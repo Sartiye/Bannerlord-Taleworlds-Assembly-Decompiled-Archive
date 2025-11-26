@@ -4,12 +4,10 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -85,7 +83,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		public override TextObject IssueAcceptByPlayer => new TextObject("{=WO3EaqB3}How can I help you?");
+		public override TextObject IssueAcceptByPlayer => new TextObject("{=A6iOIurY}How can I help you?");
 
 		public override TextObject IssueQuestSolutionExplanationByIssueGiver => new TextObject("{=tb0gqxDZ}Here's the plan. We lay an ambush in the village. When they show up, we spring. If you join us, I think we've got a good chance of ridding ourselves of this scourge before they murder us one by one.[if:convo_stern][ib:normal]");
 
@@ -184,14 +182,12 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -382,11 +378,14 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private bool _playerAwayFromSettlementNotificationSent;
 
+		[SaveableField(6)]
+		private CampaignTime _desertersRunAwayTimeoutTime;
+
 		public override TextObject Title
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=vbiA31xT}Extortion by Deserters at {SETTLEMENT}");
+				TextObject textObject = new TextObject("{=P2VNGJDa}Extortion by Deserters at {SETTLEMENT}");
 				textObject.SetTextVariable("SETTLEMENT", QuestSettlement.Name);
 				return textObject;
 			}
@@ -410,7 +409,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private ExtortionByDesertersQuestResult _questResultCancel2 => new ExtortionByDesertersQuestResult(0, 0, 0f, 0, 0, 0, 0, isSuccess: false);
 
-		private TextObject _onQuestStartedLogText
+		private TextObject OnQuestStartedLogText
 		{
 			get
 			{
@@ -421,7 +420,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestSucceededLogText
+		private TextObject OnQuestSucceededLogText
 		{
 			get
 			{
@@ -431,11 +430,11 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestFailed1LogText => new TextObject("{=bdWc1VEl}You've lost track of the deserter party.");
+		private TextObject OnQuestFailed1LogText => new TextObject("{=bdWc1VEl}You've lost track of the deserter party.");
 
-		private TextObject _onQuestFailed2LogText => new TextObject("{=oYJCP3mt}You've failed to stop the deserters. The deserters ravaged the village and left.");
+		private TextObject OnQuestFailed2LogText => new TextObject("{=oYJCP3mt}You've failed to stop the deserters. The deserters ravaged the village and left.");
 
-		private TextObject _onQuestFailed3LogText
+		private TextObject OnQuestFailed3LogText
 		{
 			get
 			{
@@ -446,7 +445,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestTimedOutLogText
+		private TextObject OnQuestTimedOutLogText
 		{
 			get
 			{
@@ -456,7 +455,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestCancel1LogText
+		private TextObject OnQuestCancel1LogText
 		{
 			get
 			{
@@ -466,7 +465,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -476,7 +475,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestCancel2LogText
+		private TextObject OnQuestCancel2LogText
 		{
 			get
 			{
@@ -487,7 +486,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onDeserterPartyDefeatedLogText
+		private TextObject OnDeserterPartyDefeatedLogText
 		{
 			get
 			{
@@ -497,7 +496,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onPlayerLeftQuestSettlementNotificationText
+		private TextObject OnPlayerLeftQuestSettlementNotificationText
 		{
 			get
 			{
@@ -507,7 +506,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onPlayerDefeatedDesertersNotificationText
+		private TextObject OnPlayerDefeatedDesertersNotificationText
 		{
 			get
 			{
@@ -518,7 +517,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onDesertersNoticedPlayerNotificationText => new TextObject("{=9vzm2j5T}Deserters have noticed our presence, they are running away!");
+		private TextObject OnDesertersNoticedPlayerNotificationText => new TextObject("{=9vzm2j5T}Deserters have noticed our presence, they are running away!");
 
 		private DialogFlow QuestCompletionDialogFlow => DialogFlow.CreateDialogFlow("start", 125).NpcLine("{=SCaWkKF1}Here is what we've promised, {GOLD_REWARD}{GOLD_ICON} denars. I hope this makes it worth the blood spilled.[if:convo_normal][ib:hip]").Condition(delegate
 		{
@@ -532,7 +531,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			{
 				ExtortionByDesertersQuestResult result3 = _questResultSuccess1;
 				ApplyQuestResult(in result3);
-				AddLog(_onQuestSucceededLogText);
+				AddLog(OnQuestSucceededLogText);
 				CompleteQuestWithSuccess();
 			})
 			.CloseDialog()
@@ -543,7 +542,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			{
 				ExtortionByDesertersQuestResult result2 = _questResultSuccess2;
 				ApplyQuestResult(in result2);
-				AddLog(_onQuestSucceededLogText);
+				AddLog(OnQuestSucceededLogText);
 				CompleteQuestWithSuccess();
 			})
 			.CloseDialog()
@@ -554,14 +553,14 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			{
 				ExtortionByDesertersQuestResult result = _questResultSuccess3;
 				ApplyQuestResult(in result);
-				AddLog(_onQuestSucceededLogText);
+				AddLog(OnQuestSucceededLogText);
 				CompleteQuestWithSuccess();
 			})
 			.CloseDialog()
 			.EndPlayerOptions()
 			.CloseDialog();
 
-		private DialogFlow DeserterPartyAmbushedDialogFlow => DialogFlow.CreateDialogFlow("start", 125).NpcLine("{=s2btPjJf}Who the hell are you? If you live in this village, you'd better rustle up some silver and wine. Look lively, eh?[if:convo_confused_annoyed][ib:warrior]").Condition(() => _deserterMobileParty != null && _deserterMobileParty.IsActive && CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_deserterMobileParty.Party) && _deserterMobileParty.Position2D.Distance(QuestSettlement.Position2D) <= 5f)
+		private DialogFlow DeserterPartyAmbushedDialogFlow => DialogFlow.CreateDialogFlow("start", 125).NpcLine("{=s2btPjJf}Who the hell are you? If you live in this village, you'd better rustle up some silver and wine. Look lively, eh?[if:convo_confused_annoyed][ib:warrior]").Condition(() => _deserterMobileParty != null && _deserterMobileParty.IsActive && CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_deserterMobileParty.Party) && _deserterMobileParty.Position.Distance(QuestSettlement.Position) <= Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 1.75f)
 			.PlayerLine("{=Pp3koSqA}This time you'll have to fight for it!")
 			.CloseDialog();
 
@@ -583,6 +582,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			base.AutoGeneratedInstanceCollectObjects(collectedObjects);
 			collectedObjects.Add(_deserterMobileParty);
 			collectedObjects.Add(_defenderMobileParty);
+			CampaignTime.AutoGeneratedStaticCollectObjectsCampaignTime(_desertersRunAwayTimeoutTime, collectedObjects);
 		}
 
 		internal static object AutoGeneratedGetMemberValue_deserterMobileParty(object o)
@@ -610,6 +610,11 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			return ((ExtortionByDesertersIssueQuest)o)._deserterBattleFinalizedForTheFirstTime;
 		}
 
+		internal static object AutoGeneratedGetMemberValue_desertersRunAwayTimeoutTime(object o)
+		{
+			return ((ExtortionByDesertersIssueQuest)o)._desertersRunAwayTimeoutTime;
+		}
+
 		public ExtortionByDesertersIssueQuest(string questId, Hero questGiver, float difficultyMultiplier, int rewardGold, CampaignTime duration)
 			: base(questId, questGiver, duration, rewardGold)
 		{
@@ -618,6 +623,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_defenderMobileParty = null;
 			_deserterBattleFinalizedForTheFirstTime = false;
 			_playerAwayFromSettlementNotificationSent = false;
+			_desertersRunAwayTimeoutTime = CampaignTime.Never;
 			CreateDeserterParty();
 			_currentState = ExtortionByDesertersQuestState.DesertersMovingToSettlement;
 			AddTrackedObject(_deserterMobileParty);
@@ -631,7 +637,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_playerAwayFromSettlementNotificationSent = false;
 			if (_currentState == ExtortionByDesertersQuestState.DesertersMovingToSettlement)
 			{
-				float num = _deserterMobileParty.Position2D.Distance(MobileParty.MainParty.Position2D);
+				float num = _deserterMobileParty.Position.Distance(MobileParty.MainParty.Position);
 				bool flag = PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement == QuestSettlement;
 				bool flag2 = num <= _deserterMobileParty.SeeingRange * 0.8f;
 				_playerAwayFromSettlementNotificationSent = !flag && !flag2;
@@ -656,7 +662,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				.CloseDialog()
 				.EndPlayerOptions()
 				.CloseDialog();
-			QuestCharacterDialogFlow = DialogFlow.CreateDialogFlow("start", 125).NpcLine("{=rAqyKcKZ}Who the hell are you? What do you want from us?[if:convo_confused_annoyed][ib:aggressive]").Condition(() => _deserterMobileParty != null && _deserterMobileParty.IsActive && CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_deserterMobileParty.Party) && _deserterMobileParty.Position2D.Distance(QuestSettlement.Position2D) >= 5f)
+			QuestCharacterDialogFlow = DialogFlow.CreateDialogFlow("start", 125).NpcLine("{=rAqyKcKZ}Who the hell are you? What do you want from us?[if:convo_confused_annoyed][ib:aggressive]").Condition(() => _deserterMobileParty != null && _deserterMobileParty.IsActive && CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_deserterMobileParty.Party) && _deserterMobileParty.Position.Distance(QuestSettlement.Position) >= 5f)
 				.BeginPlayerOptions()
 				.PlayerOption("{=Ljs9ahMk}I know your intentions. I will not let you steal from those poor villagers!")
 				.CloseDialog()
@@ -669,7 +675,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			StartQuest();
 			Campaign.Current.ConversationManager.AddDialogFlow(QuestCompletionDialogFlow, this);
 			Campaign.Current.ConversationManager.AddDialogFlow(DeserterPartyAmbushedDialogFlow, this);
-			AddLog(_onQuestStartedLogText);
+			AddLog(OnQuestStartedLogText);
 		}
 
 		private void ApplyQuestResult(in ExtortionByDesertersQuestResult result)
@@ -728,6 +734,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.GameMenuOptionSelectedEvent.AddNonSerializedListener(this, GameMenuOptionSelected);
 			CampaignEvents.VillageBeingRaided.AddNonSerializedListener(this, OnVillageBeingRaided);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
 		}
 
 		private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
@@ -736,7 +743,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			{
 				if (mapEvent.IsFieldBattle && defenderParty.IsMobile && defenderParty.MobileParty.HomeSettlement == QuestSettlement)
 				{
-					CompleteQuestWithFail(_onQuestFailed3LogText);
+					CompleteQuestWithFail(OnQuestFailed3LogText);
 					ExtortionByDesertersQuestResult result = _questResultFail3;
 					ApplyQuestResult(in result);
 				}
@@ -763,35 +770,43 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			{
 			case ExtortionByDesertersQuestState.DesertersMovingToSettlement:
 			{
-				float num = _deserterMobileParty.Position2D.Distance(MobileParty.MainParty.Position2D);
+				float num = _deserterMobileParty.Position.Distance(MobileParty.MainParty.Position);
 				bool num2 = PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement == QuestSettlement;
 				bool flag = num <= _deserterMobileParty.SeeingRange * 0.8f;
 				if (!num2)
 				{
 					if (flag)
 					{
-						MBInformationManager.AddQuickInformation(_onDesertersNoticedPlayerNotificationText, 0, Hero.MainHero.CharacterObject);
+						MBInformationManager.AddQuickInformation(OnDesertersNoticedPlayerNotificationText, 0, Hero.MainHero.CharacterObject);
 						HandleDesertersRunningAway();
 						_currentState = ExtortionByDesertersQuestState.DesertersRunningAwayFromPlayer;
+						_desertersRunAwayTimeoutTime = CampaignTime.HoursFromNow(10f);
 					}
 					else if (!_playerAwayFromSettlementNotificationSent)
 					{
-						MBInformationManager.AddQuickInformation(_onPlayerLeftQuestSettlementNotificationText, 0, base.QuestGiver.CharacterObject);
+						MBInformationManager.AddQuickInformation(OnPlayerLeftQuestSettlementNotificationText, 0, base.QuestGiver.CharacterObject);
 						_playerAwayFromSettlementNotificationSent = true;
 					}
 				}
-				else if (!_deserterMobileParty.IsCurrentlyGoingToSettlement)
+				else if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement);
+					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				break;
 			}
 			case ExtortionByDesertersQuestState.DesertersRunningAwayFromPlayer:
-				if (_deserterMobileParty.Position2D.Distance(MobileParty.MainParty.Position2D) > MobileParty.MainParty.SeeingRange + 3f)
+				if (_deserterMobileParty.Position.Distance(MobileParty.MainParty.Position) > MobileParty.MainParty.SeeingRange + 3f)
 				{
 					ExtortionByDesertersQuestResult result = _questResultFail1;
 					ApplyQuestResult(in result);
-					CompleteQuestWithFail(_onQuestFailed1LogText);
+					CompleteQuestWithFail(OnQuestFailed1LogText);
+				}
+				else if (_desertersRunAwayTimeoutTime.IsPast)
+				{
+					DestroyDeserterParty();
+					ExtortionByDesertersQuestResult result = _questResultFail1;
+					ApplyQuestResult(in result);
+					CompleteQuestWithFail(OnQuestFailed1LogText);
 				}
 				else
 				{
@@ -799,9 +814,9 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				}
 				break;
 			case ExtortionByDesertersQuestState.DesertersDefeatedPlayer:
-				if (!_deserterMobileParty.IsCurrentlyGoingToSettlement)
+				if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement);
+					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				break;
 			}
@@ -821,7 +836,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_deserterBattleFinalizedForTheFirstTime = true;
 			if (mapEvent.WinningSide == mapEvent.PlayerSide)
 			{
-				AddLog(_onDeserterPartyDefeatedLogText);
+				AddLog(OnDeserterPartyDefeatedLogText);
 				if (!IsTracked(base.QuestGiver))
 				{
 					AddTrackedObject(base.QuestGiver);
@@ -830,14 +845,14 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				{
 					AddTrackedObject(QuestSettlement);
 				}
-				MBInformationManager.AddQuickInformation(_onPlayerDefeatedDesertersNotificationText, 0, base.QuestGiver.CharacterObject);
+				MBInformationManager.AddQuickInformation(OnPlayerDefeatedDesertersNotificationText, 0, base.QuestGiver.CharacterObject);
 				_currentState = ExtortionByDesertersQuestState.DesertersAreDefeated;
 			}
 			else
 			{
-				if (!_deserterMobileParty.IsCurrentlyGoingToSettlement)
+				if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement);
+					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				_currentState = ExtortionByDesertersQuestState.DesertersDefeatedPlayer;
 			}
@@ -860,7 +875,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_onQuestCancel1LogText);
+				CompleteQuestWithCancel(OnQuestCancel1LogText);
 				ExtortionByDesertersQuestResult result = _questResultCancel1;
 				ApplyQuestResult(in result);
 			}
@@ -868,7 +883,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _onQuestCancel1LogText);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, OnQuestCancel1LogText);
 		}
 
 		private void OnVillageBeingRaided(Village village)
@@ -879,13 +894,13 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				{
 					ExtortionByDesertersQuestResult result = _questResultFail3;
 					ApplyQuestResult(in result);
-					CompleteQuestWithFail(_onQuestFailed3LogText);
+					CompleteQuestWithFail(OnQuestFailed3LogText);
 				}
 				else
 				{
 					ExtortionByDesertersQuestResult result = _questResultCancel2;
 					ApplyQuestResult(in result);
-					CompleteQuestWithCancel(_onQuestCancel2LogText);
+					CompleteQuestWithCancel(OnQuestCancel2LogText);
 				}
 			}
 		}
@@ -902,15 +917,27 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				}
 				ExtortionByDesertersQuestResult result = _questResultFail2;
 				ApplyQuestResult(in result);
-				CompleteQuestWithFail(_onQuestFailed2LogText);
+				CompleteQuestWithFail(OnQuestFailed2LogText);
 			}
 		}
 
-		private void GameMenuOptionSelected(GameMenuOption option)
+		private void GameMenuOptionSelected(GameMenu gameMenu, GameMenuOption gameMenuOption)
 		{
-			if (option.IsLeave)
+			if (gameMenuOption.IsLeave)
 			{
 				TickDesertersPartyLogic();
+			}
+		}
+
+		private void OnGameLoadFinished()
+		{
+			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.1.0")))
+			{
+				_desertersRunAwayTimeoutTime = CampaignTime.Never;
+				if (_currentState == ExtortionByDesertersQuestState.DesertersRunningAwayFromPlayer)
+				{
+					_desertersRunAwayTimeoutTime = CampaignTime.HoursFromNow(10f);
+				}
 			}
 		}
 
@@ -918,28 +945,38 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 		{
 			ExtortionByDesertersQuestResult result = _questResultTimeOut;
 			ApplyQuestResult(in result);
-			AddLog(_onQuestTimedOutLogText);
+			AddLog(OnQuestTimedOutLogText);
 		}
 
 		private void CreateDeserterParty()
 		{
-			Settlement settlement = SettlementHelper.FindNearestHideout();
-			Clan clan = null;
-			if (settlement != null)
+			float seeingRange = MobileParty.MainParty.SeeingRange;
+			float maxDistance = seeingRange + 3f;
+			CampaignVec2 initialPosition = NavigationHelper.FindReachablePointAroundPosition(MobileParty.MainParty.Position, MobileParty.NavigationType.Default, maxDistance, seeingRange);
+			Clan clan = Clan.BanditFactions.FirstOrDefault((Clan x) => x.StringId == "deserters");
+			if (clan != null)
 			{
-				CultureObject banditCulture = settlement.Culture;
-				clan = Clan.BanditFactions.FirstOrDefault((Clan x) => x.Culture == banditCulture);
+				_deserterMobileParty = BanditPartyComponent.CreateLooterParty("ebdi_deserters_party_1_new", clan, QuestSettlement, isBossParty: false, null, initialPosition);
 			}
-			if (clan == null)
+			else
 			{
-				clan = Clan.All.GetRandomElementWithPredicate((Clan x) => x.IsBanditFaction);
+				Hideout hideout = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.Default);
+				Clan clan2 = null;
+				if (hideout != null)
+				{
+					CultureObject banditCulture = hideout.Settlement.Culture;
+					clan2 = Clan.BanditFactions.FirstOrDefault((Clan x) => x.Culture == banditCulture);
+				}
+				if (clan2 == null)
+				{
+					clan2 = Clan.All.GetRandomElementWithPredicate((Clan x) => x.IsBanditFaction);
+				}
+				_deserterMobileParty = BanditPartyComponent.CreateBanditParty("ebdi_deserters_party_1", clan2, hideout, isBossParty: false, null, initialPosition);
+				TextObject customName = new TextObject("{=zT2b0v8y}Deserters Party");
+				_deserterMobileParty.Party.SetCustomName(customName);
 			}
 			PartyTemplateObject defaultPartyTemplate = QuestSettlement.Culture.DefaultPartyTemplate;
-			_deserterMobileParty = BanditPartyComponent.CreateBanditParty("ebdi_deserters_party_1", clan, settlement.Hideout, isBossParty: false);
-			TextObject customName = new TextObject("{=zT2b0v8y}Deserters Party");
-			Vec2 position = FindBestSpawnPositionForDeserterParty();
-			_deserterMobileParty.InitializeMobilePartyAtPosition(defaultPartyTemplate, position, DeserterPartyMenCount);
-			_deserterMobileParty.SetCustomName(customName);
+			MobilePartyHelper.FillPartyManuallyAfterCreation(_deserterMobileParty, defaultPartyTemplate, DeserterPartyMenCount);
 			int num = 0;
 			foreach (TroopRosterElement item in _deserterMobileParty.MemberRoster.GetTroopRoster())
 			{
@@ -948,8 +985,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 					num += item.Number;
 				}
 			}
-			ItemObject itemObject = null;
-			itemObject = Items.All.GetRandomElementWithPredicate((ItemObject x) => x.IsMountable && x.Culture == QuestSettlement.Culture && !x.NotMerchandise && x.Tier == ItemObject.ItemTiers.Tier2);
+			ItemObject itemObject = Items.All.GetRandomElementWithPredicate((ItemObject x) => x.IsMountable && x.Culture == QuestSettlement.Culture && !x.NotMerchandise && x.Tier == ItemObject.ItemTiers.Tier2);
 			if (itemObject == null)
 			{
 				itemObject = MBObjectManager.Instance.GetObject<ItemObject>("vlandia_horse") ?? MBObjectManager.Instance.GetObject<ItemObject>("sumpter_horse");
@@ -969,40 +1005,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_deserterMobileParty.Aggressiveness = 0f;
 			_deserterMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			_deserterMobileParty.Party.SetVisualAsDirty();
-			SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement);
-		}
-
-		private Vec2 FindBestSpawnPositionForDeserterParty()
-		{
-			MobileParty mainParty = MobileParty.MainParty;
-			Vec2 getPosition2D = mainParty.GetPosition2D;
-			float seeingRange = mainParty.SeeingRange;
-			float num = seeingRange + 3f;
-			float num2 = num * 1.25f;
-			float maximumDistance = num2 * 3f;
-			Vec2 result = getPosition2D;
-			float num3 = float.MaxValue;
-			int num4 = 0;
-			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-			do
-			{
-				Vec2 toPoint = MobilePartyHelper.FindReachablePointAroundPosition(getPosition2D, num, seeingRange);
-				if (mapDistanceModel.GetDistance(mainParty, in toPoint, maximumDistance, out var distance))
-				{
-					if (distance < num3)
-					{
-						result = toPoint;
-						num3 = distance;
-					}
-					if (distance < num2)
-					{
-						break;
-					}
-				}
-				num4++;
-			}
-			while (num4 < 16);
-			return result;
+			SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 		}
 
 		private void DestroyDeserterParty()
@@ -1026,24 +1029,20 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 					LeaveSettlementAction.ApplyForParty(_deserterMobileParty);
 				}
 				_deserterMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
-				_deserterMobileParty.SetCustomName(null);
+				_deserterMobileParty.Party.SetCustomName(null);
 				_deserterMobileParty.Party.SetVisualAsDirty();
 			}
 		}
 
 		private void CreateDefenderParty()
 		{
-			PartyTemplateObject militiaPartyTemplate = QuestSettlement.Culture.MilitiaPartyTemplate;
-			_defenderMobileParty = MobileParty.CreateParty("ebdi_defender_party_1", null);
 			TextObject textObject = new TextObject("{=dPU8UbKA}{QUEST_GIVER}'s Party");
 			textObject.SetTextVariable("QUEST_GIVER", base.QuestGiver.Name);
-			_defenderMobileParty.InitializeMobilePartyAroundPosition(militiaPartyTemplate, QuestSettlement.GetPosition2D, 1f, 0.5f, DefenderPartyMenCount);
-			_defenderMobileParty.SetCustomName(textObject);
+			_defenderMobileParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(QuestSettlement.GatePosition, 1f, base.QuestGiver.CurrentSettlement, textObject, base.QuestGiver.CurrentSettlement.OwnerClan, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), base.QuestGiver);
+			MobilePartyHelper.FillPartyManuallyAfterCreation(_defenderMobileParty, QuestSettlement.Culture.MilitiaPartyTemplate, DefenderPartyMenCount);
 			_defenderMobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
-			_defenderMobileParty.Party.SetCustomOwner(base.QuestGiver);
 			_defenderMobileParty.Aggressiveness = 1f;
 			_defenderMobileParty.ShouldJoinPlayerBattles = true;
-			_defenderMobileParty.ActualClan = base.QuestGiver.CurrentSettlement.OwnerClan;
 		}
 
 		private void DestroyDefenderParty()
@@ -1057,33 +1056,34 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private void HandleDesertersRunningAway()
 		{
-			Vec2 vec = _deserterMobileParty.Position2D - MobileParty.MainParty.Position2D;
+			Vec2 vec = (_deserterMobileParty.Position - MobileParty.MainParty.Position).ToVec2();
 			vec.Normalize();
 			float num = _deserterMobileParty.Speed * 1.5f;
-			Vec2 point = _deserterMobileParty.Position2D + vec * num;
+			CampaignVec2 point = _deserterMobileParty.Position + vec * num;
 			point = FindFreePositionBetweenPointAndParty(_deserterMobileParty, in point, out var distance);
-			PathFaceRecord faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(point);
+			PathFaceRecord face = point.Face;
 			float angleInRadians = 0.34906584f;
+			float distance2;
 			for (int i = 0; i < 10; i++)
 			{
-				if (faceIndex.FaceIndex != -1 && faceIndex.FaceIslandIndex != -1)
+				if (face.FaceIndex != -1 && face.FaceIslandIndex != -1)
 				{
 					break;
 				}
 				vec.RotateCCW(angleInRadians);
 				vec.Normalize();
 				MobileParty deserterMobileParty = _deserterMobileParty;
-				Vec2 point2 = _deserterMobileParty.Position2D + vec * num;
-				point = FindFreePositionBetweenPointAndParty(deserterMobileParty, in point2, out var _);
-				faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(point);
+				CampaignVec2 point2 = _deserterMobileParty.Position + vec * num;
+				point = FindFreePositionBetweenPointAndParty(deserterMobileParty, in point2, out distance2);
+				face = point.Face;
 			}
 			if (distance <= 1E-05f)
 			{
 				vec.RotateCCW(-System.MathF.PI / 2f + (float)MBRandom.RandomInt(0, 2) * System.MathF.PI);
-				point = _deserterMobileParty.Position2D + vec * num;
-				point = FindFreePositionBetweenPointAndParty(_deserterMobileParty, in point, out distance);
+				point = _deserterMobileParty.Position + vec * num;
+				point = FindFreePositionBetweenPointAndParty(_deserterMobileParty, in point, out distance2);
 			}
-			_deserterMobileParty.Ai.SetMoveGoToPoint(point);
+			_deserterMobileParty.SetMoveGoToPoint(point, MobileParty.NavigationType.Default);
 		}
 
 		private void StartAmbushEncounter()
@@ -1093,52 +1093,53 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			EncounterManager.StartPartyEncounter(_deserterMobileParty.Party, MobileParty.MainParty.Party);
 		}
 
-		private Vec2 FindFreePositionBetweenPointAndParty(MobileParty party, in Vec2 point, out float distance, float maxIterations = 10f, float acceptThres = 1E-05f, float maxPathDistance = 1000f, float euclideanThressholdFactor = 1.5f)
+		private CampaignVec2 FindFreePositionBetweenPointAndParty(MobileParty party, in CampaignVec2 point, out float distance, float maxIterations = 10f, float acceptThres = 1E-05f, float maxPathDistance = 1000f, float euclideanThressholdFactor = 1.5f)
 		{
-			IMapScene mapSceneWrapper = Campaign.Current.MapSceneWrapper;
-			Vec2 position2D = party.Position2D;
-			PathFaceRecord faceIndex = mapSceneWrapper.GetFaceIndex(position2D);
-			Vec2 vec = position2D;
+			_ = Campaign.Current.MapSceneWrapper;
+			CampaignVec2 position = party.Position;
+			PathFaceRecord currentNavigationFace = party.CurrentNavigationFace;
+			CampaignVec2 campaignVec = position;
 			distance = 0f;
-			if (!PartyBase.IsPositionOkForTraveling(position2D))
+			if (!NavigationHelper.IsPositionValidForNavigationType(position, MobileParty.NavigationType.Default))
 			{
-				Debug.FailedAssert("Origin point not valid!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1368);
+				Debug.FailedAssert("Origin point not valid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1355);
 			}
 			else
 			{
-				Vec2 vec2 = point;
-				PathFaceRecord faceIndex2 = mapSceneWrapper.GetFaceIndex(vec2);
-				Vec2 vec3 = point;
+				CampaignVec2 campaignVec2 = point;
+				PathFaceRecord face = campaignVec2.Face;
+				CampaignVec2 campaignVec3 = point;
 				float num = acceptThres * acceptThres;
 				for (int i = 0; (float)i < maxIterations; i++)
 				{
-					if (!(vec.DistanceSquared(point) > num))
+					if (!(campaignVec.DistanceSquared(point) > num))
 					{
 						break;
 					}
-					if (!faceIndex2.IsValid())
+					if (!face.IsValid())
 					{
 						break;
 					}
-					float num2 = position2D.Distance(vec2);
+					float num2 = position.Distance(campaignVec2);
+					int[] invalidTerrainTypesForNavigationType = Campaign.Current.Models.PartyNavigationModel.GetInvalidTerrainTypesForNavigationType(MobileParty.NavigationType.Default);
 					float distance2;
-					bool pathDistanceBetweenAIFaces = Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(faceIndex, faceIndex2, position2D, vec2, 0.2f, maxPathDistance, out distance2);
+					bool pathDistanceBetweenAIFaces = Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(currentNavigationFace, face, position.ToVec2(), campaignVec2.ToVec2(), 0.3f, maxPathDistance, out distance2, invalidTerrainTypesForNavigationType, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromLandToSea, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromSeaToLand);
 					bool flag = distance2 < num2 * euclideanThressholdFactor;
 					if (pathDistanceBetweenAIFaces && flag)
 					{
-						vec = vec2;
+						campaignVec = campaignVec2;
 						distance = num2;
-						vec2 = 0.5f * (vec2 + vec3);
+						campaignVec2 = (campaignVec2 + campaignVec3) * 0.5f;
 					}
 					else
 					{
-						vec3 = vec2;
-						vec2 = 0.5f * (vec + vec3);
+						campaignVec3 = campaignVec2;
+						campaignVec2 = (campaignVec + campaignVec3) * 0.5f;
 					}
-					faceIndex2 = mapSceneWrapper.GetFaceIndex(vec2);
+					face = campaignVec2.Face;
 				}
 			}
-			return vec;
+			return campaignVec;
 		}
 	}
 

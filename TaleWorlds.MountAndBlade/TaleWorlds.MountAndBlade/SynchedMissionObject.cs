@@ -68,7 +68,7 @@ public class SynchedMissionObject : MissionObject
 			return;
 		}
 		MatrixFrame frame = base.GameEntity.GetFrame();
-		if ((_synchState == SynchState.SynchronizePosition && _lastSynchedFrame.origin.NearlyEquals(frame.origin)) || _lastSynchedFrame.NearlyEquals(frame))
+		if ((_synchState == SynchState.SynchronizePosition && _lastSynchedFrame.origin.NearlyEquals(in frame.origin)) || _lastSynchedFrame.NearlyEquals(frame))
 		{
 			SetSynchState(SynchState.SynchronizeCompleted);
 			return;
@@ -85,7 +85,9 @@ public class SynchedMissionObject : MissionObject
 				frame2.rotation.Orthonormalize();
 				if (_lastSynchedFrame.rotation.HasScale())
 				{
-					frame2.rotation.ApplyScaleLocal(_lastSynchedFrame.rotation.GetScaleVector());
+					ref Mat3 rotation = ref frame2.rotation;
+					Vec3 scaleAmountXYZ = _lastSynchedFrame.rotation.GetScaleVector();
+					rotation.ApplyScaleLocal(in scaleAmountXYZ);
 				}
 			}
 			base.GameEntity.SetFrame(ref frame2);
@@ -115,12 +117,12 @@ public class SynchedMissionObject : MissionObject
 	public virtual void SetVisibleSynched(bool value, bool forceChildrenVisible = false)
 	{
 		bool flag = base.GameEntity.IsVisibleIncludeParents() != value;
-		List<GameEntity> children = null;
+		List<WeakGameEntity> children = null;
 		if (!flag && forceChildrenVisible)
 		{
-			children = new List<GameEntity>();
+			children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (GameEntity item in children)
+			foreach (WeakGameEntity item in children)
 			{
 				if (item.GetPhysicsState() != value)
 				{
@@ -129,7 +131,7 @@ public class SynchedMissionObject : MissionObject
 				}
 			}
 		}
-		if (!(base.GameEntity != null && flag))
+		if (!(base.GameEntity.IsValid && flag))
 		{
 			return;
 		}
@@ -146,10 +148,10 @@ public class SynchedMissionObject : MissionObject
 		}
 		if (children == null)
 		{
-			children = new List<GameEntity>();
+			children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
 		}
-		foreach (GameEntity item2 in children)
+		foreach (WeakGameEntity item2 in children)
 		{
 			item2.SetVisibilityExcludeParents(value);
 		}
@@ -172,7 +174,8 @@ public class SynchedMissionObject : MissionObject
 
 	public void SetFrameSynched(ref MatrixFrame frame, bool isClient = false)
 	{
-		if (!(base.GameEntity.GetFrame() != frame) && _synchState == SynchState.SynchronizeCompleted)
+		MatrixFrame m = base.GameEntity.GetFrame();
+		if (!(m != frame) && _synchState == SynchState.SynchronizeCompleted)
 		{
 			return;
 		}
@@ -199,13 +202,14 @@ public class SynchedMissionObject : MissionObject
 	{
 		_duration = 0f;
 		_timer = 0f;
-		if (!(base.GameEntity.GetGlobalFrame() != frame))
+		MatrixFrame m = base.GameEntity.GetGlobalFrame();
+		if (!(m != frame))
 		{
 			return;
 		}
 		if (GameNetwork.IsClientOrReplay)
 		{
-			_lastSynchedFrame = ((base.GameEntity.Parent != null) ? base.GameEntity.Parent.GetGlobalFrame().TransformToLocalNonOrthogonal(ref frame) : frame);
+			_lastSynchedFrame = (base.GameEntity.Parent.IsValid ? base.GameEntity.Parent.GetGlobalFrame().TransformToLocalNonOrthogonal(in frame) : frame);
 			SetSynchState(SynchState.SynchronizeFrame);
 			return;
 		}
@@ -222,7 +226,8 @@ public class SynchedMissionObject : MissionObject
 
 	public void SetFrameSynchedOverTime(ref MatrixFrame frame, float duration, bool isClient = false)
 	{
-		if (base.GameEntity.GetFrame() != frame || duration.ApproximatelyEqualsTo(0f))
+		MatrixFrame m = base.GameEntity.GetFrame();
+		if (m != frame || duration.ApproximatelyEqualsTo(0f))
 		{
 			_firstFrame = base.GameEntity.GetFrame();
 			_lastSynchedFrame = frame;
@@ -241,10 +246,11 @@ public class SynchedMissionObject : MissionObject
 
 	public void SetGlobalFrameSynchedOverTime(ref MatrixFrame frame, float duration, bool isClient = false)
 	{
-		if (base.GameEntity.GetGlobalFrame() != frame || duration.ApproximatelyEqualsTo(0f))
+		MatrixFrame m = base.GameEntity.GetGlobalFrame();
+		if (m != frame || duration.ApproximatelyEqualsTo(0f))
 		{
 			_firstFrame = base.GameEntity.GetFrame();
-			_lastSynchedFrame = ((base.GameEntity.Parent != null) ? base.GameEntity.Parent.GetGlobalFrame().TransformToLocalNonOrthogonal(ref frame) : frame);
+			_lastSynchedFrame = (base.GameEntity.Parent.IsValid ? base.GameEntity.Parent.GetGlobalFrame().TransformToLocalNonOrthogonal(in frame) : frame);
 			SetSynchState(SynchState.SynchronizeFrameOverTime);
 			_duration = (duration.ApproximatelyEqualsTo(0f) ? 0.1f : duration);
 			_timer = 0f;
@@ -391,7 +397,7 @@ public class SynchedMissionObject : MissionObject
 
 	public virtual void SetTeamColorsSynched(uint color, uint color2)
 	{
-		if (base.GameEntity != null)
+		if (base.GameEntity.IsValid)
 		{
 			if (GameNetwork.IsServerOrRecorder)
 			{
@@ -406,12 +412,11 @@ public class SynchedMissionObject : MissionObject
 
 	public virtual void WriteToNetwork()
 	{
-		GameEntity gameEntity = base.GameEntity;
-		GameNetworkMessage.WriteBoolToPacket(gameEntity.GetVisibilityExcludeParents());
+		GameNetworkMessage.WriteBoolToPacket(base.GameEntity.GetVisibilityExcludeParents());
 		GameNetworkMessage.WriteBoolToPacket(_initialSynchFlags.HasAnyFlag(SynchFlags.SynchTransform));
 		if (_initialSynchFlags.HasAnyFlag(SynchFlags.SynchTransform))
 		{
-			GameNetworkMessage.WriteMatrixFrameToPacket(gameEntity.GetFrame());
+			GameNetworkMessage.WriteMatrixFrameToPacket(base.GameEntity.GetFrame());
 			GameNetworkMessage.WriteBoolToPacket(_synchState == SynchState.SynchronizeFrameOverTime);
 			if (_synchState == SynchState.SynchronizeFrameOverTime)
 			{
@@ -419,7 +424,7 @@ public class SynchedMissionObject : MissionObject
 				GameNetworkMessage.WriteFloatToPacket(_duration - _timer, CompressionMission.FlagCapturePointDurationCompressionInfo);
 			}
 		}
-		Skeleton skeleton = gameEntity.Skeleton;
+		Skeleton skeleton = base.GameEntity.Skeleton;
 		GameNetworkMessage.WriteBoolToPacket(skeleton != null);
 		if (skeleton != null)
 		{
@@ -433,7 +438,7 @@ public class SynchedMissionObject : MissionObject
 				GameNetworkMessage.WriteIntToPacket(animationIndexAtChannel, CompressionBasic.AnimationIndexCompressionInfo);
 				GameNetworkMessage.WriteFloatToPacket(animationSpeedAtChannel, CompressionBasic.AnimationSpeedCompressionInfo);
 				GameNetworkMessage.WriteFloatToPacket(animationParameterAtChannel, CompressionBasic.AnimationProgressCompressionInfo);
-				GameNetworkMessage.WriteBoolToPacket(gameEntity.IsSkeletonAnimationPaused());
+				GameNetworkMessage.WriteBoolToPacket(base.GameEntity.IsSkeletonAnimationPaused());
 			}
 		}
 		GameNetworkMessage.WriteBoolToPacket(_initialSynchFlags.HasAnyFlag(SynchFlags.SyncColors));

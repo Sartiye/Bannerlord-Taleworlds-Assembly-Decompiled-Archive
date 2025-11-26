@@ -32,16 +32,17 @@ public class BehaviorDefendKeyPosition : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		Vec2 direction = ((base.Formation.QuerySystem.ClosestEnemyFormation != null) ? ((base.Formation.Direction.DotProduct((base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized()) < 0.5f) ? (base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition) : base.Formation.Direction).Normalized() : base.Formation.Direction);
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+		Vec2 direction = ((cachedClosestEnemyFormation != null) ? ((base.Formation.Direction.DotProduct((cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized()) < 0.5f) ? (cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition) : base.Formation.Direction).Normalized() : base.Formation.Direction);
 		if (DefensePosition.IsValid)
 		{
 			base.CurrentOrder = MovementOrder.MovementOrderMove(DefensePosition);
 		}
 		else
 		{
-			WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		}
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 	}
@@ -50,22 +51,22 @@ public class BehaviorDefendKeyPosition : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		if (base.Formation.QuerySystem.HasShield && base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < base.Formation.Depth * base.Formation.Depth * 4f)
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		if (base.Formation.QuerySystem.HasShield && base.Formation.CachedAveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < base.Formation.Depth * base.Formation.Depth * 4f)
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderShieldWall;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderShieldWall);
 		}
 		else
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
 		}
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

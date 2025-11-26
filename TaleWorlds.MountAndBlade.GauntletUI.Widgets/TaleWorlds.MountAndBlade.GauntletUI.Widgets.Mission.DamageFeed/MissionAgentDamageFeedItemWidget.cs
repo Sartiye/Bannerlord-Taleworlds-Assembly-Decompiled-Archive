@@ -21,8 +21,6 @@ public class MissionAgentDamageFeedItemWidget : Widget
 	public float FadeOutTime { get; set; } = 0.3f;
 
 
-	private float CurrentAlpha => base.AlphaFactor;
-
 	public float TimeSinceCreation { get; private set; }
 
 	public MissionAgentDamageFeedItemWidget(UIContext context)
@@ -35,9 +33,9 @@ public class MissionAgentDamageFeedItemWidget : Widget
 		_isShown = true;
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (!_isInitialized)
 		{
 			this.SetGlobalAlphaRecursively(0f);
@@ -50,7 +48,7 @@ public class MissionAgentDamageFeedItemWidget : Widget
 		TimeSinceCreation += dt * _speedModifier;
 		if (TimeSinceCreation <= FadeInTime)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 1f, TimeSinceCreation / FadeInTime));
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 1f, TimeSinceCreation / FadeInTime));
 		}
 		else if (TimeSinceCreation - FadeInTime <= StayTime)
 		{
@@ -58,8 +56,8 @@ public class MissionAgentDamageFeedItemWidget : Widget
 		}
 		else if (TimeSinceCreation - (FadeInTime + StayTime) <= FadeOutTime)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 0f, (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime));
-			if (CurrentAlpha <= 0.1f)
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 0f, (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime));
+			if (base.AlphaFactor <= 0.1f)
 			{
 				EventFired("OnRemove");
 			}

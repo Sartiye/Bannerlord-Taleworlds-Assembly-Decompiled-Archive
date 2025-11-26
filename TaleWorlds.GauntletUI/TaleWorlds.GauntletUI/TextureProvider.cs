@@ -8,11 +8,18 @@ public abstract class TextureProvider
 {
 	private Dictionary<string, MethodInfo> _getGetMethodCache = new Dictionary<string, MethodInfo>();
 
+	public string SourceInfo { get; set; }
+
 	public virtual void SetTargetSize(int width, int height)
 	{
 	}
 
-	public abstract Texture GetTexture(TwoDimensionContext twoDimensionContext, string name);
+	public Texture GetTextureForRender(TwoDimensionContext context, string name = null)
+	{
+		return OnGetTextureForRender(context, name);
+	}
+
+	protected abstract Texture OnGetTextureForRender(TwoDimensionContext twoDimensionContext, string name);
 
 	public virtual void Tick(float dt)
 	{

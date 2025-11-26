@@ -60,14 +60,19 @@ public static class FileHelper
 		Common.PlatformFileHelper.DeleteFile(path);
 	}
 
-	public static PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern)
+	public static PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern, SearchOption searchOption)
 	{
-		return Common.PlatformFileHelper.GetFiles(path, searchPattern);
+		return Common.PlatformFileHelper.GetFiles(path, searchPattern, searchOption);
 	}
 
 	public static byte[] GetFileContent(PlatformFilePath filePath)
 	{
 		return Common.PlatformFileHelper.GetFileContent(filePath);
+	}
+
+	public static byte[] GetMetaDataContent(PlatformFilePath filePath)
+	{
+		return Common.PlatformFileHelper.GetMetaDataContent(filePath);
 	}
 
 	public static void CopyFile(PlatformFilePath source, PlatformFilePath target)

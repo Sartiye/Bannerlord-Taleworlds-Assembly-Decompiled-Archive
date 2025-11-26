@@ -13,16 +13,16 @@ public abstract class EmpireConspiracySupportsSceneNotificationItemBase : SceneN
 
 	public override TextObject AffirmativeText => GameTexts.FindText("str_ok");
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner>
+		return new Banner[2]
 		{
 			King.MapFaction.Banner,
 			King.MapFaction.Banner
 		};
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = King.CivilianEquipment.Clone();
@@ -36,7 +36,7 @@ public abstract class EmpireConspiracySupportsSceneNotificationItemBase : SceneN
 		list.Add(new SceneNotificationCharacter(overriddenBodyProperties: @object.GetBodyProperties(equipment2, MBRandom.RandomInt(100)), character: @object, overriddenEquipment: equipment2, useCivilianEquipment: false, customColor1: 0u, customColor2: 0u));
 		list.Add(CampaignSceneNotificationHelper.GetBodyguardOfCulture(King.MapFaction.Culture));
 		list.Add(CampaignSceneNotificationHelper.GetBodyguardOfCulture(King.MapFaction.Culture));
-		return list;
+		return list.ToArray();
 	}
 
 	protected EmpireConspiracySupportsSceneNotificationItemBase(Hero kingHero)

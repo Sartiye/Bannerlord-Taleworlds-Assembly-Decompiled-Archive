@@ -11,7 +11,7 @@ public class HintViewModel : ViewModel
 
 	public HintViewModel()
 	{
-		HintText = TextObject.Empty;
+		HintText = TextObject.GetEmpty();
 	}
 
 	public HintViewModel(TextObject hintText, string uniqueName = null)

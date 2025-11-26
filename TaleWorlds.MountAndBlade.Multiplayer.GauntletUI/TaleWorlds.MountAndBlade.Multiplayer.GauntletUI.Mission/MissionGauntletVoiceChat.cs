@@ -22,7 +22,7 @@ public class MissionGauntletVoiceChat : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		_dataSource = new MultiplayerVoiceChatVM(base.Mission);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerVoiceChat", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerVoiceChat", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}

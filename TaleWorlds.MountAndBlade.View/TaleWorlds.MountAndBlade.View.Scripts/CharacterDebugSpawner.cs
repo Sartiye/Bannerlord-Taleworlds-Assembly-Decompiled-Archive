@@ -108,9 +108,7 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 		ActionIndexCache.Create("act_sit_conversation")
 	};
 
-	private readonly ActionIndexCache act_inventory_idle_start = ActionIndexCache.Create("act_inventory_idle_start");
-
-	public readonly ActionIndexCache PoseAction = ActionIndexCache.Create("act_walk_idle_unarmed");
+	public readonly ActionIndexCache PoseAction = ActionIndexCache.act_walk_idle_unarmed;
 
 	public string LordName = "main_hero";
 
@@ -196,7 +194,7 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 		if (Time - ActionSetTimer > ActionChangeInterval)
 		{
 			ActionSetTimer = Time;
-			_agentVisuals.SetAction(_actionIndices[MBRandom.RandomInt(_actionIndices.Length)]);
+			_agentVisuals.SetAction(in _actionIndices[MBRandom.RandomInt(_actionIndices.Length)]);
 		}
 	}
 
@@ -228,7 +226,7 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 			break;
 		}
 		case "PoseAction":
-			_agentVisuals?.SetAction(PoseAction);
+			_agentVisuals?.SetAction(in PoseAction);
 			break;
 		case "IsWeaponWielded":
 		{
@@ -262,7 +260,7 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 
 	public void InitWithCharacter(CharacterCode characterCode)
 	{
-		GameEntity gameEntity = GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
+		GameEntity gameEntity = TaleWorlds.Engine.GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
 		gameEntity.Name = "TableauCharacterAgentVisualsEntity";
 		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(characterCode.Race);
 		_agentVisuals = AgentVisuals.Create(new AgentVisualsData().Equipment(characterCode.CalculateEquipment()).BodyProperties(characterCode.BodyProperties).Race(characterCode.Race)
@@ -270,15 +268,15 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 			.SkeletonType(characterCode.IsFemale ? SkeletonType.Female : SkeletonType.Male)
 			.Entity(gameEntity)
 			.ActionSet(MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, characterCode.IsFemale, "_facegen"))
-			.ActionCode(act_inventory_idle_start)
+			.ActionCode(in ActionIndexCache.act_inventory_idle_start)
 			.Scene(base.GameEntity.Scene)
 			.Monster(baseMonsterFromRace)
 			.PrepareImmediately(CreateFaceImmediately)
 			.Banner(characterCode.Banner)
 			.ClothColor1(ClothColor1)
 			.ClothColor2(ClothColor2), "CharacterDebugSpawner", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
-		_agentVisuals.SetAction(PoseAction, MBRandom.RandomFloat);
-		base.GameEntity.AddChild(gameEntity);
+		_agentVisuals.SetAction(in PoseAction, MBRandom.RandomFloat);
+		base.GameEntity.AddChild(gameEntity.WeakEntity);
 		WieldWeapon(characterCode);
 		_agentVisuals.GetVisuals().GetSkeleton().TickAnimationsAndForceUpdate(0.1f, _agentVisuals.GetVisuals().GetGlobalFrame(), tickAnimsForChildren: true);
 	}
@@ -309,7 +307,7 @@ public class CharacterDebugSpawner : ScriptComponentBehavior
 		if (num != -1 || num2 != -1)
 		{
 			AgentVisualsData copyAgentVisualsData = _agentVisuals.GetCopyAgentVisualsData();
-			copyAgentVisualsData.RightWieldedItemIndex(num).LeftWieldedItemIndex(num2).ActionCode(PoseAction);
+			copyAgentVisualsData.RightWieldedItemIndex(num).LeftWieldedItemIndex(num2).ActionCode(in PoseAction);
 			_agentVisuals.Refresh(needBatchedVersionForWeaponMeshes: false, copyAgentVisualsData);
 		}
 	}

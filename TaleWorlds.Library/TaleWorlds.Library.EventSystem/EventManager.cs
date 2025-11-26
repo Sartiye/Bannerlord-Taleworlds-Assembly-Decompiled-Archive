@@ -20,7 +20,7 @@ public class EventManager
 		}
 		else
 		{
-			Debug.FailedAssert("Events have to derived from EventSystemBase", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "RegisterEvent", 31);
+			Debug.FailedAssert("Events have to derived from EventSystemBase", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "RegisterEvent", 31);
 		}
 	}
 
@@ -32,7 +32,7 @@ public class EventManager
 		}
 		else
 		{
-			Debug.FailedAssert("Events have to derived from EventSystemBase", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "UnregisterEvent", 48);
+			Debug.FailedAssert("Events have to derived from EventSystemBase", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "UnregisterEvent", 48);
 		}
 	}
 

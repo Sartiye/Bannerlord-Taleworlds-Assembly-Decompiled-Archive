@@ -1,15 +1,16 @@
 using System;
 using System.Numerics;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.TwoDimension;
 
 public static class Mathf
 {
-	public const float PI = MathF.PI;
+	public const float PI = System.MathF.PI;
 
-	public const float Deg2Rad = MathF.PI / 180f;
+	public const float Deg2Rad = System.MathF.PI / 180f;
 
-	public const float Rad2Deg = 180f / MathF.PI;
+	public const float Rad2Deg = 180f / System.MathF.PI;
 
 	public const float Epsilon = 1E-05f;
 
@@ -139,5 +140,24 @@ public static class Mathf
 		bool num5 = num3 / num4 % 2 == 0;
 		int num6 = num3 % num4;
 		return (float)(num5 ? (num6 + num) : (num2 - num6)) / 100f;
+	}
+
+	public static Vec3 GetClosestPointInLineSegmentToLine(Vec3 linePosition, Vec3 lineDirection, Vec3 lineSegmentBegin, Vec3 lineSegmentEnd)
+	{
+		Vec3 vec = lineSegmentEnd - lineSegmentBegin;
+		Vec3 v = linePosition - lineSegmentBegin;
+		if (!vec.IsNonZero)
+		{
+			return lineSegmentBegin;
+		}
+		float num = Vec3.DotProduct(lineDirection, lineDirection);
+		float num2 = Vec3.DotProduct(lineDirection, vec);
+		float num3 = Vec3.DotProduct(vec, vec);
+		float num4 = Vec3.DotProduct(lineDirection, v);
+		float num5 = Vec3.DotProduct(vec, v);
+		float num6 = num * num3 - num2 * num2;
+		float value = ((!num6.ApproximatelyEqualsTo(0f)) ? ((num * num5 - num2 * num4) / num6) : (Vec3.DotProduct(vec, linePosition - lineSegmentBegin) / Vec3.DotProduct(vec, vec)));
+		value = TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+		return lineSegmentBegin + value * vec;
 	}
 }

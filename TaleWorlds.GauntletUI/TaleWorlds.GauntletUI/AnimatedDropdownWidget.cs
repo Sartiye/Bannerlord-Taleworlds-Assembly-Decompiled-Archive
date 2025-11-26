@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.GamepadNavigation;
@@ -50,7 +51,7 @@ public class AnimatedDropdownWidget : Widget
 	private bool _updateSelectedItem = true;
 
 	[Editor(false)]
-	public RichTextWidget TextWidget { get; set; }
+	public Widget TextWidget { get; set; }
 
 	public ScrollbarWidget ScrollbarWidget { get; set; }
 
@@ -255,12 +256,12 @@ public class AnimatedDropdownWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_previousOpenState && _isOpen && Vector2.Distance(DropdownClipWidget.GlobalPosition, _dropdownOpenPosition) > 5f)
+		if (_previousOpenState && _isOpen && Vector2.Distance(DropdownClipWidget.AreaRect.TopLeft, _dropdownOpenPosition) > 5f)
 		{
 			ClosePanelInOneFrame();
 		}
 		UpdateListPanelPosition(dt);
-		if (!IsRecursivelyVisible())
+		if (_isOpen && !IsRecursivelyVisible())
 		{
 			ClosePanelInOneFrame();
 		}
@@ -303,7 +304,7 @@ public class AnimatedDropdownWidget : Widget
 		}
 		if (!_previousOpenState && _isOpen)
 		{
-			_dropdownOpenPosition = Button.GlobalPosition + new Vector2((Button.Size.X - DropdownClipWidget.Size.X) / 2f, Button.Size.Y);
+			_dropdownOpenPosition = DropdownClipWidget.AreaRect.TopLeft;
 		}
 		_previousOpenState = _isOpen;
 	}
@@ -317,13 +318,13 @@ public class AnimatedDropdownWidget : Widget
 		if (_isOpen)
 		{
 			Widget child = DropdownContainerWidget.GetChild(0);
-			num = child.Size.Y + child.MarginBottom * base._scaleToUse;
+			num = child.Size.Y + child.ScaledMarginBottom;
 		}
 		else
 		{
 			num = 0f;
 		}
-		one = Button.GlobalPosition + new Vector2((Button.Size.X - DropdownClipWidget.Size.X) / 2f, Button.Size.Y) - new Vector2(base.EventManager.LeftUsableAreaStart, base.EventManager.TopUsableAreaStart);
+		one = Button.GlobalPosition + new Vector2((Button.Size.X - DropdownClipWidget.Size.X) / 2f, Button.Size.Y);
 		DropdownClipWidget.ScaledPositionXOffset = one.X;
 		float amount = TaleWorlds.Library.MathF.Clamp(dt * _animationSpeedModifier, 0f, 1f);
 		DropdownClipWidget.ScaledSuggestedHeight = TaleWorlds.Library.MathF.Lerp(DropdownClipWidget.ScaledSuggestedHeight, num, amount);
@@ -433,6 +434,7 @@ public class AnimatedDropdownWidget : Widget
 		if (_scopeCollection != null)
 		{
 			base.GamepadNavigationContext.RemoveForcedScopeCollection(_scopeCollection);
+			_scopeCollection = null;
 		}
 	}
 
@@ -455,16 +457,13 @@ public class AnimatedDropdownWidget : Widget
 
 	public void UpdateButtonText(string text)
 	{
-		if (TextWidget != null)
+		if (TextWidget is TextWidget textWidget)
 		{
-			if (text != null)
-			{
-				TextWidget.Text = text;
-			}
-			else
-			{
-				TextWidget.Text = " ";
-			}
+			textWidget.Text = ((!string.IsNullOrEmpty(text)) ? text : " ");
+		}
+		else if (TextWidget is RichTextWidget richTextWidget)
+		{
+			richTextWidget.Text = ((!string.IsNullOrEmpty(text)) ? text : " ");
 		}
 	}
 
@@ -502,9 +501,14 @@ public class AnimatedDropdownWidget : Widget
 			Widget child = ListPanel.GetChild(ListPanelValue);
 			if (child != null)
 			{
-				foreach (Widget allChild in child.AllChildren)
+				List<Widget> allChildrenRecursive = child.GetAllChildrenRecursive();
+				for (int i = 0; i < allChildrenRecursive.Count; i++)
 				{
-					if (allChild is RichTextWidget richTextWidget)
+					if (allChildrenRecursive[i] is TextWidget textWidget)
+					{
+						text = textWidget.Text;
+					}
+					else if (allChildrenRecursive[i] is RichTextWidget richTextWidget)
 					{
 						text = richTextWidget.Text;
 					}
@@ -516,10 +520,10 @@ public class AnimatedDropdownWidget : Widget
 		{
 			return;
 		}
-		for (int i = 0; i < ListPanel.ChildCount; i++)
+		for (int j = 0; j < ListPanel.ChildCount; j++)
 		{
-			Widget child2 = ListPanel.GetChild(i);
-			if (CurrentSelectedIndex == i)
+			Widget child2 = ListPanel.GetChild(j);
+			if (CurrentSelectedIndex == j)
 			{
 				if (child2.CurrentState != "Selected")
 				{
@@ -527,7 +531,7 @@ public class AnimatedDropdownWidget : Widget
 				}
 				if (child2 is ButtonWidget)
 				{
-					(child2 as ButtonWidget).IsSelected = CurrentSelectedIndex == i;
+					(child2 as ButtonWidget).IsSelected = CurrentSelectedIndex == j;
 				}
 			}
 		}

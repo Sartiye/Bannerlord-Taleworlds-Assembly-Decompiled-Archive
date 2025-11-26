@@ -7,17 +7,7 @@ public class BindingPathTargetDetails
 {
 	public BindingPath BindingPath { get; private set; }
 
-	public bool IsRoot
-	{
-		get
-		{
-			if (BindingPath == null)
-			{
-				_ = 1;
-			}
-			return BindingPath.Path == "Root";
-		}
-	}
+	public bool IsRoot => BindingPath.Path == "Root";
 
 	public BindingPathTargetDetails Parent { get; private set; }
 

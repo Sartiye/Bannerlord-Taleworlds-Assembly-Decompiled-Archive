@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.InputSystem;
@@ -43,10 +44,8 @@ public class DropdownWidget : Widget
 
 	private bool _buttonClicked;
 
-	private Vector2 ListPanelPositionInsideUsableArea => ListPanel.GlobalPosition - new Vector2(base.EventManager.LeftUsableAreaStart, base.EventManager.TopUsableAreaStart);
-
 	[Editor(false)]
-	public RichTextWidget RichTextWidget { get; set; }
+	public Widget TextWidget { get; set; }
 
 	[Editor(false)]
 	public bool DoNotHandleDropdownListPanel { get; set; }
@@ -224,14 +223,14 @@ public class DropdownWidget : Widget
 			_openFrameCounter++;
 			if (_openFrameCounter > 5)
 			{
-				if (Vector2.Distance(ListPanelPositionInsideUsableArea, _listPanelOpenPosition) > 20f && !DoNotHandleDropdownListPanel)
+				if (Vector2.Distance(ListPanel.AreaRect.TopLeft, _listPanelOpenPosition) > 20f && !DoNotHandleDropdownListPanel)
 				{
 					_closeNextFrame = true;
 				}
 			}
 			else
 			{
-				_listPanelOpenPosition = ListPanelPositionInsideUsableArea;
+				_listPanelOpenPosition = ListPanel.AreaRect.TopLeft;
 			}
 		}
 		RefreshSelectedItem();
@@ -301,8 +300,8 @@ public class DropdownWidget : Widget
 		ListPanel.HorizontalAlignment = HorizontalAlignment.Left;
 		ListPanel.VerticalAlignment = VerticalAlignment.Top;
 		float num = (base.Size.X - _listPanel.Size.X) * 0.5f;
-		ListPanel.MarginTop = (base.GlobalPosition.Y + Button.Size.Y - base.EventManager.TopUsableAreaStart) * base._inverseScaleToUse;
-		ListPanel.MarginLeft = (base.GlobalPosition.X + num - base.EventManager.LeftUsableAreaStart) * base._inverseScaleToUse;
+		ListPanel.MarginTop = (base.GlobalPosition.Y + Button.Size.Y) * base._inverseScaleToUse;
+		ListPanel.MarginLeft = (base.GlobalPosition.X + num) * base._inverseScaleToUse;
 	}
 
 	protected virtual void OpenPanel()
@@ -312,7 +311,7 @@ public class DropdownWidget : Widget
 			Button.IsSelected = true;
 		}
 		ListPanel.IsVisible = true;
-		_listPanelOpenPosition = ListPanelPositionInsideUsableArea;
+		_listPanelOpenPosition = ListPanel.AreaRect.TopLeft;
 		_openFrameCounter = 0;
 		_isOpen = true;
 		OnOpenStateChanged?.Invoke(this);
@@ -417,9 +416,13 @@ public class DropdownWidget : Widget
 
 	public void UpdateButtonText(string text)
 	{
-		if (RichTextWidget != null)
+		if (TextWidget is TextWidget textWidget)
 		{
-			RichTextWidget.Text = ((!string.IsNullOrEmpty(text)) ? text : " ");
+			textWidget.Text = ((!string.IsNullOrEmpty(text)) ? text : " ");
+		}
+		else if (TextWidget is RichTextWidget richTextWidget)
+		{
+			richTextWidget.Text = ((!string.IsNullOrEmpty(text)) ? text : " ");
 		}
 	}
 
@@ -453,9 +456,14 @@ public class DropdownWidget : Widget
 			Widget widget = ListPanel?.GetChild(ListPanelValue);
 			if (widget != null)
 			{
-				foreach (Widget allChild in widget.AllChildren)
+				List<Widget> allChildrenRecursive = widget.GetAllChildrenRecursive();
+				for (int i = 0; i < allChildrenRecursive.Count; i++)
 				{
-					if (allChild is RichTextWidget richTextWidget)
+					if (allChildrenRecursive[i] is TextWidget textWidget)
+					{
+						text = textWidget.Text;
+					}
+					else if (allChildrenRecursive[i] is RichTextWidget richTextWidget)
 					{
 						text = richTextWidget.Text;
 					}
@@ -465,11 +473,11 @@ public class DropdownWidget : Widget
 		}
 		if (ListPanel != null)
 		{
-			for (int i = 0; i < ListPanel.ChildCount; i++)
+			for (int j = 0; j < ListPanel.ChildCount; j++)
 			{
-				if (ListPanel.GetChild(i) is ButtonWidget buttonWidget)
+				if (ListPanel.GetChild(j) is ButtonWidget buttonWidget)
 				{
-					buttonWidget.IsSelected = CurrentSelectedIndex == i;
+					buttonWidget.IsSelected = CurrentSelectedIndex == j;
 				}
 			}
 		}

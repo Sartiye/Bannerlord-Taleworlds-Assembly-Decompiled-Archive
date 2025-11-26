@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension.BitmapFont;
 
 namespace TaleWorlds.TwoDimension;
@@ -11,8 +12,6 @@ public class Text : IText
 	private TextHorizontalAlignment _horizontalAlignment;
 
 	private TextVerticalAlignment _verticalAlignment;
-
-	private DrawObject2D _drawObject2D;
 
 	private bool _meshNeedsUpdate;
 
@@ -32,21 +31,23 @@ public class Text : IText
 
 	private List<TextToken> _tokens;
 
+	private List<TextPart> _textParts;
+
 	private int _fontSize;
-
-	private int _width;
-
-	private int _height;
 
 	private Font _font;
 
 	private float _scaleValue;
 
-	private readonly TextMeshGenerator _textMeshGenerator;
+	private int _numOfAddedSeparators;
 
 	private readonly Func<int, Font> _getUsableFontForCharacter;
 
 	private bool _skipLineOnContainerExceeded = true;
+
+	private bool _resizeTextOnOverflow = true;
+
+	private bool _canBreakWords = true;
 
 	public ILanguage CurrentLanguage { get; set; }
 
@@ -55,21 +56,11 @@ public class Text : IText
 
 	public int LineCount { get; private set; }
 
-	public DrawObject2D DrawObject2D
-	{
-		get
-		{
-			if (_meshNeedsUpdate)
-			{
-				RecalculateTextMesh();
-				if (ScaleToFitTextInLayout != 1f)
-				{
-					RecalculateTextMesh(ScaleToFitTextInLayout);
-				}
-			}
-			return _drawObject2D;
-		}
-	}
+	internal TextOutput TextOutput { get; private set; }
+
+	public int Width { get; private set; }
+
+	public int Height { get; private set; }
 
 	public Font Font
 	{
@@ -81,9 +72,8 @@ public class Text : IText
 		{
 			if (_font != value)
 			{
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
 				_font = value;
+				SetAllDirty();
 			}
 		}
 	}
@@ -91,6 +81,8 @@ public class Text : IText
 	private float ExtraPaddingHorizontal => 0.5f;
 
 	private float ExtraPaddingVertical => 5f;
+
+	private int _textLength => _text.Length + _numOfAddedSeparators;
 
 	public TextHorizontalAlignment HorizontalAlignment
 	{
@@ -103,8 +95,7 @@ public class Text : IText
 			if (_horizontalAlignment != value)
 			{
 				_horizontalAlignment = value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
 			}
 		}
 	}
@@ -120,8 +111,7 @@ public class Text : IText
 			if (_verticalAlignment != value)
 			{
 				_verticalAlignment = value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
 			}
 		}
 	}
@@ -134,11 +124,10 @@ public class Text : IText
 		}
 		set
 		{
-			if (_fontSize != (int)value)
+			if (_fontSize != (int)Mathf.Round(value))
 			{
-				_fontSize = (int)value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				_fontSize = (int)Mathf.Round(value);
+				SetAllDirty();
 			}
 		}
 	}
@@ -160,8 +149,7 @@ public class Text : IText
 			{
 				_text = text;
 				_tokens = TextParser.Parse(text, CurrentLanguage);
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
 			}
 		}
 	}
@@ -181,8 +169,39 @@ public class Text : IText
 			if (value != _skipLineOnContainerExceeded)
 			{
 				_skipLineOnContainerExceeded = value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
+			}
+		}
+	}
+
+	public bool CanBreakWords
+	{
+		get
+		{
+			return _canBreakWords;
+		}
+		set
+		{
+			if (value != _canBreakWords)
+			{
+				_canBreakWords = value;
+				SetAllDirty();
+			}
+		}
+	}
+
+	public bool ResizeTextOnOverflow
+	{
+		get
+		{
+			return _resizeTextOnOverflow;
+		}
+		set
+		{
+			if (value != _resizeTextOnOverflow)
+			{
+				_resizeTextOnOverflow = value;
+				SetAllDirty();
 			}
 		}
 	}
@@ -190,15 +209,14 @@ public class Text : IText
 	public Text(int width, int height, Font bitmapFont, Func<int, Font> getUsableFontForCharacter)
 	{
 		Font = bitmapFont;
-		_width = width;
-		_height = height;
+		Width = width;
+		Height = height;
 		_getUsableFontForCharacter = getUsableFontForCharacter;
-		_meshNeedsUpdate = true;
-		_preferredSizeNeedsUpdate = true;
+		_textParts = new List<TextPart>();
+		SetAllDirty();
 		_text = "";
 		_fontSize = 32;
 		_tokens = null;
-		_textMeshGenerator = new TextMeshGenerator();
 	}
 
 	public Vector2 GetPreferredSize(bool fixedWidth, float widthSize, bool fixedHeight, float heightSize, SpriteData spriteData, float renderScale)
@@ -215,23 +233,25 @@ public class Text : IText
 				_scaleValue = (float)_fontSize / (float)Font.Size;
 				float num = 0f;
 				LineCount = 1;
-				float lineHeight = LineHeight;
-				float emptyCharacterWidth = EmptyCharacterWidth;
 				for (int i = 0; i < _tokens.Count; i++)
 				{
 					TextToken textToken = _tokens[i];
+					if (textToken.Type == TextToken.TokenType.Tag)
+					{
+						continue;
+					}
 					if (textToken.Type == TextToken.TokenType.NewLine)
 					{
-						LineCount++;
 						if (num > _preferredSize.X)
 						{
 							_preferredSize.X = num;
 						}
+						LineCount++;
 						num = 0f;
 					}
 					else if (textToken.Type == TextToken.TokenType.EmptyCharacter || textToken.Type == TextToken.TokenType.NonBreakingSpace)
 					{
-						num += emptyCharacterWidth;
+						num += EmptyCharacterWidth;
 					}
 					else
 					{
@@ -241,27 +261,45 @@ public class Text : IText
 						}
 						char token = textToken.Token;
 						float num2 = Font.GetCharacterWidth(token, ExtraPaddingHorizontal) * _scaleValue;
+						if (!Font.Characters.ContainsKey(token))
+						{
+							Font font = _getUsableFontForCharacter(token) ?? Font;
+							float num3 = (float)_fontSize / (float)font.Size;
+							num2 = font.GetCharacterWidth(token, ExtraPaddingHorizontal) * num3;
+						}
 						if (fixedWidth && _skipLineOnContainerExceeded)
 						{
-							if (num + num2 > widthSize && num > 0f)
+							if (num + num2 > _desiredWidth && num > 0f)
 							{
-								int indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex(_tokens, i, CurrentLanguage);
-								if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1)
+								int indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex(_tokens, i, CurrentLanguage, CanBreakWords);
+								if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1)
+								{
+									float totalWordWidthBetweenIndices = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, i, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _fontSize);
+									num -= totalWordWidthBetweenIndices;
+									if (num > _preferredSize.X)
+									{
+										_preferredSize.X = num;
+									}
+									LineCount++;
+									num = totalWordWidthBetweenIndices + num2;
+								}
+								else if (CanBreakWords)
 								{
 									int startIndex = Math.Max(0, _tokens.Count - 2);
 									int endIndex = Math.Max(0, _tokens.Count - 1);
-									float totalWordWidthBetweenIndices = TextHelper.GetTotalWordWidthBetweenIndices(startIndex, endIndex, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _scaleValue);
+									float totalWordWidthBetweenIndices2 = TextHelper.GetTotalWordWidthBetweenIndices(startIndex, endIndex, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _fontSize);
+									num -= totalWordWidthBetweenIndices2;
+									if (num > _preferredSize.X)
+									{
+										_preferredSize.X = num;
+									}
 									LineCount++;
-									num = totalWordWidthBetweenIndices + num2;
-									continue;
+									num = totalWordWidthBetweenIndices2 + num2;
 								}
-								float totalWordWidthBetweenIndices2 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, i, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _scaleValue);
-								if (num - totalWordWidthBetweenIndices2 > _preferredSize.X)
+								else
 								{
-									_preferredSize.X = num - totalWordWidthBetweenIndices2;
+									num += num2;
 								}
-								num = totalWordWidthBetweenIndices2 + num2;
-								LineCount++;
 							}
 							else
 							{
@@ -278,9 +316,9 @@ public class Text : IText
 				{
 					_preferredSize.X = num;
 				}
-				_preferredSize.Y = (float)LineCount * lineHeight;
+				_preferredSize.Y = (float)LineCount * LineHeight;
 			}
-			_preferredSize = new Vector2((float)Math.Ceiling(_preferredSize.X) + 1f, (float)Math.Ceiling(_preferredSize.Y) + 1f);
+			_preferredSize = new Vector2((float)Math.Ceiling(_preferredSize.X), (float)Math.Ceiling(_preferredSize.Y));
 			_preferredSizeNeedsUpdate = false;
 		}
 		return _preferredSize;
@@ -288,223 +326,335 @@ public class Text : IText
 
 	public void UpdateSize(int width, int height)
 	{
-		if (_width != width || _height != height)
+		if (Width != width || Height != height)
 		{
-			_width = width;
-			_height = height;
-			_meshNeedsUpdate = true;
-			_preferredSizeNeedsUpdate = true;
+			Width = width;
+			Height = height;
+			SetAllDirty();
 			ScaleToFitTextInLayout = 1f;
 		}
 	}
 
+	public void SetAllDirty()
+	{
+		_meshNeedsUpdate = true;
+		_preferredSizeNeedsUpdate = true;
+	}
+
 	private Font GetFontForTextToken(TextToken token)
 	{
+		if (Font.Characters.ContainsKey(token.Token))
+		{
+			return Font;
+		}
 		return _getUsableFontForCharacter(token.Token);
 	}
 
-	private void RecalculateTextMesh(float customScaleToFitText = 1f)
+	private void UpdateMesh()
 	{
-		if (_fontSize == 0 || string.IsNullOrEmpty(_text))
+		RecalculateTextMesh(_fontSize);
+		if (ResizeTextOnOverflow)
 		{
-			_drawObject2D = null;
-			return;
+			float num = _fontSize;
+			int num2 = 0;
+			while (ScaleToFitTextInLayout < 0.9f && num2 < 3)
+			{
+				num2++;
+				num *= TaleWorlds.Library.MathF.Sqrt(ScaleToFitTextInLayout);
+				RecalculateTextMesh(num);
+			}
+			if (ScaleToFitTextInLayout != 1f)
+			{
+				num *= ScaleToFitTextInLayout;
+				RecalculateTextMesh(num);
+			}
 		}
-		int num = _text.Length;
-		_scaleValue = (float)_fontSize / (float)Font.Size * customScaleToFitText;
-		float num2 = 0f;
-		float num3 = 0f;
-		BitmapFontCharacter bitmapFontCharacter = Font.Characters[32];
-		float num4 = ((float)Font.Base + ExtraPaddingVertical) * _scaleValue;
-		float num5 = ((float)bitmapFontCharacter.XAdvance + ExtraPaddingHorizontal) * _scaleValue;
-		TextOutput textOutput = new TextOutput(num4);
-		for (int i = 0; i < _tokens.Count; i++)
+	}
+
+	private void RecalculateTextMesh(float desiredFontSize)
+	{
+		_textParts.Clear();
+		TextOutput?.Clear();
+		_numOfAddedSeparators = 0;
+		if (desiredFontSize != 0f && !string.IsNullOrEmpty(_text))
 		{
-			TextToken textToken = _tokens[i];
-			if (textToken.Type == TextToken.TokenType.NewLine)
+			_scaleValue = desiredFontSize / (float)Font.Size;
+			TextOutput = new TextOutput(LineHeight);
+			for (int i = 0; i < _tokens.Count; i++)
 			{
-				textOutput.AddNewLine(currentLineEnded: true);
-				num2 = 0f;
-				num3 += num4;
-			}
-			else if (textToken.Type == TextToken.TokenType.EmptyCharacter || textToken.Type == TextToken.TokenType.NonBreakingSpace)
-			{
-				textOutput.AddToken(textToken, num5, _scaleValue);
-				num2 += num5;
-			}
-			else
-			{
-				if (textToken.Type == TextToken.TokenType.ZeroWidthSpace)
+				TextToken textToken = _tokens[i];
+				if (textToken.Type == TextToken.TokenType.NewLine)
 				{
-					continue;
+					TextOutput.AddNewLine(currentLineEnded: true);
 				}
-				if (textToken.Type == TextToken.TokenType.WordJoiner)
+				else if (textToken.Type == TextToken.TokenType.EmptyCharacter || textToken.Type == TextToken.TokenType.NonBreakingSpace)
 				{
-					textOutput.AddToken(textToken, 0f, _scaleValue);
+					TextOutput.AddToken(textToken, EmptyCharacterWidth, _scaleValue);
 				}
 				else
 				{
-					if (textToken.Type != TextToken.TokenType.Character)
+					if (textToken.Type == TextToken.TokenType.ZeroWidthSpace)
 					{
 						continue;
 					}
-					char token = textToken.Token;
-					float num6 = Font.GetCharacterWidth(token, ExtraPaddingHorizontal) * _scaleValue;
-					if (num6 == 0f)
+					if (textToken.Type == TextToken.TokenType.WordJoiner)
 					{
-						num6 = (_getUsableFontForCharacter(token)?.GetCharacterWidth(token, ExtraPaddingHorizontal) * _scaleValue) ?? 0f;
-					}
-					if (num2 + num6 > (float)_width && num2 > 0f && _skipLineOnContainerExceeded)
-					{
-						_ = num3 + num4;
-						_ = _height;
-						int indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex(_tokens, i, CurrentLanguage);
-						int num7 = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineForwardsFromIndex(_tokens, i, CurrentLanguage);
-						float num8 = 0f;
-						if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1)
-						{
-							if (num7 == -1)
-							{
-								num7 = _tokens.Count;
-							}
-							num8 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, num7, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _scaleValue);
-						}
-						if (((num8 != 0f && (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1 || !(num8 <= (float)_width))) || indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1) && textOutput.Tokens.Any())
-						{
-							List<TextTokenOutput> list = textOutput.RemoveTokensFromEnd(1);
-							float tokenWidth = Font.GetCharacterWidth(CurrentLanguage.GetLineSeperatorChar(), ExtraPaddingHorizontal) * _scaleValue;
-							textOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), tokenWidth, _scaleValue);
-							textOutput.AddNewLine(currentLineEnded: false);
-							num3 += num4;
-							textOutput.AddToken(list[0].Token, list[0].Width, _scaleValue);
-							textOutput.AddToken(textToken, num6, _scaleValue);
-							num++;
-							num2 = num6 + list[0].Width;
-							continue;
-						}
-						num2 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, i, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, _scaleValue);
-						List<TextTokenOutput> list2 = textOutput.RemoveTokensFromEnd(i - indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex);
-						textOutput.AddNewLine(currentLineEnded: false);
-						num3 += num4;
-						for (int num9 = list2.Count - 1; num9 >= 0; num9--)
-						{
-							TextTokenOutput textTokenOutput = list2[num9];
-							if (textTokenOutput.Token.Type != 0 && textTokenOutput.Token.Type != TextToken.TokenType.ZeroWidthSpace)
-							{
-								textOutput.AddToken(textTokenOutput.Token, textTokenOutput.Width, _scaleValue);
-							}
-						}
-						textOutput.AddToken(textToken, num6, _scaleValue);
-						num2 += num6;
+						TextOutput.AddToken(textToken, 0f, _scaleValue);
 					}
 					else
 					{
-						textOutput.AddToken(textToken, num6, _scaleValue);
-						num2 += num6;
+						if (textToken.Type != TextToken.TokenType.Character)
+						{
+							continue;
+						}
+						char token = textToken.Token;
+						float num = Font.GetCharacterWidth(token, ExtraPaddingHorizontal) * _scaleValue;
+						if (!Font.Characters.ContainsKey(token))
+						{
+							Font font = _getUsableFontForCharacter(token) ?? Font;
+							float num2 = desiredFontSize / (float)font.Size;
+							num = font.GetCharacterWidth(token, ExtraPaddingHorizontal) * num2;
+						}
+						bool flag = TextOutput.LastLineWidth + num > (float)Width;
+						if (_fixedWidth && flag && SkipLineOnContainerExceeded)
+						{
+							int indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex(_tokens, i, CurrentLanguage, CanBreakWords);
+							int num3 = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineForwardsFromIndex(_tokens, i, CurrentLanguage, CanBreakWords);
+							float num4 = 0f;
+							if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1)
+							{
+								if (num3 == -1)
+								{
+									num3 = _tokens.Count;
+								}
+								num4 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, num3, _tokens, GetFontForTextToken, ExtraPaddingHorizontal, desiredFontSize);
+							}
+							bool flag2 = num <= (float)Width;
+							bool flag3 = flag2 && (num4 == 0f || (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1 && num4 <= (float)Width));
+							if (CanBreakWords && (!flag3 || indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1))
+							{
+								float num5 = Font.GetCharacterWidth(CurrentLanguage.GetLineSeperatorChar(), ExtraPaddingHorizontal) * _scaleValue;
+								if (!flag2)
+								{
+									TextOutput.AddToken(textToken, num, _scaleValue);
+									if (i != _tokens.Count - 1)
+									{
+										if (_tokens[i + 1].Type == TextToken.TokenType.Character && !TextHelper.IsTokenEqualToSeparatorChar(textToken, CurrentLanguage) && !TextHelper.IsTokenEqualToSeparatorChar(_tokens[i + 1], CurrentLanguage))
+										{
+											_numOfAddedSeparators++;
+											TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), num5, _scaleValue);
+										}
+										TextOutput.AddNewLine(currentLineEnded: false);
+									}
+								}
+								else if (TextOutput.Tokens.Any())
+								{
+									TextTokenOutput? textTokenOutput = TextOutput.Tokens.LastOrDefault();
+									bool num6 = textTokenOutput == null || textTokenOutput.Token.Type != TextToken.TokenType.Character || TextHelper.IsTokenEqualToSeparatorChar(TextOutput.Tokens.LastOrDefault()?.Token, CurrentLanguage) || TextHelper.IsTokenEqualToSeparatorChar(textToken, CurrentLanguage);
+									bool flag4 = TextOutput.LastLineWidth + num5 > (float)Width;
+									TextTokenOutput textTokenOutput2 = null;
+									if (!num6 && flag4)
+									{
+										textTokenOutput2 = TextOutput.RemoveTokensFromEnd(1).First();
+									}
+									TextToken token2 = textTokenOutput2?.Token ?? textToken;
+									TextTokenOutput? textTokenOutput3 = TextOutput.Tokens.LastOrDefault();
+									if (textTokenOutput3 != null && textTokenOutput3.Token.Type == TextToken.TokenType.Character && !TextHelper.IsTokenEqualToSeparatorChar(TextOutput.Tokens.LastOrDefault()?.Token, CurrentLanguage) && !TextHelper.IsTokenEqualToSeparatorChar(token2, CurrentLanguage))
+									{
+										_numOfAddedSeparators++;
+										TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), num5, _scaleValue);
+									}
+									TextOutput.AddNewLine(currentLineEnded: false);
+									if (textTokenOutput2 != null)
+									{
+										TextOutput.AddToken(textTokenOutput2.Token, textTokenOutput2.Width, textTokenOutput2.Scale);
+									}
+									TextOutput.AddToken(textToken, num, _scaleValue);
+								}
+								continue;
+							}
+							if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1)
+							{
+								List<TextTokenOutput> list = TextOutput.RemoveTokensFromEnd(i - indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex);
+								TextOutput.AddNewLine(currentLineEnded: false);
+								for (int num7 = list.Count - 1; num7 >= 0; num7--)
+								{
+									TextTokenOutput textTokenOutput4 = list[num7];
+									if (textTokenOutput4.Token.Type != 0 && textTokenOutput4.Token.Type != TextToken.TokenType.ZeroWidthSpace)
+									{
+										TextOutput.AddToken(textTokenOutput4.Token, textTokenOutput4.Width, _scaleValue);
+									}
+								}
+							}
+							TextOutput.AddToken(textToken, num, _scaleValue);
+						}
+						else
+						{
+							TextOutput.AddToken(textToken, num, _scaleValue);
+						}
 					}
 				}
 			}
-		}
-		_textMeshGenerator.Refresh(Font, num, _scaleValue);
-		num2 = 0f;
-		num3 = 0f;
-		for (int j = 0; j < textOutput.LineCount; j++)
-		{
-			TextLineOutput line = textOutput.GetLine(j);
-			float num10 = num5;
-			switch (_horizontalAlignment)
+			float num8 = 0f;
+			float num9 = 0f;
+			for (int j = 0; j < TextOutput.LineCount; j++)
 			{
-			case TextHorizontalAlignment.Center:
-			{
-				float num13 = 0f;
-				if (!line.LineEnded)
+				num8 = 0f;
+				TextLineOutput line = TextOutput.GetLine(j);
+				float num10 = EmptyCharacterWidth;
+				switch (_horizontalAlignment)
 				{
-					for (int l = 1; l < line.TokenCount && line.GetToken(line.TokenCount - l).Type == TextToken.TokenType.EmptyCharacter; l++)
-					{
-						num13 += num5;
-					}
-					for (int l = 0; l < line.TokenCount && line.GetToken(l).Type == TextToken.TokenType.EmptyCharacter; l++)
-					{
-						num13 += num5;
-					}
-				}
-				num2 = ((float)_width - (line.Width - num13)) * 0.5f;
-				break;
-			}
-			case TextHorizontalAlignment.Right:
-				num2 = (float)_width - line.Width;
-				break;
-			case TextHorizontalAlignment.Justify:
-			{
-				float num11 = (float)_width - line.TextWidth;
-				if (!line.LineEnded)
+				case TextHorizontalAlignment.Center:
 				{
-					int num12 = line.EmptyCharacterCount;
-					for (int k = 1; line.GetToken(line.TokenCount - k).Type == TextToken.TokenType.EmptyCharacter; k++)
+					float num13 = 0f;
+					if (!line.LineEnded)
 					{
-						num12--;
+						for (int l = 1; l < line.TokenCount && line.GetToken(line.TokenCount - l).Type == TextToken.TokenType.EmptyCharacter; l++)
+						{
+							num13 += EmptyCharacterWidth;
+						}
+						for (int l = 0; l < line.TokenCount && line.GetToken(l).Type == TextToken.TokenType.EmptyCharacter; l++)
+						{
+							num13 += EmptyCharacterWidth;
+						}
 					}
-					for (int k = 0; line.GetToken(k).Type == TextToken.TokenType.EmptyCharacter; k++)
-					{
-						num12--;
-					}
-					num10 = num11 / (float)num12;
-				}
-				break;
-			}
-			}
-			for (int m = 0; m < line.TokenCount; m++)
-			{
-				Font font = Font;
-				TextToken token2 = line.GetToken(m);
-				switch (token2.Type)
-				{
-				case TextToken.TokenType.EmptyCharacter:
-				case TextToken.TokenType.NonBreakingSpace:
-					num2 += num10;
+					num8 = ((float)Width - (line.Width - num13)) * 0.5f;
 					break;
-				case TextToken.TokenType.Character:
+				}
+				case TextHorizontalAlignment.Right:
+					num8 = (float)Width - line.Width;
+					break;
+				case TextHorizontalAlignment.Justify:
 				{
-					int key = token2.Token;
-					if (!Font.Characters.ContainsKey(key))
+					float num11 = (float)Width - line.TextWidth;
+					if (!line.LineEnded)
 					{
-						key = 0;
+						int num12 = line.EmptyCharacterCount;
+						for (int k = 1; line.GetToken(line.TokenCount - k).Type == TextToken.TokenType.EmptyCharacter; k++)
+						{
+							num12--;
+						}
+						for (int k = 0; line.GetToken(k).Type == TextToken.TokenType.EmptyCharacter; k++)
+						{
+							num12--;
+						}
+						num10 = num11 / (float)num12;
 					}
-					BitmapFontCharacter fontCharacter = font.Characters[key];
-					float x = num2 + (float)fontCharacter.XOffset * _scaleValue;
-					float y = num3 + (float)fontCharacter.YOffset * _scaleValue;
-					_textMeshGenerator.AddCharacterToMesh(x, y, fontCharacter);
-					num2 += ((float)fontCharacter.XAdvance + ExtraPaddingHorizontal) * _scaleValue;
 					break;
 				}
 				}
+				for (int m = 0; m < line.TokenCount; m++)
+				{
+					Font font2 = Font;
+					TextToken token3 = line.GetToken(m);
+					switch (token3.Type)
+					{
+					case TextToken.TokenType.EmptyCharacter:
+					case TextToken.TokenType.NonBreakingSpace:
+						GetOrCreateTextPart(font2, num8, num9, desiredFontSize).WordWidth += num10;
+						num8 += num10;
+						break;
+					case TextToken.TokenType.Character:
+					{
+						int num14 = token3.Token;
+						float num15 = _scaleValue;
+						if (!Font.Characters.ContainsKey(num14))
+						{
+							font2 = _getUsableFontForCharacter(num14);
+							if (font2 == null)
+							{
+								font2 = Font;
+								num14 = 0;
+							}
+							else
+							{
+								num15 = desiredFontSize / (float)font2.Size;
+							}
+						}
+						TextPart orCreateTextPart = GetOrCreateTextPart(font2, num8, num9, desiredFontSize);
+						BitmapFontCharacter fontCharacter = font2.Characters[num14];
+						float x2 = num8 + (float)fontCharacter.XOffset * _scaleValue;
+						float y = num9 + (float)fontCharacter.YOffset * _scaleValue;
+						orCreateTextPart.TextMeshGenerator.AddCharacterToMesh(x2, y, fontCharacter);
+						orCreateTextPart.WordWidth += ((float)fontCharacter.XAdvance + ExtraPaddingHorizontal) * num15;
+						num8 += ((float)fontCharacter.XAdvance + ExtraPaddingHorizontal) * num15;
+						break;
+					}
+					}
+				}
+				num9 += LineHeight;
 			}
-			num2 = 0f;
-			num3 += num4;
-		}
-		if (_verticalAlignment == TextVerticalAlignment.Center || _verticalAlignment == TextVerticalAlignment.Bottom)
-		{
-			float num14;
-			if (_verticalAlignment == TextVerticalAlignment.Center)
+			if (_verticalAlignment == TextVerticalAlignment.Center || _verticalAlignment == TextVerticalAlignment.Bottom)
 			{
-				num14 = (float)_height - num3;
-				num14 *= 0.5f;
+				float extraY;
+				if (_verticalAlignment == TextVerticalAlignment.Center)
+				{
+					extraY = (float)Height - num9;
+					extraY *= 0.5f;
+				}
+				else
+				{
+					extraY = (float)Height - num9;
+				}
+				_textParts.ForEach(delegate(TextPart x)
+				{
+					x.TextMeshGenerator.AddValueToY(extraY);
+				});
 			}
-			else
+			GenerateMeshes();
+			ScaleToFitTextInLayout = 1f;
+			if (_fixedHeight && num9 > _desiredHeight && _desiredHeight > 1f)
 			{
-				num14 = (float)_height - num3;
+				ScaleToFitTextInLayout = _desiredHeight / num9;
 			}
-			_textMeshGenerator.AddValueToY(num14);
+			if (_fixedWidth && num8 > _desiredWidth && _desiredWidth > 1f)
+			{
+				ScaleToFitTextInLayout = Math.Min(ScaleToFitTextInLayout, _desiredWidth / num8);
+			}
 		}
-		_drawObject2D = _textMeshGenerator.GenerateMesh();
-		_meshNeedsUpdate = false;
-		if (_fixedHeight && num3 > _desiredHeight && _desiredHeight > 1f)
+		else
 		{
-			ScaleToFitTextInLayout = _desiredHeight / num3;
+			ScaleToFitTextInLayout = 1f;
 		}
-		if (_fixedWidth && num2 > _desiredWidth && _desiredWidth > 1f)
+	}
+
+	private void GenerateMeshes()
+	{
+		for (int i = 0; i < _textParts.Count; i++)
 		{
-			ScaleToFitTextInLayout = Math.Min(ScaleToFitTextInLayout, _desiredWidth / num2);
+			TextPart textPart = _textParts[i];
+			textPart.DrawObject2D = textPart.TextMeshGenerator.GenerateMesh();
 		}
+	}
+
+	private TextPart GetOrCreateTextPart(Font font, float x, float y, float fontSize)
+	{
+		TextPart textPart = _textParts.LastOrDefault();
+		if (textPart != null && textPart.DefaultFont == font)
+		{
+			return textPart;
+		}
+		float scaleValue = fontSize / (float)font.Size;
+		TextMeshGenerator textMeshGenerator = new TextMeshGenerator();
+		textMeshGenerator.Refresh(font, _textLength, scaleValue);
+		TextPart textPart2 = new TextPart
+		{
+			TextMeshGenerator = textMeshGenerator,
+			WordWidth = 0f,
+			PartPosition = new Vector2(x, y),
+			DefaultFont = font
+		};
+		_textParts.Add(textPart2);
+		return textPart2;
+	}
+
+	public List<TextPart> GetParts()
+	{
+		if (_meshNeedsUpdate)
+		{
+			UpdateMesh();
+			_meshNeedsUpdate = false;
+		}
+		return _textParts;
 	}
 }

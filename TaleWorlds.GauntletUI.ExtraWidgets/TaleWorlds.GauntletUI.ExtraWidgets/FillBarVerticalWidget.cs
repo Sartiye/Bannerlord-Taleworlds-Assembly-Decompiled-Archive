@@ -123,6 +123,7 @@ public class FillBarVerticalWidget : Widget
 			{
 				_currentAmount = value;
 				OnPropertyChanged(value, "CurrentAmountAsFloat");
+				_isCurrentValueSet = true;
 			}
 		}
 	}
@@ -219,23 +220,24 @@ public class FillBarVerticalWidget : Widget
 		{
 			float y = FillWidget.ParentWidget.Size.Y;
 			float num = 0f;
-			if (MaxAmount != 0)
+			if (_maxAmount != 0f)
 			{
-				num = Mathf.Clamp(Mathf.Clamp(InitialAmount, 0f, MaxAmount) / (float)MaxAmount, 0f, 1f);
+				num = Mathf.Clamp(Mathf.Clamp(_initialAmount, 0f, _maxAmount) / _maxAmount, 0f, 1f);
 			}
-			float num2 = (_isCurrentValueSet ? Mathf.Clamp((float)(CurrentAmount - InitialAmount), (float)(-MaxAmount), (float)MaxAmount) : 0f);
+			float num2 = (_isCurrentValueSet ? Mathf.Clamp(_currentAmount - _initialAmount, 0f - _maxAmount, _maxAmount) : 0f);
 			float num3 = 0f;
-			if (MaxAmount != 0)
+			if (_maxAmount != 0f)
 			{
-				num3 = (_isCurrentValueSet ? Mathf.Clamp(num2 / (float)MaxAmount, -1f, 1f) : 0f);
+				num3 = (_isCurrentValueSet ? Mathf.Clamp(num2 / _maxAmount, -1f, 1f) : 0f);
 			}
 			if (IsDirectionUpward)
 			{
 				FillWidget.VerticalAlignment = VerticalAlignment.Bottom;
-				FillWidget.ScaledSuggestedHeight = num * y;
+				FillWidget.ScaledSuggestedHeight = num * (y - FillWidget.ScaledMarginTop - FillWidget.ScaledMarginBottom);
 				if (ChangeWidget != null)
 				{
-					ChangeWidget.ScaledSuggestedHeight = num3 * y;
+					ChangeWidget.VerticalAlignment = VerticalAlignment.Bottom;
+					ChangeWidget.ScaledSuggestedHeight = num3 * (y - ChangeWidget.ScaledMarginTop - ChangeWidget.ScaledMarginBottom);
 					if (num3 >= 0f)
 					{
 						ChangeWidget.ScaledPositionYOffset = 0f - FillWidget.ScaledSuggestedHeight;
@@ -251,19 +253,19 @@ public class FillBarVerticalWidget : Widget
 			else
 			{
 				FillWidget.VerticalAlignment = VerticalAlignment.Top;
-				FillWidget.ScaledSuggestedHeight = num * y;
+				FillWidget.ScaledSuggestedHeight = num * (y - FillWidget.ScaledMarginTop - FillWidget.ScaledMarginBottom);
 				if (ChangeWidget != null)
 				{
-					ChangeWidget.ScaledSuggestedHeight = num3 * y;
-					ChangeWidget.VerticalAlignment = VerticalAlignment.Bottom;
+					ChangeWidget.VerticalAlignment = VerticalAlignment.Top;
+					ChangeWidget.ScaledSuggestedHeight = num3 * (y - ChangeWidget.ScaledMarginTop - ChangeWidget.ScaledMarginBottom);
 					if (num3 >= 0f)
 					{
-						ChangeWidget.ScaledPositionYOffset = 0f - FillWidget.ScaledSuggestedHeight;
+						ChangeWidget.ScaledPositionYOffset = FillWidget.ScaledSuggestedHeight;
 						ChangeWidget.Color = new Color(1f, 1f, 1f);
 					}
 					else
 					{
-						ChangeWidget.ScaledPositionYOffset = 0f - FillWidget.ScaledSuggestedHeight + ChangeWidget.ScaledSuggestedHeight;
+						ChangeWidget.ScaledPositionYOffset = FillWidget.ScaledSuggestedHeight - ChangeWidget.ScaledSuggestedHeight;
 						ChangeWidget.Color = new Color(1f, 0f, 0f);
 					}
 				}

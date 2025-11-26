@@ -26,7 +26,7 @@ public class AgentStatusCondition : MPPerkCondition
 	{
 		if (!Enum.TryParse<AgentStatus>(node?.Attributes?["agent_status"]?.Value, ignoreCase: true, out _status))
 		{
-			Debug.FailedAssert("provided 'agent_status' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\AgentStatusCondition.cs", "Deserialize", 31);
+			Debug.FailedAssert("provided 'agent_status' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\AgentStatusCondition.cs", "Deserialize", 31);
 		}
 	}
 

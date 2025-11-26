@@ -13,4 +13,9 @@ internal class UintBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadUInt();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 4;
+	}
 }

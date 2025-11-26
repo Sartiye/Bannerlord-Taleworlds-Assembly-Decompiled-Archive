@@ -41,7 +41,14 @@ public class KingdomVoteNotificationItemVM : MapNotificationItemBaseVM
 			Kingdom kingdom = Clan.PlayerClan.Kingdom;
 			if (kingdom != null && kingdom.UnresolvedDecisions.Any((KingdomDecision d) => d == _decision))
 			{
-				_onInspectOpenKingdom();
+				if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var _))
+				{
+					InformationManager.ShowInquiry(new InquiryData("", new TextObject("{=lSnejlxB}You cannot participate in kingdom decisions right now.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), "", null, null));
+				}
+				else
+				{
+					_onInspectOpenKingdom();
+				}
 				return;
 			}
 		}

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using Helpers;
-using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.CampaignSystem.Siege;
 
 namespace TaleWorlds.CampaignSystem.Actions;
 
@@ -33,16 +32,18 @@ public static class ChangeKingdomAction
 
 	public const float MinimumNeededGoldForRecruitingMercenaries = 20000f;
 
-	private static void ApplyInternal(Clan clan, Kingdom newKingdom, ChangeKingdomActionDetail detail, int awardMultiplier = 0, bool byRebellion = false, bool showNotification = true)
+	private static void ApplyInternal(Clan clan, Kingdom newKingdom, ChangeKingdomActionDetail detail, CampaignTime shouldStayInKingdomUntil, int awardMultiplier = 0, bool byRebellion = false, bool showNotification = true)
 	{
 		Kingdom kingdom = clan.Kingdom;
-		_ = PlayerSiege.PlayerSiegeEvent;
-		_ = MobileParty.MainParty.MapEvent;
-		_ = PlayerEncounter.Current;
 		clan.DebtToKingdom = 0;
 		if (detail == ChangeKingdomActionDetail.JoinKingdom || detail == ChangeKingdomActionDetail.JoinAsMercenary || detail == ChangeKingdomActionDetail.JoinKingdomByDefection)
 		{
+			clan.ShouldStayInKingdomUntil = shouldStayInKingdomUntil;
 			FactionHelper.AdjustFactionStancesForClanJoiningKingdom(clan, newKingdom);
+		}
+		else
+		{
+			clan.ShouldStayInKingdomUntil = CampaignTime.Zero;
 		}
 		switch (detail)
 		{
@@ -51,112 +52,101 @@ public static class ChangeKingdomAction
 		case ChangeKingdomActionDetail.CreateKingdom:
 			if (clan.IsUnderMercenaryService)
 			{
-				clan.EndMercenaryService(isByLeavingKingdom: false);
+				EndMercenaryServiceAction.EndByDefault(clan);
 			}
 			if (kingdom != null)
 			{
 				clan.ClanLeaveKingdom(!byRebellion);
 			}
-			clan.Kingdom = newKingdom;
 			if (newKingdom != null && detail == ChangeKingdomActionDetail.CreateKingdom)
 			{
 				ChangeRulingClanAction.Apply(newKingdom, clan);
 			}
+			clan.Kingdom = newKingdom;
 			break;
 		case ChangeKingdomActionDetail.JoinAsMercenary:
-			if (clan.IsUnderMercenaryService)
-			{
-				clan.EndMercenaryService(isByLeavingKingdom: true);
-			}
-			clan.MercenaryAwardMultiplier = awardMultiplier;
-			clan.Kingdom = newKingdom;
-			clan.StartMercenaryService();
-			if (clan == Clan.PlayerClan)
-			{
-				Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewDay = Campaign.CurrentTime + 720f;
-			}
+			StartMercenaryServiceAction.ApplyByDefault(clan, newKingdom, awardMultiplier);
 			break;
 		case ChangeKingdomActionDetail.LeaveKingdom:
 		case ChangeKingdomActionDetail.LeaveWithRebellion:
 		case ChangeKingdomActionDetail.LeaveAsMercenary:
 		case ChangeKingdomActionDetail.LeaveByClanDestruction:
 		case ChangeKingdomActionDetail.LeaveByKingdomDestruction:
+		{
 			clan.Kingdom = null;
+			bool flag = false;
 			if (clan.IsUnderMercenaryService)
 			{
-				clan.EndMercenaryService(isByLeavingKingdom: true);
+				flag = true;
+				EndMercenaryServiceAction.EndByLeavingKingdom(clan);
 			}
 			switch (detail)
 			{
 			case ChangeKingdomActionDetail.LeaveWithRebellion:
-				if (clan != Clan.PlayerClan)
-				{
-					break;
-				}
-				foreach (Clan clan2 in kingdom.Clans)
-				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(clan.Leader, clan2.Leader, -40);
-				}
 				DeclareWarAction.ApplyByRebellion(kingdom, clan);
-				break;
-			case ChangeKingdomActionDetail.LeaveKingdom:
-				if (clan == Clan.PlayerClan && !clan.IsEliminated)
+				foreach (IFaction item in kingdom.FactionsAtWarWith)
 				{
-					foreach (Clan clan3 in kingdom.Clans)
+					if (item != clan && !clan.IsAtWarWith(item))
 					{
-						ChangeRelationAction.ApplyRelationChangeBetweenHeroes(clan.Leader, clan3.Leader, -20);
+						DeclareWarAction.ApplyByDefault(clan, item);
 					}
 				}
-				foreach (Settlement item in new List<Settlement>(clan.Settlements))
+				break;
+			case ChangeKingdomActionDetail.LeaveKingdom:
+				foreach (Settlement item2 in new List<Settlement>(clan.Settlements))
 				{
-					ChangeOwnerOfSettlementAction.ApplyByLeaveFaction(kingdom.Leader, item);
-					foreach (Hero item2 in new List<Hero>(item.HeroesWithoutParty))
+					ChangeOwnerOfSettlementAction.ApplyByLeaveFaction(kingdom.Leader, item2);
+					foreach (Hero item3 in new List<Hero>(item2.HeroesWithoutParty))
 					{
-						if (item2.CurrentSettlement != null && item2.Clan == clan)
+						if (item3.CurrentSettlement != null && item3.Clan == clan)
 						{
-							if (item2.PartyBelongedTo != null)
+							if (item3.PartyBelongedTo != null)
 							{
-								LeaveSettlementAction.ApplyForParty(item2.PartyBelongedTo);
-								EnterSettlementAction.ApplyForParty(item2.PartyBelongedTo, clan.Leader.HomeSettlement);
+								LeaveSettlementAction.ApplyForParty(item3.PartyBelongedTo);
+								EnterSettlementAction.ApplyForParty(item3.PartyBelongedTo, clan.Leader.HomeSettlement);
 							}
 							else
 							{
-								LeaveSettlementAction.ApplyForCharacterOnly(item2);
-								EnterSettlementAction.ApplyForCharacterOnly(item2, clan.Leader.HomeSettlement);
+								LeaveSettlementAction.ApplyForCharacterOnly(item3);
+								EnterSettlementAction.ApplyForCharacterOnly(item3, clan.Leader.HomeSettlement);
 							}
 						}
 					}
 				}
 				break;
 			case ChangeKingdomActionDetail.LeaveByKingdomDestruction:
-				foreach (StanceLink stance in kingdom.Stances)
+				if (flag)
 				{
-					if (stance.IsAtWar && !stance.IsAtConstantWar)
+					foreach (IFaction item4 in kingdom.FactionsAtWarWith)
 					{
-						IFaction faction = ((stance.Faction1 == kingdom) ? stance.Faction2 : stance.Faction1);
-						if (faction != clan && !clan.GetStanceWith(faction).IsAtWar)
+						if (clan != item4 && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, item4))
 						{
-							DeclareWarAction.ApplyByDefault(clan, faction);
+							MakePeaceAction.Apply(clan, item4);
 						}
+					}
+					break;
+				}
+				foreach (IFaction item5 in kingdom.FactionsAtWarWith)
+				{
+					if (clan != item5 && !clan.GetStanceWith(item5).IsAtWar)
+					{
+						DeclareWarAction.ApplyByDefault(clan, item5);
 					}
 				}
 				break;
 			}
 			break;
 		}
-		if (detail == ChangeKingdomActionDetail.LeaveAsMercenary || detail == ChangeKingdomActionDetail.LeaveKingdom || detail == ChangeKingdomActionDetail.LeaveWithRebellion)
+		}
+		if (detail == ChangeKingdomActionDetail.LeaveAsMercenary || detail == ChangeKingdomActionDetail.LeaveKingdom)
 		{
-			foreach (StanceLink item3 in new List<StanceLink>(clan.Stances))
+			foreach (IFaction item6 in clan.FactionsAtWarWith.ToList())
 			{
-				if (item3.IsAtWar && !item3.IsAtConstantWar)
+				if (clan != item6 && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, item6))
 				{
-					IFaction faction2 = ((item3.Faction1 == clan) ? item3.Faction2 : item3.Faction1);
-					if (detail != ChangeKingdomActionDetail.LeaveWithRebellion || clan != Clan.PlayerClan || faction2 != kingdom)
-					{
-						MakePeaceAction.Apply(clan, faction2);
-						FactionHelper.FinishAllRelatedHostileActionsOfFactionToFaction(clan, faction2);
-						FactionHelper.FinishAllRelatedHostileActionsOfFactionToFaction(faction2, clan);
-					}
+					MakePeaceAction.Apply(clan, item6);
+					FactionHelper.FinishAllRelatedHostileActionsOfFactionToFaction(clan, item6);
+					FactionHelper.FinishAllRelatedHostileActionsOfFactionToFaction(item6, clan);
 				}
 			}
 			CheckIfPartyIconIsDirty(clan, kingdom);
@@ -165,55 +155,56 @@ public static class ChangeKingdomAction
 		{
 			if (warPartyComponent.MobileParty.MapEvent == null)
 			{
-				warPartyComponent.MobileParty.Ai.SetMoveModeHold();
+				warPartyComponent.MobileParty.SetMoveModeHold();
 			}
 		}
 		CampaignEventDispatcher.Instance.OnClanChangedKingdom(clan, kingdom, newKingdom, detail, showNotification);
 	}
 
-	public static void ApplyByJoinToKingdom(Clan clan, Kingdom newKingdom, bool showNotification = true)
+	public static void ApplyByJoinToKingdom(Clan clan, Kingdom newKingdom, CampaignTime shouldStayInKingdomUntil = default(CampaignTime), bool showNotification = true)
 	{
-		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinKingdom, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinKingdom, shouldStayInKingdomUntil, 0, byRebellion: false, showNotification);
 	}
 
-	public static void ApplyByJoinToKingdomByDefection(Clan clan, Kingdom newKingdom, bool showNotification = true)
+	public static void ApplyByJoinToKingdomByDefection(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, CampaignTime shouldStayInKingdomUntil = default(CampaignTime), bool showNotification = true)
 	{
-		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinKingdomByDefection, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinKingdomByDefection, shouldStayInKingdomUntil, 0, byRebellion: false, showNotification);
+		CampaignEventDispatcher.Instance.OnClanDefected(clan, oldKingdom, newKingdom);
 	}
 
 	public static void ApplyByCreateKingdom(Clan clan, Kingdom newKingdom, bool showNotification = true)
 	{
-		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.CreateKingdom, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.CreateKingdom, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
 	public static void ApplyByLeaveByKingdomDestruction(Clan clan, bool showNotification = true)
 	{
-		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveByKingdomDestruction, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveByKingdomDestruction, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
 	public static void ApplyByLeaveKingdom(Clan clan, bool showNotification = true)
 	{
-		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveKingdom, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveKingdom, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
 	public static void ApplyByLeaveWithRebellionAgainstKingdom(Clan clan, bool showNotification = true)
 	{
-		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveWithRebellion, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveWithRebellion, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
-	public static void ApplyByJoinFactionAsMercenary(Clan clan, Kingdom newKingdom, int awardMultiplier = 50, bool showNotification = true)
+	public static void ApplyByJoinFactionAsMercenary(Clan clan, Kingdom newKingdom, CampaignTime shouldStayInKingdomUntil = default(CampaignTime), int awardMultiplier = 50, bool showNotification = true)
 	{
-		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinAsMercenary, awardMultiplier, byRebellion: false, showNotification);
+		ApplyInternal(clan, newKingdom, ChangeKingdomActionDetail.JoinAsMercenary, shouldStayInKingdomUntil, awardMultiplier, byRebellion: false, showNotification);
 	}
 
 	public static void ApplyByLeaveKingdomAsMercenary(Clan mercenaryClan, bool showNotification = true)
 	{
-		ApplyInternal(mercenaryClan, null, ChangeKingdomActionDetail.LeaveAsMercenary, 0, byRebellion: false, showNotification);
+		ApplyInternal(mercenaryClan, null, ChangeKingdomActionDetail.LeaveAsMercenary, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
 	public static void ApplyByLeaveKingdomByClanDestruction(Clan clan, bool showNotification = true)
 	{
-		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveByClanDestruction, 0, byRebellion: false, showNotification);
+		ApplyInternal(clan, null, ChangeKingdomActionDetail.LeaveByClanDestruction, CampaignTime.Zero, 0, byRebellion: false, showNotification);
 	}
 
 	private static void CheckIfPartyIconIsDirty(Clan clan, Kingdom oldKingdom)

@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -56,6 +59,7 @@ public class PartyUpgradeTroopVM : PartyTroopManagerVM
 		_openButtonNoTroopsHint = new TextObject("{=fpE7BQ7f}You don't have any upgradable troops.");
 		_openButtonIrrelevantScreenHint = new TextObject("{=mdvnjI72}Troops are not upgradable in this screen.");
 		_openButtonUpgradesDisabledHint = new TextObject("{=R4rTlKMU}Troop upgrades are currently disabled.");
+		base.UsedHorsesHint = new BasicTooltipViewModel(() => GetUsedHorsesTooltip());
 	}
 
 	public override void RefreshValues()
@@ -155,21 +159,24 @@ public class PartyUpgradeTroopVM : PartyTroopManagerVM
 		}
 	}
 
-	public override void ExecuteItemPrimaryAction()
+	private List<TooltipProperty> GetUsedHorsesTooltip()
 	{
-		PartyCharacterVM partyCharacterVM = base.FocusedTroop?.PartyCharacter;
-		if (partyCharacterVM != null && partyCharacterVM.Upgrades.Count > 0 && partyCharacterVM.Upgrades[0].IsAvailable)
+		List<Tuple<EquipmentElement, int>> list = _partyVM.PartyScreenLogic.CurrentData.UsedUpgradeHorsesHistory.ToList();
+		foreach (Tuple<EquipmentElement, int> item in _initialUsedUpgradeHorsesHistory)
 		{
-			partyCharacterVM.Upgrades[0].ExecuteUpgrade();
+			int num = list.FindIndex((Tuple<EquipmentElement, int> x) => x.Item1.IsEqualTo(item.Item1));
+			if (num != -1)
+			{
+				if (list[num].Item2 > item.Item2)
+				{
+					list[num] = new Tuple<EquipmentElement, int>(list[num].Item1, list[num].Item2 - item.Item2);
+				}
+				else
+				{
+					list.RemoveAt(num);
+				}
+			}
 		}
-	}
-
-	public override void ExecuteItemSecondaryAction()
-	{
-		PartyCharacterVM partyCharacterVM = base.FocusedTroop?.PartyCharacter;
-		if (partyCharacterVM != null && partyCharacterVM.Upgrades.Count > 1 && partyCharacterVM.Upgrades[1].IsAvailable)
-		{
-			partyCharacterVM.Upgrades[1].ExecuteUpgrade();
-		}
+		return CampaignUIHelper.GetUsedHorsesTooltip(list);
 	}
 }

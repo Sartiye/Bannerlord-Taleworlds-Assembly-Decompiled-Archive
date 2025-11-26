@@ -1,24 +1,34 @@
+using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-public class DeploymentHandler : MissionLogic
+public abstract class DeploymentHandler : MissionLogic
 {
-	protected MissionMode previousMissionMode;
+	protected MissionMode PreviousMissionMode;
 
-	protected readonly bool isPlayerAttacker;
+	protected readonly bool IsPlayerAttacker;
 
-	private bool areDeploymentPointsInitialized;
+	protected DeploymentMissionController _deploymentMissionController;
 
-	public Team team => base.Mission.PlayerTeam;
+	private bool _areDeploymentPointsInitialized;
 
-	public bool IsPlayerAttacker => isPlayerAttacker;
+	public Team PlayerTeam => base.Mission.PlayerTeam;
+
+	public event Action OnPlayerSideDeploymentReady;
+
+	public event Action OnEnemySideDeploymentReady;
 
 	public DeploymentHandler(bool isPlayerAttacker)
 	{
-		this.isPlayerAttacker = isPlayerAttacker;
+		IsPlayerAttacker = isPlayerAttacker;
+	}
+
+	public override void OnBehaviorInitialize()
+	{
+		_deploymentMissionController = base.Mission.GetMissionBehavior<DeploymentMissionController>();
 	}
 
 	public override void EarlyStart()
@@ -27,15 +37,50 @@ public class DeploymentHandler : MissionLogic
 
 	public override void AfterStart()
 	{
-		base.AfterStart();
-		previousMissionMode = base.Mission.Mode;
+		PreviousMissionMode = base.Mission.Mode;
 		base.Mission.SetMissionMode(MissionMode.Deployment, atStart: true);
-		team.OnOrderIssued += OrderController_OnOrderIssued;
 	}
 
-	private void OrderController_OnOrderIssued(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController, params object[] delegateParams)
+	public override void OnRemoveBehavior()
 	{
-		OrderController_OnOrderIssued_Aux(orderType, appliedFormations, orderController, delegateParams);
+		base.OnRemoveBehavior();
+		base.Mission.SetMissionMode(PreviousMissionMode, atStart: false);
+	}
+
+	public override void OnBattleSideDeployed(BattleSideEnum side)
+	{
+		if (side == base.Mission.PlayerTeam.Side)
+		{
+			this.OnPlayerSideDeploymentReady?.Invoke();
+		}
+		else
+		{
+			this.OnEnemySideDeploymentReady?.Invoke();
+		}
+	}
+
+	public abstract void AutoDeployTeamUsingDeploymentPlan(Team playerTeam);
+
+	public abstract void ForceUpdateAllUnits();
+
+	public virtual void FinishDeployment()
+	{
+		Mission obj = base.Mission ?? Mission.Current;
+		_deploymentMissionController.FinishDeployment();
+		obj.IsTeleportingAgents = false;
+	}
+
+	public void InitializeDeploymentPoints()
+	{
+		if (_areDeploymentPointsInitialized)
+		{
+			return;
+		}
+		foreach (DeploymentPoint item in base.Mission.ActiveMissionObjects.FindAllWithType<DeploymentPoint>())
+		{
+			item.Hide();
+		}
+		_areDeploymentPointsInitialized = true;
 	}
 
 	internal static void OrderController_OnOrderIssued_Aux(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController = null, params object[] delegateParams)
@@ -54,7 +99,7 @@ public class DeploymentHandler : MissionLogic
 			switch (orderType)
 			{
 			case OrderType.None:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 107);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 152);
 				break;
 			case OrderType.Move:
 			case OrderType.MoveToLineSegment:
@@ -72,7 +117,6 @@ public class DeploymentHandler : MissionLogic
 				break;
 			case OrderType.Charge:
 			case OrderType.ChargeWithTarget:
-			case OrderType.GuardMe:
 				ForcePositioning();
 				ForceUpdateFormationParams();
 				break;
@@ -116,10 +160,10 @@ public class DeploymentHandler : MissionLogic
 				ForceUpdateFormationParams();
 				break;
 			case OrderType.PointDefence:
-				Debug.FailedAssert("will be removed", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 180);
+				Debug.FailedAssert("will be removed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 224);
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 183);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 227);
 				break;
 			case OrderType.CohesionHigh:
 			case OrderType.CohesionMedium:
@@ -136,7 +180,7 @@ public class DeploymentHandler : MissionLogic
 				if (appliedFormation2.CountOfUnits > 0)
 				{
 					Vec2 direction = appliedFormation2.FacingOrder.GetDirection(appliedFormation2);
-					appliedFormation2.SetPositioning(appliedFormation2.GetReadonlyMovementOrderReference().CreateNewOrderWorldPosition(appliedFormation2, WorldPosition.WorldPositionEnforcedCache.None), direction);
+					appliedFormation2.SetPositioning(appliedFormation2.GetReadonlyMovementOrderReference().CreateNewOrderWorldPositionMT(appliedFormation2, WorldPosition.WorldPositionEnforcedCache.None), direction);
 				}
 			}
 		}
@@ -153,42 +197,11 @@ public class DeploymentHandler : MissionLogic
 					}
 					appliedFormation3.ApplyActionOnEachUnit(delegate(Agent agent)
 					{
-						agent.UpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
+						agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
 					}, flag2 ? Mission.Current.MainAgent : null);
+					appliedFormation3.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 				}
 			}
 		}
-	}
-
-	public void ForceUpdateAllUnits()
-	{
-		OrderController_OnOrderIssued_Aux(OrderType.Move, team.FormationsIncludingSpecialAndEmpty, null);
-	}
-
-	public virtual void FinishDeployment()
-	{
-	}
-
-	public override void OnRemoveBehavior()
-	{
-		if (team != null)
-		{
-			team.OnOrderIssued -= OrderController_OnOrderIssued;
-		}
-		base.Mission.SetMissionMode(previousMissionMode, atStart: false);
-		base.OnRemoveBehavior();
-	}
-
-	public void InitializeDeploymentPoints()
-	{
-		if (areDeploymentPointsInitialized)
-		{
-			return;
-		}
-		foreach (DeploymentPoint item in base.Mission.ActiveMissionObjects.FindAllWithType<DeploymentPoint>())
-		{
-			item.Hide();
-		}
-		areDeploymentPointsInitialized = true;
 	}
 }

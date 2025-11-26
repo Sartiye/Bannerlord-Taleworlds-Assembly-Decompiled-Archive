@@ -8,7 +8,7 @@ internal class DropExtraWeaponOnStopUsageComponent : UsableMissionObjectComponen
 	{
 		if (isSuccessful && !GameNetwork.IsClientOrReplay && !userAgent.Equipment[EquipmentIndex.ExtraWeaponSlot].IsEmpty && !Mission.Current.MissionIsEnding)
 		{
-			userAgent.DropItem(EquipmentIndex.ExtraWeaponSlot);
+			userAgent.Mission.AddTickAction(Mission.MissionTickAction.DropItem, userAgent, 4, 0);
 		}
 	}
 }

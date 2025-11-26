@@ -130,7 +130,14 @@ public class AuxiliaryKeyGroupVM : ViewModel
 
 	internal bool IsChanged()
 	{
-		return HotKeys.Any((AuxiliaryKeyOptionVM k) => k.IsChanged());
+		for (int i = 0; i < HotKeys.Count; i++)
+		{
+			if (HotKeys[i].IsChanged())
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void OnGamepadActiveStateChanged()

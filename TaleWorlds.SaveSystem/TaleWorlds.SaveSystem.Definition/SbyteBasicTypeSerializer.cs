@@ -13,4 +13,9 @@ internal class SbyteBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadSByte();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 1;
+	}
 }

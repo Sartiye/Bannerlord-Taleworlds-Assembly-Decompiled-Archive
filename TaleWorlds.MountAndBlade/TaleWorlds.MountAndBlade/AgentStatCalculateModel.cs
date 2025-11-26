@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-public abstract class AgentStatCalculateModel : GameModel
+public abstract class AgentStatCalculateModel : MBGameModel<AgentStatCalculateModel>
 {
 	protected const float MaxHorizontalErrorRadian = System.MathF.PI / 90f;
 
@@ -28,6 +28,11 @@ public abstract class AgentStatCalculateModel : GameModel
 		return agent.GetBaseArmorEffectivenessForBodyPart(BoneBodyPartType.Chest) >= 24f;
 	}
 
+	public virtual float GetEffectiveArmorEncumbrance(Agent agent, Equipment equipment)
+	{
+		return equipment.GetTotalWeightOfArmor(agent.IsHuman);
+	}
+
 	public virtual float GetEffectiveMaxHealth(Agent agent)
 	{
 		return agent.BaseHealthLimit;
@@ -43,7 +48,7 @@ public abstract class AgentStatCalculateModel : GameModel
 			{
 				num *= 0.9f;
 			}
-			if (!agent.IsHuman && !MBMath.IsBetween(scene.TimeOfDay, 4f, 20.01f))
+			if (!agent.IsHuman && !scene.IsDayTime)
 			{
 				num *= 0.9f;
 			}
@@ -53,7 +58,7 @@ public abstract class AgentStatCalculateModel : GameModel
 
 	public float CalculateAIAttackOnDecideMaxValue()
 	{
-		if (GetDifficultyModifier() < 0.5f)
+		if (GetDifficultyModifier() <= 0.5f)
 		{
 			return 0.16f;
 		}
@@ -65,7 +70,7 @@ public abstract class AgentStatCalculateModel : GameModel
 		float a = 0f;
 		if (weapon.IsRangedWeapon)
 		{
-			a = (100f - (float)weapon.Accuracy) * (1f - 0.002f * (float)weaponSkill) * 0.001f;
+			a = ((weapon.WeaponClass != WeaponClass.Sling) ? ((100f - (float)weapon.Accuracy) * (1f - 0.002f * (float)weaponSkill) * 0.001f) : ((100f - (float)weapon.Accuracy) * (1f - 0.003f * (float)weaponSkill) * 0.001f));
 		}
 		else if (weapon.WeaponFlags.HasAllFlags(WeaponFlags.WideGrip))
 		{
@@ -105,11 +110,17 @@ public abstract class AgentStatCalculateModel : GameModel
 
 	public abstract float GetWeaponDamageMultiplier(Agent agent, WeaponComponentData weapon);
 
+	public abstract float GetEquipmentStealthBonus(Agent agent);
+
+	public abstract float GetSneakAttackMultiplier(Agent agent, WeaponComponentData weapon);
+
 	public abstract float GetKnockBackResistance(Agent agent);
 
 	public abstract float GetKnockDownResistance(Agent agent, StrikeType strikeType = StrikeType.Invalid);
 
 	public abstract float GetDismountResistance(Agent agent);
+
+	public abstract float GetBreatheHoldMaxDuration(Agent agent, float baseBreatheHoldMaxDuration);
 
 	public virtual string GetMissionDebugInfoForAgent(Agent agent)
 	{
@@ -140,7 +151,7 @@ public abstract class AgentStatCalculateModel : GameModel
 	protected float CalculateAILevel(Agent agent, int relevantSkillLevel)
 	{
 		float difficultyModifier = GetDifficultyModifier();
-		return MBMath.ClampFloat((float)relevantSkillLevel / 300f * difficultyModifier, 0f, 1f);
+		return MBMath.ClampFloat((float)relevantSkillLevel / 300f * ((difficultyModifier <= 0f) ? 0.1f : ((difficultyModifier <= 0.5f) ? 0.32f : 0.96f)), 0f, 1f);
 	}
 
 	protected void SetAiRelatedProperties(Agent agent, AgentDrivenProperties agentDrivenProperties, WeaponComponentData equippedItem, WeaponComponentData secondaryItem)
@@ -148,9 +159,10 @@ public abstract class AgentStatCalculateModel : GameModel
 		int meleeSkill = GetMeleeSkill(agent, equippedItem, secondaryItem);
 		SkillObject skill = ((equippedItem == null) ? DefaultSkills.Athletics : equippedItem.RelevantSkill);
 		int effectiveSkill = GetEffectiveSkill(agent, skill);
-		float num = MBMath.ClampFloat(CalculateAILevel(agent, meleeSkill) * _AILevelMultiplier, 0f, 1f);
-		float num2 = MBMath.ClampFloat(CalculateAILevel(agent, effectiveSkill) * _AILevelMultiplier, 0f, 1f);
+		float num = CalculateAILevel(agent, meleeSkill) * _AILevelMultiplier;
+		float num2 = CalculateAILevel(agent, effectiveSkill) * _AILevelMultiplier;
 		float num3 = num + agent.Defensiveness;
+		float difficultyModifier = GetDifficultyModifier();
 		agentDrivenProperties.AiRangedHorsebackMissileRange = 0.3f + 0.4f * num2;
 		agentDrivenProperties.AiFacingMissileWatch = -0.96f + num * 0.06f;
 		agentDrivenProperties.AiFlyingMissileCheckRadius = 8f - 6f * num;
@@ -184,13 +196,15 @@ public abstract class AgentStatCalculateModel : GameModel
 		agentDrivenProperties.AIHoldingReadyVariationPercentage = num;
 		agentDrivenProperties.AiRaiseShieldDelayTimeBase = -0.75f + 0.5f * num;
 		agentDrivenProperties.AiUseShieldAgainstEnemyMissileProbability = 0.1f + num * 0.6f + num3 * 0.2f;
-		agentDrivenProperties.AiCheckMovementIntervalFactor = 0.005f * (1.1f - num);
+		agentDrivenProperties.AiCheckApplyMovementInterval = (2f - difficultyModifier) * (0.05f + 0.005f * (1.1f - num));
+		agentDrivenProperties.AiCheckCalculateMovementInterval = ((agent.HasMount || agent.IsMount) ? 0.25f : ((2f - difficultyModifier) * 0.25f));
+		agentDrivenProperties.AiCheckDecideSimpleBehaviorInterval = (2f - difficultyModifier) * (agent.GetAgentFlags().HasAnyFlag(AgentFlag.CanWieldWeapon) ? 1.5f : 0.2f);
+		agentDrivenProperties.AiCheckDoSimpleBehaviorInterval = 2f - difficultyModifier;
 		agentDrivenProperties.AiMovementDelayFactor = 4f / (3f + num2);
 		agentDrivenProperties.AiParryDecisionChangeValue = 0.05f + 0.7f * num;
 		agentDrivenProperties.AiDefendWithShieldDecisionChanceValue = TaleWorlds.Library.MathF.Min(2f, 0.5f + num + 0.6f * num3);
 		agentDrivenProperties.AiMoveEnemySideTimeValue = -2.5f + 0.5f * num;
 		agentDrivenProperties.AiMinimumDistanceToContinueFactor = 2f + 0.3f * (3f - num);
-		agentDrivenProperties.AiHearingDistanceFactor = 1f + num;
 		agentDrivenProperties.AiChargeHorsebackTargetDistFactor = 1.5f * (3f - num);
 		agentDrivenProperties.AiWaitBeforeShootFactor = (agent.PropertyModifiers.resetAiWaitBeforeShootFactor ? 0f : (1f - 0.5f * num2));
 		float num4 = 1f - num2;
@@ -199,7 +213,10 @@ public abstract class AgentStatCalculateModel : GameModel
 		agentDrivenProperties.AiRangerVerticalErrorMultiplier = num4 * 0.1f;
 		agentDrivenProperties.AiRangerHorizontalErrorMultiplier = num4 * (System.MathF.PI / 90f);
 		agentDrivenProperties.AIAttackOnDecideChance = TaleWorlds.Library.MathF.Clamp(0.1f * CalculateAIAttackOnDecideMaxValue() * (3f - agent.Defensiveness), 0.05f, 1f);
-		agentDrivenProperties.SetStat(DrivenProperty.UseRealisticBlocking, (agent.Controller != Agent.ControllerType.Player) ? 1f : 0f);
+		agentDrivenProperties.SetStat(DrivenProperty.UseRealisticBlocking, (agent.Controller != AgentControllerType.Player) ? 1f : 0f);
+		agentDrivenProperties.AiWeaponFavorMultiplierMelee = 1f;
+		agentDrivenProperties.AiWeaponFavorMultiplierRanged = 1f;
+		agentDrivenProperties.AiWeaponFavorMultiplierPolearm = 1f;
 	}
 
 	protected void SetAllWeaponInaccuracy(Agent agent, AgentDrivenProperties agentDrivenProperties, int equippedIndex, WeaponComponentData equippedWeaponComponent)

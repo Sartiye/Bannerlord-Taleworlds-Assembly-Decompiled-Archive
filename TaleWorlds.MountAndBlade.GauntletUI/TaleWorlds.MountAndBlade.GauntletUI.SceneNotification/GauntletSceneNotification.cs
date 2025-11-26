@@ -6,18 +6,26 @@ using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.View;
+using TaleWorlds.MountAndBlade.View.SceneNotification;
 using TaleWorlds.MountAndBlade.View.Scripts;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.SceneNotification;
 
 public class GauntletSceneNotification : GlobalLayer
 {
+	private class SceneNotificationQueueItem
+	{
+		public SceneNotificationData Data;
+
+		public int FramesUntilDisplay;
+	}
+
 	private readonly GauntletLayer _gauntletLayer;
 
-	private readonly Queue<(SceneNotificationData, bool)> _notificationQueue;
+	private readonly Queue<SceneNotificationQueueItem> _notificationQueue;
 
 	private readonly List<ISceneNotificationContextProvider> _contextProviders;
 
@@ -28,6 +36,8 @@ public class GauntletSceneNotification : GlobalLayer
 	private bool _isActive;
 
 	private bool _isLastActiveGameStatePaused;
+
+	private bool _isPendingSceneLoad;
 
 	private Scene _scene;
 
@@ -46,9 +56,9 @@ public class GauntletSceneNotification : GlobalLayer
 	private GauntletSceneNotification()
 	{
 		_dataSource = new SceneNotificationVM(OnPositiveAction, CloseNotification, GetContinueKeyText);
-		_notificationQueue = new Queue<(SceneNotificationData, bool)>();
+		_notificationQueue = new Queue<SceneNotificationQueueItem>();
 		_contextProviders = new List<ISceneNotificationContextProvider>();
-		_gauntletLayer = new GauntletLayer(4600);
+		_gauntletLayer = new GauntletLayer("SceneNotification", 19600);
 		_gauntletLayer.LoadMovie("SceneNotification", _dataSource);
 		base.Layer = _gauntletLayer;
 		MBInformationManager.OnShowSceneNotification += OnShowSceneNotification;
@@ -79,7 +89,11 @@ public class GauntletSceneNotification : GlobalLayer
 
 	private void OnShowSceneNotification(SceneNotificationData campaignNotification)
 	{
-		_notificationQueue.Enqueue((campaignNotification, campaignNotification.PauseActiveState));
+		_notificationQueue.Enqueue(new SceneNotificationQueueItem
+		{
+			Data = campaignNotification,
+			FramesUntilDisplay = 2
+		});
 	}
 
 	protected override void OnTick(float dt)
@@ -89,26 +103,47 @@ public class GauntletSceneNotification : GlobalLayer
 		{
 			_dataSource.EndProgress = _cameraPathScript?.GetCameraFade() ?? 0f;
 			_cameraPathScript?.SetIsReady(_dataSource.IsReady);
+			if (_dataSource.IsReady && _scene != null)
+			{
+				_scene.WaitWaterRendererCPUSimulation();
+				_scene.Tick(dt);
+			}
 		}
-		_scene?.Tick(dt);
-	}
-
-	protected override void OnLateTick(float dt)
-	{
-		base.OnLateTick(dt);
+		if (_isPendingSceneLoad)
+		{
+			if (_isActive)
+			{
+				OpenScene();
+				base.Layer.IsFocusLayer = true;
+				ScreenManager.TrySetFocus(base.Layer);
+				base.Layer.InputRestrictions.SetInputRestrictions();
+			}
+			else
+			{
+				Debug.FailedAssert("Scene load was pending but scene notification is not active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OnTick", 116);
+			}
+			_isPendingSceneLoad = false;
+		}
 		QueueTick();
 	}
 
 	private void QueueTick()
 	{
-		if (!_isActive && _notificationQueue.Count > 0)
+		if (_isActive || _notificationQueue.Count <= 0)
 		{
-			SceneNotificationData.RelevantContextType relevantContext = _notificationQueue.Peek().Item1.RelevantContext;
-			if (IsGivenContextApplicableToCurrentContext(relevantContext))
-			{
-				(SceneNotificationData, bool) tuple = _notificationQueue.Dequeue();
-				CreateSceneNotification(tuple.Item1, tuple.Item2);
-			}
+			return;
+		}
+		SceneNotificationQueueItem sceneNotificationQueueItem = _notificationQueue.Peek();
+		if (sceneNotificationQueueItem.FramesUntilDisplay > 0)
+		{
+			sceneNotificationQueueItem.FramesUntilDisplay--;
+			return;
+		}
+		SceneNotificationData.RelevantContextType relevantContext = sceneNotificationQueueItem.Data.RelevantContext;
+		if (IsGivenContextApplicableToCurrentContext(relevantContext))
+		{
+			SceneNotificationQueueItem sceneNotificationQueueItem2 = _notificationQueue.Dequeue();
+			CreateSceneNotification(sceneNotificationQueueItem2.Data);
 		}
 	}
 
@@ -123,28 +158,44 @@ public class GauntletSceneNotification : GlobalLayer
 
 	private void OpenScene()
 	{
+		SceneNotificationData.SceneNotificationCharacter[] sceneNotificationCharacters = _activeData.GetSceneNotificationCharacters();
+		Banner[] banners = _activeData.GetBanners();
+		SceneNotificationData.SceneNotificationShip[] ships = _activeData.GetShips();
 		_scene = Scene.CreateNewScene(initialize_physics: true, enable_decals: true, DecalAtlasGroup.Battle);
+		_scene.SetUsesDeleteLaterSystem(value: true);
 		SceneInitializationData initData = new SceneInitializationData(initializeWithDefaults: true);
+		initData.InitPhysicsWorld = _activeData.SceneProperties.InitializePhysics;
+		if (initData.InitPhysicsWorld)
+		{
+			_scene.EnableInclusiveAsyncPhysx();
+		}
 		_scene.Read(_activeData.SceneID, ref initData);
+		if (initData.InitPhysicsWorld)
+		{
+			_scene.EnableFixedTick();
+			_scene.SetFixedTickCallbackActive(isActive: true);
+		}
+		_scene.DisableStaticShadows(_activeData.SceneProperties.DisableStaticShadows);
+		if (_activeData.SceneProperties.OverriddenWaterStrength.HasValue)
+		{
+			_scene.SetWaterStrength(_activeData.SceneProperties.OverriddenWaterStrength.Value);
+		}
 		_scene.SetClothSimulationState(state: true);
 		_scene.SetShadow(shadowEnabled: true);
 		_scene.SetDynamicShadowmapCascadesRadiusMultiplier(0.1f);
-		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene, 32);
+		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene);
 		_agentRendererSceneController.SetEnforcedVisibilityForAllAgents(_scene);
 		_sceneCharacterScripts = new List<PopupSceneSpawnPoint>();
 		_customPrefabBannerEntities = new Dictionary<string, GameEntity>();
-		GameEntity firstEntityWithScriptComponent = _scene.GetFirstEntityWithScriptComponent<PopupSceneCameraPath>();
-		_cameraPathScript = firstEntityWithScriptComponent.GetFirstScriptOfType<PopupSceneCameraPath>();
+		_cameraPathScript = _scene.GetFirstEntityWithScriptComponent<PopupSceneCameraPath>()?.GetFirstScriptOfType<PopupSceneCameraPath>();
 		_cameraPathScript?.Initialize();
 		_cameraPathScript?.SetInitialState();
-		List<SceneNotificationData.SceneNotificationCharacter> list = _activeData.GetSceneNotificationCharacters().ToList();
-		List<Banner> list2 = _activeData.GetBanners().ToList();
-		if (list != null)
+		if (sceneNotificationCharacters != null)
 		{
 			int num = 1;
-			for (int i = 0; i < list.Count; i++)
+			for (int i = 0; i < sceneNotificationCharacters.Length; i++)
 			{
-				SceneNotificationData.SceneNotificationCharacter sceneNotificationCharacter = list[i];
+				SceneNotificationData.SceneNotificationCharacter sceneNotificationCharacter = sceneNotificationCharacters[i];
 				BasicCharacterObject character = sceneNotificationCharacter.Character;
 				if (character == null)
 				{
@@ -160,14 +211,14 @@ public class GauntletSceneNotification : GlobalLayer
 				}
 				PopupSceneSpawnPoint firstScriptOfType = gameEntity.GetFirstScriptOfType<PopupSceneSpawnPoint>();
 				MatrixFrame frame = gameEntity.GetFrame();
-				Equipment equipment = character.GetFirstEquipment(civilianSet: false);
+				Equipment equipment = character.FirstBattleEquipment;
 				if (sceneNotificationCharacter.OverriddenEquipment != null)
 				{
 					equipment = sceneNotificationCharacter.OverriddenEquipment;
 				}
 				else if (sceneNotificationCharacter.UseCivilianEquipment)
 				{
-					equipment = character.GetFirstEquipment(civilianSet: true);
+					equipment = character.FirstCivilianEquipment;
 				}
 				BodyProperties bodyProperties = character.GetBodyProperties(character.Equipment);
 				if (sceneNotificationCharacter.OverriddenBodyProperties != default(BodyProperties))
@@ -219,33 +270,69 @@ public class GauntletSceneNotification : GlobalLayer
 				_sceneCharacterScripts.Add(firstScriptOfType);
 				if (!string.IsNullOrEmpty(firstScriptOfType.BannerTagToUseForAddedPrefab) && firstScriptOfType.AddedPrefabComponent != null)
 				{
-					_customPrefabBannerEntities.Add(firstScriptOfType.BannerTagToUseForAddedPrefab, firstScriptOfType.AddedPrefabComponent.GetEntity());
+					_customPrefabBannerEntities.Add(firstScriptOfType.BannerTagToUseForAddedPrefab, GameEntity.CreateFromWeakEntity(firstScriptOfType.AddedPrefabComponent.GetEntity()));
 				}
 				num++;
 			}
 		}
-		if (list2 != null)
+		if (banners != null)
 		{
-			for (int j = 0; j < list2.Count; j++)
+			for (int j = 0; j < banners.Length; j++)
 			{
-				Banner banner = list2[j];
+				Banner banner = banners[j];
 				string text = "banner_" + (j + 1);
 				GameEntity bannerEntity = _scene.FindEntityWithTag(text);
 				GameEntity entity;
 				if (bannerEntity != null)
 				{
-					((BannerVisual)banner.BannerVisual).GetTableauTextureLarge(delegate(Texture t)
+					BannerVisual obj = (BannerVisual)banner.BannerVisual;
+					BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+					obj.GetTableauTextureLarge(in debugInfo, delegate(Texture t)
 					{
 						OnBannerTableauRenderDone(bannerEntity, t);
 					});
 				}
 				else if (_customPrefabBannerEntities.TryGetValue(text, out entity))
 				{
-					((BannerVisual)banner.BannerVisual).GetTableauTextureLarge(delegate(Texture t)
+					BannerVisual obj2 = (BannerVisual)banner.BannerVisual;
+					BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+					obj2.GetTableauTextureLarge(in debugInfo, delegate(Texture t)
 					{
 						OnBannerTableauRenderDone(entity, t);
 					});
 				}
+			}
+		}
+		if (ships != null)
+		{
+			int num2 = 1;
+			for (int k = 0; k < ships.Length; k++)
+			{
+				SceneNotificationData.SceneNotificationShip sceneNotificationShip = ships[k];
+				if (string.IsNullOrEmpty(sceneNotificationShip.ShipPrefabId))
+				{
+					num2++;
+					Debug.FailedAssert("Scene notification ship does not have a valid prefab", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 359);
+					continue;
+				}
+				string text2 = "spawnpoint_ship_" + num2;
+				GameEntity gameEntity2 = _scene.FindEntityWithTag(text2);
+				if (gameEntity2 == null)
+				{
+					Debug.FailedAssert("Ship spawn point entity with tag: " + text2 + " was not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 367);
+					num2++;
+					continue;
+				}
+				List<GameEntity> list = gameEntity2.GetChildren().ToList();
+				for (int l = 0; l < list.Count; l++)
+				{
+					GameEntity entity2 = list[l];
+					_scene.RemoveEntity(entity2, 62);
+				}
+				gameEntity2.GetFirstScriptOfType<PopupSceneShipSpawnPoint>();
+				GameEntity gameEntity3 = VisualShipFactory.CreateVisualShip(sceneNotificationShip.ShipPrefabId, _scene, sceneNotificationShip.ShipUpgrades, sceneNotificationShip.ShipSeed, sceneNotificationShip.ShipHitPointRatio, sceneNotificationShip.SailColor1, sceneNotificationShip.SailColor2, createPhysics: true);
+				gameEntity2.AddChild(gameEntity3);
+				num2++;
 			}
 		}
 		_dataSource.Scene = _scene;
@@ -287,26 +374,25 @@ public class GauntletSceneNotification : GlobalLayer
 		}
 	}
 
-	private void CreateSceneNotification(SceneNotificationData data, bool pauseGameActiveState)
+	private void CreateSceneNotification(SceneNotificationData data)
 	{
-		if (!_isActive)
+		if (_isActive)
 		{
-			_isActive = true;
-			_dataSource.CreateNotification(data);
-			ScreenManager.SetSuspendLayer(base.Layer, isSuspended: false);
-			base.Layer.IsFocusLayer = true;
-			ScreenManager.TrySetFocus(base.Layer);
-			base.Layer.InputRestrictions.SetInputRestrictions();
-			_isLastActiveGameStatePaused = pauseGameActiveState;
-			if (_isLastActiveGameStatePaused)
-			{
-				GameStateManager.Current.RegisterActiveStateDisableRequest(this);
-				MBCommon.PauseGameEngine();
-			}
-			_activeData = data;
-			_dataSource.EndProgress = 0f;
-			OpenScene();
+			Debug.FailedAssert("Trying to create scene notification while another notification is playing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "CreateSceneNotification", 434);
+			return;
 		}
+		_isActive = true;
+		_dataSource.CreateNotification(data);
+		ScreenManager.SetSuspendLayer(base.Layer, isSuspended: false);
+		_isLastActiveGameStatePaused = data.PauseActiveState;
+		if (_isLastActiveGameStatePaused)
+		{
+			GameStateManager.Current.RegisterActiveStateDisableRequest(this);
+			MBCommon.PauseGameEngine();
+		}
+		_activeData = data;
+		_dataSource.EndProgress = 0f;
+		_isPendingSceneLoad = true;
 	}
 
 	private void CloseNotification()
@@ -338,18 +424,22 @@ public class GauntletSceneNotification : GlobalLayer
 		MBAgentRendererSceneController.DestructAgentRendererSceneController(_scene, _agentRendererSceneController, deleteThisFrame: false);
 		_activeData = null;
 		_scene.ClearAll();
+		_scene.ManualInvalidate();
 		_scene = null;
 	}
 
 	private string GetContinueKeyText()
 	{
-		if (Input.IsGamepadActive)
+		GameTextManager gameTextManager = Module.CurrentModule?.GlobalTextManager;
+		if (gameTextManager != null)
 		{
-			TextObject textObject = Module.CurrentModule.GlobalTextManager.FindText("str_click_to_continue_console");
-			textObject.SetTextVariable("CONSOLE_KEY_NAME", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("ConversationHotKeyCategory", "ContinueKey")));
-			return textObject.ToString();
+			if (Input.IsGamepadActive)
+			{
+				return gameTextManager.FindText("str_click_to_continue_console").SetTextVariable("CONSOLE_KEY_NAME", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("ConversationHotKeyCategory", "ContinueClick"))).ToString();
+			}
+			return gameTextManager.FindText("str_click_to_continue").ToString();
 		}
-		return Module.CurrentModule.GlobalTextManager.FindText("str_click_to_continue").ToString();
+		return string.Empty;
 	}
 
 	public void OnFinalize()

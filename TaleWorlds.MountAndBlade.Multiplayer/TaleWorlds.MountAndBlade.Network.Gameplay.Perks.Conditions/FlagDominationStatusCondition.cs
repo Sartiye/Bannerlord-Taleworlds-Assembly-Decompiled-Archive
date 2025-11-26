@@ -33,7 +33,7 @@ public class FlagDominationStatusCondition : MPPerkCondition<MissionMultiplayerF
 		if (text != null && !Enum.TryParse<Status>(text, ignoreCase: true, out _status))
 		{
 			_status = Status.Tie;
-			Debug.FailedAssert("provided 'status' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\FlagDominationStatusCondition.cs", "Deserialize", 39);
+			Debug.FailedAssert("provided 'status' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\FlagDominationStatusCondition.cs", "Deserialize", 39);
 		}
 	}
 

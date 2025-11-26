@@ -29,6 +29,8 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private Widget _widget_1_0_0;
 
+	private ImageWidget _widget_1_0_1;
+
 	private ScrollablePanel _widget_2;
 
 	private Widget _widget_2_0;
@@ -97,13 +99,15 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private Widget _widget_2_0_0_3_3_0_0;
 
+	private ImageWidget _widget_2_0_0_3_3_0_1;
+
 	private Widget _widget_2_0_0_3_4;
 
 	private ListPanel _widget_2_0_0_3_5;
 
-	private RichTextWidget _widget_2_0_0_3_5_0;
+	private TextWidget _widget_2_0_0_3_5_0;
 
-	private RichTextWidget _widget_2_0_0_3_5_1;
+	private TextWidget _widget_2_0_0_3_5_1;
 
 	private Widget _widget_2_0_0_3_6;
 
@@ -146,7 +150,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private VisualDefinition CreateVisualDefinitionEndOfBattlePanel()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("EndOfBattlePanel", 0.2f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("EndOfBattlePanel", 0.2f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			SuggestedHeight = 0f,
@@ -167,7 +171,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private VisualDefinition CreateVisualDefinitionScoresPanel()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("ScoresPanel", 0.2f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("ScoresPanel", 0.2f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			MarginTop = 0f,
@@ -199,6 +203,8 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_1.AddChild(_widget_1_0);
 		_widget_1_0_0 = new Widget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_0);
+		_widget_1_0_1 = new ImageWidget(base.Context);
+		_widget_1_0.AddChild(_widget_1_0_1);
 		_widget_2 = new ScrollablePanel(base.Context);
 		_widget.AddChild(_widget_2);
 		_widget_2_0 = new Widget(base.Context);
@@ -267,13 +273,15 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_3.AddChild(_widget_2_0_0_3_3_0);
 		_widget_2_0_0_3_3_0_0 = new Widget(base.Context);
 		_widget_2_0_0_3_3_0.AddChild(_widget_2_0_0_3_3_0_0);
+		_widget_2_0_0_3_3_0_1 = new ImageWidget(base.Context);
+		_widget_2_0_0_3_3_0.AddChild(_widget_2_0_0_3_3_0_1);
 		_widget_2_0_0_3_4 = new Widget(base.Context);
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_4);
 		_widget_2_0_0_3_5 = new ListPanel(base.Context);
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_5);
-		_widget_2_0_0_3_5_0 = new RichTextWidget(base.Context);
+		_widget_2_0_0_3_5_0 = new TextWidget(base.Context);
 		_widget_2_0_0_3_5.AddChild(_widget_2_0_0_3_5_0);
-		_widget_2_0_0_3_5_1 = new RichTextWidget(base.Context);
+		_widget_2_0_0_3_5_1 = new TextWidget(base.Context);
 		_widget_2_0_0_3_5.AddChild(_widget_2_0_0_3_5_1);
 		_widget_2_0_0_3_6 = new Widget(base.Context);
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_6);
@@ -301,7 +309,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 	{
 		_widget_1.Id = "ScrollbarContainer";
 		_widget_1_0.Id = "Scrollbar";
-		_widget_1_0_0.Id = "ScrollbarHandle";
+		_widget_1_0_1.Id = "ScrollbarHandle";
 		_widget_2.Id = "ScrollablePanel";
 		_widget_2_0.Id = "ClipRect";
 		_widget_2_0_0.Id = "InnerPanel";
@@ -317,7 +325,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_2_0_0.Id = "SidesList";
 		_widget_2_0_0_3_3.Id = "ScrollbarContainer";
 		_widget_2_0_0_3_3_0.Id = "InnerScrollbar";
-		_widget_2_0_0_3_3_0_0.Id = "ScrollbarHandle";
+		_widget_2_0_0_3_3_0_1.Id = "ScrollbarHandle";
 		_widget_3_0.Id = "ActionListPanel";
 	}
 
@@ -353,26 +361,30 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_1.MarginRight = 30f;
 		_widget_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_0.SuggestedWidth = 3f;
 		_widget_1_0.MinValue = 0f;
 		_widget_1_0.MaxValue = 100f;
+		_widget_1_0.SuggestedWidth = 8f;
 		_widget_1_0.MarginBottom = 10f;
 		_widget_1_0.AlignmentAxis = AlignmentAxis.Vertical;
 		_widget_1_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_1_0.MarginTop = 20f;
 		_widget_1_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_1_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-		_widget_1_0.Brush.AlphaFactor = 0.4f;
-		_widget_1_0.Brush.Color = new Color(0.6313726f, 0.5254902f, 0.3803922f);
-		_widget_1_0.Handle = _widget_1_0_0;
+		_widget_1_0.Handle = _widget_1_0_1;
 		_widget_1_0.ValueInt = 0;
 		_widget_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_0_0.SuggestedWidth = 7f;
-		_widget_1_0_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_0_0.VerticalAlignment = VerticalAlignment.Top;
+		_widget_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_0.SuggestedWidth = 3f;
+		_widget_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_1_0_0.AlphaFactor = 0.4f;
 		_widget_1_0_0.Color = new Color(0.6313726f, 0.5254902f, 0.3803922f);
+		_widget_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_1_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_1_0_1.SuggestedWidth = 7f;
+		_widget_1_0_1.SuggestedHeight = 10f;
+		_widget_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_1_0_1.Brush = base.Context.GetBrush("MPScoreboard.Scrollbar.Handle");
+		_widget_1_0_1.IsVisible = false;
 		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.InnerPanel = _widget_2_0_0;
@@ -550,29 +562,32 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_3.SuggestedHeight = 820f;
 		_widget_2_0_0_3_3.MarginTop = 170f;
 		_widget_2_0_0_3_3.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_2_0_0_3_3.PositionXOffset = 7f;
 		_widget_2_0_0_3_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_3_3_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_3_3_0.MinValue = 0f;
 		_widget_2_0_0_3_3_0.MaxValue = 100f;
-		_widget_2_0_0_3_3_0.SuggestedWidth = 3f;
+		_widget_2_0_0_3_3_0.SuggestedWidth = 8f;
 		_widget_2_0_0_3_3_0.MarginBottom = 10f;
 		_widget_2_0_0_3_3_0.AlignmentAxis = AlignmentAxis.Vertical;
 		_widget_2_0_0_3_3_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_2_0_0_3_3_0.MarginTop = 20f;
 		_widget_2_0_0_3_3_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_2_0_0_3_3_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-		_widget_2_0_0_3_3_0.Brush.AlphaFactor = 0.4f;
-		_widget_2_0_0_3_3_0.Brush.Color = new Color(0.6313726f, 0.5254902f, 0.3803922f);
-		_widget_2_0_0_3_3_0.Handle = _widget_2_0_0_3_3_0_0;
+		_widget_2_0_0_3_3_0.Handle = _widget_2_0_0_3_3_0_1;
 		_widget_2_0_0_3_3_0.ValueInt = 0;
 		_widget_2_0_0_3_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_0_3_3_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_0_3_3_0_0.SuggestedWidth = 7f;
-		_widget_2_0_0_3_3_0_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_2_0_0_3_3_0_0.VerticalAlignment = VerticalAlignment.Top;
+		_widget_2_0_0_3_3_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_0_0_3_3_0_0.SuggestedWidth = 3f;
+		_widget_2_0_0_3_3_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_0_3_3_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_2_0_0_3_3_0_0.AlphaFactor = 0.4f;
 		_widget_2_0_0_3_3_0_0.Color = new Color(0.6313726f, 0.5254902f, 0.3803922f);
+		_widget_2_0_0_3_3_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_2_0_0_3_3_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_2_0_0_3_3_0_1.SuggestedWidth = 6f;
+		_widget_2_0_0_3_3_0_1.SuggestedHeight = 10f;
+		_widget_2_0_0_3_3_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_2_0_0_3_3_0_1.Brush = base.Context.GetBrush("MPScoreboard.Scrollbar.Handle");
+		_widget_2_0_0_3_3_0_1.IsVisible = false;
 		_widget_2_0_0_3_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_3_4.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_3_4.SuggestedWidth = 5f;

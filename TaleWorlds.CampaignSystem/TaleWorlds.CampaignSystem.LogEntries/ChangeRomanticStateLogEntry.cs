@@ -86,7 +86,8 @@ public class ChangeRomanticStateLogEntry : LogEntry
 			hero = Hero1;
 		}
 		hero.SetTextVariables();
-		if ((Hero1 == Hero.OneToOneConversationHero || Hero2 == Hero.OneToOneConversationHero) && Level == Romance.RomanceLevelEnum.MatchMadeByFamily)
+		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+		if ((Hero1 == oneToOneConversationHero || Hero2 == oneToOneConversationHero) && Level == Romance.RomanceLevelEnum.MatchMadeByFamily)
 		{
 			score = ImportanceEnum.MatterOfLifeAndDeath;
 			if (findString)
@@ -94,7 +95,7 @@ public class ChangeRomanticStateLogEntry : LogEntry
 				comment = "str_comment_changeromanticstate_match_made_by_family";
 			}
 		}
-		else if (Level >= Romance.RomanceLevelEnum.Marriage && hero == Hero.OneToOneConversationHero)
+		else if (Level >= Romance.RomanceLevelEnum.Marriage && hero == oneToOneConversationHero)
 		{
 			score = ImportanceEnum.Important;
 			if (findString)
@@ -102,7 +103,7 @@ public class ChangeRomanticStateLogEntry : LogEntry
 				comment = "str_comment_changeromanticstate_congratulations_marriage_self";
 			}
 		}
-		else if (Level >= Romance.RomanceLevelEnum.Marriage && hero != Hero.OneToOneConversationHero && hero.MapFaction == Hero.OneToOneConversationHero.MapFaction && Hero.OneToOneConversationHero.IsLord)
+		else if (Level >= Romance.RomanceLevelEnum.Marriage && hero != oneToOneConversationHero && hero.MapFaction == oneToOneConversationHero.MapFaction && oneToOneConversationHero.IsLord && (oneToOneConversationHero.Father != Hero.MainHero || oneToOneConversationHero.Mother != hero) && (oneToOneConversationHero.Mother != Hero.MainHero || oneToOneConversationHero.Father != hero))
 		{
 			score = ImportanceEnum.Important;
 			if (findString)
@@ -110,7 +111,7 @@ public class ChangeRomanticStateLogEntry : LogEntry
 				comment = "str_comment_changeromanticstate_congratulations_marriage";
 			}
 		}
-		else if (Hero.OneToOneConversationHero.Spouse == hero && Level >= Romance.RomanceLevelEnum.CourtshipStarted)
+		else if (oneToOneConversationHero.Spouse == hero && Level >= Romance.RomanceLevelEnum.CourtshipStarted)
 		{
 			score = ImportanceEnum.MatterOfLifeAndDeath;
 			if (findString)
@@ -118,7 +119,7 @@ public class ChangeRomanticStateLogEntry : LogEntry
 				comment = "str_comment_changeromanticstate_stay_away_from_my_spouse";
 			}
 		}
-		else if (Romance.GetRomanticLevel(hero, Hero.OneToOneConversationHero) >= Romance.RomanceLevelEnum.CourtshipStarted && Level >= Romance.RomanceLevelEnum.CourtshipStarted)
+		else if (Romance.GetRomanticLevel(hero, oneToOneConversationHero) >= Romance.RomanceLevelEnum.CourtshipStarted && Level >= Romance.RomanceLevelEnum.CourtshipStarted)
 		{
 			score = ImportanceEnum.MatterOfLifeAndDeath;
 			if (findString)

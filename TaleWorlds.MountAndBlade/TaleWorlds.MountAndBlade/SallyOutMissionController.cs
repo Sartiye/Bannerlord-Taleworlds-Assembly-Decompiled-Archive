@@ -41,11 +41,18 @@ public abstract class SallyOutMissionController : MissionLogic
 
 	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
 
+	private bool _isSallyOutAmbush;
+
 	private float BesiegedDeploymentDuration => 55f;
 
 	private float BesiegerActivationDuration => 8f;
 
 	public MBReadOnlyList<SiegeWeapon> BesiegerSiegeEngines => _besiegerSiegeEngines;
+
+	public SallyOutMissionController(bool isSallyOutAmbush)
+	{
+		_isSallyOutAmbush = isSallyOutAmbush;
+	}
 
 	public override void OnBehaviorInitialize()
 	{
@@ -75,10 +82,14 @@ public abstract class SallyOutMissionController : MissionLogic
 	{
 		_besiegerSiegeEngines = GetBesiegerSiegeEngines();
 		DisableSiegeEngines();
-		Mission.Current.AddMissionBehavior(new SallyOutEndLogic());
+		if (_isSallyOutAmbush)
+		{
+			Mission.Current.AddMissionBehavior(new SallyOutEndLogic());
+		}
 		_sallyOutNotificationsHandler.OnDeploymentFinished();
 		_besiegerActivationTimer = new BasicMissionTimer();
 		DeactivateBesiegers();
+		ActivateDefenders();
 	}
 
 	protected override void OnEndMission()
@@ -134,6 +145,20 @@ public abstract class SallyOutMissionController : MissionLogic
 		}
 	}
 
+	private void ActivateDefenders()
+	{
+		foreach (Agent item in base.Mission.DefenderAllyTeam.ActiveAgents.ToList())
+		{
+			FormationClass formationIndex = item.Formation.FormationIndex;
+			item.SetTeam(base.Mission.DefenderTeam, sync: true);
+			item.Formation = base.Mission.DefenderTeam.GetFormation(formationIndex);
+		}
+		foreach (Formation item2 in base.Mission.DefenderTeam.FormationsIncludingSpecialAndEmpty)
+		{
+			item2.SetMovementOrder(MovementOrder.MovementOrderCharge);
+		}
+	}
+
 	private void AdjustTotalTroopCounts(ref int besiegedTotalTroopCount, ref int besiegerTotalTroopCount)
 	{
 		float num = 0.25f;
@@ -182,7 +207,7 @@ public abstract class SallyOutMissionController : MissionLogic
 		bool num = !agent.HasMount;
 		bool isRangedCached = agent.IsRangedCached;
 		FormationClass fClass = ((!num) ? (isRangedCached ? FormationClass.HorseArcher : FormationClass.Cavalry) : (isRangedCached ? FormationClass.Ranged : FormationClass.Infantry));
-		return Mission.Current.DeploymentPlan.GetFormationPlan(formation.Team.Side, fClass, DeploymentPlanType.Initial).CreateNewDeploymentWorldPosition(WorldPosition.WorldPositionEnforcedCache.GroundVec3);
+		return Mission.Current.DeploymentPlan.GetFormationPlan(formation.Team, fClass).CreateNewDeploymentWorldPosition(WorldPosition.WorldPositionEnforcedCache.GroundVec3);
 	}
 
 	private static MissionSpawnSettings CreateSallyOutSpawnSettings(float besiegedReinforcementPercentage, float besiegerReinforcementPercentage)
@@ -203,7 +228,7 @@ public abstract class SallyOutMissionController : MissionLogic
 		foreach (Formation item in base.Mission.AttackerTeam.FormationsIncludingSpecialAndEmpty)
 		{
 			item.SetMovementOrder(MovementOrder.MovementOrderStop);
-			item.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
+			item.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
 			item.SetControlledByAI(isControlledByAI: false);
 		}
 	}
@@ -232,9 +257,9 @@ public abstract class SallyOutMissionController : MissionLogic
 
 	public static void DisableSiegeEngines()
 	{
-		foreach (MissionObject activeMissionObject in Mission.Current.ActiveMissionObjects)
+		for (int num = Mission.Current.ActiveMissionObjects.Count - 1; num >= 0; num--)
 		{
-			if (activeMissionObject is SiegeWeapon { DestructionComponent: not null, IsDeactivated: false } siegeWeapon)
+			if (Mission.Current.ActiveMissionObjects[num] is SiegeWeapon { DestructionComponent: not null, IsDeactivated: false } siegeWeapon)
 			{
 				siegeWeapon.Disable();
 				siegeWeapon.Deactivate();

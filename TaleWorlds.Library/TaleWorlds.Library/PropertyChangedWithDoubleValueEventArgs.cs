@@ -1,6 +1,6 @@
 namespace TaleWorlds.Library;
 
-public class PropertyChangedWithDoubleValueEventArgs
+public struct PropertyChangedWithDoubleValueEventArgs
 {
 	public string PropertyName { get; }
 

@@ -137,10 +137,7 @@ public class LobbyClient : Client<LobbyClient>
 			{
 				State state = _state;
 				_state = value;
-				if (_handler != null)
-				{
-					_handler.OnGameClientStateChange(state);
-				}
+				_handler?.OnGameClientStateChange(state);
 			}
 		}
 	}
@@ -485,10 +482,7 @@ public class LobbyClient : Client<LobbyClient>
 		if (customGameServerListResponse != null)
 		{
 			AvailableCustomGames = customGameServerListResponse.AvailableCustomGames;
-			if (_handler != null)
-			{
-				_handler.OnCustomGameServerListReceived(AvailableCustomGames);
-			}
+			_handler?.OnCustomGameServerListReceived(AvailableCustomGames);
 			return AvailableCustomGames;
 		}
 		return null;
@@ -498,10 +492,7 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		SendMessage(new QuitFromCustomGameMessage());
 		CurrentState = State.AtLobby;
-		if (_handler != null)
-		{
-			_handler.OnQuitFromCustomGame();
-		}
+		_handler?.OnQuitFromCustomGame();
 	}
 
 	public void QuitFromMatchmakerGame()
@@ -510,10 +501,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			CheckAndSendMessage(new QuitFromMatchmakerGameMessage());
 			CurrentState = State.QuittingFromBattle;
-			if (_handler != null)
-			{
-				_handler.OnQuitFromMatchmakerGame();
-			}
+			_handler?.OnQuitFromMatchmakerGame();
 		}
 	}
 
@@ -589,7 +577,7 @@ public class LobbyClient : Client<LobbyClient>
 		return false;
 	}
 
-	public async Task<LobbyClientConnectResult> Connect(ILobbyClientSessionHandler lobbyClientSessionHandler, ILoginAccessProvider lobbyClientLoginAccessProvider, string overridenUserName, bool hasUserGeneratedContentPrivilege, PlatformInitParams initParams)
+	public async Task<LobbyClientConnectResult> Connect(ILobbyClientSessionHandler lobbyClientSessionHandler, ILoginAccessProvider lobbyClientLoginAccessProvider, string overridenUserName, bool hasUserGeneratedContentPrivilege, PlatformInitParams initParams, Func<Task<bool>> preLoginTask)
 	{
 		base.AccessProvider = lobbyClientLoginAccessProvider;
 		base.AccessProvider.Initialize(overridenUserName, initParams);
@@ -601,65 +589,75 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			await Task.Yield();
 		}
-		if (CurrentState == State.Connected)
+		if (CurrentState != State.Connected)
 		{
-			AccessObjectResult accessObjectResult = AccessObjectResult.CreateFailed(new TextObject("{=gAeQdLU5}Failed to acquire access data from platform"));
-			Task getAccessObjectTask = Task.Run(delegate
-			{
-				accessObjectResult = base.AccessProvider.CreateAccessObject();
-			});
-			while (!getAccessObjectTask.IsCompleted)
-			{
-				await Task.Yield();
-			}
-			if (getAccessObjectTask.IsFaulted)
-			{
-				throw getAccessObjectTask.Exception ?? new Exception("Get access object task faulted without exception");
-			}
-			if (getAccessObjectTask.IsCanceled)
-			{
-				throw new Exception("Get access object task canceled");
-			}
-			if (accessObjectResult.Success)
-			{
-				_userName = base.AccessProvider.GetUserName();
-				_playerId = base.AccessProvider.GetPlayerId();
-				CurrentState = State.SessionRequested;
-				string environmentVariable = Environment.GetEnvironmentVariable("Bannerlord.ConnectionPassword");
-				LoginResult loginResult = await Login(new InitializeSession(_playerId, _userName, accessObjectResult.AccessObject, base.Application.ApplicationVersion, environmentVariable, _loadedUnofficialModules.ToArray()));
-				if (loginResult != null)
-				{
-					if (loginResult.Successful)
-					{
-						InitializeSessionResponse initializeSessionResponse = (InitializeSessionResponse)loginResult.LoginResultObject;
-						PlayerData = initializeSessionResponse.PlayerData;
-						_serverStatus = initializeSessionResponse.ServerStatus;
-						SupportedFeatures = initializeSessionResponse.SupportedFeatures;
-						AvailableScenes = initializeSessionResponse.AvailableScenes;
-						_logOutReason = new TextObject("{=i4MNr0bo}Disconnected from the Lobby.");
-						await PermaMuteList.LoadMutedPlayers(PlayerData.PlayerId);
-						_ownedCosmetics.Clear();
-						_usedCosmetics.Clear();
-						_handler.OnPlayerDataReceived(PlayerData);
-						_handler.OnServerStatusReceived(initializeSessionResponse.ServerStatus);
-						FriendListCheckDelay = _serverStatus.FriendListUpdatePeriod * 1000;
-						if (initializeSessionResponse.HasPendingRejoin)
-						{
-							_handler.OnPendingRejoin();
-						}
-						CurrentState = State.AtLobby;
-						return new LobbyClientConnectResult(connected: true, null);
-					}
-					BeginDisconnect();
-					return LobbyClientConnectResult.FromServerConnectResult(loginResult.ErrorCode, loginResult.ErrorParameters);
-				}
-				BeginDisconnect();
-				return new LobbyClientConnectResult(connected: false, new TextObject("{=63X8LERm}Couldn't receive login result from server."));
-			}
+			return new LobbyClientConnectResult(connected: false, new TextObject("{=3cWg0cWt}Could not connect to server."));
+		}
+		AccessObjectResult accessObjectResult = AccessObjectResult.CreateFailed(new TextObject("{=gAeQdLU5}Failed to acquire access data from platform"));
+		Task getAccessObjectTask = Task.Run(delegate
+		{
+			accessObjectResult = base.AccessProvider.CreateAccessObject();
+		});
+		while (!getAccessObjectTask.IsCompleted)
+		{
+			await Task.Yield();
+		}
+		if (getAccessObjectTask.IsFaulted)
+		{
+			throw getAccessObjectTask.Exception ?? new Exception("Get access object task faulted without exception");
+		}
+		if (getAccessObjectTask.IsCanceled)
+		{
+			throw new Exception("Get access object task canceled");
+		}
+		if (!accessObjectResult.Success)
+		{
 			BeginDisconnect();
 			return new LobbyClientConnectResult(connected: false, accessObjectResult.FailReason ?? new TextObject("{=JO37PkfW}Your platform service is not initialized."));
 		}
-		return new LobbyClientConnectResult(connected: false, new TextObject("{=3cWg0cWt}Could not connect to server."));
+		bool flag = preLoginTask != null;
+		if (flag)
+		{
+			flag = !(await preLoginTask());
+		}
+		if (flag)
+		{
+			BeginDisconnect();
+			return new LobbyClientConnectResult(connected: false, new TextObject("{=63X8LERm}Couldn't receive login result from server."));
+		}
+		_userName = base.AccessProvider.GetUserName();
+		_playerId = base.AccessProvider.GetPlayerId();
+		CurrentState = State.SessionRequested;
+		string environmentVariable = Environment.GetEnvironmentVariable("Bannerlord.ConnectionPassword");
+		LoginResult loginResult = await Login(new InitializeSession(_playerId, _userName, accessObjectResult.AccessObject, base.Application.ApplicationVersion, environmentVariable, _loadedUnofficialModules.ToArray()));
+		if (loginResult == null)
+		{
+			BeginDisconnect();
+			return new LobbyClientConnectResult(connected: false, new TextObject("{=63X8LERm}Couldn't receive login result from server."));
+		}
+		if (!loginResult.Successful)
+		{
+			BeginDisconnect();
+			return LobbyClientConnectResult.FromServerConnectResult(loginResult.ErrorCode, loginResult.ErrorParameters);
+		}
+		InitializeSessionResponse initializeSessionResponse = (InitializeSessionResponse)loginResult.LoginResultObject;
+		PlayerData = initializeSessionResponse.PlayerData;
+		_serverStatus = initializeSessionResponse.ServerStatus;
+		SupportedFeatures = initializeSessionResponse.SupportedFeatures;
+		AvailableScenes = initializeSessionResponse.AvailableScenes;
+		_logOutReason = new TextObject("{=i4MNr0bo}Disconnected from the Lobby.");
+		await PermaMuteList.LoadMutedPlayers(PlayerData.PlayerId);
+		_ownedCosmetics.Clear();
+		_usedCosmetics.Clear();
+		_handler?.OnPlayerDataReceived(PlayerData);
+		_handler?.OnServerStatusReceived(initializeSessionResponse.ServerStatus);
+		FriendListCheckDelay = _serverStatus.FriendListUpdatePeriod * 1000;
+		if (initializeSessionResponse.HasPendingRejoin)
+		{
+			_handler?.OnPendingRejoin();
+		}
+		CurrentState = State.AtLobby;
+		return new LobbyClientConnectResult(connected: true, null);
 	}
 
 	public void KickPlayer(PlayerId id, bool banPlayer)
@@ -712,20 +710,14 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		base.OnConnected();
 		CurrentState = State.Connected;
-		if (_handler != null)
-		{
-			_handler.OnConnected();
-		}
+		_handler?.OnConnected();
 	}
 
 	public override void OnCantConnect()
 	{
 		base.OnCantConnect();
 		CurrentState = State.Idle;
-		if (_handler != null)
-		{
-			_handler.OnCantConnect();
-		}
+		_handler?.OnCantConnect();
 	}
 
 	public override void OnDisconnected()
@@ -741,10 +733,12 @@ public class LobbyClient : Client<LobbyClient>
 		PermaMuteList.SaveMutedPlayers();
 		_ownedCosmetics.Clear();
 		_usedCosmetics.Clear();
-		if (_handler != null)
-		{
-			_handler.OnDisconnected(loggedIn ? _logOutReason : null);
-		}
+		_handler?.OnDisconnected(loggedIn ? _logOutReason : null);
+		RemoveLobbyClientHandler();
+	}
+
+	public void RemoveLobbyClientHandler()
+	{
 		_handler = null;
 	}
 
@@ -758,7 +752,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			CurrentState = State.SearchingBattle;
 		}
-		_handler.OnFindGameAnswer(message.Successful, message.SelectedAndEnabledGameTypes, isRejoin: false);
+		_handler?.OnFindGameAnswer(message.Successful, message.SelectedAndEnabledGameTypes, isRejoin: false);
 	}
 
 	private void OnJoinBattleMessage(JoinBattleMessage message)
@@ -777,7 +771,7 @@ public class LobbyClient : Client<LobbyClient>
 		text = text + "Port: " + LastBattleServerPortForClient + "\n";
 		text = text + "Match Id: " + CurrentMatchId + "\n";
 		TaleWorlds.Library.Debug.Print(text);
-		_handler.OnBattleServerInformationReceived(battleServerInformation);
+		_handler?.OnBattleServerInformationReceived(battleServerInformation);
 		CurrentState = State.AtBattle;
 	}
 
@@ -786,13 +780,13 @@ public class LobbyClient : Client<LobbyClient>
 		if (CurrentState == State.AtBattle || CurrentState == State.QuittingFromBattle || CurrentState == State.AtLobby)
 		{
 			CurrentState = State.AtLobby;
-			_handler.OnMatchmakerGameOver(message.OldExperience, message.NewExperience, message.EarnedBadges, message.GoldGained, message.OldInfo, message.NewInfo, message.BattleCancelReason);
+			_handler?.OnMatchmakerGameOver(message.OldExperience, message.NewExperience, message.EarnedBadges, message.GoldGained, message.OldInfo, message.NewInfo, message.BattleCancelReason);
 		}
 	}
 
 	private void OnBattleResultMessage(BattleResultMessage message)
 	{
-		_handler.OnBattleResultReceived();
+		_handler?.OnBattleResultReceived();
 	}
 
 	private void OnBattleServerLostMessage(BattleServerLostMessage message)
@@ -801,14 +795,14 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			CurrentState = State.AtLobby;
 		}
-		_handler.OnBattleServerLost();
+		_handler?.OnBattleServerLost();
 	}
 
 	private void OnCancelBattleResponseMessage(CancelBattleResponseMessage message)
 	{
 		if (message.Successful)
 		{
-			_handler.OnCancelJoiningBattle();
+			_handler?.OnCancelJoiningBattle();
 			CurrentState = State.AtLobby;
 		}
 		else if (CurrentState == State.RequestingToCancelSearchBattle)
@@ -820,7 +814,7 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnRejoinRequestRejectedMessage(RejoinRequestRejectedMessage message)
 	{
 		CurrentState = State.AtLobby;
-		_handler.OnRejoinRequestRejected();
+		_handler?.OnRejoinRequestRejected();
 	}
 
 	private void OnCancelFindGameMessage(CancelFindGameMessage message)
@@ -833,22 +827,22 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnWhisperMessageReceivedMessage(WhisperReceivedMessage message)
 	{
-		_handler.OnWhisperMessageReceived(message.FromPlayer, message.ToPlayer, message.Message);
+		_handler?.OnWhisperMessageReceived(message.FromPlayer, message.ToPlayer, message.Message);
 	}
 
 	private void OnClanMessageReceivedMessage(ClanMessageReceivedMessage message)
 	{
-		_handler.OnClanMessageReceived(message.PlayerName, message.Message);
+		_handler?.OnClanMessageReceived(message.PlayerName, message.Message);
 	}
 
 	private void OnChannelMessageReceivedMessage(ChannelMessageReceivedMessage message)
 	{
-		_handler.OnChannelMessageReceived(message.Channel, message.PlayerName, message.Message);
+		_handler?.OnChannelMessageReceived(message.Channel, message.PlayerName, message.Message);
 	}
 
 	private void OnPartyMessageReceivedMessage(PartyMessageReceivedMessage message)
 	{
-		_handler.OnPartyMessageReceived(message.PlayerName, message.Message);
+		_handler?.OnPartyMessageReceived(message.PlayerName, message.Message);
 	}
 
 	private void OnPlayerQuitFromMatchmakerGameResult(PlayerQuitFromMatchmakerGameResult message)
@@ -872,7 +866,7 @@ public class LobbyClient : Client<LobbyClient>
 				_ = CurrentState;
 				_ = 6;
 			}
-			_handler.OnEnterBattleWithPartyAnswer(message.SelectedAndEnabledGameTypes);
+			_handler?.OnEnterBattleWithPartyAnswer(message.SelectedAndEnabledGameTypes);
 		}
 		else
 		{
@@ -884,10 +878,7 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		if (!message.Success && message.Response == CustomGameJoinResponse.AlreadyRequestedWaitingForServerResponse)
 		{
-			if (_handler != null)
-			{
-				_handler.OnSystemMessageReceived(new TextObject("{=ivKntfNA}Already requested to join, waiting for server response").ToString());
-			}
+			_handler?.OnSystemMessageReceived(new TextObject("{=ivKntfNA}Already requested to join, waiting for server response").ToString());
 		}
 		else if (message.Success)
 		{
@@ -905,18 +896,12 @@ public class LobbyClient : Client<LobbyClient>
 			text = text + "Match Id: " + CurrentMatchId + "\n";
 			text = text + "Is Official: " + message.JoinGameData.GameServerProperties.IsOfficial + "\n";
 			TaleWorlds.Library.Debug.Print(text);
-			if (_handler != null)
-			{
-				_handler.OnJoinCustomGameResponse(message.Success, message.JoinGameData, message.Response, message.IsAdmin);
-			}
+			_handler?.OnJoinCustomGameResponse(message.Success, message.JoinGameData, message.Response, message.IsAdmin);
 		}
 		else
 		{
 			CurrentState = State.AtLobby;
-			if (_handler != null)
-			{
-				_handler.OnJoinCustomGameFailureResponse(message.Response);
-			}
+			_handler?.OnJoinCustomGameFailureResponse(message.Response);
 		}
 	}
 
@@ -960,10 +945,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnClientQuitFromCustomGameMessage(ClientQuitFromCustomGameMessage message)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClientQuitFromCustomGame(message.PlayerId);
-		}
+		_handler?.OnClientQuitFromCustomGame(message.PlayerId);
 	}
 
 	private void OnEnterCustomBattleWithPartyAnswerMessage(EnterCustomBattleWithPartyAnswer message)
@@ -974,7 +956,7 @@ public class LobbyClient : Client<LobbyClient>
 			{
 				CurrentState = State.WaitingToJoinCustomGame;
 			}
-			_handler.OnEnterCustomBattleWithPartyAnswer();
+			_handler?.OnEnterCustomBattleWithPartyAnswer();
 		}
 		else
 		{
@@ -985,53 +967,47 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnPlayerRemovedFromMatchmakerGameMessage(PlayerRemovedFromMatchmakerGame message)
 	{
 		CurrentState = State.AtLobby;
-		if (_handler != null)
-		{
-			_handler.OnRemovedFromMatchmakerGame(message.DisconnectType);
-		}
+		_handler?.OnRemovedFromMatchmakerGame(message.DisconnectType);
 	}
 
 	private void OnPlayerRemovedFromCustomGame(PlayerRemovedFromCustomGame message)
 	{
 		CurrentState = State.AtLobby;
-		if (_handler != null)
-		{
-			_handler.OnRemovedFromCustomGame(message.DisconnectType);
-		}
+		_handler?.OnRemovedFromCustomGame(message.DisconnectType);
 	}
 
 	private void OnSystemMessage(SystemMessage message)
 	{
-		_handler.OnSystemMessageReceived(message.GetDescription().ToString());
+		_handler?.OnSystemMessageReceived(message.GetDescription().ToString());
 	}
 
 	private void OnAdminMessage(AdminMessage message)
 	{
-		_handler.OnAdminMessageReceived(message.Message);
+		_handler?.OnAdminMessageReceived(message.Message);
 	}
 
 	private void OnInvitationToPartyMessage(InvitationToPartyMessage message)
 	{
 		IsPartyInvitationPopupActive = true;
-		_handler.OnPartyInvitationReceived(message.InviterPlayerName, message.InviterPlayerId);
+		_handler?.OnPartyInvitationReceived(message.InviterPlayerName, message.InviterPlayerId);
 	}
 
 	private void OnPartyInvitationInvalidMessage(PartyInvitationInvalidMessage message)
 	{
 		IsPartyInvitationPopupActive = false;
-		_handler.OnPartyInvitationInvalidated();
+		_handler?.OnPartyInvitationInvalidated();
 	}
 
 	private void OnRequestJoinPartyMessage(RequestJoinPartyMessage message)
 	{
 		IsPartyJoinRequestPopupActive = true;
-		_handler.OnPartyJoinRequestReceived(message.PlayerId, message.ViaPlayerId, message.ViaPlayerName);
+		_handler?.OnPartyJoinRequestReceived(message.PlayerId, message.ViaPlayerId, message.ViaPlayerName);
 	}
 
 	private void OnPlayerInvitedToPartyMessage(PlayerInvitedToPartyMessage message)
 	{
 		PlayersInParty.Add(new PartyPlayerInLobbyClient(message.PlayerId, message.PlayerName));
-		_handler.OnPlayerInvitedToParty(message.PlayerId);
+		_handler?.OnPlayerInvitedToParty(message.PlayerId);
 	}
 
 	private void OnPlayerAddedToPartyMessage(PlayersAddedToPartyMessage message)
@@ -1061,7 +1037,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			PlayersInParty.Add(new PartyPlayerInLobbyClient(playerId2, name));
 		}
-		_handler.OnPlayersAddedToParty(message.Players, message.InvitedPlayers);
+		_handler?.OnPlayersAddedToParty(message.Players, message.InvitedPlayers);
 	}
 
 	private void OnPlayerRemovedFromPartyMessage(PlayerRemovedFromPartyMessage message)
@@ -1074,7 +1050,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			PlayersInParty.RemoveAll((PartyPlayerInLobbyClient partyPlayer) => partyPlayer.PlayerId == message.PlayerId);
 		}
-		_handler.OnPlayerRemovedFromParty(message.PlayerId, message.Reason);
+		_handler?.OnPlayerRemovedFromParty(message.PlayerId, message.Reason);
 	}
 
 	private void OnPlayerAssignedPartyLeaderMessage(PlayerAssignedPartyLeaderMessage message)
@@ -1089,7 +1065,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			KickPlayerFromParty(PlayerID);
 		}
-		_handler.OnPlayerAssignedPartyLeader(message.PartyLeaderId);
+		_handler?.OnPlayerAssignedPartyLeader(message.PartyLeaderId);
 	}
 
 	private void OnPlayerSuggestedToPartyMessage(PlayerSuggestedToPartyMessage message)
@@ -1100,10 +1076,7 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnUpdatePlayerDataMessage(UpdatePlayerDataMessage updatePlayerDataMessage)
 	{
 		PlayerData = updatePlayerDataMessage.PlayerData;
-		if (_handler != null)
-		{
-			_handler.OnPlayerDataReceived(PlayerData);
-		}
+		_handler?.OnPlayerDataReceived(PlayerData);
 	}
 
 	private void OnServerStatusMessage(ServerStatusMessage serverStatusMessage)
@@ -1125,10 +1098,7 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		_friendListTimer.Restart();
 		FriendInfos = friendListMessage.Friends;
-		if (_handler != null)
-		{
-			_handler.OnFriendListReceived(friendListMessage.Friends);
-		}
+		_handler?.OnFriendListReceived(friendListMessage.Friends);
 	}
 
 	private void OnMatchmakerDisabledMessage(MatchmakerDisabledMessage matchmakerDisabledMessage)
@@ -1145,41 +1115,29 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnClanCreationRequestMessage(ClanCreationRequestMessage clanCreationRequestMessage)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClanInvitationReceived(clanCreationRequestMessage.ClanName, clanCreationRequestMessage.ClanTag, isCreation: true);
-		}
+		_handler?.OnClanInvitationReceived(clanCreationRequestMessage.ClanName, clanCreationRequestMessage.ClanTag, isCreation: true);
 	}
 
 	private void OnClanCreationRequestAnsweredMessage(ClanCreationRequestAnsweredMessage clanCreationRequestAnsweredMessage)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClanInvitationAnswered(clanCreationRequestAnsweredMessage.PlayerId, clanCreationRequestAnsweredMessage.ClanCreationAnswer);
-		}
+		_handler?.OnClanInvitationAnswered(clanCreationRequestAnsweredMessage.PlayerId, clanCreationRequestAnsweredMessage.ClanCreationAnswer);
 	}
 
 	private void OnClanCreationSuccessfulMessage(ClanCreationSuccessfulMessage clanCreationSuccessfulMessage)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClanCreationSuccessful();
-		}
+		_handler?.OnClanCreationSuccessful();
 	}
 
 	private void OnClanCreationFailedMessage(ClanCreationFailedMessage clanCreationFailedMessage)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClanCreationFailed();
-		}
+		_handler?.OnClanCreationFailed();
 	}
 
 	private void OnCreateClanAnswerMessage(CreateClanAnswerMessage createClanAnswerMessage)
 	{
 		if (createClanAnswerMessage.Successful)
 		{
-			_handler.OnClanCreationStarted();
+			_handler?.OnClanCreationStarted();
 		}
 	}
 
@@ -1189,10 +1147,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnRecentPlayerStatusesMessage(RecentPlayerStatusesMessage message)
 	{
-		if (_handler != null)
-		{
-			_handler.OnRecentPlayerStatusesReceived(message.Friends);
-		}
+		_handler?.OnRecentPlayerStatusesReceived(message.Friends);
 	}
 
 	public void FleeBattle()
@@ -1234,10 +1189,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnInvitationToClanMessage(InvitationToClanMessage invitationToClanMessage)
 	{
-		if (_handler != null)
-		{
-			_handler.OnClanInvitationReceived(invitationToClanMessage.ClanName, invitationToClanMessage.ClanTag, isCreation: false);
-		}
+		_handler?.OnClanInvitationReceived(invitationToClanMessage.ClanName, invitationToClanMessage.ClanTag, isCreation: false);
 	}
 
 	public void RejoinBattle()
@@ -1259,20 +1211,20 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		if (createPremadeGameAnswerMessage.Successful)
 		{
-			_handler.OnPremadeGameCreated();
+			_handler?.OnPremadeGameCreated();
 		}
 	}
 
 	private void OnJoinPremadeGameRequestMessage(JoinPremadeGameRequestMessage joinPremadeGameRequestMessage)
 	{
-		_handler.OnJoinPremadeGameRequested(joinPremadeGameRequestMessage.ClanName, joinPremadeGameRequestMessage.Sigil, joinPremadeGameRequestMessage.ChallengerPartyId, joinPremadeGameRequestMessage.ChallengerPlayers, joinPremadeGameRequestMessage.ChallengerPartyLeaderId, joinPremadeGameRequestMessage.PremadeGameType);
+		_handler?.OnJoinPremadeGameRequested(joinPremadeGameRequestMessage.ClanName, joinPremadeGameRequestMessage.Sigil, joinPremadeGameRequestMessage.ChallengerPartyId, joinPremadeGameRequestMessage.ChallengerPlayers, joinPremadeGameRequestMessage.ChallengerPartyLeaderId, joinPremadeGameRequestMessage.PremadeGameType);
 	}
 
 	private void OnJoinPremadeGameRequestResultMessage(JoinPremadeGameRequestResultMessage joinPremadeGameRequestResultMessage)
 	{
 		if (joinPremadeGameRequestResultMessage.Successful)
 		{
-			_handler.OnJoinPremadeGameRequestSuccessful();
+			_handler?.OnJoinPremadeGameRequestSuccessful();
 			CurrentState = State.WaitingToJoinPremadeGame;
 		}
 	}
@@ -1285,12 +1237,12 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnClanGameCreationCancelledMessage(ClanGameCreationCancelledMessage clanGameCreationCancelledMessage)
 	{
 		CurrentState = State.AtLobby;
-		_handler.OnPremadeGameCreationCancelled();
+		_handler?.OnPremadeGameCreationCancelled();
 	}
 
 	private void OnPremadeGameEligibilityStatusMessage(PremadeGameEligibilityStatusMessage premadeGameEligibilityStatusMessage)
 	{
-		_handler.OnPremadeGameEligibilityStatusReceived(premadeGameEligibilityStatusMessage.EligibleGameTypes.Length != 0);
+		_handler?.OnPremadeGameEligibilityStatusReceived(premadeGameEligibilityStatusMessage.EligibleGameTypes.Length != 0);
 		IsEligibleToCreatePremadeGame = premadeGameEligibilityStatusMessage.EligibleGameTypes.Length != 0;
 	}
 
@@ -1302,7 +1254,7 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnCustomBattleOverMessage(CustomBattleOverMessage message)
 	{
 		CurrentState = State.AtLobby;
-		_handler.OnMatchmakerGameOver(message.OldExperience, message.NewExperience, new List<string>(), message.GoldGain, null, null, BattleCancelReason.None);
+		_handler?.OnMatchmakerGameOver(message.OldExperience, message.NewExperience, new List<string>(), message.GoldGain, null, null, BattleCancelReason.None);
 	}
 
 	public void AcceptClanInvitation()
@@ -1328,7 +1280,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnRejoinBattleRequestAnswerMessage(RejoinBattleRequestAnswerMessage rejoinBattleRequestAnswerMessage)
 	{
-		_handler.OnRejoinBattleRequestAnswered(rejoinBattleRequestAnswerMessage.IsSuccessful);
+		_handler?.OnRejoinBattleRequestAnswered(rejoinBattleRequestAnswerMessage.IsSuccessful);
 		if (rejoinBattleRequestAnswerMessage.IsSuccessful && rejoinBattleRequestAnswerMessage.IsRejoinAccepted)
 		{
 			CurrentState = State.SearchingBattle;
@@ -1342,7 +1294,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnPendingBattleRejoinMessage(PendingBattleRejoinMessage pendingBattleRejoinMessage)
 	{
-		_handler.OnPendingRejoin();
+		_handler?.OnPendingRejoin();
 	}
 
 	private void OnSigilChangeAnswerMessage(SigilChangeAnswerMessage message)
@@ -1365,7 +1317,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	private void OnLobbyNotificationsMessage(LobbyNotificationsMessage message)
 	{
-		_handler.OnNotificationsReceived(message.Notifications);
+		_handler?.OnNotificationsReceived(message.Notifications);
 	}
 
 	public void KickFromClan(PlayerId playerId)
@@ -1438,10 +1390,7 @@ public class LobbyClient : Client<LobbyClient>
 			}
 			ClanInfo = clanHomeInfo.ClanInfo;
 		}
-		if (_handler != null)
-		{
-			_handler.OnClanInfoChanged();
-		}
+		_handler?.OnClanInfoChanged();
 	}
 
 	public async Task<ClanLeaderboardInfo> GetClanLeaderboardInfo()
@@ -1469,10 +1418,7 @@ public class LobbyClient : Client<LobbyClient>
 		if (getPremadeGameListResult != null)
 		{
 			AvailablePremadeGames = getPremadeGameListResult.GameList;
-			if (_handler != null)
-			{
-				_handler.OnPremadeGameListReceived();
-			}
+			_handler?.OnPremadeGameListReceived();
 			return getPremadeGameListResult.GameList;
 		}
 		return null;
@@ -1608,10 +1554,7 @@ public class LobbyClient : Client<LobbyClient>
 	public async void EndCustomGame()
 	{
 		await CallFunction<EndHostingCustomGameResult>(new EndHostingCustomGameMessage());
-		if (_handler != null)
-		{
-			_handler.OnCustomGameEnd();
-		}
+		_handler?.OnCustomGameEnd();
 		CurrentState = State.AtLobby;
 	}
 
@@ -1625,10 +1568,7 @@ public class LobbyClient : Client<LobbyClient>
 		if (obj.Success)
 		{
 			CurrentState = State.HostingCustomGame;
-			if (_handler != null)
-			{
-				_handler.OnRegisterCustomGameServerResponse();
-			}
+			_handler?.OnRegisterCustomGameServerResponse();
 		}
 		else
 		{
@@ -2014,9 +1954,15 @@ public class LobbyClient : Client<LobbyClient>
 	{
 	}
 
-	public async Task<bool> SendPSPlayerJoinedToPlayerSessionMessage(ulong inviterAccountId)
+	public async Task<bool> SendPSPlayerJoinedToPlayerSessionMessage(ulong inviterPlayerId)
 	{
-		PSPlayerJoinedToPlayerSessionMessage message = new PSPlayerJoinedToPlayerSessionMessage(inviterAccountId);
+		PSPlayerJoinedToPlayerSessionMessage message = new PSPlayerJoinedToPlayerSessionMessage(inviterPlayerId);
+		return (await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Successful;
+	}
+
+	public async Task<bool> SendPlatformPlayerJoinedToPlayerSessionMessage(PlayerId inviterPlayerId)
+	{
+		PlatformPlayerJoinedToPlayerSessionMessage message = new PlatformPlayerJoinedToPlayerSessionMessage(inviterPlayerId);
 		return (await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Successful;
 	}
 

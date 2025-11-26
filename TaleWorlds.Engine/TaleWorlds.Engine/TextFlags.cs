@@ -1,10 +1,13 @@
 using System;
+using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
 [Flags]
+[EngineStruct("rglText_flags", false, null, FirstCharacterUppercase = false)]
 public enum TextFlags
 {
+	RglTfNone = 0,
 	RglTfHAlignLeft = 1,
 	RglTfHAlignRight = 2,
 	RglTfHAlignCenter = 3,

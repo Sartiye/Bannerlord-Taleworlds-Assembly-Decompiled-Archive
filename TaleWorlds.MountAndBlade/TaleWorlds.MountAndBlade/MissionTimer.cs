@@ -54,6 +54,21 @@ public class MissionTimer
 		return num;
 	}
 
+	public void Reset()
+	{
+		_startTime = MissionTime.Now;
+	}
+
+	public void Set(float timeInSeconds)
+	{
+		_startTime = new MissionTime(Mission.Current.MissionTimeTracker.NumberOfTicks + (long)(timeInSeconds * 10000000f));
+	}
+
+	public void SetDuration(float duration)
+	{
+		_duration = duration;
+	}
+
 	public static MissionTimer CreateSynchedTimerClient(float startTimeInSeconds, float duration)
 	{
 		return new MissionTimer

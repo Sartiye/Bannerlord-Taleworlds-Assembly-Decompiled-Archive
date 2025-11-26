@@ -30,6 +30,10 @@ public abstract class SaveableTypeDefiner
 	{
 	}
 
+	protected internal virtual void DefineConflictResolvers()
+	{
+	}
+
 	protected internal virtual void DefineStructTypes()
 	{
 	}
@@ -72,6 +76,11 @@ public abstract class SaveableTypeDefiner
 	{
 		BasicTypeDefinition basicTypeDefinition = new BasicTypeDefinition(type, _saveBaseId + saveId, serializer);
 		_definitionContext.AddBasicTypeDefinition(basicTypeDefinition);
+	}
+
+	protected void AddConflictResolver(int saveId, IConflictResolver conflictResolver)
+	{
+		_definitionContext.AddConflictResolver(new TypeSaveId(_saveBaseId + saveId), conflictResolver);
 	}
 
 	protected void AddClassDefinition(Type type, int saveId, IObjectResolver resolver = null)

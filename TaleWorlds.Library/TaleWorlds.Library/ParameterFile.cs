@@ -42,7 +42,7 @@ public class ParameterFile
 			_failedAttemptsCount++;
 			if (_failedAttemptsCount >= 100)
 			{
-				Debug.FailedAssert("Could not load parameters file", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\ParameterFile.cs", "Refresh", 47);
+				Debug.FailedAssert("Could not load parameters file", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\ParameterFile.cs", "Refresh", 47);
 			}
 			return;
 		}

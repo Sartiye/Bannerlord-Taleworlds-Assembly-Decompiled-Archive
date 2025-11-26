@@ -2,6 +2,7 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.EndOfRound;
@@ -299,8 +300,8 @@ public class MultiplayerEndOfRoundVM : ViewModel
 		}
 		else
 		{
-			_roundEndReasonAllyTeamGameModeSpecificEndedTextObject = TextObject.Empty;
-			_roundEndReasonEnemyTeamGameModeSpecificEndedTextObject = TextObject.Empty;
+			_roundEndReasonAllyTeamGameModeSpecificEndedTextObject = TextObject.GetEmpty();
+			_roundEndReasonEnemyTeamGameModeSpecificEndedTextObject = TextObject.GetEmpty();
 		}
 		AttackerSide = new MultiplayerEndOfRoundSideVM();
 		DefenderSide = new MultiplayerEndOfRoundSideVM();
@@ -317,39 +318,32 @@ public class MultiplayerEndOfRoundVM : ViewModel
 
 	public void Refresh()
 	{
-		BattleSideEnum allyBattleSide = BattleSideEnum.None;
+		BattleSideEnum allyBattleSideEnum = BattleSideEnum.None;
 		BattleSideEnum battleSideEnum = BattleSideEnum.None;
 		MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
 		if (missionPeer != null && missionPeer.Team != null)
 		{
-			allyBattleSide = missionPeer.Team.Side;
+			allyBattleSideEnum = missionPeer.Team.Side;
+			battleSideEnum = ((allyBattleSideEnum != BattleSideEnum.Attacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 		}
-		battleSideEnum = ((allyBattleSide != BattleSideEnum.Attacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
-		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		bool num = allyBattleSideEnum == BattleSideEnum.Attacker;
 		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Attacker);
 		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide2 = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Defender);
-		bool isWinner = _multiplayerRoundComponent.RoundWinner == BattleSideEnum.Attacker;
-		bool isWinner2 = _multiplayerRoundComponent.RoundWinner == BattleSideEnum.Defender;
-		Team team = missionPeer.Team;
-		if (team != null && team.Side == BattleSideEnum.Attacker)
-		{
-			AttackerMVPTitleText = GetMVPTitleText(@object);
-			DefenderMVPTitleText = GetMVPTitleText(object2);
-			AttackerSide.SetData(@object, missionScoreboardSide.SideScore, isWinner, useSecondary: false);
-			DefenderSide.SetData(object2, missionScoreboardSide2.SideScore, isWinner2, @object == object2);
-		}
-		else
-		{
-			DefenderMVPTitleText = GetMVPTitleText(@object);
-			AttackerMVPTitleText = GetMVPTitleText(object2);
-			DefenderSide.SetData(@object, missionScoreboardSide.SideScore, isWinner, @object == object2);
-			AttackerSide.SetData(object2, missionScoreboardSide2.SideScore, isWinner2, useSecondary: false);
-		}
-		if (_scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == allyBattleSide) != null && _multiplayerRoundComponent != null)
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide3 = (num ? missionScoreboardSide : missionScoreboardSide2);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide4 = (num ? missionScoreboardSide2 : missionScoreboardSide);
+		BasicCultureObject culture = missionScoreboardSide3.GetCulture();
+		BasicCultureObject culture2 = missionScoreboardSide4.GetCulture();
+		bool isWinner = _multiplayerRoundComponent.RoundWinner == allyBattleSideEnum;
+		bool isWinner2 = _multiplayerRoundComponent.RoundWinner == battleSideEnum;
+		AttackerMVPTitleText = GetMVPTitleText(culture);
+		DefenderMVPTitleText = GetMVPTitleText(culture2);
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(culture, culture2);
+		AttackerSide.SetData(culture, missionScoreboardSide3.SideScore, isWinner, multiplayerBattleColors.AttackerColors);
+		DefenderSide.SetData(culture2, missionScoreboardSide4.SideScore, isWinner2, multiplayerBattleColors.DefenderColors);
+		if (_scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == allyBattleSideEnum) != null && _multiplayerRoundComponent != null)
 		{
 			bool flag = false;
-			if (_multiplayerRoundComponent.RoundWinner == allyBattleSide)
+			if (_multiplayerRoundComponent.RoundWinner == allyBattleSideEnum)
 			{
 				IsRoundWinner = true;
 				Title = _victoryText;
@@ -426,7 +420,7 @@ public class MultiplayerEndOfRoundVM : ViewModel
 		{
 			return new TextObject("{=wwbIcqsq}Conqueror").ToString();
 		}
-		Debug.FailedAssert("Invalid Culture ID for MVP Title", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\EndOfRound\\MultiplayerEndOfRoundVM.cs", "GetMVPTitleText", 209);
+		Debug.FailedAssert("Invalid Culture ID for MVP Title", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\EndOfRound\\MultiplayerEndOfRoundVM.cs", "GetMVPTitleText", 205);
 		return string.Empty;
 	}
 

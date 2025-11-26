@@ -634,7 +634,7 @@ public class DecisionOptionVM : ViewModel
 			int influenceCostOfOutcome = _kingdomDecisionMaker.GetInfluenceCostOfOutcome(Option, Clan.PlayerClan, Supporter.SupportWeights.Choose);
 			CanBeChosen = (float)influenceCostOfOutcome <= Clan.PlayerClan.Influence || influenceCostOfOutcome == 0;
 		}
-		OptionHint.HintText = (CanBeChosen ? TextObject.Empty : new TextObject("{=Xmw93W6a}Not Enough Influence"));
+		OptionHint.HintText = (CanBeChosen ? TextObject.GetEmpty() : new TextObject("{=Xmw93W6a}Not Enough Influence"));
 	}
 
 	private void ExecuteSelection()

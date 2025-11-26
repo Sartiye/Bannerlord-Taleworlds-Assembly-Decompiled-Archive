@@ -118,13 +118,13 @@ public class ItemCollectionElementViewModel : ViewModel
 		}
 	}
 
-	public void FillFrom(EquipmentElement item, string bannerCode = "")
+	public void FillFrom(EquipmentElement item, Banner banner = null)
 	{
 		StringId = ((item.Item != null) ? item.Item.StringId : "");
 		Ammo = ((!item.IsEmpty && item.Item.PrimaryWeapon != null && item.Item.PrimaryWeapon.IsConsumable) ? item.GetModifiedStackCountForUsage(0) : 0);
 		AverageUnitCost = item.ItemValue;
 		ItemModifierId = ((item.ItemModifier != null) ? item.ItemModifier.StringId : "");
-		BannerCode = bannerCode;
+		BannerCode = ((banner != null) ? banner.BannerCode : "");
 	}
 
 	public override void OnFinalize()

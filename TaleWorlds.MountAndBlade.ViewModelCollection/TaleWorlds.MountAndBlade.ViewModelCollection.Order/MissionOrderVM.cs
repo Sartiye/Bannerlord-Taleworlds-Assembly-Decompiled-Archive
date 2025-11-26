@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using TaleWorlds.Core;
@@ -9,13 +8,14 @@ using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order.Visual;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
 public class MissionOrderVM : ViewModel
 {
-	public enum CursorState
+	public enum CursorStates
 	{
 		Move,
 		Face,
@@ -28,62 +28,71 @@ public class MissionOrderVM : ViewModel
 		SiegeMachines
 	}
 
-	public enum ActivationType
+	public enum TroopSelectionDirection
 	{
-		NotActive,
-		Hold,
-		Click
+		Left,
+		Top,
+		Right,
+		Bottom
+	}
+
+	public struct ClassConfiguration
+	{
+		public int FormationIndex;
+
+		public DeploymentFormationClass FormationClass;
+
+		public ClassConfiguration(int formationIndex, DeploymentFormationClass formationClass)
+		{
+			FormationIndex = formationIndex;
+			FormationClass = formationClass;
+		}
+	}
+
+	public struct FormationConfiguration
+	{
+		public int FormationIndex;
+
+		public List<FormationFilterType> Filters;
+
+		public FormationConfiguration(int formationIndex, List<FormationFilterType> filters)
+		{
+			FormationIndex = formationIndex;
+			Filters = filters;
+		}
 	}
 
 	public InputRestrictions InputRestrictions;
 
-	private ActivationType _currentActivationType;
-
 	private Timer _updateTroopsTimer;
 
-	internal readonly Dictionary<OrderSetType, OrderSetVM> OrderSetsWithOrdersByType;
-
-	private readonly Camera _deploymentCamera;
+	private MissionOrderCallbacks _callbacks;
 
 	private bool _isTroopPlacingActive;
 
-	private OrderSetType _lastSelectedOrderSetType;
-
-	private bool _isPressedViewOrders;
-
-	private readonly OnToggleActivateOrderStateDelegate _onActivateToggleOrder;
-
-	private readonly OnToggleActivateOrderStateDelegate _onDeactivateToggleOrder;
-
-	private readonly GetOrderFlagPositionDelegate _getOrderFlagPosition;
-
-	private readonly ToggleOrderPositionVisibilityDelegate _toggleOrderPositionVisibility;
-
-	private readonly OnRefreshVisualsDelegate _onRefreshVisuals;
-
-	private readonly OnToggleActivateOrderStateDelegate _onTransferTroopsFinishedDelegate;
-
-	private readonly OnBeforeOrderDelegate _onBeforeOrderDelegate;
-
-	private readonly Action<bool> _toggleMissionInputs;
-
-	private readonly List<DeploymentPoint> _deploymentPoints;
-
-	private readonly bool _isMultiplayer;
-
-	private OrderSetVM _movementSet;
+	private bool _isMultiplayer;
 
 	private MBReadOnlyList<Formation> _focusedFormationsCache;
-
-	private OrderSetVM _facingSet;
 
 	private int _delayValueForAIFormationModifications;
 
 	private readonly List<Formation> _modifiedAIFormations = new List<Formation>();
 
-	private List<(int, List<int>)> _filterData;
+	private SoundEvent _slowMotionSoundEvent;
+
+	private int _slowMotionSoundEventGlobalIndex;
+
+	private List<FormationConfiguration> _filterData;
+
+	private Dictionary<int, InputKeyItemVM> _orderKeys;
+
+	private InputKeyItemVM _returnKey;
+
+	private int _lastHighlightedFormationIndex;
 
 	private InputKeyItemVM _cancelInputKey;
+
+	private InputKeyItemVM _toggleCameraModeInputKey;
 
 	private MBBindingList<OrderSetVM> _orderSets;
 
@@ -95,6 +104,8 @@ public class MissionOrderVM : ViewModel
 
 	private int _activeTargetState;
 
+	private bool _hasAnyCascadingOrders;
+
 	private bool _isToggleOrderShown;
 
 	private bool _isTroopListShown;
@@ -105,17 +116,25 @@ public class MissionOrderVM : ViewModel
 
 	private bool _isAnyOrderSetActive;
 
+	private bool _canToggleCamera;
+
 	private string _returnText;
 
-	private Team Team => Mission.Current.PlayerTeam;
+	public CursorStates CursorState
+	{
+		get
+		{
+			if (SelectedOrderSet?.OrderIconId == "order_type_facing")
+			{
+				return CursorStates.Face;
+			}
+			return CursorStates.Move;
+		}
+	}
 
-	public OrderItemVM LastSelectedOrderItem { get; private set; }
+	public Team Team => Mission.Current.PlayerTeam;
 
-	public OrderController OrderController => Team.PlayerOrderController;
-
-	public bool IsMovementSubOrdersShown => _movementSet.ShowOrders;
-
-	public bool IsFacingSubOrdersShown => _facingSet?.ShowOrders ?? false;
+	public OrderController OrderController => Mission.PlayerTeam.PlayerOrderController;
 
 	public bool IsTroopPlacingActive
 	{
@@ -126,31 +145,17 @@ public class MissionOrderVM : ViewModel
 		set
 		{
 			_isTroopPlacingActive = value;
-			_toggleOrderPositionVisibility(!value);
+			_callbacks.SetSuspendTroopPlacer(!value);
 		}
 	}
-
-	public OrderSetType LastSelectedOrderSetType
-	{
-		get
-		{
-			return _lastSelectedOrderSetType;
-		}
-		set
-		{
-			if (value != _lastSelectedOrderSetType)
-			{
-				_lastSelectedOrderSetType = value;
-				IsAnyOrderSetActive = _lastSelectedOrderSetType != OrderSetType.None;
-			}
-		}
-	}
-
-	public OrderSetVM LastSelectedOrderSet => OrderSets.FirstOrDefault((OrderSetVM o) => o.OrderSetType == LastSelectedOrderSetType);
 
 	public bool PlayerHasAnyTroopUnderThem => Team.FormationsIncludingEmpty.Any((Formation f) => f.PlayerOwner == Agent.Main && f.CountOfUnits > 0);
 
 	private Mission Mission => Mission.Current;
+
+	public OrderSetVM SelectedOrderSet { get; private set; }
+
+	public bool DisplayedOrderMessageForLastOrder { get; private set; }
 
 	[DataSourceProperty]
 	public InputKeyItemVM CancelInputKey
@@ -165,6 +170,23 @@ public class MissionOrderVM : ViewModel
 			{
 				_cancelInputKey = value;
 				OnPropertyChangedWithValue(value, "CancelInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM ToggleCameraModeInputKey
+	{
+		get
+		{
+			return _toggleCameraModeInputKey;
+		}
+		set
+		{
+			if (value != _toggleCameraModeInputKey)
+			{
+				_toggleCameraModeInputKey = value;
+				OnPropertyChangedWithValue(value, "ToggleCameraModeInputKey");
 			}
 		}
 	}
@@ -229,19 +251,13 @@ public class MissionOrderVM : ViewModel
 		}
 		set
 		{
-			if (value == _activeTargetState)
+			if (value != _activeTargetState)
 			{
-				return;
+				_activeTargetState = value;
+				OnPropertyChangedWithValue(value, "ActiveTargetState");
+				IsTroopPlacingActive = value == 0;
+				_callbacks.RefreshVisuals();
 			}
-			_activeTargetState = value;
-			OnPropertyChangedWithValue(value, "ActiveTargetState");
-			IsTroopPlacingActive = value == 0;
-			foreach (OrderSetVM value2 in OrderSetsWithOrdersByType.Values)
-			{
-				value2.ShowOrders = false;
-				value2.TitleOrder.IsActive = value2.TitleOrder.SelectionState != 0;
-			}
-			_onRefreshVisuals();
 		}
 	}
 
@@ -260,6 +276,23 @@ public class MissionOrderVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool HasAnyCascadingOrders
+	{
+		get
+		{
+			return _hasAnyCascadingOrders;
+		}
+		set
+		{
+			if (value != _hasAnyCascadingOrders)
+			{
+				_hasAnyCascadingOrders = value;
+				OnPropertyChangedWithValue(value, "HasAnyCascadingOrders");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool IsToggleOrderShown
 	{
 		get
@@ -271,7 +304,6 @@ public class MissionOrderVM : ViewModel
 			if (value != _isToggleOrderShown)
 			{
 				_isToggleOrderShown = value;
-				OnOrderShownToggle();
 				OnPropertyChangedWithValue(value, "IsToggleOrderShown");
 			}
 		}
@@ -346,6 +378,23 @@ public class MissionOrderVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool CanToggleCamera
+	{
+		get
+		{
+			return _canToggleCamera;
+		}
+		set
+		{
+			if (value != _canToggleCamera)
+			{
+				_canToggleCamera = value;
+				OnPropertyChangedWithValue(value, "CanToggleCamera");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string ReturnText
 	{
 		get
@@ -362,103 +411,244 @@ public class MissionOrderVM : ViewModel
 		}
 	}
 
-	public MissionOrderVM(Camera deploymentCamera, List<DeploymentPoint> deploymentPoints, Action<bool> toggleMissionInputs, bool isDeployment, GetOrderFlagPositionDelegate getOrderFlagPosition, OnRefreshVisualsDelegate refreshVisuals, ToggleOrderPositionVisibilityDelegate setSuspendTroopPlacer, OnToggleActivateOrderStateDelegate onActivateToggleOrder, OnToggleActivateOrderStateDelegate onDeactivateToggleOrder, OnToggleActivateOrderStateDelegate onTransferTroopsFinishedDelegate, OnBeforeOrderDelegate onBeforeOrderDelegate, bool isMultiplayer)
+	public MissionOrderVM(OrderController orderController, bool isDeployment, bool isMultiplayer)
 	{
-		_deploymentCamera = deploymentCamera;
-		_toggleMissionInputs = toggleMissionInputs;
-		_deploymentPoints = deploymentPoints;
-		_getOrderFlagPosition = getOrderFlagPosition;
-		_onRefreshVisuals = refreshVisuals;
-		_toggleOrderPositionVisibility = setSuspendTroopPlacer;
-		_onActivateToggleOrder = onActivateToggleOrder;
-		_onDeactivateToggleOrder = onDeactivateToggleOrder;
-		_onTransferTroopsFinishedDelegate = onTransferTroopsFinishedDelegate;
-		_onBeforeOrderDelegate = onBeforeOrderDelegate;
 		_isMultiplayer = isMultiplayer;
 		IsDeployment = isDeployment;
-		OrderSetsWithOrdersByType = new Dictionary<OrderSetType, OrderSetVM>();
+		_orderKeys = new Dictionary<int, InputKeyItemVM>();
 		OrderSets = new MBBindingList<OrderSetVM>();
-		DeploymentController = new MissionOrderDeploymentControllerVM(_deploymentPoints, this, _deploymentCamera, _toggleMissionInputs, _onRefreshVisuals);
-		TroopController = new MissionOrderTroopControllerVM(this, _isMultiplayer, IsDeployment, OnTransferFinished);
-		PopulateOrderSets();
+		DeploymentController = new MissionOrderDeploymentControllerVM(this);
+		TroopController = CreateTroopController(OrderController);
 		Team.OnFormationAIActiveBehaviorChanged += TeamOnFormationAIActiveBehaviorChanged;
-		OrderTroopItemVM.OnSelectionChange += OnTroopItemSelectionStateChanged;
 		RefreshValues();
 		Mission.OnMainAgentChanged += MissionOnMainAgentChanged;
 		UpdateCanUseShortcuts(_isMultiplayer);
+		_slowMotionSoundEventGlobalIndex = SoundManager.GetEventGlobalIndex("event:/ui/mission/slow_motion");
+		RegisterEvents();
+	}
+
+	protected virtual MissionOrderTroopControllerVM CreateTroopController(OrderController orderController)
+	{
+		return new MissionOrderTroopControllerVM(this, IsDeployment, OnTransferFinished);
+	}
+
+	public void SetDeploymentParemeters(Camera deploymentCamera, List<DeploymentPoint> deploymentPoints)
+	{
+		DeploymentController.SetMissionParameters(deploymentCamera, deploymentPoints);
+	}
+
+	public void SetCallbacks(MissionOrderCallbacks callbacks)
+	{
+		_callbacks = callbacks;
+		DeploymentController.SetCallbacks(callbacks);
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
 		ReturnText = new TextObject("{=EmVbbIUc}Return").ToString();
-		foreach (OrderSetVM value in OrderSetsWithOrdersByType.Values)
+		OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM o)
 		{
-			value.RefreshValues();
-		}
+			o.RefreshValues();
+		});
+		DeploymentController.RefreshValues();
+		TroopController.RefreshValues();
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
-		OrderTroopItemVM.OnSelectionChange -= OnTroopItemSelectionStateChanged;
 		Mission.OnMainAgentChanged -= MissionOnMainAgentChanged;
+		OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM o)
+		{
+			o.OnFinalize();
+		});
 		DeploymentController.OnFinalize();
 		TroopController.OnFinalize();
-		_deploymentPoints.Clear();
+		for (int i = 0; i < _orderKeys.Count; i++)
+		{
+			_orderKeys[i].OnFinalize();
+		}
 		foreach (OrderSetVM orderSet in _orderSets)
 		{
 			orderSet.OnFinalize();
 		}
+		if (_slowMotionSoundEvent != null)
+		{
+			_slowMotionSoundEvent.Release();
+			_slowMotionSoundEvent = null;
+		}
 		InputRestrictions = null;
+		UnregisterEvents();
+	}
+
+	private void RegisterEvents()
+	{
+		OrderTroopItemVM.OnSelectionChange += OnTroopItemSelectionStateChanged;
+		OrderSetVM.OnSelectionStateChanged += OnOrderSetSelectionStateChanged;
+		OrderItemVM.OnExecuteOrder += OnOrderExecuted;
+		TransferTroopsVisualOrder.OnTransferStarted += OnTransferStarted;
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Combine(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveChanged));
+	}
+
+	private void UnregisterEvents()
+	{
+		OrderTroopItemVM.OnSelectionChange -= OnTroopItemSelectionStateChanged;
+		OrderSetVM.OnSelectionStateChanged -= OnOrderSetSelectionStateChanged;
+		OrderItemVM.OnExecuteOrder -= OnOrderExecuted;
+		TransferTroopsVisualOrder.OnTransferStarted -= OnTransferStarted;
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveChanged));
+	}
+
+	private void OnGamepadActiveChanged()
+	{
+		if (IsToggleOrderShown)
+		{
+			TryCloseToggleOrder();
+		}
+	}
+
+	private void OnOrderSetSelectionStateChanged(OrderSetVM orderSet, bool isSelected)
+	{
+		if (SelectedOrderSet == orderSet)
+		{
+			OrderSetVM selectedOrderSet = SelectedOrderSet;
+			if (selectedOrderSet != null && selectedOrderSet.IsSelected == isSelected)
+			{
+				return;
+			}
+		}
+		if (SelectedOrderSet != null)
+		{
+			SelectedOrderSet.IsSelected = false;
+			SelectedOrderSet = null;
+		}
+		if (orderSet != null && isSelected)
+		{
+			SelectedOrderSet = orderSet;
+			SelectedOrderSet.IsSelected = true;
+		}
+		IsAnyOrderSetActive = SelectedOrderSet != null;
+		UpdateOrderShortcuts();
+	}
+
+	public void OnOrderExecuted(OrderItemVM orderItem)
+	{
+		TryCloseToggleOrder();
+		if (IsToggleOrderShown)
+		{
+			OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM o)
+			{
+				o.OnOrderExecuted(orderItem);
+			});
+		}
+		List<TextObject> list = new List<TextObject>();
+		if (ActiveTargetState == 1 && orderItem.Order.StringId != "order_toggle_facing")
+		{
+			for (int i = 0; i < DeploymentController.SiegeMachineList.Count; i++)
+			{
+				OrderSiegeMachineVM orderSiegeMachineVM = DeploymentController.SiegeMachineList[i];
+				if (orderSiegeMachineVM.IsSelected)
+				{
+					list.Add(GameTexts.FindText("str_siege_engine", orderSiegeMachineVM.MachineClass));
+				}
+			}
+		}
+		else if (!(orderItem.Order is ReturnVisualOrder))
+		{
+			foreach (OrderTroopItemVM item in TroopController.TroopList.Where((OrderTroopItemVM item) => item.IsSelected))
+			{
+				list.Add(item.GetVisibleNameOfFormationForMessage());
+			}
+		}
+		if (!list.IsEmpty() && !DisplayedOrderMessageForLastOrder)
+		{
+			orderItem.RefreshState();
+			TextObject textObject = new TextObject("{=ApD0xQXT}{STR1}: {STR2}");
+			textObject.SetTextVariable("STR1", GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: false));
+			textObject.SetTextVariable("STR2", orderItem.Name);
+			InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
+			DisplayedOrderMessageForLastOrder = true;
+		}
 	}
 
 	private void PopulateOrderSets()
 	{
-		_movementSet = new OrderSetVM(OrderSetType.Movement, OnOrder, _isMultiplayer);
-		OrderSetVM orderSetVM = new OrderSetVM(OrderSetType.Form, OnOrder, _isMultiplayer);
-		bool num = BannerlordConfig.OrderLayoutType == 1;
-		OrderSets.Add(_movementSet);
-		OrderSetsWithOrdersByType.Add(OrderSetType.Movement, _movementSet);
-		if (num)
+		OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM o)
 		{
-			_facingSet = new OrderSetVM(OrderSetType.Facing, OnOrder, _isMultiplayer);
-			OrderSets.Add(_facingSet);
+			o.OnFinalize();
+		});
+		OrderSets.Clear();
+		MBReadOnlyList<VisualOrderSet> orders = VisualOrderFactory.GetOrders();
+		HasAnyCascadingOrders = false;
+		for (int i = 0; i < orders.Count; i++)
+		{
+			OrderSetVM orderSetVM = new OrderSetVM(OrderController, orders[i]);
 			OrderSets.Add(orderSetVM);
-			OrderSetsWithOrdersByType.Add(OrderSetType.Facing, _facingSet);
-			OrderSetsWithOrdersByType.Add(OrderSetType.Form, orderSetVM);
-		}
-		else
-		{
-			OrderSetVM orderSetVM2 = new OrderSetVM(OrderSetType.Toggle, OnOrder, _isMultiplayer);
-			OrderSets.Add(orderSetVM);
-			OrderSets.Add(orderSetVM2);
-			OrderSetsWithOrdersByType.Add(OrderSetType.Form, orderSetVM);
-			OrderSetsWithOrdersByType.Add(OrderSetType.Toggle, orderSetVM2);
-		}
-		OrderSetVM item = new OrderSetVM(OrderSubType.ToggleFire, OrderSets.Count, OnOrder, _isMultiplayer);
-		OrderSets.Add(item);
-		OrderSetVM item2 = new OrderSetVM(OrderSubType.ToggleMount, OrderSets.Count, OnOrder, _isMultiplayer);
-		OrderSets.Add(item2);
-		OrderSetVM item3 = new OrderSetVM(OrderSubType.ToggleAI, OrderSets.Count, OnOrder, _isMultiplayer);
-		OrderSets.Add(item3);
-		if (num)
-		{
-			if (!_isMultiplayer)
+			if (!orderSetVM.HasSingleOrder)
 			{
-				OrderSetVM item4 = new OrderSetVM(OrderSubType.ToggleTransfer, OrderSets.Count, OnOrder, _isMultiplayer);
-				OrderSets.Add(item4);
+				HasAnyCascadingOrders = true;
+			}
+		}
+		UpdateOrderShortcuts();
+		if (_isMultiplayer)
+		{
+			UpdateCanUseShortcuts(value: true);
+		}
+	}
+
+	private void UpdateOrderShortcuts()
+	{
+		InputKeyItemVM inputKeyItemVM = InputKeyItemVM.CreateFromHotKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"), isConsoleOnly: false);
+		inputKeyItemVM.SetForcedVisibility(false);
+		if (SelectedOrderSet != null)
+		{
+			for (int i = 0; i < OrderSets.Count; i++)
+			{
+				OrderSetVM orderSetVM = OrderSets[i];
+				if (orderSetVM == SelectedOrderSet)
+				{
+					for (int j = 0; j < orderSetVM.Orders.Count; j++)
+					{
+						OrderItemVM orderItemVM = orderSetVM.Orders[j];
+						InputKeyItemVM value;
+						if (orderItemVM.Order is ReturnVisualOrder)
+						{
+							orderItemVM.SetShortcutKey(_returnKey);
+						}
+						else if (_orderKeys.TryGetValue(j, out value))
+						{
+							orderItemVM.SetShortcutKey(value);
+						}
+					}
+				}
+				else
+				{
+					for (int k = 0; k < orderSetVM.Orders.Count; k++)
+					{
+						orderSetVM.Orders[k].SetShortcutKey(inputKeyItemVM);
+					}
+				}
+				orderSetVM.SetShortcutKey(inputKeyItemVM);
 			}
 		}
 		else
 		{
-			OrderSetVM item5 = new OrderSetVM(OrderSubType.ActivationFaceDirection, OrderSets.Count, OnOrder, _isMultiplayer);
-			OrderSets.Add(item5);
-			OrderSetVM item6 = new OrderSetVM(OrderSubType.FormClose, OrderSets.Count, OnOrder, _isMultiplayer);
-			OrderSets.Add(item6);
-			OrderSetVM item7 = new OrderSetVM(OrderSubType.FormLine, OrderSets.Count, OnOrder, _isMultiplayer);
-			OrderSets.Add(item7);
+			for (int l = 0; l < OrderSets.Count; l++)
+			{
+				OrderSetVM orderSetVM2 = OrderSets[l];
+				InputKeyItemVM value2;
+				if (orderSetVM2.HasSingleOrder && orderSetVM2.Orders[0].Order is ReturnVisualOrder)
+				{
+					orderSetVM2.SetShortcutKey(_returnKey);
+				}
+				else if (_orderKeys.TryGetValue(l, out value2))
+				{
+					orderSetVM2.SetShortcutKey(value2);
+				}
+			}
 		}
+		inputKeyItemVM.OnFinalize();
 	}
 
 	private void TeamOnFormationAIActiveBehaviorChanged(Formation formation)
@@ -533,7 +723,7 @@ public class MissionOrderVM : ViewModel
 		if (dictionary.Count == 1)
 		{
 			MBTextManager.SetTextVariable("IS_PLURAL", 0);
-			MBTextManager.SetTextVariable("TROOP_NAMES_BEGIN", TextObject.Empty);
+			MBTextManager.SetTextVariable("TROOP_NAMES_BEGIN", TextObject.GetEmpty());
 			MBTextManager.SetTextVariable("TROOP_NAMES_END", dictionary.First().Value);
 		}
 		else
@@ -577,14 +767,12 @@ public class MissionOrderVM : ViewModel
 		}
 	}
 
-	public void OnOrderLayoutTypeChanged()
+	public virtual void OnOrderLayoutTypeChanged()
 	{
-		TroopController = new MissionOrderTroopControllerVM(this, _isMultiplayer, IsDeployment, OnTransferFinished);
+		TroopController = CreateTroopController(OrderController);
 		OrderSets.Clear();
-		OrderSetsWithOrdersByType.Clear();
-		PopulateOrderSets();
 		TroopController.UpdateTroops();
-		TroopController.TroopList.ApplyActionOnAllItems(delegate(OrderTroopItemVM x)
+		TroopController.TroopList.ForEach(delegate(OrderTroopItemVM x)
 		{
 			TroopController.SetTroopActiveOrders(x);
 		});
@@ -593,19 +781,39 @@ public class MissionOrderVM : ViewModel
 
 	public void OpenToggleOrder(bool fromHold, bool displayMessage = true)
 	{
-		if (!IsToggleOrderShown && CheckCanBeOpened(displayMessage))
+		if (IsToggleOrderShown)
 		{
-			Mission.Current.IsOrderMenuOpen = true;
-			_currentActivationType = (fromHold ? ActivationType.Hold : ActivationType.Click);
-			IsToggleOrderShown = true;
-			TroopController.IsTransferActive = false;
-			DeploymentController.ProcessSiegeMachines();
-			if (OrderController.SelectedFormations.IsEmpty())
-			{
-				TroopController.SelectAllFormations();
-			}
-			SetActiveOrders();
+			return;
 		}
+		if (OrderController.SelectedFormations.Count == 0)
+		{
+			OrderController.SelectAllFormations();
+		}
+		PopulateOrderSets();
+		if (!CheckCanBeOpened(displayMessage))
+		{
+			return;
+		}
+		Mission.Current.IsOrderMenuOpen = true;
+		IsToggleOrderShown = true;
+		TroopController.UpdateTroops();
+		TroopController.IsTransferActive = false;
+		DeploymentController.ProcessSiegeMachines();
+		if (OrderController.SelectedFormations.IsEmpty())
+		{
+			TroopController.SelectAllFormations();
+		}
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive && TroopController.TroopList.All((OrderTroopItemVM t) => !t.IsSelectionHighlightActive))
+		{
+			OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault();
+			if (orderTroopItemVM != null)
+			{
+				orderTroopItemVM.IsSelectionHighlightActive = true;
+			}
+		}
+		SetActiveOrders();
+		OnOrderShownToggle();
+		DisplayedOrderMessageForLastOrder = false;
 	}
 
 	private bool CheckCanBeOpened(bool displayMessage = false)
@@ -641,27 +849,24 @@ public class MissionOrderVM : ViewModel
 		return true;
 	}
 
-	public bool TryCloseToggleOrder(bool dontApplySelected = false)
+	public bool TryCloseToggleOrder(bool applySelectedOrders = false)
 	{
 		if (IsToggleOrderShown)
 		{
 			Mission.Current.IsOrderMenuOpen = false;
-			if (LastSelectedOrderItem != null && !dontApplySelected)
+			if (applySelectedOrders && SelectedOrderSet != null)
 			{
-				ApplySelectedOrder();
-			}
-			LastSelectedOrderSetType = OrderSetType.None;
-			LastSelectedOrderItem = null;
-			OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM s)
-			{
-				s.Orders.ApplyActionOnAllItems(delegate(OrderItemVM o)
+				OrderItemVM orderItemVM = SelectedOrderSet.Orders.FirstOrDefault((OrderItemVM o) => o.IsSelected);
+				if (orderItemVM != null && _callbacks.GetVisualOrderExecutionParameters != null)
 				{
-					o.IsSelected = false;
-				});
-			});
-			_ = _isDeployment;
+					VisualOrderExecutionParameters executionParameters = _callbacks.GetVisualOrderExecutionParameters();
+					orderItemVM.ExecuteAction(executionParameters);
+				}
+			}
+			SelectedOrderSet?.ExecuteDeSelect();
 			IsToggleOrderShown = false;
-			UpdateTitleOrdersKeyVisualVisibility();
+			DisplayedOrderMessageForLastOrder = false;
+			OnOrderShownToggle();
 			if (!IsDeployment)
 			{
 				InputRestrictions.ResetInputRestrictions();
@@ -671,10 +876,9 @@ public class MissionOrderVM : ViewModel
 		return false;
 	}
 
-	internal void SetActiveOrders()
+	public void SetActiveOrders()
 	{
-		bool flag = ActiveTargetState == 1;
-		if (flag)
+		if (ActiveTargetState == 1)
 		{
 			DeploymentController.SetCurrentActiveOrders();
 		}
@@ -682,421 +886,15 @@ public class MissionOrderVM : ViewModel
 		{
 			TroopController.SetCurrentActiveOrders();
 		}
-		List<OrderSubjectVM> list = (flag ? DeploymentController.SiegeMachineList.Cast<OrderSubjectVM>().ToList() : TroopController.TroopList.Cast<OrderSubjectVM>().ToList()).Where((OrderSubjectVM item) => item.IsSelected && item.IsSelectable).ToList();
-		OrderSetsWithOrdersByType[OrderSetType.Movement].ResetActiveStatus();
-		OrderSetsWithOrdersByType[OrderSetType.Form].ResetActiveStatus(flag && list.IsEmpty());
-		if (OrderSetsWithOrdersByType.ContainsKey(OrderSetType.Toggle))
+		OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM os)
 		{
-			OrderSetsWithOrdersByType[OrderSetType.Toggle].ResetActiveStatus(flag);
-		}
-		if (OrderSetsWithOrdersByType.ContainsKey(OrderSetType.Facing))
-		{
-			OrderSetsWithOrdersByType[OrderSetType.Facing].ResetActiveStatus(flag);
-		}
-		foreach (OrderSetVM item in OrderSets.Where((OrderSetVM s) => !s.ContainsOrders))
-		{
-			item.ResetActiveStatus();
-		}
-		if (list.Count > 0)
-		{
-			List<OrderItemVM> list2 = new List<OrderItemVM>();
-			foreach (OrderSubjectVM item2 in list)
-			{
-				foreach (OrderItemVM activeOrder in item2.ActiveOrders)
-				{
-					if (!list2.Contains(activeOrder))
-					{
-						list2.Add(activeOrder);
-					}
-				}
-			}
-			foreach (OrderItemVM item3 in list2)
-			{
-				item3.SelectionState = 2;
-				if (item3.IsTitle)
-				{
-					item3.SetActiveState(isActive: true);
-				}
-				if (item3.OrderSetType != OrderSetType.None)
-				{
-					OrderSetsWithOrdersByType[item3.OrderSetType].SetActiveOrder(OrderSetsWithOrdersByType[item3.OrderSetType].TitleOrder);
-				}
-			}
-			list2 = list[0].ActiveOrders;
-			foreach (OrderSubjectVM item4 in list)
-			{
-				list2 = list2.Intersect(item4.ActiveOrders).ToList();
-				if (list2.IsEmpty())
-				{
-					break;
-				}
-			}
-			foreach (OrderItemVM item5 in list2)
-			{
-				item5.SelectionState = 3;
-				if (item5.OrderSetType != OrderSetType.None)
-				{
-					OrderSetsWithOrdersByType[item5.OrderSetType].SetActiveOrder(item5);
-				}
-			}
-		}
-		OrderSetsWithOrdersByType[OrderSetType.Movement].FinalizeActiveStatus();
-		OrderSetsWithOrdersByType[OrderSetType.Form].FinalizeActiveStatus(flag && list.IsEmpty());
-		if (OrderSetsWithOrdersByType.ContainsKey(OrderSetType.Toggle))
-		{
-			OrderSetsWithOrdersByType[OrderSetType.Toggle].FinalizeActiveStatus(flag);
-		}
-		if (OrderSetsWithOrdersByType.ContainsKey(OrderSetType.Facing))
-		{
-			OrderSetsWithOrdersByType[OrderSetType.Facing].FinalizeActiveStatus(flag);
-		}
-		foreach (OrderSetVM item6 in OrderSets.Where((OrderSetVM s) => !s.ContainsOrders))
-		{
-			item6.FinalizeActiveStatus();
-		}
-	}
-
-	private void OnOrder(OrderItemVM orderItem, OrderSetType orderSetType, bool fromSelection)
-	{
-		if (LastSelectedOrderItem == orderItem && fromSelection)
-		{
-			return;
-		}
-		_onBeforeOrderDelegate();
-		if (LastSelectedOrderItem != null)
-		{
-			LastSelectedOrderItem.IsSelected = false;
-		}
-		if (orderItem.IsTitle)
-		{
-			LastSelectedOrderSetType = orderSetType;
-		}
-		LastSelectedOrderItem = orderItem;
-		if (LastSelectedOrderItem != null)
-		{
-			LastSelectedOrderItem.IsSelected = true;
-			if (LastSelectedOrderItem.OrderSubType == OrderSubType.None)
-			{
-				OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = false;
-				LastSelectedOrderSetType = orderSetType;
-				OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = true;
-			}
-		}
-		if (LastSelectedOrderItem != null && LastSelectedOrderItem.OrderSubType != OrderSubType.None && !fromSelection)
-		{
-			if (LastSelectedOrderItem.OrderSubType == OrderSubType.Return && OrderSetsWithOrdersByType.TryGetValue(LastSelectedOrderSetType, out var value))
-			{
-				value.ShowOrders = false;
-				UpdateTitleOrdersKeyVisualVisibility();
-				LastSelectedOrderSetType = OrderSetType.None;
-			}
-			else if (_currentActivationType == ActivationType.Hold && LastSelectedOrderSetType != OrderSetType.None)
-			{
-				ApplySelectedOrder();
-				if (LastSelectedOrderItem != null && LastSelectedOrderSetType != OrderSetType.None)
-				{
-					OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = false;
-					LastSelectedOrderSetType = OrderSetType.None;
-					LastSelectedOrderItem = null;
-				}
-				OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM s)
-				{
-					s.Orders.ApplyActionOnAllItems(delegate(OrderItemVM o)
-					{
-						o.IsSelected = false;
-					});
-				});
-			}
-			else if (IsDeployment)
-			{
-				ApplySelectedOrder();
-			}
-			else
-			{
-				TryCloseToggleOrder();
-			}
-		}
-		if (!fromSelection)
-		{
-			UpdateTitleOrdersKeyVisualVisibility();
-		}
-	}
-
-	private void UpdateTitleOrdersKeyVisualVisibility()
-	{
-		bool num = OrderSets.Any((OrderSetVM o) => o.ShowOrders && o.Orders.Count > 0);
-		bool? forcedVisibility = null;
-		if (num)
-		{
-			forcedVisibility = false;
-		}
-		for (int i = 0; i < OrderSets.Count; i++)
-		{
-			OrderSets[i].TitleOrder.ShortcutKey.SetForcedVisibility(forcedVisibility);
-		}
+			os.RefreshOrderStates();
+		});
 	}
 
 	public void SetFocusedFormations(MBReadOnlyList<Formation> focusedFormationsCache)
 	{
 		_focusedFormationsCache = focusedFormationsCache;
-	}
-
-	public void ApplySelectedOrder()
-	{
-		bool flag = _isPressedViewOrders || (LastSelectedOrderItem.OrderSetType == OrderSetType.None && LastSelectedOrderItem.IsTitle) || !LastSelectedOrderItem.IsTitle;
-		if (LastSelectedOrderItem == null)
-		{
-			return;
-		}
-		if (LastSelectedOrderItem.OrderSubType == OrderSubType.Return)
-		{
-			if (OrderSetsWithOrdersByType.TryGetValue(LastSelectedOrderSetType, out var value))
-			{
-				value.ShowOrders = false;
-				UpdateTitleOrdersKeyVisualVisibility();
-				LastSelectedOrderSetType = OrderSetType.None;
-			}
-			else
-			{
-				TryCloseToggleOrder(dontApplySelected: true);
-			}
-			LastSelectedOrderItem = null;
-			return;
-		}
-		List<TextObject> list = new List<TextObject>();
-		if (OrderController.SelectedFormations.Count == 0 && ActiveTargetState == 0)
-		{
-			TroopController.UpdateTroops();
-			TroopController.SelectAllFormations();
-		}
-		if (LastSelectedOrderItem.OrderSubType != OrderSubType.ToggleTransfer && flag)
-		{
-			if (ActiveTargetState == 1)
-			{
-				foreach (OrderSiegeMachineVM item in DeploymentController.SiegeMachineList.Where((OrderSiegeMachineVM item) => item.IsSelected && ((LastSelectedOrderItem.OrderSetType != OrderSetType.Toggle && LastSelectedOrderItem.OrderSubType != OrderSubType.ToggleFacing) || !item.IsPrimarySiegeMachine)))
-				{
-					list.Add(GameTexts.FindText("str_siege_engine", item.MachineClass));
-				}
-			}
-			else
-			{
-				foreach (OrderTroopItemVM item2 in TroopController.TroopList.Where((OrderTroopItemVM item) => item.IsSelected))
-				{
-					list.Add(GameTexts.FindText("str_formation_class_string", item2.Formation.PhysicalClass.GetName()));
-				}
-			}
-		}
-		if (!list.IsEmpty())
-		{
-			TextObject textObject = new TextObject("{=ApD0xQXT}{STR1}: {STR2}");
-			textObject.SetTextVariable("STR1", GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: false));
-			textObject.SetTextVariable("STR2", LastSelectedOrderItem.MainTitle);
-			InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
-		}
-		if (LastSelectedOrderSetType != OrderSetType.None)
-		{
-			OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = false;
-			foreach (OrderSetVM value2 in OrderSetsWithOrdersByType.Values)
-			{
-				value2.TitleOrder.IsActive = value2.TitleOrder.SelectionState != 0;
-			}
-		}
-		if (ActiveTargetState == 0)
-		{
-			switch (LastSelectedOrderItem.OrderSubType)
-			{
-			case OrderSubType.MoveToPosition:
-			{
-				Vec3 position = _getOrderFlagPosition();
-				WorldPosition unitPosition = new WorldPosition(Mission.Scene, UIntPtr.Zero, position, hasValidZ: false);
-				if (Mission.IsFormationUnitPositionAvailable(ref unitPosition, Team))
-				{
-					OrderController.SetOrderWithTwoPositions(OrderType.MoveToLineSegment, unitPosition, unitPosition);
-				}
-				break;
-			}
-			case OrderSubType.Charge:
-			{
-				MBReadOnlyList<Formation> focusedFormationsCache2 = _focusedFormationsCache;
-				if (focusedFormationsCache2 != null && focusedFormationsCache2.Count > 0)
-				{
-					OrderController.SetOrderWithFormation(OrderType.Charge, _focusedFormationsCache[0]);
-				}
-				else
-				{
-					OrderController.SetOrder(OrderType.Charge);
-				}
-				break;
-			}
-			case OrderSubType.FollowMe:
-				OrderController.SetOrderWithAgent(OrderType.FollowMe, Agent.Main);
-				break;
-			case OrderSubType.Stop:
-				OrderController.SetOrder(OrderType.StandYourGround);
-				break;
-			case OrderSubType.Retreat:
-				OrderController.SetOrder(OrderType.Retreat);
-				break;
-			case OrderSubType.Advance:
-			{
-				MBReadOnlyList<Formation> focusedFormationsCache = _focusedFormationsCache;
-				if (focusedFormationsCache != null && focusedFormationsCache.Count > 0)
-				{
-					OrderController.SetOrderWithFormation(OrderType.Advance, _focusedFormationsCache[0]);
-				}
-				else
-				{
-					OrderController.SetOrder(OrderType.Advance);
-				}
-				break;
-			}
-			case OrderSubType.Fallback:
-				OrderController.SetOrder(OrderType.FallBack);
-				break;
-			case OrderSubType.FormLine:
-				OrderController.SetOrder(OrderType.ArrangementLine);
-				break;
-			case OrderSubType.FormClose:
-				OrderController.SetOrder(OrderType.ArrangementCloseOrder);
-				break;
-			case OrderSubType.FormLoose:
-				OrderController.SetOrder(OrderType.ArrangementLoose);
-				break;
-			case OrderSubType.FormCircular:
-				OrderController.SetOrder(OrderType.ArrangementCircular);
-				break;
-			case OrderSubType.FormSchiltron:
-				OrderController.SetOrder(OrderType.ArrangementSchiltron);
-				break;
-			case OrderSubType.FormV:
-				OrderController.SetOrder(OrderType.ArrangementVee);
-				break;
-			case OrderSubType.FormColumn:
-				OrderController.SetOrder(OrderType.ArrangementColumn);
-				break;
-			case OrderSubType.FormScatter:
-				OrderController.SetOrder(OrderType.ArrangementScatter);
-				break;
-			case OrderSubType.ToggleFacing:
-				if (OrderController.GetActiveFacingOrderOf(OrderController.SelectedFormations.FirstOrDefault()) == OrderType.LookAtDirection)
-				{
-					OrderController.SetOrder(OrderType.LookAtEnemy);
-				}
-				else
-				{
-					OrderController.SetOrderWithPosition(OrderType.LookAtDirection, new WorldPosition(Mission.Scene, UIntPtr.Zero, _getOrderFlagPosition(), hasValidZ: false));
-				}
-				break;
-			case OrderSubType.ActivationFaceDirection:
-				OrderController.SetOrderWithPosition(OrderType.LookAtDirection, new WorldPosition(Mission.Scene, UIntPtr.Zero, _getOrderFlagPosition(), hasValidZ: false));
-				break;
-			case OrderSubType.FaceEnemy:
-				OrderController.SetOrder(OrderType.LookAtEnemy);
-				break;
-			case OrderSubType.ToggleFire:
-				if (LastSelectedOrderItem.SelectionState == 3)
-				{
-					OrderController.SetOrder(OrderType.FireAtWill);
-				}
-				else
-				{
-					OrderController.SetOrder(OrderType.HoldFire);
-				}
-				break;
-			case OrderSubType.ToggleMount:
-				if (LastSelectedOrderItem.SelectionState == 3)
-				{
-					OrderController.SetOrder(OrderType.Mount);
-				}
-				else
-				{
-					OrderController.SetOrder(OrderType.Dismount);
-				}
-				break;
-			case OrderSubType.ToggleAI:
-				if (LastSelectedOrderItem.SelectionState == 3)
-				{
-					OrderController.SetOrder(OrderType.AIControlOff);
-					break;
-				}
-				OrderController.SetOrder(OrderType.AIControlOn);
-				foreach (Formation selectedFormation in OrderController.SelectedFormations)
-				{
-					TeamOnFormationAIActiveBehaviorChanged(selectedFormation);
-				}
-				break;
-			case OrderSubType.ToggleTransfer:
-			{
-				if (IsDeployment)
-				{
-					break;
-				}
-				foreach (OrderTroopItemVM transferTarget in TroopController.TransferTargetList)
-				{
-					transferTarget.IsSelected = false;
-					transferTarget.IsSelectable = !OrderController.IsFormationListening(transferTarget.Formation);
-				}
-				OrderTroopItemVM orderTroopItemVM = TroopController.TransferTargetList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable);
-				if (orderTroopItemVM != null)
-				{
-					orderTroopItemVM.IsSelected = true;
-					TroopController.IsTransferValid = true;
-					GameTexts.SetVariable("{FORMATION_INDEX}", Common.ToRoman(orderTroopItemVM.Formation.Index + 1));
-					TroopController.TransferTitleText = new TextObject("{=DvnRkWQg}Transfer Troops To {FORMATION_INDEX}").ToString();
-					TroopController.IsTransferActive = true;
-					TroopController.IsTransferValid = false;
-					TroopController.TransferMaxValue = TroopController.TroopList.Where((OrderTroopItemVM t) => t.IsSelected).Sum((OrderTroopItemVM t) => t.CurrentMemberCount);
-					TroopController.TransferValue = TroopController.TransferMaxValue;
-					InputRestrictions.SetInputRestrictions();
-				}
-				else
-				{
-					MBInformationManager.AddQuickInformation(new TextObject("{=SLY8z9fP}All formations are selected!"));
-				}
-				break;
-			}
-			case OrderSubType.None:
-			case OrderSubType.Return:
-				return;
-			}
-		}
-		else
-		{
-			switch (LastSelectedOrderItem.OrderSubType)
-			{
-			case OrderSubType.MoveToPosition:
-				OrderController.SiegeWeaponController.SetOrder(SiegeWeaponOrderType.Attack);
-				break;
-			case OrderSubType.Stop:
-				OrderController.SiegeWeaponController.SetOrder(SiegeWeaponOrderType.Stop);
-				break;
-			case OrderSubType.ToggleFacing:
-				OrderController.SiegeWeaponController.SetOrder(SiegeWeaponOrderType.FireAtWalls);
-				break;
-			case OrderSubType.Return:
-				return;
-			}
-		}
-		if (ActiveTargetState == 0)
-		{
-			IEnumerable<OrderTroopItemVM> enumerable = TroopController.TroopList.Where((OrderTroopItemVM item) => item.IsSelected);
-			enumerable.Count();
-			foreach (OrderTroopItemVM item3 in enumerable)
-			{
-				TroopController.SetTroopActiveOrders(item3);
-				item3.IsTargetRelevant = item3.IsSelected;
-			}
-		}
-		else
-		{
-			foreach (OrderSiegeMachineVM item4 in DeploymentController.SiegeMachineList.Where((OrderSiegeMachineVM item) => item.IsSelected))
-			{
-				DeploymentController.SetSiegeMachineActiveOrders(item4);
-			}
-		}
-		UpdateTitleOrdersKeyVisualVisibility();
-		LastSelectedOrderItem = null;
-		LastSelectedOrderSetType = OrderSetType.None;
 	}
 
 	public void AfterInitialize()
@@ -1124,7 +922,21 @@ public class MissionOrderVM : ViewModel
 			{
 				TroopController.IntervalUpdate();
 			}
+			TroopController.Update();
 			TroopController.RefreshTroopFormationTargetVisuals();
+		}
+		if (IsToggleOrderShown)
+		{
+			if (BannerlordConfig.SlowDownOnOrder && !_isDeployment && !_isMultiplayer && _slowMotionSoundEvent == null)
+			{
+				_slowMotionSoundEvent = SoundEvent.CreateEvent(_slowMotionSoundEventGlobalIndex, Mission.Current.Scene);
+				_slowMotionSoundEvent.Play();
+			}
+		}
+		else if (_slowMotionSoundEvent != null)
+		{
+			_slowMotionSoundEvent.Release();
+			_slowMotionSoundEvent = null;
 		}
 		DeploymentController.Update();
 		DisplayFormationAIFeedback();
@@ -1132,31 +944,14 @@ public class MissionOrderVM : ViewModel
 
 	public void OnEscape()
 	{
-		if (!IsToggleOrderShown)
+		if (IsToggleOrderShown)
 		{
-			return;
-		}
-		if (_currentActivationType == ActivationType.Hold)
-		{
-			if (LastSelectedOrderItem != null)
+			if (SelectedOrderSet != null)
 			{
-				UpdateTitleOrdersKeyVisualVisibility();
-				OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = false;
-				LastSelectedOrderItem = null;
-			}
-		}
-		else if (_currentActivationType == ActivationType.Click)
-		{
-			LastSelectedOrderItem = null;
-			if (LastSelectedOrderSetType != OrderSetType.None)
-			{
-				UpdateTitleOrdersKeyVisualVisibility();
-				OrderSetsWithOrdersByType[LastSelectedOrderSetType].ShowOrders = false;
-				LastSelectedOrderSetType = OrderSetType.None;
+				SelectedOrderSet.ExecuteDeSelect();
 			}
 			else
 			{
-				LastSelectedOrderSetType = OrderSetType.None;
 				TryCloseToggleOrder();
 			}
 		}
@@ -1164,7 +959,6 @@ public class MissionOrderVM : ViewModel
 
 	public void ViewOrders()
 	{
-		_isPressedViewOrders = true;
 		if (!IsToggleOrderShown)
 		{
 			TroopController.UpdateTroops();
@@ -1174,10 +968,37 @@ public class MissionOrderVM : ViewModel
 		{
 			TryCloseToggleOrder();
 		}
-		_isPressedViewOrders = false;
 	}
 
-	public void OnSelect(int formationTroopIndex)
+	public OrderSetVM GetOrderSetAtIndex(int orderSetIndex)
+	{
+		if (orderSetIndex < 0 || orderSetIndex >= OrderSets.Count)
+		{
+			return null;
+		}
+		return OrderSets[orderSetIndex];
+	}
+
+	public bool TrySelectOrderSet(OrderSetVM orderSet)
+	{
+		if (!CheckCanBeOpened(displayMessage: true))
+		{
+			return false;
+		}
+		VisualOrderExecutionParameters executionParameters = _callbacks.GetVisualOrderExecutionParameters();
+		orderSet.ExecuteAction(executionParameters);
+		if (!IsToggleOrderShown && !orderSet.OrderSet.IsSoloOrder)
+		{
+			OpenToggleOrder(fromHold: false);
+		}
+		else if (IsToggleOrderShown && orderSet.OrderSet.IsSoloOrder)
+		{
+			TryCloseToggleOrder();
+		}
+		return true;
+	}
+
+	public void OnTroopFormationSelected(int formationTroopIndex)
 	{
 		if (CheckCanBeOpened(displayMessage: true))
 		{
@@ -1189,40 +1010,12 @@ public class MissionOrderVM : ViewModel
 			{
 				DeploymentController.OnSelectFormationWithIndex(formationTroopIndex);
 			}
+			TryCloseToggleOrder();
 			OpenToggleOrder(fromHold: false);
 		}
 	}
 
-	public void OnGiveOrder(int pressedIndex)
-	{
-		if (!CheckCanBeOpened(displayMessage: true))
-		{
-			return;
-		}
-		OrderSetVM orderSetVM = OrderSetsWithOrdersByType.Values.FirstOrDefault((OrderSetVM o) => o.ShowOrders);
-		if (orderSetVM != null)
-		{
-			if (orderSetVM.Orders.Count > pressedIndex)
-			{
-				orderSetVM.Orders[pressedIndex].ExecuteAction();
-			}
-			else if (pressedIndex == 8)
-			{
-				orderSetVM.Orders[orderSetVM.Orders.Count - 1].ExecuteAction();
-			}
-		}
-		else
-		{
-			int num = (int)TaleWorlds.Library.MathF.Clamp(pressedIndex, 0f, OrderSets.Count - 1);
-			if (num >= 0 && OrderSets.Count > num && OrderSets[num].TitleOrder.SelectionState != 0)
-			{
-				OpenToggleOrder(fromHold: false);
-				OrderSets[num].TitleOrder.ExecuteAction();
-			}
-		}
-	}
-
-	private void MissionOnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void MissionOnMainAgentChanged(Agent oldAgent)
 	{
 		if (Mission.MainAgent == null)
 		{
@@ -1251,112 +1044,212 @@ public class MissionOrderVM : ViewModel
 		{
 			if (IsToggleOrderShown)
 			{
-				_onActivateToggleOrder();
+				_callbacks.OnActivateToggleOrder();
 			}
 			else
 			{
-				_onDeactivateToggleOrder();
+				_callbacks.OnDeactivateToggleOrder();
 			}
 		}
 		_updateTroopsTimer = (IsToggleOrderShown ? new Timer(MBCommon.GetApplicationTime() - 2f, 2f) : null);
 		IsTroopPlacingActive = IsToggleOrderShown && ActiveTargetState == 0;
-		foreach (OrderSetVM value in OrderSetsWithOrdersByType.Values)
+		if (!IsDeployment && TroopController.TroopList.Count > 0 && TaleWorlds.InputSystem.Input.IsGamepadActive && TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex) == null)
 		{
-			value.ShowOrders = false;
-			value.TitleOrder.IsActive = value.TitleOrder.SelectionState != 0;
-		}
-		if (!IsDeployment && TroopController.TroopList.FirstOrDefault() != null)
-		{
-			TroopController.TroopList.ApplyActionOnAllItems(delegate(OrderTroopItemVM t)
+			TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
 			{
-				t.IsSelectionActive = false;
+				t.IsSelectionHighlightActive = false;
 			});
-			TroopController.TroopList[0].IsSelectionActive = true;
+			TroopController.TroopList[0].IsSelectionHighlightActive = true;
 		}
-		_onRefreshVisuals();
-		if (!IsToggleOrderShown)
+		_callbacks.RefreshVisuals();
+	}
+
+	protected virtual void HighlightAllTroops()
+	{
+		foreach (OrderTroopItemVM troop in TroopController.TroopList)
 		{
-			_currentActivationType = ActivationType.NotActive;
+			if (troop.IsSelectable)
+			{
+				troop.IsSelectionHighlightActive = true;
+			}
 		}
 	}
 
-	public void SelectNextTroop(int direction)
+	public void OnTroopHighlightSelection(TroopSelectionDirection direction)
 	{
 		if (!CheckCanBeOpened(displayMessage: true) || TroopController.TroopList.Count <= 0)
 		{
 			return;
 		}
-		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectionActive);
-		if (orderTroopItemVM != null)
+		if (TroopController.TroopList.All((OrderTroopItemVM t) => t.IsSelectionHighlightActive))
 		{
-			int num = ((direction > 0) ? 1 : (-1));
-			orderTroopItemVM.IsSelectionActive = false;
-			int num2 = TroopController.TroopList.IndexOf(orderTroopItemVM) + num;
-			for (int i = 0; i < TroopController.TroopList.Count; i++)
+			OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex);
+			if (orderTroopItemVM != null)
 			{
-				int num3 = (num2 + i * num) % TroopController.TroopList.Count;
-				if (num3 < 0)
+				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
 				{
-					num3 += TroopController.TroopList.Count;
+					t.IsSelectionHighlightActive = false;
+				});
+				orderTroopItemVM.IsSelectionHighlightActive = true;
+				return;
+			}
+		}
+		OrderTroopItemVM orderTroopItemVM2 = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectionHighlightActive);
+		if (orderTroopItemVM2 != null)
+		{
+			int formationIndex = orderTroopItemVM2.FormationIndex;
+			if ((direction == TroopSelectionDirection.Left && formationIndex < 4) || (direction == TroopSelectionDirection.Right && formationIndex > 3))
+			{
+				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
+				{
+					t.IsSelectionHighlightActive = false;
+				});
+				HighlightAllTroops();
+				return;
+			}
+			int num = -1;
+			switch (direction)
+			{
+			case TroopSelectionDirection.Left:
+				num = -4;
+				break;
+			case TroopSelectionDirection.Top:
+				num = -1;
+				break;
+			case TroopSelectionDirection.Right:
+				num = 4;
+				break;
+			case TroopSelectionDirection.Bottom:
+				num = 1;
+				break;
+			}
+			int num2 = TroopController.TroopList.Min((OrderTroopItemVM t) => t.FormationIndex);
+			int num3 = TroopController.TroopList.Max((OrderTroopItemVM t) => t.FormationIndex);
+			int num4 = TaleWorlds.Library.MathF.Sign(num);
+			OrderTroopItemVM orderTroopItemVM3 = null;
+			for (int i = formationIndex + num; i >= num2 && i <= num3; i += num4)
+			{
+				for (int j = 0; j < TroopController.TroopList.Count; j++)
+				{
+					OrderTroopItemVM orderTroopItemVM4 = TroopController.TroopList[j];
+					if (orderTroopItemVM4.FormationIndex == i && (direction != TroopSelectionDirection.Bottom || formationIndex >= 4 || i < 4) && (direction != TroopSelectionDirection.Top || formationIndex < 4 || i >= 3))
+					{
+						orderTroopItemVM3 = orderTroopItemVM4;
+						break;
+					}
 				}
-				if (TroopController.TroopList[num3].IsSelectable)
+				if (orderTroopItemVM3 != null)
 				{
-					TroopController.TroopList[num3].IsSelectionActive = true;
 					break;
 				}
+			}
+			if (orderTroopItemVM3 != null)
+			{
+				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
+				{
+					t.IsSelectionHighlightActive = false;
+				});
+				orderTroopItemVM3.IsSelectionHighlightActive = true;
+				_lastHighlightedFormationIndex = orderTroopItemVM3.FormationIndex;
 			}
 		}
 		else
 		{
-			TroopController.TroopList.FirstOrDefault().IsSelectionActive = true;
+			OrderTroopItemVM orderTroopItemVM5 = TroopController.TroopList.FirstOrDefault();
+			if (orderTroopItemVM5 != null)
+			{
+				orderTroopItemVM5.IsSelectionHighlightActive = true;
+			}
 		}
 	}
 
-	public void ToggleSelectionForCurrentTroop()
+	public void ExecuteSelectHighlightedFormations()
 	{
-		if (!CheckCanBeOpened(displayMessage: true))
+		List<OrderTroopItemVM> list = new List<OrderTroopItemVM>();
+		List<OrderTroopItemVM> list2 = new List<OrderTroopItemVM>();
+		for (int i = 0; i < TroopController.TroopList.Count; i++)
 		{
-			return;
-		}
-		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectionActive);
-		if (orderTroopItemVM != null)
-		{
+			OrderTroopItemVM orderTroopItemVM = TroopController.TroopList[i];
+			if (orderTroopItemVM.IsSelectionHighlightActive)
+			{
+				list.Add(orderTroopItemVM);
+			}
 			if (orderTroopItemVM.IsSelected)
 			{
-				TroopController.OnDeselectFormation(orderTroopItemVM);
+				list2.Add(orderTroopItemVM);
+			}
+		}
+		if (list.Count == TroopController.TroopList.Count)
+		{
+			if (list2.Count != TroopController.TroopList.Count)
+			{
+				TroopController.SelectAllFormations();
+				return;
+			}
+			OrderTroopItemVM orderTroopItemVM2 = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex);
+			if (orderTroopItemVM2 != null)
+			{
+				OnTroopFormationSelected(_lastHighlightedFormationIndex);
+				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
+				{
+					t.IsSelectionHighlightActive = false;
+				});
+				orderTroopItemVM2.IsSelectionHighlightActive = true;
+				return;
+			}
+		}
+		for (int j = 0; j < list.Count; j++)
+		{
+			OrderTroopItemVM orderTroopItemVM3 = list[j];
+			if (!orderTroopItemVM3.IsSelectionHighlightActive)
+			{
+				continue;
+			}
+			if (orderTroopItemVM3.IsSelected)
+			{
+				if (list2.Count > 1)
+				{
+					TroopController.OnDeselectFormation(orderTroopItemVM3.FormationIndex);
+				}
 			}
 			else
 			{
-				TroopController.OnSelectFormation(orderTroopItemVM);
+				TroopController.AddSelectedFormation(orderTroopItemVM3);
 			}
+		}
+		TryCloseToggleOrder();
+		OpenToggleOrder(fromHold: false);
+	}
+
+	private void OnTransferStarted()
+	{
+		if (IsDeployment)
+		{
+			return;
+		}
+		foreach (OrderTroopItemVM transferTarget in TroopController.TransferTargetList)
+		{
+			transferTarget.IsSelected = false;
+			transferTarget.IsSelectable = !OrderController.IsFormationListening(transferTarget.Formation);
+		}
+		OrderTroopItemVM orderTroopItemVM = TroopController.TransferTargetList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable);
+		if (orderTroopItemVM != null)
+		{
+			TroopController.IsTransferActive = true;
+			TroopController.ExecuteSelectTransferTroop(orderTroopItemVM);
+			TroopController.TransferMaxValue = TroopController.TroopList.Where((OrderTroopItemVM t) => t.IsSelected).Sum((OrderTroopItemVM t) => t.CurrentMemberCount);
+			TroopController.TransferValue = TroopController.TransferMaxValue;
+			InputRestrictions.SetInputRestrictions();
+		}
+		else
+		{
+			MBInformationManager.AddQuickInformation(new TextObject("{=SLY8z9fP}All formations are selected!"));
 		}
 	}
 
-	private void OnTransferFinished()
+	protected void OnTransferFinished()
 	{
-		_onTransferTroopsFinishedDelegate.DynamicInvokeWithLog();
-	}
-
-	internal OrderSetType GetOrderSetWithShortcutIndex(int index)
-	{
-		return index switch
-		{
-			0 => OrderSetType.Movement, 
-			1 => OrderSetType.Form, 
-			2 => OrderSetType.Toggle, 
-			3 => OrderSetType.Facing, 
-			_ => (OrderSetType)index, 
-		};
-	}
-
-	internal IEnumerable<OrderItemVM> GetAllOrderItemsForSubType(OrderSubType orderSubType)
-	{
-		IEnumerable<OrderItemVM> first = OrderSets.Select((OrderSetVM s) => s.Orders).SelectMany((MBBindingList<OrderItemVM> o) => o.Where((OrderItemVM l) => l.OrderSubType == orderSubType));
-		IEnumerable<OrderItemVM> second = from s in OrderSets
-			where s.TitleOrder.OrderSubType == orderSubType
-			select s into t
-			select t.TitleOrder;
-		return first.Union(second);
+		_callbacks.OnTransferTroopsFinished();
 	}
 
 	[Conditional("DEBUG")]
@@ -1380,7 +1273,12 @@ public class MissionOrderVM : ViewModel
 		IsDeployment = false;
 	}
 
-	public void OnFiltersSet(List<(int, List<int>)> filterData)
+	public void OnAfterDeploymentFinished()
+	{
+		TroopController.OnAfterDeploymentFinished();
+	}
+
+	public void OnFiltersSet(List<FormationConfiguration> filterData)
 	{
 		_filterData = filterData;
 		TroopController.OnFiltersSet(filterData);
@@ -1393,10 +1291,38 @@ public class MissionOrderVM : ViewModel
 		{
 			OrderSets[i].UpdateCanUseShortcuts(value);
 		}
+		if (!value)
+		{
+			TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
+			{
+				t.CanToggleSelection = false;
+			});
+		}
+	}
+
+	public void SetOrderIndexKey(int orderIndex, GameKey gameKey)
+	{
+		if (_orderKeys.TryGetValue(orderIndex, out var value))
+		{
+			value?.OnFinalize();
+		}
+		InputKeyItemVM value2 = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: false);
+		_orderKeys[orderIndex] = value2;
+	}
+
+	public void SetReturnKey(GameKey gameKey)
+	{
+		_returnKey?.OnFinalize();
+		_returnKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: false);
 	}
 
 	public void SetCancelInputKey(HotKey hotKey)
 	{
 		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void SetToggleCameraModeInputKey(HotKey hotKey)
+	{
+		ToggleCameraModeInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

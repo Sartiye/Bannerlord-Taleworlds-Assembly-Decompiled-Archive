@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.TwoDimension.Standalone;
@@ -15,9 +16,9 @@ public class TwoDimensionPlatform : ITwoDimensionPlatform, ITwoDimensionResource
 
 	float ITwoDimensionPlatform.Height => _form.Height;
 
-	float ITwoDimensionPlatform.ReferenceWidth => _form.Width;
+	float ITwoDimensionPlatform.ReferenceWidth => 1154f;
 
-	float ITwoDimensionPlatform.ReferenceHeight => _form.Height;
+	float ITwoDimensionPlatform.ReferenceHeight => 701f;
 
 	float ITwoDimensionPlatform.ApplicationTime => Environment.TickCount;
 
@@ -28,9 +29,31 @@ public class TwoDimensionPlatform : ITwoDimensionPlatform, ITwoDimensionResource
 		_graphicsContext = _form.GraphicsContext;
 	}
 
-	void ITwoDimensionPlatform.Draw(float x, float y, Material material, DrawObject2D drawObject2D, int layer)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.DrawImage(SimpleMaterial material, in ImageDrawObject drawObject2D, int layer)
 	{
-		_graphicsContext.DrawElements(x, y, material, drawObject2D);
+		_graphicsContext.DrawImage(material, in drawObject2D);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.DrawText(TextMaterial material, in TextDrawObject drawObject2D, int layer)
+	{
+		_graphicsContext.DrawText(material, in drawObject2D);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.OnFrameBegin()
+	{
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.OnFrameEnd()
+	{
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.Clear()
+	{
 	}
 
 	Texture ITwoDimensionResourceContext.LoadTexture(ResourceDepot resourceDepot, string name)
@@ -55,7 +78,7 @@ public class TwoDimensionPlatform : ITwoDimensionPlatform, ITwoDimensionResource
 		_graphicsContext.SetScissor(scissorTestInfo);
 	}
 
-	void ITwoDimensionPlatform.ResetScissor()
+	void ITwoDimensionPlatform.ResetScissors()
 	{
 		_graphicsContext.ResetScissor();
 	}

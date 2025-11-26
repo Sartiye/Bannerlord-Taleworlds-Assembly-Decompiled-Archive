@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.InputSystem;
@@ -23,9 +24,10 @@ public class EncyclopediaTroopScrollablePanel : ScrollablePanel
 			bool flag = IsMouseOverWidget(this);
 			if (flag)
 			{
-				foreach (Widget allChildrenAndThi in base.AllChildrenAndThis)
+				List<Widget> allChildrenAndThisRecursive = GetAllChildrenAndThisRecursive();
+				for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
 				{
-					if (IsMouseOverWidget(allChildrenAndThi) && allChildrenAndThi is ButtonWidget)
+					if (IsMouseOverWidget(allChildrenAndThisRecursive[i]) && allChildrenAndThisRecursive[i] is ButtonWidget)
 					{
 						flag = false;
 					}

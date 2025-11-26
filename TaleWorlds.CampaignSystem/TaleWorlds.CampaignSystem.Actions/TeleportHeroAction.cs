@@ -29,7 +29,7 @@ public static class TeleportHeroAction
 			{
 				return;
 			}
-			if (hero.IsTraveling)
+			if (!hero.IsActive)
 			{
 				hero.ChangeState(Hero.CharacterStates.Active);
 			}
@@ -52,17 +52,17 @@ public static class TeleportHeroAction
 			{
 				hero.ChangeState(Hero.CharacterStates.Active);
 			}
-			targetParty.MemberRoster.AddToCounts(hero.CharacterObject, 1);
+			AddHeroToPartyAction.Apply(hero, targetParty);
 			return;
 		case TeleportationDetail.ImmediateTeleportToPartyAsPartyLeader:
 			if (hero.IsTraveling)
 			{
 				hero.ChangeState(Hero.CharacterStates.Active);
 			}
-			targetParty.MemberRoster.AddToCounts(hero.CharacterObject, 1);
+			AddHeroToPartyAction.Apply(hero, targetParty);
 			targetParty.ChangePartyLeader(hero);
 			targetParty.PartyComponent.ClearCachedName();
-			targetParty.SetCustomName(null);
+			targetParty.Party.SetCustomName(null);
 			targetParty.Party.SetVisualAsDirty();
 			if (targetParty.IsDisbanding)
 			{
@@ -105,7 +105,7 @@ public static class TeleportHeroAction
 		{
 			TextObject textObject = new TextObject("{=ithcVNfA}{CLAN_NAME}{.o} Party");
 			textObject.SetTextVariable("CLAN_NAME", (targetParty.ActualClan != null) ? targetParty.ActualClan.Name : CampaignData.NeutralFactionName);
-			targetParty.SetCustomName(textObject);
+			targetParty.Party.SetCustomName(textObject);
 		}
 		hero.ChangeState(Hero.CharacterStates.Traveling);
 	}

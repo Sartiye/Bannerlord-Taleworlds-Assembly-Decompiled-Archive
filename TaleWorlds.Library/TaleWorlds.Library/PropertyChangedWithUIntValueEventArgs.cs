@@ -1,6 +1,6 @@
 namespace TaleWorlds.Library;
 
-public class PropertyChangedWithUIntValueEventArgs
+public struct PropertyChangedWithUIntValueEventArgs
 {
 	public string PropertyName { get; }
 

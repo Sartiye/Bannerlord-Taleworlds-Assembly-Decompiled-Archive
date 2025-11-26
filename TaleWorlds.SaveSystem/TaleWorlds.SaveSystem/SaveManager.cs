@@ -18,10 +18,18 @@ public static class SaveManager
 
 	private static DefinitionContext _definitionContext;
 
+	internal static ApplicationVersion OperatingVersion = ApplicationVersion.Empty;
+
+	private static bool _isLoading = false;
+
 	public static void InitializeGlobalDefinitionContext()
 	{
 		_definitionContext = new DefinitionContext();
 		_definitionContext.FillWithCurrentTypes();
+		foreach (string error in _definitionContext.Errors)
+		{
+			Debug.Print(error);
+		}
 	}
 
 	public static List<Type> CheckSaveableTypes()
@@ -68,6 +76,8 @@ public static class SaveManager
 
 	public static SaveOutput Save(object target, MetaData metaData, string saveName, ISaveDriver driver)
 	{
+		_isLoading = false;
+		OperatingVersion = metaData.GetApplicationVersion();
 		if (_definitionContext == null)
 		{
 			InitializeGlobalDefinitionContext();
@@ -80,40 +90,45 @@ public static class SaveManager
 			{
 				list.Add(new SaveError(error));
 			}
-			return SaveOutput.CreateFailed(list, SaveResult.GeneralFailure);
+			saveOutput = SaveOutput.CreateFailed(list, SaveResult.GeneralFailure);
 		}
-		Debug.Print("------Saving with new context. Save name: " + saveName + "------");
-		SaveContext saveContext;
-		if ((saveContext = new SaveContext(_definitionContext)).Save(target, metaData, out var errorMessage))
+		else
 		{
-			try
+			Debug.Print("------Saving with new context. Save name: " + saveName + "------");
+			ISaveContext saveContext = new SaveContext(_definitionContext);
+			if (saveContext.Save(target, metaData, out var errorMessage))
 			{
-				Task<SaveResultWithMessage> task = driver.Save(saveName, 1, metaData, saveContext.SaveData);
-				if (task.IsCompleted)
+				try
 				{
-					if (task.Result.SaveResult == SaveResult.Success)
-					{
-						return SaveOutput.CreateSuccessful(saveContext.SaveData);
-					}
-					return SaveOutput.CreateFailed(new SaveError[1]
+					Task<SaveResultWithMessage> task = driver.Save(saveName, 1, metaData, saveContext.SaveData);
+					saveOutput = ((!task.IsCompleted) ? SaveOutput.CreateContinuing(task) : ((task.Result.SaveResult != 0) ? SaveOutput.CreateFailed(new SaveError[1]
 					{
 						new SaveError(task.Result.Message)
-					}, task.Result.SaveResult);
+					}, task.Result.SaveResult) : SaveOutput.CreateSuccessful(saveContext.SaveData)));
 				}
-				return SaveOutput.CreateContinuing(task);
-			}
-			catch (Exception ex)
-			{
-				return SaveOutput.CreateFailed(new SaveError[1]
+				catch (Exception ex)
 				{
-					new SaveError(ex.Message)
+					saveOutput = SaveOutput.CreateFailed(new SaveError[1]
+					{
+						new SaveError(ex.Message)
+					}, SaveResult.GeneralFailure);
+				}
+			}
+			else
+			{
+				saveOutput = SaveOutput.CreateFailed(new SaveError[1]
+				{
+					new SaveError(errorMessage)
 				}, SaveResult.GeneralFailure);
 			}
 		}
-		return SaveOutput.CreateFailed(new SaveError[1]
-		{
-			new SaveError(errorMessage)
-		}, SaveResult.GeneralFailure);
+		OperatingVersion = ApplicationVersion.Empty;
+		return saveOutput;
+	}
+
+	public static bool ShouldResolveConflicts()
+	{
+		return _isLoading;
 	}
 
 	public static MetaData LoadMetaData(string saveName, ISaveDriver driver)
@@ -128,11 +143,13 @@ public static class SaveManager
 
 	public static LoadResult Load(string saveName, ISaveDriver driver, bool loadAsLateInitialize)
 	{
+		_isLoading = true;
 		DefinitionContext definitionContext = new DefinitionContext();
 		definitionContext.FillWithCurrentTypes();
 		LoadResult loadResult = null;
-		LoadContext loadContext = new LoadContext(definitionContext, driver);
 		LoadData loadData = driver.Load(saveName);
+		OperatingVersion = loadData.MetaData.GetApplicationVersion();
+		LoadContext loadContext = new LoadContext(definitionContext, driver);
 		if (loadContext.Load(loadData, loadAsLateInitialize))
 		{
 			LoadCallbackInitializator loadCallbackInitializator = null;
@@ -140,11 +157,17 @@ public static class SaveManager
 			{
 				loadCallbackInitializator = loadContext.CreateLoadCallbackInitializator(loadData);
 			}
-			return LoadResult.CreateSuccessful(loadContext.RootObject, loadData.MetaData, loadCallbackInitializator);
+			loadResult = LoadResult.CreateSuccessful(loadContext.RootObject, loadData.MetaData, loadCallbackInitializator);
 		}
-		return LoadResult.CreateFailed(new LoadError[1]
+		else
 		{
-			new LoadError("Not implemented")
-		});
+			loadResult = LoadResult.CreateFailed(new LoadError[1]
+			{
+				new LoadError("Not implemented")
+			});
+		}
+		_isLoading = false;
+		OperatingVersion = ApplicationVersion.Empty;
+		return loadResult;
 	}
 }

@@ -15,7 +15,7 @@ public class SettlementUnderSiegeMapNotificationItemVM : MapNotificationItemBase
 		base.NotificationIdentifier = "settlementundersiege";
 		_onInspect = delegate
 		{
-			GoToMapPosition(_settlement.Position2D);
+			GoToMapPosition(_settlement.Position);
 		};
 		CampaignEvents.OnSiegeEventEndedEvent.AddNonSerializedListener(this, OnSiegeEventEnded);
 	}

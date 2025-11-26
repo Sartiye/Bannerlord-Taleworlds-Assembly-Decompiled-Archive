@@ -34,10 +34,13 @@ public class ParameterLoader
 			}
 			foreach (XmlNode childNode2 in childNode.ChildNodes)
 			{
-				string innerText = childNode2.Attributes["Name"].InnerText;
-				string text2 = "";
-				text2 = ((!TryGetFromFile(childNode2, out var value)) ? ((!TryGetFromEnvironment(childNode2, out var value2)) ? ((childNode2.Attributes["DefaultValue"] == null) ? childNode2.Attributes["Value"].InnerText : childNode2.Attributes["DefaultValue"].InnerText) : value2) : value);
-				parameters.AddParameter(innerText, text2, overwriteIfExists: true);
+				if (childNode2.NodeType != XmlNodeType.Comment)
+				{
+					string innerText = childNode2.Attributes["Name"].InnerText;
+					string text2 = "";
+					text2 = (TryGetFromFile(childNode2, out var value) ? value : (TryGetFromEnvironment(childNode2, out var value2) ? value2 : ((childNode2.Attributes["DefaultValue"] == null) ? childNode2.Attributes["Value"].InnerText : childNode2.Attributes["DefaultValue"].InnerText)));
+					parameters.AddParameter(innerText, text2, overwriteIfExists: true);
+				}
 			}
 		}
 	}

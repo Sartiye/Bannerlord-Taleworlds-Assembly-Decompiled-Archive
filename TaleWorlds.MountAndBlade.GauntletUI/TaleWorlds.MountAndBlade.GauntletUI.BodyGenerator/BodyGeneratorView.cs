@@ -6,7 +6,6 @@ using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Screens;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -22,11 +21,13 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 {
 	private const int ViewOrderPriority = 1;
 
+	private const bool MakeSound = true;
+
 	private Scene _facegenScene;
 
 	private MBAgentRendererSceneController _agentRendererSceneController;
 
-	private IGauntletMovie _viewMovie;
+	private GauntletMovieIdentifier _viewMovie;
 
 	private AgentVisuals _visualToShow;
 
@@ -40,6 +41,8 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	private bool _refreshCharacterEntityNextFrame;
 
+	private int _makeVoiceInFrames = -1;
+
 	private MatrixFrame _initialCharacterFrame;
 
 	private bool _setMorphAnimNextFrame;
@@ -48,13 +51,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	private bool _nextMorphAnimLoopValue;
 
-	private readonly ActionIndexCache act_inventory_idle_cached = ActionIndexCache.Create("act_inventory_idle");
-
 	private List<BodyProperties> _templateBodyProperties;
-
-	private readonly ActionIndexCache act_inventory_idle_start_cached = ActionIndexCache.Create("act_inventory_idle_start");
-
-	private readonly ActionIndexCache act_command_leftstance_cached = ActionIndexCache.Create("act_command_leftstance");
 
 	private readonly ControlCharacterCreationStage _affirmativeAction;
 
@@ -72,9 +69,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	public SkeletonType SkeletonType;
 
-	private Equipment _dressedEquipment;
-
-	private bool _makeSound = true;
+	private readonly Equipment _dressedEquipment;
 
 	private Camera _camera;
 
@@ -104,7 +99,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	public TaleWorlds.MountAndBlade.BodyGenerator BodyGen { get; private set; }
 
-	public BodyGeneratorView(ControlCharacterCreationStage affirmativeAction, TextObject affirmativeActionText, ControlCharacterCreationStage negativeAction, TextObject negativeActionText, BasicCharacterObject character, bool openedFromMultiplayer, IFaceGeneratorCustomFilter filter, Equipment dressedEquipment = null, ControlCharacterCreationStageReturnInt getCurrentStageIndexAction = null, ControlCharacterCreationStageReturnInt getTotalStageCountAction = null, ControlCharacterCreationStageReturnInt getFurthestIndexAction = null, ControlCharacterCreationStageWithInt goToIndexAction = null)
+	public BodyGeneratorView(ControlCharacterCreationStage affirmativeAction, TextObject affirmativeActionText, ControlCharacterCreationStage negativeAction, TextObject negativeActionText, BasicCharacterObject character, bool openedFromMultiplayer, IFaceGeneratorCustomFilter filter, Equipment dressedEquipment = null, ControlCharacterCreationStageReturnInt getCurrentStageIndexAction = null, ControlCharacterCreationStageReturnInt getTotalStageCountAction = null, ControlCharacterCreationStageReturnInt getFurthestIndexAction = null, ControlCharacterCreationStageWithInt goToIndexAction = null, FaceGenHistory faceGenHistory = null)
 	{
 		_affirmativeAction = affirmativeAction;
 		_negativeAction = negativeAction;
@@ -123,11 +118,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		faceGenerationParams.UseCache = true;
 		faceGenerationParams.UseGpuMorph = true;
 		SkeletonType = (BodyGen.IsFemale ? SkeletonType.Female : SkeletonType.Male);
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_facegenCategory = spriteData.SpriteCategories["ui_facegen"];
-		_facegenCategory.Load(resourceContext, uIResourceDepot);
+		_facegenCategory = UIResourceManager.LoadSpriteCategory("ui_facegen");
 		OpenScene();
 		AddCharacterEntity();
 		bool openedFromMultiplayer2 = _openedFromMultiplayer;
@@ -139,22 +130,22 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		{
 			DataSource = new FaceGenVM(BodyGen, this, OnHeightChanged, OnAgeChanged, affirmativeActionText, negativeActionText, _getCurrentStageIndexAction(), _getTotalStageCountAction(), _getFurthestIndexAction(), GoToIndex, canChangeGender: true, openedFromMultiplayer, filter);
 		}
+		DataSource.InitializeHistory(faceGenHistory);
 		DataSource.SetPreviousTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToPreviousTab"));
 		DataSource.SetNextTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToNextTab"));
 		DataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		DataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
-		DataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("FaceGenHotkeyCategory").GetGameKey(55));
 		DataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("FaceGenHotkeyCategory").GetGameKey(56));
+		DataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("FaceGenHotkeyCategory").GetGameKey(57));
 		DataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("FaceGenHotkeyCategory").RegisteredGameAxisKeys.FirstOrDefault((GameAxisKey x) => x.Id == "CameraAxisX"));
 		DataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("FaceGenHotkeyCategory").RegisteredGameAxisKeys.FirstOrDefault((GameAxisKey x) => x.Id == "CameraAxisY"));
 		DataSource.SetFaceGenerationParams(faceGenerationParams);
 		DataSource.Refresh(clearProperties: true);
-		GauntletLayer = new GauntletLayer(1);
+		GauntletLayer = new GauntletLayer("Facegen", 1);
 		GauntletLayer.InputRestrictions.SetInputRestrictions();
 		GauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 		GauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		GauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("FaceGenHotkeyCategory"));
-		GauntletLayer.InputRestrictions.SetCanOverrideFocusOnHit(canOverrideFocusOnHit: true);
 		GauntletLayer.IsFocusLayer = true;
 		ScreenManager.TrySetFocus(GauntletLayer);
 		_viewMovie = GauntletLayer.LoadMovie("FaceGen", DataSource);
@@ -186,11 +177,12 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		SceneInitializationData initData = default(SceneInitializationData);
 		initData.InitPhysicsWorld = false;
 		_facegenScene.Read("character_menu_new", ref initData);
+		_facegenScene.SetClothSimulationState(state: true);
 		_facegenScene.SetShadow(shadowEnabled: true);
 		_facegenScene.SetDynamicShadowmapCascadesRadiusMultiplier(0.1f);
 		_facegenScene.FindEntityWithName("cradle")?.SetVisibilityExcludeParents(visible: false);
 		_facegenScene.DisableStaticShadows(value: true);
-		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_facegenScene, 32);
+		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_facegenScene);
 		_camera = Camera.CreateCamera();
 		_defaultCameraGlobalFrame = InitCamera(_camera, new Vec3(6.45f, 5.15f, 1.75f));
 		_targetCameraGlobalFrame = _defaultCameraGlobalFrame;
@@ -202,7 +194,6 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		SceneLayer.SetRenderWithPostfx(value: true);
 		SceneLayer.SetPostfxFromConfig();
 		SceneLayer.SceneView.SetResolutionScaling(value: true);
-		SceneLayer.InputRestrictions.SetCanOverrideFocusOnHit(canOverrideFocusOnHit: true);
 		int num = -1;
 		num &= -5;
 		SceneLayer.SetPostfxConfigParams(num);
@@ -228,10 +219,10 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 			.UseTesselation(useTesselation: false)
 			.PrepareImmediately(prepareImmediately: true);
 		_nextVisualToShow = AgentVisuals.Create(data, "facegenvisual", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
-		_nextVisualToShow.GetEntity().Skeleton.SetAgentActionChannel(1, act_inventory_idle_start_cached);
-		_nextVisualToShow.GetEntity();
+		GameEntity entity = _nextVisualToShow.GetEntity();
+		entity.Skeleton.SetAgentActionChannel(1, in ActionIndexCache.act_inventory_idle_start);
 		_nextVisualToShow.SetAgentLodZeroOrMaxExternal(makeZero: true);
-		_nextVisualToShow.GetEntity().CheckResources(addToQueue: true, checkFaceResources: true);
+		entity.CheckResources(addToQueue: true, checkFaceResources: true);
 		_nextVisualToShow.SetVisible(value: false);
 		_visualsBeingPrepared.Add(new KeyValuePair<AgentVisuals, int>(_nextVisualToShow, 1));
 		SceneLayer.SetFocusedShadowmap(enable: true, ref _initialCharacterFrame.origin, 0.59999996f);
@@ -273,20 +264,27 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	public bool ReadyToRender()
 	{
-		if (SceneLayer != null && SceneLayer.SceneView != null && SceneLayer.SceneView.ReadyToRender())
+		if (SceneLayer != null && SceneLayer.SceneView != null)
 		{
-			return true;
+			return SceneLayer.SceneView.ReadyToRender();
 		}
 		return false;
 	}
 
 	public void OnTick(float dt)
 	{
-		DataSource.CharacterGamepadControlsEnabled = Input.IsGamepadActive && SceneLayer.IsHitThisFrame;
-		TickUserInputs(dt);
+		TickInput(dt);
 		if (SceneLayer != null && SceneLayer.ReadyToRender())
 		{
 			LoadingWindow.DisableGlobalLoadingWindow();
+		}
+		if (_makeVoiceInFrames >= 0)
+		{
+			if (_makeVoiceInFrames == 0)
+			{
+				((IFaceGeneratorHandler)this).MakeVoice();
+			}
+			_makeVoiceInFrames--;
 		}
 		if (_refreshCharacterEntityNextFrame)
 		{
@@ -297,9 +295,9 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		{
 			Skeleton skeleton = _visualToShow.GetVisuals().GetSkeleton();
 			bool flag = skeleton.GetAnimationParameterAtChannel(1) > 0.6f;
-			if (skeleton.GetActionAtChannel(1) == act_command_leftstance_cached && flag)
+			if (skeleton.GetActionAtChannel(1) == ActionIndexCache.act_command_leftstance && flag)
 			{
-				_visualToShow.GetEntity().Skeleton.SetAgentActionChannel(1, act_inventory_idle_cached);
+				_visualToShow.GetEntity().Skeleton.SetAgentActionChannel(1, in ActionIndexCache.act_inventory_idle);
 			}
 		}
 		if (!_openedFromMultiplayer)
@@ -317,7 +315,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 				string hairTags = "";
 				string beardTags = "";
 				string tatooTags = "";
-				BodyGen.CurrentBodyProperties = MBBodyProperties.GetRandomBodyProperties(BodyGen.Race, BodyGen.IsFemale, BodyGen.BodyPropertiesMin, BodyGen.BodyPropertiesMax, 0, MBRandom.RandomInt(), hairTags, beardTags, tatooTags);
+				BodyGen.CurrentBodyProperties = MBBodyProperties.GetRandomBodyProperties(BodyGen.Race, BodyGen.IsFemale, BodyGen.BodyPropertiesMin, BodyGen.BodyPropertiesMax, 0, MBRandom.RandomInt(), hairTags, beardTags, tatooTags, 0f);
 				SetNewBodyPropertiesAndBodyGen(BodyGen.CurrentBodyProperties);
 				DataSource.SetBodyProperties(BodyGen.CurrentBodyProperties, ignoreDebugValues: false);
 				DataSource.UpdateFacegen();
@@ -406,6 +404,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		MBAgentRendererSceneController.DestructAgentRendererSceneController(_facegenScene, _agentRendererSceneController, deleteThisFrame: false);
 		_agentRendererSceneController = null;
 		_facegenScene.ClearAll();
+		_facegenScene.ManualInvalidate();
 		_facegenScene = null;
 		SceneLayer.SceneView.SetEnable(value: false);
 		SceneLayer.SceneView.ClearAll(clearScene: true, removeTerrain: true);
@@ -427,57 +426,79 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		}
 	}
 
-	private void TickUserInputs(float dt)
+	private void TickInput(float dt)
 	{
-		if (SceneLayer.Input.IsHotKeyReleased("Ascend") || SceneLayer.Input.IsHotKeyReleased("Rotate") || SceneLayer.Input.IsHotKeyReleased("Zoom"))
+		DataSource.CharacterGamepadControlsEnabled = Input.IsGamepadActive && SceneLayer.IsHitThisFrame;
+		if (SceneLayer.IsHitThisFrame && ScreenManager.FocusedLayer == GauntletLayer)
+		{
+			GauntletLayer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(GauntletLayer);
+			SceneLayer.IsFocusLayer = true;
+			ScreenManager.TrySetFocus(SceneLayer);
+		}
+		else if (!SceneLayer.IsHitThisFrame && ScreenManager.FocusedLayer == SceneLayer)
+		{
+			SceneLayer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(SceneLayer);
+			GauntletLayer.IsFocusLayer = true;
+			ScreenManager.TrySetFocus(GauntletLayer);
+		}
+		Vec2 vec = new Vec2(SceneLayer.Input.GetNormalizedMouseMoveX() * 1920f, SceneLayer.Input.GetNormalizedMouseMoveY() * 1080f);
+		bool flag = SceneLayer.Input.IsHotKeyDown("Zoom");
+		bool flag2 = SceneLayer.Input.IsHotKeyDown("Rotate");
+		bool flag3 = SceneLayer.Input.IsHotKeyDown("Ascend");
+		if (flag || flag2 || flag3)
+		{
+			MBWindowManager.DontChangeCursorPos();
+			GauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+		}
+		else
 		{
 			GauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: true);
 		}
-		Vec2 vec = new Vec2(0f - SceneLayer.Input.GetMouseMoveX(), 0f - SceneLayer.Input.GetMouseMoveY());
-		bool num = SceneLayer.Input.IsHotKeyDown("Zoom");
-		float gameKeyState = SceneLayer.Input.GetGameKeyState(55);
-		float num2 = SceneLayer.Input.GetGameKeyState(56) - gameKeyState;
-		float num3 = (num ? (vec.y * 0.002f) : ((num2 != 0f) ? (num2 * 0.02f) : (SceneLayer.Input.GetDeltaMouseScroll() * -0.001f)));
+		float gameKeyState = SceneLayer.Input.GetGameKeyState(56);
+		float inputValue = SceneLayer.Input.GetGameKeyState(57) - gameKeyState;
+		float num;
+		if (Input.IsGamepadActive)
+		{
+			NormalizeControllerInputForDeadZone(ref inputValue, 0.1f);
+			num = inputValue * 5f * dt;
+		}
+		else
+		{
+			float num2 = SceneLayer.Input.GetDeltaMouseScroll() * -1f;
+			float num3 = (flag ? (vec.y * -1f) : 0f);
+			num = num2 * 0.002f + num3 * 0.004f;
+		}
 		float length = (_targetCameraGlobalFrame.origin.AsVec2 - _initialCharacterFrame.origin.AsVec2).Length;
-		_cameraCurrentDistanceAdder = MBMath.ClampFloat(_cameraCurrentDistanceAdder + num3, 0.3f - length, 3f - length);
-		if (num)
+		_cameraCurrentDistanceAdder = MBMath.ClampFloat(_cameraCurrentDistanceAdder + num, 0.3f - length, 3f - length);
+		float num4;
+		if (Input.IsGamepadActive)
 		{
-			MBWindowManager.DontChangeCursorPos();
-			GauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			float inputValue2 = SceneLayer.Input.GetGameKeyAxis("CameraAxisX");
+			NormalizeControllerInputForDeadZone(ref inputValue2, 0.1f);
+			num4 = inputValue2 * 400f * dt;
 		}
-		float gameKeyAxis = SceneLayer.Input.GetGameKeyAxis("CameraAxisX");
-		gameKeyAxis = ((!(TaleWorlds.Library.MathF.Abs(gameKeyAxis) < 0.1f)) ? ((gameKeyAxis - (float)TaleWorlds.Library.MathF.Sign(gameKeyAxis) * 0.1f) / 0.9f) : 0f);
-		bool num4 = SceneLayer.Input.IsHotKeyDown("Rotate");
-		float num5 = (num4 ? (vec.x * -0.004f) : (gameKeyAxis * -0.02f));
-		_characterTargetRotation = MBMath.WrapAngle(_characterTargetRotation + num5);
-		if (num4)
+		else
 		{
-			MBWindowManager.DontChangeCursorPos();
-			GauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			num4 = (flag2 ? vec.x : 0f) * 0.2f;
 		}
-		if (SceneLayer.Input.IsHotKeyDown("Ascend"))
+		_characterTargetRotation = MBMath.WrapAngle(_characterTargetRotation + num4 * (System.MathF.PI / 180f));
+		float num5 = ((_visualToShow != null) ? _visualToShow.GetScale() : 1f);
+		float minValue = 0.15f - _targetCameraGlobalFrame.origin.z;
+		float maxValue = 1.9f * num5 - _targetCameraGlobalFrame.origin.z;
+		float num6;
+		if (Input.IsGamepadActive)
 		{
-			float num6 = ((_visualToShow != null) ? _visualToShow.GetScale() : 1f);
-			float value = _cameraCurrentElevationAdder - vec.y * 0.002f;
-			float minValue = 0.15f - _targetCameraGlobalFrame.origin.z;
-			float maxValue = 1.9f * num6 - _targetCameraGlobalFrame.origin.z;
-			_cameraCurrentElevationAdder = MBMath.ClampFloat(value, minValue, maxValue);
-			MBWindowManager.DontChangeCursorPos();
-			GauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			float inputValue3 = SceneLayer.Input.GetGameKeyAxis("CameraAxisY");
+			NormalizeControllerInputForDeadZone(ref inputValue3, 0.1f);
+			num6 = inputValue3 * 2f * dt;
 		}
-		else if (Input.IsGamepadActive)
+		else
 		{
-			float num7 = 0f - SceneLayer.Input.GetGameKeyAxis("CameraAxisY");
-			if (TaleWorlds.Library.MathF.Abs(num7) > 0.1f)
-			{
-				num7 = (num7 - (float)TaleWorlds.Library.MathF.Sign(num7) * 0.1f) / 0.9f;
-				float num8 = ((_visualToShow != null) ? _visualToShow.GetScale() : 1f);
-				float value2 = _cameraCurrentElevationAdder - num7 * 0.01f;
-				float minValue2 = 0.15f - _targetCameraGlobalFrame.origin.z;
-				float maxValue2 = 1.9f * num8 - _targetCameraGlobalFrame.origin.z;
-				_cameraCurrentElevationAdder = MBMath.ClampFloat(value2, minValue2, maxValue2);
-			}
+			num6 = (flag3 ? vec.y : 0f) * 0.002f;
 		}
+		_cameraCurrentElevationAdder = MBMath.ClampFloat(_cameraCurrentElevationAdder + num6, minValue, maxValue);
 		if (IsHotKeyPressedOnAnyLayer("SwitchToPreviousTab"))
 		{
 			UISoundsHelper.PlayUISound("event:/ui/tab");
@@ -506,6 +527,18 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 			{
 				InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_error").ToString(), GameTexts.FindText("str_facegen_error_on_paste").ToString(), isAffirmativeOptionShown: false, isNegativeOptionShown: true, "", GameTexts.FindText("str_ok").ToString(), null, null));
 			}
+		}
+	}
+
+	private void NormalizeControllerInputForDeadZone(ref float inputValue, float controllerDeadZone)
+	{
+		if (TaleWorlds.Library.MathF.Abs(inputValue) < controllerDeadZone)
+		{
+			inputValue = 0f;
+		}
+		else
+		{
+			inputValue = (inputValue - (float)TaleWorlds.Library.MathF.Sign(inputValue) * controllerDeadZone) / (1f - controllerDeadZone);
 		}
 	}
 
@@ -545,11 +578,11 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 			.Race(BodyGen.Race)
 			.PrepareImmediately(prepareImmediately: true);
 		AgentVisuals obj = _visualToShow ?? _nextVisualToShow;
-		ActionIndexCache actionAtChannel = obj.GetEntity().Skeleton.GetActionAtChannel(1);
+		ActionIndexCache actionIndex = obj.GetEntity().Skeleton.GetActionAtChannel(1);
 		float animationParameterAtChannel = obj.GetVisuals().GetSkeleton().GetAnimationParameterAtChannel(1);
 		_nextVisualToShow = AgentVisuals.Create(data, "facegenvisual", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
 		_nextVisualToShow.SetAgentLodZeroOrMax(value: true);
-		_nextVisualToShow.GetEntity().Skeleton.SetAgentActionChannel(1, actionAtChannel, animationParameterAtChannel);
+		_nextVisualToShow.GetEntity().Skeleton.SetAgentActionChannel(1, in actionIndex, animationParameterAtChannel);
 		_nextVisualToShow.GetEntity().SetEnforcedMaximumLodLevel(0);
 		_nextVisualToShow.GetEntity().CheckResources(addToQueue: true, checkFaceResources: true);
 		_nextVisualToShow.SetVisible(value: false);
@@ -563,12 +596,14 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		_visualsBeingPrepared.Add(new KeyValuePair<AgentVisuals, int>(_nextVisualToShow, 1));
 	}
 
-	void IFaceGeneratorHandler.MakeVoice(int voiceIndex, float pitch)
+	void IFaceGeneratorHandler.MakeVoice()
 	{
-		if (_makeSound)
-		{
-			_visualToShow?.MakeRandomVoiceForFacegen();
-		}
+		_visualToShow?.MakeRandomVoiceForFacegen();
+	}
+
+	void IFaceGeneratorHandler.MakeVoiceDelayed()
+	{
+		_makeVoiceInFrames = 2;
 	}
 
 	void IFaceGeneratorHandler.RefreshCharacterEntity()
@@ -604,7 +639,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		if (TaleWorlds.MountAndBlade.Mission.Current != null)
 		{
 			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.UpdateBodyProperties(BodyGen.CurrentBodyProperties);
-			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.EquipItemsFromSpawnEquipment(neededBatchedItems: false);
+			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false);
 		}
 		_affirmativeAction();
 	}
@@ -694,7 +729,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 
 	private void UpdateCamera(float dt)
 	{
-		_characterCurrentRotation += MBMath.WrapAngle(_characterTargetRotation - _characterCurrentRotation) * TaleWorlds.Library.MathF.Min(1f, 20f * dt);
+		_characterCurrentRotation = TaleWorlds.Library.MathF.AngleLerp(_characterCurrentRotation, _characterTargetRotation, TaleWorlds.Library.MathF.Min(1f, 20f * dt));
 		_targetCameraGlobalFrame.origin = _defaultCameraGlobalFrame.origin;
 		if (_visualToShow != null)
 		{
@@ -741,7 +776,11 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		Vec3 origin = _targetCameraGlobalFrame.origin;
 		origin.AsVec2 = _targetCameraGlobalFrame.origin.AsVec2 + vec2 * _cameraCurrentDistanceAdder;
 		origin.z += _cameraCurrentElevationAdder;
-		_camera.Frame = new MatrixFrame(_camera.Frame.rotation, _camera.Frame.origin * (1f - 10f * dt) + origin * 10f * dt);
+		Camera camera = _camera;
+		MatrixFrame frame2 = _camera.Frame;
+		ref Mat3 rotation = ref frame2.rotation;
+		Vec3 o = _camera.Frame.origin * (1f - 10f * dt) + origin * 10f * dt;
+		camera.Frame = new MatrixFrame(in rotation, in o);
 		SceneLayer.SetCamera(_camera);
 	}
 }

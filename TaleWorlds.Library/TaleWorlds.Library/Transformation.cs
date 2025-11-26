@@ -20,7 +20,7 @@ public struct Transformation
 			MatrixFrame result = default(MatrixFrame);
 			result.origin = Origin;
 			result.rotation = Rotation;
-			result.rotation.ApplyScaleLocal(Scale);
+			result.rotation.ApplyScaleLocal(in Scale);
 			result.Fill();
 			return result;
 		}
@@ -37,13 +37,9 @@ public struct Transformation
 	{
 		Mat3 rotation = matrixFrame.rotation;
 		Vec3 scaleVector = matrixFrame.rotation.GetScaleVector();
-		rotation.ApplyScaleLocal(new Vec3(1f / scaleVector.X, 1f / scaleVector.Y, 1f / scaleVector.Z));
+		Vec3 scaleAmountXYZ = new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z);
+		rotation.ApplyScaleLocal(in scaleAmountXYZ);
 		return new Transformation(matrixFrame.origin, rotation, scaleVector);
-	}
-
-	public bool HasNegativeScale()
-	{
-		return Scale.X * Scale.Y * Scale.Z < 0f;
 	}
 
 	public static Transformation CreateFromRotation(Mat3 rotation)
@@ -53,22 +49,26 @@ public struct Transformation
 
 	public Vec3 TransformToParent(Vec3 v)
 	{
-		return AsMatrixFrame.TransformToParent(v);
+		return AsMatrixFrame.TransformToParent(in v);
 	}
 
 	public Transformation TransformToParent(Transformation t)
 	{
-		return CreateFromMatrixFrame(AsMatrixFrame.TransformToParent(t.AsMatrixFrame));
+		MatrixFrame asMatrixFrame = AsMatrixFrame;
+		MatrixFrame m = t.AsMatrixFrame;
+		return CreateFromMatrixFrame(asMatrixFrame.TransformToParent(in m));
 	}
 
 	public Vec3 TransformToLocal(Vec3 v)
 	{
-		return AsMatrixFrame.TransformToLocal(v);
+		return AsMatrixFrame.TransformToLocal(in v);
 	}
 
 	public Transformation TransformToLocal(Transformation t)
 	{
-		return CreateFromMatrixFrame(AsMatrixFrame.TransformToLocal(t.AsMatrixFrame));
+		MatrixFrame asMatrixFrame = AsMatrixFrame;
+		MatrixFrame m = t.AsMatrixFrame;
+		return CreateFromMatrixFrame(asMatrixFrame.TransformToLocal(in m));
 	}
 
 	public void Rotate(float radian, Vec3 axis)
@@ -76,7 +76,7 @@ public struct Transformation
 		Transformation transformation = this;
 		transformation.Scale = Vec3.One;
 		MatrixFrame asMatrixFrame = transformation.AsMatrixFrame;
-		asMatrixFrame.Rotate(radian, axis);
+		asMatrixFrame.Rotate(radian, in axis);
 		Rotation = asMatrixFrame.rotation;
 		Origin = asMatrixFrame.origin;
 	}

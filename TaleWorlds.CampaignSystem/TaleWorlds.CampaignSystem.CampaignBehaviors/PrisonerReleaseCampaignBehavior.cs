@@ -61,18 +61,23 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 
 	private void ClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
 	{
-		if (detail != ChangeKingdomAction.ChangeKingdomActionDetail.CreateKingdom)
+		if (detail == ChangeKingdomAction.ChangeKingdomActionDetail.CreateKingdom)
 		{
-			ReleasePrisonersInternal(clan);
-			if (oldKingdom != null)
+			return;
+		}
+		ReleasePrisonersInternal(clan);
+		if (oldKingdom != null)
+		{
+			ReleasePrisonersInternal(oldKingdom);
+			foreach (IFaction item in oldKingdom.FactionsAtWarWith)
 			{
-				ReleasePrisonersInternal(oldKingdom);
+				ReleasePrisonersInternal(item);
 			}
-			if (newKingdom != null)
-			{
-				OnAfterClanJoinedKingdom(clan, newKingdom);
-				ReleasePrisonersInternal(newKingdom);
-			}
+		}
+		if (newKingdom != null)
+		{
+			OnAfterClanJoinedKingdom(clan, newKingdom);
+			ReleasePrisonersInternal(newKingdom);
 		}
 	}
 
@@ -136,9 +141,9 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 
 	private static void ReleasePrisonersForClan(Clan clan, IFaction faction)
 	{
-		foreach (Hero lord in clan.Lords)
+		foreach (Hero aliveLord in clan.AliveLords)
 		{
-			foreach (CaravanPartyComponent ownedCaravan in lord.OwnedCaravans)
+			foreach (CaravanPartyComponent ownedCaravan in aliveLord.OwnedCaravans)
 			{
 				ReleasePartyPrisoners(ownedCaravan.MobileParty, faction);
 			}
@@ -212,20 +217,20 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 		if (hero.PartyBelongedToAsPrisoner.IsSettlement && hero.PartyBelongedToAsPrisoner.Settlement.Town != null && hero.PartyBelongedToAsPrisoner.Settlement.Town.Governor != null)
 		{
 			Town town = hero.PartyBelongedToAsPrisoner.Settlement.Town;
-			if (hero.PartyBelongedToAsPrisoner.Settlement.IsTown)
+			if (hero.PartyBelongedToAsPrisoner.Settlement.IsTown || hero.PartyBelongedToAsPrisoner.Settlement.IsCastle)
 			{
-				if (town.Governor.GetPerkValue(DefaultPerks.Riding.MountedPatrols))
-				{
-					stat.AddFactor(DefaultPerks.Riding.MountedPatrols.SecondaryBonus, DefaultPerks.Riding.MountedPatrols.Description);
-				}
 				if (town.Governor.GetPerkValue(DefaultPerks.Roguery.SweetTalker))
 				{
 					stat.AddFactor(DefaultPerks.Roguery.SweetTalker.SecondaryBonus, DefaultPerks.Roguery.SweetTalker.Description);
 				}
-			}
-			if ((hero.PartyBelongedToAsPrisoner.Settlement.IsTown || hero.PartyBelongedToAsPrisoner.Settlement.IsCastle) && town.Governor.GetPerkValue(DefaultPerks.Engineering.DungeonArchitect))
-			{
-				stat.AddFactor(DefaultPerks.Engineering.DungeonArchitect.SecondaryBonus, DefaultPerks.Engineering.DungeonArchitect.Description);
+				if (town.Governor.GetPerkValue(DefaultPerks.Engineering.DungeonArchitect))
+				{
+					stat.AddFactor(DefaultPerks.Engineering.DungeonArchitect.SecondaryBonus, DefaultPerks.Engineering.DungeonArchitect.Description);
+				}
+				if (town.Governor.GetPerkValue(DefaultPerks.Riding.MountedPatrols))
+				{
+					stat.AddFactor(DefaultPerks.Riding.MountedPatrols.SecondaryBonus, DefaultPerks.Riding.MountedPatrols.Description);
+				}
 			}
 		}
 		if (hero.PartyBelongedToAsPrisoner.IsMobile)
@@ -243,7 +248,7 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.RansomBroker, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref stat);
 			}
 		}
-		if (hero.PartyBelongedToAsPrisoner.IsMobile && hero.PartyBelongedToAsPrisoner.MobileParty.HasPerk(DefaultPerks.Scouting.KeenSight, checkSecondaryRole: true))
+		if (hero.PartyBelongedToAsPrisoner.IsMobile && !hero.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.KeenSight, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref stat);
 		}
@@ -286,7 +291,7 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 	private void ApplyEscapeChanceToExceededPrisoners(CharacterObject character, MobileParty capturerParty)
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(0.1f);
-		if (capturerParty.HasPerk(DefaultPerks.Athletics.Stamina, checkSecondaryRole: true))
+		if (!capturerParty.IsCurrentlyAtSea && capturerParty.HasPerk(DefaultPerks.Athletics.Stamina, checkSecondaryRole: true))
 		{
 			explainedNumber.AddFactor(-0.1f, DefaultPerks.Athletics.Stamina.Name);
 		}

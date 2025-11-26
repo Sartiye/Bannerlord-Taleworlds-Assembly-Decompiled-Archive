@@ -25,7 +25,7 @@ public class HideoutSpawnPointGroup : SynchedMissionObject
 		{
 			array[i] = spawnPointTagAffix + ((FormationClass)i).GetName().ToLower();
 		}
-		foreach (GameEntity item in from ce in base.GameEntity.GetChildren()
+		foreach (WeakGameEntity item in from ce in base.GameEntity.GetChildren()
 			where ce.Tags.Any((string t) => t.StartsWith(spawnPointTagAffix))
 			select ce)
 		{
@@ -33,7 +33,7 @@ public class HideoutSpawnPointGroup : SynchedMissionObject
 			{
 				if (item.HasTag(array[j]))
 				{
-					_spawnPoints[j] = item;
+					_spawnPoints[j] = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(item);
 					break;
 				}
 			}

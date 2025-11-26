@@ -18,11 +18,9 @@ public class SandBoxManager : GameHandler
 
 	public IAgentBehaviorManager AgentBehaviorManager { get; set; }
 
-	public IModuleManager ModuleManager { get; set; }
-
 	public ISaveManager SandBoxSaveManager { get; set; }
 
-	public static SandBoxManager Instance => Game.Current.GetGameHandler<SandBoxManager>();
+	public static SandBoxManager Instance { get; private set; }
 
 	public CampaignGameStarter GameStarter { get; private set; }
 
@@ -34,7 +32,10 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new PlayerCaptivityCampaignBehavior());
 		gameStarter.AddBehavior(new BackstoryCampaignBehavior());
 		gameStarter.AddBehavior(new TradeCampaignBehavior());
-		gameStarter.AddBehavior(new BanditsCampaignBehavior());
+		gameStarter.AddBehavior(new BanditSpawnCampaignBehavior());
+		gameStarter.AddBehavior(new DesertersCampaignBehavior());
+		gameStarter.AddBehavior(new BanditInteractionsCampaignBehavior());
+		gameStarter.AddBehavior(new WorkshopsCharactersCampaignBehavior());
 		gameStarter.AddBehavior(new CharacterRelationCampaignBehavior());
 		gameStarter.AddBehavior(new DesertionCampaignBehavior());
 		gameStarter.AddBehavior(new FoodConsumptionBehavior());
@@ -43,6 +44,7 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new ItemConsumptionBehavior());
 		gameStarter.AddBehavior(new GarrisonTroopsCampaignBehavior());
 		gameStarter.AddBehavior(new CaravansCampaignBehavior());
+		gameStarter.AddBehavior(new CaravanConversationsCampaignBehavior());
 		gameStarter.AddBehavior(new GovernorCampaignBehavior());
 		gameStarter.AddBehavior(new HideoutCampaignBehavior());
 		gameStarter.AddBehavior(new PartiesBuyFoodCampaignBehavior());
@@ -69,16 +71,13 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new CraftingCampaignBehavior());
 		gameStarter.AddBehavior(new MapTracksCampaignBehavior());
 		gameStarter.AddBehavior(new HeroAgentSpawnCampaignBehavior());
+		gameStarter.AddBehavior(new NotableHelperCharacterCampaignBehavior());
 		gameStarter.AddBehavior(new CharacterDevelopmentCampaignBehavior());
-		gameStarter.AddBehavior(new TradeSkillCampaingBehavior());
-		gameStarter.AddBehavior(new TavernEmployeesCampaignBehavior());
+		gameStarter.AddBehavior(new TradeSkillCampaignBehavior());
 		gameStarter.AddBehavior(new RecruitmentCampaignBehavior());
 		gameStarter.AddBehavior(new VillageHostileActionCampaignBehavior());
 		gameStarter.AddBehavior(new PlayerTownVisitCampaignBehavior());
-		gameStarter.AddBehavior(new PrisonBreakCampaignBehavior());
 		gameStarter.AddBehavior(new DynamicBodyCampaignBehavior());
-		gameStarter.AddBehavior(new TownMerchantsCampaignBehavior());
-		gameStarter.AddBehavior(new OutlawClansCampaignBehavior());
 		gameStarter.AddBehavior(new VillageTradeBoundCampaignBehavior());
 		gameStarter.AddBehavior(new VillageGoodProductionCampaignBehavior());
 		gameStarter.AddBehavior(new SiegeAftermathCampaignBehavior());
@@ -87,11 +86,14 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new VillageHealCampaignBehavior());
 		gameStarter.AddBehavior(new PlayerVariablesBehavior());
 		gameStarter.AddBehavior(new MobilePartyTrainingBehavior());
+		gameStarter.AddBehavior(new TradeAgreementsCampaignBehavior());
 		gameStarter.AddBehavior(new EducationCampaignBehavior());
 		gameStarter.AddBehavior(new RansomOfferCampaignBehavior());
 		gameStarter.AddBehavior(new PeaceOfferCampaignBehavior());
 		gameStarter.AddBehavior(new MarriageOfferCampaignBehavior());
 		gameStarter.AddBehavior(new VassalAndMercenaryOfferCampaignBehavior());
+		gameStarter.AddBehavior(new AllianceCampaignBehavior());
+		gameStarter.AddBehavior(new TributesCampaignBehaviour());
 		gameStarter.AddBehavior(new CommentOnLeaveFactionBehavior());
 		gameStarter.AddBehavior(new CommentOnChangeRomanticStateBehavior());
 		gameStarter.AddBehavior(new CommentOnChangeSettlementOwnerBehavior());
@@ -116,9 +118,10 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new AiMilitaryBehavior());
 		gameStarter.AddBehavior(new AiPatrollingBehavior());
 		gameStarter.AddBehavior(new AiEngagePartyBehavior());
-		gameStarter.AddBehavior(new AiBanditPatrollingBehavior());
+		gameStarter.AddBehavior(new AiLandBanditPatrollingBehavior());
 		gameStarter.AddBehavior(new AiVisitSettlementBehavior());
 		gameStarter.AddBehavior(new AiPartyThinkBehavior());
+		gameStarter.AddBehavior(new AIMoveToNearestLandBehavior());
 		gameStarter.AddBehavior(new DiplomaticBartersBehavior());
 		gameStarter.AddBehavior(new SetPrisonerFreeBarterBehavior());
 		gameStarter.AddBehavior(new FiefBarterBehavior());
@@ -126,6 +129,7 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new GoldBarterBehavior());
 		gameStarter.AddBehavior(new TransferPrisonerBarterBehavior());
 		gameStarter.AddBehavior(new CompanionGrievanceBehavior());
+		gameStarter.AddBehavior(new CompanionRolesCampaignBehavior());
 		gameStarter.AddBehavior(new PlayerTrackCompanionBehavior());
 		gameStarter.AddBehavior(new RebellionsCampaignBehavior());
 		gameStarter.AddBehavior(new SallyOutsCampaignBehavior());
@@ -149,6 +153,7 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new KingdomDecisionProposalBehavior());
 		gameStarter.AddBehavior(new PartyRolesCampaignBehavior());
 		gameStarter.AddBehavior(new EmissarySystemCampaignBehavior());
+		gameStarter.AddBehavior(new CampaignFactionManagerBehaviour());
 		gameStarter.AddBehavior(new SiegeEventCampaignBehavior());
 		gameStarter.AddBehavior(new IssuesCampaignBehavior());
 		gameStarter.AddBehavior(new InfluenceGainCampaignBehavior());
@@ -196,7 +201,13 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new PerkResetCampaignBehavior());
 		gameStarter.AddBehavior(new SiegeAmbushCampaignBehavior());
 		gameStarter.AddBehavior(new MapWeatherCampaignBehavior());
+		gameStarter.AddBehavior(new GarrisonRecruitmentCampaignBehavior());
 		gameStarter.AddBehavior(new PartyDiplomaticHandlerCampaignBehavior());
+		gameStarter.AddBehavior(new ParleyCampaignBehavior());
+		gameStarter.AddBehavior(new CharacterCreationCampaignBehavior());
+		gameStarter.AddBehavior(new IncidentsCampaignBehaviour());
+		gameStarter.AddBehavior(new PatrolPartiesCampaignBehavior());
+		gameStarter.AddBehavior(new NotableSupportersCampaignBehavior());
 		gameStarter.AddModel(new DefaultCharacterDevelopmentModel());
 		gameStarter.AddModel(new DefaultValuationModel());
 		gameStarter.AddModel(new DefaultItemDiscardModel());
@@ -204,22 +215,28 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultInformationRestrictionModel());
 		gameStarter.AddModel(new DefaultMapDistanceModel());
 		gameStarter.AddModel(new DefaultPartyHealingModel());
+		gameStarter.AddModel(new DefaultCaravanModel());
 		gameStarter.AddModel(new DefaultPartyTrainingModel());
 		gameStarter.AddModel(new DefaultPartyTradeModel());
 		gameStarter.AddModel(new DefaultRansomValueCalculationModel());
 		gameStarter.AddModel(new DefaultRaidModel());
 		gameStarter.AddModel(new DefaultCombatSimulationModel());
+		gameStarter.AddModel(new DefaultFleetManagementModel());
 		gameStarter.AddModel(new DefaultCombatXpModel());
 		gameStarter.AddModel(new DefaultGenericXpModel());
 		gameStarter.AddModel(new DefaultSmithingModel());
+		gameStarter.AddModel(new DefaultTradeAgreementModel());
 		gameStarter.AddModel(new DefaultPartySpeedCalculatingModel());
 		gameStarter.AddModel(new DefaultPartyImpairmentModel());
 		gameStarter.AddModel(new DefaultCharacterStatsModel());
 		gameStarter.AddModel(new DefaultEncounterModel());
 		gameStarter.AddModel(new DefaultMobilePartyFoodConsumptionModel());
+		gameStarter.AddModel(new DefaultSceneModel());
 		gameStarter.AddModel(new DefaultPartyFoodBuyingModel());
 		gameStarter.AddModel(new DefaultPartyMoraleModel());
 		gameStarter.AddModel(new DefaultDiplomacyModel());
+		gameStarter.AddModel(new DefaultPartyTransitionModel());
+		gameStarter.AddModel(new DefaultHideoutModel());
 		gameStarter.AddModel(new DefaultKingdomCreationModel());
 		gameStarter.AddModel(new DefaultVillageProductionCalculatorModel());
 		gameStarter.AddModel(new DefaultVolunteerModel());
@@ -241,7 +258,11 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultKingdomDecisionPermissionModel());
 		gameStarter.AddModel(new DefaultEmissaryModel());
 		gameStarter.AddModel(new DefaultMilitaryPowerModel());
+		gameStarter.AddModel(new DefaultCampaignShipDamageModel());
+		gameStarter.AddModel(new DefaultShipCostModel());
+		gameStarter.AddModel(new DefaultCampaignShipParametersModel());
 		gameStarter.AddModel(new DefaultPartySizeLimitModel());
+		gameStarter.AddModel(new DefaultPartyShipLimitModel());
 		gameStarter.AddModel(new DefaultPartyWageModel());
 		gameStarter.AddModel(new DefaultPartyDesertionModel());
 		gameStarter.AddModel(new DefaultInventoryCapacityModel());
@@ -257,10 +278,12 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultSettlementProsperityModel());
 		gameStarter.AddModel(new DefaultSettlementGarrisonModel());
 		gameStarter.AddModel(new DefaultSettlementTaxModel());
+		gameStarter.AddModel(new DefaultHeroAgentLocationModel());
 		gameStarter.AddModel(new DefaultBarterModel());
 		gameStarter.AddModel(new DefaultPersuasionModel());
 		gameStarter.AddModel(new DefaultClanTierModel());
 		gameStarter.AddModel(new DefaultMinorFactionsModel());
+		gameStarter.AddModel(new DefaultDefectionModel());
 		gameStarter.AddModel(new DefaultClanPoliticsModel());
 		gameStarter.AddModel(new DefaultVassalRewardsModel());
 		gameStarter.AddModel(new DefaultClanFinanceModel());
@@ -300,6 +323,17 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultEquipmentSelectionModel());
 		gameStarter.AddModel(new DefaultAlleyModel());
 		gameStarter.AddModel(new DefaultVoiceOverModel());
+		gameStarter.AddModel(new DefaultCampaignTimeModel());
+		gameStarter.AddModel(new DefaultVillageTradeModel());
+		gameStarter.AddModel(new DefaultPartyNavigationModel());
+		gameStarter.AddModel(new DefaultMobilePartyAIModel());
+		gameStarter.AddModel(new DefaultHeroCreationModel());
+		gameStarter.AddModel(new DefaultBuildingModel());
+		gameStarter.AddModel(new DefaultShipStatModel());
+		gameStarter.AddModel(new DefaultIncidentModel());
+		gameStarter.AddModel(new DefaultBodyPropertiesModel());
+		gameStarter.AddModel(new DefaultSettlementPatrolModel());
+		gameStarter.AddModel(new DefaultAllianceModel());
 	}
 
 	public void OnCampaignStart(CampaignGameStarter gameInitializer, GameManagerBase gameManager, bool isSavedCampaign)
@@ -310,6 +344,16 @@ public class SandBoxManager : GameHandler
 		{
 			MBObjectManager.Instance.RemoveTemporaryTypes();
 		}
+	}
+
+	protected override void OnGameStart()
+	{
+		Instance = Game.Current.GetGameHandler<SandBoxManager>();
+	}
+
+	protected override void OnGameEnd()
+	{
+		Instance = null;
 	}
 
 	public void InitializeSandboxXMLs(bool isSavedCampaign)
@@ -366,7 +410,7 @@ public class SandBoxManager : GameHandler
 					objectType.InitializeHeroCharacterOnAfterLoad();
 					continue;
 				}
-				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 436);
+				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 484);
 				list.Add(objectType);
 			}
 		}

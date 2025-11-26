@@ -7,7 +7,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.FromClient.ToLobbyServer;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class UpdateUsedCosmeticItemsMessage : Message
 {
 	[JsonProperty]

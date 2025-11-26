@@ -192,7 +192,7 @@ public class MissionMultiplayerGameModeFlagDominationClient : MissionMultiplayer
 				num = 120f;
 				break;
 			default:
-				Debug.FailedAssert(string.Concat("A flag domination mode cannot be ", GameType, "."), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ClientGameModeLogics\\MissionMultiplayerGameModeFlagDominationClient.cs", "GetWarningTimer", 207);
+				Debug.FailedAssert(string.Concat("A flag domination mode cannot be ", GameType, "."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ClientGameModeLogics\\MissionMultiplayerGameModeFlagDominationClient.cs", "GetWarningTimer", 207);
 				break;
 			}
 			float num2 = (float)MultiplayerOptions.OptionType.RoundTimeLimit.GetIntValue() - num;
@@ -479,14 +479,14 @@ public class MissionMultiplayerGameModeFlagDominationClient : MissionMultiplayer
 				{
 					continue;
 				}
-				WorldPosition medianPosition = controlledFormation.QuerySystem.MedianPosition;
+				WorldPosition cachedMedianPosition = controlledFormation.CachedMedianPosition;
 				Vec2 vec = controlledFormation.SmoothedAverageUnitPosition;
 				if (!vec.IsValid)
 				{
-					vec = controlledFormation.QuerySystem.AveragePosition;
+					vec = controlledFormation.CachedAveragePosition;
 				}
-				medianPosition.SetVec2(vec);
-				BannerCode bannerCode = null;
+				cachedMedianPosition.SetVec2(vec);
+				Banner banner = null;
 				bool isAttacker = false;
 				bool isAlly = false;
 				if (controlledFormation.Team != null)
@@ -497,18 +497,18 @@ public class MissionMultiplayerGameModeFlagDominationClient : MissionMultiplayer
 					}
 					isAttacker = controlledFormation.Team.IsAttacker;
 					isAlly = controlledFormation.Team.IsPlayerAlly;
-					bannerCode = BannerCode.CreateFrom(controlledFormation.Banner);
+					banner = controlledFormation.Banner;
 				}
 				TargetIconType targetType2 = mPHeroClassForPeer?.IconType ?? TargetIconType.None;
-				list.Add(new CompassItemUpdateParams(controlledFormation, targetType2, medianPosition.GetNavMeshVec3(), bannerCode, isAttacker, isAlly));
+				list.Add(new CompassItemUpdateParams(controlledFormation, targetType2, cachedMedianPosition.GetNavMeshVec3(), banner, isAttacker, isAlly));
 			}
 			else
 			{
 				Agent controlledAgent = component2.ControlledAgent;
-				if (controlledAgent != null && controlledAgent.IsActive() && controlledAgent.Controller != Agent.ControllerType.Player)
+				if (controlledAgent != null && controlledAgent.IsActive() && controlledAgent.Controller != AgentControllerType.Player)
 				{
-					BannerCode bannerCode2 = BannerCode.CreateFrom(new Banner(component2.Peer.BannerCode, component2.Team.Color, component2.Team.Color2));
-					list.Add(new CompassItemUpdateParams(controlledAgent, mPHeroClassForPeer.IconType, controlledAgent.Position, bannerCode2, component2.Team.IsAttacker, component2.Team.IsPlayerAlly));
+					Banner banner2 = new Banner(component2.Peer.BannerCode, component2.Team.Color, component2.Team.Color2);
+					list.Add(new CompassItemUpdateParams(controlledAgent, mPHeroClassForPeer.IconType, controlledAgent.Position, banner2, component2.Team.IsAttacker, component2.Team.IsPlayerAlly));
 				}
 			}
 		}

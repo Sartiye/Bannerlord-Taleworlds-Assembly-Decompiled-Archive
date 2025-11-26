@@ -70,7 +70,8 @@ public class BehaviorWaitForLadders : BehaviorComponent
 		}
 		else if (_breachedWallSegment != null)
 		{
-			_followedEntity = _breachedWallSegment.GameEntity.CollectChildrenEntitiesWithTag("attacker_wait_pos").FirstOrDefault();
+			WeakGameEntity firstChildEntityWithTagRecursive = _breachedWallSegment.GameEntity.GetFirstChildEntityWithTagRecursive("attacker_wait_pos");
+			_followedEntity = GameEntity.CreateFromWeakEntity(firstChildEntityWithTagRecursive);
 			_followOrder = MovementOrder.MovementOrderFollowEntity(_followedEntity);
 		}
 		else
@@ -129,10 +130,10 @@ public class BehaviorWaitForLadders : BehaviorComponent
 			CalculateCurrentOrder();
 		}
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_behaviorState == BehaviorState.Follow && _followTacticalPosition != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_followTacticalPosition.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_followTacticalPosition.Width));
 		}
 		foreach (SiegeLadder ladder in _ladders)
 		{
@@ -145,10 +146,10 @@ public class BehaviorWaitForLadders : BehaviorComponent
 
 	protected override void OnBehaviorActivatedAux()
 	{
-		base.Formation.ArrangementOrder = (base.Formation.QuerySystem.HasShield ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetArrangementOrder(base.Formation.QuerySystem.HasShield ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

@@ -61,10 +61,6 @@ public class DefaultCampaignOptionsProvider : ICampaignOptionProvider
 
 	private IEnumerable<ICampaignOptionData> GetDifficultyRelatedOptions()
 	{
-		yield return new SelectionCampaignOptionData("PlayerReceivedDamage", 200, CampaignOptionEnableState.Enabled, () => (float)CampaignOptions.PlayerReceivedDamage, delegate(float value)
-		{
-			CampaignOptions.PlayerReceivedDamage = (CampaignOptions.Difficulty)value;
-		}, null, null, isRelatedToDifficultyPreset: true);
 		yield return new SelectionCampaignOptionData("PlayerTroopsReceivedDamage", 300, CampaignOptionEnableState.Enabled, () => (float)CampaignOptions.PlayerTroopsReceivedDamage, delegate(float value)
 		{
 			CampaignOptions.PlayerTroopsReceivedDamage = (CampaignOptions.Difficulty)value;
@@ -93,28 +89,38 @@ public class DefaultCampaignOptionsProvider : ICampaignOptionProvider
 		{
 			CampaignOptions.BattleDeath = (CampaignOptions.Difficulty)value;
 		}, null, GetBattleDeathDisabledStatusWithReason, isRelatedToDifficultyPreset: true);
+		yield return new SelectionCampaignOptionData("StealthAndDisguiseDifficulty", 1000, CampaignOptionEnableState.Enabled, () => (float)CampaignOptions.StealthAndDisguiseDifficulty, delegate(float value)
+		{
+			CampaignOptions.StealthAndDisguiseDifficulty = (CampaignOptions.Difficulty)value;
+		}, null, null, isRelatedToDifficultyPreset: true, GetDisguiseAndStealthDefaultPresetForValue, GetDisguiseAndStealthDefaultValueForDifficultyPreset);
 	}
 
-	private CampaignOptionsDifficultyPresets GetDefaultPresetForValue(float value)
+	private CampaignOptionsDifficultyPresets GetDisguiseAndStealthDefaultPresetForValue(float value)
 	{
-		return (int)value switch
+		switch ((int)value)
 		{
-			0 => CampaignOptionsDifficultyPresets.Freebooter, 
-			1 => CampaignOptionsDifficultyPresets.Warrior, 
-			2 => CampaignOptionsDifficultyPresets.Bannerlord, 
-			_ => CampaignOptionsDifficultyPresets.Custom, 
-		};
+		case 0:
+			return CampaignOptionsDifficultyPresets.Freebooter;
+		case 1:
+		case 2:
+			return CampaignOptionsDifficultyPresets.Warrior;
+		default:
+			return CampaignOptionsDifficultyPresets.Custom;
+		}
 	}
 
-	private float GetDefaultValueForDifficultyPreset(CampaignOptionsDifficultyPresets preset)
+	private float GetDisguiseAndStealthDefaultValueForDifficultyPreset(CampaignOptionsDifficultyPresets preset)
 	{
-		return preset switch
+		switch (preset)
 		{
-			CampaignOptionsDifficultyPresets.Freebooter => 0f, 
-			CampaignOptionsDifficultyPresets.Warrior => 1f, 
-			CampaignOptionsDifficultyPresets.Bannerlord => 2f, 
-			_ => -1f, 
-		};
+		case CampaignOptionsDifficultyPresets.Freebooter:
+			return 0f;
+		case CampaignOptionsDifficultyPresets.Warrior:
+		case CampaignOptionsDifficultyPresets.Bannerlord:
+			return 1f;
+		default:
+			return 0f;
+		}
 	}
 
 	private CampaignOptionDisableStatus GetBattleDeathDisabledStatusWithReason()

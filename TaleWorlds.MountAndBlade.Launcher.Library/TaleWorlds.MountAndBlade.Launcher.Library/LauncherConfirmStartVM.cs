@@ -103,7 +103,7 @@ public class LauncherConfirmStartVM : ViewModel
 					string moduleId = missmatchedDependentModules[j].MissmatchedDependencies[k].Item1.ModuleId;
 					string text = missmatchedDependentModules[j].MissmatchedDependencies[k].Item1.Version.ToString();
 					string text2 = missmatchedDependentModules[j].MissmatchedDependencies[k].Item2.ToString();
-					Description = Description + missmatchedModuleId + " depends on " + moduleId + "(" + text + "), current version is  " + moduleId + "(" + text2 + ")\n";
+					Description = Description + missmatchedModuleId + " depends on " + moduleId + "(" + text + "), current version is " + moduleId + "(" + text2 + ")\n";
 				}
 			}
 			Description += "\n";

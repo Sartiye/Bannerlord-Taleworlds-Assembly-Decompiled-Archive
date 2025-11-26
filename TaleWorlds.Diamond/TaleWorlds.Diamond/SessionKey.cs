@@ -36,7 +36,8 @@ public struct SessionKey
 
 	public byte[] ToByteArray()
 	{
-		return _guid.ToByteArray();
+		Guid guid = _guid;
+		return guid.ToByteArray();
 	}
 
 	public static bool operator ==(SessionKey a, SessionKey b)
@@ -53,7 +54,8 @@ public struct SessionKey
 	{
 		if (o != null && o is SessionKey sessionKey)
 		{
-			return _guid.Equals(sessionKey.Guid);
+			Guid guid = _guid;
+			return guid.Equals(sessionKey.Guid);
 		}
 		return false;
 	}

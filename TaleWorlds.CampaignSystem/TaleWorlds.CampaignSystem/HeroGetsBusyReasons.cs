@@ -6,5 +6,6 @@ public enum HeroGetsBusyReasons
 	BecomeEmissary,
 	BecomeCaravanLeader,
 	BecomeAlleyLeader,
-	SolvesIssue
+	SolvesIssue,
+	Traveling
 }

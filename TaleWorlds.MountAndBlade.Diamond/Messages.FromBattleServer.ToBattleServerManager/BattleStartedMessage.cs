@@ -6,7 +6,7 @@ using TaleWorlds.Diamond;
 namespace Messages.FromBattleServer.ToBattleServerManager;
 
 [Serializable]
-[MessageDescription("BattleServer", "BattleServerManager")]
+[MessageDescription("BattleServer", "BattleServerManager", true)]
 public class BattleStartedMessage : Message
 {
 	[JsonProperty]

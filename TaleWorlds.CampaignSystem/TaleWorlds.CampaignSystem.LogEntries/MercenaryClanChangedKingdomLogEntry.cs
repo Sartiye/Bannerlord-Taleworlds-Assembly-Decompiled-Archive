@@ -96,6 +96,6 @@ public class MercenaryClanChangedKingdomLogEntry : LogEntry, IChatNotification, 
 			textObject3.SetTextVariable("KINGDOM", NewKingdom.InformalName);
 			return textObject3;
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 }

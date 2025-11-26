@@ -7,33 +7,6 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 [ViewCreatorModule]
 public class MultiplayerMissionViews
 {
-	[ViewMethod("MultiplayerFreeForAll")]
-	public static MissionView[] OpenFreeForAllMission(Mission mission)
-	{
-		return new List<MissionView>
-		{
-			MultiplayerViewCreator.CreateMissionServerStatusUIHandler(),
-			MultiplayerViewCreator.CreateMissionMultiplayerPreloadView(mission),
-			MultiplayerViewCreator.CreateMissionMultiplayerFFAView(),
-			MultiplayerViewCreator.CreateMissionKillNotificationUIHandler(),
-			ViewCreator.CreateMissionAgentStatusUIHandler(mission),
-			ViewCreator.CreateMissionMainAgentEquipmentController(mission),
-			ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission),
-			MultiplayerViewCreator.CreateMissionMultiplayerEscapeMenu("FreeForAll"),
-			MultiplayerViewCreator.CreateMultiplayerEndOfBattleUIHandler(),
-			MultiplayerViewCreator.CreateMissionScoreBoardUIHandler(mission, isSingleTeam: true),
-			MultiplayerViewCreator.CreateLobbyEquipmentUIHandler(),
-			MultiplayerViewCreator.CreatePollProgressUIHandler(),
-			MultiplayerViewCreator.CreateMultiplayerMissionHUDExtensionUIHandler(),
-			MultiplayerViewCreator.CreateMultiplayerMissionDeathCardUIHandler(),
-			ViewCreator.CreateOptionsUIHandler(),
-			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			MultiplayerViewCreator.CreateMultiplayerAdminPanelUIHandler(),
-			ViewCreator.CreateMissionBoundaryCrossingView(),
-			new MissionBoundaryWallView()
-		}.ToArray();
-	}
-
 	[ViewMethod("MultiplayerTeamDeathmatch")]
 	public static MissionView[] OpenTeamDeathmatchMission(Mission mission)
 	{
@@ -140,7 +113,7 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMissionMultiplayerEscapeMenu("Battle"),
 			MultiplayerViewCreator.CreateMultiplayerMissionOrderUIHandler(mission),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateOrderTroopPlacerView(mission),
+			ViewCreator.CreateOrderTroopPlacerView(null),
 			MultiplayerViewCreator.CreateMultiplayerTeamSelectUIHandler(),
 			MultiplayerViewCreator.CreateMissionScoreBoardUIHandler(mission, isSingleTeam: false),
 			MultiplayerViewCreator.CreateMultiplayerEndOfRoundUIHandler(),
@@ -177,7 +150,7 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMissionMultiplayerEscapeMenu("Captain"),
 			MultiplayerViewCreator.CreateMultiplayerMissionOrderUIHandler(mission),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateOrderTroopPlacerView(mission),
+			ViewCreator.CreateOrderTroopPlacerView(null),
 			MultiplayerViewCreator.CreateMultiplayerTeamSelectUIHandler(),
 			MultiplayerViewCreator.CreateMissionScoreBoardUIHandler(mission, isSingleTeam: false),
 			MultiplayerViewCreator.CreateMultiplayerEndOfRoundUIHandler(),
@@ -213,7 +186,7 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMissionMultiplayerEscapeMenu("Skirmish"),
 			MultiplayerViewCreator.CreateMultiplayerMissionOrderUIHandler(mission),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateOrderTroopPlacerView(mission),
+			ViewCreator.CreateOrderTroopPlacerView(null),
 			MultiplayerViewCreator.CreateMultiplayerTeamSelectUIHandler(),
 			MultiplayerViewCreator.CreateMissionScoreBoardUIHandler(mission, isSingleTeam: false),
 			MultiplayerViewCreator.CreateMultiplayerEndOfRoundUIHandler(),

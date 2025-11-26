@@ -42,39 +42,55 @@ public class FindMostDangerousThreat : DividableTask
 		}
 		else
 		{
+			int num = 5;
 			do
 			{
+				num--;
 				flag = true;
-				int num = -1;
-				float num2 = float.MinValue;
+				int num2 = -1;
+				float num3 = float.MinValue;
+				bool flag2 = false;
 				for (int i = 0; i < _threats.Count; i++)
 				{
 					Threat threat = _threats[i];
-					if (threat.ThreatValue > num2)
+					if (!flag2 || threat.ForceTarget)
 					{
-						num2 = threat.ThreatValue;
-						num = i;
+						if (!flag2 && threat.ForceTarget)
+						{
+							flag2 = true;
+							num3 = threat.ThreatValue;
+							num2 = i;
+						}
+						else if (threat.ThreatValue > num3)
+						{
+							num3 = threat.ThreatValue;
+							num2 = i;
+						}
 					}
 				}
-				if (num >= 0)
+				if (num2 < 0)
 				{
-					_currentThreat = _threats[num];
-					if (_currentThreat.Formation != null)
+					continue;
+				}
+				_currentThreat = _threats[num2];
+				if (_currentThreat.Formation != null)
+				{
+					_formationSearchThreatTask.Prepare(_currentThreat.Formation, _weapon);
+					_hasOngoingThreatTask = true;
+					flag = false;
+					break;
+				}
+				if ((_currentThreat.TargetableObject == null && _currentThreat.Agent == null) || !_weapon.CanShootAtThreat(_currentThreat))
+				{
+					if (!_currentThreat.ForceTarget)
 					{
-						_formationSearchThreatTask.Prepare(_currentThreat.Formation, _weapon);
-						_hasOngoingThreatTask = true;
-						flag = false;
-						break;
+						_threats.RemoveAt(num2);
 					}
-					if ((_currentThreat.WeaponEntity == null && _currentThreat.Agent == null) || !_weapon.CanShootAtThreat(_currentThreat))
-					{
-						_currentThreat = null;
-						_threats.RemoveAt(num);
-						flag = false;
-					}
+					_currentThreat = null;
+					flag = false;
 				}
 			}
-			while (!flag);
+			while (!flag && num > 0);
 		}
 		if (!flag)
 		{

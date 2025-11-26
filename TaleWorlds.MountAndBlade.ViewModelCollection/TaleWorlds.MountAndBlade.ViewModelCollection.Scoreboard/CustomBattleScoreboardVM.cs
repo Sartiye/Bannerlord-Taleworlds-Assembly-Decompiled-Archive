@@ -16,16 +16,18 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 	{
 		base.Initialize(missionScreen, mission, releaseSimulationSources, onToggle);
 		base.IsSimulation = false;
-		Mission.Current.GetMissionBehavior<BattleObserverMissionLogic>()?.SetObserver(this);
+		base.SimulationResult = "NotSimulation";
+		BattleObserverMissionLogic missionBehavior = Mission.Current.GetMissionBehavior<BattleObserverMissionLogic>();
 		_sallyOutEndLogic = Mission.Current.GetMissionBehavior<SallyOutEndLogic>();
 		_missionCombatantsLogic = _mission.GetMissionBehavior<MissionCombatantsLogic>();
 		if (_missionCombatantsLogic != null)
 		{
 			PlayerSide = _missionCombatantsLogic.PlayerSide;
-			base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_army", "defender"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Defender));
-			base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_army", "attacker"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Attacker));
+			base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Defender), isSimulation: false);
+			base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Attacker), isSimulation: false);
 		}
 		PlayerSide = Mission.Current.PlayerTeam.Side;
+		missionBehavior?.SetObserver(this);
 	}
 
 	public override void RefreshValues()
@@ -35,7 +37,7 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 		base.Attackers?.RefreshValues();
 	}
 
-	public override void Tick(float dt)
+	protected override void OnTick(float dt)
 	{
 		if (!base.IsOver)
 		{
@@ -62,11 +64,14 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 		}
 		goto IL_008d;
 		IL_008d:
-		base.PowerComparer.IsEnabled = Mission.Current != null && Mission.Current.Mode != MissionMode.Deployment;
-		base.IsPowerComparerEnabled = base.PowerComparer.IsEnabled && !MBCommon.IsPaused && !BannerlordConfig.HideBattleUI;
 		if (!base.IsSimulation && !base.IsOver)
 		{
 			base.MissionTimeInSeconds = (int)_mission.CurrentTime;
+		}
+		if (!base.IsSimulation)
+		{
+			base.Attackers.Morale = GetBattleMoraleOfSide(BattleSideEnum.Attacker);
+			base.Defenders.Morale = GetBattleMoraleOfSide(BattleSideEnum.Defender);
 		}
 	}
 

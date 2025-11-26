@@ -6,7 +6,7 @@ public abstract class TooltipBaseVM : ViewModel
 {
 	protected readonly Type _invokedType;
 
-	protected readonly object[] _invokedArgs;
+	protected object[] _invokedArgs;
 
 	protected bool _isPeriodicRefreshEnabled;
 
@@ -57,13 +57,12 @@ public abstract class TooltipBaseVM : ViewModel
 	{
 		_invokedType = invokedType;
 		_invokedArgs = invokedArgs;
-		RegisterCallbacks();
 	}
 
 	public override void OnFinalize()
 	{
-		UnregisterCallbacks();
 		OnFinalizeInternal();
+		_invokedArgs = null;
 	}
 
 	protected virtual void OnFinalizeInternal()
@@ -89,7 +88,7 @@ public abstract class TooltipBaseVM : ViewModel
 
 	protected void InvokeRefreshData<T>(T tooltip) where T : TooltipBaseVM
 	{
-		if (InformationManager.RegisteredTypes.TryGetValue(_invokedType, out (Type, object, string) value) && value.Item2 is Action<T, object[]> action)
+		if (InformationManager.RegisteredTypes.TryGetValue(_invokedType, out var value) && value.OnRefreshData is Action<T, object[]> action)
 		{
 			action(tooltip, _invokedArgs);
 		}
@@ -101,27 +100,5 @@ public abstract class TooltipBaseVM : ViewModel
 
 	protected virtual void OnIsExtendedChanged()
 	{
-	}
-
-	private void RegisterCallbacks()
-	{
-		InformationManager.RegisterIsAnyTooltipActiveCallback(IsAnyTooltipActive);
-		InformationManager.RegisterIsAnyTooltipExtendedCallback(IsAnyTooltipExtended);
-	}
-
-	private void UnregisterCallbacks()
-	{
-		InformationManager.UnregisterIsAnyTooltipActiveCallback(IsAnyTooltipActive);
-		InformationManager.UnregisterIsAnyTooltipExtendedCallback(IsAnyTooltipExtended);
-	}
-
-	private bool IsAnyTooltipActive()
-	{
-		return IsActive;
-	}
-
-	private bool IsAnyTooltipExtended()
-	{
-		return IsExtended;
 	}
 }

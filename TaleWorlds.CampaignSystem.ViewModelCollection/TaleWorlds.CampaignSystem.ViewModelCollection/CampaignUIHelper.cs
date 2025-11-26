@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -13,6 +14,7 @@ using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -23,6 +25,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Information.RundownTooltip;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Library.Information;
 using TaleWorlds.Localization;
@@ -50,6 +53,44 @@ public static class CampaignUIHelper
 		Descending
 	}
 
+	public class CharacterAttributeComparer : IComparer<CharacterAttribute>
+	{
+		public int Compare(CharacterAttribute x, CharacterAttribute y)
+		{
+			int attributeTypeSortIndex = GetAttributeTypeSortIndex(x);
+			int num = GetAttributeTypeSortIndex(y).CompareTo(attributeTypeSortIndex);
+			if (num != 0)
+			{
+				return num;
+			}
+			return ResolveEquality(x, y);
+		}
+
+		private int ResolveEquality(CharacterAttribute x, CharacterAttribute y)
+		{
+			return x.StringId.CompareTo(y.StringId);
+		}
+	}
+
+	public class SkillObjectComparer : IComparer<SkillObject>
+	{
+		public int Compare(SkillObject x, SkillObject y)
+		{
+			int skillObjectTypeSortIndex = GetSkillObjectTypeSortIndex(x);
+			int num = GetSkillObjectTypeSortIndex(y).CompareTo(skillObjectTypeSortIndex);
+			if (num != 0)
+			{
+				return num;
+			}
+			return ResolveEquality(x, y);
+		}
+
+		private int ResolveEquality(SkillObject x, SkillObject y)
+		{
+			return x.StringId.CompareTo(y.StringId);
+		}
+	}
+
 	public class MobilePartyPrecedenceComparer : IComparer<MobileParty>
 	{
 		public int Compare(MobileParty x, MobileParty y)
@@ -60,7 +101,7 @@ public static class CampaignUIHelper
 			}
 			if (x.IsGarrison && y.IsGarrison)
 			{
-				return -x.Party.TotalStrength.CompareTo(y.Party.TotalStrength);
+				return -x.Party.CalculateCurrentStrength().CompareTo(y.Party.CalculateCurrentStrength());
 			}
 			if (x.IsMilitia && y.IsGarrison)
 			{
@@ -72,7 +113,7 @@ public static class CampaignUIHelper
 			}
 			if (x.IsMilitia && y.IsMilitia)
 			{
-				return -x.Party.TotalStrength.CompareTo(y.Party.TotalStrength);
+				return -x.Party.CalculateCurrentStrength().CompareTo(y.Party.CalculateCurrentStrength());
 			}
 			if (x.LeaderHero != null && (y.IsGarrison || y.IsMilitia))
 			{
@@ -84,7 +125,7 @@ public static class CampaignUIHelper
 			}
 			if (x.LeaderHero != null && y.LeaderHero != null)
 			{
-				return -x.Party.TotalStrength.CompareTo(y.Party.TotalStrength);
+				return -x.Party.CalculateCurrentStrength().CompareTo(y.Party.CalculateCurrentStrength());
 			}
 			if (x.LeaderHero == null && (y.IsGarrison || y.IsMilitia || y.LeaderHero != null))
 			{
@@ -93,9 +134,9 @@ public static class CampaignUIHelper
 			if (x.LeaderHero == null)
 			{
 				_ = y.LeaderHero;
-				return -x.Party.TotalStrength.CompareTo(y.Party.TotalStrength);
+				return -x.Party.CalculateCurrentStrength().CompareTo(y.Party.CalculateCurrentStrength());
 			}
-			return -x.Party.TotalStrength.CompareTo(y.Party.TotalStrength);
+			return -x.Party.CalculateCurrentStrength().CompareTo(y.Party.CalculateCurrentStrength());
 		}
 	}
 
@@ -111,6 +152,8 @@ public static class CampaignUIHelper
 			return obj.Item1.GetHashCode();
 		}
 	}
+
+	public static readonly IssueQuestFlags[] IssueQuestFlagsValues = (IssueQuestFlags[])Enum.GetValues(typeof(IssueQuestFlags));
 
 	private static readonly TextObject _changeStr = new TextObject("{=R2AaCaPJ}Expected Change");
 
@@ -130,7 +173,7 @@ public static class CampaignUIHelper
 
 	private static readonly TextObject _securityStr = new TextObject("{=MqCH7R4A}Security");
 
-	private static readonly TextObject _criminalRatingStr = new TextObject("{=it8oPzb1}Criminal Rating");
+	private static readonly TextObject _criminalRatingStr = new TextObject("{=r0WIRUHo}Criminal Rating");
 
 	private static readonly TextObject _militiaStr = new TextObject("{=gsVtO9A7}Militia");
 
@@ -176,6 +219,8 @@ public static class CampaignUIHelper
 
 	private static readonly TextObject _battleReadyTroopsStr = new TextObject("{=LVmkE2Ow}Battle Ready Troops");
 
+	private static readonly TextObject _patrolStr = new TextObject("{=townPatrol}Patrol");
+
 	private static readonly TextObject _woundedTroopsStr = new TextObject("{=TzLtVzdg}Wounded Troops");
 
 	private static readonly TextObject _prisonersStr = new TextObject("{=N6QTvjMf}Prisoners");
@@ -187,6 +232,16 @@ public static class CampaignUIHelper
 	private static readonly TextObject _learningLimitStr = new TextObject("{=YT9giTet}Learning Limit");
 
 	private static readonly TextObject _partyInventoryCapacityStr = new TextObject("{=fI7a7RoE}Inventory Capacity");
+
+	private static readonly TextObject _partyInventoryLandCapacityStr = new TextObject("{=cBqjZjfJ}Inventory Capacity on Land");
+
+	private static readonly TextObject _partyInventorySeaCapacityStr = new TextObject("{=aAqMSU2d}Inventory Capacity at Sea");
+
+	private static readonly TextObject _partyInventoryWeightStr = new TextObject("{=4Dd2xgPm}Weight");
+
+	private static readonly TextObject _partyInventoryLandWeightStr = new TextObject("{=8d23bRmv}Weight on Land");
+
+	private static readonly TextObject _partyInventorySeaWeightStr = new TextObject("{=Tc5y7Tgd}Weight at Sea");
 
 	private static readonly TextObject _partyTroopSizeLimitStr = new TextObject("{=2Cq3tViJ}Party Troop Size Limit");
 
@@ -222,6 +277,10 @@ public static class CampaignUIHelper
 
 	public static readonly MobilePartyPrecedenceComparer MobilePartyPrecedenceComparerInstance = new MobilePartyPrecedenceComparer();
 
+	public static readonly SkillObjectComparer SkillObjectComparerInstance = new SkillObjectComparer();
+
+	public static readonly CharacterAttributeComparer CharacterAttributeComparerInstance = new CharacterAttributeComparer();
+
 	private static readonly List<ItemObject.ItemTypeEnum> _itemObjectTypeSortIndices = new List<ItemObject.ItemTypeEnum>
 	{
 		ItemObject.ItemTypeEnum.Horse,
@@ -233,6 +292,8 @@ public static class CampaignUIHelper
 		ItemObject.ItemTypeEnum.Arrows,
 		ItemObject.ItemTypeEnum.Crossbow,
 		ItemObject.ItemTypeEnum.Bolts,
+		ItemObject.ItemTypeEnum.Sling,
+		ItemObject.ItemTypeEnum.SlingStones,
 		ItemObject.ItemTypeEnum.Thrown,
 		ItemObject.ItemTypeEnum.Pistol,
 		ItemObject.ItemTypeEnum.Musket,
@@ -250,6 +311,17 @@ public static class CampaignUIHelper
 		ItemObject.ItemTypeEnum.HorseHarness,
 		ItemObject.ItemTypeEnum.Banner
 	};
+
+	private static readonly List<string> _attributeSortIndices = new List<string> { "Vigor", "Control", "Endurance", "Cunning", "Social", "Intelligence" };
+
+	private static readonly List<string> _skillSortIndices = new List<string>
+	{
+		"OneHanded", "TwoHanded", "Polearm", "Bow", "Crossbow", "Throwing", "Riding", "Athletics", "Crafting", "Scouting",
+		"Tactics", "Roguery", "Charm", "Leadership", "Trade", "Steward", "Medicine", "Engineering", "Mariner", "Boatswain",
+		"Shipmaster"
+	};
+
+	private static readonly List<string> _navalSkills = new List<string> { "Mariner", "Boatswain", "Shipmaster" };
 
 	private static void TooltipAddPropertyTitleWithValue(List<TooltipProperty> properties, string propertyName, float currentValue)
 	{
@@ -343,17 +415,29 @@ public static class CampaignUIHelper
 
 	private static void TooltipAddExtendInfo(List<TooltipProperty> properties, bool onlyShowOnExtend = false)
 	{
-		TooltipProperty item = new TooltipProperty("", "", -1)
+		properties.Add(new TooltipProperty("", "", -1)
 		{
 			OnlyShowWhenNotExtended = true
-		};
-		properties.Add(item);
-		GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
-		TooltipProperty item2 = new TooltipProperty("", GameTexts.FindText("str_map_tooltip_info").ToString(), 0)
+		});
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+		{
+			if (TaleWorlds.InputSystem.Input.ControllerType.IsPlaystation())
+			{
+				GameTexts.SetVariable("EXTEND_KEY", GameTexts.FindText("str_game_key_text", "controllerlbumper_ps").ToString());
+			}
+			else
+			{
+				GameTexts.SetVariable("EXTEND_KEY", GameTexts.FindText("str_game_key_text", "controllerlbumper").ToString());
+			}
+		}
+		else
+		{
+			GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
+		}
+		properties.Add(new TooltipProperty(string.Empty, GameTexts.FindText("str_map_tooltip_info").ToString(), -1)
 		{
 			OnlyShowWhenNotExtended = true
-		};
-		properties.Add(item2);
+		});
 	}
 
 	private static void TooltipAddEmptyLine(List<TooltipProperty> properties, bool onlyShowOnExtend = false)
@@ -439,6 +523,26 @@ public static class CampaignUIHelper
 		return GetSettlementPropertyTooltip(town.Settlement, _securityStr.ToString(), town.Security, securityChangeExplanation);
 	}
 
+	public static string GetTownPatrolTooltip(Town town)
+	{
+		TextObject textObject = GameTexts.FindText("str_string_newline_string");
+		textObject.SetTextVariable("newline", "\n");
+		textObject.SetTextVariable("STR1", _patrolStr.ToString());
+		if (IsSettlementInformationHidden(town.Settlement, out var _))
+		{
+			textObject.SetTextVariable("STR2", GameTexts.FindText("str_missing_info_indicator").ToString());
+		}
+		else if (town.Settlement.PatrolParty != null)
+		{
+			textObject.SetTextVariable("STR2", town.Settlement.PatrolParty.MobileParty.GetBehaviorText().ToString());
+		}
+		else
+		{
+			textObject.SetTextVariable("STR2", Campaign.Current.GetCampaignBehavior<IPatrolPartiesCampaignBehavior>().GetSettlementPatrolStatus(town.Settlement).ToString());
+		}
+		return textObject.ToString();
+	}
+
 	public static List<TooltipProperty> GetVillageProsperityTooltip(Village village)
 	{
 		return GetSettlementPropertyTooltip(village.Settlement, _hearthStr.ToString(), village.Hearth, village.HearthChangeExplanation);
@@ -446,7 +550,7 @@ public static class CampaignUIHelper
 
 	public static List<TooltipProperty> GetTownGarrisonTooltip(Town town)
 	{
-		return GetSettlementPropertyTooltip(town.Settlement, _garrisonStr.ToString(), town.GarrisonParty?.MemberRoster.TotalManCount ?? 0, town.GarrisonChangeExplanation);
+		return GetSettlementPropertyTooltip(town.Settlement, _garrisonStr.ToString(), town.GarrisonParty?.MemberRoster.TotalManCount ?? 0, SettlementHelper.GetGarrisonChangeExplainedNumber(town));
 	}
 
 	public static List<TooltipProperty> GetPartyTroopSizeLimitTooltip(PartyBase party)
@@ -466,12 +570,14 @@ public static class CampaignUIHelper
 		List<TooltipProperty> list = new List<TooltipProperty>();
 		if (usedUpgradeHorsesHistory.Count > 0)
 		{
-			foreach (IGrouping<ItemCategory, Tuple<EquipmentElement, int>> item in from h in usedUpgradeHorsesHistory
-				group h by h.Item1.Item.ItemCategory)
+			foreach (IGrouping<ItemObject, Tuple<EquipmentElement, int>> item in from h in usedUpgradeHorsesHistory
+				group h by h.Item1.Item)
 			{
 				int num = item.Sum((Tuple<EquipmentElement, int> c) => c.Item2);
-				list.Add(new TooltipProperty(item.Key.GetName().ToString(), num.ToString(), 0));
+				list.Add(new TooltipProperty(item.Key.Name.ToString(), num.ToString(), 0));
 			}
+			list.Add(new TooltipProperty("", "", 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
+			list.Add(new TooltipProperty(_totalStr.ToString(), usedUpgradeHorsesHistory.Sum((Tuple<EquipmentElement, int> x) => x.Item2).ToString(), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownResult));
 		}
 		return list;
 	}
@@ -584,10 +690,13 @@ public static class CampaignUIHelper
 		double num2 = 0.0;
 		foreach (MobileParty party in army.Parties)
 		{
-			float val = party.Party.MobileParty.Food / (0f - party.Party.MobileParty.FoodChange);
-			num2 += (double)Math.Max(val, 0f);
-			string daysUntilNoFood = GetDaysUntilNoFood(party.Party.MobileParty.Food, party.Party.MobileParty.FoodChange);
-			list.Add(new TooltipProperty(party.Party.MobileParty.Name.ToString(), daysUntilNoFood, 0));
+			if (army.DoesLeaderPartyAndAttachedPartiesContain(party))
+			{
+				float val = party.Party.MobileParty.Food / (0f - party.Party.MobileParty.FoodChange);
+				num2 += (double)Math.Max(val, 0f);
+				string daysUntilNoFood = GetDaysUntilNoFood(party.Party.MobileParty.Food, party.Party.MobileParty.FoodChange);
+				list.Add(new TooltipProperty(party.Party.MobileParty.Name.ToString(), daysUntilNoFood, 0));
+			}
 		}
 		list.Add(new TooltipProperty("", string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
 		list.Add(new TooltipProperty(new TextObject("{=rwKBR4NE}Average Days Until Food Runs Out").ToString(), TaleWorlds.Library.MathF.Ceiling(num2 / (double)army.LeaderPartyAndAttachedPartiesCount).ToString(), 0));
@@ -628,7 +737,7 @@ public static class CampaignUIHelper
 		for (int i = 0; i < clan.Heroes.Count; i++)
 		{
 			Hero hero = clan.Heroes[i];
-			if (hero.Gold != 0 && hero.IsAlive && hero.Age >= 18f && pageOf.IsValidEncyclopediaItem(hero))
+			if (hero.Gold != 0 && hero.IsAlive && hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && pageOf.IsValidEncyclopediaItem(hero))
 			{
 				num2 = hero.Gold;
 				list.Add(new TooltipProperty(hero.Name.ToString(), num2.ToString(), 0));
@@ -638,7 +747,7 @@ public static class CampaignUIHelper
 		for (int j = 0; j < clan.Companions.Count; j++)
 		{
 			Hero hero2 = clan.Companions[j];
-			if (hero2.Gold != 0 && hero2.IsAlive && hero2.Age >= 18f && pageOf.IsValidEncyclopediaItem(hero2))
+			if (hero2.Gold != 0 && hero2.IsAlive && hero2.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && pageOf.IsValidEncyclopediaItem(hero2))
 			{
 				num2 = hero2.Gold;
 				list.Add(new TooltipProperty(hero2.Name.ToString(), hero2.Gold.ToString(), 0));
@@ -678,24 +787,6 @@ public static class CampaignUIHelper
 		return GetDiplomacySettlementStatComparisonTooltip(settlements, textObject.ToString(), textObject2.ToString());
 	}
 
-	public static List<TooltipProperty> GetWarSuccessfulRaidsTooltip(List<Settlement> settlements, TextObject factionName)
-	{
-		TextObject textObject = new TextObject("{=1qm74K2t}Successful raids by {FACTION}");
-		TextObject textObject2 = new TextObject("{=huqEEfGD}There is no successful raid for {FACTION}");
-		textObject.SetTextVariable("FACTION", factionName);
-		textObject2.SetTextVariable("FACTION", factionName);
-		return GetDiplomacySettlementStatComparisonTooltip(settlements, textObject.ToString(), textObject2.ToString());
-	}
-
-	public static List<TooltipProperty> GetWarSuccessfulSiegesTooltip(List<Settlement> settlements, TextObject factionName, bool isTown)
-	{
-		TextObject textObject = (isTown ? new TextObject("{=mSPyh91Q}Towns conquered by {FACTION}") : new TextObject("{=eTxcYvRr}Castles conquered by {FACTION}"));
-		TextObject textObject2 = (isTown ? new TextObject("{=Zemk86FK}There is no town conquered by {FACTION}") : new TextObject("{=nKQmaSDO}There is no castle conquered by {FACTION}"));
-		textObject.SetTextVariable("FACTION", factionName);
-		textObject2.SetTextVariable("FACTION", factionName);
-		return GetDiplomacySettlementStatComparisonTooltip(settlements, textObject.ToString(), textObject2.ToString());
-	}
-
 	public static List<TooltipProperty> GetWarPrisonersTooltip(List<Hero> capturedPrisoners, TextObject factionName)
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>();
@@ -724,6 +815,23 @@ public static class CampaignUIHelper
 		return list;
 	}
 
+	public static List<TooltipProperty> GetNormalizedWarProgressTooltip(ExplainedNumber warProgress, ExplainedNumber otherFactionWarProgress, float maxValue, TextObject faction1Name, TextObject faction2Name)
+	{
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		float num = maxValue / 100f;
+		int num2 = (int)(warProgress.ResultNumber / num);
+		int num3 = (int)(otherFactionWarProgress.ResultNumber / num);
+		int num4 = TaleWorlds.Library.MathF.Max(0, num2 - num3);
+		string definition = new TextObject("{=Pa4K0Paz}War Progress of {FACTION1} Against {FACTION2}").SetTextVariable("FACTION1", faction1Name).SetTextVariable("FACTION2", faction2Name).ToString();
+		list.Add(new TooltipProperty(definition, num4.ToString(), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title));
+		foreach (var (definition2, num5) in warProgress.GetLines())
+		{
+			list.Add(new TooltipProperty(definition2, ((int)(num5 / num)).ToString(), 0));
+		}
+		list.Add(new TooltipProperty(new TextObject("{=la6R4xaY}War Progress of Opposite Faction").ToString(), (-num3).ToString(), 0));
+		return list;
+	}
+
 	public static List<TooltipProperty> GetClanStrengthTooltip(Clan clan)
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>
@@ -737,7 +845,7 @@ public static class CampaignUIHelper
 			MobileParty mobileParty = MobileParty.AllLordParties[i];
 			if (mobileParty.ActualClan == clan && !mobileParty.IsDisbanding)
 			{
-				num2 = mobileParty.Party.TotalStrength;
+				num2 = mobileParty.Party.CalculateCurrentStrength();
 				list.Add(new TooltipProperty(mobileParty.Name.ToString(), num2.ToString(), 0));
 				num += num2;
 			}
@@ -776,11 +884,19 @@ public static class CampaignUIHelper
 			TooltipAddEmptyLine(list);
 			list.Add(new TooltipProperty(GameTexts.FindText("str_clan_next_tier").ToString(), clan.RenownRequirementForNextTier.ToString(), 0));
 			TooltipAddEmptyLine(list);
-			GameTexts.SetVariable("LEFT", GameTexts.FindText("str_clan_tier_bonus").ToString());
-			TextObject textObject = GameTexts.FindText("str_string_newline_string");
-			textObject.SetTextVariable("STR1", explainedNumber.GetExplanations());
-			textObject.SetTextVariable("STR2", extraExplanation);
-			list.Add(new TooltipProperty(GameTexts.FindText("str_LEFT_colon_wSpace").ToString(), textObject.ToString(), 0));
+			GameTexts.SetVariable("LEFT", GameTexts.FindText("str_next_tier_bonus").ToString());
+			string text = explainedNumber.GetExplanations().TrimEnd(new char[1] { '\n' });
+			if (!TextObject.IsNullOrEmpty(extraExplanation))
+			{
+				TextObject textObject = GameTexts.FindText("str_string_newline_newline_string");
+				textObject.SetTextVariable("STR1", text);
+				textObject.SetTextVariable("STR2", extraExplanation);
+				list.Add(new TooltipProperty(GameTexts.FindText("str_LEFT_colon_wSpace").ToString(), textObject.ToString(), 0));
+			}
+			else
+			{
+				list.Add(new TooltipProperty(GameTexts.FindText("str_LEFT_colon_wSpace").ToString(), text, 0));
+			}
 		}
 		return list;
 	}
@@ -809,7 +925,7 @@ public static class CampaignUIHelper
 		TooltipAddPropertyTitleWithValue(list, _woundedTroopsStr.ToString(), num);
 		if (num > 0)
 		{
-			ExplainedNumber explainedNumber = MobileParty.MainParty.HealingRateForRegularsExplained;
+			ExplainedNumber explainedNumber = MobileParty.MainParty.Party.HealingRateForMemberRegularsExplained;
 			TooltipAddDoubleSeperator(list);
 			TooltipAddPropertyTitleWithValue(list, _regularsHealingRateStr.ToString(), explainedNumber.ResultNumber);
 			TooltipAddSeperator(list);
@@ -829,7 +945,7 @@ public static class CampaignUIHelper
 		TooltipAddExplanation(list, ref explainedNumber);
 		if (Hero.MainHero.HitPoints < Hero.MainHero.MaxHitPoints)
 		{
-			ExplainedNumber explainedNumber2 = MobileParty.MainParty.HealingRateForHeroesExplained;
+			ExplainedNumber explainedNumber2 = MobileParty.MainParty.Party.HealingRateForMemberHeroesExplained;
 			TooltipAddDoubleSeperator(list);
 			TooltipAddPropertyTitleWithValue(list, _heroesHealingRateStr.ToString(), explainedNumber2.ResultNumber);
 			TooltipAddSeperator(list);
@@ -893,7 +1009,7 @@ public static class CampaignUIHelper
 		return list;
 	}
 
-	public static List<TooltipProperty> GetPartySpeedTooltip()
+	public static List<TooltipProperty> GetPartySpeedTooltip(bool considerArmySpeed)
 	{
 		Game.Current.EventManager.TriggerEvent(new PlayerInspectedPartySpeedEvent());
 		List<TooltipProperty> list = new List<TooltipProperty>();
@@ -903,17 +1019,21 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			ExplainedNumber explainedNumber = MobileParty.MainParty.SpeedExplained;
-			float resultNumber = explainedNumber.ResultNumber;
-			list = GetTooltipForAccumulatingPropertyWithResult(_partySpeedStr.ToString(), resultNumber, ref explainedNumber);
+			MobileParty mobileParty = MobileParty.MainParty.Army?.LeaderParty;
+			if (considerArmySpeed && mobileParty != null)
+			{
+				ExplainedNumber explainedNumber = mobileParty.SpeedExplained;
+				float resultNumber = explainedNumber.ResultNumber;
+				list = GetTooltipForAccumulatingPropertyWithResult(_partySpeedStr.ToString(), resultNumber, ref explainedNumber);
+			}
+			else
+			{
+				ExplainedNumber explainedNumber2 = MobileParty.MainParty.SpeedExplained;
+				float resultNumber2 = explainedNumber2.ResultNumber;
+				list = GetTooltipForAccumulatingPropertyWithResult(_partySpeedStr.ToString(), resultNumber2, ref explainedNumber2);
+			}
 		}
 		return list;
-	}
-
-	public static List<TooltipProperty> GetPartyWageTooltip()
-	{
-		ExplainedNumber explainedNumber = MobileParty.MainParty.TotalWageExplained;
-		return GetTooltipForAccumulatingPropertyWithResult(GameTexts.FindText("str_party_wage").ToString(), explainedNumber.ResultNumber, ref explainedNumber);
 	}
 
 	public static List<TooltipProperty> GetPartyWageTooltip(MobileParty mobileParty)
@@ -932,34 +1052,114 @@ public static class CampaignUIHelper
 	{
 		PartyBase party = MobileParty.MainParty.Party;
 		List<TooltipProperty> list = new List<TooltipProperty>();
-		list.Add(new TooltipProperty(_battleReadyTroopsStr.ToString(), party.NumberOfHealthyMembers.ToString(), 0));
+		TooltipAddPropertyTitleWithValue(list, _battleReadyTroopsStr.ToString(), party.NumberOfHealthyMembers);
 		TooltipAddEmptyLine(list);
 		int num = party.NumberOfAllMembers - party.NumberOfHealthyMembers;
 		list.Add(new TooltipProperty(_woundedTroopsStr.ToString(), num.ToString(), 0));
 		if (num > 0)
 		{
 			TooltipAddDoubleSeperator(list);
-			list.Add(new TooltipProperty(_regularsHealingRateStr.ToString(), MobileParty.MainParty.HealingRateForRegulars.ToString(), 0));
-			TooltipAddSeperator(list);
-			ExplainedNumber explainedNumber = MobileParty.MainParty.HealingRateForRegularsExplained;
+			list.Add(new TooltipProperty(_regularsHealingRateStr.ToString(), MobileParty.MainParty.Party.HealingRateForMemberRegulars.ToString(), 0));
+			ExplainedNumber explainedNumber = MobileParty.MainParty.Party.HealingRateForMemberRegularsExplained;
 			TooltipAddExplanation(list, ref explainedNumber);
-			TooltipAddEmptyLine(list);
 		}
 		int totalManCount = party.PrisonRoster.TotalManCount;
 		if (totalManCount > 0)
 		{
+			TooltipAddSeperator(list);
 			list.Add(new TooltipProperty(_prisonersStr.ToString(), totalManCount.ToString(), 0));
+		}
+		TooltipAddEmptyLine(list);
+		TextObject textObject = GameTexts.FindText("str_LEFT_over_RIGHT_no_space");
+		Color color = new Color(0.82f, 0.12f, 0.07f);
+		int totalManCount2 = party.MemberRoster.TotalManCount;
+		int partySizeLimit = party.PartySizeLimit;
+		textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", partySizeLimit);
+		if (totalManCount2 > partySizeLimit)
+		{
+			list.Add(new TooltipProperty(new TextObject("{=ZgYAGfbD}Land Troop Capacity").ToString(), textObject.ToString(), 0, color));
+		}
+		else
+		{
+			list.Add(new TooltipProperty(new TextObject("{=ZgYAGfbD}Land Troop Capacity").ToString(), textObject.ToString(), 0));
+		}
+		if (party.Ships.Count > 0)
+		{
+			int num2 = party.Ships.Sum((Ship s) => s.SkeletalCrewCapacity);
+			textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num2);
+			if (totalManCount2 < num2)
+			{
+				list.Add(new TooltipProperty(new TextObject("{=p9wUyxfb}Ship Skeletal Crew").ToString(), textObject.ToString(), 0, color));
+			}
+			else
+			{
+				list.Add(new TooltipProperty(new TextObject("{=p9wUyxfb}Ship Skeletal Crew").ToString(), textObject.ToString(), 0));
+			}
+			int num3 = party.Ships.Sum((Ship s) => s.TotalCrewCapacity);
+			textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num3);
+			if (totalManCount2 > num3)
+			{
+				list.Add(new TooltipProperty(new TextObject("{=w1tgTNvK}Ship Troop Capacity").ToString(), textObject.ToString(), 0, color));
+			}
+			else
+			{
+				list.Add(new TooltipProperty(new TextObject("{=w1tgTNvK}Ship Troop Capacity").ToString(), textObject.ToString(), 0));
+			}
 		}
 		return list;
 	}
 
-	public static List<TooltipProperty> GetPartyInventoryCapacityTooltip(MobileParty party)
+	public static List<TooltipProperty> GetPartyInventoryCapacityTooltip(MobileParty party, bool forceLand = false, bool forceSea = false)
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>();
-		TooltipAddPropertyTitleWithValue(list, _partyInventoryCapacityStr.ToString(), party.InventoryCapacity);
-		TooltipAddSeperator(list);
-		ExplainedNumber explainedNumber = party.InventoryCapacityExplainedNumber;
-		TooltipAddExplanation(list, ref explainedNumber);
+		if (forceLand)
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventoryLandCapacityStr.ToString(), (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(party, isCurrentlyAtSea: false).ResultNumber);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber = Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(party, isCurrentlyAtSea: false, includeDescriptions: true);
+			TooltipAddExplanation(list, ref explainedNumber);
+		}
+		else if (forceSea)
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventorySeaCapacityStr.ToString(), (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(party, isCurrentlyAtSea: true).ResultNumber);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber2 = Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(party, isCurrentlyAtSea: true, includeDescriptions: true);
+			TooltipAddExplanation(list, ref explainedNumber2);
+		}
+		else
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventoryCapacityStr.ToString(), party.InventoryCapacity);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber3 = party.InventoryCapacityExplainedNumber;
+			TooltipAddExplanation(list, ref explainedNumber3);
+		}
+		return list;
+	}
+
+	public static List<TooltipProperty> GetPartyInventoryWeightTooltip(MobileParty party, bool forceLand = false, bool forceSea = false)
+	{
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		if (forceLand)
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventoryLandWeightStr.ToString(), (int)Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(party, isCurrentlyAtSea: false).ResultNumber);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber = Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(party, isCurrentlyAtSea: false, includeDescriptions: true);
+			TooltipAddExplanation(list, ref explainedNumber);
+		}
+		else if (forceSea)
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventorySeaWeightStr.ToString(), (int)Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(party, isCurrentlyAtSea: true).ResultNumber);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber2 = Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(party, isCurrentlyAtSea: true, includeDescriptions: true);
+			TooltipAddExplanation(list, ref explainedNumber2);
+		}
+		else
+		{
+			TooltipAddPropertyTitleWithValue(list, _partyInventoryWeightStr.ToString(), party.TotalWeightCarried);
+			TooltipAddSeperator(list);
+			ExplainedNumber explainedNumber3 = party.TotalWeightCarriedExplainedNumber;
+			TooltipAddExplanation(list, ref explainedNumber3);
+		}
 		return list;
 	}
 
@@ -1082,9 +1282,9 @@ public static class CampaignUIHelper
 		return list;
 	}
 
-	public static List<TooltipProperty> GetLearningRateTooltip(int attributeValue, int focusValue, int skillValue, int characterLevel, TextObject attributeName)
+	public static List<TooltipProperty> GetLearningRateTooltip(IReadOnlyPropertyOwner<CharacterAttribute> characterAttributes, int focusValue, int skillValue, SkillObject skill)
 	{
-		ExplainedNumber explainedNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(attributeValue, focusValue, skillValue, characterLevel, attributeName, includeDescriptions: true);
+		ExplainedNumber explainedNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(characterAttributes, focusValue, skillValue, skill, includeDescriptions: true);
 		return GetTooltipForAccumulatingPropertyWithResult(_learningRateStr.ToString(), explainedNumber.ResultNumber, ref explainedNumber);
 	}
 
@@ -1109,9 +1309,9 @@ public static class CampaignUIHelper
 		return list;
 	}
 
-	public static List<TooltipProperty> GetLearningLimitTooltip(int attributeValue, int focusValue, TextObject attributeName)
+	public static List<TooltipProperty> GetLearningLimitTooltip(IReadOnlyPropertyOwner<CharacterAttribute> characterAttributes, int focusValue, SkillObject skill)
 	{
-		ExplainedNumber explainedNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningLimit(attributeValue, focusValue, attributeName, includeDescriptions: true);
+		ExplainedNumber explainedNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningLimit(characterAttributes, focusValue, skill, includeDescriptions: true);
 		return GetTooltipForAccumulatingPropertyWithResult(_learningLimitStr.ToString(), explainedNumber.ResultNumber, ref explainedNumber);
 	}
 
@@ -1128,7 +1328,7 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1157);
+			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1382);
 		}
 		return list;
 	}
@@ -1138,7 +1338,7 @@ public static class CampaignUIHelper
 		int tier = character.Tier;
 		if (tier <= 0 || tier > 7)
 		{
-			return new StringItemWithHintVM("", TextObject.Empty);
+			return new StringItemWithHintVM("", TextObject.GetEmpty());
 		}
 		string text = (isBig ? (tier + "_big") : tier.ToString());
 		string text2 = "General\\TroopTierIcons\\icon_tier_" + text;
@@ -1181,7 +1381,7 @@ public static class CampaignUIHelper
 
 	public static string GetHintTextFromReasons(List<TextObject> reasons)
 	{
-		TextObject textObject = TextObject.Empty;
+		TextObject textObject = TextObject.GetEmpty();
 		for (int i = 0; i < reasons.Count; i++)
 		{
 			if (i >= 1)
@@ -1198,10 +1398,26 @@ public static class CampaignUIHelper
 		return textObject.ToString();
 	}
 
+	public static string MergeTextObjectsWithNewline(List<TextObject> textObjects)
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < textObjects.Count; i++)
+		{
+			string value = textObjects[i].ToString();
+			stringBuilder.AppendLine(value);
+		}
+		return stringBuilder.ToString().TrimEnd(Array.Empty<char>());
+	}
+
 	public static TextObject GetHoursAndDaysTextFromHourValue(int hours)
 	{
-		TextObject textObject = TextObject.Empty;
-		if (hours > 0)
+		TextObject textObject = TextObject.GetEmpty();
+		if (hours == 0)
+		{
+			textObject = GameTexts.FindText("str_hours");
+			textObject.SetTextVariable("HOUR", 0);
+		}
+		else if (hours > 0)
 		{
 			int num = hours / 24;
 			int num2 = hours % 24;
@@ -1216,7 +1432,7 @@ public static class CampaignUIHelper
 
 	public static TextObject GetTeleportationDelayText(Hero hero, PartyBase target)
 	{
-		TextObject result = TextObject.Empty;
+		TextObject result = TextObject.GetEmpty();
 		if (hero != null && target != null)
 		{
 			float resultNumber = Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, target).ResultNumber;
@@ -1242,9 +1458,8 @@ public static class CampaignUIHelper
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>();
 		int getHourOfDay = CampaignTime.Now.GetHourOfDay;
-		TextObject empty = TextObject.Empty;
-		empty = ((getHourOfDay >= 6 && getHourOfDay < 12) ? new TextObject("{=X3gcUz7C}Morning") : ((getHourOfDay >= 12 && getHourOfDay < 15) ? new TextObject("{=CTtjSwRb}Noon") : ((getHourOfDay >= 15 && getHourOfDay < 18) ? new TextObject("{=J2gvnexb}Afternoon") : ((getHourOfDay < 18 || getHourOfDay >= 22) ? new TextObject("{=fAxjyMt5}Night") : new TextObject("{=gENb9SSW}Evening")))));
-		list.Add(new TooltipProperty(empty.ToString(), "", 0));
+		TextObject textObject = ((getHourOfDay >= 6 && getHourOfDay < 12) ? new TextObject("{=X3gcUz7C}Morning") : ((getHourOfDay >= 12 && getHourOfDay < 15) ? new TextObject("{=CTtjSwRb}Noon") : ((getHourOfDay >= 15 && getHourOfDay < 18) ? new TextObject("{=J2gvnexb}Afternoon") : ((getHourOfDay < 18 || getHourOfDay >= 22) ? new TextObject("{=fAxjyMt5}Night") : new TextObject("{=gENb9SSW}Evening")))));
+		list.Add(new TooltipProperty(textObject.ToString(), "", 0));
 		list.Add(new TooltipProperty("", new TextObject("{=sFiU3Ss2}Click to Reset Camera").ToString(), 0));
 		return list;
 	}
@@ -1262,35 +1477,42 @@ public static class CampaignUIHelper
 	{
 		if (character.IsHero)
 		{
-			return new StringItemWithHintVM("", TextObject.Empty);
+			return new StringItemWithHintVM("", TextObject.GetEmpty());
 		}
-		TextObject empty = TextObject.Empty;
-		string text;
+		TextObject textObject = new TextObject("{=!}{TYPENAME}{MARINER}{BIG}");
+		TextObject textObject2;
 		if (character.IsRanged && character.IsMounted)
 		{
-			text = (isBig ? "horse_archer_big" : "horse_archer");
-			empty = GameTexts.FindText("str_troop_type_name", "HorseArcher");
+			textObject.SetTextVariable("TYPENAME", "horse_archer");
+			textObject2 = GameTexts.FindText("str_troop_type_name", "HorseArcher");
 		}
 		else if (character.IsRanged)
 		{
-			text = (isBig ? "bow_big" : "bow");
-			empty = GameTexts.FindText("str_troop_type_name", "Ranged");
+			textObject.SetTextVariable("TYPENAME", "bow");
+			textObject2 = GameTexts.FindText("str_troop_type_name", "Ranged");
 		}
 		else if (character.IsMounted)
 		{
-			text = (isBig ? "cavalry_big" : "cavalry");
-			empty = GameTexts.FindText("str_troop_type_name", "Cavalry");
+			textObject.SetTextVariable("TYPENAME", "cavalry");
+			textObject2 = GameTexts.FindText("str_troop_type_name", "Cavalry");
 		}
 		else
 		{
 			if (!character.IsInfantry)
 			{
-				return new StringItemWithHintVM("", TextObject.Empty);
+				return new StringItemWithHintVM("", TextObject.GetEmpty());
 			}
-			text = (isBig ? "infantry_big" : "infantry");
-			empty = GameTexts.FindText("str_troop_type_name", "Infantry");
+			textObject.SetTextVariable("TYPENAME", "infantry");
+			textObject2 = GameTexts.FindText("str_troop_type_name", "Infantry");
 		}
-		return new StringItemWithHintVM("General\\TroopTypeIcons\\icon_troop_type_" + text, new TextObject("{=!}" + empty.ToString()));
+		textObject.SetTextVariable("MARINER", character.IsNavalSoldier() ? "_mariner" : "");
+		textObject.SetTextVariable("BIG", isBig ? "_big" : "");
+		return new StringItemWithHintVM("General\\TroopTypeIcons\\icon_troop_type_" + textObject.ToString(), new TextObject("{=!}" + textObject2.ToString()));
+	}
+
+	private static bool IsNavalSoldier(this CharacterObject characterObject)
+	{
+		return characterObject.GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
 	}
 
 	public static List<TooltipProperty> GetHeroHealthTooltip(Hero hero)
@@ -1324,14 +1546,18 @@ public static class CampaignUIHelper
 		List<PerkObject> governorPerksForHero = PerkHelper.GetGovernorPerksForHero(hero);
 		for (int i = 0; i < governorPerksForHero.Count; i++)
 		{
-			if (governorPerksForHero[i].PrimaryRole == SkillEffect.PerkRole.Governor)
+			if (governorPerksForHero[i].PrimaryRole == PartyRole.Governor)
 			{
 				list.Add(new TooltipProperty(governorPerksForHero[i].Name.ToString(), governorPerksForHero[i].PrimaryDescription.ToString(), 0));
 			}
-			if (governorPerksForHero[i].SecondaryRole == SkillEffect.PerkRole.Governor)
+			if (governorPerksForHero[i].SecondaryRole == PartyRole.Governor)
 			{
 				list.Add(new TooltipProperty(governorPerksForHero[i].Name.ToString(), governorPerksForHero[i].SecondaryDescription.ToString(), 0));
 			}
+		}
+		if (governorPerksForHero.Count == 0)
+		{
+			list.Add(new TooltipProperty("", new TextObject("{=oSfsqBwJ}No perks").ToString(), 0));
 		}
 		return list;
 	}
@@ -1354,7 +1580,7 @@ public static class CampaignUIHelper
 			TextObject item2 = GameTexts.FindText(num ? "str_remove_governor_inquiry" : ((num2 == 0) ? "str_change_governor_instantly_inquiry" : "str_change_governor_inquiry"));
 			return (titleText: item, bodyText: item2);
 		}
-		return (titleText: TextObject.Empty, bodyText: TextObject.Empty);
+		return (titleText: TextObject.GetEmpty(), bodyText: TextObject.GetEmpty());
 	}
 
 	public static List<TooltipProperty> GetHeroGovernorEffectsTooltip(Hero hero, Settlement settlement)
@@ -1370,10 +1596,13 @@ public static class CampaignUIHelper
 		MBTextManager.SetTextVariable("LEFT", GameTexts.FindText("str_tooltip_label_type"));
 		string definition2 = GameTexts.FindText("str_LEFT_ONLY").ToString();
 		list.Add(new TooltipProperty(definition2, HeroHelper.GetCharacterTypeName(hero).ToString(), 0));
-		SkillEffect.PerkRole? perkRole = hero.PartyBelongedTo?.GetHeroPerkRole(hero);
-		if (perkRole.HasValue && perkRole != SkillEffect.PerkRole.None)
+		MBTextManager.SetTextVariable("LEFT", GameTexts.FindText("str_tooltip_label_culture"));
+		string definition3 = GameTexts.FindText("str_LEFT_ONLY").ToString();
+		list.Add(new TooltipProperty(definition3, hero.Culture.Name.ToString(), 0));
+		PartyRole? partyRole = hero.PartyBelongedTo?.GetHeroPartyRole(hero);
+		if (partyRole.HasValue && partyRole != PartyRole.None)
 		{
-			TextObject textObject = GameTexts.FindText("role", perkRole.Value.ToString());
+			TextObject textObject = GameTexts.FindText("role", partyRole.Value.ToString());
 			list.Add(new TooltipProperty(new TextObject("{=9FJi2SaE}Party Role").ToString(), textObject.ToString(), 0));
 		}
 		TooltipAddEmptyLine(list);
@@ -1594,38 +1823,36 @@ public static class CampaignUIHelper
 		if (order.PreCraftedWeaponDesignItem.PrimaryWeapon.SwingDamageType != item.PrimaryWeapon.SwingDamageType)
 		{
 			DamageTypes swingDamageType = order.PreCraftedWeaponDesignItem.PrimaryWeapon.SwingDamageType;
-			DamageTypes thrustDamageType = item.PrimaryWeapon.ThrustDamageType;
-			TextObject empty = TextObject.Empty;
-			if (thrustDamageType == DamageTypes.Invalid)
+			TextObject textObject;
+			if (item.PrimaryWeapon.ThrustDamageType == DamageTypes.Invalid)
 			{
-				empty = TextObject.Empty;
+				textObject = TextObject.GetEmpty();
 			}
 			else
 			{
-				empty = new TextObject("{=MT5A04X8} - Swing Damage Type does not match. Should be: {TYPE}");
-				TextObject textObject = empty;
+				textObject = new TextObject("{=MT5A04X8} - Swing Damage Type does not match. Should be: {TYPE}");
+				TextObject textObject2 = textObject;
 				int num3 = (int)swingDamageType;
-				textObject.SetTextVariable("TYPE", GameTexts.FindText("str_inventory_dmg_type", num3.ToString()));
+				textObject2.SetTextVariable("TYPE", GameTexts.FindText("str_inventory_dmg_type", num3.ToString()));
 			}
-			properties.Add(new TooltipProperty(empty.ToString(), "", 0));
+			properties.Add(new TooltipProperty(textObject.ToString(), "", 0));
 		}
 		if (order.PreCraftedWeaponDesignItem.PrimaryWeapon.ThrustDamageType != item.PrimaryWeapon.ThrustDamageType)
 		{
-			DamageTypes thrustDamageType2 = order.PreCraftedWeaponDesignItem.PrimaryWeapon.ThrustDamageType;
-			DamageTypes thrustDamageType3 = item.PrimaryWeapon.ThrustDamageType;
-			TextObject empty2 = TextObject.Empty;
-			if (thrustDamageType3 == DamageTypes.Invalid)
+			DamageTypes thrustDamageType = order.PreCraftedWeaponDesignItem.PrimaryWeapon.ThrustDamageType;
+			TextObject textObject3;
+			if (item.PrimaryWeapon.ThrustDamageType == DamageTypes.Invalid)
 			{
-				empty2 = TextObject.Empty;
+				textObject3 = TextObject.GetEmpty();
 			}
 			else
 			{
-				empty2 = new TextObject("{=Tx9Mynbt} - Thrust Damage Type does not match. Should be: {TYPE}");
-				TextObject textObject2 = empty2;
-				int num3 = (int)thrustDamageType2;
-				textObject2.SetTextVariable("TYPE", GameTexts.FindText("str_inventory_dmg_type", num3.ToString()).ToString());
+				textObject3 = new TextObject("{=Tx9Mynbt} - Thrust Damage Type does not match. Should be: {TYPE}");
+				TextObject textObject4 = textObject3;
+				int num3 = (int)thrustDamageType;
+				textObject4.SetTextVariable("TYPE", GameTexts.FindText("str_inventory_dmg_type", num3.ToString()).ToString());
 			}
-			properties.Add(new TooltipProperty(empty2.ToString(), "", 0));
+			properties.Add(new TooltipProperty(textObject3.ToString(), "", 0));
 		}
 		num = order.PreCraftedWeaponDesignItem.PrimaryWeapon.ThrustSpeed;
 		num2 = item.PrimaryWeapon.ThrustSpeed;
@@ -1686,12 +1913,12 @@ public static class CampaignUIHelper
 		return properties;
 		void AddProperty(CraftingTemplate.CraftingStatTypes type, float reqValue)
 		{
-			TextObject textObject3 = GameTexts.FindText("str_crafting_stat", type.ToString());
+			TextObject textObject5 = GameTexts.FindText("str_crafting_stat", type.ToString());
 			TextObject variable = GameTexts.FindText("str_inventory_dmg_type", ((int)order.PreCraftedWeaponDesignItem.PrimaryWeapon.ThrustDamageType).ToString());
-			textObject3.SetTextVariable("THRUST_DAMAGE_TYPE", variable);
+			textObject5.SetTextVariable("THRUST_DAMAGE_TYPE", variable);
 			TextObject variable2 = GameTexts.FindText("str_inventory_dmg_type", ((int)order.PreCraftedWeaponDesignItem.PrimaryWeapon.SwingDamageType).ToString());
-			textObject3.SetTextVariable("SWING_DAMAGE_TYPE", variable2);
-			_orderRequirementText.SetTextVariable("STAT", textObject3);
+			textObject5.SetTextVariable("SWING_DAMAGE_TYPE", variable2);
+			_orderRequirementText.SetTextVariable("STAT", textObject5);
 			_orderRequirementText.SetTextVariable("REQUIREMENT", reqValue);
 			properties.Add(new TooltipProperty(_orderRequirementText.ToString(), "", 0));
 		}
@@ -1899,7 +2126,7 @@ public static class CampaignUIHelper
 		{
 			if (num == 0)
 			{
-				MBTextManager.SetTextVariable("STR1", label ?? TextObject.Empty);
+				MBTextManager.SetTextVariable("STR1", label ?? TextObject.GetEmpty());
 				MBTextManager.SetTextVariable("STR2", text3);
 				string text = GameTexts.FindText("str_STR1_STR2").ToString();
 				MBTextManager.SetTextVariable("LEFT", text);
@@ -1917,6 +2144,33 @@ public static class CampaignUIHelper
 		return textObject;
 	}
 
+	public static TextObject GetCommaNewlineSeparatedText(TextObject label, IEnumerable<TextObject> texts)
+	{
+		TextObject textObject = new TextObject("{=!}{RESULT}");
+		int num = 0;
+		foreach (TextObject text3 in texts)
+		{
+			if (num == 0)
+			{
+				MBTextManager.SetTextVariable("STR1", label ?? TextObject.GetEmpty());
+				MBTextManager.SetTextVariable("STR2", text3);
+				string text = GameTexts.FindText("str_STR1_STR2").ToString();
+				MBTextManager.SetTextVariable("LEFT", text);
+				textObject.SetTextVariable("RESULT", text);
+			}
+			else
+			{
+				MBTextManager.SetTextVariable("RIGHT", text3);
+				string text2 = GameTexts.FindText("str_LEFT_comma_newline_RIGHT").ToString();
+				MBTextManager.SetTextVariable("newline", "\n");
+				MBTextManager.SetTextVariable("LEFT", text2);
+				textObject.SetTextVariable("RESULT", text2);
+			}
+			num++;
+		}
+		return textObject;
+	}
+
 	public static string GetHeroKingdomRank(Hero hero)
 	{
 		if (hero.Clan.Kingdom != null)
@@ -1926,7 +2180,7 @@ public static class CampaignUIHelper
 			bool flag = hero.Clan.Leader == hero;
 			bool flag2 = !num && !flag;
 			bool flag3 = hero.PartyBelongedTo != null && hero.PartyBelongedTo.LeaderHero == hero;
-			TextObject textObject = TextObject.Empty;
+			TextObject textObject = TextObject.GetEmpty();
 			GameTexts.SetVariable("FACTION", hero.Clan.Kingdom.Name);
 			GameTexts.SetVariable("FACTION_INFORMAL_NAME", hero.Clan.Kingdom.InformalName);
 			if (num)
@@ -1982,14 +2236,14 @@ public static class CampaignUIHelper
 	public static bool IsSettlementInformationHidden(Settlement settlement, out TextObject disableReason)
 	{
 		bool flag = !Campaign.Current.Models.InformationRestrictionModel.DoesPlayerKnowDetailsOf(settlement);
-		disableReason = (flag ? new TextObject("{=cDkHJOkl}You need to be in the viewing range, control this settlement with your kingdom or have a clan member in the settlement to see its details.") : TextObject.Empty);
+		disableReason = (flag ? new TextObject("{=cDkHJOkl}You need to be in the viewing range, control this settlement with your kingdom or have a clan member in the settlement to see its details.") : TextObject.GetEmpty());
 		return flag;
 	}
 
 	public static bool IsHeroInformationHidden(Hero hero, out TextObject disableReason)
 	{
 		bool flag = !Campaign.Current.Models.InformationRestrictionModel.DoesPlayerKnowDetailsOf(hero);
-		disableReason = (flag ? new TextObject("{=akHsjtPh}You haven't met this hero yet.") : TextObject.Empty);
+		disableReason = (flag ? new TextObject("{=akHsjtPh}You haven't met this hero yet.") : TextObject.GetEmpty());
 		return flag;
 	}
 
@@ -2030,9 +2284,13 @@ public static class CampaignUIHelper
 			.ToString();
 	}
 
-	public static string GetUpgradeHint(int index, int numOfItems, int availableUpgrades, int upgradeCoinCost, bool hasRequiredPerk, PerkObject requiredPerk, CharacterObject character, TroopRosterElement troop, int partyGoldChangeAmount, string entireStackShortcutKeyText, string fiveStackShortcutKeyText)
+	public static string GetUpgradeHint(int index, int numOfItems, int availableUpgrades, int upgradeCoinCost, bool hasRequiredPerk, PerkObject requiredPerk, CharacterObject character, TroopRosterElement troop, int partyGoldChangeAmount, bool areUpgradesDisabled)
 	{
-		string result = null;
+		if (areUpgradesDisabled)
+		{
+			return new TextObject("{=R4rTlKMU}Troop upgrades are currently disabled.").ToString();
+		}
+		string text = null;
 		CharacterObject characterObject = character.UpgradeTargets[index];
 		int level = characterObject.Level;
 		if (character.Culture.IsBandit ? (level >= character.Level) : (level > character.Level))
@@ -2041,60 +2299,61 @@ public static class CampaignUIHelper
 			GameTexts.SetVariable("newline", "\n");
 			TextObject textObject = new TextObject("{=f4nc7FfE}Upgrade to {UPGRADE_NAME}");
 			textObject.SetTextVariable("UPGRADE_NAME", characterObject.Name);
-			result = textObject.ToString();
+			text = textObject.ToString();
 			if (troop.Xp < upgradeXpCost)
 			{
 				TextObject textObject2 = new TextObject("{=Voa0sinH}Required: {NEEDED_EXP_AMOUNT}xp (You have {CURRENT_EXP_AMOUNT})");
 				textObject2.SetTextVariable("NEEDED_EXP_AMOUNT", upgradeXpCost);
 				textObject2.SetTextVariable("CURRENT_EXP_AMOUNT", troop.Xp);
-				GameTexts.SetVariable("STR1", result);
+				GameTexts.SetVariable("STR1", text);
 				GameTexts.SetVariable("STR2", textObject2);
-				result = GameTexts.FindText("str_string_newline_string").ToString();
+				text = GameTexts.FindText("str_string_newline_string").ToString();
 			}
 			if (characterObject.UpgradeRequiresItemFromCategory != null)
 			{
 				TextObject textObject3 = new TextObject((numOfItems > 0) ? "{=Raa4j4rF}Required: {UPGRADE_ITEM}" : "{=rThSy9ed}Required: {UPGRADE_ITEM} (You have none)");
 				textObject3.SetTextVariable("UPGRADE_ITEM", characterObject.UpgradeRequiresItemFromCategory.GetName().ToString());
-				GameTexts.SetVariable("STR1", result);
+				GameTexts.SetVariable("STR1", text);
 				GameTexts.SetVariable("STR2", textObject3.ToString());
-				result = GameTexts.FindText("str_string_newline_string").ToString();
+				text = GameTexts.FindText("str_string_newline_string").ToString();
 			}
 			TextObject textObject4 = new TextObject((Hero.MainHero.Gold + partyGoldChangeAmount < upgradeCoinCost) ? "{=63Ic1Ahe}Cost: {UPGRADE_COST} (You don't have)" : "{=McJjNM50}Cost: {UPGRADE_COST}");
 			textObject4.SetTextVariable("UPGRADE_COST", upgradeCoinCost);
 			GameTexts.SetVariable("STR1", textObject4);
 			GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
 			string content = GameTexts.FindText("str_STR1_STR2").ToString();
-			GameTexts.SetVariable("STR1", result);
+			GameTexts.SetVariable("STR1", text);
 			GameTexts.SetVariable("STR2", content);
-			result = GameTexts.FindText("str_string_newline_string").ToString();
+			text = GameTexts.FindText("str_string_newline_string").ToString();
 			if (!hasRequiredPerk)
 			{
-				GameTexts.SetVariable("STR1", result);
+				GameTexts.SetVariable("STR1", text);
 				TextObject textObject5 = new TextObject("{=68IlDbA2}You need to have {PERK_NAME} perk to upgrade a bandit troop to a normal troop.");
 				textObject5.SetTextVariable("PERK_NAME", requiredPerk.Name);
 				GameTexts.SetVariable("STR2", textObject5);
-				result = GameTexts.FindText("str_string_newline_string").ToString();
+				text = GameTexts.FindText("str_string_newline_string").ToString();
 			}
-			GameTexts.SetVariable("STR2", "");
-			if (availableUpgrades > 0 && !string.IsNullOrEmpty(entireStackShortcutKeyText))
-			{
-				GameTexts.SetVariable("KEY_NAME", entireStackShortcutKeyText);
-				string content2 = GameTexts.FindText("str_entire_stack_shortcut_upgrade_units").ToString();
-				GameTexts.SetVariable("STR1", content2);
-				GameTexts.SetVariable("STR2", "");
-				if (availableUpgrades >= 5 && !string.IsNullOrEmpty(fiveStackShortcutKeyText))
-				{
-					GameTexts.SetVariable("KEY_NAME", fiveStackShortcutKeyText);
-					string content3 = GameTexts.FindText("str_five_stack_shortcut_upgrade_units").ToString();
-					GameTexts.SetVariable("STR2", content3);
-				}
-				string content4 = GameTexts.FindText("str_string_newline_string").ToString();
-				GameTexts.SetVariable("STR2", content4);
-			}
-			GameTexts.SetVariable("STR1", result);
-			result = GameTexts.FindText("str_string_newline_string").ToString();
 		}
-		return result;
+		return text;
+	}
+
+	public static string GetStackModifierString(TextObject allStackText, TextObject fiveStackText, bool canFiveStack)
+	{
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+		{
+			return string.Empty;
+		}
+		TextObject variable = GameTexts.FindText("str_game_key_text", "anycontrol");
+		allStackText.SetTextVariable("KEY_NAME", variable);
+		if (canFiveStack)
+		{
+			TextObject variable2 = GameTexts.FindText("str_game_key_text", "anyshift");
+			fiveStackText.SetTextVariable("KEY_NAME", variable2);
+			return GameTexts.FindText("str_string_newline_string").SetTextVariable("newline", "\n").SetTextVariable("STR1", allStackText)
+				.SetTextVariable("STR2", fiveStackText)
+				.ToString();
+		}
+		return allStackText.ToString();
 	}
 
 	public static string ConvertToHexColor(uint color)
@@ -2110,8 +2369,12 @@ public static class CampaignUIHelper
 			disabledReason = GameTexts.FindText("str_action_disabled_reason_prisoner");
 			return false;
 		}
-		GameStateManager current = GameStateManager.Current;
-		if (current != null && current.GameStates.Any((TaleWorlds.Core.GameState x) => x.IsMission))
+		if (MobileParty.MainParty.IsInRaftState)
+		{
+			disabledReason = GameTexts.FindText("str_action_disabled_reason_raft_state");
+			return false;
+		}
+		if (CampaignMission.Current != null)
 		{
 			disabledReason = new TextObject("{=FdzsOvDq}This action is disabled while in a mission");
 			return false;
@@ -2149,7 +2412,42 @@ public static class CampaignUIHelper
 			disabledReason = new TextObject("{=MIylzRc5}You can't perform this action while you are in a map event.");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
+		return true;
+	}
+
+	public static bool GetCanManageCurrentArmyWithReason(out TextObject disabledReason)
+	{
+		if (MobileParty.MainParty.Army?.LeaderParty != MobileParty.MainParty)
+		{
+			disabledReason = TextObject.GetEmpty();
+			return false;
+		}
+		if (Hero.MainHero.IsPrisoner)
+		{
+			disabledReason = GameTexts.FindText("str_action_disabled_reason_prisoner");
+			return false;
+		}
+		if (PlayerEncounter.Current != null)
+		{
+			if (PlayerEncounter.EncounterSettlement == null)
+			{
+				disabledReason = GameTexts.FindText("str_action_disabled_reason_encounter");
+				return false;
+			}
+			Village village = PlayerEncounter.EncounterSettlement.Village;
+			if (village != null && village.VillageState == Village.VillageStates.BeingRaided && MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid)
+			{
+				disabledReason = GameTexts.FindText("str_action_disabled_reason_raid");
+				return false;
+			}
+		}
+		if (MapEvent.PlayerMapEvent != null)
+		{
+			disabledReason = GameTexts.FindText("str_cannot_manage_army_while_in_event");
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -2238,7 +2536,7 @@ public static class CampaignUIHelper
 		{
 			return GameTexts.FindText("str_clan_doesnt_have_available_heroes");
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public static string GetCraftingDisableReasonString(bool playerHasEnoughMaterials)
@@ -2250,7 +2548,7 @@ public static class CampaignUIHelper
 		return string.Empty;
 	}
 
-	public static string GetAddFocusHintString(bool playerHasEnoughPoints, bool isMaxedSkill, int currentFocusAmount, int currentAttributeAmount, int currentSkillValue, IHeroDeveloper developer, SkillObject skill)
+	public static string GetAddFocusHintString(bool playerHasEnoughPoints, bool isMaxedSkill, int currentFocusAmount)
 	{
 		GameTexts.SetVariable("newline", "\n");
 		string content = GameTexts.FindText("str_focus_points").ToString();
@@ -2279,131 +2577,18 @@ public static class CampaignUIHelper
 
 	public static string GetSkillEffectText(SkillEffect effect, int skillLevel)
 	{
-		MBTextManager.SetTextVariable("a0", effect.GetPrimaryValue(skillLevel).ToString("0.0"));
-		MBTextManager.SetTextVariable("a1", effect.GetSecondaryValue(skillLevel).ToString("0.0"));
-		string text = effect.Description.ToString();
-		if (effect.PrimaryRole != 0 && effect.PrimaryBonus != 0f)
+		TextObject effectDescriptionForSkillLevel = SkillHelper.GetEffectDescriptionForSkillLevel(effect, skillLevel);
+		if (effect.Role != 0)
 		{
-			TextObject textObject = GameTexts.FindText("role", effect.PrimaryRole.ToString());
-			if (effect.SecondaryRole != 0 && effect.SecondaryBonus != 0f)
-			{
-				TextObject textObject2 = GameTexts.FindText("role", effect.SecondaryRole.ToString());
-				return $"({textObject.ToString()} / {textObject2.ToString()}){text} ";
-			}
-			return $"({textObject.ToString()}) {text} ";
+			TextObject textObject = GameTexts.FindText("role", effect.Role.ToString());
+			return $"({textObject.ToString()}) {effectDescriptionForSkillLevel} ";
 		}
-		return text;
+		return effectDescriptionForSkillLevel.ToString();
 	}
 
 	public static string GetMobilePartyBehaviorText(MobileParty party)
 	{
-		TextObject textObject;
-		if (party.Army != null && party.Army.LeaderParty == party && !party.Ai.IsFleeing())
-		{
-			textObject = party.Army.GetBehaviorText();
-		}
-		else if (party.DefaultBehavior == AiBehavior.Hold || party.ShortTermBehavior == AiBehavior.Hold || (party.IsMainParty && Campaign.Current.IsMainPartyWaiting))
-		{
-			textObject = new TextObject("{=RClxLG6N}Holding");
-		}
-		else if (party.ShortTermBehavior == AiBehavior.EngageParty && party.ShortTermTargetParty != null)
-		{
-			textObject = new TextObject("{=5bzk75Ql}Engaging {TARGET_PARTY}.");
-			textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-		}
-		else if (party.DefaultBehavior == AiBehavior.GoAroundParty && party.ShortTermBehavior == AiBehavior.GoToPoint)
-		{
-			textObject = new TextObject("{=XYAVu2f0}Chasing {TARGET_PARTY}.");
-			textObject.SetTextVariable("TARGET_PARTY", party.TargetParty.Name);
-		}
-		else if (party.ShortTermBehavior == AiBehavior.FleeToParty && party.ShortTermTargetParty != null)
-		{
-			textObject = new TextObject("{=R8vuwKaf}Running from {TARGET_PARTY} to ally party.");
-			textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-		}
-		else if (party.ShortTermBehavior == AiBehavior.FleeToPoint && party.ShortTermTargetParty != null)
-		{
-			textObject = new TextObject("{=AcMayd1p}Running from {TARGET_PARTY}");
-			textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-		}
-		else if (party.ShortTermBehavior == AiBehavior.FleeToGate && party.ShortTermTargetParty != null)
-		{
-			textObject = new TextObject("{=J5u0uOKc}Running from {TARGET_PARTY} to settlement.");
-			textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-		}
-		else if (party.DefaultBehavior == AiBehavior.DefendSettlement)
-		{
-			textObject = ((party.ShortTermBehavior != AiBehavior.EscortParty) ? new TextObject("{=rGy8vjOv}Defending {TARGET_SETTLEMENT}.") : new TextObject("{=yD7rL5Nc}Helping ally party to defend {TARGET_SETTLEMENT}."));
-			textObject.SetTextVariable("TARGET_SETTLEMENT", party.TargetSettlement.Name);
-		}
-		else if (party.DefaultBehavior == AiBehavior.RaidSettlement)
-		{
-			textObject = new TextObject("{=VtWa9Pmh}Raiding {TARGET_SETTLEMENT}.");
-			textObject.SetTextVariable("TARGET_SETTLEMENT", party.TargetSettlement.Name);
-		}
-		else if (party.DefaultBehavior == AiBehavior.BesiegeSettlement)
-		{
-			textObject = new TextObject("{=JTxI3sW2}Besieging {TARGET_SETTLEMENT}");
-			textObject.SetTextVariable("TARGET_SETTLEMENT", party.TargetSettlement.Name);
-		}
-		else if (party.ShortTermBehavior == AiBehavior.GoToPoint)
-		{
-			if (party.ShortTermTargetParty != null)
-			{
-				textObject = new TextObject("{=AcMayd1p}Running from {TARGET_PARTY}");
-				textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-			}
-			else if (party.TargetSettlement == null)
-			{
-				textObject = ((party.DefaultBehavior != AiBehavior.PatrolAroundPoint) ? new TextObject("{=XAL3t1bs}Going to a point") : new TextObject("{=BifGz0h4}Patrolling"));
-			}
-			else if (party.DefaultBehavior == AiBehavior.PatrolAroundPoint)
-			{
-				textObject = ((!(party.TargetSettlement.GatePosition.Distance(party.Position2D) > Campaign.AverageDistanceBetweenTwoFortifications)) ? new TextObject("{=yUVv3z5V}Patrolling around {TARGET_SETTLEMENT}.") : new TextObject("{=rba7kgwS}Travelling to {TARGET_SETTLEMENT}."));
-				textObject.SetTextVariable("TARGET_SETTLEMENT", (party.TargetSettlement != null) ? party.TargetSettlement.Name : party.HomeSettlement.Name);
-			}
-			else
-			{
-				textObject = new TextObject("{=TaK6ydAx}Travelling.");
-			}
-		}
-		else if (party.ShortTermBehavior == AiBehavior.GoToSettlement || party.DefaultBehavior == AiBehavior.GoToSettlement)
-		{
-			if (party.ShortTermBehavior == AiBehavior.GoToSettlement && party.ShortTermTargetSettlement != null && party.ShortTermTargetSettlement != party.TargetSettlement)
-			{
-				textObject = new TextObject("{=NRpbagbZ}Running to {TARGET_PARTY}");
-				textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetSettlement.Name);
-			}
-			else if (party.DefaultBehavior == AiBehavior.GoToSettlement && party.TargetSettlement != null)
-			{
-				textObject = ((party.CurrentSettlement != party.TargetSettlement) ? new TextObject("{=EQHq3bHM}Travelling to {TARGET_PARTY}") : new TextObject("{=Y65gdbrx}Waiting in {TARGET_PARTY}"));
-				textObject.SetTextVariable("TARGET_PARTY", party.TargetSettlement.Name);
-			}
-			else if (party.ShortTermTargetParty != null)
-			{
-				textObject = new TextObject("{=AcMayd1p}Running from {TARGET_PARTY}");
-				textObject.SetTextVariable("TARGET_PARTY", party.ShortTermTargetParty.Name);
-			}
-			else
-			{
-				textObject = new TextObject("{=QGyoSLeY}Traveling to a settlement");
-			}
-		}
-		else if (party.ShortTermBehavior == AiBehavior.AssaultSettlement)
-		{
-			textObject = new TextObject("{=exnL6SS7}Attacking {TARGET_SETTLEMENT}");
-			textObject.SetTextVariable("TARGET_SETTLEMENT", party.ShortTermTargetSettlement.Name);
-		}
-		else if (party.DefaultBehavior == AiBehavior.EscortParty || party.ShortTermBehavior == AiBehavior.EscortParty)
-		{
-			textObject = new TextObject("{=OpzzCPiP}Following {TARGET_PARTY}");
-			textObject.SetTextVariable("TARGET_PARTY", (party.ShortTermTargetParty != null) ? party.ShortTermTargetParty.Name : party.TargetParty.Name);
-		}
-		else
-		{
-			textObject = new TextObject("{=QXBf26Rv}Unknown Behavior");
-		}
-		return textObject.ToString();
+		return party.GetBehaviorText().ToString();
 	}
 
 	public static string GetHeroBehaviorText(Hero hero, ITeleportationCampaignBehavior teleportationBehavior = null)
@@ -2471,8 +2656,23 @@ public static class CampaignUIHelper
 			{
 				return _inYourPartyText.ToString();
 			}
-			Settlement closestSettlementForNavigationMesh = Campaign.Current.Models.MapDistanceModel.GetClosestSettlementForNavigationMesh(hero.PartyBelongedTo.CurrentNavigationFace);
-			_nearSettlementText.SetTextVariable("SETTLEMENT_NAME", closestSettlementForNavigationMesh.Name);
+			Settlement settlement3 = Campaign.Current.Models.MapDistanceModel.GetClosestEntranceToFace(hero.PartyBelongedTo.CurrentNavigationFace, hero.PartyBelongedTo.NavigationCapability).Item1;
+			if (settlement3 == null)
+			{
+				float num = float.MaxValue;
+				Settlement settlement4 = null;
+				foreach (Settlement item in Settlement.All)
+				{
+					float num2 = item.Position.Distance(hero.PartyBelongedTo.Position);
+					if (num2 < num)
+					{
+						num = num2;
+						settlement4 = item;
+					}
+				}
+				settlement3 = settlement4;
+			}
+			_nearSettlementText.SetTextVariable("SETTLEMENT_NAME", settlement3.Name);
 			return _nearSettlementText.ToString();
 		}
 		if (hero.CurrentSettlement != null)
@@ -2502,6 +2702,23 @@ public static class CampaignUIHelper
 			return GameTexts.FindText("str_LEFT_comma_RIGHT").ToString();
 		}
 		return new TextObject("{=RClxLG6N}Holding").ToString();
+	}
+
+	public static string GetPartyLocationText(MobileParty mobileParty)
+	{
+		if (mobileParty.CurrentSettlement != null)
+		{
+			return mobileParty.CurrentSettlement.Name.ToString();
+		}
+		Settlement settlement = SettlementHelper.FindNearestSettlementToMobileParty(mobileParty, MobileParty.NavigationType.All);
+		if (settlement == null)
+		{
+			CampaignVec2 point = mobileParty.Position;
+			settlement = SettlementHelper.FindNearestSettlementToPoint(in point);
+		}
+		Settlement settlement2 = settlement;
+		GameTexts.SetVariable("SETTLEMENT_NAME", settlement2.Name);
+		return GameTexts.FindText("str_near_settlement").ToString();
 	}
 
 	public static Hero GetTeleportingLeaderHero(MobileParty party, ITeleportationCampaignBehavior teleportationBehavior)
@@ -2589,8 +2806,8 @@ public static class CampaignUIHelper
 	public static string GetPartyDistanceByTimeText(float distance, float speed)
 	{
 		int num = TaleWorlds.Library.MathF.Ceiling(distance / speed);
-		int num2 = num / 24;
-		num %= 24;
+		int num2 = num / CampaignTime.HoursInDay;
+		num %= CampaignTime.HoursInDay;
 		GameTexts.SetVariable("IS_UNDER_A_DAY", (num2 <= 0) ? 1 : 0);
 		GameTexts.SetVariable("IS_MORE_THAN_ONE_DAY", (num2 > 1) ? 1 : 0);
 		GameTexts.SetVariable("DAY_VALUE", num2);
@@ -2598,6 +2815,20 @@ public static class CampaignUIHelper
 		GameTexts.SetVariable("IS_MORE_THAN_AN_HOUR", (num > 1) ? 1 : 0);
 		GameTexts.SetVariable("HOUR_VALUE", num);
 		return GameTexts.FindText("str_distance_by_time").ToString();
+	}
+
+	public static string GetPartyDistanceByTimeTextAbbreviated(float distance, float speed)
+	{
+		int num = TaleWorlds.Library.MathF.Ceiling(distance / speed);
+		int num2 = num / CampaignTime.HoursInDay;
+		num %= CampaignTime.HoursInDay;
+		if (num2 < 0 || num < 0)
+		{
+			return "-";
+		}
+		GameTexts.SetVariable("DAY_VALUE", num2);
+		GameTexts.SetVariable("HOUR_VALUE", num);
+		return GameTexts.FindText("str_distance_by_time_abbreviated").ToString();
 	}
 
 	public static CharacterCode GetCharacterCode(CharacterObject character, bool useCivilian = false)
@@ -2636,7 +2867,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait as text.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3056);
+			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3301);
 			return "";
 		}
 		int traitLevel = hero.GetTraitLevel(traitObject);
@@ -2651,7 +2882,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3081);
+			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3326);
 			return null;
 		}
 		GameTexts.SetVariable("NEWLINE", "\n");
@@ -2671,25 +2902,74 @@ public static class CampaignUIHelper
 		return GameTexts.FindText("str_trait_description_tooltip").ToString();
 	}
 
-	public static string GetTextForRole(SkillEffect.PerkRole role)
+	public static string GetTextForRole(PartyRole role)
 	{
 		return role switch
 		{
-			SkillEffect.PerkRole.None => new TextObject("{=koX9okuG}None").ToString(), 
-			SkillEffect.PerkRole.ArmyCommander => new TextObject("{=g9VIbA9s}Sergeant").ToString(), 
-			SkillEffect.PerkRole.ClanLeader => new TextObject("{=pqfz386V}Clan Leader").ToString(), 
-			SkillEffect.PerkRole.Engineer => new TextObject("{=7h6cXdW7}Engineer").ToString(), 
-			SkillEffect.PerkRole.Governor => new TextObject("{=Fa2nKXxI}Governor").ToString(), 
-			SkillEffect.PerkRole.PartyLeader => new TextObject("{=ggpRTQQl}Party Leader").ToString(), 
-			SkillEffect.PerkRole.PartyMember => new TextObject("{=HcAV8x7p}Party Member").ToString(), 
-			SkillEffect.PerkRole.PartyOwner => new TextObject("{=YifFZaG7}Party Owner").ToString(), 
-			SkillEffect.PerkRole.Personal => new TextObject("{=UxAl9iyi}Personal").ToString(), 
-			SkillEffect.PerkRole.Quartermaster => new TextObject("{=redwEIlW}Quartermaster").ToString(), 
-			SkillEffect.PerkRole.Ruler => new TextObject("{=IcgVKFxZ}Ruler").ToString(), 
-			SkillEffect.PerkRole.Scout => new TextObject("{=92M0Pb5T}Scout").ToString(), 
-			SkillEffect.PerkRole.Surgeon => new TextObject("{=QBPrRdQJ}Surgeon").ToString(), 
+			PartyRole.None => GameTexts.FindText("role", PartyRole.None.ToString()).ToString(), 
+			PartyRole.ArmyCommander => GameTexts.FindText("role", PartyRole.ArmyCommander.ToString()).ToString(), 
+			PartyRole.ClanLeader => GameTexts.FindText("role", PartyRole.ClanLeader.ToString()).ToString(), 
+			PartyRole.Engineer => GameTexts.FindText("role", PartyRole.Engineer.ToString()).ToString(), 
+			PartyRole.Governor => GameTexts.FindText("role", PartyRole.Governor.ToString()).ToString(), 
+			PartyRole.PartyLeader => GameTexts.FindText("role", PartyRole.PartyLeader.ToString()).ToString(), 
+			PartyRole.PartyMember => GameTexts.FindText("role", PartyRole.PartyMember.ToString()).ToString(), 
+			PartyRole.PartyOwner => GameTexts.FindText("role", PartyRole.PartyOwner.ToString()).ToString(), 
+			PartyRole.Personal => GameTexts.FindText("role", PartyRole.Personal.ToString()).ToString(), 
+			PartyRole.Quartermaster => GameTexts.FindText("role", PartyRole.Quartermaster.ToString()).ToString(), 
+			PartyRole.Ruler => GameTexts.FindText("role", PartyRole.Ruler.ToString()).ToString(), 
+			PartyRole.Scout => GameTexts.FindText("role", PartyRole.Scout.ToString()).ToString(), 
+			PartyRole.Surgeon => GameTexts.FindText("role", PartyRole.Surgeon.ToString()).ToString(), 
 			_ => "", 
 		};
+	}
+
+	public static int GetAttributeTypeSortIndex(CharacterAttribute attribute)
+	{
+		string stringId = attribute.StringId;
+		for (int i = 0; i < _attributeSortIndices.Count; i++)
+		{
+			if (stringId.Equals(_attributeSortIndices[i], StringComparison.InvariantCultureIgnoreCase))
+			{
+				return _attributeSortIndices.Count - i;
+			}
+		}
+		return 0;
+	}
+
+	public static int GetSkillObjectTypeSortIndex(SkillObject skill)
+	{
+		string stringId = skill.StringId;
+		for (int i = 0; i < _skillSortIndices.Count; i++)
+		{
+			if (stringId.Equals(_skillSortIndices[i], StringComparison.InvariantCultureIgnoreCase))
+			{
+				return _skillSortIndices.Count - i;
+			}
+		}
+		return 0;
+	}
+
+	public static string GetSkillMeshId(SkillObject skill, bool useSmallestVariation = true)
+	{
+		string text = "SPGeneral\\Skills\\gui_skills_icon_" + skill.StringId.ToLower();
+		if (useSmallestVariation)
+		{
+			return text + "_tiny";
+		}
+		return text + "_small";
+	}
+
+	public static bool GetIsNavalSkill(SkillObject skill)
+	{
+		string stringId = skill.StringId;
+		for (int i = 0; i < _navalSkills.Count; i++)
+		{
+			if (stringId.Equals(_navalSkills[i], StringComparison.InvariantCultureIgnoreCase))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static int GetHeroCompareSortIndex(Hero x, Hero y)
@@ -2715,7 +2995,7 @@ public static class CampaignUIHelper
 
 	public static string GetHeroClanRoleText(Hero hero, Clan clan)
 	{
-		return GameTexts.FindText("role", MobileParty.MainParty.GetHeroPerkRole(hero).ToString()).ToString();
+		return GameTexts.FindText("role", MobileParty.MainParty.GetHeroPartyRole(hero).ToString()).ToString();
 	}
 
 	public static int GetItemObjectTypeSortIndex(ItemObject item)
@@ -2738,9 +3018,11 @@ public static class CampaignUIHelper
 		case ItemObject.ItemTypeEnum.Polearm:
 		case ItemObject.ItemTypeEnum.Arrows:
 		case ItemObject.ItemTypeEnum.Bolts:
+		case ItemObject.ItemTypeEnum.SlingStones:
 		case ItemObject.ItemTypeEnum.Shield:
 		case ItemObject.ItemTypeEnum.Bow:
 		case ItemObject.ItemTypeEnum.Crossbow:
+		case ItemObject.ItemTypeEnum.Sling:
 		case ItemObject.ItemTypeEnum.Thrown:
 		case ItemObject.ItemTypeEnum.Pistol:
 		case ItemObject.ItemTypeEnum.Musket:
@@ -2796,11 +3078,11 @@ public static class CampaignUIHelper
 				{
 					if (questsRelatedToHero[i].QuestGiver == queriedHero)
 					{
-						list.Add((questsRelatedToHero[i].IsSpecialQuest ? IssueQuestFlags.ActiveStoryQuest : IssueQuestFlags.ActiveIssue, questsRelatedToHero[i].Title, (questsRelatedToHero[i].JournalEntries.Count > 0) ? questsRelatedToHero[i].JournalEntries[0].LogText : TextObject.Empty));
+						list.Add((questsRelatedToHero[i].IsSpecialQuest ? IssueQuestFlags.ActiveStoryQuest : IssueQuestFlags.ActiveIssue, questsRelatedToHero[i].Title, (questsRelatedToHero[i].JournalEntries.Count > 0) ? questsRelatedToHero[i].JournalEntries[0].LogText : TextObject.GetEmpty()));
 					}
 					else
 					{
-						list.Add((questsRelatedToHero[i].IsSpecialQuest ? IssueQuestFlags.TrackedStoryQuest : IssueQuestFlags.TrackedIssue, questsRelatedToHero[i].Title, (questsRelatedToHero[i].JournalEntries.Count > 0) ? questsRelatedToHero[i].JournalEntries[0].LogText : TextObject.Empty));
+						list.Add((questsRelatedToHero[i].IsSpecialQuest ? IssueQuestFlags.TrackedStoryQuest : IssueQuestFlags.TrackedIssue, questsRelatedToHero[i].Title, (questsRelatedToHero[i].JournalEntries.Count > 0) ? questsRelatedToHero[i].JournalEntries[0].LogText : TextObject.GetEmpty()));
 					}
 				}
 			}
@@ -2830,17 +3112,24 @@ public static class CampaignUIHelper
 	{
 		List<QuestBase> list = new List<QuestBase>();
 		Campaign.Current.QuestManager.TrackedObjects.TryGetValue(hero, out var value);
+		foreach (QuestBase questGiverQuest in Campaign.Current.QuestManager.GetQuestGiverQuests(hero))
+		{
+			if (questGiverQuest.IsTrackEnabled && !list.Contains(questGiverQuest))
+			{
+				list.Add(questGiverQuest);
+			}
+		}
 		if (value != null)
 		{
 			for (int i = 0; i < value.Count; i++)
 			{
-				if (value[i].IsTrackEnabled)
+				if (value[i].IsTrackEnabled && !list.Contains(value[i]))
 				{
 					list.Add(value[i]);
 				}
 			}
 		}
-		if (hero.Issue?.IssueQuest != null && hero.Issue.IssueQuest.IsTrackEnabled && !hero.Issue.IssueQuest.IsTracked(hero))
+		if (hero.Issue?.IssueQuest != null && hero.Issue.IssueQuest.IsTrackEnabled && !hero.Issue.IssueQuest.IsTracked(hero) && !list.Contains(hero.Issue.IssueQuest))
 		{
 			list.Add(hero.Issue.IssueQuest);
 		}
@@ -2890,24 +3179,52 @@ public static class CampaignUIHelper
 		return list;
 	}
 
-	public static List<QuestBase> GetQuestsRelatedToSettlement(Settlement settlement)
+	public static List<(bool isHeroQuestGiver, QuestBase quest)> GetQuestsRelatedToSettlement(Settlement settlement)
 	{
-		List<QuestBase> list = new List<QuestBase>();
+		List<(bool, QuestBase)> list = new List<(bool, QuestBase)>();
 		foreach (KeyValuePair<ITrackableCampaignObject, List<QuestBase>> trackedObject in Campaign.Current.QuestManager.TrackedObjects)
 		{
-			if ((!(trackedObject.Key is Hero hero) || hero.CurrentSettlement != settlement) && (!(trackedObject.Key is MobileParty mobileParty) || mobileParty.CurrentSettlement != settlement))
+			Hero hero = trackedObject.Key as Hero;
+			MobileParty mobileParty = trackedObject.Key as MobileParty;
+			if ((hero == null || hero.CurrentSettlement != settlement) && (mobileParty == null || mobileParty.CurrentSettlement != settlement))
 			{
 				continue;
 			}
 			for (int i = 0; i < trackedObject.Value.Count; i++)
 			{
-				if (!list.Contains(trackedObject.Value[i]) && trackedObject.Value[i].IsTrackEnabled)
+				bool item = trackedObject.Value[i].QuestGiver != null && (trackedObject.Value[i].QuestGiver == hero || trackedObject.Value[i].QuestGiver == mobileParty?.LeaderHero);
+				if (!list.Contains((item, trackedObject.Value[i])) && trackedObject.Value[i].IsTrackEnabled)
 				{
-					list.Add(trackedObject.Value[i]);
+					list.Add((item, trackedObject.Value[i]));
 				}
 			}
 		}
 		return list;
+	}
+
+	public static bool IsQuestRelatedToSettlement(QuestBase quest, Settlement settlement)
+	{
+		if (quest.QuestGiver?.CurrentSettlement == settlement || quest.IsTracked(settlement))
+		{
+			return true;
+		}
+		foreach (KeyValuePair<ITrackableCampaignObject, List<QuestBase>> trackedObject in Campaign.Current.QuestManager.TrackedObjects)
+		{
+			Hero hero = trackedObject.Key as Hero;
+			MobileParty mobileParty = trackedObject.Key as MobileParty;
+			if ((hero == null || hero.CurrentSettlement != settlement) && (mobileParty == null || mobileParty.CurrentSettlement != settlement))
+			{
+				continue;
+			}
+			for (int i = 0; i < trackedObject.Value.Count; i++)
+			{
+				if (trackedObject.Value[i].IsTrackEnabled && trackedObject.Value[i] == quest)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public static IssueQuestFlags GetIssueType(IssueBase issue)
@@ -2985,7 +3302,7 @@ public static class CampaignUIHelper
 		{
 			return new Tuple<bool, TextObject>(item1: false, new TextObject("{=wcSSgFyK}Character name cannot contain consecutive white spaces"));
 		}
-		return new Tuple<bool, TextObject>(item1: true, TextObject.Empty);
+		return new Tuple<bool, TextObject>(item1: true, TextObject.GetEmpty());
 	}
 
 	public static Tuple<bool, string> IsStringApplicableForHeroName(string name)
@@ -3019,7 +3336,7 @@ public static class CampaignUIHelper
 		{
 			return new Tuple<bool, TextObject>(item1: false, new TextObject("{=Z4GdqdgV}Item name cannot contain consecutive white spaces."));
 		}
-		return new Tuple<bool, TextObject>(item1: true, TextObject.Empty);
+		return new Tuple<bool, TextObject>(item1: true, TextObject.GetEmpty());
 	}
 
 	public static CharacterObject GetVisualPartyLeader(PartyBase party)
@@ -3036,5 +3353,18 @@ public static class CampaignUIHelper
 			return GameTexts.FindText("str_plus_with_number").ToString();
 		}
 		return text;
+	}
+
+	public static List<Hero> GetChildrenAndGrandchildrenOfHero(Hero hero)
+	{
+		List<Hero> list = hero.Children.ToList();
+		foreach (Hero child in hero.Children)
+		{
+			foreach (Hero child2 in child.Children)
+			{
+				list.Add(child2);
+			}
+		}
+		return list;
 	}
 }

@@ -16,12 +16,27 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void AddAccelerationDelegate(UIntPtr agentPointer, in Vec3 acceleration);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void AddAsCorpseDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void AddMeshToBoneDelegate(UIntPtr agentPointer, UIntPtr meshPointer, sbyte boneIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer AddPrefabToAgentBoneDelegate(UIntPtr agentPointer, byte[] prefabName, sbyte boneIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ApplyForceOnRagdollDelegate(UIntPtr agentPointer, sbyte boneIndex, in Vec3 force);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -53,7 +68,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirectionDelegate(UIntPtr agentPointer, int navigationFaceId, ref Vec3 direction, float overridenCostForFaceId);
+	public delegate bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirectionDelegate(UIntPtr agentPointer, int navigationFaceId, in Vec3 direction, float overridenCostForFaceId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -69,6 +84,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ClearTargetFrameDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ClearTargetZDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -123,6 +143,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void EndRagdollAsCorpseDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void EnforceShieldUsageDelegate(UIntPtr agentPointer, Agent.UsageDirection direction);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -134,6 +159,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void FadeOutDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool hideInstantly);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 FindLongestDirectMoveToPositionDelegate(UIntPtr agentPointer, Vec2 targetPosition, [MarshalAs(UnmanagedType.U1)] bool checkBoundaries, [MarshalAs(UnmanagedType.U1)] bool checkFriendlyAgents, [MarshalAs(UnmanagedType.U1)] out bool isCollidedWithAgent);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -168,7 +198,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetAgentFlagsDelegate(UIntPtr agentPointer);
+	public delegate NativeObjectPointer GetAgentParentEntityDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -188,7 +218,22 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate WorldPosition GetAILastSuspiciousPositionDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetAimingTimerDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate WorldPosition GetAIMoveDestinationDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetAIMoveStopToleranceDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -208,12 +253,22 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetAverageRealGlobalVelocityDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate Vec3 GetAverageVelocityDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate Vec3 GetBodyRotationConstraintDelegate(UIntPtr agentPointer, int channelIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate MatrixFrame GetBoneEntitialFrameAtAnimationProgressDelegate(UIntPtr agentPointer, sbyte boneIndex, int animationIndex, float progress);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -228,18 +283,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Agent.ControllerType GetControllerDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool GetCrouchModeDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate int GetCurrentActionDelegate(UIntPtr agentPointer, int channelNo);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -314,7 +359,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetEventControlFlagsDelegate(UIntPtr agentPointer);
+	public delegate Agent.EventControlFlag GetEventControlFlagsDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -330,6 +375,17 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate int GetFiringOrderDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetGroundMaterialForCollisionEffectDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetHasOnAiInputSetCallbackDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -394,11 +450,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetMaximumForwardUnlimitedSpeedDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	public delegate int GetMaximumNumberOfAgentsDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -429,17 +480,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec2 GetMovementDirectionDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate float GetMovementDirectionAsAngleDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate uint GetMovementFlagsDelegate(UIntPtr agentPointer);
+	public delegate Agent.MovementControlFlag GetMovementFlagsDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -464,12 +505,22 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetOldWieldedItemInfoDelegate(UIntPtr agentPointer, out int rightHandSlotIndex, out int rightHandUsageIndex, out int leftHandSlotIndex, out int leftHandUsageIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetPathDistanceToPointDelegate(UIntPtr agentPointer, ref Vec3 direction);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate Vec3 GetPositionDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetRealGlobalVelocityDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -525,7 +576,17 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate UIntPtr GetSteppedEntityIdDelegate(UIntPtr agentPointer);
+	public delegate BodyFlags GetSteppedBodyFlagsDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetSteppedEntityIdDelegate(UIntPtr agentPointer0);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetSteppedRootEntityDelegate(UIntPtr agentPointer0);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -555,6 +616,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate float GetTotalMassDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetTurnSpeedDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -577,11 +643,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate UIntPtr GetWeaponEntityFromEquipmentSlotDelegate(UIntPtr agentPointer, int equipmentSlot);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate EquipmentIndex GetWieldedItemIndexDelegate(UIntPtr agentPointer, int handIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -630,6 +691,18 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsAddedAsCorpseDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsCrouchingAllowedDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsEnemyDelegate(UIntPtr agentPointer1, UIntPtr agentPointer2);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -654,12 +727,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool IsOnLandDelegate(UIntPtr agentPointer);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsRetreatingDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -678,6 +745,18 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsTargetNavigationFaceIdBetweenDelegate(UIntPtr agentPointer, int navigationFaceIdStart, int navigationFaceIdEnd);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsWanderingDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool KickClearDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -688,7 +767,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void MakeDeadDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool isKilled, int actionIndex);
+	public delegate void MakeDeadDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool isKilled, int actionIndex, int corpsesToFadeIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -754,12 +833,27 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetAgentIdleAnimationStatusDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool idleEnabled);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetAgentScaleDelegate(UIntPtr agentPointer, float scale);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetAIAlarmStateDelegate(UIntPtr agentPointer, Agent.AIStateFlag aiStateFlags);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetAIBehaviorParamsDelegate(UIntPtr agentPointer, int behavior, float y1, float x2, float y2, float x3, float y3);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetAILastSuspiciousPositionDelegate(UIntPtr agentPointer, in WorldPosition lastSuspiciousPosition);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -799,7 +893,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetControllerDelegate(UIntPtr agentPointer, Agent.ControllerType controller);
+	public delegate void SetControllerDelegate(UIntPtr agentPointer, AgentControllerType controller);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -829,7 +923,17 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetExcludedFromGravityDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool exclude, [MarshalAs(UnmanagedType.U1)] bool applyAverageGlobalVelocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetFiringOrderDelegate(UIntPtr agentPointer, int order);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetForceAttachedEntityDelegate(UIntPtr agentPointer, UIntPtr entityPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -840,17 +944,17 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool SetFormationFrameEnabledDelegate(UIntPtr agentPointer, WorldPosition position, Vec2 direction, Vec2 positionVelocity, float formationDirectionEnforcingFactor);
+	public delegate bool SetFormationFrameEnabledDelegate(UIntPtr agentPointer, WorldPosition position, Vec2 direction, Vec2 positionVelocity, float formationDirectionEnforcingFactor, [MarshalAs(UnmanagedType.U1)] bool teleportAgents);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetFormationInfoDelegate(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, Vec2 wallDir, int unitSpacing);
+	public delegate void SetFormationInfoDelegate(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetFormationIntegrityDataDelegate(UIntPtr agentPointer, Vec2 position, Vec2 currentFormationDirection, Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions);
+	public delegate void SetFormationIntegrityDataDelegate(UIntPtr agentPointer, in Vec2 position, in Vec2 currentFormationDirection, in Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, [MarshalAs(UnmanagedType.U1)] bool shouldKeepWithFormationInsteadOfMovingToAgent);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -860,19 +964,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetGuardedAgentIndexDelegate(UIntPtr agentPointer, int guardedAgentIndex);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool SetHandInverseKinematicsFrameDelegate(UIntPtr agentPointer, ref MatrixFrame leftGlobalFrame, ref MatrixFrame rightGlobalFrame);
+	public delegate bool SetHandInverseKinematicsFrameDelegate(UIntPtr agentPointer, in MatrixFrame leftGlobalFrame, in MatrixFrame rightGlobalFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool SetHandInverseKinematicsFrameForMissionObjectUsageDelegate(UIntPtr agentPointer, in MatrixFrame localIKFrame, in MatrixFrame boundEntityGlobalFrame, float animationHeightDifference);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetHasOnAiInputSetCallbackDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -893,6 +997,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetIsLookDirectionLockedDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool isLocked);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetIsPhysicsForceClosedDelegate(UIntPtr agentPointer, [MarshalAs(UnmanagedType.U1)] bool isPhysicsForceClosed);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -948,6 +1057,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetNetworkPeerDelegate(UIntPtr agentPointer, int networkPeerIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetOverridenStrikeAndDeathActionDelegate(UIntPtr agentPointer, int strikeActionIndex, int deathActionIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1034,7 +1148,17 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetTargetPositionAndDirectionDelegate(UIntPtr agentPointer, ref Vec2 targetPosition, ref Vec3 targetDirection);
+	public delegate void SetTargetPositionAndDirectionDelegate(UIntPtr agentPointer, in Vec2 targetPosition, in Vec3 targetDirection);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetTargetUpDelegate(UIntPtr agentPointer, in Vec3 targetUp);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetTargetZDelegate(UIntPtr agentPointer, float targetZ);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1049,12 +1173,22 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetVelocityLimitsOnRagdollDelegate(UIntPtr agentPointer, float linearVelocityLimit, float angularVelocityLimit);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetWeaponAmmoAsClientDelegate(UIntPtr agentPointer, int equipmentIndex, int ammoEquipmentIndex, short ammo);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetWeaponAmountInSlotDelegate(UIntPtr agentPointer, int equipmentSlot, short amount, [MarshalAs(UnmanagedType.U1)] bool enforcePrimaryItem);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWeaponGuardDelegate(UIntPtr agentPointer, Agent.UsageDirection direction);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1075,6 +1209,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void StartFadingOutDelegate(UIntPtr agentPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void StartRagdollAsCorpseDelegate(UIntPtr agentPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1122,11 +1261,22 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[MonoNativeFunctionWrapper]
 	public delegate void WieldNextWeaponDelegate(UIntPtr agentPointer, int handIndex, int wieldActionType);
 
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void YellAfterDelayDelegate(UIntPtr agentPointer, float delayTimeInSecond);
+
 	private static readonly Encoding _utf8 = Encoding.UTF8;
+
+	public static AddAccelerationDelegate call_AddAccelerationDelegate;
+
+	public static AddAsCorpseDelegate call_AddAsCorpseDelegate;
 
 	public static AddMeshToBoneDelegate call_AddMeshToBoneDelegate;
 
 	public static AddPrefabToAgentBoneDelegate call_AddPrefabToAgentBoneDelegate;
+
+	public static ApplyForceOnRagdollDelegate call_ApplyForceOnRagdollDelegate;
 
 	public static AttachWeaponToBoneDelegate call_AttachWeaponToBoneDelegate;
 
@@ -1145,6 +1295,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static ClearHandInverseKinematicsDelegate call_ClearHandInverseKinematicsDelegate;
 
 	public static ClearTargetFrameDelegate call_ClearTargetFrameDelegate;
+
+	public static ClearTargetZDelegate call_ClearTargetZDelegate;
 
 	public static ComputeAnimationDisplacementDelegate call_ComputeAnimationDisplacementDelegate;
 
@@ -1166,11 +1318,15 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static DropItemDelegate call_DropItemDelegate;
 
+	public static EndRagdollAsCorpseDelegate call_EndRagdollAsCorpseDelegate;
+
 	public static EnforceShieldUsageDelegate call_EnforceShieldUsageDelegate;
 
 	public static FadeInDelegate call_FadeInDelegate;
 
 	public static FadeOutDelegate call_FadeOutDelegate;
+
+	public static FindLongestDirectMoveToPositionDelegate call_FindLongestDirectMoveToPositionDelegate;
 
 	public static ForceAiBehaviorSelectionDelegate call_ForceAiBehaviorSelectionDelegate;
 
@@ -1184,7 +1340,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetAgentFacialAnimationDelegate call_GetAgentFacialAnimationDelegate;
 
-	public static GetAgentFlagsDelegate call_GetAgentFlagsDelegate;
+	public static GetAgentParentEntityDelegate call_GetAgentParentEntityDelegate;
 
 	public static GetAgentScaleDelegate call_GetAgentScaleDelegate;
 
@@ -1192,7 +1348,13 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetAgentVoiceDefinitionDelegate call_GetAgentVoiceDefinitionDelegate;
 
+	public static GetAILastSuspiciousPositionDelegate call_GetAILastSuspiciousPositionDelegate;
+
 	public static GetAimingTimerDelegate call_GetAimingTimerDelegate;
+
+	public static GetAIMoveDestinationDelegate call_GetAIMoveDestinationDelegate;
+
+	public static GetAIMoveStopToleranceDelegate call_GetAIMoveStopToleranceDelegate;
 
 	public static GetAIStateFlagsDelegate call_GetAIStateFlagsDelegate;
 
@@ -1200,19 +1362,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetAttackDirectionUsageDelegate call_GetAttackDirectionUsageDelegate;
 
+	public static GetAverageRealGlobalVelocityDelegate call_GetAverageRealGlobalVelocityDelegate;
+
 	public static GetAverageVelocityDelegate call_GetAverageVelocityDelegate;
 
 	public static GetBodyRotationConstraintDelegate call_GetBodyRotationConstraintDelegate;
+
+	public static GetBoneEntitialFrameAtAnimationProgressDelegate call_GetBoneEntitialFrameAtAnimationProgressDelegate;
 
 	public static GetChestGlobalPositionDelegate call_GetChestGlobalPositionDelegate;
 
 	public static GetCollisionCapsuleDelegate call_GetCollisionCapsuleDelegate;
 
-	public static GetControllerDelegate call_GetControllerDelegate;
-
 	public static GetCrouchModeDelegate call_GetCrouchModeDelegate;
-
-	public static GetCurrentActionDelegate call_GetCurrentActionDelegate;
 
 	public static GetCurrentActionDirectionDelegate call_GetCurrentActionDirectionDelegate;
 
@@ -1250,6 +1412,10 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetFiringOrderDelegate call_GetFiringOrderDelegate;
 
+	public static GetGroundMaterialForCollisionEffectDelegate call_GetGroundMaterialForCollisionEffectDelegate;
+
+	public static GetHasOnAiInputSetCallbackDelegate call_GetHasOnAiInputSetCallbackDelegate;
+
 	public static GetHeadCameraModeDelegate call_GetHeadCameraModeDelegate;
 
 	public static GetImmediateEnemyDelegate call_GetImmediateEnemyDelegate;
@@ -1272,8 +1438,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetLookDownLimitDelegate call_GetLookDownLimitDelegate;
 
-	public static GetMaximumForwardUnlimitedSpeedDelegate call_GetMaximumForwardUnlimitedSpeedDelegate;
-
 	public static GetMaximumNumberOfAgentsDelegate call_GetMaximumNumberOfAgentsDelegate;
 
 	public static GetMaximumSpeedLimitDelegate call_GetMaximumSpeedLimitDelegate;
@@ -1286,10 +1450,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetMountAgentDelegate call_GetMountAgentDelegate;
 
-	public static GetMovementDirectionDelegate call_GetMovementDirectionDelegate;
-
-	public static GetMovementDirectionAsAngleDelegate call_GetMovementDirectionAsAngleDelegate;
-
 	public static GetMovementFlagsDelegate call_GetMovementFlagsDelegate;
 
 	public static GetMovementInputVectorDelegate call_GetMovementInputVectorDelegate;
@@ -1300,9 +1460,13 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetNativeActionIndexDelegate call_GetNativeActionIndexDelegate;
 
+	public static GetOldWieldedItemInfoDelegate call_GetOldWieldedItemInfoDelegate;
+
 	public static GetPathDistanceToPointDelegate call_GetPathDistanceToPointDelegate;
 
 	public static GetPositionDelegate call_GetPositionDelegate;
+
+	public static GetRealGlobalVelocityDelegate call_GetRealGlobalVelocityDelegate;
 
 	public static GetRenderCheckEnabledDelegate call_GetRenderCheckEnabledDelegate;
 
@@ -1324,7 +1488,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetStateFlagsDelegate call_GetStateFlagsDelegate;
 
+	public static GetSteppedBodyFlagsDelegate call_GetSteppedBodyFlagsDelegate;
+
 	public static GetSteppedEntityIdDelegate call_GetSteppedEntityIdDelegate;
+
+	public static GetSteppedRootEntityDelegate call_GetSteppedRootEntityDelegate;
 
 	public static GetTargetAgentDelegate call_GetTargetAgentDelegate;
 
@@ -1336,6 +1504,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetTeamDelegate call_GetTeamDelegate;
 
+	public static GetTotalMassDelegate call_GetTotalMassDelegate;
+
 	public static GetTurnSpeedDelegate call_GetTurnSpeedDelegate;
 
 	public static GetVisualPositionDelegate call_GetVisualPositionDelegate;
@@ -1345,8 +1515,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static GetWalkSpeedLimitOfMountableDelegate call_GetWalkSpeedLimitOfMountableDelegate;
 
 	public static GetWeaponEntityFromEquipmentSlotDelegate call_GetWeaponEntityFromEquipmentSlotDelegate;
-
-	public static GetWieldedItemIndexDelegate call_GetWieldedItemIndexDelegate;
 
 	public static GetWieldedWeaponInfoDelegate call_GetWieldedWeaponInfoDelegate;
 
@@ -1364,6 +1532,10 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static InvalidateTargetAgentDelegate call_InvalidateTargetAgentDelegate;
 
+	public static IsAddedAsCorpseDelegate call_IsAddedAsCorpseDelegate;
+
+	public static IsCrouchingAllowedDelegate call_IsCrouchingAllowedDelegate;
+
 	public static IsEnemyDelegate call_IsEnemyDelegate;
 
 	public static IsFadingOutDelegate call_IsFadingOutDelegate;
@@ -1372,13 +1544,15 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static IsLookRotationInSlowMotionDelegate call_IsLookRotationInSlowMotionDelegate;
 
-	public static IsOnLandDelegate call_IsOnLandDelegate;
-
 	public static IsRetreatingDelegate call_IsRetreatingDelegate;
 
 	public static IsRunningAwayDelegate call_IsRunningAwayDelegate;
 
 	public static IsSlidingDelegate call_IsSlidingDelegate;
+
+	public static IsTargetNavigationFaceIdBetweenDelegate call_IsTargetNavigationFaceIdBetweenDelegate;
+
+	public static IsWanderingDelegate call_IsWanderingDelegate;
 
 	public static KickClearDelegate call_KickClearDelegate;
 
@@ -1410,9 +1584,15 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static SetAgentFlagsDelegate call_SetAgentFlagsDelegate;
 
+	public static SetAgentIdleAnimationStatusDelegate call_SetAgentIdleAnimationStatusDelegate;
+
 	public static SetAgentScaleDelegate call_SetAgentScaleDelegate;
 
+	public static SetAIAlarmStateDelegate call_SetAIAlarmStateDelegate;
+
 	public static SetAIBehaviorParamsDelegate call_SetAIBehaviorParamsDelegate;
+
+	public static SetAILastSuspiciousPositionDelegate call_SetAILastSuspiciousPositionDelegate;
 
 	public static SetAIStateFlagsDelegate call_SetAIStateFlagsDelegate;
 
@@ -1440,7 +1620,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static SetEventControlFlagsDelegate call_SetEventControlFlagsDelegate;
 
+	public static SetExcludedFromGravityDelegate call_SetExcludedFromGravityDelegate;
+
 	public static SetFiringOrderDelegate call_SetFiringOrderDelegate;
+
+	public static SetForceAttachedEntityDelegate call_SetForceAttachedEntityDelegate;
 
 	public static SetFormationFrameDisabledDelegate call_SetFormationFrameDisabledDelegate;
 
@@ -1452,11 +1636,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static SetFormationNoDelegate call_SetFormationNoDelegate;
 
-	public static SetGuardedAgentIndexDelegate call_SetGuardedAgentIndexDelegate;
-
 	public static SetHandInverseKinematicsFrameDelegate call_SetHandInverseKinematicsFrameDelegate;
 
 	public static SetHandInverseKinematicsFrameForMissionObjectUsageDelegate call_SetHandInverseKinematicsFrameForMissionObjectUsageDelegate;
+
+	public static SetHasOnAiInputSetCallbackDelegate call_SetHasOnAiInputSetCallbackDelegate;
 
 	public static SetHeadCameraModeDelegate call_SetHeadCameraModeDelegate;
 
@@ -1465,6 +1649,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static SetInteractionAgentDelegate call_SetInteractionAgentDelegate;
 
 	public static SetIsLookDirectionLockedDelegate call_SetIsLookDirectionLockedDelegate;
+
+	public static SetIsPhysicsForceClosedDelegate call_SetIsPhysicsForceClosedDelegate;
 
 	public static SetLookAgentDelegate call_SetLookAgentDelegate;
 
@@ -1487,6 +1673,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static SetMovementInputVectorDelegate call_SetMovementInputVectorDelegate;
 
 	public static SetNetworkPeerDelegate call_SetNetworkPeerDelegate;
+
+	public static SetOverridenStrikeAndDeathActionDelegate call_SetOverridenStrikeAndDeathActionDelegate;
 
 	public static SetPositionDelegate call_SetPositionDelegate;
 
@@ -1522,13 +1710,21 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static SetTargetPositionAndDirectionDelegate call_SetTargetPositionAndDirectionDelegate;
 
+	public static SetTargetUpDelegate call_SetTargetUpDelegate;
+
+	public static SetTargetZDelegate call_SetTargetZDelegate;
+
 	public static SetTeamDelegate call_SetTeamDelegate;
 
 	public static SetUsageIndexOfWeaponInSlotAsClientDelegate call_SetUsageIndexOfWeaponInSlotAsClientDelegate;
 
+	public static SetVelocityLimitsOnRagdollDelegate call_SetVelocityLimitsOnRagdollDelegate;
+
 	public static SetWeaponAmmoAsClientDelegate call_SetWeaponAmmoAsClientDelegate;
 
 	public static SetWeaponAmountInSlotDelegate call_SetWeaponAmountInSlotDelegate;
+
+	public static SetWeaponGuardDelegate call_SetWeaponGuardDelegate;
 
 	public static SetWeaponHitPointsInSlotDelegate call_SetWeaponHitPointsInSlotDelegate;
 
@@ -1537,6 +1733,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static SetWieldedItemIndexAsClientDelegate call_SetWieldedItemIndexAsClientDelegate;
 
 	public static StartFadingOutDelegate call_StartFadingOutDelegate;
+
+	public static StartRagdollAsCorpseDelegate call_StartRagdollAsCorpseDelegate;
 
 	public static StartSwitchingWeaponUsageIndexAsClientDelegate call_StartSwitchingWeaponUsageIndexAsClientDelegate;
 
@@ -1555,6 +1753,18 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public static WeaponEquippedDelegate call_WeaponEquippedDelegate;
 
 	public static WieldNextWeaponDelegate call_WieldNextWeaponDelegate;
+
+	public static YellAfterDelayDelegate call_YellAfterDelayDelegate;
+
+	public void AddAcceleration(UIntPtr agentPointer, in Vec3 acceleration)
+	{
+		call_AddAccelerationDelegate(agentPointer, in acceleration);
+	}
+
+	public void AddAsCorpse(UIntPtr agentPointer)
+	{
+		call_AddAsCorpseDelegate(agentPointer);
+	}
 
 	public void AddMeshToBone(UIntPtr agentPointer, UIntPtr meshPointer, sbyte boneIndex)
 	{
@@ -1579,6 +1789,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public void ApplyForceOnRagdoll(UIntPtr agentPointer, sbyte boneIndex, in Vec3 force)
+	{
+		call_ApplyForceOnRagdollDelegate(agentPointer, boneIndex, in force);
 	}
 
 	public void AttachWeaponToBone(UIntPtr agentPointer, in WeaponData weaponData, WeaponStatsData[] weaponStatsData, int weaponStatsDataLength, UIntPtr weaponEntity, sbyte boneIndex, ref MatrixFrame attachLocalFrame)
@@ -1614,9 +1829,9 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_CanMoveDirectlyToPositionDelegate(agentPointer, in position);
 	}
 
-	public bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(UIntPtr agentPointer, int navigationFaceId, ref Vec3 direction, float overridenCostForFaceId)
+	public bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(UIntPtr agentPointer, int navigationFaceId, in Vec3 direction, float overridenCostForFaceId)
 	{
-		return call_CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirectionDelegate(agentPointer, navigationFaceId, ref direction, overridenCostForFaceId);
+		return call_CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirectionDelegate(agentPointer, navigationFaceId, in direction, overridenCostForFaceId);
 	}
 
 	public void ClearEquipment(UIntPtr agentPointer)
@@ -1632,6 +1847,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void ClearTargetFrame(UIntPtr agentPointer)
 	{
 		call_ClearTargetFrameDelegate(agentPointer);
+	}
+
+	public void ClearTargetZ(UIntPtr agentPointer)
+	{
+		call_ClearTargetZDelegate(agentPointer);
 	}
 
 	public Vec3 ComputeAnimationDisplacement(UIntPtr agentPointer, float dt)
@@ -1684,6 +1904,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_DropItemDelegate(agentPointer, itemIndex, pickedUpItemType);
 	}
 
+	public void EndRagdollAsCorpse(UIntPtr agentPointer)
+	{
+		call_EndRagdollAsCorpseDelegate(agentPointer);
+	}
+
 	public void EnforceShieldUsage(UIntPtr agentPointer, Agent.UsageDirection direction)
 	{
 		call_EnforceShieldUsageDelegate(agentPointer, direction);
@@ -1697,6 +1922,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void FadeOut(UIntPtr agentPointer, bool hideInstantly)
 	{
 		call_FadeOutDelegate(agentPointer, hideInstantly);
+	}
+
+	public Vec2 FindLongestDirectMoveToPosition(UIntPtr agentPointer, Vec2 targetPosition, bool checkBoundaries, bool checkFriendlyAgents, out bool isCollidedWithAgent)
+	{
+		return call_FindLongestDirectMoveToPositionDelegate(agentPointer, targetPosition, checkBoundaries, checkFriendlyAgents, out isCollidedWithAgent);
 	}
 
 	public void ForceAiBehaviorSelection(UIntPtr agentPointer)
@@ -1733,9 +1963,16 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return Managed.ReturnValueFromEngine;
 	}
 
-	public uint GetAgentFlags(UIntPtr agentPointer)
+	public GameEntity GetAgentParentEntity(UIntPtr agentPointer)
 	{
-		return call_GetAgentFlagsDelegate(agentPointer);
+		NativeObjectPointer nativeObjectPointer = call_GetAgentParentEntityDelegate(agentPointer);
+		GameEntity result = null;
+		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
+		{
+			result = new GameEntity(nativeObjectPointer.Pointer);
+			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
+		}
+		return result;
 	}
 
 	public float GetAgentScale(UIntPtr agentPointer)
@@ -1764,9 +2001,24 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public WorldPosition GetAILastSuspiciousPosition(UIntPtr agentPointer)
+	{
+		return call_GetAILastSuspiciousPositionDelegate(agentPointer);
+	}
+
 	public float GetAimingTimer(UIntPtr agentPointer)
 	{
 		return call_GetAimingTimerDelegate(agentPointer);
+	}
+
+	public WorldPosition GetAIMoveDestination(UIntPtr agentPointer)
+	{
+		return call_GetAIMoveDestinationDelegate(agentPointer);
+	}
+
+	public float GetAIMoveStopTolerance(UIntPtr agentPointer)
+	{
+		return call_GetAIMoveStopToleranceDelegate(agentPointer);
 	}
 
 	public Agent.AIStateFlag GetAIStateFlags(UIntPtr agentPointer)
@@ -1784,6 +2036,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetAttackDirectionUsageDelegate(agentPointer);
 	}
 
+	public Vec3 GetAverageRealGlobalVelocity(UIntPtr agentPointer)
+	{
+		return call_GetAverageRealGlobalVelocityDelegate(agentPointer);
+	}
+
 	public Vec3 GetAverageVelocity(UIntPtr agentPointer)
 	{
 		return call_GetAverageVelocityDelegate(agentPointer);
@@ -1792,6 +2049,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public Vec3 GetBodyRotationConstraint(UIntPtr agentPointer, int channelIndex)
 	{
 		return call_GetBodyRotationConstraintDelegate(agentPointer, channelIndex);
+	}
+
+	public MatrixFrame GetBoneEntitialFrameAtAnimationProgress(UIntPtr agentPointer, sbyte boneIndex, int animationIndex, float progress)
+	{
+		return call_GetBoneEntitialFrameAtAnimationProgressDelegate(agentPointer, boneIndex, animationIndex, progress);
 	}
 
 	public Vec3 GetChestGlobalPosition(UIntPtr agentPointer)
@@ -1804,19 +2066,9 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_GetCollisionCapsuleDelegate(agentPointer, ref value);
 	}
 
-	public Agent.ControllerType GetController(UIntPtr agentPointer)
-	{
-		return call_GetControllerDelegate(agentPointer);
-	}
-
 	public bool GetCrouchMode(UIntPtr agentPointer)
 	{
 		return call_GetCrouchModeDelegate(agentPointer);
-	}
-
-	public int GetCurrentAction(UIntPtr agentPointer, int channelNo)
-	{
-		return call_GetCurrentActionDelegate(agentPointer, channelNo);
 	}
 
 	public int GetCurrentActionDirection(UIntPtr agentPointer, int channelNo)
@@ -1889,7 +2141,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetDefendMovementFlagDelegate(agentPointer);
 	}
 
-	public uint GetEventControlFlags(UIntPtr agentPointer)
+	public Agent.EventControlFlag GetEventControlFlags(UIntPtr agentPointer)
 	{
 		return call_GetEventControlFlagsDelegate(agentPointer);
 	}
@@ -1907,6 +2159,16 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public int GetFiringOrder(UIntPtr agentPointer)
 	{
 		return call_GetFiringOrderDelegate(agentPointer);
+	}
+
+	public int GetGroundMaterialForCollisionEffect(UIntPtr agentPointer)
+	{
+		return call_GetGroundMaterialForCollisionEffectDelegate(agentPointer);
+	}
+
+	public bool GetHasOnAiInputSetCallback(UIntPtr agentPointer)
+	{
+		return call_GetHasOnAiInputSetCallbackDelegate(agentPointer);
 	}
 
 	public bool GetHeadCameraMode(UIntPtr agentPointer)
@@ -1964,11 +2226,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetLookDownLimitDelegate(agentPointer);
 	}
 
-	public float GetMaximumForwardUnlimitedSpeed(UIntPtr agentPointer)
-	{
-		return call_GetMaximumForwardUnlimitedSpeedDelegate(agentPointer);
-	}
-
 	public int GetMaximumNumberOfAgents()
 	{
 		return call_GetMaximumNumberOfAgentsDelegate();
@@ -2007,17 +2264,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return DotNetObject.GetManagedObjectWithId(call_GetMountAgentDelegate(agentPointer)) as Agent;
 	}
 
-	public Vec2 GetMovementDirection(UIntPtr agentPointer)
-	{
-		return call_GetMovementDirectionDelegate(agentPointer);
-	}
-
-	public float GetMovementDirectionAsAngle(UIntPtr agentPointer)
-	{
-		return call_GetMovementDirectionAsAngleDelegate(agentPointer);
-	}
-
-	public uint GetMovementFlags(UIntPtr agentPointer)
+	public Agent.MovementControlFlag GetMovementFlags(UIntPtr agentPointer)
 	{
 		return call_GetMovementFlagsDelegate(agentPointer);
 	}
@@ -2050,6 +2297,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetNativeActionIndexDelegate(array);
 	}
 
+	public void GetOldWieldedItemInfo(UIntPtr agentPointer, out int rightHandSlotIndex, out int rightHandUsageIndex, out int leftHandSlotIndex, out int leftHandUsageIndex)
+	{
+		call_GetOldWieldedItemInfoDelegate(agentPointer, out rightHandSlotIndex, out rightHandUsageIndex, out leftHandSlotIndex, out leftHandUsageIndex);
+	}
+
 	public float GetPathDistanceToPoint(UIntPtr agentPointer, ref Vec3 direction)
 	{
 		return call_GetPathDistanceToPointDelegate(agentPointer, ref direction);
@@ -2058,6 +2310,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public Vec3 GetPosition(UIntPtr agentPointer)
 	{
 		return call_GetPositionDelegate(agentPointer);
+	}
+
+	public Vec3 GetRealGlobalVelocity(UIntPtr agentPointer)
+	{
+		return call_GetRealGlobalVelocityDelegate(agentPointer);
 	}
 
 	public bool GetRenderCheckEnabled(UIntPtr agentPointer)
@@ -2113,9 +2370,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetStateFlagsDelegate(agentPointer);
 	}
 
-	public UIntPtr GetSteppedEntityId(UIntPtr agentPointer)
+	public BodyFlags GetSteppedBodyFlags(UIntPtr agentPointer)
 	{
-		return call_GetSteppedEntityIdDelegate(agentPointer);
+		return call_GetSteppedBodyFlagsDelegate(agentPointer);
+	}
+
+	public UIntPtr GetSteppedEntityId(UIntPtr agentPointer0)
+	{
+		return call_GetSteppedEntityIdDelegate(agentPointer0);
+	}
+
+	public UIntPtr GetSteppedRootEntity(UIntPtr agentPointer0)
+	{
+		return call_GetSteppedRootEntityDelegate(agentPointer0);
 	}
 
 	public Agent GetTargetAgent(UIntPtr agentPointer)
@@ -2143,6 +2410,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_GetTeamDelegate(agentPointer);
 	}
 
+	public float GetTotalMass(UIntPtr agentPointer)
+	{
+		return call_GetTotalMassDelegate(agentPointer);
+	}
+
 	public float GetTurnSpeed(UIntPtr agentPointer)
 	{
 		return call_GetTurnSpeedDelegate(agentPointer);
@@ -2166,11 +2438,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public UIntPtr GetWeaponEntityFromEquipmentSlot(UIntPtr agentPointer, int equipmentSlot)
 	{
 		return call_GetWeaponEntityFromEquipmentSlotDelegate(agentPointer, equipmentSlot);
-	}
-
-	public EquipmentIndex GetWieldedItemIndex(UIntPtr agentPointer, int handIndex)
-	{
-		return call_GetWieldedItemIndexDelegate(agentPointer, handIndex);
 	}
 
 	public bool GetWieldedWeaponInfo(UIntPtr agentPointer, int handIndex, ref bool isMeleeWeapon, ref bool isRangedWeapon)
@@ -2213,6 +2480,16 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_InvalidateTargetAgentDelegate(agentPointer);
 	}
 
+	public bool IsAddedAsCorpse(UIntPtr agentPointer)
+	{
+		return call_IsAddedAsCorpseDelegate(agentPointer);
+	}
+
+	public bool IsCrouchingAllowed(UIntPtr agentPointer)
+	{
+		return call_IsCrouchingAllowedDelegate(agentPointer);
+	}
+
 	public bool IsEnemy(UIntPtr agentPointer1, UIntPtr agentPointer2)
 	{
 		return call_IsEnemyDelegate(agentPointer1, agentPointer2);
@@ -2233,11 +2510,6 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_IsLookRotationInSlowMotionDelegate(agentPointer);
 	}
 
-	public bool IsOnLand(UIntPtr agentPointer)
-	{
-		return call_IsOnLandDelegate(agentPointer);
-	}
-
 	public bool IsRetreating(UIntPtr agentPointer)
 	{
 		return call_IsRetreatingDelegate(agentPointer);
@@ -2253,6 +2525,16 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_IsSlidingDelegate(agentPointer);
 	}
 
+	public bool IsTargetNavigationFaceIdBetween(UIntPtr agentPointer, int navigationFaceIdStart, int navigationFaceIdEnd)
+	{
+		return call_IsTargetNavigationFaceIdBetweenDelegate(agentPointer, navigationFaceIdStart, navigationFaceIdEnd);
+	}
+
+	public bool IsWandering(UIntPtr agentPointer)
+	{
+		return call_IsWanderingDelegate(agentPointer);
+	}
+
 	public bool KickClear(UIntPtr agentPointer)
 	{
 		return call_KickClearDelegate(agentPointer);
@@ -2263,9 +2545,9 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_LockAgentReplicationTableDataWithCurrentReliableSequenceNoDelegate(agentPointer, peerIndex);
 	}
 
-	public void MakeDead(UIntPtr agentPointer, bool isKilled, int actionIndex)
+	public void MakeDead(UIntPtr agentPointer, bool isKilled, int actionIndex, int corpsesToFadeIndex)
 	{
-		call_MakeDeadDelegate(agentPointer, isKilled, actionIndex);
+		call_MakeDeadDelegate(agentPointer, isKilled, actionIndex, corpsesToFadeIndex);
 	}
 
 	public void MakeVoice(UIntPtr agentPointer, int voiceType, int predictionType)
@@ -2336,14 +2618,29 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetAgentFlagsDelegate(agentPointer, agentFlags);
 	}
 
+	public void SetAgentIdleAnimationStatus(UIntPtr agentPointer, bool idleEnabled)
+	{
+		call_SetAgentIdleAnimationStatusDelegate(agentPointer, idleEnabled);
+	}
+
 	public void SetAgentScale(UIntPtr agentPointer, float scale)
 	{
 		call_SetAgentScaleDelegate(agentPointer, scale);
 	}
 
+	public void SetAIAlarmState(UIntPtr agentPointer, Agent.AIStateFlag aiStateFlags)
+	{
+		call_SetAIAlarmStateDelegate(agentPointer, aiStateFlags);
+	}
+
 	public void SetAIBehaviorParams(UIntPtr agentPointer, int behavior, float y1, float x2, float y2, float x3, float y3)
 	{
 		call_SetAIBehaviorParamsDelegate(agentPointer, behavior, y1, x2, y2, x3, y3);
+	}
+
+	public void SetAILastSuspiciousPosition(UIntPtr agentPointer, in WorldPosition lastSuspiciousPosition)
+	{
+		call_SetAILastSuspiciousPositionDelegate(agentPointer, in lastSuspiciousPosition);
 	}
 
 	public void SetAIStateFlags(UIntPtr agentPointer, Agent.AIStateFlag aiStateFlags)
@@ -2384,7 +2681,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetColumnwiseFollowAgentDelegate(agentPointer, followAgentIndex, ref followPosition);
 	}
 
-	public void SetController(UIntPtr agentPointer, Agent.ControllerType controller)
+	public void SetController(UIntPtr agentPointer, AgentControllerType controller)
 	{
 		call_SetControllerDelegate(agentPointer, controller);
 	}
@@ -2414,9 +2711,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetEventControlFlagsDelegate(agentPointer, eventflag);
 	}
 
+	public void SetExcludedFromGravity(UIntPtr agentPointer, bool exclude, bool applyAverageGlobalVelocity)
+	{
+		call_SetExcludedFromGravityDelegate(agentPointer, exclude, applyAverageGlobalVelocity);
+	}
+
 	public void SetFiringOrder(UIntPtr agentPointer, int order)
 	{
 		call_SetFiringOrderDelegate(agentPointer, order);
+	}
+
+	public void SetForceAttachedEntity(UIntPtr agentPointer, UIntPtr entityPointer)
+	{
+		call_SetForceAttachedEntityDelegate(agentPointer, entityPointer);
 	}
 
 	public void SetFormationFrameDisabled(UIntPtr agentPointer)
@@ -2424,19 +2731,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetFormationFrameDisabledDelegate(agentPointer);
 	}
 
-	public bool SetFormationFrameEnabled(UIntPtr agentPointer, WorldPosition position, Vec2 direction, Vec2 positionVelocity, float formationDirectionEnforcingFactor)
+	public bool SetFormationFrameEnabled(UIntPtr agentPointer, WorldPosition position, Vec2 direction, Vec2 positionVelocity, float formationDirectionEnforcingFactor, bool teleportAgents)
 	{
-		return call_SetFormationFrameEnabledDelegate(agentPointer, position, direction, positionVelocity, formationDirectionEnforcingFactor);
+		return call_SetFormationFrameEnabledDelegate(agentPointer, position, direction, positionVelocity, formationDirectionEnforcingFactor, teleportAgents);
 	}
 
-	public void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, Vec2 wallDir, int unitSpacing)
+	public void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing)
 	{
-		call_SetFormationInfoDelegate(agentPointer, fileIndex, rankIndex, fileCount, rankCount, wallDir, unitSpacing);
+		call_SetFormationInfoDelegate(agentPointer, fileIndex, rankIndex, fileCount, rankCount, unitCount, wallDir, unitSpacing);
 	}
 
-	public void SetFormationIntegrityData(UIntPtr agentPointer, Vec2 position, Vec2 currentFormationDirection, Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions)
+	public void SetFormationIntegrityData(UIntPtr agentPointer, in Vec2 position, in Vec2 currentFormationDirection, in Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, bool shouldKeepWithFormationInsteadOfMovingToAgent)
 	{
-		call_SetFormationIntegrityDataDelegate(agentPointer, position, currentFormationDirection, averageVelocityOfCloseAgents, averageMaxUnlimitedSpeedOfCloseAgents, deviationOfPositions);
+		call_SetFormationIntegrityDataDelegate(agentPointer, in position, in currentFormationDirection, in averageVelocityOfCloseAgents, averageMaxUnlimitedSpeedOfCloseAgents, deviationOfPositions, shouldKeepWithFormationInsteadOfMovingToAgent);
 	}
 
 	public void SetFormationNo(UIntPtr agentPointer, int formationNo)
@@ -2444,19 +2751,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetFormationNoDelegate(agentPointer, formationNo);
 	}
 
-	public void SetGuardedAgentIndex(UIntPtr agentPointer, int guardedAgentIndex)
+	public bool SetHandInverseKinematicsFrame(UIntPtr agentPointer, in MatrixFrame leftGlobalFrame, in MatrixFrame rightGlobalFrame)
 	{
-		call_SetGuardedAgentIndexDelegate(agentPointer, guardedAgentIndex);
-	}
-
-	public bool SetHandInverseKinematicsFrame(UIntPtr agentPointer, ref MatrixFrame leftGlobalFrame, ref MatrixFrame rightGlobalFrame)
-	{
-		return call_SetHandInverseKinematicsFrameDelegate(agentPointer, ref leftGlobalFrame, ref rightGlobalFrame);
+		return call_SetHandInverseKinematicsFrameDelegate(agentPointer, in leftGlobalFrame, in rightGlobalFrame);
 	}
 
 	public bool SetHandInverseKinematicsFrameForMissionObjectUsage(UIntPtr agentPointer, in MatrixFrame localIKFrame, in MatrixFrame boundEntityGlobalFrame, float animationHeightDifference)
 	{
 		return call_SetHandInverseKinematicsFrameForMissionObjectUsageDelegate(agentPointer, in localIKFrame, in boundEntityGlobalFrame, animationHeightDifference);
+	}
+
+	public void SetHasOnAiInputSetCallback(UIntPtr agentPointer, bool value)
+	{
+		call_SetHasOnAiInputSetCallbackDelegate(agentPointer, value);
 	}
 
 	public void SetHeadCameraMode(UIntPtr agentPointer, bool value)
@@ -2477,6 +2784,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void SetIsLookDirectionLocked(UIntPtr agentPointer, bool isLocked)
 	{
 		call_SetIsLookDirectionLockedDelegate(agentPointer, isLocked);
+	}
+
+	public void SetIsPhysicsForceClosed(UIntPtr agentPointer, bool isPhysicsForceClosed)
+	{
+		call_SetIsPhysicsForceClosedDelegate(agentPointer, isPhysicsForceClosed);
 	}
 
 	public void SetLookAgent(UIntPtr agentPointer, UIntPtr lookAtAgentPointer)
@@ -2532,6 +2844,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void SetNetworkPeer(UIntPtr agentPointer, int networkPeerIndex)
 	{
 		call_SetNetworkPeerDelegate(agentPointer, networkPeerIndex);
+	}
+
+	public void SetOverridenStrikeAndDeathAction(UIntPtr agentPointer, int strikeActionIndex, int deathActionIndex)
+	{
+		call_SetOverridenStrikeAndDeathActionDelegate(agentPointer, strikeActionIndex, deathActionIndex);
 	}
 
 	public void SetPosition(UIntPtr agentPointer, ref Vec3 position)
@@ -2614,9 +2931,19 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetTargetPositionDelegate(agentPointer, ref targetPosition);
 	}
 
-	public void SetTargetPositionAndDirection(UIntPtr agentPointer, ref Vec2 targetPosition, ref Vec3 targetDirection)
+	public void SetTargetPositionAndDirection(UIntPtr agentPointer, in Vec2 targetPosition, in Vec3 targetDirection)
 	{
-		call_SetTargetPositionAndDirectionDelegate(agentPointer, ref targetPosition, ref targetDirection);
+		call_SetTargetPositionAndDirectionDelegate(agentPointer, in targetPosition, in targetDirection);
+	}
+
+	public void SetTargetUp(UIntPtr agentPointer, in Vec3 targetUp)
+	{
+		call_SetTargetUpDelegate(agentPointer, in targetUp);
+	}
+
+	public void SetTargetZ(UIntPtr agentPointer, float targetZ)
+	{
+		call_SetTargetZDelegate(agentPointer, targetZ);
 	}
 
 	public void SetTeam(UIntPtr agentPointer, int teamIndex)
@@ -2629,6 +2956,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_SetUsageIndexOfWeaponInSlotAsClientDelegate(agentPointer, slotIndex, usageIndex);
 	}
 
+	public void SetVelocityLimitsOnRagdoll(UIntPtr agentPointer, float linearVelocityLimit, float angularVelocityLimit)
+	{
+		call_SetVelocityLimitsOnRagdollDelegate(agentPointer, linearVelocityLimit, angularVelocityLimit);
+	}
+
 	public void SetWeaponAmmoAsClient(UIntPtr agentPointer, int equipmentIndex, int ammoEquipmentIndex, short ammo)
 	{
 		call_SetWeaponAmmoAsClientDelegate(agentPointer, equipmentIndex, ammoEquipmentIndex, ammo);
@@ -2637,6 +2969,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void SetWeaponAmountInSlot(UIntPtr agentPointer, int equipmentSlot, short amount, bool enforcePrimaryItem)
 	{
 		call_SetWeaponAmountInSlotDelegate(agentPointer, equipmentSlot, amount, enforcePrimaryItem);
+	}
+
+	public void SetWeaponGuard(UIntPtr agentPointer, Agent.UsageDirection direction)
+	{
+		call_SetWeaponGuardDelegate(agentPointer, direction);
 	}
 
 	public void SetWeaponHitPointsInSlot(UIntPtr agentPointer, int wieldedItemIndex, short hitPoints)
@@ -2657,6 +2994,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public void StartFadingOut(UIntPtr agentPointer)
 	{
 		call_StartFadingOutDelegate(agentPointer);
+	}
+
+	public void StartRagdollAsCorpse(UIntPtr agentPointer)
+	{
+		call_StartRagdollAsCorpseDelegate(agentPointer);
 	}
 
 	public void StartSwitchingWeaponUsageIndexAsClient(UIntPtr agentPointer, int wieldedItemIndex, int usageIndex, Agent.UsageDirection currentMovementFlagUsageDirection)
@@ -2715,6 +3057,26 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		call_WieldNextWeaponDelegate(agentPointer, handIndex, wieldActionType);
 	}
 
+	public void YellAfterDelay(UIntPtr agentPointer, float delayTimeInSecond)
+	{
+		call_YellAfterDelayDelegate(agentPointer, delayTimeInSecond);
+	}
+
+	void IMBAgent.SetFormationIntegrityData(UIntPtr agentPointer, in Vec2 position, in Vec2 currentFormationDirection, in Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, bool shouldKeepWithFormationInsteadOfMovingToAgent)
+	{
+		SetFormationIntegrityData(agentPointer, in position, in currentFormationDirection, in averageVelocityOfCloseAgents, averageMaxUnlimitedSpeedOfCloseAgents, deviationOfPositions, shouldKeepWithFormationInsteadOfMovingToAgent);
+	}
+
+	void IMBAgent.ApplyForceOnRagdoll(UIntPtr agentPointer, sbyte boneIndex, in Vec3 force)
+	{
+		ApplyForceOnRagdoll(agentPointer, boneIndex, in force);
+	}
+
+	void IMBAgent.SetAILastSuspiciousPosition(UIntPtr agentPointer, in WorldPosition lastSuspiciousPosition)
+	{
+		SetAILastSuspiciousPosition(agentPointer, in lastSuspiciousPosition);
+	}
+
 	void IMBAgent.SetInitialFrame(UIntPtr agentPointer, in Vec3 initialPosition, in Vec2 initialDirection, bool canSpawnOutsideOfMissionBoundary)
 	{
 		SetInitialFrame(agentPointer, in initialPosition, in initialDirection, canSpawnOutsideOfMissionBoundary);
@@ -2743,6 +3105,31 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	bool IMBAgent.CanMoveDirectlyToPosition(UIntPtr agentPointer, in Vec2 position)
 	{
 		return CanMoveDirectlyToPosition(agentPointer, in position);
+	}
+
+	bool IMBAgent.CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(UIntPtr agentPointer, int navigationFaceId, in Vec3 direction, float overridenCostForFaceId)
+	{
+		return CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(agentPointer, navigationFaceId, in direction, overridenCostForFaceId);
+	}
+
+	void IMBAgent.SetTargetUp(UIntPtr agentPointer, in Vec3 targetUp)
+	{
+		SetTargetUp(agentPointer, in targetUp);
+	}
+
+	void IMBAgent.SetTargetPositionAndDirection(UIntPtr agentPointer, in Vec2 targetPosition, in Vec3 targetDirection)
+	{
+		SetTargetPositionAndDirection(agentPointer, in targetPosition, in targetDirection);
+	}
+
+	void IMBAgent.AddAcceleration(UIntPtr agentPointer, in Vec3 acceleration)
+	{
+		AddAcceleration(agentPointer, in acceleration);
+	}
+
+	bool IMBAgent.SetHandInverseKinematicsFrame(UIntPtr agentPointer, in MatrixFrame leftGlobalFrame, in MatrixFrame rightGlobalFrame)
+	{
+		return SetHandInverseKinematicsFrame(agentPointer, in leftGlobalFrame, in rightGlobalFrame);
 	}
 
 	bool IMBAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(UIntPtr agentPointer, in MatrixFrame localIKFrame, in MatrixFrame boundEntityGlobalFrame, float animationHeightDifference)

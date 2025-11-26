@@ -2,12 +2,13 @@ using System;
 using System.IO;
 using System.Xml;
 using TaleWorlds.Library;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.Core;
 
 public sealed class ManagedParameters : IManagedParametersInitializer
 {
-	private readonly float[] _managedParametersArray = new float[68];
+	private readonly float[] _managedParametersArray = new float[72];
 
 	public static ManagedParameters Instance { get; } = new ManagedParameters();
 
@@ -24,8 +25,8 @@ public sealed class ManagedParameters : IManagedParametersInitializer
 
 	public void Initialize(string relativeXmlPath)
 	{
-		XmlDocument doc = LoadXmlFile(relativeXmlPath);
-		LoadFromXml(doc);
+		XmlDocument mergedXmlForManaged = MBObjectManager.GetMergedXmlForManaged("CoreParameters", skipValidation: true);
+		LoadFromXml(mergedXmlForManaged);
 	}
 
 	private ManagedParameters()

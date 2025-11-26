@@ -128,11 +128,8 @@ public class MissionGauntletClassLoadout : MissionView
 	private void CreateView()
 	{
 		MissionMultiplayerGameModeBaseClient missionBehavior = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
-		_ = UIResourceManager.SpriteData;
-		_ = UIResourceManager.ResourceContext;
-		_ = UIResourceManager.UIResourceDepot;
 		_dataSource = new MultiplayerClassLoadoutVM(missionBehavior, OnRefreshSelection, _lastSelectedHeroClass);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerClassLoadout", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerClassLoadout", _dataSource);
 	}
 

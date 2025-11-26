@@ -11,18 +11,17 @@ public struct MovementOrder
 {
 	public enum MovementOrderEnum
 	{
-		Invalid,
-		AttackEntity,
-		Charge,
-		ChargeToTarget,
-		Follow,
-		FollowEntity,
-		Guard,
-		Move,
-		Retreat,
-		Stop,
-		Advance,
-		FallBack
+		Invalid = 0,
+		AttackEntity = 1,
+		Charge = 2,
+		ChargeToTarget = 3,
+		Follow = 4,
+		FollowEntity = 5,
+		Move = 7,
+		Retreat = 8,
+		Stop = 9,
+		Advance = 10,
+		FallBack = 11
 	}
 
 	public enum MovementStateEnum
@@ -73,6 +72,10 @@ public struct MovementOrder
 
 	private WorldPosition _getPositionResultCache;
 
+	private WorldPosition _engageTargetPositionCache;
+
+	private float _engageTargetPositionOffset;
+
 	private bool _getPositionIsNavmeshlessCache;
 
 	private WorldPosition _getPositionFirstSectionCache;
@@ -105,8 +108,6 @@ public struct MovementOrder
 				return OrderType.FollowMe;
 			case MovementOrderEnum.FollowEntity:
 				return OrderType.FollowEntity;
-			case MovementOrderEnum.Guard:
-				return OrderType.GuardMe;
 			case MovementOrderEnum.Move:
 				return OrderType.Move;
 			case MovementOrderEnum.Retreat:
@@ -118,7 +119,7 @@ public struct MovementOrder
 			case MovementOrderEnum.FallBack:
 				return OrderType.FallBack;
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "OrderType", 113);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "OrderType", 114);
 				return OrderType.Move;
 			}
 		}
@@ -132,7 +133,10 @@ public struct MovementOrder
 			{
 			case MovementOrderEnum.Charge:
 			case MovementOrderEnum.ChargeToTarget:
-			case MovementOrderEnum.Guard:
+				if (_position.IsValid)
+				{
+					return MovementStateEnum.Hold;
+				}
 				return MovementStateEnum.Charge;
 			case MovementOrderEnum.Retreat:
 				return MovementStateEnum.Retreat;
@@ -175,6 +179,8 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
@@ -193,38 +199,40 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
 
-	private WorldPosition ComputeAttackEntityWaitPosition(Formation formation, GameEntity targetEntity)
+	private WorldPosition ComputeAttackEntityWaitPosition(Formation formation, WeakGameEntity targetEntity)
 	{
 		Scene scene = formation.Team.Mission.Scene;
 		WorldPosition worldPosition = new WorldPosition(scene, UIntPtr.Zero, targetEntity.GlobalPosition, hasValidZ: false);
-		Vec2 vec = formation.QuerySystem.AveragePosition - worldPosition.AsVec2;
+		Vec2 vec = formation.CachedAveragePosition - worldPosition.AsVec2;
 		Vec2 vec2 = targetEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized();
 		Vec2 vec3 = ((vec.DotProduct(vec2) >= 0f) ? vec2 : (-vec2));
 		WorldPosition worldPosition2 = worldPosition;
 		worldPosition2.SetVec2(worldPosition.AsVec2 + vec3 * 3f);
-		if (scene.DoesPathExistBetweenPositions(worldPosition2, formation.QuerySystem.MedianPosition))
+		if (scene.DoesPathExistBetweenPositions(worldPosition2, formation.CachedMedianPosition))
 		{
 			return worldPosition2;
 		}
 		WorldPosition worldPosition3 = worldPosition;
 		worldPosition3.SetVec2(worldPosition.AsVec2 - vec3 * 3f);
-		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.QuerySystem.MedianPosition))
+		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.CachedMedianPosition))
 		{
 			return worldPosition3;
 		}
 		worldPosition3 = worldPosition;
 		worldPosition3.SetVec2(worldPosition.AsVec2 + targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
-		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.QuerySystem.MedianPosition))
+		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.CachedMedianPosition))
 		{
 			return worldPosition3;
 		}
 		worldPosition3 = worldPosition;
 		worldPosition3.SetVec2(worldPosition.AsVec2 - targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
-		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.QuerySystem.MedianPosition))
+		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.CachedMedianPosition))
 		{
 			return worldPosition3;
 		}
@@ -238,30 +246,30 @@ public struct MovementOrder
 		_positionLambda = delegate(Formation f)
 		{
 			WorldPosition worldPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, targetEntity.GlobalPosition, hasValidZ: false);
-			Vec2 vec = f.QuerySystem.AveragePosition - worldPosition.AsVec2;
+			Vec2 vec = f.CachedAveragePosition - worldPosition.AsVec2;
 			Vec2 vec2 = targetEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized();
 			Vec2 vec3 = ((vec.DotProduct(vec2) >= 0f) ? vec2 : (-vec2));
 			WorldPosition worldPosition2 = worldPosition;
 			worldPosition2.SetVec2(worldPosition.AsVec2 + vec3 * 3f);
-			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition2, f.QuerySystem.MedianPosition))
+			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition2, f.CachedMedianPosition))
 			{
 				return worldPosition2;
 			}
 			WorldPosition worldPosition3 = worldPosition;
 			worldPosition3.SetVec2(worldPosition.AsVec2 - vec3 * 3f);
-			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.QuerySystem.MedianPosition))
+			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition))
 			{
 				return worldPosition3;
 			}
 			worldPosition3 = worldPosition;
 			worldPosition3.SetVec2(worldPosition.AsVec2 + targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
-			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.QuerySystem.MedianPosition))
+			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition))
 			{
 				return worldPosition3;
 			}
 			worldPosition3 = worldPosition;
 			worldPosition3.SetVec2(worldPosition.AsVec2 - targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
-			return Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.QuerySystem.MedianPosition) ? worldPosition3 : worldPosition2;
+			return Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition) ? worldPosition3 : worldPosition2;
 		};
 		TargetEntity = targetEntity;
 		_tickTimer = new Timer(Mission.Current.CurrentTime, 0.5f);
@@ -273,6 +281,8 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
@@ -309,6 +319,8 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
@@ -332,6 +344,8 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
@@ -350,6 +364,8 @@ public struct MovementOrder
 		_getPositionResultCache = WorldPosition.Invalid;
 		_getPositionFirstSectionCache = WorldPosition.Invalid;
 		_getPositionIsNavmeshlessCache = false;
+		_engageTargetPositionCache = WorldPosition.Invalid;
+		_engageTargetPositionOffset = 0f;
 		_followState = FollowState.Stop;
 		_departStartTime = -1f;
 	}
@@ -386,11 +402,6 @@ public struct MovementOrder
 	public static MovementOrder MovementOrderFollow(Agent targetAgent)
 	{
 		return new MovementOrder(MovementOrderEnum.Follow, targetAgent);
-	}
-
-	public static MovementOrder MovementOrderGuard(Agent targetAgent)
-	{
-		return new MovementOrder(MovementOrderEnum.Guard, targetAgent);
 	}
 
 	public static MovementOrder MovementOrderFollowEntity(GameEntity targetEntity)
@@ -452,17 +463,12 @@ public struct MovementOrder
 	private static WorldPosition GetAlternatePositionForNavmeshlessOrOutOfBoundsPosition(Formation f, WorldPosition originalPosition)
 	{
 		float positionPenalty = 1f;
-		WorldPosition alternatePositionForNavmeshlessOrOutOfBoundsPosition = Mission.Current.GetAlternatePositionForNavmeshlessOrOutOfBoundsPosition(originalPosition.AsVec2 - f.QuerySystem.AveragePosition, originalPosition, ref positionPenalty);
+		WorldPosition alternatePositionForNavmeshlessOrOutOfBoundsPosition = Mission.Current.GetAlternatePositionForNavmeshlessOrOutOfBoundsPosition(originalPosition.AsVec2 - f.CachedAveragePosition, originalPosition, ref positionPenalty);
 		if (f.AI?.ActiveBehavior != null)
 		{
 			f.AI.ActiveBehavior.NavmeshlessTargetPositionPenalty = positionPenalty;
 		}
 		return alternatePositionForNavmeshlessOrOutOfBoundsPosition;
-	}
-
-	private static void OnUnitJoinOrLeaveAux(Agent unit, Agent target, bool isJoining)
-	{
-		unit.SetGuardState(target, isJoining);
 	}
 
 	private void GetPositionAuxFollow(Formation f)
@@ -498,7 +504,7 @@ public struct MovementOrder
 
 	public Vec2 GetPosition(Formation f)
 	{
-		return CreateNewOrderWorldPosition(f, WorldPosition.WorldPositionEnforcedCache.None).AsVec2;
+		return CreateNewOrderWorldPositionMT(f, WorldPosition.WorldPositionEnforcedCache.None).AsVec2;
 	}
 
 	public Vec2 GetTargetVelocity()
@@ -516,114 +522,113 @@ public struct MovementOrder
 		case MovementOrderEnum.FallBack:
 			return Vec2.Zero;
 		case MovementOrderEnum.Follow:
-		case MovementOrderEnum.Guard:
 			return _targetAgent.AverageVelocity.AsVec2;
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetTargetVelocity", 847);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetTargetVelocity", 859);
 			return Vec2.Zero;
 		}
 	}
 
-	public WorldPosition CreateNewOrderWorldPosition(Formation f, WorldPosition.WorldPositionEnforcedCache worldPositionEnforcedCache)
+	public WorldPosition CreateNewOrderWorldPositionMT(Formation f, WorldPosition.WorldPositionEnforcedCache worldPositionEnforcedCache)
 	{
-		if (!IsApplicable(f))
+		lock (f.OrderPositionLock)
 		{
-			return f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
-		}
-		WorldPosition orderPosition;
-		switch (OrderEnum)
-		{
-		case MovementOrderEnum.Follow:
-			GetPositionAuxFollow(f);
-			orderPosition = _lastPosition;
-			break;
-		case MovementOrderEnum.Advance:
-		case MovementOrderEnum.FallBack:
-			orderPosition = GetPositionAux(f, worldPositionEnforcedCache);
-			break;
-		default:
-			orderPosition = _positionLambda?.Invoke(f) ?? _position;
-			break;
-		}
-		if (Mission.Current.Mode == MissionMode.Deployment)
-		{
-			if (!Mission.Current.IsOrderPositionAvailable(in orderPosition, f.Team))
+			if (!IsApplicable(f))
 			{
-				orderPosition = f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
+				return f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
 			}
-			else
+			WorldPosition orderPosition;
+			switch (OrderEnum)
 			{
-				IMissionDeploymentPlan deploymentPlan = Mission.Current.DeploymentPlan;
-				BattleSideEnum side = f.Team.Side;
-				Vec2 position = orderPosition.AsVec2;
-				if (!deploymentPlan.IsPositionInsideDeploymentBoundaries(side, in position))
+			case MovementOrderEnum.Follow:
+				GetPositionAuxFollow(f);
+				orderPosition = _lastPosition;
+				break;
+			case MovementOrderEnum.Advance:
+			case MovementOrderEnum.FallBack:
+				orderPosition = GetPositionAux(f, worldPositionEnforcedCache);
+				break;
+			default:
+				orderPosition = _positionLambda?.Invoke(f) ?? _position;
+				break;
+			}
+			if (Mission.Current.Mode == MissionMode.Deployment)
+			{
+				if (!Mission.Current.IsOrderPositionAvailable(in orderPosition, f.Team))
 				{
-					MBSceneUtilities.ProjectPositionToDeploymentBoundaries(f.Team.Side, ref orderPosition);
+					orderPosition = f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
+				}
+				else
+				{
+					if (Mission.Current.DeploymentPlan.SupportsNavmesh())
+					{
+						Mission.Current.DeploymentPlan.ProjectPositionToDeploymentBoundaries(f.Team, ref orderPosition);
+					}
 					if (!Mission.Current.IsOrderPositionAvailable(in orderPosition, f.Team))
 					{
 						orderPosition = f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
 					}
 				}
 			}
-		}
-		bool flag = false;
-		if (_getPositionFirstSectionCache.AsVec2 != orderPosition.AsVec2)
-		{
-			_getPositionIsNavmeshlessCache = false;
-			if (orderPosition.IsValid)
+			bool flag = false;
+			if (_getPositionFirstSectionCache.AsVec2 != orderPosition.AsVec2)
 			{
-				switch (worldPositionEnforcedCache)
+				_getPositionIsNavmeshlessCache = false;
+				if (orderPosition.IsValid)
 				{
-				case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
-					orderPosition.GetNavMeshVec3();
-					break;
-				case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
-					orderPosition.GetGroundVec3();
-					break;
-				}
-				_getPositionFirstSectionCache = orderPosition;
-				if (OrderEnum != MovementOrderEnum.Follow && (orderPosition.GetNavMesh() == UIntPtr.Zero || !Mission.Current.IsPositionInsideBoundaries(orderPosition.AsVec2)))
-				{
-					orderPosition = GetAlternatePositionForNavmeshlessOrOutOfBoundsPosition(f, orderPosition);
 					switch (worldPositionEnforcedCache)
 					{
 					case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
-						orderPosition.GetNavMeshVec3();
+						orderPosition.GetNavMeshVec3MT();
 						break;
 					case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
-						orderPosition.GetGroundVec3();
+						orderPosition.GetGroundVec3MT();
+						break;
+					}
+					_getPositionFirstSectionCache = orderPosition;
+					if (OrderEnum != MovementOrderEnum.Follow && (orderPosition.GetNavMeshMT() == UIntPtr.Zero || !Mission.Current.IsPositionInsideBoundaries(orderPosition.AsVec2)))
+					{
+						orderPosition = GetAlternatePositionForNavmeshlessOrOutOfBoundsPosition(f, orderPosition);
+						switch (worldPositionEnforcedCache)
+						{
+						case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
+							orderPosition.GetNavMeshVec3MT();
+							break;
+						case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
+							orderPosition.GetGroundVec3MT();
+							break;
+						}
+					}
+					else
+					{
+						flag = true;
+						_getPositionIsNavmeshlessCache = true;
+					}
+					_getPositionResultCache = orderPosition;
+				}
+			}
+			else
+			{
+				if (_getPositionResultCache.IsValid)
+				{
+					switch (worldPositionEnforcedCache)
+					{
+					case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
+						_getPositionResultCache.GetNavMeshVec3MT();
+						break;
+					case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
+						_getPositionResultCache.GetGroundVec3MT();
 						break;
 					}
 				}
-				else
-				{
-					flag = true;
-					_getPositionIsNavmeshlessCache = true;
-				}
-				_getPositionResultCache = orderPosition;
+				orderPosition = _getPositionResultCache;
 			}
-		}
-		else
-		{
-			if (_getPositionResultCache.IsValid)
+			if ((_getPositionIsNavmeshlessCache || flag) && f.AI?.ActiveBehavior != null)
 			{
-				switch (worldPositionEnforcedCache)
-				{
-				case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
-					_getPositionResultCache.GetNavMeshVec3();
-					break;
-				case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
-					_getPositionResultCache.GetGroundVec3();
-					break;
-				}
+				f.AI.ActiveBehavior.NavmeshlessTargetPositionPenalty = 1f;
 			}
-			orderPosition = _getPositionResultCache;
+			return orderPosition;
 		}
-		if ((_getPositionIsNavmeshlessCache || flag) && f.AI?.ActiveBehavior != null)
-		{
-			f.AI.ActiveBehavior.NavmeshlessTargetPositionPenalty = 1f;
-		}
-		return orderPosition;
 	}
 
 	public void ResetPositionCache()
@@ -654,8 +659,6 @@ public struct MovementOrder
 			return m1._targetAgent == m2._targetAgent;
 		case MovementOrderEnum.FollowEntity:
 			return m1.TargetEntity == m2.TargetEntity;
-		case MovementOrderEnum.Guard:
-			return m1._targetAgent == m2._targetAgent;
 		case MovementOrderEnum.Move:
 			if (!isAIControlled)
 			{
@@ -684,23 +687,18 @@ public struct MovementOrder
 		case MovementOrderEnum.Follow:
 			formation.Arrangement.ReserveMiddleFrontUnitPosition(_targetAgent);
 			break;
-		case MovementOrderEnum.Guard:
-		{
-			Agent localTargetAgent = _targetAgent;
-			formation.ApplyActionOnEachUnit(delegate(Agent agent)
-			{
-				OnUnitJoinOrLeaveAux(agent, localTargetAgent, isJoining: true);
-			});
-			break;
-		}
 		case MovementOrderEnum.Move:
-			formation.SetPositioning(CreateNewOrderWorldPosition(formation, WorldPosition.WorldPositionEnforcedCache.None));
+			formation.SetPositioning(CreateNewOrderWorldPositionMT(formation, WorldPosition.WorldPositionEnforcedCache.None));
 			break;
 		case MovementOrderEnum.Retreat:
 			RetreatAux(formation);
 			break;
 		}
 		MovementOrderEnum orderEnum = OrderEnum;
+		if ((orderEnum == MovementOrderEnum.Charge || orderEnum == MovementOrderEnum.ChargeToTarget) && GetPosition(formation).IsValid)
+		{
+			orderEnum = MovementOrderEnum.Move;
+		}
 		formation.ApplyActionOnEachUnit(delegate(Agent agent)
 		{
 			agent.RefreshBehaviorValues(orderEnum, formation.ArrangementOrder.OrderEnum);
@@ -712,50 +710,18 @@ public struct MovementOrder
 		switch (OrderEnum)
 		{
 		case MovementOrderEnum.Charge:
-			if (!(formation.Team?.TeamAI is TeamAISiegeComponent teamAISiegeComponent))
-			{
-				break;
-			}
-			if (teamAISiegeComponent.InnerGate != null && teamAISiegeComponent.InnerGate.IsUsedByFormation(formation))
-			{
-				formation.StopUsingMachine(teamAISiegeComponent.InnerGate, isPlayerOrder: true);
-			}
-			if (teamAISiegeComponent.OuterGate != null && teamAISiegeComponent.OuterGate.IsUsedByFormation(formation))
-			{
-				formation.StopUsingMachine(teamAISiegeComponent.OuterGate, isPlayerOrder: true);
-			}
-			foreach (SiegeLadder ladder in teamAISiegeComponent.Ladders)
-			{
-				if (ladder.IsUsedByFormation(formation))
-				{
-					formation.StopUsingMachine(ladder, isPlayerOrder: true);
-				}
-			}
-			if (formation.AttackEntityOrderDetachment != null)
-			{
-				formation.DisbandAttackEntityDetachment();
-				TargetEntity = null;
-			}
-			_position = WorldPosition.Invalid;
+			CancelChargeOrder(formation);
 			break;
 		case MovementOrderEnum.AttackEntity:
 			formation.DisbandAttackEntityDetachment();
 			break;
 		case MovementOrderEnum.ChargeToTarget:
 			formation.SetTargetFormation(null);
+			CancelChargeOrder(formation);
 			break;
 		case MovementOrderEnum.Follow:
 			formation.Arrangement.ReleaseMiddleFrontUnitPosition();
 			break;
-		case MovementOrderEnum.Guard:
-		{
-			Agent localTargetAgent = _targetAgent;
-			formation.ApplyActionOnEachUnit(delegate(Agent agent)
-			{
-				OnUnitJoinOrLeaveAux(agent, localTargetAgent, isJoining: false);
-			});
-			break;
-		}
 		case MovementOrderEnum.Retreat:
 			formation.ApplyActionOnEachUnitViaBackupList(delegate(Agent agent)
 			{
@@ -779,6 +745,7 @@ public struct MovementOrder
 			});
 			break;
 		case MovementOrderEnum.FollowEntity:
+		case (MovementOrderEnum)6:
 		case MovementOrderEnum.Move:
 		case MovementOrderEnum.Stop:
 		case MovementOrderEnum.Advance:
@@ -792,11 +759,6 @@ public struct MovementOrder
 		{
 			return;
 		}
-		MovementOrderEnum orderEnum = OrderEnum;
-		if (orderEnum == MovementOrderEnum.Guard)
-		{
-			OnUnitJoinOrLeaveAux(unit, _targetAgent, isJoining);
-		}
 		if (isJoining)
 		{
 			if (OrderEnum == MovementOrderEnum.Retreat)
@@ -805,6 +767,10 @@ public struct MovementOrder
 				{
 					unit.Retreat();
 				}
+			}
+			else if ((OrderEnum == MovementOrderEnum.Charge || OrderEnum == MovementOrderEnum.ChargeToTarget) && GetPosition(formation).IsValid)
+			{
+				unit.RefreshBehaviorValues(MovementOrderEnum.Move, formation.ArrangementOrder.OrderEnum);
 			}
 			else
 			{
@@ -850,7 +816,6 @@ public struct MovementOrder
 		case MovementOrderEnum.ChargeToTarget:
 			return TargetFormation.CountOfUnits > 0;
 		case MovementOrderEnum.Follow:
-		case MovementOrderEnum.Guard:
 			return _targetAgent.IsActive();
 		case MovementOrderEnum.FollowEntity:
 		{
@@ -946,7 +911,7 @@ public struct MovementOrder
 								else
 								{
 									WorldFrame worldFrame = siegeLane?.DefensePoints.FirstOrDefault((ICastleKeyPosition dp) => dp.AttackerSiegeWeapon is UsableMachine usableMachine && !usableMachine.IsDisabled)?.DefenseWaitFrame ?? siegeLane?.DefensePoints.FirstOrDefault()?.DefenseWaitFrame ?? WorldFrame.Invalid;
-									_position = (worldFrame.Origin.IsValid ? worldFrame.Origin : formation.QuerySystem.MedianPosition);
+									_position = (worldFrame.Origin.IsValid ? worldFrame.Origin : formation.CachedMedianPosition);
 								}
 							}
 							flag = true;
@@ -960,7 +925,7 @@ public struct MovementOrder
 						{
 							if (!ladder.IsDeactivated && !ladder.IsDisabled)
 							{
-								float num2 = ladder.WaitFrame.origin.DistanceSquared(formation.QuerySystem.MedianPosition.GetNavMeshVec3());
+								float num2 = ladder.WaitFrame.origin.DistanceSquared(formation.CachedMedianPosition.GetNavMeshVec3());
 								if (num2 < num)
 								{
 									num = num2;
@@ -989,15 +954,17 @@ public struct MovementOrder
 								flag3 = true;
 								if (formation.AttackEntityOrderDetachment == null)
 								{
-									formation.FormAttackEntityDetachment(castleGate.GameEntity);
-									TargetEntity = castleGate.GameEntity;
+									GameEntity targetEntity = GameEntity.CreateFromWeakEntity(castleGate.GameEntity);
+									formation.FormAttackEntityDetachment(targetEntity);
+									TargetEntity = targetEntity;
 									_position = ComputeAttackEntityWaitPosition(formation, castleGate.GameEntity);
 								}
 								else if (TargetEntity != castleGate.GameEntity)
 								{
+									GameEntity targetEntity2 = GameEntity.CreateFromWeakEntity(castleGate.GameEntity);
 									formation.DisbandAttackEntityDetachment();
-									formation.FormAttackEntityDetachment(castleGate.GameEntity);
-									TargetEntity = castleGate.GameEntity;
+									formation.FormAttackEntityDetachment(targetEntity2);
+									TargetEntity = targetEntity2;
 									_position = ComputeAttackEntityWaitPosition(formation, castleGate.GameEntity);
 								}
 							}
@@ -1009,11 +976,19 @@ public struct MovementOrder
 			{
 				_position = WorldPosition.Invalid;
 				formation.SetPositioning(_position);
+				formation.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.RefreshBehaviorValues(MovementOrderEnum.Charge, formation.ArrangementOrder.OrderEnum);
+				});
 			}
 			if (teamAISiegeComponent != null && !flag4 && _position.IsValid && !flag2 && !flag3)
 			{
 				_position = WorldPosition.Invalid;
 				formation.SetPositioning(_position);
+				formation.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.RefreshBehaviorValues(MovementOrderEnum.Charge, formation.ArrangementOrder.OrderEnum);
+				});
 			}
 			if (teamAISiegeComponent != null && formation.AttackEntityOrderDetachment != null && !flag3)
 			{
@@ -1021,10 +996,18 @@ public struct MovementOrder
 				TargetEntity = null;
 				_position = WorldPosition.Invalid;
 				formation.SetPositioning(_position);
+				formation.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.RefreshBehaviorValues(MovementOrderEnum.Charge, formation.ArrangementOrder.OrderEnum);
+				});
 			}
 			if (_position.IsValid)
 			{
 				formation.SetPositioning(_position);
+				formation.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.RefreshBehaviorValues(MovementOrderEnum.Move, formation.ArrangementOrder.OrderEnum);
+				});
 			}
 			break;
 		}
@@ -1082,7 +1065,7 @@ public struct MovementOrder
 
 	public void Advance(Formation formation, float distance)
 	{
-		WorldPosition currentPosition = CreateNewOrderWorldPosition(formation, WorldPosition.WorldPositionEnforcedCache.None);
+		WorldPosition currentPosition = CreateNewOrderWorldPositionMT(formation, WorldPosition.WorldPositionEnforcedCache.None);
 		Vec2 direction = formation.Direction;
 		currentPosition.SetVec2(currentPosition.AsVec2 + direction * distance);
 		_positionLambda = (Formation f) => currentPosition;
@@ -1101,7 +1084,7 @@ public struct MovementOrder
 		}
 		GameEntity targetEntity = TargetEntity;
 		Vec3 targetEntityPos = targetEntity.GlobalPosition;
-		Agent agent = candidateAgents.MinBy((Agent ca) => ca.Position.DistanceSquared(targetEntityPos));
+		Agent agent = TaleWorlds.Core.Extensions.MinBy(candidateAgents, (Agent ca) => ca.Position.DistanceSquared(targetEntityPos));
 		return (agent, agent.Position.DistanceSquared(targetEntityPos));
 	}
 
@@ -1113,7 +1096,7 @@ public struct MovementOrder
 		}
 		GameEntity targetEntity = TargetEntity;
 		Vec3 targetEntityPos = targetEntity.GlobalPosition;
-		Agent agent = currentAgents.MaxBy((Agent ca) => ca.Position.DistanceSquared(targetEntityPos));
+		Agent agent = TaleWorlds.Core.Extensions.MaxBy(currentAgents, (Agent ca) => ca.Position.DistanceSquared(targetEntityPos));
 		return (agent, agent.Position.DistanceSquared(targetEntityPos));
 	}
 
@@ -1132,15 +1115,14 @@ public struct MovementOrder
 		MovementOrderEnum orderEnum = OrderEnum;
 		if ((uint)(orderEnum - 10) <= 1u)
 		{
-			FormationQuerySystem querySystem = f.QuerySystem;
-			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? querySystem.ClosestEnemyFormation;
-			if (formationQuerySystem == null)
+			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.CachedClosestEnemyFormation;
+			if (formationQuerySystem != null)
 			{
-				return Vec2.One;
+				return (formationQuerySystem.Formation.CachedMedianPosition.AsVec2 - f.CachedAveragePosition).Normalized();
 			}
-			return (formationQuerySystem.MedianPosition.AsVec2 - querySystem.AveragePosition).Normalized();
+			return Vec2.One;
 		}
-		Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetDirectionAux", 1798);
+		Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetDirectionAux", 1789);
 		return Vec2.One;
 	}
 
@@ -1154,9 +1136,10 @@ public struct MovementOrder
 			{
 				return f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
 			}
+			Vec2 vec = f.Direction;
 			FormationQuerySystem querySystem = f.QuerySystem;
-			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? querySystem.ClosestEnemyFormation;
-			WorldPosition result;
+			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.CachedClosestEnemyFormation;
+			WorldPosition engageTargetPositionCache;
 			if (formationQuerySystem == null)
 			{
 				Agent closestEnemyAgent = querySystem.ClosestEnemyAgent;
@@ -1164,28 +1147,45 @@ public struct MovementOrder
 				{
 					return f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
 				}
-				result = closestEnemyAgent.GetWorldPosition();
+				engageTargetPositionCache = closestEnemyAgent.GetWorldPosition();
 			}
 			else
 			{
-				result = formationQuerySystem.MedianPosition;
+				engageTargetPositionCache = formationQuerySystem.Formation.CachedMedianPosition;
 			}
-			if (querySystem.IsRangedFormation || querySystem.IsRangedCavalryFormation || querySystem.HasThrowing)
+			if (querySystem.IsRangedFormation || querySystem.IsRangedCavalryFormation)
 			{
-				Vec2 directionAux2 = GetDirectionAux(f);
-				result.SetVec2(result.AsVec2 - directionAux2 * querySystem.MissileRangeAdjusted);
+				vec = GetDirectionAux(f);
+				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * querySystem.MissileRangeAdjusted);
 			}
 			else if (formationQuerySystem != null)
 			{
-				Vec2 vec = (formationQuerySystem.AveragePosition - f.QuerySystem.AveragePosition).Normalized();
+				vec = (formationQuerySystem.Formation.CachedAveragePosition - f.CachedAveragePosition).Normalized();
 				float num = 2f;
 				if (formationQuerySystem.FormationPower < f.QuerySystem.FormationPower * 0.2f)
 				{
 					num = 0.1f;
 				}
-				result.SetVec2(result.AsVec2 - vec * num);
+				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * num);
 			}
-			return result;
+			if (!_engageTargetPositionCache.IsValid)
+			{
+				_engageTargetPositionCache = engageTargetPositionCache;
+			}
+			float num2 = f.QuerySystem.MovementSpeedMaximum * f.QuerySystem.MovementSpeedMaximum * 9f * f.Depth;
+			if ((_engageTargetPositionCache.AsVec2 + vec * _engageTargetPositionOffset).DistanceSquared(engageTargetPositionCache.AsVec2) > f.CurrentPosition.DistanceSquared(_engageTargetPositionCache.AsVec2) * 0.1f || engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) <= num2)
+			{
+				_engageTargetPositionCache = engageTargetPositionCache;
+				_engageTargetPositionOffset = 0f;
+			}
+			engageTargetPositionCache = _engageTargetPositionCache;
+			if (engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) > num2 && f.Arrangement is LineFormation lineFormation && (double)lineFormation.GetUnavailableUnitPositions().Count() > (double)lineFormation.UnitCount * 0.03)
+			{
+				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * 10f);
+				_engageTargetPositionOffset += 10f;
+			}
+			_engageTargetPositionCache = engageTargetPositionCache;
+			return engageTargetPositionCache;
 		}
 		case MovementOrderEnum.FallBack:
 		{
@@ -1194,13 +1194,42 @@ public struct MovementOrder
 				return f.CreateNewOrderWorldPosition(worldPositionEnforcedCache);
 			}
 			Vec2 directionAux = GetDirectionAux(f);
-			WorldPosition medianPosition = f.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(f.QuerySystem.AveragePosition - directionAux * 7f);
-			return medianPosition;
+			WorldPosition cachedMedianPosition = f.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(f.CachedAveragePosition - directionAux * 7f);
+			return cachedMedianPosition;
 		}
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1869);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1891);
 			return WorldPosition.Invalid;
 		}
+	}
+
+	private void CancelChargeOrder(Formation formation)
+	{
+		if (!(formation.Team?.TeamAI is TeamAISiegeComponent teamAISiegeComponent))
+		{
+			return;
+		}
+		if (teamAISiegeComponent.InnerGate != null && teamAISiegeComponent.InnerGate.IsUsedByFormation(formation))
+		{
+			formation.StopUsingMachine(teamAISiegeComponent.InnerGate, isPlayerOrder: true);
+		}
+		if (teamAISiegeComponent.OuterGate != null && teamAISiegeComponent.OuterGate.IsUsedByFormation(formation))
+		{
+			formation.StopUsingMachine(teamAISiegeComponent.OuterGate, isPlayerOrder: true);
+		}
+		foreach (SiegeLadder ladder in teamAISiegeComponent.Ladders)
+		{
+			if (ladder.IsUsedByFormation(formation))
+			{
+				formation.StopUsingMachine(ladder, isPlayerOrder: true);
+			}
+		}
+		if (formation.AttackEntityOrderDetachment != null)
+		{
+			formation.DisbandAttackEntityDetachment();
+			TargetEntity = null;
+		}
+		_position = WorldPosition.Invalid;
 	}
 }

@@ -346,7 +346,7 @@ public class TacticSallyOutHitAndRun : TacticComponent
 		}
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

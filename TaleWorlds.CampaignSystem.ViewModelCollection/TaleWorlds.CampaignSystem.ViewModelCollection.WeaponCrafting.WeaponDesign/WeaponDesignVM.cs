@@ -147,6 +147,8 @@ public class WeaponDesignVM : ViewModel
 
 	private CraftingPieceVM _selectedPommelPiece;
 
+	private CraftingPieceListVM _activePieceList;
+
 	private CraftingPieceListVM _bladePieceList;
 
 	private CraftingPieceListVM _guardPieceList;
@@ -212,8 +214,6 @@ public class WeaponDesignVM : ViewModel
 	private bool _isOrderButtonActive;
 
 	private bool _isInOrderMode;
-
-	private bool _weaponControlsEnabled;
 
 	private WeaponDesignResultPopupVM _craftingResultPopup;
 
@@ -442,23 +442,6 @@ public class WeaponDesignVM : ViewModel
 				_isInOrderMode = !value;
 				OnPropertyChangedWithValue(value, "IsInFreeMode");
 				OnPropertyChanged("IsInOrderMode");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool WeaponControlsEnabled
-	{
-		get
-		{
-			return _weaponControlsEnabled;
-		}
-		set
-		{
-			if (value != _weaponControlsEnabled)
-			{
-				_weaponControlsEnabled = value;
-				OnPropertyChangedWithValue(value, "WeaponControlsEnabled");
 			}
 		}
 	}
@@ -891,6 +874,23 @@ public class WeaponDesignVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public CraftingPieceListVM ActivePieceList
+	{
+		get
+		{
+			return _activePieceList;
+		}
+		set
+		{
+			if (value != _activePieceList)
+			{
+				_activePieceList = value;
+				OnPropertyChangedWithValue(value, "ActivePieceList");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public CraftingPieceListVM BladePieceList
 	{
 		get
@@ -1027,6 +1027,50 @@ public class WeaponDesignVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public int ActivePieceSize
+	{
+		get
+		{
+			if (ActivePieceList == null)
+			{
+				return 0;
+			}
+			return ActivePieceList.PieceType switch
+			{
+				CraftingPiece.PieceTypes.Blade => BladeSize, 
+				CraftingPiece.PieceTypes.Guard => GuardSize, 
+				CraftingPiece.PieceTypes.Handle => HandleSize, 
+				CraftingPiece.PieceTypes.Pommel => PommelSize, 
+				_ => 0, 
+			};
+		}
+		set
+		{
+			if (value != ActivePieceSize && ActivePieceList != null)
+			{
+				switch (ActivePieceList.PieceType)
+				{
+				case CraftingPiece.PieceTypes.Blade:
+					BladeSize = value;
+					break;
+				case CraftingPiece.PieceTypes.Guard:
+					GuardSize = value;
+					break;
+				case CraftingPiece.PieceTypes.Handle:
+					HandleSize = value;
+					break;
+				case CraftingPiece.PieceTypes.Pommel:
+					PommelSize = value;
+					break;
+				case CraftingPiece.PieceTypes.Invalid:
+				case CraftingPiece.PieceTypes.NumberOfPieceTypes:
+					break;
+				}
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public int BladeSize
 	{
 		get
@@ -1045,6 +1089,7 @@ public class WeaponDesignVM : ViewModel
 					_crafting.ScaleThePiece(CraftingPiece.PieceTypes.Blade, percentage);
 					RefreshItem();
 				}
+				OnPropertyChanged("ActivePieceSize");
 			}
 		}
 	}
@@ -1068,6 +1113,7 @@ public class WeaponDesignVM : ViewModel
 					_crafting.ScaleThePiece(CraftingPiece.PieceTypes.Guard, percentage);
 					RefreshItem();
 				}
+				OnPropertyChanged("ActivePieceSize");
 			}
 		}
 	}
@@ -1091,6 +1137,7 @@ public class WeaponDesignVM : ViewModel
 					_crafting.ScaleThePiece(CraftingPiece.PieceTypes.Handle, percentage);
 					RefreshItem();
 				}
+				OnPropertyChanged("ActivePieceSize");
 			}
 		}
 	}
@@ -1114,6 +1161,7 @@ public class WeaponDesignVM : ViewModel
 					_crafting.ScaleThePiece(CraftingPiece.PieceTypes.Pommel, percentage);
 					RefreshItem();
 				}
+				OnPropertyChanged("ActivePieceSize");
 			}
 		}
 	}
@@ -1389,7 +1437,7 @@ public class WeaponDesignVM : ViewModel
 			list.AddRange(new int[5] { 1, 2, 3, 4, 5 });
 			break;
 		default:
-			Debug.FailedAssert("Invalid tier filter", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 217);
+			Debug.FailedAssert("Invalid tier filter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 217);
 			break;
 		case CraftingPieceTierFilter.None:
 			break;
@@ -1442,7 +1490,7 @@ public class WeaponDesignVM : ViewModel
 		TaleWorlds.Core.WeaponDesign design = selector.Design;
 		if (design == null)
 		{
-			Debug.FailedAssert("History design returned null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 280);
+			Debug.FailedAssert("History design returned null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 283);
 			return;
 		}
 		(CraftingPiece, int)[] array = new(CraftingPiece, int)[design.UsedPieces.Length];
@@ -1479,10 +1527,10 @@ public class WeaponDesignVM : ViewModel
 		}
 	}
 
-	private void OnSelectPieceType(CraftingPiece.PieceTypes pieceType)
+	private void OnSelectPieceType(CraftingPiece.PieceTypes pieceType, bool fromClick = false)
 	{
 		CraftingPieceListVM craftingPieceListVM = PieceLists.ElementAt(SelectedPieceTypeIndex);
-		if (craftingPieceListVM != null)
+		if (craftingPieceListVM != null && fromClick)
 		{
 			foreach (CraftingPieceVM piece in craftingPieceListVM.Pieces)
 			{
@@ -1492,13 +1540,21 @@ public class WeaponDesignVM : ViewModel
 				}
 			}
 		}
-		CraftingPieceListVM craftingPieceListVM2 = PieceLists.FirstOrDefault((CraftingPieceListVM x) => x.PieceType == pieceType);
 		foreach (CraftingPieceListVM pieceList in PieceLists)
 		{
 			pieceList.Refresh();
-			pieceList.IsSelected = pieceList == craftingPieceListVM2;
+			if (pieceList.PieceType == pieceType)
+			{
+				pieceList.IsSelected = true;
+				ActivePieceList = pieceList;
+			}
+			else
+			{
+				pieceList.IsSelected = false;
+			}
 		}
 		SelectedPieceTypeIndex = (int)pieceType;
+		OnPropertyChanged("ActivePieceSize");
 	}
 
 	private void SelectDefaultPiecesForCurrentTemplate()
@@ -1786,6 +1842,7 @@ public class WeaponDesignVM : ViewModel
 			{
 				CraftingOrderPopup.ExecuteOpenPopup();
 			}
+			Game.Current?.EventManager.TriggerEvent(new CraftingOrderTabOpenedEvent(isOpen: true));
 		}
 	}
 
@@ -1809,6 +1866,7 @@ public class WeaponDesignVM : ViewModel
 				x.IsSelected = false;
 			});
 			WeaponClassSelectionPopup.ExecuteSelectWeaponClass(0);
+			Game.Current?.EventManager.TriggerEvent(new CraftingOrderTabOpenedEvent(isOpen: false));
 		}
 	}
 
@@ -1817,7 +1875,7 @@ public class WeaponDesignVM : ViewModel
 		CraftedItemVisual.StringId = CraftedItemObject.StringId;
 		IsWeaponCivilian = CraftedItemObject.IsCivilian;
 		CraftingResultPopup?.OnFinalize();
-		CraftingResultPopup = new WeaponDesignResultPopupVM(CraftedItemObject, _itemName, ExecuteFinalizeCrafting, _crafting, ActiveCraftingOrder?.CraftingOrder, _craftedItemVisual, WeaponFlagIconsList, GetResultPropertyList, OnSecondaryUsageChangedFromPopup);
+		CraftingResultPopup = new WeaponDesignResultPopupVM(CraftedItemObject, _crafting.CraftedWeaponName, ExecuteFinalizeCrafting, _crafting, ActiveCraftingOrder?.CraftingOrder, _craftedItemVisual, WeaponFlagIconsList, GetResultPropertyList, OnSecondaryUsageChangedFromPopup);
 	}
 
 	private void OnSecondaryUsageChangedFromPopup(CraftingSecondaryUsageItemVM usage)
@@ -1973,41 +2031,43 @@ public class WeaponDesignVM : ViewModel
 
 	public void ExecuteFinalizeCrafting()
 	{
-		if (_craftingBehavior == null || Campaign.Current.GameMode != CampaignGameMode.Campaign)
+		if (_craftingBehavior != null && Campaign.Current.GameMode == CampaignGameMode.Campaign)
 		{
-			return;
-		}
-		if (GameStateManager.Current.ActiveState is CraftingState)
-		{
-			if (IsInOrderMode)
+			if (GameStateManager.Current.ActiveState is CraftingState)
 			{
-				_craftingBehavior.CompleteOrder(Settlement.CurrentSettlement.Town, ActiveCraftingOrder.CraftingOrder, CraftedItemObject, _getCurrentCraftingHero().Hero);
-				CraftedItemObject = null;
-				CraftingOrderPopup.RefreshOrders();
-				CraftingOrderItemVM craftingOrderItemVM = CraftingOrderPopup.CraftingOrders.FirstOrDefault((CraftingOrderItemVM x) => x.IsEnabled);
-				if (craftingOrderItemVM != null)
+				if (IsInOrderMode)
 				{
-					CraftingOrderPopup.SelectOrder(craftingOrderItemVM);
+					_craftingBehavior.CompleteOrder(Settlement.CurrentSettlement.Town, ActiveCraftingOrder.CraftingOrder, CraftedItemObject, _getCurrentCraftingHero().Hero);
+					CraftedItemObject = null;
+					CraftingOrderPopup.RefreshOrders();
+					CraftingOrderItemVM craftingOrderItemVM = CraftingOrderPopup.CraftingOrders.FirstOrDefault((CraftingOrderItemVM x) => x.IsEnabled);
+					if (craftingOrderItemVM != null)
+					{
+						CraftingOrderPopup.SelectOrder(craftingOrderItemVM);
+					}
+					else
+					{
+						ExecuteOpenFreeBuildTab();
+					}
 				}
 				else
 				{
-					ExecuteOpenFreeBuildTab();
+					int bladeSize = BladeSize;
+					int guardSize = GuardSize;
+					int handleSize = HandleSize;
+					int pommelSize = PommelSize;
+					RefreshWeaponDesignMode(null, _selectedWeaponClassIndex);
+					BladeSize = bladeSize;
+					GuardSize = guardSize;
+					HandleSize = handleSize;
+					PommelSize = pommelSize;
 				}
 			}
-			else
-			{
-				int bladeSize = BladeSize;
-				int guardSize = GuardSize;
-				int handleSize = HandleSize;
-				int pommelSize = PommelSize;
-				RefreshWeaponDesignMode(null, _selectedWeaponClassIndex);
-				BladeSize = bladeSize;
-				GuardSize = guardSize;
-				HandleSize = handleSize;
-				PommelSize = pommelSize;
-			}
+			IsInFinalCraftingStage = false;
 		}
-		IsInFinalCraftingStage = false;
+		TextObject textObject = new TextObject("{=uZhHh7pm}Crafted {CURR_TEMPLATE_NAME}");
+		textObject.SetTextVariable("CURR_TEMPLATE_NAME", _crafting.CurrentCraftingTemplate.TemplateName);
+		_crafting.SetCraftedWeaponName(textObject);
 	}
 
 	private bool DoesCurrentItemHaveSecondaryUsage(int usageIndex)

@@ -14,13 +14,17 @@ public struct AttackInformation
 
 	public WeaponComponentData ShieldOnBack;
 
-	public AgentFlag VictimAgentFlag;
+	public AgentFlag VictimAgentFlags;
+
+	public Agent.AIStateFlag VictimAgentAIStateFlags;
 
 	public float VictimAgentAbsorbedDamageRatio;
 
 	public float DamageMultiplierOfBone;
 
 	public float CombatDifficultyMultiplier;
+
+	public MissionWeapon AttackerWeapon;
 
 	public MissionWeapon VictimMainHandWeapon;
 
@@ -74,6 +78,8 @@ public struct AttackInformation
 
 	public BasicCharacterObject AttackerRiderAgentCharacter;
 
+	public Monster AttackerAgentMonster;
+
 	public IAgentOriginBase AttackerAgentOrigin;
 
 	public IAgentOriginBase AttackerRiderAgentOrigin;
@@ -86,11 +92,19 @@ public struct AttackInformation
 
 	public IAgentOriginBase VictimRiderAgentOrigin;
 
+	public Vec3 AttackerAgentPosition;
+
 	public Vec2 AttackerAgentMovementDirection;
 
 	public Vec3 AttackerAgentVelocity;
 
+	public Vec3 VictimAgentPosition;
+
 	public float AttackerAgentMountChargeDamageProperty;
+
+	public Vec3 VictimAgentVelocity;
+
+	public Vec2 VictimAgentMovementDirection;
 
 	public Vec3 AttackerAgentCurrentWeaponOffset;
 
@@ -113,10 +127,6 @@ public struct AttackInformation
 	public float VictimAgentTotalEncumbrance;
 
 	public bool IsVictimAgentHuman;
-
-	public Vec3 VictimAgentVelocity;
-
-	public Vec3 VictimAgentPosition;
 
 	public int WeaponAttachBoneIndex;
 
@@ -144,7 +154,7 @@ public struct AttackInformation
 
 	public DestructableComponent HitObjectDestructibleComponent;
 
-	public AttackInformation(Agent attackerAgent, Agent victimAgent, GameEntity hitObject, in AttackCollisionData attackCollisionData, in MissionWeapon attackerWeapon)
+	public AttackInformation(Agent attackerAgent, Agent victimAgent, WeakGameEntity hitObject, in AttackCollisionData attackCollisionData, in MissionWeapon attackerWeapon)
 	{
 		AttackerAgent = attackerAgent;
 		VictimAgent = victimAgent;
@@ -158,30 +168,31 @@ public struct AttackInformation
 		ShieldOnBack = null;
 		if (!IsVictimAgentNull && (victimAgent.GetAgentFlags() & AgentFlag.CanWieldWeapon) != 0)
 		{
-			EquipmentIndex wieldedItemIndex = victimAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+			EquipmentIndex offhandWieldedItemIndex = victimAgent.GetOffhandWieldedItemIndex();
 			for (int i = 0; i < 4; i++)
 			{
 				WeaponComponentData currentUsageItem = victimAgent.Equipment[i].CurrentUsageItem;
-				if (i != (int)wieldedItemIndex && currentUsageItem != null && currentUsageItem.IsShield)
+				if (i != (int)offhandWieldedItemIndex && currentUsageItem != null && currentUsageItem.IsShield)
 				{
 					ShieldOnBack = currentUsageItem;
 					break;
 				}
 			}
 		}
+		AttackerWeapon = attackerWeapon;
 		VictimShield = MissionWeapon.Invalid;
 		VictimMainHandWeapon = MissionWeapon.Invalid;
 		if (!IsVictimAgentNull && (victimAgent.GetAgentFlags() & AgentFlag.CanWieldWeapon) != 0)
 		{
-			EquipmentIndex wieldedItemIndex2 = victimAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-			if (wieldedItemIndex2 != EquipmentIndex.None)
+			EquipmentIndex offhandWieldedItemIndex2 = victimAgent.GetOffhandWieldedItemIndex();
+			if (offhandWieldedItemIndex2 != EquipmentIndex.None)
 			{
-				VictimShield = victimAgent.Equipment[wieldedItemIndex2];
+				VictimShield = victimAgent.Equipment[offhandWieldedItemIndex2];
 			}
-			EquipmentIndex wieldedItemIndex3 = victimAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			if (wieldedItemIndex3 != EquipmentIndex.None)
+			EquipmentIndex primaryWieldedItemIndex = victimAgent.GetPrimaryWieldedItemIndex();
+			if (primaryWieldedItemIndex != EquipmentIndex.None)
 			{
-				VictimMainHandWeapon = victimAgent.Equipment[wieldedItemIndex3];
+				VictimMainHandWeapon = victimAgent.Equipment[primaryWieldedItemIndex];
 			}
 		}
 		AttackerAgentMountMovementDirection = default(Vec2);
@@ -196,15 +207,15 @@ public struct AttackInformation
 		}
 		IsVictimAgentSameWithAttackerAgent = !IsAttackerAgentNull && attackerAgent == victimAgent;
 		WeaponAttachBoneIndex = ((!attackerWeapon.IsEmpty && !IsAttackerAgentNull && attackerAgent.IsHuman) ? attackerAgent.Monster.GetBoneToAttachForItemFlags(attackerWeapon.Item.ItemFlags) : (-1));
-		DestructableComponent destructableComponent = (HitObjectDestructibleComponent = hitObject?.GetFirstScriptOfTypeInFamily<DestructableComponent>());
+		DestructableComponent destructableComponent = (HitObjectDestructibleComponent = (hitObject.IsValid ? hitObject.GetFirstScriptOfTypeInFamily<DestructableComponent>() : null));
 		IsFriendlyFire = !IsAttackerAgentNull && (IsVictimAgentSameWithAttackerAgent || (!IsVictimAgentNull && victimAgent.IsFriendOf(attackerAgent)) || (destructableComponent != null && destructableComponent.BattleSide == attackerAgent.Team?.Side));
 		OffHandItem = default(MissionWeapon);
 		if (!IsAttackerAgentNull && (attackerAgent.GetAgentFlags() & AgentFlag.CanWieldWeapon) != 0)
 		{
-			EquipmentIndex wieldedItemIndex4 = attackerAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-			if (wieldedItemIndex4 != EquipmentIndex.None)
+			EquipmentIndex offhandWieldedItemIndex3 = attackerAgent.GetOffhandWieldedItemIndex();
+			if (offhandWieldedItemIndex3 != EquipmentIndex.None)
 			{
-				OffHandItem = attackerAgent.Equipment[wieldedItemIndex4];
+				OffHandItem = attackerAgent.Equipment[offhandWieldedItemIndex3];
 			}
 		}
 		IsHeadShot = attackCollisionData.VictimHitBodyPart == BoneBodyPartType.Head;
@@ -218,7 +229,8 @@ public struct AttackInformation
 		VictimAgentTotalEncumbrance = 0f;
 		CombatDifficultyMultiplier = 1f;
 		VictimHitPointRate = 0f;
-		VictimAgentFlag = AgentFlag.CanAttack;
+		VictimAgentFlags = AgentFlag.CanAttack;
+		VictimAgentAIStateFlags = Agent.AIStateFlag.Alarmed;
 		IsVictimAgentLeftStance = false;
 		DoesVictimHaveMountAgent = false;
 		IsVictimAgentMine = false;
@@ -232,6 +244,7 @@ public struct AttackInformation
 		VictimRiderAgentCharacter = null;
 		VictimAgentMovementVelocity = default(Vec2);
 		VictimAgentPosition = default(Vec3);
+		VictimAgentMovementDirection = default(Vec2);
 		VictimAgentVelocity = default(Vec3);
 		VictimCaptainCharacter = null;
 		VictimAgentOrigin = null;
@@ -257,10 +270,12 @@ public struct AttackInformation
 			VictimAgentTotalEncumbrance = victimAgent.GetTotalEncumbrance();
 			CombatDifficultyMultiplier = Mission.Current.GetDamageMultiplierOfCombatDifficulty(victimAgent, attackerAgent);
 			VictimHitPointRate = victimAgent.Health / victimAgent.HealthLimit;
-			VictimAgentMovementVelocity = victimAgent.MovementVelocity;
-			VictimAgentVelocity = victimAgent.Velocity;
 			VictimAgentPosition = victimAgent.Position;
-			VictimAgentFlag = victimAgent.GetAgentFlags();
+			VictimAgentMovementDirection = victimAgent.GetMovementDirection();
+			VictimAgentVelocity = victimAgent.Velocity;
+			VictimAgentMovementVelocity = victimAgent.MovementVelocity;
+			VictimAgentFlags = victimAgent.GetAgentFlags();
+			VictimAgentAIStateFlags = victimAgent.AIStateFlags;
 			VictimAgentCharacter = victimAgent.Character;
 			VictimAgentOrigin = victimAgent.Origin;
 			if (DoesVictimHaveRiderAgent)
@@ -294,8 +309,10 @@ public struct AttackInformation
 		AttackerAgentMovementVelocity = default(Vec2);
 		AttackerAgentCharacter = null;
 		AttackerRiderAgentCharacter = null;
+		AttackerAgentMonster = null;
 		AttackerAgentOrigin = null;
 		AttackerRiderAgentOrigin = null;
+		AttackerAgentPosition = default(Vec3);
 		AttackerAgentMovementDirection = default(Vec2);
 		AttackerAgentVelocity = default(Vec3);
 		AttackerAgentCurrentWeaponOffset = default(Vec3);
@@ -317,14 +334,16 @@ public struct AttackInformation
 			AttackerMovementDirectionAsAngle = attackerAgent.MovementDirectionAsAngle;
 			AttackerAgentMountChargeDamageProperty = attackerAgent.GetAgentDrivenPropertyValue(DrivenProperty.MountChargeDamage);
 			AttackerHitPointRate = attackerAgent.Health / attackerAgent.HealthLimit;
-			AttackerAgentMovementVelocity = attackerAgent.MovementVelocity;
+			AttackerAgentPosition = attackerAgent.Position;
 			AttackerAgentMovementDirection = attackerAgent.GetMovementDirection();
 			AttackerAgentVelocity = attackerAgent.Velocity;
+			AttackerAgentMovementVelocity = attackerAgent.MovementVelocity;
 			if (IsAttackerAgentActive)
 			{
 				AttackerAgentCurrentWeaponOffset = attackerAgent.GetCurWeaponOffset();
 			}
 			AttackerAgentCharacter = attackerAgent.Character;
+			AttackerAgentMonster = AttackerAgent.Monster;
 			AttackerAgentOrigin = attackerAgent.Origin;
 			if (DoesAttackerHaveRiderAgent)
 			{
@@ -350,16 +369,18 @@ public struct AttackInformation
 		}
 	}
 
-	public AttackInformation(Agent attackerAgent, Agent victimAgent, float armorAmountFloat, WeaponComponentData shieldOnBack, AgentFlag victimAgentFlag, float victimAgentAbsorbedDamageRatio, float damageMultiplierOfBone, float combatDifficultyMultiplier, MissionWeapon victimMainHandWeapon, MissionWeapon victimShield, bool canGiveDamageToAgentShield, bool isVictimAgentLeftStance, bool isFriendlyFire, bool doesAttackerHaveMountAgent, bool doesVictimHaveMountAgent, Vec2 attackerAgentMovementVelocity, Vec2 attackerAgentMountMovementDirection, float attackerMovementDirectionAsAngle, Vec2 victimAgentMovementVelocity, Vec2 victimAgentMountMovementDirection, float victimMovementDirectionAsAngle, bool isVictimAgentSameWithAttackerAgent, bool isAttackerAgentMine, bool doesAttackerHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentMine, bool doesVictimHaveRiderAgent, bool isVictimAgentRiderAgentMine, bool isVictimAgentMount, bool isAttackerAgentNull, bool isAttackerAIControlled, BasicCharacterObject attackerAgentCharacter, BasicCharacterObject attackerRiderAgentCharacter, IAgentOriginBase attackerAgentOrigin, IAgentOriginBase attackerRiderAgentOrigin, BasicCharacterObject victimAgentCharacter, BasicCharacterObject victimRiderAgentCharacter, IAgentOriginBase victimAgentOrigin, IAgentOriginBase victimRiderAgentOrigin, Vec2 attackerAgentMovementDirection, Vec3 attackerAgentVelocity, float attackerAgentMountChargeDamageProperty, Vec3 attackerAgentCurrentWeaponOffset, bool isAttackerAgentHuman, bool isAttackerAgentActive, bool isAttackerAgentDoingPassiveAttack, bool isVictimAgentNull, float victimAgentScale, float victimAgentHealth, float victimAgentMaxHealth, float victimAgentWeight, float victimAgentTotalEncumbrance, bool isVictimAgentHuman, Vec3 victimAgentVelocity, Vec3 victimAgentPosition, int weaponAttachBoneIndex, MissionWeapon offHandItem, bool isHeadShot, bool isVictimRiderAgentSameAsAttackerAgent, bool isAttackerPlayer, bool isVictimPlayer, DestructableComponent hitObjectDestructibleComponent)
+	public AttackInformation(Agent attackerAgent, Agent victimAgent, float armorAmountFloat, WeaponComponentData shieldOnBack, AgentFlag victimAgentFlags, Agent.AIStateFlag victimAgentAIStateFlags, float victimAgentAbsorbedDamageRatio, float damageMultiplierOfBone, float combatDifficultyMultiplier, MissionWeapon attackerWeapon, MissionWeapon victimMainHandWeapon, MissionWeapon victimShield, bool canGiveDamageToAgentShield, bool isVictimAgentLeftStance, bool isFriendlyFire, bool doesAttackerHaveMountAgent, bool doesVictimHaveMountAgent, Vec2 attackerAgentMovementVelocity, Vec2 attackerAgentMountMovementDirection, float attackerMovementDirectionAsAngle, Vec2 victimAgentMovementVelocity, Vec2 victimAgentMountMovementDirection, float victimMovementDirectionAsAngle, bool isVictimAgentSameWithAttackerAgent, bool isAttackerAgentMine, bool doesAttackerHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentMine, bool doesVictimHaveRiderAgent, bool isVictimAgentRiderAgentMine, bool isVictimAgentMount, bool isAttackerAgentNull, bool isAttackerAIControlled, BasicCharacterObject attackerAgentCharacter, BasicCharacterObject attackerRiderAgentCharacter, Monster attackerAgentMonster, IAgentOriginBase attackerAgentOrigin, IAgentOriginBase attackerRiderAgentOrigin, BasicCharacterObject victimAgentCharacter, BasicCharacterObject victimRiderAgentCharacter, IAgentOriginBase victimAgentOrigin, IAgentOriginBase victimRiderAgentOrigin, Vec3 attackerAgentPosition, Vec2 attackerAgentMovementDirection, Vec3 attackerAgentVelocity, float attackerAgentMountChargeDamageProperty, Vec3 attackerAgentCurrentWeaponOffset, bool isAttackerAgentHuman, bool isAttackerAgentActive, bool isAttackerAgentDoingPassiveAttack, bool isVictimAgentNull, float victimAgentScale, float victimAgentHealth, float victimAgentMaxHealth, float victimAgentWeight, float victimAgentTotalEncumbrance, bool isVictimAgentHuman, Vec3 victimAgentPosition, Vec2 victimAgentMovementDirection, Vec3 victimAgentVelocity, int weaponAttachBoneIndex, MissionWeapon offHandItem, bool isHeadShot, bool isVictimRiderAgentSameAsAttackerAgent, bool isAttackerPlayer, bool isVictimPlayer, DestructableComponent hitObjectDestructibleComponent)
 	{
 		AttackerAgent = attackerAgent;
 		VictimAgent = victimAgent;
 		ArmorAmountFloat = armorAmountFloat;
 		ShieldOnBack = shieldOnBack;
-		VictimAgentFlag = victimAgentFlag;
+		VictimAgentFlags = victimAgentFlags;
+		VictimAgentAIStateFlags = victimAgentAIStateFlags;
 		VictimAgentAbsorbedDamageRatio = victimAgentAbsorbedDamageRatio;
 		DamageMultiplierOfBone = damageMultiplierOfBone;
 		CombatDifficultyMultiplier = combatDifficultyMultiplier;
+		AttackerWeapon = attackerWeapon;
 		VictimMainHandWeapon = victimMainHandWeapon;
 		VictimShield = victimShield;
 		CanGiveDamageToAgentShield = canGiveDamageToAgentShield;
@@ -386,12 +407,14 @@ public struct AttackInformation
 		IsAttackerAIControlled = isAttackerAIControlled;
 		AttackerAgentCharacter = attackerAgentCharacter;
 		AttackerRiderAgentCharacter = attackerRiderAgentCharacter;
+		AttackerAgentMonster = attackerAgentMonster;
 		AttackerAgentOrigin = attackerAgentOrigin;
 		AttackerRiderAgentOrigin = attackerRiderAgentOrigin;
 		VictimAgentCharacter = victimAgentCharacter;
 		VictimRiderAgentCharacter = victimRiderAgentCharacter;
 		VictimAgentOrigin = victimAgentOrigin;
 		VictimRiderAgentOrigin = victimRiderAgentOrigin;
+		AttackerAgentPosition = attackerAgentPosition;
 		AttackerAgentMovementDirection = attackerAgentMovementDirection;
 		AttackerAgentVelocity = attackerAgentVelocity;
 		AttackerAgentMountChargeDamageProperty = attackerAgentMountChargeDamageProperty;
@@ -406,8 +429,9 @@ public struct AttackInformation
 		VictimAgentWeight = victimAgentWeight;
 		VictimAgentTotalEncumbrance = victimAgentTotalEncumbrance;
 		IsVictimAgentHuman = isVictimAgentHuman;
-		VictimAgentVelocity = victimAgentVelocity;
 		VictimAgentPosition = victimAgentPosition;
+		VictimAgentMovementDirection = victimAgentMovementDirection;
+		VictimAgentVelocity = victimAgentVelocity;
 		WeaponAttachBoneIndex = weaponAttachBoneIndex;
 		OffHandItem = offHandItem;
 		IsHeadShot = isHeadShot;

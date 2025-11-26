@@ -82,11 +82,11 @@ public class HorseComponent : ItemComponent
 				{
 					if (Speed <= 11)
 					{
-						return 1;
+						return 2;
 					}
-					return 2;
+					return 1;
 				}
-				return 6;
+				return 4;
 			}
 			return 3;
 		}
@@ -100,7 +100,7 @@ public class HorseComponent : ItemComponent
 			{
 				if (Speed <= 20)
 				{
-					return 1;
+					return 0;
 				}
 				return 2;
 			}

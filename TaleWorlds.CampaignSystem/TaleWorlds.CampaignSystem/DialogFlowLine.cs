@@ -29,6 +29,8 @@ internal class DialogFlowLine
 
 	internal bool IsSpecialOption;
 
+	internal bool IsUsedOnce;
+
 	public List<KeyValuePair<TextObject, List<GameTextManager.ChoiceTag>>> Variations { get; private set; }
 
 	public bool HasVariation => Variations.Count > 0;

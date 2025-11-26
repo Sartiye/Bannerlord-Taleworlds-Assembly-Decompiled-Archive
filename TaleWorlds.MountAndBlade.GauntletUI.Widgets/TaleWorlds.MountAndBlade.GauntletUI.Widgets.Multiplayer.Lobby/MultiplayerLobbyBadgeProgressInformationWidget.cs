@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -77,9 +78,10 @@ public class MultiplayerLobbyBadgeProgressInformationWidget : Widget
 		ActiveBadgesList.IsVisible = ShownBadgeCount > 0;
 		int num = ShownBadgeCount / 2;
 		int num2 = 0;
-		foreach (Widget allChild in ActiveBadgesList.AllChildren)
+		List<Widget> allChildrenRecursive = ActiveBadgesList.GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			if (allChild is MultiplayerPlayerBadgeVisualWidget multiplayerPlayerBadgeVisualWidget)
+			if (allChildrenRecursive[i] is MultiplayerPlayerBadgeVisualWidget multiplayerPlayerBadgeVisualWidget)
 			{
 				float num3 = MathF.Abs(num2 - num);
 				float num4 = OuterBadgeBaseSize - SizeDecayFromCenterPerElement * num3;

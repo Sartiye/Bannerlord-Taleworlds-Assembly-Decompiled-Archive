@@ -7,7 +7,7 @@ using TaleWorlds.PlayerServices;
 namespace Messages.FromBattleServer.ToBattleServerManager;
 
 [Serializable]
-[MessageDescription("BattleServer", "BattleServerManager")]
+[MessageDescription("BattleServer", "BattleServerManager", false)]
 public class FriendlyDamageKickPlayerMessage : Message
 {
 	[JsonProperty]

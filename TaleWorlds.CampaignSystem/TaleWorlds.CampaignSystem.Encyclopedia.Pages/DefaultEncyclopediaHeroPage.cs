@@ -30,7 +30,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return ((int)hero.Age).ToString();
 			}
-			Debug.FailedAssert("Unable to get the age of a non-hero object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 179);
+			Debug.FailedAssert("Unable to get the age of a non-hero object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 179);
 			return "";
 		}
 	}
@@ -60,7 +60,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return GameTexts.FindText("str_plus_with_number").ToString();
 			}
-			Debug.FailedAssert("Unable to get the relation between a non-hero object and the player.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 209);
+			Debug.FailedAssert("Unable to get the relation between a non-hero object and the player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 209);
 			return "";
 		}
 	}
@@ -111,7 +111,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be heroes.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "CompareHeroes", 258);
+			Debug.FailedAssert("Both objects should be heroes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "CompareHeroes", 258);
 			return 0;
 		}
 	}
@@ -134,7 +134,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				if (hero2.Clan != null)
 				{
 					heroName.SetTextVariable("NAME", hero2.FirstName ?? hero2.Name);
-					heroName.SetTextVariable("FACTION", hero2.Clan?.Name ?? TextObject.Empty);
+					heroName.SetTextVariable("FACTION", hero2.Clan?.Name ?? TextObject.GetEmpty());
 					name = heroName.ToString();
 				}
 				else
@@ -156,7 +156,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 			if (hero.Clan != null)
 			{
 				heroName.SetTextVariable("NAME", hero.FirstName ?? hero.Name);
-				heroName.SetTextVariable("FACTION", hero.Clan?.Name ?? TextObject.Empty);
+				heroName.SetTextVariable("FACTION", hero.Clan?.Name ?? TextObject.GetEmpty());
 				yield return new EncyclopediaListItem(hero, heroName.ToString(), "", hero.StringId, GetIdentifier(typeof(Hero)), CanPlayerSeeValuesOf(hero), delegate
 				{
 					InformationManager.ShowTooltip(typeof(Hero), hero, false);
@@ -249,9 +249,9 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 		if (o is Hero { IsTemplate: false, IsReady: not false } hero)
 		{
 			IFaction mapFaction = hero.MapFaction;
-			if (mapFaction == null || !mapFaction.IsBanditFaction)
+			if ((mapFaction == null || !mapFaction.IsBanditFaction) && !hero.CharacterObject.HiddenInEncyclopedia)
 			{
-				return !hero.CharacterObject.HiddenInEncylopedia;
+				return !hero.HiddenInEncyclopedia;
 			}
 		}
 		return false;

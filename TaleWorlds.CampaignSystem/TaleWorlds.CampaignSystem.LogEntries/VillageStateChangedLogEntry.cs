@@ -144,17 +144,17 @@ public class VillageStateChangedLogEntry : LogEntry, IWarLog
 		return textObject.ToString();
 	}
 
-	public override int GetAsRumor(Settlement talkSettlement, ref TextObject comment)
+	public override int GetAsRumor(Settlement talkSettlement, out TextObject comment)
 	{
-		int result = 0;
 		if (NewState == Village.VillageStates.Looted && Village.Settlement.MapFaction == talkSettlement.MapFaction)
 		{
 			comment = new TextObject("{=nV1xbbM6}So I hear {ENEMY_NAME} burned and pillaged {VILLAGE_NAME}. Bastards...");
 			comment.SetTextVariable("ENEMY_NAME", FactionHelper.GetTermUsedByOtherFaction(RaiderPartyMapFaction, talkSettlement.MapFaction, pejorative: false));
 			comment.SetTextVariable("VILLAGE_NAME", Village.Name);
-			result = 10;
+			return 10;
 		}
-		return result;
+		comment = TextObject.GetEmpty();
+		return 0;
 	}
 
 	public override void GetConversationScoreAndComment(Hero talkTroop, bool findString, out string comment, out ImportanceEnum score)

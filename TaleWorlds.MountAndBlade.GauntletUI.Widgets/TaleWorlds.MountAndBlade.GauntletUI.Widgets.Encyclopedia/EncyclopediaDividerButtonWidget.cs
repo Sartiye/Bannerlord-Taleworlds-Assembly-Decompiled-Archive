@@ -47,9 +47,9 @@ public class EncyclopediaDividerButtonWidget : ButtonWidget
 	{
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		UpdateItemListVisibility();
 		UpdateCollapseIndicator();
 	}

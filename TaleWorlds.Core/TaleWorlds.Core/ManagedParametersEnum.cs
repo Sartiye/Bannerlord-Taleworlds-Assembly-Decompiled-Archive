@@ -68,6 +68,10 @@ public enum ManagedParametersEnum
 	AirFrictionBullet,
 	AirFrictionKnife,
 	AirFrictionAxe,
+	AirFrictionStone,
+	AirFrictionBoulder,
+	AirFrictionBallistaStone,
+	AirFrictionBallistaBoulder,
 	HeavyAttackMomentumMultiplier,
 	ActivateHeroTest,
 	Count

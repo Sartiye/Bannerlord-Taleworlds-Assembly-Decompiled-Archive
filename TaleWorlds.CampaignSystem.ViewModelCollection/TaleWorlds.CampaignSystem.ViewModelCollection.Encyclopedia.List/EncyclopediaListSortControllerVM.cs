@@ -9,7 +9,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.List;
 
 public class EncyclopediaListSortControllerVM : ViewModel
 {
-	private TextObject _sortedValueLabel = TextObject.Empty;
+	private TextObject _sortedValueLabel = TextObject.GetEmpty();
 
 	private MBBindingList<EncyclopediaListItemVM> _items;
 
@@ -167,6 +167,12 @@ public class EncyclopediaListSortControllerVM : ViewModel
 		NameLabel = GameTexts.FindText("str_sort_by_name_label").ToString();
 		SortByLabel = GameTexts.FindText("str_sort_by_label").ToString();
 		SortedValueLabelText = _sortedValueLabel.ToString();
+	}
+
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		Game.Current.EventManager.UnregisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 	}
 
 	public void SetSortSelection(int index)

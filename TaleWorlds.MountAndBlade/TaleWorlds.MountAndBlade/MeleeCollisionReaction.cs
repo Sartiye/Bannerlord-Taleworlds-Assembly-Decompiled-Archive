@@ -2,7 +2,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Melee_collision_reaction", false)]
+[EngineStruct("Melee_collision_reaction", true, "mcr", false)]
 public enum MeleeCollisionReaction
 {
 	Invalid = -1,

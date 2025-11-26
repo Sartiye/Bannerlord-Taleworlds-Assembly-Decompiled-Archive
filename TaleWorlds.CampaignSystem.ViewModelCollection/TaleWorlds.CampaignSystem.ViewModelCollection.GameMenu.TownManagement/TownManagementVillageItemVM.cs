@@ -124,7 +124,7 @@ public class TownManagementVillageItemVM : ViewModel
 
 	public void ExecuteShowTooltip()
 	{
-		InformationManager.ShowTooltip(typeof(Settlement), _village.Settlement, true);
+		InformationManager.ShowTooltip(typeof(Settlement), _village.Settlement);
 	}
 
 	public void ExecuteHideTooltip()

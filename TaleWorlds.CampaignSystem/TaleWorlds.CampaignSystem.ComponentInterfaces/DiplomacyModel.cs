@@ -9,8 +9,14 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class DiplomacyModel : GameModel
+public abstract class DiplomacyModel : MBGameModel<DiplomacyModel>
 {
+	public enum DiplomacyStance
+	{
+		Neutral,
+		War
+	}
+
 	public abstract int MaxRelationLimit { get; }
 
 	public abstract int MinRelationLimit { get; }
@@ -24,6 +30,10 @@ public abstract class DiplomacyModel : GameModel
 	public abstract int GiftingTownRelationshipBonus { get; }
 
 	public abstract int GiftingCastleRelationshipBonus { get; }
+
+	public abstract float WarDeclarationScorePenaltyAgainstAllies { get; }
+
+	public abstract float WarDeclarationScoreBonusAgainstEnemiesOfAllies { get; }
 
 	public abstract float GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(Kingdom kingdomToJoin);
 
@@ -53,9 +63,15 @@ public abstract class DiplomacyModel : GameModel
 
 	public abstract float GetScoreOfKingdomToSackMercenary(Kingdom kingdom, Clan mercenaryClan);
 
-	public abstract float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace, IFaction evaluatingFaction, out TextObject reason);
+	public abstract float GetScoreOfDeclaringPeaceForClan(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace, Clan evaluatingClan, out TextObject reason, bool includeReason = false);
 
-	public abstract float GetScoreOfDeclaringWar(IFaction factionDeclaresWar, IFaction factionDeclaredWar, IFaction evaluatingFaction, out TextObject reason);
+	public abstract float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace);
+
+	public abstract bool IsPeaceSuitable(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace);
+
+	public abstract float GetScoreOfDeclaringWar(IFaction factionDeclaresWar, IFaction factionDeclaredWar, Clan evaluatingClan, out TextObject reason, bool includeReason = false);
+
+	public abstract ExplainedNumber GetWarProgressScore(IFaction factionDeclaresWar, IFaction factionDeclaredWar, bool includeDescriptions = false);
 
 	public abstract float GetScoreOfLettingPartyGo(MobileParty party, MobileParty partyToLetGo);
 
@@ -105,9 +121,11 @@ public abstract class DiplomacyModel : GameModel
 
 	public abstract uint GetNotificationColor(ChatNotificationType notificationType);
 
-	public abstract int GetValueOfDailyTribute(int dailyTributeAmount);
+	public abstract int GetDailyTributeToPay(Clan factionToPay, Clan factionToReceive, out int tributeDurationInDays);
 
-	public abstract int GetDailyTributeForValue(int value);
+	public abstract float GetDecisionMakingThreshold(IFaction consideringFaction);
+
+	public abstract float GetValueOfSettlementsForFaction(IFaction faction);
 
 	public abstract bool CanSettlementBeGifted(Settlement settlement);
 
@@ -118,4 +136,10 @@ public abstract class DiplomacyModel : GameModel
 	public abstract int GetCharmExperienceFromRelationGain(Hero hero, float relationChange, ChangeRelationAction.ChangeRelationDetail detail);
 
 	public abstract float DenarsToInfluence();
+
+	public abstract DiplomacyStance? GetShallowDiplomaticStance(IFaction faction1, IFaction faction2);
+
+	public abstract DiplomacyStance GetDefaultDiplomaticStance(IFaction faction1, IFaction faction2);
+
+	public abstract bool IsAtConstantWar(IFaction faction1, IFaction faction2);
 }

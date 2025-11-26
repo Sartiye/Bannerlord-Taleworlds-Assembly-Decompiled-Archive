@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -14,13 +15,21 @@ public class ClanCardSelectionPopupVM : ViewModel
 
 	private bool _isMultiSelection;
 
+	private int _minimumSelection;
+
+	private int _maximumSelection;
+
 	private ClanCardSelectionPopupItemVM _lastSelectedItem;
+
+	private int _selectedItemCount;
 
 	private Action<List<object>, Action> _onClosed;
 
 	private MBBindingList<ClanCardSelectionPopupItemVM> _items;
 
 	private InputKeyItemVM _doneInputKey;
+
+	private InputKeyItemVM _cancelInputKey;
 
 	private string _title;
 
@@ -29,6 +38,10 @@ public class ClanCardSelectionPopupVM : ViewModel
 	private string _doneLbl;
 
 	private bool _isVisible;
+
+	private bool _isDoneEnabled;
+
+	private HintViewModel _disabledHint;
 
 	[DataSourceProperty]
 	public MBBindingList<ClanCardSelectionPopupItemVM> Items
@@ -60,6 +73,23 @@ public class ClanCardSelectionPopupVM : ViewModel
 			{
 				_doneInputKey = value;
 				OnPropertyChangedWithValue(value, "DoneInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM CancelInputKey
+	{
+		get
+		{
+			return _cancelInputKey;
+		}
+		set
+		{
+			if (value != _cancelInputKey)
+			{
+				_cancelInputKey = value;
+				OnPropertyChangedWithValue(value, "CancelInputKey");
 			}
 		}
 	}
@@ -132,10 +162,45 @@ public class ClanCardSelectionPopupVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsDoneEnabled
+	{
+		get
+		{
+			return _isDoneEnabled;
+		}
+		set
+		{
+			if (value != _isDoneEnabled)
+			{
+				_isDoneEnabled = value;
+				OnPropertyChangedWithValue(value, "IsDoneEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel DisabledHint
+	{
+		get
+		{
+			return _disabledHint;
+		}
+		set
+		{
+			if (value != _disabledHint)
+			{
+				_disabledHint = value;
+				OnPropertyChangedWithValue(value, "DisabledHint");
+			}
+		}
+	}
+
 	public ClanCardSelectionPopupVM()
 	{
-		_titleText = TextObject.Empty;
+		_titleText = TextObject.GetEmpty();
 		Items = new MBBindingList<ClanCardSelectionPopupItemVM>();
+		DisabledHint = new HintViewModel();
 	}
 
 	public override void RefreshValues()
@@ -151,12 +216,37 @@ public class ClanCardSelectionPopupVM : ViewModel
 		{
 			x.RefreshValues();
 		});
+		RefreshHintText();
+	}
+
+	private void RefreshHintText()
+	{
+		TextObject textObject = TextObject.GetEmpty();
+		if (_isMultiSelection)
+		{
+			if (_maximumSelection > 0 && _selectedItemCount > _maximumSelection)
+			{
+				textObject = new TextObject("{=lIGdkJGm}You must choose less than {NUMBER} {?NUMBER>1}items{?}item{\\?}");
+				textObject.SetTextVariable("NUMBER", _maximumSelection);
+			}
+			else if (_selectedItemCount < _minimumSelection)
+			{
+				textObject = new TextObject("{=woD234nb}You must choose more than {NUMBER} {?NUMBER>1}items{?}item{\\?}");
+				textObject.SetTextVariable("NUMBER", _minimumSelection);
+			}
+		}
+		else if (_selectedItemCount != 1)
+		{
+			textObject = new TextObject("{=aYm5Ehv1}You must choose an item");
+		}
+		DisabledHint.HintText = textObject;
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
 		DoneInputKey?.OnFinalize();
+		CancelInputKey?.OnFinalize();
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)
@@ -164,9 +254,16 @@ public class ClanCardSelectionPopupVM : ViewModel
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 
+	public void SetCancelInputKey(HotKey hotKey)
+	{
+		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
 	public void Open(ClanCardSelectionInfo info)
 	{
 		_isMultiSelection = info.IsMultiSelection;
+		_minimumSelection = info.MinimumSelection;
+		_maximumSelection = info.MaximumSelection;
 		_titleText = info.Title;
 		_onClosed = info.OnClosedAction;
 		foreach (ClanCardSelectionItemInfo item in info.Items)
@@ -174,8 +271,10 @@ public class ClanCardSelectionPopupVM : ViewModel
 			ClanCardSelectionItemInfo info2 = item;
 			Items.Add(new ClanCardSelectionPopupItemVM(in info2, OnItemSelected));
 		}
+		_selectedItemCount = 0;
 		RefreshValues();
 		IsVisible = true;
+		UpdateIsDoneEnabled();
 	}
 
 	public void ExecuteCancel()
@@ -201,7 +300,7 @@ public class ClanCardSelectionPopupVM : ViewModel
 	{
 		IsVisible = false;
 		_lastSelectedItem = null;
-		_titleText = TextObject.Empty;
+		_titleText = TextObject.GetEmpty();
 		ActionResult = string.Empty;
 		Title = string.Empty;
 		_onClosed = null;
@@ -213,6 +312,14 @@ public class ClanCardSelectionPopupVM : ViewModel
 		if (_isMultiSelection)
 		{
 			item.IsSelected = !item.IsSelected;
+			if (item.IsSelected)
+			{
+				_selectedItemCount++;
+			}
+			else
+			{
+				_selectedItemCount--;
+			}
 		}
 		else if (item != _lastSelectedItem)
 		{
@@ -222,7 +329,22 @@ public class ClanCardSelectionPopupVM : ViewModel
 			}
 			item.IsSelected = true;
 			ActionResult = item.ActionResultText?.ToString() ?? string.Empty;
+			_selectedItemCount = 1;
 		}
 		_lastSelectedItem = item;
+		UpdateIsDoneEnabled();
+		RefreshHintText();
+	}
+
+	private void UpdateIsDoneEnabled()
+	{
+		if (_isMultiSelection)
+		{
+			IsDoneEnabled = _selectedItemCount >= _minimumSelection && (_maximumSelection <= 0 || _selectedItemCount <= _maximumSelection);
+		}
+		else
+		{
+			IsDoneEnabled = _selectedItemCount == 1;
+		}
 	}
 }

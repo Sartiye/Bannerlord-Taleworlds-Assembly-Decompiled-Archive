@@ -266,7 +266,7 @@ public class MPDeathCardVM : ViewModel
 		}
 		else if (affectorAgent != null && affectorAgent.IsMount && affectorAgent.RiderAgent == null)
 		{
-			_killedByStrayHorse.SetTextVariable("MOUNT_NAME", affectorAgent.Name);
+			_killedByStrayHorse.SetTextVariable("MOUNT_NAME", affectorAgent.NameTextObject);
 			TitleText = _killedByStrayHorse.ToString();
 			IsSelfInflicted = true;
 		}

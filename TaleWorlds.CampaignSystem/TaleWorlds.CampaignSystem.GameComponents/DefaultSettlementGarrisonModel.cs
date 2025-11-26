@@ -1,8 +1,10 @@
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -19,10 +21,6 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 
 	private static readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
 
-	private static readonly TextObject RecruitFromCenterNotablesText = GameTexts.FindText("str_center_notables");
-
-	private static readonly TextObject RecruitFromVillageNotablesText = GameTexts.FindText("str_village_notables");
-
 	private static readonly TextObject VillageBeingRaided = GameTexts.FindText("str_village_being_raided");
 
 	private static readonly TextObject VillageLooted = GameTexts.FindText("str_village_looted");
@@ -37,57 +35,22 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 
 	private static readonly TextObject RebellionText = GameTexts.FindText("str_rebel_settlement");
 
-	public override ExplainedNumber CalculateGarrisonChange(Settlement settlement, bool includeDescriptions = false)
+	private const int MaximumDailyAutoRecruitmentCount = 1;
+
+	public override int GetMaximumDailyAutoRecruitmentCount(Town town)
 	{
-		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions);
-		CalculateGarrisonChangeInternal(settlement, ref result);
-		return result;
+		return 1;
 	}
 
-	private static void CalculateGarrisonChangeInternal(Settlement settlement, ref ExplainedNumber result)
+	public override ExplainedNumber CalculateBaseGarrisonChange(Settlement settlement, bool includeDescriptions = false)
 	{
-		if (settlement.IsTown || settlement.IsCastle)
+		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions);
+		if ((settlement.IsTown || settlement.IsCastle) && settlement.OwnerClan.IsRebelClan && (settlement.OwnerClan.MapFaction == null || !settlement.OwnerClan.MapFaction.IsKingdomFaction))
 		{
-			if (settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.HasUnpaidWages > 0f)
-			{
-				int num = MathF.Min(settlement.Town.GarrisonParty.Party.NumberOfHealthyMembers, 5);
-				result.Add(-num, UnpaidWagesText);
-			}
-			if (settlement.Town.GarrisonParty != null && ((float)settlement.Town.GarrisonParty.Party.NumberOfHealthyMembers + result.ResultNumber > (float)settlement.Town.GarrisonParty.LimitedPartySize || settlement.Town.GarrisonParty.IsWageLimitExceeded()))
-			{
-				int num2 = MathF.Max(settlement.Town.GarrisonParty.IsWageLimitExceeded() ? MathF.Min(20, MathF.Max(1, (int)((float)(settlement.Town.GarrisonParty.TotalWage - settlement.Town.GarrisonParty.PaymentLimit) / Campaign.Current.AverageWage / 5f))) : 0, Campaign.Current.Models.PartyDesertionModel.GetNumberOfDeserters(settlement.Town.GarrisonParty));
-				result.Add(-num2, PaymentIsLessText);
-			}
-			if (settlement.OwnerClan.IsRebelClan && (settlement.OwnerClan.MapFaction == null || !settlement.OwnerClan.MapFaction.IsKingdomFaction))
-			{
-				result.Add(2f, RebellionText);
-			}
-			if (settlement.IsFortification && settlement.Town.GarrisonAutoRecruitmentIsEnabled)
-			{
-				GetSettlementGarrisonDueToAutoRecruitment(settlement, ref result);
-			}
+			explainedNumber.Add(2f, RebellionText);
 		}
-		GetSettlementGarrisonChangeDueToIssues(settlement, ref result);
-	}
-
-	public override ExplainedNumber CalculateGarrisonChangeAutoRecruitment(Settlement settlement, bool includeDescriptions = false)
-	{
-		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions);
-		GetSettlementGarrisonDueToAutoRecruitment(settlement, ref result);
-		return result;
-	}
-
-	private static void GetSettlementGarrisonDueToAutoRecruitment(Settlement settlement, ref ExplainedNumber result)
-	{
-		if (settlement.SiegeEvent == null && settlement.OwnerClan != null && settlement.IsFortification && settlement.Town.FoodChange > 0f && settlement.OwnerClan.Leader.PartyBelongedTo != null && settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.CanPayMoreWage() && settlement.Town.GarrisonParty.Party.MemberRoster.TotalManCount < settlement.Town.GarrisonParty.LimitedPartySize && SettlementHelper.IsThereAnyVolunteerCanBeRecruitedForGarrison(settlement))
-		{
-			result.Add(1f, RecruitFromCenterNotablesText);
-		}
-	}
-
-	private static void GetSettlementGarrisonChangeDueToIssues(Settlement settlement, ref ExplainedNumber result)
-	{
-		Campaign.Current.Models.IssueModel.GetIssueEffectsOfSettlement(DefaultIssueEffects.SettlementGarrison, settlement, ref result);
+		Campaign.Current.Models.IssueModel.GetIssueEffectsOfSettlement(DefaultIssueEffects.SettlementGarrison, settlement, ref explainedNumber);
+		return explainedNumber;
 	}
 
 	public override int FindNumberOfTroopsToTakeFromGarrison(MobileParty mobileParty, Settlement settlement, float defaultIdealGarrisonStrengthPerWalledCenter = 0f)
@@ -96,7 +59,7 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 		float num = 0f;
 		if (garrisonParty != null)
 		{
-			num = garrisonParty.Party.TotalStrength;
+			num = garrisonParty.Party.CalculateCurrentStrength();
 			float num2 = 100f;
 			if (garrisonParty.HasLimitedWage())
 			{
@@ -110,9 +73,9 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 				num2 *= num3;
 				num2 *= (settlement.IsTown ? 2f : 1f);
 			}
-			int limitedPartySize = mobileParty.LimitedPartySize;
+			int partySizeLimit = mobileParty.Party.PartySizeLimit;
 			int numberOfAllMembers = mobileParty.Party.NumberOfAllMembers;
-			float num4 = (float)limitedPartySize / (float)numberOfAllMembers;
+			float num4 = (float)partySizeLimit / (float)numberOfAllMembers;
 			float num5 = MathF.Min(11f, num4 * MathF.Sqrt(num4)) - 1f;
 			float num6 = MathF.Pow(num / num2, 1.5f);
 			float num7 = ((mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero) ? 2f : 1f);
@@ -138,7 +101,7 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 		float num = 0f;
 		if (garrisonParty != null)
 		{
-			num = garrisonParty.Party.TotalStrength;
+			num = garrisonParty.Party.CalculateCurrentStrength();
 		}
 		float num2 = 100f;
 		if (garrisonParty != null && garrisonParty.HasLimitedWage())
@@ -159,14 +122,14 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 		{
 			int numberOfRegularMembers = mobileParty.Party.NumberOfRegularMembers;
 			float num6 = 1f + (float)mobileParty.Party.MemberRoster.TotalWoundedRegulars / (float)mobileParty.Party.NumberOfRegularMembers;
-			int limitedPartySize = mobileParty.LimitedPartySize;
-			float num7 = MathF.Pow(MathF.Min(2f, (float)numberOfRegularMembers / (float)limitedPartySize), 1.2f) * 0.75f;
+			int partySizeLimit = mobileParty.Party.PartySizeLimit;
+			float num7 = MathF.Pow(MathF.Min(2f, (float)numberOfRegularMembers / (float)partySizeLimit), 1.2f) * 0.75f;
 			float num8 = (1f - num / num2) * (1f - num / num2);
 			float num9 = 1f;
 			if (mobileParty.Army != null)
 			{
 				num8 = MathF.Min(num8, 0.7f);
-				num9 = 0.3f + mobileParty.Army.TotalStrength / mobileParty.Party.TotalStrength * 0.025f;
+				num9 = 0.3f + mobileParty.Army.CalculateCurrentStrength() / mobileParty.Party.CalculateCurrentStrength() * 0.025f;
 			}
 			float num10 = (settlement.Town.IsOwnerUnassigned ? 0.75f : 0.5f);
 			if (settlement.OwnerClan == mobileParty.LeaderHero.Clan || settlement.OwnerClan == mobileParty.Party.Owner.MapFaction.Leader.Clan)
@@ -180,5 +143,19 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 			}
 		}
 		return 0;
+	}
+
+	public override float GetMaximumDailyRepairAmount(Settlement settlement)
+	{
+		if (settlement.IsUnderSiege || settlement.SettlementWallSectionHitPointsRatioList.All((float ratio) => ratio >= 1f))
+		{
+			return 0f;
+		}
+		ExplainedNumber result = new ExplainedNumber(settlement.MaxHitPointsOfOneWallSection * (float)settlement.WallSectionCount * 0.02f);
+		if (settlement.IsFortification)
+		{
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.WallRepairSpeed, ref result);
+		}
+		return result.ResultNumber;
 	}
 }

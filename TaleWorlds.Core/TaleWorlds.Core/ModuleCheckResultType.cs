@@ -2,7 +2,7 @@ namespace TaleWorlds.Core;
 
 public enum ModuleCheckResultType
 {
-	ModuleRemoved,
-	ModuleAdded,
+	ModuleRemovedFromGame,
+	ModuleAddedToGame,
 	VersionMismatch
 }

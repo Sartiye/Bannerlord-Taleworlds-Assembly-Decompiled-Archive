@@ -35,12 +35,12 @@ public class EmpireConspiracyBeginsSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { Empire.Banner };
+		return new Banner[1] { Empire.Banner };
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		for (int i = 0; i < 8; i++)
@@ -53,7 +53,7 @@ public class EmpireConspiracyBeginsSceneNotificationItem : SceneNotificationData
 			uint customColor2 = _audienceColors[MBRandom.RandomInt(_audienceColors.Length)];
 			list.Add(new SceneNotificationCharacter(facePropertiesFromAudienceIndex, equipment, bodyProperties, useCivilianEquipment: false, customColor, customColor2));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public EmpireConspiracyBeginsSceneNotificationItem(Hero playerHero, Kingdom empire, bool isConspiracyAgainstEmpire)

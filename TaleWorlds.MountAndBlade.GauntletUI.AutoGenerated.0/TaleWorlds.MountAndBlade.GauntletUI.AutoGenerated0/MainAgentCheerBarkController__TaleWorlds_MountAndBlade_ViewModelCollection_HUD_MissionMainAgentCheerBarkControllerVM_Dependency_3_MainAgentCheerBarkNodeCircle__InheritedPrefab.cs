@@ -4,8 +4,8 @@ using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.ExtraWidgets;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.Radial;
-using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.Lobby.Armory;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
@@ -19,7 +19,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private StringBasedVisibilityWidget _widget_0_0;
 
-	private TauntVisualBrushWidget _widget_0_0_0;
+	private IconBrushWidget _widget_0_0_0;
 
 	private StringBasedVisibilityWidget _widget_0_1;
 
@@ -38,7 +38,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleBackground()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 84f,
@@ -69,7 +69,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleGlow()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 125f,
@@ -105,7 +105,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new StringBasedVisibilityWidget(base.Context);
 		_widget_0.AddChild(_widget_0_0);
-		_widget_0_0_0 = new TauntVisualBrushWidget(base.Context);
+		_widget_0_0_0 = new IconBrushWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
 		_widget_0_1 = new StringBasedVisibilityWidget(base.Context);
 		_widget_0.AddChild(_widget_0_1);
@@ -146,7 +146,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.Brush = base.Context.GetBrush("MPLobby.Armory.Cosmetic.Taunt");
-		_widget_0_0_0.TauntIconsBrush = base.Context.GetBrush("MPLobby.Armory.Cosmetic.Taunt.Icons");
+		_widget_0_0_0.IconBrush = base.Context.GetBrush("MPLobby.Armory.Cosmetic.Taunt.Icons");
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.FirstString = "";
@@ -161,7 +161,6 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 		_widget_0_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_2.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_2.PositionYOffset = -30f;
-		_widget_0_2.HideIfNone = false;
 	}
 
 	public virtual void DestroyDataSource()
@@ -419,9 +418,9 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private void HandleWidgetPropertyChangeOf_widget_0_0_0(string propertyName)
 	{
-		if (propertyName == "TauntID")
+		if (propertyName == "IconID")
 		{
-			_datasource_Root.TauntVisualName = _widget_0_0_0.TauntID;
+			_datasource_Root.TauntVisualName = _widget_0_0_0.IconID;
 		}
 	}
 
@@ -644,7 +643,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 			break;
 		case "TauntVisualName":
 			_widget_0_0.SecondString = _datasource_Root.TauntVisualName;
-			_widget_0_0_0.TauntID = _datasource_Root.TauntVisualName;
+			_widget_0_0_0.IconID = _datasource_Root.TauntVisualName;
 			_widget_0_1.SecondString = _datasource_Root.TauntVisualName;
 			break;
 		case "CheerNameText":
@@ -823,7 +822,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 			_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
-			_widget_0_0_0.TauntID = _datasource_Root.TauntVisualName;
+			_widget_0_0_0.IconID = _datasource_Root.TauntVisualName;
 			_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;

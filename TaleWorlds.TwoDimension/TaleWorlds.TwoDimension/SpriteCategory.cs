@@ -21,8 +21,6 @@ public class SpriteCategory
 
 	public string Name { get; private set; }
 
-	public SpriteData SpriteData { get; private set; }
-
 	public List<SpritePart> SpriteParts { get; private set; }
 
 	public List<SpritePart> SortedSpritePartList { get; private set; }
@@ -33,12 +31,13 @@ public class SpriteCategory
 
 	public bool IsLoaded { get; private set; }
 
+	public bool IsPartiallyLoaded { get; private set; }
+
 	public Vec2i[] SheetSizes { get; set; }
 
-	public SpriteCategory(string name, SpriteData spriteData, int spriteSheetCount, bool alwaysLoad = false)
+	public SpriteCategory(string name, int spriteSheetCount, bool alwaysLoad = false)
 	{
 		Name = name;
-		SpriteData = spriteData;
 		SpriteSheetCount = spriteSheetCount;
 		AlwaysLoad = alwaysLoad;
 		SpriteSheets = new List<Texture>();
@@ -53,6 +52,7 @@ public class SpriteCategory
 		if (!IsLoaded)
 		{
 			IsLoaded = true;
+			IsPartiallyLoaded = false;
 			for (int i = 1; i <= SpriteSheetCount; i++)
 			{
 				Texture item = resourceContext.LoadTexture(resourceDepot, "SpriteSheets\\" + Name + "\\" + Name + "_" + i);
@@ -71,6 +71,39 @@ public class SpriteCategory
 			});
 			SpriteSheets.Clear();
 			IsLoaded = false;
+			IsPartiallyLoaded = false;
+		}
+	}
+
+	public void Reload(ITwoDimensionResourceContext resourceContext, ResourceDepot resourceDepot, SpriteCategory newCategoryInfo)
+	{
+		if (!IsLoaded)
+		{
+			return;
+		}
+		SpriteParts = newCategoryInfo.SpriteParts;
+		SheetSizes = newCategoryInfo.SheetSizes;
+		SortList();
+		if (IsPartiallyLoaded)
+		{
+			List<int> list = new List<int>();
+			for (int i = 0; i < SpriteSheetCount; i++)
+			{
+				if (SpriteSheets[i] != null)
+				{
+					list.Add(i + 1);
+					PartialUnloadAtIndex(i + 1);
+				}
+			}
+			for (int j = 0; j < list.Count; j++)
+			{
+				PartialLoadAtIndex(resourceContext, resourceDepot, list[j]);
+			}
+		}
+		else
+		{
+			Unload();
+			Load(resourceContext, resourceDepot);
 		}
 	}
 
@@ -79,6 +112,7 @@ public class SpriteCategory
 		if (!IsLoaded)
 		{
 			IsLoaded = true;
+			IsPartiallyLoaded = true;
 			for (int i = 1; i <= SpriteSheetCount; i++)
 			{
 				SpriteSheets.Add(null);
@@ -90,12 +124,13 @@ public class SpriteCategory
 	{
 		if (IsLoaded)
 		{
-			for (int i = 1; i < SpriteSheetCount; i++)
+			for (int i = 1; i <= SpriteSheetCount; i++)
 			{
 				PartialUnloadAtIndex(i);
 			}
 			SpriteSheets.Clear();
 			IsLoaded = false;
+			IsPartiallyLoaded = false;
 		}
 	}
 
@@ -129,7 +164,7 @@ public class SpriteCategory
 		for (int i = 0; i < SpriteSheets.Count; i++)
 		{
 			Texture texture = SpriteSheets[i];
-			if (texture != null && !texture.IsLoaded())
+			if (texture == null || !texture.IsLoaded())
 			{
 				return false;
 			}

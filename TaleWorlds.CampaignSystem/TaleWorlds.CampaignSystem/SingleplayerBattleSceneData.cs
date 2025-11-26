@@ -15,12 +15,15 @@ public struct SingleplayerBattleSceneData
 
 	public List<int> MapIndices { get; private set; }
 
-	public SingleplayerBattleSceneData(string sceneID, TerrainType terrain, List<TerrainType> terrainTypes, ForestDensity forestDensity, List<int> mapIndices)
+	public bool IsNaval { get; private set; }
+
+	public SingleplayerBattleSceneData(string sceneID, TerrainType terrain, List<TerrainType> terrainTypes, ForestDensity forestDensity, List<int> mapIndices, bool isNaval)
 	{
 		SceneID = sceneID;
 		Terrain = terrain;
 		TerrainTypes = terrainTypes;
 		ForestDensity = forestDensity;
 		MapIndices = mapIndices;
+		IsNaval = isNaval;
 	}
 }

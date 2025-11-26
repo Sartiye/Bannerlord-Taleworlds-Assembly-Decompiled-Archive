@@ -64,12 +64,12 @@ public class MovementPath
 		float num = float.MaxValue;
 		for (int i = 0; i < LineCount; i++)
 		{
-			Vec2 closestPointInLineSegmentToPoint = MBMath.GetClosestPointInLineSegmentToPoint(point, _navigationData.Points[i], _navigationData.Points[i + 1]);
-			float num2 = closestPointInLineSegmentToPoint.DistanceSquared(point);
+			Vec2 closestPointOnLineSegmentToPoint = MBMath.GetClosestPointOnLineSegmentToPoint(in _navigationData.Points[i], in _navigationData.Points[i + 1], in point);
+			float num2 = closestPointOnLineSegmentToPoint.DistanceSquared(point);
 			if (num2 < num)
 			{
 				num = num2;
-				closest = closestPointInLineSegmentToPoint;
+				closest = closestPointOnLineSegmentToPoint;
 				lineIndex = i;
 			}
 		}

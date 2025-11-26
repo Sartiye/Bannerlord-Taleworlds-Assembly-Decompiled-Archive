@@ -38,19 +38,19 @@ public class BehaviorSkirmish : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		WorldPosition position = base.Formation.QuerySystem.MedianPosition;
+		WorldPosition position = base.Formation.CachedMedianPosition;
 		bool flag = false;
 		Vec2 vec;
 		if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation == null)
 		{
 			vec = base.Formation.Direction;
-			position.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			position.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
-			vec = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition;
+			vec = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition;
 			float num = vec.Normalize();
-			float num2 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.CurrentVelocity.DotProduct(vec);
+			float num2 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedCurrentVelocity.DotProduct(vec);
 			float num3 = MBMath.Lerp(5f, 10f, (MBMath.ClampFloat(base.Formation.CountOfUnits, 10f, 60f) - 10f) * 0.02f) * num2;
 			num += num3;
 			float num4 = MBMath.Lerp(0.1f, 0.33f, 1f - MBMath.ClampFloat(base.Formation.CountOfUnits, 1f, 50f) * 0.02f) * base.Formation.QuerySystem.RangedUnitRatio;
@@ -119,29 +119,29 @@ public class BehaviorSkirmish : BehaviorComponent
 			switch (_behaviorState)
 			{
 			case BehaviorState.Shooting:
-				position.SetVec2(base.Formation.QuerySystem.AveragePosition + base.Formation.QuerySystem.CurrentVelocity.Normalized() * (base.Formation.Depth * 0.5f));
+				position.SetVec2(base.Formation.CachedAveragePosition + base.Formation.CachedCurrentVelocity.Normalized() * (base.Formation.Depth * 0.5f));
 				break;
 			case BehaviorState.Approaching:
 			{
 				bool flag2 = false;
 				if (_alternatePositionUsed)
 				{
-					float num5 = base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition);
-					Vec2 v = (base.Formation.QuerySystem.AveragePosition + base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition) * 0.5f;
+					float num5 = base.Formation.CachedAveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition);
+					Vec2 v = (base.Formation.CachedAveragePosition + base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition) * 0.5f;
 					bool flag3 = (double)_alternatePosition.AsVec2.DistanceSquared(v) > (double)num5 * 0.0625;
 					if (!flag3)
 					{
-						int faceGroupId = -1;
+						Scene scene = Mission.Current.Scene;
 						Vec3 position2 = _alternatePosition.GetNavMeshVec3();
-						Mission.Current.Scene.GetNavigationMeshForPosition(ref position2, out faceGroupId);
-						Agent medianAgent = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.AveragePosition);
+						scene.GetNavigationMeshForPosition(in position2, out var faceGroupId, 1.5f, excludeDynamicNavigationMeshes: false);
+						Agent medianAgent = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.CachedAveragePosition);
 						flag3 = (medianAgent != null && medianAgent.GetCurrentNavigationFaceId() % 10 == 1) != (faceGroupId % 10 == 1);
 					}
 					if (flag3)
 					{
-						Agent medianAgent2 = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.AveragePosition);
+						Agent medianAgent2 = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.CachedAveragePosition);
 						bool num6 = medianAgent2 != null && medianAgent2.GetCurrentNavigationFaceId() % 10 == 1;
-						Agent medianAgent3 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition);
+						Agent medianAgent3 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition);
 						if (num6 == (medianAgent3 != null && medianAgent3.GetCurrentNavigationFaceId() % 10 == 1))
 						{
 							_alternatePositionUsed = false;
@@ -155,9 +155,9 @@ public class BehaviorSkirmish : BehaviorComponent
 				}
 				else if (Mission.Current.MissionTeamAIType == Mission.MissionTeamAITypeEnum.Siege || Mission.Current.MissionTeamAIType == Mission.MissionTeamAITypeEnum.SallyOut)
 				{
-					Agent medianAgent4 = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.AveragePosition);
+					Agent medianAgent4 = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.CachedAveragePosition);
 					bool num7 = medianAgent4 != null && medianAgent4.GetCurrentNavigationFaceId() % 10 == 1;
-					Agent medianAgent5 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition);
+					Agent medianAgent5 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition);
 					if (num7 != (medianAgent5 != null && medianAgent5.GetCurrentNavigationFaceId() % 10 == 1))
 					{
 						_alternatePositionUsed = true;
@@ -168,19 +168,19 @@ public class BehaviorSkirmish : BehaviorComponent
 				{
 					if (flag2)
 					{
-						_alternatePosition = new WorldPosition(Mission.Current.Scene, new Vec3((base.Formation.QuerySystem.AveragePosition + base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition) * 0.5f, base.Formation.QuerySystem.MedianPosition.GetNavMeshZ()));
+						_alternatePosition = new WorldPosition(Mission.Current.Scene, new Vec3((base.Formation.CachedAveragePosition + base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition) * 0.5f, base.Formation.CachedMedianPosition.GetNavMeshZ()));
 					}
 					position = _alternatePosition;
 				}
 				else
 				{
-					position = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition;
-					position.SetVec2(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition);
+					position = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition;
+					position.SetVec2(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition);
 				}
 				break;
 			}
 			case BehaviorState.PullingBack:
-				position = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition;
+				position = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition;
 				position.SetVec2(position.AsVec2 - vec * (base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Depth * 0.5f - 10f));
 				break;
 			}
@@ -199,7 +199,7 @@ public class BehaviorSkirmish : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	protected override void OnBehaviorActivatedAux()
@@ -211,10 +211,10 @@ public class BehaviorSkirmish : BehaviorComponent
 		_pullBackTimer.Reset(0f, 0f);
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

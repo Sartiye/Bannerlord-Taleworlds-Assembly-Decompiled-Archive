@@ -11,6 +11,8 @@ namespace TaleWorlds.MountAndBlade.View.Tableaus;
 
 public class ItemTableau
 {
+	private static int _tableauIndex;
+
 	private Scene _tableauScene;
 
 	private GameEntity _itemTableauEntity;
@@ -122,12 +124,12 @@ public class ItemTableau
 		_cameraRatio = (float)_tableauSizeX / (float)_tableauSizeY;
 		View?.SetEnable(value: false);
 		View?.AddClearTask(clearOnlySceneview: true);
-		Texture?.ReleaseNextFrame();
+		Texture?.Release();
 		if (!isSizeValid && _isSizeValid)
 		{
 			Recalculate();
 		}
-		Texture = TableauView.AddTableau("ItemTableau", TableauMaterialTabInventoryItemTooltipOnRender, _tableauScene, _tableauSizeX, _tableauSizeY);
+		Texture = TableauView.AddTableau($"ItemTableau_{_tableauIndex++}", TableauMaterialTabInventoryItemTooltipOnRender, _tableauScene, _tableauSizeX, _tableauSizeY);
 	}
 
 	public void OnFinalize()
@@ -136,6 +138,7 @@ public class ItemTableau
 		_camera?.ReleaseCameraEntity();
 		_camera = null;
 		View?.AddClearTask();
+		_tableauScene?.ManualInvalidate();
 		_tableauScene = null;
 		Texture = null;
 		_initialized = false;
@@ -224,10 +227,15 @@ public class ItemTableau
 				_itemTableauFrame.rotation.Orthonormalize();
 				_itemTableauFrame.rotation.ApplyScaleLocal(length * num3);
 				_itemTableauEntity.SetFrame(ref _itemTableauFrame);
-				if (globalBoxMax.NearlyEquals(_itemTableauEntity.GlobalBoxMax) && globalBoxMin.NearlyEquals(_itemTableauEntity.GlobalBoxMin))
+				Vec3 v = _itemTableauEntity.GlobalBoxMax;
+				if (globalBoxMax.NearlyEquals(in v))
 				{
-					_itemTableauEntity.SetBoundingboxDirty();
-					_itemTableauEntity.RecomputeBoundingBox();
+					Vec3 v2 = _itemTableauEntity.GlobalBoxMin;
+					if (globalBoxMin.NearlyEquals(in v2))
+					{
+						_itemTableauEntity.SetBoundingboxDirty();
+						_itemTableauEntity.RecomputeBoundingBox();
+					}
 				}
 				_itemTableauFrame.origin += (globalBoxMax + globalBoxMin - _itemTableauEntity.GlobalBoxMax - _itemTableauEntity.GlobalBoxMin) * 0.5f;
 				_itemTableauEntity.SetFrame(ref _itemTableauFrame);
@@ -340,19 +348,21 @@ public class ItemTableau
 			_panRotation += mouseMoveX * 0.004363323f;
 			_tiltRotation += mouseMoveY * 0.004363323f;
 			_tiltRotation = TaleWorlds.Library.MathF.Clamp(_tiltRotation, System.MathF.PI * -19f / 20f, -System.MathF.PI / 20f);
-			MatrixFrame frame = _itemTableauEntity.GetFrame();
+			MatrixFrame m = _itemTableauEntity.GetFrame();
 			Vec3 vec = (_itemTableauEntity.GetBoundingBoxMax() + _itemTableauEntity.GetBoundingBoxMin()) * 0.5f;
-			MatrixFrame identity = MatrixFrame.Identity;
-			identity.origin = vec;
-			MatrixFrame identity2 = MatrixFrame.Identity;
-			identity2.origin = -vec;
-			frame *= identity;
-			frame.rotation = Mat3.Identity;
-			frame.rotation.ApplyScaleLocal(_initialFrame.rotation.GetScaleVector());
-			frame.rotation.RotateAboutSide(_tiltRotation);
-			frame.rotation.RotateAboutUp(_panRotation);
-			frame *= identity2;
-			_itemTableauEntity.SetFrame(ref frame);
+			MatrixFrame m2 = MatrixFrame.Identity;
+			m2.origin = vec;
+			MatrixFrame m3 = MatrixFrame.Identity;
+			m3.origin = -vec;
+			m *= m2;
+			m.rotation = Mat3.Identity;
+			ref Mat3 rotation = ref m.rotation;
+			Vec3 scaleAmountXYZ = _initialFrame.rotation.GetScaleVector();
+			rotation.ApplyScaleLocal(in scaleAmountXYZ);
+			m.rotation.RotateAboutSide(_tiltRotation);
+			m.rotation.RotateAboutUp(_panRotation);
+			m *= m3;
+			_itemTableauEntity.SetFrame(ref m);
 		}
 	}
 
@@ -400,13 +410,13 @@ public class ItemTableau
 			MatrixFrame placementFrame = _itemRosterElement.GetItemFrameForItemTooltip();
 			placementFrame.origin.z += 2.5f;
 			MetaMesh itemMeshForInventory = _itemRosterElement.GetItemMeshForInventory();
-			Banner banner = new Banner(_bannerCode);
 			uint color = 0u;
 			uint color2 = 0u;
 			if (!string.IsNullOrEmpty(_bannerCode))
 			{
+				Banner banner = new Banner(_bannerCode);
 				color = banner.GetPrimaryColor();
-				if (banner.BannerDataList.Count > 0 && BannerManager.ColorPalette.TryGetValue(banner.BannerDataList[1].ColorId, out var value))
+				if (banner.BannerDataList.Count > 0 && BannerManager.Instance.ReadOnlyColorPalette.TryGetValue(banner.BannerDataList[1].ColorId, out var value))
 				{
 					color2 = value.Color;
 				}
@@ -419,7 +429,7 @@ public class ItemTableau
 					AnimationSystemData animationSystemData = Game.Current.DefaultMonster.FillAnimationSystemData(MBActionSet.GetActionSet(Game.Current.DefaultMonster.ActionSetCode), 1f, hasClippingPlane: false);
 					_itemTableauEntity.CreateSkeletonWithActionSet(ref animationSystemData);
 					_itemTableauEntity.SetFrame(ref placementFrame);
-					_itemTableauEntity.Skeleton.SetAgentActionChannel(0, ActionIndexCache.Create("act_tableau_hand_armor_pose"));
+					_itemTableauEntity.Skeleton.SetAgentActionChannel(0, in ActionIndexCache.act_tableau_hand_armor_pose);
 					_itemTableauEntity.AddMultiMeshToSkeleton(itemMeshForInventory);
 					_itemTableauEntity.Skeleton.TickActionChannels();
 					_itemTableauEntity.Skeleton.TickAnimationsAndForceUpdate(0.01f, placementFrame, tickAnimsForChildren: true);
@@ -431,7 +441,7 @@ public class ItemTableau
 					_itemTableauEntity = GameEntity.CreateEmpty(_tableauScene);
 					AnimationSystemData animationSystemData2 = monster.FillAnimationSystemData(MBGlobals.GetActionSet(horseComponent.Monster.ActionSetCode), 1f, hasClippingPlane: false);
 					_itemTableauEntity.CreateSkeletonWithActionSet(ref animationSystemData2);
-					_itemTableauEntity.Skeleton.SetAgentActionChannel(0, ActionIndexCache.Create("act_inventory_idle_start"));
+					_itemTableauEntity.Skeleton.SetAgentActionChannel(0, in ActionIndexCache.act_inventory_idle_start);
 					_itemTableauEntity.SetFrame(ref placementFrame);
 					_itemTableauEntity.AddMultiMeshToSkeleton(itemMeshForInventory);
 				}
@@ -449,19 +459,24 @@ public class ItemTableau
 					switch (itemType)
 					{
 					case ItemObject.ItemTypeEnum.Shield:
-						if (_itemRosterElement.EquipmentElement.Item.IsUsingTableau && !banner.BannerDataList.IsEmpty())
+						if (!string.IsNullOrEmpty(_bannerCode))
 						{
-							itemMeshForInventory.SetMaterial(_itemRosterElement.EquipmentElement.Item.GetTableauMaterial(banner));
+							Banner banner3 = new Banner(_bannerCode);
+							if (_itemRosterElement.EquipmentElement.Item.IsUsingTableau && !banner3.IsBannerDataListEmpty())
+							{
+								itemMeshForInventory.SetMaterial(_itemRosterElement.EquipmentElement.Item.GetTableauMaterial(banner3));
+							}
 						}
 						_itemTableauEntity = _tableauScene.AddItemEntity(ref placementFrame, itemMeshForInventory);
 						break;
 					case ItemObject.ItemTypeEnum.Banner:
-						if (_itemRosterElement.EquipmentElement.Item.IsUsingTableau && !banner.BannerDataList.IsEmpty())
-						{
-							itemMeshForInventory.SetMaterial(_itemRosterElement.EquipmentElement.Item.GetTableauMaterial(banner));
-						}
 						if (!string.IsNullOrEmpty(_bannerCode))
 						{
+							Banner banner2 = new Banner(_bannerCode);
+							if (_itemRosterElement.EquipmentElement.Item.IsUsingTableau && !banner2.IsBannerDataListEmpty())
+							{
+								itemMeshForInventory.SetMaterial(_itemRosterElement.EquipmentElement.Item.GetTableauMaterial(banner2));
+							}
 							for (int i = 0; i < itemMeshForInventory.MeshCount; i++)
 							{
 								itemMeshForInventory.GetMeshAtIndex(i).Color = color;
@@ -608,7 +623,7 @@ public class ItemTableau
 
 	private void MakeCameraLookMidPoint()
 	{
-		Vec3 vec = _camera.Frame.rotation.TransformToParent(_curCamDisplacement);
+		Vec3 vec = _camera.Frame.rotation.TransformToParent(in _curCamDisplacement);
 		Vec3 vec2 = _midPoint + vec;
 		float num = _midPoint.Length * 0.5263158f;
 		Vec3 position = vec2 - _camera.Direction * num;

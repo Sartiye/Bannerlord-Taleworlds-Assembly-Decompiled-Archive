@@ -14,4 +14,9 @@ internal class MBGUIDBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return new MBGUID(reader.ReadUInt());
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 4;
+	}
 }

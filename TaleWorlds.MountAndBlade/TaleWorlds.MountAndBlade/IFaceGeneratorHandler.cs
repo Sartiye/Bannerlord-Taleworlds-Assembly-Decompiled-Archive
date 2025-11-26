@@ -16,7 +16,9 @@ public interface IFaceGeneratorHandler
 
 	void RefreshCharacterEntity();
 
-	void MakeVoice(int voiceIndex, float pitch);
+	void MakeVoice();
+
+	void MakeVoiceDelayed();
 
 	void SetFacialAnimation(string faceAnimation, bool loop);
 

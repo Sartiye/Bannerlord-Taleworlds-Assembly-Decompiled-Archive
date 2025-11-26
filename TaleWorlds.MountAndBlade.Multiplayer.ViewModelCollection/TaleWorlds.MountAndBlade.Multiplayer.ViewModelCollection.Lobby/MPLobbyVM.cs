@@ -55,12 +55,6 @@ public class MPLobbyVM : ViewModel
 
 	private LobbyState _lobbyState;
 
-	private Action _onForceCloseFacegen;
-
-	private Action<KeyOptionVM> _onKeybindRequest;
-
-	private readonly Action<bool> _setNavigationRestriction;
-
 	private const float PlayerCountInQueueTimerInterval = 5f;
 
 	private float _playerCountInQueueTimer;
@@ -84,6 +78,14 @@ public class MPLobbyVM : ViewModel
 	private bool _isStartingGameFind;
 
 	private bool? _cachedHasUserGeneratedContentPrivilege;
+
+	private readonly Action _onForceCloseFacegen;
+
+	private readonly Action _onLogout;
+
+	private readonly Action<KeyOptionVM> _onKeybindRequest;
+
+	private readonly Action<bool> _setNavigationRestriction;
 
 	private const string _defaultSound = "event:/ui/default";
 
@@ -935,11 +937,12 @@ public class MPLobbyVM : ViewModel
 		}
 	}
 
-	public MPLobbyVM(LobbyState lobbyState, Action<BasicCharacterObject> onOpenFacegen, Action onForceCloseFacegen, Action<KeyOptionVM> onKeybindRequest, Func<string> getContinueKeyText, Action<bool> setNavigationRestriction)
+	public MPLobbyVM(LobbyState lobbyState, Action<BasicCharacterObject> onOpenFacegen, Action onForceCloseFacegen, Action onLogout, Action<KeyOptionVM> onKeybindRequest, Func<string> getContinueKeyText, Action<bool> setNavigationRestriction)
 	{
 		CurrentPage = LobbyPage.NotAssigned;
-		_onKeybindRequest = onKeybindRequest;
 		_onForceCloseFacegen = onForceCloseFacegen;
+		_onLogout = onLogout;
+		_onKeybindRequest = onKeybindRequest;
 		_setNavigationRestriction = setNavigationRestriction;
 		_lobbyState = lobbyState;
 		_lobbyClient = _lobbyState.LobbyClient;
@@ -1022,6 +1025,7 @@ public class MPLobbyVM : ViewModel
 		QueryPopup.RefreshValues();
 		AfterBattlePopup.RefreshValues();
 		PartyInvitationPopup.RefreshValues();
+		PartyJoinRequestPopup.RefreshValues();
 		PartyPlayerSuggestionPopup.RefreshValues();
 		Clan.RefreshValues();
 		ClanCreationPopup.RefreshValues();
@@ -1041,6 +1045,7 @@ public class MPLobbyVM : ViewModel
 		RankLeaderboard.RefreshValues();
 		BrightnessPopup.RefreshValues();
 		ExposurePopup.RefreshValues();
+		RefreshPlayerData(NetworkMain.GameClient.PlayerData);
 	}
 
 	private void OnUserGeneratedContentPrivilegeUpdated(bool hasPrivilege)
@@ -1109,6 +1114,7 @@ public class MPLobbyVM : ViewModel
 		ChangeSigilPopup.OnFinalize();
 		ClanCreationPopup.OnFinalize();
 		BadgeSelectionPopup.OnFinalize();
+		BadgeProgressionInformation.OnFinalize();
 		CosmeticObtainPopup.OnFinalize();
 		InformationManager.ClearAllMessages();
 		Login.OnFinalize();
@@ -1181,6 +1187,8 @@ public class MPLobbyVM : ViewModel
 		Friends.OnTick(dt);
 		Armory.OnTick(dt);
 		Home.OnTick(dt);
+		PartyInvitationPopup.OnTick(dt);
+		PartyJoinRequestPopup.OnTick(dt);
 		UpdateBlockerState();
 		if (IsSearchingGame)
 		{
@@ -1238,8 +1246,11 @@ public class MPLobbyVM : ViewModel
 	{
 		if (Login.IsEnabled)
 		{
-			SoundEvent.PlaySound2D("event:/ui/default");
-			Login.ExecuteLogin();
+			if (Login.CanTryLogin)
+			{
+				SoundEvent.PlaySound2D("event:/ui/default");
+				Login.ExecuteLogin();
+			}
 		}
 		else if (Options.IsEnabled)
 		{
@@ -1422,7 +1433,7 @@ public class MPLobbyVM : ViewModel
 
 	public bool HasNoPopupOpen()
 	{
-		if (!Clan.IsEnabled && !Clan.ClanOverview.ChangeFactionPopup.IsSelected && !Clan.ClanOverview.ChangeSigilPopup.IsSelected && !Clan.ClanOverview.SendAnnouncementPopup.IsSelected && !Clan.ClanOverview.SetClanInformationPopup.IsSelected && !PartyInvitationPopup.IsEnabled && !PartyPlayerSuggestionPopup.IsEnabled && !ClanInvitationPopup.IsEnabled && !ClanMatchmakingRequestPopup.IsEnabled && !BannerlordIDChangePopup.IsSelected && !BannerlordIDAddFriendPopup.IsSelected && !CosmeticObtainPopup.IsEnabled && !AfterBattlePopup.IsEnabled && !ClanCreationPopup.IsEnabled && !ClanCreationInformationPopup.IsEnabled && !ClanInviteFriendsPopup.IsEnabled && !ClanLeaderboardPopup.IsEnabled && !BadgeProgressionInformation.IsEnabled && !BadgeSelectionPopup.IsEnabled && !ChangeSigilPopup.IsEnabled && !RecentGames.IsEnabled && !PlayerProfile.IsEnabled && !RankProgressInformation.IsEnabled && !RankLeaderboard.IsEnabled && !ExposurePopup.Visible && !BrightnessPopup.Visible)
+		if (!Clan.IsEnabled && !Clan.ClanOverview.ChangeFactionPopup.IsSelected && !Clan.ClanOverview.ChangeSigilPopup.IsSelected && !Clan.ClanOverview.SendAnnouncementPopup.IsSelected && !Clan.ClanOverview.SetClanInformationPopup.IsSelected && !PartyInvitationPopup.IsEnabled && !PartyJoinRequestPopup.IsEnabled && !PartyPlayerSuggestionPopup.IsEnabled && !ClanInvitationPopup.IsEnabled && !ClanMatchmakingRequestPopup.IsEnabled && !BannerlordIDChangePopup.IsSelected && !BannerlordIDAddFriendPopup.IsSelected && !CosmeticObtainPopup.IsEnabled && !AfterBattlePopup.IsEnabled && !ClanCreationPopup.IsEnabled && !ClanCreationInformationPopup.IsEnabled && !ClanInviteFriendsPopup.IsEnabled && !ClanLeaderboardPopup.IsEnabled && !BadgeProgressionInformation.IsEnabled && !BadgeSelectionPopup.IsEnabled && !ChangeSigilPopup.IsEnabled && !RecentGames.IsEnabled && !PlayerProfile.IsEnabled && !RankProgressInformation.IsEnabled && !RankLeaderboard.IsEnabled && !ExposurePopup.Visible && !BrightnessPopup.Visible)
 		{
 			return !QueryPopup.IsEnabled;
 		}
@@ -1437,6 +1448,7 @@ public class MPLobbyVM : ViewModel
 		Clan.ClanOverview.SendAnnouncementPopup.ExecuteClosePopup();
 		Clan.ClanOverview.SetClanInformationPopup.ExecuteClosePopup();
 		PartyInvitationPopup.Close();
+		PartyJoinRequestPopup.Close();
 		PartyPlayerSuggestionPopup.Close();
 		ClanInvitationPopup.Close();
 		ClanMatchmakingRequestPopup.Close();
@@ -1493,6 +1505,7 @@ public class MPLobbyVM : ViewModel
 	{
 		_isDisconnecting = true;
 		_setNavigationRestriction?.Invoke(obj: true);
+		_onLogout?.Invoke();
 		NetworkMain.GameClient.Logout(null);
 	}
 
@@ -1519,6 +1532,7 @@ public class MPLobbyVM : ViewModel
 		else
 		{
 			PartyInvitationPopup.Close();
+			PartyJoinRequestPopup.Close();
 			ClanInvitationPopup.Close();
 		}
 		OnSearchBattleCanceled();

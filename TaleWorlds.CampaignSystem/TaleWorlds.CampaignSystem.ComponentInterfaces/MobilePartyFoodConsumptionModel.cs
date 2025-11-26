@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MobilePartyFoodConsumptionModel : GameModel
+public abstract class MobilePartyFoodConsumptionModel : MBGameModel<MobilePartyFoodConsumptionModel>
 {
 	public abstract int NumberOfMenOnMapToEatOneFood { get; }
 

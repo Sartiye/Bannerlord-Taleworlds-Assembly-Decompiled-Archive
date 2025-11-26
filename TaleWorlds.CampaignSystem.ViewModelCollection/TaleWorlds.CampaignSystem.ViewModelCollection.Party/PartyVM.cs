@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
-using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Party.PartyTroopManagerPopUp;
@@ -22,7 +21,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Party;
 
-public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHandler, IPartyScreenTroopHandler
+public class PartyVM : ViewModel
 {
 	private class TroopVMComparer : IComparer<PartyCharacterVM>
 	{
@@ -39,7 +38,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 	}
 
-	private readonly PartyScreenMode _currentMode;
+	private readonly PartyScreenHelper.PartyScreenMode _currentMode;
 
 	private readonly IViewDataTracker _viewDataTracker;
 
@@ -217,7 +216,15 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	private bool _isUpgradePopUpDisabled;
 
+	private bool _isAnyPopUpOpen;
+
 	private bool _isRecruitPopUpDisabled;
+
+	private bool _scrollToCharacter;
+
+	private bool _isScrollTargetPrisoner;
+
+	private string _scrollCharacterId;
 
 	private InputKeyItemVM _resetInputKey;
 
@@ -257,19 +264,6 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	public PartyScreenLogic PartyScreenLogic { get; private set; }
 
-	public bool IsAnyPopUpOpen
-	{
-		get
-		{
-			PartyUpgradeTroopVM upgradePopUp = UpgradePopUp;
-			if (upgradePopUp == null || !upgradePopUp.IsOpen)
-			{
-				return RecruitPopUp?.IsOpen ?? false;
-			}
-			return true;
-		}
-	}
-
 	public bool CanRightPartyTakeMoreTroops => PartyScreenLogic.CurrentData.RightMemberRoster.TotalManCount < PartyScreenLogic.RightPartyMembersSizeLimit;
 
 	public bool CanRightPartyTakeMorePrisoners => PartyScreenLogic.CurrentData.RightPrisonerRoster.TotalManCount < PartyScreenLogic.RightPartyPrisonersSizeLimit;
@@ -283,7 +277,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 		set
 		{
-			if (value != null && value != _currentCharacter)
+			if (value != null && _currentCharacter != value)
 			{
 				_currentCharacter = value;
 				RefreshCurrentCharacterInformation();
@@ -1673,6 +1667,74 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	}
 
 	[DataSourceProperty]
+	public bool IsAnyPopUpOpen
+	{
+		get
+		{
+			return _isAnyPopUpOpen;
+		}
+		set
+		{
+			if (value != _isAnyPopUpOpen)
+			{
+				_isAnyPopUpOpen = value;
+				OnPropertyChangedWithValue(value, "IsAnyPopUpOpen");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ScrollToCharacter
+	{
+		get
+		{
+			return _scrollToCharacter;
+		}
+		set
+		{
+			if (value != _scrollToCharacter)
+			{
+				_scrollToCharacter = value;
+				OnPropertyChangedWithValue(value, "ScrollToCharacter");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsScrollTargetPrisoner
+	{
+		get
+		{
+			return _isScrollTargetPrisoner;
+		}
+		set
+		{
+			if (value != _isScrollTargetPrisoner)
+			{
+				_isScrollTargetPrisoner = value;
+				OnPropertyChangedWithValue(value, "IsScrollTargetPrisoner");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ScrollCharacterId
+	{
+		get
+		{
+			return _scrollCharacterId;
+		}
+		set
+		{
+			if (value != _scrollCharacterId)
+			{
+				_scrollCharacterId = value;
+				OnPropertyChangedWithValue(value, "ScrollCharacterId");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public InputKeyItemVM ResetInputKey
 	{
 		get
@@ -1828,7 +1890,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	public PartyVM(PartyScreenLogic partyScreenLogic)
 	{
 		PartyScreenLogic = partyScreenLogic;
-		_currentMode = PartyScreenManager.Instance.CurrentMode;
+		_currentMode = PartyScreenHelper.GetActivePartyState()?.PartyScreenMode ?? PartyScreenHelper.PartyScreenMode.Normal;
 		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
 		OtherPartyTroops = new MBBindingList<PartyCharacterVM>();
 		OtherPartyPrisoners = new MBBindingList<PartyCharacterVM>();
@@ -1847,10 +1909,10 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		PartyCharacterVM.OnFocus = OnFocusCharacter;
 		PartyCharacterVM.OnShift = null;
 		PartyCharacterVM.OnTransfer = OnTransferTroop;
-		PartyCharacterVM.SetSelected = SetSelectedCharacter;
+		PartyCharacterVM.SetSelected = ExecuteSelectCharacterTuple;
 		OtherPartyComposition = new PartyCompositionVM();
 		MainPartyComposition = new PartyCompositionVM();
-		CanChooseRoles = _currentMode == PartyScreenMode.Normal;
+		CanChooseRoles = _currentMode == PartyScreenHelper.PartyScreenMode.Normal;
 		if (PartyScreenLogic != null)
 		{
 			PartyScreenLogic.PartyGoldChange += OnPartyGoldChanged;
@@ -1863,10 +1925,10 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			if (ShowQuestProgress)
 			{
 				QuestProgressRequiredCount = PartyScreenLogic.GetCurrentQuestRequiredCount();
-				IsDoneDisabled = !PartyScreenLogic.IsDoneActive();
-				DoneHint.HintText = new TextObject("{=!}" + PartyScreenLogic.DoneReasonString);
-				IsCancelDisabled = !PartyScreenLogic.IsCancelActive();
 			}
+			IsDoneDisabled = !PartyScreenLogic.IsDoneActive();
+			DoneHint.HintText = new TextObject("{=!}" + PartyScreenLogic.DoneReasonString);
+			IsCancelDisabled = !PartyScreenLogic.IsCancelActive();
 			InitializeStaticInformation();
 			InitializeTroopLists();
 			RefreshPartyInformation();
@@ -1875,6 +1937,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		PartyTradeVM.RemoveZeroCounts += ExecuteRemoveZeroCounts;
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 		_viewDataTracker.ClearPartyNotification();
+		IsAnyPopUpOpen = false;
 		OtherPartySortController = new PartySortControllerVM(PartyScreenLogic.PartyRosterSide.Left, OnSortTroops);
 		MainPartySortController = new PartySortControllerVM(PartyScreenLogic.PartyRosterSide.Right, OnSortTroops);
 		MainPartySortController.SortWith((PartyScreenLogic.TroopSortType)_viewDataTracker.GetPartySortType(), _viewDataTracker.GetIsPartySortAscending());
@@ -1899,25 +1962,25 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		PrisonersLabel = GameTexts.FindText("str_party_category_prisoners_tooltip").ToString();
 		TransferAllMainTroopsHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=Pvx4TU66}Transfer All Main Troops"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=9WrJP0hD}Transfer All Troops"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllMainTroopsKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
 		TransferAllMainPrisonersHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=PpbopMjT}Transfer All Main Prisoners"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=qgK86eSo}Transfer All Prisoners"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllMainPrisonersKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
 		TransferAllOtherTroopsHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=sVsaWZjg}Transfer All Other Troops"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=9WrJP0hD}Transfer All Troops"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllOtherTroopsKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
 		TransferAllOtherPrisonersHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=Srr4rOSq}Transfer All Other Prisoners"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=qgK86eSo}Transfer All Prisoners"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllOtherPrisonersKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
@@ -1946,16 +2009,6 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			InitializeStaticInformation();
 		}
-	}
-
-	public void SetFiveStackShortcutKeyText(string text)
-	{
-		PartyCharacterVM.FiveStackShortcutKeyText = text;
-	}
-
-	public void SetEntireStackShortcutKeyText(string text)
-	{
-		PartyCharacterVM.EntireStackShortcutKeyText = text;
 	}
 
 	private void OnPartyGoldChanged()
@@ -1991,8 +2044,8 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	private void InitializeTroopLists()
 	{
-		ArePrisonersRelevantOnCurrentMode = _currentMode != PartyScreenMode.TroopsManage && _currentMode != PartyScreenMode.QuestTroopManage;
-		AreMembersRelevantOnCurrentMode = _currentMode != PartyScreenMode.PrisonerManage && _currentMode != PartyScreenMode.Ransom;
+		ArePrisonersRelevantOnCurrentMode = _currentMode != PartyScreenHelper.PartyScreenMode.TroopsManage && _currentMode != PartyScreenHelper.PartyScreenMode.QuestTroopManage;
+		AreMembersRelevantOnCurrentMode = _currentMode != PartyScreenHelper.PartyScreenMode.PrisonerManage && _currentMode != PartyScreenHelper.PartyScreenMode.Ransom;
 		_lockedTroopIDs = _viewDataTracker.GetPartyTroopLocks().ToList();
 		_lockedPrisonerIDs = _viewDataTracker.GetPartyPrisonerLocks().ToList();
 		InitializePartyList(MainPartyPrisoners, PartyScreenLogic.PrisonerRosters[1], PartyScreenLogic.TroopType.Prisoner, 1);
@@ -2023,7 +2076,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	private void UpdateLabelHints()
 	{
-		SpeedHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartySpeedTooltip());
+		SpeedHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartySpeedTooltip(considerArmySpeed: false));
 		if (PartyScreenLogic.RightOwnerParty != null)
 		{
 			MainPartyTroopSizeLimitHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyTroopSizeLimitTooltip(PartyScreenLogic.RightOwnerParty));
@@ -2071,6 +2124,71 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		CurrentCharacter = troop;
 		CurrentCharacter.UpdateRecruitable();
+	}
+
+	public void ExecuteSelectCharacterTuple(PartyCharacterVM troop)
+	{
+		if (troop == null || troop.IsSelected)
+		{
+			foreach (PartyCharacterVM allCharacter in GetAllCharacters(includePrisoners: true))
+			{
+				allCharacter.IsSelected = false;
+			}
+		}
+		else
+		{
+			foreach (PartyCharacterVM allCharacter2 in GetAllCharacters(includePrisoners: true))
+			{
+				allCharacter2.IsSelected = allCharacter2.Character.Equals(troop.Character) && allCharacter2.IsPrisoner == troop.IsPrisoner;
+				if (allCharacter2.IsSelected)
+				{
+					ScrollCharacterId = allCharacter2.Character.StringId;
+					ScrollToCharacter = true;
+					IsScrollTargetPrisoner = allCharacter2.IsPrisoner;
+				}
+			}
+		}
+		if (troop != null)
+		{
+			SetSelectedCharacter(troop);
+		}
+	}
+
+	public void ExecuteClearSelectedCharacterTuple()
+	{
+		ExecuteSelectCharacterTuple(null);
+	}
+
+	private IEnumerable<PartyCharacterVM> GetAllCharacters(bool includePrisoners)
+	{
+		foreach (PartyCharacterVM otherPartyTroop in OtherPartyTroops)
+		{
+			yield return otherPartyTroop;
+		}
+		foreach (PartyCharacterVM mainPartyTroop in MainPartyTroops)
+		{
+			yield return mainPartyTroop;
+		}
+		if (!includePrisoners)
+		{
+			yield break;
+		}
+		foreach (PartyCharacterVM prisonerCharacter in GetPrisonerCharacters())
+		{
+			yield return prisonerCharacter;
+		}
+	}
+
+	private IEnumerable<PartyCharacterVM> GetPrisonerCharacters()
+	{
+		foreach (PartyCharacterVM otherPartyPrisoner in OtherPartyPrisoners)
+		{
+			yield return otherPartyPrisoner;
+		}
+		foreach (PartyCharacterVM mainPartyPrisoner in MainPartyPrisoners)
+		{
+			yield return mainPartyPrisoner;
+		}
 	}
 
 	private void ProcessCharacterLock(PartyCharacterVM troop, bool isLocked)
@@ -2134,7 +2252,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			TroopRosterElement troopRosterElement = troopRoster[i];
 			if (troopRosterElement.Character == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Invalid TroopRosterElement found in InitializePartyList!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "InitializePartyList", 438);
+				TaleWorlds.Library.Debug.FailedAssert("Invalid TroopRosterElement found in InitializePartyList!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "InitializePartyList", 497);
 				continue;
 			}
 			PartyCharacterVM partyCharacterVM = new PartyCharacterVM(PartyScreenLogic, this, currentTroopRoster, currentTroopRoster.FindIndexOfTroop(troopRosterElement.Character), type, (PartyScreenLogic.PartyRosterSide)side, PartyScreenLogic.IsTroopTransferable(type, troopRosterElement.Character, side));
@@ -2194,8 +2312,8 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 		if (transferAmount > 0)
 		{
-			int numberOfHealthyTroopNumberForSide = GetNumberOfHealthyTroopNumberForSide(troop.Troop.Character, fromSide, troop.IsPrisoner);
-			int numberOfWoundedTroopNumberForSide = GetNumberOfWoundedTroopNumberForSide(troop.Troop.Character, fromSide, troop.IsPrisoner);
+			int numberOfHealthyTroopNumberForSide = GetNumberOfHealthyTroopNumberForSide(troop.Troop.Character, fromSide, troop.Type);
+			int numberOfWoundedTroopNumberForSide = GetNumberOfWoundedTroopNumberForSide(troop.Troop.Character, fromSide, troop.Type);
 			if ((PartyScreenLogic.TransferHealthiesGetWoundedsFirst && fromSide == PartyScreenLogic.PartyRosterSide.Right) || (!PartyScreenLogic.TransferHealthiesGetWoundedsFirst && fromSide == PartyScreenLogic.PartyRosterSide.Left))
 			{
 				int num = ((transferAmount > numberOfHealthyTroopNumberForSide) ? (transferAmount - numberOfHealthyTroopNumberForSide) : 0);
@@ -2215,14 +2333,14 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		CurrentFocusedCharacter = character;
 	}
 
-	private int GetNumberOfWoundedTroopNumberForSide(CharacterObject character, PartyScreenLogic.PartyRosterSide fromSide, bool isPrisoner)
+	private int GetNumberOfWoundedTroopNumberForSide(CharacterObject character, PartyScreenLogic.PartyRosterSide fromSide, PartyScreenLogic.TroopType troopType)
 	{
-		return FindCharacterVM(character, fromSide, isPrisoner)?.WoundedCount ?? 0;
+		return FindCharacterVM(character, fromSide, troopType)?.WoundedCount ?? 0;
 	}
 
-	private int GetNumberOfHealthyTroopNumberForSide(CharacterObject character, PartyScreenLogic.PartyRosterSide fromSide, bool isPrisoner)
+	private int GetNumberOfHealthyTroopNumberForSide(CharacterObject character, PartyScreenLogic.PartyRosterSide fromSide, PartyScreenLogic.TroopType troopType)
 	{
-		PartyCharacterVM partyCharacterVM = FindCharacterVM(character, fromSide, isPrisoner);
+		PartyCharacterVM partyCharacterVM = FindCharacterVM(character, fromSide, troopType);
 		return (partyCharacterVM?.Troop.Number - partyCharacterVM?.Troop.WoundedNumber) ?? 0;
 	}
 
@@ -2238,16 +2356,16 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 	}
 
-	private PartyCharacterVM FindCharacterVM(CharacterObject character, PartyScreenLogic.PartyRosterSide side, bool isPrisoner)
+	private PartyCharacterVM FindCharacterVM(CharacterObject character, PartyScreenLogic.PartyRosterSide side, PartyScreenLogic.TroopType troopType)
 	{
 		MBBindingList<PartyCharacterVM> mBBindingList = null;
 		switch (side)
 		{
 		case PartyScreenLogic.PartyRosterSide.Left:
-			mBBindingList = (isPrisoner ? OtherPartyPrisoners : OtherPartyTroops);
+			mBBindingList = ((troopType == PartyScreenLogic.TroopType.Member) ? OtherPartyTroops : OtherPartyPrisoners);
 			break;
 		case PartyScreenLogic.PartyRosterSide.Right:
-			mBBindingList = (isPrisoner ? MainPartyPrisoners : MainPartyTroops);
+			mBBindingList = ((troopType == PartyScreenLogic.TroopType.Member) ? MainPartyTroops : MainPartyPrisoners);
 			break;
 		}
 		return mBBindingList?.FirstOrDefault((PartyCharacterVM x) => x.Troop.Character == character);
@@ -2368,28 +2486,9 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	private void TransferTroop(PartyScreenLogic.PartyCommand command)
 	{
-		PartyScreenLogic.PartyRosterSide partyRosterSide = PartyScreenLogic.PartyRosterSide.None;
-		switch (command.RosterSide)
-		{
-		case PartyScreenLogic.PartyRosterSide.Left:
-			partyRosterSide = PartyScreenLogic.PartyRosterSide.Right;
-			break;
-		case PartyScreenLogic.PartyRosterSide.Right:
-			partyRosterSide = PartyScreenLogic.PartyRosterSide.Left;
-			break;
-		}
+		PartyScreenLogic.PartyRosterSide partyRosterSide = ((command.RosterSide == PartyScreenLogic.PartyRosterSide.Left) ? PartyScreenLogic.PartyRosterSide.Right : PartyScreenLogic.PartyRosterSide.Left);
 		MBBindingList<PartyCharacterVM> partyCharacterVMList = GetPartyCharacterVMList(command.RosterSide, command.Type);
 		MBBindingList<PartyCharacterVM> partyCharacterVMList2 = GetPartyCharacterVMList(partyRosterSide, command.Type);
-		if (command.Type == PartyScreenLogic.TroopType.Member)
-		{
-			_currentCharacter.Troop = PartyScreenLogic.MemberRosters[(uint)CurrentCharacter.Side].GetElementCopyAtIndex(PartyScreenLogic.MemberRosters[(uint)CurrentCharacter.Side].FindIndexOfTroop(CurrentCharacter.Character));
-		}
-		else if (command.Type == PartyScreenLogic.TroopType.Prisoner)
-		{
-			_currentCharacter.Troop = PartyScreenLogic.PrisonerRosters[(uint)CurrentCharacter.Side].GetElementCopyAtIndex(PartyScreenLogic.PrisonerRosters[(uint)CurrentCharacter.Side].FindIndexOfTroop(CurrentCharacter.Character));
-		}
-		_currentCharacter.UpdateTradeData();
-		_currentCharacter.ThrowOnPropertyChanged();
 		TroopRoster troopRoster = null;
 		TroopRoster troopRoster2 = null;
 		int index = 0;
@@ -2416,9 +2515,18 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			partyCharacterVM.ThrowOnPropertyChanged();
 			partyCharacterVM.UpdateTradeData();
 		}
-		if (partyCharacterVMList2.Contains(CurrentCharacter))
+		int num = -1;
+		for (int i = 0; i < partyCharacterVMList2.Count; i++)
 		{
-			PartyCharacterVM partyCharacterVM2 = partyCharacterVMList2.First((PartyCharacterVM q) => q.Character == CurrentCharacter.Character);
+			if (partyCharacterVMList2[i].Character == command.Character)
+			{
+				num = i;
+				break;
+			}
+		}
+		if (num >= 0)
+		{
+			PartyCharacterVM partyCharacterVM2 = partyCharacterVMList2[num];
 			partyCharacterVM2.Troop = troopRoster.GetElementCopyAtIndex(index);
 			partyCharacterVM2.ThrowOnPropertyChanged();
 			if (!partyCharacterVMList.Contains(CurrentCharacter))
@@ -2426,6 +2534,22 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 				SetSelectedCharacter(partyCharacterVM2);
 			}
 			partyCharacterVM2.UpdateTradeData();
+			if (partyCharacterVM2.IsSelected)
+			{
+				ScrollCharacterId = partyCharacterVM2.Character.StringId;
+				IsScrollTargetPrisoner = partyCharacterVM2.IsPrisoner;
+				ScrollToCharacter = true;
+			}
+			int num2 = command.Index;
+			if (num2 != -1)
+			{
+				if (num2 == partyCharacterVMList2.Count)
+				{
+					num2 = partyCharacterVMList2.Count - 1;
+				}
+				partyCharacterVMList2.RemoveAt(num);
+				partyCharacterVMList2.Insert(num2, partyCharacterVM2);
+			}
 		}
 		else
 		{
@@ -2443,7 +2567,15 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 				SetSelectedCharacter(partyCharacterVM3);
 			}
 			partyCharacterVM3.IsLocked = partyCharacterVM3.Side == PartyScreenLogic.PartyRosterSide.Right && IsTroopLocked(partyCharacterVM3.Troop, partyCharacterVM3.IsPrisoner);
+			partyCharacterVM3.IsSelected = partyCharacterVM?.IsSelected ?? false;
+			if (partyCharacterVM3.IsSelected)
+			{
+				ScrollCharacterId = partyCharacterVM3.Character.StringId;
+				IsScrollTargetPrisoner = partyCharacterVM3.IsPrisoner;
+				ScrollToCharacter = true;
+			}
 		}
+		CurrentCharacter = FindCharacterVM(command.Character, partyRosterSide, command.Type);
 		GetCompositionForList(partyCharacterVMList)?.OnTroopRemoved(command.Character.DefaultFormationClass, command.TotalNumber);
 		GetCompositionForList(partyCharacterVMList2)?.OnTroopAdded(command.Character.DefaultFormationClass, command.TotalNumber);
 		CurrentCharacter.UpdateTradeData();
@@ -2491,6 +2623,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			UpdateTroopManagerPopUpCounts();
 		}
 		Game.Current.EventManager.TriggerEvent(new PlayerToggledUpgradePopupEvent(isOpened: false));
+		IsAnyPopUpOpen = RecruitPopUp?.IsOpen ?? false;
 	}
 
 	public void OnRecruitPopUpClosed(bool isCancelled)
@@ -2499,6 +2632,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			UpdateTroopManagerPopUpCounts();
 		}
+		IsAnyPopUpOpen = UpgradePopUp?.IsOpen ?? false;
 	}
 
 	private void UpdateTroopManagerPopUpCounts()
@@ -2620,7 +2754,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Players can only recruit prisoners", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "RecruitTroop", 1045);
+			TaleWorlds.Library.Debug.FailedAssert("Players can only recruit prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "RecruitTroop", 1105);
 		}
 		if (num < 0)
 		{
@@ -2655,7 +2789,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Players can only execute prisoners", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1085);
+			TaleWorlds.Library.Debug.FailedAssert("Players can only execute prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1145);
 		}
 		if (num < 0)
 		{
@@ -2665,7 +2799,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("The prisoner should have been removed from the prisoner roster after execution", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1096);
+			TaleWorlds.Library.Debug.FailedAssert("The prisoner should have been removed from the prisoner roster after execution", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1156);
 		}
 		RefreshTopInformation();
 		RefreshPartyInformation();
@@ -2768,12 +2902,14 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	public void ExecuteOpenUpgradePopUp()
 	{
+		IsAnyPopUpOpen = true;
 		UpgradePopUp.OpenPopUp();
 		Game.Current.EventManager.TriggerEvent(new PlayerToggledUpgradePopupEvent(isOpened: true));
 	}
 
 	public void ExecuteOpenRecruitPopUp()
 	{
+		IsAnyPopUpOpen = true;
 		RecruitPopUp.OpenPopUp();
 	}
 
@@ -2817,6 +2953,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			partyCommand.FillForRecruitTroop(CurrentCharacter.Side, CurrentCharacter.Type, CurrentCharacter.Character, number, indexToInsertTroop);
 			PartyScreenLogic.AddCommand(partyCommand);
 			CurrentCharacter.UpdateRecruitable();
+			CurrentCharacter.UpdateTalkable();
 		}
 	}
 
@@ -2838,6 +2975,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (list[num].Number == 0 && OtherPartyTroops.Count > num)
 			{
+				list[num].IsSelected = false;
 				OtherPartyTroops.RemoveAt(num);
 			}
 		}
@@ -2846,6 +2984,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (list2[num2].Number == 0 && OtherPartyPrisoners.Count > num2)
 			{
+				list2[num2].IsSelected = false;
 				OtherPartyPrisoners.RemoveAt(num2);
 			}
 		}
@@ -2854,6 +2993,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (list3[num3].Number == 0 && MainPartyTroops.Count > num3)
 			{
+				list3[num3].IsSelected = false;
 				MainPartyTroops.RemoveAt(num3);
 			}
 		}
@@ -2862,6 +3002,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (list4[num4].Number == 0 && MainPartyPrisoners.Count > num4)
 			{
+				list4[num4].IsSelected = false;
 				MainPartyPrisoners.RemoveAt(num4);
 			}
 		}
@@ -2876,6 +3017,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 
 	private void RefreshCurrentCharacterInformation()
 	{
+		HeroViewModel heroViewModel = new HeroViewModel();
 		bool flag = CurrentCharacter.Character == CharacterObject.PlayerCharacter;
 		CurrentCharacterWageLbl = "";
 		if (CurrentCharacter.Type == PartyScreenLogic.TroopType.Member && !flag)
@@ -2892,36 +3034,37 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (CurrentCharacter.Character.IsHero)
 			{
-				SelectedCharacter.FillFrom(CurrentCharacter.Character.HeroObject);
+				heroViewModel.FillFrom(CurrentCharacter.Character.HeroObject);
 			}
 			else
 			{
-				string bannerCodeText = "";
+				string bannerCode = "";
 				if (!CurrentCharacter.IsPrisoner)
 				{
-					bannerCodeText = ((CurrentCharacter.Side != 0) ? ((PartyScreenLogic.RightOwnerParty != null && PartyScreenLogic.RightOwnerParty.Banner != null) ? BannerCode.CreateFrom(PartyScreenLogic.RightOwnerParty.Banner).Code : "") : ((PartyScreenLogic.LeftOwnerParty != null && PartyScreenLogic.LeftOwnerParty.Banner != null) ? BannerCode.CreateFrom(PartyScreenLogic.LeftOwnerParty.Banner).Code : ""));
+					bannerCode = ((CurrentCharacter.Side != 0) ? ((PartyScreenLogic.RightOwnerParty != null && PartyScreenLogic.RightOwnerParty.Banner != null) ? PartyScreenLogic.RightOwnerParty.Banner.BannerCode : "") : ((PartyScreenLogic.LeftOwnerParty != null && PartyScreenLogic.LeftOwnerParty.Banner != null) ? PartyScreenLogic.LeftOwnerParty.Banner.BannerCode : ""));
 				}
-				SelectedCharacter.FillFrom(CurrentCharacter.Character, CurrentCharacter.Character.StringId.GetDeterministicHashCode());
-				SelectedCharacter.BannerCodeText = bannerCodeText;
+				heroViewModel.FillFrom(CurrentCharacter.Character, CurrentCharacter.Character.StringId.GetDeterministicHashCode(), bannerCode);
 			}
 		}
-		SelectedCharacter.SetEquipment(CurrentCharacter.Character.Equipment);
+		heroViewModel.SetEquipment(CurrentCharacter.Character.Equipment);
 		if (!CurrentCharacter.IsPrisoner)
 		{
 			if (CurrentCharacter.Side == PartyScreenLogic.PartyRosterSide.Right && PartyScreenLogic.RightOwnerParty != null && PartyScreenLogic.RightOwnerParty.MapFaction != null)
 			{
-				SelectedCharacter.ArmorColor1 = PartyScreenLogic.RightOwnerParty?.MapFaction?.Color ?? 0;
-				SelectedCharacter.ArmorColor2 = PartyScreenLogic.RightOwnerParty?.MapFaction?.Color2 ?? 0;
+				heroViewModel.ArmorColor1 = PartyScreenLogic.RightOwnerParty?.MapFaction?.Color ?? 0;
+				heroViewModel.ArmorColor2 = PartyScreenLogic.RightOwnerParty?.MapFaction?.Color2 ?? 0;
 			}
 			else if (CurrentCharacter.Side == PartyScreenLogic.PartyRosterSide.Left && PartyScreenLogic.LeftOwnerParty != null && PartyScreenLogic.LeftOwnerParty.MapFaction != null)
 			{
-				SelectedCharacter.ArmorColor1 = PartyScreenLogic.LeftOwnerParty?.MapFaction?.Color ?? 0;
-				SelectedCharacter.ArmorColor2 = PartyScreenLogic.LeftOwnerParty?.MapFaction?.Color2 ?? 0;
+				heroViewModel.ArmorColor1 = PartyScreenLogic.LeftOwnerParty?.MapFaction?.Color ?? 0;
+				heroViewModel.ArmorColor2 = PartyScreenLogic.LeftOwnerParty?.MapFaction?.Color2 ?? 0;
 			}
 		}
 		IsCurrentCharacterFormationEnabled = !CurrentCharacter.IsMainHero && !CurrentCharacter.IsPrisoner && CurrentCharacter.Side != PartyScreenLogic.PartyRosterSide.Left;
 		IsCurrentCharacterWageEnabled = !CurrentCharacter.IsMainHero && !CurrentCharacter.IsPrisoner;
 		CurrentCharacterTier = CampaignUIHelper.GetCharacterTierData(CurrentCharacter.Character, isBig: true);
+		SelectedCharacter = heroViewModel;
+		CurrentCharacter.UpdateTalkable();
 	}
 
 	private void RefreshPartyInformation()
@@ -2932,10 +3075,10 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		MainPartyPrisonersLbl = PopulatePartyListLabel(MainPartyPrisoners, PartyScreenLogic.RightPartyPrisonersSizeLimit);
 		if (ShowQuestProgress)
 		{
-			QuestProgressCurrentCount = PartyScreenLogic.GetCurrentQuestCurrentCount();
+			QuestProgressCurrentCount = PartyScreenLogic.GetCurrentQuestCurrentCount(ArePrisonersRelevantOnCurrentMode, AreMembersRelevantOnCurrentMode);
 		}
 		IsMainTroopsLimitWarningEnabled = PartyScreenLogic.RightPartyMembersSizeLimit < PartyScreenLogic.MemberRosters[1].TotalManCount && AreMembersRelevantOnCurrentMode;
-		IsOtherTroopsLimitWarningEnabled = (_currentMode == PartyScreenMode.TroopsManage || _currentMode == PartyScreenMode.QuestTroopManage) && PartyScreenLogic.LeftPartyMembersSizeLimit < PartyScreenLogic.MemberRosters[0].TotalManCount && ArePrisonersRelevantOnCurrentMode;
+		IsOtherTroopsLimitWarningEnabled = (_currentMode == PartyScreenHelper.PartyScreenMode.TroopsManage || _currentMode == PartyScreenHelper.PartyScreenMode.QuestTroopManage) && PartyScreenLogic.LeftPartyMembersSizeLimit < PartyScreenLogic.MemberRosters[0].TotalManCount && ArePrisonersRelevantOnCurrentMode;
 		IsMainPrisonersLimitWarningEnabled = PartyScreenLogic.RightPartyPrisonersSizeLimit < PartyScreenLogic.PrisonerRosters[1].TotalManCount && ArePrisonersRelevantOnCurrentMode;
 		UpdateAnyTransferableTroops(MainPartyTroops, delegate(bool result)
 		{
@@ -3056,13 +3199,14 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		if (CurrentCharacter.Side == PartyScreenLogic.PartyRosterSide.Right && CurrentCharacter.Character != CharacterObject.PlayerCharacter)
 		{
-			if (Settlement.CurrentSettlement == null)
+			Location location = LocationComplex.Current?.GetLocationOfCharacter(LocationComplex.Current?.GetFirstLocationCharacterOfCharacter(CurrentCharacter.Character));
+			if (location == null)
 			{
 				CampaignMission.OpenConversationMission(new ConversationCharacterData(CharacterObject.PlayerCharacter, PartyBase.MainParty), new ConversationCharacterData(CurrentCharacter.Character, PartyBase.MainParty, noHorse: false, noWeapon: false, spawnAfterFight: false, CurrentCharacter.IsPrisoner));
 			}
 			else
 			{
-				PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(LocationComplex.Current.GetLocationOfCharacter(LocationComplex.Current.GetFirstLocationCharacterOfCharacter(CurrentCharacter.Character)), null, CurrentCharacter.Character);
+				PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(location, null, CurrentCharacter.Character);
 			}
 			IsInConversation = true;
 		}
@@ -3093,7 +3237,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 			}
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=uJro3Bua}Over Limit").ToString(), text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), CloseScreenInternal, null));
 		}
-		else if (_currentMode == PartyScreenMode.Loot && ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops)))
+		else if (_currentMode == PartyScreenHelper.PartyScreenMode.Loot && ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops)))
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_troops_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), CloseScreenInternal, null));
 		}
@@ -3107,7 +3251,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		SaveSortState();
 		SaveCharacterLockStates();
-		PartyScreenManager.CloseScreen(isForced: false);
+		PartyScreenHelper.CloseScreen(isForced: false);
 	}
 
 	public void ExecuteReset()
@@ -3120,7 +3264,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	public void ExecuteResetAndCancel()
 	{
 		ExecuteReset();
-		PartyScreenManager.CloseScreen(isForced: false, fromCancel: true);
+		PartyScreenHelper.CloseScreen(isForced: false, fromCancel: true);
 	}
 
 	public void ExecuteCancel()
@@ -3129,11 +3273,11 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			return;
 		}
-		if (_currentMode == PartyScreenMode.Loot)
+		if (_currentMode == PartyScreenHelper.PartyScreenMode.Loot)
 		{
 			if (PartyScreenLogic.IsThereAnyChanges())
 			{
-				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_troop_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteResetAndCancel, null));
+				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteResetAndCancel, null));
 			}
 			else if ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops))
 			{
@@ -3171,53 +3315,24 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		{
 			if (list[i].Count != list2[i].Count)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1741);
+				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1817);
 				continue;
 			}
 			for (int j = 0; j < list[i].Count; j++)
 			{
 				if (list[i].GetCharacterAtIndex(j).StringId != list2[i][j].Character.StringId)
 				{
-					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1749);
+					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1825);
 					return;
 				}
 			}
 		}
 	}
 
-	void PartyScreenPrisonHandler.ExecuteTakeAllPrisonersScript()
-	{
-		ExecuteTransferAllOtherPrisoners();
-	}
-
-	void PartyScreenPrisonHandler.ExecuteDoneScript()
-	{
-		ExecuteDone();
-	}
-
-	void PartyScreenPrisonHandler.ExecuteResetScript()
-	{
-		ExecuteReset();
-	}
-
-	void PartyScreenPrisonHandler.ExecuteSellAllPrisoners()
-	{
-		ExecuteTransferAllMainPrisoners();
-	}
-
-	void IPartyScreenTroopHandler.PartyTroopTransfer()
-	{
-		ExecuteTransferAllMainTroops();
-	}
-
-	void IPartyScreenTroopHandler.ExecuteDoneScript()
-	{
-		ExecuteDone();
-	}
-
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
+		IsAnyPopUpOpen = false;
 		_selectedCharacter.OnFinalize();
 		_selectedCharacter = null;
 		Game.Current.EventManager.UnregisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
@@ -3240,15 +3355,11 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		RecruitPopUp.OnFinalize();
 	}
 
-	public void RequestUserInput(string text, Action accept, Action cancel)
-	{
-	}
-
 	private TextObject GetTransferAllOtherTroopsKeyText()
 	{
 		if (TakeAllTroopsInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(TakeAllTroopsInputKey.KeyID);
 	}
@@ -3257,7 +3368,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		if (DismissAllTroopsInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(DismissAllTroopsInputKey.KeyID);
 	}
@@ -3266,7 +3377,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		if (TakeAllPrisonersInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(TakeAllPrisonersInputKey.KeyID);
 	}
@@ -3275,7 +3386,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	{
 		if (DismissAllPrisonersInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(DismissAllPrisonersInputKey.KeyID);
 	}
@@ -3288,6 +3399,8 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 	public void SetCancelInputKey(HotKey hotKey)
 	{
 		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		UpgradePopUp.SetCancelInputKey(hotKey);
+		RecruitPopUp.SetCancelInputKey(hotKey);
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)
@@ -3302,7 +3415,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		TakeAllTroopsInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 		TransferAllOtherTroopsHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=sVsaWZjg}Transfer All Other Troops"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=9WrJP0hD}Transfer All Troops"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllOtherTroopsKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
@@ -3317,7 +3430,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		DismissAllTroopsInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 		TransferAllMainTroopsHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=Pvx4TU66}Transfer All Main Troops"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=9WrJP0hD}Transfer All Troops"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllMainTroopsKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
@@ -3332,7 +3445,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		TakeAllPrisonersInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 		TransferAllOtherPrisonersHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=Srr4rOSq}Transfer All Other Prisoners"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=qgK86eSo}Transfer All Prisoners"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllOtherPrisonersKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});
@@ -3347,7 +3460,7 @@ public class PartyVM : ViewModel, IPartyScreenLogicHandler, PartyScreenPrisonHan
 		DismissAllPrisonersInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 		TransferAllMainPrisonersHint = new BasicTooltipViewModel(delegate
 		{
-			GameTexts.SetVariable("TEXT", new TextObject("{=PpbopMjT}Transfer All Main Prisoners"));
+			GameTexts.SetVariable("TEXT", new TextObject("{=qgK86eSo}Transfer All Prisoners"));
 			GameTexts.SetVariable("HOTKEY", GetTransferAllMainPrisonersKeyText());
 			return GameTexts.FindText("str_hotkey_with_hint").ToString();
 		});

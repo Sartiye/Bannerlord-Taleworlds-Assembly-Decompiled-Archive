@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.InputSystem;
@@ -8,27 +7,34 @@ using TaleWorlds.Engine.Options;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.GameKeyCategory;
+using TaleWorlds.MountAndBlade.View.CustomBattle;
 using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.MountAndBlade.View.Tableaus;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
+using TaleWorlds.MountAndBlade.View.VisualOrders;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order.Visual;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.View;
 
 public class ViewSubModule : MBSubModuleBase
 {
-	private Dictionary<Tuple<Material, BannerCode>, Material> _bannerTexturedMaterialCache;
+	private Dictionary<Tuple<Material, Banner>, Material> _bannerTexturedMaterialCache;
 
 	private GameStateScreenManager _gameStateScreenManager;
 
 	private bool _newGameInitialization;
 
+	private VisualOrderProvider _visualOrderProvider;
+
 	private static ViewSubModule _instance;
 
 	private bool _initialized;
 
-	public static Dictionary<Tuple<Material, BannerCode>, Material> BannerTexturedMaterialCache
+	private DLCInstallationQueryView _dlcInstallationQueryView;
+
+	public static Dictionary<Tuple<Material, Banner>, Material> BannerTexturedMaterialCache
 	{
 		get
 		{
@@ -62,6 +68,7 @@ public class ViewSubModule : MBSubModuleBase
 			new MapHotKeyCategory(),
 			new MapNotificationHotKeyCategory(),
 			new MissionOrderHotkeyCategory(),
+			new OrderOfBattleHotKeyCategory(),
 			new MultiplayerHotkeyCategory(),
 			new ScoreboardHotKeyCategory(),
 			new ConversationHotKeyCategory(),
@@ -73,24 +80,10 @@ public class ViewSubModule : MBSubModuleBase
 
 	private void InitializeBannerVisualManager()
 	{
-		if (BannerManager.Instance != null)
+		if (BannerManager.Instance == null)
 		{
-			return;
-		}
-		BannerManager.Initialize();
-		BannerManager.Instance.LoadBannerIcons(ModuleHelper.GetModuleFullPath("Native") + "ModuleData/banner_icons.xml");
-		string[] modulesNames = Utilities.GetModulesNames();
-		for (int i = 0; i < modulesNames.Length; i++)
-		{
-			ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(modulesNames[i]);
-			if (moduleInfo != null && !moduleInfo.IsNative)
-			{
-				string text = moduleInfo.FolderPath + "/ModuleData/banner_icons.xml";
-				if (File.Exists(text))
-				{
-					BannerManager.Instance.LoadBannerIcons(text);
-				}
-			}
+			BannerManager.Initialize();
+			BannerManager.Instance.LoadBannerIcons();
 		}
 	}
 
@@ -101,7 +94,8 @@ public class ViewSubModule : MBSubModuleBase
 		InitializeHotKeyManager(loadKeys: false);
 		InitializeBannerVisualManager();
 		CraftedDataViewManager.Initialize();
-		ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
+		_visualOrderProvider = new DefaultVisualOrderProvider();
+		VisualOrderFactory.RegisterProvider(_visualOrderProvider);
 		_gameStateScreenManager = new GameStateScreenManager();
 		Module.CurrentModule.GlobalGameStateManager.RegisterListener(_gameStateScreenManager);
 		MBMusicManager.Create();
@@ -113,24 +107,33 @@ public class ViewSubModule : MBSubModuleBase
 				MBInitialScreenBase.OnEditModeEnterPress();
 			}, () => (Module.CurrentModule.IsOnlyCoreContentEnabled, coreContentDisabledReason)));
 		}
+		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("CustomBattle", new TextObject("{=4gOGGbeQ}Custom Battle"), 5000, CustomBattleFactory.StartCustomBattle, () => ((bool, TextObject))(false, null), null, () => CustomBattleFactory.GetProviderCount() == 0));
 		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("Options", new TextObject("{=NqarFr4P}Options"), 9998, delegate
 		{
 			ScreenManager.PushScreen(ViewCreator.CreateOptionsScreen(fromMainMenu: true));
-		}, () => (false, TextObject.Empty)));
+		}, () => ((bool, TextObject))(false, null)));
 		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("Credits", new TextObject("{=ODQmOrIw}Credits"), 9999, delegate
 		{
 			ScreenManager.PushScreen(ViewCreator.CreateCreditsScreen());
-		}, () => (false, TextObject.Empty)));
+		}, () => ((bool, TextObject))(false, null)));
 		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("Exit", new TextObject("{=YbpzLHzk}Exit Game"), 10000, delegate
 		{
 			MBInitialScreenBase.DoExitButtonAction();
 		}, () => (Module.CurrentModule.IsOnlyCoreContentEnabled, coreContentDisabledReason)));
+		ViewModel.RefreshPropertyAndMethodInfos();
 		Module.CurrentModule.ImguiProfilerTick += OnImguiProfilerTick;
 		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Combine(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
+		ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
 		NativeOptions.OnNativeOptionChanged = (NativeOptions.OnNativeOptionChangedDelegate)Delegate.Combine(NativeOptions.OnNativeOptionChanged, new NativeOptions.OnNativeOptionChangedDelegate(OnNativeOptionChanged));
-		ViewModel.CollectPropertiesAndMethods();
-		HyperlinkTexts.IsPlayStationGamepadActive = GetIsPlaystationGamepadActive;
 		EngineController.OnConstrainedStateChanged += OnConstrainedStateChange;
+		HyperlinkTexts.IsPlayStationGamepadActive = GetIsPlaystationGamepadActive;
+		_dlcInstallationQueryView = new DLCInstallationQueryView();
+		_dlcInstallationQueryView.Initialize();
+	}
+
+	private void OnModuleStructureChanged()
+	{
+		ViewModel.RefreshPropertyAndMethodInfos();
 	}
 
 	private void OnConstrainedStateChange(bool isConstrained)
@@ -171,27 +174,48 @@ public class ViewSubModule : MBSubModuleBase
 
 	protected override void OnSubModuleUnloaded()
 	{
-		ScreenManager.OnPushScreen -= OnScreenManagerPushScreen;
-		NativeOptions.OnNativeOptionChanged = (NativeOptions.OnNativeOptionChangedDelegate)Delegate.Remove(NativeOptions.OnNativeOptionChanged, new NativeOptions.OnNativeOptionChangedDelegate(OnNativeOptionChanged));
-		TableauCacheManager.ClearManager();
+		_dlcInstallationQueryView?.OnFinalize();
+		_dlcInstallationQueryView = null;
+		VisualOrderFactory.UnregisterProvider(_visualOrderProvider);
+		ThumbnailCacheManager.ClearManager();
 		BannerlordTableauManager.ClearManager();
 		CraftedDataViewManager.Clear();
 		Module.CurrentModule.ImguiProfilerTick -= OnImguiProfilerTick;
 		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Remove(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
-		_instance = null;
+		ScreenManager.OnPushScreen -= OnScreenManagerPushScreen;
+		NativeOptions.OnNativeOptionChanged = (NativeOptions.OnNativeOptionChangedDelegate)Delegate.Remove(NativeOptions.OnNativeOptionChanged, new NativeOptions.OnNativeOptionChangedDelegate(OnNativeOptionChanged));
 		EngineController.OnConstrainedStateChanged -= OnConstrainedStateChange;
+		_instance = null;
 		base.OnSubModuleUnloaded();
 	}
 
 	protected override void OnBeforeInitialModuleScreenSetAsRoot()
 	{
+		if (_initialized)
+		{
+			BannerPersistentTextureCache.Current?.FlushCache();
+		}
 		if (!_initialized)
 		{
-			HotKeyManager.Load();
+			HotKeyManager.LoadAsync();
 			BannerlordTableauManager.InitializeCharacterTableauRenderSystem();
-			TableauCacheManager.InitializeManager();
+			ThumbnailCacheManager.InitializeManager();
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new AvatarThumbnailCache(75));
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new BannerThumbnailCache(100));
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new BannerPersistentTextureCache());
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new BannerEditorTextureCache(5));
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new CharacterThumbnailCache(75));
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new CraftingPieceThumbnailCache(75));
+			ThumbnailCacheManager.Current.RegisterThumbnailCache(new ItemThumbnailCache(75));
 			_initialized = true;
 		}
+	}
+
+	protected override void OnNewModuleLoad()
+	{
+		ViewCreatorManager.CollectTypes();
+		ViewModel.RefreshPropertyAndMethodInfos();
+		_gameStateScreenManager.CollectTypes();
 	}
 
 	protected override void OnApplicationTick(float dt)
@@ -203,7 +227,7 @@ public class ViewSubModule : MBSubModuleBase
 		}
 		HotKeyManager.Tick(dt);
 		MBMusicManager.Current?.Update(dt);
-		TableauCacheManager.Current?.Tick();
+		ThumbnailCacheManager.Current?.Tick(dt);
 	}
 
 	protected override void AfterAsyncTickTick(float dt)
@@ -285,7 +309,6 @@ public class ViewSubModule : MBSubModuleBase
 
 	private void OnImguiProfilerTick()
 	{
-		TableauCacheManager.Current.OnImguiProfilerTick();
 	}
 
 	private void OnScreenManagerPushScreen(ScreenBase pushedScreen)

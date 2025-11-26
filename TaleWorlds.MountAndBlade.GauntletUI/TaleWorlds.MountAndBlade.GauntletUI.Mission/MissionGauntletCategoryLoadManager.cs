@@ -1,6 +1,5 @@
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.TwoDimension;
@@ -12,44 +11,30 @@ public class MissionGauntletCategoryLoadManager : MissionView, IMissionListener
 {
 	private SpriteCategory _fullBackgroundCategory;
 
-	private SpriteCategory _backgroundCategory;
-
-	private SpriteCategory _fullscreensCategory;
-
 	private SpriteCategory _mapBarCategory;
 
 	private SpriteCategory _encyclopediaCategory;
 
 	private MissionGauntletOptionsUIHandler _optionsView;
 
-	private ITwoDimensionResourceContext _resourceContext => UIResourceManager.ResourceContext;
-
-	private ResourceDepot _resourceDepot => UIResourceManager.UIResourceDepot;
-
-	private SpriteData _spriteData => UIResourceManager.SpriteData;
-
 	public override void AfterStart()
 	{
 		base.AfterStart();
 		if (_fullBackgroundCategory == null)
 		{
-			_fullBackgroundCategory = _spriteData.SpriteCategories["ui_fullbackgrounds"];
-		}
-		if (_backgroundCategory == null)
-		{
-			_backgroundCategory = _spriteData.SpriteCategories["ui_backgrounds"];
-		}
-		if (_fullscreensCategory == null)
-		{
-			_fullscreensCategory = _spriteData.SpriteCategories["ui_fullscreens"];
+			_fullBackgroundCategory = UIResourceManager.GetSpriteCategory("ui_fullbackgrounds");
 		}
 		if (_encyclopediaCategory == null)
 		{
-			_encyclopediaCategory = _spriteData.SpriteCategories["ui_encyclopedia"];
+			_encyclopediaCategory = UIResourceManager.GetSpriteCategory("ui_encyclopedia");
 		}
-		if (_mapBarCategory == null && _spriteData.SpriteCategories.ContainsKey("ui_mapbar") && _spriteData.SpriteCategories["ui_mapbar"].IsLoaded)
+		if (_mapBarCategory == null)
 		{
-			_mapBarCategory = _spriteData.SpriteCategories["ui_mapbar"];
+			SpriteCategory spriteCategory = UIResourceManager.GetSpriteCategory("ui_mapbar");
+			if (spriteCategory != null && spriteCategory.IsLoaded)
+			{
+				_mapBarCategory = spriteCategory;
+			}
 		}
 		if (_optionsView == null)
 		{
@@ -89,38 +74,22 @@ public class MissionGauntletCategoryLoadManager : MissionView, IMissionListener
 		{
 			if (!_fullBackgroundCategory.IsLoaded)
 			{
-				_fullBackgroundCategory.Load(_resourceContext, _resourceDepot);
-			}
-			if (!_backgroundCategory.IsLoaded)
-			{
-				_backgroundCategory.Load(_resourceContext, _resourceDepot);
-			}
-			if (!_fullscreensCategory.IsLoaded)
-			{
-				_fullscreensCategory.Load(_resourceContext, _resourceDepot);
+				_fullBackgroundCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.ResourceDepot);
 			}
 			if (!_encyclopediaCategory.IsLoaded)
 			{
-				_encyclopediaCategory.Load(_resourceContext, _resourceDepot);
+				_encyclopediaCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.ResourceDepot);
 			}
 			SpriteCategory mapBarCategory = _mapBarCategory;
 			if (mapBarCategory != null && !mapBarCategory.IsLoaded)
 			{
-				_mapBarCategory.Load(_resourceContext, _resourceDepot);
+				_mapBarCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.ResourceDepot);
 			}
 			return;
 		}
 		if (_fullBackgroundCategory.IsLoaded)
 		{
 			_fullBackgroundCategory.Unload();
-		}
-		if (_backgroundCategory.IsLoaded)
-		{
-			_backgroundCategory.Unload();
-		}
-		if (_fullscreensCategory.IsLoaded && !_optionsView.IsEnabled)
-		{
-			_fullscreensCategory.Unload();
 		}
 		if (_encyclopediaCategory.IsLoaded)
 		{
@@ -171,7 +140,7 @@ public class MissionGauntletCategoryLoadManager : MissionView, IMissionListener
 	{
 	}
 
-	void IMissionListener.OnInitialDeploymentPlanMade(BattleSideEnum battleSide, bool isFirstPlan)
+	void IMissionListener.OnDeploymentPlanMade(Team team, bool isFirstPlan)
 	{
 	}
 }

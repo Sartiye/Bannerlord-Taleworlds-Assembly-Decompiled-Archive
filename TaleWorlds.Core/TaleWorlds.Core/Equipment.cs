@@ -15,7 +15,8 @@ public class Equipment
 	{
 		Invalid = -1,
 		Battle,
-		Civilian
+		Civilian,
+		Stealth
 	}
 
 	public enum UnderwearTypes
@@ -44,9 +45,11 @@ public class Equipment
 
 	public const string NullCode = "@null";
 
-	public bool IsValid => _equipmentType != EquipmentType.Invalid;
-
 	public bool IsCivilian => _equipmentType == EquipmentType.Civilian;
+
+	public bool IsBattle => _equipmentType == EquipmentType.Battle;
+
+	public bool IsStealth => _equipmentType == EquipmentType.Stealth;
 
 	public EquipmentElement this[int index]
 	{
@@ -143,11 +146,11 @@ public class Equipment
 		_equipmentType = EquipmentType.Invalid;
 	}
 
-	public Equipment(bool isCivilian)
+	public Equipment(EquipmentType equipmentType)
 		: this()
 	{
 		_itemSlots = new EquipmentElement[12];
-		_equipmentType = (isCivilian ? EquipmentType.Civilian : EquipmentType.Battle);
+		_equipmentType = equipmentType;
 	}
 
 	public Equipment(Equipment equipment)
@@ -167,7 +170,7 @@ public class Equipment
 
 	public Equipment Clone(bool cloneWithoutWeapons = false)
 	{
-		Equipment equipment = new Equipment(IsCivilian);
+		Equipment equipment = new Equipment(_equipmentType);
 		for (int i = 0; i < 12; i++)
 		{
 			bool flag = cloneWithoutWeapons && i >= 0 && i < 5;
@@ -212,7 +215,7 @@ public class Equipment
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat((@object == null) ? TextObject.Empty : @object.Name, " does not fit to slot ", equipmentIndexFromOldEquipmentIndexName), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Equipment.cs", "DeserializeNode", 168);
+				Debug.FailedAssert(string.Concat((@object == null) ? TextObject.GetEmpty() : @object.Name, " does not fit to slot ", equipmentIndexFromOldEquipmentIndexName), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Equipment.cs", "DeserializeNode", 169);
 			}
 		}
 	}
@@ -459,9 +462,11 @@ public class Equipment
 			case ItemObject.ItemTypeEnum.Polearm:
 			case ItemObject.ItemTypeEnum.Arrows:
 			case ItemObject.ItemTypeEnum.Bolts:
+			case ItemObject.ItemTypeEnum.SlingStones:
 			case ItemObject.ItemTypeEnum.Shield:
 			case ItemObject.ItemTypeEnum.Bow:
 			case ItemObject.ItemTypeEnum.Crossbow:
+			case ItemObject.ItemTypeEnum.Sling:
 			case ItemObject.ItemTypeEnum.Thrown:
 			case ItemObject.ItemTypeEnum.Pistol:
 			case ItemObject.ItemTypeEnum.Musket:
@@ -532,13 +537,26 @@ public class Equipment
 				return false;
 			}
 		}
-		return IsCivilian == other.IsCivilian;
+		if (other.IsStealth == IsStealth && other.IsCivilian == IsCivilian)
+		{
+			return other.IsBattle == IsBattle;
+		}
+		return false;
 	}
 
-	public static Equipment GetRandomEquipmentElements(BasicCharacterObject character, bool randomEquipmentModifier, bool isCivilianEquipment = false, int seed = -1)
+	public static Equipment GetRandomEquipmentElements(BasicCharacterObject character, bool randomEquipmentModifier, EquipmentType equipmentType, int seed = -1)
 	{
-		Equipment equipment = new Equipment(isCivilianEquipment);
-		List<Equipment> list = character.AllEquipments.Where((Equipment eq) => eq.IsCivilian == isCivilianEquipment && !eq.IsEmpty()).ToList();
+		Equipment equipment = new Equipment(equipmentType);
+		List<Equipment> list = new List<Equipment>();
+		switch (equipmentType)
+		{
+		case EquipmentType.Battle:
+			list = character.BattleEquipments.ToList();
+			break;
+		case EquipmentType.Civilian:
+			list = character.CivilianEquipments.ToList();
+			break;
+		}
 		if (list.IsEmpty())
 		{
 			return equipment;

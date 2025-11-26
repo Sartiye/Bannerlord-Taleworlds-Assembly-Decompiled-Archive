@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class TradeItemPriceFactorModel : GameModel
+public abstract class TradeItemPriceFactorModel : MBGameModel<TradeItemPriceFactorModel>
 {
 	public abstract float GetTradePenalty(ItemObject item, MobileParty clientParty, PartyBase merchant, bool isSelling, float inStore, float supply, float demand);
 

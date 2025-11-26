@@ -54,7 +54,7 @@ public class DefencePoint : ScriptComponentBehavior
 				return position;
 			}
 		}
-		Debug.FailedAssert("Couldn't find a vacant position", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\DefencePoint.cs", "GetVacantPosition", 73);
+		Debug.FailedAssert("Couldn't find a vacant position", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\DefencePoint.cs", "GetVacantPosition", 73);
 		return MatrixFrame.Identity;
 	}
 

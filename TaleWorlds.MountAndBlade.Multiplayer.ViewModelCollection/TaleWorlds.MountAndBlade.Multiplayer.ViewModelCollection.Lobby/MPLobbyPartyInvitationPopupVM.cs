@@ -9,6 +9,10 @@ public class MPLobbyPartyInvitationPopupVM : ViewModel
 {
 	private bool _isEnabled;
 
+	private float _remainingAnswerDuration;
+
+	private float _maxAnswerDuration;
+
 	private string _title;
 
 	private string _message;
@@ -83,9 +87,44 @@ public class MPLobbyPartyInvitationPopupVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public float RemainingAnswerDuration
+	{
+		get
+		{
+			return _remainingAnswerDuration;
+		}
+		set
+		{
+			if (value != _remainingAnswerDuration)
+			{
+				_remainingAnswerDuration = value;
+				OnPropertyChangedWithValue(value, "RemainingAnswerDuration");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float MaxAnswerDuration
+	{
+		get
+		{
+			return _maxAnswerDuration;
+		}
+		set
+		{
+			if (value != _maxAnswerDuration)
+			{
+				_maxAnswerDuration = value;
+				OnPropertyChangedWithValue(value, "MaxAnswerDuration");
+			}
+		}
+	}
+
 	public MPLobbyPartyInvitationPopupVM()
 	{
 		RefreshValues();
+		MaxAnswerDuration = 60f;
 	}
 
 	public override void RefreshValues()
@@ -97,13 +136,29 @@ public class MPLobbyPartyInvitationPopupVM : ViewModel
 
 	public void OpenWith(PlayerId invitingPlayerID)
 	{
+		RemainingAnswerDuration = MaxAnswerDuration;
 		InvitingPlayer = new MPLobbyPlayerBaseVM(invitingPlayerID);
 		IsEnabled = true;
 	}
 
 	public void Close()
 	{
-		IsEnabled = false;
+		if (IsEnabled)
+		{
+			ExecuteDecline();
+		}
+	}
+
+	public void OnTick(float dt)
+	{
+		if (IsEnabled)
+		{
+			RemainingAnswerDuration -= dt;
+			if (RemainingAnswerDuration <= 0f)
+			{
+				ExecuteDecline();
+			}
+		}
 	}
 
 	private void ExecuteAccept()

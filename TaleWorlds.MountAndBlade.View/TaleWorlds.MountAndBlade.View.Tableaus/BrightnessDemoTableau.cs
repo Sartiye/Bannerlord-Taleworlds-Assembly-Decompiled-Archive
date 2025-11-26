@@ -7,6 +7,8 @@ namespace TaleWorlds.MountAndBlade.View.Tableaus;
 
 public class BrightnessDemoTableau
 {
+	private static int _tableauIndex;
+
 	private MatrixFrame _frame;
 
 	private Scene _tableauScene;
@@ -80,8 +82,8 @@ public class BrightnessDemoTableau
 			_tableauSizeY = num2;
 			View?.SetEnable(value: false);
 			View?.AddClearTask(clearOnlySceneview: true);
-			Texture?.ReleaseNextFrame();
-			Texture = TableauView.AddTableau("BrightnessDemo", SceneTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
+			Texture?.Release();
+			Texture = TableauView.AddTableau($"BrightnessDemo_{_tableauIndex++}", SceneTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
 		}
 	}
 
@@ -95,6 +97,7 @@ public class BrightnessDemoTableau
 		View?.SetEnable(value: false);
 		View?.AddClearTask();
 		Texture = null;
+		_tableauScene?.ManualInvalidate();
 		_tableauScene = null;
 	}
 
@@ -117,10 +120,22 @@ public class BrightnessDemoTableau
 			break;
 		case 3:
 			_demoTexture = Texture.GetFromResource("calibration_image_3");
-			_tableauScene.SetAtmosphereWithName("exposure_calibration_interior");
+			_tableauScene.SetAtmosphereWithName("TOD_05_00_SemiCloudy");
+			break;
+		case 4:
+			_demoTexture = Texture.GetFromResource("naval_calibration_0");
+			_tableauScene.SetAtmosphereWithName("TOD_naval_10_00_SemiCloudy");
+			break;
+		case 5:
+			_demoTexture = Texture.GetFromResource("naval_calibration_1");
+			_tableauScene.SetAtmosphereWithName("TOD_naval_06_00_sunset");
+			break;
+		case 6:
+			_demoTexture = Texture.GetFromResource("naval_calibration_2");
+			_tableauScene.SetAtmosphereWithName("TOD_naval_08_00_rain_storm");
 			break;
 		default:
-			Debug.FailedAssert($"Undefined Brightness demo type({_demoType})", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BrightnessDemoTableau.cs", "SetScene", 130);
+			Debug.FailedAssert($"Undefined Brightness demo type({_demoType})", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BrightnessDemoTableau.cs", "SetScene", 145);
 			break;
 		}
 		_tableauScene.SetDepthOfFieldParameters(0f, 0f, isVignetteOn: false);
@@ -162,6 +177,7 @@ public class BrightnessDemoTableau
 		scene.SetDynamicShadowmapCascadesRadiusMultiplier(0.31f);
 		scene.SetExternalInjectionTexture(_demoTexture);
 		tableauView.SetRenderWithPostfx(value: true);
+		tableauView.SetDoQuickExposure(value: true);
 		if (_continuousRenderCamera != null)
 		{
 			Camera continuousRenderCamera = _continuousRenderCamera;

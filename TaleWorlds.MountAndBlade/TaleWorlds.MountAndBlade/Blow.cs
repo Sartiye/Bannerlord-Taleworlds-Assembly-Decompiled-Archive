@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Blow", false)]
+[EngineStruct("Blow", false, null)]
 public struct Blow
 {
 	public BlowWeaponRecord WeaponRecord;

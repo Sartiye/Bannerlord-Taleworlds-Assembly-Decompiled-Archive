@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class FormationArrangementModel : GameModel
+public abstract class FormationArrangementModel : MBGameModel<FormationArrangementModel>
 {
 	public struct ArrangementPosition
 	{

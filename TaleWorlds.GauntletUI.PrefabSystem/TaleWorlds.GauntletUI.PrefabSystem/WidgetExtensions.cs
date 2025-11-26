@@ -36,8 +36,20 @@ public static class WidgetExtensions
 
 	public static void SetWidgetAttributeFromString(object target, string name, string value, BrushFactory brushFactory, SpriteData spriteData, Dictionary<string, VisualDefinitionTemplate> visualDefinitionTemplates, Dictionary<string, ConstantDefinition> constants, Dictionary<string, WidgetAttributeTemplate> parameters, Dictionary<string, XmlElement> customElements, Dictionary<string, string> defaultParameters)
 	{
+		try
+		{
+			SetWidgetAttributeFromStringAux(target, name, value, brushFactory, spriteData, visualDefinitionTemplates, constants, parameters, customElements, defaultParameters);
+		}
+		catch (Exception ex)
+		{
+			Debug.FailedAssert($"Failed to set attribute from string.\nTarget:{target}\nName:{name}\nValue:{value}\n{ex.Message}", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetExtensions.cs", "SetWidgetAttributeFromString", 54);
+		}
+	}
+
+	private static void SetWidgetAttributeFromStringAux(object target, string name, string value, BrushFactory brushFactory, SpriteData spriteData, Dictionary<string, VisualDefinitionTemplate> visualDefinitionTemplates, Dictionary<string, ConstantDefinition> constants, Dictionary<string, WidgetAttributeTemplate> parameters, Dictionary<string, XmlElement> customElements, Dictionary<string, string> defaultParameters)
+	{
 		GetObjectAndProperty(target, name, 0, out var targetObject, out var targetPropertyInfo);
-		if (!(targetPropertyInfo != null))
+		if (targetPropertyInfo == null)
 		{
 			return;
 		}

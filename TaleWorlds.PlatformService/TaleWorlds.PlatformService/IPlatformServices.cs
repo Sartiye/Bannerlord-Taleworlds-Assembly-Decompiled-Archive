@@ -35,6 +35,8 @@ public interface IPlatformServices
 
 	event Action<string> OnTextEnteredFromPlatform;
 
+	event Action OnTextCanceledFromPlatform;
+
 	event Action OnBlockedUserListUpdated;
 
 	void LoginUser();
@@ -67,7 +69,7 @@ public interface IPlatformServices
 
 	void ShowPlayerProfileCard(PlayerId providedId);
 
-	void ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated);
+	bool ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated);
 
 	void GetPlatformId(PlayerId playerId, Action<object> callback);
 
@@ -80,4 +82,6 @@ public interface IPlatformServices
 	bool RegisterPermissionChangeEvent(PlayerId targetPlayerId, Permission permission, PermissionChanged callback);
 
 	bool UnregisterPermissionChangeEvent(PlayerId targetPlayerId, Permission permission, PermissionChanged callback);
+
+	bool UsePlatformInvitationService(PlayerId targetPlayerId);
 }

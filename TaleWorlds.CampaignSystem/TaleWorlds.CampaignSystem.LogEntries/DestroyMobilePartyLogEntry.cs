@@ -73,9 +73,8 @@ public class DestroyMobilePartyLogEntry : LogEntry
 		DestroyerHero = destroyerParty?.LeaderHero;
 	}
 
-	public override int GetAsRumor(Settlement settlement, ref TextObject comment)
+	public override int GetAsRumor(Settlement settlement, out TextObject comment)
 	{
-		int result = 0;
 		if (DestroyerPartyFaction == settlement.MapFaction && DestroyerHero != null && Hero != null)
 		{
 			comment = new TextObject("{=shihxzUN}Praise be... {LORD.LINK} met {OTHER_SIDE} and whipped them soundly. Maybe now there will be an end to this war.");
@@ -90,12 +89,13 @@ public class DestroyMobilePartyLogEntry : LogEntry
 			comment.SetTextVariable("OTHER_SIDE", FactionHelper.GetTermUsedByOtherFaction(DestroyerPartyFaction, settlement.MapFaction, pejorative: false));
 			return 4;
 		}
-		return result;
+		comment = TextObject.GetEmpty();
+		return 0;
 	}
 
 	public override string ToString()
 	{
-		TextObject textObject = TextObject.Empty;
+		TextObject textObject = TextObject.GetEmpty();
 		if (Hero != null && _destroyerPartyName != null)
 		{
 			textObject = new TextObject("{=i90Cmb5e}Party of {HERO.NAME} is destroyed by {DESTROYER_PARTY}");

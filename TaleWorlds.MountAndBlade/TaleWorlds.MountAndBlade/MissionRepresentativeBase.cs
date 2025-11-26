@@ -80,7 +80,7 @@ public abstract class MissionRepresentativeBase : PeerComponent
 		ControlledAgent = agent;
 		if (ControlledAgent != null)
 		{
-			ControlledAgent.MissionRepresentative = this;
+			ControlledAgent.SetMissionRepresentative(this);
 			OnAgentSpawned();
 		}
 	}

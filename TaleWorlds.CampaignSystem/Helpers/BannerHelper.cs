@@ -19,14 +19,14 @@ public static class BannerHelper
 		}
 	}
 
-	private static void AddBannerEffectToStat(ref ExplainedNumber stat, BannerEffect.EffectIncrementType effectIncrementType, float number, TextObject effectName)
+	private static void AddBannerEffectToStat(ref ExplainedNumber stat, EffectIncrementType effectIncrementType, float number, TextObject effectName)
 	{
 		switch (effectIncrementType)
 		{
-		case BannerEffect.EffectIncrementType.Add:
+		case EffectIncrementType.Add:
 			stat.Add(number, effectName);
 			break;
-		case BannerEffect.EffectIncrementType.AddFactor:
+		case EffectIncrementType.AddFactor:
 			stat.AddFactor(number, effectName);
 			break;
 		}

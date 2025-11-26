@@ -134,6 +134,10 @@ public class DiamondDebugManager : IDebugManager
 		return Vec3.Zero;
 	}
 
+	void IDebugManager.SetDebugVector(Vec3 value)
+	{
+	}
+
 	void IDebugManager.SetTestModeEnabled(bool testModeEnabled)
 	{
 	}

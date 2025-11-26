@@ -58,28 +58,28 @@ public class CharacterDeveloperPerkSelectionWidget : Widget
 		{
 			return;
 		}
-		float num = _latestMouseUpWidgetWhenActivated.GlobalPosition.X + _latestMouseUpWidgetWhenActivated.Size.X + _distBetweenPerkItemsMultiplier * 2f * base._scaleToUse;
-		float num2 = 0f;
+		float value = _latestMouseUpWidgetWhenActivated.GlobalPosition.X + _latestMouseUpWidgetWhenActivated.Size.X + _distBetweenPerkItemsMultiplier * 2f * base._scaleToUse;
+		float value2 = 0f;
 		if (GetChild(0).ChildCount > 1)
 		{
 			if (_latestMouseUpWidgetWhenActivated is PerkItemButtonWidget perkItemButtonWidget)
 			{
 				if (perkItemButtonWidget.AlternativeType == 1)
 				{
-					num2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y + (_latestMouseUpWidgetWhenActivated.Size.Y - 4f * base._scaleToUse) - base.Size.Y / 2f;
+					value2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y + (_latestMouseUpWidgetWhenActivated.Size.Y - 4f * base._scaleToUse) - base.Size.Y / 2f;
 				}
 				else if (perkItemButtonWidget.AlternativeType == 2)
 				{
-					num2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y - base.Size.Y / 2f;
+					value2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y - base.Size.Y / 2f;
 				}
 			}
 		}
 		else
 		{
-			num2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y + _latestMouseUpWidgetWhenActivated.Size.Y / 2f - base.Size.Y / 2f;
+			value2 = _latestMouseUpWidgetWhenActivated.GlobalPosition.Y + _latestMouseUpWidgetWhenActivated.Size.Y / 2f - base.Size.Y / 2f;
 		}
-		base.ScaledPositionXOffset = MathF.Clamp(num - base.EventManager.LeftUsableAreaStart, 0f, base.EventManager.PageSize.X - base.Size.X);
-		base.ScaledPositionYOffset = MathF.Clamp(num2 - base.EventManager.TopUsableAreaStart, 0f, base.EventManager.PageSize.Y - base.Size.Y);
+		base.ScaledPositionXOffset = MathF.Clamp(value, 0f, base.EventManager.PageSize.X - base.Size.X);
+		base.ScaledPositionYOffset = MathF.Clamp(value2, 0f, base.EventManager.PageSize.Y - base.Size.Y);
 	}
 
 	private void Activate()

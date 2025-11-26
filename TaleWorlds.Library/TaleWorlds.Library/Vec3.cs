@@ -50,7 +50,7 @@ public struct Vec3
 				case 7:
 					return _element7;
 				default:
-					Debug.FailedAssert("Index out of range.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec3.cs", "Item", 41);
+					Debug.FailedAssert("Index out of range.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec3.cs", "Item", 40);
 					return Zero;
 				}
 			}
@@ -83,7 +83,7 @@ public struct Vec3
 					_element7 = value;
 					break;
 				default:
-					Debug.FailedAssert("Index out of range.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec3.cs", "Item", 59);
+					Debug.FailedAssert("Index out of range.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec3.cs", "Item", 58);
 					break;
 				}
 			}
@@ -311,6 +311,16 @@ public struct Vec3
 		return new Vec3(va.y * vb.z - va.z * vb.y, va.z * vb.x - va.x * vb.z, va.x * vb.y - va.y * vb.x);
 	}
 
+	public static Vec3 ElementWiseProduct(Vec3 va, Vec3 vb)
+	{
+		return new Vec3(va.x * vb.x, va.y * vb.y, va.z * vb.z);
+	}
+
+	public static Vec3 ElementWiseDivision(Vec3 va, Vec3 vb)
+	{
+		return new Vec3(va.x / vb.x, va.y / vb.y, va.z / vb.z);
+	}
+
 	public static Vec3 operator -(Vec3 v)
 	{
 		return new Vec3(0f - v.x, 0f - v.y, 0f - v.z);
@@ -409,6 +419,12 @@ public struct Vec3
 		return length;
 	}
 
+	public void ClampMagnitude(float min, float max)
+	{
+		float value = Normalize();
+		this *= MathF.Clamp(value, min, max);
+	}
+
 	public Vec3 ClampedCopy(float min, float max)
 	{
 		Vec3 result = this;
@@ -422,18 +438,35 @@ public struct Vec3
 	{
 		Vec3 result = this;
 		valueClamped = false;
-		for (int i = 0; i < 3; i++)
+		if (result.x < min)
 		{
-			if (result[i] < min)
-			{
-				result[i] = min;
-				valueClamped = true;
-			}
-			else if (result[i] > max)
-			{
-				result[i] = max;
-				valueClamped = true;
-			}
+			result.x = min;
+			valueClamped = true;
+		}
+		else if (result.x > max)
+		{
+			result.x = max;
+			valueClamped = true;
+		}
+		if (result.y < min)
+		{
+			result.y = min;
+			valueClamped = true;
+		}
+		else if (result.y > max)
+		{
+			result.y = max;
+			valueClamped = true;
+		}
+		if (result.z < min)
+		{
+			result.z = min;
+			valueClamped = true;
+		}
+		else if (result.z > max)
+		{
+			result.z = max;
+			valueClamped = true;
 		}
 		return result;
 	}
@@ -459,7 +492,17 @@ public struct Vec3
 		}
 	}
 
-	public bool NearlyEquals(Vec3 v, float epsilon = 1E-05f)
+	public Vec3 CrossProductWithUp()
+	{
+		return new Vec3(y, 0f - x);
+	}
+
+	public Vec3 CrossProductWithUpAsLeftParameter()
+	{
+		return new Vec3(0f - y, x);
+	}
+
+	public bool NearlyEquals(in Vec3 v, float epsilon = 1E-05f)
 	{
 		if (MathF.Abs(x - v.x) < epsilon && MathF.Abs(y - v.y) < epsilon)
 		{
@@ -534,6 +577,15 @@ public struct Vec3
 		return MathF.Sqrt((v.x - x) * (v.x - x) + (v.y - y) * (v.y - y) + (v.z - z) * (v.z - z));
 	}
 
+	public Vec3 RotateVectorToXYPlane()
+	{
+		float length = Length;
+		Vec3 vec = this;
+		vec.z = 0f;
+		vec.Normalize();
+		return vec * length;
+	}
+
 	public static float AngleBetweenTwoVectors(Vec3 v1, Vec3 v2)
 	{
 		return MathF.Acos(MathF.Clamp(DotProduct(v1, v2) / (v1.Length * v2.Length), -1f, 1f));
@@ -542,6 +594,11 @@ public struct Vec3
 	public override string ToString()
 	{
 		return "(" + x + ", " + y + ", " + z + ")";
+	}
+
+	public string ToString(string format)
+	{
+		return "(" + x.ToString(format) + ", " + y.ToString(format) + ", " + z.ToString(format) + ")";
 	}
 
 	public static Vec3 Parse(string input)

@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -134,7 +135,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		public override bool IsThereLordSolution => false;
 
-		public override TextObject Title => new TextObject("{=zKHkS5Gf}Gang leader needs weapons");
+		public override TextObject Title => new TextObject("{=zKHkS5Gf}Gang Leader Needs Weapons");
 
 		public override TextObject Description
 		{
@@ -234,18 +235,16 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(CompanionGoldNeedForAlternativeSolution, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(CompanionGoldNeedForAlternativeSolution, out explanation);
 			}
 			return false;
 		}
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -367,7 +366,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 		[SaveableField(110)]
 		private JournalLog _playerStartsQuestLog;
 
-		public override TextObject Title => new TextObject("{=zKHkS5Gf}Gang leader needs weapons");
+		public override TextObject Title => new TextObject("{=zKHkS5Gf}Gang Leader Needs Weapons");
 
 		public override bool IsRemainingTimeHidden => false;
 
@@ -698,21 +697,16 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		private void CreateGuardsParty()
 		{
-			_guardsParty = MobileParty.CreateParty("weapon_smuggling_quest_guards_party_" + CreatedPartyCount, null);
-			TextObject customName = new TextObject("{=7aaAWc01}Guard's Party");
-			_guardsParty.InitializeMobilePartyAtPosition(new TroopRoster(_guardsParty.Party), new TroopRoster(_guardsParty.Party), base.QuestGiver.CurrentSettlement.GatePosition);
-			_guardsParty.SetCustomName(customName);
-			_guardsParty.SetCustomHomeSettlement(base.QuestGiver.CurrentSettlement);
-			_guardsParty.Party.SetCustomOwner(base.QuestGiver.CurrentSettlement.OwnerClan.Leader);
-			CharacterObject character = CharacterObject.All.First((CharacterObject x) => x.StringId == "guard_" + _guardsParty.HomeSettlement.Culture.StringId);
-			_guardsParty.MemberRoster.AddToCounts(character, 1, insertAtFront: true);
+			TextObject name = new TextObject("{=7aaAWc01}Guard's Party");
+			_guardsParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(base.QuestGiver.CurrentSettlement.GatePosition, 1f, base.QuestGiver.CurrentSettlement, name, base.QuestGiver.CurrentSettlement.OwnerClan, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), base.QuestGiver.CurrentSettlement.OwnerClan.Leader);
+			_guardsParty.IsVisible = false;
 			_guardsParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			_guardsParty.Ai.DisableAi();
+			CharacterObject character = CharacterObject.All.First((CharacterObject x) => x.StringId == "guard_" + _guardsParty.HomeSettlement.Culture.StringId);
+			_guardsParty.MemberRoster.AddToCounts(character, 1, insertAtFront: true);
 			float num = 5f + 15f * _issueDifficulty;
 			_guardsParty.MemberRoster.AddToCounts(_guardsParty.HomeSettlement.Culture.MeleeMilitiaTroop, (int)num);
 			EnterSettlementAction.ApplyForParty(_guardsParty, base.QuestGiver.CurrentSettlement);
-			_guardsParty.IsVisible = false;
-			_guardsParty.ActualClan = base.QuestGiver.CurrentSettlement.OwnerClan;
 		}
 
 		protected override void SetDialogs()
@@ -765,7 +759,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		private DialogFlow GetGuardDialogFlow()
 		{
-			TextObject npcText = new TextObject("{=wBBidWVw}What have we here? You can't enter the town with so many weapons. Hand them over! You can retrieve them when you leave.[if:convo_thinking][closed2]");
+			TextObject npcText = new TextObject("{=wBBidWVw}What have we here? You can't enter the town with so many weapons. Hand them over! You can retrieve them when you leave.[if:convo_thinking][ib:closed2]");
 			TextObject text = new TextObject("{=oVAtPtsu}Clear the way! We don't want to use force!");
 			TextObject text2 = new TextObject("{=JL204Kc0}Sure... sure. We'll hand them over..");
 			TextObject text3 = new TextObject("{=nlCa3tW8}You seem like a reasonable man. What is your price?");
@@ -846,12 +840,12 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		private bool CheckPlayerHealth(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
 			if (Hero.MainHero.IsWounded)
 			{
 				explanation = new TextObject("{=yNMrF2QF}You are wounded");
 				return false;
 			}
+			explanation = null;
 			return true;
 		}
 
@@ -1033,7 +1027,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 0)
 			{
-				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : TextObject.GetEmpty());
 				return !_task.Options.ElementAt(0).IsBlocked;
 			}
 			return false;
@@ -1044,7 +1038,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 1)
 			{
-				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : TextObject.GetEmpty());
 				return !_task.Options.ElementAt(1).IsBlocked;
 			}
 			return false;
@@ -1055,7 +1049,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 2)
 			{
-				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : TextObject.GetEmpty());
 				return !_task.Options.ElementAt(2).IsBlocked;
 			}
 			return false;
@@ -1156,13 +1150,13 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 
 		private bool HasPlayerEnoughMoneyToBribe(out TextObject hintText)
 		{
-			hintText = TextObject.Empty;
 			if (Hero.MainHero.Gold < _bribeGold)
 			{
 				hintText = new TextObject("{=1V6DRayw}You don't have {BRIBE_COST} denars.");
 				hintText.SetTextVariable("BRIBE_COST", _bribeGold);
 				return false;
 			}
+			hintText = TextObject.GetEmpty();
 			return true;
 		}
 

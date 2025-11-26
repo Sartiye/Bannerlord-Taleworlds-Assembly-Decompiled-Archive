@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Barter;
@@ -287,7 +288,7 @@ public class BarterItemVM : EncyclopediaLinkVM
 		HasVisualIdentifier = visualIdentifier != null;
 		if (visualIdentifier != null)
 		{
-			VisualIdentifier = new ImageIdentifierVM(visualIdentifier);
+			VisualIdentifier = new GenericImageIdentifierVM(visualIdentifier);
 		}
 		else
 		{

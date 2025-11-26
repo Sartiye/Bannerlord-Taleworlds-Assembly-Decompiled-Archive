@@ -9,23 +9,23 @@ namespace TaleWorlds.CampaignSystem.Actions;
 
 public static class BreakInOutBesiegedSettlementAction
 {
-	public static void ApplyBreakIn(out TroopRoster casualties, out int armyCasualtiesCount)
+	public static void ApplyBreakIn(out TroopRoster casualties, out int armyCasualtiesCount, bool isFromPort)
 	{
-		ApplyInternal(breakIn: true, out casualties, out armyCasualtiesCount);
+		ApplyInternal(breakIn: true, out casualties, out armyCasualtiesCount, isFromPort);
 	}
 
-	public static void ApplyBreakOut(out TroopRoster casualties, out int armyCasualtiesCount)
+	public static void ApplyBreakOut(out TroopRoster casualties, out int armyCasualtiesCount, bool isFromPort)
 	{
-		ApplyInternal(breakIn: false, out casualties, out armyCasualtiesCount);
+		ApplyInternal(breakIn: false, out casualties, out armyCasualtiesCount, isFromPort);
 	}
 
-	private static void ApplyInternal(bool breakIn, out TroopRoster casualties, out int armyCasualtiesCount)
+	private static void ApplyInternal(bool breakIn, out TroopRoster casualties, out int armyCasualtiesCount, bool isFromPort)
 	{
 		casualties = TroopRoster.CreateDummyTroopRoster();
 		armyCasualtiesCount = -1;
 		MobileParty mainParty = MobileParty.MainParty;
 		SiegeEvent siegeEvent = Settlement.CurrentSettlement.SiegeEvent;
-		int num = ((!breakIn) ? Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingOutOfBesiegedSettlement(mainParty, siegeEvent) : Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingInBesiegedSettlement(mainParty, siegeEvent));
+		int num = ((!breakIn) ? Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingOutOfBesiegedSettlement(mainParty, siegeEvent, isFromPort).RoundedResultNumber : Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingInBesiegedSettlement(mainParty, siegeEvent).RoundedResultNumber);
 		if (mainParty.Army == null || mainParty.Army.LeaderParty != mainParty)
 		{
 			TroopRoster memberRoster = mainParty.MemberRoster;

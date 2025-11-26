@@ -4,7 +4,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class WorkshopModel : GameModel
+public abstract class WorkshopModel : MBGameModel<WorkshopModel>
 {
 	public abstract int DaysForPlayerSaveWorkshopFromBankruptcy { get; }
 
@@ -26,9 +26,9 @@ public abstract class WorkshopModel : GameModel
 
 	public abstract int GetCostForNotable(Workshop workshop);
 
-	public abstract ExplainedNumber GetEffectiveConversionSpeedOfProduction(Workshop workshop, float speed, bool includeDescriptions);
-
 	public abstract Hero GetNotableOwnerForWorkshop(Workshop workshop);
+
+	public abstract ExplainedNumber GetEffectiveConversionSpeedOfProduction(Workshop workshop, float speed, bool includeDescriptions);
 
 	public abstract int GetConvertProductionCost(WorkshopType workshopType);
 

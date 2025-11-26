@@ -33,6 +33,12 @@ public class GameMenuWidget : Widget
 
 	private ListPanel _optionItemsList;
 
+	private string _spriteName;
+
+	private string _menuId;
+
+	private Brush _overriddenSpriteMapBrush;
+
 	public int EncounterModeMenuWidth { get; set; }
 
 	public int EncounterModeMenuHeight { get; set; }
@@ -225,6 +231,57 @@ public class GameMenuWidget : Widget
 		}
 	}
 
+	[Editor(false)]
+	public string SpriteName
+	{
+		get
+		{
+			return _spriteName;
+		}
+		set
+		{
+			if (value != _spriteName)
+			{
+				_spriteName = value;
+				OnPropertyChanged(value, "SpriteName");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public string MenuId
+	{
+		get
+		{
+			return _menuId;
+		}
+		set
+		{
+			if (value != _menuId)
+			{
+				_menuId = value;
+				OnPropertyChanged(value, "MenuId");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public Brush OverriddenSpriteMapBrush
+	{
+		get
+		{
+			return _overriddenSpriteMapBrush;
+		}
+		set
+		{
+			if (value != _overriddenSpriteMapBrush)
+			{
+				_overriddenSpriteMapBrush = value;
+				OnPropertyChanged(value, "OverriddenSpriteMapBrush");
+			}
+		}
+	}
+
 	public GameMenuWidget(UIContext context)
 		: base(context)
 	{
@@ -255,6 +312,10 @@ public class GameMenuWidget : Widget
 			}
 			_firstFrame = false;
 			RefreshSize();
+		}
+		if (base.Sprite == null && OverriddenSpriteMapBrush != null && SpriteName != null)
+		{
+			base.Sprite = OverriddenSpriteMapBrush.GetLayer(SpriteName)?.Sprite;
 		}
 		base.OnLateUpdate(dt);
 	}

@@ -107,9 +107,8 @@ public class DeclareWarLogEntry : LogEntry, IEncyclopediaLog, IChatNotification,
 		}
 	}
 
-	public override int GetAsRumor(Settlement talkSettlement, ref TextObject comment)
+	public override int GetAsRumor(Settlement talkSettlement, out TextObject comment)
 	{
-		int result = 0;
 		if (Faction1 == talkSettlement.MapFaction)
 		{
 			comment = new TextObject("{=mrmxEklL}So looks like it's war with {ENEMY_NAME}. Well, I don't deny they deserve it, but it will fall hardest on the poor folk like us.");
@@ -122,7 +121,8 @@ public class DeclareWarLogEntry : LogEntry, IEncyclopediaLog, IChatNotification,
 			comment.SetTextVariable("ENEMY_NAME", FactionHelper.GetTermUsedByOtherFaction(Faction1, talkSettlement.MapFaction, pejorative: false));
 			return 10;
 		}
-		return result;
+		comment = TextObject.GetEmpty();
+		return 0;
 	}
 
 	public override string ToString()

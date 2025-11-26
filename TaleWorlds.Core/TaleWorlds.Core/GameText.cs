@@ -75,6 +75,19 @@ public class GameText
 		_variationList.Add(new GameTextVariation(variationId, text, choiceTags));
 	}
 
+	public void SetVariationWithId(string variationId, TextObject text, List<GameTextManager.ChoiceTag> choiceTags)
+	{
+		for (int i = 0; i < _variationList.Count; i++)
+		{
+			if (_variationList[i].Id.Equals(variationId))
+			{
+				_variationList[i] = new GameTextVariation(variationId, text, choiceTags);
+				return;
+			}
+		}
+		_variationList.Add(new GameTextVariation(variationId, text, choiceTags));
+	}
+
 	public void AddVariation(string text, params object[] propertiesAndWeights)
 	{
 		List<GameTextManager.ChoiceTag> list = new List<GameTextManager.ChoiceTag>();

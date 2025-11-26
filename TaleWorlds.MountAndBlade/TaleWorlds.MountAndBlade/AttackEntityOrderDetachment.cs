@@ -15,13 +15,17 @@ public class AttackEntityOrderDetachment : IDetachment
 
 	private readonly MBList<Formation> _userFormations;
 
-	private WorldFrame _frame;
+	private bool _isDetachmentRecentlyEvaluated;
+
+	private int _reevaluatedIndex;
 
 	private readonly GameEntity _targetEntity;
 
 	private readonly DestructableComponent _targetEntityDestructableComponent;
 
 	private readonly bool _surroundEntity;
+
+	private WorldFrame _frame;
 
 	private bool _isEvaluated;
 
@@ -60,18 +64,27 @@ public class AttackEntityOrderDetachment : IDetachment
 		return _frame.Origin.GetGroundVec3();
 	}
 
-	public void AddAgent(Agent agent, int slotIndex)
+	public void AddAgent(Agent agent, int slotIndex, Agent.AIScriptedFrameFlags customFlags = Agent.AIScriptedFrameFlags.None)
 	{
 		_agents.Add(agent);
-		agent.SetScriptedTargetEntityAndPosition(_targetEntity, new WorldPosition(agent.Mission.Scene, UIntPtr.Zero, _targetEntity.GlobalPosition, hasValidZ: false), _surroundEntity ? Agent.AISpecialCombatModeFlags.SurroundAttackEntity : Agent.AISpecialCombatModeFlags.None);
+		agent.SetScriptedTargetEntityAndPosition(_targetEntity.WeakEntity, new WorldPosition(agent.Mission.Scene, UIntPtr.Zero, _targetEntity.GlobalPosition, hasValidZ: false), _surroundEntity ? Agent.AISpecialCombatModeFlags.SurroundAttackEntity : Agent.AISpecialCombatModeFlags.None);
 	}
 
 	public void AddAgentAtSlotIndex(Agent agent, int slotIndex)
 	{
+		if (_agents.Count > slotIndex && _agents[slotIndex] != null)
+		{
+			Agent agent2 = _agents[slotIndex];
+			if (agent2 != null)
+			{
+				RemoveAgent(agent2);
+				agent2.Formation?.AttachUnit(agent2);
+			}
+		}
 		AddAgent(agent, slotIndex);
 		agent.Formation?.DetachUnit(agent, isLoose: true);
 		agent.Detachment = this;
-		agent.DetachmentWeight = 1f;
+		agent.SetDetachmentWeight(1f);
 	}
 
 	void IDetachment.FormationStartUsing(Formation formation)
@@ -91,20 +104,24 @@ public class AttackEntityOrderDetachment : IDetachment
 
 	Agent IDetachment.GetMovingAgentAtSlotIndex(int slotIndex)
 	{
-		return null;
+		if (slotIndex >= _agents.Count)
+		{
+			return null;
+		}
+		return _agents[slotIndex];
 	}
 
 	void IDetachment.GetSlotIndexWeightTuples(List<(int, float)> slotIndexWeightTuples)
 	{
-		for (int i = _agents.Count; i < 8; i++)
+		for (int i = ((_agents.Count != 8) ? _agents.Count : 0); i < 8; i++)
 		{
-			slotIndexWeightTuples.Add((i, CalculateWeight(i)));
+			slotIndexWeightTuples.Add((i, CalculateWeight(i) + ((i == _reevaluatedIndex) ? 10f : 0f)));
 		}
 	}
 
 	bool IDetachment.IsSlotAtIndexAvailableForAgent(int slotIndex, Agent agent)
 	{
-		if (slotIndex < 8 && slotIndex >= _agents.Count && agent.CanBeAssignedForScriptedMovement())
+		if (agent.CanBeAssignedForScriptedMovement())
 		{
 			return !IsAgentOnInconvenientNavmesh(agent);
 		}
@@ -138,16 +155,22 @@ public class AttackEntityOrderDetachment : IDetachment
 
 	void IDetachment.UnmarkDetachment()
 	{
+		_isDetachmentRecentlyEvaluated = false;
+		_reevaluatedIndex = 0;
 	}
 
 	bool IDetachment.IsDetachmentRecentlyEvaluated()
 	{
-		return false;
+		return _isDetachmentRecentlyEvaluated;
 	}
 
 	void IDetachment.MarkSlotAtIndex(int slotIndex)
 	{
-		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\TeamAI\\AttackEntityOrderDetachment.cs", "MarkSlotAtIndex", 149);
+		_reevaluatedIndex++;
+		if (_reevaluatedIndex == 8)
+		{
+			_reevaluatedIndex = 0;
+		}
 	}
 
 	bool IDetachment.IsAgentUsingOrInterested(Agent agent)
@@ -191,8 +214,14 @@ public class AttackEntityOrderDetachment : IDetachment
 
 	float IDetachment.GetExactCostOfAgentAtSlot(Agent candidate, int slotIndex)
 	{
-		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\TeamAI\\AttackEntityOrderDetachment.cs", "GetExactCostOfAgentAtSlot", 205);
-		return 0f;
+		WorldPosition point = candidate.GetWorldPosition();
+		WorldPosition point2 = _frame.Origin;
+		point2.SetVec2(point2.AsVec2 + _frame.Rotation.f.AsVec2.Normalized() * 0.7f);
+		if (!Mission.Current.Scene.GetPathDistanceBetweenPositions(ref point, ref point2, candidate.Monster.BodyCapsuleRadius, out var pathDistance))
+		{
+			return float.MaxValue;
+		}
+		return pathDistance * MissionGameModels.Current.AgentStatCalculateModel.GetDetachmentCostMultiplierOfAgent(candidate, this);
 	}
 
 	public float GetTemplateWeightOfAgent(Agent candidate)
@@ -212,7 +241,7 @@ public class AttackEntityOrderDetachment : IDetachment
 		if (_agents.Count < 8)
 		{
 			Vec3 position = _targetEntity.GlobalPosition;
-			match = newAgents.MinBy((Agent a) => a.Position.DistanceSquared(position));
+			match = TaleWorlds.Core.Extensions.MinBy(newAgents, (Agent a) => a.Position.DistanceSquared(position));
 			return weightOfNextSlot;
 		}
 		match = null;
@@ -231,7 +260,7 @@ public class AttackEntityOrderDetachment : IDetachment
 			});
 			if (source.Any())
 			{
-				match = source.MinBy(((Agent, float) a) => a.Item2).Item1;
+				match = TaleWorlds.Core.Extensions.MinBy(source, ((Agent, float) a) => a.Item2).Item1;
 				return weight;
 			}
 		}
@@ -243,7 +272,7 @@ public class AttackEntityOrderDetachment : IDetachment
 	{
 		float weightOfOccupiedSlot = GetWeightOfOccupiedSlot(detachedAgent);
 		Vec3 position = _targetEntity.GlobalPosition;
-		match = newAgents.MinBy((Agent a) => a.Position.DistanceSquared(position));
+		match = TaleWorlds.Core.Extensions.MinBy(newAgents, (Agent a) => a.Position.DistanceSquared(position));
 		return weightOfOccupiedSlot * 0.5f;
 	}
 
@@ -289,7 +318,11 @@ public class AttackEntityOrderDetachment : IDetachment
 		{
 			return (float)(8 - _agents.Count) * 1f / 8f;
 		}
-		return float.MinValue;
+		if (!_isDetachmentRecentlyEvaluated)
+		{
+			return 0.099f;
+		}
+		return 0.0099f;
 	}
 
 	void IDetachment.ResetEvaluation()

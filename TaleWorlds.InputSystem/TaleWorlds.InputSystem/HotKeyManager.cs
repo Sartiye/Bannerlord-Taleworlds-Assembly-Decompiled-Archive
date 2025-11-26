@@ -13,7 +13,7 @@ public static class HotKeyManager
 
 	private static readonly List<string> _serializeIgnoredCategories = new List<string>();
 
-	private static readonly float _versionOfHotkeys = 3f;
+	private static readonly float _versionOfHotkeys = 5f;
 
 	private static bool _hotkeyEditEnabled = false;
 
@@ -29,7 +29,7 @@ public static class HotKeyManager
 		{
 			return value.GetHotKeyId(hotKeyId);
 		}
-		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 29);
+		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 29);
 		return "";
 	}
 
@@ -39,7 +39,7 @@ public static class HotKeyManager
 		{
 			return value.GetHotKeyId(hotKeyId);
 		}
-		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 40);
+		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 40);
 		return "invalid";
 	}
 
@@ -68,18 +68,27 @@ public static class HotKeyManager
 		_categories.Clear();
 		foreach (GameKeyContext context in contexts)
 		{
-			if (!_categories.ContainsKey(context.GameKeyCategoryId))
-			{
-				_categories.Add(context.GameKeyCategoryId, context);
-			}
-			if (context.Type == GameKeyContext.GameKeyContextType.AuxiliaryNotSerialized && !_serializeIgnoredCategories.Contains(context.GameKeyCategoryId))
-			{
-				_serializeIgnoredCategories.Add(context.GameKeyCategoryId);
-			}
+			RegisterContext(context, context.Type == GameKeyContext.GameKeyContextType.AuxiliaryNotSerialized);
 		}
 		if (loadKeys)
 		{
-			Load();
+			LoadAsync();
+		}
+	}
+
+	public static void RegisterContext(GameKeyContext context, bool ignoreSerialize = false, bool loadKeys = false)
+	{
+		if (!_categories.ContainsKey(context.GameKeyCategoryId))
+		{
+			_categories.Add(context.GameKeyCategoryId, context);
+		}
+		if (ignoreSerialize && !_serializeIgnoredCategories.Contains(context.GameKeyCategoryId))
+		{
+			_serializeIgnoredCategories.Add(context.GameKeyCategoryId);
+		}
+		if (loadKeys)
+		{
+			LoadAsync();
 		}
 	}
 
@@ -121,7 +130,7 @@ public static class HotKeyManager
 		}
 	}
 
-	public static void Load()
+	public static async void LoadAsync()
 	{
 		if (!FileHelper.FileExists(_savePath))
 		{
@@ -129,9 +138,9 @@ public static class HotKeyManager
 		}
 		try
 		{
-			XmlDocument xmlDocument = new XmlDocument();
-			xmlDocument.Load(_savePath);
-			XmlElement documentElement = xmlDocument.DocumentElement;
+			XmlDocument document = new XmlDocument();
+			await document.LoadAsync(_savePath);
+			XmlElement documentElement = document.DocumentElement;
 			float num = 0f;
 			if (documentElement.HasAttribute("hotkeyEditEnabled"))
 			{
@@ -144,7 +153,7 @@ public static class HotKeyManager
 			if (num != _versionOfHotkeys)
 			{
 				_notifyDocumentVersionDifferent = true;
-				Save(throwEvent: false);
+				SaveAsync(throwEvent: false);
 				return;
 			}
 			foreach (XmlNode childNode in documentElement.ChildNodes)
@@ -281,13 +290,13 @@ public static class HotKeyManager
 				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
-			Debug.FailedAssert("Couldn't load key bindings.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "Load", 345);
+			Debug.FailedAssert("Couldn't load key bindings: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "LoadAsync", 354);
 		}
 	}
 
-	public static void Save(bool throwEvent)
+	public static async void SaveAsync(bool throwEvent)
 	{
 		try
 		{
@@ -366,7 +375,7 @@ public static class HotKeyManager
 					}
 				}
 			}
-			xmlDocument.Save(_savePath);
+			await xmlDocument.SaveAsync(_savePath);
 			if (throwEvent)
 			{
 				HotKeyManager.OnKeybindsChanged?.Invoke();
@@ -374,7 +383,7 @@ public static class HotKeyManager
 		}
 		catch
 		{
-			Debug.FailedAssert("Couldn't save key bindings.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "Save", 457);
+			Debug.FailedAssert("Couldn't save key bindings.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "SaveAsync", 466);
 		}
 	}
 }

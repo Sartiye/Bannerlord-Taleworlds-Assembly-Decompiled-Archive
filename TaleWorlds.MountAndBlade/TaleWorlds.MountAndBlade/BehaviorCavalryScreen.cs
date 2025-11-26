@@ -35,9 +35,9 @@ public class BehaviorCavalryScreen : BehaviorComponent
 		if (_mainFormation == null || base.Formation.AI.IsMainFormation || (base.Formation.AI.Side != 0 && base.Formation.AI.Side != FormationAI.BehaviorSide.Right))
 		{
 			_flankingEnemyCavalryFormation = null;
-			WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 			return;
 		}
 		float currentTime = Mission.Current.CurrentTime;
@@ -59,7 +59,7 @@ public class BehaviorCavalryScreen : BehaviorComponent
 					{
 						continue;
 					}
-					Vec2 vec2 = item.QuerySystem.MedianPosition.AsVec2 - _mainFormation.QuerySystem.MedianPosition.AsVec2;
+					Vec2 vec2 = item.CachedMedianPosition.AsVec2 - _mainFormation.CachedMedianPosition.AsVec2;
 					if (vec.Normalized().DotProduct(vec2.Normalized()) > 0.9238795f)
 					{
 						float formationPower = item.QuerySystem.FormationPower;
@@ -72,20 +72,20 @@ public class BehaviorCavalryScreen : BehaviorComponent
 				}
 			}
 		}
-		WorldPosition medianPosition2;
+		WorldPosition cachedMedianPosition2;
 		if (_flankingEnemyCavalryFormation == null)
 		{
-			medianPosition2 = base.Formation.QuerySystem.MedianPosition;
-			medianPosition2.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			cachedMedianPosition2 = base.Formation.CachedMedianPosition;
+			cachedMedianPosition2.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
-			Vec2 vec3 = _flankingEnemyCavalryFormation.QuerySystem.MedianPosition.AsVec2 - _mainFormation.QuerySystem.MedianPosition.AsVec2;
+			Vec2 vec3 = _flankingEnemyCavalryFormation.CachedMedianPosition.AsVec2 - _mainFormation.CachedMedianPosition.AsVec2;
 			float num2 = vec3.Normalize() * 0.5f;
-			medianPosition2 = _mainFormation.QuerySystem.MedianPosition;
-			medianPosition2.SetVec2(medianPosition2.AsVec2 + num2 * vec3);
+			cachedMedianPosition2 = _mainFormation.CachedMedianPosition;
+			cachedMedianPosition2.SetVec2(cachedMedianPosition2.AsVec2 + num2 * vec3);
 		}
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition2);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition2);
 	}
 
 	public override void TickOccasionally()
@@ -98,10 +98,10 @@ public class BehaviorCavalryScreen : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderSkein;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderSkein);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	public override TextObject GetBehaviorString()

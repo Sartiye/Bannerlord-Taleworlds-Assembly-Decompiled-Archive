@@ -8,6 +8,10 @@ public interface IGauntletMovie
 
 	string MovieName { get; }
 
+	bool IsLoaded { get; }
+
+	bool IsReleased { get; }
+
 	void Update();
 
 	void Release();

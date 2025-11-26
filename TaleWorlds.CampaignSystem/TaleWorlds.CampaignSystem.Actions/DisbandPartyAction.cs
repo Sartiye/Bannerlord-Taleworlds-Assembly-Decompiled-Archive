@@ -35,7 +35,7 @@ public static class DisbandPartyAction
 		}
 		TextObject textObject = new TextObject("{=ithcVNfA}{CLAN_NAME}{.o} Party");
 		textObject.SetTextVariable("CLAN_NAME", (disbandParty.ActualClan != null) ? disbandParty.ActualClan.Name : CampaignData.NeutralFactionName);
-		disbandParty.SetCustomName(textObject);
+		disbandParty.Party.SetCustomName(textObject);
 		CampaignEventDispatcher.Instance.OnPartyDisbandStarted(disbandParty);
 	}
 
@@ -43,7 +43,7 @@ public static class DisbandPartyAction
 	{
 		CampaignEventDispatcher.Instance.OnPartyDisbandCanceled(disbandParty);
 		disbandParty.IsDisbanding = false;
-		disbandParty.SetCustomName(TextObject.Empty);
-		disbandParty.Ai.SetMoveModeHold();
+		disbandParty.Party.SetCustomName(TextObject.GetEmpty());
+		disbandParty.SetMoveModeHold();
 	}
 }

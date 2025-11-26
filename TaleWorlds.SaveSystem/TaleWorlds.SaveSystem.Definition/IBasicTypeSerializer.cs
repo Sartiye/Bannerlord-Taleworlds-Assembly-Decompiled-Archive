@@ -7,4 +7,6 @@ public interface IBasicTypeSerializer
 	void Serialize(IWriter writer, object value);
 
 	object Deserialize(IReader reader);
+
+	int GetSizeInBytes();
 }

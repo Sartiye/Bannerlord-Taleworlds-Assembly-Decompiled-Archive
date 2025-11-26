@@ -29,7 +29,7 @@ public class MountHealthCondition : MPPerkCondition
 		}
 		else if (!float.TryParse(text, out _min))
 		{
-			Debug.FailedAssert("provided 'min' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\MountHealthCondition.cs", "Deserialize", 34);
+			Debug.FailedAssert("provided 'min' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\MountHealthCondition.cs", "Deserialize", 34);
 		}
 		string text2 = node?.Attributes?["max"]?.Value;
 		if (text2 == null)
@@ -38,7 +38,7 @@ public class MountHealthCondition : MPPerkCondition
 		}
 		else if (!float.TryParse(text2, out _max))
 		{
-			Debug.FailedAssert("provided 'max' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\MountHealthCondition.cs", "Deserialize", 44);
+			Debug.FailedAssert("provided 'max' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\MountHealthCondition.cs", "Deserialize", 44);
 		}
 	}
 

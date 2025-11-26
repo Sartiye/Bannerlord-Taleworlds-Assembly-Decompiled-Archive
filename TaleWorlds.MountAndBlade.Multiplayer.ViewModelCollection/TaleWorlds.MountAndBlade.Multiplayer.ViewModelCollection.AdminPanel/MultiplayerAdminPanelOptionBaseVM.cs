@@ -280,9 +280,9 @@ public abstract class MultiplayerAdminPanelOptionBaseVM : ViewModel
 		{
 			DescriptionHint = null;
 		}
-		RequiresRestartHint = new HintViewModel(new TextObject("{=*}This option won't take effect until next mission."));
-		IsDirtyHint = new HintViewModel(new TextObject("{=*}Revert changes"));
-		RestoreToDefaultsHint = new HintViewModel(new TextObject("{=*}Restore to defaults"));
+		RequiresRestartHint = new HintViewModel(new TextObject("{=MxRJ4CWL}This option won't take effect until next mission."));
+		IsDirtyHint = new HintViewModel(new TextObject("{=ftM2TjQ5}Revert changes"));
+		RestoreToDefaultsHint = new HintViewModel(new TextObject("{=36ll5uSI}Restore to defaults"));
 	}
 
 	public override void OnFinalize()

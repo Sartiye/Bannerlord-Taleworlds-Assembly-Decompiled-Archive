@@ -1,5 +1,5 @@
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.BarterSystem.Barterables;
@@ -37,15 +37,15 @@ public class DeclareWarBarterable : Barterable
 	public override int GetUnitValueForFaction(IFaction faction)
 	{
 		int result = 0;
-		Clan evaluatingFaction = ((faction is Clan) ? ((Clan)faction) : ((Kingdom)faction).RulingClan);
+		Clan evaluatingClan = ((faction is Clan) ? ((Clan)faction) : ((Kingdom)faction).RulingClan);
 		TextObject reason;
 		if (faction.MapFaction == base.OriginalOwner.MapFaction)
 		{
-			result = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(base.OriginalOwner.MapFaction, OtherFaction.MapFaction, evaluatingFaction, out reason);
+			result = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(base.OriginalOwner.MapFaction, OtherFaction.MapFaction, evaluatingClan, out reason);
 		}
 		else if (faction.MapFaction == OtherFaction.MapFaction)
 		{
-			result = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(OtherFaction.MapFaction, base.OriginalOwner.MapFaction, evaluatingFaction, out reason);
+			result = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(OtherFaction.MapFaction, base.OriginalOwner.MapFaction, evaluatingClan, out reason);
 		}
 		return result;
 	}

@@ -40,6 +40,8 @@ public class BannerEditorVM : ViewModel
 
 	private InputKeyItemVM _doneInputKey;
 
+	private MBBindingList<InputKeyItemVM> _cameraControlKeys;
+
 	private string _iconCodes;
 
 	private string _colorCodes;
@@ -81,6 +83,8 @@ public class BannerEditorVM : ViewModel
 	private HintViewModel _redoHint;
 
 	private MBBindingList<HintViewModel> _categoryNames;
+
+	private bool _characterGamepadControlsEnabled;
 
 	private string _title = "";
 
@@ -126,6 +130,23 @@ public class BannerEditorVM : ViewModel
 			{
 				_doneInputKey = value;
 				OnPropertyChangedWithValue(value, "DoneInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<InputKeyItemVM> CameraControlKeys
+	{
+		get
+		{
+			return _cameraControlKeys;
+		}
+		set
+		{
+			if (value != _cameraControlKeys)
+			{
+				_cameraControlKeys = value;
+				OnPropertyChangedWithValue(value, "CameraControlKeys");
 			}
 		}
 	}
@@ -492,6 +513,23 @@ public class BannerEditorVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool CharacterGamepadControlsEnabled
+	{
+		get
+		{
+			return _characterGamepadControlsEnabled;
+		}
+		set
+		{
+			if (value != _characterGamepadControlsEnabled)
+			{
+				_characterGamepadControlsEnabled = value;
+				OnPropertyChangedWithValue(value, "CharacterGamepadControlsEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string Title
 	{
 		get
@@ -595,15 +633,15 @@ public class BannerEditorVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Banner Editor couldn't find a shield to show", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\BannerEditorVM.cs", ".ctor", 55);
+			Debug.FailedAssert("Banner Editor couldn't find a shield to show", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\BannerEditorVM.cs", ".ctor", 55);
 		}
 		_goToIndex = goToIndex;
 		TotalStageCount = totalStagesCount;
 		CurrentStageIndex = currentStageIndex;
 		FurthestIndex = furthestIndex;
+		CameraControlKeys = new MBBindingList<InputKeyItemVM>();
 		MinIconSize = 100;
 		MaxIconSize = 700;
-		BannerVM.SetCode(banner.Serialize());
 		RefreshValues();
 	}
 
@@ -631,7 +669,7 @@ public class BannerEditorVM : ViewModel
 			{
 				BannerIconVM bannerIconVM = new BannerIconVM(availableIcon.Key, OnIconSelection);
 				IconsList.Add(bannerIconVM);
-				bannerIconVM.IsSelected = bannerIconVM.IconID == _banner.BannerDataList[1].MeshId;
+				bannerIconVM.IsSelected = bannerIconVM.IconID == _banner.GetIconMeshId();
 			}
 			CategoryNames.Add(new HintViewModel(bannerIconGroup.Name, "banner_group_hint_" + bannerIconGroup.Id));
 		}
@@ -643,7 +681,7 @@ public class BannerEditorVM : ViewModel
 			if (flag2)
 			{
 				BannerColorVM bannerColorVM = new BannerColorVM(item.Key, item.Value.Color, OnPrimaryColorSelection);
-				if (bannerColorVM.ColorID == _banner.BannerDataList[0].ColorId)
+				if (bannerColorVM.ColorID == _banner.GetPrimaryColorId())
 				{
 					bannerColorVM.IsSelected = true;
 					_currentSelectedPrimaryColor = bannerColorVM;
@@ -653,7 +691,7 @@ public class BannerEditorVM : ViewModel
 			if (num)
 			{
 				BannerColorVM bannerColorVM2 = new BannerColorVM(item.Key, item.Value.Color, OnSigilColorSelection);
-				if (bannerColorVM2.ColorID == _banner.BannerDataList[1].ColorId)
+				if (bannerColorVM2.ColorID == _banner.GetIconColorId())
 				{
 					bannerColorVM2.IsSelected = true;
 					_currentSelectedSigilColor = bannerColorVM2;
@@ -661,15 +699,58 @@ public class BannerEditorVM : ViewModel
 				SigilColorList.Add(bannerColorVM2);
 			}
 		}
-		CurrentIconSize = (int)_banner.BannerDataList[1].Size.X;
+		CurrentIconSize = (int)_banner.GetIconSize().X;
 		_initialized = true;
+	}
+
+	public void RefreshSelectedColorsAndSigils()
+	{
+		int iconMeshId = BannerVM.Banner.GetIconMeshId();
+		int primaryColorId = _banner.GetPrimaryColorId();
+		int iconColorId = _banner.GetIconColorId();
+		for (int i = 0; i < IconsList.Count; i++)
+		{
+			BannerIconVM bannerIconVM = IconsList[i];
+			bannerIconVM.IsSelected = bannerIconVM.IconID == iconMeshId;
+		}
+		if (!DoesListHaveColor(PrimaryColorList, primaryColorId) || !DoesListHaveColor(SigilColorList, iconColorId))
+		{
+			ExecuteSwitchColors();
+		}
+		if (!DoesListHaveColor(PrimaryColorList, primaryColorId) || !DoesListHaveColor(SigilColorList, iconColorId))
+		{
+			Debug.FailedAssert("Color lists do not contain banner colors", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\BannerEditorVM.cs", "RefreshSelectedColorsAndSigils", 160);
+			return;
+		}
+		for (int j = 0; j < PrimaryColorList.Count; j++)
+		{
+			BannerColorVM bannerColorVM = PrimaryColorList[j];
+			bannerColorVM.IsSelected = bannerColorVM.ColorID == primaryColorId;
+		}
+		for (int k = 0; k < SigilColorList.Count; k++)
+		{
+			BannerColorVM bannerColorVM2 = SigilColorList[k];
+			bannerColorVM2.IsSelected = bannerColorVM2.ColorID == iconColorId;
+		}
+	}
+
+	private static bool DoesListHaveColor(MBBindingList<BannerColorVM> list, int color)
+	{
+		for (int i = 0; i < list.Count; i++)
+		{
+			if (list[i].ColorID == color)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private bool IsColorsSwitched()
 	{
 		foreach (KeyValuePair<int, BannerColor> item in BannerManager.Instance.ReadOnlyColorPalette)
 		{
-			if (item.Value.PlayerCanChooseForBackground && item.Key == _banner.BannerDataList[0].ColorId)
+			if (item.Value.PlayerCanChooseForBackground && item.Key == _banner.GetPrimaryColorId())
 			{
 				return false;
 			}
@@ -692,7 +773,7 @@ public class BannerEditorVM : ViewModel
 			}
 			_currentSelectedIcon = icon;
 			icon.IsSelected = true;
-			BannerVM.SetIconMeshID(icon.IconID);
+			BannerVM.Banner.SetIconMeshId(icon.IconID);
 			_refresh();
 		}
 	}
@@ -701,7 +782,7 @@ public class BannerEditorVM : ViewModel
 	{
 		if (_currentSelectedPrimaryColor == null || _currentSelectedSigilColor == null)
 		{
-			Debug.FailedAssert("Couldn't find current player clan colors in the list of selectable banner editor colors.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\BannerEditorVM.cs", "ExecuteSwitchColors", 179);
+			Debug.FailedAssert("Couldn't find current player clan colors in the list of selectable banner editor colors.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\BannerEditorVM.cs", "ExecuteSwitchColors", 230);
 			return;
 		}
 		MBBindingList<BannerColorVM> primaryColorList = PrimaryColorList;
@@ -720,9 +801,9 @@ public class BannerEditorVM : ViewModel
 		_currentSelectedSigilColor = currentSelectedPrimaryColor;
 		_currentSelectedPrimaryColor.IsSelected = true;
 		_currentSelectedSigilColor.IsSelected = true;
-		BannerVM.SetPrimaryColorId(_currentSelectedPrimaryColor.ColorID);
-		BannerVM.SetSecondaryColorId(_currentSelectedPrimaryColor.ColorID);
-		BannerVM.SetSigilColorId(_currentSelectedSigilColor.ColorID);
+		BannerVM.Banner.SetPrimaryColorId(_currentSelectedPrimaryColor.ColorID);
+		BannerVM.Banner.SetSecondaryColorId(_currentSelectedPrimaryColor.ColorID);
+		BannerVM.Banner.SetIconColorId(_currentSelectedSigilColor.ColorID);
 		_refresh();
 	}
 
@@ -736,8 +817,8 @@ public class BannerEditorVM : ViewModel
 			}
 			_currentSelectedPrimaryColor = color;
 			color.IsSelected = true;
-			BannerVM.SetPrimaryColorId(color.ColorID);
-			BannerVM.SetSecondaryColorId(color.ColorID);
+			BannerVM.Banner.SetPrimaryColorId(color.ColorID);
+			BannerVM.Banner.SetSecondaryColorId(color.ColorID);
 			_refresh();
 		}
 	}
@@ -752,14 +833,14 @@ public class BannerEditorVM : ViewModel
 			}
 			_currentSelectedSigilColor = color;
 			color.IsSelected = true;
-			BannerVM.SetSigilColorId(color.ColorID);
+			BannerVM.Banner.SetIconColorId(color.ColorID);
 			_refresh();
 		}
 	}
 
 	private void OnBannerIconSizeChange(int newSize)
 	{
-		BannerVM.SetIconSize(newSize);
+		BannerVM.Banner.SetIconSize(newSize);
 		_refresh();
 	}
 
@@ -799,6 +880,10 @@ public class BannerEditorVM : ViewModel
 		base.OnFinalize();
 		CancelInputKey?.OnFinalize();
 		DoneInputKey?.OnFinalize();
+		for (int i = 0; i < CameraControlKeys.Count; i++)
+		{
+			CameraControlKeys[i].OnFinalize();
+		}
 	}
 
 	public void SetCancelInputKey(HotKey hotKey)
@@ -809,6 +894,24 @@ public class BannerEditorVM : ViewModel
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void AddCameraControlInputKey(HotKey hotKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameKey gameKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameAxisKey gameAxisKey, TextObject keyName)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromForcedID(gameAxisKey.AxisKey.ToString(), keyName, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
 	}
 
 	public void ExecuteGoToIndex(int index)

@@ -54,10 +54,20 @@ public class MissionCameraFadeView : MissionView
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (base.Mission != null && base.MissionScreen.IsMissionTickable)
+		if (base.Mission != null && base.MissionScreen.IsMissionTickable && !MBCommon.IsPaused)
 		{
 			UpdateFadeState(dt);
 		}
+	}
+
+	public override bool OnEscape()
+	{
+		return IsCameraFading;
+	}
+
+	public override bool IsOpeningEscapeMenuOnFocusChangeAllowed()
+	{
+		return !IsCameraFading;
 	}
 
 	protected void UpdateFadeState(float dt)

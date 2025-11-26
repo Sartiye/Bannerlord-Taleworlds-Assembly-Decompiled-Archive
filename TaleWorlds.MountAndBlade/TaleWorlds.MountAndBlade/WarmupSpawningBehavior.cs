@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -15,7 +16,7 @@ public class WarmupSpawningBehavior : SpawningBehaviorBase
 
 	public override void OnTick(float dt)
 	{
-		if (IsSpawningEnabled && _spawnCheckTimer.Check(base.Mission.CurrentTime))
+		if (IsSpawningEnabled && SpawnCheckTimer.Check(base.Mission.CurrentTime))
 		{
 			SpawnAgents();
 		}
@@ -26,6 +27,7 @@ public class WarmupSpawningBehavior : SpawningBehaviorBase
 	{
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
 			if (!networkPeer.IsSynchronized)
@@ -38,7 +40,7 @@ public class WarmupSpawningBehavior : SpawningBehaviorBase
 				continue;
 			}
 			IAgentVisual agentVisualForPeer = component.GetAgentVisualForPeer(0);
-			BasicCultureObject basicCultureObject = ((component.Team.Side == BattleSideEnum.Attacker) ? @object : object2);
+			BasicCultureObject basicCultureObject = ((component.Culture == @object) ? @object : object2);
 			int num = component.SelectedTroopIndex;
 			IEnumerable<MultiplayerClassDivisions.MPHeroClass> mPHeroClasses = MultiplayerClassDivisions.GetMPHeroClasses(basicCultureObject);
 			MultiplayerClassDivisions.MPHeroClass mPHeroClass = ((num < 0) ? null : mPHeroClasses.ElementAt(num));
@@ -67,14 +69,15 @@ public class WarmupSpawningBehavior : SpawningBehaviorBase
 				matrixFrame = agentVisualForPeer.GetFrame();
 				matrixFrame.rotation.MakeUnit();
 			}
+			MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = multiplayerBattleColors.GetPeerColors(component);
 			AgentBuildData agentBuildData = new AgentBuildData(heroCharacter).MissionPeer(component).Equipment(equipment).Team(component.Team)
 				.TroopOrigin(new BasicBattleAgentOrigin(heroCharacter))
 				.InitialPosition(in matrixFrame.origin);
 			Vec2 direction = matrixFrame.rotation.f.AsVec2.Normalized();
 			AgentBuildData agentBuildData2 = agentBuildData.InitialDirection(in direction).IsFemale(component.Peer.IsFemale).BodyProperties(GetBodyProperties(component, basicCultureObject))
 				.VisualsIndex(0)
-				.ClothingColor1((component.Team == base.Mission.AttackerTeam) ? basicCultureObject.Color : basicCultureObject.ClothAlternativeColor)
-				.ClothingColor2((component.Team == base.Mission.AttackerTeam) ? basicCultureObject.Color2 : basicCultureObject.ClothAlternativeColor2);
+				.ClothingColor1(peerColors.ClothingColor1Uint)
+				.ClothingColor2(peerColors.ClothingColor2Uint);
 			if (GameMode.ShouldSpawnVisualsForServer(networkPeer))
 			{
 				base.AgentVisualSpawnComponent.SpawnAgentVisualsForPeer(component, agentBuildData2, num);

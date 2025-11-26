@@ -42,7 +42,7 @@ public class BoundaryWallView : ScriptComponentBehavior
 			if (flag || flag2 || flag3)
 			{
 				base.GameEntity.ClearEntityComponents(resetAll: true, removeScripts: false, deleteChildEntities: true);
-				base.GameEntity.Name = "editor_map_border";
+				base.GameEntity.SetName("editor_map_border");
 				Mesh mesh = CreateBoundaryMesh(base.Scene, _lastPoints);
 				if (mesh != null)
 				{
@@ -70,13 +70,13 @@ public class BoundaryWallView : ScriptComponentBehavior
 
 	private bool CalculateBoundaries(string vertexTag, ref List<Vec2> lastPoints)
 	{
-		IEnumerable<GameEntity> source = base.Scene.FindEntitiesWithTag(vertexTag);
-		source = source.Where((GameEntity e) => !e.EntityFlags.HasAnyFlag(EntityFlags.DontSaveToScene));
+		IEnumerable<WeakGameEntity> source = base.Scene.FindWeakEntitiesWithTag(vertexTag);
+		source = source.Where((WeakGameEntity e) => !e.EntityFlags.HasAnyFlag(EntityFlags.DontSaveToScene));
 		int num = source.Count();
 		bool flag = false;
 		if (num >= 3)
 		{
-			List<Vec2> source2 = source.Select((GameEntity e) => e.GlobalPosition.AsVec2).ToList();
+			List<Vec2> source2 = source.Select((WeakGameEntity e) => e.GlobalPosition.AsVec2).ToList();
 			Vec2 mid = new Vec2(source2.Average((Vec2 p) => p.x), source2.Average((Vec2 p) => p.y));
 			source2 = source2.OrderBy((Vec2 p) => TaleWorlds.Library.MathF.Atan2(p.x - mid.x, p.y - mid.y)).ToList();
 			if (lastPoints != null && lastPoints.Count == source2.Count)
@@ -160,8 +160,8 @@ public class BoundaryWallView : ScriptComponentBehavior
 		{
 			vectorArgument = 100000f;
 		}
-		IEnumerable<GameEntity> source = scene.FindEntitiesWithTag("walk_area_vertex");
-		float vectorArgument2 = (source.Any() ? source.Average((GameEntity ent) => ent.GlobalPosition.z) : 0f);
+		IEnumerable<WeakGameEntity> source = scene.FindWeakEntitiesWithTag("walk_area_vertex");
+		float vectorArgument2 = (source.Any() ? source.Average((WeakGameEntity ent) => ent.GlobalPosition.z) : 0f);
 		mesh.SetVectorArgument(vectorArgument, vectorArgument2, 0f, 0f);
 		mesh.ComputeNormals();
 		mesh.ComputeTangents();

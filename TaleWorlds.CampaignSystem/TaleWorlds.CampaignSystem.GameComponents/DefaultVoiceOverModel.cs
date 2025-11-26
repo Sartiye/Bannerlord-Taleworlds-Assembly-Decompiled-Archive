@@ -49,27 +49,23 @@ public class DefaultVoiceOverModel : VoiceOverModel
 		{
 			return "";
 		}
-		foreach (string voicePath in voiceObject.VoicePaths)
-		{
-			Debug.Print("[VOICEOVER]Sound path search for: " + voicePath);
-		}
 		string text = "";
 		string value = character.StringId + "_" + (CharacterObject.PlayerCharacter.IsFemale ? "female" : "male");
-		foreach (string voicePath2 in voiceObject.VoicePaths)
+		foreach (string voicePath in voiceObject.VoicePaths)
 		{
-			if (voicePath2.Contains(value))
+			if (voicePath.Contains(value))
 			{
-				text = voicePath2;
+				text = voicePath;
 				break;
 			}
-			if (voicePath2.Contains(character.StringId + "_"))
+			if (voicePath.Contains(character.StringId + "_"))
 			{
-				text = voicePath2;
+				text = voicePath;
 			}
 		}
 		if (string.IsNullOrEmpty(text))
 		{
-			string accentClass = GetAccentClass(character.Culture, ConversationTagHelper.UsesHighRegister(character));
+			string accentClass = Campaign.Current.Models.VoiceOverModel.GetAccentClass(character.Culture, ConversationTagHelper.UsesHighRegister(character));
 			Debug.Print("accentClass: " + accentClass);
 			string text2 = (character.IsFemale ? "female" : "male");
 			string stringId = character.GetPersona().StringId;
@@ -120,12 +116,15 @@ public class DefaultVoiceOverModel : VoiceOverModel
 				{
 					continue;
 				}
-				if (doubleCheckForGender && (voicePath.Contains("_male") || voicePath.Contains("_female")))
+				if (doubleCheckForGender)
 				{
-					string value = (isFemale ? "_female" : "_male");
-					if (voicePath.Contains(value))
+					if (voicePath.Contains("_male") || voicePath.Contains("_female"))
 					{
-						possibleVoicePaths.Add(voicePath);
+						string value = (isFemale ? "_female" : "_male");
+						if (voicePath.Contains(value))
+						{
+							possibleVoicePaths.Add(voicePath);
+						}
 					}
 				}
 				else

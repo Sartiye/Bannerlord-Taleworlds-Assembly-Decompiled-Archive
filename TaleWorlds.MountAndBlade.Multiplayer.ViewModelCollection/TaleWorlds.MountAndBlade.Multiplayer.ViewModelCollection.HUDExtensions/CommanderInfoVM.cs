@@ -634,7 +634,7 @@ public class CommanderInfoVM : ViewModel
 			}
 			else if (team.Side != BattleSideEnum.None)
 			{
-				Debug.FailedAssert("Incorrect flag team state", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\HUDExtensions\\CommanderInfoVM.cs", "HandleAddNewCapturePoint", 321);
+				Debug.FailedAssert("Incorrect flag team state", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\HUDExtensions\\CommanderInfoVM.cs", "HandleAddNewCapturePoint", 321);
 			}
 			RefreshMoraleIncreaseLevels();
 		}

@@ -133,15 +133,6 @@ public class PartyRecruitTroopVM : PartyTroopManagerVM
 		}
 	}
 
-	public override void ExecuteItemPrimaryAction()
-	{
-	}
-
-	public override void ExecuteItemSecondaryAction()
-	{
-		base.FocusedTroop?.PartyCharacter.ExecuteRecruitTroop();
-	}
-
 	public void ExecuteRecruitAll()
 	{
 		for (int num = base.Troops.Count - 1; num >= 0; num--)

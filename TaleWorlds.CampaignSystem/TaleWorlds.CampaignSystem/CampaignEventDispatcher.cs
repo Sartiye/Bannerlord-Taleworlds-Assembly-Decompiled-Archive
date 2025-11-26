@@ -5,15 +5,20 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
+using TaleWorlds.CampaignSystem.CharacterCreationContent;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
 using TaleWorlds.CampaignSystem.CraftingSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.GameMenus;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
@@ -73,6 +78,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnHomeHideoutChanged(BanditPartyComponent banditPartyComponent, Hideout oldHomeHideout)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnHomeHideoutChanged(banditPartyComponent, oldHomeHideout);
+		}
+	}
+
 	public override void OnCharacterCreationIsOver()
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -109,12 +123,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnLootDistributedToParty(MapEvent mapEvent, PartyBase winner, Dictionary<PartyBase, ItemRoster> loot)
+	public override void OnLootDistributedToParty(PartyBase winnerParty, PartyBase defeatedParty, ItemRoster lootedItems)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnLootDistributedToParty(mapEvent, winner, loot);
+			eventReceivers[i].OnLootDistributedToParty(winnerParty, defeatedParty, lootedItems);
 		}
 	}
 
@@ -190,12 +204,21 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnCompanionClanCreated(Clan clan)
+	public override void OnClanDefected(Clan clan, Kingdom oldKingdom, Kingdom newKingdom)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnCompanionClanCreated(clan);
+			eventReceivers[i].OnClanDefected(clan, oldKingdom, newKingdom);
+		}
+	}
+
+	public override void OnClanCreated(Clan clan, bool isCompanion)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnClanCreated(clan, isCompanion);
 		}
 	}
 
@@ -298,12 +321,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnArmyGathered(Army army, Settlement gatheringSettlement)
+	public override void OnArmyGathered(Army army, IMapPoint gatheringPoint)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnArmyGathered(army, gatheringSettlement);
+			eventReceivers[i].OnArmyGathered(army, gatheringPoint);
 		}
 	}
 
@@ -313,6 +336,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnPerkOpened(hero, perk);
+		}
+	}
+
+	public override void OnPerkReset(Hero hero, PerkObject perk)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPerkReset(hero, perk);
 		}
 	}
 
@@ -349,6 +381,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnAfterSettlementEntered(party, settlement, hero);
+		}
+	}
+
+	public override void OnBeforeSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnBeforeSettlementEntered(party, settlement, hero);
 		}
 	}
 
@@ -406,12 +447,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnHeroesMarried(Hero hero1, Hero hero2, bool showNotification)
+	public override void OnBeforeHeroesMarried(Hero hero1, Hero hero2, bool showNotification)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnHeroesMarried(hero1, hero2, showNotification);
+			eventReceivers[i].OnBeforeHeroesMarried(hero1, hero2, showNotification);
 		}
 	}
 
@@ -541,6 +582,24 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnMapInteractableCreated(IInteractablePoint interactable)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMapInteractableCreated(interactable);
+		}
+	}
+
+	public override void OnMapInteractableDestroyed(IInteractablePoint interactable)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMapInteractableDestroyed(interactable);
+		}
+	}
+
 	public override void OnMobilePartyQuestStatusChanged(MobileParty party, bool isUsedByQuest)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -622,21 +681,21 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+	public override void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification = true)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnHeroPrisonerReleased(prisoner, party, capturerFaction, detail);
+			eventReceivers[i].OnHeroPrisonerReleased(prisoner, party, capturerFaction, detail, showNotification);
 		}
 	}
 
-	public override void OnCharacterBecameFugitive(Hero hero)
+	public override void OnCharacterBecameFugitive(Hero hero, bool showNotification)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnCharacterBecameFugitive(hero);
+			eventReceivers[i].OnCharacterBecameFugitive(hero, showNotification);
 		}
 	}
 
@@ -847,21 +906,30 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount)
+	public override void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount, int tributeDurationInDays)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnPeaceOfferedToPlayer(opponentFaction, tributeAmount);
+			eventReceivers[i].OnPeaceOfferedToPlayer(opponentFaction, tributeAmount, tributeDurationInDays);
 		}
 	}
 
-	public override void OnPeaceOfferCancelled(IFaction opponentFaction)
+	public override void OnTradeAgreementSigned(Kingdom kingdom, Kingdom other)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnPeaceOfferCancelled(opponentFaction);
+			eventReceivers[i].OnTradeAgreementSigned(kingdom, other);
+		}
+	}
+
+	public override void OnPeaceOfferResolved(IFaction opponentFaction)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPeaceOfferResolved(opponentFaction);
 		}
 	}
 
@@ -1045,12 +1113,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnArmyLeaderThink(Hero hero, Army.ArmyLeaderThinkReason reason)
+	public override void OnPlayerArmyLeaderChangedBehavior()
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnArmyLeaderThink(hero, reason);
+			eventReceivers[i].OnPlayerArmyLeaderChangedBehavior();
 		}
 	}
 
@@ -1279,12 +1347,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void AfterGameMenuOpened(MenuCallbackArgs args)
+	public override void AfterGameMenuInitialized(MenuCallbackArgs args)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].AfterGameMenuOpened(args);
+			eventReceivers[i].AfterGameMenuInitialized(args);
 		}
 	}
 
@@ -1351,6 +1419,24 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnBeforePlayerAgentSpawn(ref MatrixFrame spawnFrame)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnBeforePlayerAgentSpawn(ref spawnFrame);
+		}
+	}
+
+	public override void OnPlayerAgentSpawned()
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPlayerAgentSpawned();
+		}
+	}
+
 	public override void OnPlayerUpgradedTroops(CharacterObject upgradeFromTroop, CharacterObject upgradeToTroop, int number)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -1396,12 +1482,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnGameMenuOptionSelected(GameMenuOption gameMenuOption)
+	public override void OnGameMenuOptionSelected(GameMenu gameMenu, GameMenuOption gameMenuOption)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnGameMenuOptionSelected(gameMenuOption);
+			eventReceivers[i].OnGameMenuOptionSelected(gameMenu, gameMenuOption);
 		}
 	}
 
@@ -1765,6 +1851,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void AfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].AfterSiegeCompleted(siegeSettlement, attackerParty, isWin, battleType);
+		}
+	}
+
 	public override void SiegeEngineBuilt(SiegeEvent siegeEvent, BattleSideEnum side, SiegeEngineType siegeEngine)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -1828,21 +1923,21 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnWorkshopInitialized(Workshop workshop)
-	{
-		CampaignEventReceiver[] eventReceivers = _eventReceivers;
-		for (int i = 0; i < eventReceivers.Length; i++)
-		{
-			eventReceivers[i].OnWorkshopInitialized(workshop);
-		}
-	}
-
 	public override void OnWorkshopOwnerChanged(Workshop workshop, Hero oldOwner)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnWorkshopOwnerChanged(workshop, oldOwner);
+		}
+	}
+
+	public override void OnWorkshopInitialized(Workshop workshop)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnWorkshopInitialized(workshop);
 		}
 	}
 
@@ -1963,12 +2058,21 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void CollectLoots(MapEvent mapEvent, PartyBase winner, Dictionary<PartyBase, ItemRoster> baseAndLootedItems, ItemRoster gainedLoot, MBList<TroopRosterElement> lootedCasualties, float lootAmount)
+	public override void OnClanEarnedGoldFromTribute(Clan receiverClan, IFaction payingFaction)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].CollectLoots(mapEvent, winner, baseAndLootedItems, gainedLoot, lootedCasualties, lootAmount);
+			eventReceivers[i].OnClanEarnedGoldFromTribute(receiverClan, payingFaction);
+		}
+	}
+
+	public override void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnCollectLootItems(winnerParty, gainedLoots);
 		}
 	}
 
@@ -2017,6 +2121,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnPartyLeaderChanged(MobileParty mobileParty, Hero oldLeader)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPartyLeaderChanged(mobileParty, oldLeader);
+		}
+	}
+
 	public override void OnMainPartyStarving()
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -2059,6 +2172,213 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnMapEventContinuityNeedsUpdate(faction);
+		}
+	}
+
+	public override void OnHeirSelectionRequested(Dictionary<Hero, int> heirApparents)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnHeirSelectionRequested(heirApparents);
+		}
+	}
+
+	public override void OnHeirSelectionOver(Hero selectedHeir)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnHeirSelectionOver(selectedHeir);
+		}
+	}
+
+	public override void OnCharacterCreationInitialized(CharacterCreationManager characterCreationManager)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnCharacterCreationInitialized(characterCreationManager);
+		}
+	}
+
+	public override void OnShipDestroyed(PartyBase owner, Ship ship, DestroyShipAction.ShipDestroyDetail detail)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnShipDestroyed(owner, ship, detail);
+		}
+	}
+
+	public override void OnPartyLeftArmy(MobileParty party, Army army)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPartyLeftArmy(party, army);
+		}
+	}
+
+	public override void OnShipOwnerChanged(Ship ship, PartyBase oldOwner, ChangeShipOwnerAction.ShipOwnerChangeDetail changeDetail)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnShipOwnerChanged(ship, oldOwner, changeDetail);
+		}
+	}
+
+	public override void OnShipRepaired(Ship ship, Settlement repairPort)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnShipRepaired(ship, repairPort);
+		}
+	}
+
+	public override void OnFigureheadUnlocked(Figurehead figurehead)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnFigureheadUnlocked(figurehead);
+		}
+	}
+
+	public override void OnPartyAddedToMapEvent(PartyBase party)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPartyAddedToMapEvent(party);
+		}
+	}
+
+	public override void OnIncidentResolved(Incident incident)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnIncidentResolved(incident);
+		}
+	}
+
+	public override void OnMobilePartyNavigationStateChanged(MobileParty mobileParty)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMobilePartyNavigationStateChanged(mobileParty);
+		}
+	}
+
+	public override void OnMobilePartyJoinedToSiegeEvent(MobileParty mobileParty)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMobilePartyJoinedToSiegeEvent(mobileParty);
+		}
+	}
+
+	public override void OnMobilePartyLeftSiegeEvent(MobileParty mobileParty)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMobilePartyLeftSiegeEvent(mobileParty);
+		}
+	}
+
+	public override void OnBlockadeActivated(SiegeEvent siegeEvent)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnBlockadeActivated(siegeEvent);
+		}
+	}
+
+	public override void OnBlockadeDeactivated(SiegeEvent siegeEvent)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnBlockadeDeactivated(siegeEvent);
+		}
+	}
+
+	public override void OnMapMarkerCreated(MapMarker mapMarker)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMapMarkerCreated(mapMarker);
+		}
+	}
+
+	public override void OnMapMarkerRemoved(MapMarker mapMarker)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMapMarkerRemoved(mapMarker);
+		}
+	}
+
+	public override void OnMercenaryServiceStarted(Clan mercenaryClan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails details)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMercenaryServiceStarted(mercenaryClan, details);
+		}
+	}
+
+	public override void OnMercenaryServiceEnded(Clan mercenaryClan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails details)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMercenaryServiceEnded(mercenaryClan, details);
+		}
+	}
+
+	public override void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnAllianceStarted(kingdom1, kingdom2);
+		}
+	}
+
+	public override void OnAllianceEnded(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnAllianceEnded(kingdom1, kingdom2);
+		}
+	}
+
+	public override void OnCallToWarAgreementStarted(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnCallToWarAgreementStarted(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+		}
+	}
+
+	public override void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnCallToWarAgreementEnded(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
 		}
 	}
 
@@ -2140,6 +2460,19 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void CanPlayerMeetWithHeroAfterConversation(Hero hero, ref bool result)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].CanPlayerMeetWithHeroAfterConversation(hero, ref result);
+			if (!result)
+			{
+				break;
+			}
+		}
+	}
+
 	public override void CanMoveToSettlement(Hero hero, ref bool result)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -2153,16 +2486,25 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void CanHaveQuestsOrIssues(Hero hero, ref bool result)
+	public override void CanHaveCampaignIssues(Hero hero, ref bool result)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].CanHaveQuestsOrIssues(hero, ref result);
+			eventReceivers[i].CanHaveCampaignIssues(hero, ref result);
 			if (!result)
 			{
 				break;
 			}
+		}
+	}
+
+	public override void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].IsSettlementBusy(settlement, asker, ref priority);
 		}
 	}
 
@@ -2175,12 +2517,30 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnShipCreated(Ship ship, Settlement createdSettlement)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnShipCreated(ship, createdSettlement);
+		}
+	}
+
 	public override void OnConfigChanged()
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnConfigChanged();
+		}
+	}
+
+	public override void OnMobilePartyRaftStateChanged(MobileParty mobileParty)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnMobilePartyRaftStateChanged(mobileParty);
 		}
 	}
 }

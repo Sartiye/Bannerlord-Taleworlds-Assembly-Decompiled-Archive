@@ -22,29 +22,9 @@ public class DefaultPrisonerDonationModel : PrisonerDonationModel
 		return result;
 	}
 
-	public override float CalculateInfluenceGainAfterPrisonerDonation(PartyBase donatingParty, CharacterObject character, Settlement donatedSettlement)
+	public override float CalculateInfluenceGainAfterPrisonerDonation(PartyBase donatingParty, CharacterObject donatedPrisoner, Settlement donatedSettlement)
 	{
-		float num = 0f;
-		if (donatingParty.LeaderHero == Hero.MainHero)
-		{
-			if (character.IsHero)
-			{
-				Hero heroObject = character.HeroObject;
-				float num2 = MathF.Pow(Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(heroObject.CharacterObject, donatingParty.LeaderHero), 0.4f);
-				if (heroObject.IsKingdomLeader)
-				{
-					return num2;
-				}
-				if (heroObject.Clan.Leader == heroObject)
-				{
-					return num2 * 0.5f;
-				}
-				return num2 * 0.2f;
-			}
-			return num + character.GetPower() / 20f;
-		}
-		int tier = character.Tier;
-		return (float)((2 + tier) * (8 + tier)) * 0.02f;
+		return MathF.Pow(Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(donatedPrisoner, donatingParty.LeaderHero), 0.4f) * 0.2f;
 	}
 
 	public override float CalculateInfluenceGainAfterTroopDonation(PartyBase donatingParty, CharacterObject donatedCharacter, Settlement donatedSettlement)

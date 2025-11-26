@@ -5,7 +5,7 @@ using TaleWorlds.Diamond;
 namespace Messages.FromBattleServerManager.ToBattleServer;
 
 [Serializable]
-[MessageDescription("BattleServerManager", "BattleServer")]
+[MessageDescription("BattleServerManager", "BattleServer", true)]
 public class BattleReadyResponseMessage : FunctionResult
 {
 	[JsonProperty]

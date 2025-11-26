@@ -70,6 +70,26 @@ public sealed class MBAgentVisuals : NativeObject
 		return outFrame;
 	}
 
+	public void SetAttachedPositionForMeshAfterAnimationPostIntegrate(WeakGameEntity ropeEntity, sbyte bone)
+	{
+		MBAPI.IMBAgentVisuals.SetAttachedPositionForRopeEntityAfterAnimationPostIntegrate(base.Pointer, ropeEntity.Pointer, bone);
+	}
+
+	public Vec3 GetCurrentHeadLookDirection()
+	{
+		return MBAPI.IMBAgentVisuals.GetCurrentHeadLookDirection(base.Pointer);
+	}
+
+	public HumanWalkingMovementMode GetMovementMode()
+	{
+		return (HumanWalkingMovementMode)MBAPI.IMBAgentVisuals.GetMovementMode(base.Pointer);
+	}
+
+	public float GetVisualStrengthOfAgentVisual(MBAgentVisuals targetAgentVisual, Mission mission, float ambientLightStrength, float sunMoonLightStrength, int agentIndexToIgnore)
+	{
+		return MBAPI.IMBAgentVisuals.GetVisualStrengthOfAgentVisual(base.Pointer, targetAgentVisual.Pointer, mission.Pointer, ambientLightStrength, sunMoonLightStrength, agentIndexToIgnore);
+	}
+
 	public RagdollState GetCurrentRagdollState()
 	{
 		return MBAPI.IMBAgentVisuals.GetCurrentRagdollState(base.Pointer);
@@ -153,9 +173,9 @@ public sealed class MBAgentVisuals : NativeObject
 		MBAPI.IMBAgentVisuals.AddChildEntity(GetPtr(), entity.Pointer);
 	}
 
-	public void SetClothWindToWeaponAtIndex(Vec3 windDirection, bool isLocal, EquipmentIndex weaponIndex)
+	public void SetClothWindToWeaponAtIndex(Vec3 windVector, bool isLocal, EquipmentIndex weaponIndex)
 	{
-		MBAPI.IMBAgentVisuals.SetClothWindToWeaponAtIndex(GetPtr(), windDirection, isLocal, (int)weaponIndex);
+		MBAPI.IMBAgentVisuals.SetClothWindToWeaponAtIndex(GetPtr(), windVector, isLocal, (int)weaponIndex);
 	}
 
 	public void RemoveChildEntity(GameEntity entity, int removeReason)
@@ -266,8 +286,8 @@ public sealed class MBAgentVisuals : NativeObject
 	public MatrixFrame GetFacegenScalingMatrix()
 	{
 		MatrixFrame identity = MatrixFrame.Identity;
-		Vec3 currentHelmetScalingFactor = MBAPI.IMBAgentVisuals.GetCurrentHelmetScalingFactor(GetPtr());
-		identity.rotation.ApplyScaleLocal(currentHelmetScalingFactor);
+		Vec3 scaleAmountXYZ = MBAPI.IMBAgentVisuals.GetCurrentHelmetScalingFactor(GetPtr());
+		identity.rotation.ApplyScaleLocal(in scaleAmountXYZ);
 		return identity;
 	}
 
@@ -283,9 +303,9 @@ public sealed class MBAgentVisuals : NativeObject
 		}
 	}
 
-	public void SetAgentActionChannel(int actionChannelNo, int actionIndex, float channelParameter = 0f, float blendPeriodOverride = -0.2f, bool forceFaceMorphRestart = true)
+	public void SetAgentActionChannel(int actionChannelNo, int actionIndex, float channelParameter = 0f, float blendPeriodOverride = -0.2f, bool forceFaceMorphRestart = true, float blendWithNextActionFactor = 0f)
 	{
-		MBAPI.IMBSkeletonExtensions.SetAgentActionChannel(GetSkeleton().Pointer, actionChannelNo, actionIndex, channelParameter, blendPeriodOverride, forceFaceMorphRestart);
+		MBAPI.IMBSkeletonExtensions.SetAgentActionChannel(GetSkeleton().Pointer, actionChannelNo, actionIndex, channelParameter, blendPeriodOverride, forceFaceMorphRestart, blendWithNextActionFactor);
 	}
 
 	public void SetVoiceDefinitionIndex(int voiceDefinitionIndex, float voicePitch)
@@ -346,9 +366,14 @@ public sealed class MBAgentVisuals : NativeObject
 		case EquipmentIndex.Cape:
 			return BodyMeshTypes.Shoulderpiece;
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBAgentVisuals.cs", "GetBodyMeshIndex", 393);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBAgentVisuals.cs", "GetBodyMeshIndex", 429);
 			return BodyMeshTypes.Invalid;
 		}
+	}
+
+	public MatrixFrame GetBoneEntitialFrameAtAnimationProgress(sbyte boneIndex, int animationIndex, float progress)
+	{
+		return MBAPI.IMBAgentVisuals.GetBoneEntitialFrameAtAnimationProgress(GetPtr(), boneIndex, animationIndex, progress);
 	}
 
 	public void Reset()

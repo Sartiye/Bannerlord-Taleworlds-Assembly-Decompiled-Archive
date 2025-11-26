@@ -46,7 +46,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 
 	private ListPanel _widget_0_0_0_0_1;
 
-	private ScrollingRichTextWidget _widget_0_0_0_0_1_0;
+	private ScrollingTextWidget _widget_0_0_0_0_1_0;
 
 	private TextWidget _widget_0_0_0_0_1_1;
 
@@ -100,7 +100,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_0_0_0_0_2.AddChild(_widget_0_0_0_0_0_2_1);
 		_widget_0_0_0_0_1 = new ListPanel(base.Context);
 		_widget_0_0_0_0.AddChild(_widget_0_0_0_0_1);
-		_widget_0_0_0_0_1_0 = new ScrollingRichTextWidget(base.Context);
+		_widget_0_0_0_0_1_0 = new ScrollingTextWidget(base.Context);
 		_widget_0_0_0_0_1.AddChild(_widget_0_0_0_0_1_0);
 		_widget_0_0_0_0_1_1 = new TextWidget(base.Context);
 		_widget_0_0_0_0_1.AddChild(_widget_0_0_0_0_1_1);

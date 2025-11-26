@@ -11,4 +11,6 @@ public struct ScoreboardHotkeys
 	public HotKey DoneInputKey;
 
 	public HotKey FastForwardKey;
+
+	public HotKey PauseInputKey;
 }

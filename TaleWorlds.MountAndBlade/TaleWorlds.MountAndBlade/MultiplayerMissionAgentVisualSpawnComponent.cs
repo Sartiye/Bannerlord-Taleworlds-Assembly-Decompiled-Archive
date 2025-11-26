@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -37,20 +36,20 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 			_visualSpawnPointUsers = new VirtualPlayer[6];
 			for (int i = 0; i < 6; i++)
 			{
-				List<GameEntity> list = Mission.Current.Scene.FindEntitiesWithTag("sp_visual_" + i).ToList();
-				if (list.Count > 0)
+				GameEntity gameEntity = Mission.Current.Scene.FindEntityWithTag("sp_visual_" + i);
+				if (gameEntity != null)
 				{
-					_visualSpawnPoints[i] = list[0];
+					_visualSpawnPoints[i] = gameEntity;
 				}
-				list = Mission.Current.Scene.FindEntitiesWithTag("sp_visual_attacker_" + i).ToList();
-				if (list.Count > 0)
+				gameEntity = Mission.Current.Scene.FindEntityWithTag("sp_visual_attacker_" + i);
+				if (gameEntity != null)
 				{
-					_visualAttackerSpawnPoints[i] = list[0];
+					_visualAttackerSpawnPoints[i] = gameEntity;
 				}
-				list = Mission.Current.Scene.FindEntitiesWithTag("sp_visual_defender_" + i).ToList();
-				if (list.Count > 0)
+				gameEntity = Mission.Current.Scene.FindEntityWithTag("sp_visual_defender_" + i);
+				if (gameEntity != null)
 				{
-					_visualDefenderSpawnPoints[i] = list[0];
+					_visualDefenderSpawnPoints[i] = gameEntity;
 				}
 			}
 			_visualSpawnPointUsers[0] = GameNetwork.MyPeer.VirtualPlayer;
@@ -92,18 +91,18 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 					result.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
 					return result;
 				}
-				Debug.FailedAssert("Couldn't find a valid spawn point for player.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerMissionAgentVisualSpawnComponent.cs", "GetSpawnPointFrameForPlayer", 139);
+				Debug.FailedAssert("Couldn't find a valid spawn point for player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerMissionAgentVisualSpawnComponent.cs", "GetSpawnPointFrameForPlayer", 139);
 				return MatrixFrame.Identity;
 			}
-			Vec3 origin = _visualSpawnPoints[3].GetGlobalFrame().origin;
-			Vec3 origin2 = _visualSpawnPoints[1].GetGlobalFrame().origin;
-			Vec3 origin3 = _visualSpawnPoints[5].GetGlobalFrame().origin;
-			Mat3 rotation = _visualSpawnPoints[0].GetGlobalFrame().rotation;
-			rotation.MakeUnit();
-			List<WorldFrame> formationFramesForBeforeFormationCreation = Formation.GetFormationFramesForBeforeFormationCreation(origin2.Distance(origin3), totalTroopCount, isMounted, new WorldPosition(Mission.Current.Scene, origin), rotation);
+			Vec3 o = _visualSpawnPoints[3].GetGlobalFrame().origin;
+			Vec3 origin = _visualSpawnPoints[1].GetGlobalFrame().origin;
+			Vec3 origin2 = _visualSpawnPoints[5].GetGlobalFrame().origin;
+			Mat3 rot = _visualSpawnPoints[0].GetGlobalFrame().rotation;
+			rot.MakeUnit();
+			List<WorldFrame> formationFramesForBeforeFormationCreation = Formation.GetFormationFramesForBeforeFormationCreation(origin.Distance(origin2), totalTroopCount, isMounted, new WorldPosition(Mission.Current.Scene, o), rot);
 			if (formationFramesForBeforeFormationCreation.Count < agentVisualIndex)
 			{
-				return new MatrixFrame(rotation, origin);
+				return new MatrixFrame(in rot, in o);
 			}
 			return formationFramesForBeforeFormationCreation[agentVisualIndex - 1].ToGroundMatrixFrame();
 		}
@@ -140,7 +139,7 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 		Equipment equipment = new Equipment(buildData.AgentOverridenSpawnEquipment);
 		ItemObject item = equipment[10].Item;
 		MatrixFrame frame = _spawnFrameSelectionHelper.GetSpawnPointFrameForPlayer(missionPeer.Peer, missionPeer.Team.Side, buildData.AgentVisualsIndex, totalTroopCount, item != null);
-		ActionIndexCache actionIndexCache = ((item == null) ? SpawningBehaviorBase.PoseActionInfantry : SpawningBehaviorBase.PoseActionCavalry);
+		ActionIndexCache actionIndexCache = ((item == null) ? ActionIndexCache.act_walk_idle_unarmed : ActionIndexCache.act_horse_stand_1);
 		MultiplayerClassDivisions.MPHeroClass mPHeroClassForCharacter = MultiplayerClassDivisions.GetMPHeroClassForCharacter(buildData.AgentCharacter);
 		MBReadOnlyList<MPPerkObject> selectedPerks = missionPeer.SelectedPerks;
 		float parameter = 0.1f + MBRandom.RandomFloat * 0.8f;
@@ -157,51 +156,51 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 			agentVisual = Mission.Current.AgentVisualCreator.Create(agentVisualsData, "Agent " + buildData.AgentCharacter.StringId + " mount", needBatchedVersionForWeaponMeshes: true, forceUseFaceCache: false);
 			MatrixFrame frame2 = frame;
 			frame2.rotation.ApplyScaleLocal(agentVisualsData.ScaleData);
-			ActionIndexCache actionIndexCache2 = ActionIndexCache.act_none;
+			ActionIndexCache actionName = ActionIndexCache.act_none;
 			foreach (MPPerkObject item2 in selectedPerks)
 			{
 				if (!isBot && item2.HeroMountIdleAnimOverride != null)
 				{
-					actionIndexCache2 = ActionIndexCache.Create(item2.HeroMountIdleAnimOverride);
+					actionName = ActionIndexCache.Create(item2.HeroMountIdleAnimOverride);
 					break;
 				}
 				if (isBot && item2.TroopMountIdleAnimOverride != null)
 				{
-					actionIndexCache2 = ActionIndexCache.Create(item2.TroopMountIdleAnimOverride);
+					actionName = ActionIndexCache.Create(item2.TroopMountIdleAnimOverride);
 					break;
 				}
 			}
-			if (actionIndexCache2 == ActionIndexCache.act_none)
+			if (actionName == ActionIndexCache.act_none)
 			{
 				if (item.StringId == "mp_aserai_camel")
 				{
 					Debug.Print("Client is spawning a camel for without mountCustomAction from the perk.", 0, Debug.DebugColor.White, 17179869184uL);
-					actionIndexCache2 = (isBot ? ActionIndexCache.Create("act_camel_idle_1") : ActionIndexCache.Create("act_hero_mount_idle_camel"));
+					actionName = ((!isBot) ? ActionIndexCache.act_hero_mount_idle_camel : ActionIndexCache.act_camel_idle_1);
 				}
 				else
 				{
 					if (!isBot && !string.IsNullOrEmpty(mPHeroClassForCharacter.HeroMountIdleAnim))
 					{
-						actionIndexCache2 = ActionIndexCache.Create(mPHeroClassForCharacter.HeroMountIdleAnim);
+						actionName = ActionIndexCache.Create(mPHeroClassForCharacter.HeroMountIdleAnim);
 					}
 					if (isBot && !string.IsNullOrEmpty(mPHeroClassForCharacter.TroopMountIdleAnim))
 					{
-						actionIndexCache2 = ActionIndexCache.Create(mPHeroClassForCharacter.TroopMountIdleAnim);
+						actionName = ActionIndexCache.Create(mPHeroClassForCharacter.TroopMountIdleAnim);
 					}
 				}
 			}
-			if (actionIndexCache2 != ActionIndexCache.act_none)
+			if (actionName != ActionIndexCache.act_none)
 			{
-				agentVisual.SetAction(actionIndexCache2);
+				agentVisual.SetAction(in actionName);
 				agentVisual.GetVisuals().GetSkeleton().SetAnimationParameterAtChannel(0, parameter);
 				agentVisual.GetVisuals().GetSkeleton().TickAnimationsAndForceUpdate(0.1f, frame2, tickAnimsForChildren: true);
 			}
 			agentVisual.GetVisuals().GetEntity().SetFrame(ref frame2);
 		}
-		ActionIndexCache actionIndexCache3 = actionIndexCache;
+		ActionIndexCache actionCode = actionIndexCache;
 		if (agentVisual != null)
 		{
-			actionIndexCache3 = agentVisual.GetVisuals().GetSkeleton().GetActionAtChannel(0);
+			actionCode = agentVisual.GetVisuals().GetSkeleton().GetActionAtChannel(0);
 		}
 		else
 		{
@@ -209,24 +208,24 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 			{
 				if (!isBot && item3.HeroIdleAnimOverride != null)
 				{
-					actionIndexCache3 = ActionIndexCache.Create(item3.HeroIdleAnimOverride);
+					actionCode = ActionIndexCache.Create(item3.HeroIdleAnimOverride);
 					break;
 				}
 				if (isBot && item3.TroopIdleAnimOverride != null)
 				{
-					actionIndexCache3 = ActionIndexCache.Create(item3.TroopIdleAnimOverride);
+					actionCode = ActionIndexCache.Create(item3.TroopIdleAnimOverride);
 					break;
 				}
 			}
-			if (actionIndexCache3 == actionIndexCache)
+			if (actionCode == actionIndexCache)
 			{
 				if (!isBot && !string.IsNullOrEmpty(mPHeroClassForCharacter.HeroIdleAnim))
 				{
-					actionIndexCache3 = ActionIndexCache.Create(mPHeroClassForCharacter.HeroIdleAnim);
+					actionCode = ActionIndexCache.Create(mPHeroClassForCharacter.HeroIdleAnim);
 				}
 				if (isBot && !string.IsNullOrEmpty(mPHeroClassForCharacter.TroopIdleAnim))
 				{
-					actionIndexCache3 = ActionIndexCache.Create(mPHeroClassForCharacter.TroopIdleAnim);
+					actionCode = ActionIndexCache.Create(mPHeroClassForCharacter.TroopIdleAnim);
 				}
 			}
 		}
@@ -241,8 +240,8 @@ public class MultiplayerMissionAgentVisualSpawnComponent : MissionNetwork
 			.ClothColor1(buildData.AgentClothingColor1)
 			.ClothColor2(buildData.AgentClothingColor2)
 			.AddColorRandomness(buildData.AgentVisualsIndex != 0)
-			.ActionCode(actionIndexCache3), "Mission::SpawnAgentVisuals", needBatchedVersionForWeaponMeshes: true, forceUseFaceCache: false);
-		agentVisual2.SetAction(actionIndexCache3);
+			.ActionCode(in actionCode), "Mission::SpawnAgentVisuals", needBatchedVersionForWeaponMeshes: true, forceUseFaceCache: false);
+		agentVisual2.SetAction(in actionCode);
 		agentVisual2.GetVisuals().GetSkeleton().SetAnimationParameterAtChannel(0, parameter);
 		agentVisual2.GetVisuals().GetSkeleton().TickAnimationsAndForceUpdate(0.1f, frame, tickAnimsForChildren: true);
 		agentVisual2.GetVisuals().SetFrame(ref frame);

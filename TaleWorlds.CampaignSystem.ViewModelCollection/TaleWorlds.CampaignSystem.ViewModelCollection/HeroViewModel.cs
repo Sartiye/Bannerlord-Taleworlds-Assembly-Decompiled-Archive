@@ -55,7 +55,7 @@ public class HeroViewModel : CharacterViewModel
 		FillFrom(hero.CharacterObject, seed);
 		base.MountCreationKey = TaleWorlds.Core.MountCreationKey.GetRandomMountKeyString(hero.CharacterObject.Equipment[10].Item, hero.CharacterObject.GetMountKeySeed());
 		IsDead = hero.IsDead;
-		if (hero.IsNoncombatant || useCivilian)
+		if ((hero.IsNoncombatant && !hero.IsPartyLeader) || useCivilian)
 		{
 			_equipment = hero.CivilianEquipment?.Clone();
 		}
@@ -75,7 +75,7 @@ public class HeroViewModel : CharacterViewModel
 		base.HasMount = _equipment?[10].Item != null;
 		if (hero?.ClanBanner != null)
 		{
-			base.BannerCodeText = BannerCode.CreateFrom(hero.ClanBanner).Code;
+			base.BannerCodeText = hero.ClanBanner.BannerCode;
 		}
 		base.ArmorColor1 = hero.MapFaction?.Color ?? 0;
 		base.ArmorColor2 = hero.MapFaction?.Color2 ?? 0;

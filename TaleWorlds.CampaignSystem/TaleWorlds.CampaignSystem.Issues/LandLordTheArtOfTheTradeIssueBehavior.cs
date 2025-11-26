@@ -142,7 +142,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		public override TextObject Title => new TextObject("{=96m29Eb7}The Art of The Trade");
+		public override TextObject Title => new TextObject("{=96m29Eb7}The Art of the Trade");
 
 		public override TextObject Description
 		{
@@ -199,7 +199,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				explanation.SetTextVariable("NEEDED_TROOP_COUNT", totalAlternativeSolutionNeededMenCount);
 				return false;
 			}
-			explanation = TextObject.Empty;
+			explanation = null;
 			return true;
 		}
 
@@ -268,7 +268,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
 		{
 			GainRenownAction.Apply(Hero.MainHero, 1f);
-			RelationshipChangeWithIssueOwner = 10;
+			RelationshipChangeWithIssueOwner = 5;
 		}
 	}
 
@@ -302,7 +302,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 		[SaveableField(90)]
 		private JournalLog _gatheredDenarsLog;
 
-		public override TextObject Title => new TextObject("{=96m29Eb7}The Art of The Trade");
+		public override TextObject Title => new TextObject("{=96m29Eb7}The Art of the Trade");
 
 		public override bool IsRemainingTimeHidden => false;
 
@@ -575,10 +575,10 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			playerMainOptionOneWithGold.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
 			TextObject playerMainOptionOneNoGold = new TextObject("{=52lNazA1}I'm afraid that things came up. I was not able to make the sale.");
 			TextObject text = new TextObject("{=!}{PLAYER_OPTION}");
-			TextObject textObject4 = new TextObject("{=THD3C7xc}I have. Here is the {TOTAL_DENARS}{GOLD_ICON} denars just as we agreed.[ib:hip2]");
+			TextObject textObject4 = new TextObject("{=THD3C7xc}I have. Here is the {TOTAL_DENARS}{GOLD_ICON} denars just as we agreed.");
 			textObject4.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
 			textObject4.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
-			TextObject textObject5 = new TextObject("{=z47GjqTZ}Yes, of course. This is the {TOTAL_DENARS}{GOLD_ICON} denars that I owe you.[ib:hip2]");
+			TextObject textObject5 = new TextObject("{=z47GjqTZ}Yes, of course. This is the {TOTAL_DENARS}{GOLD_ICON} denars that I owe you.");
 			textObject5.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
 			textObject5.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
 			TextObject playerFailOptionWithGold = new TextObject("{=dtzKfkrh}We never agreed on this. I am not paying you any more than {GATHERED_DENARS}{GOLD_ICON}, and you cannot force me.");
@@ -675,7 +675,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 		{
 			AddLog(QuestSuccessLogText);
 			GainRenownAction.Apply(Hero.MainHero, 1f);
-			RelationshipChangeWithQuestGiver = 10;
+			RelationshipChangeWithQuestGiver = 5;
 			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, base.QuestGiver, _targetDenarsToAchieve);
 			CompleteQuestWithSuccess();
 		}
@@ -683,17 +683,17 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 		private void QuestFailedPlayerBrokeTheAgreement()
 		{
 			AddLog(QuestFailedPlayerBrokeTheAgreementLogText);
-			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 5f);
 			base.QuestGiver.AddPower(-5f);
 			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, base.QuestGiver, _gatheredDenars);
 			RelationshipChangeWithQuestGiver = -10 - RemainingDenars / 10;
 			CompleteQuestWithFail();
+			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 5f);
 		}
 
 		private void PlayerPaidAgreedDenarsQuestSuccess()
 		{
 			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, base.QuestGiver, _targetDenarsToAchieve);
-			RelationshipChangeWithQuestGiver = 10;
+			RelationshipChangeWithQuestGiver = 5;
 			GainRenownAction.Apply(Hero.MainHero, 1f);
 			AddLog(QuestSuccessWithPayingGatheredDenarsLogText);
 			CompleteQuestWithSuccess();
@@ -701,24 +701,24 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 
 		private bool PlayerPayAgreedDenarsClickableCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
 			if (Hero.MainHero.Gold < _targetDenarsToAchieve)
 			{
 				explanation = new TextObject("{=d0kbtGYn}You don't have enough gold.");
 				return false;
 			}
 			MBTextManager.SetTextVariable("REMAINING_DENARS", RemainingDenars);
+			explanation = null;
 			return true;
 		}
 
 		private bool PlayerFailWithGoldClickableCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
 			if (_gatheredDenars > 0 && Hero.MainHero.Gold < _gatheredDenars)
 			{
 				explanation = new TextObject("{=d0kbtGYn}You don't have enough gold.");
 				return false;
 			}
+			explanation = null;
 			return true;
 		}
 
@@ -739,8 +739,8 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			textObject2.SetTextVariable("SELECTED_ITEM", _selectedItemObject.Name);
 			TextObject textObject3 = new TextObject("{=pwnqk0Nj}Gathered denars from {.%}{SELECTED_ITEM}{.%}");
 			textObject3.SetTextVariable("SELECTED_ITEM", _selectedItemObject.Name);
-			_soldItemAmountLog = AddDiscreteLog(TextObject.Empty, textObject2, _soldCount, _selectedItemObjectCount);
-			_gatheredDenarsLog = AddDiscreteLog(TextObject.Empty, textObject3, _gatheredDenars, _targetDenarsToAchieve);
+			_soldItemAmountLog = AddDiscreteLog(TextObject.GetEmpty(), textObject2, _soldCount, _selectedItemObjectCount);
+			_gatheredDenarsLog = AddDiscreteLog(TextObject.GetEmpty(), textObject3, _gatheredDenars, _targetDenarsToAchieve);
 		}
 
 		private void QuestFinishedPlayerBoughtTheGoods()
@@ -755,12 +755,12 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 
 		private bool PlayerBuyClickableOptionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
 			if (Hero.MainHero.Gold < _targetDenarsToAchieve)
 			{
 				explanation = new TextObject("{=d0kbtGYn}You don't have enough gold.");
 				return false;
 			}
+			explanation = null;
 			return true;
 		}
 
@@ -768,6 +768,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 		{
 			AddLog(QuestFailedWithTimeOutLogText);
 			RelationshipChangeWithQuestGiver = -10;
+			CampaignEvents.WarDeclared.ClearListeners(this);
 			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 5f);
 		}
 

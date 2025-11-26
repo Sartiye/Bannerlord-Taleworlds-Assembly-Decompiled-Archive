@@ -29,7 +29,7 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 			}
 		}
 
-		public Track RequestTrack(MobileParty party, Vec2 trackPosition, Vec2 trackDirection)
+		public Track RequestTrack(MobileParty party, CampaignVec2 trackPosition, Vec2 trackDirection)
 		{
 			Track track = ((_stack.Count > 0) ? _stack.Pop() : new Track());
 			int num = party.Party.NumberOfAllMembers;
@@ -61,7 +61,7 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 			{
 				string message = $"Track culture is null for {party.StringId}: {party.Name}";
 				Debug.Print(message);
-				Debug.FailedAssert(message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\MapTracksCampaignBehavior.cs", "RequestTrack", 62);
+				Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\MapTracksCampaignBehavior.cs", "RequestTrack", 62);
 			}
 			track.Speed = party.Speed;
 			track.Life = Campaign.Current.Models.MapTrackModel.GetTrackLife(party);
@@ -78,7 +78,7 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 			return track;
 		}
 
-		public Track RequestMapArrow(TextObject pointerName, Vec2 trackPosition, Vec2 trackDirection, float life)
+		public Track RequestMapArrow(TextObject pointerName, CampaignVec2 trackPosition, Vec2 trackDirection, float life)
 		{
 			Track obj = ((_stack.Count > 0) ? _stack.Pop() : new Track());
 			obj.Position = trackPosition;
@@ -112,7 +112,7 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 
 	private MBList<Track> _detectedTracksCache = new MBList<Track>();
 
-	private Dictionary<MobileParty, Vec2> _trackDataDictionary = new Dictionary<MobileParty, Vec2>();
+	private Dictionary<MobileParty, CampaignVec2> _trackDataDictionary = new Dictionary<MobileParty, CampaignVec2>();
 
 	private MBCampaignEvent _quarterHourlyTick;
 
@@ -146,32 +146,45 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 
 	private void OnNewGameCreated(CampaignGameStarter gameStarted)
 	{
-		_trackDataDictionary = new Dictionary<MobileParty, Vec2>();
 		AddEventHandler();
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
 		dataStore.SyncData("_allTracks", ref _allTracks);
-		dataStore.SyncData("_trackDataDictionary", ref _trackDataDictionary);
+		dataStore.SyncData("_trackDataDictionary2", ref _trackDataDictionary);
+		if (!dataStore.IsLoading || !MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.0")))
+		{
+			return;
+		}
+		Dictionary<MobileParty, Vec2> data = new Dictionary<MobileParty, Vec2>();
+		dataStore.SyncData("_trackDataDictionary", ref data);
+		if (!data.Any())
+		{
+			return;
+		}
+		foreach (KeyValuePair<MobileParty, Vec2> item in data)
+		{
+			_trackDataDictionary.Add(item.Key, new CampaignVec2(item.Value, isOnLand: true));
+		}
 	}
 
 	private void OnHourlyTickParty(MobileParty mobileParty)
 	{
 		if (Campaign.Current.Models.MapTrackModel.CanPartyLeaveTrack(mobileParty))
 		{
-			Vec2 vec = Vec2.Zero;
+			CampaignVec2 campaignVec = CampaignVec2.Zero;
 			if (_trackDataDictionary.ContainsKey(mobileParty))
 			{
-				vec = _trackDataDictionary[mobileParty];
+				campaignVec = _trackDataDictionary[mobileParty];
 			}
-			if (vec.DistanceSquared(mobileParty.Position2D) > 5f && IsTrackDropped(mobileParty))
+			if (campaignVec.DistanceSquared(mobileParty.Position.ToVec2()) > 5f && IsTrackDropped(mobileParty))
 			{
-				Vec2 position2D = mobileParty.Position2D;
-				Vec2 trackDirection = mobileParty.Position2D - vec;
-				trackDirection.Normalize();
-				AddTrack(mobileParty, position2D, trackDirection);
-				_trackDataDictionary[mobileParty] = position2D;
+				CampaignVec2 position = mobileParty.Position;
+				CampaignVec2 campaignVec2 = mobileParty.Position - campaignVec;
+				campaignVec2.Normalize();
+				AddTrack(mobileParty, position, campaignVec2.ToVec2());
+				_trackDataDictionary[mobileParty] = position;
 			}
 		}
 	}
@@ -217,7 +230,7 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 			return;
 		}
 		float maxTrackSpottingDistanceForMainParty = Campaign.Current.Models.MapTrackModel.GetMaxTrackSpottingDistanceForMainParty();
-		LocatableSearchData<Track> data = _trackLocator.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position2D, maxTrackSpottingDistanceForMainParty);
+		LocatableSearchData<Track> data = _trackLocator.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position.ToVec2(), maxTrackSpottingDistanceForMainParty);
 		for (Track track = _trackLocator.FindNextLocatable(ref data); track != null; track = _trackLocator.FindNextLocatable(ref data))
 		{
 			if (!track.IsDetected && _allTracks.Contains(track) && Campaign.Current.Models.MapTrackModel.GetTrackDetectionDifficultyForMainParty(track, maxTrackSpottingDistanceForMainParty) < (float)num)
@@ -261,8 +274,8 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 		{
 			return false;
 		}
-		float num = mobileParty.Position2D.DistanceSquared(MobileParty.MainParty.Position2D);
-		float num2 = MobileParty.MainParty.Speed * Campaign.Current.Models.MapTrackModel.MaxTrackLife;
+		float num = mobileParty.Position.DistanceSquared(MobileParty.MainParty.Position);
+		float num2 = (MobileParty.MainParty.IsActive ? (MobileParty.MainParty._lastCalculatedSpeed * Campaign.Current.Models.MapTrackModel.MaxTrackLife) : 0f);
 		if (num2 * num2 > num)
 		{
 			return true;
@@ -270,14 +283,14 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 		return false;
 	}
 
-	public void AddTrack(MobileParty party, Vec2 trackPosition, Vec2 trackDirection)
+	public void AddTrack(MobileParty party, CampaignVec2 trackPosition, Vec2 trackDirection)
 	{
 		Track track = _trackPool.RequestTrack(party, trackPosition, trackDirection);
 		_allTracks.Add(track);
 		_trackLocator.UpdateLocator(track);
 	}
 
-	public void AddMapArrow(TextObject pointerName, Vec2 trackPosition, Vec2 trackDirection, float life)
+	public void AddMapArrow(TextObject pointerName, CampaignVec2 trackPosition, Vec2 trackDirection, float life)
 	{
 		Track track = _trackPool.RequestMapArrow(pointerName, trackPosition, trackDirection, life);
 		_allTracks.Add(track);

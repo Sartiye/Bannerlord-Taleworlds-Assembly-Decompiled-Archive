@@ -205,23 +205,23 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		}
 	}
 
-	private List<Tuple<Hero, SkillEffect.PerkRole>> GetPartyHeroesWithPerks(TroopRoster roster)
+	private List<Tuple<Hero, PartyRole>> GetPartyHeroesWithPerks(TroopRoster roster)
 	{
 		MobileParty mobileParty = roster?.OwnerParty?.MobileParty;
 		if (mobileParty == null)
 		{
 			return null;
 		}
-		List<Tuple<Hero, SkillEffect.PerkRole>> list = new List<Tuple<Hero, SkillEffect.PerkRole>>();
+		List<Tuple<Hero, PartyRole>> list = new List<Tuple<Hero, PartyRole>>();
 		for (int i = 0; i < roster.Count; i++)
 		{
 			Hero hero = roster.GetCharacterAtIndex(i)?.HeroObject;
 			if (hero != null)
 			{
-				SkillEffect.PerkRole heroPerkRole = mobileParty.GetHeroPerkRole(hero);
-				if (heroPerkRole != 0)
+				PartyRole heroPartyRole = mobileParty.GetHeroPartyRole(hero);
+				if (heroPartyRole != 0)
 				{
-					list.Add(new Tuple<Hero, SkillEffect.PerkRole>(hero, heroPerkRole));
+					list.Add(new Tuple<Hero, PartyRole>(hero, heroPartyRole));
 				}
 			}
 		}
@@ -230,8 +230,8 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 
 	public void ResetUsing(PartyScreenData partyScreenData)
 	{
-		List<Tuple<Hero, SkillEffect.PerkRole>> partyHeroesWithPerks = GetPartyHeroesWithPerks(LeftMemberRoster);
-		List<Tuple<Hero, SkillEffect.PerkRole>> partyHeroesWithPerks2 = GetPartyHeroesWithPerks(RightMemberRoster);
+		List<Tuple<Hero, PartyRole>> partyHeroesWithPerks = GetPartyHeroesWithPerks(LeftMemberRoster);
+		List<Tuple<Hero, PartyRole>> partyHeroesWithPerks2 = GetPartyHeroesWithPerks(RightMemberRoster);
 		RightMemberRoster.Clear();
 		RightMemberRoster.RemoveZeroCounts();
 		for (int i = 0; i < partyScreenData.RightMemberRoster.Count; i++)
@@ -239,7 +239,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 			TroopRosterElement elementCopyAtIndex = partyScreenData.RightMemberRoster.GetElementCopyAtIndex(i);
 			RightMemberRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber, elementCopyAtIndex.Xp);
 		}
-		if (RightParty?.MobileParty != null)
+		if (RightParty?.MobileParty != null && RightParty.MobileParty.LeaderHero != partyScreenData.RightPartyLeaderHero)
 		{
 			RightParty.MobileParty.ChangePartyLeader(partyScreenData.RightPartyLeaderHero);
 		}
@@ -250,7 +250,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 			TroopRosterElement elementCopyAtIndex2 = partyScreenData.LeftMemberRoster.GetElementCopyAtIndex(j);
 			LeftMemberRoster.AddToCounts(elementCopyAtIndex2.Character, elementCopyAtIndex2.Number, insertAtFront: false, elementCopyAtIndex2.WoundedNumber, elementCopyAtIndex2.Xp);
 		}
-		if (LeftParty?.MobileParty != null)
+		if (LeftParty?.MobileParty != null && LeftParty.MobileParty.LeaderHero != partyScreenData.LeftPartyLeaderHero)
 		{
 			LeftParty.MobileParty.ChangePartyLeader(partyScreenData.LeftPartyLeaderHero);
 		}
@@ -290,14 +290,14 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		{
 			for (int n = 0; n < partyHeroesWithPerks.Count; n++)
 			{
-				LeftParty.MobileParty.SetHeroPerkRole(partyHeroesWithPerks[n].Item1, partyHeroesWithPerks[n].Item2);
+				LeftParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks[n].Item1, partyHeroesWithPerks[n].Item2);
 			}
 		}
 		if (partyHeroesWithPerks2 != null && RightParty?.MobileParty != null)
 		{
 			for (int num = 0; num < partyHeroesWithPerks2.Count; num++)
 			{
-				RightParty.MobileParty.SetHeroPerkRole(partyHeroesWithPerks2[num].Item1, partyHeroesWithPerks2[num].Item2);
+				RightParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks2[num].Item1, partyHeroesWithPerks2[num].Item2);
 			}
 		}
 	}
@@ -333,74 +333,151 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		return false;
 	}
 
-	public List<TroopTradeDifference> GetTroopTradeDifferencesFromTo(PartyScreenData toPartyScreenData)
+	public List<TroopTradeDifference> GetTroopTradeDifferencesFromTo(PartyScreenData toPartyScreenData, PartyScreenLogic.PartyRosterSide side = PartyScreenLogic.PartyRosterSide.None)
 	{
 		List<TroopTradeDifference> list = new List<TroopTradeDifference>();
 		Debug.Print("Current settlement: " + Settlement.CurrentSettlement?.StringId);
 		Debug.Print("Left party id: " + toPartyScreenData.LeftParty?.MobileParty?.StringId);
 		Debug.Print("Right party id: " + toPartyScreenData.RightParty?.MobileParty?.StringId);
-		using (IEnumerator<(TroopRosterElement, bool)> enumerator = GetEnumerator())
+		if (side == PartyScreenLogic.PartyRosterSide.None || side == PartyScreenLogic.PartyRosterSide.Right)
 		{
-			while (enumerator.MoveNext())
+			using (IEnumerator<(TroopRosterElement, bool)> enumerator = GetEnumerator())
 			{
-				(TroopRosterElement, bool) current = enumerator.Current;
-				TroopRosterElement item = current.Item1;
-				int number = item.Number;
-				int num = 0;
-				foreach (var toPartyScreenDatum in toPartyScreenData)
+				while (enumerator.MoveNext())
 				{
-					if (toPartyScreenDatum.Item1.Character == current.Item1.Character && toPartyScreenDatum.Item2 == current.Item2)
+					(TroopRosterElement, bool) current = enumerator.Current;
+					TroopRosterElement item = current.Item1;
+					int number = item.Number;
+					int num = 0;
+					foreach (var toPartyScreenDatum in toPartyScreenData)
 					{
-						int num2 = num;
-						item = toPartyScreenDatum.Item1;
-						num = num2 + item.Number;
+						if (toPartyScreenDatum.Item1.Character == current.Item1.Character && toPartyScreenDatum.Item2 == current.Item2)
+						{
+							int num2 = num;
+							item = toPartyScreenDatum.Item1;
+							num = num2 + item.Number;
+						}
+					}
+					if (number != num)
+					{
+						TroopTradeDifference troopTradeDifference = default(TroopTradeDifference);
+						troopTradeDifference.Troop = current.Item1.Character;
+						troopTradeDifference.ToCount = num;
+						troopTradeDifference.FromCount = number;
+						troopTradeDifference.IsPrisoner = current.Item2;
+						TroopTradeDifference item2 = troopTradeDifference;
+						list.Add(item2);
+					}
+					Debug.Print("currently owned: " + number + ", previously owned: " + num + " name: " + current.Item1.Character.StringId);
+				}
+			}
+			foreach (var toPartyScreenDatum2 in toPartyScreenData)
+			{
+				TroopRosterElement item = toPartyScreenDatum2.Item1;
+				int number2 = item.Number;
+				int num3 = 0;
+				using (IEnumerator<(TroopRosterElement, bool)> enumerator2 = GetEnumerator())
+				{
+					while (enumerator2.MoveNext())
+					{
+						(TroopRosterElement, bool) current4 = enumerator2.Current;
+						if (toPartyScreenDatum2.Item1.Character == current4.Item1.Character && toPartyScreenDatum2.Item2 == current4.Item2)
+						{
+							int num4 = num3;
+							item = toPartyScreenDatum2.Item1;
+							num3 = num4 + item.Number;
+						}
 					}
 				}
-				if (number != num)
+				if (num3 != number2)
 				{
 					TroopTradeDifference troopTradeDifference = default(TroopTradeDifference);
-					troopTradeDifference.Troop = current.Item1.Character;
-					troopTradeDifference.ToCount = num;
-					troopTradeDifference.FromCount = number;
-					troopTradeDifference.IsPrisoner = current.Item2;
-					TroopTradeDifference item2 = troopTradeDifference;
-					list.Add(item2);
-				}
-				Debug.Print("currently owned: " + number + ", previously owned: " + num + " name: " + current.Item1.Character.StringId);
-			}
-		}
-		foreach (var toPartyScreenDatum2 in toPartyScreenData)
-		{
-			TroopRosterElement item = toPartyScreenDatum2.Item1;
-			int number2 = item.Number;
-			int num3 = 0;
-			using (IEnumerator<(TroopRosterElement, bool)> enumerator2 = GetEnumerator())
-			{
-				while (enumerator2.MoveNext())
-				{
-					(TroopRosterElement, bool) current4 = enumerator2.Current;
-					if (toPartyScreenDatum2.Item1.Character == current4.Item1.Character && toPartyScreenDatum2.Item2 == current4.Item2)
+					troopTradeDifference.Troop = toPartyScreenDatum2.Item1.Character;
+					troopTradeDifference.ToCount = number2;
+					troopTradeDifference.FromCount = num3;
+					troopTradeDifference.IsPrisoner = toPartyScreenDatum2.Item2;
+					TroopTradeDifference item3 = troopTradeDifference;
+					if (!list.Contains(item3))
 					{
-						int num4 = num3;
-						item = toPartyScreenDatum2.Item1;
-						num3 = num4 + item.Number;
+						list.Add(item3);
+						Debug.Print("currently owned: " + num3 + ", previously owned: " + number2 + " name: " + toPartyScreenDatum2.Item1.Character.StringId);
 					}
 				}
 			}
-			if (num3 != number2)
+		}
+		else
+		{
+			foreach (var leftSideElement in GetLeftSideElements())
 			{
-				TroopTradeDifference troopTradeDifference = default(TroopTradeDifference);
-				troopTradeDifference.Troop = toPartyScreenDatum2.Item1.Character;
-				troopTradeDifference.ToCount = number2;
-				troopTradeDifference.FromCount = num3;
-				troopTradeDifference.IsPrisoner = toPartyScreenDatum2.Item2;
-				TroopTradeDifference item3 = troopTradeDifference;
-				if (!list.Contains(item3))
+				TroopRosterElement item = leftSideElement.Item1;
+				int number3 = item.Number;
+				int num5 = 0;
+				foreach (var leftSideElement2 in toPartyScreenData.GetLeftSideElements())
 				{
-					list.Add(item3);
-					Debug.Print("currently owned: " + num3 + ", previously owned: " + number2 + " name: " + toPartyScreenDatum2.Item1.Character.StringId);
+					if (leftSideElement2.Item1.Character == leftSideElement.Item1.Character && leftSideElement2.Item2 == leftSideElement.Item2)
+					{
+						int num6 = num5;
+						item = leftSideElement2.Item1;
+						num5 = num6 + item.Number;
+					}
+				}
+				if (number3 != num5)
+				{
+					TroopTradeDifference troopTradeDifference = default(TroopTradeDifference);
+					troopTradeDifference.Troop = leftSideElement.Item1.Character;
+					troopTradeDifference.ToCount = num5;
+					troopTradeDifference.FromCount = number3;
+					troopTradeDifference.IsPrisoner = leftSideElement.Item2;
+					TroopTradeDifference item4 = troopTradeDifference;
+					list.Add(item4);
+				}
+				Debug.Print("currently owned: " + number3 + ", previously owned: " + num5 + " name: " + leftSideElement.Item1.Character.StringId);
+			}
+			foreach (var leftSideElement3 in toPartyScreenData.GetLeftSideElements())
+			{
+				TroopRosterElement item = leftSideElement3.Item1;
+				int number4 = item.Number;
+				int num7 = 0;
+				foreach (var leftSideElement4 in GetLeftSideElements())
+				{
+					if (leftSideElement3.Item1.Character == leftSideElement4.Item1.Character && leftSideElement3.Item2 == leftSideElement4.Item2)
+					{
+						int num8 = num7;
+						item = leftSideElement3.Item1;
+						num7 = num8 + item.Number;
+					}
+				}
+				if (num7 != number4)
+				{
+					TroopTradeDifference troopTradeDifference = default(TroopTradeDifference);
+					troopTradeDifference.Troop = leftSideElement3.Item1.Character;
+					troopTradeDifference.ToCount = number4;
+					troopTradeDifference.FromCount = num7;
+					troopTradeDifference.IsPrisoner = leftSideElement3.Item2;
+					TroopTradeDifference item5 = troopTradeDifference;
+					if (!list.Contains(item5))
+					{
+						list.Add(item5);
+						Debug.Print("currently owned: " + num7 + ", previously owned: " + number4 + " name: " + leftSideElement3.Item1.Character.StringId);
+					}
 				}
 			}
+		}
+		return list;
+	}
+
+	private List<(TroopRosterElement, bool)> GetLeftSideElements()
+	{
+		List<(TroopRosterElement, bool)> list = new List<(TroopRosterElement, bool)>();
+		for (int i = 0; i < LeftMemberRoster.Count; i++)
+		{
+			TroopRosterElement elementCopyAtIndex = LeftMemberRoster.GetElementCopyAtIndex(i);
+			list.Add((elementCopyAtIndex, false));
+		}
+		for (int j = 0; j < LeftPrisonerRoster.Count; j++)
+		{
+			TroopRosterElement elementCopyAtIndex2 = LeftPrisonerRoster.GetElementCopyAtIndex(j);
+			list.Add((elementCopyAtIndex2, true));
 		}
 		return list;
 	}
@@ -452,11 +529,11 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		{
 			return false;
 		}
-		if (a.RightMemberRoster != b.RightMemberRoster)
+		if (!TroopRoster.RostersAreIdentical(a.RightMemberRoster, b.RightMemberRoster))
 		{
 			return false;
 		}
-		if (a.RightPrisonerRoster != b.RightPrisonerRoster)
+		if (!TroopRoster.RostersAreIdentical(a.RightPrisonerRoster, b.LeftPrisonerRoster))
 		{
 			return false;
 		}

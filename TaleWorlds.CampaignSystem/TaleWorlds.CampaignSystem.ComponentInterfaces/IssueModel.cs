@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class IssueModel : GameModel
+public abstract class IssueModel : MBGameModel<IssueModel>
 {
 	public abstract int IssueOwnerCoolDownInDays { get; }
 
@@ -23,6 +23,8 @@ public abstract class IssueModel : GameModel
 	public abstract CampaignTime GetDurationOfResolutionForHero(Hero alternativeSolutionHero, IssueBase issue);
 
 	public abstract int GetTroopsRequiredForHero(Hero alternativeSolutionHero, IssueBase issue);
+
+	public abstract bool CanTroopsReturnFromAlternativeSolution();
 
 	public abstract (SkillObject, int) GetIssueAlternativeSolutionSkill(Hero hero, IssueBase issue);
 }

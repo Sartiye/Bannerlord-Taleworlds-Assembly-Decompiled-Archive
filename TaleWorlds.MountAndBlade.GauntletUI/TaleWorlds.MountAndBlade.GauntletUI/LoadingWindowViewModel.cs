@@ -1,4 +1,3 @@
-using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -7,17 +6,25 @@ namespace TaleWorlds.MountAndBlade.GauntletUI;
 
 public class LoadingWindowViewModel : ViewModel
 {
+	public delegate void UnloadImageDelegate(int index);
+
+	public delegate void LoadImageDelegate(int index, out string imageName);
+
 	private int _currentImage;
 
 	private int _totalGenericImageCount;
 
-	private Action<bool, int> _handleSPPartialLoading;
+	private LoadImageDelegate _loadImageDelegate;
+
+	private UnloadImageDelegate _unloadImageDelegate;
 
 	private bool _enabled;
 
 	private bool _isDevelopmentMode;
 
 	private bool _isMultiplayer;
+
+	private bool _isNavalDLCEnabled;
 
 	private string _loadingImageName;
 
@@ -136,6 +143,23 @@ public class LoadingWindowViewModel : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsNavalDLCEnabled
+	{
+		get
+		{
+			return _isNavalDLCEnabled;
+		}
+		set
+		{
+			if (_isNavalDLCEnabled != value)
+			{
+				_isNavalDLCEnabled = value;
+				OnPropertyChangedWithValue(value, "IsNavalDLCEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string LoadingImageName
 	{
 		get
@@ -152,10 +176,15 @@ public class LoadingWindowViewModel : ViewModel
 		}
 	}
 
-	public LoadingWindowViewModel(Action<bool, int> handleSPPartialLoading)
+	public LoadingWindowViewModel(LoadImageDelegate loadImageDelegate, UnloadImageDelegate unloadImageDelegate)
 	{
-		_handleSPPartialLoading = handleSPPartialLoading;
-		_handleSPPartialLoading?.Invoke(arg1: true, _currentImage + 1);
+		_unloadImageDelegate = unloadImageDelegate;
+		_loadImageDelegate = loadImageDelegate;
+		if (_loadImageDelegate != null)
+		{
+			_loadImageDelegate(_currentImage + 1, out var imageName);
+			LoadingImageName = imageName;
+		}
 	}
 
 	internal void Update()
@@ -188,9 +217,9 @@ public class LoadingWindowViewModel : ViewModel
 
 	private bool IsEligableForMultiplayerLoading()
 	{
-		if (_isMultiplayer && TaleWorlds.MountAndBlade.Mission.Current != null)
+		if (_isMultiplayer && TaleWorlds.MountAndBlade.Mission.Current != null && Game.Current.GameStateManager.ActiveState is MissionState && ((MissionState)Game.Current.GameStateManager.ActiveState).MissionName != "MultiplayerPractice")
 		{
-			return Game.Current.GameStateManager.ActiveState is MissionState;
+			return true;
 		}
 		return false;
 	}
@@ -240,13 +269,23 @@ public class LoadingWindowViewModel : ViewModel
 
 	private void SetNextGenericImage()
 	{
-		int arg = ((_currentImage >= 1) ? _currentImage : _totalGenericImageCount);
+		int index = ((_currentImage >= 1) ? _currentImage : _totalGenericImageCount);
 		_currentImage = ((_currentImage >= _totalGenericImageCount) ? 1 : (_currentImage + 1));
-		int arg2 = ((_currentImage >= _totalGenericImageCount) ? 1 : (_currentImage + 1));
-		_handleSPPartialLoading?.Invoke(arg1: false, arg);
-		_handleSPPartialLoading?.Invoke(arg1: true, arg2);
+		int index2 = ((_currentImage >= _totalGenericImageCount) ? 1 : (_currentImage + 1));
+		if (_unloadImageDelegate != null)
+		{
+			_unloadImageDelegate(index);
+		}
+		if (_loadImageDelegate != null)
+		{
+			_loadImageDelegate(index2, out var imageName);
+			LoadingImageName = imageName;
+		}
+		else
+		{
+			LoadingImageName = string.Empty;
+		}
 		IsDevelopmentMode = NativeConfig.IsDevelopmentMode;
-		LoadingImageName = "loading_" + _currentImage.ToString("00");
 	}
 
 	public void SetTotalGenericImageCount(int totalGenericImageCount)

@@ -20,7 +20,18 @@ public static class TakePrisonerAction
 		capturerParty.AddPrisoner(prisonerCharacter.CharacterObject, 1);
 		if (prisonerCharacter == Hero.MainHero)
 		{
+			if (MobileParty.MainParty.IsDisorganized)
+			{
+				MobileParty.MainParty.SetDisorganized(isDisorganized: false);
+			}
 			PlayerCaptivity.StartCaptivity(capturerParty);
+			if (MobileParty.MainParty.IsCurrentlyAtSea)
+			{
+				for (int num = MobileParty.MainParty.Ships.Count - 1; num >= 0; num--)
+				{
+					DestroyShipAction.Apply(MobileParty.MainParty.Ships[num]);
+				}
+			}
 		}
 		if (capturerParty.IsSettlement && prisonerCharacter.StayingInSettlement != null)
 		{

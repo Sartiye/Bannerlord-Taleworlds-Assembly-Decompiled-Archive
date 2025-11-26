@@ -1,4 +1,5 @@
 using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -147,7 +148,7 @@ public class InquiryElementVM : ViewModel
 	public InquiryElementVM(InquiryElement elementData, TextObject hint, Action<InquiryElementVM, bool> onSelectedStateChanged = null)
 	{
 		Text = elementData.Title;
-		ImageIdentifier = ((elementData.ImageIdentifier != null) ? new ImageIdentifierVM(elementData.ImageIdentifier) : new ImageIdentifierVM());
+		ImageIdentifier = new GenericImageIdentifierVM(elementData.ImageIdentifier);
 		InquiryElement = elementData;
 		IsEnabled = elementData.IsEnabled;
 		HasVisuals = elementData.ImageIdentifier != null;

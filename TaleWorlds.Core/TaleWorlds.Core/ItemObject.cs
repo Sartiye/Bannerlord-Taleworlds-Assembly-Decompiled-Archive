@@ -30,9 +30,11 @@ public sealed class ItemObject : MBObjectBase
 		Polearm,
 		Arrows,
 		Bolts,
+		SlingStones,
 		Shield,
 		Bow,
 		Crossbow,
+		Sling,
 		Thrown,
 		Goods,
 		HeadArmor,
@@ -65,6 +67,8 @@ public sealed class ItemObject : MBObjectBase
 
 	public const int MaxHolsterSlotCount = 4;
 
+	private const float TierfOverrideAdjustmentValue = 1f;
+
 	public ItemTypeEnum Type;
 
 	public ItemComponent ItemComponent { get; private set; }
@@ -84,6 +88,10 @@ public sealed class ItemObject : MBObjectBase
 	public string FlyingMeshName { get; private set; }
 
 	public string BodyName { get; private set; }
+
+	public string SkeletonName { get; private set; }
+
+	public string StaticAnimationName { get; private set; }
 
 	public string HolsterBodyName { get; private set; }
 
@@ -117,6 +125,8 @@ public sealed class ItemObject : MBObjectBase
 
 	public bool IsCivilian => ItemFlags.HasAnyFlag(ItemFlags.Civilian);
 
+	public bool IsStealthItem => ItemFlags.HasAnyFlag(ItemFlags.Stealth);
+
 	public bool UsingFacegenScaling
 	{
 		get
@@ -133,8 +143,6 @@ public sealed class ItemObject : MBObjectBase
 
 	public bool IsFood { get; private set; }
 
-	public bool IsUniqueItem { get; private set; }
-
 	public float ScaleFactor { get; private set; }
 
 	public BasicCultureObject Culture { get; private set; }
@@ -147,7 +155,35 @@ public sealed class ItemObject : MBObjectBase
 
 	public int LodAtlasIndex { get; private set; }
 
+	private float TierfOverride { get; set; }
+
+	public bool IsTransferable => Game.Current.BasicModels.ItemValueModel.GetIsTransferable(this);
+
+	public float Tierf
+	{
+		get
+		{
+			if (TierfOverride >= 1f)
+			{
+				return TierfOverride - 1f;
+			}
+			return Game.Current.BasicModels.ItemValueModel.CalculateTier(this);
+		}
+	}
+
 	public bool IsCraftedWeapon => WeaponDesign != null;
+
+	public ItemTiers Tier
+	{
+		get
+		{
+			if (ItemComponent == null)
+			{
+				return ItemTiers.Tier1;
+			}
+			return (ItemTiers)(MBMath.ClampInt(TaleWorlds.Library.MathF.Round(Tierf), 0, 6) - 1);
+		}
+	}
 
 	public WeaponDesign WeaponDesign { get; private set; }
 
@@ -176,22 +212,6 @@ public sealed class ItemObject : MBObjectBase
 	public TradeItemComponent FoodComponent => ItemComponent as TradeItemComponent;
 
 	public bool HasFoodComponent => FoodComponent != null;
-
-	public float Tierf => Game.Current.BasicModels.ItemValueModel.CalculateTier(this);
-
-	public ItemTiers Tier
-	{
-		get
-		{
-			if (ItemComponent == null)
-			{
-				return ItemTiers.Tier1;
-			}
-			return (ItemTiers)(MBMath.ClampInt(TaleWorlds.Library.MathF.Round(Tierf), 0, 6) - 1);
-		}
-	}
-
-	public ItemObject PrerequisiteItem { get; private set; }
 
 	public MBReadOnlyList<WeaponComponentData> Weapons => WeaponComponent?.Weapons;
 
@@ -282,6 +302,8 @@ public sealed class ItemObject : MBObjectBase
 		HolsterPositionShift = itemToCopy.HolsterPositionShift;
 		FlyingMeshName = itemToCopy.FlyingMeshName;
 		BodyName = itemToCopy.BodyName;
+		SkeletonName = itemToCopy.SkeletonName;
+		StaticAnimationName = itemToCopy.StaticAnimationName;
 		HolsterBodyName = itemToCopy.HolsterBodyName;
 		CollisionBodyName = itemToCopy.CollisionBodyName;
 		RecalculateBody = itemToCopy.RecalculateBody;
@@ -295,12 +317,15 @@ public sealed class ItemObject : MBObjectBase
 		IsFood = itemToCopy.IsFood;
 		Type = itemToCopy.Type;
 		ScaleFactor = itemToCopy.ScaleFactor;
-		IsUniqueItem = false;
 	}
 
-	internal void SetName(TextObject name)
+	internal void SetCraftedWeaponName(TextObject weaponName)
 	{
-		Name = name;
+		Name = weaponName;
+		if (WeaponDesign != null)
+		{
+			WeaponDesign.SetWeaponName(Name);
+		}
 	}
 
 	public static ItemObject InitializeTradeGood(ItemObject item, TextObject name, string meshName, ItemCategory category, int value, float weight, ItemTypeEnum itemType, bool isFood = false)
@@ -402,7 +427,7 @@ public sealed class ItemObject : MBObjectBase
 			{
 				NotMerchandise = xmlNode2.InnerText != "true";
 			}
-			TextObject weaponName = new TextObject(node.Attributes["name"].InnerText);
+			TextObject craftedWeaponName = new TextObject(node.Attributes["name"].InnerText);
 			string innerText = node.Attributes["crafting_template"].InnerText;
 			bool num = node.Attributes["has_modifier"] == null || node.Attributes["has_modifier"].InnerText != "false";
 			string text = node.Attributes["modifier_group"]?.Value;
@@ -438,10 +463,10 @@ public sealed class ItemObject : MBObjectBase
 					}
 				}
 			}
-			ItemObject itemObject = Crafting.CreatePreCraftedWeapon(this, array, innerText, weaponName, itemModifierGroup);
+			ItemObject itemObject = Crafting.CreatePreCraftedWeaponOnDeserialize(this, array, innerText, craftedWeaponName, itemModifierGroup);
 			if (itemObject.WeaponComponent == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Crafted item: " + itemObject.StringId + " can not be initialized, item replaced with Trash item.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 423);
+				TaleWorlds.Library.Debug.FailedAssert("Crafted item: " + itemObject.StringId + " can not be initialized, item replaced with Trash item.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 446);
 				MBObjectManager.Instance.UnregisterObject(this);
 				return;
 			}
@@ -458,7 +483,6 @@ public sealed class ItemObject : MBObjectBase
 			{
 				Culture = (BasicCultureObject)objectManager.ReadObjectReferenceFromXml("culture", typeof(BasicCultureObject), node);
 			}
-			PrerequisiteItem = ((node.Attributes["prerequisite_item"] != null) ? ((ItemObject)objectManager.ReadObjectReferenceFromXml("prerequisite_item", typeof(ItemObject), node)) : null);
 		}
 		else
 		{
@@ -473,7 +497,6 @@ public sealed class ItemObject : MBObjectBase
 			{
 				NotMerchandise = xmlNode6.InnerText != "true";
 			}
-			PrerequisiteItem = ((node.Attributes["prerequisite_item"] != null) ? ((ItemObject)objectManager.ReadObjectReferenceFromXml("prerequisite_item", typeof(ItemObject), node)) : null);
 			XmlNode xmlNode7 = node.Attributes["mesh"];
 			if (xmlNode7 != null && !string.IsNullOrEmpty(xmlNode7.InnerText))
 			{
@@ -497,6 +520,8 @@ public sealed class ItemObject : MBObjectBase
 			}
 			HolsterPositionShift = ((node.Attributes["holster_position_shift"] != null) ? Vec3.Parse(node.Attributes["holster_position_shift"].Value) : Vec3.Zero);
 			BodyName = ((node.Attributes["body_name"] != null) ? node.Attributes["body_name"].Value : null);
+			SkeletonName = ((node.Attributes["skeleton_name"] != null) ? node.Attributes["skeleton_name"].Value : null);
+			StaticAnimationName = ((node.Attributes["static_animation_name"] != null) ? node.Attributes["static_animation_name"].Value : null);
 			HolsterBodyName = ((node.Attributes["holster_body_name"] != null) ? node.Attributes["holster_body_name"].Value : null);
 			CollisionBodyName = ((node.Attributes["shield_body_name"] != null) ? node.Attributes["shield_body_name"].Value : null);
 			RecalculateBody = node.Attributes["recalculate_body"] != null && bool.Parse(node.Attributes["recalculate_body"].Value);
@@ -561,7 +586,7 @@ public sealed class ItemObject : MBObjectBase
 								itemComponent = new TradeItemComponent();
 								break;
 							case "Food":
-								TaleWorlds.Library.Debug.FailedAssert("FoodComponent tag has been converted to TradeComponent. Use Trade xml node type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 672);
+								TaleWorlds.Library.Debug.FailedAssert("FoodComponent tag has been converted to TradeComponent. Use Trade xml node type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 685);
 								itemComponent = null;
 								break;
 							case "Banner":
@@ -610,7 +635,7 @@ public sealed class ItemObject : MBObjectBase
 			}
 			if (Type == ItemTypeEnum.Banner && !(ItemComponent is BannerComponent) && !(base.StringId == "campaign_banner_small"))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 734);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 747);
 				TaleWorlds.Library.Debug.Print(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 			}
 			XmlAttribute xmlAttribute9 = node.Attributes["AmmoOffset"];
@@ -627,13 +652,18 @@ public sealed class ItemObject : MBObjectBase
 					}
 					catch (Exception)
 					{
-						TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 761);
+						TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 774);
 					}
 				}
 				else
 				{
-					TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 766);
+					TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 779);
 				}
+			}
+			if (node.Attributes["tier_override"] != null)
+			{
+				float num2 = float.Parse(node.Attributes["tier_override"].Value);
+				TierfOverride = num2 + 1f;
 			}
 			Effectiveness = CalculateEffectiveness();
 			if (node.Attributes["value"] != null)
@@ -694,17 +724,17 @@ public sealed class ItemObject : MBObjectBase
 		{
 			if ((Type == ItemTypeEnum.Bow || Type == ItemTypeEnum.Crossbow || Type == ItemTypeEnum.TwoHandedWeapon) && !PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have NotUsableWithOneHand flag!"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 936);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have NotUsableWithOneHand flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 957);
 				PrimaryWeapon.WeaponFlags |= WeaponFlags.NotUsableWithOneHand;
 			}
 			if ((Type == ItemTypeEnum.Bow || Type == ItemTypeEnum.Crossbow) && !PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.TwoHandIdleOnMount))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have TwoHandIdleOnMount flag!"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 945);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have TwoHandIdleOnMount flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 966);
 				PrimaryWeapon.WeaponFlags |= WeaponFlags.TwoHandIdleOnMount;
 			}
 			if ((Type == ItemTypeEnum.OneHandedWeapon || Type == ItemTypeEnum.Shield) && PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": One Handed Item has TwoHanded flag!"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 954);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": One Handed Item has TwoHanded flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 975);
 				PrimaryWeapon.WeaponFlags &= ~WeaponFlags.NotUsableWithOneHand;
 			}
 		}
@@ -726,7 +756,7 @@ public sealed class ItemObject : MBObjectBase
 		{
 			_ = weapon.WeaponLength;
 			_ = 0;
-			if (Type == ItemTypeEnum.Arrows || Type == ItemTypeEnum.Bolts || Type == ItemTypeEnum.Bullets || Type == ItemTypeEnum.Thrown)
+			if (Type == ItemTypeEnum.Arrows || Type == ItemTypeEnum.Bolts || Type == ItemTypeEnum.SlingStones || Type == ItemTypeEnum.Bullets || Type == ItemTypeEnum.Thrown)
 			{
 				_ = weapon.MissileSpeed;
 				_ = 0;
@@ -740,6 +770,7 @@ public sealed class ItemObject : MBObjectBase
 		{
 			ItemTypeEnum.Bow => ItemTypeEnum.Arrows, 
 			ItemTypeEnum.Crossbow => ItemTypeEnum.Bolts, 
+			ItemTypeEnum.Sling => ItemTypeEnum.SlingStones, 
 			ItemTypeEnum.Pistol => ItemTypeEnum.Bullets, 
 			ItemTypeEnum.Thrown => ItemTypeEnum.Thrown, 
 			_ => ItemTypeEnum.Invalid, 
@@ -758,16 +789,17 @@ public sealed class ItemObject : MBObjectBase
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
 		case WeaponClass.Bolt:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
+		case WeaponClass.SlingStone:
 		case WeaponClass.Cartridge:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBullet);
 		case WeaponClass.Bow:
-			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
 		case WeaponClass.Crossbow:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
+		case WeaponClass.Sling:
 		case WeaponClass.Stone:
-			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionKnife);
+			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionStone);
 		case WeaponClass.Boulder:
-			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
+			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBoulder);
 		case WeaponClass.ThrowingAxe:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionAxe);
 		case WeaponClass.ThrowingKnife:
@@ -775,9 +807,12 @@ public sealed class ItemObject : MBObjectBase
 		case WeaponClass.Javelin:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionJavelin);
 		case WeaponClass.Pistol:
-			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBullet);
 		case WeaponClass.Musket:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBullet);
+		case WeaponClass.BallistaStone:
+			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBallistaStone);
+		case WeaponClass.BallistaBoulder:
+			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionBallistaBoulder);
 		default:
 			return ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.AirFrictionArrow);
 		}
@@ -845,10 +880,18 @@ public sealed class ItemObject : MBObjectBase
 			case WeaponClass.Crossbow:
 				num = 0.57f;
 				break;
+			case WeaponClass.Sling:
+				num = 0.1f;
+				break;
 			case WeaponClass.Stone:
+			case WeaponClass.BallistaStone:
+				num = 0.1f;
+				break;
+			case WeaponClass.SlingStone:
 				num = 0.1f;
 				break;
 			case WeaponClass.Boulder:
+			case WeaponClass.BallistaBoulder:
 				num = 0.1f;
 				break;
 			case WeaponClass.ThrowingAxe:

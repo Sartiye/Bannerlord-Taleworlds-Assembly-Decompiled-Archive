@@ -149,7 +149,7 @@ public class QuestStageVM : ViewModel
 
 	public QuestStageVM(JournalLog log, string dateString, bool isLastStage, Action onLogNotified, QuestStageTaskVM stageTask = null)
 	{
-		StageTask = new QuestStageTaskVM(TextObject.Empty, 0, 0, LogType.None);
+		StageTask = new QuestStageTaskVM(TextObject.GetEmpty(), 0, 0, LogType.None);
 		_onLogNotified = onLogNotified;
 		string content = log.LogText.ToString();
 		GameTexts.SetVariable("ENTRY", content);
@@ -171,7 +171,7 @@ public class QuestStageVM : ViewModel
 	public QuestStageVM(JournalLog log, string description, string dateString, bool isLastStage, Action onLogNotified)
 	{
 		Log = log;
-		StageTask = new QuestStageTaskVM(TextObject.Empty, 0, 0, LogType.None);
+		StageTask = new QuestStageTaskVM(TextObject.GetEmpty(), 0, 0, LogType.None);
 		_onLogNotified = onLogNotified;
 		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
 		DateText = dateString;

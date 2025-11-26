@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -56,7 +57,9 @@ public class MPLobbyClanOverviewVM : ViewModel
 
 	private Color _cultureColor2;
 
-	private ImageIdentifierVM _sigilImage;
+	private BannerImageIdentifierVM _sigilImage;
+
+	private BannerImageIdentifierVM _factionBanner;
 
 	private MPLobbyClanChangeSigilPopupVM _changeSigilPopup;
 
@@ -430,7 +433,7 @@ public class MPLobbyClanOverviewVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM SigilImage
+	public BannerImageIdentifierVM SigilImage
 	{
 		get
 		{
@@ -442,6 +445,23 @@ public class MPLobbyClanOverviewVM : ViewModel
 			{
 				_sigilImage = value;
 				OnPropertyChanged("SigilImage");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BannerImageIdentifierVM FactionBanner
+	{
+		get
+		{
+			return _factionBanner;
+		}
+		set
+		{
+			if (value != _factionBanner)
+			{
+				_factionBanner = value;
+				OnPropertyChanged("FactionBanner");
 			}
 		}
 	}
@@ -609,7 +629,7 @@ public class MPLobbyClanOverviewVM : ViewModel
 		GameTexts.SetVariable("LEFT", new TextObject("{=lBn2pSBL}Members").ToString());
 		GameTexts.SetVariable("RIGHT", clanInfo.Players.Length);
 		MembersText = GameTexts.FindText("str_LEFT_colon_RIGHT").ToString();
-		SigilImage = new ImageIdentifierVM(BannerCode.CreateFrom(clanInfo.Sigil), nineGrid: true);
+		SigilImage = new BannerImageIdentifierVM(new Banner(clanInfo.Sigil), nineGrid: true);
 		FactionCultureID = clanInfo.Faction;
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(FactionCultureID);
 		CultureColor1 = Color.FromUint(@object?.Color ?? 0);
@@ -621,11 +641,12 @@ public class MPLobbyClanOverviewVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Game client is destroyed while updating clan home info", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Clan\\MPLobbyClanOverviewVM.cs", "RefreshClanInformation", 87);
+			Debug.FailedAssert("Game client is destroyed while updating clan home info", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Clan\\MPLobbyClanOverviewVM.cs", "RefreshClanInformation", 89);
 			Debug.Print("Game client is destroyed while updating clan home info");
 			IsLeader = false;
 			IsPrivilegedMember = false;
 		}
+		FactionBanner = new BannerImageIdentifierVM(@object.Banner, nineGrid: true);
 		ClanDescriptionText = clanInfo.InformationText;
 		DoesHaveDescription = true;
 		if (string.IsNullOrEmpty(clanInfo.InformationText))

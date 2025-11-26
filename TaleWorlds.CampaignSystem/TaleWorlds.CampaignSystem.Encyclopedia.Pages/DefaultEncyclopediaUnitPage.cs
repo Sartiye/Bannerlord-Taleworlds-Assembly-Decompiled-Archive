@@ -25,7 +25,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 			{
 				return tier.ToString();
 			}
-			Debug.FailedAssert("Unable to get the tier of a non-character object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 138);
+			Debug.FailedAssert("Unable to get the tier of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 147);
 			return "";
 		}
 	}
@@ -45,7 +45,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 			{
 				return level.ToString();
 			}
-			Debug.FailedAssert("Unable to get the level of a non-character object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 159);
+			Debug.FailedAssert("Unable to get the level of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 168);
 			return "";
 		}
 	}
@@ -63,7 +63,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be character objects.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "CompareUnits", 174);
+			Debug.FailedAssert("Both objects should be character objects.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "CompareUnits", 183);
 			return 0;
 		}
 	}
@@ -106,16 +106,22 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 		};
 		list.Add(new EncyclopediaFilterGroup(filters2, new TextObject("{=GZxFIeiJ}Occupation")));
 		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
+		List<EncyclopediaFilterItem> list3 = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
 			orderby !x.IsMainCulture descending
 			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
 		{
-			if (culture.StringId != "neutral_culture")
+			if (culture.IsBandit)
+			{
+				list3.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
+			}
+			else if (culture.StringId != "neutral_culture")
 			{
 				list2.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
 			}
 		}
 		list.Add(new EncyclopediaFilterGroup(list2, GameTexts.FindText("str_culture")));
+		list.Add(new EncyclopediaFilterGroup(list3, GameTexts.FindText("str_outlaw")));
 		return list;
 	}
 
@@ -150,7 +156,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 
 	public override bool IsValidEncyclopediaItem(object o)
 	{
-		if (o is CharacterObject { IsTemplate: false } characterObject && characterObject != null && !characterObject.HiddenInEncylopedia)
+		if (o is CharacterObject { IsTemplate: false } characterObject && characterObject != null && !characterObject.HiddenInEncyclopedia && characterObject?.HeroObject == null)
 		{
 			if (characterObject.Occupation != Occupation.Soldier && characterObject.Occupation != Occupation.Mercenary && characterObject.Occupation != Occupation.Bandit && characterObject.Occupation != Occupation.Gangster && characterObject.Occupation != Occupation.CaravanGuard)
 			{

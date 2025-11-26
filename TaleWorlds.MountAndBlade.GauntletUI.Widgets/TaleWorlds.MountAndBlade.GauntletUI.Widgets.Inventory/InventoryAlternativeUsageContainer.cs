@@ -98,13 +98,9 @@ public class InventoryAlternativeUsageContainer : Container
 		SetChildrenLayout();
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		base.OnChildRemoved(child);
-		if (base.IntValue < base.ChildCount - 1)
-		{
-			base.IntValue = -1;
-		}
+		base.OnBeforeChildRemoved(child);
 		foreach (Action<Widget, Widget> itemRemoveEventHandler in ItemRemoveEventHandlers)
 		{
 			itemRemoveEventHandler(this, child);

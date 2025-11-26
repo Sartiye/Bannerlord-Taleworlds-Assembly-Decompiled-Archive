@@ -146,10 +146,6 @@ public class StonePile : UsableMachine, IDetachment
 		public Timer Timer;
 	}
 
-	private static readonly ActionIndexCache act_pickup_boulder_begin = ActionIndexCache.Create("act_pickup_boulder_begin");
-
-	private static readonly ActionIndexCache act_pickup_boulder_end = ActionIndexCache.Create("act_pickup_boulder_end");
-
 	private const string ThrowingTargetTag = "throwing_target";
 
 	private const string ThrowingPointTag = "throwing";
@@ -164,9 +160,9 @@ public class StonePile : UsableMachine, IDetachment
 
 	public int StartingAmmoCount = 12;
 
-	public string GivenItemID;
+	public string GivenItemID = "boulder";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _givenItemRange = 15f;
 
 	private ItemObject _givenItem;
@@ -244,7 +240,7 @@ public class StonePile : UsableMachine, IDetachment
 		base.OnInit();
 		_tickOccasionallyTimer = new Timer(Mission.Current.CurrentTime, 0.5f + MBRandom.RandomFloat * 0.5f);
 		_givenItem = Game.Current.ObjectManager.GetObject<ItemObject>(GivenItemID);
-		MBList<VolumeBox> source = base.GameEntity.CollectObjects<VolumeBox>();
+		MBList<VolumeBox> source = base.GameEntity.CollectScriptComponentsIncludingChildrenRecursive<VolumeBox>();
 		_throwingPoints = new List<ThrowingPoint>();
 		_volumeBoxTimerPairs = new List<VolumeBoxTimerPair>();
 		foreach (StandingPointWithWeaponRequirement item2 in base.StandingPoints.OfType<StandingPointWithWeaponRequirement>())
@@ -253,7 +249,7 @@ public class StonePile : UsableMachine, IDetachment
 			{
 				item2.InitGivenWeapon(_givenItem);
 				item2.SetHasAlternative(hasAlternative: true);
-				item2.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none));
+				item2.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
 			}
 			else
 			{
@@ -267,7 +263,7 @@ public class StonePile : UsableMachine, IDetachment
 				throwingPoint.AmmoPickUpPoint = null;
 				throwingPoint.AttackEntity = null;
 				throwingPoint.AttackEntityNearbyAgentsCheckRadius = 0f;
-				List<StandingPointWithWeaponRequirement> list = item2.GameEntity.CollectObjectsWithTag<StandingPointWithWeaponRequirement>("wait_to_throw");
+				List<StandingPointWithWeaponRequirement> list = item2.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<StandingPointWithWeaponRequirement>("wait_to_throw");
 				if (list != null && list.Count > 0)
 				{
 					throwingPoint.WaitingPoint = list[0];
@@ -357,18 +353,18 @@ public class StonePile : UsableMachine, IDetachment
 			textObject.SetTextVariable("PILE_TYPE", new TextObject("{=1CPdu9K0}Stone"));
 			return textObject;
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		if (gameEntity.HasTag(AmmoPickUpTag))
+		if (gameEntity.IsValid && gameEntity.HasTag(AmmoPickUpTag))
 		{
 			TextObject textObject = new TextObject("{=bNYm3K6b}{KEY} Pick Up");
 			textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
-			return textObject.ToString();
+			return textObject;
 		}
-		return string.Empty;
+		return null;
 	}
 
 	public override UsableMachineAIBase CreateAIBehaviorObject()
@@ -512,7 +508,7 @@ public class StonePile : UsableMachine, IDetachment
 			}
 			goto IL_006e;
 			IL_006e:
-			if (agent.GetWieldedItemIndex(Agent.HandIndex.MainHand) == EquipmentIndex.ExtraWeaponSlot && agent.Equipment[EquipmentIndex.ExtraWeaponSlot].Item == _givenItem)
+			if (agent.GetPrimaryWieldedItemIndex() == EquipmentIndex.ExtraWeaponSlot && agent.Equipment[EquipmentIndex.ExtraWeaponSlot].Item == _givenItem)
 			{
 				agent.DropItem(EquipmentIndex.ExtraWeaponSlot);
 			}
@@ -532,7 +528,7 @@ public class StonePile : UsableMachine, IDetachment
 	private void UpdateThrowingPointAttackEntities()
 	{
 		bool flag = false;
-		List<GameEntity> list = null;
+		List<WeakGameEntity> list = null;
 		foreach (ThrowingPoint throwingPoint in _throwingPoints)
 		{
 			if (throwingPoint.StandingPoint.HasAIUser)
@@ -559,7 +555,7 @@ public class StonePile : UsableMachine, IDetachment
 				if (attackEntity != null)
 				{
 					bool flag2 = false;
-					if (!CanShootAtEntity(userAgent, attackEntity))
+					if (!CanShootAtEntity(userAgent, attackEntity.WeakEntity))
 					{
 						flag2 = true;
 					}
@@ -567,7 +563,7 @@ public class StonePile : UsableMachine, IDetachment
 					{
 						flag2 = !throwingPoint.CanUseAttackEntity();
 					}
-					else if (!list.Contains(attackEntity))
+					else if (!list.Contains(attackEntity.WeakEntity))
 					{
 						flag2 = true;
 					}
@@ -586,7 +582,7 @@ public class StonePile : UsableMachine, IDetachment
 				{
 					foreach (GameEntity throwingTarget in _throwingTargets)
 					{
-						if (attackEntity != throwingTarget && CanShootAtEntity(userAgent, throwingTarget, canShootEvenIfRayCastHitsNothing: true))
+						if (attackEntity != throwingTarget && CanShootAtEntity(userAgent, throwingTarget.WeakEntity, canShootEvenIfRayCastHitsNothing: true))
 						{
 							throwingPoint.AttackEntity = throwingTarget;
 							throwingPoint.AttackEntityNearbyAgentsCheckRadius = 1.31f;
@@ -599,11 +595,11 @@ public class StonePile : UsableMachine, IDetachment
 				{
 					continue;
 				}
-				foreach (GameEntity item in list)
+				foreach (WeakGameEntity item in list)
 				{
 					if (attackEntity != item && CanShootAtEntity(userAgent, item))
 					{
-						throwingPoint.AttackEntity = item;
+						throwingPoint.AttackEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(item);
 						throwingPoint.AttackEntityNearbyAgentsCheckRadius = 0f;
 						break;
 					}
@@ -624,13 +620,13 @@ public class StonePile : UsableMachine, IDetachment
 	protected internal override void OnTick(float dt)
 	{
 		base.OnTick(dt);
-		if (!GameNetwork.IsClientOrReplay && _tickOccasionallyTimer.Check(Mission.Current.CurrentTime))
-		{
-			TickOccasionally();
-		}
 		if (GameNetwork.IsClientOrReplay)
 		{
 			return;
+		}
+		if (_tickOccasionallyTimer.Check(Mission.Current.CurrentTime))
+		{
+			TickOccasionally();
 		}
 		StandingPoint.StackArray8StandingPoint stackArray8StandingPoint = default(StandingPoint.StackArray8StandingPoint);
 		int num = 0;
@@ -640,10 +636,10 @@ public class StonePile : UsableMachine, IDetachment
 		{
 			if (ammoPickUpPoint2.HasUser)
 			{
-				ActionIndexValueCache currentActionValue = ammoPickUpPoint2.UserAgent.GetCurrentActionValue(1);
-				if (!(currentActionValue == act_pickup_boulder_begin))
+				ActionIndexCache currentAction = ammoPickUpPoint2.UserAgent.GetCurrentAction(1);
+				if (!(currentAction == ActionIndexCache.act_pickup_boulder_begin))
 				{
-					if (currentActionValue == act_pickup_boulder_end)
+					if (currentAction == ActionIndexCache.act_pickup_boulder_end)
 					{
 						MissionWeapon weapon = new MissionWeapon(_givenItem, null, null, 1);
 						Agent userAgent = ammoPickUpPoint2.UserAgent;
@@ -655,7 +651,7 @@ public class StonePile : UsableMachine, IDetachment
 							stackArray8Agent[num2++] = userAgent;
 						}
 					}
-					else if (!ammoPickUpPoint2.UserAgent.SetActionChannel(1, act_pickup_boulder_begin, ignorePriority: false, 0uL))
+					else if (!ammoPickUpPoint2.UserAgent.SetActionChannel(1, in ActionIndexCache.act_pickup_boulder_begin, ignorePriority: false, (AnimFlags)0uL))
 					{
 						base.Ai.StopUsingStandingPoint(ammoPickUpPoint2);
 					}
@@ -789,10 +785,10 @@ public class StonePile : UsableMachine, IDetachment
 			}
 		}
 		bool num = agent != null;
-		if (num && agent.Controller == Agent.ControllerType.AI)
+		if (num && agent.Controller == AgentControllerType.AI)
 		{
-			EquipmentIndex wieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			if (wieldedItemIndex == EquipmentIndex.None || agent.Equipment[wieldedItemIndex].Item != _givenItem)
+			EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
+			if (primaryWieldedItemIndex == EquipmentIndex.None || agent.Equipment[primaryWieldedItemIndex].Item != _givenItem)
 			{
 				base.Ai.StopUsingStandingPoint(standingPoint);
 				throwingPoint.AttackEntity = null;
@@ -813,7 +809,7 @@ public class StonePile : UsableMachine, IDetachment
 				{
 					if (throwingPoint.CanUseAttackEntity())
 					{
-						agent.SetScriptedTargetEntityAndPosition(throwingPoint.AttackEntity, new WorldPosition(throwingPoint.AttackEntity.Scene, UIntPtr.Zero, throwingPoint.AttackEntity.GlobalPosition, hasValidZ: false), Agent.AISpecialCombatModeFlags.None, ignoreIfAlreadyAttacking: true);
+						agent.SetScriptedTargetEntityAndPosition(throwingPoint.AttackEntity.WeakEntity, new WorldPosition(throwingPoint.AttackEntity.Scene, UIntPtr.Zero, throwingPoint.AttackEntity.GlobalPosition, hasValidZ: false), Agent.AISpecialCombatModeFlags.None, ignoreIfAlreadyAttacking: true);
 						return num;
 					}
 					agent.DisableScriptedCombatMovement();
@@ -1021,7 +1017,7 @@ public class StonePile : UsableMachine, IDetachment
 	protected virtual void UpdateAmmoMesh()
 	{
 		int num = 20 - AmmoCount;
-		if (!(base.GameEntity != null))
+		if (!base.GameEntity.IsValid)
 		{
 			return;
 		}
@@ -1035,14 +1031,18 @@ public class StonePile : UsableMachine, IDetachment
 		}
 	}
 
-	private bool CanShootAtEntity(Agent agent, GameEntity entity, bool canShootEvenIfRayCastHitsNothing = false)
+	private bool CanShootAtEntity(Agent agent, WeakGameEntity entity, bool canShootEvenIfRayCastHitsNothing = false)
 	{
 		bool result = false;
-		if (agent.GetEyeGlobalPosition().DistanceSquared(entity.GlobalPosition) < _givenItemRange * _givenItemRange)
+		Vec3 eyeGlobalPosition = agent.GetEyeGlobalPosition();
+		Vec3 globalPosition = entity.GlobalPosition;
+		Vec3 vec = eyeGlobalPosition - globalPosition;
+		float num = vec.Normalize();
+		if (num > 1E-05f && TaleWorlds.Library.MathF.Abs(vec.z) < TaleWorlds.Library.MathF.Cos(System.MathF.PI / 12f) && num < _givenItemRange)
 		{
-			if (base.Scene.RayCastForClosestEntityOrTerrain(agent.GetEyeGlobalPosition(), entity.GlobalPosition, out float _, out GameEntity collidedEntity, 0.01f, BodyFlags.CommonFocusRayCastExcludeFlags))
+			if (base.Scene.RayCastForClosestEntityOrTerrain(agent.GetEyeGlobalPosition(), entity.GlobalPosition, out float _, out WeakGameEntity collidedEntity, 0.01f, BodyFlags.CommonFocusRayCastExcludeFlags))
 			{
-				while (collidedEntity != null)
+				while (collidedEntity.IsValid)
 				{
 					if (collidedEntity == entity)
 					{
@@ -1060,18 +1060,18 @@ public class StonePile : UsableMachine, IDetachment
 		return result;
 	}
 
-	private List<GameEntity> GetEnemySiegeWeapons()
+	private List<WeakGameEntity> GetEnemySiegeWeapons()
 	{
-		List<GameEntity> list = null;
+		List<WeakGameEntity> list = null;
 		if (Mission.Current.Teams.Attacker.TeamAI is TeamAISiegeComponent)
 		{
 			foreach (IPrimarySiegeWeapon primarySiegeWeapon in ((TeamAISiegeComponent)Mission.Current.Teams.Attacker.TeamAI).PrimarySiegeWeapons)
 			{
-				if (primarySiegeWeapon is SiegeWeapon siegeWeapon && siegeWeapon.GameEntity.GetFirstScriptOfType<DestructableComponent>() != null && siegeWeapon.IsUsed)
+				if (primarySiegeWeapon is SiegeWeapon { GameEntity: var gameEntity } siegeWeapon && gameEntity.GetFirstScriptOfType<DestructableComponent>() != null && siegeWeapon.IsUsed)
 				{
 					if (list == null)
 					{
-						list = new List<GameEntity>();
+						list = new List<WeakGameEntity>();
 					}
 					list.Add(siegeWeapon.GameEntity);
 				}
@@ -1106,12 +1106,12 @@ public class StonePile : UsableMachine, IDetachment
 		int num = base.StandingPoints.IndexOf(standingPoint);
 		if (num >= 0)
 		{
-			((IDetachment)this).AddAgent(agent, num);
+			((IDetachment)this).AddAgent(agent, num, Agent.AIScriptedFrameFlags.None);
 			if (agent.Formation != null)
 			{
 				agent.Formation.DetachUnit(agent, ((IDetachment)this).IsLoose);
 				agent.Detachment = this;
-				agent.DetachmentWeight = GetWeightOfStandingPoint(standingPoint);
+				agent.SetDetachmentWeight(GetWeightOfStandingPoint(standingPoint));
 				return true;
 			}
 		}

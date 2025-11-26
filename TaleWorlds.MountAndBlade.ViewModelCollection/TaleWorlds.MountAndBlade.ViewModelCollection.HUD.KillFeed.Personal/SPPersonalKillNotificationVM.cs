@@ -38,9 +38,9 @@ public class SPPersonalKillNotificationVM : ViewModel
 		NotificationList.Add(new SPPersonalKillNotificationItemVM(damageAmount, isMountDamage, isFriendlyFire, killedAgentName, RemoveItem));
 	}
 
-	public void OnPersonalAssist(string killedAgentName)
+	public void OnPersonalMessage(string message)
 	{
-		NotificationList.Add(new SPPersonalKillNotificationItemVM(killedAgentName, RemoveItem));
+		NotificationList.Add(new SPPersonalKillNotificationItemVM(message, RemoveItem));
 	}
 
 	private void RemoveItem(SPPersonalKillNotificationItemVM item)

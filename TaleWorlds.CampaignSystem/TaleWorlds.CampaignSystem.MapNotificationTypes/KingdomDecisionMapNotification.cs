@@ -49,9 +49,9 @@ public class KingdomDecisionMapNotification : InformationData
 
 	public override bool IsValid()
 	{
-		if (Decision is KingdomPolicyDecision kingdomPolicyDecision)
+		if (Decision is KingdomPolicyDecision kingdomPolicyDecision && !kingdomPolicyDecision.Policy.IsReady)
 		{
-			return kingdomPolicyDecision.Policy.IsReady;
+			return false;
 		}
 		return true;
 	}

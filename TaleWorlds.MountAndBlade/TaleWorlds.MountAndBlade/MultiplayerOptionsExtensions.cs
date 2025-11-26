@@ -17,7 +17,7 @@ public static class MultiplayerOptionsExtensions
 		case MultiplayerOptions.OptionValueType.String:
 			return optionType.GetStrValue(mode);
 		default:
-			Debug.FailedAssert("Missing OptionValueType for optionType: " + optionType, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetValueText", 1039);
+			Debug.FailedAssert("Missing OptionValueType for optionType: " + optionType, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetValueText", 1014);
 			return null;
 		}
 	}

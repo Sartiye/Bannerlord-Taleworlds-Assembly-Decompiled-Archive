@@ -1,5 +1,6 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
@@ -89,5 +90,12 @@ public class GamepadCursorParentWidget : Widget
 	{
 		base.OnLateUpdate(dt);
 		CenterWidget.SetGlobalAlphaRecursively(MathF.Lerp(CenterWidget.AlphaFactor, HasTarget ? 0.67f : 1f, 0.16f));
+		Widget widget = GauntletGamepadNavigationManager.Instance?.LastTargetedWidget;
+		if (widget != null)
+		{
+			CenterWidget.PivotX = 0.5f;
+			CenterWidget.PivotY = 0.5f;
+			CenterWidget.Rotation = widget.GlobalRotation;
+		}
 	}
 }

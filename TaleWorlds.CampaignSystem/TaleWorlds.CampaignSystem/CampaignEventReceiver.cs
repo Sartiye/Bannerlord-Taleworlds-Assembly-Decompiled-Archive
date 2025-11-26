@@ -4,15 +4,20 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
+using TaleWorlds.CampaignSystem.CharacterCreationContent;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
 using TaleWorlds.CampaignSystem.CraftingSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.GameMenus;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
@@ -34,6 +39,10 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void OnHeroLevelledUp(Hero hero, bool shouldNotify = true)
+	{
+	}
+
+	public virtual void OnHomeHideoutChanged(BanditPartyComponent banditPartyComponent, Hideout oldHomeHideout)
 	{
 	}
 
@@ -69,7 +78,11 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnCompanionClanCreated(Clan clan)
+	public virtual void OnClanDefected(Clan clan, Kingdom oldKingdom, Kingdom newKingdom)
+	{
+	}
+
+	public virtual void OnClanCreated(Clan clan, bool isCompanion)
 	{
 	}
 
@@ -117,11 +130,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnArmyGathered(Army army, Settlement gatheringSettlement)
+	public virtual void OnArmyGathered(Army army, IMapPoint gatheringPoint)
 	{
 	}
 
 	public virtual void OnPerkOpened(Hero hero, PerkObject perk)
+	{
+	}
+
+	public virtual void OnPerkReset(Hero hero, PerkObject perk)
 	{
 	}
 
@@ -138,6 +155,10 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void OnAfterSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
+	{
+	}
+
+	public virtual void OnBeforeSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
 	{
 	}
 
@@ -165,7 +186,7 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnHeroesMarried(Hero hero1, Hero hero2, bool showNotification = true)
+	public virtual void OnBeforeHeroesMarried(Hero hero1, Hero hero2, bool showNotification = true)
 	{
 	}
 
@@ -249,6 +270,14 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void OnMapInteractableCreated(IInteractablePoint interactable)
+	{
+	}
+
+	public virtual void OnMapInteractableDestroyed(IInteractablePoint interactable)
+	{
+	}
+
 	public virtual void OnMobilePartyQuestStatusChanged(MobileParty party, bool isUsedByQuest)
 	{
 	}
@@ -285,11 +314,11 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+	public virtual void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification = true)
 	{
 	}
 
-	public virtual void OnCharacterBecameFugitive(Hero hero)
+	public virtual void OnCharacterBecameFugitive(Hero hero, bool showNotification)
 	{
 	}
 
@@ -365,11 +394,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount)
+	public virtual void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount, int tributeDuration)
 	{
 	}
 
-	public virtual void OnPeaceOfferCancelled(IFaction opponentFaction)
+	public virtual void OnTradeAgreementSigned(Kingdom kingdom, Kingdom other)
+	{
+	}
+
+	public virtual void OnPeaceOfferResolved(IFaction opponentFaction)
 	{
 	}
 
@@ -469,15 +502,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnArmyLeaderThink(Hero hero, Army.ArmyLeaderThinkReason reason)
-	{
-	}
-
 	public virtual void OnArmyOverlaySetDirty()
 	{
 	}
 
 	public virtual void OnPlayerDesertedBattle(int sacrificedMenCount)
+	{
+	}
+
+	public virtual void OnPlayerArmyLeaderChangedBehavior()
 	{
 	}
 
@@ -581,7 +614,7 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void AfterGameMenuOpened(MenuCallbackArgs args)
+	public virtual void AfterGameMenuInitialized(MenuCallbackArgs args)
 	{
 	}
 
@@ -613,6 +646,14 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void OnBeforePlayerAgentSpawn(ref MatrixFrame spawnFrame)
+	{
+	}
+
+	public virtual void OnPlayerAgentSpawned()
+	{
+	}
+
 	public virtual void OnPlayerUpgradedTroops(CharacterObject upgradeFromTroop, CharacterObject upgradeToTroop, int number)
 	{
 	}
@@ -633,7 +674,7 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnGameMenuOptionSelected(GameMenuOption gameMenuOption)
+	public virtual void OnGameMenuOptionSelected(GameMenu gameMenu, GameMenuOption gameMenuOption)
 	{
 	}
 
@@ -737,6 +778,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	{
+	}
+
 	public virtual void OnPlayerInventoryExchange(List<(ItemRosterElement, int)> purchasedItems, List<(ItemRosterElement, int)> soldItems, bool isTrading)
 	{
 	}
@@ -777,6 +822,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void AfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
+	{
+	}
+
 	public virtual void SiegeEngineBuilt(SiegeEvent siegeEvent, BattleSideEnum side, SiegeEngineType siegeEngine)
 	{
 	}
@@ -805,10 +854,6 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
-	{
-	}
-
 	public virtual void OnNewIssueCreated(IssueBase issue)
 	{
 	}
@@ -833,19 +878,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnEquipmentSmeltedByHero(Hero hero, EquipmentElement equipmentElement)
-	{
-	}
-
 	public virtual void CraftingPartUnlocked(CraftingPiece craftingPiece)
 	{
 	}
 
-	public virtual void OnPrisonerTaken(FlattenedTroopRoster roster)
+	public virtual void OnNewItemCrafted(ItemObject itemObject, ItemModifier overriddenItemModifier, bool isCraftingOrderItem)
 	{
 	}
 
-	public virtual void OnNewItemCrafted(ItemObject itemObject, ItemModifier overriddenItemModifier, bool isCraftingOrderItem)
+	public virtual void OnEquipmentSmeltedByHero(Hero hero, EquipmentElement equipmentElement)
 	{
 	}
 
@@ -854,6 +895,10 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void OnMainPartyPrisonerRecruited(FlattenedTroopRoster roster)
+	{
+	}
+
+	public virtual void OnPrisonerTaken(FlattenedTroopRoster roster)
 	{
 	}
 
@@ -870,6 +915,10 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
+	{
+	}
+
+	public virtual void CanPlayerMeetWithHeroAfterConversation(Hero hero, ref bool result)
 	{
 	}
 
@@ -901,6 +950,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void OnPartyLeaderChanged(MobileParty mobileParty, Hero oldLeader)
+	{
+	}
+
 	public virtual void OnClanInfluenceChanged(Clan clan, float change)
 	{
 	}
@@ -913,11 +966,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void CollectLoots(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot, ItemRoster gainedLoot, MBList<TroopRosterElement> lootedCasualties, float lootAmount)
+	public virtual void OnClanEarnedGoldFromTribute(Clan receiverClan, IFaction payingFaction)
 	{
 	}
 
-	public virtual void OnLootDistributedToParty(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot)
+	public virtual void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
+	{
+	}
+
+	public virtual void OnLootDistributedToParty(PartyBase winnerParty, PartyBase defeatedParty, ItemRoster lootedItems)
 	{
 	}
 
@@ -925,11 +982,103 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnHeroUnregistered(Hero hero)
+	public virtual void OnConfigChanged()
 	{
 	}
 
-	public virtual void OnConfigChanged()
+	public virtual void OnMobilePartyRaftStateChanged(MobileParty mobileParty)
+	{
+	}
+
+	public virtual void OnCharacterCreationInitialized(CharacterCreationManager characterCreationManager)
+	{
+	}
+
+	public virtual void OnShipDestroyed(PartyBase owner, Ship ship, DestroyShipAction.ShipDestroyDetail detail)
+	{
+	}
+
+	public virtual void OnShipOwnerChanged(Ship ship, PartyBase oldOwner, ChangeShipOwnerAction.ShipOwnerChangeDetail shipOwnerChangeDetail)
+	{
+	}
+
+	public virtual void OnFigureheadUnlocked(Figurehead figurehead)
+	{
+	}
+
+	public virtual void OnShipRepaired(Ship ship, Settlement repairPort)
+	{
+	}
+
+	public virtual void OnPartyLeftArmy(MobileParty party, Army army)
+	{
+	}
+
+	public virtual void OnIncidentResolved(Incident incident)
+	{
+	}
+
+	public virtual void OnPartyAddedToMapEvent(PartyBase partyBase)
+	{
+	}
+
+	public virtual void OnMobilePartyNavigationStateChanged(MobileParty mobileParty)
+	{
+	}
+
+	public virtual void OnMobilePartyJoinedToSiegeEvent(MobileParty mobileParty)
+	{
+	}
+
+	public virtual void OnMobilePartyLeftSiegeEvent(MobileParty mobileParty)
+	{
+	}
+
+	public virtual void OnBlockadeActivated(SiegeEvent siegeEvent)
+	{
+	}
+
+	public virtual void OnBlockadeDeactivated(SiegeEvent siegeEvent)
+	{
+	}
+
+	public virtual void OnShipCreated(Ship ship, Settlement createdSettlement)
+	{
+	}
+
+	public virtual void OnMercenaryServiceStarted(Clan mercenaryClan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails details)
+	{
+	}
+
+	public virtual void OnMercenaryServiceEnded(Clan mercenaryClan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails details)
+	{
+	}
+
+	public virtual void OnMapMarkerCreated(MapMarker mapMarker)
+	{
+	}
+
+	public virtual void OnMapMarkerRemoved(MapMarker mapMarker)
+	{
+	}
+
+	public virtual void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
+	{
+	}
+
+	public virtual void OnAllianceEnded(Kingdom kingdom1, Kingdom kingdom2)
+	{
+	}
+
+	public virtual void OnCallToWarAgreementStarted(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+	}
+
+	public virtual void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+	}
+
+	public virtual void CanHeroLeadParty(Hero hero, ref bool result)
 	{
 	}
 
@@ -945,7 +1094,11 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void CanHeroLeadParty(Hero hero, ref bool result)
+	public virtual void OnHeirSelectionOver(Hero selectedHeir)
+	{
+	}
+
+	public virtual void OnHeirSelectionRequested(Dictionary<Hero, int> heirApparents)
 	{
 	}
 
@@ -961,7 +1114,15 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void CanHaveQuestsOrIssues(Hero hero, ref bool result)
+	public virtual void CanHaveCampaignIssues(Hero hero, ref bool result)
+	{
+	}
+
+	public virtual void IsSettlementBusy(Settlement settlement, object asker, ref int flags)
+	{
+	}
+
+	public virtual void OnHeroUnregistered(Hero hero)
 	{
 	}
 }

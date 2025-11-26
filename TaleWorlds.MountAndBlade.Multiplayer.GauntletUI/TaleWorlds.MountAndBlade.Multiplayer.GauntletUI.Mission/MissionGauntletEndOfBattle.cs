@@ -20,7 +20,7 @@ public class MissionGauntletEndOfBattle : MissionView
 		base.OnMissionScreenInitialize();
 		ViewOrderPriority = 30;
 		_dataSource = new MultiplayerEndOfBattleVM();
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerEndOfBattle", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerEndOfBattle", _dataSource);
 		_lobbyComponent = base.Mission.GetMissionBehavior<MissionLobbyComponent>();
 		_lobbyComponent.OnPostMatchEnded += OnPostMatchEnded;

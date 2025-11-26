@@ -433,7 +433,7 @@ public class DCSHelperVM : ViewModel
 
 	public async Task OpenPopup()
 	{
-		_gauntletLayer = new GauntletLayer(20);
+		_gauntletLayer = new GauntletLayer("DCSHelper", 20);
 		_gauntletLayer.LoadMovie("DCSHelper", this);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
 		_gauntletLayer.IsFocusLayer = true;

@@ -11,6 +11,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 
 namespace TaleWorlds.CampaignSystem.Conversation;
 
@@ -32,6 +33,8 @@ public class ConversationManager
 	private int _autoId;
 
 	private int _autoToken;
+
+	private HashSet<int> _usedIndices = new HashSet<int>();
 
 	private int _numConversationSentencesCreated;
 
@@ -60,8 +63,6 @@ public class ConversationManager
 	private bool _executeDoOptionContinue;
 
 	public int LastSelectedButtonIndex;
-
-	public string LastSelectedDialog;
 
 	public ConversationAnimationManager ConversationAnimationManager;
 
@@ -241,12 +242,13 @@ public class ConversationManager
 
 	public void StartNew(int startingToken, bool setActionsInstantly)
 	{
+		_usedIndices.Clear();
 		ActiveToken = startingToken;
 		_currentSentence = -1;
 		ResetRepeatedDialogSystem();
 		_lastSelectedDialogObject = null;
-		Debug.Print("--------------- Conversation Start --------------- ", 5, Debug.DebugColor.White, 4503599627370496uL);
-		Debug.Print(string.Concat("Conversation character name: ", OneToOneConversationCharacter.Name, "\nid: ", OneToOneConversationCharacter.StringId, "\nculture:", OneToOneConversationCharacter.Culture, "\npersona:", OneToOneConversationCharacter.GetPersona().Name), 5);
+		Debug.Print("--------------- Conversation Start --------------- ", 0, Debug.DebugColor.White, 4503599627370496uL);
+		Debug.Print(string.Concat("Conversation character name: ", OneToOneConversationCharacter.Name, "\nid: ", OneToOneConversationCharacter.StringId, "\nculture:", OneToOneConversationCharacter.Culture, "\npersona:", OneToOneConversationCharacter.GetPersona().Name));
 		if (CampaignMission.Current != null)
 		{
 			foreach (IAgent conversationAgent in ConversationAgents)
@@ -289,11 +291,15 @@ public class ConversationManager
 		UpdateCurrentSentenceText();
 		int count = _sentences.Count;
 		conversationSentence.RunConsequence(Game.Current);
+		if (conversationSentence.IsUsedOnce)
+		{
+			_usedIndices.Add(conversationSentence.Index);
+		}
 		if (CampaignMission.Current != null)
 		{
 			string[] conversationAnimations = MBTextManager.GetConversationAnimations(_currentSentenceText);
 			string soundPath = "";
-			if (MBTextManager.TryGetVoiceObject(_currentSentenceText, out var vo))
+			if (MBTextManager.TryGetVoiceObject(_currentSentenceText, out var vo, out var _))
 			{
 				soundPath = Campaign.Current.Models.VoiceOverModel.GetSoundPathForCharacter((CharacterObject)SpeakerAgent.Character, vo);
 			}
@@ -301,7 +307,7 @@ public class ConversationManager
 		}
 		if (0 > _currentSentence || _currentSentence >= count)
 		{
-			Debug.FailedAssert("CurrentSentence is not valid.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "ProcessSentence", 389);
+			Debug.FailedAssert("CurrentSentence is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "ProcessSentence", 415);
 		}
 	}
 
@@ -546,6 +552,7 @@ public class ConversationManager
 					conversationSentenceOption.SkillName = conversationSentence.SkillName;
 					conversationSentenceOption.TraitName = conversationSentence.TraitName;
 					conversationSentenceOption.IsSpecial = conversationSentence.IsSpecial;
+					conversationSentenceOption.IsUsedOnce = conversationSentence.IsUsedOnce;
 					conversationSentenceOption.HintText = conversationSentence.HintText;
 					conversationSentenceOption.PersuationOptionArgs = conversationSentence.PersuationOptionArgs;
 					ConversationSentenceOption item = conversationSentenceOption;
@@ -574,6 +581,10 @@ public class ConversationManager
 		if (!flag && onlyPlayer)
 		{
 			flag = !_sentences[sentenceIndex].IsPlayer;
+		}
+		if (!flag)
+		{
+			flag = _sentences[sentenceIndex].IsUsedOnce && _usedIndices.Contains(_sentences[sentenceIndex].Index);
 		}
 		return !flag;
 	}
@@ -671,8 +682,8 @@ public class ConversationManager
 		foreach (DialogFlowLine line in dialogFlow.Lines)
 		{
 			string text = CreateId();
-			uint flags = (line.ByPlayer ? 1u : 0u) | (line.IsRepeatable ? 2u : 0u) | (line.IsSpecialOption ? 4u : 0u);
-			AddDialogLine(new ConversationSentence(text, line.HasVariation ? new TextObject("{=7AyjDt96}{VARIATION_TEXT_TAGGED_LINE}") : line.Text, line.InputToken, line.OutputToken, line.ConditionDelegate, line.ClickableConditionDelegate, line.ConsequenceDelegate, flags, dialogFlow.Priority, 0, 0, relatedObject, line.HasVariation, line.SpeakerDelegate, line.ListenerDelegate));
+			uint flags = (line.ByPlayer ? 1u : 0u) | (line.IsRepeatable ? 2u : 0u) | (line.IsSpecialOption ? 4u : 0u) | (line.IsUsedOnce ? 8u : 0u);
+			AddDialogLine(new ConversationSentence(text, line.HasVariation ? new TextObject("{=!}{VARIATION_TEXT_TAGGED_LINE}") : line.Text, line.InputToken, line.OutputToken, line.ConditionDelegate, line.ClickableConditionDelegate, line.ConsequenceDelegate, flags, dialogFlow.Priority, 0, 0, relatedObject, line.HasVariation, line.SpeakerDelegate, line.ListenerDelegate));
 			GameText gameText = Game.Current.GameTextManager.AddGameText(text);
 			foreach (KeyValuePair<TextObject, List<GameTextManager.ChoiceTag>> variation in line.Variations)
 			{
@@ -858,7 +869,6 @@ public class ConversationManager
 
 	public void SetupAndStartMissionConversation(IAgent agent, IAgent mainAgent, bool setActionsInstantly)
 	{
-		CampaignEvents.SetupPreConversation();
 		SetupConversation();
 		_mainAgent = mainAgent;
 		_conversationAgents.Clear();
@@ -890,7 +900,6 @@ public class ConversationManager
 	public void SetupAndStartMapConversation(MobileParty party, IAgent agent, IAgent mainAgent)
 	{
 		_conversationParty = party;
-		CampaignEvents.SetupPreConversation();
 		_mainAgent = mainAgent;
 		_conversationAgents.Clear();
 		AddConversationAgent(agent);
@@ -912,6 +921,20 @@ public class ConversationManager
 				AddConversationAgent(agent);
 				CampaignMission.Current.OnConversationStart(agent, setActionsInstantly);
 			}
+		}
+	}
+
+	public void RemoveConversationAgent(IAgent agent)
+	{
+		if (agent.IsActive() && ConversationAgents.Contains(agent) && ConversationAgents.Count > 1)
+		{
+			CampaignMission.Current.OnConversationEnd(agent);
+			agent.SetAsConversationAgent(set: false);
+			_conversationAgents.Remove(agent);
+		}
+		else
+		{
+			Debug.FailedAssert("Failed to remove conversation agent.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "RemoveConversationAgent", 1247);
 		}
 	}
 
@@ -996,21 +1019,19 @@ public class ConversationManager
 	{
 		_tags = new Dictionary<string, ConversationTag>();
 		string name = typeof(ConversationTag).Assembly.GetName().Name;
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (Assembly assembly in assemblies)
+		foreach (Assembly activeGameAssembly in ModuleHelper.GetActiveGameAssemblies())
 		{
-			AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
 			bool flag = false;
-			if (name == assembly.GetName().Name)
+			if (name == activeGameAssembly.GetName().Name)
 			{
 				flag = true;
 			}
 			else
 			{
-				AssemblyName[] array = referencedAssemblies;
-				for (int j = 0; j < array.Length; j++)
+				AssemblyName[] referencedAssemblies = activeGameAssembly.GetReferencedAssemblies();
+				for (int i = 0; i < referencedAssemblies.Length; i++)
 				{
-					if (array[j].Name == name)
+					if (referencedAssemblies[i].Name == name)
 					{
 						flag = true;
 						break;
@@ -1021,7 +1042,7 @@ public class ConversationManager
 			{
 				continue;
 			}
-			foreach (Type item in assembly.GetTypesSafe())
+			foreach (Type item in activeGameAssembly.GetTypesSafe())
 			{
 				if (item.IsSubclassOf(typeof(ConversationTag)))
 				{
@@ -1041,7 +1062,7 @@ public class ConversationManager
 			string text = ((num == 1) ? "" : ("_" + num));
 			StringHelpers.SetCharacterProperties("CONVERSATION_CHARACTER" + text, conversationCharacter);
 		}
-		MBTextManager.SetTextVariable("CURRENT_SETTLEMENT_NAME", (Settlement.CurrentSettlement == null) ? TextObject.Empty : Settlement.CurrentSettlement.Name);
+		MBTextManager.SetTextVariable("CURRENT_SETTLEMENT_NAME", (Settlement.CurrentSettlement == null) ? TextObject.GetEmpty() : Settlement.CurrentSettlement.Name);
 		ConversationHelper.ConversationTroopCommentShown = false;
 	}
 
@@ -1062,7 +1083,7 @@ public class ConversationManager
 		{
 			return value.IsApplicableTo(character);
 		}
-		Debug.FailedAssert("asking for a nonexistent tag", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "IsTagApplicable", 1432);
+		Debug.FailedAssert("Asking for a nonexistent tag: " + tagId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "IsTagApplicable", 1482);
 		return false;
 	}
 

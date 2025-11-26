@@ -1,6 +1,5 @@
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.HUDExtensions;
 using TaleWorlds.MountAndBlade.View;
@@ -28,13 +27,9 @@ public class MissionGauntletMultiplayerHUDExtension : MissionView
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_mpMissionCategory = spriteData.SpriteCategories["ui_mpmission"];
-		_mpMissionCategory.Load(resourceContext, uIResourceDepot);
+		_mpMissionCategory = UIResourceManager.LoadSpriteCategory("ui_mpmission");
 		_dataSource = new MissionMultiplayerHUDExtensionVM(base.Mission);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("HUDExtension", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("HUDExtension", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		base.MissionScreen.OnSpectateAgentFocusIn += _dataSource.OnSpectatedAgentFocusIn;

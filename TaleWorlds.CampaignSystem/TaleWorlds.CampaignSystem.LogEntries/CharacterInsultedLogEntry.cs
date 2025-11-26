@@ -22,7 +22,7 @@ public class CharacterInsultedLogEntry : LogEntry, IEncyclopediaLog, IChatNotifi
 	[SaveableField(113)]
 	private readonly ActionNotes _gameActionNote;
 
-	public override CampaignTime KeepInHistoryTime => CampaignTime.Weeks(240f);
+	public override CampaignTime KeepInHistoryTime => CampaignTime.Days(1680f);
 
 	public override ChatNotificationType NotificationType => CivilianNotification(Insulter.Clan);
 
@@ -143,56 +143,47 @@ public class CharacterInsultedLogEntry : LogEntry, IEncyclopediaLog, IChatNotifi
 
 	public TextObject GetEncyclopediaText()
 	{
-		TextObject textObject = TextObject.Empty;
-		if (_gameActionNote == ActionNotes.CourtshipQuarrel)
+		TextObject textObject = null;
+		switch (_gameActionNote)
 		{
+		case ActionNotes.CourtshipQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_courtship");
-		}
-		if (_gameActionNote == ActionNotes.ValorStrategyQuarrel)
-		{
+			break;
+		case ActionNotes.ValorStrategyQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_setback_valor");
-		}
-		if (_gameActionNote == ActionNotes.CalculatingStrategyQuarrel)
-		{
+			break;
+		case ActionNotes.CalculatingStrategyQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_setback_calculating");
-		}
-		if (_gameActionNote == ActionNotes.ResponsibilityStrategyQuarrel)
-		{
+			break;
+		case ActionNotes.ResponsibilityStrategyQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_setback_responsibility");
-		}
-		if (_gameActionNote == ActionNotes.LandCheatingQuarrel)
-		{
+			break;
+		case ActionNotes.LandCheatingQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_land");
-		}
-		if (_gameActionNote == ActionNotes.TroublemakerQuarrel)
-		{
+			break;
+		case ActionNotes.TroublemakerQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_troublemaker");
-		}
-		if (_gameActionNote == ActionNotes.HereticQuarrel)
-		{
+			break;
+		case ActionNotes.HereticQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_heretic");
-		}
-		if (_gameActionNote == ActionNotes.RuthlessBusinessQuarrel)
-		{
+			break;
+		case ActionNotes.RuthlessBusinessQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_ruthless_business");
-		}
-		if (_gameActionNote == ActionNotes.DishonestBusinessQuarrel)
-		{
+			break;
+		case ActionNotes.DishonestBusinessQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_dishonest_business");
-		}
-		if (_gameActionNote == ActionNotes.ExtortingQuarrel)
-		{
+			break;
+		case ActionNotes.ExtortingQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_extorting");
-		}
-		if (_gameActionNote == ActionNotes.VengeanceQuarrel)
-		{
+			break;
+		case ActionNotes.VengeanceQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_vengeance");
-		}
-		if (_gameActionNote == ActionNotes.FiefQuarrel)
-		{
+			break;
+		case ActionNotes.FiefQuarrel:
 			textObject = GameTexts.FindText("str_insult_news_fief");
+			break;
 		}
-		if (textObject != TextObject.Empty)
+		if (!TextObject.IsNullOrEmpty(textObject))
 		{
 			StringHelpers.SetCharacterProperties("INSULTER", Insultee.CharacterObject, textObject);
 			StringHelpers.SetCharacterProperties("INSULTEE", Insulter.CharacterObject, textObject);

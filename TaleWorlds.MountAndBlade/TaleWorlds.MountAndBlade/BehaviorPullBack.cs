@@ -14,18 +14,18 @@ public class BehaviorPullBack : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-		if (base.Formation.QuerySystem.ClosestEnemyFormation == null)
+		WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+		if (cachedClosestEnemyFormation == null)
 		{
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
-			Vec2 vec = (base.Formation.QuerySystem.AveragePosition - base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2).Normalized();
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition + 50f * vec);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			Vec2 vec = (base.Formation.CachedAveragePosition - cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2).Normalized();
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition + 50f * vec);
 		}
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 	}
 
 	public override void TickOccasionally()
@@ -38,10 +38,10 @@ public class BehaviorPullBack : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()
@@ -52,15 +52,15 @@ public class BehaviorPullBack : BehaviorComponent
 		}
 		FormationQuerySystem querySystem = base.Formation.QuerySystem;
 		FormationQuerySystem formationQuerySystem = querySystem.ClosestSignificantlyLargeEnemyFormation;
-		if (formationQuerySystem == null || formationQuerySystem.ClosestEnemyFormation != querySystem || formationQuerySystem.MovementSpeedMaximum - querySystem.MovementSpeedMaximum > 2f)
+		if (formationQuerySystem == null || formationQuerySystem.Formation.CachedClosestEnemyFormation != querySystem || formationQuerySystem.MovementSpeedMaximum - querySystem.MovementSpeedMaximum > 2f)
 		{
-			formationQuerySystem = querySystem.ClosestEnemyFormation;
-			if (formationQuerySystem == null || formationQuerySystem.ClosestEnemyFormation != querySystem || formationQuerySystem.MovementSpeedMaximum - querySystem.MovementSpeedMaximum > 2f)
+			formationQuerySystem = base.Formation.CachedClosestEnemyFormation;
+			if (formationQuerySystem == null || formationQuerySystem.Formation.CachedClosestEnemyFormation != querySystem || formationQuerySystem.MovementSpeedMaximum - querySystem.MovementSpeedMaximum > 2f)
 			{
 				return 0f;
 			}
 		}
-		float num = querySystem.AveragePosition.Distance(formationQuerySystem.MedianPosition.AsVec2) / formationQuerySystem.MovementSpeedMaximum;
+		float num = base.Formation.CachedAveragePosition.Distance(formationQuerySystem.Formation.CachedMedianPosition.AsVec2) / formationQuerySystem.MovementSpeedMaximum;
 		float num2 = MBMath.ClampFloat(num, 4f, 10f);
 		float num3 = MBMath.Lerp(0.1f, 1f, 1f - (num2 - 4f) / 6f);
 		float num4 = 0f;
@@ -76,8 +76,8 @@ public class BehaviorPullBack : BehaviorComponent
 				{
 					continue;
 				}
-				float num5 = item.QuerySystem.MedianPosition.AsVec2.Distance(formationQuerySystem.MedianPosition.AsVec2) / item.QuerySystem.MovementSpeedMaximum;
-				if (!(num5 <= num + 4f) || (!(num > 8f) && item.QuerySystem.ClosestEnemyFormation != base.Formation.QuerySystem))
+				float num5 = item.CachedMedianPosition.AsVec2.Distance(formationQuerySystem.Formation.CachedMedianPosition.AsVec2) / item.QuerySystem.MovementSpeedMaximum;
+				if (!(num5 <= num + 4f) || (!(num > 8f) && item.CachedClosestEnemyFormation != base.Formation.QuerySystem))
 				{
 					continue;
 				}
@@ -92,7 +92,7 @@ public class BehaviorPullBack : BehaviorComponent
 						}
 						foreach (Formation item2 in team2.FormationsIncludingSpecialAndEmpty)
 						{
-							if (item2.CountOfUnits > 0 && item2 != base.Formation && item2.QuerySystem.ClosestEnemyFormation == item.QuerySystem && item2.QuerySystem.MedianPosition.AsVec2.DistanceSquared(querySystem.AveragePosition) / item2.QuerySystem.MovementSpeedMaximum < num5 + 4f)
+							if (item2.CountOfUnits > 0 && item2 != base.Formation && item2.CachedClosestEnemyFormation == item.QuerySystem && item2.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition) / item2.QuerySystem.MovementSpeedMaximum < num5 + 4f)
 							{
 								flag = true;
 								break;
@@ -119,7 +119,7 @@ public class BehaviorPullBack : BehaviorComponent
 			}
 			foreach (Formation item3 in team3.FormationsIncludingSpecialAndEmpty)
 			{
-				if (item3.CountOfUnits > 0 && item3 != base.Formation && item3.QuerySystem.ClosestEnemyFormation == formationQuerySystem && item3.QuerySystem.MedianPosition.AsVec2.Distance(item3.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / item3.QuerySystem.MovementSpeedMaximum < 4f)
+				if (item3.CountOfUnits > 0 && item3 != base.Formation && item3.CachedClosestEnemyFormation == formationQuerySystem && item3.CachedMedianPosition.AsVec2.Distance(item3.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / item3.QuerySystem.MovementSpeedMaximum < 4f)
 				{
 					num6 += item3.QuerySystem.FormationMeleeFightingPower * item3.QuerySystem.GetClassWeightedFactor(1f, 1f, 1f, 1f);
 				}

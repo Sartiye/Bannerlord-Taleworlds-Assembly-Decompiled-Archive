@@ -17,12 +17,12 @@ public static class WeaponComponentMissionExtensions
 		return CalculateCenterOfMass(body);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static Vec3 CalculateCenterOfMass(PhysicsShape body)
 	{
 		if (body == null)
 		{
-			Debug.FailedAssert("Item has no body! Check this!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\ItemCollectionElementMissionExtensions.cs", "CalculateCenterOfMass", 46);
+			Debug.FailedAssert("Item has no body! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\ItemCollectionElementMissionExtensions.cs", "CalculateCenterOfMass", 46);
 			return Vec3.Zero;
 		}
 		Vec3 result = Vec3.Zero;

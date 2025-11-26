@@ -105,6 +105,8 @@ public class GamepadNavigationScope
 
 	public bool ForceGainNavigationOnClosestChild { get; set; }
 
+	public bool ForceGainNavigationOnFirstChild { get; set; }
+
 	public bool NavigateFromScopeEdges { get; set; }
 
 	public bool UseDiscoveryAreaAsScopeEdges { get; set; }
@@ -578,7 +580,7 @@ public class GamepadNavigationScope
 
 	internal GamepadNavigationTypes GetMovementsToReachMyPosition(Vector2 fromPosition)
 	{
-		Rectangle rectangle = GetRectangle();
+		SimpleRectangle rectangle = GetRectangle();
 		GamepadNavigationTypes gamepadNavigationTypes = GamepadNavigationTypes.None;
 		if (fromPosition.X > rectangle.X + rectangle.Width)
 		{
@@ -707,19 +709,19 @@ public class GamepadNavigationScope
 		_widgetIndices.Clear();
 	}
 
-	internal Rectangle GetDiscoveryRectangle()
+	internal SimpleRectangle GetDiscoveryRectangle()
 	{
 		float customScale = ParentWidget.EventManager.Context.CustomScale;
-		return new Rectangle(DiscoveryAreaOffsetX + ParentWidget.GlobalPosition.X - ExtendDiscoveryAreaLeft * customScale, DiscoveryAreaOffsetY + ParentWidget.GlobalPosition.Y - ExtendDiscoveryAreaTop * customScale, ParentWidget.Size.X + (ExtendDiscoveryAreaLeft + ExtendDiscoveryAreaRight) * customScale, ParentWidget.Size.Y + (ExtendDiscoveryAreaTop + ExtendDiscoveryAreaBottom) * customScale);
+		return new SimpleRectangle(DiscoveryAreaOffsetX + ParentWidget.GlobalPosition.X - ExtendDiscoveryAreaLeft * customScale, DiscoveryAreaOffsetY + ParentWidget.GlobalPosition.Y - ExtendDiscoveryAreaTop * customScale, ParentWidget.Size.X + (ExtendDiscoveryAreaLeft + ExtendDiscoveryAreaRight) * customScale, ParentWidget.Size.Y + (ExtendDiscoveryAreaTop + ExtendDiscoveryAreaBottom) * customScale);
 	}
 
-	internal Rectangle GetRectangle()
+	internal SimpleRectangle GetRectangle()
 	{
 		if (ParentWidget == null)
 		{
-			return new Rectangle(0f, 0f, 1f, 1f);
+			return new SimpleRectangle(0f, 0f, 1f, 1f);
 		}
-		return new Rectangle(ParentWidget.GlobalPosition.X, ParentWidget.GlobalPosition.Y, ParentWidget.Size.X, ParentWidget.Size.Y);
+		return new SimpleRectangle(ParentWidget.GlobalPosition.X, ParentWidget.GlobalPosition.Y, ParentWidget.Size.X, ParentWidget.Size.Y);
 	}
 
 	internal bool IsWidgetVisible(Widget widget)
@@ -881,7 +883,7 @@ public class GamepadNavigationScope
 		Vector2 relativePositionRatio = GetRelativePositionRatio(fromPos);
 		float num = float.MaxValue;
 		int result = -1;
-		Rectangle rectangle = GetRectangle();
+		SimpleRectangle rectangle = GetRectangle();
 		if (!rectangle.IsPointInside(fromPos))
 		{
 			List<int> list2 = new List<int>();

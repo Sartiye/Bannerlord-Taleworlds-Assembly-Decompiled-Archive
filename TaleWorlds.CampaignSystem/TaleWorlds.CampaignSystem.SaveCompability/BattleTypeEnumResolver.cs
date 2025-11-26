@@ -10,7 +10,7 @@ public class BattleTypeEnumResolver : IEnumResolver
 	{
 		if (string.IsNullOrEmpty(originalObject))
 		{
-			Debug.FailedAssert("EndCaptivityDetail data is null or empty", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SaveCompability\\BattleTypeEnumResolver.cs", "ResolveObject", 16);
+			Debug.FailedAssert("EndCaptivityDetail data is null or empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SaveCompability\\BattleTypeEnumResolver.cs", "ResolveObject", 16);
 			return MapEvent.BattleTypes.None.ToString();
 		}
 		if (originalObject.Equals("AlleyFight"))

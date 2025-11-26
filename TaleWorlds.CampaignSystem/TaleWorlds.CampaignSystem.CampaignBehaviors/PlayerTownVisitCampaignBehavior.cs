@@ -6,9 +6,6 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Inventory;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -21,9 +18,9 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 {
-	private CampaignTime _lastTimeRelationGivenPathfinder = CampaignTime.Zero;
+	private CampaignTime _lastTimeRelationGivenPathfinder;
 
-	private CampaignTime _lastTimeRelationGivenWaterDiviner = CampaignTime.Zero;
+	private CampaignTime _lastTimeRelationGivenWaterDiviner;
 
 	public override void RegisterEvents()
 	{
@@ -40,7 +37,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	protected void AddGameMenus(CampaignGameStarter campaignGameSystemStarter)
 	{
-		campaignGameSystemStarter.AddGameMenu("town", "{=!}{SETTLEMENT_INFO}", game_menu_town_on_init, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		campaignGameSystemStarter.AddGameMenu("town", "{=!}{SETTLEMENT_INFO}", game_menu_town_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("town", "town_streets", "{=R5ObSaUN}Take a walk around the town center", game_menu_town_town_streets_on_condition, game_menu_town_town_streets_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town", "town_keep", "{=!}{GO_TO_KEEP_TEXT}", game_menu_town_go_to_keep_on_condition, game_menu_town_go_to_keep_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town", "town_arena", "{=CfDlOdTH}Go to the arena", game_menu_town_go_to_arena_on_condition, delegate
@@ -65,7 +62,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		});
 		campaignGameSystemStarter.AddGameMenuOption("town", "town_return_to_army", "{=SK43eB6y}Return to Army", game_menu_return_to_army_on_condition, game_menu_return_to_army_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town", "town_leave", "{=3sRdGQou}Leave", game_menu_town_town_leave_on_condition, game_menu_settlement_leave_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_keep", "{=!}{SETTLEMENT_INFO}", town_keep_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("town_keep", "{=!}{SETTLEMENT_INFO}", town_keep_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep", "town_lords_hall", "{=dv2ZNazN}Go to the lord's hall", game_menu_town_keep_go_to_lords_hall_on_condition, game_menu_town_lordshall_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep", "town_lords_hall_cheat", "{=!}Go to the lord's hall (Cheat)", game_menu_castle_go_to_lords_hall_cheat_on_condition, game_menu_lordshall_cheat_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep", "town_lords_hall_go_to_dungeon", "{=etjMHPjQ}Go to dungeon", game_menu_go_dungeon_on_condition, game_menu_go_dungeon_on_consequence);
@@ -76,7 +73,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		{
 			GameMenu.SwitchToMenu("town");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_keep_dungeon", "{=!}{PRISONER_INTRODUCTION}", town_keep_dungeon_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("town_keep_dungeon", "{=!}{PRISONER_INTRODUCTION}", town_keep_dungeon_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep_dungeon", "town_prison", "{=UnQFawna}Enter the dungeon", game_menu_castle_enter_the_dungeon_on_condition, game_menu_town_dungeon_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep_dungeon", "town_prison_cheat", "{=KBxajw4c}Enter the dungeon (Cheat)", game_menu_castle_go_to_dungeon_cheat_on_condition, game_menu_dungeon_cheat_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep_dungeon", "town_prison_leave_prisoners", "{=kmsNUfbA}Donate prisoners", game_menu_castle_leave_prisoners_on_condition, game_menu_castle_leave_prisoners_on_consequence);
@@ -85,18 +82,18 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		{
 			GameMenu.SwitchToMenu("town_keep");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_keep_bribe", "{=yyz111nn}The guards say that they can't just let anyone in.", town_keep_bribe_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("town_keep_bribe", "{=yyz111nn}The guards say that they can't just let anyone in.", town_keep_bribe_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep_bribe", "town_keep_bribe_pay", "{=fxEka7Bm}Pay a {AMOUNT}{GOLD_ICON} bribe to enter the keep", game_menu_town_keep_bribe_pay_bribe_on_condition, game_menu_town_keep_bribe_pay_bribe_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_keep_bribe", "town_keep_bribe_back", "{=3sRdGQou}Leave", back_on_condition, delegate
 		{
 			GameMenu.SwitchToMenu("town");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_enemy_town_keep", "{=!}{SCOUT_KEEP_TEXT}", town_enemy_keep_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("town_enemy_town_keep", "{=!}{SCOUT_KEEP_TEXT}", town_enemy_keep_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("town_enemy_town_keep", "settlement_go_back_to_center", "{=3sRdGQou}Leave", back_on_condition, delegate
 		{
 			GameMenu.SwitchToMenu("town");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_backstreet", "{=Zwy8JybD}You are in the backstreets. The local tavern seems to be attracting its usual crowd.", town_backstreet_on_init, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		campaignGameSystemStarter.AddGameMenu("town_backstreet", "{=Zwy8JybD}You are in the backstreets. The local tavern seems to be attracting its usual crowd.", town_backstreet_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("town_backstreet", "town_tavern", "{=qcl3YTPh}Visit the tavern", visit_the_tavern_on_condition, game_menu_town_town_tavern_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_backstreet", "sell_all_prisoners", "{=xZIBKK0v}Ransom your prisoners ({RANSOM_AMOUNT}{GOLD_ICON})", SellPrisonersCondition, delegate
 		{
@@ -110,25 +107,25 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		{
 			GameMenu.SwitchToMenu("town");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("town_arena", "{=5id9mGrc}You are near the arena. {ADDITIONAL_STRING}", town_arena_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("town_arena", "{=5id9mGrc}You are near the arena. {ADDITIONAL_STRING}", town_arena_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("town_arena", "town_enter_arena", "{=YQ3vm6er}Enter the arena", game_menu_town_enter_the_arena_on_condition, game_menu_town_town_arena_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("town_arena", "town_arena_back", "{=qWAmxyYz}Back to town center", back_on_condition, delegate
 		{
 			GameMenu.SwitchToMenu("town");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("settlement_player_unconscious", "{=S5OEsjwg}You slip into unconsciousness. After a little while some of the friendlier locals manage to bring you around. A little confused but without any serious injuries, you resolve to be more careful next time.", null, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		campaignGameSystemStarter.AddGameMenu("settlement_player_unconscious", "{=S5OEsjwg}You slip into unconsciousness. After a little while some of the friendlier locals manage to bring you around. A little confused but without any serious injuries, you resolve to be more careful next time.", null, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("settlement_player_unconscious", "continue", "{=DM6luo3c}Continue", continue_on_condition, settlement_player_unconscious_continue_on_consequence);
-		campaignGameSystemStarter.AddWaitGameMenu("settlement_wait", "{=8AbHxCM8}{CAPTIVITY_TEXT}\nWaiting in captivity...", settlement_wait_on_init, wait_menu_prisoner_wait_on_condition, null, wait_menu_settlement_wait_on_tick, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption);
+		campaignGameSystemStarter.AddWaitGameMenu("settlement_wait", "{=8AbHxCM8}{CAPTIVITY_TEXT}{newline}Waiting in captivity...", settlement_wait_on_init, wait_menu_prisoner_wait_on_condition, null, wait_menu_settlement_wait_on_tick, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption);
 		campaignGameSystemStarter.AddWaitGameMenu("town_wait_menus", "{=ydbVysqv}You are waiting in {CURRENT_SETTLEMENT}.", game_menu_settlement_wait_on_init, game_menu_town_wait_on_condition, null, delegate(MenuCallbackArgs args, CampaignTime dt)
 		{
 			SwitchToMenuIfThereIsAnInterrupt(args.MenuContext.GameMenu.StringId);
-		}, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		}, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("town_wait_menus", "wait_leave", "{=UqDNAZqM}Stop waiting", back_on_condition, delegate(MenuCallbackArgs args)
 		{
 			PlayerEncounter.Current.IsPlayerWaiting = false;
 			SwitchToMenuIfThereIsAnInterrupt(args.MenuContext.GameMenu.StringId);
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("castle", "{=!}{SETTLEMENT_INFO}", game_menu_castle_on_init, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		campaignGameSystemStarter.AddGameMenu("castle", "{=!}{SETTLEMENT_INFO}", game_menu_castle_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("castle", "take_a_walk_around_the_castle", "{=R92XzKXE}Take a walk around the castle", game_menu_castle_take_a_walk_on_condition, game_menu_castle_take_a_walk_around_the_castle_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("castle", "castle_lords_hall", "{=dv2ZNazN}Go to the lord's hall", game_menu_castle_go_to_lords_hall_on_condition, game_menu_castle_lordshall_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("castle", "castle_lords_hall_cheat", "{=dl6YxNTT}Go to the lord's hall (Cheat)", game_menu_castle_go_to_lords_hall_cheat_on_condition, game_menu_lordshall_cheat_on_consequence);
@@ -144,13 +141,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		});
 		campaignGameSystemStarter.AddGameMenuOption("castle", "castle_return_to_army", "{=SK43eB6y}Return to Army", game_menu_return_to_army_on_condition, game_menu_return_to_army_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("castle", "leave", "{=3sRdGQou}Leave", game_menu_town_town_leave_on_condition, game_menu_settlement_leave_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("castle_lords_hall_bribe", "{=yyz111nn}The guards say that they can't just let anyone in.", null, GameOverlays.MenuOverlayType.SettlementWithCharacters);
-		campaignGameSystemStarter.AddGameMenuOption("castle_lords_hall_bribe", "castle_bribe_pay", "{=3lxq5fvI}Pay a {AMOUNT}{GOLD_ICON} bribe to go to the lord's hall.", game_menu_castle_lordshall_bribe_pay_bribe_on_condition, game_menu_castle_lordshall_bribe_on_consequence);
-		campaignGameSystemStarter.AddGameMenuOption("castle_lords_hall_bribe", "castle_bribe_back", "{=3sRdGQou}Leave", back_on_condition, delegate
-		{
-			GameMenu.SwitchToMenu("castle");
-		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("castle_dungeon", "{=!}{PRISONER_INTRODUCTION}", town_keep_dungeon_on_init, GameOverlays.MenuOverlayType.SettlementWithCharacters);
+		campaignGameSystemStarter.AddGameMenu("castle_dungeon", "{=!}{PRISONER_INTRODUCTION}", town_keep_dungeon_on_init, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		campaignGameSystemStarter.AddGameMenuOption("castle_dungeon", "town_prison", "{=UnQFawna}Enter the dungeon", game_menu_castle_enter_the_dungeon_on_condition, game_menu_castle_dungeon_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("castle_dungeon", "town_prison_cheat", "{=KBxajw4c}Enter the dungeon (Cheat)", game_menu_castle_go_to_dungeon_cheat_on_condition, game_menu_dungeon_cheat_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("castle_dungeon", "town_prison_leave_prisoners", "{=kmsNUfbA}Donate prisoners", game_menu_castle_leave_prisoners_on_condition, game_menu_castle_leave_prisoners_on_consequence);
@@ -159,7 +150,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		{
 			GameMenu.SwitchToMenu("castle");
 		}, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("village", "{=!}{SETTLEMENT_INFO}", game_menu_village_on_init, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		campaignGameSystemStarter.AddGameMenu("village", "{=!}{SETTLEMENT_INFO}", game_menu_village_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("village", "village_center", "{=U4azeSib}Take a walk through the lands", game_menu_village_village_center_on_condition, game_menu_village_village_center_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village", "recruit_volunteers", "{=E31IJyqs}Recruit troops", game_menu_recruit_volunteers_on_condition, game_menu_recruit_volunteers_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village", "trade", "{=VN4ctHIU}Buy products", game_menu_village_buy_good_on_condition, null);
@@ -169,7 +160,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddWaitGameMenu("village_wait_menus", "{=lsBuV9W7}You are waiting in the village.", game_menu_settlement_wait_on_init, game_menu_village_wait_on_condition, null, delegate(MenuCallbackArgs args, CampaignTime dt)
 		{
 			SwitchToMenuIfThereIsAnInterrupt(args.MenuContext.GameMenu.StringId);
-		}, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		}, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("village_wait_menus", "wait_leave", "{=UqDNAZqM}Stop waiting", back_on_condition, game_menu_stop_waiting_at_village_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddWaitGameMenu("prisoner_wait", "{=!}{CAPTIVITY_TEXT}", wait_menu_prisoner_wait_on_init, wait_menu_prisoner_wait_on_condition, null, wait_menu_prisoner_wait_on_tick, GameMenu.MenuAndOptionType.WaitMenuHideProgressAndHoursOption);
 	}
@@ -211,7 +202,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static bool game_menu_castle_go_to_the_dungeon_on_condition(MenuCallbackArgs args)
 	{
 		Campaign.Current.Models.SettlementAccessModel.CanMainHeroEnterDungeon(Settlement.CurrentSettlement, out var accessDetails);
-		if (accessDetails.AccessLevel == SettlementAccessModel.AccessLevel.LimitedAccess)
+		if (Settlement.CurrentSettlement.BribePaid < Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterDungeon(Settlement.CurrentSettlement) && accessDetails.AccessLevel == SettlementAccessModel.AccessLevel.LimitedAccess)
 		{
 			args.Tooltip = new TextObject("{=aPoS8wOW}You have limited access to Dungeon.");
 			args.IsEnabled = false;
@@ -274,12 +265,12 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_castle_leave_prisoners_on_consequence(MenuCallbackArgs args)
 	{
-		PartyScreenManager.OpenScreenAsDonatePrisoners();
+		PartyScreenHelper.OpenScreenAsDonatePrisoners();
 	}
 
 	private static void game_menu_castle_manage_prisoners_on_consequence(MenuCallbackArgs args)
 	{
-		PartyScreenManager.OpenScreenAsManagePrisoners();
+		PartyScreenHelper.OpenScreenAsManagePrisoners();
 	}
 
 	private static bool game_menu_town_go_to_keep_on_condition(MenuCallbackArgs args)
@@ -396,7 +387,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			}
 			break;
 		}
-		Debug.FailedAssert("invalid LimitedAccessSolution or AccessLevel for town keep", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "game_menu_town_go_to_keep_on_consequence", 477);
+		Debug.FailedAssert("invalid LimitedAccessSolution or AccessLevel for town keep", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "game_menu_town_go_to_keep_on_consequence", 467);
 	}
 
 	private static bool game_menu_go_dungeon_on_condition(MenuCallbackArgs args)
@@ -483,7 +474,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			textObject.SetTextVariable("NUMBER_OF_DAYS", captiveTimeInDays);
 			textObject.SetTextVariable("PLURAL", (captiveTimeInDays > 1) ? 1 : 0);
 		}
-		textObject.SetTextVariable("PARTY_NAME", (Hero.MainHero.PartyBelongedToAsPrisoner != null) ? Hero.MainHero.PartyBelongedToAsPrisoner.Name : TextObject.Empty);
+		textObject.SetTextVariable("PARTY_NAME", (Hero.MainHero.PartyBelongedToAsPrisoner != null) ? Hero.MainHero.PartyBelongedToAsPrisoner.Name : TextObject.GetEmpty());
 		text.SetTextVariable("CAPTIVITY_TEXT", textObject);
 	}
 
@@ -576,12 +567,12 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void ChooseRansomPrisoners()
 	{
 		GameMenu.SwitchToMenu("town_backstreet");
-		PartyScreenManager.OpenScreenAsRansom();
+		PartyScreenHelper.OpenScreenAsRansom();
 	}
 
 	private static void SellAllTransferablePrisoners()
 	{
-		SellPrisonersAction.ApplyForSelectedPrisoners(PartyBase.MainParty, Settlement.CurrentSettlement.Party, MobilePartyHelper.GetPlayerPrisonersPlayerCanSell());
+		SellPrisonersAction.ApplyForSelectedPrisoners(PartyBase.MainParty, null, MobilePartyHelper.GetPlayerPrisonersPlayerCanSell());
 		GameMenu.SwitchToMenu("town_backstreet");
 	}
 
@@ -615,7 +606,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			args.Tooltip = new TextObject("{=cojKmfSk}There is no one inside.");
 			break;
 		default:
-			Debug.FailedAssert($"{accessDetails.AccessLimitationReason} is not a valid no access reason for lord's hall", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "SetLordsHallAccessLimitationReasonText", 726);
+			Debug.FailedAssert($"{accessDetails.AccessLimitationReason} is not a valid no access reason for lord's hall", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "SetLordsHallAccessLimitationReasonText", 716);
 			break;
 		}
 	}
@@ -659,56 +650,12 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(LocationComplex.Current.GetLocationWithId("center"));
 	}
 
-	private static bool CheckAndOpenNextLocation(MenuCallbackArgs args)
-	{
-		if (Campaign.Current.GameMenuManager.NextLocation != null && GameStateManager.Current.ActiveState is MapState)
-		{
-			PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(Campaign.Current.GameMenuManager.NextLocation, Campaign.Current.GameMenuManager.PreviousLocation);
-			switch (Campaign.Current.GameMenuManager.NextLocation.StringId)
-			{
-			case "center":
-				if (Settlement.CurrentSettlement.IsCastle)
-				{
-					Campaign.Current.GameMenuManager.SetNextMenu("castle");
-				}
-				else if (Settlement.CurrentSettlement.IsTown)
-				{
-					Campaign.Current.GameMenuManager.SetNextMenu("town");
-				}
-				else if (Settlement.CurrentSettlement.IsVillage)
-				{
-					Campaign.Current.GameMenuManager.SetNextMenu("village");
-				}
-				else
-				{
-					Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "CheckAndOpenNextLocation", 809);
-				}
-				break;
-			case "tavern":
-				Campaign.Current.GameMenuManager.SetNextMenu("town_backstreet");
-				break;
-			case "arena":
-				Campaign.Current.GameMenuManager.SetNextMenu("town_arena");
-				break;
-			case "lordshall":
-			case "prison":
-				Campaign.Current.GameMenuManager.SetNextMenu("town_keep");
-				break;
-			}
-			Campaign.Current.GameMenuManager.NextLocation = null;
-			Campaign.Current.GameMenuManager.PreviousLocation = null;
-			return true;
-		}
-		return false;
-	}
-
 	private static void game_menu_town_on_init(MenuCallbackArgs args)
 	{
 		SetIntroductionText(Settlement.CurrentSettlement, fromKeep: false);
 		UpdateMenuLocations(args.MenuContext.GameMenu.StringId);
-		Campaign.Current.autoEnterTown = null;
 		_ = Settlement.CurrentSettlement;
-		if (CheckAndOpenNextLocation(args))
+		if (MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			return;
 		}
@@ -763,12 +710,12 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			Campaign.Current.GameMenuManager.MenuLocations.Add(settlement.LocationComplex.GetLocationWithId("prison"));
 			break;
 		default:
-			Debug.FailedAssert("Could not get the associated locations for Game Menu: " + menuID, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "UpdateMenuLocations", 916);
+			Debug.FailedAssert("Could not get the associated locations for Game Menu: " + menuID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "UpdateMenuLocations", 855);
 			Campaign.Current.GameMenuManager.MenuLocations.AddRange(settlement.LocationComplex.GetListOfLocations());
 			break;
 		case "town_keep_bribe":
 			break;
-		case "castle_lords_hall_bribe":
+		case "castle_enter_bribe":
 			break;
 		}
 	}
@@ -776,7 +723,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void town_keep_on_init(MenuCallbackArgs args)
 	{
 		UpdateMenuLocations(args.MenuContext.GameMenu.StringId);
-		if (!CheckAndOpenNextLocation(args))
+		if (!MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			SetIntroductionText(Settlement.CurrentSettlement, fromKeep: true);
 			args.MenuTitle = new TextObject("{=723ig40Q}Keep");
@@ -786,7 +733,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void town_enemy_keep_on_init(MenuCallbackArgs args)
 	{
 		UpdateMenuLocations(args.MenuContext.GameMenu.StringId);
-		if (!CheckAndOpenNextLocation(args))
+		if (!MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			SetIntroductionText(Settlement.CurrentSettlement, fromKeep: true);
 			TextObject text = args.MenuContext.GameMenu.GetText();
@@ -800,21 +747,21 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void town_keep_dungeon_on_init(MenuCallbackArgs args)
 	{
 		UpdateMenuLocations(args.MenuContext.GameMenu.StringId);
-		if (!CheckAndOpenNextLocation(args))
+		if (!MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			args.MenuTitle = new TextObject("{=x04UGQDn}Dungeon");
-			TextObject empty = TextObject.Empty;
+			TextObject textObject;
 			if (Settlement.CurrentSettlement.SettlementComponent.GetPrisonerHeroes().Count == 0)
 			{
-				empty = new TextObject("{=O4flV28Q}There are no prisoners here.");
+				textObject = new TextObject("{=O4flV28Q}There are no prisoners here.");
 			}
 			else
 			{
 				int count = Settlement.CurrentSettlement.SettlementComponent.GetPrisonerHeroes().Count;
-				empty = new TextObject("{=gAc8SWDt}There {?(PRISONER_COUNT > 1)}are {PRISONER_COUNT} prisoners{?}is 1 prisoner{\\?} here.");
-				empty.SetTextVariable("PRISONER_COUNT", count);
+				textObject = new TextObject("{=gAc8SWDt}There {?(PRISONER_COUNT > 1)}are {PRISONER_COUNT} prisoners{?}is 1 prisoner{\\?} here.");
+				textObject.SetTextVariable("PRISONER_COUNT", count);
 			}
-			MBTextManager.SetTextVariable("PRISONER_INTRODUCTION", empty);
+			MBTextManager.SetTextVariable("PRISONER_INTRODUCTION", textObject);
 		}
 	}
 
@@ -833,7 +780,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		UpdateMenuLocations(args.MenuContext.GameMenu.StringId);
 		string backgroundMeshName = Settlement.CurrentSettlement.Culture.StringId + "_tavern";
 		args.MenuContext.SetBackgroundMeshName(backgroundMeshName);
-		if (!CheckAndOpenNextLocation(args))
+		if (!MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			args.MenuTitle = new TextObject("{=a0MVffcN}Backstreet");
 		}
@@ -852,7 +799,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			TextObject text2 = GameTexts.FindText("str_town_empty_arena_text");
 			MBTextManager.SetTextVariable("ADDITIONAL_STRING", text2);
 		}
-		if (!CheckAndOpenNextLocation(args))
+		if (!MenuHelper.CheckAndOpenNextLocation(args))
 		{
 			args.MenuTitle = new TextObject("{=mMU3H6HZ}Arena");
 		}
@@ -893,7 +840,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_town_keep_open_stash_on_consequence(MenuCallbackArgs args)
 	{
-		InventoryManager.OpenScreenAsStash(Settlement.CurrentSettlement.Stash);
+		InventoryScreenHelper.OpenScreenAsStash(Settlement.CurrentSettlement.Stash);
 	}
 
 	private static bool game_menu_manage_garrison_on_condition(MenuCallbackArgs args)
@@ -924,7 +871,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		{
 			currentSettlement.AddGarrisonParty();
 		}
-		PartyScreenManager.OpenScreenAsManageTroops(currentSettlement.Town.GarrisonParty);
+		PartyScreenHelper.OpenScreenAsManageTroops(currentSettlement.Town.GarrisonParty);
 	}
 
 	private static bool game_menu_leave_troops_garrison_on_condition(MenuCallbackArgs args)
@@ -944,7 +891,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_leave_troops_garrison_on_consequece(MenuCallbackArgs args)
 	{
-		PartyScreenManager.OpenScreenAsDonateGarrisonWithCurrentSettlement();
+		PartyScreenHelper.OpenScreenAsDonateGarrisonWithCurrentSettlement();
 	}
 
 	private static bool game_menu_town_town_streets_on_condition(MenuCallbackArgs args)
@@ -972,26 +919,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_castle_lordshall_on_consequence(MenuCallbackArgs args)
 	{
-		Campaign.Current.Models.SettlementAccessModel.CanMainHeroEnterLordsHall(Settlement.CurrentSettlement, out var accessDetails);
-		if (accessDetails.AccessLevel == SettlementAccessModel.AccessLevel.FullAccess)
-		{
-			OpenMissionWithSettingPreviousLocation("center", "lordshall");
-		}
-		else if (accessDetails.AccessLevel == SettlementAccessModel.AccessLevel.LimitedAccess && accessDetails.LimitedAccessSolution == SettlementAccessModel.LimitedAccessSolution.Bribe)
-		{
-			if (Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterLordsHall(Settlement.CurrentSettlement) > 0)
-			{
-				GameMenu.SwitchToMenu("castle_lords_hall_bribe");
-			}
-			else
-			{
-				OpenMissionWithSettingPreviousLocation("center", "lordshall");
-			}
-		}
-		else
-		{
-			Debug.FailedAssert("invalid LimitedAccessSolution or AccessLevel for castle lord's hall", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "game_menu_castle_lordshall_on_consequence", 1182);
-		}
+		OpenMissionWithSettingPreviousLocation("center", "lordshall");
 	}
 
 	private static void game_menu_town_keep_bribe_pay_bribe_on_consequence(MenuCallbackArgs args)
@@ -1000,13 +928,6 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		BribeGuardsAction.Apply(Settlement.CurrentSettlement, bribeToEnterLordsHall);
 		_ = PlayerEncounter.LocationEncounter;
 		GameMenu.ActivateGameMenu("town_keep");
-	}
-
-	private static void game_menu_castle_lordshall_bribe_on_consequence(MenuCallbackArgs args)
-	{
-		int bribeToEnterLordsHall = Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterLordsHall(Settlement.CurrentSettlement);
-		BribeGuardsAction.Apply(Settlement.CurrentSettlement, bribeToEnterLordsHall);
-		OpenMissionWithSettingPreviousLocation("center", "lordshall");
 	}
 
 	private static void game_menu_lordshall_cheat_on_consequence(MenuCallbackArgs args)
@@ -1050,7 +971,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void game_menu_town_town_market_on_consequence(MenuCallbackArgs args)
 	{
 		_ = PlayerEncounter.LocationEncounter;
-		InventoryManager.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Town);
+		InventoryScreenHelper.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Town);
 	}
 
 	private static bool game_menu_town_town_leave_on_condition(MenuCallbackArgs args)
@@ -1065,6 +986,14 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_settlement_leave_on_consequence(MenuCallbackArgs args)
 	{
+		MobileParty.MainParty.Position = MobileParty.MainParty.CurrentSettlement.GatePosition;
+		if (MobileParty.MainParty.Army != null)
+		{
+			foreach (MobileParty attachedParty in MobileParty.MainParty.AttachedParties)
+			{
+				attachedParty.Position = MobileParty.MainParty.Position;
+			}
+		}
 		PlayerEncounter.LeaveSettlement();
 		PlayerEncounter.Finish();
 		Campaign.Current.SaveHandler.SignalAutoSave();
@@ -1124,21 +1053,6 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			Campaign.Current.GameMenuManager.PreviousLocation = null;
 		}
 		args.MenuTitle = new TextObject("{=sVXa3zFx}Castle");
-	}
-
-	private static bool game_menu_castle_lordshall_bribe_pay_bribe_on_condition(MenuCallbackArgs args)
-	{
-		int bribeToEnterLordsHall = Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterLordsHall(Settlement.CurrentSettlement);
-		MBTextManager.SetTextVariable("AMOUNT", bribeToEnterLordsHall);
-		List<Location> locations = Settlement.CurrentSettlement.LocationComplex.FindAll((string x) => x == "lordshall").ToList();
-		MenuHelper.SetIssueAndQuestDataForLocations(args, locations);
-		args.optionLeaveType = GameMenuOption.LeaveType.Mission;
-		if (Hero.MainHero.Gold < bribeToEnterLordsHall)
-		{
-			args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.");
-			args.IsEnabled = false;
-		}
-		return bribeToEnterLordsHall > 0;
 	}
 
 	private static bool game_menu_village_village_center_on_condition(MenuCallbackArgs args)
@@ -1216,7 +1130,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 
 	private static void SetIntroductionText(Settlement settlement, bool fromKeep)
 	{
-		TextObject textObject = new TextObject();
+		TextObject textObject;
 		if (settlement.IsTown && !fromKeep)
 		{
 			textObject = ((settlement.OwnerClan != Clan.PlayerClan) ? new TextObject("{=UWzQsHA2}{SETTLEMENT_LINK} is governed by {LORD.LINK}, {FACTION_OFFICIAL} of the {FACTION_TERM}. {PROSPERITY_INFO} {MORALE_INFO}") : new TextObject("{=kXVHwjoV}You have arrived at your fief of {SETTLEMENT_LINK}. {PROSPERITY_INFO} {MORALE_INFO}"));
@@ -1232,6 +1146,11 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		else if (settlement.IsVillage)
 		{
 			textObject = ((settlement.OwnerClan != Clan.PlayerClan) ? new TextObject("{=RVDojUOM}The lands around {SETTLEMENT_LINK} are owned mostly by {LORD.LINK}, {FACTION_OFFICIAL} of the {FACTION_TERM}. {PROSPERITY_INFO}") : new TextObject("{=M5iR1e5h}You have arrived at your fief of {SETTLEMENT_LINK}. {PROSPERITY_INFO}"));
+		}
+		else
+		{
+			Debug.FailedAssert("Couldn't set settlementIntro!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "SetIntroductionText", 1415);
+			textObject = TextObject.GetEmpty();
 		}
 		settlement.OwnerClan.Leader.SetPropertiesToTextObject(textObject, "LORD");
 		string text = settlement.OwnerClan.Leader.MapFaction.Culture.StringId;
@@ -1315,6 +1234,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	[GameMenuInitializationHandler("encounter_interrupted_siege_preparations")]
 	[GameMenuInitializationHandler("castle_dungeon")]
 	[GameMenuInitializationHandler("encounter_interrupted_raid_started")]
+	[GameMenuInitializationHandler("settlement_player_unconscious_when_disguise")]
 	public static void game_menu_town_menu_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetBackgroundMeshName(Settlement.CurrentSettlement.SettlementComponent.WaitMeshName);
@@ -1325,6 +1245,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	{
 		string backgroundMeshName = Settlement.CurrentSettlement.Culture.StringId + "_arena";
 		args.MenuContext.SetBackgroundMeshName(backgroundMeshName);
+		args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_arena");
 		args.MenuContext.SetAmbientSound("event:/map/ambient/node/settlements/2d/arena");
 	}
 
@@ -1368,7 +1289,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	[GameMenuEventHandler("village", "trade", GameMenuEventHandler.EventType.OnConsequence)]
 	private static void game_menu_ui_village_buy_good_on_consequence(MenuCallbackArgs args)
 	{
-		InventoryManager.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Village);
+		InventoryScreenHelper.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Village);
 	}
 
 	[GameMenuEventHandler("village", "manage_production", GameMenuEventHandler.EventType.OnConsequence)]
@@ -1383,12 +1304,25 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private static void game_menu_ui_recruit_volunteers_on_consequence(MenuCallbackArgs args)
 	{
 		args.MenuContext.OpenRecruitVolunteers();
+		args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");
 	}
 
 	[GameMenuInitializationHandler("prisoner_wait")]
 	private static void wait_menu_ui_prisoner_wait_on_init(MenuCallbackArgs args)
 	{
-		if (Hero.MainHero.IsFemale)
+		PartyBase partyBelongedToAsPrisoner = Hero.MainHero.PartyBelongedToAsPrisoner;
+		if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.MobileParty?.IsCurrentlyAtSea == true)
+		{
+			if (Hero.MainHero.IsFemale)
+			{
+				args.MenuContext.SetBackgroundMeshName("wait_captive_at_sea_female");
+			}
+			else
+			{
+				args.MenuContext.SetBackgroundMeshName("wait_captive_at_sea_male");
+			}
+		}
+		else if (Hero.MainHero.IsFemale)
 		{
 			args.MenuContext.SetBackgroundMeshName("wait_captive_female");
 		}
@@ -1402,6 +1336,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	public static void game_menu_town_menu_backstreet_sound_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetAmbientSound("event:/map/ambient/node/settlements/2d/tavern");
+		args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_tavern");
 	}
 
 	[GameMenuInitializationHandler("town_enemy_town_keep")]
@@ -1418,6 +1353,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	public static void game_menu_town_menu_sound_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetAmbientSound("event:/map/ambient/node/settlements/2d/city");
+		args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_wait");
 		args.MenuContext.SetBackgroundMeshName(Settlement.CurrentSettlement.SettlementComponent.WaitMeshName);
 	}
 
@@ -1438,6 +1374,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	}
 
 	[GameMenuInitializationHandler("village")]
+	[GameMenuInitializationHandler("village_raid_diplomatically_ended")]
 	public static void game_menu_village__enter_menu_sound_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetPanelSound("event:/ui/panels/settlement_village");

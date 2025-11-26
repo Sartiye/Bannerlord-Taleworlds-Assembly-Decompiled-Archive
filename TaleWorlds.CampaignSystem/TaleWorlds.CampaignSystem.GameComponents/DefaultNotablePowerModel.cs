@@ -94,15 +94,13 @@ public class DefaultNotablePowerModel : NotablePowerModel
 
 	private void CalculateDailyPowerChangePerPropertyOwned(Hero hero, ref ExplainedNumber explainedNumber)
 	{
-		float num = 0.1f;
 		int count = hero.OwnedAlleys.Count;
-		explainedNumber.Add(num * (float)count, _propertyEffect);
+		explainedNumber.Add(0.1f * (float)count, _propertyEffect);
 	}
 
 	private void CalculateDailyPowerChangeForAffiliationWithRulerClan(ref ExplainedNumber explainedNumber)
 	{
-		float value = 0.2f;
-		explainedNumber.Add(value, _rulerClanEffect);
+		explainedNumber.Add(0.2f, _rulerClanEffect);
 	}
 
 	private void CalculateDailyPowerChangeForInfluentialNotables(Hero hero, ref ExplainedNumber explainedNumber)
@@ -139,17 +137,20 @@ public class DefaultNotablePowerModel : NotablePowerModel
 		return NotablePowerRanks[num];
 	}
 
-	public override int GetInitialPower()
+	public override int GetInitialPower(Hero hero)
 	{
+		int num = 0;
 		float randomFloat = MBRandom.RandomFloat;
-		if (!(randomFloat < 0.2f))
+		num += ((randomFloat < 0.2f) ? MBRandom.RandomInt((int)((float)(NotablePowerRanks[0].MinPowerValue + NotablePowerRanks[1].MinPowerValue) * 0.5f), NotablePowerRanks[1].MinPowerValue) : ((randomFloat < 0.8f) ? MBRandom.RandomInt(NotablePowerRanks[1].MinPowerValue, NotablePowerRanks[2].MinPowerValue) : MBRandom.RandomInt(NotablePowerRanks[2].MinPowerValue, (int)((float)NotablePowerRanks[2].MinPowerValue * 2f))));
+		if ((hero.Occupation == Occupation.GangLeader || hero.Occupation == Occupation.Artisan || hero.Occupation == Occupation.RuralNotable || hero.Occupation == Occupation.Merchant || hero.Occupation == Occupation.Headman) && hero.HomeSettlement.IsVillage && hero.HomeSettlement.Village.Bound != null && hero.HomeSettlement.Village.Bound.IsCastle)
 		{
-			if (!(randomFloat < 0.8f))
-			{
-				return MBRandom.RandomInt(NotablePowerRanks[2].MinPowerValue, (int)((float)NotablePowerRanks[2].MinPowerValue * 2f));
-			}
-			return MBRandom.RandomInt(NotablePowerRanks[1].MinPowerValue, NotablePowerRanks[2].MinPowerValue);
+			num += (int)(MBRandom.RandomFloat * 20f);
 		}
-		return MBRandom.RandomInt((int)((float)(NotablePowerRanks[0].MinPowerValue + NotablePowerRanks[1].MinPowerValue) * 0.5f), NotablePowerRanks[1].MinPowerValue);
+		return num;
+	}
+
+	public override int GetInitialNotableSupporterCost(Hero hero)
+	{
+		return 20000 + 10000 * Clan.PlayerClan.SupporterNotables.Count;
 	}
 }

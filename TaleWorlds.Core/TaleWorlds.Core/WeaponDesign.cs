@@ -17,9 +17,6 @@ public class WeaponDesign
 	[CachedData]
 	private int _cachedHashedCodeInt;
 
-	[CachedData]
-	private string _hashedCode;
-
 	[SaveableField(40)]
 	private readonly float[] _piecePivotDistances;
 
@@ -38,12 +35,12 @@ public class WeaponDesign
 	[SaveableField(100)]
 	public readonly Vec3 HolsterShiftAmount;
 
+	private string _hashedCode;
+
 	[SaveableProperty(21)]
 	public TextObject WeaponName { get; private set; }
 
 	public WeaponDesignElement[] UsedPieces => _usedPieces;
-
-	public string HashedCode => _hashedCode;
 
 	public float[] PiecePivotDistances => _piecePivotDistances;
 
@@ -51,6 +48,19 @@ public class WeaponDesign
 
 	[SaveableProperty(50)]
 	public float HandToBottomLength { get; private set; }
+
+	public string HashedCode
+	{
+		get
+		{
+			return _hashedCode;
+		}
+		private set
+		{
+			_hashedCode = value;
+			_cachedHashedCodeInt = Common.GetDJB2(_hashedCode);
+		}
+	}
 
 	public float BottomPivotOffset => BottomPivotOffsets[BottomPivotOffsets.Count - 1];
 
@@ -119,7 +129,7 @@ public class WeaponDesign
 		return ((WeaponDesign)o)._piecePivotDistances;
 	}
 
-	public WeaponDesign(CraftingTemplate template, TextObject weaponName, WeaponDesignElement[] usedPieces)
+	public WeaponDesign(CraftingTemplate template, TextObject weaponName, WeaponDesignElement[] usedPieces, string customId = null)
 	{
 		Template = template;
 		_usedPieces = usedPieces.ToArray();
@@ -132,18 +142,10 @@ public class WeaponDesign
 		{
 			WeaponFlags |= weaponDesignElement.CraftingPiece.AdditionalWeaponFlags;
 		}
-		BuildHashedCode();
-	}
-
-	[LoadInitializationCallback]
-	private void OnLoad()
-	{
-		BuildHashedCode();
-	}
-
-	public void SetWeaponName(TextObject name)
-	{
-		WeaponName = name;
+		if (!string.IsNullOrEmpty(customId))
+		{
+			HashedCode = customId;
+		}
 	}
 
 	private void CalculatePivotDistances()
@@ -210,16 +212,17 @@ public class WeaponDesign
 		{
 			return false;
 		}
-		if (HashedCode == weaponDesign.HashedCode)
-		{
-			return WeaponName == weaponDesign.WeaponName;
-		}
-		return false;
+		return HashedCode == weaponDesign.HashedCode;
 	}
 
 	public override int GetHashCode()
 	{
 		return _cachedHashedCodeInt;
+	}
+
+	public void SetWeaponName(TextObject name)
+	{
+		WeaponName = name;
 	}
 
 	public static bool operator ==(WeaponDesign x, WeaponDesign y)
@@ -286,19 +289,5 @@ public class WeaponDesign
 			}
 		}
 		return MathF.Max(a, num2);
-	}
-
-	private void BuildHashedCode()
-	{
-		string text = "";
-		WeaponDesignElement[] usedPieces = UsedPieces;
-		foreach (WeaponDesignElement weaponDesignElement in usedPieces)
-		{
-			text = ((!weaponDesignElement.IsValid) ? (text + "invalid_piece;") : (text + weaponDesignElement.CraftingPiece.StringId + ";" + weaponDesignElement.ScalePercentage + ";"));
-		}
-		text += Template.StringId;
-		text += WeaponName;
-		_hashedCode = Common.CalculateMD5Hash(text);
-		_cachedHashedCodeInt = Common.GetDJB2(_hashedCode);
 	}
 }

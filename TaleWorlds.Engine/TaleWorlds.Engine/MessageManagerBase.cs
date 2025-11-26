@@ -4,15 +4,15 @@ namespace TaleWorlds.Engine;
 
 public abstract class MessageManagerBase : DotNetObject
 {
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal abstract void PostWarningLine(string text);
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal abstract void PostSuccessLine(string text);
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal abstract void PostMessageLineFormatted(string text, uint color);
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal abstract void PostMessageLine(string text, uint color);
 }

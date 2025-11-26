@@ -18,7 +18,7 @@ internal class DisorganizedStateCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.GameMenuOptionSelectedEvent.AddNonSerializedListener(this, OnGameMenuOptionSelected);
 	}
 
-	private void OnGameMenuOptionSelected(GameMenuOption gameMenuOption)
+	private void OnGameMenuOptionSelected(GameMenu gameMenu, GameMenuOption gameMenuOption)
 	{
 		if (!_checkForEvent || (!(gameMenuOption.IdString == "str_order_attack") && !(gameMenuOption.IdString == "attack")))
 		{
@@ -70,7 +70,7 @@ internal class DisorganizedStateCampaignBehavior : CampaignBehaviorBase
 				if (involvedParty.IsActive)
 				{
 					MobileParty mobileParty = involvedParty.MobileParty;
-					if ((mobileParty == null || !mobileParty.IsMainParty || !mapEvent.DiplomaticallyFinished || !mapEvent.AttackerSide.MapFaction.IsAtWarWith(mapEvent.DefenderSide.MapFaction)) && (!mapEvent.IsSallyOut || involvedParty.MapEventSide.MissionSide == BattleSideEnum.Defender) && Campaign.Current.Models.PartyImpairmentModel.CanGetDisorganized(involvedParty))
+					if ((mobileParty == null || !mobileParty.IsMainParty || !mapEvent.DiplomaticallyFinished || !mapEvent.AttackerSide.MapFaction.IsAtWarWith(mapEvent.DefenderSide.MapFaction)) && (!mapEvent.IsSallyOut || involvedParty.MapEventSide.MissionSide == BattleSideEnum.Defender) && Campaign.Current.Models.PartyImpairmentModel.CanGetDisorganized(involvedParty) && (mapEvent.RetreatingSide == BattleSideEnum.None || mapEvent.RetreatingSide != involvedParty.Side))
 					{
 						involvedParty.MobileParty.SetDisorganized(isDisorganized: true);
 					}

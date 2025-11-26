@@ -32,7 +32,7 @@ public class PropertyDefinition : MemberDefinition
 		}
 		if (SetMethod == null)
 		{
-			Debug.FailedAssert("Property " + PropertyInfo.Name + " at Type " + PropertyInfo.DeclaringType.FullName + " does not have setter method.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Definition\\PropertyDefinition.cs", ".ctor", 39);
+			Debug.FailedAssert("Property " + PropertyInfo.Name + " at Type " + PropertyInfo.DeclaringType.FullName + " does not have setter method.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Definition\\PropertyDefinition.cs", ".ctor", 39);
 			throw new Exception("Property " + PropertyInfo.Name + " at Type " + PropertyInfo.DeclaringType.FullName + " does not have setter method.");
 		}
 		GetMethod = PropertyInfo.GetGetMethod(nonPublic: true);

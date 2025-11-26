@@ -26,12 +26,12 @@ public class DeathOldAgeSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { DeadHero.ClanBanner };
+		return new Banner[1] { DeadHero.ClanBanner };
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = DeadHero.CivilianEquipment.Clone();
@@ -43,7 +43,7 @@ public class DeathOldAgeSceneNotificationItem : SceneNotificationData
 			CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2);
 			list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(item, equipment2));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public DeathOldAgeSceneNotificationItem(Hero deadHero)

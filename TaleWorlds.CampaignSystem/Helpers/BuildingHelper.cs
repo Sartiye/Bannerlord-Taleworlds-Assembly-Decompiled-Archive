@@ -10,22 +10,20 @@ namespace Helpers;
 
 public static class BuildingHelper
 {
-	public static void ChangeCurrentBuilding(BuildingType buildingType, Town town)
+	public static void CheckIfBuildingIsComplete(Building building)
 	{
-		Queue<Building> queue = new Queue<Building>();
-		foreach (Building building in town.Buildings)
+		if ((float)building.GetConstructionCost() <= building.BuildingProgress)
 		{
-			if (building.BuildingType == buildingType)
+			if (building.CurrentLevel < 3)
 			{
-				queue.Enqueue(building);
-				break;
+				building.LevelUp();
 			}
+			if (building.CurrentLevel == 3)
+			{
+				building.BuildingProgress = building.GetConstructionCost();
+			}
+			building.Town.BuildingsInProgress.Dequeue();
 		}
-		foreach (Building item in town.BuildingsInProgress)
-		{
-			queue.Enqueue(item);
-		}
-		town.BuildingsInProgress = queue;
 	}
 
 	public static void ChangeDefaultBuilding(Building newDefault, Town town)
@@ -45,12 +43,16 @@ public static class BuildingHelper
 
 	public static void ChangeCurrentBuildingQueue(List<Building> buildings, Town town)
 	{
-		town.BuildingsInProgress = new Queue<Building>();
+		town.BuildingsInProgress.Clear();
 		foreach (Building building in buildings)
 		{
-			if (!building.BuildingType.IsDefaultProject)
+			if (!building.BuildingType.IsDailyProject)
 			{
 				town.BuildingsInProgress.Enqueue(building);
+			}
+			else
+			{
+				Debug.FailedAssert("DefaultProject in building queue", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ChangeCurrentBuildingQueue", 7159);
 			}
 		}
 	}
@@ -64,7 +66,7 @@ public static class BuildingHelper
 				return building.BuildingProgress / (float)building.GetConstructionCost();
 			}
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 6252);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 7174);
 		return 0f;
 	}
 
@@ -97,7 +99,7 @@ public static class BuildingHelper
 			}
 			return -1;
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 6294);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 7216);
 		return 0;
 	}
 
@@ -110,7 +112,7 @@ public static class BuildingHelper
 				return building.CurrentLevel;
 			}
 		}
-		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 6308);
+		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 7230);
 		return 0;
 	}
 
@@ -125,11 +127,5 @@ public static class BuildingHelper
 			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, gold - town.BoostBuildingProcess);
 		}
 		town.BoostBuildingProcess = gold;
-	}
-
-	public static void AddDefaultDailyBonus(Town fortification, BuildingEffectEnum effect, ref ExplainedNumber result)
-	{
-		float buildingEffectAmount = Campaign.Current.Models.BuildingEffectModel.GetBuildingEffectAmount(fortification.CurrentDefaultBuilding, effect);
-		result.Add(buildingEffectAmount, fortification.CurrentDefaultBuilding.BuildingType.Name);
 	}
 }

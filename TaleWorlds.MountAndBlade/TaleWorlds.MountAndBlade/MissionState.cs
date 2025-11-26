@@ -14,13 +14,11 @@ public class MissionState : GameState
 
 	private bool _missionInitializing;
 
-	private bool _firstMissionTickAfterLoading = true;
-
 	private int _tickCountBeforeLoad;
 
 	public static bool RecordMission;
 
-	public float MissionFastForwardAmount;
+	public float MissionReplayStartTime;
 
 	public float MissionEndTime;
 
@@ -30,13 +28,13 @@ public class MissionState : GameState
 
 	public IMissionSystemHandler Handler { get; set; }
 
-	public override bool IsMission => true;
-
 	public static MissionState Current { get; private set; }
 
 	public Mission CurrentMission { get; private set; }
 
 	public string MissionName { get; private set; }
+
+	public bool FirstMissionTickAfterLoading { get; private set; }
 
 	public bool Paused { get; set; }
 
@@ -44,6 +42,7 @@ public class MissionState : GameState
 	{
 		base.OnInitialize();
 		Current = this;
+		FirstMissionTickAfterLoading = true;
 		LoadingWindow.EnableGlobalLoadingWindow();
 	}
 
@@ -97,10 +96,10 @@ public class MissionState : GameState
 		}
 		else if (CurrentMission.CurrentState == Mission.State.Continuing || CurrentMission.MissionEnded)
 		{
-			if (MissionFastForwardAmount != 0f)
+			if (MissionReplayStartTime != 0f)
 			{
-				CurrentMission.FastForwardMission(MissionFastForwardAmount, 0.033f);
-				MissionFastForwardAmount = 0f;
+				CurrentMission.SkipForwardMissionReplay(MissionReplayStartTime, 0.033f);
+				MissionReplayStartTime = 0f;
 			}
 			bool flag = false;
 			if (MissionEndTime != 0f && CurrentMission.CurrentTime > MissionEndTime)
@@ -133,18 +132,14 @@ public class MissionState : GameState
 
 	private void TickMission(float realDt)
 	{
-		if (_firstMissionTickAfterLoading && CurrentMission != null && CurrentMission.CurrentState == Mission.State.Continuing)
+		if (FirstMissionTickAfterLoading && CurrentMission != null && CurrentMission.CurrentState == Mission.State.Continuing && GameNetwork.IsClient)
 		{
-			if (GameNetwork.IsClient)
-			{
-				int currentBattleIndex = GameNetwork.GetNetworkComponent<BaseNetworkComponentData>().CurrentBattleIndex;
-				MBDebug.Print($"Client: I finished loading battle with index: {currentBattleIndex}. Sending confirmation to server.", 0, Debug.DebugColor.White, 17179869184uL);
-				GameNetwork.BeginModuleEventAsClient();
-				GameNetwork.WriteMessage(new FinishedLoading(currentBattleIndex));
-				GameNetwork.EndModuleEventAsClient();
-				GameNetwork.SyncRelevantGameOptionsToServer();
-			}
-			_firstMissionTickAfterLoading = false;
+			int currentBattleIndex = GameNetwork.GetNetworkComponent<BaseNetworkComponentData>().CurrentBattleIndex;
+			MBDebug.Print($"Client: I finished loading battle with index: {currentBattleIndex}. Sending confirmation to server.", 0, Debug.DebugColor.White, 17179869184uL);
+			GameNetwork.BeginModuleEventAsClient();
+			GameNetwork.WriteMessage(new FinishedLoading(currentBattleIndex));
+			GameNetwork.EndModuleEventAsClient();
+			GameNetwork.SyncRelevantGameOptionsToServer();
 		}
 		Handler?.BeforeMissionTick(CurrentMission, realDt);
 		CurrentMission.PauseAITick = false;
@@ -210,6 +205,7 @@ public class MissionState : GameState
 		{
 			Handler.AfterMissionTick(CurrentMission, realDt);
 		}
+		FirstMissionTickAfterLoading = false;
 		_missionTickCount++;
 	}
 
@@ -247,15 +243,15 @@ public class MissionState : GameState
 		CurrentMission.Initialize();
 	}
 
-	private void CreateMission(MissionInitializerRecord rec)
+	private void CreateMission(MissionInitializerRecord rec, bool needsMemoryCleanup)
 	{
-		CurrentMission = new Mission(rec, this);
+		CurrentMission = new Mission(rec, this, needsMemoryCleanup);
 	}
 
-	private Mission HandleOpenNew(string missionName, MissionInitializerRecord rec, InitializeMissionBehaviorsDelegate handler, bool addDefaultMissionBehaviors)
+	protected Mission HandleOpenNew(string missionName, MissionInitializerRecord rec, InitializeMissionBehaviorsDelegate handler, bool addDefaultMissionBehaviors, bool needsMemoryCleanup)
 	{
 		MissionName = missionName;
-		CreateMission(rec);
+		CreateMission(rec, needsMemoryCleanup);
 		IEnumerable<MissionBehavior> source = handler(CurrentMission);
 		source = source.Where((MissionBehavior behavior) => behavior != null);
 		if (addDefaultMissionBehaviors)
@@ -290,7 +286,7 @@ public class MissionState : GameState
 		CurrentMission.InitializeStartingBehaviors(logicBehaviors, otherBehaviors, networkBehaviors);
 	}
 
-	private static bool IsRecordingActive()
+	protected static bool IsRecordingActive()
 	{
 		if (GameNetwork.IsServer)
 		{
@@ -312,10 +308,9 @@ public class MissionState : GameState
 		}
 		Game.Current.OnMissionIsStarting(missionName, rec);
 		MissionState missionState = Game.Current.GameStateManager.CreateState<MissionState>();
-		Mission mission = missionState.HandleOpenNew(missionName, rec, handler, addDefaultMissionBehaviors);
+		Mission result = missionState.HandleOpenNew(missionName, rec, handler, addDefaultMissionBehaviors, needsMemoryCleanup);
 		Game.Current.GameStateManager.PushState(missionState);
-		mission.NeedsMemoryCleanup = needsMemoryCleanup;
-		return mission;
+		return result;
 	}
 
 	private static IEnumerable<MissionBehavior> AddDefaultMissionBehaviorsTo(Mission mission, IEnumerable<MissionBehavior> behaviors)

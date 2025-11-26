@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -9,31 +8,31 @@ public class DefaultBuildingTypes
 {
 	public const int MaxBuildingLevel = 3;
 
-	private BuildingType _buildingFortifications;
-
-	private BuildingType _buildingSettlementGarrisonBarracks;
-
-	private BuildingType _buildingSettlementTrainingFields;
-
-	private BuildingType _buildingSettlementFairgrounds;
+	private BuildingType _buildingSettlementFortifications;
 
 	private BuildingType _buildingSettlementMarketplace;
 
-	private BuildingType _buildingSettlementAquaducts;
+	private BuildingType _buildingSettlementTrainingFields;
 
-	private BuildingType _buildingSettlementForum;
-
-	private BuildingType _buildingSettlementGranary;
-
-	private BuildingType _buildingSettlementOrchard;
-
-	private BuildingType _buildingSettlementMilitiaBarracks;
+	private BuildingType _buildingSettlementBarracks;
 
 	private BuildingType _buildingSettlementSiegeWorkshop;
 
-	private BuildingType _buildingSettlementLimeKilns;
+	private BuildingType _buildingSettlementGuardHouse;
 
-	private BuildingType _buildingWall;
+	private BuildingType _buildingSettlementTaxOffice;
+
+	private BuildingType _buildingSettlementWarehouse;
+
+	private BuildingType _buildingSettlementMason;
+
+	private BuildingType _buildingSettlementCourthouse;
+
+	private BuildingType _buildingSettlementWaterworks;
+
+	private BuildingType _buildingSettlementRoadsAndPaths;
+
+	private BuildingType _buildingCastleFortifications;
 
 	private BuildingType _buildingCastleBarracks;
 
@@ -41,104 +40,99 @@ public class DefaultBuildingTypes
 
 	private BuildingType _buildingCastleGranary;
 
-	private BuildingType _buildingCastleGardens;
+	private BuildingType _buildingCastleGuardHouse;
 
 	private BuildingType _buildingCastleCastallansOffice;
 
-	private BuildingType _buildingCastleWorkshop;
-
-	private BuildingType _buildingCastleFairgrounds;
-
 	private BuildingType _buildingCastleSiegeWorkshop;
 
-	private BuildingType _buildingCastleMilitiaBarracks;
+	private BuildingType _buildingCastleCraftmansQuarters;
 
-	private BuildingType _buildingCastleTollCollector;
+	private BuildingType _buildingCastleFarmlands;
 
-	private BuildingType _buildingDailyBuildHouse;
+	private BuildingType _buildingSettlementDailyHousing;
 
-	private BuildingType _buildingDailyTrainMilitia;
+	private BuildingType _buildingCastleMason;
 
-	private BuildingType _buildingDailyFestivalsAndGames;
+	private BuildingType _buildingCastleRoadsAndPaths;
 
-	private BuildingType _buildingDailyIrrigation;
+	private BuildingType _buildingSettlementDailyIrrigation;
 
-	public static IEnumerable<BuildingType> MilitaryBuildings
-	{
-		get
-		{
-			yield return Fortifications;
-			yield return SettlementGarrisonBarracks;
-			yield return SettlementTrainingFields;
-			yield return SettlementWorkshop;
-			yield return SettlementMilitiaBarracks;
-			yield return SettlementSiegeWorkshop;
-			yield return Wall;
-			yield return CastleBarracks;
-			yield return CastleTrainingFields;
-			yield return CastleCastallansOffice;
-			yield return CastleWorkshop;
-			yield return CastleSiegeWorkshop;
-			yield return CastleMilitiaBarracks;
-			yield return TrainMilitiaDaily;
-		}
-	}
+	private BuildingType _buildingSettlementDailyTrainMilitia;
+
+	private BuildingType _buildingCastleDailySlackenGarrison;
+
+	private BuildingType _buildingSettlementDailyFestivalAndGames;
+
+	private BuildingType _buildingCastleDailyRaiseTroops;
+
+	private BuildingType _buildingCastleDailyDrills;
+
+	private BuildingType _buildingCastleDailyIrrigation;
 
 	private static DefaultBuildingTypes Instance => Campaign.Current.DefaultBuildingTypes;
 
-	public static BuildingType Fortifications => Instance._buildingFortifications;
+	public static BuildingType SettlementFortifications => Instance._buildingSettlementFortifications;
 
-	public static BuildingType SettlementGarrisonBarracks => Instance._buildingSettlementGarrisonBarracks;
+	public static BuildingType SettlementBarracks => Instance._buildingSettlementBarracks;
 
 	public static BuildingType SettlementTrainingFields => Instance._buildingSettlementTrainingFields;
 
-	public static BuildingType SettlementFairgrounds => Instance._buildingSettlementFairgrounds;
+	public static BuildingType SettlementGuardHouse => Instance._buildingSettlementGuardHouse;
 
-	public static BuildingType SettlementMarketplace => Instance._buildingSettlementMarketplace;
+	public static BuildingType SettlementTaxOffice => Instance._buildingSettlementTaxOffice;
 
-	public static BuildingType SettlementAquaducts => Instance._buildingSettlementAquaducts;
+	public static BuildingType SettlementWarehouse => Instance._buildingSettlementWarehouse;
 
-	public static BuildingType SettlementForum => Instance._buildingSettlementForum;
-
-	public static BuildingType SettlementGranary => Instance._buildingSettlementGranary;
-
-	public static BuildingType SettlementWorkshop => Instance._buildingSettlementOrchard;
-
-	public static BuildingType SettlementMilitiaBarracks => Instance._buildingSettlementMilitiaBarracks;
+	public static BuildingType SettlementMason => Instance._buildingSettlementMason;
 
 	public static BuildingType SettlementSiegeWorkshop => Instance._buildingSettlementSiegeWorkshop;
 
-	public static BuildingType SettlementLimeKilns => Instance._buildingSettlementLimeKilns;
+	public static BuildingType SettlementWaterworks => Instance._buildingSettlementWaterworks;
 
-	public static BuildingType Wall => Instance._buildingWall;
+	public static BuildingType SettlementCourthouse => Instance._buildingSettlementCourthouse;
+
+	public static BuildingType SettlementMarketplace => Instance._buildingSettlementMarketplace;
+
+	public static BuildingType SettlementRoadsAndPaths => Instance._buildingSettlementRoadsAndPaths;
+
+	public static BuildingType CastleFortifications => Instance._buildingCastleFortifications;
 
 	public static BuildingType CastleBarracks => Instance._buildingCastleBarracks;
 
 	public static BuildingType CastleTrainingFields => Instance._buildingCastleTrainingFields;
 
-	public static BuildingType CastleGranary => Instance._buildingCastleGranary;
-
-	public static BuildingType CastleGardens => Instance._buildingCastleGardens;
+	public static BuildingType CastleGuardHouse => Instance._buildingCastleGuardHouse;
 
 	public static BuildingType CastleCastallansOffice => Instance._buildingCastleCastallansOffice;
 
-	public static BuildingType CastleWorkshop => Instance._buildingCastleWorkshop;
-
-	public static BuildingType CastleFairgrounds => Instance._buildingCastleFairgrounds;
-
 	public static BuildingType CastleSiegeWorkshop => Instance._buildingCastleSiegeWorkshop;
 
-	public static BuildingType CastleMilitiaBarracks => Instance._buildingCastleMilitiaBarracks;
+	public static BuildingType CastleCraftmansQuarters => Instance._buildingCastleCraftmansQuarters;
 
-	public static BuildingType CastleTollCollector => Instance._buildingCastleTollCollector;
+	public static BuildingType CastleFarmlands => Instance._buildingCastleFarmlands;
 
-	public static BuildingType BuildHouseDaily => Instance._buildingDailyBuildHouse;
+	public static BuildingType CastleGranary => Instance._buildingCastleGranary;
 
-	public static BuildingType TrainMilitiaDaily => Instance._buildingDailyTrainMilitia;
+	public static BuildingType CastleMason => Instance._buildingCastleMason;
 
-	public static BuildingType FestivalsAndGamesDaily => Instance._buildingDailyFestivalsAndGames;
+	public static BuildingType CastleRoadsAndPaths => Instance._buildingCastleRoadsAndPaths;
 
-	public static BuildingType IrrigationDaily => Instance._buildingDailyIrrigation;
+	public static BuildingType SettlementDailyHousing => Instance._buildingSettlementDailyHousing;
+
+	public static BuildingType SettlementDailyTrainMilitia => Instance._buildingSettlementDailyTrainMilitia;
+
+	public static BuildingType SettlementDailyFestivalAndGames => Instance._buildingSettlementDailyFestivalAndGames;
+
+	public static BuildingType SettlementDailyIrrigation => Instance._buildingSettlementDailyIrrigation;
+
+	public static BuildingType CastleDailySlackenGarrison => Instance._buildingCastleDailySlackenGarrison;
+
+	public static BuildingType CastleDailyRaiseTroops => Instance._buildingCastleDailyRaiseTroops;
+
+	public static BuildingType CastleDailyDrills => Instance._buildingCastleDailyDrills;
+
+	public static BuildingType CastleDailyIrrigation => Instance._buildingCastleDailyIrrigation;
 
 	public DefaultBuildingTypes()
 	{
@@ -147,33 +141,37 @@ public class DefaultBuildingTypes
 
 	private void RegisterAll()
 	{
-		_buildingFortifications = Create("building_fortifications");
-		_buildingSettlementGarrisonBarracks = Create("building_settlement_garrison_barracks");
+		_buildingSettlementFortifications = Create("building_settlement_fortifications");
+		_buildingSettlementBarracks = Create("building_settlement_barracks");
 		_buildingSettlementTrainingFields = Create("building_settlement_training_fields");
-		_buildingSettlementFairgrounds = Create("building_settlement_fairgrounds");
+		_buildingSettlementGuardHouse = Create("building_settlement_guard_house");
+		_buildingSettlementSiegeWorkshop = Create("building_settlement_siege_workshop");
+		_buildingSettlementTaxOffice = Create("building_settlement_tax_office");
 		_buildingSettlementMarketplace = Create("building_settlement_marketplace");
-		_buildingSettlementAquaducts = Create("building_settlement_aquaducts");
-		_buildingSettlementForum = Create("building_settlement_forum");
-		_buildingSettlementGranary = Create("building_settlement_granary");
-		_buildingSettlementOrchard = Create("building_settlement_lime_kilns");
-		_buildingSettlementMilitiaBarracks = Create("building_settlement_militia_barracks");
-		_buildingSettlementSiegeWorkshop = Create("building_siege_workshop");
-		_buildingSettlementLimeKilns = Create("building_settlement_workshop");
-		_buildingWall = Create("building_wall");
+		_buildingSettlementWarehouse = Create("building_settlement_warehouse");
+		_buildingSettlementMason = Create("building_settlement_mason");
+		_buildingSettlementWaterworks = Create("building_settlement_waterworks");
+		_buildingSettlementCourthouse = Create("building_settlement_courthouse");
+		_buildingSettlementRoadsAndPaths = Create("building_settlement_roads_and_paths");
+		_buildingCastleFortifications = Create("building_castle_fortifications");
 		_buildingCastleBarracks = Create("building_castle_barracks");
 		_buildingCastleTrainingFields = Create("building_castle_training_fields");
-		_buildingCastleGranary = Create("building_castle_granary");
-		_buildingCastleGardens = Create("building_castle_gardens");
-		_buildingCastleCastallansOffice = Create("building_castle_castallans_office");
-		_buildingCastleWorkshop = Create("building_castle_workshops");
-		_buildingCastleFairgrounds = Create("building_castle_fairgrounds");
+		_buildingCastleGuardHouse = Create("building_castle_guard_house");
 		_buildingCastleSiegeWorkshop = Create("building_castle_siege_workshop");
-		_buildingCastleMilitiaBarracks = Create("building_castle_militia_barracks");
-		_buildingCastleTollCollector = Create("building_castle_lime_kilns");
-		_buildingDailyBuildHouse = Create("building_daily_build_house");
-		_buildingDailyTrainMilitia = Create("building_daily_train_militia");
-		_buildingDailyFestivalsAndGames = Create("building_festivals_and_games");
-		_buildingDailyIrrigation = Create("building_irrigation");
+		_buildingCastleCastallansOffice = Create("building_castle_castallans_office");
+		_buildingCastleGranary = Create("building_castle_granary");
+		_buildingCastleCraftmansQuarters = Create("building_castle_craftmans_quarters");
+		_buildingCastleFarmlands = Create("building_castle_farmlands");
+		_buildingCastleMason = Create("building_castle_mason");
+		_buildingCastleRoadsAndPaths = Create("building_castle_roads_and_paths");
+		_buildingSettlementDailyHousing = Create("building_settlement_daily_housing");
+		_buildingSettlementDailyTrainMilitia = Create("building_settlement_daily_train_militia");
+		_buildingSettlementDailyFestivalAndGames = Create("building_settlement_daily_festival_and_games");
+		_buildingSettlementDailyIrrigation = Create("building_settlement_daily_irrigation");
+		_buildingCastleDailySlackenGarrison = Create("building_castle_daily_slacken_garrison");
+		_buildingCastleDailyRaiseTroops = Create("building_castle_daily_raise_troops");
+		_buildingCastleDailyDrills = Create("building_castle_daily_drills");
+		_buildingCastleDailyIrrigation = Create("building_castle_daily_irrigation");
 		InitializeAll();
 	}
 
@@ -184,115 +182,151 @@ public class DefaultBuildingTypes
 
 	private void InitializeAll()
 	{
-		_buildingFortifications.Initialize(new TextObject("{=CVdK1ax1}Fortifications"), new TextObject("{=dIM6xa2O}Better fortifications and higher walls around town, also increases the max garrison limit since it provides more space for the resident troops."), new int[3] { 0, 8000, 16000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingSettlementFortifications.Initialize(new TextObject("{=CVdK1ax1}Fortifications"), new TextObject("{=dIM6xa2O}Better fortifications and higher walls around town, also increases the max garrison limit since it provides more space for the resident troops."), new int[3] { 0, 6000, 12000 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.GarrisonCapacity, 25f, 50f, 100f)
-		}, 1);
-		_buildingSettlementGarrisonBarracks.Initialize(new TextObject("{=54vkRuHo}Garrison Barracks"), new TextObject("{=DHm1MBsj}Lodging for the garrisoned troops. Each level increases the garrison capacity of the stronghold."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonCapacity, BuildingEffectIncrementType.Add, 60f, 90f, 120f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.PrisonCapacity, BuildingEffectIncrementType.Add, 50f, 75f, 100f)
+		}, isMilitaryProject: true, 0f, 1);
+		_buildingSettlementBarracks.Initialize(new TextObject("{=x2B0OjhI}Barracks"), new TextObject("{=JalrbDBC}Lodgings for garrison troops. Each level increases garrison limit and decreases garrison wage."), new int[3] { 1800, 3000, 4200 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.GarrisonCapacity, 30f, 60f, 100f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonCapacity, BuildingEffectIncrementType.Add, 60f, 90f, 120f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonWageReduction, BuildingEffectIncrementType.AddFactor, -0.05f, -0.1f, -0.15f)
+		}, isMilitaryProject: true, 0f);
+		_buildingSettlementTrainingFields.Initialize(new TextObject("{=BkTiRPT4}Training Fields"), new TextObject("{=NYzORuQm}Provides experience for garrison troops and increases militia veterancy."), new int[3] { 1500, 2100, 2700 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ExperiencePerDay, BuildingEffectIncrementType.Add, 1f, 2f, 3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.MilitiaVeterancyChance, BuildingEffectIncrementType.Add, 0.1f, 0.15f, 0.2f)
+		}, isMilitaryProject: true, 0f);
+		_buildingSettlementGuardHouse.Initialize(new TextObject("{=OHEiwoHC}Guard House"), new TextObject("{=doojtAwr}Increases prisoner limit and provides a patrol party that improves security."), new int[3] { 1500, 2100, 2700 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.PatrolPartyStrength, BuildingEffectIncrementType.Add, 1f, 2f, 3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.PrisonCapacity, BuildingEffectIncrementType.Add, 30f, 60f, 90f)
+		}, isMilitaryProject: true, 0f);
+		_buildingSettlementSiegeWorkshop.Initialize(new TextObject("{=9Bnwttn6}Siege Workshop"), new TextObject("{=MharAceZ}Builds and maintains siege engines for defense of the settlement."), new int[3] { 1200, 1800, 3000 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[3]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.BallistaOnSiegeStart, BuildingEffectIncrementType.Add, 1f, 1f, 2f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.CatapultOnSiegeStart, BuildingEffectIncrementType.Add, 0f, 1f, 1f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.SiegeEngineSpeed, BuildingEffectIncrementType.AddFactor, 0.3f, 0.6f, 1f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementTaxOffice.Initialize(new TextObject("{=LG84byW0}Tax Office"), new TextObject("{=nQ6ytZeF}Increases tax income."), new int[3] { 1800, 3000, 4200 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.TaxPerDay, BuildingEffectIncrementType.AddFactor, 0.05f, 0.1f, 0.15f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementMarketplace.Initialize(new TextObject("{=zLdXCpne}Marketplace"), new TextObject("{=Z0xf3Bbd}Increases the tariff collected from trades made in town"), new int[3] { 2400, 3600, 4800 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.TariffIncome, BuildingEffectIncrementType.AddFactor, 0.1f, 0.2f, 0.3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.CaravanAccessibility, BuildingEffectIncrementType.AddFactor, 1.02f, 1.04f, 1.06f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementWarehouse.Initialize(new TextObject("{=anTRftmb}Warehouse"), new TextObject("{=hhKDZJeM}Increases Food storage limits and improves workshop productivity."), new int[3] { 1800, 2400, 3000 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.FoodStock, BuildingEffectIncrementType.Add, 100f, 300f, 500f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.WorkshopProduction, BuildingEffectIncrementType.AddFactor, 0.05f, 0.1f, 0.15f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementMason.Initialize(new TextObject("{=R7ssoDHW}Mason"), new TextObject("{=hqUPvnaj}Increase bricks per day, increasing building and repair speed."), new int[3] { 2400, 3000, 4800 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ConstructionPerDay, BuildingEffectIncrementType.Add, 3f, 6f, 9f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.WallRepairSpeed, BuildingEffectIncrementType.AddFactor, 0.05f, 0.15f, 0.3f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementWaterworks.Initialize(new TextObject("{=DA0y7B3S}Waterworks"), new TextObject("{=SfbwSASh}Waterways and sanitation, decrease food consumption."), new int[3] { 1800, 3600, 5400 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.FoodConsumption, BuildingEffectIncrementType.AddFactor, -0.05f, -0.1f, -0.15f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementCourthouse.Initialize(new TextObject("{=Bw8kAvGY}Courthouse"), new TextObject("{=tmLJvPlz}Local judges manage disputes and maintain law and order. Provides influence and loyalty per day."), new int[3] { 2400, 3600, 5400 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Loyalty, BuildingEffectIncrementType.Add, 0.3f, 0.6f, 1f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Influence, BuildingEffectIncrementType.Add, 0.2f, 0.5f, 1f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementRoadsAndPaths.Initialize(new TextObject("{=maEmutDP}Roads and Paths"), new TextObject("{=YPFDiwuy}Increase village production and village hearth growth."), new int[3] { 2400, 3600, 4800 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageProduction, BuildingEffectIncrementType.AddFactor, 0.05f, 0.1f, 0.15f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageHeartsPerDay, BuildingEffectIncrementType.Add, 0.1f, 0.2f, 0.3f)
+		}, isMilitaryProject: false, 0f);
+		_buildingCastleFortifications.Initialize(new TextObject("{=CVdK1ax1}Fortifications"), new TextObject("{=oS5Nesmi}Better fortifications and higher walls around the keep, also increases the max garrison limit since it provides more space for the resident troops."), new int[3] { 0, 1400, 2800 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonCapacity, BuildingEffectIncrementType.Add, 50f, 75f, 100f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.PrisonCapacity, BuildingEffectIncrementType.Add, 30f, 45f, 60f)
+		}, isMilitaryProject: true, 0f, 1);
+		_buildingCastleBarracks.Initialize(new TextObject("{=x2B0OjhI}Barracks"), new TextObject("{=JalrbDBC}Lodgings for garrison troops. Each level increases garrison limit and decreases garrison wage."), new int[3] { 420, 700, 1120 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonCapacity, BuildingEffectIncrementType.Add, 20f, 40f, 80f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonWageReduction, BuildingEffectIncrementType.AddFactor, -0.1f, -0.2f, -0.3f)
+		}, isMilitaryProject: true, 0f);
+		_buildingCastleTrainingFields.Initialize(new TextObject("{=BkTiRPT4}Training Fields"), new TextObject("{=otWlERkc}A field for military drills that increases the daily experience gain of all garrisoned units."), new int[3] { 420, 560, 700 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ExperiencePerDay, BuildingEffectIncrementType.Add, 3f, 4f, 5f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.MilitiaVeterancyChance, BuildingEffectIncrementType.Add, 0.1f, 0.15f, 0.2f)
+		}, isMilitaryProject: true, 0f);
+		_buildingCastleGuardHouse.Initialize(new TextObject("{=OHEiwoHC}Guard House"), new TextObject("{=K0cbj7o3}Increase militia recruitment, and prisoner limit."), new int[3] { 350, 490, 630 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Militia, BuildingEffectIncrementType.Add, 1f, 2f, 3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.PrisonCapacity, BuildingEffectIncrementType.Add, 10f, 30f, 50f)
+		}, isMilitaryProject: true, 0f);
+		_buildingCastleSiegeWorkshop.Initialize(new TextObject("{=9Bnwttn6}Siege Workshop"), new TextObject("{=YRCW0oFd}Builds and maintains siege engines for defense of the settlement."), new int[3] { 280, 420, 700 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[3]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.BallistaOnSiegeStart, BuildingEffectIncrementType.Add, 1f, 2f, 3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.CatapultOnSiegeStart, BuildingEffectIncrementType.Add, 0f, 1f, 2f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.SiegeEngineSpeed, BuildingEffectIncrementType.AddFactor, 0.2f, 0.4f, 0.8f)
+		}, isMilitaryProject: true, 0f);
+		_buildingCastleCastallansOffice.Initialize(new TextObject("{=kLNnFMR9}Castellan's Office"), new TextObject("{=GDsI6daq}Increases auto recruitment, and decreases garrison wage."), new int[3] { 560, 840, 1260 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonWageReduction, BuildingEffectIncrementType.AddFactor, -0.1f, -0.2f, -0.3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonAutoRecruitment, BuildingEffectIncrementType.Add, 1f, 2f, 3f)
+		}, isMilitaryProject: true, 0f);
+		_buildingCastleGranary.Initialize(new TextObject("{=PstO2f5I}Granary"), new TextObject("{=iazij7fO}Increases food storage limits."), new int[3] { 420, 560, 700 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.FoodStock, BuildingEffectIncrementType.Add, 100f, 200f, 300f)
+		}, isMilitaryProject: false, 0f);
+		_buildingCastleCraftmansQuarters.Initialize(new TextObject("{=KE1KUayw}Craftmans Quarters"), new TextObject("{=2qZ14G9p}Provides income based on bound village hearts"), new int[3] { 350, 490, 630 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.DenarByBoundVillageHeartPerDay, BuildingEffectIncrementType.Add, 0.2f, 0.4f, 0.6f)
+		}, isMilitaryProject: false, 0f);
+		_buildingCastleFarmlands.Initialize(new TextObject("{=l4eZqegY}Farmlands"), new TextObject("{=tajCl8Bg}Provides daily food."), new int[3] { 420, 630, 840 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.FoodProduction, BuildingEffectIncrementType.Add, 6f, 12f, 18f)
+		}, isMilitaryProject: false, 0f);
+		_buildingCastleMason.Initialize(new TextObject("{=R7ssoDHW}Mason"), new TextObject("{=hqUPvnaj}Increase bricks per day, increasing building and repair speed."), new int[3] { 560, 700, 1120 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ConstructionPerDay, BuildingEffectIncrementType.Add, 2f, 4f, 6f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.WallRepairSpeed, BuildingEffectIncrementType.AddFactor, 0.1f, 0.3f, 0.6f)
+		}, isMilitaryProject: false, 0f);
+		_buildingCastleRoadsAndPaths.Initialize(new TextObject("{=maEmutDP}Roads and Paths"), new TextObject("{=YPFDiwuy}Increase village production and village hearth growth."), new int[3] { 560, 840, 1120 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageProduction, BuildingEffectIncrementType.AddFactor, 0.05f, 0.1f, 0.15f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageHeartsPerDay, BuildingEffectIncrementType.Add, 0.1f, 0.2f, 0.3f)
+		}, isMilitaryProject: false, 0f);
+		_buildingSettlementDailyHousing.InitializeDailyProject(new TextObject("{=F4V7oaVx}Housing"), new TextObject("{=yWXtcxqb}Construct housing so that more folks can settle, increasing population."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
+		{
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Prosperity, BuildingEffectIncrementType.Add, 2f, 2f, 2f)
 		});
-		_buildingSettlementTrainingFields.Initialize(new TextObject("{=BkTiRPT4}Training Fields"), new TextObject("{=otWlERkc}A field for military drills that increases the daily experience gain of all garrisoned units."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingSettlementDailyTrainMilitia.InitializeDailyProject(new TextObject("{=p1Y3EU5O}Train Militia"), new TextObject("{=61J1wa6k}Schedule drills for commoners, increasing militia recruitment."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Experience, 1f, 2f, 3f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Militia, BuildingEffectIncrementType.Add, 2f, 2f, 2f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonAutoRecruitment, BuildingEffectIncrementType.Add, 1f, 1f, 1f)
 		});
-		_buildingSettlementFairgrounds.Initialize(new TextObject("{=ixHqTrX5}Fairgrounds"), new TextObject("{=0B91pZ2R}A permanent space that hosts fairs. Citizens can gather, drink dance and socialize,  increasing the daily morale of the settlement."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingSettlementDailyFestivalAndGames.InitializeDailyProject(new TextObject("{=aEmYZadz}Festival and Games"), new TextObject("{=ovDbQIo9}Organize festivals and games in the settlement, increasing loyalty."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Loyalty, 0.5f, 1f, 1.5f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Loyalty, BuildingEffectIncrementType.Add, 3f, 3f, 3f)
 		});
-		_buildingSettlementMarketplace.Initialize(new TextObject("{=zLdXCpne}Marketplace"), new TextObject("{=Z9LWA6A3}Scheduled market days lure folks from surrounding villages to the settlement and of course the local ruler takes a handsome cut of any sales. Increases the wealth and tax yield of the settlement."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingSettlementDailyIrrigation.InitializeDailyProject(new TextObject("{=O4cknzhW}Irrigation"), new TextObject("{=CU9g49fo}Provide irrigation, increasing hearth growth in bound villages."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Tax, 5f, 10f, 15f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageHeartsPerDay, BuildingEffectIncrementType.Add, 1f, 1f, 1f)
 		});
-		_buildingSettlementAquaducts.Initialize(new TextObject("{=f5jHMbOq}Aqueducts"), new TextObject("{=UojHRjdG}Access to clean water provides room for growth with healthy citizens and a clean infrastructure. Increases daily Prosperity change."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingCastleDailySlackenGarrison.InitializeDailyProject(new TextObject("{=cHIa0Xty}Slacken Garrison"), new TextObject("{=5VBbLVBt}Decrease garrison wages."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Prosperity, 0.3f, 0.6f, 1f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonWageReduction, BuildingEffectIncrementType.AddFactor, -0.05f, -0.05f, -0.05f)
 		});
-		_buildingSettlementForum.Initialize(new TextObject("{=paelEWj1}Forum"), new TextObject("{=wTBtu1t5}An open square in the settlement where people can meet, spend time, and share their ideas. Increases influence of the settlement owner."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingCastleDailyRaiseTroops.InitializeDailyProject(new TextObject("{=jm1ScaoK}Raise Troops"), new TextObject("{=UsHhePdk}Increase militia recruitment, and auto recruitment."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Influence, 0.5f, 1f, 1.5f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.Militia, BuildingEffectIncrementType.Add, 3f, 3f, 3f),
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.GarrisonAutoRecruitment, BuildingEffectIncrementType.Add, 2f, 2f, 2f)
 		});
-		_buildingSettlementGranary.Initialize(new TextObject("{=PstO2f5I}Granary"), new TextObject("{=aK23T43P}Keeps stockpiles of food so that the settlement has more food supply. Each level increases the local food supply."), new int[3] { 1000, 1500, 2000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingCastleDailyDrills.InitializeDailyProject(new TextObject("{=JpiQagYa}Drills"), new TextObject("{=e9V1W7nW}Provides experience to garrison."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Foodstock, 200f, 400f, 600f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ExperiencePerDay, BuildingEffectIncrementType.Add, 8f, 8f, 8f)
 		});
-		_buildingSettlementLimeKilns.Initialize(new TextObject("{=NbgeKwVr}Workshops"), new TextObject("{=qR9bEE6g}A building which provides the means required for the manufacture or repair of buildings. Improves project development speed. Also stonemasons reinforce the walls."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
+		_buildingCastleDailyIrrigation.InitializeDailyProject(new TextObject("{=O4cknzhW}Irrigation"), new TextObject("{=CU9g49fo}Provide irrigation, increasing hearth growth in bound villages."), new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Construction, 3f, 6f, 9f)
-		});
-		_buildingSettlementMilitiaBarracks.Initialize(new TextObject("{=l91xAgmU}Militia Grounds"), new TextObject("{=RliyRJKl}Provides weapons training for citizens. Increases daily militia recruitment."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Militia, 0.5f, 1f, 1.5f)
-		});
-		_buildingSettlementSiegeWorkshop.Initialize(new TextObject("{=9Bnwttn6}Siege Workshop"), new TextObject("{=MharAceZ}A workshop dedicated to sieges. Contains tools and materials to repair walls, build and repair siege engines."), new int[3] { 1000, 1500, 2000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[2]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.WallRepairSpeed, 50f, 50f, 50f),
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.SiegeEngineSpeed, 30f, 60f, 100f)
-		});
-		_buildingSettlementOrchard.Initialize(new TextObject("{=AkbiPIij}Orchards"), new TextObject("{=ZCLVOXgM}Fruit trees and vegetable gardens outside the walls provide food as long as there is no siege."), new int[3] { 2000, 3000, 4000 }, BuildingLocation.Settlement, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.FoodProduction, 6f, 12f, 18f)
-		});
-		_buildingWall.Initialize(new TextObject("{=6pNrNj93}Wall"), new TextObject("{=oS5Nesmi}Better fortifications and higher walls around the keep, also increases the max garrison limit since it provides more space for the resident troops."), new int[3] { 0, 2500, 5000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.GarrisonCapacity, 25f, 50f, 100f)
-		}, 1);
-		_buildingCastleBarracks.Initialize(new TextObject("{=x2B0OjhI}Barracks"), new TextObject("{=HJ1is924}Lodgings for the garrisoned troops. Increases the garrison capacity of the stronghold."), new int[3] { 500, 1000, 1500 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.GarrisonCapacity, 30f, 60f, 100f)
-		});
-		_buildingCastleTrainingFields.Initialize(new TextObject("{=BkTiRPT4}Training Fields"), new TextObject("{=otWlERkc}A field for military drills that increases the daily experience gain of all garrisoned units."), new int[3] { 500, 1000, 1500 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Experience, 1f, 2f, 3f)
-		});
-		_buildingCastleGranary.Initialize(new TextObject("{=PstO2f5I}Granary"), new TextObject("{=iazij7fO}Keeps stockpiles of food so that the settlement has more food supply. Increases the local food supply."), new int[3] { 500, 1000, 1500 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Foodstock, 100f, 150f, 200f)
-		});
-		_buildingCastleGardens.Initialize(new TextObject("{=yT6XN4Mr}Gardens"), new TextObject("{=ZCLVOXgM}Fruit trees and vegetable gardens outside the walls provide food as long as there is no siege."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.FoodProduction, 3f, 6f, 9f)
-		});
-		_buildingCastleCastallansOffice.Initialize(new TextObject("{=kLNnFMR9}Castellan's Office"), new TextObject("{=GDsI6daq}Provides a warden for the castle who maintains discipline and upholds the law."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.GarrisonWageReduce, 10f, 20f, 30f)
-		});
-		_buildingCastleWorkshop.Initialize(new TextObject("{=NbgeKwVr}Workshops"), new TextObject("{=qR9bEE6g}A building which provides the means required for the manufacture or repair of buildings. Improves project development speed. Also stonemasons reinforce the walls."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Construction, 1f, 2f, 3f)
-		});
-		_buildingCastleFairgrounds.Initialize(new TextObject("{=ixHqTrX5}Fairgrounds"), new TextObject("{=QHZeCDJy}A permanent space that hosts fairs. Citizens can gather, drink dance and socialize, increasing the daily morale of the settlement."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Loyalty, 0.5f, 1f, 1.5f)
-		});
-		_buildingCastleSiegeWorkshop.Initialize(new TextObject("{=9Bnwttn6}Siege Workshop"), new TextObject("{=MharAceZ}A workshop dedicated to sieges. Contains tools and materials to repair walls, build and repair siege engines."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[2]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.WallRepairSpeed, 50f, 50f, 50f),
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.SiegeEngineSpeed, 30f, 60f, 100f)
-		});
-		_buildingCastleMilitiaBarracks.Initialize(new TextObject("{=l91xAgmU}Militia Grounds"), new TextObject("{=YRrx8bAK}Provides weapons training for citizens. Each level increases daily militia recruitment."), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Militia, 1f, 2f, 3f)
-		});
-		_buildingCastleTollCollector.Initialize(new TextObject("{=VawDQKLl}Toll Collector"), new TextObject("{=ac8PkfhG}Increases tax income from the region"), new int[3] { 500, 750, 1000 }, BuildingLocation.Castle, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.Tax, 10f, 20f, 30f)
-		});
-		_buildingDailyBuildHouse.Initialize(new TextObject("{=F4V7oaVx}Housing"), new TextObject("{=yWXtcxqb}Construct housing so that more folks can settle, increasing population."), new int[3], BuildingLocation.Daily, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.ProsperityDaily, 1f, 1f, 1f)
-		});
-		_buildingDailyTrainMilitia.Initialize(new TextObject("{=p1Y3EU5O}Train Militia"), new TextObject("{=61J1wa6k}Schedule drills for commoners, increasing militia recruitment."), new int[3], BuildingLocation.Daily, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.MilitiaDaily, 3f, 3f, 3f)
-		});
-		_buildingDailyFestivalsAndGames.Initialize(new TextObject("{=aEmYZadz}Festival and Games"), new TextObject("{=ovDbQIo9}Organize festivals and games in the settlement, increasing morale."), new int[3], BuildingLocation.Daily, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.LoyaltyDaily, 3f, 3f, 3f)
-		});
-		_buildingDailyIrrigation.Initialize(new TextObject("{=O4cknzhW}Irrigation"), new TextObject("{=CU9g49fo}Provide irrigation, increasing growth in bound villages."), new int[3], BuildingLocation.Daily, new Tuple<BuildingEffectEnum, float, float, float>[1]
-		{
-			new Tuple<BuildingEffectEnum, float, float, float>(BuildingEffectEnum.VillageDevelopmentDaily, 1f, 1f, 1f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.VillageHeartsPerDay, BuildingEffectIncrementType.AddFactor, 0.5f, 0.5f, 0.5f)
 		});
 	}
 }

@@ -113,7 +113,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		MarriageModel marriageModel = Campaign.Current.Models.MarriageModel;
-		foreach (Hero item in consideringClan.Lords.ToList())
+		foreach (Hero item in consideringClan.AliveLords.ToList())
 		{
 			if (!item.CanMarry())
 			{
@@ -124,7 +124,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 			{
 				continue;
 			}
-			foreach (Hero item2 in clan.Lords.ToList())
+			foreach (Hero item2 in clan.AliveLords.ToList())
 			{
 				float num = marriageModel.NpcCoupleMarriageChance(item, item2);
 				if (!(num > 0f) || !(MBRandom.RandomFloat < num))
@@ -273,11 +273,11 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 	private void conversation_finalize_marriage_barter_consequence()
 	{
 		Hero heroBeingProposedTo = Hero.OneToOneConversationHero;
-		foreach (Hero lord in Hero.OneToOneConversationHero.Clan.Lords)
+		foreach (Hero aliveLord in Hero.OneToOneConversationHero.Clan.AliveLords)
 		{
-			if (Romance.GetRomanticLevel(Hero.MainHero, lord) == Romance.RomanceLevelEnum.CoupleAgreedOnMarriage)
+			if (Romance.GetRomanticLevel(Hero.MainHero, aliveLord) == Romance.RomanceLevelEnum.CoupleAgreedOnMarriage)
 			{
-				heroBeingProposedTo = lord;
+				heroBeingProposedTo = aliveLord;
 				break;
 			}
 		}
@@ -412,7 +412,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 		persuasionTask3.SpokenLine = Campaign.Current.ConversationManager.FindMatchingTextOrNull("str_courtship_aspirations_task", CharacterObject.OneToOneConversationCharacter);
 		persuasionTask3.ImmediateFailLine = new TextObject("{=8hEVO9hw}Hmm. Perhaps you and I have different priorities in life.");
 		persuasionTask3.FinalFailLine = new TextObject("{=HAtHptbV}In the end, I don't think we have that much in common.");
-		persuasionTask3.TryLaterLine = new TextObject("{=ZmxbIXsp}I am sorry you feel that way. We can speak later.");
+		persuasionTask3.TryLaterLine = new TextObject("{=PoDVgQaz}Well, it would take a bit long to discuss this.");
 		Tuple<TraitObject, int>[] traitCorrelations9 = GetTraitCorrelations(0, 2, 1);
 		PersuasionOptionArgs option9 = new PersuasionOptionArgs(argumentStrength: Campaign.Current.Models.PersuasionModel.GetArgumentStrengthBasedOnTargetTraits(CharacterObject.OneToOneConversationCharacter, traitCorrelations9), skill: DefaultSkills.Leadership, trait: DefaultTraits.Mercy, traitEffect: TraitEffect.Positive, givesCriticalSuccess: false, line: new TextObject("{=6kjacaiB}I hope I can bring peace to the land, and justice, and alleviate people's suffering."), traitCorrelation: traitCorrelations9, canBlockOtherOption: false, canMoveToTheNextReservation: true);
 		persuasionTask3.AddOptionToTask(option9);
@@ -932,10 +932,10 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool RomancePersuasionOption1ClickableOnCondition1(out TextObject hintText)
 	{
-		hintText = TextObject.Empty;
 		PersuasionTask currentPersuasionTask = GetCurrentPersuasionTask();
 		if (currentPersuasionTask.Options.Count > 0)
 		{
+			hintText = null;
 			return !currentPersuasionTask.Options.ElementAt(0).IsBlocked;
 		}
 		hintText = new TextObject("{=9ACJsI6S}Blocked");
@@ -944,10 +944,10 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool RomancePersuasionOption2ClickableOnCondition2(out TextObject hintText)
 	{
-		hintText = TextObject.Empty;
 		PersuasionTask currentPersuasionTask = GetCurrentPersuasionTask();
 		if (currentPersuasionTask.Options.Count > 1)
 		{
+			hintText = null;
 			return !currentPersuasionTask.Options.ElementAt(1).IsBlocked;
 		}
 		hintText = new TextObject("{=9ACJsI6S}Blocked");
@@ -956,10 +956,10 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool RomancePersuasionOption3ClickableOnCondition3(out TextObject hintText)
 	{
-		hintText = TextObject.Empty;
 		PersuasionTask currentPersuasionTask = GetCurrentPersuasionTask();
 		if (currentPersuasionTask.Options.Count > 2)
 		{
+			hintText = null;
 			return !currentPersuasionTask.Options.ElementAt(2).IsBlocked;
 		}
 		hintText = new TextObject("{=9ACJsI6S}Blocked");
@@ -968,10 +968,10 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool RomancePersuasionOption4ClickableOnCondition4(out TextObject hintText)
 	{
-		hintText = TextObject.Empty;
 		PersuasionTask currentPersuasionTask = GetCurrentPersuasionTask();
 		if (currentPersuasionTask.Options.Count > 3)
 		{
+			hintText = null;
 			return !currentPersuasionTask.Options.ElementAt(3).IsBlocked;
 		}
 		hintText = new TextObject("{=9ACJsI6S}Blocked");
@@ -1044,7 +1044,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_propose_clan_leader_for_player_nomination_on_condition()
 	{
-		foreach (Hero item in Hero.OneToOneConversationHero.Clan.Lords.OrderByDescending((Hero x) => x.Age))
+		foreach (Hero item in Hero.OneToOneConversationHero.Clan.AliveLords.OrderByDescending((Hero x) => x.Age))
 		{
 			if (MarriageCourtshipPossibility(_playerProposalHero, item) && item.CharacterObject == Hero.OneToOneConversationHero.CharacterObject)
 			{
@@ -1057,7 +1057,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_propose_spouse_for_player_nomination_on_condition()
 	{
-		foreach (Hero item in Hero.OneToOneConversationHero.Clan.Lords.OrderByDescending((Hero x) => x.Age))
+		foreach (Hero item in Hero.OneToOneConversationHero.Clan.AliveLords.OrderByDescending((Hero x) => x.Age))
 		{
 			if (MarriageCourtshipPossibility(_playerProposalHero, item) && item != Hero.OneToOneConversationHero)
 			{
@@ -1122,7 +1122,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 			}
 			else if (MobileParty.MainParty.Army != null)
 			{
-				MBTextManager.SetTextVariable("ROMANCE_BLOCKED_REASON", "{=BQn8yTs5}Ah, yes. I am afraid I can no longer entertain your proposal, at least not for now.");
+				MBTextManager.SetTextVariable("ROMANCE_BLOCKED_REASON", "{=bLjYzudi}Let's discuss this matter at a later date, after your campaign has ended.");
 			}
 			else
 			{
@@ -1191,11 +1191,11 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		foreach (Hero lord in Hero.OneToOneConversationHero.Clan.Lords)
+		foreach (Hero aliveLord in Hero.OneToOneConversationHero.Clan.AliveLords)
 		{
-			if (lord != Hero.OneToOneConversationHero && MarriageCourtshipPossibility(Hero.MainHero, lord) && Romance.GetRomanticLevel(Hero.MainHero, lord) == Romance.RomanceLevelEnum.CoupleAgreedOnMarriage)
+			if (aliveLord != Hero.OneToOneConversationHero && MarriageCourtshipPossibility(Hero.MainHero, aliveLord) && Romance.GetRomanticLevel(Hero.MainHero, aliveLord) == Romance.RomanceLevelEnum.CoupleAgreedOnMarriage)
 			{
-				MBTextManager.SetTextVariable("COURTSHIP_PARTNER", lord.Name);
+				MBTextManager.SetTextVariable("COURTSHIP_PARTNER", aliveLord.Name);
 				return true;
 			}
 		}
@@ -1221,9 +1221,9 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 				{
 					foreach (Hero hero in Hero.MainHero.Clan.Heroes)
 					{
-						foreach (Hero lord in Hero.OneToOneConversationHero.Clan.Lords)
+						foreach (Hero aliveLord in Hero.OneToOneConversationHero.Clan.AliveLords)
 						{
-							if (MarriageCourtshipPossibility(hero, lord))
+							if (MarriageCourtshipPossibility(hero, aliveLord))
 							{
 								result = true;
 							}
@@ -1327,7 +1327,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (PersuasionAttempt previousRomancePersuasionAttempt in _previousRomancePersuasionAttempts)
 		{
-			if (previousRomancePersuasionAttempt.PersuadedHero == Hero.OneToOneConversationHero || Hero.OneToOneConversationHero.Clan.Lords.Contains(previousRomancePersuasionAttempt.PersuadedHero))
+			if (previousRomancePersuasionAttempt.PersuadedHero == Hero.OneToOneConversationHero || Hero.OneToOneConversationHero.Clan.AliveLords.Contains(previousRomancePersuasionAttempt.PersuadedHero))
 			{
 				switch (previousRomancePersuasionAttempt.Result)
 				{
@@ -1412,9 +1412,9 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 	{
 		List<CharacterObject> list = new List<CharacterObject>();
 		MarriageModel marriageModel = Campaign.Current.Models.MarriageModel;
-		foreach (Hero characterRelative in Hero.MainHero.Clan.Lords)
+		foreach (Hero characterRelative in Hero.MainHero.Clan.AliveLords)
 		{
-			IEnumerable<Hero> source = withClan.Lords.Where((Hero x) => marriageModel.IsCoupleSuitableForMarriage(x, characterRelative));
+			IEnumerable<Hero> source = withClan.AliveLords.Where((Hero x) => marriageModel.IsCoupleSuitableForMarriage(x, characterRelative));
 			if (characterRelative != Hero.MainHero && source.Any())
 			{
 				list.Add(characterRelative.CharacterObject);
@@ -1425,7 +1425,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private TextObject ShowSuccess(PersuasionOptionArgs optionArgs)
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	private bool MarriageCourtshipPossibility(Hero person1, Hero person2)

@@ -92,7 +92,7 @@ public class DeploymentPoint : SynchedMissionObject
 
 	private void SetBreachSideDeploymentPoint()
 	{
-		Debug.Print("Deployment point " + ((base.GameEntity != null) ? ("upgrade level mask " + base.GameEntity.GetUpgradeLevelMask()) : "no game entity.") + "\n");
+		Debug.Print("Deployment point " + (base.GameEntity.IsValid ? ("upgrade level mask " + base.GameEntity.GetUpgradeLevelMask()) : "no game entity.") + "\n");
 		_isBreachSideDeploymentPoint = true;
 		_deploymentPointType = DeploymentPointType.Breach;
 		FormationAI.BehaviorSide deploymentPointSide = (_weapons.FirstOrDefault((SynchedMissionObject w) => w is SiegeTower) as IPrimarySiegeWeapon).WeaponSide;
@@ -192,7 +192,7 @@ public class DeploymentPoint : SynchedMissionObject
 		float num = Radius * Radius;
 		foreach (SiegeWeapon item in list)
 		{
-			if (item.GameEntity.HasTag(SiegeWeaponTag) || (item.GameEntity.Parent != null && item.GameEntity.Parent.HasTag(SiegeWeaponTag)) || (item.GameEntity != base.GameEntity && item.GameEntity.GlobalPosition.DistanceSquared(base.GameEntity.GlobalPosition) < num))
+			if (item.GameEntity.HasTag(SiegeWeaponTag) || (item.GameEntity.Parent.IsValid && item.GameEntity.Parent.HasTag(SiegeWeaponTag)) || (item.GameEntity != base.GameEntity && item.GameEntity.GlobalPosition.DistanceSquared(base.GameEntity.GlobalPosition) < num))
 			{
 				mBList.Add(item);
 			}
@@ -244,7 +244,7 @@ public class DeploymentPoint : SynchedMissionObject
 		foreach (SpawnerBase item in GetSpawnersForEditor())
 		{
 			item.GameEntity.SetContourColor(num);
-			_highlightedEntites.Add(item.GameEntity);
+			_highlightedEntites.Add(TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(item.GameEntity));
 		}
 	}
 
@@ -265,22 +265,6 @@ public class DeploymentPoint : SynchedMissionObject
 		{
 			siegeWeapon.OnDeploymentStateChanged(IsDeployed);
 		}
-	}
-
-	public SiegeMachineStonePile GetStonePileOfWeapon(SynchedMissionObject weapon)
-	{
-		if (weapon is SiegeWeapon)
-		{
-			foreach (GameEntity child in weapon.GameEntity.Parent.GetChildren())
-			{
-				SiegeMachineStonePile firstScriptOfType = child.GetFirstScriptOfType<SiegeMachineStonePile>();
-				if (firstScriptOfType != null)
-				{
-					return firstScriptOfType;
-				}
-			}
-		}
-		return null;
 	}
 
 	public void Deploy(Type t)
@@ -345,7 +329,8 @@ public class DeploymentPoint : SynchedMissionObject
 
 	public void ToggleWeaponVisibility(bool visible, SynchedMissionObject weapon)
 	{
-		SynchedMissionObject synchedMissionObject = weapon?.GameEntity.Parent?.GetFirstScriptOfType<SynchedMissionObject>();
+		WeakGameEntity weakGameEntity = weapon?.GameEntity.Parent ?? WeakGameEntity.Invalid;
+		SynchedMissionObject synchedMissionObject = (weakGameEntity.IsValid ? weakGameEntity.GetFirstScriptOfType<SynchedMissionObject>() : null);
 		if (synchedMissionObject != null)
 		{
 			synchedMissionObject.SetVisibleSynched(visible);
@@ -356,11 +341,11 @@ public class DeploymentPoint : SynchedMissionObject
 			weapon?.SetVisibleSynched(visible);
 			weapon?.SetPhysicsStateSynched(visible);
 		}
-		if (!(weapon is SiegeWeapon) || !(weapon.GameEntity.Parent != null))
+		if (!(weapon is SiegeWeapon) || !weapon.GameEntity.Parent.IsValid)
 		{
 			return;
 		}
-		foreach (GameEntity child in weapon.GameEntity.Parent.GetChildren())
+		foreach (WeakGameEntity child in weapon.GameEntity.Parent.GetChildren())
 		{
 			SiegeMachineStonePile firstScriptOfType = child.GetFirstScriptOfType<SiegeMachineStonePile>();
 			if (firstScriptOfType != null)

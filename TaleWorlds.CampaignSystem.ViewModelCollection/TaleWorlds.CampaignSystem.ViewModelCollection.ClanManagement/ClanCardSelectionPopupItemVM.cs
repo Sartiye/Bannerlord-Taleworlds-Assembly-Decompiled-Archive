@@ -1,5 +1,5 @@
 using System;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -292,7 +292,8 @@ public class ClanCardSelectionPopupItemVM : ViewModel
 		SpriteType = info.SpriteType.ToString();
 		SpriteName = info.SpriteName ?? string.Empty;
 		SpriteLabel = info.SpriteLabel ?? string.Empty;
-		Image = (HasImage ? new ImageIdentifierVM(info.Image) : new ImageIdentifierVM());
+		Image = new GenericImageIdentifierVM(info.Image);
+		RefreshValues();
 	}
 
 	public override void RefreshValues()
@@ -300,7 +301,7 @@ public class ClanCardSelectionPopupItemVM : ViewModel
 		base.RefreshValues();
 		Title = _titleText?.ToString() ?? string.Empty;
 		SpecialAction = _specialActionText?.ToString() ?? string.Empty;
-		DisabledHint.HintText = new TextObject("{=!}" + ((!IsDisabled) ? null : _disabledReasonText?.ToString()));
+		DisabledHint.HintText = (IsDisabled ? _disabledReasonText : TextObject.GetEmpty());
 		Properties.ApplyActionOnAllItems(delegate(ClanCardSelectionPopupItemPropertyVM x)
 		{
 			x.RefreshValues();

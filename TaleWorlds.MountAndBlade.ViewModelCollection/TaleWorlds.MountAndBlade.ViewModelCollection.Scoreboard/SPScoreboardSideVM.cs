@@ -1,5 +1,7 @@
 using System.Linq;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -7,24 +9,28 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
 
 public class SPScoreboardSideVM : ViewModel
 {
-	private TextObject _nameTextObject;
-
 	private MBBindingList<SPScoreboardPartyVM> _parties;
+
+	private MBBindingList<SPScoreboardShipVM> _ships;
 
 	private SPScoreboardStatsVM _score;
 
-	private ImageIdentifierVM _bannerVisual;
+	private BannerImageIdentifierVM _bannerVisual;
 
-	private ImageIdentifierVM _bannerVisualSmall;
+	private BannerImageIdentifierVM _bannerVisualSmall;
 
 	private SPScoreboardSortControllerVM _sortController;
+
+	private float _morale;
+
+	private BasicTooltipViewModel _moraleHint;
 
 	public float CurrentPower { get; private set; }
 
 	public float InitialPower { get; private set; }
 
 	[DataSourceProperty]
-	public ImageIdentifierVM BannerVisual
+	public BannerImageIdentifierVM BannerVisual
 	{
 		get
 		{
@@ -41,7 +47,7 @@ public class SPScoreboardSideVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM BannerVisualSmall
+	public BannerImageIdentifierVM BannerVisualSmall
 	{
 		get
 		{
@@ -92,6 +98,23 @@ public class SPScoreboardSideVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public MBBindingList<SPScoreboardShipVM> Ships
+	{
+		get
+		{
+			return _ships;
+		}
+		set
+		{
+			if (value != _ships)
+			{
+				_ships = value;
+				OnPropertyChangedWithValue(value, "Ships");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public SPScoreboardSortControllerVM SortController
 	{
 		get
@@ -108,20 +131,55 @@ public class SPScoreboardSideVM : ViewModel
 		}
 	}
 
-	public SPScoreboardSideVM(TextObject name, Banner sideFlag)
+	[DataSourceProperty]
+	public float Morale
 	{
-		_nameTextObject = name;
+		get
+		{
+			return _morale;
+		}
+		set
+		{
+			if (value != _morale)
+			{
+				_morale = value;
+				OnPropertyChangedWithValue(value, "Morale");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel MoraleHint
+	{
+		get
+		{
+			return _moraleHint;
+		}
+		set
+		{
+			if (value != _moraleHint)
+			{
+				_moraleHint = value;
+				OnPropertyChangedWithValue(value, "MoraleHint");
+			}
+		}
+	}
+
+	public SPScoreboardSideVM(TextObject name, Banner sideFlag, bool isSimulation)
+	{
+		SPScoreboardSideVM sPScoreboardSideVM = this;
 		Parties = new MBBindingList<SPScoreboardPartyVM>();
-		Score = new SPScoreboardStatsVM(_nameTextObject);
+		Ships = new MBBindingList<SPScoreboardShipVM>();
+		Score = new SPScoreboardStatsVM(name);
 		MBBindingList<SPScoreboardPartyVM> listToControl = Parties;
 		SortController = new SPScoreboardSortControllerVM(ref listToControl);
 		Parties = listToControl;
 		if (sideFlag != null)
 		{
-			BannerCode bannerCode = BannerCode.CreateFrom(sideFlag);
-			BannerVisual = new ImageIdentifierVM(bannerCode, nineGrid: true);
-			BannerVisualSmall = new ImageIdentifierVM(bannerCode);
+			BannerVisual = new BannerImageIdentifierVM(sideFlag, nineGrid: true);
+			BannerVisualSmall = new BannerImageIdentifierVM(sideFlag);
 		}
+		MoraleHint = new BasicTooltipViewModel(() => sPScoreboardSideVM.GetMoraleHintStr(isSimulation));
 	}
 
 	public override void RefreshValues()
@@ -132,6 +190,16 @@ public class SPScoreboardSideVM : ViewModel
 		{
 			x.RefreshValues();
 		});
+		Ships.ApplyActionOnAllItems(delegate(SPScoreboardShipVM x)
+		{
+			x.RefreshValues();
+		});
+	}
+
+	private string GetMoraleHintStr(bool isSimulation)
+	{
+		return GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").SetTextVariable("LEFT", isSimulation ? GameTexts.FindText("str_morale").ToString() : new TextObject("{=trPyg7mr}Battle Morale").ToString()).SetTextVariable("RIGHT", MathF.Round(Morale).ToString())
+			.ToString();
 	}
 
 	public void UpdateScores(IBattleCombatant battleCombatant, bool isPlayerParty, BasicCharacterObject character, int numberRemaining, int numberDead, int numberWounded, int numberRouted, int numberKilled, int numberReadyToUpgrade)
@@ -185,6 +253,17 @@ public class SPScoreboardSideVM : ViewModel
 	{
 		Parties.FirstOrDefault((SPScoreboardPartyVM p) => p.BattleCombatant == battleCombatant).AddUnit(currentTroop, scoreToBringOver);
 		Score.UpdateScores(scoreToBringOver.Remaining, scoreToBringOver.Dead, scoreToBringOver.Wounded, scoreToBringOver.Routed, scoreToBringOver.Kill, scoreToBringOver.ReadyToUpgrade);
+	}
+
+	public SPScoreboardShipVM GetShipAddIfNotExists(IShipOrigin ship, string shipType, IBattleCombatant owner, TeamSideEnum teamSideEnum)
+	{
+		SPScoreboardShipVM sPScoreboardShipVM = Ships.FirstOrDefault((SPScoreboardShipVM p) => p.Ship == ship);
+		if (sPScoreboardShipVM == null)
+		{
+			sPScoreboardShipVM = new SPScoreboardShipVM(ship, shipType, owner, teamSideEnum);
+			Ships.Add(sPScoreboardShipVM);
+		}
+		return sPScoreboardShipVM;
 	}
 
 	private void RefreshPower()

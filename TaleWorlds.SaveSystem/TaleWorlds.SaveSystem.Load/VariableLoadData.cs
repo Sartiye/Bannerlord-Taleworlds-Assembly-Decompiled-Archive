@@ -112,8 +112,9 @@ internal abstract class VariableLoadData
 			}
 			else
 			{
+				EnumDefinition enumDefinition = (EnumDefinition)_typeDefinition;
 				Type type = _typeDefinition.Type;
-				if (Enum.IsDefined(type, Data))
+				if (Enum.IsDefined(type, Data) || enumDefinition.HasFlags)
 				{
 					result = Enum.Parse(type, (string)Data);
 				}

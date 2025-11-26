@@ -23,28 +23,11 @@ public static class Managed
 	[MonoNativeFunctionWrapper]
 	public delegate void InitializerDelegate(Delegate argument);
 
-	public enum RglScriptFieldType
-	{
-		RglSftString,
-		RglSftDouble,
-		RglSftFloat,
-		RglSftBool,
-		RglSftInt,
-		RglSftVec3,
-		RglSftEntity,
-		RglSftTexture,
-		RglSftMesh,
-		RglSftEnum,
-		RglSftMaterial,
-		RglSftButton,
-		RglSftColor,
-		RglSftMatrixFrame
-	}
-
 	private static List<IManagedComponent> _components;
 
 	private static ICallbackManager _callbackManager;
 
+	[ThreadStatic]
 	internal static string ReturnValueFromEngine;
 
 	private static ManagedInitializeMethod _initializer;
@@ -53,13 +36,15 @@ public static class Managed
 
 	private static Dictionary<int, IntPtr> _engineApiPointers;
 
-	private static Dictionary<string, Dictionary<string, FieldInfo>> _fieldsOfScriptsCached;
+	private static Dictionary<uint, uint> _scriptTags;
 
-	private static Dictionary<string, Dictionary<string, FieldInfo>> _editableFieldsOfScriptsCached;
+	private static Dictionary<uint, Dictionary<uint, FieldInfo>> _fieldsOfScriptsCached;
 
-	private static Dictionary<string, ConstructorInfo> _constructorsOfScriptsCached;
+	private static Dictionary<uint, Dictionary<uint, FieldInfo>> _editableFieldsOfScriptsCached;
 
-	private static Dictionary<string, Delegate> _constructorDelegatesOfScriptsCached;
+	private static Dictionary<uint, ConstructorInfo> _constructorsOfScriptsCached;
+
+	private static Dictionary<uint, Delegate> _constructorDelegatesOfScriptsCached;
 
 	private static Dictionary<Type, Delegate> _constructorDelegatesOfWeakReferencesCached;
 
@@ -79,10 +64,11 @@ public static class Managed
 	{
 		ReturnValueFromEngine = "";
 		_engineApiPointers = new Dictionary<int, IntPtr>();
-		_fieldsOfScriptsCached = new Dictionary<string, Dictionary<string, FieldInfo>>();
-		_editableFieldsOfScriptsCached = new Dictionary<string, Dictionary<string, FieldInfo>>();
-		_constructorsOfScriptsCached = new Dictionary<string, ConstructorInfo>();
-		_constructorDelegatesOfScriptsCached = new Dictionary<string, Delegate>();
+		_scriptTags = new Dictionary<uint, uint>();
+		_fieldsOfScriptsCached = new Dictionary<uint, Dictionary<uint, FieldInfo>>();
+		_editableFieldsOfScriptsCached = new Dictionary<uint, Dictionary<uint, FieldInfo>>();
+		_constructorsOfScriptsCached = new Dictionary<uint, ConstructorInfo>();
+		_constructorDelegatesOfScriptsCached = new Dictionary<uint, Delegate>();
 		_constructorDelegatesOfWeakReferencesCached = new Dictionary<Type, Delegate>();
 		PassManagedInitializeMethodPointerMono = null;
 		PassManagedEngineCallbackMethodPointersMono = null;
@@ -92,12 +78,12 @@ public static class Managed
 		TaleWorlds.Library.Debug.TelemetryManager = NativeTelemetryManager;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void SetLogsFolder(string logFolder)
 	{
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	public static string GetStackTraceStr(int skipCount = 0)
 	{
 		string text = new StackTrace(skipCount, fNeedFileInfo: true).ToString();
@@ -110,10 +96,22 @@ public static class Managed
 		return "";
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	public static string GetStackTraceRaw(int skipCount = 0)
 	{
 		return GetStackTraceRaw(new StackTrace(0, fNeedFileInfo: false), skipCount);
+	}
+
+	public static uint GetStringHashCode(string text)
+	{
+		byte[] bytes = Encoding.ASCII.GetBytes(text);
+		uint num = 5381u;
+		byte[] array = bytes;
+		foreach (uint num2 in array)
+		{
+			num = (num << 5) + num + num2;
+		}
+		return num;
 	}
 
 	public static string GetStackTraceRaw(StackTrace stack, int skipCount = 0)
@@ -143,7 +141,7 @@ public static class Managed
 		return mBStringBuilder.ToStringAndRelease();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	public static string GetModuleList()
 	{
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -163,7 +161,7 @@ public static class Managed
 		return text;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	public static void GetVersionInts(ref int major, ref int minor, ref int revision)
 	{
 		ApplicationVersion applicationVersion = ApplicationVersion.FromParametersFile();
@@ -172,7 +170,7 @@ public static class Managed
 		revision = applicationVersion.Revision;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static DotNetObject CreateCustomParameterStringArray(int length)
 	{
 		return new CustomParameter<string[]>(new string[length]);
@@ -183,19 +181,19 @@ public static class Managed
 		return new CustomParameter<T>(parameterData);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void GarbageCollect(bool forceTimer)
 	{
 		Common.MemoryCleanupGC(forceTimer);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void SetStringArrayValueAtIndex(string[] array, int index, string value)
 	{
 		array[index] = value;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetStringArrayValueAtIndex(string[] array, int index)
 	{
 		return array[index];
@@ -259,19 +257,19 @@ public static class Managed
 		LibraryApplicationInterface.SetObjects(_callbackManager.GetScriptingInterfaceObjects());
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void CheckSharedStructureSizes()
 	{
 		_callbackManager.CheckSharedStructureSizes();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void SetClosing()
 	{
 		Closing = true;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void PreFinalize()
 	{
 		Closing = true;
@@ -280,7 +278,7 @@ public static class Managed
 		Common.MemoryCleanupGC();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void OnFinalize()
 	{
 		ManagedObject.FinalizeManagedObjects();
@@ -288,7 +286,7 @@ public static class Managed
 		ManagedObjectOwner.LogFinalize();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void ApplicationTick(float dt)
 	{
 		ManagedObject.HandleManagedObjects();
@@ -302,7 +300,7 @@ public static class Managed
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void ApplicationTickLight(float dt)
 	{
 		DotNetObject.HandleDotNetObjects();
@@ -314,19 +312,19 @@ public static class Managed
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static bool CheckClassNameIsValid(string className)
 	{
 		return _moduleTypes.ContainsKey(className);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static int GetStringArrayLength(string[] array)
 	{
 		return array.Length;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string[] GetClassFields(string className, bool recursive, bool includeInternal, bool includeProtected, bool includePrivate)
 	{
 		List<string> list = new List<string>();
@@ -345,7 +343,7 @@ public static class Managed
 		return list.ToArray();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static ManagedObject CreateObjectClassInstanceWithPointer(string className, IntPtr pointer)
 	{
 		ConstructorInfo constructor = _moduleTypes[className].GetConstructor(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[1] { typeof(IntPtr) }, null);
@@ -394,7 +392,7 @@ public static class Managed
 		return text;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static ManagedObject CreateObjectClassInstanceWithInteger(string className, int value)
 	{
 		ConstructorInfo constructor = _moduleTypes[className].GetConstructor(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[1] { typeof(int) }, null);
@@ -409,22 +407,22 @@ public static class Managed
 		return null;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void SetCurrentStringReturnValue(IntPtr pointer)
 	{
 		ReturnValueFromEngine = Marshal.PtrToStringAnsi(pointer);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void SetCurrentStringReturnValueAsUnicode(IntPtr pointer)
 	{
-		ReturnValueFromEngine = Marshal.PtrToStringAnsi(pointer);
-		byte[] bytes = Encoding.Default.GetBytes(ReturnValueFromEngine);
+		string s = Marshal.PtrToStringAnsi(pointer);
+		byte[] bytes = Encoding.Default.GetBytes(s);
 		byte[] bytes2 = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, bytes);
 		ReturnValueFromEngine = Encoding.Unicode.GetString(bytes2);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetObjectClassName(string className)
 	{
 		if (_moduleTypes.TryGetValue(className, out var value))
@@ -434,13 +432,13 @@ public static class Managed
 		return "unknown";
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void EngineApiMethodInterfaceInitializer(int id, IntPtr pointer)
 	{
 		_engineApiPointers.Add(id, pointer);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void FillEngineApiPointers()
 	{
 		foreach (KeyValuePair<int, IntPtr> engineApiPointer in _engineApiPointers)
@@ -456,13 +454,13 @@ public static class Managed
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static long GetMemoryUsage()
 	{
 		return GC.GetTotalMemory(forceFullCollection: false);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void PassCustomCallbackMethodPointers(string name, IntPtr initalizer)
 	{
 		Delegate delegateForFunctionPointer = Marshal.GetDelegateForFunctionPointer(initalizer, typeof(InitializerDelegate));
@@ -472,7 +470,7 @@ public static class Managed
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string CallCommandlineFunction(string functionName, string arguments)
 	{
 		bool found;
@@ -482,82 +480,149 @@ public static class Managed
 	public static void InitializeTypes(Dictionary<string, Type> types)
 	{
 		_moduleTypes = types;
-		foreach (KeyValuePair<string, Type> type in types)
+		foreach (KeyValuePair<string, Type> type2 in types)
 		{
-			Dictionary<string, FieldInfo> dictionary = new Dictionary<string, FieldInfo>();
-			Dictionary<string, FieldInfo> dictionary2 = new Dictionary<string, FieldInfo>();
-			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-			FieldInfo[] fields = type.Value.GetFields(bindingFlags);
-			foreach (FieldInfo fieldInfo in fields)
+			Dictionary<uint, FieldInfo> dictionary = new Dictionary<uint, FieldInfo>();
+			Dictionary<uint, FieldInfo> dictionary2 = new Dictionary<uint, FieldInfo>();
+			uint stringHashCode = GetStringHashCode(type2.Key);
+			object[] customAttributesSafe = type2.Value.GetCustomAttributesSafe(typeof(ScriptComponentParams), inherit: true);
+			if (customAttributesSafe.Length != 0)
 			{
-				string name = fieldInfo.Name;
-				object[] customAttributesSafe = fieldInfo.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
-				bool flag = false;
-				if (customAttributesSafe.Length != 0)
+				ScriptComponentParams scriptComponentParams = (ScriptComponentParams)customAttributesSafe[0];
+				if (scriptComponentParams.NameOverride.Length > 0)
 				{
-					flag = ((EditableScriptComponentVariable)customAttributesSafe[0]).Visible;
+					stringHashCode = GetStringHashCode(scriptComponentParams.NameOverride);
 				}
-				else if (!fieldInfo.IsPrivate && !fieldInfo.IsFamily)
+				if (scriptComponentParams.Tag.Length > 0)
+				{
+					uint stringHashCode2 = GetStringHashCode(scriptComponentParams.Tag);
+					_scriptTags.Add(stringHashCode, stringHashCode2);
+				}
+			}
+			Type type = type2.Value;
+			List<FieldInfo> list = new List<FieldInfo>();
+			while (type != null)
+			{
+				list.AddRange(type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+				type = type.BaseType;
+			}
+			foreach (FieldInfo item in list)
+			{
+				string text = item.Name;
+				object[] customAttributesSafe2 = item.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
+				bool flag = false;
+				if (customAttributesSafe2.Length != 0)
+				{
+					EditableScriptComponentVariable editableScriptComponentVariable = (EditableScriptComponentVariable)customAttributesSafe2[0];
+					flag = editableScriptComponentVariable.Visible;
+					if (editableScriptComponentVariable.OverrideFieldName.Length > 0)
+					{
+						text = editableScriptComponentVariable.OverrideFieldName;
+					}
+				}
+				else if (!item.IsPrivate && !item.IsFamily)
 				{
 					flag = true;
 				}
 				if (flag)
 				{
-					dictionary2.Add(name, fieldInfo);
+					dictionary2.Add(GetStringHashCode(text), item);
 				}
-				dictionary.Add(name, fieldInfo);
+				uint stringHashCode3 = GetStringHashCode(text);
+				if (!dictionary.ContainsKey(stringHashCode3))
+				{
+					dictionary.Add(stringHashCode3, item);
+				}
 			}
-			_fieldsOfScriptsCached.Add(type.Key, dictionary);
-			_editableFieldsOfScriptsCached.Add(type.Key, dictionary2);
-			bindingFlags |= BindingFlags.CreateInstance;
-			ConstructorInfo constructor = type.Value.GetConstructor(bindingFlags, null, new Type[0], null);
-			_constructorsOfScriptsCached.Add(type.Key, constructor);
+			_fieldsOfScriptsCached.Add(stringHashCode, dictionary);
+			_editableFieldsOfScriptsCached.Add(stringHashCode, dictionary2);
+			ConstructorInfo constructor = type2.Value.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null);
+			_constructorsOfScriptsCached.Add(stringHashCode, constructor);
 		}
 	}
 
 	public static void AddTypes(Dictionary<string, Type> types)
 	{
 		_moduleTypes = _moduleTypes.Union(types).ToDictionary((KeyValuePair<string, Type> k) => k.Key, (KeyValuePair<string, Type> v) => v.Value);
-		foreach (KeyValuePair<string, Type> type in types)
+		foreach (KeyValuePair<string, Type> type2 in types)
 		{
-			Dictionary<string, FieldInfo> dictionary = new Dictionary<string, FieldInfo>();
-			Dictionary<string, FieldInfo> dictionary2 = new Dictionary<string, FieldInfo>();
-			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-			FieldInfo[] fields = type.Value.GetFields(bindingFlags);
-			foreach (FieldInfo fieldInfo in fields)
+			Dictionary<uint, FieldInfo> dictionary = new Dictionary<uint, FieldInfo>();
+			Dictionary<uint, FieldInfo> dictionary2 = new Dictionary<uint, FieldInfo>();
+			_ = type2.Key;
+			uint stringHashCode = GetStringHashCode(type2.Key);
+			object[] customAttributesSafe = type2.Value.GetCustomAttributesSafe(typeof(ScriptComponentParams), inherit: true);
+			if (customAttributesSafe.Length != 0)
 			{
-				string name = fieldInfo.Name;
-				object[] customAttributesSafe = fieldInfo.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
-				bool flag = false;
-				if (customAttributesSafe.Length != 0)
+				ScriptComponentParams scriptComponentParams = (ScriptComponentParams)customAttributesSafe[0];
+				if (scriptComponentParams.NameOverride.Length > 0)
 				{
-					flag = ((EditableScriptComponentVariable)customAttributesSafe[0]).Visible;
+					stringHashCode = GetStringHashCode(scriptComponentParams.NameOverride);
 				}
-				else if (!fieldInfo.IsPrivate && !fieldInfo.IsFamily)
+				if (scriptComponentParams.Tag.Length > 0)
+				{
+					uint stringHashCode2 = GetStringHashCode(scriptComponentParams.Tag);
+					_scriptTags.Add(stringHashCode, stringHashCode2);
+				}
+			}
+			Type type = type2.Value;
+			List<FieldInfo> list = new List<FieldInfo>();
+			while (type != null)
+			{
+				list.AddRange(type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+				type = type.BaseType;
+			}
+			foreach (FieldInfo item in list)
+			{
+				string text = item.Name;
+				object[] customAttributesSafe2 = item.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
+				bool flag = false;
+				if (customAttributesSafe2.Length != 0)
+				{
+					EditableScriptComponentVariable editableScriptComponentVariable = (EditableScriptComponentVariable)customAttributesSafe2[0];
+					flag = editableScriptComponentVariable.Visible;
+					if (editableScriptComponentVariable.OverrideFieldName.Length > 0)
+					{
+						text = editableScriptComponentVariable.OverrideFieldName;
+					}
+				}
+				else if (!item.IsPrivate && !item.IsFamily)
 				{
 					flag = true;
 				}
 				if (flag)
 				{
-					dictionary2.Add(name, fieldInfo);
+					dictionary2.Add(GetStringHashCode(text), item);
 				}
-				dictionary.Add(name, fieldInfo);
+				uint stringHashCode3 = GetStringHashCode(text);
+				if (!dictionary.ContainsKey(stringHashCode3))
+				{
+					dictionary.Add(stringHashCode3, item);
+				}
 			}
-			_fieldsOfScriptsCached.Add(type.Key, dictionary);
-			_editableFieldsOfScriptsCached.Add(type.Key, dictionary2);
-			bindingFlags |= BindingFlags.CreateInstance;
-			ConstructorInfo constructor = type.Value.GetConstructor(bindingFlags, null, new Type[0], null);
-			_constructorsOfScriptsCached.Add(type.Key, constructor);
+			_fieldsOfScriptsCached.Add(stringHashCode, dictionary);
+			_editableFieldsOfScriptsCached.Add(stringHashCode, dictionary2);
+			ConstructorInfo constructor = type2.Value.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null);
+			_constructorsOfScriptsCached.Add(stringHashCode, constructor);
 		}
 	}
 
 	public static void AddConstructorDelegateOfClass<T>()
 	{
 		Type typeFromHandle = typeof(T);
-		string name = typeFromHandle.Name;
-		if (!_constructorDelegatesOfScriptsCached.ContainsKey(name))
+		string text = typeFromHandle.Name;
+		object[] customAttributesSafe = typeFromHandle.GetCustomAttributesSafe(typeof(ScriptComponentParams), inherit: true);
+		if (customAttributesSafe.Length != 0)
 		{
-			_constructorDelegatesOfScriptsCached[name] = Expression.Lambda<Func<T>>(Expression.New(typeFromHandle), Array.Empty<ParameterExpression>()).Compile();
+			ScriptComponentParams scriptComponentParams = (ScriptComponentParams)customAttributesSafe[0];
+			if (scriptComponentParams.NameOverride.Length > 0)
+			{
+				text = scriptComponentParams.NameOverride;
+			}
+		}
+		uint stringHashCode = GetStringHashCode(text);
+		if (!_constructorDelegatesOfScriptsCached.ContainsKey(stringHashCode))
+		{
+			_constructorDelegatesOfScriptsCached[stringHashCode] = Expression.Lambda<Func<T>>(Expression.New(typeFromHandle), Array.Empty<ParameterExpression>()).Compile();
 		}
 	}
 
@@ -580,7 +645,7 @@ public static class Managed
 		PassManagedEngineCallbackMethodPointersMono?.DynamicInvoke(methodDelegate);
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void LoadManagedComponent(string assemblyName, string managedInterface)
 	{
 		IManagedComponent managedComponent = (IManagedComponent)Activator.CreateInstance(AssemblyLoader.LoadFrom(ManagedDllFolder.Name + assemblyName + ".dll").GetType(managedInterface));
@@ -588,17 +653,17 @@ public static class Managed
 		managedComponent.OnStart();
 	}
 
-	internal static Dictionary<string, FieldInfo> GetEditableFieldsOfClass(string className)
+	internal static Dictionary<uint, FieldInfo> GetEditableFieldsOfClass(uint classNameHash)
 	{
-		_editableFieldsOfScriptsCached.TryGetValue(className, out var value);
+		_editableFieldsOfScriptsCached.TryGetValue(classNameHash, out var value);
 		return value;
 	}
 
-	internal static FieldInfo GetFieldOfClass(string className, string fieldName)
+	internal static FieldInfo GetFieldOfClass(uint classNameHash, uint fieldNameHash)
 	{
-		if (_fieldsOfScriptsCached.TryGetValue(className, out var value))
+		if (_fieldsOfScriptsCached.TryGetValue(classNameHash, out var value))
 		{
-			value.TryGetValue(fieldName, out var value2);
+			value.TryGetValue(fieldNameHash, out var value2);
 			return value2;
 		}
 		return null;
@@ -606,13 +671,13 @@ public static class Managed
 
 	internal static ConstructorInfo GetConstructorOfClass(string className)
 	{
-		_constructorsOfScriptsCached.TryGetValue(className, out var value);
+		_constructorsOfScriptsCached.TryGetValue(GetStringHashCode(className), out var value);
 		return value;
 	}
 
 	internal static Delegate GetConstructorDelegateOfClass(string className)
 	{
-		_constructorDelegatesOfScriptsCached.TryGetValue(className, out var value);
+		_constructorDelegatesOfScriptsCached.TryGetValue(GetStringHashCode(className), out var value);
 		return value;
 	}
 
@@ -621,16 +686,16 @@ public static class Managed
 		return _constructorDelegatesOfWeakReferencesCached[classType];
 	}
 
-	[LibraryCallback]
-	internal static bool IsClassFieldExists(string className, string fieldName)
+	[LibraryCallback(null, false)]
+	internal static bool IsClassFieldExists(uint classNameHash, uint fieldNameHash)
 	{
-		return GetFieldOfClass(className, fieldName) != null;
+		return GetFieldOfClass(classNameHash, fieldNameHash) != null;
 	}
 
-	[LibraryCallback]
-	internal static string GetEnumNamesOfField(string className, string fieldName)
+	[LibraryCallback(null, false)]
+	internal static string GetEnumNamesOfField(uint classNameHash, uint fieldNameHash)
 	{
-		string text = GetFieldOfClass(className, fieldName).FieldType.FullName;
+		string text = GetFieldOfClass(classNameHash, fieldNameHash).FieldType.FullName;
 		string text2 = text.Substring(0, text.IndexOf('.'));
 		if (text2 != null && text2 != "" && text2 != Assembly.GetExecutingAssembly().GetName().Name)
 		{

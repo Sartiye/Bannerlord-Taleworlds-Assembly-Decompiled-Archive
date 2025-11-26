@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -17,7 +17,7 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 
 	private MPPlayerVM _datasource_Root;
 
-	private ImageIdentifierVM _datasource_Root_Avatar;
+	private PlayerAvatarImageIdentifierVM _datasource_Root_Avatar;
 
 	public MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_TeamSelection_MultiplayerTeamSelectVM_Dependency_4_ItemTemplate(UIContext context)
 		: base(context)
@@ -142,9 +142,17 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 
 	private void HandleWidgetPropertyChangeOf_widget_0(string propertyName)
 	{
-		if (!(propertyName == "ImageId") && !(propertyName == "AdditionalArgs"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "ImageId":
+			_datasource_Root_Avatar.Id = _widget_0.ImageId;
+			break;
+		case "AdditionalArgs":
+			_datasource_Root_Avatar.AdditionalArgs = _widget_0.AdditionalArgs;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_Avatar.TextureProviderName = _widget_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -256,8 +264,8 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 		case "AdditionalArgs":
 			_widget_0.AdditionalArgs = _datasource_Root_Avatar.AdditionalArgs;
 			break;
-		case "ImageTypeCode":
-			_widget_0.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 			break;
 		}
 	}
@@ -325,7 +333,7 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 				_datasource_Root_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Avatar;
 				_widget_0.ImageId = _datasource_Root_Avatar.Id;
 				_widget_0.AdditionalArgs = _datasource_Root_Avatar.AdditionalArgs;
-				_widget_0.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+				_widget_0.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 				_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 				_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
 				_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;
@@ -339,7 +347,7 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Avatar(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_Avatar(PlayerAvatarImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_Avatar != null)
 		{
@@ -378,7 +386,7 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 			_datasource_Root_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Avatar;
 			_widget_0.ImageId = _datasource_Root_Avatar.Id;
 			_widget_0.AdditionalArgs = _datasource_Root_Avatar.AdditionalArgs;
-			_widget_0.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+			_widget_0.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
 			_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;

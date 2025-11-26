@@ -4,9 +4,10 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.SceneInformationPopupTypes;
-using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Events;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -27,10 +28,6 @@ public class PartyCharacterVM : ViewModel
 
 	public static Action<PartyCharacterVM> OnFocus;
 
-	public static string FiveStackShortcutKeyText;
-
-	public static string EntireStackShortcutKeyText;
-
 	public readonly PartyScreenLogic.PartyRosterSide Side;
 
 	public readonly PartyScreenLogic.TroopType Type;
@@ -40,6 +37,8 @@ public class PartyCharacterVM : ViewModel
 	protected readonly PartyScreenLogic _partyScreenLogic;
 
 	protected readonly bool _initIsTroopTransferable;
+
+	private Tuple<bool, TextObject> _partyCharacterTalkPermission;
 
 	private TroopRosterElement _troop;
 
@@ -59,15 +58,17 @@ public class PartyCharacterVM : ViewModel
 
 	private MBBindingList<UpgradeTargetVM> _upgrades;
 
-	private ImageIdentifierVM _code = new ImageIdentifierVM();
+	private CharacterImageIdentifierVM _code;
 
-	public HintViewModel _transferHint;
+	private BasicTooltipViewModel _transferHint;
 
 	private BasicTooltipViewModel _recruitPrisonerHint;
 
 	private BasicTooltipViewModel _executePrisonerHint;
 
 	private BasicTooltipViewModel _heroHealthHint;
+
+	private HintViewModel _talkHint;
 
 	private int _transferAmount = 1;
 
@@ -87,9 +88,9 @@ public class PartyCharacterVM : ViewModel
 
 	private int _currentConformity;
 
-	public BasicTooltipViewModel _troopXPTooltip;
+	private BasicTooltipViewModel _troopXPTooltip;
 
-	public BasicTooltipViewModel _troopConformityTooltip;
+	private BasicTooltipViewModel _troopConformityTooltip;
 
 	private bool _isHero;
 
@@ -117,8 +118,6 @@ public class PartyCharacterVM : ViewModel
 
 	private StringItemWithHintVM _typeIconData;
 
-	private bool _hasMoreThanTwoUpgrades;
-
 	private bool _isRecruitButtonsHiglighted;
 
 	private bool _isTransferButtonHiglighted;
@@ -134,6 +133,12 @@ public class PartyCharacterVM : ViewModel
 	private bool _isLocked;
 
 	private HintViewModel _lockHint;
+
+	private bool _isTalkableCharacter;
+
+	private bool _canTalk;
+
+	private bool _isSelected;
 
 	public TroopRoster Troops { get; private set; }
 
@@ -168,7 +173,7 @@ public class PartyCharacterVM : ViewModel
 			{
 				_character = value;
 				CharacterCode characterCode = GetCharacterCode(value, Type, Side);
-				Code = new ImageIdentifierVM(characterCode);
+				Code = new CharacterImageIdentifierVM(characterCode);
 				CharacterObject[] upgradeTargets = _character.UpgradeTargets;
 				if (upgradeTargets != null && upgradeTargets.Length != 0)
 				{
@@ -178,7 +183,6 @@ public class PartyCharacterVM : ViewModel
 						CharacterCode characterCode2 = GetCharacterCode(_character.UpgradeTargets[i], Type, Side);
 						Upgrades.Add(new UpgradeTargetVM(i, value, characterCode2, Upgrade, FocusUpgrade));
 					}
-					HasMoreThanTwoUpgrades = Upgrades.Count > 2;
 				}
 			}
 			CheckTransferAmountDefaultValue();
@@ -444,7 +448,7 @@ public class PartyCharacterVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel TransferHint
+	public BasicTooltipViewModel TransferHint
 	{
 		get
 		{
@@ -744,7 +748,7 @@ public class PartyCharacterVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Code
+	public CharacterImageIdentifierVM Code
 	{
 		get
 		{
@@ -841,23 +845,6 @@ public class PartyCharacterVM : ViewModel
 			{
 				_isMainHero = value;
 				OnPropertyChangedWithValue(value, "IsMainHero");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool HasMoreThanTwoUpgrades
-	{
-		get
-		{
-			return _hasMoreThanTwoUpgrades;
-		}
-		set
-		{
-			if (value != _hasMoreThanTwoUpgrades)
-			{
-				_hasMoreThanTwoUpgrades = value;
-				OnPropertyChangedWithValue(value, "HasMoreThanTwoUpgrades");
 			}
 		}
 	}
@@ -982,17 +969,53 @@ public class PartyCharacterVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsTalkableCharacter
+	{
+		get
+		{
+			return _isTalkableCharacter;
+		}
+		set
+		{
+			if (value != _isTalkableCharacter)
+			{
+				_isTalkableCharacter = value;
+				OnPropertyChangedWithValue(value, "IsTalkableCharacter");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool CanTalk
 	{
 		get
 		{
-			bool flag = Side == PartyScreenLogic.PartyRosterSide.Right;
-			bool num = Troop.Character != CharacterObject.PlayerCharacter;
-			bool isHero = Troop.Character.IsHero;
-			bool flag2 = CampaignMission.Current == null;
-			bool flag3 = Settlement.CurrentSettlement == null;
-			bool flag4 = MobileParty.MainParty.MapEvent == null;
-			return num && flag && isHero && flag2 && flag3 && flag4;
+			return _canTalk;
+		}
+		set
+		{
+			if (value != _canTalk)
+			{
+				_canTalk = value;
+				OnPropertyChangedWithValue(value, "CanTalk");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel TalkHint
+	{
+		get
+		{
+			return _talkHint;
+		}
+		set
+		{
+			if (value != _talkHint)
+			{
+				_talkHint = value;
+				OnPropertyChangedWithValue(value, "TalkHint");
+			}
 		}
 	}
 
@@ -1048,6 +1071,23 @@ public class PartyCharacterVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsSelected
+	{
+		get
+		{
+			return _isSelected;
+		}
+		set
+		{
+			if (value != _isSelected)
+			{
+				_isSelected = value;
+				OnPropertyChangedWithValue(value, "IsSelected");
+			}
+		}
+	}
+
 	public PartyCharacterVM(PartyScreenLogic partyScreenLogic, PartyVM partyVm, TroopRoster troops, int index, PartyScreenLogic.TroopType type, PartyScreenLogic.PartyRosterSide side, bool isTroopTransferrable)
 	{
 		Upgrades = new MBBindingList<UpgradeTargetVM>();
@@ -1070,17 +1110,60 @@ public class PartyCharacterVM : ViewModel
 		IsPrisonerOfPlayer = IsPrisoner && Side == PartyScreenLogic.PartyRosterSide.Right;
 		IsHeroPrisonerOfPlayer = IsPrisonerOfPlayer && Character.IsHero;
 		IsExecutable = _partyScreenLogic.IsExecutable(Type, Character, Side);
-		IsUpgradableTroop = Side == PartyScreenLogic.PartyRosterSide.Right && !IsHero && !IsPrisoner && Character.UpgradeTargets.Length != 0 && !_partyScreenLogic.IsTroopUpgradesDisabled;
+		IsUpgradableTroop = Side == PartyScreenLogic.PartyRosterSide.Right && !IsHero && !IsPrisoner && Character.UpgradeTargets.Length != 0;
 		InitializeUpgrades();
 		ThrowOnPropertyChanged();
 		CheckTransferAmountDefaultValue();
 		UpdateRecruitable();
 		RefreshValues();
-		UpdateTransferHint();
 		SetMoraleCost();
-		RecruitPrisonerHint = new BasicTooltipViewModel(() => _partyScreenLogic.GetRecruitableReasonText(Troop.Character, IsTroopRecruitable, Troop.Number, FiveStackShortcutKeyText, EntireStackShortcutKeyText));
-		ExecutePrisonerHint = new BasicTooltipViewModel(() => _partyScreenLogic.GetExecutableReasonText(Troop.Character, IsExecutable));
+		UpdateTalkable();
+		TransferHint = new BasicTooltipViewModel(() => GetTransferHint());
+		RecruitPrisonerHint = new BasicTooltipViewModel(() => GetRecruitHint());
+		ExecutePrisonerHint = new BasicTooltipViewModel(() => _partyScreenLogic.GetExecutableReasonString(Troop.Character, IsExecutable));
 		HeroHealthHint = (Troop.Character.IsHero ? new BasicTooltipViewModel(() => CampaignUIHelper.GetHeroHealthTooltip(Troop.Character.HeroObject)) : null);
+	}
+
+	public void UpdateTalkable()
+	{
+		bool flag = Side == PartyScreenLogic.PartyRosterSide.Right;
+		bool flag2 = Troop.Character != CharacterObject.PlayerCharacter;
+		bool isHero = Troop.Character.IsHero;
+		IsTalkableCharacter = flag2 && flag && isHero;
+		if (TalkHint == null)
+		{
+			TalkHint = new HintViewModel();
+		}
+		if (IsTalkableCharacter)
+		{
+			_partyCharacterTalkPermission = null;
+			Game.Current.EventManager.TriggerEvent(new PartyScreenCharacterTalkPermissionEvent(Character.HeroObject, OnPartyCharacterTalkPermissionResult));
+			if (_partyCharacterTalkPermission != null && !_partyCharacterTalkPermission.Item1)
+			{
+				CanTalk = false;
+				TalkHint.HintText = _partyCharacterTalkPermission.Item2;
+				if (TalkHint.HintText.IsEmpty())
+				{
+					TalkHint.HintText = new TextObject("{=epQYhd1A}Cannot talk to hero right now");
+				}
+				return;
+			}
+			CanTalkToHeroDelegate canTalkToHeroDelegate = _partyVm.PartyScreenLogic.CanTalkToHeroDelegate;
+			CanTalk = (canTalkToHeroDelegate == null || canTalkToHeroDelegate(Character.HeroObject, Type, Side, _partyScreenLogic.LeftOwnerParty, out TalkHint.HintText)) && CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out TalkHint.HintText);
+			if (CanTalk)
+			{
+				TalkHint.HintText = GameTexts.FindText("str_talk_button");
+			}
+			else if (TalkHint.HintText.IsEmpty())
+			{
+				TalkHint.HintText = new TextObject("{=epQYhd1A}Cannot talk to hero right now");
+			}
+		}
+		else
+		{
+			TalkHint.HintText = TextObject.GetEmpty();
+			CanTalk = false;
+		}
 	}
 
 	public override void RefreshValues()
@@ -1095,29 +1178,34 @@ public class PartyCharacterVM : ViewModel
 		TradeData?.RefreshValues();
 	}
 
-	private void UpdateTransferHint()
+	private void OnPartyCharacterTalkPermissionResult(bool isAvailable, TextObject reasonStr)
 	{
-		GameTexts.SetVariable("newline", "\n");
-		GameTexts.SetVariable("STR1", "");
-		GameTexts.SetVariable("STR2", "");
-		if (!string.IsNullOrEmpty(EntireStackShortcutKeyText))
+		_partyCharacterTalkPermission = new Tuple<bool, TextObject>(isAvailable, reasonStr);
+	}
+
+	private string GetTransferHint()
+	{
+		string text = GameTexts.FindText("str_transfer").ToString();
+		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_transfer_troops"), GameTexts.FindText("str_five_stack_shortcut_transfer_troops"), Troop.Number >= 5);
+		if (string.IsNullOrEmpty(stackModifierString))
 		{
-			GameTexts.SetVariable("KEY_NAME", EntireStackShortcutKeyText);
-			string content = GameTexts.FindText("str_entire_stack_shortcut_transfer_troops").ToString();
-			GameTexts.SetVariable("STR1", content);
-			GameTexts.SetVariable("STR2", "");
-			if (Number >= 5 && !string.IsNullOrEmpty(FiveStackShortcutKeyText))
-			{
-				GameTexts.SetVariable("KEY_NAME", FiveStackShortcutKeyText);
-				string content2 = GameTexts.FindText("str_five_stack_shortcut_transfer_troops").ToString();
-				GameTexts.SetVariable("STR2", content2);
-			}
+			return text;
 		}
-		string variable = GameTexts.FindText("str_string_newline_string").ToString();
-		TextObject textObject = GameTexts.FindText("str_string_newline_string").CopyTextObject();
-		textObject.SetTextVariable("STR2", variable);
-		textObject.SetTextVariable("STR1", GameTexts.FindText("str_transfer").ToString());
-		TransferHint = new HintViewModel(textObject);
+		return GameTexts.FindText("str_string_newline_string").SetTextVariable("STR1", text).SetTextVariable("STR2", stackModifierString)
+			.ToString();
+	}
+
+	private string GetRecruitHint()
+	{
+		bool showStackModifierText;
+		string recruitableReasonString = _partyScreenLogic.GetRecruitableReasonString(Troop.Character, IsTroopRecruitable, Troop.Number, out showStackModifierText);
+		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_recruit_units"), GameTexts.FindText("str_five_stack_shortcut_recruit_units"), Troop.Number >= 5);
+		if (string.IsNullOrEmpty(stackModifierString) || !showStackModifierText)
+		{
+			return recruitableReasonString;
+		}
+		return GameTexts.FindText("str_string_newline_string").SetTextVariable("STR1", recruitableReasonString).SetTextVariable("STR2", stackModifierString)
+			.ToString();
 	}
 
 	private void CheckTransferAmountDefaultValue()
@@ -1144,7 +1232,6 @@ public class PartyCharacterVM : ViewModel
 	public void UpdateTradeData()
 	{
 		TradeData?.UpdateTroopData(Troop, Side);
-		UpdateTransferHint();
 	}
 
 	public void UpdateRecruitable()
@@ -1153,7 +1240,7 @@ public class PartyCharacterVM : ViewModel
 		int elementXp = PartyBase.MainParty.PrisonRoster.GetElementXp(Troop.Character);
 		CurrentConformity = ((elementXp >= Troop.Number * MaxConformity) ? MaxConformity : (elementXp % MaxConformity));
 		IsRecruitablePrisoner = !_character.IsHero && Type == PartyScreenLogic.TroopType.Prisoner;
-		IsTroopRecruitable = _partyScreenLogic.IsPrisonerRecruitable(Type, Character, Side);
+		IsTroopRecruitable = _partyScreenLogic.IsPrisonerRecruitable(Type, Character, Side) && !_partyScreenLogic.IsTroopUpgradesDisabled;
 		NumOfRecruitablePrisoners = _partyScreenLogic.GetTroopRecruitableAmount(Character);
 		GameTexts.SetVariable("LEFT", NumOfRecruitablePrisoners);
 		GameTexts.SetVariable("RIGHT", Troop.Number);
@@ -1198,7 +1285,7 @@ public class PartyCharacterVM : ViewModel
 					flag4 = numOfCategoryItemPartyHas > 0;
 				}
 				bool flag5 = Hero.MainHero.Gold + _partyScreenLogic.CurrentData.PartyGoldChangeAmount >= upgradeGoldCost;
-				flag = level >= Character.Level && Troop.Xp >= Character.GetUpgradeXpCost(PartyBase.MainParty, i) && !_partyVm.PartyScreenLogic.IsTroopUpgradesDisabled;
+				flag = level >= Character.Level && Troop.Xp >= Character.GetUpgradeXpCost(PartyBase.MainParty, i);
 				flag2 = !(flag4 && flag5);
 				int a = Troop.Number;
 				if (upgradeGoldCost > 0)
@@ -1213,8 +1300,9 @@ public class PartyCharacterVM : ViewModel
 					flag2 = flag2 || !Campaign.Current.Models.PartyTroopUpgradeModel.CanPartyUpgradeTroopToTarget(PartyBase.MainParty, Character, characterObject);
 					num = (flag ? num : 0);
 				}
-				string upgradeHint = CampaignUIHelper.GetUpgradeHint(i, numOfCategoryItemPartyHas, num, upgradeGoldCost, flag3, requiredPerk, Character, Troop, _partyScreenLogic.CurrentData.PartyGoldChangeAmount, EntireStackShortcutKeyText, FiveStackShortcutKeyText);
-				Upgrades[i].Refresh(num, upgradeHint, flag, flag2, flag4, flag3);
+				flag = flag && !_partyVm.PartyScreenLogic.IsTroopUpgradesDisabled;
+				string upgradeHint = CampaignUIHelper.GetUpgradeHint(i, numOfCategoryItemPartyHas, num, upgradeGoldCost, flag3, requiredPerk, Character, Troop, _partyScreenLogic.CurrentData.PartyGoldChangeAmount, _partyVm.PartyScreenLogic.IsTroopUpgradesDisabled);
+				Upgrades[i].Refresh(num, flag, flag2, flag4, flag3, upgradeHint, Character.GetTraitLevel(DefaultTraits.NavalSoldier) != 0);
 				if (i == 0)
 				{
 					UpgradeCostText = upgradeGoldCost.ToString();
@@ -1267,7 +1355,6 @@ public class PartyCharacterVM : ViewModel
 		OnPropertyChanged("Index");
 		OnPropertyChanged("TroopNum");
 		OnPropertyChanged("TransferString");
-		OnPropertyChanged("CanTalk");
 	}
 
 	public override bool Equals(object obj)
@@ -1291,6 +1378,7 @@ public class PartyCharacterVM : ViewModel
 	{
 		OnTransfer(this, -1, transferAmount, side);
 		ThrowOnPropertyChanged();
+		UpdateTalkable();
 	}
 
 	private void ExecuteTransfer()

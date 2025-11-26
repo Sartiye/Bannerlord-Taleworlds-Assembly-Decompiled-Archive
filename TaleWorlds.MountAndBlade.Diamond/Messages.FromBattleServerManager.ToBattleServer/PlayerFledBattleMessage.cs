@@ -6,7 +6,7 @@ using TaleWorlds.PlayerServices;
 namespace Messages.FromBattleServerManager.ToBattleServer;
 
 [Serializable]
-[MessageDescription("BattleServerManager", "BattleServer")]
+[MessageDescription("BattleServerManager", "BattleServer", true)]
 public class PlayerFledBattleMessage : Message
 {
 	[JsonProperty]

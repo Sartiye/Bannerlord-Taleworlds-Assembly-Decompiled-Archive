@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class InformationRestrictionModel : GameModel
+public abstract class InformationRestrictionModel : MBGameModel<InformationRestrictionModel>
 {
 	public abstract bool DoesPlayerKnowDetailsOf(Settlement settlement);
 

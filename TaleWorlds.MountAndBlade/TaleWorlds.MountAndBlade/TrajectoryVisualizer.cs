@@ -52,7 +52,7 @@ public class TrajectoryVisualizer : ScriptComponentBehavior
 		}
 		if (ShowTrajectory && _trajectoryMeshHolder == null && !base.GameEntity.IsGhostObject() && _trajectoryParams.IsValid)
 		{
-			_trajectoryMeshHolder = GameEntity.CreateEmpty(base.Scene, isModifiableFromEditor: false);
+			_trajectoryMeshHolder = TaleWorlds.Engine.GameEntity.CreateEmpty(base.Scene, isModifiableFromEditor: false);
 			if (_trajectoryMeshHolder != null)
 			{
 				_trajectoryMeshHolder.EntityFlags |= EntityFlags.DontSaveToScene;
@@ -61,7 +61,7 @@ public class TrajectoryVisualizer : ScriptComponentBehavior
 				frame.origin = origin;
 				_trajectoryMeshHolder.SetGlobalFrame(in frame);
 				_trajectoryMeshHolder.ComputeTrajectoryVolume(_trajectoryParams.MissileSpeed, _trajectoryParams.VerticalAngleMaxInDegrees, _trajectoryParams.VerticalAngleMinInDegrees, _trajectoryParams.HorizontalAngleRangeInDegrees, _trajectoryParams.AirFrictionConstant);
-				base.GameEntity.AddChild(_trajectoryMeshHolder, autoLocalizeFrame: true);
+				base.GameEntity.AddChild(_trajectoryMeshHolder.WeakEntity, autoLocalizeFrame: true);
 				_trajectoryMeshHolder.SetVisibilityExcludeParents(visible: false);
 			}
 		}

@@ -2,6 +2,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -13,9 +14,9 @@ public static class SkillLevelingManager
 {
 	private static ISkillLevelingManager Instance => Campaign.Current.SkillLevelingManager;
 
-	public static void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge)
+	public static void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge, bool isSneakAttack)
 	{
-		Instance.OnCombatHit(affectorCharacter, affectedCharacter, captain, commander, speedBonusFromMovement, shotDifficulty, affectorWeapon, hitPointRatio, missionType, isAffectorMounted, isTeamKill, isAffectorUnderCommand, damageAmount, isFatal, isSiegeEngineHit, isHorseCharge);
+		Instance.OnCombatHit(affectorCharacter, affectedCharacter, captain, commander, speedBonusFromMovement, shotDifficulty, affectorWeapon, hitPointRatio, missionType, isAffectorMounted, isTeamKill, isAffectorUnderCommand, damageAmount, isFatal, isSiegeEngineHit, isHorseCharge, isSneakAttack);
 	}
 
 	public static void OnSiegeEngineDestroyed(MobileParty party, SiegeEngineType destroyedSiegeEngine)
@@ -148,6 +149,11 @@ public static class SkillLevelingManager
 		Instance.OnTravelOnHorse(hero, speed);
 	}
 
+	public static void OnTravelOnWater(Hero hero, float speed)
+	{
+		Instance.OnTravelOnWater(hero, speed);
+	}
+
 	public static void OnAIPartiesTravel(Hero hero, bool isCaravanParty, TerrainType currentTerrainType)
 	{
 		Instance.OnAIPartiesTravel(hero, isCaravanParty, currentTerrainType);
@@ -156,6 +162,11 @@ public static class SkillLevelingManager
 	public static void OnTraverseTerrain(MobileParty mobileParty, TerrainType currentTerrainType)
 	{
 		Instance.OnTraverseTerrain(mobileParty, currentTerrainType);
+	}
+
+	public static void OnBattleEnded(PartyBase party, CharacterObject troop, int excessXp)
+	{
+		Instance.OnBattleEnded(party, troop, excessXp);
 	}
 
 	public static void OnHeroHealedWhileWaiting(Hero hero, int healingAmount)
@@ -186,11 +197,6 @@ public static class SkillLevelingManager
 	public static void OnUpgradeTroops(PartyBase party, CharacterObject troop, CharacterObject upgrade, int numberOfTroops)
 	{
 		Instance.OnUpgradeTroops(party, troop, upgrade, numberOfTroops);
-	}
-
-	public static void OnBattleEnd(PartyBase party, FlattenedTroopRoster flattenedTroopRoster)
-	{
-		Instance.OnBattleEnd(party, flattenedTroopRoster);
 	}
 
 	public static void OnPersuasionSucceeded(Hero targetHero, SkillObject skill, PersuasionDifficulty difficulty, int argumentDifficultyBonusCoefficient)
@@ -226,5 +232,15 @@ public static class SkillLevelingManager
 	public static void OnProductionProducedToWarehouse(EquipmentElement production)
 	{
 		Instance.OnWarehouseProduction(production);
+	}
+
+	public static void OnAIPartyLootCasualties(int goldAmount, Hero winnerPartyLeader, PartyBase defeatedParty)
+	{
+		Instance.OnAIPartyLootCasualties(goldAmount, winnerPartyLeader, defeatedParty);
+	}
+
+	public static void OnShipDamaged(Ship ship, float rawDamage, float finalDamage)
+	{
+		Instance.OnShipDamaged(ship, rawDamage, finalDamage);
 	}
 }

@@ -251,9 +251,9 @@ public class GameMenuPartyItemButtonWidget : ButtonWidget
 		}
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (_popupWidget != null)
 		{
 			_popupWidget.SetCurrentCharacter(this);

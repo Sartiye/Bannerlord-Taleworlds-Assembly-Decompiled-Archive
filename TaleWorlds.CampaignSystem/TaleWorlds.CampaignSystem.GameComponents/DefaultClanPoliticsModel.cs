@@ -51,7 +51,7 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 		foreach (WarPartyComponent warPartyComponent in clan.WarPartyComponents)
 		{
 			MobileParty mobileParty = warPartyComponent.MobileParty;
-			if (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty && mobileParty.LeaderHero != null)
+			if (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty && mobileParty.LeaderHero != null && mobileParty.Army.LeaderParty.LeaderHero != null && warPartyComponent.Clan != mobileParty.Army.LeaderParty.LeaderHero.Clan)
 			{
 				num2 += Campaign.Current.Models.ArmyManagementCalculationModel.DailyBeingAtArmyInfluenceAward(mobileParty);
 			}
@@ -61,39 +61,30 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 		{
 			influenceChange.Add(3f, _kingBonusStr);
 		}
-		float num3 = 0f;
 		foreach (Settlement settlement in clan.Settlements)
 		{
-			if (!settlement.IsTown)
+			if (settlement.IsFortification)
 			{
-				continue;
+				settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.Influence, ref influenceChange);
 			}
-			foreach (Building building in settlement.Town.Buildings)
-			{
-				num3 += building.GetBuildingEffectAmount(BuildingEffectEnum.Influence);
-			}
-		}
-		if (num3 > 0f)
-		{
-			influenceChange.Add(num3, _townProjectStr);
 		}
 		if (clan == Clan.PlayerClan && clan.MapFaction.MainHeroCrimeRating > 0f)
 		{
-			int num4 = (int)(clan.MapFaction.MainHeroCrimeRating * -0.5f);
-			influenceChange.Add(num4, _crimeStr);
+			int num3 = (int)(clan.MapFaction.MainHeroCrimeRating * -0.5f);
+			influenceChange.Add(num3, _crimeStr);
 		}
-		float num5 = 0f;
+		float num4 = 0f;
 		foreach (Hero supporterNotable in clan.SupporterNotables)
 		{
 			if (supporterNotable.CurrentSettlement != null)
 			{
 				float influenceBonusToClan = Campaign.Current.Models.NotablePowerModel.GetInfluenceBonusToClan(supporterNotable);
-				num5 += influenceBonusToClan;
+				num4 += influenceBonusToClan;
 			}
 		}
-		if (num5 > 0f)
+		if (num4 > 0f)
 		{
-			influenceChange.Add(num5, _supporterStr);
+			influenceChange.Add(num4, _supporterStr);
 		}
 		if (clan.Kingdom != null && !clan.IsUnderMercenaryService)
 		{

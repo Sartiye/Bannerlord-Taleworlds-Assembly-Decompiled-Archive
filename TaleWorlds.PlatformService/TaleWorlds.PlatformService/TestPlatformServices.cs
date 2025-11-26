@@ -46,6 +46,8 @@ public class TestPlatformServices : IPlatformServices
 
 	public event Action<string> OnTextEnteredFromPlatform;
 
+	public event Action OnTextCanceledFromPlatform;
+
 	public TestPlatformServices(string userName)
 	{
 		_userName = userName;
@@ -125,6 +127,10 @@ public class TestPlatformServices : IPlatformServices
 		{
 			this.OnTextEnteredFromPlatform(null);
 		}
+		if (this.OnTextCanceledFromPlatform != null)
+		{
+			this.OnTextCanceledFromPlatform();
+		}
 	}
 
 	public void Tick(float dt)
@@ -183,7 +189,13 @@ public class TestPlatformServices : IPlatformServices
 		return true;
 	}
 
-	void IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
+	bool IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxLine, bool isObfuscated)
 	{
+		return false;
+	}
+
+	bool IPlatformServices.UsePlatformInvitationService(PlayerId targetPlayerId)
+	{
+		return false;
 	}
 }

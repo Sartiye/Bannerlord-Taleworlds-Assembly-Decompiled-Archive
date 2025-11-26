@@ -45,6 +45,7 @@ public abstract class MBGameManager : GameManagerBase
 
 	public static void StartNewGame(MBGameManager gameLoader)
 	{
+		Module.CurrentModule.OnBeforeGameStart(gameLoader);
 		GameLoadingState gameLoadingState = GameStateManager.Current.CreateState<GameLoadingState>();
 		gameLoadingState.SetLoadingParameters(gameLoader);
 		GameStateManager.Current.CleanAndPushState(gameLoadingState);
@@ -52,49 +53,65 @@ public abstract class MBGameManager : GameManagerBase
 
 	public override void BeginGameStart(Game game)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.BeginGameStart(game);
+			item.BeginGameStart(game);
 		}
 	}
 
 	public override void OnNewCampaignStart(Game game, object starterObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnCampaignStart(game, starterObject);
+			item.OnCampaignStart(game, starterObject);
+		}
+	}
+
+	public override void InitializeSubModuleGameObjects(Game game)
+	{
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
+		{
+			item.InitializeSubModuleGameObjects(game);
 		}
 	}
 
 	public override void RegisterSubModuleObjects(bool isSavedCampaign)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.RegisterSubModuleObjects(isSavedCampaign);
+			item.RegisterSubModuleObjects(isSavedCampaign);
+		}
+	}
+
+	public override void RegisterSubModuleTypes()
+	{
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
+		{
+			item.RegisterSubModuleTypes();
 		}
 	}
 
 	public override void AfterRegisterSubModuleObjects(bool isSavedCampaign)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.AfterRegisterSubModuleObjects(isSavedCampaign);
+			item.AfterRegisterSubModuleObjects(isSavedCampaign);
 		}
 	}
 
 	public override void InitializeGameStarter(Game game, IGameStarter starterObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.InitializeGameStarter(game, starterObject);
+			item.InitializeGameStarter(game, starterObject);
 		}
 	}
 
 	public override void OnGameInitializationFinished(Game game)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnGameInitializationFinished(game);
+			item.OnGameInitializationFinished(game);
 		}
 		foreach (SkeletonScale objectType in Game.Current.ObjectManager.GetObjectTypeList<SkeletonScale>())
 		{
@@ -109,34 +126,42 @@ public abstract class MBGameManager : GameManagerBase
 
 	public override void OnAfterGameInitializationFinished(Game game, object initializerObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnAfterGameInitializationFinished(game, initializerObject);
+			item.OnAfterGameInitializationFinished(game, initializerObject);
 		}
 	}
 
 	public override void OnGameLoaded(Game game, object initializerObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnGameLoaded(game, initializerObject);
+			item.OnGameLoaded(game, initializerObject);
+		}
+	}
+
+	public override void OnAfterGameLoaded(Game game)
+	{
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
+		{
+			item.OnAfterGameLoaded(game);
 		}
 	}
 
 	public override void OnNewGameCreated(Game game, object initializerObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnNewGameCreated(game, initializerObject);
+			item.OnNewGameCreated(game, initializerObject);
 		}
 	}
 
 	public override void OnGameStart(Game game, IGameStarter gameStarter)
 	{
 		Game.Current.MonsterMissionDataCreator = new MonsterMissionDataCreator();
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnGameStart(game, gameStarter);
+			item.OnGameStart(game, gameStarter);
 		}
 		Game.Current.AddGameModelsManager<MissionGameModels>(gameStarter.Models);
 		Monster.GetBoneIndexWithId = MBActionSet.GetBoneIndexWithId;
@@ -145,10 +170,11 @@ public abstract class MBGameManager : GameManagerBase
 
 	public override void OnGameEnd(Game game)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnGameEnd(game);
+			item.OnGameEnd(game);
 		}
+		Module.CurrentModule.OnGameEnd();
 		MissionGameModels.Clear();
 		base.OnGameEnd(game);
 	}

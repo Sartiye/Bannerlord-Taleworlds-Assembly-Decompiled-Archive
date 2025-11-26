@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.ClanFinance;
 
@@ -16,7 +17,7 @@ public class ClanFinanceMercenaryItemVM : ClanFinanceIncomeItemBaseVM
 		{
 			base.Name = GameTexts.FindText("str_mercenary_service").ToString();
 			base.Income = (int)(Clan.Influence * (float)Clan.MercenaryAwardMultiplier);
-			base.Visual = new ImageIdentifierVM(Clan.Banner);
+			base.Visual = new BannerImageIdentifierVM(Clan.Banner);
 			base.IncomeValueText = DetermineIncomeText(base.Income);
 		}
 	}

@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
-public class OrderSubjectVM : ViewModel
+public abstract class OrderSubjectVM : ViewModel
 {
-	internal List<OrderItemVM> ActiveOrders;
-
 	private int _behaviorType;
 
 	private int _underAttackOfType;
@@ -17,23 +13,15 @@ public class OrderSubjectVM : ViewModel
 
 	private bool _isSelected;
 
-	private bool _isSelectionActive;
+	private bool _isSelectionHighlightActive;
+
+	private bool _canToggleSelection;
 
 	private string _shortcutText;
 
 	private InputKeyItemVM _selectionKey;
 
-	private bool _isGamepadActive
-	{
-		get
-		{
-			if (TaleWorlds.InputSystem.Input.IsControllerConnected)
-			{
-				return !TaleWorlds.InputSystem.Input.IsMouseActive;
-			}
-			return false;
-		}
-	}
+	private MBBindingList<OrderItemVM> _activeOrders;
 
 	[DataSourceProperty]
 	public bool IsSelectable
@@ -71,18 +59,35 @@ public class OrderSubjectVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsSelectionActive
+	public bool IsSelectionHighlightActive
 	{
 		get
 		{
-			return _isSelectionActive;
+			return _isSelectionHighlightActive;
 		}
 		set
 		{
-			if (value != _isSelectionActive)
+			if (value != _isSelectionHighlightActive)
 			{
-				_isSelectionActive = value;
-				OnPropertyChangedWithValue(value, "IsSelectionActive");
+				_isSelectionHighlightActive = value;
+				OnPropertyChangedWithValue(value, "IsSelectionHighlightActive");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanToggleSelection
+	{
+		get
+		{
+			return _canToggleSelection;
+		}
+		set
+		{
+			if (value != _canToggleSelection)
+			{
+				_canToggleSelection = value;
+				OnPropertyChangedWithValue(value, "CanToggleSelection");
 			}
 		}
 	}
@@ -155,12 +160,42 @@ public class OrderSubjectVM : ViewModel
 		}
 	}
 
-	public OrderSubjectVM()
+	[DataSourceProperty]
+	public MBBindingList<OrderItemVM> ActiveOrders
 	{
-		ActiveOrders = new List<OrderItemVM>();
+		get
+		{
+			return _activeOrders;
+		}
+		set
+		{
+			if (value != _activeOrders)
+			{
+				_activeOrders = value;
+				OnPropertyChangedWithValue(value, "ActiveOrders");
+			}
+		}
 	}
 
-	protected virtual void OnSelectionStateChanged(bool isSelected)
+	public OrderSubjectVM()
 	{
+		ActiveOrders = new MBBindingList<OrderItemVM>();
 	}
+
+	public void AddActiveOrder(OrderItemVM order)
+	{
+		ActiveOrders.Add(order);
+	}
+
+	public void RemoveActiveOrder(OrderItemVM order)
+	{
+		ActiveOrders.Remove(order);
+	}
+
+	public void ClearActiveOrders()
+	{
+		ActiveOrders.Clear();
+	}
+
+	protected abstract void OnSelectionStateChanged(bool isSelected);
 }

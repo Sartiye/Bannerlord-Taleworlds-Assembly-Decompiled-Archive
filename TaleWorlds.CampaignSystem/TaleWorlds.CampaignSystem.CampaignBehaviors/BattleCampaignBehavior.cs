@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
@@ -12,45 +11,43 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnHeroCombatHitEvent.AddNonSerializedListener(this, OnHeroCombatHit);
-		CampaignEvents.CollectLootsEvent.AddNonSerializedListener(this, CollectLoots);
+		CampaignEvents.OnCollectLootsItemsEvent.AddNonSerializedListener(this, OnCollectLootItems);
+	}
+
+	private static void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
+	{
+		if (!winnerParty.IsMobile || !winnerParty.MobileParty.HasPerk(DefaultPerks.Engineering.Metallurgy))
+		{
+			return;
+		}
+		foreach (ItemRosterElement item in gainedLoots.ToMBList())
+		{
+			ItemModifier itemModifier = item.EquipmentElement.ItemModifier;
+			if (itemModifier == null || !(itemModifier.PriceMultiplier < 1f))
+			{
+				continue;
+			}
+			for (int i = 0; i < item.Amount; i++)
+			{
+				int num = 0;
+				if (MBRandom.RandomFloat < DefaultPerks.Engineering.Metallurgy.PrimaryBonus)
+				{
+					num++;
+				}
+				gainedLoots.AddToCounts(item.EquipmentElement.Item, -num);
+				ItemRosterElement itemRosterElement = new ItemRosterElement(item.EquipmentElement.Item, num);
+				gainedLoots.Add(itemRosterElement);
+			}
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
 	}
 
-	private void CollectLoots(MapEvent mapEvent, PartyBase winnerParty, Dictionary<PartyBase, ItemRoster> lootedItems, ItemRoster lootedItemsForParty, ICollection<TroopRosterElement> shareFromCasualties, float lootAmount)
+	private static void OnHeroCombatHit(CharacterObject attacker, CharacterObject attacked, PartyBase party, WeaponComponentData attackerWeapon, bool isFatal, int xpGained)
 	{
-		foreach (KeyValuePair<PartyBase, ItemRoster> lootedItem in lootedItems)
-		{
-			ItemRoster value = lootedItem.Value;
-			for (int num = value.Count - 1; num >= 0; num--)
-			{
-				ItemRosterElement elementCopyAtIndex = value.GetElementCopyAtIndex(num);
-				ItemModifier itemModifier = elementCopyAtIndex.EquipmentElement.ItemModifier;
-				bool flag = itemModifier != null && winnerParty.IsMobile && winnerParty.MobileParty.HasPerk(DefaultPerks.Engineering.Metallurgy) && itemModifier.PriceMultiplier < 1f;
-				for (int i = 0; i < elementCopyAtIndex.Amount; i++)
-				{
-					if (MBRandom.RandomFloat < lootAmount)
-					{
-						if (flag && MBRandom.RandomFloat < DefaultPerks.Engineering.Metallurgy.PrimaryBonus)
-						{
-							ItemRosterElement itemRosterElement = new ItemRosterElement(elementCopyAtIndex.EquipmentElement.Item, 1);
-							lootedItemsForParty.Add(itemRosterElement);
-						}
-						else
-						{
-							lootedItemsForParty.AddToCounts(elementCopyAtIndex.EquipmentElement, 1);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void OnHeroCombatHit(CharacterObject attacker, CharacterObject attacked, PartyBase party, WeaponComponentData attackerWeapon, bool isFatal, int xpGained)
-	{
-		if (!(attacker.HeroObject.GetPerkValue(DefaultPerks.TwoHanded.BaptisedInBlood) && attackerWeapon != null && isFatal) || party.MemberRoster.TotalRegulars <= 0 || (attackerWeapon.WeaponClass != WeaponClass.TwoHandedSword && attackerWeapon.WeaponClass != WeaponClass.TwoHandedPolearm && attackerWeapon.WeaponClass != WeaponClass.TwoHandedAxe && attackerWeapon.WeaponClass != WeaponClass.TwoHandedMace))
+		if (!isFatal || attackerWeapon == null || party.MemberRoster.TotalRegulars <= 0 || !IsWeaponSuitableToGetBaptisedInBloodPerkBonus(attackerWeapon) || !attacker.HeroObject.GetPerkValue(DefaultPerks.TwoHanded.BaptisedInBlood))
 		{
 			return;
 		}
@@ -59,8 +56,17 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 			TroopRosterElement elementCopyAtIndex = party.MemberRoster.GetElementCopyAtIndex(i);
 			if (!elementCopyAtIndex.Character.IsHero && elementCopyAtIndex.Character.IsInfantry)
 			{
-				party.MemberRoster.AddXpToTroopAtIndex((int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number, i);
+				party.MemberRoster.AddXpToTroopAtIndex(i, (int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number);
 			}
 		}
+	}
+
+	private static bool IsWeaponSuitableToGetBaptisedInBloodPerkBonus(WeaponComponentData attackerWeapon)
+	{
+		if (attackerWeapon.WeaponClass != WeaponClass.TwoHandedSword && attackerWeapon.WeaponClass != WeaponClass.TwoHandedPolearm && attackerWeapon.WeaponClass != WeaponClass.TwoHandedAxe)
+		{
+			return attackerWeapon.WeaponClass == WeaponClass.TwoHandedMace;
+		}
+		return true;
 	}
 }

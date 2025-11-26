@@ -8,11 +8,11 @@ namespace TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 
 public class MissionEntitySelectionUIHandler : MissionView
 {
-	private Action<GameEntity> onSelect;
+	private Action<WeakGameEntity> onSelect;
 
-	private Action<GameEntity> onHover;
+	private Action<WeakGameEntity> onHover;
 
-	public MissionEntitySelectionUIHandler(Action<GameEntity> onSelect = null, Action<GameEntity> onHover = null)
+	public MissionEntitySelectionUIHandler(Action<WeakGameEntity> onSelect = null, Action<WeakGameEntity> onHover = null)
 	{
 		this.onSelect = onSelect;
 		this.onHover = onHover;
@@ -21,7 +21,7 @@ public class MissionEntitySelectionUIHandler : MissionView
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		GameEntity value = new Lazy<GameEntity>(GetCollidedEntity).Value;
+		WeakGameEntity value = new Lazy<WeakGameEntity>(GetCollidedEntity).Value;
 		onHover?.Invoke(value);
 		if (base.Input.IsKeyReleased(InputKey.LeftMouseButton))
 		{
@@ -29,23 +29,33 @@ public class MissionEntitySelectionUIHandler : MissionView
 		}
 	}
 
-	private GameEntity GetCollidedEntity()
+	private WeakGameEntity GetCollidedEntity()
 	{
 		Vec2 mousePositionRanged = base.Input.GetMousePositionRanged();
 		base.MissionScreen.ScreenPointToWorldRay(mousePositionRanged, out var rayBegin, out var rayEnd);
-		using (new TWSharedMutexUpgradeableReadLock(Scene.PhysicsAndRayCastLock))
+		WeakGameEntity result;
+		using (new TWSharedMutexReadLock(Scene.PhysicsAndRayCastLock))
 		{
 			if (Mission.Current != null)
 			{
-				Mission.Current.Scene.RayCastForClosestEntityOrTerrainMT(rayBegin, rayEnd, out float _, out GameEntity collidedEntity, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags);
-				while (collidedEntity != null && collidedEntity.Parent != null)
+				Mission.Current.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out float _, out WeakGameEntity collidedEntity, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags);
+				while (collidedEntity.IsValid)
 				{
+					result = collidedEntity.Parent;
+					if (!result.IsValid)
+					{
+						break;
+					}
 					collidedEntity = collidedEntity.Parent;
 				}
-				return collidedEntity;
+				result = collidedEntity;
 			}
-			return null;
+			else
+			{
+				result = WeakGameEntity.Invalid;
+			}
 		}
+		return result;
 	}
 
 	public override void OnRemoveBehavior()
@@ -58,8 +68,8 @@ public class MissionEntitySelectionUIHandler : MissionView
 	[Conditional("DEBUG")]
 	public void TickDebug()
 	{
-		GameEntity collidedEntity = GetCollidedEntity();
-		if (!(collidedEntity == null))
+		WeakGameEntity collidedEntity = GetCollidedEntity();
+		if (collidedEntity.IsValid)
 		{
 			_ = collidedEntity.Name;
 		}

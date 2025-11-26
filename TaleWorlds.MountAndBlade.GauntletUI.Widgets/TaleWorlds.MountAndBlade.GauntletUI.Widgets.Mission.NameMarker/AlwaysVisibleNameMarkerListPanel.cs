@@ -43,10 +43,10 @@ public class AlwaysVisibleNameMarkerListPanel : ListPanel
 
 	protected override void OnLateUpdate(float dt)
 	{
-		foreach (Widget allChildrenAndThi in base.AllChildrenAndThis)
+		ApplyActionToAllChildrenRecursive(delegate(Widget child)
 		{
-			allChildrenAndThi.IsVisible = true;
-		}
+			child.IsVisible = true;
+		});
 		base.ScaledPositionYOffset = Position.y - base.Size.Y / 2f;
 		base.ScaledPositionXOffset = Position.x - base.Size.X / 2f;
 		UpdateOpacity();

@@ -42,6 +42,8 @@ public class NullPlatformServices : IPlatformServices
 
 	public event Action<string> OnTextEnteredFromPlatform;
 
+	public event Action OnTextCanceledFromPlatform;
+
 	public NullPlatformServices()
 	{
 		_testFriendListService = new TestFriendListService("NULL", default(PlayerId));
@@ -100,6 +102,10 @@ public class NullPlatformServices : IPlatformServices
 		if (this.OnTextEnteredFromPlatform != null)
 		{
 			this.OnTextEnteredFromPlatform(null);
+		}
+		if (this.OnTextCanceledFromPlatform != null)
+		{
+			this.OnTextCanceledFromPlatform();
 		}
 		if (this.OnBlockedUserListUpdated != null)
 		{
@@ -178,7 +184,13 @@ public class NullPlatformServices : IPlatformServices
 		return true;
 	}
 
-	void IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxLine, bool isObfuscated)
+	bool IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxLine, bool isObfuscated)
 	{
+		return false;
+	}
+
+	bool IPlatformServices.UsePlatformInvitationService(PlayerId targetPlayerId)
+	{
+		return false;
 	}
 }

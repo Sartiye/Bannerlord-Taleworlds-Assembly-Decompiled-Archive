@@ -39,15 +39,20 @@ public class WidgetPrefab
 			{
 				visualDefinitionTemplate.TransitionDuration = Convert.ToSingle(xmlAttribute.Value, CultureInfo.InvariantCulture);
 			}
-			XmlAttribute xmlAttribute2 = childNode.Attributes["EaseIn"];
-			if (xmlAttribute2 != null && bool.TryParse(xmlAttribute2.Value, out var result))
+			XmlAttribute xmlAttribute2 = childNode.Attributes["EaseType"];
+			if (xmlAttribute2 != null && Enum.TryParse<AnimationInterpolation.Type>(xmlAttribute2.Value, out var result))
 			{
-				visualDefinitionTemplate.EaseIn = result;
+				visualDefinitionTemplate.EaseType = result;
 			}
-			XmlAttribute xmlAttribute3 = childNode.Attributes["DelayOnBegin"];
-			if (xmlAttribute3 != null)
+			XmlAttribute xmlAttribute3 = childNode.Attributes["EaseFunction"];
+			if (xmlAttribute3 != null && Enum.TryParse<AnimationInterpolation.Function>(xmlAttribute3.Value, out var result2))
 			{
-				visualDefinitionTemplate.DelayOnBegin = Convert.ToSingle(xmlAttribute3.Value, CultureInfo.InvariantCulture);
+				visualDefinitionTemplate.EaseFunction = result2;
+			}
+			XmlAttribute xmlAttribute4 = childNode.Attributes["DelayOnBegin"];
+			if (xmlAttribute4 != null)
+			{
+				visualDefinitionTemplate.DelayOnBegin = Convert.ToSingle(xmlAttribute4.Value, CultureInfo.InvariantCulture);
 			}
 			foreach (XmlNode childNode2 in childNode.ChildNodes)
 			{
@@ -287,7 +292,7 @@ public class WidgetPrefab
 				break;
 			}
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetPrefab.cs", "SaveConstantsTo", 355);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetPrefab.cs", "SaveConstantsTo", 362);
 				break;
 			}
 			if (!string.IsNullOrEmpty(value.Additive))
@@ -312,7 +317,7 @@ public class WidgetPrefab
 		XmlDocument xmlDocument = new XmlDocument();
 		XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
 		xmlReaderSettings.IgnoreComments = true;
-		using (XmlReader reader = XmlReader.Create(path, xmlReaderSettings))
+		using (XmlReader reader = XmlReader.Create(new StreamReader(path), xmlReaderSettings))
 		{
 			xmlDocument.Load(reader);
 		}

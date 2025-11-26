@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -22,26 +23,6 @@ public class WidgetInfo
 
 	public bool GotUpdateBrushes { get; private set; }
 
-	static WidgetInfo()
-	{
-		Reload();
-	}
-
-	public static void Reload()
-	{
-		_widgetInfos = new Dictionary<Type, WidgetInfo>();
-		foreach (Type item in CollectWidgetTypes())
-		{
-			_widgetInfos.Add(item, new WidgetInfo(item));
-		}
-		TextureWidget.RecollectProviderTypes();
-	}
-
-	public static WidgetInfo GetWidgetInfo(Type type)
-	{
-		return _widgetInfos[type];
-	}
-
 	public WidgetInfo(Type type)
 	{
 		Name = type.Name;
@@ -50,6 +31,23 @@ public class WidgetInfo
 		GotCustomLateUpdate = IsMethodOverridden("OnLateUpdate");
 		GotCustomParallelUpdate = IsMethodOverridden("OnParallelUpdate");
 		GotUpdateBrushes = IsMethodOverridden("UpdateBrushes");
+	}
+
+	public static void Refresh()
+	{
+		_widgetInfos = new Dictionary<Type, WidgetInfo>();
+		CollectWidgetTypes();
+		TextureProviderFactory.RefreshProviderTypes();
+	}
+
+	public static WidgetInfo GetWidgetInfo(Type type)
+	{
+		return _widgetInfos[type];
+	}
+
+	public static WidgetInfo[] GetWidgetInfos()
+	{
+		return _widgetInfos.Values.ToArray();
 	}
 
 	private static bool CheckAssemblyReferencesThis(Assembly assembly)
@@ -66,9 +64,9 @@ public class WidgetInfo
 		return false;
 	}
 
-	public static List<Type> CollectWidgetTypes()
+	private static void CollectWidgetTypes()
 	{
-		List<Type> list = new List<Type>();
+		new List<Type>();
 		Assembly assembly = typeof(Widget).Assembly;
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		foreach (Assembly assembly2 in assemblies)
@@ -81,11 +79,10 @@ public class WidgetInfo
 			{
 				if (typeof(Widget).IsAssignableFrom(item))
 				{
-					list.Add(item);
+					_widgetInfos.Add(item, new WidgetInfo(item));
 				}
 			}
 		}
-		return list;
 	}
 
 	private bool IsMethodOverridden(string methodName)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -30,6 +32,53 @@ public class ShallowItemVM : ViewModel
 		Stone
 	}
 
+	public class ArmoryItemFlagVM : ViewModel
+	{
+		private string _icon;
+
+		private HintViewModel _hint;
+
+		[DataSourceProperty]
+		public string Icon
+		{
+			get
+			{
+				return _icon;
+			}
+			set
+			{
+				if (value != _icon)
+				{
+					_icon = value;
+					OnPropertyChangedWithValue(value, "Icon");
+				}
+			}
+		}
+
+		[DataSourceProperty]
+		public HintViewModel Hint
+		{
+			get
+			{
+				return _hint;
+			}
+			set
+			{
+				if (value != _hint)
+				{
+					_hint = value;
+					OnPropertyChangedWithValue(value, "Hint");
+				}
+			}
+		}
+
+		public ArmoryItemFlagVM(string icon, TextObject hintText)
+		{
+			Icon = "SPGeneral\\" + icon;
+			Hint = new HintViewModel(hintText);
+		}
+	}
+
 	private readonly Action<ShallowItemVM> _onSelect;
 
 	private AlternativeUsageItemOptionVM _latestUsageOption;
@@ -40,7 +89,7 @@ public class ShallowItemVM : ViewModel
 
 	private bool _isInitialized;
 
-	private ImageIdentifierVM _icon;
+	private ItemImageIdentifierVM _icon;
 
 	private string _name;
 
@@ -52,11 +101,30 @@ public class ShallowItemVM : ViewModel
 
 	private bool _hasAnyAlternativeUsage;
 
+	private MBBindingList<ArmoryItemFlagVM> _itemInformationList;
+
 	private MBBindingList<ShallowItemPropertyVM> _propertyList;
 
 	private SelectorVM<AlternativeUsageItemOptionVM> _alternativeUsageSelector;
 
 	public ItemGroup Type { get; private set; }
+
+	[DataSourceProperty]
+	public MBBindingList<ArmoryItemFlagVM> ItemInformationList
+	{
+		get
+		{
+			return _itemInformationList;
+		}
+		set
+		{
+			if (value != _itemInformationList)
+			{
+				_itemInformationList = value;
+				OnPropertyChangedWithValue(value, "ItemInformationList");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public MBBindingList<ShallowItemPropertyVM> PropertyList
@@ -93,7 +161,7 @@ public class ShallowItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Icon
+	public ItemImageIdentifierVM Icon
 	{
 		get
 		{
@@ -196,6 +264,7 @@ public class ShallowItemVM : ViewModel
 
 	public ShallowItemVM(Action<ShallowItemVM> onSelect)
 	{
+		ItemInformationList = new MBBindingList<ArmoryItemFlagVM>();
 		PropertyList = new MBBindingList<ShallowItemPropertyVM>();
 		AlternativeUsageSelector = new SelectorVM<AlternativeUsageItemOptionVM>(new List<string>(), 0, OnAlternativeUsageChanged);
 		_onSelect = onSelect;
@@ -225,12 +294,12 @@ public class ShallowItemVM : ViewModel
 		if (itemObject == null || (equipmentIndex == EquipmentIndex.ArmorItemEndSlot && !itemObject.HasHorseComponent) || (equipmentIndex != EquipmentIndex.ArmorItemEndSlot && (itemObject.PrimaryWeapon == null || itemObject.PrimaryWeapon.IsAmmo)))
 		{
 			IsValid = false;
-			Icon = new ImageIdentifierVM();
+			Icon = new ItemImageIdentifierVM(null);
 			return;
 		}
 		IsValid = true;
 		Name = itemObject.Name.ToString();
-		Icon = new ImageIdentifierVM(itemObject);
+		Icon = new ItemImageIdentifierVM(itemObject);
 		Type = GetItemGroupType(itemObject);
 		TypeAsString = ((Type == ItemGroup.None) ? "" : Type.ToString());
 		HasAnyAlternativeUsage = false;
@@ -315,7 +384,7 @@ public class ShallowItemVM : ViewModel
 				AddProperty(new TextObject("{=ahiBhAqU}Armor"), (float)weaponComponentData.GetModifiedArmor(itemModifier) / 40f, weaponComponentData.GetModifiedArmor(itemModifier));
 				AddProperty(new TextObject("{=4Dd2xgPm}Weight"), item.Weight / 40f, (int)item.Weight);
 			}
-			if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Bow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow)
+			if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Bow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Sling)
 			{
 				int num = 0;
 				float num2 = 0f;
@@ -338,6 +407,13 @@ public class ShallowItemVM : ViewModel
 				AddProperty(new TextObject("{=TAnabTdy}Accuracy"), (float)weaponComponentData.Accuracy / 105f, weaponComponentData.Accuracy);
 				AddProperty(new TextObject("{=yUpH2mQ4}Ammo"), (float)num / 90f, num);
 			}
+			ItemInformationList.Clear();
+			List<(string, TextObject)> weaponFlagDetails = GetWeaponFlagDetails(weaponComponentData.WeaponFlags);
+			for (int i = 0; i < weaponFlagDetails.Count; i++)
+			{
+				ArmoryItemFlagVM item3 = new ArmoryItemFlagVM(weaponFlagDetails[i].Item1, weaponFlagDetails[i].Item2);
+				ItemInformationList.Add(item3);
+			}
 		}
 		if (item.HorseComponent != null)
 		{
@@ -354,6 +430,66 @@ public class ShallowItemVM : ViewModel
 			AddProperty(new TextObject("{=oBbiVeKE}Hit Points"), (float)modifiedMountHitPoints / 300f, modifiedMountHitPoints);
 			AddProperty(new TextObject("{=kftE5nvv}Horse Armor"), (float)modifiedMountBodyArmor / 100f, modifiedMountBodyArmor);
 		}
+	}
+
+	private static List<(string, TextObject)> GetWeaponFlagDetails(WeaponFlags weaponFlags)
+	{
+		List<(string, TextObject)> list = new List<(string, TextObject)>();
+		if (weaponFlags.HasAnyFlag(WeaponFlags.BonusAgainstShield))
+		{
+			string item = "WeaponFlagIcons\\bonus_against_shield";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_bonus_against_shield");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.CanKnockDown))
+		{
+			string item = "WeaponFlagIcons\\can_knock_down";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_can_knockdown");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.CanDismount) && !weaponFlags.HasAnyFlag(WeaponFlags.CanHook))
+		{
+			string item = "WeaponFlagIcons\\can_dismount";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_can_dismount");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.CanHook) && !weaponFlags.HasAnyFlag(WeaponFlags.CanDismount))
+		{
+			string item = "WeaponFlagIcons\\can_dismount";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_can_hook");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAllFlags(WeaponFlags.CanDismount | WeaponFlags.CanHook))
+		{
+			string item = "WeaponFlagIcons\\can_dismount";
+			TextObject item2 = new TextObject("{=7HA99oUg}Both swing and thrust attacks can dismount riders");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.CanCrushThrough))
+		{
+			string item = "WeaponFlagIcons\\can_crush_through";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_can_crush_through");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithTwoHand))
+		{
+			string item = "WeaponFlagIcons\\not_usable_with_two_hand";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_not_usable_two_hand");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
+		{
+			string item = "WeaponFlagIcons\\not_usable_with_one_hand";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_not_usable_one_hand");
+			list.Add((item, item2));
+		}
+		if (weaponFlags.HasAnyFlag(WeaponFlags.CantReloadOnHorseback))
+		{
+			string item = "WeaponFlagIcons\\cant_reload_on_horseback";
+			TextObject item2 = GameTexts.FindText("str_inventory_flag_cant_reload_on_horseback");
+			list.Add((item, item2));
+		}
+		return list;
 	}
 
 	private void AddProperty(TextObject name, float fraction, int value)
@@ -395,10 +531,13 @@ public class ShallowItemVM : ViewModel
 				return ItemGroup.Shield;
 			case WeaponClass.Arrow:
 			case WeaponClass.Bolt:
+			case WeaponClass.SlingStone:
 			case WeaponClass.Cartridge:
 			case WeaponClass.Musket:
 				return ItemGroup.Ammo;
+			case WeaponClass.Sling:
 			case WeaponClass.Stone:
+			case WeaponClass.BallistaStone:
 				return ItemGroup.Stone;
 			default:
 				return ItemGroup.None;

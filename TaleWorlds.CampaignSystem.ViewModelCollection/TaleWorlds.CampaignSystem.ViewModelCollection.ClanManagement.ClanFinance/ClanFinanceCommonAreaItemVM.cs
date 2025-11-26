@@ -1,6 +1,7 @@
 using System;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.ClanFinance;
 
@@ -17,7 +18,7 @@ public class ClanFinanceCommonAreaItemVM : ClanFinanceIncomeItemBaseVM
 		GameTexts.SetVariable("COMMON_AREA_NAME", alley.Name);
 		base.Name = GameTexts.FindText("str_clan_finance_common_area").ToString();
 		base.Income = Campaign.Current.Models.AlleyModel.GetDailyIncomeOfAlley(alley);
-		base.Visual = ((alley.Owner.CharacterObject != null) ? new ImageIdentifierVM(CharacterCode.CreateFrom(alley.Owner.CharacterObject)) : new ImageIdentifierVM());
+		base.Visual = ((alley.Owner.CharacterObject != null) ? new CharacterImageIdentifierVM(CharacterCode.CreateFrom(alley.Owner.CharacterObject)) : new CharacterImageIdentifierVM(null));
 		base.IncomeValueText = DetermineIncomeText(base.Income);
 		PopulateActionList();
 		PopulateStatsList();

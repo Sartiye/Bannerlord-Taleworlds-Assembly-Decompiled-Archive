@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade;
@@ -13,4 +14,10 @@ public interface IMissionAgentSpawnLogic : IMissionBehavior
 	bool IsSideDepleted(BattleSideEnum side);
 
 	float GetReinforcementInterval();
+
+	IEnumerable<IAgentOriginBase> GetAllTroopsForSide(BattleSideEnum side);
+
+	bool GetSpawnHorses(BattleSideEnum side);
+
+	int GetNumberOfPlayerControllableTroops();
 }

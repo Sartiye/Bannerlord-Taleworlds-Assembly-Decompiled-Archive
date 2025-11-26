@@ -65,7 +65,11 @@ public static class BannerlordConfig
 
 	private static int[] _reinforcementWaveCounts = new int[4] { 3, 4, 5, 0 };
 
+	public const int MaxCorpseCount = 1021;
+
 	public static double SiegeBattleSizeMultiplier = 0.8;
+
+	public const int DefaultPlayerReceviedDamageDifficulty = 0;
 
 	public const bool DefaultGyroOverrideForAttackDefend = false;
 
@@ -103,13 +107,15 @@ public static class BannerlordConfig
 
 	public const float DefaultFriendlyTroopsBannerOpacity = 1f;
 
+	public const bool DefaultAlwaysShowFriendlyTroopBanners = false;
+
 	public const bool DefaultReportDamage = true;
 
 	public const bool DefaultReportBark = true;
 
 	public const bool DefaultEnableTutorialHints = true;
 
-	public const int DefaultReportCasualtiesType = 0;
+	public const int DefaultKillFeedVisualType = 1;
 
 	public const int DefaultAutoTrackAttackedSettlements = 0;
 
@@ -156,6 +162,8 @@ public static class BannerlordConfig
 	public const bool DefaultHideUnofficialServers = false;
 
 	public const bool DefaultHideModuleIncompatibleServers = false;
+
+	public const bool DefaultShowOnlyFavoriteServers = false;
 
 	public const int DefaultOrderLayoutType = 0;
 
@@ -214,7 +222,7 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Language cannot be set!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 353);
+					Debug.FailedAssert("Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 389);
 				}
 				MBTextManager.LocalizationDebugMode = NativeConfig.LocalizationDebugMode;
 			}
@@ -242,11 +250,15 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Voice Language cannot be set!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 380);
+					Debug.FailedAssert("Voice Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 416);
 				}
 			}
 		}
 	}
+
+	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
+	public static int PlayerReceivedDamageDifficulty { get; set; } = 0;
+
 
 	[ConfigPropertyUnbounded]
 	public static bool GyroOverrideForAttackDefend { get; set; } = false;
@@ -364,8 +376,12 @@ public static class BannerlordConfig
 	public static float FriendlyTroopsBannerOpacity { get; set; } = 1f;
 
 
+	[ConfigPropertyUnbounded]
+	public static bool AlwaysShowFriendlyTroopBanners { get; set; } = false;
+
+
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
-	public static int ReportCasualtiesType { get; set; } = 0;
+	public static int KillFeedVisualType { get; set; } = 1;
 
 
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
@@ -441,6 +457,10 @@ public static class BannerlordConfig
 	public static bool HideModuleIncompatibleServers { get; set; } = false;
 
 
+	[ConfigPropertyUnbounded]
+	public static bool ShowOnlyFavoriteServers { get; set; } = false;
+
+
 	[ConfigPropertyInt(new int[] { 0, 1 }, false)]
 	public static int OrderType
 	{
@@ -505,6 +525,10 @@ public static class BannerlordConfig
 
 	[ConfigPropertyInt(new int[] { 0, 1, 2, 3 }, false)]
 	public static int UnitSpawnPrioritization { get; set; } = 0;
+
+
+	[ConfigPropertyUnbounded]
+	public static bool IAPNoticeConfirmed { get; set; } = false;
 
 
 	public static void Initialize()
@@ -579,7 +603,7 @@ public static class BannerlordConfig
 					else
 					{
 						flag = true;
-						Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Initialize", 113);
+						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Initialize", 114);
 					}
 				}
 				catch
@@ -619,6 +643,17 @@ public static class BannerlordConfig
 		return result;
 	}
 
+	public static float GetDamageToPlayerMultiplier()
+	{
+		return PlayerReceivedDamageDifficulty switch
+		{
+			0 => 0.25f, 
+			1 => 0.5f, 
+			2 => 1f, 
+			_ => 1f, 
+		};
+	}
+
 	public static int GetRealBattleSize()
 	{
 		return _battleSizes[BattleSize];
@@ -627,6 +662,11 @@ public static class BannerlordConfig
 	public static int GetRealBattleSizeForSiege()
 	{
 		return _siegeBattleSizes[BattleSize];
+	}
+
+	public static int GetRealBattleSizeForNaval()
+	{
+		return _battleSizes[BattleSize];
 	}
 
 	public static int GetReinforcementWaveCount()

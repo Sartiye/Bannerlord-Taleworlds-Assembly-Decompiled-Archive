@@ -29,12 +29,12 @@ public class BattleSpawnLogic : MissionLogic
 		{
 			return;
 		}
-		GameEntity gameEntity = base.Mission.Scene.FindEntityWithTag(_selectedSpawnPointSetTag);
-		if (gameEntity != null)
+		WeakGameEntity weakGameEntity = base.Mission.Scene.FindWeakEntityWithTag(_selectedSpawnPointSetTag);
+		if (weakGameEntity != null)
 		{
-			List<GameEntity> list = base.Mission.Scene.FindEntitiesWithTag("spawnpoint_set").ToList();
-			list.Remove(gameEntity);
-			foreach (GameEntity item in list)
+			List<WeakGameEntity> list = base.Mission.Scene.FindWeakEntitiesWithTag("spawnpoint_set").ToList();
+			list.Remove(weakGameEntity);
+			foreach (WeakGameEntity item in list)
 			{
 				item.Remove(76);
 			}

@@ -31,7 +31,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=uc4M4bhG}Well, there is something I want. There is one {?TARGET_HERO.GENDER}lady{?}lord{\\?} of the {TARGET_FACTION} with whom I have a long, long relationship. And not a friendly one. Even though we are not now at war, as long as {?TARGET_HERO.GENDER}she{?}he{\\?} is free, I know my life and lands are not safe. As I say, it won't be easy at all. But whoever manages to do that, bring {?TARGET_HERO.GENDER}her{?}him{\\?} back alive to me, having my gratitude aside, will be a very rich man indeed.[if:convo_grave][ib:closed2]");
+				TextObject textObject = new TextObject("{=uc4M4bhG}Well, there is something I want. There is one {?TARGET_HERO.GENDER}lady{?}lord{\\?} of the {TARGET_FACTION} with whom I have a long, long relationship. And not a friendly one. Now that we are at war, as long as {?TARGET_HERO.GENDER}she{?}he{\\?} is free, I know my life and lands are not safe. As I say, it won't be easy at all. But whoever manages to do that, bring {?TARGET_HERO.GENDER}her{?}him{\\?} back alive to me, having my gratitude aside, will be a very rich man indeed.[if:convo_grave][ib:closed2]");
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				textObject.SetTextVariable("TARGET_FACTION", _targetHero.Clan.Name);
 				return textObject;
@@ -78,7 +78,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=FoNfLOny}{ISSUE_OWNER.NAME} wants {TARGET_HERO.NAME} captured");
+				TextObject textObject = new TextObject("{=XY7doPYr}{ISSUE_OWNER.NAME} Wants {TARGET_HERO.NAME} Captured");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.IssueOwner.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				return textObject;
@@ -162,6 +162,10 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			{
 				flags |= PreconditionFlags.NotEnoughTroops;
 			}
+			if (issueGiver.MapFaction != Hero.MainHero.MapFaction)
+			{
+				flags |= PreconditionFlags.NotInSameFaction;
+			}
 			skill = null;
 			return flags == PreconditionFlags.None;
 		}
@@ -202,7 +206,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=FoNfLOny}{ISSUE_OWNER.NAME} wants {TARGET_HERO.NAME} captured");
+				TextObject textObject = new TextObject("{=XY7doPYr}{ISSUE_OWNER.NAME} Wants {TARGET_HERO.NAME} Captured");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				return textObject;
@@ -211,7 +215,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -223,7 +227,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerAcceptedOfferQuestFail
+		private TextObject PlayerAcceptedOfferQuestFail
 		{
 			get
 			{
@@ -234,7 +238,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeliveredPrisonerQuestSuccess
+		private TextObject PlayerDeliveredPrisonerQuestSuccessLogText
 		{
 			get
 			{
@@ -247,7 +251,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerCapturedTargetBrief1LogText
+		private TextObject PlayerCapturedTargetBrief1LogText
 		{
 			get
 			{
@@ -260,7 +264,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerCapturedTargetBrief2LogText
+		private TextObject PlayerCapturedTargetBrief2LogText
 		{
 			get
 			{
@@ -272,7 +276,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerCapturedTargetBrief3LogText
+		private TextObject PlayerCapturedTargetBrief3LogText
 		{
 			get
 			{
@@ -283,7 +287,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _targetKilledByPlayerLogText
+		private TextObject TargetKilledByPlayerLogText
 		{
 			get
 			{
@@ -295,7 +299,18 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _questGiverCapturedTargetHero
+		private TextObject TargetKilledByOthersLogText
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=tPasYJbt}{TARGET_HERO.LINK} died and your agreement with {QUEST_GIVER.LINK} has been canceled.");
+				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
+				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
+				return textObject;
+			}
+		}
+
+		private TextObject QuestGiverCapturedTargetHero
 		{
 			get
 			{
@@ -306,7 +321,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _targetHeroAndQuestGiverInSameFaction
+		private TextObject TargetHeroAndQuestGiverInSameFaction
 		{
 			get
 			{
@@ -317,7 +332,17 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _warDeclaredQuestLog
+		private TextObject PlayerAndQuestGiverNotInSameFaction
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=Z4WHrYxd}You are no longer in the same faction as {ISSUE_OWNER.LINK}. Your agreement with {ISSUE_OWNER.LINK} has been canceled.");
+				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject, textObject);
+				return textObject;
+			}
+		}
+
+		private TextObject WarDeclaredQuestLog
 		{
 			get
 			{
@@ -327,7 +352,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _timeOutLogText => new TextObject("{=maXW8tps}You failed to capture and deliver the prisoner in time.");
+		private TextObject TimeOutLogText => new TextObject("{=maXW8tps}You failed to capture and deliver the prisoner in time.");
 
 		internal static void AutoGeneratedStaticCollectObjectsLordWantsRivalCapturedIssueQuest(object o, List<object> collectedObjects)
 		{
@@ -405,14 +430,25 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 			TextObject textObject2 = new TextObject("{=qOhDHFyH}Are you another one of {QUEST_GIVER.NAME}'s lackeys? Did {?QUEST_GIVER.GENDER}she{?}he{\\?} send you to hunt me like an animal? Well, I think you've found you've caught not a hare but a lion.[if:convo_confused_annoyed][ib:aggressive]");
 			StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject2);
+			TextObject textObject3 = new TextObject("{=SyZ75CJ7}I don’t think so. I’m a loyal subject of {?TARGET_HERO_RULER.GENDER}Queen{?}King{\\?} {TARGET_HERO_RULER.NAME}. You can’t touch me. Now move along!");
+			StringHelpers.SetCharacterProperties("TARGET_HERO_RULER", _targetHero.MapFaction.Leader.CharacterObject, textObject3);
 			return DialogFlow.CreateDialogFlow("start", 125).BeginNpcOptions().NpcOption(textObject2, target_hero_encounter_agressive_condition)
 				.NpcLine(new TextObject("{=TzvGs0v1}Well I guess it's too late to change your mind now, I decided to make an example of you.[if:convo_furious][ib:warrior]"))
 				.CloseDialog()
 				.NpcOption(textObject, target_hero_encounter_default_condition)
 				.BeginPlayerOptions()
 				.PlayerOption(new TextObject("{=WoAgHDrN}I'm bringing you in, one way or the other."))
-				.NpcLine(new TextObject("{=hzCTbbLP}You think you've caught a hare but instead you've caught a lion.[if:convo_furious][ib:warrior]"))
+				.BeginNpcOptions()
+				.NpcOption(new TextObject("{=hzCTbbLP}You think you've caught a hare but instead you've caught a lion.[if:convo_furious][ib:warrior]"), () => _targetHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 				.Consequence(player_target_hero_encounter_consequence)
+				.CloseDialog()
+				.NpcOption(textObject3, () => !_targetHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+				.Consequence(delegate
+				{
+					PlayerEncounter.LeaveEncounter = true;
+				})
+				.CloseDialog()
+				.EndNpcOptions()
 				.CloseDialog()
 				.PlayerOption(new TextObject("{=pZm7HRDG}Don't worry I have no intention to attack."))
 				.NpcLine(new TextObject("{=eJuvk4om}Wise decision.[ib:closed][if:convo_bared_teeth]"))
@@ -471,6 +507,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				.Condition(set_reward_x_2_and_gold_icon)
 				.NpcLine(new TextObject("{=jeljPTgV}Thank you, my {?PLAYER.GENDER}lady{?}lord{\\?}. I knew we could reach an agreement."))
 				.Consequence(QuestFailCounterOfferAccepted)
+				.CloseDialog()
 				.PlayerOption(new TextObject("{=AOgrLJos}No. I haven't decided yet."))
 				.NpcLine(new TextObject("{=UKTjwBxk}Please be quick about it!"))
 				.CloseDialog()
@@ -539,7 +576,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		{
 			if (common_first_dialogue_condition())
 			{
-				return !FactionManager.IsAlliedWithFaction(_targetHero.MapFaction, Hero.MainHero.MapFaction);
+				return !DiplomacyHelper.IsSameFactionAndNotEliminated(_targetHero.MapFaction, Hero.MainHero.MapFaction);
 			}
 			return false;
 		}
@@ -582,7 +619,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			ChangeRelationAction.ApplyPlayerRelation(_targetHero, 10);
 			RelationshipChangeWithQuestGiver = -15;
 			EndCaptivityAction.ApplyByReleasedByChoice(new FlattenedTroopRoster(1) { _targetHero.CharacterObject });
-			AddLog(_playerAcceptedOfferQuestFail);
+			AddLog(PlayerAcceptedOfferQuestFail);
 			CompleteQuestWithBetrayal();
 		}
 
@@ -591,7 +628,8 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			ChangeRelationAction.ApplyPlayerRelation(_targetHero, -10);
 			RelationshipChangeWithQuestGiver = 15;
-			AddLog(_playerDeliveredPrisonerQuestSuccess);
+			GainRenownAction.Apply(Hero.MainHero, 6f);
+			AddLog(PlayerDeliveredPrisonerQuestSuccessLogText);
 			CompleteQuestWithSuccess();
 			if (Hero.OneToOneConversationHero == base.QuestGiver)
 			{
@@ -606,13 +644,14 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			AddLog(_playerStartsQuestLogText);
+			AddLog(PlayerStartsQuestLogText);
+			AddTrackedObject(_targetHero);
 		}
 
 		protected override void OnTimedOut()
 		{
 			RelationshipChangeWithQuestGiver = -5;
-			AddLog(_timeOutLogText);
+			AddLog(TimeOutLogText);
 		}
 
 		protected override void InitializeQuestOnGameLoad()
@@ -644,7 +683,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+		private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification)
 		{
 			if (base.IsOngoing && PlayerCapturedTargetHero && prisoner == _targetHero)
 			{
@@ -667,12 +706,21 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 
 		private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification = true)
 		{
-			if (victim == _targetHero && killer == Hero.MainHero)
+			if (victim == _targetHero)
 			{
-				AddLog(_targetKilledByPlayerLogText);
-				GainRenownAction.Apply(Hero.MainHero, 10f);
-				RelationshipChangeWithQuestGiver = 10;
-				CompleteQuestWithSuccess();
+				if (killer == Hero.MainHero)
+				{
+					AddLog(TargetKilledByPlayerLogText);
+					GainRenownAction.Apply(Hero.MainHero, 10f);
+					RelationshipChangeWithQuestGiver = 10;
+					GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold / 2);
+					CompleteQuestWithSuccess();
+				}
+				else
+				{
+					AddLog(TargetKilledByOthersLogText);
+					CompleteQuestWithCancel();
+				}
 			}
 		}
 
@@ -702,21 +750,21 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			}
 			if (capturer == PartyBase.MainParty)
 			{
-				AddLog(_playerCapturedTargetBrief1LogText);
-				AddLog(_playerCapturedTargetBrief2LogText);
-				AddLog(_playerCapturedTargetBrief3LogText);
+				AddLog(PlayerCapturedTargetBrief1LogText);
+				AddLog(PlayerCapturedTargetBrief2LogText);
+				AddLog(PlayerCapturedTargetBrief3LogText);
 				return;
 			}
 			if (base.QuestGiver.PartyBelongedTo != null && capturer == base.QuestGiver.PartyBelongedTo.Party)
 			{
 				if (base.IsOngoing)
 				{
-					AddLog(_questGiverCapturedTargetHero);
+					AddLog(QuestGiverCapturedTargetHero);
 					CompleteQuestWithCancel();
 				}
 				return;
 			}
-			TextObject textObject = TextObject.Empty;
+			TextObject textObject = TextObject.GetEmpty();
 			if (capturer.IsMobile)
 			{
 				textObject = new TextObject("{=gq8sgb2J}{TARGET_HERO.LINK} has been taken prisoner by {OTHER_HERO.LINK}.");
@@ -729,7 +777,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				textObject.SetTextVariable("SETTLEMENT", capturer.Settlement.EncyclopediaLinkWithName);
 			}
-			if (textObject != TextObject.Empty)
+			if (!textObject.IsEmpty())
 			{
 				AddLog(textObject);
 			}
@@ -751,12 +799,17 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				{
 					CompleteQuestWithCancel();
 				}
-				AddLog(_warDeclaredQuestLog);
+				AddLog(WarDeclaredQuestLog);
 			}
 			else if (base.QuestGiver.MapFaction == _targetHero.MapFaction)
 			{
 				CompleteQuestWithCancel();
-				AddLog(_targetHeroAndQuestGiverInSameFaction);
+				AddLog(TargetHeroAndQuestGiverInSameFaction);
+			}
+			else if (base.QuestGiver.MapFaction != Hero.MainHero.MapFaction)
+			{
+				CompleteQuestWithCancel();
+				AddLog(PlayerAndQuestGiverNotInSameFaction);
 			}
 		}
 	}
@@ -793,7 +846,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		targetHero = null;
 		if (issueGiver.IsLord && !issueGiver.IsMinorFactionHero && issueGiver.Clan.Leader == issueGiver && issueGiver.Clan != Clan.PlayerClan && issueGiver.GetTraitLevel(DefaultTraits.Mercy) <= 0 && issueGiver.GetTraitLevel(DefaultTraits.Honor) <= 0 && issueGiver.GetTraitLevel(DefaultTraits.Valor) <= 0)
 		{
-			List<Clan> list = Clan.FindAll((Clan x) => x.MapFaction != issueGiver.MapFaction && x.MapFaction.IsAtWarWith(issueGiver.MapFaction) && x.Lords.Count > 0).ToList();
+			List<Clan> list = Clan.FindAll((Clan x) => x.MapFaction != issueGiver.MapFaction && !x.IsMinorFaction && x.MapFaction.IsAtWarWith(issueGiver.MapFaction) && x.AliveLords.Count > 0).ToList();
 			int count = list.Count;
 			if (count > 0)
 			{
@@ -803,7 +856,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				do
 				{
 					Clan clan = list[num2];
-					targetHero = clan.Lords.GetRandomElementWithPredicate((Hero noble) => noble.IsAlive && !noble.IsKingdomLeader && noble.PartyBelongedTo != null && noble.PartyBelongedTo.MemberRoster.TotalHealthyCount >= 50 && (float)noble.GetRelation(issueGiver) <= -10f);
+					targetHero = clan.AliveLords.GetRandomElementWithPredicate((Hero noble) => !noble.IsKingdomLeader && noble.PartyBelongedTo != null && noble.PartyBelongedTo.MemberRoster.TotalHealthyCount >= 50 && (float)noble.GetRelation(issueGiver) <= -10f);
 					num2++;
 					if (num2 == count)
 					{

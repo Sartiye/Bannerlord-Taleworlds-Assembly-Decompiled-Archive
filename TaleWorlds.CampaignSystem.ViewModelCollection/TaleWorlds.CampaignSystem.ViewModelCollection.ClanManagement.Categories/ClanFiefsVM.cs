@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -363,6 +364,11 @@ public class ClanFiefsVM : ViewModel
 		RefreshValues();
 	}
 
+	protected virtual ClanSettlementItemVM CreateSettlementItem(Settlement settlement, Action<ClanSettlementItemVM> onSelection, Action onShowSendMembers, ITeleportationCampaignBehavior teleportationBehavior)
+	{
+		return new ClanSettlementItemVM(settlement, onSelection, onShowSendMembers, teleportationBehavior);
+	}
+
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
@@ -398,11 +404,11 @@ public class ClanFiefsVM : ViewModel
 		{
 			if (settlement.IsTown)
 			{
-				Settlements.Add(new ClanSettlementItemVM(settlement, OnFiefSelection, OnShowSendMembers, _teleportationBehavior));
+				Settlements.Add(CreateSettlementItem(settlement, OnFiefSelection, OnShowSendMembers, _teleportationBehavior));
 			}
 			else if (settlement.IsCastle)
 			{
-				Castles.Add(new ClanSettlementItemVM(settlement, OnFiefSelection, OnShowSendMembers, _teleportationBehavior));
+				Castles.Add(CreateSettlementItem(settlement, OnFiefSelection, OnShowSendMembers, _teleportationBehavior));
 			}
 		}
 		GameTexts.SetVariable("RANK", GameTexts.FindText("str_towns"));
@@ -471,10 +477,10 @@ public class ClanFiefsVM : ViewModel
 		}
 		if (CurrentSelectedFief?.Settlement.Town == null)
 		{
-			disabledReason = TextObject.Empty;
+			disabledReason = TextObject.GetEmpty();
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -498,7 +504,7 @@ public class ClanFiefsVM : ViewModel
 				bool flag = FactionHelper.IsMainClanMemberAvailableForSendingSettlementAsGovernor(item, GetSettlementOfGovernor(item), out explanation);
 				SkillObject charm = DefaultSkills.Charm;
 				int skillValue = item.GetSkillValue(charm);
-				ImageIdentifier image = new ImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
+				CharacterImageIdentifier image = new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
 				yield return new ClanCardSelectionItemInfo(item, item.Name, image, CardSelectionItemSpriteType.Skill, charm.StringId.ToLower(), skillValue.ToString(), GetGovernorCandidateProperties(item), !flag, explanation, null);
 			}
 		}
@@ -516,8 +522,8 @@ public class ClanFiefsVM : ViewModel
 		int addedPerkCount = 0;
 		foreach (PerkObject item in governorPerksForHero)
 		{
-			bool num = item.PrimaryRole == SkillEffect.PerkRole.Governor;
-			bool flag = item.SecondaryRole == SkillEffect.PerkRole.Governor;
+			bool num = item.PrimaryRole == PartyRole.Governor;
+			bool flag = item.SecondaryRole == PartyRole.Governor;
 			if (num)
 			{
 				TextObject perkText = ClanCardSelectionItemPropertyInfo.CreateLabeledValueText(item.Name, item.PrimaryDescription);
@@ -624,7 +630,7 @@ public class ClanFiefsVM : ViewModel
 				bool flag = FactionHelper.IsMainClanMemberAvailableForSendingSettlement(item, CurrentSelectedFief.Settlement, out explanation);
 				SkillObject charm = DefaultSkills.Charm;
 				int skillValue = item.GetSkillValue(charm);
-				ImageIdentifier image = new ImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
+				CharacterImageIdentifier image = new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
 				yield return new ClanCardSelectionItemInfo(item, item.Name, image, CardSelectionItemSpriteType.Skill, charm.StringId.ToLower(), skillValue.ToString(), GetSendMembersCandidateProperties(item), !flag, explanation, null);
 			}
 		}

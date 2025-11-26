@@ -285,29 +285,44 @@ public class MissionMultiplayerSiegeClient : MissionMultiplayerGameModeBaseClien
 	public List<ItemObject> GetSiegeMissiles()
 	{
 		List<ItemObject> list = new List<ItemObject>();
-		ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>("grapeshot_fire_projectile");
-		list.Add(@object);
-		foreach (GameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<RangedSiegeWeapon>())
+		foreach (WeakGameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<RangedSiegeWeapon>())
 		{
 			RangedSiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<RangedSiegeWeapon>();
 			if (!string.IsNullOrEmpty(firstScriptOfType.MissileItemID))
 			{
-				ItemObject object2 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MissileItemID);
-				if (!list.Contains(object2))
+				ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MissileItemID);
+				if (!list.Contains(@object))
 				{
-					list.Add(object2);
+					list.Add(@object);
+				}
+			}
+			foreach (ItemObject item2 in new List<ItemObject>
+			{
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleFireProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleFireProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleFireProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleFireProjectileFlyingId)
+			})
+			{
+				if (!list.Contains(item2))
+				{
+					list.Add(item2);
 				}
 			}
 		}
-		foreach (GameEntity item2 in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<StonePile>())
+		foreach (WeakGameEntity item3 in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<StonePile>())
 		{
-			StonePile firstScriptOfType2 = item2.GetFirstScriptOfType<StonePile>();
+			StonePile firstScriptOfType2 = item3.GetFirstScriptOfType<StonePile>();
 			if (!string.IsNullOrEmpty(firstScriptOfType2.GivenItemID))
 			{
-				ItemObject object3 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType2.GivenItemID);
-				if (!list.Contains(object3))
+				ItemObject object2 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType2.GivenItemID);
+				if (!list.Contains(object2))
 				{
-					list.Add(object3);
+					list.Add(object2);
 				}
 			}
 		}

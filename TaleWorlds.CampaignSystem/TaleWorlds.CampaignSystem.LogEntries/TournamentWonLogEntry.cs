@@ -141,4 +141,17 @@ public class TournamentWonLogEntry : LogEntry, IEncyclopediaLog, IChatNotificati
 			}
 		}
 	}
+
+	public override bool IsValid()
+	{
+		if (Winner != null)
+		{
+			if (Winner.IsWanderer)
+			{
+				return Winner.IsAlive;
+			}
+			return true;
+		}
+		return false;
+	}
 }

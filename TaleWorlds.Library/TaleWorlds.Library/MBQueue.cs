@@ -1,61 +1,50 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace TaleWorlds.Library;
 
-public class MBQueue<T> : IMBCollection, ICollection, IEnumerable, IEnumerable<T>
+public class MBQueue<T> : MBReadOnlyQueue<T>, IMBCollection
 {
-	private readonly Queue<T> _data;
-
-	public int Count => _data.Count;
-
-	public bool IsSynchronized => false;
-
-	public object SyncRoot => null;
-
 	public MBQueue()
 	{
-		_data = new Queue<T>();
+	}
+
+	public MBQueue(int capacity)
+		: base(capacity)
+	{
 	}
 
 	public MBQueue(Queue<T> queue)
+		: base(queue)
 	{
-		_data = new Queue<T>(queue);
 	}
 
-	public bool Contains(T item)
+	public MBQueue(IEnumerable<T> collection)
+		: base(collection)
 	{
-		return _data.Contains(item);
 	}
 
-	public IEnumerator<T> GetEnumerator()
+	public bool Remove(T item)
 	{
-		return _data.GetEnumerator();
+		EqualityComparer<T> @default = EqualityComparer<T>.Default;
+		int count = base.Count;
+		bool flag = false;
+		for (int i = 0; i < count; i++)
+		{
+			T val = Dequeue();
+			if (!flag && @default.Equals(val, item))
+			{
+				flag = true;
+			}
+			else
+			{
+				Enqueue(val);
+			}
+		}
+		return flag;
 	}
 
-	IEnumerator IEnumerable.GetEnumerator()
+	void IMBCollection.Clear()
 	{
-		return GetEnumerator();
-	}
-
-	public void Clear()
-	{
-		_data.Clear();
-	}
-
-	public void Enqueue(T item)
-	{
-		_data.Enqueue(item);
-	}
-
-	public T Dequeue()
-	{
-		return _data.Dequeue();
-	}
-
-	public void CopyTo(Array array, int index)
-	{
-		_data.CopyTo((T[])array, index);
+		Clear();
 	}
 }

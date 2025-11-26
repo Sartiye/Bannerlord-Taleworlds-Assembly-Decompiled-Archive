@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class CharacterDevelopmentModel : GameModel
+public abstract class CharacterDevelopmentModel : MBGameModel<CharacterDevelopmentModel>
 {
 	public abstract int MaxAttribute { get; }
 
@@ -24,8 +21,6 @@ public abstract class CharacterDevelopmentModel : GameModel
 
 	public abstract int LevelsPerAttributePoint { get; }
 
-	public abstract List<Tuple<SkillObject, int>> GetSkillsDerivedFromTraits(Hero hero = null, CharacterObject templateCharacter = null, bool isByNaturalGrowth = false);
-
 	public abstract int SkillsRequiredForLevel(int level);
 
 	public abstract int GetMaxSkillPoint();
@@ -40,11 +35,9 @@ public abstract class CharacterDevelopmentModel : GameModel
 
 	public abstract int GetTraitXpRequiredForTraitLevel(TraitObject trait, int traitLevel);
 
-	public abstract ExplainedNumber CalculateLearningLimit(int attributeValue, int focusValue, TextObject attributeName, bool includeDescriptions = false);
+	public abstract ExplainedNumber CalculateLearningLimit(IReadOnlyPropertyOwner<CharacterAttribute> characterAttributes, int focusValue, SkillObject skill, bool includeDescriptions = false);
 
-	public abstract float CalculateLearningRate(Hero hero, SkillObject skill);
-
-	public abstract ExplainedNumber CalculateLearningRate(int attributeValue, int focusValue, int skillValue, int characterLevel, TextObject attributeName, bool includeDescriptions = false);
+	public abstract ExplainedNumber CalculateLearningRate(IReadOnlyPropertyOwner<CharacterAttribute> characterAttributes, int focusValue, int skillValue, SkillObject skill, bool includeDescriptions = false);
 
 	public abstract SkillObject GetNextSkillToAddFocus(Hero hero);
 

@@ -1,13 +1,17 @@
 using System;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MapBar;
 
 public class MapTimeControlVM : ViewModel
 {
+	private bool _mainPartyPreviousTransitioning;
+
 	private Action _onTimeFlowStateChange;
 
 	private Func<MapBarShortcuts> _getMapBarShortcuts;
@@ -60,7 +64,13 @@ public class MapTimeControlVM : ViewModel
 
 	public bool IsMarriageOfferPopupActive { get; set; }
 
+	public bool IsHeirSelectionPopupActive { get; set; }
+
 	public bool IsMapCheatsActive { get; set; }
+
+	public bool IsMapIncidentActive { get; set; }
+
+	public bool IsOverlayContextMenuEnabled { get; set; }
 
 	[DataSourceProperty]
 	public BasicTooltipViewModel TimeOfDayHint
@@ -92,6 +102,7 @@ public class MapTimeControlVM : ViewModel
 			{
 				_isCurrentlyPausedOnMap = value;
 				OnPropertyChangedWithValue(value, "IsCurrentlyPausedOnMap");
+				RefreshPausedText();
 			}
 		}
 	}
@@ -279,9 +290,38 @@ public class MapTimeControlVM : ViewModel
 				return GameTexts.FindText("str_hotkey_with_hint").ToString();
 			});
 		}
-		PausedText = GameTexts.FindText("str_paused_capital").ToString();
+		RefreshPausedText();
 		Date = CampaignTime.Now.ToString();
 		_lastSetDate = CampaignTime.Now;
+	}
+
+	private void RefreshPausedText()
+	{
+		MobileParty mainParty = MobileParty.MainParty;
+		if (mainParty == null)
+		{
+			Debug.FailedAssert("Main party is null when refreshing pause text", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Map\\MapBar\\MapTimeControlVM.cs", "RefreshPausedText", 107);
+			PausedText = GameTexts.FindText("str_paused_capital").ToString();
+		}
+		else if (IsCurrentlyPausedOnMap)
+		{
+			PausedText = GameTexts.FindText("str_paused_capital").ToString();
+		}
+		else if (MobileParty.MainParty.IsTransitionInProgress)
+		{
+			if (mainParty.IsCurrentlyAtSea)
+			{
+				PausedText = new TextObject("{=g1op0Thi}DISEMBARKING").ToString();
+			}
+			else
+			{
+				PausedText = new TextObject("{=Lt0PzKHN}EMBARKING").ToString();
+			}
+		}
+		else
+		{
+			PausedText = string.Empty;
+		}
 	}
 
 	public override void OnFinalize()
@@ -314,7 +354,12 @@ public class MapTimeControlVM : ViewModel
 	{
 		TimeFlowState = (int)Campaign.Current.GetSimplifiedTimeControlMode();
 		IsCurrentlyPausedOnMap = (TimeFlowState == 0 || TimeFlowState == 6) && IsCenterPanelEnabled && !IsEscapeMenuOpened && !_isSaving;
-		IsCenterPanelEnabled = !IsInBattleSimulation && !IsInRecruitment && !IsEncyclopediaOpen && !IsInTownManagement && !IsInArmyManagement && IsInMap && !IsInCampaignOptions && !IsInHideoutTroopManage && !IsMarriageOfferPopupActive && !IsMapCheatsActive;
+		IsCenterPanelEnabled = !IsInBattleSimulation && !IsInRecruitment && !IsEncyclopediaOpen && !IsInTownManagement && !IsInArmyManagement && IsInMap && !IsInCampaignOptions && !IsInHideoutTroopManage && !IsMarriageOfferPopupActive && !IsHeirSelectionPopupActive && !IsMapCheatsActive && !IsMapIncidentActive && !IsOverlayContextMenuEnabled;
+		if (MobileParty.MainParty.IsTransitionInProgress != _mainPartyPreviousTransitioning)
+		{
+			_mainPartyPreviousTransitioning = MobileParty.MainParty.IsTransitionInProgress;
+			RefreshPausedText();
+		}
 	}
 
 	public void Refresh()
@@ -324,7 +369,7 @@ public class MapTimeControlVM : ViewModel
 			Date = CampaignTime.Now.ToString();
 			_lastSetDate = CampaignTime.Now;
 		}
-		Time = CampaignTime.Now.ToHours % 24.0;
+		Time = CampaignTime.Now.ToHours % (double)CampaignTime.HoursInDay;
 		TimeOfDayHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTimeOfDayAndResetCameraTooltip());
 	}
 

@@ -88,7 +88,7 @@ public class BatteringRamSpawner : SpawnerBase
 	protected internal override bool OnCheckForProblems()
 	{
 		bool result = base.OnCheckForProblems();
-		if (!base.Scene.IsMultiplayerScene() && base.Scene.FindEntitiesWithTag("ditch_filler").FirstOrDefault((GameEntity df) => df.HasTag(SideTag)) != null)
+		if (!base.Scene.IsMultiplayerScene() && base.Scene.FindWeakEntitiesWithTag("ditch_filler").FirstOrDefault((WeakGameEntity df) => df.HasTag(SideTag)) != null)
 		{
 			if (DitchNavMeshID_1 >= 0 && !base.Scene.IsAnyFaceWithId(DitchNavMeshID_1))
 			{

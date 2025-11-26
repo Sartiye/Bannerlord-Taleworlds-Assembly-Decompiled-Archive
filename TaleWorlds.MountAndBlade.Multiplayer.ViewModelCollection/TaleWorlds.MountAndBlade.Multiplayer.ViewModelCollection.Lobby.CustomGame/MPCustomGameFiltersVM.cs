@@ -18,7 +18,8 @@ public class MPCustomGameFiltersVM : ViewModel
 		HasPlayers,
 		HasPasswordProtection,
 		IsOfficial,
-		ModuleCompatible
+		ModuleCompatible,
+		Favorite
 	}
 
 	public Action OnFiltersApplied;
@@ -110,7 +111,7 @@ public class MPCustomGameFiltersVM : ViewModel
 			new MPCustomGameFilterItemVM(CustomGameFilterType.HasPasswordProtection, new TextObject("{=v6J8ILV3}No password"), (GameServerEntry x) => !x.PasswordProtected, OnAnyFilterChange),
 			new MPCustomGameFilterItemVM(CustomGameFilterType.NotFull, new TextObject("{=W4DLzPSb}Server not full"), (GameServerEntry x) => x.MaxPlayerCount - x.PlayerCount > 0, OnAnyFilterChange),
 			new MPCustomGameFilterItemVM(CustomGameFilterType.ModuleCompatible, new TextObject("{=CNR4cZwZ}Modules compatible"), FilterByCompatibleModules, OnAnyFilterChange),
-			new MPCustomGameFilterItemVM(CustomGameFilterType.ModuleCompatible, new TextObject("{=BDdVhfuJ}Favorites"), FilterByFavorites, OnAnyFilterChange)
+			new MPCustomGameFilterItemVM(CustomGameFilterType.Favorite, new TextObject("{=BDdVhfuJ}Favorite"), FilterByFavorites, OnAnyFilterChange)
 		};
 		RefreshValues();
 	}

@@ -337,7 +337,7 @@ public class MPLobbyRankProgressInformationVM : ViewModel
 		ClickToCloseText = _getExitText?.Invoke();
 		if (player.RankInfo == null)
 		{
-			Debug.FailedAssert("Can't request rank progression information of another player.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Profile\\MPLobbyRankProgressInformationVM.cs", "OpenWith", 54);
+			Debug.FailedAssert("Can't request rank progression information of another player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Profile\\MPLobbyRankProgressInformationVM.cs", "OpenWith", 54);
 			return;
 		}
 		_basePlayer = player;

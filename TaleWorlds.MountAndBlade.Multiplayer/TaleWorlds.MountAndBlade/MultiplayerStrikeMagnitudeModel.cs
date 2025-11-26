@@ -38,7 +38,12 @@ public class MultiplayerStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			}
 		}
 		WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
-		return CombatStatCalculator.CalculateStrikeMagnitudeForSwing(swingSpeed, impactPoint, weapon.Item.Weight, currentUsageItem.GetRealWeaponLength(), currentUsageItem.Inertia, currentUsageItem.CenterOfMass, num);
+		return CombatStatCalculator.CalculateStrikeMagnitudeForSwing(swingSpeed, impactPoint, weapon.Item.Weight, currentUsageItem.GetRealWeaponLength(), currentUsageItem.TotalInertia, currentUsageItem.CenterOfMass, num);
+	}
+
+	public override float CalculateStrikeMagnitudeForUnarmedAttack(in AttackInformation attackInformation, in AttackCollisionData collisionData, float progressEffect, float momentumRemaining)
+	{
+		return momentumRemaining * progressEffect * ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.FistFightDamageMultiplier);
 	}
 
 	public override float CalculateStrikeMagnitudeForThrust(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float thrustWeaponSpeed, float extraLinearSpeed, bool isThrown = false)
@@ -74,7 +79,7 @@ public class MultiplayerStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 				num4 = MathF.Max(0f, magnitude * (45f / (45f + armorEffectiveness)));
 				break;
 			default:
-				Debug.FailedAssert("Given damage type is invalid.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\ComponentInterfaces\\MultiplayerStrikeMagnitudeModel.cs", "ComputeRawDamage", 96);
+				Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\ComponentInterfaces\\MultiplayerStrikeMagnitudeModel.cs", "ComputeRawDamage", 107);
 				return 0f;
 			}
 			num3 += (1f - bluntDamageFactorByDamageType) * num4;

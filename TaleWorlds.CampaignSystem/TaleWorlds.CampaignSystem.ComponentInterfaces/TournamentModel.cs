@@ -1,10 +1,11 @@
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.TournamentGames;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class TournamentModel : GameModel
+public abstract class TournamentModel : MBGameModel<TournamentModel>
 {
 	public abstract float GetTournamentStartChance(Town town);
 
@@ -23,4 +24,8 @@ public abstract class TournamentModel : GameModel
 	public abstract (SkillObject skill, int xp) GetSkillXpGainFromTournament(Town town);
 
 	public abstract Equipment GetParticipantArmor(CharacterObject participant);
+
+	public abstract MBList<ItemObject> GetRegularRewardItems(Town town, int regularRewardMinValue, int regularRewardMaxValue);
+
+	public abstract MBList<ItemObject> GetEliteRewardItems(Town town, int regularRewardMinValue, int regularRewardMaxValue);
 }

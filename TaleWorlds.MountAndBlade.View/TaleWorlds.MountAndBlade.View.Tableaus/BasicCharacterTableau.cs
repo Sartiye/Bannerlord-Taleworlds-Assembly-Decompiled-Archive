@@ -6,11 +6,14 @@ using TaleWorlds.Engine;
 using TaleWorlds.Engine.Options;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View.Tableaus;
 
 public class BasicCharacterTableau
 {
+	private static int _tableauIndex;
+
 	private bool _isVersionCompatible;
 
 	private const int _expectedCharacterCodeVersion = 4;
@@ -105,7 +108,7 @@ public class BasicCharacterTableau
 
 	private BodyProperties _bodyProperties = BodyProperties.Default;
 
-	private BannerCode _bannerCode;
+	private Banner _banner;
 
 	public Texture Texture { get; private set; }
 
@@ -208,8 +211,8 @@ public class BasicCharacterTableau
 		_cameraRatio = (float)_tableauSizeX / (float)_tableauSizeY;
 		View?.SetEnable(value: false);
 		View?.AddClearTask(clearOnlySceneview: true);
-		Texture?.ReleaseNextFrame();
-		Texture = TableauView.AddTableau("BasicCharacterTableau", CharacterTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
+		Texture?.Release();
+		Texture = TableauView.AddTableau($"BasicCharacterTableau_{_tableauIndex++}", CharacterTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
 		View.SetScene(_tableauScene);
 		View.SetSceneUsesSkybox(value: false);
 		View.SetDeleteAfterRendering(value: false);
@@ -226,9 +229,10 @@ public class BasicCharacterTableau
 		View?.SetEnable(value: false);
 		View?.AddClearTask();
 		Texture = null;
-		_bannerCode = null;
+		_banner = null;
 		if (_tableauScene != null)
 		{
+			_tableauScene.ManualInvalidate();
 			_tableauScene = null;
 		}
 	}
@@ -332,8 +336,8 @@ public class BasicCharacterTableau
 			catch (Exception ex)
 			{
 				ResetProperties();
-				Debug.FailedAssert("Exception: " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 348);
-				Debug.FailedAssert("Couldn't parse character code: " + code, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 349);
+				Debug.FailedAssert("Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 348);
+				Debug.FailedAssert("Couldn't parse character code: " + code, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 349);
 			}
 		}
 		_isVisualsDirty = true;
@@ -468,12 +472,13 @@ public class BasicCharacterTableau
 							continue;
 						}
 						Mesh mesh2 = currentMesh;
-						if ((object)mesh2 != null && mesh2.HasTag("banner_replacement_mesh") && _bannerCode != null)
+						if ((object)mesh2 != null && mesh2.HasTag("banner_replacement_mesh") && _banner != null)
 						{
-							TableauCacheManager.Current.BeginCreateBannerTexture(_bannerCode, delegate(Texture t)
+							BannerTextureCreationData thumbnailCreationData = new BannerTextureCreationData(_banner, delegate(Texture t)
 							{
 								ApplyBannerTextureToMesh(currentMesh, t);
-							}, isTableauOrNineGrid: true);
+							}, null, BannerDebugInfo.CreateManual(GetType().Name), isTableauOrNineGrid: true, isLarge: true);
+							ThumbnailCacheManager.Current.CreateTexture(thumbnailCreationData);
 							break;
 						}
 					}
@@ -498,7 +503,7 @@ public class BasicCharacterTableau
 			gameEntity.SetGlobalFrame(in _initialSpawnFrame);
 			SkinGenerationParams skinParams = new SkinGenerationParams((int)_skinMeshesMask, _underwearType, (int)_bodyMeshType, (int)_hairCoverType, (int)_beardCoverType, (int)_bodyDeformType, prepareImmediately: true, _faceDirtAmount, flag ? 1 : 0, _race, useTranslucency: false, useTesselation: false);
 			MBAgentVisuals.FillEntityWithBodyMeshesWithoutAgentVisuals(gameEntity, skinParams, _bodyProperties, glovesMesh);
-			gameEntity.Skeleton.SetAgentActionChannel(0, ActionIndexCache.Create("act_inventory_idle"));
+			gameEntity.Skeleton.SetAgentActionChannel(0, in ActionIndexCache.act_inventory_idle);
 			gameEntity.SetEnforcedMaximumLodLevel(0);
 			gameEntity.CheckResources(addToQueue: true, checkFaceResources: true);
 			if (_mountMeshName.Length > 0)
@@ -594,11 +599,11 @@ public class BasicCharacterTableau
 	{
 		if (string.IsNullOrEmpty(value))
 		{
-			_bannerCode = null;
+			_banner = null;
 		}
 		else
 		{
-			_bannerCode = BannerCode.CreateFrom(value);
+			_banner = new Banner(value);
 		}
 	}
 

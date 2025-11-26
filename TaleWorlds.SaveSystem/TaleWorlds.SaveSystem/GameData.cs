@@ -7,13 +7,13 @@ namespace TaleWorlds.SaveSystem;
 [Serializable]
 public class GameData
 {
-	public byte[] Header { get; private set; }
+	public byte[] Header { get; internal set; }
 
-	public byte[] Strings { get; private set; }
+	public byte[] Strings { get; internal set; }
 
-	public byte[][] ObjectData { get; private set; }
+	public byte[][] ObjectData { get; internal set; }
 
-	public byte[][] ContainerData { get; private set; }
+	public byte[][] ContainerData { get; internal set; }
 
 	public int TotalSize
 	{
@@ -41,6 +41,10 @@ public class GameData
 		ContainerData = containerData;
 	}
 
+	public GameData()
+	{
+	}
+
 	public void Inspect()
 	{
 		Debug.Print($"Header Size: {Header.Length} Strings Size: {Strings.Length} Object Size: {ObjectData.Length} Container Size: {ContainerData.Length}");
@@ -50,12 +54,52 @@ public class GameData
 
 	public static GameData CreateFrom(byte[] readBytes)
 	{
-		return (GameData)Common.DeserializeObject(readBytes);
+		TaleWorlds.Library.BinaryReader binaryReader = new TaleWorlds.Library.BinaryReader(readBytes);
+		int length = binaryReader.ReadInt();
+		byte[] header = binaryReader.ReadBytes(length);
+		int length2 = binaryReader.ReadInt();
+		byte[] strings = binaryReader.ReadBytes(length2);
+		int num = binaryReader.ReadInt();
+		byte[][] array = new byte[num][];
+		for (int i = 0; i < num; i++)
+		{
+			int length3 = binaryReader.ReadInt();
+			byte[] array2 = binaryReader.ReadBytes(length3);
+			array[i] = array2;
+		}
+		int num2 = binaryReader.ReadInt();
+		byte[][] array3 = new byte[num2][];
+		for (int j = 0; j < num2; j++)
+		{
+			int length4 = binaryReader.ReadInt();
+			byte[] array4 = binaryReader.ReadBytes(length4);
+			array3[j] = array4;
+		}
+		return new GameData(header, strings, array, array3);
 	}
 
 	public byte[] GetData()
 	{
-		return Common.SerializeObject(this);
+		TaleWorlds.Library.BinaryWriter binaryWriter = new TaleWorlds.Library.BinaryWriter();
+		binaryWriter.WriteInt(Header.Length);
+		binaryWriter.WriteBytes(Header);
+		binaryWriter.WriteInt(Strings.Length);
+		binaryWriter.WriteBytes(Strings);
+		binaryWriter.WriteInt(ObjectData.Length);
+		byte[][] objectData = ObjectData;
+		foreach (byte[] array in objectData)
+		{
+			binaryWriter.WriteInt(array.Length);
+			binaryWriter.WriteBytes(array);
+		}
+		binaryWriter.WriteInt(ContainerData.Length);
+		objectData = ContainerData;
+		foreach (byte[] array2 in objectData)
+		{
+			binaryWriter.WriteInt(array2.Length);
+			binaryWriter.WriteBytes(array2);
+		}
+		return binaryWriter.GetFinalData();
 	}
 
 	public static void Write(System.IO.BinaryWriter writer, GameData gameData)
@@ -116,14 +160,14 @@ public class GameData
 	{
 		if (arr1.Length != arr2.Length)
 		{
-			Debug.FailedAssert(name + " failed length comparison.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 142);
+			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 192);
 			return false;
 		}
 		for (int i = 0; i < arr1.Length; i++)
 		{
 			if (arr1[i] != arr2[i])
 			{
-				Debug.FailedAssert($"{name} failed byte comparison at index {i}.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 150);
+				Debug.FailedAssert($"{name} failed byte comparison at index {i}.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 200);
 				return false;
 			}
 		}
@@ -134,21 +178,21 @@ public class GameData
 	{
 		if (arr1.Length != arr2.Length)
 		{
-			Debug.FailedAssert(name + " failed length comparison.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 161);
+			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 211);
 			return false;
 		}
 		for (int i = 0; i < arr1.Length; i++)
 		{
 			if (arr1[i].Length != arr2[i].Length)
 			{
-				Debug.FailedAssert(name + " failed length comparison.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 168);
+				Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 218);
 				return false;
 			}
 			for (int j = 0; j < arr1[i].Length; j++)
 			{
 				if (arr1[i][j] != arr2[i][j])
 				{
-					Debug.FailedAssert($"{name} failed byte comparison at index {i}-{j}.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 176);
+					Debug.FailedAssert($"{name} failed byte comparison at index {i}-{j}.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 226);
 				}
 			}
 		}

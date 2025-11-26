@@ -68,9 +68,19 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 
 	private TextWidget _widget_4_0;
 
-	private NavigationScopeTargeter _widget_4_1;
+	private ScrollablePanel _widget_4_1;
 
-	private NavigatableListPanel _widget_4_2;
+	private Widget _widget_4_1_0;
+
+	private NavigationScopeTargeter _widget_4_1_0_0;
+
+	private NavigatableListPanel _widget_4_1_0_1;
+
+	private ScrollbarWidget _widget_4_2;
+
+	private ImageWidget _widget_4_2_0;
+
+	private ImageWidget _widget_4_2_1;
 
 	private Widget _widget_5;
 
@@ -157,10 +167,20 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget.AddChild(_widget_4);
 		_widget_4_0 = new TextWidget(base.Context);
 		_widget_4.AddChild(_widget_4_0);
-		_widget_4_1 = new NavigationScopeTargeter(base.Context);
+		_widget_4_1 = new ScrollablePanel(base.Context);
 		_widget_4.AddChild(_widget_4_1);
-		_widget_4_2 = new NavigatableListPanel(base.Context);
+		_widget_4_1_0 = new Widget(base.Context);
+		_widget_4_1.AddChild(_widget_4_1_0);
+		_widget_4_1_0_0 = new NavigationScopeTargeter(base.Context);
+		_widget_4_1_0.AddChild(_widget_4_1_0_0);
+		_widget_4_1_0_1 = new NavigatableListPanel(base.Context);
+		_widget_4_1_0.AddChild(_widget_4_1_0_1);
+		_widget_4_2 = new ScrollbarWidget(base.Context);
 		_widget_4.AddChild(_widget_4_2);
+		_widget_4_2_0 = new ImageWidget(base.Context);
+		_widget_4_2.AddChild(_widget_4_2_0);
+		_widget_4_2_1 = new ImageWidget(base.Context);
+		_widget_4_2.AddChild(_widget_4_2_1);
 		_widget_5 = new Widget(base.Context);
 		_widget.AddChild(_widget_5);
 		_widget_5_0 = new TextWidget(base.Context);
@@ -189,7 +209,11 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_3_0_0_1.Id = "Icon";
 		_widget_3_1_0_0.Id = "Banner";
 		_widget_3_1_0_1.Id = "Icon";
-		_widget_4_2.Id = "AvailableMaps";
+		_widget_4_1_0.Id = "ClipRect";
+		_widget_4_1_0_1.Id = "AvailableMaps";
+		_widget_4_2.Id = "HorizontalScrollbar";
+		_widget_4_2_0.Id = "ScrollbarBed";
+		_widget_4_2_1.Id = "ScrollbarHandle";
 	}
 
 	public void SetAttributes()
@@ -303,7 +327,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_3_1_0_1.SuggestedHeight = 220f;
 		_widget_3_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_3_1_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4.VerticalAlignment = VerticalAlignment.Center;
@@ -314,15 +338,48 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_4_0.MarginTop = 20f;
 		_widget_4_0.Brush = base.Context.GetBrush("MPIntermission.Voting.Title.Text");
 		_widget_4_0.Brush.FontSize = 40;
-		_widget_4_1.ScopeID = "IntermissionMapSelectionScope";
-		_widget_4_1.ScopeParent = _widget_4_2;
-		_widget_4_1.ScopeMovements = GamepadNavigationTypes.Horizontal;
-		_widget_4_2.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_2.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_2.MarginTop = 90f;
-		_widget_4_2.MarginBottom = 20f;
-		_widget_4_2.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
+		_widget_4_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1.MarginTop = 90f;
+		_widget_4_1.MarginBottom = 20f;
+		_widget_4_1.AutoHideScrollBars = true;
+		_widget_4_1.ClipRect = _widget_4_1_0;
+		_widget_4_1.InnerPanel = _widget_4_1_0_1;
+		_widget_4_1.HorizontalScrollbar = _widget_4_2;
+		_widget_4_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1_0.ClipContents = true;
+		_widget_4_1_0_0.ScopeID = "IntermissionMapSelectionScope";
+		_widget_4_1_0_0.ScopeParent = _widget_4_1_0_1;
+		_widget_4_1_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
+		_widget_4_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_1_0_1.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
+		_widget_4_2.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_2.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_2.SuggestedHeight = 10f;
+		_widget_4_2.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_4_2.MarginLeft = 20f;
+		_widget_4_2.MarginRight = 20f;
+		_widget_4_2.MarginTop = 10f;
+		_widget_4_2.AlignmentAxis = AlignmentAxis.Horizontal;
+		_widget_4_2.DoNotUpdateHandleSize = true;
+		_widget_4_2.Handle = _widget_4_2_1;
+		_widget_4_2.MaxValue = 100f;
+		_widget_4_2.MinValue = 0f;
+		_widget_4_2.UpdateChildrenStates = true;
+		_widget_4_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_2_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_2_0.SuggestedHeight = 4f;
+		_widget_4_2_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_2_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_4_2_0.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Bed");
+		_widget_4_2_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4_2_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_2_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_2_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_4_2_1.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Handle");
 		_widget_5.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5.HorizontalAlignment = HorizontalAlignment.Center;
@@ -577,11 +634,11 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		if (_datasource_Root_AvailableMaps != null)
 		{
 			_datasource_Root_AvailableMaps.ListChanged -= OnList_datasource_Root_AvailableMapsChanged;
-			for (int num = _widget_4_2.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_4_1_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = _widget_4_2.GetChild(num);
+				Widget child = _widget_4_1_0_1.GetChild(num);
 				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)_widget_4_2.GetChild(num)).DestroyDataSource();
+				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)_widget_4_1_0_1.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_AvailableMaps = null;
 		}
@@ -1822,13 +1879,13 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		{
 		case TaleWorlds.Library.ListChangedType.Reset:
 		{
-			for (int num = _widget_4_2.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_4_1_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child3 = _widget_4_2.GetChild(num);
+				Widget child3 = _widget_4_1_0_1.GetChild(num);
 				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-				Widget child4 = _widget_4_2.GetChild(num);
+				Widget child4 = _widget_4_1_0_1.GetChild(num);
 				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child4).SetDataSource(null);
-				_widget_4_2.RemoveChild(child4);
+				_widget_4_1_0_1.RemoveChild(child4);
 			}
 			break;
 		}
@@ -1837,7 +1894,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			for (int i = 0; i < _datasource_Root_AvailableMaps.Count; i++)
 			{
 				MPIntermissionMapItemVM bindingObject = _datasource_Root_AvailableMaps[i];
-				_widget_4_2.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+				_widget_4_1_0_1.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
 			}
 			break;
 		}
@@ -1847,7 +1904,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate);
 			MPIntermissionMapItemVM dataSource = (MPIntermissionMapItemVM)(generatedWidgetData.Data = _datasource_Root_AvailableMaps[e.NewIndex]);
 			multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_4_2.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, e.NewIndex);
+			_widget_4_1_0_1.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, e.NewIndex);
 			multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.CreateWidgets();
 			multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetIds();
 			multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetAttributes();
@@ -1856,15 +1913,15 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
-			Widget child2 = _widget_4_2.GetChild(e.NewIndex);
+			Widget child2 = _widget_4_1_0_1.GetChild(e.NewIndex);
 			((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
-			Widget child = _widget_4_2.GetChild(e.NewIndex);
+			Widget child = _widget_4_1_0_1.GetChild(e.NewIndex);
 			((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child).SetDataSource(null);
-			_widget_4_2.RemoveChild(child);
+			_widget_4_1_0_1.RemoveChild(child);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemChanged:
@@ -2126,13 +2183,13 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			if (_datasource_Root_AvailableMaps != null)
 			{
 				_datasource_Root_AvailableMaps.ListChanged -= OnList_datasource_Root_AvailableMapsChanged;
-				for (int num = _widget_4_2.ChildCount - 1; num >= 0; num--)
+				for (int num = _widget_4_1_0_1.ChildCount - 1; num >= 0; num--)
 				{
-					Widget child = _widget_4_2.GetChild(num);
+					Widget child = _widget_4_1_0_1.GetChild(num);
 					((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-					Widget child2 = _widget_4_2.GetChild(num);
+					Widget child2 = _widget_4_1_0_1.GetChild(num);
 					((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child2).SetDataSource(null);
-					_widget_4_2.RemoveChild(child2);
+					_widget_4_1_0_1.RemoveChild(child2);
 				}
 				_datasource_Root_AvailableMaps = null;
 			}
@@ -2380,7 +2437,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate);
 				MPIntermissionMapItemVM dataSource = (MPIntermissionMapItemVM)(generatedWidgetData.Data = _datasource_Root_AvailableMaps[i]);
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_4_2.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, i);
+				_widget_4_1_0_1.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, i);
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.CreateWidgets();
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetIds();
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetAttributes();
@@ -2412,13 +2469,13 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		if (_datasource_Root_AvailableMaps != null)
 		{
 			_datasource_Root_AvailableMaps.ListChanged -= OnList_datasource_Root_AvailableMapsChanged;
-			for (int num = _widget_4_2.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_4_1_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = _widget_4_2.GetChild(num);
+				Widget child = _widget_4_1_0_1.GetChild(num);
 				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-				Widget child2 = _widget_4_2.GetChild(num);
+				Widget child2 = _widget_4_1_0_1.GetChild(num);
 				((MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate)child2).SetDataSource(null);
-				_widget_4_2.RemoveChild(child2);
+				_widget_4_1_0_1.RemoveChild(child2);
 			}
 			_datasource_Root_AvailableMaps = null;
 		}
@@ -2433,7 +2490,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate);
 				MPIntermissionMapItemVM dataSource = (MPIntermissionMapItemVM)(generatedWidgetData.Data = _datasource_Root_AvailableMaps[i]);
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_4_2.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, i);
+				_widget_4_1_0_1.AddChildAtIndex(multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate, i);
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.CreateWidgets();
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetIds();
 				multiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_Intermission_MPIntermissionVM_Dependency_1_ItemTemplate.SetAttributes();

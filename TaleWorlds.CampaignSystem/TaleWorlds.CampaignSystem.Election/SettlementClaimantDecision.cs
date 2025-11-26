@@ -4,8 +4,10 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -54,7 +56,7 @@ public class SettlementClaimantDecision : KingdomDecision
 
 		public override ImageIdentifier GetDecisionImageIdentifier()
 		{
-			return new ImageIdentifier(CharacterCode.CreateFrom(Clan.Leader.CharacterObject));
+			return new CharacterImageIdentifier(CharacterCode.CreateFrom(Clan.Leader.CharacterObject));
 		}
 
 		public ClanAsDecisionOutcome(Clan clan)
@@ -180,7 +182,8 @@ public class SettlementClaimantDecision : KingdomDecision
 				continue;
 			}
 			num += item.GetSettlementValueForFaction(clanAsDecisionOutcome.Clan.Kingdom);
-			if (Campaign.Current.Models.MapDistanceModel.GetDistance(item, Settlement, num4, out var distance))
+			float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(item, Settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
+			if (distance < num4)
 			{
 				if (distance < num3)
 				{
@@ -194,22 +197,22 @@ public class SettlementClaimantDecision : KingdomDecision
 			}
 			num2++;
 		}
-		float num5 = Campaign.AverageDistanceBetweenTwoFortifications * 1.5f;
-		float a = num5 * 0.25f;
-		float b = num5;
+		float a = 1f * 0.25f;
+		float num5 = 1f;
 		if (num4 < Campaign.MapDiagonal)
 		{
-			b = (num4 + num3) / 2f;
+			num5 = (num4 + num3) / 2f;
 		}
 		else if (num3 < Campaign.MapDiagonal)
 		{
-			b = num3;
+			num5 = num3;
 		}
-		float num6 = TaleWorlds.Library.MathF.Pow(num5 / TaleWorlds.Library.MathF.Max(a, TaleWorlds.Library.MathF.Min(400f, b)), 0.5f);
-		float num7 = clan.TotalStrength;
+		float b = num5 / (Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay);
+		float num6 = TaleWorlds.Library.MathF.Pow(1f / TaleWorlds.Library.MathF.Max(a, TaleWorlds.Library.MathF.Min(2.5f, b)), Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 0.0076f);
+		float num7 = clan.CurrentTotalStrength;
 		if (Settlement.OwnerClan == clan && Settlement.Town != null && Settlement.Town.GarrisonParty != null)
 		{
-			num7 -= Settlement.Town.GarrisonParty.Party.TotalStrength;
+			num7 -= Settlement.Town.GarrisonParty.Party.CalculateCurrentStrength();
 			if (num7 < 0f)
 			{
 				num7 = 0f;
@@ -313,20 +316,19 @@ public class SettlementClaimantDecision : KingdomDecision
 
 	public override TextObject GetChosenOutcomeText(DecisionOutcome chosenOutcome, SupportStatus supportStatus, bool isShortVersion = false)
 	{
-		TextObject empty = TextObject.Empty;
 		bool flag = ((ClanAsDecisionOutcome)chosenOutcome).Clan.Leader == Settlement.MapFaction.Leader;
-		empty = ((supportStatus == SupportStatus.Majority && flag) ? new TextObject("{=Zckbdm4Z}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief with {?RULER.GENDER}her{?}his{\\?} council's support.") : ((supportStatus == SupportStatus.Minority && flag) ? new TextObject("{=qa4FlTWS}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief despite {?RULER.GENDER}her{?}his{\\?} council's opposition.") : (flag ? new TextObject("{=5bBAOHmC}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief, with {?RULER.GENDER}her{?}his{\\?} council evenly split.") : (supportStatus switch
+		TextObject textObject = ((supportStatus == SupportStatus.Majority && flag) ? new TextObject("{=Zckbdm4Z}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief with {?RULER.GENDER}her{?}his{\\?} council's support.") : ((supportStatus == SupportStatus.Minority && flag) ? new TextObject("{=qa4FlTWS}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief despite {?RULER.GENDER}her{?}his{\\?} council's opposition.") : (flag ? new TextObject("{=5bBAOHmC}{RULER.NAME} of the {KINGDOM} takes {SETTLEMENT} as {?RULER.GENDER}her{?}his{\\?} fief, with {?RULER.GENDER}her{?}his{\\?} council evenly split.") : (supportStatus switch
 		{
 			SupportStatus.Majority => new TextObject("{=0nhqJewP}{RULER.NAME} of the {KINGDOM} grants {SETTLEMENT} to {LEADER.NAME} with {?RULER.GENDER}her{?}his{\\?} council's support."), 
 			SupportStatus.Minority => new TextObject("{=Ktpia7Pa}{RULER.NAME} of the {KINGDOM} grants {SETTLEMENT} to {LEADER.NAME} despite {?RULER.GENDER}her{?}his{\\?} council's opposition."), 
 			_ => new TextObject("{=l5H9x7Lo}{RULER.NAME} of the {KINGDOM} grants {SETTLEMENT} to {LEADER.NAME}, with {?RULER.GENDER}her{?}his{\\?} council evenly split."), 
 		}))));
-		empty.SetTextVariable("SETTLEMENT", Settlement.Name);
-		StringHelpers.SetCharacterProperties("LEADER", ((ClanAsDecisionOutcome)chosenOutcome).Clan.Leader.CharacterObject, empty);
-		StringHelpers.SetCharacterProperties("RULER", Settlement.MapFaction.Leader.CharacterObject, empty);
-		empty.SetTextVariable("KINGDOM", Settlement.MapFaction.InformalName);
-		empty.SetTextVariable("CLAN", ((ClanAsDecisionOutcome)chosenOutcome).Clan.Name);
-		return empty;
+		textObject.SetTextVariable("SETTLEMENT", Settlement.Name);
+		StringHelpers.SetCharacterProperties("LEADER", ((ClanAsDecisionOutcome)chosenOutcome).Clan.Leader.CharacterObject, textObject);
+		StringHelpers.SetCharacterProperties("RULER", Settlement.MapFaction.Leader.CharacterObject, textObject);
+		textObject.SetTextVariable("KINGDOM", Settlement.MapFaction.InformalName);
+		textObject.SetTextVariable("CLAN", ((ClanAsDecisionOutcome)chosenOutcome).Clan.Name);
+		return textObject;
 	}
 
 	public override DecisionOutcome GetQueriedDecisionOutcome(MBReadOnlyList<DecisionOutcome> possibleOutcomes)

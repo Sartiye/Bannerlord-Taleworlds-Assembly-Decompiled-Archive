@@ -32,7 +32,7 @@ public class HandPose : ScriptComponentBehavior
 			AnimationSystemData animationSystemData = Game.Current.DefaultMonster.FillAnimationSystemData(MBActionSet.GetActionSet(Game.Current.DefaultMonster.ActionSetCode), 1f, hasClippingPlane: false);
 			base.GameEntity.CreateSkeletonWithActionSet(ref animationSystemData);
 			base.GameEntity.CopyComponentsToSkeleton();
-			base.GameEntity.Skeleton.SetAgentActionChannel(0, ActionIndexCache.Create("act_tableau_hand_armor_pose"));
+			base.GameEntity.Skeleton.SetAgentActionChannel(0, in ActionIndexCache.act_tableau_hand_armor_pose);
 			base.GameEntity.Skeleton.TickAnimationsAndForceUpdate(0.01f, base.GameEntity.GetGlobalFrame(), tickAnimsForChildren: true);
 			base.GameEntity.Skeleton.Freeze(p: false);
 			base.GameEntity.Skeleton.TickAnimationsAndForceUpdate(0.001f, base.GameEntity.GetGlobalFrame(), tickAnimsForChildren: false);

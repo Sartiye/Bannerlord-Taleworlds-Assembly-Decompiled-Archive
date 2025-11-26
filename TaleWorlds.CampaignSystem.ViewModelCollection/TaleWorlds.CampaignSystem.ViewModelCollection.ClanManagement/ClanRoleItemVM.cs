@@ -54,7 +54,7 @@ public class ClanRoleItemVM : ViewModel
 
 	private string _noEffectText;
 
-	public SkillEffect.PerkRole Role { get; private set; }
+	public PartyRole Role { get; private set; }
 
 	[DataSourceProperty]
 	public bool IsEnabled
@@ -226,7 +226,7 @@ public class ClanRoleItemVM : ViewModel
 		}
 	}
 
-	public ClanRoleItemVM(MobileParty party, SkillEffect.PerkRole role, MBBindingList<ClanPartyMemberItemVM> heroMembers, Action<ClanRoleItemVM> onRoleSelectionToggled, Action onRoleAssigned)
+	public ClanRoleItemVM(MobileParty party, PartyRole role, MBBindingList<ClanPartyMemberItemVM> heroMembers, Action<ClanRoleItemVM> onRoleSelectionToggled, Action onRoleAssigned)
 	{
 		Role = role;
 		_comparer = new ClanRoleMemberComparer();
@@ -290,27 +290,27 @@ public class ClanRoleItemVM : ViewModel
 		_onRoleSelectionToggled?.Invoke(this);
 	}
 
-	private void GetMemberAssignedToRole(MobileParty party, SkillEffect.PerkRole role, out Hero roleOwner, out Hero effectiveRoleOwner)
+	private void GetMemberAssignedToRole(MobileParty party, PartyRole role, out Hero roleOwner, out Hero effectiveRoleOwner)
 	{
 		roleOwner = party.GetRoleHolder(role);
 		switch (role)
 		{
-		case SkillEffect.PerkRole.Quartermaster:
+		case PartyRole.Quartermaster:
 			effectiveRoleOwner = party.EffectiveQuartermaster;
 			return;
-		case SkillEffect.PerkRole.Scout:
+		case PartyRole.Scout:
 			effectiveRoleOwner = party.EffectiveScout;
 			return;
-		case SkillEffect.PerkRole.Surgeon:
+		case PartyRole.Surgeon:
 			effectiveRoleOwner = party.EffectiveSurgeon;
 			return;
-		case SkillEffect.PerkRole.Engineer:
+		case PartyRole.Engineer:
 			effectiveRoleOwner = party.EffectiveEngineer;
 			return;
 		}
 		effectiveRoleOwner = party.LeaderHero;
 		roleOwner = party.LeaderHero;
-		Debug.FailedAssert("Given party role is not valid.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 107);
+		Debug.FailedAssert("Given party role is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 107);
 	}
 
 	private void OnRoleAssigned()

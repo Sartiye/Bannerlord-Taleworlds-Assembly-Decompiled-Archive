@@ -3,7 +3,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -52,15 +52,16 @@ public class PeaceBarterable : Barterable
 		IFaction faction2 = PeaceOfferingFaction;
 		if (factionToEvaluateFor.MapFaction == faction)
 		{
-			IFaction faction3 = faction;
-			faction = faction2;
-			faction2 = faction3;
+			IFaction faction3 = faction2;
+			IFaction faction4 = faction;
+			faction = faction3;
+			faction2 = faction4;
 		}
 		if (faction == null || faction2 == null)
 		{
 			return 0;
 		}
-		num = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringPeace(faction2, faction, factionToEvaluateFor, out var _);
+		num = (int)Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringPeaceForClan(faction2, faction, factionToEvaluateFor.Leader.Clan, out var _);
 		if (factionToEvaluateFor.IsKingdomFaction)
 		{
 			float num2 = 0f;
@@ -112,17 +113,17 @@ public class PeaceBarterable : Barterable
 		{
 			return;
 		}
-		LocatableSearchData<MobileParty> data = Campaign.Current.MobilePartyLocator.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position2D, 5f);
+		LocatableSearchData<MobileParty> data = Campaign.Current.MobilePartyLocator.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position.ToVec2(), 5f);
 		for (MobileParty mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data); mobileParty != null; mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data))
 		{
 			if (!mobileParty.IsMainParty && mobileParty.MapFaction == base.OriginalOwner.MapFaction && (mobileParty.TargetParty == MobileParty.MainParty || mobileParty.Ai.AiBehaviorPartyBase == PartyBase.MainParty))
 			{
-				mobileParty.Ai.SetMoveModeHold();
+				mobileParty.SetMoveModeHold();
 			}
 		}
 		if (base.OriginalParty.MobileParty.Army != null && MobileParty.MainParty.Army != base.OriginalParty.MobileParty.Army)
 		{
-			base.OriginalParty.MobileParty.Army.LeaderParty.Ai.SetMoveModeHold();
+			base.OriginalParty.MobileParty.Army.LeaderParty.SetMoveModeHold();
 		}
 	}
 

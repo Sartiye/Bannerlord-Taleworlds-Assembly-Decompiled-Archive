@@ -9,20 +9,20 @@ public class CommentOnCharacterKilledBehavior : CampaignBehaviorBase
 {
 	public override void RegisterEvents()
 	{
-		CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
+		CampaignEvents.BeforeHeroKilledEvent.AddNonSerializedListener(this, OnBeforeHeroKilled);
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
 	}
 
-	private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification)
+	private void OnBeforeHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification)
 	{
 		if (victim.Clan != null && !Clan.BanditFactions.Contains(victim.Clan))
 		{
 			CharacterKilledLogEntry characterKilledLogEntry = new CharacterKilledLogEntry(victim, killer, detail);
 			LogEntry.AddLogEntry(characterKilledLogEntry);
-			if (IsRelatedToPlayer(victim))
+			if (IsRelatedToPlayer(victim) && ((detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) || killer != Hero.MainHero))
 			{
 				Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new DeathMapNotification(victim, killer, characterKilledLogEntry.GetEncyclopediaText(), detail, CampaignTime.Now));
 			}

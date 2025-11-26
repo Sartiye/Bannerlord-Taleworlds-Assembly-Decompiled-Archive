@@ -92,7 +92,7 @@ public class TacticDefensiveRing : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (base.AreFormationsCreated)
 		{
@@ -138,8 +138,8 @@ public class TacticDefensiveRing : TacticComponent
 
 	private bool IsTacticalPositionEligible(TacticalPosition tacticalPosition)
 	{
-		float num = _mainInfantry?.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2) ?? base.Team.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
-		float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry?.QuerySystem.AveragePosition ?? base.Team.QuerySystem.AveragePosition);
+		float num = _mainInfantry?.CachedAveragePosition.Distance(tacticalPosition.Position.AsVec2) ?? base.Team.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
+		float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry?.CachedAveragePosition ?? base.Team.QuerySystem.AveragePosition);
 		if ((num > 20f && num > num2 * 0.5f) || !tacticalPosition.IsInsurmountable)
 		{
 			return false;
@@ -152,12 +152,12 @@ public class TacticDefensiveRing : TacticComponent
 		if (CheckAndDetermineFormation(ref _mainInfantry, (Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsInfantryFormation) && CheckAndDetermineFormation(ref _archers, (Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsRangedFormation))
 		{
 			float num = MBMath.Lerp(1f, 1.5f, MBMath.ClampFloat(tacticalPosition.Slope, 0f, 60f) / 60f);
-			Formation formation = base.Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsRangedFormation).MaxBy((Formation f) => f.CountOfUnits);
+			Formation formation = TaleWorlds.Core.Extensions.MaxBy(base.Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsRangedFormation), (Formation f) => f.CountOfUnits);
 			float num2 = TaleWorlds.Library.MathF.Max(formation.Arrangement.RankDepth, formation.Arrangement.FlankWidth);
 			float num3 = MBMath.ClampFloat(tacticalPosition.Width / num2, 0.7f, 1f);
 			float num4 = (tacticalPosition.IsInsurmountable ? 1.5f : 1f);
 			float cavalryFactor = GetCavalryFactor(tacticalPosition);
-			float value = _mainInfantry.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
+			float value = _mainInfantry.CachedAveragePosition.Distance(tacticalPosition.Position.AsVec2);
 			float num5 = MBMath.Lerp(0.7f, 1f, (150f - MBMath.ClampFloat(value, 50f, 150f)) / 100f);
 			return num * num3 * num4 * cavalryFactor * num5;
 		}
@@ -215,7 +215,7 @@ public class TacticDefensiveRing : TacticComponent
 		List<(TacticalPosition, float)> list = first.Concat<(TacticalPosition, float)>(second).ToList();
 		if (list.Count > 0)
 		{
-			TacticalPosition item = list.MaxBy<(TacticalPosition, float), float>(((TacticalPosition tp, float) pst) => pst.Item2).Item1;
+			TacticalPosition item = TaleWorlds.Core.Extensions.MaxBy<(TacticalPosition, float), float>(list, ((TacticalPosition tp, float) pst) => pst.Item2).Item1;
 			if (item != _mainRingPosition)
 			{
 				_mainRingPosition = item;

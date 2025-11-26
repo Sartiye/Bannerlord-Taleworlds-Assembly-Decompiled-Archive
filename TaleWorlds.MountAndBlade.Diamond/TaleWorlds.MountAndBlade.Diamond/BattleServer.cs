@@ -424,8 +424,8 @@ public class BattleServer : Client<BattleServer>
 			BattlePeer battlePeer = _peers.First((BattlePeer peer) => peer.PlayerId == playerId);
 			if (!battlePeer.Quit)
 			{
-				_handler.OnPlayerFledBattle(battlePeer, out var battleResult);
 				battlePeer.Flee();
+				_handler.OnPlayerFledBattle(battlePeer, out var battleResult, isQuitFromBattle: true);
 				int value;
 				bool isAllowedLeave = !_isWarmupEnded || _state == State.Finishing || !_playerSpawnCounts.TryGetValue(playerId, out value) || value <= 0;
 				SendMessage(new PlayerFledBattleAnswerMessage(playerId, battleResult, isAllowedLeave));
@@ -439,7 +439,7 @@ public class BattleServer : Client<BattleServer>
 		BattlePeer battlePeer = _peers.First((BattlePeer peer) => peer.PlayerId == playerId);
 		if (!battlePeer.Quit)
 		{
-			_handler.OnPlayerFledBattle(battlePeer, out var _);
+			_handler.OnPlayerFledBattle(battlePeer, out var _, isQuitFromBattle: false);
 			battlePeer.SetPlayerDisconnectdFromLobby();
 		}
 	}
@@ -450,7 +450,7 @@ public class BattleServer : Client<BattleServer>
 		BattlePeer battlePeer = _peers.First((BattlePeer peer) => peer.PlayerId == playerId);
 		if (!battlePeer.Quit)
 		{
-			_handler.OnPlayerFledBattle(battlePeer, out var _);
+			_handler.OnPlayerFledBattle(battlePeer, out var _, isQuitFromBattle: false);
 			battlePeer.SetPlayerKickedDueToFriendlyDamage();
 		}
 	}

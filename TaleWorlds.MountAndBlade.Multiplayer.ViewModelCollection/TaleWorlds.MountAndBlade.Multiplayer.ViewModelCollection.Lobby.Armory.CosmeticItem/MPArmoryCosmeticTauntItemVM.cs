@@ -1,9 +1,9 @@
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 
@@ -197,7 +197,7 @@ public class MPArmoryCosmeticTauntItemVM : MPArmoryCosmeticItemBaseVM
 	private void RefreshTauntUsages()
 	{
 		TauntUsages.Clear();
-		TauntUsageManager.TauntUsage.TauntUsageFlag tauntUsageFlag = TauntUsageManager.GetUsageSet(TauntCosmeticElement.Id)?.GetUsages()?.FirstOrDefault().UsageFlag ?? TauntUsageManager.TauntUsage.TauntUsageFlag.None;
+		TauntUsageManager.TauntUsage.TauntUsageFlag tauntUsageFlag = TauntUsageManager.Instance.GetUsageSet(TauntCosmeticElement.Id)?.GetUsages()?.FirstOrDefault().UsageFlag ?? TauntUsageManager.TauntUsage.TauntUsageFlag.None;
 		TextObject textObject = new TextObject("{=aeDp7IEK}Usable with {USAGE}");
 		if ((tauntUsageFlag & TauntUsageManager.TauntUsage.TauntUsageFlag.UnsuitableForOneHanded) == 0)
 		{
@@ -240,7 +240,7 @@ public class MPArmoryCosmeticTauntItemVM : MPArmoryCosmeticItemBaseVM
 
 	private MPArmoryCosmeticsVM.TauntCategoryFlag GetCategoryOfTaunt()
 	{
-		MBReadOnlyList<TauntUsageManager.TauntUsage> mBReadOnlyList = TauntUsageManager.GetUsageSet(TauntCosmeticElement.Id)?.GetUsages();
+		MBReadOnlyList<TauntUsageManager.TauntUsage> mBReadOnlyList = TauntUsageManager.Instance.GetUsageSet(TauntCosmeticElement.Id)?.GetUsages();
 		MPArmoryCosmeticsVM.TauntCategoryFlag tauntCategoryFlag = MPArmoryCosmeticsVM.TauntCategoryFlag.None;
 		if (mBReadOnlyList == null || mBReadOnlyList.Count <= 0)
 		{

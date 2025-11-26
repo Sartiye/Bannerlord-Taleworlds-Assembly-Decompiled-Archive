@@ -11,10 +11,16 @@ public class DefineAsEngineStruct : Attribute
 
 	public bool IgnoreMemberOffsetTest { get; set; }
 
-	public DefineAsEngineStruct(Type type, string engineType, bool ignoreMemberOffsetTest = false)
+	public string EngineEnumPrefix { get; set; }
+
+	public string[] Conditionals { get; set; }
+
+	public DefineAsEngineStruct(Type type, string engineType, bool ignoreMemberOffsetTest = false, string engineEnumPrefix = null, string[] conditionals = null)
 	{
 		Type = type;
 		EngineType = engineType;
 		IgnoreMemberOffsetTest = ignoreMemberOffsetTest;
+		EngineEnumPrefix = engineEnumPrefix;
+		Conditionals = conditionals;
 	}
 }

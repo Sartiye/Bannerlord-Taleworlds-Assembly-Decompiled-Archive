@@ -485,7 +485,7 @@ public class EducationVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Skipped a stage for education!!!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Education\\EducationVM.cs", "OnOptionSelect", 210);
+				Debug.FailedAssert("Skipped a stage for education!!!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Education\\EducationVM.cs", "OnOptionSelect", 210);
 			}
 			OptionEffectText = educationOptionVM.OptionEffect;
 			OptionDescriptionText = educationOptionVM.OptionDescription;

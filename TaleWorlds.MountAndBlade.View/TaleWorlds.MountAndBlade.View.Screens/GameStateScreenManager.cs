@@ -4,28 +4,36 @@ using System.Reflection;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
+using TaleWorlds.MountAndBlade.View.Tableaus;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.View.Screens;
 
 public class GameStateScreenManager : IGameStateManagerListener
 {
-	private Dictionary<Type, Type> _screenTypes;
+	private Dictionary<Type, MBList<Type>> _screenTypes;
 
 	private GameStateManager GameStateManager => GameStateManager.Current;
 
 	public GameStateScreenManager()
 	{
-		_screenTypes = new Dictionary<Type, Type>();
-		Assembly[] viewAssemblies = GetViewAssemblies();
+		_screenTypes = new Dictionary<Type, MBList<Type>>();
+		CollectTypes();
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+	}
+
+	internal void CollectTypes()
+	{
+		_screenTypes.Clear();
 		Assembly assembly = typeof(GameStateScreen).Assembly;
+		Assembly[] referencingAssembliesSafe = assembly.GetReferencingAssembliesSafe();
 		CheckAssemblyScreens(assembly);
-		Assembly[] array = viewAssemblies;
+		Assembly[] array = referencingAssembliesSafe;
 		foreach (Assembly assembly2 in array)
 		{
 			CheckAssemblyScreens(assembly2);
 		}
-		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 	}
 
 	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
@@ -58,42 +66,33 @@ public class GameStateScreenManager : IGameStateManagerListener
 				GameStateScreen gameStateScreen = (GameStateScreen)array[i];
 				if (_screenTypes.ContainsKey(gameStateScreen.GameStateType))
 				{
-					_screenTypes[gameStateScreen.GameStateType] = item;
+					_screenTypes[gameStateScreen.GameStateType].Add(item);
+					continue;
 				}
-				else
-				{
-					_screenTypes.Add(gameStateScreen.GameStateType, item);
-				}
+				_screenTypes.Add(gameStateScreen.GameStateType, new MBList<Type> { item });
 			}
 		}
-	}
-
-	public static Assembly[] GetViewAssemblies()
-	{
-		List<Assembly> list = new List<Assembly>();
-		Assembly assembly = typeof(GameStateScreen).Assembly;
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (Assembly assembly2 in assemblies)
-		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
-			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
-				{
-					list.Add(assembly2);
-					break;
-				}
-			}
-		}
-		return list.ToArray();
 	}
 
 	public ScreenBase CreateScreen(GameState state)
 	{
-		Type value = null;
-		if (_screenTypes.TryGetValue(state.GetType(), out value))
+		Type type = null;
+		if (_screenTypes.TryGetValue(state.GetType(), out var value))
 		{
-			return Activator.CreateInstance(value, state) as ScreenBase;
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
+			if (type != null)
+			{
+				return Activator.CreateInstance(type, state) as ScreenBase;
+			}
+			Debug.FailedAssert($"Failed to create game state screen for state: {state.GetType()}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\GameStateScreenManager.cs", "CreateScreen", 108);
 		}
 		return null;
 	}
@@ -123,6 +122,10 @@ public class GameStateScreenManager : IGameStateManagerListener
 	void IGameStateManagerListener.OnCreateState(GameState gameState)
 	{
 		ScreenBase screenBase = CreateScreen(gameState);
+		if (screenBase == null)
+		{
+			Debug.FailedAssert($"Create screen for {gameState.GetName()} returned null.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\GameStateScreenManager.cs", "OnCreateState", 145);
+		}
 		gameState.RegisterListener(screenBase as IGameStateListener);
 	}
 
@@ -152,14 +155,11 @@ public class GameStateScreenManager : IGameStateManagerListener
 				ScreenManager.PushScreen(listenerOfType);
 			}
 		}
+		ThumbnailCacheManager.Current.ClearUnusedCache();
 	}
 
 	void IGameStateManagerListener.OnPopState(GameState gameState)
 	{
-		if (!gameState.IsMenuState)
-		{
-			Utilities.ClearOldResourcesAndObjects();
-		}
 		if (gameState.IsMenuState && BannerlordConfig.ForceVSyncInMenus)
 		{
 			Utilities.SetForceVsync(value: false);
@@ -169,6 +169,11 @@ public class GameStateScreenManager : IGameStateManagerListener
 			Utilities.SetForceVsync(value: true);
 		}
 		ScreenManager.PopScreen();
+		if (!gameState.IsMenuState)
+		{
+			Utilities.ClearOldResourcesAndObjects();
+		}
+		ThumbnailCacheManager.Current.ClearUnusedCache();
 	}
 
 	void IGameStateManagerListener.OnCleanStates()

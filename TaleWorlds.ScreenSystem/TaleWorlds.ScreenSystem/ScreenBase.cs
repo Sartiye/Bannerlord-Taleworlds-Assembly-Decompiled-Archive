@@ -14,12 +14,6 @@ public abstract class ScreenBase
 
 	private readonly MBList<ScreenLayer> _layers;
 
-	private readonly List<ScreenLayer> _layersCopy;
-
-	protected bool _shouldTickLayersThisFrame = true;
-
-	private bool _isInitialized;
-
 	public IInputContext DebugInput => Input.DebugInput;
 
 	public MBReadOnlyList<ScreenLayer> Layers => _layers;
@@ -27,6 +21,10 @@ public abstract class ScreenBase
 	public bool IsActive { get; private set; }
 
 	public bool IsPaused { get; private set; }
+
+	public bool IsInitialized { get; private set; }
+
+	public bool IsFinalized { get; private set; }
 
 	public virtual bool MouseVisible { get; set; }
 
@@ -37,9 +35,9 @@ public abstract class ScreenBase
 	internal void HandleInitialize()
 	{
 		Debug.Print(string.Concat(this, "::HandleInitialize"));
-		if (!_isInitialized)
+		if (!IsInitialized)
 		{
-			_isInitialized = true;
+			IsInitialized = true;
 			OnInitialize();
 			Debug.ReportMemoryBookmark("ScreenBase Initialized: " + GetType().Name);
 		}
@@ -47,10 +45,15 @@ public abstract class ScreenBase
 
 	internal void HandleFinalize()
 	{
-		Debug.Print(string.Concat(this, "::HandleFinalize"));
-		if (_isInitialized)
+		if (IsFinalized)
 		{
-			_isInitialized = false;
+			Debug.FailedAssert("Screen is already finalized", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "HandleFinalize", 64);
+			return;
+		}
+		Debug.Print(string.Concat(this, "::HandleFinalize"));
+		if (IsInitialized)
+		{
+			IsInitialized = false;
 			OnFinalize();
 			for (int num = _layers.Count - 1; num >= 0; num--)
 			{
@@ -60,6 +63,7 @@ public abstract class ScreenBase
 		IsActive = false;
 		this.OnAddLayer = null;
 		this.OnRemoveLayer = null;
+		IsFinalized = true;
 	}
 
 	internal void HandleActivate()
@@ -140,34 +144,29 @@ public abstract class ScreenBase
 
 	internal void FrameTick(float dt)
 	{
-		_shouldTickLayersThisFrame = true;
 		if (IsActive)
 		{
 			OnFrameTick(dt);
 		}
-		if (!IsActive)
+		if (DebugInput is InputContext inputContext)
 		{
-			return;
-		}
-		if (!_shouldTickLayersThisFrame)
-		{
-			dt = 0f;
-		}
-		for (int i = 0; i < _layers.Count; i++)
-		{
-			if (_layers[i].IsActive)
+			if (IsActive)
 			{
-				_layersCopy.Add(_layers[i]);
+				inputContext.RegisterDownKeys();
+			}
+			else
+			{
+				inputContext.ResetLastDownKeys();
 			}
 		}
-		for (int j = 0; j < _layersCopy.Count; j++)
+	}
+
+	internal void PostFrameTick(float dt)
+	{
+		if (IsActive)
 		{
-			if (!_layersCopy[j].Finalized)
-			{
-				_layersCopy[j].Tick(dt);
-			}
+			OnPostFrameTick(dt);
 		}
-		ScreenManager.UpdateLateTickLayers(_layersCopy);
 	}
 
 	public void ActivateAllLayers()
@@ -214,7 +213,7 @@ public abstract class ScreenBase
 	{
 		for (int i = 0; i < _layers.Count; i++)
 		{
-			if (!_layers[i].Finalized)
+			if (!_layers[i].IsFinalized)
 			{
 				_layers[i].UpdateLayout();
 			}
@@ -254,6 +253,10 @@ public abstract class ScreenBase
 	{
 	}
 
+	protected virtual void OnPostFrameTick(float dt)
+	{
+	}
+
 	protected virtual void OnIdleTick(float dt)
 	{
 	}
@@ -281,9 +284,9 @@ public abstract class ScreenBase
 
 	public void AddLayer(ScreenLayer layer)
 	{
-		if (layer == null || layer.Finalized)
+		if (layer == null || layer.IsFinalized)
 		{
-			Debug.FailedAssert("Trying to add a null or finalized layer", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 334);
+			Debug.FailedAssert("Trying to add a null or finalized layer", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 337);
 		}
 		else if (!_layers.Contains(layer))
 		{
@@ -298,7 +301,7 @@ public abstract class ScreenBase
 		}
 		else
 		{
-			Debug.FailedAssert("Layer is already added to the screen!", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 353);
+			Debug.FailedAssert("Layer is already added to the screen!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 356);
 		}
 	}
 
@@ -348,7 +351,7 @@ public abstract class ScreenBase
 	{
 		foreach (ScreenLayer layer in _layers)
 		{
-			if (categoryIds.IndexOf(layer._categoryId) >= 0)
+			if (categoryIds.IndexOf(layer.Name) >= 0)
 			{
 				if (isActive && !layer.IsActive)
 				{
@@ -366,7 +369,7 @@ public abstract class ScreenBase
 	{
 		foreach (ScreenLayer layer in _layers)
 		{
-			if (categoryIds.IndexOf(layer._categoryId) >= 0)
+			if (categoryIds.IndexOf(layer.Name) >= 0)
 			{
 				if (isActive && !layer.IsActive)
 				{
@@ -392,7 +395,7 @@ public abstract class ScreenBase
 	{
 		foreach (ScreenLayer layer in _layers)
 		{
-			if (categoryIds.IndexOf(layer._categoryId) >= 0)
+			if (categoryIds.IndexOf(layer.Name) >= 0)
 			{
 				if (isActive && !layer.IsActive)
 				{
@@ -416,7 +419,6 @@ public abstract class ScreenBase
 		IsActive = false;
 		_components = new List<ScreenComponent>();
 		_layers = new MBList<ScreenLayer>();
-		_layersCopy = new List<ScreenLayer>();
 	}
 
 	internal void Update(IReadOnlyList<int> lastKeysPressed)

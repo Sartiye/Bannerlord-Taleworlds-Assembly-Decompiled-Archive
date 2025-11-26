@@ -1,404 +1,347 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Helpers;
-using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.Extensions;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem;
 
 public static class HeroCreator
 {
-	public static Hero CreateHeroAtOccupation(Occupation neededOccupation, Settlement forcedHomeSettlement = null)
+	private class HeroInitializationArgs
 	{
-		Settlement settlement = forcedHomeSettlement ?? SettlementHelper.GetRandomTown();
-		IEnumerable<CharacterObject> enumerable = settlement.Culture.NotableAndWandererTemplates.Where((CharacterObject x) => x.Occupation == neededOccupation);
-		int num = 0;
-		foreach (CharacterObject item in enumerable)
+		public Hero Hero { get; }
+
+		public TextObject Name { get; private set; }
+
+		public TextObject FirstName { get; private set; }
+
+		public Hero Mother { get; private set; }
+
+		public Hero Father { get; private set; }
+
+		public bool IsFemale { get; private set; }
+
+		public Settlement BornSettlement { get; private set; }
+
+		public int Level { get; private set; }
+
+		public float Weight { get; private set; }
+
+		public float Build { get; private set; }
+
+		public StaticBodyProperties? StaticBodyProperties { get; private set; }
+
+		public FormationClass? PreferredUpgradeFormation { get; private set; }
+
+		public Clan Clan { get; private set; }
+
+		public CultureObject Culture { get; private set; }
+
+		public Clan SupporterOf { get; private set; }
+
+		public Occupation Occupation { get; private set; }
+
+		public bool IsOffspring { get; private set; }
+
+		public bool GenerateFirstAndFullName { get; private set; }
+
+		public bool HasBornSettlementBeenSet { get; private set; }
+
+		public bool HasClanBeenSet { get; private set; }
+
+		public HeroInitializationArgs(Hero hero, bool isOffspring)
 		{
-			int num2 = item.GetTraitLevel(DefaultTraits.Frequency) * 10;
-			num += ((num2 > 0) ? num2 : 100);
+			DynamicBodyProperties dynamicBodyPropertiesBetweenMinMaxRange = CharacterHelper.GetDynamicBodyPropertiesBetweenMinMaxRange(hero.CharacterObject);
+			Hero = hero;
+			IsOffspring = isOffspring;
+			Name = hero.Name;
+			FirstName = hero.FirstName;
+			Mother = hero.Mother;
+			Father = hero.Father;
+			IsFemale = hero.IsFemale;
+			BornSettlement = null;
+			Level = hero.Level;
+			Weight = dynamicBodyPropertiesBetweenMinMaxRange.Weight;
+			Build = dynamicBodyPropertiesBetweenMinMaxRange.Build;
+			StaticBodyProperties = null;
+			PreferredUpgradeFormation = null;
+			Clan = null;
+			SupporterOf = hero.SupporterOf;
+			Occupation = hero.Occupation;
+			Culture = null;
 		}
-		if (!enumerable.Any())
+
+		public HeroInitializationArgs SetGenerateFirstAndFullName(bool value)
 		{
-			return null;
+			GenerateFirstAndFullName = value;
+			return this;
 		}
-		CharacterObject template = null;
-		int num3 = settlement.RandomIntWithSeed((uint)settlement.Notables.Count, 1, num);
-		foreach (CharacterObject item2 in enumerable)
+
+		public HeroInitializationArgs SetName(TextObject name)
 		{
-			int num4 = item2.GetTraitLevel(DefaultTraits.Frequency) * 10;
-			num3 -= ((num4 > 0) ? num4 : 100);
-			if (num3 < 0)
+			Name = name;
+			return this;
+		}
+
+		public HeroInitializationArgs SetFirstName(TextObject firstName)
+		{
+			FirstName = firstName;
+			return this;
+		}
+
+		public HeroInitializationArgs SetMother(Hero mother)
+		{
+			Mother = mother;
+			return this;
+		}
+
+		public HeroInitializationArgs SetFather(Hero father)
+		{
+			Father = father;
+			return this;
+		}
+
+		public HeroInitializationArgs SetIsFemale(bool isFemale)
+		{
+			IsFemale = isFemale;
+			return this;
+		}
+
+		public HeroInitializationArgs SetBornSettlement(Settlement bornSettlement)
+		{
+			BornSettlement = bornSettlement;
+			HasBornSettlementBeenSet = true;
+			return this;
+		}
+
+		public HeroInitializationArgs SetLevel(int level)
+		{
+			Level = level;
+			return this;
+		}
+
+		public HeroInitializationArgs SetAppearance(StaticBodyProperties? staticBodyProperties, float weight = -1f, float build = -1f, int hair = -1, int beard = -1, int tattoo = -1)
+		{
+			if (weight > 0f)
 			{
-				template = item2;
-				break;
+				Weight = weight;
 			}
+			if (build > 0f)
+			{
+				Build = build;
+			}
+			BodyProperties bodyProperties = new BodyProperties(new DynamicBodyProperties(Hero.Age, Weight, Build), staticBodyProperties ?? default(StaticBodyProperties));
+			FaceGen.SetHair(ref bodyProperties, hair, beard, tattoo);
+			StaticBodyProperties = bodyProperties.StaticProperties;
+			return this;
 		}
-		Hero hero = CreateSpecialHero(template, settlement);
-		if (hero.HomeSettlement.IsVillage && hero.HomeSettlement.Village.Bound != null && hero.HomeSettlement.Village.Bound.IsCastle)
+
+		public HeroInitializationArgs SetPreferredUpgradeFormation(FormationClass preferredUpgradeFormation)
 		{
-			float value = MBRandom.RandomFloat * 20f;
-			hero.AddPower(value);
+			PreferredUpgradeFormation = preferredUpgradeFormation;
+			return this;
 		}
-		if (neededOccupation != Occupation.Wanderer)
+
+		public HeroInitializationArgs SetClan(Clan clan)
 		{
-			hero.ChangeState(Hero.CharacterStates.Active);
+			Clan = clan;
+			HasClanBeenSet = true;
+			return this;
 		}
-		if (neededOccupation != Occupation.Wanderer)
+
+		public HeroInitializationArgs SetCulture(CultureObject culture)
 		{
-			EnterSettlementAction.ApplyForCharacterOnly(hero, settlement);
+			Culture = culture;
+			return this;
 		}
-		if (neededOccupation != Occupation.Wanderer)
+
+		public HeroInitializationArgs SetSupporterOf(Clan supporterOf)
 		{
-			int amount = 10000;
-			GiveGoldAction.ApplyBetweenCharacters(null, hero, amount, disableNotification: true);
+			SupporterOf = supporterOf;
+			return this;
 		}
-		if (hero.Template?.HeroObject != null && hero.Template.HeroObject.Clan != null && hero.Template.HeroObject.Clan.IsMinorFaction)
+
+		public HeroInitializationArgs SetOccupation(Occupation occupation)
 		{
-			hero.SupporterOf = hero.Template.HeroObject.Clan;
+			Occupation = occupation;
+			return this;
 		}
-		else
-		{
-			hero.SupporterOf = HeroHelper.GetRandomClanForNotable(hero);
-		}
-		if (neededOccupation != Occupation.Wanderer)
-		{
-			AddRandomVarianceToTraits(hero);
-		}
-		return hero;
 	}
 
-	private static Hero CreateNewHero(CharacterObject template, int age = -1)
+	public static Hero CreateNotable(Occupation occupation, Settlement settlement = null)
 	{
-		Debug.Print("creating hero from template with id: " + template.StringId);
-		CharacterObject newCharacter = CharacterObject.CreateFrom(template);
-		Hero hero = Hero.CreateHero(newCharacter.StringId);
-		hero.SetCharacterObject(newCharacter);
-		newCharacter.HeroObject = hero;
-		CampaignTime birthDay;
-		switch (age)
+		CharacterObject randomTemplateByOccupation = Campaign.Current.Models.HeroCreationModel.GetRandomTemplateByOccupation(occupation, settlement);
+		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(randomTemplateByOccupation, createAlive: true, -1);
+		CampaignTime item = birthAndDeathDay.birthDay;
+		CampaignTime item2 = birthAndDeathDay.deathDay;
+		Hero hero = CreateHero(randomTemplateByOccupation, useCharacterAsTemplate: true, item, item2);
+		HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: false).SetGenerateFirstAndFullName(value: true);
+		if (settlement != null)
 		{
-		case -1:
-			birthDay = HeroHelper.GetRandomBirthDayForAge(Campaign.Current.Models.AgeModel.HeroComesOfAge + MBRandom.RandomInt(30));
-			break;
-		case 0:
-			birthDay = CampaignTime.Now;
-			break;
-		default:
-			if (hero.IsWanderer)
-			{
-				age = (int)template.Age;
-				if (age < 20)
-				{
-					foreach (TraitObject item in TraitObject.All)
-					{
-						int num = 12 + 4 * template.GetTraitLevel(item);
-						if (age < num)
-						{
-							age = num;
-						}
-					}
-				}
-				birthDay = HeroHelper.GetRandomBirthDayForAge(age);
-			}
-			else
-			{
-				birthDay = HeroHelper.GetRandomBirthDayForAge(age);
-			}
-			break;
+			heroInitializationArgs.SetBornSettlement(settlement);
 		}
-		newCharacter.HeroObject.SetBirthDay(birthDay);
-		Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown && (newCharacter.Culture.StringId == "neutral_culture" || x.Culture == newCharacter.Culture));
-		if (settlement == null)
-		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown);
-		}
-		newCharacter.HeroObject.BornSettlement = settlement;
-		newCharacter.HeroObject.StaticBodyProperties = BodyProperties.GetRandomBodyProperties(template.Race, template.IsFemale, template.GetBodyPropertiesMin(), template.GetBodyPropertiesMax(), 0, MBRandom.RandomInt(), newCharacter.HairTags, newCharacter.BeardTags, newCharacter.TattooTags).StaticProperties;
-		newCharacter.HeroObject.Weight = 0f;
-		newCharacter.HeroObject.Build = 0f;
-		if (newCharacter.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
-		{
-			newCharacter.HeroObject.HeroDeveloper.InitializeHeroDeveloper();
-		}
-		hero.PreferredUpgradeFormation = GetRandomPreferredUpgradeFormation();
-		return newCharacter.HeroObject;
+		heroInitializationArgs.SetAppearance(Campaign.Current.Models.HeroCreationModel.GetStaticBodyProperties(hero, isOffspring: false, 0f));
+		InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
+		return hero;
 	}
 
 	public static Hero CreateSpecialHero(CharacterObject template, Settlement bornSettlement = null, Clan faction = null, Clan supporterOfClan = null, int age = -1)
 	{
-		Hero hero = CreateNewHero(template, age);
-		CultureObject culture = template.Culture;
-		if (culture == null && bornSettlement != null)
+		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(template, createAlive: true, age);
+		CampaignTime item = birthAndDeathDay.birthDay;
+		CampaignTime item2 = birthAndDeathDay.deathDay;
+		Hero hero = CreateHero(template, useCharacterAsTemplate: true, item, item2);
+		HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: false).SetGenerateFirstAndFullName(value: true);
+		if (bornSettlement != null)
 		{
-			culture = bornSettlement.Culture;
-		}
-		else if (culture == null && faction != null)
-		{
-			culture = faction.Culture;
+			heroInitializationArgs.SetBornSettlement(bornSettlement);
 		}
 		if (faction != null)
 		{
-			hero.Clan = faction;
+			heroInitializationArgs.SetClan(faction);
 		}
 		if (supporterOfClan != null)
 		{
-			hero.SupporterOf = supporterOfClan;
+			heroInitializationArgs.SetSupporterOf(supporterOfClan);
 		}
-		if (bornSettlement != null)
-		{
-			hero.BornSettlement = bornSettlement;
-		}
-		hero.CharacterObject.Culture = culture;
-		NameGenerator.Current.GenerateHeroNameAndHeroFullName(hero, out var firstName, out var fullName, useDeterministicValues: false);
-		hero.SetName(fullName, firstName);
-		ModifyAppearanceByTraits(hero);
-		CampaignEventDispatcher.Instance.OnHeroCreated(hero);
+		InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
+		return hero;
+	}
+
+	public static Hero CreateChild(CharacterObject template, Settlement bornSettlement, Clan clan, int age)
+	{
+		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(template, createAlive: true, age);
+		CampaignTime item = birthAndDeathDay.birthDay;
+		CampaignTime item2 = birthAndDeathDay.deathDay;
+		Hero hero = CreateHero(template, useCharacterAsTemplate: true, item, item2);
+		HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: false).SetGenerateFirstAndFullName(value: true).SetBornSettlement(bornSettlement).SetClan(clan)
+			.SetLevel(1);
+		InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
 		return hero;
 	}
 
 	public static Hero CreateRelativeNotableHero(Hero relative)
 	{
-		Hero hero = CreateHeroAtOccupation(relative.CharacterObject.Occupation, relative.HomeSettlement);
-		hero.Culture = relative.Culture;
+		CharacterObject randomTemplateByOccupation = Campaign.Current.Models.HeroCreationModel.GetRandomTemplateByOccupation(relative.Occupation, relative.HomeSettlement);
+		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(randomTemplateByOccupation, createAlive: true, -1);
+		CampaignTime item = birthAndDeathDay.birthDay;
+		CampaignTime item2 = birthAndDeathDay.deathDay;
+		Hero hero = CreateHero(randomTemplateByOccupation, useCharacterAsTemplate: true, item, item2);
 		BodyProperties bodyPropertiesMin = relative.CharacterObject.GetBodyPropertiesMin();
-		BodyProperties bodyPropertiesMin2 = hero.CharacterObject.GetBodyPropertiesMin();
+		BodyProperties bodyPropertiesMin2 = randomTemplateByOccupation.GetBodyPropertiesMin();
 		int defaultFaceSeed = relative.CharacterObject.GetDefaultFaceSeed(1);
-		string hairTags = relative.HairTags;
-		string tattooTags = relative.TattooTags;
-		hero.StaticBodyProperties = BodyProperties.GetRandomBodyProperties(hero.CharacterObject.Race, hero.IsFemale, bodyPropertiesMin, bodyPropertiesMin2, 1, defaultFaceSeed, hairTags, relative.BeardTags, tattooTags).StaticProperties;
+		MBBodyProperty bodyPropertyRange = hero.CharacterObject.BodyPropertyRange;
+		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(randomTemplateByOccupation.Race, randomTemplateByOccupation.IsFemale, bodyPropertiesMin, bodyPropertiesMin2, 1, defaultFaceSeed, bodyPropertyRange.HairTags, bodyPropertyRange.BeardTags, bodyPropertyRange.TattooTags);
+		HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: false).SetBornSettlement(relative.HomeSettlement).SetCulture(relative.Culture).SetAppearance(randomBodyProperties.StaticProperties)
+			.SetGenerateFirstAndFullName(value: true);
+		InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
 		return hero;
 	}
 
-	public static bool CreateBasicHero(CharacterObject character, out Hero hero, string stringId = "")
+	public static bool CreateBasicHero(string stringId, CharacterObject character, out Hero hero, bool isAlive = true)
 	{
-		if (string.IsNullOrEmpty(stringId))
+		hero = Campaign.Current.CampaignObjectManager.Find<Hero>(stringId);
+		if (hero == null)
 		{
-			hero = CreateNewHero(character);
-			CampaignEventDispatcher.Instance.OnHeroCreated(hero);
+			(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(character, isAlive, (int)character.Age);
+			CampaignTime item = birthAndDeathDay.birthDay;
+			CampaignTime item2 = birthAndDeathDay.deathDay;
+			hero = CreateHero(character, useCharacterAsTemplate: false, item, item2);
+			HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: false);
+			InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
 			return true;
 		}
-		hero = Campaign.Current.CampaignObjectManager.Find<Hero>(stringId);
-		if (hero != null)
-		{
-			return false;
-		}
-		hero = Hero.CreateHero(stringId);
-		hero.SetCharacterObject(character);
-		hero.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: false, hero.Template);
-		hero.StaticBodyProperties = character.GetBodyPropertiesMin().StaticProperties;
-		hero.Weight = 0f;
-		hero.Build = 0f;
-		character.HeroObject = hero;
-		hero.PreferredUpgradeFormation = GetRandomPreferredUpgradeFormation();
-		CampaignEventDispatcher.Instance.OnHeroCreated(hero);
-		return true;
-	}
-
-	private static void ModifyAppearanceByTraits(Hero hero)
-	{
-		int num = MBRandom.RandomInt(0, 100);
-		int num2 = MBRandom.RandomInt(0, 100);
-		if (hero.Age >= 40f)
-		{
-			num -= 30;
-			num2 += 30;
-		}
-		int hair = -1;
-		int beard = -1;
-		int tattoo = -1;
-		bool flag = hero.HairTags.IsEmpty() && hero.BeardTags.IsEmpty();
-		if (hero.GetTraitLevel(DefaultTraits.RomanHair) > 0 && !hero.IsFemale && flag)
-		{
-			hair = ((num >= 0) ? ((num < 20) ? 13 : ((num >= 70) ? 6 : 8)) : 0);
-			beard = ((num2 >= 60) ? ((num2 >= 110) ? 14 : 13) : 0);
-		}
-		else if (hero.GetTraitLevel(DefaultTraits.CelticHair) > 0 && !hero.IsFemale && flag)
-		{
-			hair = ((num >= 0) ? ((num < 20) ? 13 : ((num < 40) ? 6 : ((num < 60) ? 14 : ((num >= 85) ? 7 : 2)))) : 0);
-			beard = ((num2 < 40) ? 1 : ((num2 < 60) ? 2 : ((num2 >= 110) ? 5 : 3)));
-		}
-		else if (hero.GetTraitLevel(DefaultTraits.ArabianHair) > 0 && !hero.IsFemale && flag)
-		{
-			hair = ((num >= 0) ? ((num < 20) ? 13 : ((num < 40) ? 6 : ((num < 60) ? 2 : ((num >= 85) ? 7 : 11)))) : 0);
-			beard = ((num2 >= 40) ? ((num2 < 50) ? 6 : ((num2 < 60) ? 12 : ((num2 < 70) ? 8 : ((num2 < 80) ? 15 : ((num2 >= 100) ? 17 : 9))))) : 0);
-		}
-		else if (hero.GetTraitLevel(DefaultTraits.RusHair) > 0 && !hero.IsFemale && flag)
-		{
-			hair = ((num >= 0) ? ((num < 40) ? 6 : ((num < 60) ? 12 : ((num >= 85) ? 2 : 11))) : 0);
-			beard = ((num2 >= 30) ? ((num2 < 60) ? 13 : ((num2 < 70) ? 17 : ((num2 >= 90) ? 19 : 18))) : 0);
-		}
-		hero.ModifyHair(hair, beard, tattoo);
-	}
-
-	private static void AddRandomVarianceToTraits(Hero hero)
-	{
-		foreach (TraitObject item in TraitObject.All)
-		{
-			if (item != DefaultTraits.Honor && item != DefaultTraits.Mercy && item != DefaultTraits.Generosity && item != DefaultTraits.Valor && item != DefaultTraits.Calculating)
-			{
-				continue;
-			}
-			int num = hero.CharacterObject.GetTraitLevel(item);
-			float num2 = MBRandom.RandomFloat;
-			if (hero.IsPreacher && item == DefaultTraits.Generosity)
-			{
-				num2 = 0.5f;
-			}
-			if (hero.IsMerchant && item == DefaultTraits.Calculating)
-			{
-				num2 = 0.5f;
-			}
-			if ((double)num2 < 0.25)
-			{
-				num--;
-				if (num < -1)
-				{
-					num = -1;
-				}
-			}
-			if ((double)num2 > 0.75)
-			{
-				num++;
-				if (num > 1)
-				{
-					num = 1;
-				}
-			}
-			if (hero.IsGangLeader && (item == DefaultTraits.Mercy || item == DefaultTraits.Honor) && num > 0)
-			{
-				num = 0;
-			}
-			num = MBMath.ClampInt(num, item.MinValue, item.MaxValue);
-			hero.SetTraitLevel(item, num);
-		}
+		return false;
 	}
 
 	public static Hero DeliverOffSpring(Hero mother, Hero father, bool isOffspringFemale)
 	{
-		Debug.SilentAssert(mother.CharacterObject.Race == father.CharacterObject.Race, "", getDump: false, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\HeroCreator.cs", "DeliverOffSpring", 484);
-		Hero hero = CreateNewHero(isOffspringFemale ? mother.CharacterObject : father.CharacterObject, 0);
-		hero.ClearTraits();
-		float randomFloat = MBRandom.RandomFloat;
-		int num = 0;
-		num = ((!((double)randomFloat < 0.1)) ? (((double)randomFloat < 0.5) ? 1 : ((!((double)randomFloat < 0.9)) ? 3 : 2)) : 0);
-		List<TraitObject> list = DefaultTraits.Personality.ToList();
-		list.Shuffle();
-		for (int i = 0; i < Math.Min(list.Count, num); i++)
-		{
-			int value = (((double)MBRandom.RandomFloat < 0.5) ? MBRandom.RandomInt(list[i].MinValue, 0) : MBRandom.RandomInt(1, list[i].MaxValue + 1));
-			hero.SetTraitLevel(list[i], value);
-		}
-		foreach (TraitObject item in TraitObject.All.Except(DefaultTraits.Personality))
-		{
-			hero.SetTraitLevel(item, ((double)MBRandom.RandomFloat < 0.5) ? mother.GetTraitLevel(item) : father.GetTraitLevel(item));
-		}
-		hero.SetNewOccupation(isOffspringFemale ? mother.Occupation : father.Occupation);
-		int becomeChildAge = Campaign.Current.Models.AgeModel.BecomeChildAge;
-		hero.CharacterObject.IsFemale = isOffspringFemale;
-		hero.Mother = mother;
-		hero.Father = father;
-		MBEquipmentRoster randomElementInefficiently = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForDeliveredOffspring(hero).GetRandomElementInefficiently();
-		if (randomElementInefficiently != null)
-		{
-			Equipment randomElementInefficiently2 = randomElementInefficiently.GetCivilianEquipments().GetRandomElementInefficiently();
-			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElementInefficiently2);
-			Equipment equipment = new Equipment(isCivilian: false);
-			equipment.FillFrom(randomElementInefficiently2, useSourceEquipmentType: false);
-			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipment);
-		}
-		else
-		{
-			Debug.FailedAssert("Equipment template not found", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\HeroCreator.cs", "DeliverOffSpring", 549);
-		}
-		NameGenerator.Current.GenerateHeroNameAndHeroFullName(hero, out var firstName, out var fullName, useDeterministicValues: false);
-		hero.SetName(fullName, firstName);
-		hero.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: true);
-		BodyProperties bodyProperties = mother.BodyProperties;
-		BodyProperties bodyProperties2 = father.BodyProperties;
-		int seed = MBRandom.RandomInt();
-		string hairTags = (isOffspringFemale ? mother.HairTags : father.HairTags);
-		string tattooTags = (isOffspringFemale ? mother.TattooTags : father.TattooTags);
-		hero.StaticBodyProperties = BodyProperties.GetRandomBodyProperties(mother.CharacterObject.Race, isOffspringFemale, bodyProperties, bodyProperties2, 1, seed, hairTags, father.BeardTags, tattooTags).StaticProperties;
-		hero.BornSettlement = DecideBornSettlement(hero);
+		Debug.SilentAssert(mother.CharacterObject.Race == father.CharacterObject.Race, "", getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\HeroCreator.cs", "DeliverOffSpring", 275);
+		CharacterObject characterTemplateForOffspring = Campaign.Current.Models.HeroCreationModel.GetCharacterTemplateForOffspring(mother, father, isOffspringFemale);
+		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(characterTemplateForOffspring, createAlive: true, 0);
+		CampaignTime item = birthAndDeathDay.birthDay;
+		CampaignTime item2 = birthAndDeathDay.deathDay;
+		Hero hero = CreateHero(characterTemplateForOffspring, useCharacterAsTemplate: true, item, item2);
+		HeroInitializationArgs heroInitializationArgs = new HeroInitializationArgs(hero, isOffspring: true).SetMother(mother).SetFather(father).SetIsFemale(isOffspringFemale)
+			.SetOccupation(isOffspringFemale ? mother.Occupation : father.Occupation)
+			.SetLevel(1)
+			.SetGenerateFirstAndFullName(value: true);
 		if (mother == Hero.MainHero || father == Hero.MainHero)
 		{
-			hero.Clan = Clan.PlayerClan;
-			hero.Culture = Hero.MainHero.Culture;
+			heroInitializationArgs.SetClan(Hero.MainHero.Clan).SetCulture(Hero.MainHero.Culture);
 		}
 		else
 		{
-			hero.Clan = father.Clan;
-			hero.Culture = (((double)MBRandom.RandomFloat < 0.5) ? father.Culture : mother.Culture);
+			CultureObject culture = ((MBRandom.RandomFloat < 0.5f) ? father.Culture : mother.Culture);
+			heroInitializationArgs.SetClan(father.Clan).SetCulture(culture);
 		}
-		CampaignEventDispatcher.Instance.OnHeroCreated(hero, isBornNaturally: true);
-		int heroComesOfAge = Campaign.Current.Models.AgeModel.HeroComesOfAge;
-		if (hero.Age > (float)becomeChildAge || (hero.Age == (float)becomeChildAge && hero.BirthDay.GetDayOfYear < CampaignTime.Now.GetDayOfYear))
-		{
-			CampaignEventDispatcher.Instance.OnHeroGrowsOutOfInfancy(hero);
-		}
-		if (hero.Age > (float)heroComesOfAge || (hero.Age == (float)heroComesOfAge && hero.BirthDay.GetDayOfYear < CampaignTime.Now.GetDayOfYear))
-		{
-			CampaignEventDispatcher.Instance.OnHeroComesOfAge(hero);
-		}
+		InitializeHeroFromSettings(heroInitializationArgs.Hero, heroInitializationArgs);
 		return hero;
 	}
 
-	private static Settlement DecideBornSettlement(Hero child)
+	private static Hero CreateHero(CharacterObject character, bool useCharacterAsTemplate, CampaignTime birthDay, CampaignTime deathDay)
 	{
-		Settlement settlement;
-		if (child.Mother.CurrentSettlement != null && (child.Mother.CurrentSettlement.IsTown || child.Mother.CurrentSettlement.IsVillage))
+		if (useCharacterAsTemplate)
 		{
-			settlement = child.Mother.CurrentSettlement;
-		}
-		else if (child.Mother.PartyBelongedTo != null || child.Mother.PartyBelongedToAsPrisoner != null)
-		{
-			IMapPoint toMapPoint;
-			if (child.Mother.PartyBelongedToAsPrisoner != null)
-			{
-				IMapPoint mapPoint;
-				if (!child.Mother.PartyBelongedToAsPrisoner.IsMobile)
-				{
-					IMapPoint settlement2 = child.Mother.PartyBelongedToAsPrisoner.Settlement;
-					mapPoint = settlement2;
-				}
-				else
-				{
-					IMapPoint settlement2 = child.Mother.PartyBelongedToAsPrisoner.MobileParty;
-					mapPoint = settlement2;
-				}
-				toMapPoint = mapPoint;
-			}
-			else
-			{
-				toMapPoint = child.Mother.PartyBelongedTo;
-			}
-			settlement = SettlementHelper.FindNearestTown(null, toMapPoint);
+			Debug.Print("creating hero from template with id: " + character.StringId);
+			character = CharacterObject.CreateFrom(character);
 		}
 		else
 		{
-			settlement = child.Mother.HomeSettlement;
+			Debug.Print("creating hero for character with id: " + character.StringId);
 		}
-		if (settlement == null)
-		{
-			settlement = ((child.Mother.Clan.Settlements.Count > 0) ? child.Mother.Clan.Settlements.GetRandomElement() : Town.AllTowns.GetRandomElement().Settlement);
-		}
-		return settlement;
+		return new Hero(character.StringId, character, birthDay, deathDay);
 	}
 
-	private static FormationClass GetRandomPreferredUpgradeFormation()
+	private static void InitializeHeroFromSettings(Hero hero, HeroInitializationArgs initializationArgs)
 	{
-		int num = MBRandom.RandomInt(10);
-		if (num < 4)
+		hero.Mother = initializationArgs.Mother;
+		hero.Father = initializationArgs.Father;
+		hero.IsFemale = initializationArgs.IsFemale;
+		hero.BornSettlement = (initializationArgs.HasBornSettlementBeenSet ? initializationArgs.BornSettlement : Campaign.Current.Models.HeroCreationModel.GetBornSettlement(hero));
+		hero.PreferredUpgradeFormation = initializationArgs.PreferredUpgradeFormation ?? Campaign.Current.Models.HeroCreationModel.GetPreferredUpgradeFormation(hero);
+		hero.Clan = (initializationArgs.HasClanBeenSet ? initializationArgs.Clan : Campaign.Current.Models.HeroCreationModel.GetClan(hero));
+		hero.Culture = initializationArgs.Culture ?? Campaign.Current.Models.HeroCreationModel.GetCulture(hero, hero.BornSettlement, hero.Clan);
+		hero.StaticBodyProperties = initializationArgs.StaticBodyProperties ?? Campaign.Current.Models.HeroCreationModel.GetStaticBodyProperties(hero, initializationArgs.IsOffspring);
+		hero.SupporterOf = initializationArgs.SupporterOf;
+		hero.Level = initializationArgs.Level;
+		hero.Weight = initializationArgs.Weight;
+		hero.Build = initializationArgs.Build;
+		if (initializationArgs.GenerateFirstAndFullName)
 		{
-			return (FormationClass)num;
+			var (firstName, fullName) = Campaign.Current.Models.HeroCreationModel.GenerateFirstAndFullName(hero);
+			hero.SetName(fullName, firstName);
 		}
-		return FormationClass.NumberOfAllFormations;
+		else
+		{
+			hero.SetName(initializationArgs.Name, initializationArgs.FirstName);
+		}
+		if (initializationArgs.Occupation != hero.Occupation)
+		{
+			hero.SetNewOccupation(initializationArgs.Occupation);
+		}
+		foreach (var (trait, value) in Campaign.Current.Models.HeroCreationModel.GetTraitsForHero(hero))
+		{
+			hero.SetTraitLevel(trait, value);
+		}
+		foreach (var (skill, value2) in Campaign.Current.Models.HeroCreationModel.GetDefaultSkillsForHero(hero))
+		{
+			hero.SetSkillValue(skill, value2);
+		}
+		if (initializationArgs.IsOffspring)
+		{
+			hero.HeroDeveloper.InitializeHeroDeveloper();
+			hero.ClearTraits();
+		}
+		else if (hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
+		{
+			hero.HeroDeveloper.InitializeHeroDeveloper();
+		}
+		Equipment civilianEquipment = Campaign.Current.Models.HeroCreationModel.GetCivilianEquipment(hero);
+		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, civilianEquipment);
+		Equipment battleEquipment = Campaign.Current.Models.HeroCreationModel.GetBattleEquipment(hero);
+		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, battleEquipment);
+		CampaignEventDispatcher.Instance.OnHeroCreated(initializationArgs.Hero, initializationArgs.IsOffspring);
 	}
 }

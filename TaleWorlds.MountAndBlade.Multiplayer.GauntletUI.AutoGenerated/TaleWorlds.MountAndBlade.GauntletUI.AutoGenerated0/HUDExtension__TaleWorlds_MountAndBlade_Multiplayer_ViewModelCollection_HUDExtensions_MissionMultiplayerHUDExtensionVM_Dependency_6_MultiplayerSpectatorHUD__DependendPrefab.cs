@@ -25,7 +25,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private ListPanel _widget_0_1;
 
-	private Widget _widget_0_1_0;
+	private BrushWidget _widget_0_1_0;
 
 	private Widget _widget_0_1_1;
 
@@ -35,7 +35,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private Widget _widget_0_1_1_0_1;
 
-	private Widget _widget_0_1_2;
+	private BrushWidget _widget_0_1_2;
 
 	private Widget _widget_0_1_3;
 
@@ -45,7 +45,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private Widget _widget_0_1_3_0_1;
 
-	private Widget _widget_0_1_4;
+	private BrushWidget _widget_0_1_4;
 
 	private Widget _widget_0_1_5;
 
@@ -88,7 +88,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_0.AddChild(_widget_0_0_1);
 		_widget_0_1 = new ListPanel(base.Context);
 		_widget_0.AddChild(_widget_0_1);
-		_widget_0_1_0 = new Widget(base.Context);
+		_widget_0_1_0 = new BrushWidget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_0);
 		_widget_0_1_1 = new Widget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_1);
@@ -98,7 +98,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_1_1_0.AddChild(_widget_0_1_1_0_0);
 		_widget_0_1_1_0_1 = new Widget(base.Context);
 		_widget_0_1_1_0.AddChild(_widget_0_1_1_0_1);
-		_widget_0_1_2 = new Widget(base.Context);
+		_widget_0_1_2 = new BrushWidget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_2);
 		_widget_0_1_3 = new Widget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_3);
@@ -108,7 +108,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_1_3_0.AddChild(_widget_0_1_3_0_0);
 		_widget_0_1_3_0_1 = new Widget(base.Context);
 		_widget_0_1_3_0.AddChild(_widget_0_1_3_0_1);
-		_widget_0_1_4 = new Widget(base.Context);
+		_widget_0_1_4 = new BrushWidget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_4);
 		_widget_0_1_5 = new Widget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_5);
@@ -182,7 +182,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_1_0.SuggestedWidth = 35f;
 		_widget_0_1_0.SuggestedHeight = 35f;
 		_widget_0_1_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Mission\\hero_icon");
+		_widget_0_1_0.Brush = base.Context.GetBrush("Mission.MainAgentHUD.HeroHealthBar.Icon");
 		_widget_0_1_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_1.SuggestedWidth = 106f;
@@ -223,7 +223,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_1_2.SuggestedHeight = 35f;
 		_widget_0_1_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_1_2.MarginLeft = 10f;
-		_widget_0_1_2.Sprite = base.Context.SpriteData.GetSprite("General\\Mission\\mount_icon");
+		_widget_0_1_2.Brush = base.Context.GetBrush("Mission.MainAgentHUD.MountHealthBar.Icon");
 		_widget_0_1_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_3.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_3.SuggestedWidth = 106f;
@@ -264,7 +264,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_0_1_4.SuggestedHeight = 35f;
 		_widget_0_1_4.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_1_4.MarginLeft = 10f;
-		_widget_0_1_4.Sprite = base.Context.SpriteData.GetSprite("General\\Mission\\shield_icon");
+		_widget_0_1_4.Brush = base.Context.GetBrush("Mission.MainAgentHUD.ShieldHealthBar.Icon");
 		_widget_0_1_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_5.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_5.SuggestedWidth = 106f;

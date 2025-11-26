@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 
 namespace TaleWorlds.Library;
@@ -22,9 +23,11 @@ public interface IPlatformFileHelper
 
 	byte[] GetFileContent(PlatformFilePath filePath);
 
+	byte[] GetMetaDataContent(PlatformFilePath filePath);
+
 	bool DeleteFile(PlatformFilePath path);
 
-	PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern);
+	PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern, SearchOption searchOption);
 
 	string GetFileFullPath(PlatformFilePath filePath);
 

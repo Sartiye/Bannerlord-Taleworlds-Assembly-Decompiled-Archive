@@ -8,11 +8,11 @@ public class MultiplayerAchievementComponent : MissionLogic
 {
 	private struct BoulderKillRecord
 	{
-		public readonly float time;
+		public readonly float Time;
 
 		public BoulderKillRecord(float time)
 		{
-			this.time = time;
+			Time = time;
 		}
 	}
 
@@ -107,10 +107,7 @@ public class MultiplayerAchievementComponent : MissionLogic
 		{
 			_multiplayerRoundComponent.OnRoundStarted -= OnRoundStarted;
 		}
-		if (_recentBoulderKills != null)
-		{
-			_recentBoulderKills.Clear();
-		}
+		_recentBoulderKills?.Clear();
 	}
 
 	public override void OnMissionTick(float dt)
@@ -122,7 +119,7 @@ public class MultiplayerAchievementComponent : MissionLogic
 		while (_recentBoulderKills.Count > 0)
 		{
 			BoulderKillRecord boulderKillRecord = _recentBoulderKills.Peek();
-			if (!(base.Mission.CurrentTime - boulderKillRecord.time < 4f))
+			if (!(base.Mission.CurrentTime - boulderKillRecord.Time < 4f))
 			{
 				_recentBoulderKills.Dequeue();
 				continue;
@@ -179,11 +176,11 @@ public class MultiplayerAchievementComponent : MissionLogic
 		{
 			if (affectorAgent != null && affectorAgent.IsMine && affectorAgent != affectedAgent && !affectedAgent.IsFriendOf(affectorAgent))
 			{
-				int weaponClass;
-				int num = (weaponClass = blow.WeaponClass);
-				bool flag = weaponClass >= 1 && weaponClass <= 11;
+				WeaponClass weaponClass = (WeaponClass)blow.WeaponClass;
+				int num = (int)weaponClass;
+				bool flag = num >= 1 && num <= 11;
 				bool isMissile = blow.IsMissile;
-				if (num == 18)
+				if (weaponClass == WeaponClass.Boulder || weaponClass == WeaponClass.BallistaBoulder)
 				{
 					_recentBoulderKills.Enqueue(new BoulderKillRecord(base.Mission.CurrentTime));
 					if (_recentBoulderKills.Count > 1 && _recentBoulderKills.Count > _cachedMaxMultiKillsWithSingleMangonelShot)
@@ -203,7 +200,7 @@ public class MultiplayerAchievementComponent : MissionLogic
 					_cachedKillsWithRangedHeadShots++;
 					SetStatInternal("KillsWithRangedHeadshots", _cachedKillsWithRangedHeadShots);
 				}
-				if (affectorAgent.IsReleasingChainAttack())
+				if (affectorAgent.IsReleasingChainAttackInMultiplayer())
 				{
 					_cachedKillsWithChainAttack++;
 					SetStatInternal("KillsWithChainAttack", _cachedKillsWithChainAttack);
@@ -258,23 +255,10 @@ public class MultiplayerAchievementComponent : MissionLogic
 				}
 			}
 			MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
-			if (missionPeer != null)
+			if (missionPeer != null && _missionLobbyComponent.MissionType == MultiplayerGameType.Captain && (affectorAgent?.MissionPeer == missionPeer || affectorAgent?.OwningAgentMissionPeer == missionPeer))
 			{
-				Team team = missionPeer.Team;
-				if (_missionLobbyComponent.MissionType == MultiplayerGameType.Captain)
-				{
-					Agent mainAgent = Mission.Current.MainAgent;
-					if (mainAgent != null && affectorAgent != null)
-					{
-						Formation formation = mainAgent.Formation;
-						Formation formation2 = affectorAgent.Formation;
-						if (formation != null && formation2 != null && formation2 == formation && team != null && team != affectedAgent?.Team)
-						{
-							_cachedKillCountCaptain++;
-							SetStatInternal("KillCountCaptain", _cachedKillCountCaptain);
-						}
-					}
-				}
+				_cachedKillCountCaptain++;
+				SetStatInternal("KillCountCaptain", _cachedKillCountCaptain);
 			}
 		}
 		if (affectedAgent.IsMine)

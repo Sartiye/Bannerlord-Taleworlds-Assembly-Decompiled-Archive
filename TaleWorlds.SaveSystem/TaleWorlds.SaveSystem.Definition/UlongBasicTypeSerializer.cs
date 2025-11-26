@@ -13,4 +13,9 @@ internal class UlongBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadULong();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 8;
+	}
 }

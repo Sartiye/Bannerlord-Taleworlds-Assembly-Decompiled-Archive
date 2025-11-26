@@ -27,59 +27,56 @@ public class TacticPerimeterDefense : TacticComponent
 
 	private class EnemyCluster
 	{
-		public List<Formation> enemyFormations;
+		private readonly MBList<Formation> _enemyFormations = new MBList<Formation>();
 
-		public float totalPower;
+		private float _totalPower;
 
 		public Vec2 AggregatePosition { get; private set; }
 
 		public WorldPosition MedianAggregatePosition { get; private set; }
 
-		public EnemyCluster()
-		{
-			enemyFormations = new List<Formation>();
-		}
+		public MBReadOnlyList<Formation> EnemyFormations => _enemyFormations;
 
 		public void UpdateClusterData()
 		{
-			totalPower = enemyFormations.Sum((Formation ef) => ef.QuerySystem.FormationPower);
+			_totalPower = _enemyFormations.Sum((Formation ef) => ef.QuerySystem.FormationPower);
 			AggregatePosition = Vec2.Zero;
-			foreach (Formation enemyFormation in enemyFormations)
+			foreach (Formation enemyFormation in _enemyFormations)
 			{
-				AggregatePosition += enemyFormation.QuerySystem.AveragePosition * (enemyFormation.QuerySystem.FormationPower / totalPower);
+				AggregatePosition += enemyFormation.CachedAveragePosition * (enemyFormation.QuerySystem.FormationPower / _totalPower);
 			}
 			UpdateMedianPosition();
 		}
 
 		public void AddToCluster(Formation formation)
 		{
-			enemyFormations.Add(formation);
-			float num = totalPower;
-			totalPower += formation.QuerySystem.FormationPower;
-			AggregatePosition = AggregatePosition * (num / totalPower) + formation.QuerySystem.AveragePosition * (formation.QuerySystem.FormationPower / totalPower);
+			_enemyFormations.Add(formation);
+			float totalPower = _totalPower;
+			_totalPower += formation.QuerySystem.FormationPower;
+			AggregatePosition = AggregatePosition * (totalPower / _totalPower) + formation.CachedAveragePosition * (formation.QuerySystem.FormationPower / _totalPower);
 			UpdateMedianPosition();
 		}
 
 		public void RemoveFromCluster(Formation formation)
 		{
-			enemyFormations.Remove(formation);
-			float num = totalPower;
-			totalPower -= formation.QuerySystem.FormationPower;
-			AggregatePosition -= formation.QuerySystem.AveragePosition * (formation.QuerySystem.FormationPower / num);
-			AggregatePosition *= num / totalPower;
+			_enemyFormations.Remove(formation);
+			float totalPower = _totalPower;
+			_totalPower -= formation.QuerySystem.FormationPower;
+			AggregatePosition -= formation.CachedAveragePosition * (formation.QuerySystem.FormationPower / totalPower);
+			AggregatePosition *= totalPower / _totalPower;
 			UpdateMedianPosition();
 		}
 
 		private void UpdateMedianPosition()
 		{
 			float num = float.MaxValue;
-			foreach (Formation enemyFormation in enemyFormations)
+			foreach (Formation enemyFormation in _enemyFormations)
 			{
-				float num2 = enemyFormation.QuerySystem.MedianPosition.AsVec2.DistanceSquared(AggregatePosition);
+				float num2 = enemyFormation.CachedMedianPosition.AsVec2.DistanceSquared(AggregatePosition);
 				if (num2 < num)
 				{
 					num = num2;
-					MedianAggregatePosition = enemyFormation.QuerySystem.MedianPosition;
+					MedianAggregatePosition = enemyFormation.CachedMedianPosition;
 				}
 			}
 		}
@@ -138,25 +135,25 @@ public class TacticPerimeterDefense : TacticComponent
 				Formation enemyFormation = team2.FormationsIncludingSpecialAndEmpty[i];
 				if (enemyFormation.CountOfUnits > 0 && enemyFormation.QuerySystem.FormationPower < TaleWorlds.Library.MathF.Min(base.Team.QuerySystem.TeamPower, num) / 4f)
 				{
-					if (!_enemyClusters.Any((EnemyCluster ec) => ec.enemyFormations.IndexOf(enemyFormation) >= 0))
+					if (!_enemyClusters.Any((EnemyCluster ec) => ec.EnemyFormations.IndexOf(enemyFormation) >= 0))
 					{
 						list.Add(enemyFormation);
 					}
 					continue;
 				}
-				EnemyCluster enemyCluster = _enemyClusters.FirstOrDefault((EnemyCluster ec) => ec.enemyFormations.IndexOf(enemyFormation) >= 0);
+				EnemyCluster enemyCluster = _enemyClusters.FirstOrDefault((EnemyCluster ec) => ec.EnemyFormations.IndexOf(enemyFormation) >= 0);
 				if (enemyCluster != null)
 				{
-					if ((double)(_defendPosition.AsVec2 - enemyCluster.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.QuerySystem.AveragePosition) >= 0.70710678118)
+					if ((double)(_defendPosition.AsVec2 - enemyCluster.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.CachedAveragePosition) >= 0.70710678118)
 					{
 						continue;
 					}
 					enemyCluster.RemoveFromCluster(enemyFormation);
 				}
-				List<EnemyCluster> list2 = _enemyClusters.Where((EnemyCluster c) => (double)(_defendPosition.AsVec2 - c.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.QuerySystem.MedianPosition.AsVec2) >= 0.70710678118).ToList();
+				List<EnemyCluster> list2 = _enemyClusters.Where((EnemyCluster c) => (double)(_defendPosition.AsVec2 - c.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.CachedMedianPosition.AsVec2) >= 0.70710678118).ToList();
 				if (list2.Count > 0)
 				{
-					list2.MaxBy((EnemyCluster ec) => (_defendPosition.AsVec2 - ec.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.QuerySystem.MedianPosition.AsVec2)).AddToCluster(enemyFormation);
+					TaleWorlds.Core.Extensions.MaxBy(list2, (EnemyCluster ec) => (_defendPosition.AsVec2 - ec.AggregatePosition).DotProduct(_defendPosition.AsVec2 - enemyFormation.CachedMedianPosition.AsVec2)).AddToCluster(enemyFormation);
 				}
 				else
 				{
@@ -172,7 +169,7 @@ public class TacticPerimeterDefense : TacticComponent
 		}
 		foreach (Formation skippedFormation in list)
 		{
-			_enemyClusters.MaxBy((EnemyCluster ec) => (_defendPosition.AsVec2 - ec.AggregatePosition).DotProduct(_defendPosition.AsVec2 - skippedFormation.QuerySystem.MedianPosition.AsVec2)).AddToCluster(skippedFormation);
+			TaleWorlds.Core.Extensions.MaxBy(_enemyClusters, (EnemyCluster ec) => (_defendPosition.AsVec2 - ec.AggregatePosition).DotProduct(_defendPosition.AsVec2 - skippedFormation.CachedMedianPosition.AsVec2)).AddToCluster(skippedFormation);
 		}
 	}
 
@@ -257,7 +254,7 @@ public class TacticPerimeterDefense : TacticComponent
 		}
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (base.AreFormationsCreated)
 		{

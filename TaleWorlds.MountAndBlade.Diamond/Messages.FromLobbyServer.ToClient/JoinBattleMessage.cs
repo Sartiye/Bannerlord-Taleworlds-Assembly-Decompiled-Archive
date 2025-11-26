@@ -6,7 +6,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.FromLobbyServer.ToClient;
 
 [Serializable]
-[MessageDescription("LobbyServer", "Client")]
+[MessageDescription("LobbyServer", "Client", true)]
 public class JoinBattleMessage : Message
 {
 	[JsonProperty]

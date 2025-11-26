@@ -68,14 +68,14 @@ public class AnimatedFlag : ScriptComponentBehavior
 			vec = new Vec3(20f, 0f, -10f) * 0.1f - vec;
 			if (!(vec.LengthSquared < 1E-08f))
 			{
-				Vec3 vec2 = globalFrame.rotation.TransformToLocal(vec);
+				Vec3 vec2 = globalFrame.rotation.TransformToLocal(in vec);
 				vec2.z = 0f;
 				vec2.Normalize();
 				float theta = TaleWorlds.Library.MathF.Atan2(vec2.y, vec2.x);
 				SmoothTheta(ref theta, dt);
-				Vec3 scaleVector = metaMesh.Frame.rotation.GetScaleVector();
+				Vec3 scalingVector = metaMesh.Frame.rotation.GetScaleVector();
 				MatrixFrame identity = MatrixFrame.Identity;
-				identity.Scale(scaleVector);
+				identity.Scale(in scalingVector);
 				identity.rotation.RotateAboutUp(theta);
 				_prevTheta = theta;
 				float num = TaleWorlds.Library.MathF.Acos(Vec3.DotProduct(vec, globalFrame.rotation.u) / vec.Length);

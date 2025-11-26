@@ -1,4 +1,3 @@
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -6,25 +5,54 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MapDistanceModel : GameModel
+public abstract class MapDistanceModel : MBGameModel<MapDistanceModel>
 {
-	public abstract float MaximumDistanceBetweenTwoSettlements { get; set; }
+	public interface INavigationCache
+	{
+		float MaximumDistanceBetweenTwoConnectedSettlements { get; }
 
-	public abstract float GetDistance(Settlement fromSettlement, Settlement toSettlement);
+		float GetSettlementToSettlementDistanceWithLandRatio(Settlement settlement1, bool isAtSea1, Settlement settlement2, bool isAtSea2, out float landRatio);
 
-	public abstract float GetDistance(MobileParty fromParty, Settlement toSettlement);
+		MBReadOnlyList<Settlement> GetNeighbors(Settlement settlement);
 
-	public abstract float GetDistance(MobileParty fromParty, MobileParty toParty);
+		Settlement GetClosestSettlementToFaceIndex(int faceId, out bool isAtSea);
 
-	public abstract bool GetDistance(Settlement fromSettlement, Settlement toSettlement, float maximumDistance, out float distance);
+		void FinalizeInitialization();
+	}
 
-	public abstract bool GetDistance(MobileParty fromParty, Settlement toSettlement, float maximumDistance, out float distance);
+	public const float PossibleMaximumMapBoundary = 100000000f;
 
-	public abstract bool GetDistance(IMapPoint fromMapPoint, MobileParty toParty, float maximumDistance, out float distance);
+	public abstract int RegionSwitchCostFromLandToSea { get; }
 
-	public abstract bool GetDistance(IMapPoint fromMapPoint, Settlement toSettlement, float maximumDistance, out float distance);
+	public abstract int RegionSwitchCostFromSeaToLand { get; }
 
-	public abstract bool GetDistance(IMapPoint fromMapPoint, in Vec2 toPoint, float maximumDistance, out float distance);
+	public abstract float MaximumSpawnDistanceForCompanionsAfterDisband { get; }
 
-	public abstract Settlement GetClosestSettlementForNavigationMesh(PathFaceRecord face);
+	public abstract float GetMaximumDistanceBetweenTwoConnectedSettlements(MobileParty.NavigationType navigationType);
+
+	public abstract float GetLandRatioOfPathBetweenSettlements(Settlement fromSettlement, Settlement toSettlement, bool isFromPort, bool isTargetingPort);
+
+	public abstract float GetDistance(MobileParty fromMobileParty, Settlement toSettlement, bool isTargetingPort, MobileParty.NavigationType customCapability, out float estimatedLandRatio);
+
+	public abstract float GetDistance(MobileParty fromMobileParty, MobileParty toMobileParty, MobileParty.NavigationType customCapability, out float landRatio);
+
+	public abstract bool GetDistance(MobileParty fromMobileParty, MobileParty toMobileParty, MobileParty.NavigationType customCapability, float maxDistance, out float distance, out float landRatio);
+
+	public abstract float GetDistance(Settlement fromSettlement, Settlement toSettlement, bool isFromPort, bool isTargetingPort, MobileParty.NavigationType navigationCapability);
+
+	public abstract float GetDistance(Settlement fromSettlement, Settlement toSettlement, bool isFromPort, bool isTargetingPort, MobileParty.NavigationType navigationCapability, out float landRatio);
+
+	public abstract float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType, out float landRatio);
+
+	public abstract float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType navigationType);
+
+	public abstract bool PathExistBetweenPoints(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType);
+
+	public abstract void RegisterDistanceCache(MobileParty.NavigationType navigationCapability, INavigationCache cacheToRegister);
+
+	public abstract (Settlement, bool) GetClosestEntranceToFace(PathFaceRecord face, MobileParty.NavigationType navigationCapabilities);
+
+	public abstract MBReadOnlyList<Settlement> GetNeighborsOfFortification(Town town, MobileParty.NavigationType navigationCapabilities);
+
+	public abstract float GetTransitionCostAdjustment(Settlement settlement1, bool isFromPort, Settlement settlement2, bool isTargetingPort, bool fromIsCurrentlyAtSea, bool toIsCurrentlyAtSea);
 }

@@ -8,7 +8,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class CommonAIComponent : AgentComponent
 {
-	private const float MoraleThresholdForPanicking = 0.01f;
+	public const float MoraleThresholdForPanicking = 0.01f;
 
 	private const float MaxRecoverableMoraleMultiplier = 0.5f;
 
@@ -20,9 +20,11 @@ public class CommonAIComponent : AgentComponent
 
 	private float _morale = 50f;
 
+	private bool _panicTriggered;
+
 	private readonly Timer _fadeOutTimer;
 
-	private readonly float _retreatDistanceSquared;
+	private float _retreatDistanceSquared;
 
 	public bool IsPanicked { get; private set; }
 
@@ -73,29 +75,33 @@ public class CommonAIComponent : AgentComponent
 		Morale = _initialMorale;
 	}
 
-	public override void OnTickAsAI(float dt)
+	public override void OnTickParallel(float dt)
 	{
-		base.OnTickAsAI(dt);
+		if (!Agent.Mission.AllowAiTicking || !Agent.IsAIControlled)
+		{
+			return;
+		}
 		if (!IsRetreating && _morale < 0.01f)
 		{
 			if (CanPanic())
 			{
-				Panic();
+				_panicTriggered = true;
 			}
 			else
 			{
 				Morale = 0.01f;
 			}
 		}
-		if (!IsPanicked && _morale < _recoveryMorale)
+		if (!IsPanicked && !_panicTriggered && _morale < _recoveryMorale)
 		{
 			Morale = Math.Min(_morale + 0.4f * dt, _recoveryMorale);
 		}
-		if (Mission.Current.CanAgentRout(Agent) && _fadeOutTimer.Check(Mission.Current.CurrentTime) && !Agent.IsFadingOut())
+		if (_fadeOutTimer.Check(Mission.Current.CurrentTime) && Mission.Current.CanAgentRout(Agent) && !Agent.IsFadingOut())
 		{
 			Vec3 position = Agent.Position;
 			WorldPosition retreatPos = Agent.GetRetreatPos();
-			if ((retreatPos.AsVec2.IsValid && retreatPos.AsVec2.DistanceSquared(position.AsVec2) < _retreatDistanceSquared && retreatPos.GetGroundVec3().DistanceSquared(position) < _retreatDistanceSquared) || !Agent.Mission.IsPositionInsideBoundaries(position.AsVec2) || position.DistanceSquared(Agent.Mission.GetClosestBoundaryPosition(position.AsVec2).ToVec3()) < _retreatDistanceSquared)
+			_retreatDistanceSquared = _fadeOutTimer.Duration * Agent.Velocity.AsVec2.LengthSquared + 2f * Agent.Monster.BodyCapsuleRadius;
+			if ((retreatPos.AsVec2.IsValid && retreatPos.AsVec2.DistanceSquared(position.AsVec2) < _retreatDistanceSquared && retreatPos.GetGroundVec3MT().DistanceSquared(position) < _retreatDistanceSquared) || !Agent.Mission.IsPositionInsideBoundaries(position.AsVec2) || position.DistanceSquared(Agent.Mission.GetClosestBoundaryPosition(position.AsVec2).ToVec3()) < _retreatDistanceSquared)
 			{
 				Agent.StartFadingOut();
 			}
@@ -110,8 +116,18 @@ public class CommonAIComponent : AgentComponent
 		}
 	}
 
+	public override void OnTick(float dt)
+	{
+		if (_panicTriggered)
+		{
+			_panicTriggered = false;
+			Panic();
+		}
+	}
+
 	public void Panic()
 	{
+		Agent.SetAlarmState(Agent.AIStateFlag.Alarmed);
 		if (!IsPanicked)
 		{
 			IsPanicked = true;
@@ -176,9 +192,9 @@ public class CommonAIComponent : AgentComponent
 		return true;
 	}
 
-	public override void OnHit(Agent affectorAgent, int damage, in MissionWeapon affectorWeapon)
+	public override void OnHit(Agent affectorAgent, int damage, in MissionWeapon affectorWeapon, in Blow b, in AttackCollisionData collisionData)
 	{
-		base.OnHit(affectorAgent, damage, in affectorWeapon);
+		base.OnHit(affectorAgent, damage, in affectorWeapon, in b, in collisionData);
 		if (damage >= 1 && Agent.IsMount && Agent.IsAIControlled && Agent.RiderAgent == null)
 		{
 			Panic();

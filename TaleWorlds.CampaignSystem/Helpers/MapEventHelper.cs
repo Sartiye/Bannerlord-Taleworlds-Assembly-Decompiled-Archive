@@ -1,8 +1,11 @@
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encounters;
-using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 
 namespace Helpers;
@@ -22,17 +25,34 @@ public static class MapEventHelper
 		return MobileParty.MainParty.CurrentSettlement.SiegeEvent.BesiegerCamp.LeaderParty.Party;
 	}
 
-	public static bool CanLeaveBattle(MobileParty mobileParty)
+	public static bool CanMainPartyLeaveBattleCommonCondition()
 	{
-		if (mobileParty.MapEvent.DefenderSide.LeaderParty != mobileParty.Party && (!mobileParty.MapEvent.DefenderSide.LeaderParty.IsSettlement || mobileParty.CurrentSettlement != mobileParty.MapEvent.DefenderSide.LeaderParty.Settlement || mobileParty.MapFaction != mobileParty.MapEvent.DefenderSide.LeaderParty.MapFaction) && (mobileParty.MapEvent.PartiesOnSide(BattleSideEnum.Attacker).FindIndexQ((MapEventParty party) => party.Party == mobileParty.Party) < 0 || !mobileParty.MapEvent.IsRaid || mobileParty.Army == null || mobileParty.Army.LeaderParty == mobileParty))
+		if (MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Defender)
 		{
-			if (mobileParty.MapEvent.PartiesOnSide(BattleSideEnum.Defender).FindIndexQ((MapEventParty party) => party.Party == mobileParty.Party) >= 0 && mobileParty.Army != null)
+			if (MobileParty.MainParty.SiegeEvent != null && !MobileParty.MainParty.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(MobileParty.MainParty))
 			{
-				return mobileParty.Army.LeaderParty == mobileParty;
+				return MobileParty.MainParty.CurrentSettlement == null;
 			}
-			return true;
+			return false;
 		}
-		return false;
+		return true;
+	}
+
+	public static PartyBase GetEncounteredPartyBase(PartyBase attackerParty, PartyBase defenderParty)
+	{
+		if (attackerParty == PartyBase.MainParty || defenderParty == PartyBase.MainParty)
+		{
+			if (attackerParty != PartyBase.MainParty)
+			{
+				return attackerParty;
+			}
+			return defenderParty;
+		}
+		if (defenderParty.MapEvent == null)
+		{
+			return attackerParty;
+		}
+		return defenderParty;
 	}
 
 	public static void OnConversationEnd()
@@ -41,5 +61,32 @@ public static class MapEventHelper
 		{
 			PlayerEncounter.LeaveEncounter = true;
 		}
+	}
+
+	public static FlattenedTroopRoster GetPriorityListForHideoutMission(List<MobileParty> partyList, out int firstPhaseTroopCount)
+	{
+		int num = partyList.SumQ((MobileParty x) => x.Party.MemberRoster.TotalHealthyCount);
+		firstPhaseTroopCount = MathF.Min(MathF.Floor((float)num * Campaign.Current.Models.BanditDensityModel.SpawnPercentageForFirstFightInHideoutMission), Campaign.Current.Models.BanditDensityModel.NumberOfMaximumTroopCountForFirstFightInHideout);
+		int num2 = num - firstPhaseTroopCount;
+		FlattenedTroopRoster flattenedTroopRoster = new FlattenedTroopRoster(num);
+		foreach (MobileParty party in partyList)
+		{
+			flattenedTroopRoster.Add(party.Party.MemberRoster.GetTroopRoster());
+		}
+		flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => x.IsWounded);
+		int count = flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => x.Troop.IsHero || x.Troop.Culture.BanditBoss == x.Troop).ToList().Count;
+		int num3 = 0;
+		int num4 = num2 - count;
+		if (num4 > 0)
+		{
+			IEnumerable<FlattenedTroopRosterElement> selectedRegularTroops = flattenedTroopRoster.OrderByDescending((FlattenedTroopRosterElement x) => x.Troop.Level).Take(num4);
+			flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => selectedRegularTroops.Contains(x));
+			num3 += selectedRegularTroops.Count();
+		}
+		Debug.Print("Picking bandit troops for hideout mission...", 0, Debug.DebugColor.Yellow, 256uL);
+		Debug.Print("- First phase troop count: " + firstPhaseTroopCount, 0, Debug.DebugColor.Yellow, 256uL);
+		Debug.Print("- Second phase boss troop count: " + count, 0, Debug.DebugColor.Yellow, 256uL);
+		Debug.Print("- Second phase regular troop count: " + num3, 0, Debug.DebugColor.Yellow, 256uL);
+		return flattenedTroopRoster;
 	}
 }

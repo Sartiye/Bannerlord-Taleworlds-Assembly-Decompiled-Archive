@@ -3,7 +3,6 @@ using System.Linq;
 using System.Xml;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.ObjectSystem;
@@ -25,9 +24,7 @@ public class Hideout : SettlementComponent, ISpottable
 
 	public bool IsInfested => base.Owner.Settlement.Parties.CountQ((MobileParty x) => x.IsBandit) >= Campaign.Current.Models.BanditDensityModel.NumberOfMinimumBanditPartiesInAHideoutToInfestIt;
 
-	public string SceneName { get; private set; }
-
-	public IFaction MapFaction
+	public override IFaction MapFaction
 	{
 		get
 		{
@@ -82,9 +79,9 @@ public class Hideout : SettlementComponent, ISpottable
 		return ((Hideout)o)._isSpotted;
 	}
 
-	public void UpdateNextPossibleAttackTime()
+	public void SetNextPossibleAttackTime(CampaignTime hiddenDurationFromNow)
 	{
-		_nextPossibleAttackTime = CampaignTime.Now + CampaignTime.Hours(12f);
+		_nextPossibleAttackTime = CampaignTime.Now + hiddenDurationFromNow;
 	}
 
 	public IEnumerable<PartyBase> GetDefenderParties(MapEvent.BattleTypes battleType)
@@ -118,11 +115,6 @@ public class Hideout : SettlementComponent, ISpottable
 		return null;
 	}
 
-	public void SetScene(string sceneName)
-	{
-		SceneName = sceneName;
-	}
-
 	public Hideout()
 	{
 		IsSpotted = false;
@@ -132,9 +124,9 @@ public class Hideout : SettlementComponent, ISpottable
 	{
 		base.OnPartyEntered(mobileParty);
 		UpdateOwnership();
-		if (mobileParty.MapFaction.IsBanditFaction)
+		if (mobileParty.MapFaction.IsBanditFaction && mobileParty.BanditPartyComponent != null)
 		{
-			mobileParty.BanditPartyComponent.SetHomeHideout(base.Owner.Settlement.Hideout);
+			mobileParty.BanditPartyComponent.SetHomeHideout(this);
 		}
 	}
 
@@ -173,10 +165,6 @@ public class Hideout : SettlementComponent, ISpottable
 		base.BackgroundMeshName = node.Attributes["background_mesh"].Value;
 		base.WaitMeshName = node.Attributes["wait_mesh"].Value;
 		base.Deserialize(objectManager, node);
-		if (node.Attributes["scene_name"] != null)
-		{
-			SceneName = node.Attributes["scene_name"].InnerText;
-		}
 	}
 
 	private void UpdateOwnership()
@@ -185,9 +173,5 @@ public class Hideout : SettlementComponent, ISpottable
 		{
 			base.Owner.Settlement.Party.SetVisualAsDirty();
 		}
-	}
-
-	protected override void OnInventoryUpdated(ItemRosterElement item, int count)
-	{
 	}
 }

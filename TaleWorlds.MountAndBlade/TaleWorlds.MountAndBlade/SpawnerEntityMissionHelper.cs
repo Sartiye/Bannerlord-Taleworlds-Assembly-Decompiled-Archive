@@ -24,7 +24,7 @@ public class SpawnerEntityMissionHelper
 	{
 		_spawner = spawner;
 		_fireVersion = fireVersion;
-		_ownerEntity = _spawner.GameEntity;
+		_ownerEntity = GameEntity.CreateFromWeakEntity(_spawner.GameEntity);
 		_gameEntityName = _ownerEntity.Name;
 		if (SpawnPrefab(_ownerEntity, GetPrefabName()) != null)
 		{
@@ -32,7 +32,7 @@ public class SpawnerEntityMissionHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Spawner couldn't spawn a proper entity.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerEntityMissionHelper.cs", ".ctor", 34);
+			Debug.FailedAssert("Spawner couldn't spawn a proper entity.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerEntityMissionHelper.cs", ".ctor", 34);
 		}
 		_spawner.AssignParameters(this);
 		CallSetSpawnedFromSpawnerOfScripts();
@@ -40,8 +40,8 @@ public class SpawnerEntityMissionHelper
 
 	private GameEntity SpawnPrefab(GameEntity parent, string entityName)
 	{
-		SpawnedEntity = GameEntity.Instantiate(parent.Scene, entityName, callScriptCallbacks: false);
-		SpawnedEntity.SetMobility(GameEntity.Mobility.dynamic);
+		InstantiateEntity(parent, entityName);
+		SpawnedEntity.SetMobility(GameEntity.Mobility.Dynamic);
 		SpawnedEntity.EntityFlags |= EntityFlags.DontSaveToScene;
 		parent.AddChild(SpawnedEntity);
 		MatrixFrame frame = MatrixFrame.Identity;
@@ -54,9 +54,14 @@ public class SpawnerEntityMissionHelper
 		return SpawnedEntity;
 	}
 
+	protected virtual void InstantiateEntity(GameEntity parent, string entityName)
+	{
+		SpawnedEntity = GameEntity.Instantiate(parent.Scene, entityName, callScriptCallbacks: false);
+	}
+
 	private void RemoveChildEntity(GameEntity child)
 	{
-		child.CallScriptCallbacks();
+		child.CallScriptCallbacks(registerScriptComponents: false);
 		child.Remove(85);
 	}
 

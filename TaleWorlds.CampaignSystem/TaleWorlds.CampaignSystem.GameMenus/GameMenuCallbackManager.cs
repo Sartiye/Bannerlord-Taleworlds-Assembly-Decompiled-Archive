@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 
 namespace TaleWorlds.CampaignSystem.GameMenus;
 
@@ -27,31 +28,16 @@ public class GameMenuCallbackManager
 		_gameMenuInitializationHandlers = new Dictionary<string, GameMenuInitializationHandlerDelegate>();
 		Assembly assembly = typeof(GameMenuInitializationHandler).Assembly;
 		FillInitializationHandlerWith(assembly);
-		Assembly[] array = GeAssemblies();
-		foreach (Assembly assembly2 in array)
+		Assembly[] assemblies = GetAssemblies();
+		foreach (Assembly assembly2 in assemblies)
 		{
 			FillInitializationHandlerWith(assembly2);
 		}
 	}
 
-	private static Assembly[] GeAssemblies()
+	private static Assembly[] GetAssemblies()
 	{
-		List<Assembly> list = new List<Assembly>();
-		Assembly assembly = typeof(GameMenu).Assembly;
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (Assembly assembly2 in assemblies)
-		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
-			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
-				{
-					list.Add(assembly2);
-					break;
-				}
-			}
-		}
-		return list.ToArray();
+		return typeof(GameMenu).Assembly.GetActiveReferencingGameAssembliesSafe();
 	}
 
 	public void OnGameLoad()
@@ -95,8 +81,8 @@ public class GameMenuCallbackManager
 		_eventHandlers = new Dictionary<string, Dictionary<string, GameMenuEventHandlerDelegate>>();
 		Assembly assembly = typeof(GameMenuEventHandler).Assembly;
 		FillEventHandlersWith(assembly);
-		Assembly[] array = GeAssemblies();
-		foreach (Assembly assembly2 in array)
+		Assembly[] assemblies = GetAssemblies();
+		foreach (Assembly assembly2 in assemblies)
 		{
 			FillEventHandlersWith(assembly2);
 		}
@@ -171,7 +157,7 @@ public class GameMenuCallbackManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public TextObject GetVirtualMenuOptionTooltip(MenuContext menuContext, int virtualMenuItemIndex)
@@ -189,7 +175,7 @@ public class GameMenuCallbackManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetVirtualMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public TextObject GetVirtualMenuOptionText(MenuContext menuContext, int virtualMenuItemIndex)
@@ -207,7 +193,7 @@ public class GameMenuCallbackManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetVirtualMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public TextObject GetMenuOptionText(MenuContext menuContext, int menuItemNumber)
@@ -220,6 +206,6 @@ public class GameMenuCallbackManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 }

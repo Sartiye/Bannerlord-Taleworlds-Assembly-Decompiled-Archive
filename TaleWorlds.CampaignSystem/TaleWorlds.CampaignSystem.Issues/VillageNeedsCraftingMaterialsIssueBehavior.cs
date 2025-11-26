@@ -169,8 +169,7 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -183,8 +182,7 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation);
 		}
 
 		protected override void OnGameLoad()
@@ -440,7 +438,7 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 		{
 			if (_playerAcceptedQuestLog.CurrentProgress >= _requestedItemAmount)
 			{
-				explanation = TextObject.Empty;
+				explanation = null;
 				return true;
 			}
 			explanation = new TextObject("{=EmBla2xa}You don't have enough {ITEM}");
@@ -527,18 +525,12 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 
 		private void OnItemsRefined(Hero hero, Crafting.RefiningFormula refiningFormula)
 		{
-			if (hero == Hero.MainHero)
-			{
-				UpdateQuestLog();
-			}
+			UpdateQuestLog();
 		}
 
 		private void OnEquipmentSmeltedByHero(Hero hero, EquipmentElement equipmentElement)
 		{
-			if (hero == Hero.MainHero)
-			{
-				UpdateQuestLog();
-			}
+			UpdateQuestLog();
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)

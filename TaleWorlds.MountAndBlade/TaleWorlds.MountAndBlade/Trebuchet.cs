@@ -12,31 +12,9 @@ namespace TaleWorlds.MountAndBlade;
 
 public class Trebuchet : RangedSiegeWeapon, ISpawnable
 {
-	private static readonly ActionIndexCache act_usage_trebuchet_idle = ActionIndexCache.Create("act_usage_trebuchet_idle");
-
 	public const float TrebuchetDirectionRestriction = System.MathF.PI * 4f / 9f;
 
-	private static readonly ActionIndexCache act_usage_trebuchet_reload = ActionIndexCache.Create("act_usage_trebuchet_reload");
-
-	private static readonly ActionIndexCache act_usage_trebuchet_reload_2 = ActionIndexCache.Create("act_usage_trebuchet_reload_2");
-
-	private static readonly ActionIndexCache act_usage_trebuchet_reload_idle = ActionIndexCache.Create("act_usage_trebuchet_reload_idle");
-
-	private static readonly ActionIndexCache act_usage_trebuchet_reload_2_idle = ActionIndexCache.Create("act_usage_trebuchet_reload_2_idle");
-
-	private static readonly ActionIndexCache act_usage_trebuchet_load_ammo = ActionIndexCache.Create("act_usage_trebuchet_load_ammo");
-
-	private static readonly ActionIndexCache act_usage_trebuchet_shoot = ActionIndexCache.Create("act_usage_trebuchet_shoot");
-
-	private static readonly ActionIndexCache act_strike_bent_over = ActionIndexCache.Create("act_strike_bent_over");
-
-	private static readonly ActionIndexCache act_pickup_boulder_begin = ActionIndexCache.Create("act_pickup_boulder_begin");
-
-	private static readonly ActionIndexCache act_pickup_boulder_end = ActionIndexCache.Create("act_pickup_boulder_end");
-
 	private const string BodyTag = "body";
-
-	private const string SlideTag = "slide";
 
 	private const string SlingTag = "sling";
 
@@ -48,13 +26,9 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 
 	private const string MissileBoneName = "bn_projectile_holder";
 
-	private const string LeftTag = "left";
-
-	private const string _rotateObjectTag = "rotate_entity";
+	private const string RotateObjectTag = "rotate_entity";
 
 	public float ProjectileSpeed = 45f;
-
-	public string AIAmmoLoadTag = "ammoload_ai";
 
 	private SynchedMissionObject _body;
 
@@ -79,8 +53,6 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 	public string RopeSetUpAnimation;
 
 	public string VerticalAdjusterAnimation;
-
-	public float TimeGapBetweenShootActionAndProjectileLeaving = 1.6f;
 
 	private GameEntity _verticalAdjuster;
 
@@ -111,8 +83,9 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 		get
 		{
 			Mat3 rotation = RotationObject.GameEntity.GetGlobalFrame().rotation;
-			rotation.RotateAboutSide(0f - currentReleaseAngle);
-			return rotation.TransformToParent(new Vec3(0f, -1f));
+			rotation.RotateAboutSide(0f - CurrentReleaseAngle);
+			Vec3 v = new Vec3(0f, -1f);
+			return rotation.TransformToParent(in v);
 		}
 	}
 
@@ -134,18 +107,18 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
 	{
-		TextObject textObject = (usableGameObject.GameEntity.HasTag(AmmoPickUpTag) ? new TextObject("{=bNYm3K6b}{KEY} Pick Up") : (usableGameObject.GameEntity.HasTag("reload") ? new TextObject((base.PilotStandingPoint == usableGameObject) ? "{=fEQAPJ2e}{KEY} Use" : "{=Na81xuXn}{KEY} Rearm") : (usableGameObject.GameEntity.HasTag("rotate") ? new TextObject("{=5wx4BF5h}{KEY} Rotate") : ((!usableGameObject.GameEntity.HasTag("ammoload")) ? TextObject.Empty : new TextObject("{=ibC4xPoo}{KEY} Load Ammo")))));
+		TextObject textObject = (usableGameObject.GameEntity.HasTag(AmmoPickUpTag) ? new TextObject("{=bNYm3K6b}{KEY} Pick Up") : (usableGameObject.GameEntity.HasTag("reload") ? new TextObject((base.PilotStandingPoint == usableGameObject) ? "{=fEQAPJ2e}{KEY} Use" : "{=Na81xuXn}{KEY} Rearm") : (usableGameObject.GameEntity.HasTag("rotate") ? new TextObject("{=5wx4BF5h}{KEY} Rotate") : ((!usableGameObject.GameEntity.HasTag("ammoload")) ? TextObject.GetEmpty() : new TextObject("{=ibC4xPoo}{KEY} Load Ammo")))));
 		textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
 		return textObject;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
 		if (!gameEntity.HasTag(AmmoPickUpTag))
 		{
-			return new TextObject("{=4Skg9QhO}Trebuchet").ToString();
+			return new TextObject("{=4Skg9QhO}Trebuchet");
 		}
-		return new TextObject("{=pzfbPbWW}Boulder").ToString();
+		return new TextObject("{=pzfbPbWW}Boulder");
 	}
 
 	protected override void RegisterAnimationParameters()
@@ -189,7 +162,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 	{
 		MoveSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/trebuchet/move");
 		ReloadSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/trebuchet/reload");
-		ReloadEndSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/trebuchet/reload_end");
+		FireSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/trebuchet/fire");
 	}
 
 	public override UsableMachineAIBase CreateAIBehaviorObject()
@@ -199,23 +172,23 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 
 	protected internal override void OnInit()
 	{
-		List<SynchedMissionObject> list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("body");
+		List<SynchedMissionObject> list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("body");
 		_body = list[0];
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("sling");
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("sling");
 		_sling = list[0];
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("rope");
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("rope");
 		_rope = list[0];
-		List<GameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("vertical_adjuster");
-		_verticalAdjuster = list2[0];
+		List<WeakGameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("vertical_adjuster");
+		_verticalAdjuster = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(list2[0]);
 		_verticalAdjusterSkeleton = _verticalAdjuster.Skeleton;
 		_verticalAdjusterSkeleton.SetAnimationAtChannel(VerticalAdjusterAnimation, 0);
 		_verticalAdjusterStartingLocalFrame = _verticalAdjuster.GetFrame();
-		_verticalAdjusterStartingLocalFrame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToLocal(_verticalAdjusterStartingLocalFrame);
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("rotate_entity");
+		_verticalAdjusterStartingLocalFrame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToLocal(in _verticalAdjusterStartingLocalFrame);
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("rotate_entity");
 		RotationObject = list[0];
 		base.OnInit();
-		timeGapBetweenShootActionAndProjectileLeaving = TimeGapBetweenShootActionAndProjectileLeaving;
-		timeGapBetweenShootingEndAndReloadingStart = 0f;
+		TimeGapBetweenShootActionAndProjectileLeaving = 1.6f;
+		TimeGapBetweenShootingEndAndReloadingStart = 0f;
 		_ammoLoadPoints = new List<StandingPointWithWeaponRequirement>();
 		if (base.StandingPoints != null)
 		{
@@ -225,12 +198,16 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 				{
 					_ammoLoadPoints.Add(base.StandingPoints[i] as StandingPointWithWeaponRequirement);
 				}
+				else if (base.StandingPoints[i] != base.PilotStandingPoint && !base.StandingPoints[i].GameEntity.HasTag(AmmoPickUpTag) && !GameNetwork.IsClientOrReplay)
+				{
+					base.StandingPoints[i].SetIsDisabledForPlayersSynched(value: true);
+				}
 			}
-			MatrixFrame globalFrame = _body.GameEntity.GetGlobalFrame();
+			MatrixFrame m = _body.GameEntity.GetGlobalFrame();
 			_standingPointLocalIKFrames = new MatrixFrame[base.StandingPoints.Count];
 			for (int j = 0; j < base.StandingPoints.Count; j++)
 			{
-				_standingPointLocalIKFrames[j] = base.StandingPoints[j].GameEntity.GetGlobalFrame().TransformToLocal(globalFrame);
+				_standingPointLocalIKFrames[j] = base.StandingPoints[j].GameEntity.GetGlobalFrame().TransformToLocal(in m);
 				base.StandingPoints[j].AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 			}
 		}
@@ -251,11 +228,11 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 
 	public override void AfterMissionStart()
 	{
-		if (AmmoPickUpStandingPoints != null)
+		if (base.AmmoPickUpPoints != null)
 		{
-			foreach (StandingPointWithWeaponRequirement ammoPickUpStandingPoint in AmmoPickUpStandingPoints)
+			foreach (StandingPoint ammoPickUpPoint in base.AmmoPickUpPoints)
 			{
-				ammoPickUpStandingPoint.LockUserFrames = true;
+				ammoPickUpPoint.LockUserFrames = true;
 			}
 		}
 		if (_ammoLoadPoints == null)
@@ -301,7 +278,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 		{
 			return -1000f;
 		}
-		if (flags.HasAnyFlag(TargetFlags.None))
+		if (flags.HasAllFlags(TargetFlags.IsSiegeEngine | TargetFlags.IsAttacker))
 		{
 			baseValue *= 1.5f;
 		}
@@ -373,19 +350,19 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 		}
 		if (!GameNetwork.IsClientOrReplay)
 		{
-			foreach (StandingPointWithWeaponRequirement ammoPickUpStandingPoint in AmmoPickUpStandingPoints)
+			foreach (StandingPoint ammoPickUpPoint in base.AmmoPickUpPoints)
 			{
-				if (!ammoPickUpStandingPoint.HasUser)
+				if (!ammoPickUpPoint.HasUser)
 				{
 					continue;
 				}
-				Agent userAgent = ammoPickUpStandingPoint.UserAgent;
-				ActionIndexValueCache currentActionValue = userAgent.GetCurrentActionValue(1);
-				if (currentActionValue == act_pickup_boulder_begin)
+				Agent userAgent = ammoPickUpPoint.UserAgent;
+				ActionIndexCache currentAction = userAgent.GetCurrentAction(1);
+				if (currentAction == ActionIndexCache.act_pickup_boulder_begin)
 				{
 					continue;
 				}
-				if (currentActionValue == act_pickup_boulder_end)
+				if (currentAction == ActionIndexCache.act_pickup_boulder_end)
 				{
 					MissionWeapon weapon = new MissionWeapon(OriginalMissileItem, null, null);
 					userAgent.EquipWeaponToExtraSlotAndWield(ref weapon);
@@ -407,7 +384,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 						ReloaderAgent = null;
 					}
 				}
-				else if (!userAgent.SetActionChannel(1, act_pickup_boulder_begin, ignorePriority: false, 0uL) && userAgent.Controller != Agent.ControllerType.AI)
+				else if (!userAgent.SetActionChannel(1, in ActionIndexCache.act_pickup_boulder_begin, ignorePriority: false, (AnimFlags)0uL) && userAgent.Controller != AgentControllerType.AI)
 				{
 					userAgent.StopUsingGameObject();
 				}
@@ -447,14 +424,14 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 					{
 						flag = true;
 						Agent userAgent2 = ammoLoadPoint.UserAgent;
-						ActionIndexValueCache currentActionValue2 = userAgent2.GetCurrentActionValue(1);
-						if (currentActionValue2 == act_usage_trebuchet_load_ammo && userAgent2.GetCurrentActionProgress(1) > 0.56f)
+						ActionIndexCache currentAction2 = userAgent2.GetCurrentAction(1);
+						if (currentAction2 == ActionIndexCache.act_usage_trebuchet_load_ammo && userAgent2.GetCurrentActionProgress(1) > 0.56f)
 						{
-							EquipmentIndex wieldedItemIndex = userAgent2.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-							if (wieldedItemIndex != EquipmentIndex.None && userAgent2.Equipment[wieldedItemIndex].CurrentUsageItem.WeaponClass == OriginalMissileItem.PrimaryWeapon.WeaponClass)
+							EquipmentIndex primaryWieldedItemIndex = userAgent2.GetPrimaryWieldedItemIndex();
+							if (primaryWieldedItemIndex != EquipmentIndex.None && userAgent2.Equipment[primaryWieldedItemIndex].CurrentUsageItem.WeaponClass == OriginalMissileItem.PrimaryWeapon.WeaponClass)
 							{
-								ChangeProjectileEntityServer(userAgent2, userAgent2.Equipment[wieldedItemIndex].Item.StringId);
-								userAgent2.RemoveEquippedWeapon(wieldedItemIndex);
+								ChangeProjectileEntityServer(userAgent2, userAgent2.Equipment[primaryWieldedItemIndex].Item.StringId);
+								userAgent2.RemoveEquippedWeapon(primaryWieldedItemIndex);
 								_timeElapsedAfterLoading = 0f;
 								base.Projectile.SetVisibleSynched(value: true);
 								_sling.SetAnimationAtChannelSynched(IdleWithAmmoAnimation, 0);
@@ -471,7 +448,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 						}
 						else
 						{
-							if (!(currentActionValue2 != act_usage_trebuchet_load_ammo) || userAgent2.SetActionChannel(1, act_usage_trebuchet_load_ammo, ignorePriority: false, 0uL))
+							if (!(currentAction2 != ActionIndexCache.act_usage_trebuchet_load_ammo) || userAgent2.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_load_ammo, ignorePriority: false, (AnimFlags)0uL))
 							{
 								continue;
 							}
@@ -492,8 +469,8 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 					else if (ammoLoadPoint.HasAIMovingTo)
 					{
 						Agent movingAgent = ammoLoadPoint.MovingAgent;
-						EquipmentIndex wieldedItemIndex2 = movingAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-						if (wieldedItemIndex2 == EquipmentIndex.None || movingAgent.Equipment[wieldedItemIndex2].CurrentUsageItem.WeaponClass != OriginalMissileItem.PrimaryWeapon.WeaponClass)
+						EquipmentIndex primaryWieldedItemIndex2 = movingAgent.GetPrimaryWieldedItemIndex();
+						if (primaryWieldedItemIndex2 == EquipmentIndex.None || movingAgent.Equipment[primaryWieldedItemIndex2].CurrentUsageItem.WeaponClass != OriginalMissileItem.PrimaryWeapon.WeaponClass)
 						{
 							movingAgent.StopUsingGameObject(isSuccessful: true, Agent.StopUsingGameObjectFlags.None);
 							SendAgentToAmmoPickup(movingAgent);
@@ -520,9 +497,9 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 		{
 			UpdateProjectilePosition();
 		}
-		float parameter = MBMath.ClampFloat((currentReleaseAngle - BottomReleaseAngleRestriction) / (TopReleaseAngleRestriction - BottomReleaseAngleRestriction), 0f, 1f);
+		float parameter = MBMath.ClampFloat((CurrentReleaseAngle - BottomReleaseAngleRestriction) / (TopReleaseAngleRestriction - BottomReleaseAngleRestriction), 0f, 1f);
 		_verticalAdjusterSkeleton.SetAnimationParameterAtChannel(0, parameter);
-		MatrixFrame frame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToParent(_verticalAdjusterStartingLocalFrame);
+		MatrixFrame frame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToParent(in _verticalAdjusterStartingLocalFrame);
 		_verticalAdjuster.SetFrame(ref frame);
 		MatrixFrame boundEntityGlobalFrame = _body.GameEntity.GetGlobalFrame();
 		for (int i = 0; i < base.StandingPoints.Count; i++)
@@ -537,7 +514,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 			}
 			else if (base.StandingPoints[i] != base.PilotStandingPoint)
 			{
-				if (base.StandingPoints[i].UserAgent.GetCurrentActionValue(1) == act_usage_trebuchet_reload_2)
+				if (base.StandingPoints[i].UserAgent.GetCurrentAction(1) == ActionIndexCache.act_usage_trebuchet_reload_2)
 				{
 					base.StandingPoints[i].UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in _standingPointLocalIKFrames[i], in boundEntityGlobalFrame);
 				}
@@ -555,19 +532,19 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 		{
 			if (base.PilotAgent != null)
 			{
-				ActionIndexValueCache currentActionValue = base.PilotAgent.GetCurrentActionValue(1);
+				ActionIndexCache currentAction = base.PilotAgent.GetCurrentAction(1);
 				if (base.State == WeaponState.WaitingBeforeProjectileLeaving || base.State == WeaponState.Shooting || base.State == WeaponState.WaitingBeforeReloading)
 				{
-					if (!_shootAnimPlayed && currentActionValue != act_usage_trebuchet_shoot)
+					if (!_shootAnimPlayed && currentAction != ActionIndexCache.act_usage_trebuchet_shoot)
 					{
-						_shootAnimPlayed = base.PilotAgent.SetActionChannel(1, act_usage_trebuchet_shoot, ignorePriority: false, 0uL);
+						_shootAnimPlayed = base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_shoot, ignorePriority: false, (AnimFlags)0uL);
 					}
-					else if (currentActionValue != act_usage_trebuchet_shoot && !base.PilotAgent.SetActionChannel(1, act_usage_trebuchet_reload_idle, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+					else if (currentAction != ActionIndexCache.act_usage_trebuchet_shoot && !base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_reload_idle, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 					{
 						base.PilotAgent.StopUsingGameObjectMT();
 					}
 				}
-				else if (currentActionValue != act_usage_trebuchet_reload && currentActionValue != act_usage_trebuchet_shoot && !base.PilotAgent.SetActionChannel(1, act_usage_trebuchet_idle, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+				else if (currentAction != ActionIndexCache.act_usage_trebuchet_reload && currentAction != ActionIndexCache.act_usage_trebuchet_shoot && !base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_idle, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 				{
 					base.PilotAgent.StopUsingGameObjectMT();
 				}
@@ -579,7 +556,7 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 					if (reloadStandingPoint.HasUser && reloadStandingPoint != base.PilotStandingPoint)
 					{
 						Agent userAgent = reloadStandingPoint.UserAgent;
-						if (!userAgent.SetActionChannel(1, act_usage_trebuchet_reload_2_idle, ignorePriority: false, 0uL) && userAgent.Controller != Agent.ControllerType.AI)
+						if (!userAgent.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_reload_2_idle, ignorePriority: false, (AnimFlags)0uL) && userAgent.Controller != AgentControllerType.AI)
 						{
 							userAgent.StopUsingGameObjectMT();
 						}
@@ -588,10 +565,10 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 			}
 			foreach (StandingPoint standingPoint in base.StandingPoints)
 			{
-				if (standingPoint.HasUser && ReloadStandingPoints.IndexOf(standingPoint) < 0 && (!(standingPoint is StandingPointWithWeaponRequirement) || (_ammoLoadPoints.IndexOf((StandingPointWithWeaponRequirement)standingPoint) < 0 && AmmoPickUpStandingPoints.IndexOf((StandingPointWithWeaponRequirement)standingPoint) < 0)))
+				if (standingPoint.HasUser && ReloadStandingPoints.IndexOf(standingPoint) < 0 && (!(standingPoint is StandingPointWithWeaponRequirement) || (_ammoLoadPoints.IndexOf((StandingPointWithWeaponRequirement)standingPoint) < 0 && base.AmmoPickUpPoints.IndexOf(standingPoint) < 0)))
 				{
 					Agent userAgent2 = standingPoint.UserAgent;
-					if (!userAgent2.SetActionChannel(1, act_usage_trebuchet_reload_2_idle, ignorePriority: false, 0uL) && userAgent2.Controller != Agent.ControllerType.AI)
+					if (!userAgent2.SetActionChannel(1, in ActionIndexCache.act_usage_trebuchet_reload_2_idle, ignorePriority: false, (AnimFlags)0uL) && userAgent2.Controller != AgentControllerType.AI)
 					{
 						userAgent2.StopUsingGameObjectMT();
 					}
@@ -610,19 +587,19 @@ public class Trebuchet : RangedSiegeWeapon, ISpawnable
 				continue;
 			}
 			Agent userAgent3 = ReloadStandingPoints[j].UserAgent;
-			ActionIndexValueCache currentActionValue2 = userAgent3.GetCurrentActionValue(1);
-			if (currentActionValue2 == act_usage_trebuchet_reload || currentActionValue2 == act_usage_trebuchet_reload_2)
+			ActionIndexCache currentAction2 = userAgent3.GetCurrentAction(1);
+			if (currentAction2 == ActionIndexCache.act_usage_trebuchet_reload || currentAction2 == ActionIndexCache.act_usage_trebuchet_reload_2)
 			{
 				userAgent3.SetCurrentActionProgress(1, Skeletons[0].GetAnimationParameterAtChannel(0));
 			}
 			else if (!GameNetwork.IsClientOrReplay)
 			{
-				ActionIndexCache actionIndexCache = act_usage_trebuchet_reload;
+				ActionIndexCache actionIndexCache = ActionIndexCache.act_usage_trebuchet_reload;
 				if (ReloadStandingPoints[j].GameEntity.HasTag("right"))
 				{
-					actionIndexCache = act_usage_trebuchet_reload_2;
+					actionIndexCache = ActionIndexCache.act_usage_trebuchet_reload_2;
 				}
-				if (!userAgent3.SetActionChannel(1, actionIndexCache, ignorePriority: false, 0uL, 0f, 1f, -0.2f, 0.4f, Skeletons[0].GetAnimationParameterAtChannel(0)) && userAgent3.Controller != Agent.ControllerType.AI)
+				if (!userAgent3.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL, 0f, 1f, -0.2f, 0.4f, Skeletons[0].GetAnimationParameterAtChannel(0)) && userAgent3.Controller != AgentControllerType.AI)
 				{
 					userAgent3.StopUsingGameObjectMT();
 				}

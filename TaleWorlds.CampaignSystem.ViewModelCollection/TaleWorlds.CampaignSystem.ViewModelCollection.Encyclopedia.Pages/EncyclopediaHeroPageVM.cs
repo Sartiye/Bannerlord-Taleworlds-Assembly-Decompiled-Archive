@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encyclopedia;
@@ -28,9 +29,7 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 
 	private readonly HeroRelationComparer _relationDescendingComparer;
 
-	private const int _friendLimit = 40;
-
-	private const int _enemyLimit = -30;
+	private const int _alliesEnemiesCapacity = 13;
 
 	private MBBindingList<HeroVM> _enemies;
 
@@ -101,6 +100,24 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 	private string _masterText;
 
 	private HintViewModel _pregnantHint;
+
+	private bool _hasAnySkills;
+
+	private MBBindingList<HeroVM> _additionalAllies;
+
+	private MBBindingList<HeroVM> _additionalEnemies;
+
+	private bool _anyAdditionalAllies;
+
+	private bool _anyAdditionalEnemies;
+
+	private string _additionalAlliesString;
+
+	private string _additionalEnemiesString;
+
+	private BasicTooltipViewModel _additionalAlliesHint;
+
+	private BasicTooltipViewModel _additionalEnemiesHint;
 
 	[DataSourceProperty]
 	public EncyclopediaFactionVM Faction
@@ -701,23 +718,178 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		}
 	}
 
+	[DataSourceProperty]
+	public bool HasAnySkills
+	{
+		get
+		{
+			return _hasAnySkills;
+		}
+		set
+		{
+			if (value != _hasAnySkills)
+			{
+				_hasAnySkills = value;
+				OnPropertyChangedWithValue(value, "HasAnySkills");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<HeroVM> AdditionalEnemies
+	{
+		get
+		{
+			return _additionalEnemies;
+		}
+		set
+		{
+			if (value != _additionalEnemies)
+			{
+				_additionalEnemies = value;
+				OnPropertyChangedWithValue(value, "AdditionalEnemies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<HeroVM> AdditionalAllies
+	{
+		get
+		{
+			return _additionalAllies;
+		}
+		set
+		{
+			if (value != _additionalAllies)
+			{
+				_additionalAllies = value;
+				OnPropertyChangedWithValue(value, "AdditionalAllies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool AnyAdditionalAllies
+	{
+		get
+		{
+			return _anyAdditionalAllies;
+		}
+		set
+		{
+			if (value != _anyAdditionalAllies)
+			{
+				_anyAdditionalAllies = value;
+				OnPropertyChangedWithValue(value, "AnyAdditionalAllies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool AnyAdditionalEnemies
+	{
+		get
+		{
+			return _anyAdditionalEnemies;
+		}
+		set
+		{
+			if (value != _anyAdditionalEnemies)
+			{
+				_anyAdditionalEnemies = value;
+				OnPropertyChangedWithValue(value, "AnyAdditionalEnemies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string AdditionalAlliesString
+	{
+		get
+		{
+			return _additionalAlliesString;
+		}
+		set
+		{
+			if (value != _additionalAlliesString)
+			{
+				_additionalAlliesString = value;
+				OnPropertyChangedWithValue(value, "AdditionalAlliesString");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string AdditionalEnemiesString
+	{
+		get
+		{
+			return _additionalEnemiesString;
+		}
+		set
+		{
+			if (value != _additionalEnemiesString)
+			{
+				_additionalEnemiesString = value;
+				OnPropertyChangedWithValue(value, "AdditionalEnemiesString");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel AdditionalAlliesHint
+	{
+		get
+		{
+			return _additionalAlliesHint;
+		}
+		set
+		{
+			if (value != _additionalAlliesHint)
+			{
+				_additionalAlliesHint = value;
+				OnPropertyChangedWithValue(value, "AdditionalAlliesHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel AdditionalEnemiesHint
+	{
+		get
+		{
+			return _additionalEnemiesHint;
+		}
+		set
+		{
+			if (value != _additionalEnemiesHint)
+			{
+				_additionalEnemiesHint = value;
+				OnPropertyChangedWithValue(value, "AdditionalEnemiesHint");
+			}
+		}
+	}
+
 	public EncyclopediaHeroPageVM(EncyclopediaPageArgs args)
 		: base(args)
 	{
 		_hero = base.Obj as Hero;
-		_relationAscendingComparer = new HeroRelationComparer(_hero, isAscending: true);
-		_relationDescendingComparer = new HeroRelationComparer(_hero, isAscending: false);
+		_relationAscendingComparer = new HeroRelationComparer(_hero, isAscending: true, showLeadersFirst: true);
+		_relationDescendingComparer = new HeroRelationComparer(_hero, isAscending: false, showLeadersFirst: true);
 		IsInformationHidden = CampaignUIHelper.IsHeroInformationHidden(_hero, out var disableReason);
 		_infoHiddenReasonText = disableReason;
 		_allRelatedHeroes = new List<Hero> { _hero.Father, _hero.Mother, _hero.Spouse };
-		_allRelatedHeroes.AddRange(_hero.Children);
 		_allRelatedHeroes.AddRange(_hero.Siblings);
 		_allRelatedHeroes.AddRange(_hero.ExSpouses);
+		_allRelatedHeroes.AddRange(CampaignUIHelper.GetChildrenAndGrandchildrenOfHero(_hero));
 		StringHelpers.SetCharacterProperties("NPC", _hero.CharacterObject);
 		Settlements = new MBBindingList<EncyclopediaSettlementVM>();
 		Dwellings = new MBBindingList<EncyclopediaDwellingVM>();
 		Allies = new MBBindingList<HeroVM>();
+		AdditionalAllies = new MBBindingList<HeroVM>();
 		Enemies = new MBBindingList<HeroVM>();
+		AdditionalEnemies = new MBBindingList<HeroVM>();
 		Family = new MBBindingList<EncyclopediaFamilyMemberVM>();
 		Companions = new MBBindingList<HeroVM>();
 		History = new MBBindingList<EncyclopediaHistoryEventVM>();
@@ -757,6 +929,8 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		Dwellings.Clear();
 		Allies.Clear();
 		Enemies.Clear();
+		AdditionalAllies.Clear();
+		AdditionalEnemies.Clear();
 		Companions.Clear();
 		Family.Clear();
 		History.Clear();
@@ -769,12 +943,13 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		HasNeutralClan = _hero.Clan == null;
 		if (!IsInformationHidden)
 		{
-			for (int i = 0; i < TaleWorlds.CampaignSystem.Extensions.Skills.All.Count; i++)
+			List<SkillObject> list = TaleWorlds.CampaignSystem.Extensions.Skills.All.ToList();
+			list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+			foreach (SkillObject item3 in list)
 			{
-				SkillObject skill = TaleWorlds.CampaignSystem.Extensions.Skills.All[i];
-				if (_hero.GetSkillValue(skill) > 0 && _hero.GetSkillValue(skill) > 50)
+				if (_hero.GetSkillValue(item3) >= 50)
 				{
-					Skills.Add(new EncyclopediaSkillVM(skill, _hero.GetSkillValue(skill)));
+					Skills.Add(new EncyclopediaSkillVM(item3, _hero.GetSkillValue(item3)));
 				}
 			}
 			foreach (TraitObject heroTrait in CampaignUIHelper.GetHeroTraits())
@@ -786,47 +961,61 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 			}
 			if (_hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
 			{
-				for (int j = 0; j < Hero.AllAliveHeroes.Count; j++)
+				for (int i = 0; i < Hero.AllAliveHeroes.Count; i++)
 				{
-					AddHeroToRelatedVMList(Hero.AllAliveHeroes[j]);
+					AddHeroToRelatedVMList(Hero.AllAliveHeroes[i]);
 				}
-				for (int k = 0; k < Hero.DeadOrDisabledHeroes.Count; k++)
+				for (int j = 0; j < Hero.DeadOrDisabledHeroes.Count; j++)
 				{
-					AddHeroToRelatedVMList(Hero.DeadOrDisabledHeroes[k]);
+					AddHeroToRelatedVMList(Hero.DeadOrDisabledHeroes[j]);
 				}
 				Allies.Sort(_relationDescendingComparer);
 				Enemies.Sort(_relationAscendingComparer);
+				while (Allies.Count > 13)
+				{
+					HeroVM item = Allies[13];
+					Allies.Remove(item);
+					AdditionalAllies.Add(item);
+				}
+				while (Enemies.Count > 13)
+				{
+					HeroVM item2 = Enemies[13];
+					Enemies.Remove(item2);
+					AdditionalEnemies.Add(item2);
+				}
+				OnAdditionalListsUpdated();
 			}
 			if (_hero.Clan != null && _hero == _hero.Clan.Leader)
 			{
-				for (int l = 0; l < _hero.Clan.Companions.Count; l++)
+				for (int k = 0; k < _hero.Clan.Companions.Count; k++)
 				{
-					Hero hero = _hero.Clan.Companions[l];
+					Hero hero = _hero.Clan.Companions[k];
 					Companions.Add(new HeroVM(hero));
 				}
 			}
-			for (int m = 0; m < _allRelatedHeroes.Count; m++)
+			for (int l = 0; l < _allRelatedHeroes.Count; l++)
 			{
-				Hero hero2 = _allRelatedHeroes[m];
+				Hero hero2 = _allRelatedHeroes[l];
 				if (hero2 != null && pageOf.IsValidEncyclopediaItem(hero2))
 				{
 					Family.Add(new EncyclopediaFamilyMemberVM(hero2, _hero));
 				}
 			}
-			for (int n = 0; n < _hero.OwnedWorkshops.Count; n++)
+			for (int m = 0; m < _hero.OwnedWorkshops.Count; m++)
 			{
-				Dwellings.Add(new EncyclopediaDwellingVM(_hero.OwnedWorkshops[n].WorkshopType));
+				Dwellings.Add(new EncyclopediaDwellingVM(_hero.OwnedWorkshops[m].WorkshopType));
 			}
 			EncyclopediaPage pageOf2 = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Settlement));
-			for (int num = 0; num < Settlement.All.Count; num++)
+			for (int n = 0; n < Settlement.All.Count; n++)
 			{
-				Settlement settlement = Settlement.All[num];
+				Settlement settlement = Settlement.All[n];
 				if (settlement.OwnerClan != null && settlement.OwnerClan.Leader == _hero && pageOf2.IsValidEncyclopediaItem(settlement))
 				{
 					Settlements.Add(new EncyclopediaSettlementVM(settlement));
 				}
 			}
 		}
+		HasAnySkills = Skills.Count > 0;
 		if (_hero.Culture != null)
 		{
 			string definition = GameTexts.FindText("str_enc_sf_culture").ToString();
@@ -834,9 +1023,9 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		}
 		string definition2 = GameTexts.FindText("str_enc_sf_age").ToString();
 		Stats.Add(new StringPairItemVM(definition2, IsInformationHidden ? text : ((int)_hero.Age).ToString()));
-		for (int num2 = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num2 >= 0; num2--)
+		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num2] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_hero))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_hero))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}
@@ -876,25 +1065,15 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 	{
 		if (Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Hero)).IsValidEncyclopediaItem(hero) && !hero.IsNotable && hero != _hero && hero.IsAlive && hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && !_allRelatedHeroes.Contains(hero))
 		{
-			if (IsFriend(_hero, hero))
+			if (_hero.IsFriend(hero))
 			{
 				Allies.Add(new HeroVM(hero));
 			}
-			else if (IsEnemy(_hero, hero))
+			else if (_hero.IsEnemy(hero))
 			{
 				Enemies.Add(new HeroVM(hero));
 			}
 		}
-	}
-
-	private static bool IsFriend(Hero h1, Hero h2)
-	{
-		return CharacterRelationManager.GetHeroRelation(h1, h2) >= 40;
-	}
-
-	public static bool IsEnemy(Hero h1, Hero h2)
-	{
-		return CharacterRelationManager.GetHeroRelation(h1, h2) <= -30;
 	}
 
 	public override string GetName()
@@ -942,5 +1121,25 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		{
 			InformationText = Hero.SetHeroEncyclopediaTextAndLinks(_hero).ToString();
 		}
+	}
+
+	private void OnAdditionalListsUpdated()
+	{
+		AnyAdditionalAllies = AdditionalAllies.Count > 0;
+		AnyAdditionalEnemies = AdditionalEnemies.Count > 0;
+		AdditionalAlliesString = (AnyAdditionalAllies ? new TextObject("{=!}+{REMAINING}").SetTextVariable("REMAINING", AdditionalAllies.Count).ToString() : string.Empty);
+		AdditionalEnemiesString = (AnyAdditionalEnemies ? new TextObject("{=!}+{REMAINING}").SetTextVariable("REMAINING", AdditionalEnemies.Count).ToString() : string.Empty);
+		AdditionalAlliesHint = new BasicTooltipViewModel(() => GetOverflowTooltip(AdditionalAllies));
+		AdditionalEnemiesHint = new BasicTooltipViewModel(() => GetOverflowTooltip(AdditionalEnemies));
+	}
+
+	private List<TooltipProperty> GetOverflowTooltip(MBBindingList<HeroVM> overflowList)
+	{
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		foreach (HeroVM overflow in overflowList)
+		{
+			list.Add(new TooltipProperty(string.Empty, overflow.NameText, 0));
+		}
+		return list;
 	}
 }

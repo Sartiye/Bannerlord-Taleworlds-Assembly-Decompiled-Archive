@@ -31,6 +31,20 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 	{
 	}
 
+	private VisualDefinition CreateVisualDefinitionPersonalKillFeed()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("PersonalKillFeed", 0.62f, 0f, AnimationInterpolation.Type.EaseInOut, AnimationInterpolation.Function.Cubic);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 0f
+		});
+		visualDefinition.AddVisualState(new VisualState("Passive")
+		{
+			PositionYOffset = -60f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;
@@ -224,6 +238,9 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		case "ItemType":
 			_datasource_Root.ItemType = _widget.ItemType;
 			break;
+		case "IsPaused":
+			_datasource_Root.IsPaused = _widget.IsPaused;
+			break;
 		}
 	}
 
@@ -342,6 +359,9 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		case "ItemType":
 			_widget.ItemType = _datasource_Root.ItemType;
 			break;
+		case "IsPaused":
+			_widget.IsPaused = _datasource_Root.IsPaused;
+			break;
 		}
 	}
 
@@ -395,6 +415,7 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_widget.Amount = _datasource_Root.Amount;
 			_widget.Message = _datasource_Root.Message;
 			_widget.ItemType = _datasource_Root.ItemType;
+			_widget.IsPaused = _datasource_Root.IsPaused;
 			_widget.EventFire += EventListenerOf_widget;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;

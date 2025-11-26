@@ -206,7 +206,7 @@ public class DeploymentSiegeMachineVM : ViewModel
 		IsSelected = isSelected;
 		if (siegeMachine != null)
 		{
-			MachineType = siegeMachine.GetType();
+			MachineType = ((object)siegeMachine).GetType();
 			Machine = OrderSiegeMachineVM.GetSiegeType(MachineType, siegeMachine.Side);
 			MachineClass = siegeMachine.GetSiegeEngineType().StringId;
 		}
@@ -293,7 +293,7 @@ public class DeploymentSiegeMachineVM : ViewModel
 		SiegeWeapon siegeWeapon = (SiegeWeapon = DeploymentPoint.DeployedWeapon as SiegeWeapon);
 		if (siegeWeapon != null)
 		{
-			MachineType = siegeWeapon.GetType();
+			MachineType = ((object)siegeWeapon).GetType();
 			MachineClass = siegeWeapon.GetSiegeEngineType().StringId;
 		}
 		else

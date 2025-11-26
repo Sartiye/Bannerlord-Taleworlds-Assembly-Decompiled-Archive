@@ -13,4 +13,9 @@ internal class ByteBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadByte();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 1;
+	}
 }

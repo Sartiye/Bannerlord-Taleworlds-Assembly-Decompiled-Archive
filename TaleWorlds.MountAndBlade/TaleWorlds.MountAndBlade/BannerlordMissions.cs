@@ -5,6 +5,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.MissionSpawnHandlers;
 using TaleWorlds.MountAndBlade.Missions.Handlers;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 using TaleWorlds.MountAndBlade.Source.Missions;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers.Logic;
@@ -79,27 +80,21 @@ public static class BannerlordMissions
 		return dictionary;
 	}
 
-	private static AtmosphereInfo CreateAtmosphereInfoForMission(string seasonId, int timeOfDay)
+	public static AtmosphereInfo CreateAtmosphereInfoForMission(string seasonId, int timeOfDay)
 	{
-		Dictionary<string, int> obj = new Dictionary<string, int>
-		{
-			{ "spring", 0 },
-			{ "summer", 1 },
-			{ "fall", 2 },
-			{ "winter", 3 }
-		};
-		int value = 0;
-		obj.TryGetValue(seasonId, out value);
-		Dictionary<int, string> obj2 = new Dictionary<int, string>
-		{
-			{ 6, "TOD_06_00_SemiCloudy" },
-			{ 12, "TOD_12_00_SemiCloudy" },
-			{ 15, "TOD_04_00_SemiCloudy" },
-			{ 18, "TOD_03_00_SemiCloudy" },
-			{ 22, "TOD_01_00_SemiCloudy" }
-		};
-		string value2 = "field_battle";
-		obj2.TryGetValue(timeOfDay, out value2);
+		Dictionary<string, int> dictionary = new Dictionary<string, int>();
+		dictionary.Add("spring", 0);
+		dictionary.Add("summer", 1);
+		dictionary.Add("fall", 2);
+		dictionary.Add("winter", 3);
+		dictionary.TryGetValue(seasonId, out var value);
+		Dictionary<int, string> dictionary2 = new Dictionary<int, string>();
+		dictionary2.Add(6, "TOD_06_00_SemiCloudy");
+		dictionary2.Add(12, "TOD_12_00_SemiCloudy");
+		dictionary2.Add(15, "TOD_04_00_SemiCloudy");
+		dictionary2.Add(18, "TOD_03_00_SemiCloudy");
+		dictionary2.Add(22, "TOD_01_00_SemiCloudy");
+		dictionary2.TryGetValue(timeOfDay, out var value2);
 		AtmosphereInfo result = default(AtmosphereInfo);
 		result.AtmosphereName = value2;
 		result.TimeInfo = new TimeInformation
@@ -120,15 +115,14 @@ public static class BannerlordMissions
 		CustomBattleTroopSupplier customBattleTroopSupplier2 = new CustomBattleTroopSupplier(enemyParty, isPlayerSide: false, isPlayerGeneral: false, isSallyOut: false);
 		troopSuppliers[(int)enemyParty.Side] = customBattleTroopSupplier2;
 		bool isPlayerSergeant = !isPlayerGeneral;
-		return MissionState.OpenNew("CustomBattle", new MissionInitializerRecord(scene)
+		Mission mission = MissionState.OpenNew("CustomBattle", new MissionInitializerRecord(scene)
 		{
 			DoNotUseLoadingScreen = false,
 			PlayingInCampaignMode = false,
 			AtmosphereOnCampaign = CreateAtmosphereInfoForMission(seasonString, (int)timeOfDay),
 			SceneLevels = sceneLevels,
-			TimeOfDay = timeOfDay,
 			DecalAtlasGroup = 2
-		}, (Mission missionController) => new MissionBehavior[25]
+		}, (Mission missionController) => new MissionBehavior[26]
 		{
 			new MissionAgentSpawnLogic(troopSuppliers, playerSide, Mission.BattleSizeType.Battle),
 			new BattlePowerCalculationLogic(),
@@ -153,9 +147,12 @@ public static class BannerlordMissions
 			new MissionBoundaryCrossingHandler(),
 			new HighlightsController(),
 			new BattleHighlightsController(),
-			new DeploymentMissionController(isPlayerAttacker),
-			new BattleDeploymentHandler(isPlayerAttacker)
+			new BattleDeploymentMissionController(isPlayerAttacker),
+			new BattleDeploymentHandler(isPlayerAttacker),
+			new MissionObjectiveLogic()
 		});
+		mission.SetPlayerCanTakeControlOfAnotherAgentWhenDead();
+		return mission;
 	}
 
 	[MissionMethod]
@@ -174,12 +171,12 @@ public static class BannerlordMissions
 		CustomBattleTroopSupplier customBattleTroopSupplier2 = new CustomBattleTroopSupplier(enemyParty, isPlayerSide: false, isPlayerGeneral: false, isSallyOut);
 		troopSuppliers[(int)enemyParty.Side] = customBattleTroopSupplier2;
 		bool isPlayerSergeant = !isPlayerGeneral;
-		return MissionState.OpenNew("CustomSiegeBattle", new MissionInitializerRecord(scene)
+		Mission mission2 = MissionState.OpenNew("CustomSiegeBattle", new MissionInitializerRecord(scene)
 		{
 			PlayingInCampaignMode = false,
 			AtmosphereOnCampaign = CreateAtmosphereInfoForMission(seasonString, (int)timeOfDay),
 			SceneLevels = sceneLevels,
-			TimeOfDay = timeOfDay
+			DecalAtlasGroup = 2
 		}, delegate
 		{
 			List<MissionBehavior> list = new List<MissionBehavior>
@@ -236,10 +233,12 @@ public static class BannerlordMissions
 			list.Add(new SiegeDeploymentMissionController(isPlayerAttacker));
 			return list.ToArray();
 		});
+		mission2.SetPlayerCanTakeControlOfAnotherAgentWhenDead();
+		return mission2;
 	}
 
 	[MissionMethod]
-	public static Mission OpenCustomBattleLordsHallMission(string scene, BasicCharacterObject playerCharacter, CustomBattleCombatant playerParty, CustomBattleCombatant enemyParty, BasicCharacterObject playerSideGeneralCharacter, string sceneLevels = "", int sceneUpgradeLevel = 0, string seasonString = "", float timeOfDay = 6f)
+	public static Mission OpenCustomBattleLordsHallMission(string scene, BasicCharacterObject playerCharacter, CustomBattleCombatant playerParty, CustomBattleCombatant enemyParty, BasicCharacterObject playerSideGeneralCharacter, string sceneLevels = "", int sceneUpgradeLevel = 0, string seasonString = "")
 	{
 		int remainingDefenderArcherCount = TaleWorlds.Library.MathF.Round(18.9f);
 		BattleSideEnum playerSide = BattleSideEnum.Attacker;
@@ -269,7 +268,7 @@ public static class BannerlordMissions
 			DoNotUseLoadingScreen = false,
 			PlayingInCampaignMode = false,
 			SceneLevels = "siege",
-			TimeOfDay = timeOfDay
+			DecalAtlasGroup = 3
 		}, (Mission missionController) => new MissionBehavior[17]
 		{
 			new MissionOptionsComponent(),

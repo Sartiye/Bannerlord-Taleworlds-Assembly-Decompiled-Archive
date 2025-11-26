@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -8,37 +9,47 @@ public interface IMapScene
 {
 	void Load();
 
+	void AfterLoad();
+
 	void Destroy();
 
-	PathFaceRecord GetFaceIndex(Vec2 position);
+	PathFaceRecord GetFaceIndex(in CampaignVec2 vec2);
 
-	bool AreFacesOnSameIsland(PathFaceRecord startingFace, PathFaceRecord endFace, bool ignoreDisabled);
+	TerrainType GetTerrainTypeAtPosition(in CampaignVec2 vec2);
 
-	TerrainType GetTerrainTypeAtPosition(Vec2 position);
+	List<TerrainType> GetEnvironmentTerrainTypes(in CampaignVec2 vec2);
 
-	List<TerrainType> GetEnvironmentTerrainTypes(Vec2 position);
+	List<TerrainType> GetEnvironmentTerrainTypesCount(in CampaignVec2 vec2, out TerrainType currentPositionTerrainType);
 
-	List<TerrainType> GetEnvironmentTerrainTypesCount(Vec2 position, out TerrainType currentPositionTerrainType);
-
-	MapPatchData GetMapPatchAtPosition(Vec2 position);
+	MapPatchData GetMapPatchAtPosition(in CampaignVec2 position);
 
 	TerrainType GetFaceTerrainType(PathFaceRecord faceIndex);
 
-	Vec2 GetAccessiblePointNearPosition(Vec2 position, float radius);
+	CampaignVec2 GetNearestFaceCenterForPosition(in CampaignVec2 vec2, int[] excludedFaceIds);
 
-	bool GetPathBetweenAIFaces(PathFaceRecord startingFace, PathFaceRecord endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds = null);
+	CampaignVec2 GetNearestFaceCenterForPositionWithPath(PathFaceRecord pathFaceRecord, bool targetIsLand, float maxDist, int[] excludedFaceIds);
 
-	bool GetPathDistanceBetweenAIFaces(PathFaceRecord startingAiFace, PathFaceRecord endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance);
+	CampaignVec2 GetAccessiblePointNearPosition(in CampaignVec2 vec2, float radius);
+
+	bool GetPathBetweenAIFaces(PathFaceRecord startingFace, PathFaceRecord endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int regionSwitchCostFromLandToSea, int regionSwitchCostFromSeaToLand);
+
+	bool GetPathDistanceBetweenAIFaces(PathFaceRecord startingAiFace, PathFaceRecord endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance, int[] excludedFaceIds, int regionSwitchCostFromLandToSea, int regionSwitchCostFromSeaToLand);
 
 	bool IsLineToPointClear(PathFaceRecord startingFace, Vec2 position, Vec2 destination, float agentRadius);
 
-	Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(PathFaceRecord startingFace, Vec2 position, Vec2 destination);
+	Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(PathFaceRecord startingFace, Vec2 position, Vec2 destination, int[] excludedFaceIds = null);
+
+	Vec2 GetLastPositionOnNavMeshFaceForPointAndDirection(PathFaceRecord startingFace, Vec2 position, Vec2 destination);
 
 	Vec2 GetNavigationMeshCenterPosition(PathFaceRecord face);
 
+	Vec2 GetNavigationMeshCenterPosition(int faceIndex);
+
+	PathFaceRecord GetFaceAtIndex(int faceIndex);
+
 	int GetNumberOfNavigationMeshFaces();
 
-	bool GetHeightAtPoint(Vec2 point, ref float height);
+	bool GetHeightAtPoint(in CampaignVec2 point, ref float height);
 
 	float GetWinterTimeFactor();
 
@@ -47,6 +58,8 @@ public interface IMapScene
 	float GetFaceVertexZ(PathFaceRecord navMeshFace);
 
 	Vec3 GetGroundNormal(Vec2 position);
+
+	void GetSiegeCampFrames(Settlement settlement, out List<MatrixFrame> siegeCamp1GlobalFrames, out List<MatrixFrame> siegeCamp2GlobalFrames);
 
 	string GetTerrainTypeName(TerrainType type);
 
@@ -60,11 +73,15 @@ public interface IMapScene
 
 	void SetAtmosphereColorgrade(TerrainType terrainType);
 
-	void AddNewEntityToMapScene(string entityId, Vec2 position);
-
-	void GetFaceIndexForMultiplePositions(int movedPartyCount, float[] positionArray, PathFaceRecord[] resultArray);
+	void AddNewEntityToMapScene(string entityId, in CampaignVec2 position);
 
 	void GetMapBorders(out Vec2 minimumPosition, out Vec2 maximumPosition, out float maximumHeight);
 
-	void GetSnowAmountData(byte[] snowData);
+	uint GetSceneXmlCrc();
+
+	uint GetSceneNavigationMeshCrc();
+
+	float GetSnowAmountAtPosition(Vec2 position);
+
+	float GetRainAmountAtPosition(Vec2 position);
 }

@@ -9,6 +9,8 @@ namespace TaleWorlds.MountAndBlade.View.Screens;
 [GameStateScreen(typeof(EditorState))]
 public class SceneEditorScreen : ScreenBase, IGameStateListener
 {
+	private SceneEditorLayer _editorLayer;
+
 	public SceneEditorScreen(EditorState editorState)
 	{
 	}
@@ -16,9 +18,9 @@ public class SceneEditorScreen : ScreenBase, IGameStateListener
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		SceneEditorLayer sceneEditorLayer = new SceneEditorLayer();
-		sceneEditorLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Invalid);
-		AddLayer(sceneEditorLayer);
+		_editorLayer = new SceneEditorLayer();
+		_editorLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Invalid);
+		AddLayer(_editorLayer);
 		ManagedParameters.Instance.Initialize(ModuleHelper.GetXmlPath("Native", "managed_core_parameters"));
 	}
 
@@ -39,6 +41,11 @@ public class SceneEditorScreen : ScreenBase, IGameStateListener
 	protected override void OnFrameTick(float dt)
 	{
 		base.OnFrameTick(dt);
+		if (_editorLayer != null)
+		{
+			bool mouseVisible = Screen.GetMouseVisible();
+			_editorLayer.InputRestrictions.SetMouseVisibility(mouseVisible);
+		}
 		MBEditor.TickSceneEditorPresentation(dt);
 	}
 

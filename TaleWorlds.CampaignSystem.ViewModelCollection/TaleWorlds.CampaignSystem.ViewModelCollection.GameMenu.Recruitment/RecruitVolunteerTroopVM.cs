@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -27,7 +28,7 @@ public class RecruitVolunteerTroopVM : ViewModel
 
 	public RecruitVolunteerVM Owner;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private CharacterImageIdentifierVM _imageIdentifier;
 
 	private string _nameText;
 
@@ -190,7 +191,7 @@ public class RecruitVolunteerTroopVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public CharacterImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -267,10 +268,10 @@ public class RecruitVolunteerTroopVM : ViewModel
 			Level = GameTexts.FindText("str_level_with_value").ToString();
 			Character = character;
 			Wage = Character.TroopWage;
-			Cost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(Character, Hero.MainHero);
+			Cost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(Character, Hero.MainHero).RoundedResultNumber;
 			IsTroopEmpty = false;
 			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(character);
-			ImageIdentifier = new ImageIdentifierVM(characterCode);
+			ImageIdentifier = new CharacterImageIdentifierVM(characterCode);
 			TierIconData = CampaignUIHelper.GetCharacterTierData(character);
 			TypeIconData = CampaignUIHelper.GetCharacterTypeData(character);
 		}

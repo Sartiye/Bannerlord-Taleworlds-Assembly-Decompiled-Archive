@@ -9,18 +9,9 @@ public static class AddHeroToPartyAction
 {
 	private static void ApplyInternal(Hero hero, MobileParty newParty, bool showNotification = true)
 	{
-		PartyBase partyBase = ((hero.PartyBelongedTo != null) ? hero.PartyBelongedTo.Party : ((hero.CurrentSettlement != null) ? hero.CurrentSettlement.Party : null));
-		if (partyBase != null)
-		{
-			if (partyBase.IsSettlement && partyBase.Settlement.Notables.IndexOf(hero) >= 0)
-			{
-				hero.StayingInSettlement = null;
-			}
-			else
-			{
-				partyBase.MemberRoster.AddToCounts(hero.CharacterObject, -1);
-			}
-		}
+		hero.PartyBelongedTo?.MemberRoster.AddToCounts(hero.CharacterObject, -1);
+		hero.StayingInSettlement = null;
+		_ = hero.IsNotable;
 		if (hero.GovernorOf != null)
 		{
 			ChangeGovernorAction.RemoveGovernorOf(hero);

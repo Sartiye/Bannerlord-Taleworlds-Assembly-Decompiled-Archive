@@ -50,7 +50,7 @@ public class GDKLoginAccessProvider : ILoginAccessProvider
 		}
 		if (_playerId == PlayerId.Empty)
 		{
-			return AccessObjectResult.CreateFailed(new TextObject("{=leU2EiDo}Could not initialize Xbox Live player on lobby server"));
+			return AccessObjectResult.CreateFailed(new TextObject("{=leU2EiDo}Could not initialize Xbox Network player on lobby server"));
 		}
 		return AccessObjectResult.CreateSuccess(new GDKAccessObject
 		{

@@ -18,7 +18,7 @@ public class ManagedDelegate : DotNetObject
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	public void InvokeAux()
 	{
 		Instance();

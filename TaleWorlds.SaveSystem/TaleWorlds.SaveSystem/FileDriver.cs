@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using TaleWorlds.Library;
 
@@ -10,9 +9,9 @@ namespace TaleWorlds.SaveSystem;
 
 public class FileDriver : ISaveDriver
 {
-	private const string SaveDirectoryName = "Game Saves";
+	public const string SaveDirectoryName = "Game Saves";
 
-	private static PlatformDirectoryPath SavePath
+	public static PlatformDirectoryPath SavePath
 	{
 		get
 		{
@@ -21,7 +20,7 @@ public class FileDriver : ISaveDriver
 		}
 	}
 
-	private PlatformFilePath GetSaveFilePath(string fileName)
+	public static PlatformFilePath GetSaveFilePath(string fileName)
 	{
 		return new PlatformFilePath(SavePath, fileName);
 	}
@@ -51,10 +50,10 @@ public class FileDriver : ISaveDriver
 
 	public MetaData LoadMetaData(string saveName)
 	{
-		byte[] fileContent = FileHelper.GetFileContent(GetSaveFilePath(saveName + ".sav"));
-		if (fileContent != null)
+		byte[] metaDataContent = FileHelper.GetMetaDataContent(GetSaveFilePath(saveName + ".sav"));
+		if (metaDataContent != null)
 		{
-			return MetaData.Deserialize(new MemoryStream(fileContent));
+			return MetaData.Deserialize(new MemoryStream(metaDataContent));
 		}
 		Debug.Print("[Load meta data error]: " + saveName);
 		return null;
@@ -67,16 +66,16 @@ public class FileDriver : ISaveDriver
 		{
 			MemoryStream stream = new MemoryStream(fileContent);
 			MetaData metaData = MetaData.Deserialize(stream);
-			using DeflateStream deflateStream = new DeflateStream(stream, CompressionMode.Decompress);
+			using DeflateStream input = new DeflateStream(stream, CompressionMode.Decompress);
 			try
 			{
 				GameData gameData;
 				if (GetApplicationVersionOfMetaData(metaData) < ApplicationVersion.FromString("v1.1.0"))
 				{
-					gameData = (GameData)new BinaryFormatter().Deserialize(deflateStream);
+					gameData = LegacyGameDataDeserializer.Deserialize(stream);
 					return new LoadData(metaData, gameData);
 				}
-				using (System.IO.BinaryReader reader = new System.IO.BinaryReader(deflateStream))
+				using (System.IO.BinaryReader reader = new System.IO.BinaryReader(input))
 				{
 					gameData = GameData.Read(reader);
 				}
@@ -94,7 +93,7 @@ public class FileDriver : ISaveDriver
 
 	public SaveGameFileInfo[] GetSaveGameFileInfos()
 	{
-		PlatformFilePath[] files = FileHelper.GetFiles(SavePath, "*.sav");
+		PlatformFilePath[] files = FileHelper.GetFiles(SavePath, "*.sav", SearchOption.TopDirectoryOnly);
 		List<SaveGameFileInfo> list = new List<SaveGameFileInfo>((files != null) ? files.Length : 0);
 		if (files != null)
 		{
@@ -125,7 +124,7 @@ public class FileDriver : ISaveDriver
 	public string[] GetSaveGameFileNames()
 	{
 		List<string> list = new List<string>();
-		PlatformFilePath[] files = FileHelper.GetFiles(SavePath, "*.sav");
+		PlatformFilePath[] files = FileHelper.GetFiles(SavePath, "*.sav", SearchOption.TopDirectoryOnly);
 		if (files != null)
 		{
 			foreach (PlatformFilePath platformFilePath in files)

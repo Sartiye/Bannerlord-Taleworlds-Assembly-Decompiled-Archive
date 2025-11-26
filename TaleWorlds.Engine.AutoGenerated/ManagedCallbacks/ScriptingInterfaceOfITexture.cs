@@ -68,7 +68,17 @@ internal class ScriptingInterfaceOfITexture : ITexture
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetPixelDataDelegate(UIntPtr texturePointer, ManagedArray bytes);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetRenderTargetComponentDelegate(UIntPtr texturePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetSDFBoundingBoxDataDelegate(UIntPtr texturePointer, ref Vec3 min, ref Vec3 max);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -101,6 +111,11 @@ internal class ScriptingInterfaceOfITexture : ITexture
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ReleaseDelegate(UIntPtr texturePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ReleaseAfterNumberOfFramesDelegate(UIntPtr texturePointer, int numberOfFrames);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -166,7 +181,11 @@ internal class ScriptingInterfaceOfITexture : ITexture
 
 	public static GetNameDelegate call_GetNameDelegate;
 
+	public static GetPixelDataDelegate call_GetPixelDataDelegate;
+
 	public static GetRenderTargetComponentDelegate call_GetRenderTargetComponentDelegate;
+
+	public static GetSDFBoundingBoxDataDelegate call_GetSDFBoundingBoxDataDelegate;
 
 	public static GetTableauViewDelegate call_GetTableauViewDelegate;
 
@@ -179,6 +198,8 @@ internal class ScriptingInterfaceOfITexture : ITexture
 	public static LoadTextureFromPathDelegate call_LoadTextureFromPathDelegate;
 
 	public static ReleaseDelegate call_ReleaseDelegate;
+
+	public static ReleaseAfterNumberOfFramesDelegate call_ReleaseAfterNumberOfFramesDelegate;
 
 	public static ReleaseGpuMemoriesDelegate call_ReleaseGpuMemoriesDelegate;
 
@@ -344,9 +365,23 @@ internal class ScriptingInterfaceOfITexture : ITexture
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public void GetPixelData(UIntPtr texturePointer, byte[] bytes)
+	{
+		PinnedArrayData<byte> pinnedArrayData = new PinnedArrayData<byte>(bytes);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		ManagedArray bytes2 = new ManagedArray(pointer, (bytes != null) ? bytes.Length : 0);
+		call_GetPixelDataDelegate(texturePointer, bytes2);
+		pinnedArrayData.Dispose();
+	}
+
 	public RenderTargetComponent GetRenderTargetComponent(UIntPtr texturePointer)
 	{
 		return DotNetObject.GetManagedObjectWithId(call_GetRenderTargetComponentDelegate(texturePointer)) as RenderTargetComponent;
+	}
+
+	public void GetSDFBoundingBoxData(UIntPtr texturePointer, ref Vec3 min, ref Vec3 max)
+	{
+		call_GetSDFBoundingBoxDataDelegate(texturePointer, ref min, ref max);
 	}
 
 	public TableauView GetTableauView(UIntPtr texturePointer)
@@ -407,6 +442,11 @@ internal class ScriptingInterfaceOfITexture : ITexture
 	public void Release(UIntPtr texturePointer)
 	{
 		call_ReleaseDelegate(texturePointer);
+	}
+
+	public void ReleaseAfterNumberOfFrames(UIntPtr texturePointer, int numberOfFrames)
+	{
+		call_ReleaseAfterNumberOfFramesDelegate(texturePointer, numberOfFrames);
 	}
 
 	public void ReleaseGpuMemories()

@@ -32,8 +32,9 @@ public sealed class SetMissionObjectGlobalFrame : GameNetworkMessage
 		Vec3 o = GameNetworkMessage.ReadVec3FromPacket(CompressionBasic.PositionCompressionInfo, ref bufferReadValid);
 		if (bufferReadValid)
 		{
-			Frame = new MatrixFrame(new Mat3(s, f, u), o);
-			Frame.Scale(scalingVector);
+			Mat3 rot = new Mat3(in s, in f, in u);
+			Frame = new MatrixFrame(in rot, in o);
+			Frame.Scale(in scalingVector);
 		}
 		return bufferReadValid;
 	}
@@ -42,7 +43,8 @@ public sealed class SetMissionObjectGlobalFrame : GameNetworkMessage
 	{
 		Vec3 scaleVector = Frame.rotation.GetScaleVector();
 		MatrixFrame frame = Frame;
-		frame.Scale(new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z));
+		Vec3 scalingVector = new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z);
+		frame.Scale(in scalingVector);
 		GameNetworkMessage.WriteMissionObjectIdToPacket(MissionObjectId);
 		GameNetworkMessage.WriteVec3ToPacket(frame.rotation.f, CompressionBasic.UnitVectorCompressionInfo);
 		GameNetworkMessage.WriteVec3ToPacket(frame.rotation.s, CompressionBasic.UnitVectorCompressionInfo);

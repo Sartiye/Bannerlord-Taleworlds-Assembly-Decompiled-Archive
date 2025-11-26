@@ -28,9 +28,9 @@ public class SPGeneralKillNotificationVM : ViewModel
 		NotificationList = new MBBindingList<SPGeneralKillNotificationItemVM>();
 	}
 
-	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, Agent assistedAgent, bool isHeadshot)
+	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isHeadshot, bool isSuicide, bool isDrowning)
 	{
-		NotificationList.Add(new SPGeneralKillNotificationItemVM(affectedAgent, affectorAgent, assistedAgent, isHeadshot, RemoveItem));
+		NotificationList.Add(new SPGeneralKillNotificationItemVM(affectedAgent, affectorAgent, isHeadshot, isSuicide, isDrowning, RemoveItem));
 	}
 
 	private void RemoveItem(SPGeneralKillNotificationItemVM item)

@@ -118,6 +118,10 @@ public class SettlementProjectSelectionVM : ViewModel
 			{
 				_currentSelectedProject = value;
 				OnPropertyChangedWithValue(value, "CurrentSelectedProject");
+				if (_currentSelectedProject != null)
+				{
+					_currentSelectedProject.RefreshProductionText();
+				}
 			}
 		}
 	}
@@ -133,8 +137,16 @@ public class SettlementProjectSelectionVM : ViewModel
 		{
 			if (value != _currentDailyDefault)
 			{
+				if (_currentDailyDefault != null)
+				{
+					_currentDailyDefault.IsDefault = false;
+				}
 				_currentDailyDefault = value;
 				OnPropertyChangedWithValue(value, "CurrentDailyDefault");
+				if (_currentDailyDefault != null)
+				{
+					_currentDailyDefault.IsDefault = true;
+				}
 			}
 		}
 	}
@@ -218,39 +230,30 @@ public class SettlementProjectSelectionVM : ViewModel
 		for (int i = 0; i < _town.Buildings.Count; i++)
 		{
 			Building building = _town.Buildings[i];
-			if (building.BuildingType.BuildingLocation != BuildingLocation.Daily)
+			if (!building.BuildingType.IsDailyProject)
 			{
-				SettlementBuildingProjectVM settlementBuildingProjectVM = new SettlementBuildingProjectVM(OnCurrentProjectSelection, OnCurrentProjectSet, OnResetCurrentProject, building, _settlement);
-				AvailableProjects.Add(settlementBuildingProjectVM);
-				if (settlementBuildingProjectVM.Building == _town.CurrentBuilding)
-				{
-					CurrentSelectedProject = settlementBuildingProjectVM;
-				}
+				SettlementBuildingProjectVM item = new SettlementBuildingProjectVM(OnCurrentProjectSelection, OnCurrentProjectSet, OnResetCurrentProject, building, _settlement);
+				AvailableProjects.Add(item);
 				continue;
 			}
 			SettlementDailyProjectVM settlementDailyProjectVM = new SettlementDailyProjectVM(OnCurrentProjectSelection, OnCurrentProjectSet, OnResetCurrentProject, building, _settlement);
 			DailyDefaultList.Add(settlementDailyProjectVM);
-			if (settlementDailyProjectVM.Building == _town.CurrentDefaultBuilding)
+			if (settlementDailyProjectVM.Building == _town.Buildings.FirstOrDefault((Building k) => k.IsCurrentlyDefault))
 			{
 				CurrentDailyDefault = settlementDailyProjectVM;
-				CurrentDailyDefault.IsDefault = true;
-				settlementDailyProjectVM.IsDefault = true;
 			}
 		}
-		foreach (Building item in _town.BuildingsInProgress)
+		foreach (Building item2 in _town.BuildingsInProgress)
 		{
-			LocalDevelopmentList.Add(item);
+			LocalDevelopmentList.Add(item2);
 		}
 		RefreshDevelopmentsQueueIndex();
+		RefreshCurrentSelectedProject();
 	}
 
 	private void OnCurrentProjectSet(SettlementProjectVM selectedItem)
 	{
-		if (selectedItem != CurrentSelectedProject)
-		{
-			CurrentSelectedProject = selectedItem;
-			CurrentSelectedProject.RefreshProductionText();
-		}
+		CurrentSelectedProject = selectedItem;
 	}
 
 	private void OnCurrentProjectSelection(SettlementProjectVM selectedItem, bool isSetAsActiveDevelopment)
@@ -259,8 +262,17 @@ public class SettlementProjectSelectionVM : ViewModel
 		{
 			if (isSetAsActiveDevelopment)
 			{
-				LocalDevelopmentList.Clear();
-				LocalDevelopmentList.Add(selectedItem.Building);
+				if (LocalDevelopmentList.Exists((Building d) => d == selectedItem.Building))
+				{
+					int num = LocalDevelopmentList.IndexOf(selectedItem.Building) - 1;
+					while (0 <= num)
+					{
+						LocalDevelopmentList[num + 1] = LocalDevelopmentList[num];
+						num--;
+					}
+					LocalDevelopmentList.RemoveAt(0);
+				}
+				LocalDevelopmentList.Insert(0, selectedItem.Building);
 			}
 			else if (LocalDevelopmentList.Exists((Building d) => d == selectedItem.Building))
 			{
@@ -273,31 +285,40 @@ public class SettlementProjectSelectionVM : ViewModel
 		}
 		else
 		{
-			CurrentDailyDefault.IsDefault = false;
 			CurrentDailyDefault = selectedItem as SettlementDailyProjectVM;
-			(selectedItem as SettlementDailyProjectVM).IsDefault = true;
 		}
 		RefreshDevelopmentsQueueIndex();
-		if (LocalDevelopmentList.Count == 0)
-		{
-			CurrentSelectedProject = CurrentDailyDefault;
-		}
-		else if (selectedItem != CurrentSelectedProject)
-		{
-			CurrentSelectedProject = selectedItem;
-		}
+		RefreshCurrentSelectedProject();
 		_onAnyChangeInQueue?.Invoke();
 	}
 
 	private void OnResetCurrentProject()
 	{
-		CurrentSelectedProject = ((LocalDevelopmentList.Count > 0) ? ((SettlementProjectVM)AvailableProjects.First((SettlementBuildingProjectVM p) => p.Building == LocalDevelopmentList[0])) : ((SettlementProjectVM)CurrentDailyDefault));
-		CurrentSelectedProject.RefreshProductionText();
+		RefreshCurrentSelectedProject();
+	}
+
+	private void RefreshCurrentSelectedProject()
+	{
+		if (LocalDevelopmentList.Count > 0)
+		{
+			for (int i = 0; i < AvailableProjects.Count; i++)
+			{
+				SettlementBuildingProjectVM settlementBuildingProjectVM = AvailableProjects[i];
+				if (settlementBuildingProjectVM.Building == LocalDevelopmentList[0])
+				{
+					CurrentSelectedProject = settlementBuildingProjectVM;
+					break;
+				}
+			}
+		}
+		else
+		{
+			CurrentSelectedProject = CurrentDailyDefault;
+		}
 	}
 
 	private void RefreshDevelopmentsQueueIndex()
 	{
-		CurrentSelectedProject = null;
 		CurrentDevelopmentQueue = new MBBindingList<SettlementBuildingProjectVM>();
 		foreach (SettlementBuildingProjectVM item in AvailableProjects)
 		{
@@ -310,14 +331,32 @@ public class SettlementProjectSelectionVM : ViewModel
 				item.DevelopmentQueueIndex = num;
 				if (num == 0)
 				{
-					CurrentSelectedProject = item;
 					item.IsCurrentActiveProject = true;
 				}
 				CurrentDevelopmentQueue.Add(item);
 			}
-			Comparer<SettlementBuildingProjectVM> comparer = Comparer<SettlementBuildingProjectVM>.Create((SettlementBuildingProjectVM s1, SettlementBuildingProjectVM s2) => s1.DevelopmentQueueIndex.CompareTo(s2.DevelopmentQueueIndex));
-			CurrentDevelopmentQueue.Sort(comparer);
 			item.RefreshProductionText();
+		}
+		Comparer<SettlementBuildingProjectVM> comparer = Comparer<SettlementBuildingProjectVM>.Create((SettlementBuildingProjectVM s1, SettlementBuildingProjectVM s2) => s1.DevelopmentQueueIndex.CompareTo(s2.DevelopmentQueueIndex));
+		CurrentDevelopmentQueue.Sort(comparer);
+	}
+
+	public void ExecuteChangeQueueOrder(SettlementBuildingProjectVM project, int index, string targetTag)
+	{
+		if (index != project.DevelopmentQueueIndex && !(targetTag != "CurrentDevelopmentQueue"))
+		{
+			LocalDevelopmentList.Remove(project.Building);
+			if (index > project.DevelopmentQueueIndex)
+			{
+				LocalDevelopmentList.Insert(index - 1, project.Building);
+			}
+			else
+			{
+				LocalDevelopmentList.Insert(index, project.Building);
+			}
+			RefreshDevelopmentsQueueIndex();
+			RefreshCurrentSelectedProject();
+			_onAnyChangeInQueue?.Invoke();
 		}
 	}
 }

@@ -28,7 +28,11 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 
 	private ScrollingRichTextWidget _widget_1_0_0_0;
 
-	private HintWidget _widget_1_0_1;
+	private HintWidget _widget_1_0_0_1;
+
+	private Widget _widget_1_0_1;
+
+	private HintWidget _widget_1_0_1_0;
 
 	private Widget _widget_1_1;
 
@@ -76,8 +80,12 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1_0.AddChild(_widget_1_0_0);
 		_widget_1_0_0_0 = new ScrollingRichTextWidget(base.Context);
 		_widget_1_0_0.AddChild(_widget_1_0_0_0);
-		_widget_1_0_1 = new HintWidget(base.Context);
+		_widget_1_0_0_1 = new HintWidget(base.Context);
+		_widget_1_0_0.AddChild(_widget_1_0_0_1);
+		_widget_1_0_1 = new Widget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_1);
+		_widget_1_0_1_0 = new HintWidget(base.Context);
+		_widget_1_0_1.AddChild(_widget_1_0_1_0);
 		_widget_1_1 = new Widget(base.Context);
 		_widget_1.AddChild(_widget_1_1);
 		_widget_1_1_0 = new BrushWidget(base.Context);
@@ -166,9 +174,13 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1_0_0_0.Brush = base.Context.GetBrush("SPOptions.Dropdown.Center.Text");
 		_widget_1_0_0_0.IsAutoScrolling = false;
 		_widget_1_0_0_0.ScrollOnHoverWidget = _widget_1_0_0;
+		_widget_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.IsDisabled = true;
+		_widget_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1.ClipContents = true;
@@ -186,12 +198,11 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1_1_0_0.MarginBottom = 20f;
 		_widget_1_1_0_0.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_1_0_0.InnerPanel = _widget_1_1_0_0_0_0;
-		_widget_1_1_0_0.MaxHeight = 355f;
 		_widget_1_1_0_0.VerticalScrollbar = _widget_1_1_0_1;
 		_widget_1_1_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_0_0.ClipContents = true;
-		_widget_1_1_0_0_0.MaxHeight = 355f;
+		_widget_1_1_0_0_0.MaxHeight = 348f;
 		_widget_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -201,8 +212,9 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1_1_0_1.SuggestedWidth = 8f;
 		_widget_1_1_0_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_1_0_1.MarginTop = 15f;
-		_widget_1_1_0_1.MarginBottom = 15f;
+		_widget_1_1_0_1.MarginTop = 8f;
+		_widget_1_1_0_1.MarginBottom = 18f;
+		_widget_1_1_0_1.MarginRight = 5f;
 		_widget_1_1_0_1.AlignmentAxis = AlignmentAxis.Vertical;
 		_widget_1_1_0_1.Handle = _widget_1_1_0_1_1;
 		_widget_1_1_0_1.IsVisible = false;
@@ -275,7 +287,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
-			_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
+			_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+			_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 			if (_datasource_Root_RaceSelector_ItemList != null)
 			{
@@ -311,7 +324,13 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_ = commandName == "OnDropdownClick";
 	}
 
-	private void EventListenerOf_widget_1_0_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_1_0_0_1(Widget widget, string commandName, object[] args)
+	{
+		_ = commandName == "HoverBegin";
+		_ = commandName == "HoverEnd";
+	}
+
+	private void EventListenerOf_widget_1_0_1_0(Widget widget, string commandName, object[] args)
 	{
 		_ = commandName == "HoverBegin";
 		_ = commandName == "HoverEnd";
@@ -568,7 +587,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
-			_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
+			_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+			_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 			if (_datasource_Root_RaceSelector_ItemList != null)
 			{
@@ -612,7 +632,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 		_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 		_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
-		_widget_1_0_1.EventFire += EventListenerOf_widget_1_0_1;
+		_widget_1_0_0_1.EventFire += EventListenerOf_widget_1_0_0_1;
+		_widget_1_0_1_0.EventFire += EventListenerOf_widget_1_0_1_0;
 		_widget_2_0.EventFire += EventListenerOf_widget_2_0;
 		_datasource_Root_RaceSelector_ItemList = _datasource_Root_RaceSelector.ItemList;
 		if (_datasource_Root_RaceSelector_ItemList != null)
@@ -703,7 +724,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 				_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 				_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 				_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
-				_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
+				_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+				_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 				_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 				if (_datasource_Root_RaceSelector_ItemList != null)
 				{
@@ -762,7 +784,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 		_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 		_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
-		_widget_1_0_1.EventFire += EventListenerOf_widget_1_0_1;
+		_widget_1_0_0_1.EventFire += EventListenerOf_widget_1_0_0_1;
+		_widget_1_0_1_0.EventFire += EventListenerOf_widget_1_0_1_0;
 		_widget_2_0.EventFire += EventListenerOf_widget_2_0;
 		_datasource_Root_RaceSelector_ItemList = _datasource_Root_RaceSelector.ItemList;
 		if (_datasource_Root_RaceSelector_ItemList != null)

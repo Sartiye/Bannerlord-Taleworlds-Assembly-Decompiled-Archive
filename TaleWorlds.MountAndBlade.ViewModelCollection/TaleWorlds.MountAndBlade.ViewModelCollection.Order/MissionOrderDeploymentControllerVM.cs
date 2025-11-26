@@ -12,9 +12,9 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
 public class MissionOrderDeploymentControllerVM : ViewModel
 {
-	public const uint ENTITYHIGHLIGHTCOLOR = 4289622555u;
+	public const uint _entityHiglightColor = 4289622555u;
 
-	public const uint ENTITYSELECTEDCOLOR = 4293481743u;
+	public const uint _entitySelectedColor = 4293481743u;
 
 	private GameEntity _currentSelectedEntity;
 
@@ -22,23 +22,19 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 
 	private InquiryData _siegeDeployQueryData;
 
+	private DeploymentHandler _deploymentHandler;
+
 	private SiegeDeploymentHandler _siegeDeploymentHandler;
-
-	private BattleDeploymentHandler _battleDeploymentHandler;
-
-	private readonly List<DeploymentPoint> _deploymentPoints;
 
 	internal DeploymentSiegeMachineVM _selectedDeploymentPointVM;
 
 	private readonly MissionOrderVM _missionOrder;
 
-	private readonly Camera _deploymentCamera;
+	private Camera _deploymentCamera;
 
-	private readonly Action<bool> _toggleMissionInputs;
+	private List<DeploymentPoint> _deploymentPoints;
 
-	private readonly OnRefreshVisualsDelegate _onRefreshVisuals;
-
-	private bool _isOrderPreconfigured;
+	private MissionOrderCallbacks _callbacks;
 
 	private MBBindingList<OrderSiegeMachineVM> _siegeMachineList;
 
@@ -101,8 +97,8 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 			{
 				_isSiegeDeploymentListActive = value;
 				OnPropertyChanged("IsSiegeDeploymentListActive");
-				_toggleMissionInputs(value);
-				_onRefreshVisuals();
+				_callbacks.ToggleMissionInputs(value);
+				_callbacks.RefreshVisuals();
 				if (_selectedDeploymentPointVM != null)
 				{
 					_selectedDeploymentPointVM.IsSelected = value;
@@ -128,51 +124,55 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		}
 	}
 
-	public MissionOrderDeploymentControllerVM(List<DeploymentPoint> deploymentPoints, MissionOrderVM missionOrder, Camera deploymentCamera, Action<bool> toggleMissionInputs, OnRefreshVisualsDelegate onRefreshVisuals)
+	public void SetMissionParameters(Camera deploymentCamera, List<DeploymentPoint> deploymentPoints)
 	{
 		_deploymentPoints = deploymentPoints;
-		_missionOrder = missionOrder;
 		_deploymentCamera = deploymentCamera;
-		_toggleMissionInputs = toggleMissionInputs;
-		_onRefreshVisuals = onRefreshVisuals;
+		SiegeDeploymentList.Clear();
+		if (_siegeDeploymentHandler == null)
+		{
+			return;
+		}
+		int num = 1;
+		foreach (DeploymentPoint deploymentPoint in _deploymentPoints)
+		{
+			OrderSiegeMachineVM item = new OrderSiegeMachineVM(deploymentPoint, OnSelectOrderSiegeMachine, num++);
+			SiegeMachineList.Add(item);
+			if (deploymentPoint.DeployableWeapons.Any((SynchedMissionObject x) => _siegeDeploymentHandler.GetMaxDeployableWeaponCountOfPlayer(((object)x).GetType()) > 0))
+			{
+				DeploymentSiegeMachineVM item2 = new DeploymentSiegeMachineVM(deploymentPoint, null, _deploymentCamera, OnRefreshSelectedDeploymentPoint, OnEntityHover, deploymentPoint.IsDeployed);
+				DeploymentTargets.Add(item2);
+			}
+		}
+	}
+
+	public void SetCallbacks(MissionOrderCallbacks callbacks)
+	{
+		_callbacks = callbacks;
+	}
+
+	public MissionOrderDeploymentControllerVM(MissionOrderVM missionOrder)
+	{
+		_missionOrder = missionOrder;
 		SiegeMachineList = new MBBindingList<OrderSiegeMachineVM>();
 		SiegeDeploymentList = new MBBindingList<DeploymentSiegeMachineVM>();
 		DeploymentTargets = new MBBindingList<DeploymentSiegeMachineVM>();
 		MBTextManager.SetTextVariable("UNDEPLOYED_SIEGE_MACHINE_COUNT", SiegeMachineList.Count((OrderSiegeMachineVM s) => !s.SiegeWeapon.IsUsed).ToString());
-		_siegeDeployQueryData = new InquiryData(new TextObject("{=TxphX8Uk}Deployment").ToString(), new TextObject("{=LlrlE199}You can still deploy siege engines.\nBegin anyway?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_ok").ToString(), GameTexts.FindText("str_cancel").ToString(), delegate
+		_siegeDeployQueryData = new InquiryData(new TextObject("{=TxphX8Uk}Deployment").ToString(), new TextObject("{=LlrlE199}You can still deploy siege engines.{newline}Begin anyway?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_ok").ToString(), GameTexts.FindText("str_cancel").ToString(), delegate
 		{
 			_siegeDeploymentHandler.FinishDeployment();
 			_missionOrder.TryCloseToggleOrder();
 		}, null);
 		SiegeMachineList.Clear();
 		OrderController.SiegeWeaponController.OnSelectedSiegeWeaponsChanged += OnSelectedSiegeWeaponsChanged;
-		_siegeDeploymentHandler = Mission.GetMissionBehavior<SiegeDeploymentHandler>();
-		if (_siegeDeploymentHandler != null)
+		_deploymentHandler = Mission.GetMissionBehavior<DeploymentHandler>();
+		if (_deploymentHandler != null)
 		{
-			_siegeDeploymentHandler.OnDeploymentReady += ExecuteDeployAll;
-			_siegeDeploymentHandler.OnAIDeploymentReady += ExecuteDeployAI;
-		}
-		else
-		{
-			_battleDeploymentHandler = Mission.GetMissionBehavior<BattleDeploymentHandler>();
-			if (_battleDeploymentHandler != null)
+			_deploymentHandler.OnPlayerSideDeploymentReady += ExecuteDeployPlayerSide;
+			if (_deploymentHandler is SiegeDeploymentHandler siegeDeploymentHandler)
 			{
-				_battleDeploymentHandler.OnDeploymentReady += ExecuteDeployAll;
-			}
-		}
-		SiegeDeploymentList.Clear();
-		if (_siegeDeploymentHandler != null)
-		{
-			int num = 1;
-			foreach (DeploymentPoint deploymentPoint in _deploymentPoints)
-			{
-				OrderSiegeMachineVM item = new OrderSiegeMachineVM(deploymentPoint, OnSelectOrderSiegeMachine, num++);
-				SiegeMachineList.Add(item);
-				if (deploymentPoint.DeployableWeapons.Any((SynchedMissionObject x) => _siegeDeploymentHandler.GetMaxDeployableWeaponCountOfPlayer(x.GetType()) > 0))
-				{
-					DeploymentSiegeMachineVM item2 = new DeploymentSiegeMachineVM(deploymentPoint, null, _deploymentCamera, OnRefreshSelectedDeploymentPoint, OnEntityHover, deploymentPoint.IsDeployed);
-					DeploymentTargets.Add(item2);
-				}
+				_siegeDeploymentHandler = siegeDeploymentHandler;
+				_siegeDeploymentHandler.OnEnemySideDeploymentReady += ExecuteDeployEnemySide;
 			}
 		}
 		RefreshValues();
@@ -195,11 +195,6 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		});
 	}
 
-	public void SetIsOrderPreconfigured(bool isPreconfigured)
-	{
-		_isOrderPreconfigured = isPreconfigured;
-	}
-
 	internal void Update()
 	{
 		for (int i = 0; i < DeploymentTargets.Count; i++)
@@ -210,24 +205,19 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 
 	internal void DeployFormationsOfPlayer()
 	{
-		if (Mission.IsSiegeBattle)
+		if (_siegeDeploymentHandler != null)
 		{
-			Mission.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam, autoAssignDetachments: false);
+			_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam, autoAssignDetachments: false);
 		}
-		else
+		else if (!Mission.IsNavalBattle && _deploymentHandler != null)
 		{
-			Mission.AutoDeployTeamUsingDeploymentPlan(Mission.PlayerTeam);
+			_deploymentHandler.AutoDeployTeamUsingDeploymentPlan(Mission.PlayerTeam);
 		}
 		Mission.Current.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>()?.OnPlayerTeamDeployed();
-		if (Mission.IsSiegeBattle)
+		if (_siegeDeploymentHandler != null)
 		{
-			Mission.AutoAssignDetachmentsForDeployment(Mission.PlayerTeam);
+			_siegeDeploymentHandler.AutoAssignDetachmentsForDeployment(Mission.PlayerTeam);
 		}
-	}
-
-	internal void DeployFormationsOfAI()
-	{
-		Mission.AutoDeployTeamUsingTeamAI(Mission.PlayerEnemyTeam);
 	}
 
 	internal void SetSiegeMachineActiveOrders(OrderSiegeMachineVM siegeItemVM)
@@ -237,29 +227,29 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 
 	internal void ProcessSiegeMachines()
 	{
-		foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
+		for (int i = 0; i < SiegeMachineList.Count; i++)
 		{
-			siegeMachine.RefreshSiegeWeapon();
-			if (!siegeMachine.IsSelectable && siegeMachine.IsSelected)
+			OrderSiegeMachineVM orderSiegeMachineVM = SiegeMachineList[i];
+			orderSiegeMachineVM.RefreshSiegeWeapon();
+			if (orderSiegeMachineVM.IsSelectable && OrderController.SiegeWeaponController.SelectedWeapons.Contains(orderSiegeMachineVM.SiegeWeapon))
 			{
-				OnDeselectSiegeMachine(siegeMachine);
+				orderSiegeMachineVM.IsSelected = true;
+			}
+			else if (!orderSiegeMachineVM.IsSelectable && orderSiegeMachineVM.IsSelected)
+			{
+				OnDeselectSiegeMachine(orderSiegeMachineVM);
 			}
 		}
 	}
 
 	internal void SelectAllSiegeMachines()
 	{
-		OrderController.SiegeWeaponController.SelectAll();
-		foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
+		if (SiegeMachineList.Any((OrderSiegeMachineVM t) => t.IsSelectable))
 		{
-			siegeMachine.IsSelected = siegeMachine.IsSelectable;
-			if (siegeMachine.IsSelectable)
-			{
-				SetSiegeMachineActiveOrders(siegeMachine);
-			}
+			OrderController.SiegeWeaponController.SelectAll();
 		}
 		_missionOrder.SetActiveOrders();
-		_onRefreshVisuals();
+		_callbacks.RefreshVisuals();
 	}
 
 	internal void AddSelectedSiegeMachine(OrderSiegeMachineVM item)
@@ -267,38 +257,31 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		if (item.IsSelectable)
 		{
 			OrderController.SiegeWeaponController.Select(item.SiegeWeapon);
-			item.IsSelected = true;
 			_missionOrder.SetActiveOrders();
-			_onRefreshVisuals();
+			_callbacks.RefreshVisuals();
 		}
 	}
 
 	internal void SetSelectedSiegeMachine(OrderSiegeMachineVM item)
 	{
 		ProcessSiegeMachines();
-		if (!item.IsSelectable)
+		if (item.IsSelectable)
 		{
-			return;
+			SetSiegeMachineActiveOrders(item);
+			OrderController.SiegeWeaponController.ClearSelectedWeapons();
+			AddSelectedSiegeMachine(item);
+			_callbacks.RefreshVisuals();
 		}
-		SetSiegeMachineActiveOrders(item);
-		OrderController.SiegeWeaponController.ClearSelectedWeapons();
-		foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
-		{
-			siegeMachine.IsSelected = false;
-		}
-		AddSelectedSiegeMachine(item);
-		_onRefreshVisuals();
 	}
 
 	internal void OnDeselectSiegeMachine(OrderSiegeMachineVM item)
 	{
-		if (OrderController.SiegeWeaponController.SelectedWeapons.Contains(item.SiegeWeapon))
+		if (item.IsSelected)
 		{
 			OrderController.SiegeWeaponController.Deselect(item.SiegeWeapon);
 		}
-		item.IsSelected = false;
 		_missionOrder.SetActiveOrders();
-		_onRefreshVisuals();
+		_callbacks.RefreshVisuals();
 	}
 
 	internal void OnSelectOrderSiegeMachine(OrderSiegeMachineVM item)
@@ -324,7 +307,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		{
 			SetSelectedSiegeMachine(item);
 		}
-		_onRefreshVisuals();
+		_callbacks.RefreshVisuals();
 	}
 
 	internal void OnSelectDeploymentSiegeMachine(DeploymentSiegeMachineVM item)
@@ -335,7 +318,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		_selectedDeploymentPointVM = null;
 		SiegeDeploymentList.Clear();
 		bool flag = false;
-		if (item != null && (!(item.MachineType != null) || _siegeDeploymentHandler.GetDeployableWeaponCountOfPlayer(item.MachineType) != 0) && (item.DeploymentPoint.DeployedWeapon == null || !(item.DeploymentPoint.DeployedWeapon.GetType() == item.MachineType)))
+		if (item != null && (!(item.MachineType != null) || _siegeDeploymentHandler.GetDeployableWeaponCountOfPlayer(item.MachineType) != 0) && (item.DeploymentPoint.DeployedWeapon == null || !(((object)item.DeploymentPoint.DeployedWeapon).GetType() == item.MachineType)))
 		{
 			bool num = !item.DeploymentPoint.IsDeployed || item.DeploymentPoint.DeployedWeapon != item.SiegeWeapon;
 			if (item.DeploymentPoint.IsDeployed)
@@ -378,7 +361,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		{
 			_missionOrder.SetActiveOrders();
 		}
-		_onRefreshVisuals();
+		_callbacks.RefreshVisuals();
 		foreach (DeploymentSiegeMachineVM deploymentTarget in DeploymentTargets)
 		{
 			deploymentTarget.RefreshWithDeployedWeapon();
@@ -387,6 +370,11 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 
 	internal void OnSelectedSiegeWeaponsChanged()
 	{
+		for (int i = 0; i < SiegeMachineList.Count; i++)
+		{
+			OrderSiegeMachineVM orderSiegeMachineVM = SiegeMachineList[i];
+			orderSiegeMachineVM.IsSelected = OrderController.SiegeWeaponController.SelectedWeapons.Contains(orderSiegeMachineVM.SiegeWeapon);
+		}
 	}
 
 	public void OnRefreshSelectedDeploymentPoint(DeploymentSiegeMachineVM item)
@@ -394,14 +382,14 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		RefreshSelectedDeploymentPoint(item.DeploymentPoint);
 	}
 
-	public void OnEntityHover(GameEntity hoveredEntity)
+	public void OnEntityHover(WeakGameEntity hoveredEntity)
 	{
 		if (_currentHoveredEntity == hoveredEntity)
 		{
 			return;
 		}
 		DeploymentPoint deploymentPoint = null;
-		if (hoveredEntity != null)
+		if (hoveredEntity.IsValid)
 		{
 			if (hoveredEntity.HasScriptOfType<DeploymentPoint>())
 			{
@@ -423,7 +411,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		}
 		if (deploymentPoint != null)
 		{
-			_currentHoveredEntity = (deploymentPoint.IsDeployed ? deploymentPoint.DeployedWeapon.GameEntity : deploymentPoint.GameEntity);
+			_currentHoveredEntity = GameEntity.CreateFromWeakEntity(deploymentPoint.IsDeployed ? deploymentPoint.DeployedWeapon.GameEntity : deploymentPoint.GameEntity);
 		}
 		else
 		{
@@ -435,14 +423,14 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		}
 	}
 
-	public void OnEntitySelect(GameEntity selectedEntity)
+	public void OnEntitySelect(WeakGameEntity selectedEntity)
 	{
 		if (_currentSelectedEntity == selectedEntity)
 		{
 			return;
 		}
 		DeploymentPoint deploymentPoint = null;
-		if (selectedEntity != null && _siegeDeploymentHandler != null)
+		if (selectedEntity.IsValid && _siegeDeploymentHandler != null)
 		{
 			if (selectedEntity.HasScriptOfType<DeploymentPoint>())
 			{
@@ -482,7 +470,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		DeploymentSiegeMachineVM deploymentSiegeMachineVM;
 		foreach (SynchedMissionObject deployableWeapon in selectedDeploymentPoint.DeployableWeapons)
 		{
-			Type type = deployableWeapon.GetType();
+			Type type = ((object)deployableWeapon).GetType();
 			if (_siegeDeploymentHandler.GetMaxDeployableWeaponCountOfPlayer(type) > 0)
 			{
 				deploymentSiegeMachineVM = new DeploymentSiegeMachineVM(selectedDeploymentPoint, deployableWeapon as SiegeWeapon, _deploymentCamera, OnSelectDeploymentSiegeMachine, null, selectedDeploymentPoint.IsDeployed && selectedDeploymentPoint.DeployedWeapon == deployableWeapon);
@@ -495,7 +483,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		selectedDeploymentPoint.GameEntity.SetContourColor(4293481743u);
 		IsSiegeDeploymentListActive = true;
 		_currentSelectedEntity?.SetContourColor(null);
-		_currentSelectedEntity = selectedDeploymentPoint.GameEntity;
+		_currentSelectedEntity = GameEntity.CreateFromWeakEntity(selectedDeploymentPoint.GameEntity);
 		_currentSelectedEntity?.SetContourColor(4293481743u);
 	}
 
@@ -504,36 +492,32 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		OnSelectDeploymentSiegeMachine(null);
 	}
 
-	public void ExecuteBeginSiege()
+	public void ExecuteBeginMission()
 	{
 		IsSiegeDeploymentListActive = false;
 		if (_siegeDeploymentHandler != null && _siegeDeploymentHandler.PlayerDeploymentPoints.Any((DeploymentPoint d) => !d.IsDeployed && d.DeployableWeaponTypes.Any((Type type) => _siegeDeploymentHandler.GetDeployableWeaponCountOfPlayer(type) > 0)))
 		{
 			InformationManager.ShowInquiry(_siegeDeployQueryData);
-			return;
 		}
-		_missionOrder.TryCloseToggleOrder();
-		if (_siegeDeploymentHandler != null)
+		else if (_deploymentHandler != null)
 		{
-			_siegeDeploymentHandler.FinishDeployment();
-		}
-		else
-		{
-			_battleDeploymentHandler.FinishDeployment();
+			_missionOrder.TryCloseToggleOrder();
+			_deploymentHandler.FinishDeployment();
 		}
 	}
 
 	public void ExecuteAutoDeploy()
 	{
-		Mission.TryRemakeInitialDeploymentPlanForBattleSide(Mission.PlayerTeam.Side);
-		if (Mission.IsSiegeBattle)
+		Mission.GetDeploymentPlan<IMissionDeploymentPlan>(out var deploymentPlan);
+		deploymentPlan.RemakeDeploymentPlan(Mission.PlayerTeam);
+		if (_siegeDeploymentHandler != null)
 		{
-			Mission.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam);
+			_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam);
 			AutoDeploySiegeMachines();
 		}
-		else
+		else if (_deploymentHandler != null)
 		{
-			Mission.AutoDeployTeamUsingDeploymentPlan(Mission.PlayerTeam);
+			_deploymentHandler.AutoDeployTeamUsingDeploymentPlan(Mission.PlayerTeam);
 		}
 	}
 
@@ -551,15 +535,21 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		IsSiegeDeploymentListActive = false;
 	}
 
-	public void ExecuteDeployAll()
+	public void ExecuteDeployPlayerSide()
 	{
 		if (_siegeDeploymentHandler != null)
 		{
 			Mission.ForceTickOccasionally = true;
 			bool isTeleportingAgents = Mission.Current.IsTeleportingAgents;
-			Mission.IsTeleportingAgents = true;
-			DeployFormationsOfPlayer();
-			_siegeDeploymentHandler.ForceUpdateAllUnits();
+			if (!Mission.IsNavalBattle)
+			{
+				Mission.IsTeleportingAgents = true;
+			}
+			if (!Mission.IsSallyOutBattle || Mission.PlayerTeam.Side == BattleSideEnum.Attacker)
+			{
+				DeployFormationsOfPlayer();
+				_siegeDeploymentHandler.ForceUpdateAllUnits();
+			}
 			_missionOrder.OnDeployAll();
 			foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
 			{
@@ -569,27 +559,36 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 			{
 				deploymentTarget.RefreshWithDeployedWeapon();
 			}
-			Mission.IsTeleportingAgents = isTeleportingAgents;
+			if (!Mission.IsNavalBattle)
+			{
+				Mission.IsTeleportingAgents = isTeleportingAgents;
+			}
 			Mission.ForceTickOccasionally = false;
 			SelectAllSiegeMachines();
 		}
-		else if (_battleDeploymentHandler != null)
+		else if (_deploymentHandler != null)
 		{
 			DeployFormationsOfPlayer();
-			_battleDeploymentHandler.ForceUpdateAllUnits();
+			_deploymentHandler.ForceUpdateAllUnits();
 			_missionOrder.OnDeployAll();
 		}
 	}
 
-	private void ExecuteDeployAI()
+	private void ExecuteDeployEnemySide()
 	{
 		if (_siegeDeploymentHandler != null)
 		{
 			Mission.ForceTickOccasionally = true;
 			bool isTeleportingAgents = Mission.Current.IsTeleportingAgents;
-			Mission.IsTeleportingAgents = true;
-			DeployFormationsOfAI();
-			_siegeDeploymentHandler.ForceUpdateAllUnits();
+			if (!Mission.IsNavalBattle)
+			{
+				Mission.IsTeleportingAgents = true;
+			}
+			if (!Mission.IsSallyOutBattle || Mission.PlayerTeam.Side == BattleSideEnum.Defender)
+			{
+				_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerEnemyTeam);
+				_siegeDeploymentHandler.ForceUpdateAllUnits();
+			}
 			_missionOrder.OnDeployAll();
 			foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
 			{
@@ -599,13 +598,16 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 			{
 				deploymentTarget.RefreshWithDeployedWeapon();
 			}
-			Mission.IsTeleportingAgents = isTeleportingAgents;
+			if (!Mission.IsNavalBattle)
+			{
+				Mission.IsTeleportingAgents = isTeleportingAgents;
+			}
 			Mission.ForceTickOccasionally = false;
 			SelectAllSiegeMachines();
 		}
-		else if (_battleDeploymentHandler != null)
+		else if (_deploymentHandler != null)
 		{
-			_battleDeploymentHandler.ForceUpdateAllUnits();
+			_deploymentHandler.ForceUpdateAllUnits();
 			_missionOrder.OnDeployAll();
 		}
 	}
@@ -643,19 +645,16 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 
 	internal void SetCurrentActiveOrders()
 	{
-		List<OrderSubjectVM> list = (from item in SiegeMachineList.Cast<OrderSubjectVM>().ToList()
-			where item.IsSelected && item.IsSelectable
-			select item).ToList();
-		if (!list.IsEmpty())
+		if (SiegeMachineList.Any((OrderSiegeMachineVM x) => x.IsSelectable) && !SiegeMachineList.Any((OrderSiegeMachineVM x) => x.IsSelected))
 		{
-			return;
+			SelectAllSiegeMachines();
 		}
-		OrderController.SiegeWeaponController.SelectAll();
-		foreach (OrderSiegeMachineVM item in SiegeMachineList.Where((OrderSiegeMachineVM s) => s.IsSelectable && s.DeploymentPoint.IsDeployed))
+		foreach (OrderSiegeMachineVM siegeMachine in SiegeMachineList)
 		{
-			item.IsSelected = true;
-			SetSiegeMachineActiveOrders(item);
-			list.Add(item);
+			if (siegeMachine.IsSelected)
+			{
+				SetSiegeMachineActiveOrders(siegeMachine);
+			}
 		}
 	}
 

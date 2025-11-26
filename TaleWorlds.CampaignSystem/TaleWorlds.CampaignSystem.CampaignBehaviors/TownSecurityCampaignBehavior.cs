@@ -1,4 +1,5 @@
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -19,7 +20,7 @@ public class TownSecurityCampaignBehavior : CampaignBehaviorBase
 	private void OnHideoutDeactivated(Settlement hideout)
 	{
 		SettlementSecurityModel model = Campaign.Current.Models.SettlementSecurityModel;
-		foreach (Settlement item in Settlement.All.Where((Settlement t) => t.IsTown && t.GatePosition.DistanceSquared(hideout.GatePosition) < model.HideoutClearedSecurityEffectRadius * model.HideoutClearedSecurityEffectRadius).ToList())
+		foreach (Settlement item in Settlement.All.Where((Settlement t) => t.IsTown && t.Position.DistanceSquared(hideout.Position) < model.HideoutClearedSecurityEffectRadius * model.HideoutClearedSecurityEffectRadius).ToList())
 		{
 			item.Town.Security += model.HideoutClearedSecurityGain;
 		}
@@ -32,7 +33,7 @@ public class TownSecurityCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		SettlementSecurityModel model = Campaign.Current.Models.SettlementSecurityModel;
-		foreach (Settlement town in Settlement.All.Where((Settlement t) => t.IsTown && t.GatePosition.DistanceSquared(mapEvent.Position) < model.MapEventSecurityEffectRadius * model.MapEventSecurityEffectRadius).ToList())
+		foreach (Settlement town in Settlement.All.Where((Settlement t) => t.IsTown && t.Position.DistanceSquared(mapEvent.Position) < model.MapEventSecurityEffectRadius * model.MapEventSecurityEffectRadius).ToList())
 		{
 			if (mapEvent.Winner.Parties.Any((MapEventParty party) => party.Party.IsMobile && party.Party.MobileParty.IsBandit) && mapEvent.InvolvedParties.Any((PartyBase party) => ValidCivilianPartyCondition(party, mapEvent, town.MapFaction)))
 			{
@@ -51,7 +52,7 @@ public class TownSecurityCampaignBehavior : CampaignBehaviorBase
 	{
 		if (party.IsMobile)
 		{
-			if (party.Side == mapEvent.WinningSide || !party.MobileParty.IsVillager || !FactionManager.IsAlliedWithFaction(party.MapFaction, mapFaction))
+			if (party.Side == mapEvent.WinningSide || !party.MobileParty.IsVillager || !DiplomacyHelper.IsSameFactionAndNotEliminated(party.MapFaction, mapFaction))
 			{
 				if (party.MobileParty.IsCaravan)
 				{

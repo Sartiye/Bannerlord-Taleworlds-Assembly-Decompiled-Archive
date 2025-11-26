@@ -18,7 +18,7 @@ public class LightCycle : ScriptComponentBehavior
 		{
 			light.SetVisibility(visibility);
 		}
-		foreach (GameEntity child in base.GameEntity.GetChildren())
+		foreach (WeakGameEntity child in base.GameEntity.GetChildren())
 		{
 			child.SetVisibilityExcludeParents(visibility);
 		}
@@ -30,7 +30,7 @@ public class LightCycle : ScriptComponentBehavior
 		SetVisibility();
 		if (!visibility)
 		{
-			List<GameEntity> children = new List<GameEntity>();
+			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
 			for (int num = children.Count - 1; num >= 0; num--)
 			{

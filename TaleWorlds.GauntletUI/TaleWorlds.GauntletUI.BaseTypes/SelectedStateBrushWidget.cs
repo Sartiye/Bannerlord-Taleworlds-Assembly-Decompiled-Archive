@@ -41,7 +41,7 @@ public class SelectedStateBrushWidget : BrushWidget
 		}
 		if (_isDirty)
 		{
-			SetState(SelectedState);
+			SetState(SelectedState ?? "Default");
 			_isDirty = false;
 		}
 	}

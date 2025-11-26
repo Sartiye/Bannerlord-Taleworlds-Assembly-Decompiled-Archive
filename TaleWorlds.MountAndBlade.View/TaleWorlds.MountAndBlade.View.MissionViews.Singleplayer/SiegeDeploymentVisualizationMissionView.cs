@@ -34,8 +34,6 @@ public class SiegeDeploymentVisualizationMissionView : MissionView
 
 	private Dictionary<DeploymentPoint, GameEntity> _deploymentLights = new Dictionary<DeploymentPoint, GameEntity>();
 
-	private DeploymentMissionView _deploymentMissionView;
-
 	private const uint EntityHighlightColor = 4289622555u;
 
 	public override void AfterStart()
@@ -53,19 +51,9 @@ public class SiegeDeploymentVisualizationMissionView : MissionView
 		Mission.Current.GetMissionBehavior<SiegeDeploymentMissionController>();
 	}
 
-	public override void OnMissionScreenInitialize()
+	public override void OnDeploymentFinished()
 	{
-		base.OnMissionScreenInitialize();
-		_deploymentMissionView = base.Mission.GetMissionBehavior<DeploymentMissionView>();
-		DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-		deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Combine(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
-	}
-
-	public void OnDeploymentFinish()
-	{
-		DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-		deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Remove(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
-		_deploymentMissionView = null;
+		base.OnDeploymentFinished();
 		TryRemoveDeploymentVisibilities();
 		Mission.Current.RemoveMissionBehavior(this);
 	}
@@ -513,7 +501,8 @@ public class SiegeDeploymentVisualizationMissionView : MissionView
 		MatrixFrame identity = MatrixFrame.Identity;
 		identity.origin = deploymentPoint.DeploymentTargetPosition + new Vec3(0f, 0f, (deploymentPoint.GetDeploymentPointType() == DeploymentPoint.DeploymentPointType.TowerLadder) ? 10f : 3f);
 		identity.rotation.RotateAboutSide(System.MathF.PI / 2f);
-		identity.Scale(new Vec3(5f, 5f, 5f));
+		Vec3 scalingVector = new Vec3(5f, 5f, 5f);
+		identity.Scale(in scalingVector);
 		GameEntity value = GameEntity.Instantiate(Mission.Current.Scene, "aserai_keep_interior_a_light_shaft_a", identity);
 		_deploymentLights.Add(deploymentPoint, value);
 	}

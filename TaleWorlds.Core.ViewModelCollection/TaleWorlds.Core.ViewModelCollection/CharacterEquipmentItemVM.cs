@@ -6,12 +6,12 @@ public class CharacterEquipmentItemVM : ViewModel
 {
 	private readonly ItemObject _item;
 
-	private int _type;
+	private string _type;
 
 	private bool _hasItem;
 
 	[DataSourceProperty]
-	public int Type
+	public string Type
 	{
 		get
 		{
@@ -50,12 +50,12 @@ public class CharacterEquipmentItemVM : ViewModel
 		if (_item == null)
 		{
 			HasItem = false;
-			Type = 0;
+			Type = ItemObject.ItemTypeEnum.Invalid.ToString();
 		}
 		else
 		{
 			HasItem = true;
-			Type = (int)_item.Type;
+			Type = _item.Type.ToString();
 		}
 	}
 

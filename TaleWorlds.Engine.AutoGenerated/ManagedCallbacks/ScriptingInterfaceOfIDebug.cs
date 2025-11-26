@@ -144,6 +144,11 @@ internal class ScriptingInterfaceOfIDebug : IDebug
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetDebugVectorDelegate(Vec3 debugVector);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetDumpGenerationDisabledDelegate([MarshalAs(UnmanagedType.U1)] bool Disabled);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -229,6 +234,8 @@ internal class ScriptingInterfaceOfIDebug : IDebug
 	public static RenderDebugTextDelegate call_RenderDebugTextDelegate;
 
 	public static RenderDebugText3dDelegate call_RenderDebugText3dDelegate;
+
+	public static SetDebugVectorDelegate call_SetDebugVectorDelegate;
 
 	public static SetDumpGenerationDisabledDelegate call_SetDumpGenerationDisabledDelegate;
 
@@ -455,6 +462,11 @@ internal class ScriptingInterfaceOfIDebug : IDebug
 			array[byteCount] = 0;
 		}
 		call_RenderDebugText3dDelegate(worldPosition, array, color, screenPosOffsetX, screenPosOffsetY, time);
+	}
+
+	public void SetDebugVector(Vec3 debugVector)
+	{
+		call_SetDebugVectorDelegate(debugVector);
 	}
 
 	public void SetDumpGenerationDisabled(bool Disabled)

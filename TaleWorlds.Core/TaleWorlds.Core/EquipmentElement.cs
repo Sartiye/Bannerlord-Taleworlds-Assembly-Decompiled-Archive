@@ -56,11 +56,12 @@ public struct EquipmentElement : ISerializableObject, ISavedStruct
 	{
 		get
 		{
-			if (Item == null)
+			float num = ((Item != null) ? Item.Weight : 0f);
+			if (!(num > 0f))
 			{
 				return 0f;
 			}
-			return Item.Weight;
+			return num;
 		}
 	}
 
@@ -116,16 +117,8 @@ public struct EquipmentElement : ISerializableObject, ISavedStruct
 
 	public override int GetHashCode()
 	{
-		int num = 0;
-		if (Item != null)
-		{
-			num += Item.GetHashCode();
-		}
-		if (ItemModifier != null)
-		{
-			num += ItemModifier.GetHashCode() * 317;
-		}
-		return num;
+		int num = Item?.GetHashCode() ?? 0;
+		return (ItemModifier != null) ? ((num * 317) ^ ItemModifier.GetHashCode()) : num;
 	}
 
 	public override string ToString()
@@ -221,6 +214,24 @@ public struct EquipmentElement : ISerializableObject, ISavedStruct
 		if (Item.HasArmorComponent)
 		{
 			num = Item.ArmorComponent.ArmArmor;
+		}
+		if (num > 0 && ItemModifier != null)
+		{
+			num = ItemModifier.ModifyArmor(num);
+		}
+		if (num <= 0)
+		{
+			return 0;
+		}
+		return num;
+	}
+
+	public int GetModifiedStealthFactor()
+	{
+		int num = 0;
+		if (Item.HasArmorComponent)
+		{
+			num = Item.ArmorComponent.StealthFactor;
 		}
 		if (num > 0 && ItemModifier != null)
 		{

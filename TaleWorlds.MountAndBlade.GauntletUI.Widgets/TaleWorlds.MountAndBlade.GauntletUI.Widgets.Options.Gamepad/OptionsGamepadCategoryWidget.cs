@@ -64,7 +64,7 @@ public class OptionsGamepadCategoryWidget : Widget
 			break;
 		default:
 			XboxLayoutParentWidget.IsVisible = true;
-			Debug.FailedAssert("This kind of gamepad is not visually supported", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\Gamepad\\OptionsGamepadCategoryWidget.cs", "SetGamepadLayoutVisibility", 47);
+			Debug.FailedAssert("This kind of gamepad is not visually supported", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\Gamepad\\OptionsGamepadCategoryWidget.cs", "SetGamepadLayoutVisibility", 47);
 			break;
 		}
 	}

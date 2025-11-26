@@ -57,7 +57,7 @@ public class NewsManager
 			}
 			else
 			{
-				Debug.FailedAssert("News file doesn't exist", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\NewsSystem\\NewsManager.cs", "UpdateNewsItems", 73);
+				Debug.FailedAssert("News file doesn't exist", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\NewsSystem\\NewsManager.cs", "UpdateNewsItems", 73);
 			}
 		}
 		catch (Exception)

@@ -85,6 +85,8 @@ public class SteamPlatformServices : IPlatformServices
 
 	public event Action<string> OnTextEnteredFromPlatform;
 
+	public event Action OnTextCanceledFromPlatform;
+
 	public SteamPlatformServices(PlatformInitParams initParams)
 	{
 		_initParams = initParams;
@@ -110,7 +112,7 @@ public class SteamPlatformServices : IPlatformServices
 		{
 			return false;
 		}
-		ModuleHelper.InitializePlatformModuleExtension(new SteamModuleExtension());
+		ModuleHelper.InitializePlatformModuleExtension(new SteamModuleExtension(), null);
 		InitCallbacks();
 		_achievementService.Initialize();
 		SteamUserStats.RequestCurrentStats();
@@ -132,12 +134,13 @@ public class SteamPlatformServices : IPlatformServices
 		SteamAPI.Shutdown();
 	}
 
-	void IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
+	bool IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
 	{
 		if (Initialized)
 		{
-			SteamUtils.ShowGamepadTextInput((EGamepadTextInputMode)(isObfuscated ? 1 : 0), (EGamepadTextInputLineMode)0, descriptionText, maxChars, existingText);
+			return SteamUtils.ShowGamepadTextInput((EGamepadTextInputMode)(isObfuscated ? 1 : 0), (EGamepadTextInputLineMode)0, descriptionText, maxChars, existingText);
 		}
+		return false;
 	}
 
 	bool IPlatformServices.IsPlayerProfileCardAvailable(PlayerId providedId)
@@ -477,6 +480,10 @@ public class SteamPlatformServices : IPlatformServices
 			SteamUtils.GetEnteredGamepadTextInput(ref obj, SteamUtils.GetEnteredGamepadTextLength());
 			this.OnTextEnteredFromPlatform?.Invoke(obj);
 		}
+		else
+		{
+			this.OnTextCanceledFromPlatform?.Invoke();
+		}
 	}
 
 	private static void HandleOnUserStatusChanged(PlayerId playerId)
@@ -492,5 +499,10 @@ public class SteamPlatformServices : IPlatformServices
 	IFriendListService[] IPlatformServices.GetFriendListServices()
 	{
 		return _friendListServices;
+	}
+
+	bool IPlatformServices.UsePlatformInvitationService(PlayerId targetPlayerId)
+	{
+		return false;
 	}
 }

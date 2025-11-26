@@ -78,6 +78,6 @@ public class EncyclopediaSettlementVM : ViewModel
 
 	public void ExecuteBeginHint()
 	{
-		InformationManager.ShowTooltip(typeof(Settlement), _settlement, true);
+		InformationManager.ShowTooltip(typeof(Settlement), _settlement);
 	}
 }

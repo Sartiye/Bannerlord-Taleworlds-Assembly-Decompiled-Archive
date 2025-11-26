@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using TaleWorlds.GauntletUI.Layout;
 using TaleWorlds.InputSystem;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.GauntletUI.BaseTypes;
@@ -30,6 +32,10 @@ public class EditableTextWidget : BrushWidget
 		BackSpace,
 		Delete
 	}
+
+	private Rectangle2D _cursorRectangle;
+
+	private Rectangle2D _highlightRectangle;
 
 	protected EditableText _editableText;
 
@@ -59,11 +65,13 @@ public class EditableTextWidget : BrushWidget
 
 	protected bool _isSelection;
 
+	private bool _updatingTexts;
+
 	private string _realText = "";
 
 	private string _keyboardInfoText = "";
 
-	public int MaxLength { get; set; } = -1;
+	public int MaxLength { get; set; } = 512;
 
 
 	public bool IsObfuscationEnabled
@@ -86,11 +94,9 @@ public class EditableTextWidget : BrushWidget
 	{
 		get
 		{
-			Vector2 mousePosition = base.EventManager.MousePosition;
-			Vector2 globalPosition = base.GlobalPosition;
-			float x = mousePosition.X - globalPosition.X;
-			float y = mousePosition.Y - globalPosition.Y;
-			return new Vector2(x, y);
+			ref Rectangle2D areaRect = ref AreaRect;
+			Vector2 screenPosition = base.EventManager.MousePosition;
+			return areaRect.TransformScreenPositionToLocal(in screenPosition);
 		}
 	}
 
@@ -107,14 +113,13 @@ public class EditableTextWidget : BrushWidget
 		{
 			if (_realText != value)
 			{
-				_editableText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
 				if (string.IsNullOrEmpty(value))
 				{
 					value = "";
 				}
-				Text = (IsObfuscationEnabled ? ObfuscateText(value) : value);
 				_realText = value;
 				OnPropertyChanged(value, "RealText");
+				UpdateRealAndVisibleText(value);
 			}
 		}
 	}
@@ -147,19 +152,14 @@ public class EditableTextWidget : BrushWidget
 		{
 			if (_editableText.VisibleText != value)
 			{
-				_editableText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
-				_editableText.VisibleText = value;
-				if (!string.IsNullOrEmpty(_editableText.VisibleText))
-				{
-					_editableText.SetCursor(_editableText.VisibleText.Length);
-				}
 				if (string.IsNullOrEmpty(value))
 				{
-					_editableText.VisibleText = "";
-					_editableText.SetCursor(0, base.IsFocused);
+					value = "";
 				}
-				RealText = value;
+				_editableText.VisibleText = value;
 				OnPropertyChanged(value, "Text");
+				_editableText.SetCursor(_editableText.VisibleText.Length, base.IsFocused);
+				UpdateRealAndVisibleText(value);
 				SetMeasureAndLayoutDirty();
 			}
 		}
@@ -175,6 +175,8 @@ public class EditableTextWidget : BrushWidget
 		_textHeight = -1;
 		_cursorVisible = false;
 		_lastFontBrush = null;
+		_cursorRectangle = Rectangle2D.Create();
+		_highlightRectangle = Rectangle2D.Create();
 		_cursorDirection = CursorMovementDirection.None;
 		_keyboardAction = KeyboardAction.None;
 		_nextRepeatTime = int.MinValue;
@@ -206,10 +208,22 @@ public class EditableTextWidget : BrushWidget
 		SetEditTextParameters();
 	}
 
+	private void UpdateRealAndVisibleText(string newText)
+	{
+		if (!_updatingTexts)
+		{
+			_updatingTexts = true;
+			_editableText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
+			RealText = newText;
+			Text = (IsObfuscationEnabled ? ObfuscateText(RealText) : RealText);
+			_updatingTexts = false;
+		}
+	}
+
 	private void SetEditTextParameters()
 	{
 		bool flag = false;
-		_editableText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_editableText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 		UpdateFontData();
 		if (_editableText.HorizontalAlignment != base.ReadOnlyBrush.TextHorizontalAlignment)
 		{
@@ -251,16 +265,7 @@ public class EditableTextWidget : BrushWidget
 		}
 		if (num != 0 && num <= Text.Length)
 		{
-			if (IsObfuscationEnabled)
-			{
-				RealText = RealText.Substring(0, num - 1) + RealText.Substring(num, RealText.Length - num);
-				Text = ObfuscateText(RealText);
-			}
-			else
-			{
-				Text = Text.Substring(0, num - 1) + Text.Substring(num, Text.Length - num);
-				RealText = Text;
-			}
+			RealText = RealText.Substring(0, num - 1) + RealText.Substring(num, RealText.Length - num);
 			_editableText.SetCursor(num - 1);
 			ResetSelected();
 		}
@@ -273,11 +278,11 @@ public class EditableTextWidget : BrushWidget
 
 	protected void MoveCursor(int direction, bool withSelection = false)
 	{
+		_editableText.SetCursor(_editableText.CursorPosition + direction, visible: true, withSelection);
 		if (!withSelection)
 		{
 			ResetSelected();
 		}
-		_editableText.SetCursor(_editableText.CursorPosition + direction, visible: true, withSelection);
 	}
 
 	protected string GetAppendCharacterResult(int charCode)
@@ -297,7 +302,6 @@ public class EditableTextWidget : BrushWidget
 		{
 			int cursorPosition = _editableText.CursorPosition;
 			RealText = GetAppendCharacterResult(charCode);
-			Text = (IsObfuscationEnabled ? ObfuscateText(RealText) : RealText);
 			_editableText.SetCursor(cursorPosition + 1);
 			ResetSelected();
 		}
@@ -313,7 +317,6 @@ public class EditableTextWidget : BrushWidget
 			}
 			int cursorPosition = _editableText.CursorPosition;
 			RealText = RealText.Substring(0, cursorPosition) + text + RealText.Substring(cursorPosition, RealText.Length - cursorPosition);
-			Text = (IsObfuscationEnabled ? ObfuscateText(RealText) : RealText);
 			_editableText.SetCursor(cursorPosition + text.Length);
 			ResetSelected();
 		}
@@ -323,8 +326,12 @@ public class EditableTextWidget : BrushWidget
 	{
 		if (beginIndex != endIndex)
 		{
+			if (beginIndex > endIndex || beginIndex < 0 || endIndex < 0 || endIndex > RealText.Length)
+			{
+				Debug.FailedAssert("Calling DeleteText when beginIndex or endIndex is invalid!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\BaseTypes\\EditableTextWidget.cs", "DeleteText", 355);
+				return;
+			}
 			RealText = RealText.Substring(0, beginIndex) + RealText.Substring(endIndex, RealText.Length - endIndex);
-			Text = (IsObfuscationEnabled ? ObfuscateText(RealText) : RealText);
 			_editableText.SetCursor(beginIndex);
 			ResetSelected();
 		}
@@ -350,8 +357,9 @@ public class EditableTextWidget : BrushWidget
 
 	protected void PasteText()
 	{
-		string text = Regex.Replace(Input.GetClipboardText(), "[<>]+", " ");
-		AppendText(text);
+		string source = Regex.Replace(Input.GetClipboardText(), "[<>]+", " ");
+		source = new string(source.Where((char c) => !char.IsControl(c)).ToArray());
+		AppendText(source);
 	}
 
 	public override void HandleInput(IReadOnlyList<int> lastKeysPressed)
@@ -469,28 +477,35 @@ public class EditableTextWidget : BrushWidget
 		}
 		else if (_keyboardAction == KeyboardAction.BackSpace || _keyboardAction == KeyboardAction.Delete)
 		{
-			if (flag3 || tickCount >= _nextRepeatTime)
+			if (!flag3 && tickCount < _nextRepeatTime)
 			{
-				if (_editableText.IsAnySelected())
+				return;
+			}
+			if (_editableText.IsAnySelected())
+			{
+				DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
+			}
+			else if (Input.IsKeyDown(InputKey.LeftControl))
+			{
+				if (_keyboardAction == KeyboardAction.BackSpace)
 				{
-					DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
-				}
-				else if (Input.IsKeyDown(InputKey.LeftControl))
-				{
-					int num2 = FindNextWordPosition(-1) - _editableText.CursorPosition;
-					DeleteText(_editableText.CursorPosition + num2, _editableText.CursorPosition);
+					DeleteText(FindNextWordPosition(-1), _editableText.CursorPosition);
 				}
 				else
 				{
-					DeleteChar(_keyboardAction == KeyboardAction.Delete);
-				}
-				if (tickCount >= _nextRepeatTime)
-				{
-					_nextRepeatTime = tickCount + 30;
+					DeleteText(_editableText.CursorPosition, FindNextWordPosition(1));
 				}
 			}
+			else
+			{
+				DeleteChar(_keyboardAction == KeyboardAction.Delete);
+			}
+			if (tickCount >= _nextRepeatTime)
+			{
+				_nextRepeatTime = tickCount + 30;
+			}
 		}
-		else if (Input.IsKeyDown(InputKey.LeftControl))
+		else if (Input.IsKeyDown(InputKey.LeftControl) && !Input.IsKeyDown(InputKey.RightAlt))
 		{
 			if (Input.IsKeyPressed(InputKey.A))
 			{
@@ -516,7 +531,6 @@ public class EditableTextWidget : BrushWidget
 	protected internal override void OnGainFocus()
 	{
 		base.OnGainFocus();
-		_editableText.SetCursor(RealText.Length);
 		if (string.IsNullOrEmpty(RealText) && !string.IsNullOrEmpty(DefaultSearchText))
 		{
 			_editableText.VisibleText = "";
@@ -561,7 +575,7 @@ public class EditableTextWidget : BrushWidget
 
 	private void UpdateFontData()
 	{
-		if (_lastFontBrush == base.ReadOnlyBrush && _lastScale == base._scaleToUse && _lastLanguageCode == base.Context.FontFactory.CurrentLangageID)
+		if (_lastFontBrush == base.ReadOnlyBrush && _lastScale == base._scaleToUse && _lastLanguageCode == base.Context.FontFactory.CurrentLanguage.LanguageID)
 		{
 			return;
 		}
@@ -575,8 +589,8 @@ public class EditableTextWidget : BrushWidget
 		}
 		_lastFontBrush = base.ReadOnlyBrush;
 		_lastScale = base._scaleToUse;
-		_lastLanguageCode = base.Context.FontFactory.CurrentLangageID;
-		_editableText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_lastLanguageCode = base.Context.FontFactory.CurrentLanguage.LanguageID;
+		_editableText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 	}
 
 	private Font GetFont(Style style = null)
@@ -604,7 +618,7 @@ public class EditableTextWidget : BrushWidget
 			UpdateFontData();
 			bool isFixedWidth = base.WidthSizePolicy != SizePolicy.CoverChildren || base.MaxWidth != 0f;
 			bool isFixedHeight = base.HeightSizePolicy != SizePolicy.CoverChildren || base.MaxHeight != 0f;
-			_editableText.Update(base.Context.SpriteData, localMousePosition, focus, isFixedWidth, isFixedHeight, base._scaleToUse);
+			_editableText.Update(dt, base.Context.SpriteData, localMousePosition, focus, isFixedWidth, isFixedHeight, base._scaleToUse);
 		}
 	}
 
@@ -615,60 +629,78 @@ public class EditableTextWidget : BrushWidget
 		{
 			return;
 		}
-		Vector2 globalPosition = base.GlobalPosition;
+		_ = base.GlobalPosition;
+		Style styleOrDefault = base.ReadOnlyBrush.GetStyleOrDefault("Default");
+		Font font = GetFont(styleOrDefault);
+		_ = font.LineHeight;
+		_ = (float)styleOrDefault.FontSize / (float)font.Size;
+		_ = base._scaleToUse;
 		foreach (RichTextPart part in _editableText.GetParts())
 		{
-			DrawObject2D drawObject2D = part.DrawObject2D;
-			Material material = null;
-			Style styleOrDefault = base.ReadOnlyBrush.GetStyleOrDefault(part.Style);
-			Font font = GetFont(styleOrDefault);
-			int fontSize = styleOrDefault.FontSize;
-			float scaleFactor = (float)fontSize * base._scaleToUse;
-			float num = (float)fontSize / (float)font.Size;
-			float height = (float)font.LineHeight * num * base._scaleToUse;
-			TextMaterial textMaterial = styleOrDefault.CreateTextMaterial(drawContext);
-			textMaterial.ColorFactor *= base.ReadOnlyBrush.GlobalColorFactor;
-			textMaterial.AlphaFactor *= base.ReadOnlyBrush.GlobalAlphaFactor;
-			textMaterial.Color *= base.ReadOnlyBrush.GlobalColor;
-			textMaterial.Texture = font.FontSprite.Texture;
-			textMaterial.ScaleFactor = scaleFactor;
-			textMaterial.Smooth = font.Smooth;
-			textMaterial.SmoothingConstant = font.SmoothingConstant;
-			if (textMaterial.GlowRadius > 0f || textMaterial.Blur > 0f || textMaterial.OutlineAmount > 0f)
+			if (part.TextDrawObject.IsValid)
 			{
-				TextMaterial textMaterial2 = styleOrDefault.CreateTextMaterial(drawContext);
-				textMaterial2.CopyFrom(textMaterial);
-				drawContext.Draw(globalPosition.X, globalPosition.Y, textMaterial2, drawObject2D, base.Size.X, base.Size.Y);
+				TextDrawObject drawObject = part.TextDrawObject;
+				Rectangle2D rectangle = drawObject.Rectangle;
+				rectangle.FillLocalValuesFrom(in AreaRect);
+				rectangle.LocalScale = new Vector2(drawObject.Text_MeshWidth, drawObject.Text_MeshHeight);
+				rectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
+				Style styleOrDefault2 = base.ReadOnlyBrush.GetStyleOrDefault(part.Style);
+				Font defaultFont = part.DefaultFont;
+				int fontSize = styleOrDefault2.FontSize;
+				float scaleFactor = (float)fontSize * base._scaleToUse;
+				float num = (float)fontSize / (float)defaultFont.Size;
+				float y = (float)defaultFont.LineHeight * num * base._scaleToUse;
+				TextMaterial textMaterial = styleOrDefault2.CreateTextMaterial(drawContext);
+				textMaterial.ColorFactor *= base.ReadOnlyBrush.GlobalColorFactor;
+				textMaterial.AlphaFactor *= base.ReadOnlyBrush.GlobalAlphaFactor;
+				textMaterial.Color *= base.ReadOnlyBrush.GlobalColor;
+				textMaterial.Texture = defaultFont.FontSprite.Texture;
+				textMaterial.ScaleFactor = scaleFactor;
+				textMaterial.Smooth = defaultFont.Smooth;
+				textMaterial.SmoothingConstant = defaultFont.SmoothingConstant;
+				if (textMaterial.GlowRadius > 0f || textMaterial.Blur > 0f || textMaterial.OutlineAmount > 0f)
+				{
+					TextMaterial textMaterial2 = styleOrDefault2.CreateTextMaterial(drawContext);
+					textMaterial2.CopyFrom(textMaterial);
+					drawContext.Draw(textMaterial2, in drawObject);
+				}
+				textMaterial.GlowRadius = 0f;
+				textMaterial.Blur = 0f;
+				textMaterial.OutlineAmount = 0f;
+				if (part.Style == "Highlight")
+				{
+					SpriteData spriteData = base.Context.SpriteData;
+					string name = "warm_overlay";
+					Sprite sprite = spriteData.GetSprite(name);
+					SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
+					simpleMaterial.Reset(sprite?.Texture);
+					_highlightRectangle.FillLocalValuesFrom(in AreaRect);
+					_highlightRectangle.LocalPosition = new Vector2(base.LocalPosition.X + part.PartPosition.X, base.LocalPosition.Y + part.PartPosition.Y);
+					_highlightRectangle.LocalScale = new Vector2(part.WordWidth, y);
+					_highlightRectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
+					drawContext.DrawSprite(sprite, simpleMaterial, in _highlightRectangle, base._scaleToUse);
+				}
+				drawObject.Rectangle = rectangle;
+				drawContext.Draw(textMaterial, in drawObject);
 			}
-			textMaterial.GlowRadius = 0f;
-			textMaterial.Blur = 0f;
-			textMaterial.OutlineAmount = 0f;
-			material = textMaterial;
-			if (part.Style == "Highlight")
-			{
-				SpriteData spriteData = base.Context.SpriteData;
-				string name = "warm_overlay";
-				Sprite sprite = spriteData.GetSprite(name);
-				SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
-				simpleMaterial.Reset(sprite?.Texture);
-				drawContext.DrawSprite(sprite, simpleMaterial, globalPosition.X + part.PartPosition.X, globalPosition.Y + part.PartPosition.Y, 1f, part.WordWidth, height, horizontalFlip: false, verticalFlip: false);
-			}
-			drawContext.Draw(globalPosition.X, globalPosition.Y, material, drawObject2D, base.Size.X, base.Size.Y);
 		}
 		if (_editableText.IsCursorVisible())
 		{
-			Style styleOrDefault2 = base.ReadOnlyBrush.GetStyleOrDefault("Default");
-			Font font2 = GetFont(styleOrDefault2);
-			int fontSize2 = styleOrDefault2.FontSize;
-			float num2 = (float)fontSize2 / (float)font2.Size;
-			float height2 = (float)font2.LineHeight * num2 * base._scaleToUse;
+			Style styleOrDefault3 = base.ReadOnlyBrush.GetStyleOrDefault("Default");
+			Font font2 = GetFont(styleOrDefault3);
+			float num2 = (float)styleOrDefault3.FontSize / (float)font2.Size;
+			float y2 = (float)font2.LineHeight * num2 * base._scaleToUse;
+			Vector2 cursorPosition = _editableText.GetCursorPosition();
+			_cursorRectangle.FillLocalValuesFrom(in AreaRect);
+			_cursorRectangle.LocalPosition = new Vector2(base.LocalPosition.X + cursorPosition.X, base.LocalPosition.Y + cursorPosition.Y);
+			_cursorRectangle.LocalScale = new Vector2(1f, y2);
+			_cursorRectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
 			SpriteData spriteData2 = base.Context.SpriteData;
 			string name2 = "BlankWhiteSquare_9";
 			Sprite sprite2 = spriteData2.GetSprite(name2);
 			SimpleMaterial simpleMaterial2 = drawContext.CreateSimpleMaterial();
 			simpleMaterial2.Reset(sprite2?.Texture);
-			Vector2 cursorPosition = _editableText.GetCursorPosition(font2, fontSize2, base._scaleToUse);
-			drawContext.DrawSprite(sprite2, simpleMaterial2, (int)(globalPosition.X + cursorPosition.X), globalPosition.Y + cursorPosition.Y, 1f, 1f, height2, horizontalFlip: false, verticalFlip: false);
+			drawContext.DrawSprite(sprite2, simpleMaterial2, in _cursorRectangle, base._scaleToUse);
 		}
 	}
 
@@ -690,14 +722,7 @@ public class EditableTextWidget : BrushWidget
 
 	private void OnObfuscationToggled(bool isEnabled)
 	{
-		if (isEnabled)
-		{
-			Text = ObfuscateText(RealText);
-		}
-		else
-		{
-			Text = RealText;
-		}
+		UpdateRealAndVisibleText(RealText);
 	}
 
 	private string ObfuscateText(string stringToObfuscate)
@@ -708,7 +733,8 @@ public class EditableTextWidget : BrushWidget
 	public virtual void SetAllText(string text)
 	{
 		DeleteText(0, RealText.Length);
-		string text2 = Regex.Replace(text, "[<>]+", " ");
-		AppendText(text2);
+		string source = Regex.Replace(text, "[<>]+", " ");
+		source = new string(source.Where((char c) => !char.IsControl(c)).ToArray());
+		AppendText(source);
 	}
 }

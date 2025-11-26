@@ -68,7 +68,7 @@ public static class MBTextManager
 			LocalizedTextManager.LoadLanguage(_activeTextLanguageId);
 			return true;
 		}
-		Debug.FailedAssert("Invalid language", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\MBTextManager.cs", "ChangeLanguage", 141);
+		Debug.FailedAssert("Invalid language", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\MBTextManager.cs", "ChangeLanguage", 141);
 		return false;
 	}
 
@@ -177,7 +177,7 @@ public static class MBTextManager
 
 	public static void SetTextVariable(string variableName, TextObject text, bool sendClients = false)
 	{
-		if (text != null)
+		if (!(text == null))
 		{
 			TextContext.SetTextVariable(variableName, text);
 		}
@@ -189,9 +189,9 @@ public static class MBTextManager
 		SetTextVariable(variableName, text);
 	}
 
-	public static void SetTextVariable(string variableName, float content)
+	public static void SetTextVariable(string variableName, float content, int decimalDigits = 2)
 	{
-		TextObject text = ProcessNumber(content);
+		TextObject text = ProcessNumber(TaleWorlds.Library.MathF.Round(content, decimalDigits));
 		SetTextVariable(variableName, text);
 	}
 
@@ -226,7 +226,7 @@ public static class MBTextManager
 
 	public static void ThrowLocalizationError(string message)
 	{
-		Debug.FailedAssert(message, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\MBTextManager.cs", "ThrowLocalizationError", 342);
+		Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\MBTextManager.cs", "ThrowLocalizationError", 342);
 	}
 
 	internal static string GetLocalizedText(string text)
@@ -355,6 +355,7 @@ public static class MBTextManager
 					}
 					if (text[i] == ',' || text[i] == ']')
 					{
+						to.Value.Contains("{=!}");
 						array[num] = stringBuilder.ToString();
 						stringBuilder.Clear();
 						if (text[i] == ']')
@@ -392,19 +393,21 @@ public static class MBTextManager
 		return array;
 	}
 
-	public static bool TryGetVoiceObject(TextObject to, out VoiceObject vo)
+	public static bool TryGetVoiceObject(TextObject to, out VoiceObject vo, out string vocalizationId)
 	{
 		if (!TextObject.IsNullOrEmpty(to))
 		{
-			vo = ProcessTextForVocalization(to);
+			vo = ProcessTextForVocalization(to, out vocalizationId);
 			return true;
 		}
 		vo = null;
+		vocalizationId = null;
 		return false;
 	}
 
-	private static VoiceObject ProcessTextForVocalization(TextObject to)
+	private static VoiceObject ProcessTextForVocalization(TextObject to, out string vocalizationId)
 	{
+		vocalizationId = null;
 		if (TextObject.IsNullOrEmpty(to))
 		{
 			return null;
@@ -412,9 +415,9 @@ public static class MBTextManager
 		string localizationId = GetLocalizationId(to);
 		if (localizationId != "!")
 		{
+			vocalizationId = localizationId;
 			return LocalizedVoiceManager.GetLocalizedVoice(localizationId);
 		}
-		Debug.Print("[VOICEOVER]VoiceObject search for: " + localizationId);
 		VoiceObject voiceObject = null;
 		List<MBTextToken> list = to.GetCachedTokens();
 		if (list == null)
@@ -425,7 +428,7 @@ public static class MBTextManager
 		{
 			if (item.TokenType == TokenType.Identifier)
 			{
-				voiceObject = ProcessTextForVocalization(TextContext.GetRawTextVariable(item.Value, to));
+				voiceObject = ProcessTextForVocalization(TextContext.GetRawTextVariable(item.Value, to), out vocalizationId);
 				if (voiceObject != null)
 				{
 					return voiceObject;
@@ -437,6 +440,10 @@ public static class MBTextManager
 
 	private static string GetLocalizationId(TextObject to)
 	{
+		if (TextObject.IsNullOrEmpty(to))
+		{
+			return string.Empty;
+		}
 		string value = to.Value;
 		if (value != null && value.Length > 2 && value[0] == '{' && value[1] == '=')
 		{

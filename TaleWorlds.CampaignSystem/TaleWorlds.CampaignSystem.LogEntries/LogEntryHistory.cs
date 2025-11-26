@@ -39,7 +39,7 @@ public class LogEntryHistory
 	{
 		if (_logs.Count > 0 && _logs[_logs.Count - 1].Id > actionLog.Id)
 		{
-			Debug.FailedAssert("Log ids should always get bigger", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\LogEntries\\LogEntry.cs", "AddActionLog", 209);
+			Debug.FailedAssert("Log ids should always get bigger", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\LogEntries\\LogEntry.cs", "AddActionLog", 215);
 			int num = _logs.FindIndex((LogEntry l) => l.Id > actionLog.Id);
 			if (num >= 0)
 			{
@@ -64,7 +64,8 @@ public class LogEntryHistory
 		for (int i = 0; i < _logs.Count; i++)
 		{
 			LogEntry logEntry = _logs[i];
-			if (!(logEntry.KeepInHistoryTime + logEntry.GameTime).IsPast)
+			CampaignTime campaignTime = logEntry.KeepInHistoryTime + logEntry.GameTime;
+			if (logEntry.IsValid() && !campaignTime.IsPast)
 			{
 				num++;
 				if (i != num)
@@ -185,7 +186,7 @@ public class LogEntryHistory
 	{
 		for (int num = _logs.Count - 1; num >= 0; num--)
 		{
-			if (_logs[num] == null)
+			if (_logs[num] == null || !_logs[num].IsValid())
 			{
 				_logs.RemoveAt(num);
 			}

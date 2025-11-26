@@ -8,7 +8,7 @@ namespace TaleWorlds.Library;
 [JsonConverter(typeof(ApplicationVersionJsonConverter))]
 public struct ApplicationVersion
 {
-	public const int DefaultChangeSet = 54620;
+	public const int DefaultChangeSet = 102350;
 
 	[JsonIgnore]
 	public static readonly ApplicationVersion Empty = new ApplicationVersion(ApplicationVersionType.Invalid, -1, -1, -1, -1);
@@ -50,7 +50,7 @@ public struct ApplicationVersion
 		return FromString(xmlDocument.ChildNodes[0].ChildNodes[0].Attributes["Value"].InnerText);
 	}
 
-	public static ApplicationVersion FromString(string versionAsString, int defaultChangeSet = 54620)
+	public static ApplicationVersion FromString(string versionAsString, int defaultChangeSet = 0)
 	{
 		string[] array = versionAsString.Split(new char[1] { '.' });
 		if (array.Length != 3 && array.Length != 4)
@@ -127,15 +127,22 @@ public struct ApplicationVersion
 	public static ApplicationVersionType ApplicationVersionTypeFromString(string applicationVersionTypeAsString)
 	{
 		ApplicationVersionType applicationVersionType = ApplicationVersionType.Release;
-		return applicationVersionTypeAsString switch
+		switch (applicationVersionTypeAsString)
 		{
-			"a" => ApplicationVersionType.Alpha, 
-			"b" => ApplicationVersionType.Beta, 
-			"e" => ApplicationVersionType.EarlyAccess, 
-			"v" => ApplicationVersionType.Release, 
-			"d" => ApplicationVersionType.Development, 
-			_ => ApplicationVersionType.Invalid, 
-		};
+		case "a":
+			return ApplicationVersionType.Alpha;
+		case "b":
+			return ApplicationVersionType.Beta;
+		case "e":
+			return ApplicationVersionType.EarlyAccess;
+		case "v":
+			return ApplicationVersionType.Release;
+		case "d":
+			return ApplicationVersionType.Development;
+		default:
+			Debug.FailedAssert("Invalid version type.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\ApplicationVersion.cs", "ApplicationVersionTypeFromString", 158);
+			return ApplicationVersionType.Invalid;
+		}
 	}
 
 	public static string GetPrefix(ApplicationVersionType applicationVersionType)

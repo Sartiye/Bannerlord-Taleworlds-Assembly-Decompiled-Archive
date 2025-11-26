@@ -13,6 +13,8 @@ public class PropertyBasedTooltipWidget : TooltipWidget
 
 	private Brush _valueRelationBrush;
 
+	private bool _firstFrame = true;
+
 	private int _mode;
 
 	private Brush _neutralTroopsTextBrush;
@@ -221,6 +223,11 @@ public class PropertyBasedTooltipWidget : TooltipWidget
 		_valueRelationBrush = null;
 		if (PropertyList != null)
 		{
+			if (_firstFrame)
+			{
+				_firstFrame = false;
+				return;
+			}
 			for (int i = 0; i < PropertyList.ChildCount; i++)
 			{
 				if (PropertyList.GetChild(i) is TooltipPropertyWidget { IsTwoColumn: not false, IsMultiLine: false } tooltipPropertyWidget)
@@ -254,6 +261,10 @@ public class PropertyBasedTooltipWidget : TooltipWidget
 					tooltipPropertyWidget2.RefreshSize(flag, battleScopeSize, num, num2, _definitionRelationBrush, _valueRelationBrush);
 				}
 			}
+		}
+		else
+		{
+			_firstFrame = true;
 		}
 		if (PropertyListBackground != null)
 		{

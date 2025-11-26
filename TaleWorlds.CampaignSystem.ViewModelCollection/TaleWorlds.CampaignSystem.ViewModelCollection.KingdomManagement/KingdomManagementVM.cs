@@ -14,6 +14,7 @@ using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Policies;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -49,7 +50,7 @@ public class KingdomManagementVM : ViewModel
 
 	private KingdomGiftFiefPopupVM _giftFief;
 
-	private ImageIdentifierVM _kingdomBanner;
+	private BannerImageIdentifierVM _kingdomBanner;
 
 	private HeroVM _leader;
 
@@ -111,7 +112,7 @@ public class KingdomManagementVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM KingdomBanner
+	public BannerImageIdentifierVM KingdomBanner
 	{
 		get
 		{
@@ -554,7 +555,7 @@ public class KingdomManagementVM : ViewModel
 		_onClose = onClose;
 		_onShowArmyOnMap = onShowArmyOnMap;
 		Army = new KingdomArmyVM(onManageArmy, OnRefreshDecision, _onShowArmyOnMap);
-		Settlement = new KingdomSettlementVM(ForceDecideDecision, OnGrantFief);
+		Settlement = CreateSettlementVM(ForceDecideDecision, OnGrantFief);
 		Clan = new KingdomClanVM(ForceDecideDecision);
 		Policy = new KingdomPoliciesVM(ForceDecideDecision);
 		Diplomacy = new KingdomDiplomacyVM(ForceDecideDecision);
@@ -563,7 +564,13 @@ public class KingdomManagementVM : ViewModel
 		_categoryCount = 5;
 		_leaveKingdomPermissionEvent = new LeaveKingdomPermissionEvent(OnLeaveKingdomRequest);
 		SetSelectedCategory(1);
+		ChangeKingdomNameHint = new HintViewModel();
 		RefreshValues();
+	}
+
+	protected virtual KingdomSettlementVM CreateSettlementVM(Action<KingdomDecision> forceDecision, Action<Settlement> onGrantFief)
+	{
+		return new KingdomSettlementVM(forceDecision, onGrantFief);
 	}
 
 	public override void RefreshValues()
@@ -576,7 +583,6 @@ public class KingdomManagementVM : ViewModel
 		ArmiesText = GameTexts.FindText("str_armies").ToString();
 		DiplomacyText = GameTexts.FindText("str_diplomatic_group").ToString();
 		DoneText = GameTexts.FindText("str_done").ToString();
-		ChangeKingdomNameHint = new HintViewModel();
 		RefreshDynamicKingdomProperties();
 		Army.RefreshValues();
 		Policy.RefreshValues();
@@ -593,38 +599,51 @@ public class KingdomManagementVM : ViewModel
 		{
 			Kingdom = Hero.MainHero.MapFaction as Kingdom;
 			Leader = new HeroVM(Kingdom.Leader);
-			KingdomBanner = new ImageIdentifierVM(BannerCode.CreateFrom(Kingdom.Banner), nineGrid: true);
-			_isPlayerTheRuler = Kingdom?.Leader == Hero.MainHero;
-			PlayerCanChangeKingdomName = GetCanChangeKingdomNameWithReason(out var disabledReason);
-			ChangeKingdomNameHint.HintText = disabledReason;
+			KingdomBanner = new BannerImageIdentifierVM(Kingdom.Banner, nineGrid: true);
+			_isPlayerTheRuler = Kingdom.Leader == Hero.MainHero;
+			KingdomActionText = (_isPlayerTheRuler ? GameTexts.FindText("str_abdicate_leadership").ToString() : GameTexts.FindText("str_leave_kingdom").ToString());
 		}
-		KingdomActionText = (_isPlayerTheRuler ? GameTexts.FindText("str_abdicate_leadership").ToString() : GameTexts.FindText("str_leave_kingdom").ToString());
+		else
+		{
+			Kingdom = null;
+			Leader = null;
+			KingdomBanner = null;
+			_isPlayerTheRuler = false;
+			KingdomActionText = string.Empty;
+		}
+		PlayerCanChangeKingdomName = GetCanChangeKingdomNameWithReason(out var disabledReason);
+		ChangeKingdomNameHint.HintText = disabledReason;
 		IsKingdomActionEnabled = GetIsKingdomActionEnabledWithReason(_isPlayerTheRuler, out var kingdomActionDisabledReasons);
-		KingdomActionHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetHintTextFromReasons(kingdomActionDisabledReasons));
+		KingdomActionHint = new BasicTooltipViewModel(() => CampaignUIHelper.MergeTextObjectsWithNewline(kingdomActionDisabledReasons));
 	}
 
 	private bool GetCanChangeKingdomNameWithReason(out TextObject disabledReason)
 	{
+		if (!PlayerHasKingdom)
+		{
+			disabledReason = new TextObject("{=kQsXUvgO}You are not under a kingdom.");
+			return false;
+		}
+		if (!_isPlayerTheRuler)
+		{
+			disabledReason = new TextObject("{=HFZdseH9}Only the ruler of the kingdom can change its name.");
+			return false;
+		}
 		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
 		}
-		if (!_isPlayerTheRuler)
-		{
-			disabledReason = new TextObject("{=HFZdseH9}Only the ruler of the kingdom can change it's name.");
-			return false;
-		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
 	private bool GetIsKingdomActionEnabledWithReason(bool isPlayerTheRuler, out List<TextObject> disabledReasons)
 	{
 		disabledReasons = new List<TextObject>();
-		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason))
+		if (!PlayerHasKingdom)
 		{
-			disabledReasons.Add(disabledReason);
+			disabledReasons.Add(new TextObject("{=kQsXUvgO}You are not under a kingdom."));
 			return false;
 		}
 		if (isPlayerTheRuler && !Campaign.Current.Models.KingdomCreationModel.IsPlayerKingdomAbdicationPossible(out var explanations))
@@ -642,6 +661,11 @@ public class KingdomManagementVM : ViewModel
 		if (mostRecentLeaveKingdomPermission.HasValue && !mostRecentLeaveKingdomPermission.GetValueOrDefault().Item1)
 		{
 			disabledReasons.Add(_mostRecentLeaveKingdomPermission?.Item2);
+			return false;
+		}
+		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason))
+		{
+			disabledReasons.Add(disabledReason);
 			return false;
 		}
 		return true;
@@ -731,25 +755,35 @@ public class KingdomManagementVM : ViewModel
 
 	private void ExecuteKingdomAction()
 	{
-		if (IsKingdomActionEnabled)
+		if (!IsKingdomActionEnabled)
 		{
-			ref(bool, TextObject)? mostRecentLeaveKingdomPermission = ref _mostRecentLeaveKingdomPermission;
-			if (mostRecentLeaveKingdomPermission.HasValue && mostRecentLeaveKingdomPermission.GetValueOrDefault().Item1 && _mostRecentLeaveKingdomPermission?.Item2 != null)
+			return;
+		}
+		ref(bool, TextObject)? mostRecentLeaveKingdomPermission = ref _mostRecentLeaveKingdomPermission;
+		if (mostRecentLeaveKingdomPermission.HasValue && mostRecentLeaveKingdomPermission.GetValueOrDefault().Item1 && _mostRecentLeaveKingdomPermission?.Item2 != null)
+		{
+			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), _mostRecentLeaveKingdomPermission?.Item2.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmLeaveKingdom, null));
+		}
+		else if (_isPlayerTheRuler)
+		{
+			GameTexts.SetVariable("WILL_DESTROY", (Kingdom.Clans.Count == 1) ? 1 : 0);
+			InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_abdicate_leadership").ToString(), GameTexts.FindText("str_abdicate_leadership_question").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmAbdicateLeadership, null));
+		}
+		else if (TaleWorlds.CampaignSystem.Clan.PlayerClan.Settlements.Count == 0)
+		{
+			if (TaleWorlds.CampaignSystem.Clan.PlayerClan.IsUnderMercenaryService)
 			{
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), _mostRecentLeaveKingdomPermission?.Item2.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmLeaveKingdom, null));
-				return;
+				TextObject textObject = new TextObject("{=b7muQ9mt}Are you sure you want to end your mercenary contract with the {KINGDOM_INFORMALNAME}?");
+				textObject.SetTextVariable("KINGDOM_INFORMALNAME", Kingdom.InformalName);
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=5Unqsx3N}Confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
 			}
-			if (_isPlayerTheRuler)
-			{
-				GameTexts.SetVariable("WILL_DESTROY", (Kingdom.Clans.Count == 1) ? 1 : 0);
-				InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_abdicate_leadership").ToString(), GameTexts.FindText("str_abdicate_leadership_question").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmAbdicateLeadership, null));
-				return;
-			}
-			if (TaleWorlds.CampaignSystem.Clan.PlayerClan.Settlements.Count == 0)
+			else
 			{
 				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), new TextObject("{=BgqZWbga}The nobles of the realm will dislike you for abandoning your fealty. Are you sure you want to leave the Kingdom?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=5Unqsx3N}Confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
-				return;
 			}
+		}
+		else
+		{
 			List<InquiryElement> inquiryElements = new List<InquiryElement>
 			{
 				new InquiryElement("keep", new TextObject("{=z8h0BRAb}Keep all holdings").ToString(), null, isEnabled: true, new TextObject("{=lkJfq1ap}Owned settlements remain under your control but nobles will dislike this dishonorable act and the kingdom will declare war on you.").ToString()),
@@ -911,6 +945,12 @@ public class KingdomManagementVM : ViewModel
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: true);
 		Decision.SetDoneInputKey(hotkey);
+		GiftFief.SetDoneInputKey(hotkey);
+	}
+
+	public void SetCancelInputKey(HotKey hotkey)
+	{
+		GiftFief.SetCancelInputKey(hotkey);
 	}
 
 	public void SetPreviousTabInputKey(HotKey hotkey)

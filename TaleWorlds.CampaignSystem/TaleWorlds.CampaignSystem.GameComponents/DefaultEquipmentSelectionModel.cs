@@ -11,30 +11,23 @@ public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 	public override MBList<MBEquipmentRoster> GetEquipmentRostersForHeroComeOfAge(Hero hero, bool isCivilian)
 	{
 		MBList<MBEquipmentRoster> mBList = new MBList<MBEquipmentRoster>();
-		bool flag = IsHeroCombatant(hero);
+		bool flag = !hero.IsNoncombatant;
 		foreach (MBEquipmentRoster item in MBEquipmentRosterExtensions.All)
 		{
-			if (!IsRosterAppropriateForHeroAsTemplate(item, hero, EquipmentFlags.IsNobleTemplate))
+			if (!IsRosterAppropriateForHeroAsTemplate(item, hero, shouldMatchGender: true, EquipmentFlags.IsNobleTemplate))
 			{
 				continue;
 			}
-			if (flag)
+			if (isCivilian)
 			{
-				if (isCivilian)
+				if (flag)
 				{
 					if (item.HasEquipmentFlags(EquipmentFlags.IsCombatantTemplate | EquipmentFlags.IsCivilianTemplate))
 					{
 						mBList.Add(item);
 					}
 				}
-				else if (item.HasEquipmentFlags(EquipmentFlags.IsMediumTemplate))
-				{
-					mBList.Add(item);
-				}
-			}
-			else if (isCivilian)
-			{
-				if (item.HasEquipmentFlags(EquipmentFlags.IsNoncombatantTemplate))
+				else if (item.HasEquipmentFlags(EquipmentFlags.IsNoncombatantTemplate))
 				{
 					mBList.Add(item);
 				}
@@ -80,7 +73,7 @@ public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 		return roster;
 	}
 
-	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, Hero hero, EquipmentFlags customFlags = EquipmentFlags.None, bool shouldMatchGender = false)
+	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, Hero hero, bool shouldMatchGender, EquipmentFlags customFlags = EquipmentFlags.None)
 	{
 		bool result = false;
 		if (equipmentRoster.IsEquipmentTemplate() && (!shouldMatchGender || equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsFemaleTemplate) == hero.IsFemale) && equipmentRoster.EquipmentCulture == hero.Culture && (customFlags == EquipmentFlags.None || equipmentRoster.HasEquipmentFlags(customFlags)))
@@ -108,11 +101,11 @@ public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 		return true;
 	}
 
-	private void AddEquipmentsToRoster(Hero hero, EquipmentFlags suitableFlags, ref MBList<MBEquipmentRoster> roster, bool shouldMatchGender = false)
+	private void AddEquipmentsToRoster(Hero hero, EquipmentFlags suitableFlags, ref MBList<MBEquipmentRoster> roster, bool shouldMatchGender)
 	{
 		foreach (MBEquipmentRoster item in MBEquipmentRosterExtensions.All)
 		{
-			if (IsRosterAppropriateForHeroAsTemplate(item, hero, suitableFlags, shouldMatchGender))
+			if (IsRosterAppropriateForHeroAsTemplate(item, hero, shouldMatchGender, suitableFlags))
 			{
 				roster.Add(item);
 			}

@@ -2,6 +2,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -11,7 +12,7 @@ namespace TaleWorlds.CampaignSystem.CharacterDevelopment;
 
 public interface ISkillLevelingManager
 {
-	void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge);
+	void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge, bool isSneakAttack);
 
 	void OnSiegeEngineDestroyed(MobileParty party, SiegeEngineType destroyedSiegeEngine);
 
@@ -34,6 +35,8 @@ public interface ISkillLevelingManager
 	void OnBribeGiven(int amount);
 
 	void OnWarehouseProduction(EquipmentElement production);
+
+	void OnAIPartyLootCasualties(int goldAmount, Hero winnerPartyLeader, PartyBase defeatedParty);
 
 	void OnBanditsRecruited(MobileParty mobileParty, CharacterObject bandit, int count);
 
@@ -61,6 +64,8 @@ public interface ISkillLevelingManager
 
 	void OnTravelOnHorse(Hero hero, float speed);
 
+	void OnTravelOnWater(Hero hero, float speed);
+
 	void OnHeroHealedWhileWaiting(Hero hero, int healingAmount);
 
 	void OnRegularTroopHealedWhileWaiting(MobileParty mobileParty, int healedTroopCount, float averageTier);
@@ -87,7 +92,7 @@ public interface ISkillLevelingManager
 
 	void OnTraverseTerrain(MobileParty mobileParty, TerrainType currentTerrainType);
 
-	void OnBattleEnd(PartyBase party, FlattenedTroopRoster flattenedTroopRoster);
+	void OnBattleEnded(PartyBase party, CharacterObject troop, int excessXp);
 
 	void OnFoodConsumed(MobileParty mobileParty, bool wasStarving);
 
@@ -96,4 +101,8 @@ public interface ISkillLevelingManager
 	void OnDailyAlleyTick(Alley alley, Hero alleyLeader);
 
 	void OnBoardGameWonAgainstLord(Hero lord, BoardGameHelper.AIDifficulty difficulty, bool extraXpGain);
+
+	void OnShipDamaged(Ship ship, float rawDamage, float finalDamage);
+
+	void OnHideoutMissionEnd(bool isSucceeded);
 }

@@ -163,7 +163,7 @@ public class MBArrayList<T> : IMBCollection, ICollection, IEnumerable, IEnumerab
 		}
 		catch (ArrayTypeMismatchException)
 		{
-			Debug.FailedAssert("Invalid array type", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\MBArrayList.cs", "CopyTo", 210);
+			Debug.FailedAssert("Invalid array type", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\MBArrayList.cs", "CopyTo", 210);
 		}
 	}
 }

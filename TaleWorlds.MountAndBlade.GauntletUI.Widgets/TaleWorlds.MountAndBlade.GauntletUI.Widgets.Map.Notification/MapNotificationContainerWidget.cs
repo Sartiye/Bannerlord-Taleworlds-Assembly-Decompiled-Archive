@@ -119,9 +119,9 @@ public class MapNotificationContainerWidget : Widget
 		_newChildren.Add(child);
 	}
 
-	protected override void OnAfterChildRemoved(Widget child)
+	protected override void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
-		base.OnAfterChildRemoved(child);
+		base.OnAfterChildRemoved(child, previousIndexOfChild);
 		if (_newChildren.Contains(child))
 		{
 			_newChildren.Remove(child);

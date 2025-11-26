@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -256,7 +257,7 @@ public class EncyclopediaUnitPageVM : EncyclopediaContentPageVM
 		{
 			if (character.UpgradeTargets[i] == baseCharacter)
 			{
-				Debug.FailedAssert($"Circular dependency on troop upgrade paths: {character.Name} --> {baseCharacter.Name}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Encyclopedia\\Pages\\EncyclopediaUnitPageVM.cs", "DoesCharacterHaveCircularUpgradePaths", 56);
+				Debug.FailedAssert($"Circular dependency on troop upgrade paths: {character.Name} --> {baseCharacter.Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Encyclopedia\\Pages\\EncyclopediaUnitPageVM.cs", "DoesCharacterHaveCircularUpgradePaths", 56);
 				result = true;
 				break;
 			}
@@ -289,7 +290,9 @@ public class EncyclopediaUnitPageVM : EncyclopediaContentPageVM
 		EquipmentSetText = _equipmentSetTextObj.ToString();
 		TreeDisplayErrorText = new TextObject("{=BkDycbdq}Error while displaying the troop tree").ToString();
 		Skills = new MBBindingList<EncyclopediaSkillVM>();
-		foreach (SkillObject item in TaleWorlds.CampaignSystem.Extensions.Skills.All)
+		List<SkillObject> list = TaleWorlds.CampaignSystem.Extensions.Skills.All.ToList();
+		list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject item in list)
 		{
 			if (_character.GetSkillValue(item) > 0)
 			{

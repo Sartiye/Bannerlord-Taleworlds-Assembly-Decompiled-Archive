@@ -143,8 +143,8 @@ public class Location
 		_playerCanSee = playerCanSee;
 		_aiCanExit = aiCanExit;
 		_ownerComplex = locationComplex;
-		_overriddenName = TextObject.Empty;
-		_overriddenDoorName = TextObject.Empty;
+		_overriddenName = TextObject.GetEmpty();
+		_overriddenDoorName = TextObject.GetEmpty();
 		_sceneNames = new string[4];
 		for (int i = 0; i < 4; i++)
 		{
@@ -230,8 +230,8 @@ public class Location
 		if (CanBeReserved)
 		{
 			IsReserved = false;
-			_overriddenName = TextObject.Empty;
-			_overriddenDoorName = TextObject.Empty;
+			_overriddenName = TextObject.GetEmpty();
+			_overriddenDoorName = TextObject.GetEmpty();
 		}
 	}
 
@@ -260,6 +260,13 @@ public class Location
 			LocationCharacter locationCharacter = createDelegate(culture, relation);
 			AddCharacter(locationCharacter);
 		}
+	}
+
+	public LocationCharacter AddLocationCharacter(CreateLocationCharacterDelegate createDelegate, CultureObject culture, LocationCharacter.CharacterRelations relation)
+	{
+		LocationCharacter locationCharacter = createDelegate(culture, relation);
+		AddCharacter(locationCharacter);
+		return locationCharacter;
 	}
 
 	public void AddSpecialItem(ItemObject itemObject)

@@ -20,7 +20,7 @@ public class InquiryData
 
 	public readonly string SoundEventPath;
 
-	public Action AffirmativeAction;
+	public readonly Action AffirmativeAction;
 
 	public readonly Action NegativeAction;
 
@@ -55,11 +55,6 @@ public class InquiryData
 	public void SetTitleText(string titleText)
 	{
 		TitleText = titleText;
-	}
-
-	public void SetAffirmativeAction(Action newAffirmativeAction)
-	{
-		AffirmativeAction = newAffirmativeAction;
 	}
 
 	public bool HasSameContentWith(object other)

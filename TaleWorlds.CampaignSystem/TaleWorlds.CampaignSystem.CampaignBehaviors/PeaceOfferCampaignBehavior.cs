@@ -1,3 +1,4 @@
+using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Library;
@@ -23,9 +24,9 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 
 	private int _currentPeaceOfferTributeAmount;
 
-	private int _influenceCostOfDecline;
+	private int _currentPeaceOfferTributeDuration;
 
-	private int _hourCounter;
+	private int _influenceCostOfDecline;
 
 	private static TextObject PeacePanelTitleText => new TextObject("{=ho5EndaV}Decision");
 
@@ -38,9 +39,7 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnPeaceOfferedToPlayerEvent.AddNonSerializedListener(this, OnPeaceOffered);
-		CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
-		CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
-		CampaignEvents.OnPeaceOfferCancelledEvent.AddNonSerializedListener(this, OnPeaceOfferCancelled);
+		CampaignEvents.OnPeaceOfferResolvedEvent.AddNonSerializedListener(this, OnPeaceOfferResolved);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -49,17 +48,13 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_opponentFaction", ref _opponentFaction);
 	}
 
-	public void SetCurrentTributeAmount(int tributeAmount)
-	{
-		_currentPeaceOfferTributeAmount = tributeAmount;
-	}
-
-	private void OnPeaceOffered(IFaction opponentFaction, int tributeAmount)
+	private void OnPeaceOffered(IFaction opponentFaction, int tributeAmount, int tributeDuration)
 	{
 		if (_opponentFaction == null)
 		{
 			_opponentFaction = opponentFaction;
 			_currentPeaceOfferTributeAmount = tributeAmount;
+			_currentPeaceOfferTributeDuration = tributeDuration;
 			TextObject textObject = ((tributeAmount <= 0) ? ((tributeAmount >= 0) ? ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferDefaultPanelDescriptionText : PeaceOfferDefaultPanelPlayerIsVassalDescriptionText) : ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferTributeWantedPanelDescriptionText : PeaceOfferTributeWantedPanelPlayerIsVassalDescriptionText)) : ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferTributePaidPanelDescriptionText : PeaceOfferTributePaidPanelPlayerIsVassalDescriptionText));
 			textObject.SetTextVariable("MAP_FACTION_NAME", opponentFaction.InformalName);
 			textObject.SetTextVariable("GOLD_AMOUNT", MathF.Abs(_currentPeaceOfferTributeAmount));
@@ -70,50 +65,20 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 			if (Hero.MainHero.MapFaction.Leader == Hero.MainHero)
 			{
 				InformationManager.ShowInquiry(new InquiryData(PeacePanelTitleText.ToString(), textObject.ToString(), isAffirmativeOptionShown: true, (float)_influenceCostOfDecline <= 0.1f || Hero.MainHero.Clan.Influence >= (float)_influenceCostOfDecline, PeacePanelAffirmativeText.ToString(), peacePanelNegativeText.ToString(), AcceptPeaceOffer, DeclinePeaceOffer), pauseGameActiveState: true);
-				_hourCounter = 0;
 			}
 			else
 			{
 				InformationManager.ShowInquiry(new InquiryData(PeacePanelTitleText.ToString(), textObject.ToString(), isAffirmativeOptionShown: false, isNegativeOptionShown: true, PeacePanelOkText.ToString(), PeacePanelOkText.ToString(), OkPeaceOffer, OkPeaceOffer), pauseGameActiveState: true);
-				_hourCounter = 0;
 			}
 		}
 	}
 
-	private void OnPeaceOfferCancelled(IFaction opponentFaction)
+	private void OnPeaceOfferResolved(IFaction opponentFaction)
 	{
-		if (Hero.MainHero.MapFaction.Leader != Hero.MainHero)
+		if (Hero.MainHero.MapFaction.Leader != Hero.MainHero && opponentFaction != null)
 		{
 			_opponentFaction = opponentFaction;
 			OkPeaceOffer();
-		}
-	}
-
-	public void HourlyTick()
-	{
-		if (_opponentFaction == null)
-		{
-			return;
-		}
-		_hourCounter++;
-		if (_hourCounter == 24)
-		{
-			if (Hero.MainHero.MapFaction.Leader == Hero.MainHero)
-			{
-				CampaignEventDispatcher.Instance.OnPeaceOfferCancelled(_opponentFaction);
-			}
-			else
-			{
-				CampaignEventDispatcher.Instance.OnPeaceOfferCancelled(_opponentFaction);
-			}
-		}
-	}
-
-	private void OnMakePeace(IFaction side1Faction, IFaction side2Faction, MakePeaceAction.MakePeaceDetail detail)
-	{
-		if ((side1Faction == Hero.MainHero.MapFaction && side2Faction == _opponentFaction) || (side2Faction == Hero.MainHero.MapFaction && side1Faction == _opponentFaction))
-		{
-			DeclinePeaceOffer();
 		}
 	}
 
@@ -124,20 +89,25 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 			AcceptPeaceOffer();
 			return;
 		}
-		MakePeaceKingdomDecision kingdomDecision = new MakePeaceKingdomDecision(Hero.MainHero.MapFaction.Leader.Clan, _opponentFaction, -_currentPeaceOfferTributeAmount);
-		((Kingdom)Hero.MainHero.MapFaction).AddDecision(kingdomDecision);
+		Kingdom kingdom = Clan.PlayerClan.Kingdom;
+		KingdomDecision kingdomDecision = kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is MakePeaceKingdomDecision makePeaceKingdomDecision && makePeaceKingdomDecision.ProposerClan.MapFaction == Hero.MainHero.MapFaction && makePeaceKingdomDecision.FactionToMakePeaceWith == _opponentFaction);
+		if (kingdomDecision != null)
+		{
+			kingdom.RemoveDecision(kingdomDecision);
+		}
+		MakePeaceKingdomDecision kingdomDecision2 = new MakePeaceKingdomDecision(Hero.MainHero.MapFaction.Leader.Clan, _opponentFaction, -_currentPeaceOfferTributeAmount, _currentPeaceOfferTributeDuration, applyResults: true, isProposedByOpponent: true);
+		((Kingdom)Hero.MainHero.MapFaction).AddDecision(kingdomDecision2, ignoreInfluenceCost: true);
 		_opponentFaction = null;
 	}
 
 	private void AcceptPeaceOffer()
 	{
-		MakePeaceAction.Apply(_opponentFaction, Hero.MainHero.MapFaction, _currentPeaceOfferTributeAmount);
+		MakePeaceAction.ApplyByKingdomDecision(_opponentFaction, Hero.MainHero.MapFaction, _currentPeaceOfferTributeAmount, _currentPeaceOfferTributeDuration);
 		_opponentFaction = null;
 	}
 
 	private void DeclinePeaceOffer()
 	{
-		CampaignEventDispatcher.Instance.OnPeaceOfferCancelled(_opponentFaction);
 		_opponentFaction = null;
 		ChangeClanInfluenceAction.Apply(Clan.PlayerClan, -_influenceCostOfDecline);
 	}

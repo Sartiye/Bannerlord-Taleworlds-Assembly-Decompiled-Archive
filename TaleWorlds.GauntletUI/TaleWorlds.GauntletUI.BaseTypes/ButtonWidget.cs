@@ -303,7 +303,6 @@ public class ButtonWidget : ImageWidget
 				(base.ParentWidget as Container).OnChildSelected(this);
 			}
 		}
-		OnClick();
 		EventFired("Click");
 		if (base.Context.EventManager.Time - _lastClickTime < 0.5f)
 		{
@@ -315,17 +314,8 @@ public class ButtonWidget : ImageWidget
 		}
 	}
 
-	private void HandleAlternateClick()
+	protected virtual void HandleAlternateClick()
 	{
-		OnAlternateClick();
 		EventFired("AlternateClick");
-	}
-
-	protected virtual void OnClick()
-	{
-	}
-
-	protected virtual void OnAlternateClick()
-	{
 	}
 }

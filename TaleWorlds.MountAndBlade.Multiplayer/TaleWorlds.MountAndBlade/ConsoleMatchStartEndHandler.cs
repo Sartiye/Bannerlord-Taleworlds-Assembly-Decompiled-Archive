@@ -48,11 +48,8 @@ public class ConsoleMatchStartEndHandler : MissionNetwork
 
 	private void AgentVisualSpawnComponentOnOnMyAgentVisualSpawned()
 	{
-		if (!_gameModeClient.IsInWarmup)
-		{
-			_visualSpawnComponent.OnMyAgentSpawnedFromVisual -= AgentVisualSpawnComponentOnOnMyAgentVisualSpawned;
-			_inGameCheckActive = true;
-		}
+		_visualSpawnComponent.OnMyAgentSpawnedFromVisual -= AgentVisualSpawnComponentOnOnMyAgentVisualSpawned;
+		_inGameCheckActive = true;
 	}
 
 	private void OnTeamChange(NetworkCommunicator peer, Team previousTeam, Team newTeam)

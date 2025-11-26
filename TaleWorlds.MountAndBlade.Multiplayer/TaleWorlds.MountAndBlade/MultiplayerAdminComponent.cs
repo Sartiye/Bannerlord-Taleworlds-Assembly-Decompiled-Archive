@@ -37,6 +37,11 @@ public class MultiplayerAdminComponent : MissionNetwork
 		MultiplayerIntermissionVotingManager.Instance.IsCultureVoteEnabled = !MultiplayerIntermissionVotingManager.Instance.IsDisableCultureVoteOverride;
 	}
 
+	public void ChangeAdminMenuActiveState(bool isActive)
+	{
+		this.OnSetAdminMenuActiveState?.Invoke(isActive);
+	}
+
 	public void KickPlayer(NetworkCommunicator peerToKick, bool banPlayer)
 	{
 		if (GameNetwork.IsServer)
@@ -62,11 +67,6 @@ public class MultiplayerAdminComponent : MissionNetwork
 		}
 	}
 
-	public void ChangeAdminMenuActiveState(bool isActive)
-	{
-		this.OnSetAdminMenuActiveState?.Invoke(isActive);
-	}
-
 	public void GlobalMuteUnmutePlayer(NetworkCommunicator peerToMute, bool unmute)
 	{
 		if (GameNetwork.IsServer)
@@ -77,15 +77,15 @@ public class MultiplayerAdminComponent : MissionNetwork
 				return;
 			}
 			PlayerId id = peerToMute.VirtualPlayer.Id;
-			if (CustomGameMutedPlayerManager.IsUserMuted(id) == unmute)
+			if (MultiplayerGlobalMutedPlayersManager.IsUserMuted(id) == unmute)
 			{
 				if (unmute)
 				{
-					CustomGameMutedPlayerManager.UnmutePlayer(peerToMute.VirtualPlayer.Id);
+					MultiplayerGlobalMutedPlayersManager.UnmutePlayer(peerToMute.VirtualPlayer.Id);
 				}
 				else
 				{
-					CustomGameMutedPlayerManager.MutePlayer(peerToMute.VirtualPlayer.Id);
+					MultiplayerGlobalMutedPlayersManager.MutePlayer(peerToMute.VirtualPlayer.Id);
 				}
 				GameNetwork.BeginBroadcastModuleEvent();
 				GameNetwork.WriteMessage(new SyncPlayerMuteState(id, !unmute));
@@ -148,58 +148,6 @@ public class MultiplayerAdminComponent : MissionNetwork
 		}
 	}
 
-	public override void OnBehaviorInitialize()
-	{
-		base.OnBehaviorInitialize();
-		_missionLobbyComponent = Mission.Current.GetMissionBehavior<MissionLobbyComponent>();
-		_missionLobbyComponent.OnAdminMessageRequested += AdminAnnouncement;
-	}
-
-	protected override void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegistererContainer registerer)
-	{
-		if (GameNetwork.IsServer)
-		{
-			registerer.RegisterBaseHandler<KickPlayer>(HandleClientEventKickPlayer);
-			registerer.RegisterBaseHandler<ChangeWelcomeMessage>(HandleClientEventChangeWelcomeMessage);
-			registerer.RegisterBaseHandler<AdminRequestAnnouncement>(HandleClientEventAdminRequestAnnouncement);
-			registerer.RegisterBaseHandler<AdminRequestClassRestrictionChange>(HandleClientEventAdminRequestClassRestrictionChange);
-			registerer.RegisterBaseHandler<AdminRequestEndMission>(HandleClientEventAdminRequestEndMission);
-			registerer.RegisterBaseHandler<AdminUpdateMultiplayerOptions>(HandleAdminUpdateMultiplayerOptions);
-			registerer.RegisterBaseHandler<AdminMuteUnmutePlayer>(HandleClientEventMuteUnmutePlayer);
-			registerer.RegisterBaseHandler<AdminRequestEndWarmup>(HandleClientEventAdminRequestEndWarmup);
-		}
-	}
-
-	private bool HandleClientEventKickPlayer(NetworkCommunicator peer, GameNetworkMessage baseMessage)
-	{
-		KickPlayer kickPlayer = (KickPlayer)baseMessage;
-		if (peer.IsAdmin)
-		{
-			KickPlayer(kickPlayer.PlayerPeer, kickPlayer.BanPlayer);
-		}
-		return true;
-	}
-
-	private bool HandleClientEventMuteUnmutePlayer(NetworkCommunicator peer, GameNetworkMessage baseMessage)
-	{
-		AdminMuteUnmutePlayer adminMuteUnmutePlayer = (AdminMuteUnmutePlayer)baseMessage;
-		if (peer.IsAdmin)
-		{
-			GlobalMuteUnmutePlayer(adminMuteUnmutePlayer.PlayerPeer, adminMuteUnmutePlayer.Unmute);
-		}
-		return true;
-	}
-
-	private bool HandleClientEventChangeWelcomeMessage(NetworkCommunicator peer, GameNetworkMessage baseMessage)
-	{
-		ChangeWelcomeMessage changeWelcomeMessage = (ChangeWelcomeMessage)baseMessage;
-		if (peer.IsAdmin)
-		{
-			ChangeWelcomeMessage(changeWelcomeMessage.NewWelcomeMessage);
-		}
-		return true;
-	}
-
 	public void ChangeClassRestriction(FormationClass classToChangeRestriction, bool newValue)
 	{
 		if (GameNetwork.IsServer)
@@ -229,14 +177,26 @@ public class MultiplayerAdminComponent : MissionNetwork
 		GameNetwork.EndModuleEventAsClient();
 	}
 
-	private bool HandleClientEventAdminRequestClassRestrictionChange(NetworkCommunicator peer, GameNetworkMessage baseMessage)
+	public override void OnBehaviorInitialize()
 	{
-		AdminRequestClassRestrictionChange adminRequestClassRestrictionChange = (AdminRequestClassRestrictionChange)baseMessage;
-		if (peer.IsAdmin)
+		base.OnBehaviorInitialize();
+		_missionLobbyComponent = Mission.Current.GetMissionBehavior<MissionLobbyComponent>();
+		_missionLobbyComponent.OnAdminMessageRequested += AdminAnnouncement;
+	}
+
+	protected override void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegistererContainer registerer)
+	{
+		if (GameNetwork.IsServer)
 		{
-			ChangeClassRestriction(adminRequestClassRestrictionChange.ClassToChangeRestriction, adminRequestClassRestrictionChange.NewValue);
+			registerer.RegisterBaseHandler<KickPlayer>(HandleClientEventKickPlayer);
+			registerer.RegisterBaseHandler<ChangeWelcomeMessage>(HandleClientEventChangeWelcomeMessage);
+			registerer.RegisterBaseHandler<AdminRequestAnnouncement>(HandleClientEventAdminRequestAnnouncement);
+			registerer.RegisterBaseHandler<AdminRequestClassRestrictionChange>(HandleClientEventAdminRequestClassRestrictionChange);
+			registerer.RegisterBaseHandler<AdminRequestEndMission>(HandleClientEventAdminRequestEndMission);
+			registerer.RegisterBaseHandler<AdminUpdateMultiplayerOptions>(HandleAdminUpdateMultiplayerOptions);
+			registerer.RegisterBaseHandler<AdminMuteUnmutePlayer>(HandleClientEventMuteUnmutePlayer);
+			registerer.RegisterBaseHandler<AdminRequestEndWarmup>(HandleClientEventAdminRequestEndWarmup);
 		}
-		return true;
 	}
 
 	private bool HandleAdminUpdateMultiplayerOptions(NetworkCommunicator peer, GameNetworkMessage baseMessage)
@@ -301,6 +261,7 @@ public class MultiplayerAdminComponent : MissionNetwork
 			}
 			if (flag2)
 			{
+				MultiplayerIntermissionVotingManager.Instance.IsMapSelectedByAdmin = false;
 				if (flag)
 				{
 					if (MultiplayerIntermissionVotingManager.Instance.IsDisableMapVoteOverride)
@@ -327,6 +288,7 @@ public class MultiplayerAdminComponent : MissionNetwork
 			else
 			{
 				MultiplayerIntermissionVotingManager.Instance.IsMapVoteEnabled = false;
+				MultiplayerIntermissionVotingManager.Instance.IsMapSelectedByAdmin = true;
 				Debug.Print("[Admin] next game type: " + text + " next map: " + MultiplayerOptions.OptionType.Map.GetStrValue(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions));
 			}
 			if (flag3 && flag4)
@@ -359,6 +321,46 @@ public class MultiplayerAdminComponent : MissionNetwork
 		return true;
 	}
 
+	private bool HandleClientEventKickPlayer(NetworkCommunicator peer, GameNetworkMessage baseMessage)
+	{
+		KickPlayer kickPlayer = (KickPlayer)baseMessage;
+		if (peer.IsAdmin)
+		{
+			KickPlayer(kickPlayer.PlayerPeer, kickPlayer.BanPlayer);
+		}
+		return true;
+	}
+
+	private bool HandleClientEventMuteUnmutePlayer(NetworkCommunicator peer, GameNetworkMessage baseMessage)
+	{
+		AdminMuteUnmutePlayer adminMuteUnmutePlayer = (AdminMuteUnmutePlayer)baseMessage;
+		if (peer.IsAdmin)
+		{
+			GlobalMuteUnmutePlayer(adminMuteUnmutePlayer.PlayerPeer, adminMuteUnmutePlayer.Unmute);
+		}
+		return true;
+	}
+
+	private bool HandleClientEventChangeWelcomeMessage(NetworkCommunicator peer, GameNetworkMessage baseMessage)
+	{
+		ChangeWelcomeMessage changeWelcomeMessage = (ChangeWelcomeMessage)baseMessage;
+		if (peer.IsAdmin)
+		{
+			ChangeWelcomeMessage(changeWelcomeMessage.NewWelcomeMessage);
+		}
+		return true;
+	}
+
+	private bool HandleClientEventAdminRequestClassRestrictionChange(NetworkCommunicator peer, GameNetworkMessage baseMessage)
+	{
+		AdminRequestClassRestrictionChange adminRequestClassRestrictionChange = (AdminRequestClassRestrictionChange)baseMessage;
+		if (peer.IsAdmin)
+		{
+			ChangeClassRestriction(adminRequestClassRestrictionChange.ClassToChangeRestriction, adminRequestClassRestrictionChange.NewValue);
+		}
+		return true;
+	}
+
 	private bool HandleClientEventAdminRequestAnnouncement(NetworkCommunicator peer, GameNetworkMessage baseMessage)
 	{
 		AdminRequestAnnouncement adminRequestAnnouncement = (AdminRequestAnnouncement)baseMessage;
@@ -377,6 +379,26 @@ public class MultiplayerAdminComponent : MissionNetwork
 			AdminEndMission();
 		}
 		return true;
+	}
+
+	[CommandLineFunctionality.CommandLineArgumentFunction("announcement", "mp_admin")]
+	public static string MPAdminAnnouncement(List<string> strings)
+	{
+		if (strings.Count == 0)
+		{
+			return "Wrong format! Usage: mp_admin.announcement {TEXT}";
+		}
+		if (Mission.Current == null)
+		{
+			return "Mission is not running!";
+		}
+		MultiplayerAdminComponent missionBehavior = Mission.Current.GetMissionBehavior<MultiplayerAdminComponent>();
+		if (missionBehavior == null)
+		{
+			return "Admin component could not be found!";
+		}
+		missionBehavior.AdminAnnouncement(string.Join(" ", strings), isBroadcast: true);
+		return "Success";
 	}
 
 	private bool HandleClientEventAdminRequestEndWarmup(NetworkCommunicator peer, GameNetworkMessage baseMessage)
@@ -512,26 +534,6 @@ public class MultiplayerAdminComponent : MissionNetwork
 			return "Admin component could not be found!";
 		}
 		missionBehavior.AdminEndMission();
-		return "Success";
-	}
-
-	[CommandLineFunctionality.CommandLineArgumentFunction("announcement", "mp_admin")]
-	public static string MPAdminAnnouncement(List<string> strings)
-	{
-		if (strings.Count == 0)
-		{
-			return "Wrong format! Usage: mp_admin.announcement {TEXT}";
-		}
-		if (Mission.Current == null)
-		{
-			return "Mission is not running!";
-		}
-		MultiplayerAdminComponent missionBehavior = Mission.Current.GetMissionBehavior<MultiplayerAdminComponent>();
-		if (missionBehavior == null)
-		{
-			return "Admin component could not be found!";
-		}
-		missionBehavior.AdminAnnouncement(string.Join(" ", strings), isBroadcast: true);
 		return "Success";
 	}
 

@@ -93,7 +93,7 @@ public class MissionSiegeWeaponsController : IMissionSiegeWeaponsController
 	{
 		if (weapon is UsableGameObjectGroup)
 		{
-			return weapon.GameEntity.GetChildren().SelectMany((GameEntity c) => c.GetScriptComponents()).First((ScriptComponentBehavior s) => s is IFocusable)
+			return weapon.GameEntity.GetChildren().SelectMany((WeakGameEntity c) => c.GetScriptComponents()).First((ScriptComponentBehavior s) => s is IFocusable)
 				.GetType();
 		}
 		return weapon.GetType();

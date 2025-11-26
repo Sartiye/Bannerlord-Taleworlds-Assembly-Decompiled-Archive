@@ -3,7 +3,6 @@ using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Quests;
-using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -11,8 +10,41 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 
-public class GameMenuItemVM : BindingListStringItem
+public class GameMenuItemVM : ViewModel
 {
+	public readonly struct GameMenuItemCreationData
+	{
+		public readonly MenuContext MenuContext;
+
+		public readonly int Index;
+
+		public readonly TextObject Text;
+
+		public readonly TextObject Text2;
+
+		public readonly TextObject Tooltip;
+
+		public readonly TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType Type;
+
+		public readonly GameMenuOption GameMenuOption;
+
+		public readonly GameKey ShortcutKey;
+
+		public string OptionID => GameMenuOption.IdString;
+
+		public GameMenuItemCreationData(MenuContext menuContext, int index, TextObject text, TextObject text2, TextObject tooltip, TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType type, GameMenuOption gameMenuOption, GameKey shortcutKey)
+		{
+			MenuContext = menuContext;
+			Index = index;
+			Text = text;
+			Text2 = text2;
+			Tooltip = tooltip;
+			Type = type;
+			GameMenuOption = gameMenuOption;
+			ShortcutKey = shortcutKey;
+		}
+	}
+
 	private MenuContext _menuContext;
 
 	public int Index;
@@ -23,7 +55,7 @@ public class GameMenuItemVM : BindingListStringItem
 
 	private TextObject _tooltip;
 
-	private readonly GameMenuOption _gameMenuOption;
+	private GameMenuOption.IssueQuestFlags _questFlags;
 
 	private MBBindingList<QuestMarkerVM> _quests;
 
@@ -41,15 +73,21 @@ public class GameMenuItemVM : BindingListStringItem
 
 	private bool _isHighlightEnabled;
 
-	private int _optionLeaveType = -1;
+	private string _optionLeaveType;
 
 	private string _gameMenuStringId;
 
+	private string _item;
+
 	private int _battleSize = -1;
+
+	private bool _isNavalBattle;
 
 	private InputKeyItemVM _shortcutKey;
 
-	public string OptionID { get; }
+	public string OptionID { get; private set; }
+
+	public GameMenuOption GameMenuOption { get; private set; }
 
 	[DataSourceProperty]
 	public MBBindingList<QuestMarkerVM> Quests
@@ -69,7 +107,7 @@ public class GameMenuItemVM : BindingListStringItem
 	}
 
 	[DataSourceProperty]
-	public int OptionLeaveType
+	public string OptionLeaveType
 	{
 		get
 		{
@@ -115,7 +153,7 @@ public class GameMenuItemVM : BindingListStringItem
 			{
 				_isWaitActive = value;
 				OnPropertyChangedWithValue(value, "IsWaitActive");
-				base.Item = (value ? _waitText.ToString() : _nonWaitText.ToString());
+				Item = (value ? _waitText.ToString() : _nonWaitText.ToString());
 			}
 		}
 	}
@@ -223,6 +261,23 @@ public class GameMenuItemVM : BindingListStringItem
 	}
 
 	[DataSourceProperty]
+	public string Item
+	{
+		get
+		{
+			return _item;
+		}
+		set
+		{
+			if (value != _item)
+			{
+				_item = value;
+				OnPropertyChangedWithValue(value, "Item");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public int BattleSize
 	{
 		get
@@ -235,6 +290,23 @@ public class GameMenuItemVM : BindingListStringItem
 			{
 				_battleSize = value;
 				OnPropertyChangedWithValue(value, "BattleSize");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsNavalBattle
+	{
+		get
+		{
+			return _isNavalBattle;
+		}
+		set
+		{
+			if (value != _isNavalBattle)
+			{
+				_isNavalBattle = value;
+				OnPropertyChangedWithValue(value, "IsNavalBattle");
 			}
 		}
 	}
@@ -255,44 +327,46 @@ public class GameMenuItemVM : BindingListStringItem
 		}
 	}
 
-	public GameMenuItemVM(MenuContext menuContext, int index, TextObject text, TextObject text2, TextObject tooltip, TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType type, GameMenuOption gameMenuOption, GameKey shortcutKey)
-		: base(text.ToString())
+	public GameMenuItemVM()
 	{
-		_gameMenuOption = gameMenuOption;
 		ItemHint = new HintViewModel();
-		Index = index;
-		_menuContext = menuContext;
-		_itemType = (int)type;
-		_tooltip = tooltip;
-		_nonWaitText = text;
-		_waitText = text2;
-		base.Item = _nonWaitText.ToString();
-		ItemHint.HintText = _tooltip;
-		OptionLeaveType = (int)gameMenuOption.OptionLeaveType;
-		OptionID = gameMenuOption.IdString;
 		Quests = new MBBindingList<QuestMarkerVM>();
-		GameMenuOption.IssueQuestFlags[] issueQuestFlagsValues = GameMenuOption.IssueQuestFlagsValues;
-		foreach (GameMenuOption.IssueQuestFlags issueQuestFlags in issueQuestFlagsValues)
+	}
+
+	public void InitializeWith(in GameMenuItemCreationData data)
+	{
+		GameMenuOption = data.GameMenuOption;
+		Index = data.Index;
+		_menuContext = data.MenuContext;
+		_itemType = (int)data.Type;
+		_tooltip = data.Tooltip;
+		_nonWaitText = data.Text;
+		_waitText = data.Text2;
+		Item = _nonWaitText.ToString();
+		ItemHint.HintText = _tooltip;
+		OptionLeaveType = data.GameMenuOption.OptionLeaveType.ToString();
+		OptionID = data.GameMenuOption.IdString;
+		if (data.GameMenuOption.OptionQuestData != _questFlags)
 		{
-			if (issueQuestFlags != 0 && (gameMenuOption.OptionQuestData & issueQuestFlags) != 0)
+			Quests.Clear();
+			for (int i = 0; i < GameMenuOption.IssueQuestFlagsValues.Length; i++)
 			{
-				CampaignUIHelper.IssueQuestFlags issueQuestFlag = (CampaignUIHelper.IssueQuestFlags)issueQuestFlags;
-				Quests.Add(new QuestMarkerVM(issueQuestFlag));
+				GameMenuOption.IssueQuestFlags issueQuestFlags = GameMenuOption.IssueQuestFlagsValues[i];
+				if (issueQuestFlags != 0 && (data.GameMenuOption.OptionQuestData & issueQuestFlags) != 0)
+				{
+					CampaignUIHelper.IssueQuestFlags issueQuestFlag = (CampaignUIHelper.IssueQuestFlags)issueQuestFlags;
+					Quests.Add(new QuestMarkerVM(issueQuestFlag));
+				}
 			}
+			_questFlags = data.GameMenuOption.OptionQuestData;
 		}
-		ShortcutKey = ((shortcutKey != null) ? InputKeyItemVM.CreateFromGameKey(shortcutKey, isConsoleOnly: true) : null);
+		ShortcutKey = ((data.ShortcutKey != null) ? InputKeyItemVM.CreateFromGameKey(data.ShortcutKey, isConsoleOnly: true) : null);
 		RefreshValues();
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		Refresh();
-	}
-
-	public void UpdateMenuContext(MenuContext newMenuContext)
-	{
-		_menuContext = newMenuContext;
 		Refresh();
 	}
 
@@ -330,5 +404,17 @@ public class GameMenuItemVM : BindingListStringItem
 		{
 			BattleSize = -1;
 		}
+		IsNavalBattle = PlayerEncounter.Battle?.IsNavalMapEvent ?? false;
+	}
+
+	public void UpdateWith(GameMenuItemVM newItem)
+	{
+		Item = newItem.Item;
+		OptionLeaveType = newItem.OptionLeaveType;
+		ItemHint = newItem.ItemHint;
+		Quests = newItem.Quests;
+		Index = newItem.Index;
+		GameMenuOption = newItem.GameMenuOption;
+		Refresh();
 	}
 }

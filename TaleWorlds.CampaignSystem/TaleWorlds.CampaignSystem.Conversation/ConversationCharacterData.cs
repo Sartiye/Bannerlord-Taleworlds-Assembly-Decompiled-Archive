@@ -58,7 +58,7 @@ public struct ConversationCharacterData : ISerializableObject
 
 	private static PartyBase FindParty(int index)
 	{
-		MobileParty mobileParty = Campaign.Current.CampaignObjectManager.Find((MobileParty x) => x.Party.Index == index);
+		MobileParty mobileParty = Campaign.Current.CampaignObjectManager.FindFirst((MobileParty x) => x.Party.Index == index);
 		if (mobileParty != null)
 		{
 			return mobileParty.Party;

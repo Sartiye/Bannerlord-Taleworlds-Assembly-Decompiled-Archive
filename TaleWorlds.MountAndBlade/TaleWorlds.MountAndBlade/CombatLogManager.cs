@@ -12,7 +12,7 @@ public static class CombatLogManager
 
 	public static void PrintDebugLogForInfo(Agent attackerAgent, Agent victimAgent, DamageTypes damageType, int speedBonus, int armorAmount, int inflictedDamage, int absorbedByArmor, sbyte collisionBone, float lostHpPercentage)
 	{
-		TextObject message = TextObject.Empty;
+		TextObject message = TextObject.GetEmpty();
 		CombatLogColor logColor = CombatLogColor.White;
 		bool isMine = attackerAgent.IsMine;
 		bool isMine2 = victimAgent.IsMine;
@@ -21,13 +21,13 @@ public static class CombatLogManager
 		GameTexts.SetVariable("LOST_HP_PERCENTAGE", lostHpPercentage);
 		if (isMine2)
 		{
-			GameTexts.SetVariable("ATTACKER_NAME", attackerAgent.Name);
+			GameTexts.SetVariable("ATTACKER_NAME", attackerAgent.NameTextObject);
 			message = GameTexts.FindText("combat_log_player_attacked");
 			logColor = CombatLogColor.Red;
 		}
 		else if (isMine)
 		{
-			GameTexts.SetVariable("VICTIM_NAME", victimAgent.Name);
+			GameTexts.SetVariable("VICTIM_NAME", victimAgent.NameTextObject);
 			message = GameTexts.FindText("combat_log_player_attacker");
 			logColor = CombatLogColor.Green;
 		}

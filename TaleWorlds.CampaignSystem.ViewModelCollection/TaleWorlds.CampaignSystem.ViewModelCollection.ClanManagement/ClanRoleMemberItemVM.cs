@@ -27,7 +27,7 @@ public class ClanRoleMemberItemVM : ViewModel
 
 	private bool _isRemoveAssigneeOption;
 
-	public SkillEffect.PerkRole Role { get; private set; }
+	public PartyRole Role { get; private set; }
 
 	public SkillObject RelevantSkill { get; private set; }
 
@@ -84,7 +84,7 @@ public class ClanRoleMemberItemVM : ViewModel
 		}
 	}
 
-	public ClanRoleMemberItemVM(MobileParty party, SkillEffect.PerkRole role, ClanPartyMemberItemVM member, Action onRoleAssigned)
+	public ClanRoleMemberItemVM(MobileParty party, PartyRole role, ClanPartyMemberItemVM member, Action onRoleAssigned)
 	{
 		Role = role;
 		Member = member;
@@ -92,7 +92,7 @@ public class ClanRoleMemberItemVM : ViewModel
 		_onRoleAssigned = onRoleAssigned;
 		RelevantSkill = GetRelevantSkillForRole(role);
 		RelevantSkillValue = Member?.HeroObject?.GetSkillValue(RelevantSkill) ?? (-1);
-		_skillEffects = SkillEffect.All.Where((SkillEffect x) => x.PrimaryRole != SkillEffect.PerkRole.Personal || x.SecondaryRole != SkillEffect.PerkRole.Personal);
+		_skillEffects = SkillEffect.All.Where((SkillEffect x) => x.Role != PartyRole.Personal);
 		_perks = PerkObject.All.Where((PerkObject x) => Member.HeroObject.GetPerkValue(x));
 		IsRemoveAssigneeOption = Member == null;
 		Hint = new HintViewModel(IsRemoveAssigneeOption ? new TextObject("{=bfWlTVjs}Remove assignee") : GetRoleHint(Role));
@@ -114,16 +114,16 @@ public class ClanRoleMemberItemVM : ViewModel
 		{
 			switch (Role)
 			{
-			case SkillEffect.PerkRole.Quartermaster:
+			case PartyRole.Quartermaster:
 				_party.SetPartyQuartermaster(null);
 				break;
-			case SkillEffect.PerkRole.Scout:
+			case PartyRole.Scout:
 				_party.SetPartyScout(null);
 				break;
-			case SkillEffect.PerkRole.Surgeon:
+			case PartyRole.Surgeon:
 				_party.SetPartySurgeon(null);
 				break;
-			case SkillEffect.PerkRole.Engineer:
+			case PartyRole.Engineer:
 				_party.SetPartyEngineer(null);
 				break;
 			}
@@ -135,39 +135,39 @@ public class ClanRoleMemberItemVM : ViewModel
 		_onRoleAssigned?.Invoke();
 	}
 
-	private void OnSetMemberAsRole(SkillEffect.PerkRole role)
+	private void OnSetMemberAsRole(PartyRole role)
 	{
 		if (role != 0)
 		{
-			if (_party.GetHeroPerkRole(Member.HeroObject) != role)
+			if (_party.GetHeroPartyRole(Member.HeroObject) != role)
 			{
-				_party.RemoveHeroPerkRole(Member.HeroObject);
+				_party.RemoveHeroPartyRole(Member.HeroObject);
 				switch (role)
 				{
-				case SkillEffect.PerkRole.Engineer:
+				case PartyRole.Engineer:
 					_party.SetPartyEngineer(Member.HeroObject);
 					break;
-				case SkillEffect.PerkRole.Quartermaster:
+				case PartyRole.Quartermaster:
 					_party.SetPartyQuartermaster(Member.HeroObject);
 					break;
-				case SkillEffect.PerkRole.Scout:
+				case PartyRole.Scout:
 					_party.SetPartyScout(Member.HeroObject);
 					break;
-				case SkillEffect.PerkRole.Surgeon:
+				case PartyRole.Surgeon:
 					_party.SetPartySurgeon(Member.HeroObject);
 					break;
 				}
 				Game.Current?.EventManager.TriggerEvent(new ClanRoleAssignedThroughClanScreenEvent(role, Member.HeroObject));
 			}
 		}
-		else if (role == SkillEffect.PerkRole.None)
+		else if (role == PartyRole.None)
 		{
-			_party.RemoveHeroPerkRole(Member.HeroObject);
+			_party.RemoveHeroPartyRole(Member.HeroObject);
 		}
 		_onRoleAssigned?.Invoke();
 	}
 
-	private TextObject GetRoleHint(SkillEffect.PerkRole role)
+	private TextObject GetRoleHint(PartyRole role)
 	{
 		string text = "";
 		if (RelevantSkillValue <= 0)
@@ -184,9 +184,9 @@ public class ClanRoleMemberItemVM : ViewModel
 			GameTexts.SetVariable("MIN_SKILL_AMOUNT", 0);
 			text = GameTexts.FindText("str_character_role_disabled_tooltip").ToString();
 		}
-		else if (!role.Equals(SkillEffect.PerkRole.None))
+		else if (!role.Equals(PartyRole.None))
 		{
-			IEnumerable<SkillEffect> enumerable = _skillEffects.Where((SkillEffect x) => x.PrimaryRole == role || x.SecondaryRole == role);
+			IEnumerable<SkillEffect> enumerable = _skillEffects.Where((SkillEffect x) => x.Role == role);
 			IEnumerable<PerkObject> enumerable2 = _perks.Where((PerkObject x) => x.PrimaryRole == role || x.SecondaryRole == role);
 			GameTexts.SetVariable("LEFT", RelevantSkill.Name.ToString());
 			GameTexts.SetVariable("RIGHT", RelevantSkillValue.ToString());
@@ -227,7 +227,7 @@ public class ClanRoleMemberItemVM : ViewModel
 			foreach (SkillEffect item2 in enumerable)
 			{
 				GameTexts.SetVariable("STR1", text);
-				GameTexts.SetVariable("STR2", SkillHelper.GetEffectDescriptionForSkillLevel(item2, RelevantSkillValue));
+				GameTexts.SetVariable("STR2", SkillHelper.GetEffectDescriptionForSkillLevel(item2, RelevantSkillValue).ToString());
 				text = GameTexts.FindText("str_string_newline_string").ToString();
 			}
 		}
@@ -239,13 +239,13 @@ public class ClanRoleMemberItemVM : ViewModel
 		{
 			return new TextObject("{=!}" + text);
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
-	public string GetEffectsList(SkillEffect.PerkRole role)
+	public string GetEffectsList(PartyRole role)
 	{
 		string text = "";
-		IEnumerable<SkillEffect> enumerable = _skillEffects.Where((SkillEffect x) => x.PrimaryRole == role || x.SecondaryRole == role);
+		IEnumerable<SkillEffect> enumerable = _skillEffects.Where((SkillEffect x) => x.Role == role);
 		int num = 0;
 		if (RelevantSkillValue > 0)
 		{
@@ -253,12 +253,12 @@ public class ClanRoleMemberItemVM : ViewModel
 			{
 				if (num == 0)
 				{
-					text = SkillHelper.GetEffectDescriptionForSkillLevel(item, RelevantSkillValue);
+					text = SkillHelper.GetEffectDescriptionForSkillLevel(item, RelevantSkillValue).ToString();
 				}
 				else
 				{
 					GameTexts.SetVariable("STR1", text);
-					GameTexts.SetVariable("STR2", SkillHelper.GetEffectDescriptionForSkillLevel(item, RelevantSkillValue));
+					GameTexts.SetVariable("STR2", SkillHelper.GetEffectDescriptionForSkillLevel(item, RelevantSkillValue).ToString());
 					text = GameTexts.FindText("str_string_newline_string").ToString();
 				}
 				num++;
@@ -267,25 +267,25 @@ public class ClanRoleMemberItemVM : ViewModel
 		return text;
 	}
 
-	private static SkillObject GetRelevantSkillForRole(SkillEffect.PerkRole role)
+	private static SkillObject GetRelevantSkillForRole(PartyRole role)
 	{
 		switch (role)
 		{
-		case SkillEffect.PerkRole.Engineer:
+		case PartyRole.Engineer:
 			return DefaultSkills.Engineering;
-		case SkillEffect.PerkRole.Quartermaster:
+		case PartyRole.Quartermaster:
 			return DefaultSkills.Steward;
-		case SkillEffect.PerkRole.Scout:
+		case PartyRole.Scout:
 			return DefaultSkills.Scouting;
-		case SkillEffect.PerkRole.Surgeon:
+		case PartyRole.Surgeon:
 			return DefaultSkills.Medicine;
 		default:
-			Debug.FailedAssert($"Undefined clan role relevant skill {role}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleMemberItemVM.cs", "GetRelevantSkillForRole", 246);
+			Debug.FailedAssert($"Undefined clan role relevant skill {role}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleMemberItemVM.cs", "GetRelevantSkillForRole", 246);
 			return null;
 		}
 	}
 
-	public static bool IsHeroAssignableForRole(Hero hero, SkillEffect.PerkRole role, MobileParty party)
+	public static bool IsHeroAssignableForRole(Hero hero, PartyRole role, MobileParty party)
 	{
 		if (DoesHeroHaveEnoughSkillForRole(hero, role, party))
 		{
@@ -294,26 +294,26 @@ public class ClanRoleMemberItemVM : ViewModel
 		return false;
 	}
 
-	private static bool DoesHeroHaveEnoughSkillForRole(Hero hero, SkillEffect.PerkRole role, MobileParty party)
+	private static bool DoesHeroHaveEnoughSkillForRole(Hero hero, PartyRole role, MobileParty party)
 	{
-		if (party.GetHeroPerkRole(hero) == role)
+		if (party.GetHeroPartyRole(hero) == role)
 		{
 			return true;
 		}
 		switch (role)
 		{
-		case SkillEffect.PerkRole.Engineer:
+		case PartyRole.Engineer:
 			return MobilePartyHelper.IsHeroAssignableForEngineerInParty(hero, party);
-		case SkillEffect.PerkRole.Quartermaster:
+		case PartyRole.Quartermaster:
 			return MobilePartyHelper.IsHeroAssignableForQuartermasterInParty(hero, party);
-		case SkillEffect.PerkRole.Scout:
+		case PartyRole.Scout:
 			return MobilePartyHelper.IsHeroAssignableForScoutInParty(hero, party);
-		case SkillEffect.PerkRole.Surgeon:
+		case PartyRole.Surgeon:
 			return MobilePartyHelper.IsHeroAssignableForSurgeonInParty(hero, party);
-		case SkillEffect.PerkRole.None:
+		case PartyRole.None:
 			return true;
 		default:
-			Debug.FailedAssert($"Undefined clan role is asked if assignable {role}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleMemberItemVM.cs", "DoesHeroHaveEnoughSkillForRole", 284);
+			Debug.FailedAssert($"Undefined clan role is asked if assignable {role}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleMemberItemVM.cs", "DoesHeroHaveEnoughSkillForRole", 284);
 			return false;
 		}
 	}

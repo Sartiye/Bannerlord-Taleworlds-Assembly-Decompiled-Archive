@@ -35,7 +35,7 @@ public sealed class LobbyGameStatePlayerBasedCustomServer : LobbyGameState
 		BannerlordNetwork.StartMultiplayerLobbyMission(LobbyMissionType.Custom);
 		if (!Module.CurrentModule.StartMultiplayerGame(_gameClient.CustomGameType, _gameClient.CustomGameScene))
 		{
-			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameState.cs", "HandleServerStartMultiplayer", 346);
+			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameState.cs", "HandleServerStartMultiplayer", 346);
 		}
 		while (Mission.Current == null || Mission.Current.CurrentState != Mission.State.Continuing)
 		{

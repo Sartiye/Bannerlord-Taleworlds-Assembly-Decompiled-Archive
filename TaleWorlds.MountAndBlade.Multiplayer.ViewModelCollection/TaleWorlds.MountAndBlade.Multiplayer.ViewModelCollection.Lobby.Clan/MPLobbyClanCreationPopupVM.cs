@@ -638,8 +638,8 @@ public class MPLobbyClanCreationPopupVM : ViewModel
 	private Banner GetCreatedClanSigil()
 	{
 		BasicCultureObject selectedCulture = GetSelectedCulture();
-		Banner banner = new Banner(selectedCulture.BannerKey, selectedCulture.BackgroundColor1, selectedCulture.ForegroundColor1);
-		banner.BannerDataList[1].MeshId = _selectedSigilIcon.IconID;
+		Banner banner = new Banner(selectedCulture.Banner, selectedCulture.BackgroundColor1, selectedCulture.ForegroundColor1);
+		banner.SetIconMeshId(_selectedSigilIcon.IconID);
 		return banner;
 	}
 

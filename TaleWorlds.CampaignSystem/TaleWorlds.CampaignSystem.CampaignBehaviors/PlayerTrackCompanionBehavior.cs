@@ -12,68 +12,69 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class PlayerTrackCompanionBehavior : CampaignBehaviorBase
 {
-	private Dictionary<Hero, CampaignTime> ScatteredCompanions = new Dictionary<Hero, CampaignTime>();
+	private Dictionary<Hero, CampaignTime> _scatteredCompanions = new Dictionary<Hero, CampaignTime>();
 
 	public override void RegisterEvents()
 	{
-		CampaignEvents.CharacterBecameFugitive.AddNonSerializedListener(this, HeroBecameFugitive);
+		CampaignEvents.CharacterBecameFugitiveEvent.AddNonSerializedListener(this, HeroBecameFugitive);
 		CampaignEvents.CompanionRemoved.AddNonSerializedListener(this, CompanionRemoved);
 		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, SettlementEntered);
 		CampaignEvents.NewCompanionAdded.AddNonSerializedListener(this, CompanionAdded);
 		CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
-		CampaignEvents.CanBeGovernorOrHavePartyRoleEvent.AddNonSerializedListener(this, CanBeGovernorOrHavePartyRole);
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, OnMobilePartyCreated);
+		CampaignEvents.OnHeroTeleportationRequestedEvent.AddNonSerializedListener(this, OnHeroTeleportationRequested);
+	}
+
+	private void OnHeroTeleportationRequested(Hero hero, Settlement settlement, MobileParty party, TeleportHeroAction.TeleportationDetail detail)
+	{
+		if (hero.IsPlayerCompanion && party == MobileParty.MainParty && detail == TeleportHeroAction.TeleportationDetail.DelayedTeleportToParty && _scatteredCompanions.ContainsKey(hero))
+		{
+			_scatteredCompanions.Remove(hero);
+		}
 	}
 
 	private void OnGameLoadFinished()
 	{
-		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.9.35637")))
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.0")))
 		{
 			return;
 		}
-		foreach (Hero item in ScatteredCompanions.Keys.ToList())
+		foreach (Hero item in _scatteredCompanions.Keys.ToList())
 		{
 			if (item.PartyBelongedTo != null || item.GovernorOf != null || Campaign.Current.IssueManager.IssueSolvingCompanionList.Contains(item))
 			{
-				ScatteredCompanions.Remove(item);
+				_scatteredCompanions.Remove(item);
 			}
 		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
-		dataStore.SyncData("ScatteredCompanions", ref ScatteredCompanions);
-	}
-
-	private void CanBeGovernorOrHavePartyRole(Hero hero, ref bool canBeGovernorOrHavePartyRole)
-	{
-		if (ScatteredCompanions.ContainsKey(hero))
-		{
-			canBeGovernorOrHavePartyRole = false;
-		}
+		dataStore.SyncData("ScatteredCompanions", ref _scatteredCompanions);
 	}
 
 	private void AddHeroToScatteredCompanions(Hero hero)
 	{
 		if (hero.IsPlayerCompanion)
 		{
-			if (!ScatteredCompanions.ContainsKey(hero))
+			if (!_scatteredCompanions.ContainsKey(hero))
 			{
-				ScatteredCompanions.Add(hero, CampaignTime.Now);
+				_scatteredCompanions.Add(hero, CampaignTime.Now);
 			}
 			else
 			{
-				ScatteredCompanions[hero] = CampaignTime.Now;
+				_scatteredCompanions[hero] = CampaignTime.Now;
 			}
 		}
 	}
 
-	private void HeroBecameFugitive(Hero hero)
+	private void HeroBecameFugitive(Hero hero, bool showNotification)
 	{
 		AddHeroToScatteredCompanions(hero);
 	}
 
-	private void OnHeroPrisonerReleased(Hero releasedHero, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+	private void OnHeroPrisonerReleased(Hero releasedHero, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification)
 	{
 		AddHeroToScatteredCompanions(releasedHero);
 	}
@@ -84,31 +85,39 @@ public class PlayerTrackCompanionBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		foreach (Hero item in settlement.HeroesWithoutParty)
+		foreach (Hero item in _scatteredCompanions.Keys.ToMBList())
 		{
-			if (ScatteredCompanions.ContainsKey(item))
+			if (item.CurrentSettlement == settlement)
 			{
-				TextObject textObject = new TextObject("{=ahpSGaow}You hear that your companion {NOTABLE.LINK}, who was separated from you after a battle, is currently in this settlement.");
-				StringHelpers.SetCharacterProperties("NOTABLE", item.CharacterObject, textObject);
+				TextObject textObject = new TextObject("{=ahpSGaow}You hear that your companion {COMPANION.LINK}, who was separated from you after a battle, is currently in this settlement.");
+				StringHelpers.SetCharacterProperties("COMPANION", item.CharacterObject, textObject);
 				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=dx0hmeH6}Tracking").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yS7PvrTD}OK").ToString(), "", null, null));
-				ScatteredCompanions.Remove(item);
+				_scatteredCompanions.Remove(item);
 			}
 		}
 	}
 
 	private void CompanionAdded(Hero companion)
 	{
-		if (ScatteredCompanions.ContainsKey(companion))
+		if (_scatteredCompanions.ContainsKey(companion))
 		{
-			ScatteredCompanions.Remove(companion);
+			_scatteredCompanions.Remove(companion);
 		}
 	}
 
 	private void CompanionRemoved(Hero companion, RemoveCompanionAction.RemoveCompanionDetail detail)
 	{
-		if (ScatteredCompanions.ContainsKey(companion))
+		if (_scatteredCompanions.ContainsKey(companion))
 		{
-			ScatteredCompanions.Remove(companion);
+			_scatteredCompanions.Remove(companion);
+		}
+	}
+
+	private void OnMobilePartyCreated(MobileParty mobileParty)
+	{
+		if (mobileParty.LeaderHero != null && mobileParty.LeaderHero.IsPlayerCompanion && _scatteredCompanions.ContainsKey(mobileParty.LeaderHero))
+		{
+			_scatteredCompanions.Remove(mobileParty.LeaderHero);
 		}
 	}
 }

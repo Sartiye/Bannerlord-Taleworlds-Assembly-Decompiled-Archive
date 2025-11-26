@@ -16,7 +16,8 @@ public class ConversationSentence
 	{
 		PlayerLine = 1,
 		RepeatForObjects = 2,
-		SpecialLine = 4
+		SpecialLine = 4,
+		UsedOnce = 8
 	}
 
 	public delegate bool OnConditionDelegate();
@@ -98,6 +99,18 @@ public class ConversationSentence
 		internal set
 		{
 			set_flags(value, DialogLineFlags.SpecialLine);
+		}
+	}
+
+	public bool IsUsedOnce
+	{
+		get
+		{
+			return GetFlags(DialogLineFlags.UsedOnce);
+		}
+		internal set
+		{
+			set_flags(value, DialogLineFlags.UsedOnce);
 		}
 	}
 
@@ -295,23 +308,29 @@ public class ConversationSentence
 			string innerText6 = xmlNode6.InnerText;
 			IsSpecial = Convert.ToBoolean(innerText6);
 		}
-		XmlNode xmlNode7 = node.Attributes["text"];
+		XmlNode xmlNode7 = node.Attributes["is_used_once"];
 		if (xmlNode7 != null)
 		{
-			Text = new TextObject(xmlNode7.InnerText);
+			string innerText7 = xmlNode7.InnerText;
+			IsUsedOnce = Convert.ToBoolean(innerText7);
 		}
-		XmlNode xmlNode8 = node.Attributes["istate"];
+		XmlNode xmlNode8 = node.Attributes["text"];
 		if (xmlNode8 != null)
 		{
-			InputToken = conversationManager.GetStateIndex(xmlNode8.InnerText);
+			Text = new TextObject(xmlNode8.InnerText);
 		}
-		XmlNode xmlNode9 = node.Attributes["ostate"];
+		XmlNode xmlNode9 = node.Attributes["istate"];
 		if (xmlNode9 != null)
 		{
-			OutputToken = conversationManager.GetStateIndex(xmlNode9.InnerText);
+			InputToken = conversationManager.GetStateIndex(xmlNode9.InnerText);
 		}
-		XmlNode xmlNode10 = node.Attributes["priority"];
-		Priority = ((xmlNode10 != null) ? int.Parse(xmlNode10.InnerText) : defaultPriority);
+		XmlNode xmlNode10 = node.Attributes["ostate"];
+		if (xmlNode10 != null)
+		{
+			OutputToken = conversationManager.GetStateIndex(xmlNode10.InnerText);
+		}
+		XmlNode xmlNode11 = node.Attributes["priority"];
+		Priority = ((xmlNode11 != null) ? int.Parse(xmlNode11.InnerText) : defaultPriority);
 	}
 
 	public static void SetObjectsToRepeatOver(IReadOnlyList<object> objectsToRepeatOver, int maxRepeatedDialogsInConversation = 5)

@@ -1,3 +1,5 @@
+using System.Linq;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -71,9 +73,12 @@ public class MarriageOfferPopupHeroAttributeVM : ViewModel
 	private void FillSkillsList()
 	{
 		_attributeSkills = new MBBindingList<EncyclopediaSkillVM>();
-		foreach (SkillObject skill in _attribute.Skills)
+		foreach (SkillObject skill in Skills.All)
 		{
-			_attributeSkills.Add(new EncyclopediaSkillVM(skill, _hero.GetSkillValue(skill)));
+			if (!CampaignUIHelper.GetIsNavalSkill(skill) && skill.Attributes.FirstOrDefault() == _attribute && !_attributeSkills.Any((EncyclopediaSkillVM s) => s.SkillId == skill.StringId))
+			{
+				_attributeSkills.Add(new EncyclopediaSkillVM(skill, _hero.GetSkillValue(skill)));
+			}
 		}
 	}
 }

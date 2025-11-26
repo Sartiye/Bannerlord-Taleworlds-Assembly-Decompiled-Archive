@@ -87,9 +87,9 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (WarPartyComponent warPartyComponent in Clan.PlayerClan.WarPartyComponents)
 		{
-			if (warPartyComponent.MobileParty.GetHeroPerkRole(hero) != 0)
+			if (warPartyComponent.MobileParty.GetHeroPartyRole(hero) != 0)
 			{
-				warPartyComponent.MobileParty.RemoveHeroPerkRole(hero);
+				warPartyComponent.MobileParty.RemoveHeroPartyRole(hero);
 			}
 		}
 	}

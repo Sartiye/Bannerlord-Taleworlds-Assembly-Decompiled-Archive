@@ -70,6 +70,7 @@ public class ChatCollapsableListPanel : ListPanel
 	public ChatCollapsableListPanel(UIContext context)
 		: base(context)
 	{
+		RefreshAlphaValues(Alpha);
 	}
 
 	private void ToggleLines(bool isVisible)
@@ -95,6 +96,7 @@ public class ChatCollapsableListPanel : ListPanel
 	protected override void OnChildAdded(Widget child)
 	{
 		base.OnChildAdded(child);
+		RefreshAlphaValues(Alpha);
 		ToggleLines(isVisible: true);
 	}
 

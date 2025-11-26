@@ -78,6 +78,11 @@ public class DefaultSettlementEconomyModel : SettlementEconomyModel
 		return MathF.Round(0.25f * num);
 	}
 
+	public override float CalculateDailySettlementBudgetForItemCategory(Town town, float demand, ItemCategory category)
+	{
+		return demand * MathF.Pow(town.GetItemCategoryPriceIndex(category), 0.3f);
+	}
+
 	public override float GetDemandChangeFromValue(float purchaseValue)
 	{
 		return purchaseValue * 0.15f;
@@ -85,6 +90,6 @@ public class DefaultSettlementEconomyModel : SettlementEconomyModel
 
 	public override float GetEstimatedDemandForCategory(Town town, ItemData itemData, ItemCategory category)
 	{
-		return GetDailyDemandForCategory(town, category, 1000);
+		return Campaign.Current.Models.SettlementEconomyModel.GetDailyDemandForCategory(town, category, 1000);
 	}
 }

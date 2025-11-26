@@ -66,7 +66,7 @@ public class VoiceChatHandler : MissionNetwork
 		{
 			if (IsReadyOnPlatform && _voiceData.Count > 0)
 			{
-				bool flag = Peer.IsMutedFromGameOrPlatform || CustomGameMutedPlayerManager.IsUserMuted(Peer.Peer.Id);
+				bool flag = Peer.IsMutedFromGameOrPlatform || MultiplayerGlobalMutedPlayersManager.IsUserMuted(Peer.Peer.Id);
 				if (_playDelayRemainingSizeInBytes > 0)
 				{
 					_playDelayRemainingSizeInBytes -= 2;
@@ -251,7 +251,7 @@ public class VoiceChatHandler : MissionNetwork
 			return;
 		}
 		MissionPeer component = sendVoiceToPlay.Peer.GetComponent<MissionPeer>();
-		if (component == null || sendVoiceToPlay.BufferLength <= 0 || component.IsMutedFromGameOrPlatform || CustomGameMutedPlayerManager.IsUserMuted(component.Peer.Id))
+		if (component == null || sendVoiceToPlay.BufferLength <= 0 || component.IsMutedFromGameOrPlatform || MultiplayerGlobalMutedPlayersManager.IsUserMuted(component.Peer.Id))
 		{
 			return;
 		}
@@ -405,7 +405,7 @@ public class VoiceChatHandler : MissionNetwork
 				}
 			}
 		});
-		missionPeer.SetMuted(PermaMuteList.IsPlayerMuted(missionPeer.Peer.Id));
+		missionPeer.SetMuted(PermaMuteList.IsPlayerMuted(missionPeer.Peer.Id) || MultiplayerGlobalMutedPlayersManager.IsUserMuted(missionPeer.Peer.Id));
 		SoundManager.AddSoundClientWithId((ulong)peer.Index);
 		this.OnPeerMuteStatusUpdated?.Invoke(missionPeer);
 	}
@@ -538,5 +538,19 @@ public class VoiceChatHandler : MissionNetwork
 				break;
 			}
 		}
+	}
+
+	protected override void HandleNewClientAfterSynchronized(NetworkCommunicator networkPeer)
+	{
+		if (networkPeer.IsMuted)
+		{
+			MultiplayerGlobalMutedPlayersManager.MutePlayer(networkPeer.VirtualPlayer.Id);
+			GameNetwork.BeginBroadcastModuleEvent();
+			GameNetwork.WriteMessage(new SyncPlayerMuteState(networkPeer.VirtualPlayer.Id, networkPeer.IsMuted));
+			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+		}
+		GameNetwork.BeginModuleEventAsServer(networkPeer);
+		GameNetwork.WriteMessage(new SyncMutedPlayers(MultiplayerGlobalMutedPlayersManager.MutedPlayers));
+		GameNetwork.EndModuleEventAsServer();
 	}
 }

@@ -131,6 +131,8 @@ public class ContainerPageControlButtonListWidget : ContainerPageControlWidget
 				buttonWidget.SuggestedWidth = PageButtonTemplate.SuggestedWidth;
 				buttonWidget.MarginLeft = PageButtonTemplate.MarginLeft;
 				buttonWidget.MarginRight = PageButtonTemplate.MarginRight;
+				buttonWidget.MarginTop = PageButtonTemplate.MarginTop;
+				buttonWidget.MarginBottom = PageButtonTemplate.MarginBottom;
 				buttonWidget.DoNotPassEventsToChildren = PageButtonTemplate.DoNotPassEventsToChildren;
 				buttonWidget.ClickEventHandlers.Add(OnPageSelection);
 				_pageButtonsList.Add(buttonWidget);

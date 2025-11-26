@@ -149,7 +149,7 @@ public class StackLayout : ILayout
 			Widget child = _parallelMeasureBasicChildWidget.GetChild(i);
 			if (child == null)
 			{
-				Debug.FailedAssert("Trying to measure a null child for parent" + _parallelMeasureBasicChildWidget.GetFullIDPath(), "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "ParallelMeasureBasicChild", 184);
+				Debug.FailedAssert("Trying to measure a null child for parent" + _parallelMeasureBasicChildWidget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "ParallelMeasureBasicChild", 184);
 			}
 			else
 			{
@@ -192,7 +192,7 @@ public class StackLayout : ILayout
 			Widget child = widget.GetChild(i);
 			if (child == null)
 			{
-				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 234);
+				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 234);
 			}
 			else
 			{
@@ -249,7 +249,7 @@ public class StackLayout : ILayout
 				Widget child2 = widget.GetChild(j);
 				if (child2 == null)
 				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 296);
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 296);
 				}
 				else
 				{
@@ -299,17 +299,20 @@ public class StackLayout : ILayout
 					}
 					child2.Measure(measureSpec2);
 					num7--;
+					Vector2 measuredSize = child2.MeasuredSize;
+					measuredSize.X += child2.ScaledMarginLeft + child2.ScaledMarginRight;
+					measuredSize.Y += child2.ScaledMarginTop + child2.ScaledMarginBottom;
 					switch (alignmentAxis)
 					{
 					case AlignmentAxis.Horizontal:
-						num6 -= child2.MeasuredSize.X;
-						num2 += child2.MeasuredSize.X;
-						num = MathF.Max(num, child2.MeasuredSize.Y);
+						num6 -= measuredSize.X;
+						num2 += measuredSize.X;
+						num = MathF.Max(num, measuredSize.Y);
 						break;
 					case AlignmentAxis.Vertical:
-						num6 -= child2.MeasuredSize.Y;
-						num += child2.MeasuredSize.Y;
-						num2 = MathF.Max(num2, child2.MeasuredSize.X);
+						num6 -= measuredSize.Y;
+						num += measuredSize.Y;
+						num2 = MathF.Max(num2, measuredSize.X);
 						break;
 					}
 				}
@@ -352,7 +355,7 @@ public class StackLayout : ILayout
 				Widget child = widget.GetChild(i);
 				if (child == null)
 				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 417);
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 422);
 				}
 				else if (child.IsVisible)
 				{
@@ -377,7 +380,7 @@ public class StackLayout : ILayout
 				Widget widget2 = widget.Children[k];
 				if (widget2 == null)
 				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 448);
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 453);
 				}
 				else if (widget2.IsVisible)
 				{
@@ -473,8 +476,10 @@ public class StackLayout : ILayout
 					num3 += child.MeasuredSize.Y + child.ScaledMarginTop + child.ScaledMarginBottom;
 				}
 			}
-			num2 = (bottom - top) / 2f - num3 / 2f;
-			num = (bottom - top) / 2f + num3 / 2f;
+			float num4 = (bottom - top) * 0.5f;
+			float num5 = num3 * 0.5f;
+			num2 = num4 + num5;
+			num = num4 - num5;
 		}
 		_layoutBoxes.Clear();
 		for (int j = 0; j < widget.ChildCount; j++)
@@ -493,14 +498,14 @@ public class StackLayout : ILayout
 						num2 -= 20f;
 					}
 				}
-				float num4 = child2.MeasuredSize.Y + child2.ScaledMarginTop + child2.ScaledMarginBottom;
-				if (LayoutMethod == LayoutMethod.VerticalBottomToTop)
+				float num6 = child2.MeasuredSize.Y + child2.ScaledMarginTop + child2.ScaledMarginBottom;
+				if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered)
 				{
-					num2 = num + num4;
+					num2 = num + num6;
 				}
-				else
+				else if (LayoutMethod == LayoutMethod.VerticalTopToBottom)
 				{
-					num = num2 - num4;
+					num = num2 - num6;
 				}
 				if (widget.ChildCount < 64)
 				{
@@ -515,7 +520,7 @@ public class StackLayout : ILayout
 					value.Top = num;
 					_layoutBoxes.Add(j, value);
 				}
-				if (LayoutMethod == LayoutMethod.VerticalBottomToTop)
+				if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered)
 				{
 					num = num2;
 				}

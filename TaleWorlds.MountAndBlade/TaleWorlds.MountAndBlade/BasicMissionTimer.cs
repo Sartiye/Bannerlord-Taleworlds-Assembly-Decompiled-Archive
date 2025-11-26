@@ -15,4 +15,9 @@ public class BasicMissionTimer
 	{
 		_startTime = MBCommon.GetTotalMissionTime();
 	}
+
+	public void Set(float newElapsedTime)
+	{
+		_startTime = MBCommon.GetTotalMissionTime() - newElapsedTime;
+	}
 }

@@ -6,76 +6,42 @@ namespace TaleWorlds.CampaignSystem;
 
 public sealed class SkillEffect : PropertyObject
 {
-	public enum EffectIncrementType
-	{
-		Invalid = -1,
-		Add,
-		AddFactor
-	}
+	private float Bonus;
 
-	public enum PerkRole
-	{
-		None,
-		Ruler,
-		ClanLeader,
-		Governor,
-		ArmyCommander,
-		PartyLeader,
-		PartyOwner,
-		Surgeon,
-		Engineer,
-		Scout,
-		Quartermaster,
-		PartyMember,
-		Personal,
-		Captain,
-		NumberOfPerkRoles
-	}
+	private float BaseValue;
+
+	private float LimitMin;
+
+	private float LimitMax;
 
 	public static MBReadOnlyList<SkillEffect> All => Campaign.Current.AllSkillEffects;
 
-	public PerkRole PrimaryRole { get; private set; }
-
-	public PerkRole SecondaryRole { get; private set; }
-
-	public float PrimaryBonus { get; private set; }
-
-	public float SecondaryBonus { get; private set; }
+	public PartyRole Role { get; private set; }
 
 	public EffectIncrementType IncrementType { get; private set; }
 
-	public SkillObject[] EffectedSkills { get; private set; }
-
-	public float PrimaryBaseValue { get; private set; }
-
-	public float SecondaryBaseValue { get; private set; }
+	public SkillObject EffectedSkill { get; private set; }
 
 	public SkillEffect(string stringId)
 		: base(stringId)
 	{
 	}
 
-	public void Initialize(TextObject description, SkillObject[] effectedSkills, PerkRole primaryRole = PerkRole.None, float primaryBonus = 0f, PerkRole secondaryRole = PerkRole.None, float secondaryBonus = 0f, EffectIncrementType incrementType = EffectIncrementType.AddFactor, float primaryBaseValue = 0f, float secondaryBaseValue = 0f)
+	public void Initialize(TextObject description, SkillObject effectedSkill, PartyRole role, float bonus, EffectIncrementType incrementType, float baseValue = 0f, float limitMin = float.MinValue, float limitMax = float.MaxValue)
 	{
-		Initialize(TextObject.Empty, description);
-		PrimaryRole = primaryRole;
-		SecondaryRole = secondaryRole;
-		PrimaryBonus = primaryBonus;
-		SecondaryBonus = secondaryBonus;
+		Initialize(TextObject.GetEmpty(), description);
+		Role = role;
+		Bonus = bonus;
 		IncrementType = incrementType;
-		EffectedSkills = effectedSkills;
-		PrimaryBaseValue = primaryBaseValue;
-		SecondaryBaseValue = secondaryBaseValue;
+		EffectedSkill = effectedSkill;
+		BaseValue = baseValue;
+		LimitMin = limitMin;
+		LimitMax = limitMax;
 		AfterInitialized();
 	}
 
-	public float GetPrimaryValue(int skillLevel)
+	public float GetSkillEffectValue(int skillLevel)
 	{
-		return MathF.Max(0f, PrimaryBaseValue + PrimaryBonus * (float)skillLevel);
-	}
-
-	public float GetSecondaryValue(int skillLevel)
-	{
-		return MathF.Max(0f, SecondaryBaseValue + SecondaryBonus * (float)skillLevel);
+		return MathF.Clamp(BaseValue + Bonus * (float)skillLevel, LimitMin, LimitMax);
 	}
 }

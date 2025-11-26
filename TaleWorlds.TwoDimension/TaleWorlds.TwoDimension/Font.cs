@@ -49,7 +49,7 @@ public class Font
 		}
 		catch (Exception arg)
 		{
-			Debug.FailedAssert("Failed to load font:" + Name + " at path: " + path, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.TwoDimension\\BitmapFont\\Font.cs", "TryLoadFontFromPath", 54);
+			Debug.FailedAssert("Failed to load font:" + Name + " at path: " + path, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.TwoDimension\\BitmapFont\\Font.cs", "TryLoadFontFromPath", 54);
 			Debug.Print($"Failed to load font:{Name} at path: {path}. Error:{arg}");
 			return false;
 		}

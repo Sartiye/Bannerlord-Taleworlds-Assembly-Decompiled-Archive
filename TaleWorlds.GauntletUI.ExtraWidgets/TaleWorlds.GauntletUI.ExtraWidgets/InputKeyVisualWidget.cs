@@ -11,8 +11,6 @@ public class InputKeyVisualWidget : Widget
 
 	private string _iconsPath = "General\\InputKeys";
 
-	public bool HideIfNone { get; set; }
-
 	public string KeyID
 	{
 		get
@@ -232,13 +230,8 @@ public class InputKeyVisualWidget : Widget
 
 	private void SetKeyVisual(string visualName)
 	{
-		if (visualName == "None" && HideIfNone)
-		{
-			base.IsVisible = false;
-			return;
-		}
 		string text = IconsPath + "\\" + visualName;
-		if (Input.IsGamepadActive && Input.ControllerType.IsPlaystation())
+		if (Input.GetPrimaryControllerType().IsPlaystation())
 		{
 			base.Sprite = base.Context.SpriteData.GetSprite(text + "_ps");
 		}

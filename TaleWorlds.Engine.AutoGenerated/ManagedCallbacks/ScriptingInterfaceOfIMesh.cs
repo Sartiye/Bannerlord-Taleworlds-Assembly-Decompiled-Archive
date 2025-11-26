@@ -108,6 +108,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate float GetClothLinearVelocityMultiplierDelegate(UIntPtr meshPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate uint GetColorDelegate(UIntPtr meshPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -168,7 +173,23 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetVectorArgumentDelegate(UIntPtr meshPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetVectorArgument2Delegate(UIntPtr meshPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate VisibilityMaskFlags GetVisibilityMaskDelegate(UIntPtr meshPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasClothDelegate(UIntPtr meshPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -214,6 +235,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetAdditionalBoneFrameDelegate(UIntPtr meshPointer, int boneIndex, in MatrixFrame frame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetAsNotEffectedBySeasonDelegate(UIntPtr meshPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -250,6 +276,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetCullingModeDelegate(UIntPtr meshPointer, uint newCullingMode);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetCustomClipPlaneDelegate(UIntPtr meshPointer, Vec3 clipPlanePosition, Vec3 clipPlaneNormal, int planeIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -295,6 +326,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetNameDelegate(UIntPtr meshPointer, byte[] name);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetupAdditionalBoneBufferDelegate(UIntPtr meshPointer, int numBones);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -361,6 +397,8 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 
 	public static GetBoundingBoxWidthDelegate call_GetBoundingBoxWidthDelegate;
 
+	public static GetClothLinearVelocityMultiplierDelegate call_GetClothLinearVelocityMultiplierDelegate;
+
 	public static GetColorDelegate call_GetColorDelegate;
 
 	public static GetColor2Delegate call_GetColor2Delegate;
@@ -385,7 +423,13 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 
 	public static GetSecondMaterialDelegate call_GetSecondMaterialDelegate;
 
+	public static GetVectorArgumentDelegate call_GetVectorArgumentDelegate;
+
+	public static GetVectorArgument2Delegate call_GetVectorArgument2Delegate;
+
 	public static GetVisibilityMaskDelegate call_GetVisibilityMaskDelegate;
+
+	public static HasClothDelegate call_HasClothDelegate;
 
 	public static HasTagDelegate call_HasTagDelegate;
 
@@ -403,6 +447,8 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 
 	public static ReleaseResourcesDelegate call_ReleaseResourcesDelegate;
 
+	public static SetAdditionalBoneFrameDelegate call_SetAdditionalBoneFrameDelegate;
+
 	public static SetAsNotEffectedBySeasonDelegate call_SetAsNotEffectedBySeasonDelegate;
 
 	public static SetBillboardDelegate call_SetBillboardDelegate;
@@ -418,6 +464,8 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	public static SetContourColorDelegate call_SetContourColorDelegate;
 
 	public static SetCullingModeDelegate call_SetCullingModeDelegate;
+
+	public static SetCustomClipPlaneDelegate call_SetCustomClipPlaneDelegate;
 
 	public static SetEditDataFaceCornerVertexColorDelegate call_SetEditDataFaceCornerVertexColorDelegate;
 
@@ -436,6 +484,8 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	public static SetMorphTimeDelegate call_SetMorphTimeDelegate;
 
 	public static SetNameDelegate call_SetNameDelegate;
+
+	public static SetupAdditionalBoneBufferDelegate call_SetupAdditionalBoneBufferDelegate;
 
 	public static SetVectorArgumentDelegate call_SetVectorArgumentDelegate;
 
@@ -570,6 +620,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 		return call_GetBoundingBoxWidthDelegate(meshPointer);
 	}
 
+	public float GetClothLinearVelocityMultiplier(UIntPtr meshPointer)
+	{
+		return call_GetClothLinearVelocityMultiplierDelegate(meshPointer);
+	}
+
 	public uint GetColor(UIntPtr meshPointer)
 	{
 		return call_GetColorDelegate(meshPointer);
@@ -670,9 +725,24 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 		return result;
 	}
 
+	public Vec3 GetVectorArgument(UIntPtr meshPointer)
+	{
+		return call_GetVectorArgumentDelegate(meshPointer);
+	}
+
+	public Vec3 GetVectorArgument2(UIntPtr meshPointer)
+	{
+		return call_GetVectorArgument2Delegate(meshPointer);
+	}
+
 	public VisibilityMaskFlags GetVisibilityMask(UIntPtr meshPointer)
 	{
 		return call_GetVisibilityMaskDelegate(meshPointer);
+	}
+
+	public bool HasCloth(UIntPtr meshPointer)
+	{
+		return call_HasClothDelegate(meshPointer);
 	}
 
 	public bool HasTag(UIntPtr meshPointer, string tag)
@@ -723,6 +793,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 		call_ReleaseResourcesDelegate(meshPointer);
 	}
 
+	public void SetAdditionalBoneFrame(UIntPtr meshPointer, int boneIndex, in MatrixFrame frame)
+	{
+		call_SetAdditionalBoneFrameDelegate(meshPointer, boneIndex, in frame);
+	}
+
 	public void SetAsNotEffectedBySeason(UIntPtr meshPointer)
 	{
 		call_SetAsNotEffectedBySeasonDelegate(meshPointer);
@@ -761,6 +836,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	public void SetCullingMode(UIntPtr meshPointer, uint newCullingMode)
 	{
 		call_SetCullingModeDelegate(meshPointer, newCullingMode);
+	}
+
+	public void SetCustomClipPlane(UIntPtr meshPointer, Vec3 clipPlanePosition, Vec3 clipPlaneNormal, int planeIndex)
+	{
+		call_SetCustomClipPlaneDelegate(meshPointer, clipPlanePosition, clipPlaneNormal, planeIndex);
 	}
 
 	public void SetEditDataFaceCornerVertexColor(UIntPtr meshPointer, int index, uint color)
@@ -824,6 +904,11 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 		call_SetNameDelegate(meshPointer, array);
 	}
 
+	public void SetupAdditionalBoneBuffer(UIntPtr meshPointer, int numBones)
+	{
+		call_SetupAdditionalBoneBufferDelegate(meshPointer, numBones);
+	}
+
 	public void SetVectorArgument(UIntPtr meshPointer, float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3)
 	{
 		call_SetVectorArgumentDelegate(meshPointer, vectorArgument0, vectorArgument1, vectorArgument2, vectorArgument3);
@@ -847,5 +932,10 @@ internal class ScriptingInterfaceOfIMesh : IMesh
 	public void UpdateBoundingBox(UIntPtr meshPointer)
 	{
 		call_UpdateBoundingBoxDelegate(meshPointer);
+	}
+
+	void IMesh.SetAdditionalBoneFrame(UIntPtr meshPointer, int boneIndex, in MatrixFrame frame)
+	{
+		SetAdditionalBoneFrame(meshPointer, boneIndex, in frame);
 	}
 }

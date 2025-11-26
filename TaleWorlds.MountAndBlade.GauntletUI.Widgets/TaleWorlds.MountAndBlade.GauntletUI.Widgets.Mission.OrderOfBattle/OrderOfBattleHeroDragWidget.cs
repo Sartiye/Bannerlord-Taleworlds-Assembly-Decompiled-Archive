@@ -132,7 +132,7 @@ public class OrderOfBattleHeroDragWidget : Widget
 					MarginLeft = StackThumbnailWidget.MarginLeft,
 					AdditionalArgs = StackThumbnailWidget.AdditionalArgs,
 					ImageId = StackThumbnailWidget.ImageId,
-					ImageTypeCode = StackThumbnailWidget.ImageTypeCode
+					TextureProviderName = StackThumbnailWidget.TextureProviderName
 				};
 				brushWidget.AddChild(widget);
 				brushWidget.AddChild(widget2);

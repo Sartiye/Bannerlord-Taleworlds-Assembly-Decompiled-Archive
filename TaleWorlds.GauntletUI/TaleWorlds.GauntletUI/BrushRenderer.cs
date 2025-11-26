@@ -58,6 +58,8 @@ public class BrushRenderer
 		}
 	}
 
+	public ulong LastUpdatedFrameNumber { get; private set; }
+
 	public bool ForcePixelPerfectPlacement { get; set; }
 
 	public Style CurrentStyle => _styleOfCurrentState;
@@ -87,25 +89,25 @@ public class BrushRenderer
 				_startBrushLayerState.Clear();
 				_currentBrushLayerState.Clear();
 			}
-			if (_brush == null)
+			if (_brush != null)
 			{
-				return;
-			}
-			Style defaultStyle = _brush.DefaultStyle;
-			BrushState brushState = default(BrushState);
-			brushState.FillFrom(defaultStyle);
-			_startBrushState = brushState;
-			_currentBrushState = brushState;
-			foreach (BrushLayer layer in _brush.Layers)
-			{
-				BrushLayerState value2 = default(BrushLayerState);
-				value2.FillFrom(layer);
-				_startBrushLayerState[layer.Name] = value2;
-				_currentBrushLayerState[layer.Name] = value2;
-			}
-			if (!string.IsNullOrEmpty(CurrentState))
-			{
-				_styleOfCurrentState = Brush.GetStyleOrDefault(CurrentState);
+				_styleOfCurrentState = _brush.DefaultStyle;
+				if (!string.IsNullOrEmpty(CurrentState))
+				{
+					_styleOfCurrentState = _brush.GetStyleOrDefault(CurrentState);
+				}
+				BrushState brushState = default(BrushState);
+				brushState.FillFrom(_styleOfCurrentState);
+				_startBrushState = brushState;
+				_currentBrushState = brushState;
+				StyleLayer[] layers = _styleOfCurrentState.GetLayers();
+				foreach (StyleLayer styleLayer in layers)
+				{
+					BrushLayerState value2 = default(BrushLayerState);
+					value2.FillFrom(styleLayer);
+					_startBrushLayerState[styleLayer.Name] = value2;
+					_currentBrushLayerState[styleLayer.Name] = value2;
+				}
 			}
 		}
 	}
@@ -184,9 +186,10 @@ public class BrushRenderer
 		return _randomYOffset;
 	}
 
-	public void Update(float globalAnimTime, float dt)
+	public void Update(ulong frameNumber, float globalAnimTime, float dt)
 	{
 		_globalTime = globalAnimTime;
+		LastUpdatedFrameNumber = frameNumber;
 		_brushLocalTimer += dt;
 		if (Brush == null)
 		{
@@ -348,6 +351,7 @@ public class BrushRenderer
 					brushAnimationKeyFrame3 = brushAnimationKeyFrame2;
 					brushLayerData = source;
 				}
+				num = AnimationInterpolation.Ease(animation.InterpolationType, animation.InterpolationFunction, num);
 				switch (propertyType)
 				{
 				case BrushAnimationProperty.BrushAnimationPropertyType.ColorFactor:
@@ -369,6 +373,7 @@ public class BrushRenderer
 				case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
 				case BrushAnimationProperty.BrushAnimationPropertyType.XOffset:
 				case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
+				case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight:
 				case BrushAnimationProperty.BrushAnimationPropertyType.ExtendLeft:
@@ -503,6 +508,7 @@ public class BrushRenderer
 					style = source;
 				}
 				value = TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+				value = AnimationInterpolation.Ease(animation.InterpolationType, animation.InterpolationFunction, value);
 				switch (propertyType)
 				{
 				case BrushAnimationProperty.BrushAnimationPropertyType.ColorFactor:
@@ -524,6 +530,7 @@ public class BrushRenderer
 				case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
 				case BrushAnimationProperty.BrushAnimationPropertyType.XOffset:
 				case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
+				case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight:
 				case BrushAnimationProperty.BrushAnimationPropertyType.ExtendLeft:
@@ -586,20 +593,23 @@ public class BrushRenderer
 		}
 	}
 
-	public void Render(TwoDimensionDrawContext drawContext, Vector2 targetPosition, Vector2 targetSize, float scale, float contextAlpha, Vector2 overlayOffset = default(Vector2))
+	public void Render(TwoDimensionDrawContext drawContext, in Rectangle2D rect, float scale, float contextAlpha, Vector2 overlayOffset = default(Vector2))
 	{
 		if (Brush == null)
 		{
 			return;
 		}
+		Vector2 vector = new Vector2(rect.LocalPosition.X, rect.LocalPosition.Y);
+		Vector2 size = new Vector2(rect.LocalScale.X, rect.LocalScale.Y);
 		if (ForcePixelPerfectPlacement)
 		{
-			targetPosition.X = TaleWorlds.Library.MathF.Round(targetPosition.X);
-			targetPosition.Y = TaleWorlds.Library.MathF.Round(targetPosition.Y);
+			vector.X = TaleWorlds.Library.MathF.Round(vector.X);
+			vector.Y = TaleWorlds.Library.MathF.Round(vector.Y);
 		}
 		Style styleOfCurrentState = _styleOfCurrentState;
 		for (int i = 0; i < styleOfCurrentState.LayerCount; i++)
 		{
+			Rectangle2D rectangle = rect;
 			StyleLayer layer = styleOfCurrentState.GetLayer(i);
 			if (layer.IsHidden)
 			{
@@ -626,8 +636,8 @@ public class BrushRenderer
 			{
 				continue;
 			}
-			float num = targetPosition.X + brushLayerState.XOffset * scale;
-			float num2 = targetPosition.Y + brushLayerState.YOffset * scale;
+			float num = vector.X + brushLayerState.XOffset * scale;
+			float num2 = vector.Y + brushLayerState.YOffset * scale;
 			SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
 			simpleMaterial.OverlayEnabled = false;
 			simpleMaterial.CircularMaskingEnabled = false;
@@ -639,7 +649,7 @@ public class BrushRenderer
 				{
 					simpleMaterial.OverlayEnabled = true;
 					simpleMaterial.StartCoordinate = new Vector2(num, num2);
-					simpleMaterial.Size = targetSize;
+					simpleMaterial.Size = size;
 					simpleMaterial.OverlayTexture = texture2;
 					simpleMaterial.UseOverlayAlphaAsMask = layer.UseOverlayAlphaAsMask;
 					float num3;
@@ -670,60 +680,71 @@ public class BrushRenderer
 					simpleMaterial.OverlayXOffset = num3 * scale;
 					simpleMaterial.OverlayYOffset = num4 * scale;
 					simpleMaterial.Scale = scale;
-					simpleMaterial.OverlayTextureWidth = (layer.UseOverlayAlphaAsMask ? targetSize.X : ((float)overlaySprite.Width));
-					simpleMaterial.OverlayTextureHeight = (layer.UseOverlayAlphaAsMask ? targetSize.Y : ((float)overlaySprite.Height));
+					simpleMaterial.OverlayTextureWidth = (layer.UseOverlayAlphaAsMask ? size.X : ((float)overlaySprite.Width));
+					simpleMaterial.OverlayTextureHeight = (layer.UseOverlayAlphaAsMask ? size.Y : ((float)overlaySprite.Height));
 				}
 			}
 			simpleMaterial.Texture = texture;
+			simpleMaterial.NinePatchParameters = sprite.NinePatchParameters;
 			simpleMaterial.Color = brushLayerState.Color * Brush.GlobalColor;
 			simpleMaterial.ColorFactor = brushLayerState.ColorFactor * Brush.GlobalColorFactor;
 			simpleMaterial.AlphaFactor = brushLayerState.AlphaFactor * Brush.GlobalAlphaFactor * contextAlpha;
 			simpleMaterial.HueFactor = brushLayerState.HueFactor;
 			simpleMaterial.SaturationFactor = brushLayerState.SaturationFactor;
 			simpleMaterial.ValueFactor = brushLayerState.ValueFactor;
-			float width = 0f;
-			float height = 0f;
+			float num5 = 0f;
+			float num6 = 0f;
 			if (layer.WidthPolicy == BrushLayerSizePolicy.StretchToTarget)
 			{
-				float num5 = layer.ExtendLeft;
+				float num7 = brushLayerState.ExtendLeft;
 				if (layer.HorizontalFlip)
 				{
-					num5 = layer.ExtendRight;
+					num7 = brushLayerState.ExtendRight;
 				}
-				width = targetSize.X;
-				width += (layer.ExtendRight + layer.ExtendLeft) * scale;
-				num -= num5 * scale;
+				num5 = size.X;
+				num5 += (brushLayerState.ExtendRight + brushLayerState.ExtendLeft) * scale;
+				num -= num7 * scale;
 			}
 			else if (layer.WidthPolicy == BrushLayerSizePolicy.Original)
 			{
-				width = (float)sprite.Width * scale;
+				num5 = (float)sprite.Width * scale;
 			}
 			else if (layer.WidthPolicy == BrushLayerSizePolicy.Overriden)
 			{
-				width = layer.OverridenWidth * scale;
+				num5 = layer.OverridenWidth * scale;
 			}
 			if (layer.HeightPolicy == BrushLayerSizePolicy.StretchToTarget)
 			{
-				float num6 = layer.ExtendTop;
+				float num8 = brushLayerState.ExtendTop;
 				if (layer.HorizontalFlip)
 				{
-					num6 = layer.ExtendBottom;
+					num8 = brushLayerState.ExtendBottom;
 				}
-				height = targetSize.Y;
-				height += (layer.ExtendTop + layer.ExtendBottom) * scale;
-				num2 -= num6 * scale;
+				num6 = size.Y;
+				num6 += (brushLayerState.ExtendTop + brushLayerState.ExtendBottom) * scale;
+				num2 -= num8 * scale;
 			}
 			else if (layer.HeightPolicy == BrushLayerSizePolicy.Original)
 			{
-				height = (float)sprite.Height * scale;
+				num6 = (float)sprite.Height * scale;
 			}
 			else if (layer.HeightPolicy == BrushLayerSizePolicy.Overriden)
 			{
-				height = layer.OverridenHeight * scale;
+				num6 = layer.OverridenHeight * scale;
 			}
 			bool horizontalFlip = layer.HorizontalFlip;
 			bool verticalFlip = layer.VerticalFlip;
-			drawContext.DrawSprite(sprite, simpleMaterial, num, num2, scale, width, height, horizontalFlip, verticalFlip);
+			num5 = (horizontalFlip ? (0f - num5) : num5);
+			num6 = (verticalFlip ? (0f - num6) : num6);
+			float num9 = ((size.X == 0f) ? 1f : (num5 / size.X));
+			float num10 = ((size.Y == 0f) ? 1f : (num6 / size.Y));
+			Vector2 vector2 = new Vector2(num - vector.X, num2 - vector.Y);
+			Vector2 vector3 = new Vector2(num9 - 1f, num10 - 1f);
+			rectangle.AddVisualOffset(vector2.X, vector2.Y);
+			rectangle.AddVisualScale(vector3.X, vector3.Y);
+			rectangle.AddVisualRotationOffset(brushLayerState.Rotation);
+			rectangle.ValidateVisuals();
+			drawContext.DrawSprite(sprite, simpleMaterial, in rectangle, scale);
 		}
 	}
 

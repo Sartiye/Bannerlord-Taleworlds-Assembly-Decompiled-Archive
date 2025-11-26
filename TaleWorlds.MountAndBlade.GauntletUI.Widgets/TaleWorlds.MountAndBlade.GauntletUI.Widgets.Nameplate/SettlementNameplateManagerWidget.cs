@@ -19,19 +19,21 @@ public class SettlementNameplateManagerWidget : Widget
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
 	{
 		_visibleNameplates.Clear();
-		foreach (SettlementNameplateWidget allChildrenNameplate in _allChildrenNameplates)
+		for (int i = 0; i < _allChildrenNameplates.Count; i++)
 		{
-			if (allChildrenNameplate != null && allChildrenNameplate.IsVisibleOnMap)
+			SettlementNameplateWidget settlementNameplateWidget = _allChildrenNameplates[i];
+			if (settlementNameplateWidget != null && settlementNameplateWidget.IsVisibleOnMap)
 			{
-				_visibleNameplates.Add(allChildrenNameplate);
+				_visibleNameplates.Add(settlementNameplateWidget);
 			}
 		}
 		_visibleNameplates.Sort();
-		foreach (SettlementNameplateWidget visibleNameplate in _visibleNameplates)
+		for (int j = 0; j < _visibleNameplates.Count; j++)
 		{
-			visibleNameplate.DisableRender = false;
-			visibleNameplate.Render(twoDimensionContext, drawContext);
-			visibleNameplate.DisableRender = true;
+			SettlementNameplateWidget settlementNameplateWidget2 = _visibleNameplates[j];
+			settlementNameplateWidget2.DisableRender = false;
+			settlementNameplateWidget2.Render(twoDimensionContext, drawContext);
+			settlementNameplateWidget2.DisableRender = true;
 		}
 	}
 
@@ -42,9 +44,9 @@ public class SettlementNameplateManagerWidget : Widget
 		_allChildrenNameplates.Add(child as SettlementNameplateWidget);
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 		_allChildrenNameplates.Remove(child as SettlementNameplateWidget);
 	}
 

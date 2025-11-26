@@ -15,7 +15,9 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 	{
 		private static int GarrisonComparison(Town t1, Town t2)
 		{
-			return t1.GarrisonParty.MemberRoster.TotalManCount.CompareTo(t2.GarrisonParty.MemberRoster.TotalManCount);
+			int num = ((t1.GarrisonParty != null) ? t1.GarrisonParty.MemberRoster.TotalManCount : 0);
+			int value = ((t2.GarrisonParty != null) ? t2.GarrisonParty.MemberRoster.TotalManCount : 0);
+			return num.CompareTo(value);
 		}
 
 		protected override bool CompareVisibility(Settlement s1, Settlement s2, out int comparisonResult)
@@ -60,7 +62,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return settlement.Town.GarrisonParty?.MemberRoster.TotalManCount.ToString() ?? 0.ToString();
 			}
-			Debug.FailedAssert("Unable to get the garrison of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 159);
+			Debug.FailedAssert("Unable to get the garrison of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 163);
 			return "";
 		}
 	}
@@ -91,7 +93,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return ((int)settlement.Town.FoodStocks).ToString();
 			}
-			Debug.FailedAssert("Unable to get the food stocks of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 194);
+			Debug.FailedAssert("Unable to get the food stocks of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 198);
 			return "";
 		}
 	}
@@ -122,7 +124,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return ((int)settlement.Town.Security).ToString();
 			}
-			Debug.FailedAssert("Unable to get the security of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 229);
+			Debug.FailedAssert("Unable to get the security of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 233);
 			return "";
 		}
 	}
@@ -153,7 +155,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return ((int)settlement.Town.Loyalty).ToString();
 			}
-			Debug.FailedAssert("Unable to get the loyalty of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 264);
+			Debug.FailedAssert("Unable to get the loyalty of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 268);
 			return "";
 		}
 	}
@@ -180,7 +182,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return ((int)settlement.Militia).ToString();
 			}
-			Debug.FailedAssert("Unable to get the militia of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 295);
+			Debug.FailedAssert("Unable to get the militia of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 299);
 			return "";
 		}
 	}
@@ -211,7 +213,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return ((int)settlement.Town.Prosperity).ToString();
 			}
-			Debug.FailedAssert("Unable to get the prosperity of a non-settlement object.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 330);
+			Debug.FailedAssert("Unable to get the prosperity of a non-settlement object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "GetComparedValueText", 334);
 			return "";
 		}
 	}
@@ -262,7 +264,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be settlements.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "CompareSettlements", 379);
+			Debug.FailedAssert("Both objects should be settlements.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "CompareSettlements", 383);
 			return 0;
 		}
 
@@ -294,7 +296,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Unable to compare loyalty of non-fief (castle or town) objects.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "CompareFiefs", 403);
+			Debug.FailedAssert("Unable to compare loyalty of non-fief (castle or town) objects.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaSettlementPage.cs", "CompareFiefs", 407);
 			return 0;
 		}
 	}
@@ -312,7 +314,7 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 			{
 				yield return new EncyclopediaListItem(settlement, settlement.Name.ToString(), "", settlement.StringId, GetIdentifier(typeof(Settlement)), CanPlayerSeeValuesOf(settlement), delegate
 				{
-					InformationManager.ShowTooltip(typeof(Settlement), settlement, false);
+					InformationManager.ShowTooltip(typeof(Settlement), settlement);
 				});
 			}
 		}

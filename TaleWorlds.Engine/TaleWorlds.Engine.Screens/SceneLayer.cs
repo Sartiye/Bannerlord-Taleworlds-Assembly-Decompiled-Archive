@@ -14,10 +14,9 @@ public class SceneLayer : ScreenLayer
 
 	public SceneView SceneView => _sceneView;
 
-	public SceneLayer(string categoryId = "SceneLayer", bool clearSceneOnFinalize = true, bool autoToggleSceneView = true)
-		: base(-100, categoryId)
+	public SceneLayer(bool clearSceneOnFinalize = true, bool autoToggleSceneView = true)
+		: base("SceneLayer", -100)
 	{
-		base.Name = "SceneLayer";
 		ClearSceneOnFinalize = clearSceneOnFinalize;
 		base.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
 		_sceneView = SceneView.CreateSceneView();
@@ -156,12 +155,17 @@ public class SceneLayer : ScreenLayer
 
 	public override bool HitTest(Vector2 position)
 	{
-		return true;
+		bool num = position.X >= 0f && position.X < Screen.RealScreenResolutionWidth;
+		bool flag = position.Y >= 0f && position.Y < Screen.RealScreenResolutionHeight;
+		return num && flag;
 	}
 
 	public override bool HitTest()
 	{
-		return true;
+		Vector2 vector = (Vector2)base.Input.GetMousePositionPixel();
+		bool num = vector.X >= 0f && vector.X < Screen.RealScreenResolutionWidth;
+		bool flag = vector.Y >= 0f && vector.Y < Screen.RealScreenResolutionHeight;
+		return num && flag;
 	}
 
 	public override bool FocusTest()

@@ -140,16 +140,16 @@ public class DefaultPersuasionModel : PersuasionModel
 		return TaleWorlds.Library.MathF.Max(0f, character.HeroObject.GetRelationWithPlayer() * successValue) / (float)Campaign.Current.Models.DiplomacyModel.MaxRelationLimit;
 	}
 
-	public override float CalculatePersuasionGoalValue(CharacterObject oneToOneConversationCharacter, float baseGoalValue)
+	public override float CalculatePersuasionGoalValue(CharacterObject oneToOneConversationCharacter, float successValue)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(baseGoalValue);
+		ExplainedNumber explainedNumber = new ExplainedNumber(successValue);
 		if (CharacterObject.OneToOneConversationCharacter != null && CharacterObject.OneToOneConversationCharacter.IsHero)
 		{
-			if (CharacterObject.OneToOneConversationCharacter.HeroObject.MapFaction == Hero.MainHero.MapFaction && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.MoralLeader))
+			if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture == Hero.MainHero.Culture && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.MoralLeader))
 			{
 				explainedNumber.Add(DefaultPerks.Charm.MoralLeader.PrimaryBonus, DefaultPerks.Charm.MoralLeader.Name);
 			}
-			else if (CharacterObject.OneToOneConversationCharacter.HeroObject.MapFaction != Hero.MainHero.MapFaction && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.NaturalLeader))
+			else if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture != Hero.MainHero.Culture && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.NaturalLeader))
 			{
 				explainedNumber.Add(DefaultPerks.Charm.NaturalLeader.PrimaryBonus, DefaultPerks.Charm.NaturalLeader.Name);
 			}

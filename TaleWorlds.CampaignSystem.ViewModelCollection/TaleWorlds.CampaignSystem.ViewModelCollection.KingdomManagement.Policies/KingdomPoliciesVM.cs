@@ -555,7 +555,7 @@ public class KingdomPoliciesVM : KingdomCategoryVM
 			disabledReason = GameTexts.FindText("str_warning_you_dont_have_enough_influence");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 

@@ -176,6 +176,7 @@ public class LobbyState : GameState
 		PlatformServices.OnSessionInvitationAccepted = (Action<SessionInvitationType>)Delegate.Remove(PlatformServices.OnSessionInvitationAccepted, new Action<SessionInvitationType>(OnSessionInvitationAccepted));
 		PlatformServices.Instance.OnSignInStateUpdated -= OnPlatformSignInStateUpdated;
 		PlatformServices.Instance.OnNameUpdated -= OnPlayerNameUpdated;
+		LobbyClient.RemoveLobbyClientHandler();
 		RecentPlayersManager.Serialize();
 		NewsManager.OnFinalize();
 		NewsManager = null;
@@ -300,13 +301,14 @@ public class LobbyState : GameState
 			await UpdateHasUserGeneratedContentPrivilege(showResolveUI: false);
 			ILoginAccessProvider loginAccessProvider = await PlatformServices.Instance.CreateLobbyClientLoginProvider();
 			string userName = loginAccessProvider.GetUserName();
-			LobbyClientConnectResult lobbyClientConnectResult = await gameClient.Connect(_lobbyGameClientManager, loginAccessProvider, userName, HasUserGeneratedContentPrivilege == true, PlatformServices.Instance.GetInitParams());
+			Func<Task<bool>> preLoginTask = null;
+			if (PlatformServices.InvitationServices != null)
+			{
+				preLoginTask = async () => await PlatformServices.InvitationServices.OnLogin();
+			}
+			LobbyClientConnectResult lobbyClientConnectResult = await gameClient.Connect(_lobbyGameClientManager, loginAccessProvider, userName, HasUserGeneratedContentPrivilege == true, PlatformServices.Instance.GetInitParams(), preLoginTask);
 			if (lobbyClientConnectResult.Connected)
 			{
-				if (PlatformServices.InvitationServices != null)
-				{
-					await PlatformServices.InvitationServices.OnLogin();
-				}
 				Game.Current.GetGameHandler<ChatBox>().OnLogin();
 				OnResume();
 			}
@@ -324,7 +326,7 @@ public class LobbyState : GameState
 	public async Task TryLogin(string userName, string password)
 	{
 		IsLoggingIn = true;
-		LobbyClientConnectResult lobbyClientConnectResult = await NetworkMain.GameClient.Connect(_lobbyGameClientManager, new TestLoginAccessProvider(), userName, hasUserGeneratedContentPrivilege: true, PlatformServices.Instance.GetInitParams());
+		LobbyClientConnectResult lobbyClientConnectResult = await NetworkMain.GameClient.Connect(_lobbyGameClientManager, new TestLoginAccessProvider(), userName, hasUserGeneratedContentPrivilege: true, PlatformServices.Instance.GetInitParams(), null);
 		if (!lobbyClientConnectResult.Connected)
 		{
 			string title = new TextObject("{=lVfmVHbz}Login Failed").ToString();
@@ -957,7 +959,7 @@ public class LobbyState : GameState
 			return false;
 		}
 		bool flag = false;
-		if ((!LobbyClient.IsInParty || LobbyClient.IsPartyLeader) && LobbyClient.PlayersInParty.Count < Parameters.MaxPlayerCountInParty && PlatformServices.InvitationServices != null)
+		if ((!LobbyClient.IsInParty || LobbyClient.IsPartyLeader) && LobbyClient.PlayersInParty.Count < Parameters.MaxPlayerCountInParty && PlatformServices.Instance.UsePlatformInvitationService(playerId))
 		{
 			flag = await PlatformServices.InvitationServices.OnInviteToPlatformSession(playerId);
 		}
@@ -1007,14 +1009,8 @@ public class LobbyState : GameState
 				waitTime += 100;
 			}
 		}
-		if (LobbyClient.CurrentState == LobbyClient.State.AtLobby && PlatformServices.InvitationServices != null)
-		{
-			Tuple<bool, ulong> tuple = await PlatformServices.InvitationServices.JoinSession();
-			if (tuple.Item1 && !(await LobbyClient.SendPSPlayerJoinedToPlayerSessionMessage(tuple.Item2)))
-			{
-				await PlatformServices.InvitationServices.LeaveSession(createNewSession: true);
-			}
-		}
+		_ = LobbyClient.CurrentState;
+		_ = 4;
 	}
 
 	public List<CustomServerAction> GetCustomActionsForServer(GameServerEntry gameServerEntry)
@@ -1039,7 +1035,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1179);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1188);
 		}
 	}
 
@@ -1051,7 +1047,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1191);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1200);
 		}
 	}
 }

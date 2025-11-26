@@ -75,7 +75,7 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 			_isPlayerTeamGeneralFormationSet = true;
 		}
 		Agent mainAgent;
-		if (_isPlayerTeamGeneralFormationSet && (mainAgent = base.Mission.MainAgent) != null && playerTeam.GeneralAgent != mainAgent)
+		if (_isPlayerTeamGeneralFormationSet && (mainAgent = base.Mission.MainAgent) != null && playerTeam.GeneralAgent != mainAgent && !base.Mission.IsNavalBattle)
 		{
 			mainAgent.SetCanLeadFormationsRemotely(value: true);
 			Formation formation2 = (mainAgent.Formation = playerTeam.GetFormation(FormationClass.NumberOfRegularFormations));
@@ -110,6 +110,10 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 
 	private bool CanTeamHaveGeneralsFormation(Team team)
 	{
+		if (base.Mission.IsNavalBattle)
+		{
+			return false;
+		}
 		Agent generalAgent = team.GeneralAgent;
 		if (generalAgent != null)
 		{
@@ -187,10 +191,13 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 			}
 			else if (source.Any((IFormationUnit u) => !((Agent)u).IsMainAgent && ((Agent)u).IsHero))
 			{
-				agent = (Agent)source.Where((IFormationUnit u) => !((Agent)u).IsMainAgent && ((Agent)u).IsHero).MaxBy((IFormationUnit u) => ((Agent)u).CharacterPowerCached);
+				agent = (Agent)TaleWorlds.Core.Extensions.MaxBy(source.Where((IFormationUnit u) => !((Agent)u).IsMainAgent && ((Agent)u).IsHero), (IFormationUnit u) => ((Agent)u).CharacterPowerCached);
 			}
 		}
-		agent?.SetCanLeadFormationsRemotely(value: true);
+		if (agent != null && !base.Mission.IsNavalBattle)
+		{
+			agent.SetCanLeadFormationsRemotely(value: true);
+		}
 		team.GeneralAgent = agent;
 	}
 

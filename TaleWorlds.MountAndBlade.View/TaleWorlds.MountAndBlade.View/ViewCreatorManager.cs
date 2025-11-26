@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.ScreenSystem;
 
@@ -10,32 +11,40 @@ namespace TaleWorlds.MountAndBlade.View;
 
 public static class ViewCreatorManager
 {
-	private static Dictionary<string, MethodInfo> _viewCreators;
+	private static Dictionary<string, MBList<MethodInfo>> _viewCreators;
 
-	private static Dictionary<Type, Type> _actualViewTypes;
+	private static Dictionary<Type, MBList<Type>> _actualViewTypes;
 
-	private static Dictionary<Type, Type> _defaultTypes;
+	private static HashSet<Type> _defaultTypes;
 
 	static ViewCreatorManager()
 	{
-		_viewCreators = new Dictionary<string, MethodInfo>();
-		_actualViewTypes = new Dictionary<Type, Type>();
-		_defaultTypes = new Dictionary<Type, Type>();
-		Assembly[] viewAssemblies = GetViewAssemblies();
+		_viewCreators = new Dictionary<string, MBList<MethodInfo>>();
+		_actualViewTypes = new Dictionary<Type, MBList<Type>>();
+		_defaultTypes = new HashSet<Type>();
+		CollectTypes();
+	}
+
+	internal static void CollectTypes()
+	{
+		_viewCreators.Clear();
+		_actualViewTypes.Clear();
+		_defaultTypes.Clear();
+		Assembly[] referencingAssembliesSafe = typeof(ViewCreatorModule).Assembly.GetReferencingAssembliesSafe();
 		Assembly assembly = typeof(ViewCreatorModule).Assembly;
 		CheckAssemblyScreens(assembly);
-		Assembly[] array = viewAssemblies;
+		Assembly[] array = referencingAssembliesSafe;
 		for (int i = 0; i < array.Length; i++)
 		{
 			CheckAssemblyScreens(array[i]);
 		}
 		CollectDefaults(assembly);
-		array = viewAssemblies;
+		array = referencingAssembliesSafe;
 		for (int i = 0; i < array.Length; i++)
 		{
 			CollectDefaults(array[i]);
 		}
-		array = viewAssemblies;
+		array = referencingAssembliesSafe;
 		for (int i = 0; i < array.Length; i++)
 		{
 			CheckOverridenViews(array[i]);
@@ -56,41 +65,47 @@ public static class ViewCreatorManager
 			{
 				if (methodInfo.GetCustomAttributesSafe(typeof(ViewMethod), inherit: false)[0] is ViewMethod viewMethod)
 				{
-					_viewCreators.Add(viewMethod.Name, methodInfo);
+					if (_viewCreators.TryGetValue(viewMethod.Name, out var value))
+					{
+						value.Add(methodInfo);
+						continue;
+					}
+					_viewCreators.Add(viewMethod.Name, new MBList<MethodInfo> { methodInfo });
 				}
 			}
 		}
-	}
-
-	private static Assembly[] GetViewAssemblies()
-	{
-		List<Assembly> list = new List<Assembly>();
-		Assembly assembly = typeof(ViewCreatorModule).Assembly;
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (Assembly assembly2 in assemblies)
-		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
-			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
-				{
-					list.Add(assembly2);
-					break;
-				}
-			}
-		}
-		return list.ToArray();
 	}
 
 	internal static IEnumerable<MissionBehavior> CreateDefaultMissionBehaviors(Mission mission)
 	{
 		List<MissionBehavior> list = new List<MissionBehavior>();
-		foreach (KeyValuePair<Type, Type> defaultType in _defaultTypes)
+		foreach (Type defaultType in _defaultTypes)
 		{
-			if (!defaultType.Value.IsAbstract)
+			Type type = null;
+			if (_actualViewTypes.TryGetValue(defaultType, out var value))
 			{
-				MissionBehavior item = Activator.CreateInstance(defaultType.Value) as MissionBehavior;
+				MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+				for (int num = value.Count - 1; num >= 0; num--)
+				{
+					if (activeGameAssemblies.Contains(value[num].Assembly))
+					{
+						type = value[num];
+						break;
+					}
+				}
+			}
+			if (type == null && !defaultType.IsAbstract)
+			{
+				type = defaultType;
+			}
+			if (type != null)
+			{
+				MissionBehavior item = Activator.CreateInstance(type) as MissionBehavior;
 				list.Add(item);
+			}
+			else
+			{
+				Debug.FailedAssert($"Failed to initialize default mission view type: {defaultType}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\ViewCreatorManager.cs", "CreateDefaultMissionBehaviors", 129);
 			}
 		}
 		return list;
@@ -99,19 +114,49 @@ public static class ViewCreatorManager
 	internal static IEnumerable<MissionBehavior> CollectMissionBehaviors(string missionName, Mission mission, IEnumerable<MissionBehavior> behaviors)
 	{
 		List<MissionBehavior> list = new List<MissionBehavior>();
-		if (_viewCreators.ContainsKey(missionName))
+		if (_viewCreators.TryGetValue(missionName, out var value))
 		{
-			MissionBehavior[] collection = _viewCreators[missionName].Invoke(null, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new object[1] { mission }, null) as MissionBehavior[];
-			list.AddRange(collection);
+			MethodInfo methodInfo = null;
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].DeclaringType.Assembly))
+				{
+					methodInfo = value[num];
+					break;
+				}
+			}
+			if (methodInfo != null)
+			{
+				MissionBehavior[] collection = methodInfo.Invoke(null, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new object[1] { mission }, null) as MissionBehavior[];
+				list.AddRange(collection);
+			}
+			else
+			{
+				Debug.FailedAssert("Failed to invoke view creator method for: " + missionName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\ViewCreatorManager.cs", "CollectMissionBehaviors", 170);
+			}
 		}
 		return behaviors.Concat(list);
 	}
 
 	public static ScreenBase CreateScreenView<T>() where T : ScreenBase, new()
 	{
-		if (_actualViewTypes.ContainsKey(typeof(T)))
+		if (_actualViewTypes.TryGetValue(typeof(T), out var value))
 		{
-			return Activator.CreateInstance(_actualViewTypes[typeof(T)]) as ScreenBase;
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			Type type = null;
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
+			if (type != null)
+			{
+				return Activator.CreateInstance(type) as ScreenBase;
+			}
 		}
 		return new T();
 	}
@@ -119,18 +164,36 @@ public static class ViewCreatorManager
 	public static ScreenBase CreateScreenView<T>(params object[] parameters) where T : ScreenBase
 	{
 		Type type = typeof(T);
-		if (_actualViewTypes.ContainsKey(typeof(T)))
+		if (_actualViewTypes.TryGetValue(typeof(T), out var value))
 		{
-			type = _actualViewTypes[typeof(T)];
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
 		}
 		return Activator.CreateInstance(type, parameters) as ScreenBase;
 	}
 
 	public static MissionView CreateMissionView<T>(bool isNetwork = false, Mission mission = null, params object[] parameters) where T : MissionView, new()
 	{
-		if (_actualViewTypes.ContainsKey(typeof(T)))
+		Type type = null;
+		if (_actualViewTypes.TryGetValue(typeof(T), out var value))
 		{
-			return Activator.CreateInstance(_actualViewTypes[typeof(T)], parameters) as MissionView;
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
+			return Activator.CreateInstance(type, parameters) as MissionView;
 		}
 		return new T();
 	}
@@ -138,9 +201,17 @@ public static class ViewCreatorManager
 	public static MissionView CreateMissionViewWithArgs<T>(params object[] parameters) where T : MissionView
 	{
 		Type type = typeof(T);
-		if (_actualViewTypes.ContainsKey(typeof(T)))
+		if (_actualViewTypes.TryGetValue(typeof(T), out var value))
 		{
-			type = _actualViewTypes[typeof(T)];
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
 		}
 		return Activator.CreateInstance(type, parameters) as MissionView;
 	}
@@ -156,11 +227,12 @@ public static class ViewCreatorManager
 			object[] customAttributesSafe = item.GetCustomAttributesSafe(typeof(OverrideView), inherit: false);
 			if (customAttributesSafe != null && customAttributesSafe.Length == 1 && customAttributesSafe[0] is OverrideView overrideView)
 			{
-				_actualViewTypes[overrideView.BaseType] = item;
-				if (_defaultTypes.ContainsKey(overrideView.BaseType))
+				if (_actualViewTypes.TryGetValue(overrideView.BaseType, out var value))
 				{
-					_defaultTypes[overrideView.BaseType] = item;
+					value.Add(item);
+					continue;
 				}
+				_actualViewTypes[overrideView.BaseType] = new MBList<Type> { item };
 			}
 		}
 	}
@@ -171,7 +243,7 @@ public static class ViewCreatorManager
 		{
 			if (typeof(MissionBehavior).IsAssignableFrom(item) && item.GetCustomAttributesSafe(typeof(DefaultView), inherit: false).Length == 1)
 			{
-				_defaultTypes.Add(item, item);
+				_defaultTypes.Add(item);
 			}
 		}
 	}

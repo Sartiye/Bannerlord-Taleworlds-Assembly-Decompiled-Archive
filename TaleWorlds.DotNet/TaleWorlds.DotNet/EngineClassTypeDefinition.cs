@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace TaleWorlds.DotNet;
 
-[EngineStruct("ftlObject_type_definition", false)]
+[EngineStruct("ftlObject_type_definition", false, null)]
 internal struct EngineClassTypeDefinition
 {
 	public int TypeId;

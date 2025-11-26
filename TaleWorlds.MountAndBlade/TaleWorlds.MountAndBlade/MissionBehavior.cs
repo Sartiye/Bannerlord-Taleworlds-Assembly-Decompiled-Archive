@@ -110,7 +110,7 @@ public abstract class MissionBehavior : IMissionBehavior
 	{
 	}
 
-	public virtual void OnAgentInteraction(Agent userAgent, Agent agent)
+	public virtual void OnAgentInteraction(Agent userAgent, Agent agent, sbyte agentBoneIndex)
 	{
 	}
 
@@ -128,6 +128,10 @@ public abstract class MissionBehavior : IMissionBehavior
 	}
 
 	public virtual void OnRemoveBehavior()
+	{
+	}
+
+	public virtual void OnFixedMissionTick(float fixedDt)
 	{
 	}
 
@@ -197,7 +201,15 @@ public abstract class MissionBehavior : IMissionBehavior
 	{
 	}
 
+	public virtual void OnAfterDeploymentFinished()
+	{
+	}
+
 	public virtual void OnTeamDeployed(Team team)
+	{
+	}
+
+	public virtual void OnBattleSideDeployed(BattleSideEnum side)
 	{
 	}
 
@@ -217,15 +229,23 @@ public abstract class MissionBehavior : IMissionBehavior
 	{
 	}
 
-	protected internal virtual void OnAgentControllerChanged(Agent agent, Agent.ControllerType oldController)
+	protected internal virtual void OnAgentControllerChanged(Agent agent, AgentControllerType oldController)
 	{
 	}
 
-	public virtual void OnRegisterBlow(Agent attacker, Agent victim, GameEntity realHitEntity, Blow b, ref AttackCollisionData collisionData, in MissionWeapon attackerWeapon)
+	public virtual void OnRegisterBlow(Agent attacker, Agent victim, WeakGameEntity realHitEntity, Blow b, ref AttackCollisionData collisionData, in MissionWeapon attackerWeapon)
 	{
 	}
 
 	public virtual void OnAgentShootMissile(Agent shooterAgent, EquipmentIndex weaponIndex, Vec3 position, Vec3 velocity, Mat3 orientation, bool hasRigidBody, int forcedMissileIndex)
+	{
+	}
+
+	public virtual void OnMissileRemoved(int MissileIndex)
+	{
+	}
+
+	public virtual void OnTutorialCompleted(string completedTutorialIdentifier)
 	{
 	}
 }

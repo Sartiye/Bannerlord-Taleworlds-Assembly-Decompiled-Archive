@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -171,11 +170,11 @@ public abstract class GameNetworkMessage
 
 	public static void WriteBannerCodeToPacket(string bannerCode)
 	{
-		List<BannerData> bannerDataFromBannerCode = Banner.GetBannerDataFromBannerCode(bannerCode);
-		WriteIntToPacket(bannerDataFromBannerCode.Count, CompressionBasic.BannerDataCountCompressionInfo);
-		for (int i = 0; i < bannerDataFromBannerCode.Count; i++)
+		Banner.TryGetBannerDataFromCode(bannerCode, out var bannerDataList);
+		WriteIntToPacket(bannerDataList.Count, CompressionBasic.BannerDataCountCompressionInfo);
+		for (int i = 0; i < bannerDataList.Count; i++)
 		{
-			BannerData bannerData = bannerDataFromBannerCode[i];
+			BannerData bannerData = bannerDataList[i];
 			WriteIntToPacket(bannerData.MeshId, CompressionBasic.BannerDataMeshIdCompressionInfo);
 			WriteIntToPacket(bannerData.ColorId, CompressionBasic.BannerDataColorIndexCompressionInfo);
 			WriteIntToPacket(bannerData.ColorId2, CompressionBasic.BannerDataColorIndexCompressionInfo);
@@ -195,7 +194,7 @@ public abstract class GameNetworkMessage
 		MBList<BannerData> mBList = new MBList<BannerData>(num);
 		for (int i = 0; i < num; i++)
 		{
-			BannerData item = new BannerData(ReadIntFromPacket(CompressionBasic.BannerDataMeshIdCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataColorIndexCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataColorIndexCompressionInfo, ref bufferReadValid), new Vec2(ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid)), new Vec2(ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid)), ReadBoolFromPacket(ref bufferReadValid), ReadBoolFromPacket(ref bufferReadValid), (float)ReadIntFromPacket(CompressionBasic.BannerDataRotationCompressionInfo, ref bufferReadValid) * 0.00278f);
+			BannerData item = new BannerData(ReadIntFromPacket(CompressionBasic.BannerDataMeshIdCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataColorIndexCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataColorIndexCompressionInfo, ref bufferReadValid), new Vec2(ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid)), new Vec2(ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid), ReadIntFromPacket(CompressionBasic.BannerDataSizeCompressionInfo, ref bufferReadValid)), ReadBoolFromPacket(ref bufferReadValid), ReadBoolFromPacket(ref bufferReadValid), (float)ReadIntFromPacket(CompressionBasic.BannerDataRotationCompressionInfo, ref bufferReadValid) * 0.0027777778f);
 			mBList.Add(item);
 		}
 		return Banner.GetBannerCodeFromBannerDataList(mBList);
@@ -364,7 +363,7 @@ public abstract class GameNetworkMessage
 		Vec3 s = ReadVec3FromPacket(CompressionBasic.UnitVectorCompressionInfo, ref bufferReadValid);
 		Vec3 f = ReadVec3FromPacket(CompressionBasic.UnitVectorCompressionInfo, ref bufferReadValid);
 		Vec3 u = ReadVec3FromPacket(CompressionBasic.UnitVectorCompressionInfo, ref bufferReadValid);
-		return new Mat3(s, f, u);
+		return new Mat3(in s, in f, in u);
 	}
 
 	public static void WriteRotationMatrixToPacket(Mat3 value)
@@ -379,8 +378,8 @@ public abstract class GameNetworkMessage
 		Vec3 o = ReadVec3FromPacket(CompressionBasic.PositionCompressionInfo, ref bufferReadValid);
 		Vec3 scalingVector = ReadVec3FromPacket(CompressionBasic.ScaleCompressionInfo, ref bufferReadValid);
 		Mat3 rot = ReadRotationMatrixFromPacket(ref bufferReadValid);
-		MatrixFrame result = new MatrixFrame(rot, o);
-		result.Scale(scalingVector);
+		MatrixFrame result = new MatrixFrame(in rot, in o);
+		result.Scale(in scalingVector);
 		return result;
 	}
 
@@ -388,7 +387,8 @@ public abstract class GameNetworkMessage
 	{
 		Vec3 scaleVector = frame.rotation.GetScaleVector();
 		MatrixFrame matrixFrame = frame;
-		matrixFrame.Scale(new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z));
+		Vec3 scalingVector = new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z);
+		matrixFrame.Scale(in scalingVector);
 		WriteVec3ToPacket(matrixFrame.origin, CompressionBasic.PositionCompressionInfo);
 		WriteVec3ToPacket(scaleVector, CompressionBasic.ScaleCompressionInfo);
 		WriteRotationMatrixToPacket(matrixFrame.rotation);
@@ -398,7 +398,7 @@ public abstract class GameNetworkMessage
 	{
 		MatrixFrame result = ReadUnitTransformFromPacket(positionCompressionInfo, quaternionCompressionInfo, ref bufferReadValid);
 		Vec3 scaleAmountXYZ = ReadVec3FromPacket(CompressionBasic.ScaleCompressionInfo, ref bufferReadValid);
-		result.rotation.ApplyScaleLocal(scaleAmountXYZ);
+		result.rotation.ApplyScaleLocal(in scaleAmountXYZ);
 		return result;
 	}
 
@@ -438,7 +438,7 @@ public abstract class GameNetworkMessage
 	{
 		MatrixFrame result = default(MatrixFrame);
 		result.origin = ReadVec3FromPacket(positionCompressionInfo, ref bufferReadValid);
-		result.rotation = ReadQuaternionFromPacket(quaternionCompressionInfo, ref bufferReadValid).ToMat3;
+		result.rotation = ReadQuaternionFromPacket(quaternionCompressionInfo, ref bufferReadValid).ToMat3();
 		return result;
 	}
 

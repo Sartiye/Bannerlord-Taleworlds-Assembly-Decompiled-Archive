@@ -110,15 +110,15 @@ public class EpicPlatformServices : IPlatformServices
 	{
 		public static readonly _003C_003Ec _003C_003E9 = new _003C_003Ec();
 
-		public static OnQueryDefinitionsCompleteCallback _003C_003E9__72_0;
+		public static OnQueryDefinitionsCompleteCallback _003C_003E9__73_0;
 
-		public static OnQueryStatsCompleteCallback _003C_003E9__86_0;
+		public static OnQueryStatsCompleteCallback _003C_003E9__87_0;
 
-		internal void _003CQueryDefinitions_003Eb__72_0(ref OnQueryDefinitionsCompleteCallbackInfo data)
+		internal void _003CQueryDefinitions_003Eb__73_0(ref OnQueryDefinitionsCompleteCallbackInfo data)
 		{
 		}
 
-		internal void _003CQueryStats_003Eb__86_0(ref OnQueryStatsCompleteCallbackInfo data)
+		internal void _003CQueryStats_003Eb__87_0(ref OnQueryStatsCompleteCallbackInfo data)
 		{
 		}
 	}
@@ -150,8 +150,6 @@ public class EpicPlatformServices : IPlatformServices
 	private DateTime _statsLastWrittenOn = DateTime.MinValue;
 
 	private const int MinStatsWriteInterval = 5;
-
-	private static EpicPlatformServices Instance => PlatformServices.Instance as EpicPlatformServices;
 
 	public string UserId
 	{
@@ -195,6 +193,8 @@ public class EpicPlatformServices : IPlatformServices
 
 	public event Action<string> OnTextEnteredFromPlatform;
 
+	public event Action OnTextCanceledFromPlatform;
+
 	public EpicPlatformServices(PlatformInitParams initParams)
 	{
 		_initParams = initParams;
@@ -204,144 +204,39 @@ public class EpicPlatformServices : IPlatformServices
 
 	public bool Initialize(IFriendListService[] additionalFriendListServices)
 	{
-		//IL_004e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0078: Unknown result type (might be due to invalid IL or missing references)
-		//IL_007d: Unknown result type (might be due to invalid IL or missing references)
-		//IL_007e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00d5: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00fd: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00ff: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0102: Unknown result type (might be due to invalid IL or missing references)
-		//IL_012c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_014b: Unknown result type (might be due to invalid IL or missing references)
-		//IL_014d: Unknown result type (might be due to invalid IL or missing references)
-		//IL_015e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0179: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0183: Expected O, but got Unknown
-		//IL_0186: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01a6: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01a8: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01b3: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01bb: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01c7: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01c9: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01e0: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01ea: Expected O, but got Unknown
-		//IL_00b5: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00aa: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00b4: Expected O, but got Unknown
+		//IL_00b6: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00d1: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00db: Expected O, but got Unknown
 		_friendListServices = new IFriendListService[additionalFriendListServices.Length + 1];
 		_friendListServices[0] = _epicFriendListService;
 		for (int i = 0; i < additionalFriendListServices.Length; i++)
 		{
 			_friendListServices[i + 1] = additionalFriendListServices[i];
 		}
-		InitializeOptions val = default(InitializeOptions);
-		((InitializeOptions)(ref val)).ProductName = Utf8String.op_Implicit("Bannerlord");
-		((InitializeOptions)(ref val)).ProductVersion = Utf8String.op_Implicit("1.2.12.54620");
-		Result val2 = PlatformInterface.Initialize(ref val);
-		if ((int)val2 != 0)
+		string text = (string)_initParams["PlatformInterface"];
+		if (!long.TryParse(text, out var result))
 		{
 			_initFailReason = new TextObject("{=BJ1626h7}Epic platform initialization failed: {FAILREASON}.");
-			_initFailReason.SetTextVariable("FAILREASON", ((object)(Result)(ref val2)).ToString());
-			Debug.Print("Epic PlatformInterface.Initialize Failed:" + val2);
+			_initFailReason.SetTextVariable("FAILREASON (Platform Interface Handle)", text);
+			Debug.Print("Epic PlatformInterface.Initialize Failed (Platform Interface Handle):" + text);
 			return false;
 		}
-		ClientCredentials val3 = default(ClientCredentials);
-		((ClientCredentials)(ref val3)).ClientId = Utf8String.op_Implicit("e2cf3228b2914793b9a5e5570bad92b3");
-		((ClientCredentials)(ref val3)).ClientSecret = Utf8String.op_Implicit("Fk5W1E6t1zExNqEUfjyNZinYrkDcDTA63sf5MfyDbQG4");
-		ClientCredentials clientCredentials = val3;
-		Options val4 = default(Options);
-		((Options)(ref val4)).ProductId = Utf8String.op_Implicit("6372ed7350f34ffc9ace219dff4b9f40");
-		((Options)(ref val4)).SandboxId = Utf8String.op_Implicit("aeac94c7a11048758064b82f8f8d20ed");
-		((Options)(ref val4)).ClientCredentials = clientCredentials;
-		((Options)(ref val4)).IsServer = false;
-		((Options)(ref val4)).DeploymentId = Utf8String.op_Implicit("e77799aa8a5143f199b2cda9937a133f");
-		Options val5 = val4;
-		_platform = PlatformInterface.Create(ref val5);
-		AddNotifyFriendsUpdateOptions val6 = default(AddNotifyFriendsUpdateOptions);
-		_platform.GetFriendsInterface().AddNotifyFriendsUpdate(ref val6, (object)null, (OnFriendsUpdateCallback)delegate(ref OnFriendsUpdateInfo callbackInfo)
+		IntPtr intPtr = new IntPtr(result);
+		_platform = new PlatformInterface(intPtr);
+		AddNotifyFriendsUpdateOptions val = default(AddNotifyFriendsUpdateOptions);
+		_platform.GetFriendsInterface().AddNotifyFriendsUpdate(ref val, (object)null, (OnFriendsUpdateCallback)delegate(ref OnFriendsUpdateInfo callbackInfo)
 		{
 			_epicFriendListService.UserStatusChanged(EpicAccountIdToPlayerId(((OnFriendsUpdateInfo)(ref callbackInfo)).TargetUserId));
 		});
-		Credentials val7 = default(Credentials);
-		((Credentials)(ref val7)).Type = (LoginCredentialType)1;
-		((Credentials)(ref val7)).Token = Utf8String.op_Implicit(ExchangeCode);
-		Credentials value = val7;
-		bool failed = false;
-		LoginOptions val8 = default(LoginOptions);
-		((LoginOptions)(ref val8)).Credentials = value;
-		LoginOptions val9 = val8;
-		_platform.GetAuthInterface().Login(ref val9, (object)null, (OnLoginCallback)delegate(ref LoginCallbackInfo callbackInfo)
+		_epicAccountId = EpicAccountId.FromString(Utf8String.op_Implicit((string)_initParams["EpicUserId"]));
+		_epicUserName = (string)_initParams["EpicUserName"];
+		if ((Handle)(object)_platform.GetAuthInterface() == (Handle)null)
 		{
-			//IL_000e: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0051: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0071: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0072: Unknown result type (might be due to invalid IL or missing references)
-			//IL_008d: Unknown result type (might be due to invalid IL or missing references)
-			//IL_0097: Expected O, but got Unknown
-			//IL_0022: Unknown result type (might be due to invalid IL or missing references)
-			if ((int)((LoginCallbackInfo)(ref callbackInfo)).ResultCode != 0)
-			{
-				failed = true;
-				Debug.Print("Epic AuthInterface.Login Failed:" + ((LoginCallbackInfo)(ref callbackInfo)).ResultCode);
-			}
-			else
-			{
-				EpicAccountId epicAccountId = ((LoginCallbackInfo)(ref callbackInfo)).LocalUserId;
-				QueryUserInfoOptions val10 = default(QueryUserInfoOptions);
-				((QueryUserInfoOptions)(ref val10)).LocalUserId = epicAccountId;
-				((QueryUserInfoOptions)(ref val10)).TargetUserId = epicAccountId;
-				QueryUserInfoOptions val11 = val10;
-				_platform.GetUserInfoInterface().QueryUserInfo(ref val11, (object)null, (OnQueryUserInfoCallback)delegate(ref QueryUserInfoCallbackInfo queryCallbackInfo)
-				{
-					//IL_0001: Unknown result type (might be due to invalid IL or missing references)
-					//IL_003d: Unknown result type (might be due to invalid IL or missing references)
-					//IL_005d: Unknown result type (might be due to invalid IL or missing references)
-					//IL_005e: Unknown result type (might be due to invalid IL or missing references)
-					//IL_0078: Unknown result type (might be due to invalid IL or missing references)
-					//IL_001a: Unknown result type (might be due to invalid IL or missing references)
-					//IL_0097: Unknown result type (might be due to invalid IL or missing references)
-					//IL_009c: Unknown result type (might be due to invalid IL or missing references)
-					if ((int)((QueryUserInfoCallbackInfo)(ref queryCallbackInfo)).ResultCode != 0)
-					{
-						failed = true;
-						Debug.Print("Epic UserInfoInterface.QueryUserInfo Failed:" + ((QueryUserInfoCallbackInfo)(ref queryCallbackInfo)).ResultCode);
-					}
-					else
-					{
-						CopyUserInfoOptions val12 = default(CopyUserInfoOptions);
-						((CopyUserInfoOptions)(ref val12)).LocalUserId = epicAccountId;
-						((CopyUserInfoOptions)(ref val12)).TargetUserId = epicAccountId;
-						CopyUserInfoOptions val13 = val12;
-						UserInfoData? val14 = default(UserInfoData?);
-						_platform.GetUserInfoInterface().CopyUserInfo(ref val13, ref val14);
-						EpicPlatformServices epicPlatformServices = this;
-						object obj;
-						if (!val14.HasValue)
-						{
-							obj = null;
-						}
-						else
-						{
-							UserInfoData valueOrDefault = val14.GetValueOrDefault();
-							obj = ((UserInfoData)(ref valueOrDefault)).DisplayName;
-						}
-						if (obj == null)
-						{
-							obj = Utf8String.op_Implicit("");
-						}
-						epicPlatformServices._epicUserName = Utf8String.op_Implicit((Utf8String)obj);
-						_epicAccountId = epicAccountId;
-					}
-				});
-			}
-		});
-		while ((Handle)(object)_epicAccountId == (Handle)null && !failed)
-		{
-			_platform.Tick();
-		}
-		if (failed)
-		{
-			_initFailReason = new TextObject("{=KoKdRd1u}Could not login to Epic");
+			Console.WriteLine("ERROR: Failed to get Auth interface!");
+			_initFailReason = new TextObject("{=BJ1626h7}Failed to get Auth interface!.");
+			Debug.Print("Failed to get Auth interface!");
 			return false;
 		}
 		return Connect();
@@ -368,6 +263,10 @@ public class EpicPlatformServices : IPlatformServices
 		if (this.OnTextEnteredFromPlatform != null)
 		{
 			this.OnTextEnteredFromPlatform(null);
+		}
+		if (this.OnTextCanceledFromPlatform != null)
+		{
+			this.OnTextCanceledFromPlatform();
 		}
 	}
 
@@ -528,6 +427,8 @@ public class EpicPlatformServices : IPlatformServices
 
 	Task<ILoginAccessProvider> IPlatformServices.CreateLobbyClientLoginProvider()
 	{
+		//IL_001e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0028: Expected O, but got Unknown
 		return Task.FromResult((ILoginAccessProvider)new EpicLoginAccessProvider(_platform, _epicAccountId, _epicUserName, _accessToken, _initFailReason));
 	}
 
@@ -713,13 +614,13 @@ public class EpicPlatformServices : IPlatformServices
 		QueryDefinitionsOptions val = default(QueryDefinitionsOptions);
 		((QueryDefinitionsOptions)(ref val)).LocalUserId = _localUserId;
 		QueryDefinitionsOptions val2 = val;
-		object obj = _003C_003Ec._003C_003E9__72_0;
+		object obj = _003C_003Ec._003C_003E9__73_0;
 		if (obj == null)
 		{
 			OnQueryDefinitionsCompleteCallback val3 = delegate
 			{
 			};
-			_003C_003Ec._003C_003E9__72_0 = val3;
+			_003C_003Ec._003C_003E9__73_0 = val3;
 			obj = (object)val3;
 		}
 		achievementsInterface.QueryDefinitions(ref val2, (object)null, (OnQueryDefinitionsCompleteCallback)obj);
@@ -934,13 +835,13 @@ public class EpicPlatformServices : IPlatformServices
 		((QueryStatsOptions)(ref val)).TargetUserId = _localUserId;
 		QueryStatsOptions val2 = val;
 		StatsInterface statsInterface = _platform.GetStatsInterface();
-		object obj = _003C_003Ec._003C_003E9__86_0;
+		object obj = _003C_003Ec._003C_003E9__87_0;
 		if (obj == null)
 		{
 			OnQueryStatsCompleteCallback val3 = delegate
 			{
 			};
-			_003C_003Ec._003C_003E9__86_0 = val3;
+			_003C_003Ec._003C_003E9__87_0 = val3;
 			obj = (object)val3;
 		}
 		statsInterface.QueryStats(ref val2, (object)null, (OnQueryStatsCompleteCallback)obj);
@@ -951,7 +852,13 @@ public class EpicPlatformServices : IPlatformServices
 		return _friendListServices;
 	}
 
-	public void ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
+	public bool ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
 	{
+		return false;
+	}
+
+	bool IPlatformServices.UsePlatformInvitationService(PlayerId targetPlayerId)
+	{
+		return false;
 	}
 }

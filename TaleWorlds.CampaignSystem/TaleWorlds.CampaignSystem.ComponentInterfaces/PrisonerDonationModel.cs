@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PrisonerDonationModel : GameModel
+public abstract class PrisonerDonationModel : MBGameModel<PrisonerDonationModel>
 {
 	public abstract float CalculateRelationGainAfterHeroPrisonerDonate(PartyBase donatingParty, Hero donatedHero, Settlement donatedSettlement);
 

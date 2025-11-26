@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.TeamSelection;
 
@@ -39,7 +40,7 @@ public class TeamSelectTeamInstanceVM : ViewModel
 
 	private int _score;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
 	private MBBindingList<MPPlayerVM> _friendAvatars;
 
@@ -199,7 +200,7 @@ public class TeamSelectTeamInstanceVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -317,7 +318,7 @@ public class TeamSelectTeamInstanceVM : ViewModel
 		}
 	}
 
-	public TeamSelectTeamInstanceVM(MissionScoreboardComponent missionScoreboardComponent, Team team, BasicCultureObject culture, BannerCode bannercode, Action<Team> onSelect, bool useSecondary)
+	public TeamSelectTeamInstanceVM(MissionScoreboardComponent missionScoreboardComponent, Team team, BasicCultureObject culture, Banner banner, Action<Team> onSelect, MultiplayerBattleColors.MultiplayerCultureColorInfo cultureColors)
 	{
 		Team = team;
 		_onSelect = onSelect;
@@ -336,19 +337,9 @@ public class TeamSelectTeamInstanceVM : ViewModel
 		{
 			IsDisabled = true;
 		}
-		if (bannercode == null)
-		{
-			Banner = new ImageIdentifierVM();
-		}
-		else
-		{
-			Banner = new ImageIdentifierVM(bannercode, nineGrid: true);
-		}
-		if (culture != null)
-		{
-			CultureColor1 = Color.FromUint(useSecondary ? culture.Color2 : culture.Color);
-			CultureColor2 = Color.FromUint(useSecondary ? culture.Color : culture.Color2);
-		}
+		Banner = new BannerImageIdentifierVM(banner, nineGrid: true);
+		CultureColor1 = cultureColors.Color1;
+		CultureColor2 = cultureColors.Color2;
 		_friends = new List<MPPlayerVM>();
 		FriendAvatars = new MBBindingList<MPPlayerVM>();
 		RefreshValues();
@@ -447,7 +438,6 @@ public class TeamSelectTeamInstanceVM : ViewModel
 		}
 	}
 
-	[UsedImplicitly]
 	public void ExecuteSelectTeam()
 	{
 		if (_onSelect != null)

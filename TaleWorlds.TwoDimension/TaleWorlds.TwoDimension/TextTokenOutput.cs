@@ -12,7 +12,7 @@ internal class TextTokenOutput
 
 	public float Scale { get; private set; }
 
-	public Rectangle Rectangle { get; private set; }
+	public SimpleRectangle Rectangle { get; private set; }
 
 	public TextToken Token { get; private set; }
 
@@ -23,7 +23,7 @@ internal class TextTokenOutput
 		Token = token;
 		Width = width;
 		Height = height;
-		Rectangle = new Rectangle(0f, 0f, Width, Height);
+		Rectangle = new SimpleRectangle(0f, 0f, Width, Height);
 		Style = style;
 		Scale = scaleValue;
 	}
@@ -32,6 +32,6 @@ internal class TextTokenOutput
 	{
 		X = x;
 		Y = y;
-		Rectangle = new Rectangle(x, y, Width, Height);
+		Rectangle = new SimpleRectangle(x, y, Width, Height);
 	}
 }

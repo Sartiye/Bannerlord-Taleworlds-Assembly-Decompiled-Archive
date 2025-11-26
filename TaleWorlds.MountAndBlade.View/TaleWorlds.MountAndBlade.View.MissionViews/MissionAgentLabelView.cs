@@ -1,27 +1,57 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews;
 
 public class MissionAgentLabelView : MissionView
 {
-	private const float _highlightedLabelScaleFactor = 30f;
+	private const float _highlightedLabelScaleFactor = 20f;
 
 	private const float _labelBannerWidth = 0.4f;
 
 	private const float _labelBlackBorderWidth = 0.44f;
 
+	private readonly Vec3 _meshOffset = new Vec3(0f, 0f, 2f);
+
+	private const float _nearDistance = 1.5f;
+
+	private const float _farDistance = 8f;
+
+	private readonly List<Agent> _closeAgentsWithMeshes;
+
 	private readonly Dictionary<Agent, MetaMesh> _agentMeshes;
 
 	private readonly Dictionary<Texture, Material> _labelMaterials;
 
-	private bool _wasOrderScreenVisible;
+	private bool _isSuspendingView;
 
-	private bool _wasSiegeControllerScreenVisible;
+	private bool _isResumingView;
+
+	private bool _isOrderFlagVisible;
+
+	private bool _alwaysShowFriendlyTroopBanners;
+
+	private bool _indicatorsActive;
+
+	private bool IndicatorsActive
+	{
+		get
+		{
+			return _indicatorsActive;
+		}
+		set
+		{
+			if (_indicatorsActive != value)
+			{
+				_indicatorsActive = value;
+				UpdateAllAgentMeshVisibilities();
+			}
+		}
+	}
 
 	private OrderController PlayerOrderController => base.Mission.PlayerTeam?.PlayerOrderController;
 
@@ -31,6 +61,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		_agentMeshes = new Dictionary<Agent, MetaMesh>();
 		_labelMaterials = new Dictionary<Texture, Material>();
+		_closeAgentsWithMeshes = new List<Agent>();
 	}
 
 	public override void OnBehaviorInitialize()
@@ -55,30 +86,49 @@ public class MissionAgentLabelView : MissionView
 		{
 			missionBehavior.OnBannerBearerAgentUpdated += BannerBearerLogic_OnBannerBearerAgentUpdated;
 		}
+		UpdateAlwaysShowFriendlyTroopBanners();
 	}
 
 	public override void OnMissionTick(float dt)
 	{
-		bool flag = IsOrderScreenVisible();
-		bool flag2 = IsSiegeControllerScreenVisible();
-		if (!flag && _wasOrderScreenVisible)
+		bool isOrderFlagVisible = _isOrderFlagVisible;
+		UpdateIsOrderFlagVisible();
+		if (!_isOrderFlagVisible && isOrderFlagVisible)
 		{
 			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: false, useAllTeamAgents: false);
-		}
-		if (!flag2 && _wasSiegeControllerScreenVisible)
-		{
 			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: true, useAllTeamAgents: false);
 		}
-		if (flag && !_wasOrderScreenVisible)
+		if (_isOrderFlagVisible && !isOrderFlagVisible)
 		{
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
-		}
-		if (flag2 && !_wasSiegeControllerScreenVisible)
-		{
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: true, useAllTeamAgents: false);
 		}
-		_wasOrderScreenVisible = flag;
-		_wasSiegeControllerScreenVisible = flag2;
+		UpdateProximityBannerTransparencies();
+		IndicatorsActive = _alwaysShowFriendlyTroopBanners || base.Input.IsGameKeyDown(5);
+	}
+
+	private void UpdateProximityBannerTransparencies()
+	{
+		for (int i = 0; i < _closeAgentsWithMeshes.Count; i++)
+		{
+			Agent agent = _closeAgentsWithMeshes[i];
+			SetBannerHighlightVisibility(agent, _agentMeshes[agent], IsAgentListeningToOrders(agent));
+		}
+		_closeAgentsWithMeshes.Clear();
+		AgentProximityMap.ProximityMapSearchStruct searchStruct = AgentProximityMap.BeginSearch(base.Mission, base.MissionScreen.CombatCamera.Position.AsVec2, 8f);
+		while (searchStruct.LastFoundAgent != null)
+		{
+			if (_agentMeshes.ContainsKey(searchStruct.LastFoundAgent))
+			{
+				_closeAgentsWithMeshes.Add(searchStruct.LastFoundAgent);
+			}
+			AgentProximityMap.FindNext(base.Mission, ref searchStruct);
+		}
+		for (int j = 0; j < _closeAgentsWithMeshes.Count; j++)
+		{
+			Agent agent2 = _closeAgentsWithMeshes[j];
+			SetBannerHighlightVisibility(agent2, _agentMeshes[agent2], IsAgentListeningToOrders(agent2));
+		}
 	}
 
 	public override void OnRemoveBehavior()
@@ -133,19 +183,20 @@ public class MissionAgentLabelView : MissionView
 
 	public override void OnAssignPlayerAsSergeantOfFormation(Agent agent)
 	{
-		float friendlyTroopsBannerOpacity = BannerlordConfig.FriendlyTroopsBannerOpacity;
-		_agentMeshes[agent].SetVectorArgument2(30f, 0.4f, 0.44f, 1f * friendlyTroopsBannerOpacity);
+		SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlightVisibility: true);
 	}
 
 	public override void OnClearScene()
 	{
 		_agentMeshes.Clear();
 		_labelMaterials.Clear();
+		_closeAgentsWithMeshes.Clear();
 	}
 
 	private void PlayerTeam_OnFormationsChanged(Team team, Formation formation)
 	{
-		if (IsOrderScreenVisible())
+		UpdateIsOrderFlagVisible();
+		if (_isOrderFlagVisible)
 		{
 			DehighlightAllAgents();
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
@@ -155,7 +206,7 @@ public class MissionAgentLabelView : MissionView
 	private void Mission_OnPlayerTeamChanged(Team previousTeam, Team currentTeam)
 	{
 		DehighlightAllAgents();
-		_wasOrderScreenVisible = false;
+		_isOrderFlagVisible = false;
 		if (previousTeam?.PlayerOrderController != null)
 		{
 			previousTeam.PlayerOrderController.OnSelectedFormationsChanged -= OrderController_OnSelectedFormationsChanged;
@@ -175,8 +226,10 @@ public class MissionAgentLabelView : MissionView
 
 	private void OrderController_OnSelectedFormationsChanged()
 	{
+		UpdateAllAgentMeshVisibilities();
 		DehighlightAllAgents();
-		if (IsOrderScreenVisible())
+		UpdateIsOrderFlagVisible();
+		if (_isOrderFlagVisible)
 		{
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
 		}
@@ -186,20 +239,6 @@ public class MissionAgentLabelView : MissionView
 	{
 		DehighlightAllAgents();
 		SetHighlightForAgents(highlight: true, useSiegeMachineUsers: true, useAllTeamAgents: false);
-	}
-
-	public void OnAgentListSelectionChanged(bool selectionMode, List<Agent> affectedAgents)
-	{
-		foreach (Agent affectedAgent in affectedAgents)
-		{
-			float num = (selectionMode ? 1f : (-1f));
-			if (_agentMeshes.ContainsKey(affectedAgent))
-			{
-				MetaMesh metaMesh = _agentMeshes[affectedAgent];
-				float friendlyTroopsBannerOpacity = BannerlordConfig.FriendlyTroopsBannerOpacity;
-				metaMesh.SetVectorArgument2(30f, 0.4f, 0.44f, num * friendlyTroopsBannerOpacity);
-			}
-		}
 	}
 
 	private void BannerBearerLogic_OnBannerBearerAgentUpdated(Agent agent, bool isBannerBearer)
@@ -218,6 +257,10 @@ public class MissionAgentLabelView : MissionView
 			}
 			_agentMeshes.Remove(agent);
 		}
+		if (_closeAgentsWithMeshes.Contains(agent))
+		{
+			_closeAgentsWithMeshes.Remove(agent);
+		}
 	}
 
 	private void InitAgentLabel(Agent agent, Banner peerBanner = null)
@@ -234,7 +277,8 @@ public class MissionAgentLabelView : MissionView
 		Texture texture = null;
 		MetaMesh copy = MetaMesh.GetCopy("troop_banner_selection", showErrors: false, mayReturnNull: true);
 		Material tableauMaterial = Material.GetFromResource("agent_label_with_tableau");
-		texture = banner.GetTableauTextureSmall(null);
+		BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+		texture = banner.GetTableauTextureSmall(in debugInfo, null);
 		if (!(copy != null) || !(tableauMaterial != null))
 		{
 			return;
@@ -251,17 +295,17 @@ public class MissionAgentLabelView : MissionView
 			{
 				tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap, tex);
 			};
-			texture = banner.GetTableauTextureSmall(setAction);
+			debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+			texture = banner.GetTableauTextureSmall(in debugInfo, setAction);
 			tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, fromResource);
 			_labelMaterials.Add(texture, tableauMaterial);
 		}
 		copy.SetMaterial(tableauMaterial);
 		copy.SetVectorArgument(0.5f, 0.5f, 0.25f, 0.25f);
-		copy.SetVectorArgument2(30f, 0.4f, 0.44f, -1f);
 		agent.AgentVisuals.AddMultiMesh(copy, BodyMeshTypes.Label);
 		_agentMeshes.Add(agent, copy);
 		UpdateVisibilityOfAgentMesh(agent);
-		UpdateSelectionVisibility(agent, _agentMeshes[agent], false);
+		SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlightVisibility: false);
 	}
 
 	private void UpdateVisibilityOfAgentMesh(Agent agent)
@@ -275,18 +319,28 @@ public class MissionAgentLabelView : MissionView
 
 	private bool IsMeshVisibleForAgent(Agent agent)
 	{
-		if (IsAllyInAllyTeam(agent) && base.MissionScreen.LastFollowedAgent != agent && BannerlordConfig.FriendlyTroopsBannerOpacity > 0f)
+		if ((_isResumingView || (!base.IsViewSuspended && !_isSuspendingView)) && IsAllyInAllyTeam(agent) && base.MissionScreen.LastFollowedAgent != agent && BannerlordConfig.FriendlyTroopsBannerOpacity > 0f && !base.MissionScreen.IsPhotoModeEnabled)
 		{
-			return !base.MissionScreen.IsPhotoModeEnabled;
+			if (!IndicatorsActive && base.Mission.Mode != MissionMode.Deployment)
+			{
+				return IsAgentListeningToOrders(agent);
+			}
+			return true;
 		}
 		return false;
+	}
+
+	public override void OnMissionModeChange(MissionMode oldMissionMode, bool atStart)
+	{
+		base.OnMissionModeChange(oldMissionMode, atStart);
+		UpdateAllAgentMeshVisibilities();
 	}
 
 	private void OnUpdateOpacityValueOfAgentMesh(Agent agent)
 	{
 		if (agent.IsActive() && _agentMeshes.ContainsKey(agent))
 		{
-			_agentMeshes[agent].SetVectorArgument2(30f, 0.4f, 0.44f, 0f - BannerlordConfig.FriendlyTroopsBannerOpacity);
+			SetBannerHighlightVisibility(agent, _agentMeshes[agent], IsAgentListeningToOrders(agent));
 		}
 	}
 
@@ -314,12 +368,9 @@ public class MissionAgentLabelView : MissionView
 		return false;
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
-		foreach (Agent key in _agentMeshes.Keys)
-		{
-			UpdateVisibilityOfAgentMesh(key);
-		}
+		UpdateAllAgentMeshVisibilities();
 	}
 
 	private void HandleSpectateAgentFocusIn(Agent agent)
@@ -334,10 +385,24 @@ public class MissionAgentLabelView : MissionView
 
 	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType optionType)
 	{
-		if (optionType != ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity)
+		if (optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners)
 		{
-			return;
+			UpdateAlwaysShowFriendlyTroopBanners();
+			UpdateAllAgentMeshVisibilities();
 		}
+		if (optionType == ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity || optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners)
+		{
+			UpdateAllAgentMeshVisibilities();
+		}
+	}
+
+	private void UpdateAlwaysShowFriendlyTroopBanners()
+	{
+		_alwaysShowFriendlyTroopBanners = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners) > 1E-05f;
+	}
+
+	private void UpdateAllAgentMeshVisibilities()
+	{
 		foreach (Agent agent in base.Mission.Agents)
 		{
 			if (agent.IsHuman)
@@ -353,50 +418,51 @@ public class MissionAgentLabelView : MissionView
 
 	private bool IsAgentListeningToOrders(Agent agent)
 	{
-		if (IsOrderScreenVisible() && agent.Formation != null && IsAllyInAllyTeam(agent))
+		UpdateIsOrderFlagVisible();
+		if (!_isOrderFlagVisible)
 		{
-			foreach (Formation selectedFormation in PlayerOrderController.SelectedFormations)
-			{
-				if (selectedFormation.HasUnitsWithCondition((Agent unit) => unit == agent))
-				{
-					return true;
-				}
-			}
 			return false;
 		}
-		return false;
-	}
-
-	private void UpdateSelectionVisibility(Agent agent, MetaMesh mesh, bool? visibility = null)
-	{
-		if (!visibility.HasValue)
+		if (PlayerOrderController != null && agent.Formation != null && PlayerOrderController.IsFormationListening(agent.Formation))
 		{
-			visibility = IsAgentListeningToOrders(agent);
+			return true;
 		}
-		float num = (visibility.Value ? 1f : (-1f));
-		if (agent.MissionPeer == null)
+		if (PlayerSiegeWeaponController != null && agent.IsUsingGameObject)
 		{
-			float config = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity);
-			mesh.SetVectorArgument2(30f, 0.4f, 0.44f, num * config);
-		}
-	}
-
-	private bool IsOrderScreenVisible()
-	{
-		if (PlayerOrderController != null && base.MissionScreen.OrderFlag != null)
-		{
-			return base.MissionScreen.OrderFlag.IsVisible;
+			UsableMissionObject currentlyUsedGameObject = agent.CurrentlyUsedGameObject;
+			for (int i = 0; i < PlayerSiegeWeaponController.SelectedWeapons.Count; i++)
+			{
+				TaleWorlds.MountAndBlade.SiegeWeapon siegeWeapon = PlayerSiegeWeaponController.SelectedWeapons[i];
+				for (int j = 0; j < siegeWeapon.StandingPoints.Count; j++)
+				{
+					if (currentlyUsedGameObject == siegeWeapon.StandingPoints[j])
+					{
+						return true;
+					}
+				}
+			}
 		}
 		return false;
 	}
 
-	private bool IsSiegeControllerScreenVisible()
+	private void SetBannerHighlightVisibility(Agent agent, MetaMesh mesh, bool highlightVisibility)
 	{
-		if (PlayerOrderController != null && base.MissionScreen.OrderFlag != null)
+		float num = (highlightVisibility ? 1f : (-1f));
+		float num2 = (agent.Position + _meshOffset).Distance(base.MissionScreen.CombatCamera.Position);
+		if (num2 < 1.5f)
 		{
-			return base.MissionScreen.OrderFlag.IsVisible;
+			num = 0f;
 		}
-		return false;
+		else if (num2 < 8f)
+		{
+			num *= (num2 - 1.5f) / 6.5f;
+		}
+		mesh.SetVectorArgument2(20f, 0.4f, 0.44f, num * BannerlordConfig.FriendlyTroopsBannerOpacity);
+	}
+
+	private void UpdateIsOrderFlagVisible()
+	{
+		_isOrderFlagVisible = PlayerOrderController != null && base.MissionScreen.OrderFlag != null && base.MissionScreen.OrderFlag.IsVisible;
 	}
 
 	private void SetHighlightForAgents(bool highlight, bool useSiegeMachineUsers, bool useAllTeamAgents)
@@ -415,7 +481,7 @@ public class MissionAgentLabelView : MissionView
 					Agent userAgent = standingPoint.UserAgent;
 					if (userAgent != null)
 					{
-						UpdateSelectionVisibility(userAgent, _agentMeshes[userAgent], highlight);
+						SetBannerHighlightVisibility(userAgent, _agentMeshes[userAgent], highlight);
 					}
 				}
 			}
@@ -434,7 +500,7 @@ public class MissionAgentLabelView : MissionView
 				{
 					foreach (Agent activeAgent in team.ActiveAgents)
 					{
-						UpdateSelectionVisibility(activeAgent, _agentMeshes[activeAgent], highlight);
+						SetBannerHighlightVisibility(activeAgent, _agentMeshes[activeAgent], highlight);
 					}
 					return;
 				}
@@ -446,7 +512,7 @@ public class MissionAgentLabelView : MissionView
 		{
 			selectedFormation.ApplyActionOnEachUnit(delegate(Agent agent)
 			{
-				UpdateSelectionVisibility(agent, _agentMeshes[agent], highlight);
+				SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlight);
 			});
 		}
 	}
@@ -455,7 +521,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		foreach (KeyValuePair<Agent, MetaMesh> agentMesh in _agentMeshes)
 		{
-			UpdateSelectionVisibility(agentMesh.Key, agentMesh.Value, false);
+			SetBannerHighlightVisibility(agentMesh.Key, agentMesh.Value, highlightVisibility: false);
 		}
 	}
 
@@ -467,24 +533,28 @@ public class MissionAgentLabelView : MissionView
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		foreach (Agent agent in base.Mission.Agents)
-		{
-			if (agent.IsHuman)
-			{
-				UpdateVisibilityOfAgentMesh(agent);
-			}
-		}
+		UpdateAllAgentMeshVisibilities();
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		foreach (Agent agent in base.Mission.Agents)
-		{
-			if (agent.IsHuman)
-			{
-				UpdateVisibilityOfAgentMesh(agent);
-			}
-		}
+		UpdateAllAgentMeshVisibilities();
+	}
+
+	protected override void OnSuspendView()
+	{
+		base.OnSuspendView();
+		_isSuspendingView = true;
+		UpdateAllAgentMeshVisibilities();
+		_isSuspendingView = false;
+	}
+
+	protected override void OnResumeView()
+	{
+		base.OnResumeView();
+		_isResumingView = true;
+		UpdateAllAgentMeshVisibilities();
+		_isResumingView = false;
 	}
 }

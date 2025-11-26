@@ -18,9 +18,9 @@ public class EditorGameManager : MBGameManager
 		case GameManagerLoadingSteps.FirstInitializeFirstStep:
 		{
 			bool flag = true;
-			foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+			foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 			{
-				flag = flag && subModule.DoLoading(Game.Current);
+				flag = flag && item.DoLoading(Game.Current);
 			}
 			nextStep = ((!flag) ? GameManagerLoadingSteps.FirstInitializeFirstStep : GameManagerLoadingSteps.WaitSecondStep);
 			break;

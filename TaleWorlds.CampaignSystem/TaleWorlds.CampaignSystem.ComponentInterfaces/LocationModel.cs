@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class LocationModel : GameModel
+public abstract class LocationModel : MBGameModel<LocationModel>
 {
 	public abstract int GetSettlementUpgradeLevel(LocationEncounter locationEncounter);
 

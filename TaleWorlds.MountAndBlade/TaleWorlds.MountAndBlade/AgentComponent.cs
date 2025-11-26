@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -15,7 +16,11 @@ public abstract class AgentComponent
 	{
 	}
 
-	public virtual void OnTickAsAI(float dt)
+	public virtual void OnTick(float dt)
+	{
+	}
+
+	public virtual void OnTickParallel(float dt)
 	{
 	}
 
@@ -57,7 +62,7 @@ public abstract class AgentComponent
 	{
 	}
 
-	public virtual void OnHit(Agent affectorAgent, int damage, in MissionWeapon affectorWeapon)
+	public virtual void OnHit(Agent affectorAgent, int damage, in MissionWeapon affectorWeapon, in Blow b, in AttackCollisionData collisionData)
 	{
 	}
 
@@ -69,7 +74,19 @@ public abstract class AgentComponent
 	{
 	}
 
+	public virtual void OnAgentTeleported()
+	{
+	}
+
+	public virtual void OnAIInputSet(ref Agent.EventControlFlag eventFlag, ref Agent.MovementControlFlag movementFlag, ref Vec2 inputVector)
+	{
+	}
+
 	public virtual void OnComponentRemoved()
+	{
+	}
+
+	public virtual void OnFormationSet()
 	{
 	}
 }

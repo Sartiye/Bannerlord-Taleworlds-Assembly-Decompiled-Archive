@@ -3,6 +3,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -10,7 +11,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultVillageProductionCalculatorModel : VillageProductionCalculatorModel
 {
-	public override float CalculateDailyProductionAmount(Village village, ItemObject item)
+	public override ExplainedNumber CalculateDailyProductionAmount(Village village, ItemObject item)
 	{
 		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
 		if (village.VillageState == Village.VillageStates.Normal)
@@ -48,9 +49,17 @@ public class DefaultVillageProductionCalculatorModel : VillageProductionCalculat
 					}
 					PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.Breeder, village.TradeBound.Town, ref bonuses);
 				}
-				if (village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitAnimalProductionFeat) && (item.ItemCategory == DefaultItemCategories.Sheep || item.ItemCategory == DefaultItemCategories.Cow || item.ItemCategory == DefaultItemCategories.WarHorse || item.ItemCategory == DefaultItemCategories.Horse || item.ItemCategory == DefaultItemCategories.PackAnimal))
+				if ((item.ItemCategory == DefaultItemCategories.Sheep || item.ItemCategory == DefaultItemCategories.Cow || item.ItemCategory == DefaultItemCategories.WarHorse || item.ItemCategory == DefaultItemCategories.Horse || item.ItemCategory == DefaultItemCategories.PackAnimal) && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitAnimalProductionFeat))
 				{
 					bonuses.AddFactor(DefaultCulturalFeats.KhuzaitAnimalProductionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				}
+				if (item.ItemCategory == DefaultItemCategories.Grain && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.SturgianGrainProductionFeat))
+				{
+					bonuses.AddFactor(DefaultCulturalFeats.SturgianGrainProductionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				}
+				if (village.Bound.IsFortification)
+				{
+					village.Bound.Town.AddEffectOfBuildings(BuildingEffectEnum.VillageProduction, ref bonuses);
 				}
 				if (village.Bound.IsCastle && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.VlandianCastleVillageProductionFeat))
 				{
@@ -58,7 +67,7 @@ public class DefaultVillageProductionCalculatorModel : VillageProductionCalculat
 				}
 			}
 		}
-		return bonuses.ResultNumber;
+		return bonuses;
 	}
 
 	public override float CalculateDailyFoodProductionAmount(Village village)

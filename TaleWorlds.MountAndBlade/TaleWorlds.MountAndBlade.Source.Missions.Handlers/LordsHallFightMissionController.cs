@@ -86,6 +86,11 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		{
 			_troopSpawningActive = spawnTroops;
 		}
+
+		public IEnumerable<IAgentOriginBase> GetAllTroops()
+		{
+			return _troopSupplier.GetAllTroops();
+		}
 	}
 
 	private class AreaData
@@ -215,6 +220,8 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 
 	private bool _setChargeOrderNextFrame;
 
+	private BattleSideEnum _playerSide;
+
 	public LordsHallFightMissionController(IMissionTroopSupplier[] suppliers, float areaLostRatio, float attackerDefenderTroopCountRatio, int attackerSideTroopCountMax, int defenderSideTroopCountMax, BattleSideEnum playerSide)
 	{
 		_areaLostRatio = areaLostRatio;
@@ -222,6 +229,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		_attackerSideTroopCountMax = attackerSideTroopCountMax;
 		_defenderSideTroopCountMax = defenderSideTroopCountMax;
 		_missionSides = new MissionSide[2];
+		_playerSide = playerSide;
 		for (int i = 0; i < 2; i++)
 		{
 			IMissionTroopSupplier troopSupplier = suppliers[i];
@@ -313,7 +321,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		IOrderedEnumerable<FightAreaMarker> orderedEnumerable = from area in base.Mission.ActiveMissionObjects.FindAllWithType<FightAreaMarker>()
 			orderby area.AreaIndex
 			select area;
-		base.Mission.MakeDefaultDeploymentPlans();
+		base.Mission.DeploymentPlan.MakeDefaultDeploymentPlans();
 		foreach (FightAreaMarker item in orderedEnumerable)
 		{
 			if (!_dividedAreaDictionary.ContainsKey(item.AreaIndex))
@@ -352,11 +360,11 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 			{
 				if (item2.CountOfUnits > 0)
 				{
-					item2.ArrangementOrder = ArrangementOrder.ArrangementOrderSquare;
-					item2.FormOrder = FormOrder.FormOrderDeep;
+					item2.SetArrangementOrder(ArrangementOrder.ArrangementOrderSquare);
+					item2.SetFormOrder(FormOrder.FormOrderDeep);
 				}
 				item2.SetMovementOrder(MovementOrder.MovementOrderCharge);
-				item2.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
+				item2.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
 				if (flag)
 				{
 					item2.PlayerOwner = Mission.Current.MainAgent;
@@ -397,6 +405,21 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 	public bool IsSideDepleted(BattleSideEnum side)
 	{
 		return _missionSides[(int)side].NumberOfActiveTroops == 0;
+	}
+
+	public int GetNumberOfPlayerControllableTroops()
+	{
+		throw new NotImplementedException();
+	}
+
+	public IEnumerable<IAgentOriginBase> GetAllTroopsForSide(BattleSideEnum side)
+	{
+		return _missionSides[(int)side].GetAllTroops();
+	}
+
+	public bool GetSpawnHorses(BattleSideEnum side)
+	{
+		return false;
 	}
 
 	private void CheckIfAnyAreaIsLostByDefender()

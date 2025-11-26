@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -24,19 +23,17 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 
 	private static readonly TextObject MilitiaFromMarketText = new TextObject("{=7ve3bQxg}Weapons From Market");
 
-	private static readonly TextObject FoodShortageText = new TextObject("{=qTFKvGSg}Food Shortage");
-
 	private static readonly TextObject LowLoyaltyText = new TextObject("{=SJ2qsRdF}Low Loyalty");
 
 	private static readonly TextObject CultureText = GameTexts.FindText("str_culture");
 
-	private const int AutoSpawnMilitiaDayMultiplierAfterSiege = 20;
+	private const int AutoSpawnMilitiaDayMultiplierAfterSiege = 25;
 
-	private const int MinimumAutoSpawnedMilitiaAfterSiege = 30;
+	private const int BaseMilitiaChange = 2;
 
 	public override int MilitiaToSpawnAfterSiege(Town town)
 	{
-		return Math.Max(30, (int)(town.MilitiaChange * 20f));
+		return 2 * (45 + MBRandom.RandomInt(10));
 	}
 
 	public override ExplainedNumber CalculateMilitiaChange(Settlement settlement, bool includeDescriptions = false)
@@ -44,9 +41,9 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 		return CalculateMilitiaChangeInternal(settlement, includeDescriptions);
 	}
 
-	public override float CalculateEliteMilitiaSpawnChance(Settlement settlement)
+	public override ExplainedNumber CalculateVeteranMilitiaSpawnChance(Settlement settlement)
 	{
-		float num = 0f;
+		ExplainedNumber result = default(ExplainedNumber);
 		Hero hero = null;
 		if (settlement.IsFortification && settlement.Town.Governor != null)
 		{
@@ -56,11 +53,34 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 		{
 			hero = settlement.Village.TradeBound.Town.Governor;
 		}
-		if (hero != null && hero.GetPerkValue(DefaultPerks.Leadership.CitizenMilitia))
+		if (hero != null)
 		{
-			num += DefaultPerks.Leadership.CitizenMilitia.PrimaryBonus;
+			if (hero.GetPerkValue(DefaultPerks.Leadership.CitizenMilitia))
+			{
+				result.Add(DefaultPerks.Leadership.CitizenMilitia.PrimaryBonus);
+			}
+			if (hero.GetPerkValue(DefaultPerks.Polearm.Drills))
+			{
+				result.Add(DefaultPerks.Polearm.Drills.PrimaryBonus);
+			}
+			if (hero.GetPerkValue(DefaultPerks.Steward.SevenVeterans))
+			{
+				result.Add(DefaultPerks.Steward.SevenVeterans.PrimaryBonus);
+			}
 		}
-		return num;
+		if (settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.BattanianMilitiaFeat))
+		{
+			result.Add(DefaultCulturalFeats.BattanianMilitiaFeat.EffectBonus);
+		}
+		if (settlement.IsFortification)
+		{
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.MilitiaVeterancyChance, ref result);
+		}
+		if (settlement.OwnerClan.Kingdom != null && settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.LandGrantsForVeteran))
+		{
+			result.AddFactor(0.1f);
+		}
+		return result;
 	}
 
 	public override void CalculateMilitiaSpawnRate(Settlement settlement, out float meleeTroopRate, out float rangedTroopRate)
@@ -91,7 +111,7 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 			if (settlement.Town.InRebelliousState)
 			{
 				float num2 = MBMath.Map(settlement.Town.Loyalty, 0f, Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold, Campaign.Current.Models.SettlementLoyaltyModel.MilitiaBoostPercentage, 0f);
-				float value3 = TaleWorlds.Library.MathF.Abs(num * (num2 * 0.01f));
+				float value3 = MathF.Abs(num * (num2 * 0.01f));
 				result.Add(value3, LowLoyaltyText);
 			}
 		}
@@ -120,44 +140,10 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 		}
 		if (settlement.IsCastle || settlement.IsTown)
 		{
-			if (settlement.Town.BuildingsInProgress.IsEmpty())
-			{
-				BuildingHelper.AddDefaultDailyBonus(settlement.Town, BuildingEffectEnum.MilitiaDaily, ref result);
-			}
-			foreach (Building building in settlement.Town.Buildings)
-			{
-				if (!building.BuildingType.IsDefaultProject)
-				{
-					float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.Militia);
-					if (buildingEffectAmount > 0f)
-					{
-						result.Add(buildingEffectAmount, building.Name);
-					}
-				}
-			}
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.Militia, ref result);
 			if (settlement.IsCastle && settlement.Town.InRebelliousState)
 			{
-				float resultNumber = result.ResultNumber;
-				float num4 = 0f;
-				foreach (Building building2 in settlement.Town.Buildings)
-				{
-					if (!(num4 < 1f) || (building2.BuildingType.IsDefaultProject && settlement.Town.CurrentBuilding != building2))
-					{
-						continue;
-					}
-					float buildingEffectAmount2 = building2.GetBuildingEffectAmount(BuildingEffectEnum.ReduceMilitia);
-					if (buildingEffectAmount2 > 0f)
-					{
-						float num5 = buildingEffectAmount2 * 0.01f;
-						num4 += num5;
-						if (num4 > 1f)
-						{
-							num5 -= num4 - 1f;
-						}
-						float value4 = resultNumber * (0f - num5);
-						result.Add(value4, building2.Name);
-					}
-				}
+				settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.MilitiaReduction, ref result);
 			}
 			GetSettlementMilitiaChangeDueToPolicies(settlement, ref result);
 			GetSettlementMilitiaChangeDueToPerks(settlement, ref result);
@@ -172,10 +158,9 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 		{
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.SwiftStrike, settlement.Town, ref result);
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.KeepAtBay, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Drills, settlement.Town, ref result);
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.MerryMen, settlement.Town, ref result);
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.LongShots, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.ThrowingCompetitions, settlement.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.SlingingCompetitions, settlement.Town, ref result);
 			if (settlement.IsUnderSiege)
 			{
 				PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.ArmsDealer, settlement.Town, ref result);

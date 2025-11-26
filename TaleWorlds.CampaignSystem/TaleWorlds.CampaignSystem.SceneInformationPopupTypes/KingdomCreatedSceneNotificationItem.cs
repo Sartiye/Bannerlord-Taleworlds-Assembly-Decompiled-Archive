@@ -31,12 +31,12 @@ public class KingdomCreatedSceneNotificationItem : SceneNotificationData
 
 	public override TextObject AffirmativeText => GameTexts.FindText("str_ok");
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { NewKingdom.Banner, NewKingdom.Banner };
+		return new Banner[2] { NewKingdom.Banner, NewKingdom.Banner };
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Hero leader = NewKingdom.Leader;
@@ -49,7 +49,7 @@ public class KingdomCreatedSceneNotificationItem : SceneNotificationData
 			CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2, removeHelmet: true);
 			list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(item, equipment2));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public KingdomCreatedSceneNotificationItem(Kingdom newKingdom)

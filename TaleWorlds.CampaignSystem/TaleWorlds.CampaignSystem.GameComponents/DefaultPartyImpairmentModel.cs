@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
@@ -15,23 +16,21 @@ public class DefaultPartyImpairmentModel : PartyImpairmentModel
 
 	public override float GetSiegeExpectedVulnerabilityTime()
 	{
-		float num = (2f + MBRandom.RandomFloatNormal + 24f - CampaignTime.Now.CurrentHourInDay) % 24f;
+		float num = ((float)CampaignTime.SunRise + MBRandom.RandomFloatNormal + (float)CampaignTime.HoursInDay - CampaignTime.Now.CurrentHourInDay) % (float)CampaignTime.HoursInDay;
 		float num2 = MathF.Pow(MBRandom.RandomFloat, 6f);
-		return (((MBRandom.RandomFloatNormal > 0f) ? num2 : (1f - num2)) * 24f + num) % 24f;
+		return (((MBRandom.RandomFloatNormal > 0f) ? num2 : (1f - num2)) * (float)CampaignTime.HoursInDay + num) % (float)CampaignTime.HoursInDay;
 	}
 
-	public override float GetDisorganizedStateDuration(MobileParty party)
+	public override ExplainedNumber GetDisorganizedStateDuration(MobileParty party)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(6f);
-		if (party.MapEvent != null && (party.MapEvent.IsRaid || party.MapEvent.IsSiegeAssault) && party.HasPerk(DefaultPerks.Tactics.SwiftRegroup))
+		ExplainedNumber stat = new ExplainedNumber(6f);
+		bool flag = party.MapEvent != null && (party.MapEvent.IsRaid || party.MapEvent.IsSiegeAssault);
+		if (!party.IsCurrentlyAtSea && flag && party.HasPerk(DefaultPerks.Tactics.SwiftRegroup))
 		{
-			explainedNumber.AddFactor(DefaultPerks.Tactics.SwiftRegroup.PrimaryBonus, DefaultPerks.Tactics.SwiftRegroup.Description);
+			stat.AddFactor(DefaultPerks.Tactics.SwiftRegroup.PrimaryBonus, DefaultPerks.Tactics.SwiftRegroup.Description);
 		}
-		if (party.HasPerk(DefaultPerks.Scouting.Foragers))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Scouting.Foragers.SecondaryBonus, DefaultPerks.Scouting.Foragers.Description);
-		}
-		return explainedNumber.ResultNumber;
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Foragers, party, isPrimaryBonus: false, ref stat, party.IsCurrentlyAtSea);
+		return stat;
 	}
 
 	public override bool CanGetDisorganized(PartyBase party)

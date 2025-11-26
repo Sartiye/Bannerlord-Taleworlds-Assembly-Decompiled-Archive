@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -8,12 +7,12 @@ using TaleWorlds.Core.ViewModelCollection.Information.RundownTooltip;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Options;
+using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.ExtraWidgets;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.GauntletUI.SceneNotification;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.ScreenSystem;
@@ -29,73 +28,78 @@ public class GauntletUISubModule : MBSubModuleBase
 
 	private GauntletQueryManager _queryManager;
 
-	private LoadingWindowManager _loadingWindowManager;
-
 	private SpriteCategory _fullBackgroundCategory;
-
-	private SpriteCategory _backgroundCategory;
 
 	private SpriteCategory _fullscreensCategory;
 
 	private bool _isTouchpadMouseActive;
+
+	private bool _areResourcesDirty;
 
 	public static GauntletUISubModule Instance { get; private set; }
 
 	protected override void OnSubModuleLoad()
 	{
 		base.OnSubModuleLoad();
-		ResourceDepot resourceDepot = new ResourceDepot();
-		resourceDepot.AddLocation(BasePath.Name, "GUI/GauntletUI/");
-		List<string> list = new List<string>();
-		string[] modulesNames = Utilities.GetModulesNames();
-		for (int i = 0; i < modulesNames.Length; i++)
-		{
-			ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(modulesNames[i]);
-			if (moduleInfo == null)
-			{
-				continue;
-			}
-			string folderPath = moduleInfo.FolderPath;
-			if (Directory.Exists(folderPath + "/GUI/"))
-			{
-				resourceDepot.AddLocation(folderPath, "/GUI/");
-			}
-			foreach (SubModuleInfo subModule in moduleInfo.SubModules)
-			{
-				if (subModule != null && subModule.DLLExists && !string.IsNullOrEmpty(subModule.DLLName))
-				{
-					list.Add(subModule.DLLName);
-				}
-			}
-		}
-		resourceDepot.CollectResources();
-		CustomWidgetManager.Initilize();
-		BannerlordCustomWidgetManager.Initialize();
-		UIResourceManager.Initialize(resourceDepot, list);
-		UIResourceManager.WidgetFactory.GeneratedPrefabContext.CollectPrefabs();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		_fullBackgroundCategory = spriteData.SpriteCategories["ui_fullbackgrounds"];
-		_fullBackgroundCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
-		_backgroundCategory = spriteData.SpriteCategories["ui_backgrounds"];
-		_backgroundCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
-		_fullscreensCategory = spriteData.SpriteCategories["ui_fullscreens"];
-		_fullscreensCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
-		SpriteCategory[] array = spriteData.SpriteCategories.Values.Where((SpriteCategory x) => x.AlwaysLoad).ToArray();
-		int num = array.Length;
-		float num2 = 0.2f / (float)(num - 1);
-		for (int j = 0; j < array.Length; j++)
-		{
-			array[j].Load(resourceContext, resourceDepot);
-			Utilities.SetLoadingScreenPercentage(0.4f + (float)j * num2);
-		}
-		Utilities.SetLoadingScreenPercentage(0.6f);
+		CustomWidgetManager.TouchAssembly();
+		BannerlordCustomWidgetManager.TouchAssembly();
+		RefreshResources(initialLoad: true);
 		ScreenManager.OnControllerDisconnected += OnControllerDisconnected;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Combine(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		NativeOptions.GetConfig(NativeOptions.NativeOptionsType.DisplayMode);
 		GauntletGamepadNavigationManager.Initialize();
+		LoadingWindow.InitializeWith<GauntletDefaultLoadingWindowManager>();
+		GauntletGameVersionView.AddModuleVersionInfo("Bannerlord", Utilities.GetApplicationVersionWithBuildNumber().ToString());
 		Instance = this;
+	}
+
+	private void RefreshResources(bool initialLoad)
+	{
+		Dictionary<GauntletLayer, List<GauntletMovieIdentifier>> dictionary = new Dictionary<GauntletLayer, List<GauntletMovieIdentifier>>();
+		if (!initialLoad)
+		{
+			foreach (ScreenLayer sortedLayer in ScreenManager.SortedLayers)
+			{
+				if (sortedLayer is GauntletLayer gauntletLayer)
+				{
+					gauntletLayer.OnResourceRefreshBegin(out var previouslyLoadedMovies);
+					dictionary.Add(gauntletLayer, previouslyLoadedMovies);
+				}
+			}
+		}
+		WidgetInfo.Refresh();
+		UIResourceManager.Refresh();
+		_fullBackgroundCategory?.Unload();
+		_fullscreensCategory?.Unload();
+		_fullBackgroundCategory = UIResourceManager.LoadSpriteCategory("ui_fullbackgrounds");
+		_fullscreensCategory = UIResourceManager.LoadSpriteCategory("ui_fullscreens");
+		GauntletGameVersionView.Refresh();
+		SpriteCategory[] array = UIResourceManager.SpriteData.SpriteCategories.Values.Where((SpriteCategory x) => x.AlwaysLoad).ToArray();
+		float num = 0.2f / (float)(array.Length - 1);
+		for (int i = 0; i < array.Length; i++)
+		{
+			array[i].Load();
+			if (initialLoad)
+			{
+				Utilities.SetLoadingScreenPercentage(0.4f + (float)i * num);
+			}
+		}
+		if (initialLoad)
+		{
+			Utilities.SetLoadingScreenPercentage(0.6f);
+		}
+		if (initialLoad)
+		{
+			return;
+		}
+		foreach (ScreenLayer sortedLayer2 in ScreenManager.SortedLayers)
+		{
+			if (sortedLayer2 is GauntletLayer gauntletLayer2)
+			{
+				gauntletLayer2.OnResourceRefreshEnd(dictionary[gauntletLayer2]);
+			}
+		}
 	}
 
 	private void OnControllerTypeChanged(Input.ControllerTypes newType)
@@ -130,18 +134,26 @@ public class GauntletUISubModule : MBSubModuleBase
 		}
 	}
 
+	protected override void OnNewModuleLoad()
+	{
+		_areResourcesDirty = true;
+	}
+
 	protected override void OnSubModuleUnloaded()
 	{
 		ScreenManager.OnControllerDisconnected -= OnControllerDisconnected;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Remove(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		UIResourceManager.Clear();
-		LoadingWindow.Destroy();
 		if (GauntletGamepadNavigationManager.Instance != null)
 		{
 			GauntletGamepadNavigationManager.Instance.OnFinalize();
 		}
+		_fullBackgroundCategory?.Unload();
+		_fullscreensCategory?.Unload();
+		GauntletGameVersionView.RemoveModuleVersionInfo("Bannerlord");
 		Instance = null;
+		GauntletInformationView.OnFinalize();
 		base.OnSubModuleUnloaded();
 	}
 
@@ -152,11 +164,11 @@ public class GauntletUISubModule : MBSubModuleBase
 			if (!Utilities.CommandLineArgumentExists("VisualTests"))
 			{
 				GauntletInformationView.Initialize();
-				GauntletGameNotification.Initialize();
 				GauntletSceneNotification.Initialize();
 				GauntletSceneNotification.Current.RegisterContextProvider(new NativeSceneNotificationContextProvider());
 				GauntletChatLogView.Initialize();
 				GauntletGamepadCursor.Initialize();
+				GauntletGameVersionView.Initialize();
 				InformationManager.RegisterTooltip<List<TooltipProperty>, PropertyBasedTooltipVM>(PropertyBasedTooltipVM.RefreshGenericPropertyBasedTooltip, "PropertyBasedTooltip");
 				InformationManager.RegisterTooltip<RundownLineVM, RundownTooltipVM>(RundownTooltipVM.RefreshGenericRundownTooltip, "RundownTooltip");
 				InformationManager.RegisterTooltip<string, HintVM>(HintVM.RefreshGenericHintTooltip, "HintTooltip");
@@ -164,8 +176,6 @@ public class GauntletUISubModule : MBSubModuleBase
 				_queryManager.Initialize();
 				_queryManager.InitializeKeyVisuals();
 			}
-			_loadingWindowManager = new LoadingWindowManager();
-			LoadingWindow.Initialize(_loadingWindowManager);
 			UIResourceManager.OnLanguageChange(BannerlordConfig.Language);
 			ScreenManager.OnScaleChange(BannerlordConfig.UIScale);
 			_initialized = true;
@@ -177,7 +187,7 @@ public class GauntletUISubModule : MBSubModuleBase
 		base.OnMultiplayerGameStart(game, starterObject);
 		if (!_isMultiplayer)
 		{
-			_loadingWindowManager.SetCurrentModeIsMultiplayer(isMultiplayer: true);
+			LoadingWindow.LoadingWindowManager?.SetCurrentModeIsMultiplayer(isMultiplayer: true);
 			_isMultiplayer = true;
 		}
 	}
@@ -187,17 +197,23 @@ public class GauntletUISubModule : MBSubModuleBase
 		base.OnGameEnd(game);
 		if (_isMultiplayer)
 		{
-			_loadingWindowManager.SetCurrentModeIsMultiplayer(isMultiplayer: false);
+			LoadingWindow.LoadingWindowManager?.SetCurrentModeIsMultiplayer(isMultiplayer: false);
 			_isMultiplayer = false;
 		}
 	}
 
 	protected override void OnApplicationTick(float dt)
 	{
+		if (_areResourcesDirty)
+		{
+			RefreshResources(initialLoad: false);
+			_areResourcesDirty = false;
+		}
 		base.OnApplicationTick(dt);
 		UIResourceManager.Update();
 		if (GauntletGamepadNavigationManager.Instance != null && ScreenManager.GetMouseVisibility())
 		{
+			GauntletGamepadNavigationManager.Instance.IsTouchpadMouseEnabled = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.EnableTouchpadMouse) != 0f;
 			GauntletGamepadNavigationManager.Instance.Update(dt);
 		}
 	}

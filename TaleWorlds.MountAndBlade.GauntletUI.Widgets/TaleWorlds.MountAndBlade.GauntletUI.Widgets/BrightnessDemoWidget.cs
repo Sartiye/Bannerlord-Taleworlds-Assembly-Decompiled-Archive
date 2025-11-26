@@ -12,7 +12,10 @@ public class BrightnessDemoWidget : TextureWidget
 		BrightnessWide,
 		ExposureTexture1,
 		ExposureTexture2,
-		ExposureTexture3
+		ExposureTexture3,
+		ExposureTexture4,
+		ExposureTexture5,
+		ExposureTexture6
 	}
 
 	private DemoTypes _demoType = DemoTypes.None;

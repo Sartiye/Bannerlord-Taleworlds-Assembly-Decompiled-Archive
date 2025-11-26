@@ -12,8 +12,6 @@ public class MapConversationVM : ViewModel
 
 	private object _tableauData;
 
-	private bool _isTableauEnabled;
-
 	private bool _isBarterActive;
 
 	[DataSourceProperty]
@@ -51,23 +49,6 @@ public class MapConversationVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsTableauEnabled
-	{
-		get
-		{
-			return _isTableauEnabled;
-		}
-		set
-		{
-			if (value != _isTableauEnabled)
-			{
-				_isTableauEnabled = value;
-				OnPropertyChangedWithValue(value, "IsTableauEnabled");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public bool IsBarterActive
 	{
 		get
@@ -88,7 +69,6 @@ public class MapConversationVM : ViewModel
 	{
 		_onContinue = onContinue;
 		DialogController = new MissionConversationVM(getContinueInputText);
-		IsTableauEnabled = false;
 		TableauData = null;
 	}
 
@@ -102,5 +82,6 @@ public class MapConversationVM : ViewModel
 		base.OnFinalize();
 		DialogController?.OnFinalize();
 		DialogController = null;
+		TableauData = null;
 	}
 }

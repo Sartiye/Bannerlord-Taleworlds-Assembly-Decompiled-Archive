@@ -97,7 +97,7 @@ public class VillageTypeVisualIconBrushWidget : BrushWidget
 				SetState("Default");
 				break;
 			default:
-				Debug.FailedAssert("No workshop visual with this type: " + VillageType, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Map\\Menu\\TownManagement\\VillageTypeVisualIconBrushWidget.cs", "OnLateUpdate", 103);
+				Debug.FailedAssert("No workshop visual with this type: " + VillageType, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Map\\Menu\\TownManagement\\VillageTypeVisualIconBrushWidget.cs", "OnLateUpdate", 103);
 				SetState("Default");
 				break;
 			}

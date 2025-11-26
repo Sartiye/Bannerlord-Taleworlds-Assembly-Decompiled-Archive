@@ -1,6 +1,7 @@
 using System;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
@@ -9,8 +10,6 @@ public class GameMenuItemWidget : Widget
 	public Action OnOptionStateChanged;
 
 	private string _latestTextWidgetState = "";
-
-	private bool _firstFrame = true;
 
 	private int _itemType;
 
@@ -22,7 +21,7 @@ public class GameMenuItemWidget : Widget
 
 	private BrushWidget _leaveTypeIcon;
 
-	private int _leaveType = -1;
+	private string _leaveType;
 
 	private int _questType = -1;
 
@@ -37,6 +36,8 @@ public class GameMenuItemWidget : Widget
 	private string _gameMenuStringId;
 
 	private int _battleSize;
+
+	private bool _isNavalBattle;
 
 	public Brush DefaultTextBrush { get; set; }
 
@@ -100,7 +101,7 @@ public class GameMenuItemWidget : Widget
 		}
 	}
 
-	public int LeaveType
+	public string LeaveType
 	{
 		get
 		{
@@ -112,8 +113,8 @@ public class GameMenuItemWidget : Widget
 			{
 				_leaveType = value;
 				OnPropertyChanged(value, "LeaveType");
-				SetLeaveTypeIcon(value);
-				SetLeaveTypeSound();
+				UpdateLeaveTypeIcon();
+				UpdateLeaveTypeSound();
 			}
 		}
 	}
@@ -250,7 +251,7 @@ public class GameMenuItemWidget : Widget
 			{
 				_gameMenuStringId = value;
 				OnPropertyChanged(value, "GameMenuStringId");
-				SetLeaveTypeSound();
+				UpdateLeaveTypeSound();
 			}
 		}
 	}
@@ -267,7 +268,24 @@ public class GameMenuItemWidget : Widget
 			{
 				_battleSize = value;
 				OnPropertyChanged(value, "BattleSize");
-				SetLeaveTypeSound();
+				UpdateLeaveTypeSound();
+			}
+		}
+	}
+
+	public bool IsNavalBattle
+	{
+		get
+		{
+			return _isNavalBattle;
+		}
+		set
+		{
+			if (value != _isNavalBattle)
+			{
+				_isNavalBattle = value;
+				OnPropertyChanged(value, "IsNavalBattle");
+				UpdateLeaveTypeSound();
 			}
 		}
 	}
@@ -280,11 +298,6 @@ public class GameMenuItemWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_firstFrame)
-		{
-			base.GamepadNavigationIndex = GetSiblingIndex();
-			_firstFrame = false;
-		}
 		if (_latestTextWidgetState != ItemRichTextWidget.CurrentState)
 		{
 			if (ItemRichTextWidget.CurrentState == "Default")
@@ -307,143 +320,22 @@ public class GameMenuItemWidget : Widget
 		}
 	}
 
-	private void SetLeaveTypeIcon(int type)
+	private void UpdateLeaveTypeIcon()
 	{
-		string text = string.Empty;
-		switch (type)
+		if (!string.IsNullOrEmpty(LeaveType))
 		{
-		case 0:
-			text = "Default";
-			break;
-		case 1:
-			text = "Mission";
-			break;
-		case 2:
-			text = "SubMenu";
-			break;
-		case 3:
-			text = "BribeAndEscape";
-			break;
-		case 4:
-			text = "Escape";
-			break;
-		case 5:
-			text = "Craft";
-			break;
-		case 6:
-			text = "ForceToGiveGoods";
-			break;
-		case 7:
-			text = "ForceToGiveTroops";
-			break;
-		case 8:
-			text = "Bribe";
-			break;
-		case 9:
-			text = "LeaveTroopsAndFlee";
-			break;
-		case 10:
-			text = "OrderTroopsToAttack";
-			break;
-		case 11:
-			text = "Raid";
-			break;
-		case 12:
-			text = "HostileAction";
-			break;
-		case 13:
-			text = "Recruit";
-			break;
-		case 14:
-			text = "Trade";
-			break;
-		case 15:
-			text = "Wait";
-			break;
-		case 16:
-			text = "Leave";
-			break;
-		case 17:
-			text = "Continue";
-			break;
-		case 18:
-			text = "Manage";
-			break;
-		case 19:
-			text = "ManageHideoutTroops";
-			break;
-		case 20:
-			text = "WaitQuest";
-			break;
-		case 21:
-			text = "Surrender";
-			break;
-		case 22:
-			text = "Conversation";
-			break;
-		case 23:
-			text = "DefendAction";
-			break;
-		case 24:
-			text = "Devastate";
-			break;
-		case 25:
-			text = "Pillage";
-			break;
-		case 26:
-			text = "ShowMercy";
-			break;
-		case 27:
-			text = "Leaderboard";
-			break;
-		case 28:
-			text = "OpenStash";
-			break;
-		case 29:
-			text = "ManageGarrison";
-			break;
-		case 30:
-			text = "StagePrisonBreak";
-			break;
-		case 31:
-			text = "ManagePrisoners";
-			break;
-		case 32:
-			text = "Ransom";
-			break;
-		case 33:
-			text = "PracticeFight";
-			break;
-		case 34:
-			text = "BesiegeTown";
-			break;
-		case 35:
-			text = "SneakIn";
-			break;
-		case 36:
-			text = "LeadAssault";
-			break;
-		case 37:
-			text = "DonateTroops";
-			break;
-		case 38:
-			text = "DonatePrisoners";
-			break;
-		case 39:
-			text = "SiegeAmbush";
-			break;
-		case 40:
-			text = "Warehouse";
-			break;
-		}
-		if (!string.IsNullOrEmpty(text) && type != 0)
-		{
-			LeaveTypeIcon.SetState(text);
-			LeaveTypeIcon.IsVisible = true;
+			Sprite sprite = LeaveTypeIcon.ReadOnlyBrush.GetLayer(LeaveType)?.Sprite;
+			bool flag = sprite != null;
+			LeaveTypeIcon.IsVisible = flag;
+			if (flag)
+			{
+				LeaveTypeIcon.Brush.Sprite = sprite;
+				LeaveTypeIcon.Brush.DefaultLayer.Sprite = sprite;
+			}
 		}
 	}
 
-	private void SetLeaveTypeSound()
+	private void UpdateLeaveTypeSound()
 	{
 		AudioProperty audioProperty = ParentButton?.Brush.SoundProperties.GetEventAudioProperty("Click");
 		if (audioProperty == null)
@@ -453,20 +345,24 @@ public class GameMenuItemWidget : Widget
 		audioProperty.AudioName = "default";
 		switch (LeaveType)
 		{
-		case 1:
+		case "Mission":
 			if (GameMenuStringId == "menu_siege_strategies")
 			{
 				audioProperty.AudioName = "panels/siege/sally_out";
 			}
 			break;
-		case 9:
+		case "LeaveTroopsAndFlee":
 			if (GameMenuStringId == "encounter" || GameMenuStringId == "encounter_interrupted_siege_preparations" || GameMenuStringId == "menu_siege_strategies")
 			{
 				audioProperty.AudioName = "panels/battle/retreat";
 			}
 			break;
-		case 12:
-			if (GameMenuStringId == "encounter")
+		case "HostileAction":
+			if (!(GameMenuStringId == "encounter"))
+			{
+				break;
+			}
+			if (!IsNavalBattle)
 			{
 				if (BattleSize < 50)
 				{
@@ -481,22 +377,38 @@ public class GameMenuItemWidget : Widget
 					audioProperty.AudioName = "panels/battle/attack_large";
 				}
 			}
+			else
+			{
+				audioProperty.AudioName = "panels/battle/naval_attack_large";
+			}
 			break;
-		case 21:
+		case "Surrender":
 			if (GameMenuStringId == "encounter")
 			{
 				audioProperty.AudioName = "panels/battle/retreat";
 			}
 			break;
-		case 24:
-		case 25:
+		case "Devastate":
+		case "Pillage":
 			audioProperty.AudioName = "panels/siege/raid";
 			break;
-		case 34:
+		case "BesiegeTown":
 			audioProperty.AudioName = "panels/siege/besiege";
 			break;
-		case 36:
+		case "LeadAssault":
 			audioProperty.AudioName = "panels/siege/lead_assault";
+			break;
+		case "VisitPort":
+			audioProperty.AudioName = "panels/panel_visit_port";
+			break;
+		case "CallFleet":
+			audioProperty.AudioName = "panels/panel_call_fleet";
+			break;
+		case "ManageFleet":
+			audioProperty.AudioName = "panels/panel_manage_fleet";
+			break;
+		case "RepairShips":
+			audioProperty.AudioName = "repair_all_ships";
 			break;
 		}
 	}

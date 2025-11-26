@@ -287,11 +287,13 @@ public struct MissionWeapon
 			weaponData.HasFlagAnimation = false;
 			weaponData.WeaponFrame = weaponComponent.PrimaryWeapon.Frame;
 			weaponData.ScaleFactor = Item.ScaleFactor;
-			weaponData.Inertia = weaponComponent.PrimaryWeapon.Inertia;
+			weaponData.TotalInertia = weaponComponent.PrimaryWeapon.TotalInertia;
 			weaponData.CenterOfMass = weaponComponent.PrimaryWeapon.CenterOfMass;
 			weaponData.CenterOfMass3D = weaponComponent.PrimaryWeapon.CenterOfMass3D;
 			weaponData.HolsterPositionShift = Item.HolsterPositionShift;
 			weaponData.TrailParticleName = weaponComponent.PrimaryWeapon.TrailParticleName;
+			weaponData.SkeletonName = Item.SkeletonName;
+			weaponData.StaticAnimationName = Item.StaticAnimationName;
 			weaponData.AmmoOffset = weaponComponent.PrimaryWeapon.AmmoOffset;
 			WeaponData weaponData2 = weaponData;
 			string physicsMaterial = weaponComponent.PrimaryWeapon.PhysicsMaterial;

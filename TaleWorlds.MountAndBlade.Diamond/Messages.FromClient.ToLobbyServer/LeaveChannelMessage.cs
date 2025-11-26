@@ -6,7 +6,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.FromClient.ToLobbyServer;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class LeaveChannelMessage : Message
 {
 	[JsonProperty]

@@ -2,7 +2,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Hit_particle_result_data", false)]
+[EngineStruct("Hit_particle_result_data", false, null)]
 public struct HitParticleResultData
 {
 	public int StartHitParticleIndex;

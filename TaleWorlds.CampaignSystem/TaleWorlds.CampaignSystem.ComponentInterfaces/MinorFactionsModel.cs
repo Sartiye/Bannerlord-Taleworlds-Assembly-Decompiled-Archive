@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MinorFactionsModel : GameModel
+public abstract class MinorFactionsModel : MBGameModel<MinorFactionsModel>
 {
 	public abstract float DailyMinorFactionHeroSpawnChance { get; }
 

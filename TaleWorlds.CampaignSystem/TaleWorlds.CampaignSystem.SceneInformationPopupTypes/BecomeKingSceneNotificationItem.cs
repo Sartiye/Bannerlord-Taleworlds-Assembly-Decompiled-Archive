@@ -43,7 +43,16 @@ public class BecomeKingSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override Banner[] GetBanners()
+	{
+		return new Banner[2]
+		{
+			NewLeaderHero.Clan.Kingdom.Banner,
+			NewLeaderHero.Clan.Kingdom.Banner
+		};
+	}
+
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		Equipment overriddenEquipment = NewLeaderHero.CharacterObject.Equipment.Clone(cloneWithoutWeapons: true);
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
@@ -67,16 +76,7 @@ public class BecomeKingSceneNotificationItem : SceneNotificationData
 			CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2);
 			list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(item, equipment2));
 		}
-		return list;
-	}
-
-	public override IEnumerable<Banner> GetBanners()
-	{
-		return new List<Banner>
-		{
-			NewLeaderHero.Clan.Kingdom.Banner,
-			NewLeaderHero.Clan.Kingdom.Banner
-		};
+		return list.ToArray();
 	}
 
 	public BecomeKingSceneNotificationItem(Hero newLeaderHero)

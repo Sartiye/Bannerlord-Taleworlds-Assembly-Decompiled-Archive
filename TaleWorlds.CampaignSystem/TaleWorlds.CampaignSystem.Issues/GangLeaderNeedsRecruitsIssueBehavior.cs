@@ -120,14 +120,12 @@ public class GangLeaderNeedsRecruitsIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -377,7 +375,7 @@ public class GangLeaderNeedsRecruitsIssueBehavior : CampaignBehaviorBase
 
 		private void OpenRecruitDeliveryScreen()
 		{
-			PartyScreenManager.OpenScreenWithCondition(IsTroopTransferable, DoneButtonCondition, DoneClicked, null, PartyScreenLogic.TransferState.Transferable, PartyScreenLogic.TransferState.NotTransferable, base.QuestGiver.Name, _requestedRecruitCount - _deliveredRecruitCount, showProgressBar: false, isDonating: false, PartyScreenMode.TroopsManage);
+			PartyScreenHelper.OpenScreenWithCondition(IsTroopTransferable, DoneButtonCondition, DoneClicked, null, PartyScreenLogic.TransferState.Transferable, PartyScreenLogic.TransferState.NotTransferable, base.QuestGiver.Name, _requestedRecruitCount - _deliveredRecruitCount, showProgressBar: false, isDonating: false, PartyScreenHelper.PartyScreenMode.TroopsManage);
 		}
 
 		private Tuple<bool, TextObject> DoneButtonCondition(TroopRoster leftMemberRoster, TroopRoster leftPrisonRoster, TroopRoster rightMemberRoster, TroopRoster rightPrisonRoster, int leftLimitNum, int rightLimitNum)
@@ -473,7 +471,7 @@ public class GangLeaderNeedsRecruitsIssueBehavior : CampaignBehaviorBase
 		protected override void OnTimedOut()
 		{
 			AddLog(QuestFailedWithTimeOutLogText);
-			base.QuestGiver.AddPower(10f);
+			base.QuestGiver.AddPower(-10f);
 			RelationshipChangeWithQuestGiver = -5;
 		}
 

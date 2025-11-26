@@ -25,9 +25,9 @@ public class MultiplayerGeneralKillFeedItemWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (!_initialized)
 		{
 			this.SetGlobalAlphaRecursively(0f);

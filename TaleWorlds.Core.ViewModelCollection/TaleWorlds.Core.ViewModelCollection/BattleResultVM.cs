@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -11,9 +12,9 @@ public class BattleResultVM : ViewModel
 
 	private BasicTooltipViewModel _hint;
 
-	private ImageIdentifierVM _deadLordPortrait;
+	private CharacterImageIdentifierVM _deadLordPortrait;
 
-	private ImageIdentifierVM _deadLordClanBanner;
+	private BannerImageIdentifierVM _deadLordClanBanner;
 
 	[DataSourceProperty]
 	public string Text
@@ -50,7 +51,7 @@ public class BattleResultVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM DeadLordPortrait
+	public CharacterImageIdentifierVM DeadLordPortrait
 	{
 		get
 		{
@@ -67,7 +68,7 @@ public class BattleResultVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM DeadLordClanBanner
+	public BannerImageIdentifierVM DeadLordClanBanner
 	{
 		get
 		{
@@ -89,8 +90,8 @@ public class BattleResultVM : ViewModel
 		Hint = new BasicTooltipViewModel(propertyFunc);
 		if (deadHeroCode != null)
 		{
-			DeadLordPortrait = new ImageIdentifierVM(deadHeroCode);
-			DeadLordClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(deadHeroCode.Banner), nineGrid: true);
+			DeadLordPortrait = new CharacterImageIdentifierVM(deadHeroCode);
+			DeadLordClanBanner = new BannerImageIdentifierVM(deadHeroCode.Banner, nineGrid: true);
 		}
 		else
 		{

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade.ComponentInterfaces;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -45,6 +46,7 @@ public class EditorGame : GameType
 		basicGameStarter.AddModel(new DefaultFormationArrangementModel());
 		basicGameStarter.AddModel(new DefaultDamageParticleModel());
 		basicGameStarter.AddModel(new DefaultItemPickupModel());
+		basicGameStarter.AddModel(new DefaultSiegeEngineCalculationModel());
 	}
 
 	private void LoadCustomGameXmls()
@@ -53,6 +55,8 @@ public class EditorGame : GameType
 		base.ObjectManager.LoadXML("EquipmentRosters");
 		base.ObjectManager.LoadXML("NPCCharacters");
 		base.ObjectManager.LoadXML("SPCultures");
+		base.ObjectManager.LoadXML("ShipPhysicsReferences");
+		base.ObjectManager.LoadXML("MissionShips");
 	}
 
 	protected override void BeforeRegisterTypes(MBObjectManager objectManager)
@@ -63,6 +67,8 @@ public class EditorGame : GameType
 	{
 		objectManager.RegisterType<BasicCharacterObject>("NPCCharacter", "NPCCharacters", 43u);
 		objectManager.RegisterType<BasicCultureObject>("Culture", "SPCultures", 17u);
+		objectManager.RegisterType<MissionShipObject>("MissionShip", "MissionShips", 57u);
+		objectManager.RegisterType<ShipPhysicsReference>("ShipPhysicsReference", "ShipPhysicsReferences", 64u);
 	}
 
 	protected override void DoLoadingForGameType(GameTypeLoadingStates gameTypeLoadingState, out GameTypeLoadingStates nextState)

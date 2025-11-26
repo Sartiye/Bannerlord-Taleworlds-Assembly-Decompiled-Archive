@@ -37,7 +37,17 @@ public static class MBDebug
 
 	private static readonly Dictionary<string, int> ProcessedFrameList;
 
-	public static Vec3 DebugVector => EngineApplicationInterface.IDebug.GetDebugVector();
+	public static Vec3 DebugVector
+	{
+		get
+		{
+			return EngineApplicationInterface.IDebug.GetDebugVector();
+		}
+		set
+		{
+			EngineApplicationInterface.IDebug.SetDebugVector(value);
+		}
+	}
 
 	public static int ShowDebugInfoState
 	{
@@ -277,6 +287,60 @@ public static class MBDebug
 	public static void RenderDebugCapsule(Vec3 p0, Vec3 p1, float radius, uint color = uint.MaxValue, bool depthCheck = false, float time = 0f)
 	{
 		EngineApplicationInterface.IDebug.RenderDebugCapsule(p0, p1, radius, color, depthCheck, time);
+	}
+
+	[Conditional("_RGL_KEEP_ASSERTS")]
+	public static void RenderDebugBoundingBoxOfEntity(GameEntity entity, MatrixFrame frame, uint color = uint.MaxValue, bool depthCheck = false, float time = 0f)
+	{
+		Vec3 boundingBoxMin = entity.GetBoundingBoxMin();
+		Vec3 boundingBoxMax = entity.GetBoundingBoxMax();
+		List<Vec3> list = new List<Vec3>();
+		list.Add(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMin.z));
+		list.Add(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMin.z));
+		list.Add(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMin.z));
+		list.Add(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMin.z));
+		list.Add(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMax.z));
+		list.Add(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMax.z));
+		list.Add(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMax.z));
+		list.Add(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMax.z));
+		for (int i = 0; i < list.Count / 2; i++)
+		{
+			Vec3 v = list[i];
+			frame.TransformToParent(in v);
+			v = list[(i + 1) % (list.Count / 2)];
+			frame.TransformToParent(in v);
+			v = list[i + list.Count / 2];
+			frame.TransformToParent(in v);
+			v = list[(i + 1) % (list.Count / 2) + list.Count / 2];
+			frame.TransformToParent(in v);
+		}
+	}
+
+	[Conditional("_RGL_KEEP_ASSERTS")]
+	public static void RenderDebugBoundingBox(BoundingBox box, MatrixFrame frame, uint color = uint.MaxValue, bool depthCheck = false, float time = 0f)
+	{
+		Vec3 min = box.min;
+		Vec3 max = box.max;
+		List<Vec3> list = new List<Vec3>();
+		list.Add(new Vec3(min.x, min.y, min.z));
+		list.Add(new Vec3(max.x, min.y, min.z));
+		list.Add(new Vec3(max.x, max.y, min.z));
+		list.Add(new Vec3(min.x, max.y, min.z));
+		list.Add(new Vec3(min.x, min.y, max.z));
+		list.Add(new Vec3(max.x, min.y, max.z));
+		list.Add(new Vec3(max.x, max.y, max.z));
+		list.Add(new Vec3(min.x, max.y, max.z));
+		for (int i = 0; i < list.Count / 2; i++)
+		{
+			Vec3 v = list[i];
+			frame.TransformToParent(in v);
+			v = list[(i + 1) % (list.Count / 2)];
+			frame.TransformToParent(in v);
+			v = list[i + list.Count / 2];
+			frame.TransformToParent(in v);
+			v = list[(i + 1) % (list.Count / 2) + list.Count / 2];
+			frame.TransformToParent(in v);
+		}
 	}
 
 	[Conditional("_RGL_KEEP_ASSERTS")]

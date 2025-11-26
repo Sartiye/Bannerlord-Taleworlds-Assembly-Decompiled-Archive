@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
@@ -25,7 +26,7 @@ public class TakePrisonerLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 	[SaveableField(334)]
 	public readonly Hero CapturerHero;
 
-	public override CampaignTime KeepInHistoryTime => CampaignTime.Weeks(12f);
+	public override CampaignTime KeepInHistoryTime => CampaignTime.Days(84f);
 
 	public bool IsVisibleNotification => true;
 
@@ -111,26 +112,51 @@ public class TakePrisonerLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 
 	public TextObject GetNotificationText()
 	{
-		TextObject textObject = new TextObject("{=QRJQ9Wgv}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has been taken prisoner by the {CAPTOR_FACTION}.");
-		if (CapturerHero != null)
+		Clan clan = Prisoner.Clan;
+		TextObject textObject;
+		if (clan != null && !clan.IsMinorFaction)
 		{
-			textObject = new TextObject("{=Ebb7aH3T}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has been taken prisoner by {CAPTURER_LORD.LINK}{?CAPTURER_LORD_HAS_FACTION_LINK} of the {CAPTURER_LORD_FACTION_LINK}{?}{\\?}.");
-			StringHelpers.SetCharacterProperties("CAPTURER_LORD", CapturerHero.CharacterObject, textObject);
-			Clan clan = CapturerHero.Clan;
-			if (clan != null && !clan.IsMinorFaction)
+			if (CapturerHero != null)
 			{
-				textObject.SetTextVariable("CAPTURER_LORD_FACTION_LINK", CapturerHero.MapFaction.EncyclopediaLinkWithName);
-				textObject.SetTextVariable("CAPTURER_LORD_HAS_FACTION_LINK", 1);
+				Clan clan2 = CapturerHero.Clan;
+				if (clan2 != null && !clan2.IsMinorFaction)
+				{
+					textObject = GameTexts.FindText("str_prisoner_lord_with_faction_captuter_lord_with_faction");
+					textObject.SetTextVariable("CAPTURER_FACTION_LINK", CapturerHero.MapFaction.EncyclopediaLinkWithName);
+				}
+				else
+				{
+					textObject = GameTexts.FindText("str_prisoner_lord_with_faction_captuter_lord");
+				}
+				StringHelpers.SetCharacterProperties("CAPTURER_LORD", CapturerHero.CharacterObject, textObject);
 			}
+			else
+			{
+				textObject = GameTexts.FindText("str_prisoner_lord_with_faction_captor_faction");
+				textObject.SetTextVariable("CAPTOR_FACTION", CapturerPartyMapFaction.InformalName);
+			}
+			textObject.SetTextVariable("PRISONER_FACTION_LINK", Prisoner.MapFaction.EncyclopediaLinkWithName);
 		}
-		textObject.SetTextVariable("CAPTOR_FACTION", CapturerPartyMapFaction.InformalName);
-		StringHelpers.SetCharacterProperties("PRISONER_LORD", Prisoner.CharacterObject, textObject);
-		Clan clan2 = Prisoner.Clan;
-		if (clan2 != null && !clan2.IsMinorFaction)
+		else if (CapturerHero != null)
 		{
-			textObject.SetTextVariable("PRISONER_LORD_FACTION_LINK", Prisoner.MapFaction.EncyclopediaLinkWithName);
-			textObject.SetTextVariable("PRISONER_LORD_HAS_FACTION_LINK", 1);
+			Clan clan3 = CapturerHero.Clan;
+			if (clan3 != null && !clan3.IsMinorFaction)
+			{
+				textObject = GameTexts.FindText("str_prisoner_lord_captuter_lord_with_faction");
+				textObject.SetTextVariable("CAPTURER_FACTION_LINK", CapturerHero.MapFaction.EncyclopediaLinkWithName);
+			}
+			else
+			{
+				textObject = GameTexts.FindText("str_prisoner_lord_captuter_lord");
+			}
+			StringHelpers.SetCharacterProperties("CAPTURER_LORD", CapturerHero.CharacterObject, textObject);
 		}
+		else
+		{
+			textObject = GameTexts.FindText("str_prisoner_lord_captor_faction");
+			textObject.SetTextVariable("CAPTOR_FACTION", CapturerPartyMapFaction.InformalName);
+		}
+		StringHelpers.SetCharacterProperties("PRISONER_LORD", Prisoner.CharacterObject, textObject);
 		return textObject;
 	}
 
@@ -150,5 +176,18 @@ public class TakePrisonerLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 	public TextObject GetEncyclopediaText()
 	{
 		return GetNotificationText();
+	}
+
+	public override bool IsValid()
+	{
+		if (Prisoner != null && (!Prisoner.IsRebel || Prisoner.IsAlive))
+		{
+			if (CapturerHero != null && CapturerHero.IsRebel)
+			{
+				return CapturerHero.IsAlive;
+			}
+			return true;
+		}
+		return false;
 	}
 }

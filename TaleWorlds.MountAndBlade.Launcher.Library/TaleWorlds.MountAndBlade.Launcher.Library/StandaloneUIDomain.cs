@@ -62,6 +62,7 @@ public class StandaloneUIDomain : FrameworkDomain
 		}
 		if (!_initialized)
 		{
+			WidgetInfo.Refresh();
 			GauntletGamepadNavigationManager.Initialize();
 			UserDataManager.LoadUserData();
 			Input.Initialize(new StandaloneInputManager(_graphicsForm), null);
@@ -69,13 +70,12 @@ public class StandaloneUIDomain : FrameworkDomain
 			_graphicsContext = _graphicsForm.GraphicsContext;
 			TwoDimensionPlatform twoDimensionPlatform = new TwoDimensionPlatform(_graphicsForm, isAssetsUnderDefaultFolders: true);
 			_twoDimensionContext = new TwoDimensionContext(twoDimensionPlatform, twoDimensionPlatform, _resourceDepot);
-			StandaloneInputService inputService = new StandaloneInputService(_graphicsForm);
 			InputContext inputContext = new InputContext();
 			inputContext.MouseOnMe = true;
 			inputContext.IsKeysAllowed = true;
 			inputContext.IsMouseButtonAllowed = true;
 			inputContext.IsMouseWheelAllowed = true;
-			_gauntletUIContext = new UIContext(_twoDimensionContext, inputContext, inputService);
+			_gauntletUIContext = new UIContext(_twoDimensionContext, inputContext);
 			_gauntletUIContext.IsDynamicScaleEnabled = false;
 			_gauntletUIContext.Initialize();
 			_launcherUI = new LauncherUI(UserDataManager, _gauntletUIContext, OnCloseRequest, OnMinimizeRequest);
@@ -93,6 +93,7 @@ public class StandaloneUIDomain : FrameworkDomain
 		_gauntletUIContext.Update(1f / 60f);
 		_launcherUI.Update();
 		_gauntletUIContext.LateUpdate(1f / 60f);
+		_gauntletUIContext.RenderTick(1f / 60f);
 		_graphicsForm.PostRender();
 		_graphicsContext.SwapBuffers();
 		if (_shouldDestroy)
@@ -114,6 +115,7 @@ public class StandaloneUIDomain : FrameworkDomain
 		_initialized = false;
 		_graphicsContext?.DestroyContext();
 		_gauntletUIContext = null;
+		_launcherUI.OnFinalize();
 		_launcherUI = null;
 		_graphicsForm?.Destroy();
 	}

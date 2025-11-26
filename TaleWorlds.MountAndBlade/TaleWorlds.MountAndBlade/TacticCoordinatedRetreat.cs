@@ -93,7 +93,7 @@ public class TacticCoordinatedRetreat : TacticComponent
 
 	private bool HasRetreatDestinationBeenReached()
 	{
-		return base.FormationsIncludingEmpty.All((Formation f) => f.CountOfUnits == 0 || !f.QuerySystem.IsInfantryFormation || f.QuerySystem.AveragePosition.DistanceSquared(_retreatPosition) < 5625f);
+		return base.FormationsIncludingEmpty.All((Formation f) => f.CountOfUnits == 0 || !f.QuerySystem.IsInfantryFormation || f.CachedAveragePosition.DistanceSquared(_retreatPosition) < 5625f);
 	}
 
 	protected override bool CheckAndSetAvailableFormationsChanged()
@@ -124,7 +124,7 @@ public class TacticCoordinatedRetreat : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

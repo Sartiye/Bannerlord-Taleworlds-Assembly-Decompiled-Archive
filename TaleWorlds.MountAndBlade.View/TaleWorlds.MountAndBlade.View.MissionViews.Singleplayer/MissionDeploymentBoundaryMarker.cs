@@ -4,6 +4,7 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 
@@ -15,15 +16,17 @@ public class MissionDeploymentBoundaryMarker : MissionView
 
 	public readonly float MarkerInterval;
 
-	private readonly Dictionary<string, List<GameEntity>>[] boundaryMarkersPerSide = new Dictionary<string, List<GameEntity>>[2];
+	protected readonly Dictionary<string, List<GameEntity>>[] _boundaryMarkersPerSide = new Dictionary<string, List<GameEntity>>[2];
 
-	private readonly IEntityFactory entityFactory;
+	protected readonly string _prefabName;
 
-	private bool _boundaryMarkersRemoved = true;
+	protected GameEntity _cachedEntity;
 
-	public MissionDeploymentBoundaryMarker(IEntityFactory entityFactory, float markerInterval = 2f)
+	protected bool _boundaryMarkersRemoved = true;
+
+	public MissionDeploymentBoundaryMarker(string prefabName, float markerInterval = 2f)
 	{
-		this.entityFactory = entityFactory;
+		_prefabName = prefabName;
 		MarkerInterval = Math.Max(markerInterval, 0.0001f);
 	}
 
@@ -32,7 +35,7 @@ public class MissionDeploymentBoundaryMarker : MissionView
 		base.AfterStart();
 		for (int i = 0; i < 2; i++)
 		{
-			boundaryMarkersPerSide[i] = new Dictionary<string, List<GameEntity>>();
+			_boundaryMarkersPerSide[i] = new Dictionary<string, List<GameEntity>>();
 		}
 		_boundaryMarkersRemoved = false;
 	}
@@ -43,16 +46,20 @@ public class MissionDeploymentBoundaryMarker : MissionView
 		TryRemoveBoundaryMarkers();
 	}
 
-	public override void OnInitialDeploymentPlanMadeForSide(BattleSideEnum side, bool isFirstPlan)
+	public override void OnDeploymentPlanMade(Team team, bool isFirstPlan)
 	{
-		bool flag = base.Mission.DeploymentPlan.HasDeploymentBoundaries(side);
+		if (!team.IsPlayerTeam && team != base.Mission.PlayerEnemyTeam)
+		{
+			return;
+		}
+		bool flag = base.Mission.DeploymentPlan.HasDeploymentBoundaries(team);
 		if (!(isFirstPlan && flag))
 		{
 			return;
 		}
-		foreach (var deploymentBoundary in base.Mission.DeploymentPlan.GetDeploymentBoundaries(side))
+		foreach (var deploymentBoundary in base.Mission.DeploymentPlan.GetDeploymentBoundaries(team))
 		{
-			AddBoundaryMarkerForSide(side, new KeyValuePair<string, ICollection<Vec2>>(deploymentBoundary.id, deploymentBoundary.points));
+			AddBoundaryMarkerForSide(team.Side, new KeyValuePair<string, ICollection<Vec2>>(deploymentBoundary.id, deploymentBoundary.points));
 		}
 	}
 
@@ -65,7 +72,7 @@ public class MissionDeploymentBoundaryMarker : MissionView
 	private void AddBoundaryMarkerForSide(BattleSideEnum side, KeyValuePair<string, ICollection<Vec2>> boundary)
 	{
 		string key = boundary.Key;
-		if (!boundaryMarkersPerSide[(int)side].ContainsKey(key))
+		if (!_boundaryMarkersPerSide[(int)side].ContainsKey(key))
 		{
 			Banner banner = side switch
 			{
@@ -79,7 +86,7 @@ public class MissionDeploymentBoundaryMarker : MissionView
 			{
 				MarkLine(new Vec3(list2[i]), new Vec3(list2[(i + 1) % list2.Count]), list, banner);
 			}
-			boundaryMarkersPerSide[(int)side][key] = list;
+			_boundaryMarkersPerSide[(int)side][key] = list;
 		}
 	}
 
@@ -91,7 +98,7 @@ public class MissionDeploymentBoundaryMarker : MissionView
 		}
 		for (int i = 0; i < 2; i++)
 		{
-			foreach (string item in boundaryMarkersPerSide[i].Keys.ToList())
+			foreach (string item in _boundaryMarkersPerSide[i].Keys.ToList())
 			{
 				RemoveBoundaryMarker(item, (BattleSideEnum)i);
 			}
@@ -101,7 +108,7 @@ public class MissionDeploymentBoundaryMarker : MissionView
 
 	private void RemoveBoundaryMarker(string boundaryName, BattleSideEnum side)
 	{
-		if (!boundaryMarkersPerSide[(int)side].TryGetValue(boundaryName, out var value))
+		if (!_boundaryMarkersPerSide[(int)side].TryGetValue(boundaryName, out var value))
 		{
 			return;
 		}
@@ -109,10 +116,10 @@ public class MissionDeploymentBoundaryMarker : MissionView
 		{
 			item.Remove(103);
 		}
-		boundaryMarkersPerSide[(int)side].Remove(boundaryName);
+		_boundaryMarkersPerSide[(int)side].Remove(boundaryName);
 	}
 
-	protected void MarkLine(Vec3 startPoint, Vec3 endPoint, List<GameEntity> boundary, Banner banner = null)
+	protected virtual void MarkLine(Vec3 startPoint, Vec3 endPoint, List<GameEntity> boundary, Banner banner = null)
 	{
 		Scene scene = base.Mission.Scene;
 		Vec3 vec = endPoint - startPoint;
@@ -130,11 +137,36 @@ public class MissionDeploymentBoundaryMarker : MissionView
 				frame.origin.z = 0f;
 			}
 			frame.origin.z -= 0.5f;
-			frame.Scale(Vec3.One * 0.4f);
-			GameEntity gameEntity = entityFactory.MakeEntity(banner);
+			Vec3 scalingVector = Vec3.One * 0.4f;
+			frame.Scale(in scalingVector);
+			GameEntity gameEntity = MakeEntity(banner);
 			gameEntity.SetFrame(ref frame);
 			boundary.Add(gameEntity);
 			startPoint += vec2;
 		}
+	}
+
+	private GameEntity MakeEntity(Banner banner = null)
+	{
+		Scene scene = base.Mission.Scene;
+		if (_cachedEntity == null)
+		{
+			_cachedEntity = GameEntity.Instantiate(null, _prefabName, callScriptCallbacks: false);
+		}
+		GameEntity gameEntity = GameEntity.CopyFrom(scene, _cachedEntity);
+		gameEntity.SetMobility(GameEntity.Mobility.Dynamic);
+		if (banner != null)
+		{
+			Mesh firstMesh = gameEntity.GetFirstMesh();
+			Material material = firstMesh.GetMaterial();
+			Material tableauMaterial = material.CreateCopy();
+			BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+			banner.GetTableauTextureSmall(in debugInfo, delegate(Texture tex)
+			{
+				tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
+			});
+			firstMesh.SetMaterial(tableauMaterial);
+		}
+		return gameEntity;
 	}
 }

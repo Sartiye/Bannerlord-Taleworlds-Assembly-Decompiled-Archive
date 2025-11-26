@@ -112,15 +112,6 @@ public class KingdomElection
 		StartElection();
 	}
 
-	public float GetLikelihoodForOutcome(int outcomeNo)
-	{
-		if (outcomeNo >= 0 && outcomeNo < _possibleOutcomes.Count)
-		{
-			return _possibleOutcomes[outcomeNo].Likelihood;
-		}
-		return 0f;
-	}
-
 	public float GetLikelihoodForSponsor(Clan sponsor)
 	{
 		foreach (DecisionOutcome possibleOutcome in _possibleOutcomes)
@@ -130,7 +121,7 @@ public class KingdomElection
 				return possibleOutcome.Likelihood;
 			}
 		}
-		Debug.FailedAssert("This clan is not a sponsor of any of the outcomes.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecisionMaker.cs", "GetLikelihoodForSponsor", 151);
+		Debug.FailedAssert("This clan is not a sponsor of any of the outcomes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecisionMaker.cs", "GetLikelihoodForSponsor", 139);
 		return -1f;
 	}
 
@@ -292,11 +283,11 @@ public class KingdomElection
 	{
 		DecisionOutcome decisionOutcome = null;
 		DetermineOfficialSupport();
-		DecisionOutcome decisionOutcome2 = possibleOutcomes.MaxBy((DecisionOutcome t) => t.TotalSupportPoints);
+		DecisionOutcome decisionOutcome2 = TaleWorlds.Core.Extensions.MaxBy(possibleOutcomes, (DecisionOutcome t) => t.TotalSupportPoints);
 		decisionOutcome = decisionOutcome2;
 		if (_decision.IsKingsVoteAllowed)
 		{
-			DecisionOutcome decisionOutcome3 = possibleOutcomes.MaxBy((DecisionOutcome t) => _decision.DetermineSupport(_chooser, t));
+			DecisionOutcome decisionOutcome3 = TaleWorlds.Core.Extensions.MaxBy(possibleOutcomes, (DecisionOutcome t) => _decision.DetermineSupport(_chooser, t));
 			float num = _decision.DetermineSupport(_chooser, decisionOutcome3);
 			float num2 = _decision.DetermineSupport(_chooser, decisionOutcome2);
 			float a = num - num2;

@@ -7,7 +7,6 @@ using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Armory;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Armory.CosmeticItem;
@@ -538,8 +537,8 @@ public class MPCosmeticObtainPopupVM : ViewModel
 		}
 		CharacterVisual.FillFrom(sourceCharacter);
 		CharacterVisual.SetEquipment(equipment);
-		string defaultAction = TauntUsageManager.GetDefaultAction(TauntUsageManager.GetIndexOfAction(tauntCosmeticElement.Id));
-		CharacterVisual.ExecuteStartCustomAnimation(TauntUsageManager.GetDefaultAction(TauntUsageManager.GetIndexOfAction(tauntCosmeticElement.Id)), loop: true, 0.35f);
+		string defaultAction = TauntUsageManager.Instance.GetDefaultAction(TauntUsageManager.Instance.GetIndexOfAction(tauntCosmeticElement.Id));
+		CharacterVisual.ExecuteStartCustomAnimation(TauntUsageManager.Instance.GetDefaultAction(TauntUsageManager.Instance.GetIndexOfAction(tauntCosmeticElement.Id)), loop: true, 0.35f);
 		AnimationVariationText = GetAnimationVariationText(defaultAction);
 		ItemVisual.BannerCode = "";
 		ItemVisual.InitialPanRotation = 0f;
@@ -569,19 +568,19 @@ public class MPCosmeticObtainPopupVM : ViewModel
 	{
 		if (TauntItem?.TauntCosmeticElement == null)
 		{
-			Debug.FailedAssert("Invalid taunt cosmetic item", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 178);
+			Debug.FailedAssert("Invalid taunt cosmetic item", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 177);
 			return;
 		}
-		TauntUsageManager.TauntUsageSet usageSet = TauntUsageManager.GetUsageSet(_tauntItem.TauntCosmeticElement.Id);
+		TauntUsageManager.TauntUsageSet usageSet = TauntUsageManager.Instance.GetUsageSet(_tauntItem.TauntCosmeticElement.Id);
 		if (usageSet == null)
 		{
-			Debug.FailedAssert("No usage set for taunt: " + TauntItem.TauntCosmeticElement.Id, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 186);
+			Debug.FailedAssert("No usage set for taunt: " + TauntItem.TauntCosmeticElement.Id, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 185);
 			return;
 		}
 		MBReadOnlyList<TauntUsageManager.TauntUsage> usages = usageSet.GetUsages();
 		if (usages == null || usages.Count == 0)
 		{
-			Debug.FailedAssert("No usages assigned for taunt usage set: " + TauntItem.TauntCosmeticElement.Id, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 194);
+			Debug.FailedAssert("No usages assigned for taunt usage set: " + TauntItem.TauntCosmeticElement.Id, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\MPCosmeticObtainPopupVM.cs", "ExecuteSelectNextAnimation", 193);
 			return;
 		}
 		_currentTauntUsageIndex += increment;
@@ -687,7 +686,7 @@ public class MPCosmeticObtainPopupVM : ViewModel
 	{
 		ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>(_cultureShieldItemIDs[cultureItem.Culture]);
 		Banner banner = Banner.CreateOneColoredBannerWithOneIcon(cultureItem.Culture.ForegroundColor1, cultureItem.Culture.ForegroundColor2, SigilItem.IconID);
-		ItemVisual.FillFrom(new EquipmentElement(@object), BannerCode.CreateFrom(banner).Code);
+		ItemVisual.FillFrom(new EquipmentElement(@object), banner);
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)

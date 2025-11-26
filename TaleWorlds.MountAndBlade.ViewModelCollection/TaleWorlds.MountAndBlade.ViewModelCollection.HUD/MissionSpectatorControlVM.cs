@@ -20,13 +20,21 @@ public class MissionSpectatorControlVM : ViewModel
 
 	private string _nextCharacterText;
 
+	private string _takeControlText;
+
 	private string _statusText;
+
+	private bool _isTakeControlRelevant;
+
+	private bool _isTakeControlEnabled;
 
 	private string _spectatedAgentName;
 
 	private InputKeyItemVM _prevCharacterKey;
 
 	private InputKeyItemVM _nextCharacterKey;
+
+	private InputKeyItemVM _takeControlKey;
 
 	[DataSourceProperty]
 	public bool IsEnabled
@@ -80,6 +88,23 @@ public class MissionSpectatorControlVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string TakeControlText
+	{
+		get
+		{
+			return _takeControlText;
+		}
+		set
+		{
+			if (value != _takeControlText)
+			{
+				_takeControlText = value;
+				OnPropertyChangedWithValue(value, "TakeControlText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string StatusText
 	{
 		get
@@ -92,6 +117,40 @@ public class MissionSpectatorControlVM : ViewModel
 			{
 				_statusText = value;
 				OnPropertyChangedWithValue(value, "StatusText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsTakeControlRelevant
+	{
+		get
+		{
+			return _isTakeControlRelevant;
+		}
+		set
+		{
+			if (value != _isTakeControlRelevant)
+			{
+				_isTakeControlRelevant = value;
+				OnPropertyChangedWithValue(value, "IsTakeControlRelevant");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsTakeControlEnabled
+	{
+		get
+		{
+			return _isTakeControlEnabled;
+		}
+		set
+		{
+			if (value != _isTakeControlEnabled)
+			{
+				_isTakeControlEnabled = value;
+				OnPropertyChangedWithValue(value, "IsTakeControlEnabled");
 			}
 		}
 	}
@@ -147,6 +206,23 @@ public class MissionSpectatorControlVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public InputKeyItemVM TakeControlKey
+	{
+		get
+		{
+			return _takeControlKey;
+		}
+		set
+		{
+			if (value != _takeControlKey)
+			{
+				_takeControlKey = value;
+				OnPropertyChangedWithValue(value, "TakeControlKey");
+			}
+		}
+	}
+
 	public MissionSpectatorControlVM(Mission mission)
 	{
 		_mission = mission;
@@ -158,6 +234,7 @@ public class MissionSpectatorControlVM : ViewModel
 		base.RefreshValues();
 		PrevCharacterText = new TextObject("{=BANC61K5}Previous Character").ToString();
 		NextCharacterText = new TextObject("{=znKxunbQ}Next Character").ToString();
+		TakeControlText = new TextObject("{=TGpbi44D}Take Control of Character").ToString();
 		UpdateStatusText();
 	}
 
@@ -168,7 +245,7 @@ public class MissionSpectatorControlVM : ViewModel
 
 	public void OnSpectatedAgentFocusOut(Agent followedAgent)
 	{
-		SpectatedAgentName = TextObject.Empty.ToString();
+		SpectatedAgentName = "";
 	}
 
 	public override void OnFinalize()
@@ -176,6 +253,7 @@ public class MissionSpectatorControlVM : ViewModel
 		base.OnFinalize();
 		PrevCharacterKey?.OnFinalize();
 		NextCharacterKey?.OnFinalize();
+		TakeControlKey?.OnFinalize();
 	}
 
 	public void SetMainAgentStatus(bool isDead)
@@ -207,5 +285,10 @@ public class MissionSpectatorControlVM : ViewModel
 	public void SetNextCharacterInputKey(GameKey gameKey)
 	{
 		NextCharacterKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: false);
+	}
+
+	public void SetTakeControlInputKey(GameKey gameKey)
+	{
+		TakeControlKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: false);
 	}
 }

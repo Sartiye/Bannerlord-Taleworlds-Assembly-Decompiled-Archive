@@ -5,7 +5,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class CompressionInfo
 {
-	[EngineStruct("Integer_compression_info", false)]
+	[EngineStruct("Integer_compression_info", false, null)]
 	public struct Integer
 	{
 		[CustomEngineStructMemberData("min_value")]
@@ -50,7 +50,7 @@ public class CompressionInfo
 		}
 	}
 
-	[EngineStruct("Unsigned_integer_compression_info", false)]
+	[EngineStruct("Unsigned_integer_compression_info", false, null)]
 	public struct UnsignedInteger
 	{
 		[CustomEngineStructMemberData("min_value")]
@@ -90,7 +90,7 @@ public class CompressionInfo
 		}
 	}
 
-	[EngineStruct("Integer64_compression_info", false)]
+	[EngineStruct("Integer64_compression_info", false, null)]
 	public struct LongInteger
 	{
 		[CustomEngineStructMemberData("min_value")]
@@ -130,7 +130,7 @@ public class CompressionInfo
 		}
 	}
 
-	[EngineStruct("Unsigned_integer64_compression_info", false)]
+	[EngineStruct("Unsigned_integer64_compression_info", false, null)]
 	public struct UnsignedLongInteger
 	{
 		[CustomEngineStructMemberData("min_value")]
@@ -170,7 +170,7 @@ public class CompressionInfo
 		}
 	}
 
-	[EngineStruct("Float_compression_info", false)]
+	[EngineStruct("Float_compression_info", false, null)]
 	public struct Float
 	{
 		[CustomEngineStructMemberData("min_value")]
@@ -234,6 +234,11 @@ public class CompressionInfo
 		public float GetPrecision()
 		{
 			return precision;
+		}
+
+		public void ClampValueAccordingToLimits(ref float x)
+		{
+			x = MathF.Clamp(x, minimumValue, maximumValue);
 		}
 	}
 }

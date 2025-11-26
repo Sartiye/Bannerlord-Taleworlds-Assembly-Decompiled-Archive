@@ -6,7 +6,7 @@ public struct Mat2
 
 	public Vec2 f;
 
-	public static Mat2 Identity = new Mat2(1f, 0f, 0f, 1f);
+	public static readonly Mat2 Identity = new Mat2(1f, 0f, 0f, 1f);
 
 	public Mat2(float sx, float sy, float fx, float fy)
 	{

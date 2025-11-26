@@ -206,7 +206,7 @@ public static class ConversationHelper
 		}
 		if (textObject == null)
 		{
-			Debug.FailedAssert("GENERIC - UNSPECIFIED RELATION in clan", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationHelper.cs", "GetHeroRelationToHeroTextShort", 275);
+			Debug.FailedAssert("GENERIC - UNSPECIFIED RELATION in clan", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationHelper.cs", "GetHeroRelationToHeroTextShort", 275);
 			textObject = GameTexts.FindText("str_relative_of_player");
 		}
 		else if (queriedHero != null)

@@ -39,25 +39,11 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		NumberOfStates
 	}
 
-	private static readonly ActionIndexCache act_usage_batteringram_left = ActionIndexCache.Create("act_usage_batteringram_left");
-
-	private static readonly ActionIndexCache act_usage_batteringram_left_slower = ActionIndexCache.Create("act_usage_batteringram_left_slower");
-
-	private static readonly ActionIndexCache act_usage_batteringram_left_slowest = ActionIndexCache.Create("act_usage_batteringram_left_slowest");
-
-	private static readonly ActionIndexCache act_usage_batteringram_right = ActionIndexCache.Create("act_usage_batteringram_right");
-
-	private static readonly ActionIndexCache act_usage_batteringram_right_slower = ActionIndexCache.Create("act_usage_batteringram_right_slower");
-
-	private static readonly ActionIndexCache act_usage_batteringram_right_slowest = ActionIndexCache.Create("act_usage_batteringram_right_slowest");
-
 	private string _pathEntityName = "Path";
 
 	private const string PullStandingPointTag = "pull";
 
 	private const string RightStandingPointTag = "right";
-
-	private const string LeftStandingPointTag = "left";
 
 	private const string IdleAnimation = "batteringram_idle";
 
@@ -72,8 +58,6 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 	private const float KnockSlowerAnimationHitProgress = 0.6f;
 
 	private const float KnockSlowestAnimationHitProgress = 0.61f;
-
-	private const string RoofTag = "roof";
 
 	private string _gateTag = "gate";
 
@@ -91,17 +75,17 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 
 	public int DisabledNavMeshID = 8;
 
-	private int _bridgeNavMeshID_1 = 8;
+	private int _bridgeNavMeshID1 = 8;
 
-	private int _bridgeNavMeshID_2 = 8;
+	private int _bridgeNavMeshID2 = 8;
 
-	private int _ditchNavMeshID_1 = 9;
+	private int _ditchNavMeshID1 = 9;
 
-	private int _ditchNavMeshID_2 = 10;
+	private int _ditchNavMeshID2 = 10;
 
-	private int _groundToBridgeNavMeshID_1 = 12;
+	private int _groundToBridgeNavMeshID1 = 12;
 
-	private int _groundToBridgeNavMeshID_2 = 13;
+	private int _groundToBridgeNavMeshID2 = 13;
 
 	public int NavMeshIdToDisableOnDestination = -1;
 
@@ -249,7 +233,7 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 			destructableComponent.BattleSide = BattleSideEnum.Attacker;
 		}
 		_state = RamState.Stable;
-		IEnumerable<GameEntity> source = from ewgt in base.Scene.FindEntitiesWithTag(_gateTag).ToList()
+		IEnumerable<WeakGameEntity> source = from ewgt in base.Scene.FindWeakEntitiesWithTag(_gateTag).ToList()
 			where ewgt.HasScriptOfType<CastleGate>()
 			select ewgt;
 		if (!source.IsEmpty())
@@ -258,22 +242,22 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 			_gate.AttackerSiegeWeapon = this;
 		}
 		AddRegularMovementComponent();
-		_batteringRamBody = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag("body"));
+		_batteringRamBody = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("body"));
 		_batteringRamBodySkeleton = _batteringRamBody.Skeleton;
 		_batteringRamBodySkeleton.SetAnimationAtChannel("batteringram_idle", 0, 1f, 0f);
 		_pullStandingPoints = new List<StandingPoint>();
 		_pullStandingPointLocalIKFrames = new List<MatrixFrame>();
-		MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
+		MatrixFrame m = base.GameEntity.GetGlobalFrame();
 		if (base.StandingPoints != null)
 		{
 			foreach (StandingPoint standingPoint in base.StandingPoints)
 			{
-				standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none));
+				standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
 				if (standingPoint.GameEntity.HasTag("pull"))
 				{
 					standingPoint.IsDeactivated = true;
 					_pullStandingPoints.Add(standingPoint);
-					_pullStandingPointLocalIKFrames.Add(standingPoint.GameEntity.GetGlobalFrame().TransformToLocal(globalFrame));
+					_pullStandingPointLocalIKFrames.Add(standingPoint.GameEntity.GetGlobalFrame().TransformToLocal(in m));
 					standingPoint.AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 				}
 			}
@@ -326,21 +310,21 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		{
 			if (isDeployed)
 			{
-				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID_1, isEnabled: true);
-				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID_2, isEnabled: true);
-				Mission.Current.Scene.SeparateFacesWithId(_ditchNavMeshID_1, _groundToBridgeNavMeshID_1);
-				Mission.Current.Scene.SeparateFacesWithId(_ditchNavMeshID_2, _groundToBridgeNavMeshID_2);
-				Mission.Current.Scene.MergeFacesWithId(_bridgeNavMeshID_1, _groundToBridgeNavMeshID_1, 0);
-				Mission.Current.Scene.MergeFacesWithId(_bridgeNavMeshID_2, _groundToBridgeNavMeshID_2, 0);
+				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID1, isEnabled: true);
+				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID2, isEnabled: true);
+				Mission.Current.Scene.SeparateFacesWithId(_ditchNavMeshID1, _groundToBridgeNavMeshID1);
+				Mission.Current.Scene.SeparateFacesWithId(_ditchNavMeshID2, _groundToBridgeNavMeshID2);
+				Mission.Current.Scene.MergeFacesWithId(_bridgeNavMeshID1, _groundToBridgeNavMeshID1, 0);
+				Mission.Current.Scene.MergeFacesWithId(_bridgeNavMeshID2, _groundToBridgeNavMeshID2, 0);
 			}
 			else
 			{
-				Mission.Current.Scene.SeparateFacesWithId(_bridgeNavMeshID_1, _groundToBridgeNavMeshID_1);
-				Mission.Current.Scene.SeparateFacesWithId(_bridgeNavMeshID_2, _groundToBridgeNavMeshID_2);
-				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID_1, isEnabled: false);
-				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID_2, isEnabled: false);
-				Mission.Current.Scene.MergeFacesWithId(_ditchNavMeshID_1, _groundToBridgeNavMeshID_1, 0);
-				Mission.Current.Scene.MergeFacesWithId(_ditchNavMeshID_2, _groundToBridgeNavMeshID_2, 0);
+				Mission.Current.Scene.SeparateFacesWithId(_bridgeNavMeshID1, _groundToBridgeNavMeshID1);
+				Mission.Current.Scene.SeparateFacesWithId(_bridgeNavMeshID2, _groundToBridgeNavMeshID2);
+				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID1, isEnabled: false);
+				Mission.Current.Scene.SetAbilityOfFacesWithId(_bridgeNavMeshID2, isEnabled: false);
+				Mission.Current.Scene.MergeFacesWithId(_ditchNavMeshID1, _groundToBridgeNavMeshID1, 0);
+				Mission.Current.Scene.MergeFacesWithId(_ditchNavMeshID2, _groundToBridgeNavMeshID2, 0);
 			}
 		}
 	}
@@ -449,6 +433,7 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 			if (userCountNotInStruckAction > 0)
 			{
 				State = RamState.Hitting;
+				SetAbilityOfConditionalFaces(enabled: false);
 				_usedPower = userCountNotInStruckAction;
 				_storedPower = 0f;
 				StartHitAnimationWithProgress((userCountNotInStruckAction - 1) / 2, 0f);
@@ -482,7 +467,7 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 					MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
 					float num3 = _storedPower * DamageMultiplier;
 					num3 /= animationParameterAtChannel * MBAnimation.GetAnimationDuration(animationName);
-					_gate.DestructionComponent.TriggerOnHit(base.PilotAgent, (int)num3, globalFrame.origin, globalFrame.rotation.f, in MissionWeapon.Invalid, this);
+					_gate.DestructionComponent.TriggerOnHit(base.PilotAgent, (int)num3, globalFrame.origin, globalFrame.rotation.f, in MissionWeapon.Invalid, -1, this);
 					State = RamState.AfterHit;
 				}
 			}
@@ -490,12 +475,14 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 			{
 				_batteringRamBody.GetFirstScriptOfType<SynchedMissionObject>().SetAnimationAtChannelSynched("batteringram_idle", 0);
 				State = RamState.Stable;
+				SetAbilityOfConditionalFaces(enabled: true);
 			}
 			break;
 		case RamState.AfterHit:
 			if (_batteringRamBodySkeleton.GetAnimationParameterAtChannel(0) > 0.999f)
 			{
 				State = RamState.Stable;
+				SetAbilityOfConditionalFaces(enabled: true);
 			}
 			break;
 		}
@@ -517,8 +504,8 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		{
 			if (standingPoint.HasUser && standingPoint.GameEntity.HasTag("pull"))
 			{
-				ActionIndexCache actionCodeForStandingPoint = GetActionCodeForStandingPoint(standingPoint, powerStage);
-				if (!standingPoint.UserAgent.SetActionChannel(1, actionCodeForStandingPoint, ignorePriority: false, 0uL, 0f, 1f, -0.2f, 0.4f, progress) && standingPoint.UserAgent.Controller == Agent.ControllerType.AI)
+				ActionIndexCache actionIndexCache = GetActionCodeForStandingPoint(standingPoint, powerStage);
+				if (!standingPoint.UserAgent.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL, 0f, 1f, -0.2f, 0.4f, progress) && standingPoint.UserAgent.Controller == AgentControllerType.AI)
 				{
 					standingPoint.UserAgent.StopUsingGameObject(isSuccessful: false);
 				}
@@ -533,7 +520,7 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 			if (standingPoint.HasUser && standingPoint.GameEntity.HasTag("pull"))
 			{
 				ActionIndexCache actionCodeForStandingPoint = GetActionCodeForStandingPoint(standingPoint, powerStage);
-				if (standingPoint.UserAgent.GetCurrentActionValue(1) == actionCodeForStandingPoint)
+				if (standingPoint.UserAgent.GetCurrentAction(1) == actionCodeForStandingPoint)
 				{
 					standingPoint.UserAgent.SetCurrentActionProgress(1, progress);
 				}
@@ -548,16 +535,16 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		switch (powerStage)
 		{
 		case 0:
-			result = (flag ? act_usage_batteringram_left_slowest : act_usage_batteringram_right_slowest);
+			result = (flag ? ActionIndexCache.act_usage_batteringram_left_slowest : ActionIndexCache.act_usage_batteringram_right_slowest);
 			break;
 		case 1:
-			result = (flag ? act_usage_batteringram_left_slower : act_usage_batteringram_right_slower);
+			result = (flag ? ActionIndexCache.act_usage_batteringram_left_slower : ActionIndexCache.act_usage_batteringram_right_slower);
 			break;
 		case 2:
-			result = (flag ? act_usage_batteringram_left : act_usage_batteringram_right);
+			result = (flag ? ActionIndexCache.act_usage_batteringram_left : ActionIndexCache.act_usage_batteringram_right);
 			break;
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\BatteringRam.cs", "GetActionCodeForStandingPoint", 590);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\BatteringRam.cs", "GetActionCodeForStandingPoint", 583);
 			break;
 		}
 		return result;
@@ -572,6 +559,10 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 	{
 		base.OnMissionReset();
 		_state = RamState.Stable;
+		if (!GameNetwork.IsClientOrReplay)
+		{
+			SetAbilityOfConditionalFaces(enabled: true);
+		}
 		_hasArrivedAtTarget = false;
 		_batteringRamBodySkeleton.SetAnimationAtChannel("batteringram_idle", 0, 1f, 0f);
 		foreach (StandingPoint standingPoint in base.StandingPoints)
@@ -639,9 +630,9 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		MovementComponent.SetupGhostEntity();
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return new TextObject("{=MaBSSg7I}Battering Ram").ToString();
+		return new TextObject("{=MaBSSg7I}Battering Ram");
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
@@ -712,23 +703,17 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		_spawnedFromSpawner = true;
 	}
 
-	public void AssignParametersFromSpawner(string gateTag, string sideTag, int bridgeNavMeshID_1, int bridgeNavMeshID_2, int ditchNavMeshID_1, int ditchNavMeshID_2, int groundToBridgeNavMeshID_1, int groundToBridgeNavMeshID_2, string pathEntityName)
+	public void AssignParametersFromSpawner(string gateTag, string sideTag, int bridgeNavMeshID1, int bridgeNavMeshID2, int ditchNavMeshID1, int ditchNavMeshID2, int groundToBridgeNavMeshID1, int groundToBridgeNavMeshID2, string pathEntityName)
 	{
 		_gateTag = gateTag;
 		_sideTag = sideTag;
-		_bridgeNavMeshID_1 = bridgeNavMeshID_1;
-		_bridgeNavMeshID_2 = bridgeNavMeshID_2;
-		_ditchNavMeshID_1 = ditchNavMeshID_1;
-		_ditchNavMeshID_2 = ditchNavMeshID_2;
-		_groundToBridgeNavMeshID_1 = groundToBridgeNavMeshID_1;
-		_groundToBridgeNavMeshID_2 = groundToBridgeNavMeshID_2;
+		_bridgeNavMeshID1 = bridgeNavMeshID1;
+		_bridgeNavMeshID2 = bridgeNavMeshID2;
+		_ditchNavMeshID1 = ditchNavMeshID1;
+		_ditchNavMeshID2 = ditchNavMeshID2;
+		_groundToBridgeNavMeshID1 = groundToBridgeNavMeshID1;
+		_groundToBridgeNavMeshID2 = groundToBridgeNavMeshID2;
 		_pathEntityName = pathEntityName;
-	}
-
-	public bool GetNavmeshFaceIds(out List<int> navmeshFaceIds)
-	{
-		navmeshFaceIds = null;
-		return false;
 	}
 
 	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
@@ -741,5 +726,11 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		totalDistanceTraveled += 0.05f;
 		MovementComponent.SetTotalDistanceTraveledForPathTracker(totalDistanceTraveled);
 		MovementComponent.SetTargetFrameForPathTracker();
+	}
+
+	public bool GetNavmeshFaceIds(out List<int> navmeshFaceIds)
+	{
+		navmeshFaceIds = null;
+		return false;
 	}
 }

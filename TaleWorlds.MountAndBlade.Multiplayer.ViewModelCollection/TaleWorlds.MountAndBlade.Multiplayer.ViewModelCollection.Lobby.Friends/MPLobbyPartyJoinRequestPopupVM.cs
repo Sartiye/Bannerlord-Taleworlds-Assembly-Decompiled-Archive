@@ -13,6 +13,10 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 
 	private bool _isEnabled;
 
+	private float _remainingAnswerDuration;
+
+	private float _maxAnswerDuration;
+
 	private string _titleText;
 
 	private string _doYouWantToInviteText;
@@ -106,9 +110,44 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public float RemainingAnswerDuration
+	{
+		get
+		{
+			return _remainingAnswerDuration;
+		}
+		set
+		{
+			if (value != _remainingAnswerDuration)
+			{
+				_remainingAnswerDuration = value;
+				OnPropertyChangedWithValue(value, "RemainingAnswerDuration");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float MaxAnswerDuration
+	{
+		get
+		{
+			return _maxAnswerDuration;
+		}
+		set
+		{
+			if (value != _maxAnswerDuration)
+			{
+				_maxAnswerDuration = value;
+				OnPropertyChangedWithValue(value, "MaxAnswerDuration");
+			}
+		}
+	}
+
 	public MPLobbyPartyJoinRequestPopupVM()
 	{
 		RefreshValues();
+		MaxAnswerDuration = 30f;
 	}
 
 	public override void RefreshValues()
@@ -122,6 +161,7 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 	{
 		_viaPlayerId = viaPlayerId;
 		JoiningPlayer = new MPLobbyPlayerBaseVM(joiningPlayer);
+		RemainingAnswerDuration = MaxAnswerDuration;
 		if (viaPlayerId == NetworkMain.GameClient.PlayerID)
 		{
 			TextObject textObject = new TextObject("{=BcEN71ts}Player wants to join your party.");
@@ -140,12 +180,28 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 	{
 		JoiningPlayer = new MPLobbyPlayerBaseVM(joiningPlayer);
 		JoiningPlayerText = "";
+		RemainingAnswerDuration = MaxAnswerDuration;
 		IsEnabled = true;
 	}
 
 	public void Close()
 	{
-		IsEnabled = false;
+		if (IsEnabled)
+		{
+			ExecuteDeclineJoinRequest();
+		}
+	}
+
+	public void OnTick(float dt)
+	{
+		if (IsEnabled)
+		{
+			RemainingAnswerDuration -= dt;
+			if (RemainingAnswerDuration <= 0f)
+			{
+				ExecuteDeclineJoinRequest();
+			}
+		}
 	}
 
 	private void ExecuteAcceptJoinRequest()
@@ -164,13 +220,13 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 					{
 						NetworkMain.GameClient.DeclinePartyJoinRequest(JoiningPlayer.ProvidedID, PartyJoinDeclineReason.NoPlatformPermission);
 					}
-					Close();
+					IsEnabled = false;
 				});
 			}
 			else
 			{
 				NetworkMain.GameClient.DeclinePartyJoinRequest(JoiningPlayer.ProvidedID, PartyJoinDeclineReason.NoPlatformPermission);
-				Close();
+				IsEnabled = false;
 			}
 		});
 	}
@@ -178,6 +234,6 @@ public class MPLobbyPartyJoinRequestPopupVM : ViewModel
 	private void ExecuteDeclineJoinRequest()
 	{
 		NetworkMain.GameClient.DeclinePartyJoinRequest(JoiningPlayer.ProvidedID, PartyJoinDeclineReason.DeclinedByLeader);
-		Close();
+		IsEnabled = false;
 	}
 }

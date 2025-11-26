@@ -6,27 +6,27 @@ namespace TaleWorlds.MountAndBlade;
 
 public class MissionCombatantsLogic : MissionLogic
 {
-	private readonly IEnumerable<IBattleCombatant> _battleCombatants;
+	protected readonly IEnumerable<IBattleCombatant> BattleCombatants;
 
-	private readonly IBattleCombatant _playerBattleCombatant;
+	protected readonly IBattleCombatant PlayerBattleCombatant;
 
-	private readonly IBattleCombatant _defenderLeaderBattleCombatant;
+	protected readonly IBattleCombatant DefenderLeaderBattleCombatant;
 
-	private readonly IBattleCombatant _attackerLeaderBattleCombatant;
+	protected readonly IBattleCombatant AttackerLeaderBattleCombatant;
 
-	private readonly Mission.MissionTeamAITypeEnum _teamAIType;
+	protected readonly Mission.MissionTeamAITypeEnum TeamAIType;
 
-	private readonly bool _isPlayerSergeant;
+	protected readonly bool IsPlayerSergeant;
 
 	public BattleSideEnum PlayerSide
 	{
 		get
 		{
-			if (_playerBattleCombatant == null)
+			if (PlayerBattleCombatant == null)
 			{
 				return BattleSideEnum.None;
 			}
-			if (_playerBattleCombatant != _defenderLeaderBattleCombatant)
+			if (PlayerBattleCombatant != DefenderLeaderBattleCombatant)
 			{
 				return BattleSideEnum.Attacker;
 			}
@@ -40,21 +40,21 @@ public class MissionCombatantsLogic : MissionLogic
 		{
 			battleCombatants = new IBattleCombatant[2] { defenderLeaderBattleCombatant, attackerLeaderBattleCombatant };
 		}
-		_battleCombatants = battleCombatants;
-		_playerBattleCombatant = playerBattleCombatant;
-		_defenderLeaderBattleCombatant = defenderLeaderBattleCombatant;
-		_attackerLeaderBattleCombatant = attackerLeaderBattleCombatant;
-		_teamAIType = teamAIType;
-		_isPlayerSergeant = isPlayerSergeant;
+		BattleCombatants = battleCombatants;
+		PlayerBattleCombatant = playerBattleCombatant;
+		DefenderLeaderBattleCombatant = defenderLeaderBattleCombatant;
+		AttackerLeaderBattleCombatant = attackerLeaderBattleCombatant;
+		TeamAIType = teamAIType;
+		IsPlayerSergeant = isPlayerSergeant;
 	}
 
 	public Banner GetBannerForSide(BattleSideEnum side)
 	{
 		if (side != 0)
 		{
-			return _attackerLeaderBattleCombatant.Banner;
+			return AttackerLeaderBattleCombatant.Banner;
 		}
-		return _defenderLeaderBattleCombatant.Banner;
+		return DefenderLeaderBattleCombatant.Banner;
 	}
 
 	public override void OnBehaviorInitialize()
@@ -64,31 +64,34 @@ public class MissionCombatantsLogic : MissionLogic
 		{
 			throw new MBIllegalValueException("Number of teams is not 0.");
 		}
-		BattleSideEnum side = _playerBattleCombatant.Side;
-		BattleSideEnum oppositeSide = side.GetOppositeSide();
-		if (side == BattleSideEnum.Defender)
+		BattleSideEnum playerSide = PlayerBattleCombatant.Side;
+		BattleSideEnum oppositeSide = playerSide.GetOppositeSide();
+		if (playerSide == BattleSideEnum.Defender)
 		{
-			AddPlayerTeam(side);
+			AddPlayerTeam(playerSide);
 		}
 		else
 		{
 			AddEnemyTeam(oppositeSide);
 		}
-		if (side == BattleSideEnum.Attacker)
+		if (playerSide == BattleSideEnum.Attacker)
 		{
-			AddPlayerTeam(side);
+			AddPlayerTeam(playerSide);
 		}
 		else
 		{
 			AddEnemyTeam(oppositeSide);
 		}
-		AddPlayerAllyTeam(side);
+		if (SupportsAllyTeamOnPlayerSide(BattleCombatants.Where((IBattleCombatant cmbt) => cmbt.Side == playerSide), PlayerBattleCombatant, IsPlayerSergeant, out var allyCombatant))
+		{
+			AddPlayerAllyTeam(playerSide, allyCombatant);
+		}
 	}
 
 	public override void EarlyStart()
 	{
-		Mission.Current.MissionTeamAIType = _teamAIType;
-		switch (_teamAIType)
+		Mission.Current.MissionTeamAIType = TeamAIType;
+		switch (TeamAIType)
 		{
 		case Mission.MissionTeamAITypeEnum.FieldBattle:
 			foreach (Team team2 in Mission.Current.Teams)
@@ -145,7 +148,7 @@ public class MissionCombatantsLogic : MissionLogic
 				{
 					continue;
 				}
-				int num = _battleCombatants.Where((IBattleCombatant bc) => bc.Side == team.Side).Max((IBattleCombatant bcs) => bcs.GetTacticsSkillAmount());
+				int num = BattleCombatants.Where((IBattleCombatant bc) => bc.Side == team.Side).Max((IBattleCombatant bcs) => bcs.GetTacticsSkillAmount());
 				team.AddTacticOption(new TacticCharge(team));
 				if ((float)num >= 20f)
 				{
@@ -223,45 +226,48 @@ public class MissionCombatantsLogic : MissionLogic
 
 	public IEnumerable<IBattleCombatant> GetAllCombatants()
 	{
-		foreach (IBattleCombatant battleCombatant in _battleCombatants)
+		foreach (IBattleCombatant battleCombatant in BattleCombatants)
 		{
 			yield return battleCombatant;
 		}
 	}
 
-	private void AddPlayerTeam(BattleSideEnum playerSide)
+	protected void AddPlayerTeam(BattleSideEnum playerSide)
 	{
-		base.Mission.Teams.Add(playerSide, _playerBattleCombatant.PrimaryColorPair.Item1, _playerBattleCombatant.PrimaryColorPair.Item2, _playerBattleCombatant.Banner);
+		base.Mission.Teams.Add(playerSide, PlayerBattleCombatant.PrimaryColorPair.Item1, PlayerBattleCombatant.PrimaryColorPair.Item2, PlayerBattleCombatant.Banner);
 		base.Mission.PlayerTeam = ((playerSide == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
 	}
 
-	private void AddEnemyTeam(BattleSideEnum enemySide)
+	protected void AddEnemyTeam(BattleSideEnum enemySide)
 	{
-		IBattleCombatant battleCombatant = ((enemySide == BattleSideEnum.Attacker) ? _attackerLeaderBattleCombatant : _defenderLeaderBattleCombatant);
+		IBattleCombatant battleCombatant = ((enemySide == BattleSideEnum.Attacker) ? AttackerLeaderBattleCombatant : DefenderLeaderBattleCombatant);
 		base.Mission.Teams.Add(enemySide, battleCombatant.PrimaryColorPair.Item1, battleCombatant.PrimaryColorPair.Item2, battleCombatant.Banner);
 	}
 
-	private void AddPlayerAllyTeam(BattleSideEnum playerSide)
+	protected void AddPlayerAllyTeam(BattleSideEnum playerSide, IBattleCombatant allyCombatant)
 	{
-		if (_battleCombatants == null)
+		base.Mission.Teams.Add(playerSide, allyCombatant.PrimaryColorPair.Item1, allyCombatant.PrimaryColorPair.Item2, allyCombatant.Banner);
+		if (playerSide != BattleSideEnum.Attacker)
 		{
-			return;
+			_ = base.Mission.DefenderAllyTeam;
 		}
-		foreach (IBattleCombatant battleCombatant in _battleCombatants)
+		else
 		{
-			if (battleCombatant != _playerBattleCombatant && battleCombatant.Side == playerSide && !_isPlayerSergeant)
+			_ = base.Mission.AttackerAllyTeam;
+		}
+	}
+
+	public static bool SupportsAllyTeamOnPlayerSide(IEnumerable<IBattleCombatant> playerSideBattleCombatants, IBattleCombatant playerBattleCombatant, bool isPlayerSergeant, out IBattleCombatant allyCombatant)
+	{
+		allyCombatant = null;
+		foreach (IBattleCombatant playerSideBattleCombatant in playerSideBattleCombatants)
+		{
+			if (playerSideBattleCombatant != playerBattleCombatant && playerSideBattleCombatant.Side == playerBattleCombatant.Side && !isPlayerSergeant)
 			{
-				base.Mission.Teams.Add(playerSide, battleCombatant.PrimaryColorPair.Item1, battleCombatant.PrimaryColorPair.Item2, battleCombatant.Banner);
-				if (playerSide != BattleSideEnum.Attacker)
-				{
-					_ = base.Mission.DefenderAllyTeam;
-				}
-				else
-				{
-					_ = base.Mission.AttackerAllyTeam;
-				}
-				break;
+				allyCombatant = playerSideBattleCombatant;
+				return true;
 			}
 		}
+		return false;
 	}
 }

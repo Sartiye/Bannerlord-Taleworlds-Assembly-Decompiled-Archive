@@ -36,10 +36,10 @@ public class OrderOfBattleHeroDropWidget : ButtonWidget
 		return true;
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
 		HandleSoundEvent();
-		base.OnClick();
+		base.HandleClick();
 	}
 
 	private void HandleSoundEvent()

@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
-using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -190,17 +193,27 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private const float InventoryFullnessGoal = 0.9f;
+
 	private const float AverageCaravanWaitAtSettlement = 3f;
-
-	private const int MaxMoneyToSpendOnSingleCategory = 1500;
-
-	private const int MaxNumberOfItemsToBuyFromSingleCategory = 100;
-
-	public const int InitialCaravanGold = 10000;
 
 	private const float ProfitRateRumorThreshold = 1.2f;
 
-	private float ReferenceBudgetValue = 5000f;
+	private const float ReferenceBudgetValue = 5000f;
+
+	private const float HighSecurityThreshold = 75f;
+
+	private const float MustDiscardPriorityValue = float.MinValue;
+
+	private const float CaravanTradeAgreementBonus = 2f;
+
+	private const float ConvoyTradeAgreementBonus = 1.5f;
+
+	private float _navalCaravanVeryFarCache = -1f;
+
+	private float _defaultCaravanVeryFarCache = -1f;
+
+	private ITradeAgreementsCampaignBehavior _tradeAgreementsBehavior;
 
 	private Dictionary<MobileParty, CampaignTime> _tradeRumorTakenCaravans = new Dictionary<MobileParty, CampaignTime>();
 
@@ -212,9 +225,9 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private Dictionary<MobileParty, List<TradeActionLog>> _tradeActionLogs = new Dictionary<MobileParty, List<TradeActionLog>>();
 
-	private Dictionary<MobileParty, List<Settlement>> _previouslyChangedCaravanTargetsDueToEnemyOnWay = new Dictionary<MobileParty, List<Settlement>>();
-
 	private TradeActionLogPool _tradeActionLogPool;
+
+	private List<Kingdom> _prohibitedKingdomsForPlayerCaravans = new List<Kingdom>();
 
 	private int _packAnimalCategoryIndex = -1;
 
@@ -222,17 +235,47 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private readonly Dictionary<ItemCategory, PriceIndexData> _priceDictionary = new Dictionary<ItemCategory, PriceIndexData>();
 
+	private readonly Dictionary<ItemCategory, PriceIndexData> _coastalPriceDictionary = new Dictionary<ItemCategory, PriceIndexData>();
+
 	private readonly Dictionary<ItemCategory, int> _totalValueOfItemsAtCategory = new Dictionary<ItemCategory, int>();
 
-	private float DistanceScoreDivider => (636f + 11.36f * Campaign.AverageDistanceBetweenTwoFortifications) / 2f;
+	private int MaxNumberOfItemsToBuyFromSingleCategory => Campaign.Current.Models.CaravanModel.MaxNumberOfItemsToBuyFromSingleCategory;
 
-	private float DistanceLimitVeryFar => (508f + 9f * Campaign.AverageDistanceBetweenTwoFortifications) / 2f;
+	public ITradeAgreementsCampaignBehavior TradeAgreementsCampaignBehavior
+	{
+		get
+		{
+			if (_tradeAgreementsBehavior == null)
+			{
+				_tradeAgreementsBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+			}
+			return _tradeAgreementsBehavior;
+		}
+	}
 
-	private float DistanceLimitFar => (381f + 6.75f * Campaign.AverageDistanceBetweenTwoFortifications) / 2f;
+	private float GetDistanceLimitVeryFarAsDaysForNavigationType(bool isNavalCaravan)
+	{
+		if (!isNavalCaravan)
+		{
+			return _defaultCaravanVeryFarCache;
+		}
+		return _navalCaravanVeryFarCache;
+	}
 
-	private float DistanceLimitMedium => (254f + 4.5f * Campaign.AverageDistanceBetweenTwoFortifications) / 2f;
+	private float GetDistanceLimitFarAsDaysForNavigationType(bool isNavalCaravan)
+	{
+		return GetDistanceLimitVeryFarAsDaysForNavigationType(isNavalCaravan) * 0.75f;
+	}
 
-	private float DistanceLimitClose => (127f + 2.25f * Campaign.AverageDistanceBetweenTwoFortifications) / 2f;
+	private float GetDistanceLimitMediumAsDaysForNavigationType(bool isNavalCaravan)
+	{
+		return GetDistanceLimitVeryFarAsDaysForNavigationType(isNavalCaravan) * 0.5f;
+	}
+
+	private float GetDistanceLimitCloseAsDaysForNavigationType(bool isNavalCaravan)
+	{
+		return GetDistanceLimitVeryFarAsDaysForNavigationType(isNavalCaravan) * 0.25f;
+	}
 
 	public CaravansCampaignBehavior()
 	{
@@ -247,13 +290,34 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, DailyTickHero);
 		CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
-		CampaignEvents.OnNewGameCreatedPartialFollowUpEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEvent);
 		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEndEvent);
 		CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
 		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, OnMobilePartyCreated);
 		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
-		CampaignEvents.DistributeLootToPartyEvent.AddNonSerializedListener(this, OnLootCaravanParties);
+		CampaignEvents.OnLootDistributedToPartyEvent.AddNonSerializedListener(this, OnLootDistributedToParty);
 		CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, OnSiegeEventStarted);
+		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+		CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
+	}
+
+	private void OnKingdomDestroyed(Kingdom destroyedKingdom)
+	{
+		if (_prohibitedKingdomsForPlayerCaravans.Contains(destroyedKingdom))
+		{
+			_prohibitedKingdomsForPlayerCaravans.Remove(destroyedKingdom);
+		}
+	}
+
+	private void OnGameLoadFinished()
+	{
+		CreatePriceDataCache();
+		foreach (MobileParty allCaravanParty in MobileParty.AllCaravanParties)
+		{
+			if ((!allCaravanParty.IsActive || !allCaravanParty.IsReady) && _caravanLastHomeTownVisitTime.ContainsKey(allCaravanParty))
+			{
+				_caravanLastHomeTownVisitTime.Remove(allCaravanParty);
+			}
+		}
 	}
 
 	private void OnSiegeEventStarted(SiegeEvent siegeEvent)
@@ -262,42 +326,16 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		{
 			if (siegeEvent.BesiegedSettlement.Parties[i].IsCaravan)
 			{
-				siegeEvent.BesiegedSettlement.Parties[i].Ai.SetMoveModeHold();
+				siegeEvent.BesiegedSettlement.Parties[i].SetMoveModeHold();
 			}
 		}
 	}
 
-	private void OnLootCaravanParties(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot)
+	private void OnLootDistributedToParty(PartyBase winnerParty, PartyBase defeatedParty, ItemRoster lootedItems)
 	{
-		foreach (PartyBase key in loot.Keys)
+		if (winnerParty.IsMobile && defeatedParty.IsMobile && defeatedParty.MobileParty.IsCaravan)
 		{
-			if (key.IsMobile && key.MobileParty.IsCaravan && party.IsMobile)
-			{
-				SkillLevelingManager.OnLoot(party.MobileParty, key.MobileParty, loot[key], attacked: true);
-			}
-		}
-	}
-
-	public void OnNewGameCreatedPartialFollowUpEvent(CampaignGameStarter starter, int i)
-	{
-		List<Hero> list = new List<Hero>();
-		foreach (Hero allAliveHero in Hero.AllAliveHeroes)
-		{
-			if (allAliveHero.Clan != Clan.PlayerClan && ShouldHaveCaravan(allAliveHero))
-			{
-				list.Add(allAliveHero);
-			}
-		}
-		int count = list.Count;
-		int num = count / 100 + ((count % 100 > i) ? 1 : 0);
-		int num2 = count / 100 * i;
-		for (int j = 0; j < i; j++)
-		{
-			num2 += ((count % 100 > j) ? 1 : 0);
-		}
-		for (int k = 0; k < num; k++)
-		{
-			SpawnCaravan(list[num2 + k], initialSpawn: true);
+			SkillLevelingManager.OnLoot(winnerParty.MobileParty, defeatedParty.MobileParty, lootedItems, attacked: true);
 		}
 	}
 
@@ -305,6 +343,13 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		for (int i = 0; i < 2; i++)
 		{
+			foreach (Hero allAliveHero in Hero.AllAliveHeroes)
+			{
+				if (allAliveHero.Clan != Clan.PlayerClan && Campaign.Current.Models.CaravanModel.CanHeroCreateCaravan(allAliveHero))
+				{
+					SpawnCaravan(allAliveHero, initialSpawn: true);
+				}
+			}
 			UpdateAverageValues();
 			DoInitialTradeRuns();
 		}
@@ -316,7 +361,8 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_lootedCaravans", ref _lootedCaravans);
 		dataStore.SyncData("_interactedCaravans", ref _interactedCaravans);
 		dataStore.SyncData("_tradeActionLogs", ref _tradeActionLogs);
-		dataStore.SyncData("_previouslyChangedCaravanTargetsDueToEnemyOnWay", ref _previouslyChangedCaravanTargetsDueToEnemyOnWay);
+		dataStore.SyncData("_caravanLastHomeTownVisitTime", ref _caravanLastHomeTownVisitTime);
+		dataStore.SyncData("_prohibitedKingdomsForPlayerCaravans", ref _prohibitedKingdomsForPlayerCaravans);
 	}
 
 	private void DoInitialTradeRuns()
@@ -324,34 +370,20 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		foreach (MobileParty allCaravanParty in MobileParty.AllCaravanParties)
 		{
 			Town town = null;
-			Town town2 = null;
-			float num = 0f;
+			Town town2 = allCaravanParty.CurrentSettlement?.Town;
+			MobileParty.NavigationType navigationType = ((!allCaravanParty.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
+			List<(Town, float)> list = new List<(Town, float)>();
 			foreach (Town allTown in Town.AllTowns)
 			{
-				float num2 = allCaravanParty.Position2D.Distance(allTown.Settlement.GatePosition);
-				if (num2 > 1f)
+				if (allTown.Settlement.HasPort || allCaravanParty.HasLandNavigationCapability)
 				{
-					num += 1f / TaleWorlds.Library.MathF.Pow(num2, 1.5f);
-				}
-				else
-				{
-					town2 = allTown;
+					float num = float.MaxValue;
+					bool flag = navigationType == MobileParty.NavigationType.Naval;
+					num = ((allCaravanParty.CurrentSettlement == null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(allCaravanParty, allTown.Settlement, flag, navigationType, out var _) : Campaign.Current.Models.MapDistanceModel.GetDistance(allCaravanParty.CurrentSettlement, allTown.Settlement, flag, flag, navigationType));
+					list.Add((allTown, 1f / TaleWorlds.Library.MathF.Pow(num, 1.5f)));
 				}
 			}
-			float num3 = MBRandom.RandomFloat * num;
-			foreach (Town allTown2 in Town.AllTowns)
-			{
-				float num4 = allCaravanParty.Position2D.Distance(allTown2.Settlement.GatePosition);
-				if (num4 > 1f)
-				{
-					num3 -= 1f / TaleWorlds.Library.MathF.Pow(num4, 1.5f);
-					if (num3 <= 0f)
-					{
-						town = allTown2;
-						break;
-					}
-				}
-			}
+			town = MBRandom.ChooseWeighted(list);
 			if (town != null && town2 != null)
 			{
 				CreatePriceDataCache();
@@ -373,8 +405,23 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
+		CacheVeryFarDistances();
 		AddDialogs(campaignGameStarter);
 		UpdateAverageValues();
+	}
+
+	private void CacheVeryFarDistances()
+	{
+		MobileParty.NavigationType navigationType = MobileParty.NavigationType.Naval;
+		float num = 20f;
+		float num2 = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType) * num;
+		float num3 = Campaign.Current.EstimatedAverageCaravanPartyNavalSpeed * (float)CampaignTime.HoursInDay;
+		_navalCaravanVeryFarCache = num2 / num3;
+		navigationType = MobileParty.NavigationType.Default;
+		num = 5f;
+		num2 = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType) * num;
+		num3 = Campaign.Current.EstimatedAverageCaravanPartySpeed * (float)CampaignTime.HoursInDay;
+		_defaultCaravanVeryFarCache = num2 / num3;
 	}
 
 	private void OnMapEventEnded(MapEvent mapEvent)
@@ -385,12 +432,16 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			{
 				continue;
 			}
+			if (involvedParty.MobileParty.HasNavalNavigationCapability)
+			{
+				DiscardShips(involvedParty.MobileParty);
+			}
 			MobileParty mobileParty = involvedParty.MobileParty;
 			int numberOfPackAnimals = mobileParty.ItemRoster.NumberOfPackAnimals;
 			int numberOfLivestockAnimals = mobileParty.ItemRoster.NumberOfLivestockAnimals;
 			int numberOfMounts = mobileParty.ItemRoster.NumberOfMounts;
 			int totalManCount = mobileParty.MemberRoster.TotalManCount;
-			if ((float)(numberOfPackAnimals + numberOfLivestockAnimals + numberOfMounts) > (float)totalManCount * 1.2f)
+			if (involvedParty.MobileParty.HasLandNavigationCapability && (float)(numberOfPackAnimals + numberOfLivestockAnimals + numberOfMounts) > (float)totalManCount * 1.2f)
 			{
 				int num = numberOfPackAnimals + numberOfLivestockAnimals + numberOfMounts;
 				while (num > totalManCount)
@@ -415,15 +466,15 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 			int inventoryCapacity = mobileParty.InventoryCapacity;
-			float totalWeight = mobileParty.ItemRoster.TotalWeight;
+			float totalWeightCarried = mobileParty.TotalWeightCarried;
 			float num4 = 0f;
-			if (!(totalWeight - num4 > (float)inventoryCapacity))
+			if (!(totalWeightCarried - num4 > (float)inventoryCapacity))
 			{
 				continue;
 			}
 			int num6;
 			float weight;
-			for (; totalWeight - num4 > (float)inventoryCapacity; num4 += weight * (float)num6)
+			for (; totalWeightCarried - num4 > (float)inventoryCapacity; num4 += weight * (float)num6)
 			{
 				int num5 = 10000;
 				ItemRosterElement itemRosterElement2 = involvedParty.MobileParty.ItemRoster[0];
@@ -439,7 +490,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 						}
 					}
 				}
-				int val = TaleWorlds.Library.MathF.Ceiling((totalWeight - num4 - (float)inventoryCapacity) / itemRosterElement2.EquipmentElement.Weight);
+				int val = TaleWorlds.Library.MathF.Ceiling((totalWeightCarried - num4 - (float)inventoryCapacity) / itemRosterElement2.EquipmentElement.Weight);
 				num6 = Math.Max(1, Math.Min(itemRosterElement2.Amount, val));
 				weight = itemRosterElement2.EquipmentElement.Weight;
 				mobileParty.ItemRoster.AddToCounts(itemRosterElement2.EquipmentElement, -num6);
@@ -447,32 +498,16 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	public bool ShouldHaveCaravan(Hero hero)
-	{
-		if (hero.PartyBelongedTo == null && hero.IsMerchant && (hero.IsFugitive || hero.IsReleased || hero.IsNotSpawned || hero.IsActive) && !hero.IsTemplate)
-		{
-			return hero.CanLeadParty();
-		}
-		return false;
-	}
-
 	public void SpawnCaravan(Hero hero, bool initialSpawn = false)
 	{
-		if (hero.OwnedCaravans.Count <= 0)
+		bool flag = Campaign.Current.Models.CaravanModel.GetEliteCaravanSpawnChance(hero) > hero.RandomFloat();
+		PartyTemplateObject randomElementWithPredicate = ((MBReadOnlyList<PartyTemplateObject>)(flag ? hero.Culture.EliteCaravanPartyTemplates : hero.Culture.CaravanPartyTemplates)).GetRandomElementWithPredicate((Func<PartyTemplateObject, bool>)((PartyTemplateObject x) => x.ShipHulls.Count == 0 != hero.CurrentSettlement.HasPort));
+		bool isNaval = randomElementWithPredicate.ShipHulls.Any();
+		Settlement settlement = hero.HomeSettlement ?? hero.BornSettlement;
+		MobileParty caravanParty = CaravanPartyComponent.CreateCaravanParty(spawnSettlement: (settlement == null) ? Town.AllTowns.GetRandomElementWithPredicate((Town x) => x.Settlement.HasPort == isNaval).Settlement : (settlement.IsTown ? settlement : ((!settlement.IsVillage) ? Town.AllTowns.GetRandomElementWithPredicate((Town x) => x.Settlement.HasPort == isNaval).Settlement : (settlement.Village.TradeBound ?? Town.AllTowns.GetRandomElementWithPredicate((Town x) => x.Settlement.HasPort == isNaval).Settlement))), caravanOwner: hero, templateObject: randomElementWithPredicate, isInitialSpawn: initialSpawn, caravanLeader: null, caravanItems: null, isElite: flag);
+		if (!initialSpawn)
 		{
-			Settlement settlement = hero.HomeSettlement ?? hero.BornSettlement;
-			Settlement spawnSettlement = ((settlement == null) ? Town.AllTowns.GetRandomElement().Settlement : (settlement.IsTown ? settlement : ((!settlement.IsVillage) ? Town.AllTowns.GetRandomElement().Settlement : (settlement.Village.TradeBound ?? Town.AllTowns.GetRandomElement().Settlement))));
-			bool isElite = false;
-			if (hero.Power >= 112f)
-			{
-				float num = hero.Power * 0.0045f - 0.5f;
-				isElite = hero.RandomFloat() < num;
-			}
-			CaravanPartyComponent.CreateCaravanParty(hero, spawnSettlement, initialSpawn, null, null, 0, isElite);
-			if (!initialSpawn && hero.Power >= 50f)
-			{
-				hero.AddPower(-30f);
-			}
+			hero.AddPower(Campaign.Current.Models.CaravanModel.GetPowerChangeAfterCaravanCreation(hero, caravanParty));
 		}
 	}
 
@@ -507,6 +542,8 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		{
 			float num = 0f;
 			float num2 = 1000f;
+			float num3 = 0f;
+			float num4 = 1000f;
 			foreach (Town allTown in Town.AllTowns)
 			{
 				float itemCategoryPriceIndex = allTown.GetItemCategoryPriceIndex(item);
@@ -515,9 +552,19 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				{
 					num2 = itemCategoryPriceIndex;
 				}
+				if (allTown.Settlement.HasPort)
+				{
+					num3 += itemCategoryPriceIndex;
+					if (itemCategoryPriceIndex < num4)
+					{
+						num4 = itemCategoryPriceIndex;
+					}
+				}
 			}
 			float averageBuySellPriceIndex = num / (float)Town.AllTowns.Count;
+			float averageBuySellPriceIndex2 = num3 / (float)Town.AllTowns.Count((Town x) => x.Settlement.HasPort);
 			_priceDictionary[item] = new PriceIndexData(averageBuySellPriceIndex, num2);
+			_coastalPriceDictionary[item] = new PriceIndexData(averageBuySellPriceIndex2, num4);
 		}
 	}
 
@@ -530,7 +577,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private void DailyTickHero(Hero hero)
 	{
-		if (hero != Hero.MainHero && ShouldHaveCaravan(hero))
+		if (hero != Hero.MainHero && MBRandom.RandomFloat < 0.75f && Campaign.Current.Models.CaravanModel.CanHeroCreateCaravan(hero))
 		{
 			SpawnCaravan(hero);
 		}
@@ -573,23 +620,23 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		return party.TargetSettlement?.Town;
 	}
 
-	public void HourlyTickParty(MobileParty caravanParty)
+	public void HourlyTickParty(MobileParty mobileParty)
 	{
-		if (!Campaign.Current.GameStarted || !caravanParty.IsCaravan)
+		if (!Campaign.Current.GameStarted || !mobileParty.IsCaravan)
 		{
 			return;
 		}
 		bool flag = false;
 		float randomFloat = MBRandom.RandomFloat;
-		if (caravanParty.MapEvent != null || !caravanParty.IsPartyTradeActive || caravanParty.Ai.DoNotMakeNewDecisions)
+		if (mobileParty.MapEvent != null || mobileParty.IsInRaftState || !mobileParty.IsPartyTradeActive || mobileParty.Ai.DoNotMakeNewDecisions || mobileParty.DefaultBehavior == AiBehavior.MoveToNearestLandOrPort)
 		{
 			return;
 		}
-		if (caravanParty.CurrentSettlement != null && caravanParty.CurrentSettlement.IsTown)
+		if (mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsFortification)
 		{
-			if (!caravanParty.CurrentSettlement.IsUnderSiege && caravanParty.ShortTermBehavior != AiBehavior.FleeToPoint && !caravanParty.Ai.IsAlerted && (caravanParty.IsCurrentlyUsedByAQuest || randomFloat < 1f / 3f))
+			if ((!mobileParty.CurrentSettlement.IsUnderSiege || (!mobileParty.CurrentSettlement.SiegeEvent.IsBlockadeActive && mobileParty.HasNavalNavigationCapability)) && mobileParty.ShortTermBehavior != AiBehavior.FleeToPoint && !mobileParty.Ai.IsAlerted && (mobileParty.IsCurrentlyUsedByAQuest || randomFloat < 1f / 3f))
 			{
-				float num = ((caravanParty.MemberRoster.TotalManCount > 0) ? ((float)caravanParty.MemberRoster.TotalWounded / (float)caravanParty.MemberRoster.TotalManCount) : 1f);
+				float num = ((mobileParty.MemberRoster.TotalManCount > 0) ? ((float)mobileParty.MemberRoster.TotalWounded / (float)mobileParty.MemberRoster.TotalManCount) : 1f);
 				float num2 = 1f;
 				if ((double)num > 0.4)
 				{
@@ -620,34 +667,24 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Town destinationForMobileParty = GetDestinationForMobileParty(caravanParty);
-			flag = destinationForMobileParty == null || destinationForMobileParty.IsUnderSiege || caravanParty.MapFaction.IsAtWarWith(destinationForMobileParty.MapFaction) || caravanParty.Ai.NeedTargetReset || (!caravanParty.IsCurrentlyUsedByAQuest && randomFloat < 0.01f);
+			Town destinationForMobileParty = GetDestinationForMobileParty(mobileParty);
+			flag = destinationForMobileParty == null || (destinationForMobileParty.IsUnderSiege && (!mobileParty.HasNavalNavigationCapability || destinationForMobileParty.Settlement.SiegeEvent.IsBlockadeActive)) || !CanTradeWith(mobileParty.MapFaction, destinationForMobileParty.MapFaction);
 		}
 		if (flag)
 		{
-			if (caravanParty.CurrentSettlement != null && caravanParty.CurrentSettlement.IsTown)
+			if (mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsTown)
 			{
-				Town town = caravanParty.CurrentSettlement.Town;
-				BuyGoods(caravanParty, town);
+				Town town = mobileParty.CurrentSettlement.Town;
+				BuyGoods(mobileParty, town);
 			}
-			if (!_previouslyChangedCaravanTargetsDueToEnemyOnWay.ContainsKey(caravanParty))
-			{
-				_previouslyChangedCaravanTargetsDueToEnemyOnWay.Add(caravanParty, new List<Settlement>());
-			}
-			if (caravanParty.Ai.NeedTargetReset && caravanParty.TargetSettlement != null)
-			{
-				_previouslyChangedCaravanTargetsDueToEnemyOnWay[caravanParty].Add(caravanParty.TargetSettlement);
-			}
-			Town town2 = ThinkNextDestination(caravanParty);
+			MobileParty.NavigationType bestNavigationType;
+			bool isFromPort;
+			bool isTargetingPort;
+			Town town2 = ThinkNextDestination(mobileParty, out bestNavigationType, out isFromPort, out isTargetingPort);
 			if (town2 != null)
 			{
-				caravanParty.Ai.SetMoveGoToSettlement(town2.Settlement);
+				SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, town2.Settlement, bestNavigationType, isFromPort, isTargetingPort);
 			}
-		}
-		Town destinationForMobileParty2 = GetDestinationForMobileParty(caravanParty);
-		if (caravanParty.CurrentSettlement == null && destinationForMobileParty2 != null && caravanParty.TargetSettlement != destinationForMobileParty2.Settlement)
-		{
-			caravanParty.Ai.SetMoveGoToSettlement(destinationForMobileParty2.Settlement);
 		}
 	}
 
@@ -656,13 +693,14 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		Town town = settlement.Town;
 		if (Campaign.Current.GameStarted && mobileParty != null && town != null && mobileParty.IsCaravan && mobileParty.IsPartyTradeActive && mobileParty.IsActive)
 		{
-			if (_previouslyChangedCaravanTargetsDueToEnemyOnWay.ContainsKey(mobileParty))
+			if (mobileParty.DefaultBehavior == AiBehavior.MoveToNearestLandOrPort)
 			{
-				_previouslyChangedCaravanTargetsDueToEnemyOnWay[mobileParty].Clear();
+				mobileParty.SetMoveModeHold();
 			}
-			else
+			if (mobileParty.CaravanPartyComponent.CanHaveNavalNavigationCapability)
 			{
-				_previouslyChangedCaravanTargetsDueToEnemyOnWay.Add(mobileParty, new List<Settlement>());
+				AdjustConvoyShips(mobileParty, town);
+				RefillConvoyTroops(mobileParty);
 			}
 			if (Campaign.Current.GameStarted)
 			{
@@ -685,10 +723,123 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				_caravanLastHomeTownVisitTime[mobileParty] = CampaignTime.Now;
 			}
 		}
-		if (mobileParty != null && mobileParty.IsCaravan && settlement.IsTown && settlement.Town.Governor != null && settlement.Town.Governor.GetPerkValue(DefaultPerks.Trade.Tollgates))
+		if (mobileParty != null && mobileParty.IsCaravan && mobileParty.HasLandNavigationCapability && settlement.IsTown && settlement.Town.Governor != null && settlement.Town.Governor.GetPerkValue(DefaultPerks.Trade.Tollgates))
 		{
 			settlement.Town.TradeTaxAccumulated += TaleWorlds.Library.MathF.Round(DefaultPerks.Trade.Tollgates.SecondaryBonus);
 		}
+	}
+
+	private void DiscardShips(MobileParty convoy)
+	{
+		MBList<(Ship, float)> mBList = new MBList<(Ship, float)>();
+		foreach (Ship ship in convoy.Ships)
+		{
+			mBList.Add((ship, GetShipPriority(convoy, ship, isForSelling: false)));
+		}
+		mBList = mBList.OrderByDescending(((Ship, float) x) => x.Item2).ToMBList();
+		int idealShipNumber = Campaign.Current.Models.PartyShipLimitModel.GetIdealShipNumber(convoy);
+		for (int i = 0; i < mBList.Count; i++)
+		{
+			Ship item = mBList[i].Item1;
+			float item2 = mBList[i].Item2;
+			if (i >= idealShipNumber || (item2 == float.MinValue && convoy.Ships.Count > 1))
+			{
+				DestroyShipAction.ApplyByDiscard(item);
+			}
+		}
+	}
+
+	private void RefillConvoyTroops(MobileParty convoy)
+	{
+		PartyTemplateObject randomCaravanTemplate = CaravanHelper.GetRandomCaravanTemplate(convoy.Owner.Culture, convoy.CaravanPartyComponent.IsElite, isLand: false);
+		int totalManCount = convoy.MemberRoster.TotalManCount;
+		int num = convoy.Party.PartySizeLimit - totalManCount;
+		if (num <= 0)
+		{
+			return;
+		}
+		int num2 = randomCaravanTemplate.Stacks.Sum((PartyTemplateStack x) => x.MaxValue);
+		float num3 = (float)num / (float)num2;
+		foreach (PartyTemplateStack stack in randomCaravanTemplate.Stacks)
+		{
+			CharacterObject character = stack.Character;
+			int num4 = TaleWorlds.Library.MathF.Floor((float)stack.MaxValue * num3);
+			num -= num4;
+			convoy.MemberRoster.AddToCounts(character, num4);
+		}
+		if (num > 0)
+		{
+			List<(int, float)> list = new List<(int, float)>();
+			for (int i = 0; i < randomCaravanTemplate.Stacks.Count; i++)
+			{
+				PartyTemplateStack partyTemplateStack = randomCaravanTemplate.Stacks[i];
+				float item = (float)(partyTemplateStack.MaxValue + partyTemplateStack.MinValue) / 2f;
+				list.Add((i, item));
+			}
+			for (int j = 0; j < num; j++)
+			{
+				int index = MBRandom.ChooseWeighted(list);
+				CharacterObject character2 = randomCaravanTemplate.Stacks[index].Character;
+				convoy.MemberRoster.AddToCounts(character2, 1);
+			}
+		}
+	}
+
+	private void AdjustConvoyShips(MobileParty caravan, Town town)
+	{
+		if (town.AvailableShips.Count > 0 && caravan.PartyTradeGold > 10000 && caravan.Ships.Count < Campaign.Current.Models.PartyShipLimitModel.GetIdealShipNumber(caravan))
+		{
+			BuyShips(caravan, town);
+		}
+	}
+
+	private void BuyShips(MobileParty caravan, Town town)
+	{
+		MBList<(Ship, float)> mBList = new MBList<(Ship, float)>();
+		bool flag = false;
+		if (caravan.CaravanPartyComponent.IsElite)
+		{
+			flag = true;
+			for (int i = 0; i < caravan.Ships.Count; i++)
+			{
+				if (caravan.Ships[i].ShipHull.Type == ShipHull.ShipType.Medium)
+				{
+					flag = false;
+					break;
+				}
+			}
+		}
+		for (int num = town.AvailableShips.Count - 1; num >= 0; num--)
+		{
+			Ship ship = town.AvailableShips[num];
+			if (ship.ShipHull.Type == ShipHull.ShipType.Light || (ship.ShipHull.Type == ShipHull.ShipType.Medium && flag))
+			{
+				mBList.Add((ship, GetShipPriority(caravan, ship, isForSelling: false)));
+			}
+		}
+		mBList = mBList.OrderByDescending(((Ship, float) x) => x.Item2).ToMBList();
+		int idealShipNumber = Campaign.Current.Models.PartyShipLimitModel.GetIdealShipNumber(caravan);
+		for (int j = 0; j < mBList.Count; j++)
+		{
+			if (caravan.Ships.Count >= idealShipNumber)
+			{
+				break;
+			}
+			Ship item = mBList[j].Item1;
+			if ((float)caravan.PartyTradeGold * 0.5f >= Campaign.Current.Models.ShipCostModel.GetShipTradeValue(item, town.Settlement.Party, caravan.Party) && (item.ShipHull.Type != ShipHull.ShipType.Medium || flag))
+			{
+				ChangeShipOwnerAction.ApplyByTrade(caravan.Party, item);
+				if (item.ShipHull.Type == ShipHull.ShipType.Medium)
+				{
+					flag = false;
+				}
+			}
+		}
+	}
+
+	private float GetShipPriority(MobileParty convoy, Ship ship, bool isForSelling)
+	{
+		return Campaign.Current.Models.PartyShipLimitModel.GetShipPriority(convoy, ship, isForSelling);
 	}
 
 	public void OnSettlementLeft(MobileParty mobileParty, Settlement settlement)
@@ -698,21 +849,21 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		int inventoryCapacity = mobileParty.InventoryCapacity;
-		float totalWeight = mobileParty.ItemRoster.TotalWeight;
+		float totalWeightCarried = mobileParty.TotalWeightCarried;
 		Town town = (settlement.IsTown ? settlement.Town : (settlement.IsVillage ? settlement.Village.Bound.Town : null));
 		if (town == null)
 		{
 			return;
 		}
 		float num = 1.1f;
-		while (totalWeight > (float)inventoryCapacity)
+		while (totalWeightCarried > (float)inventoryCapacity)
 		{
 			SellGoods(mobileParty, town, num, toLoseWeight: true);
 			num -= 0.02f;
 			if (!(num < 0.75f))
 			{
 				inventoryCapacity = mobileParty.InventoryCapacity;
-				totalWeight = mobileParty.ItemRoster.TotalWeight;
+				totalWeightCarried = mobileParty.TotalWeightCarried;
 				continue;
 			}
 			break;
@@ -721,6 +872,10 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private void OnMobilePartyDestroyed(MobileParty mobileParty, PartyBase destroyerParty)
 	{
+		if (!mobileParty.IsCaravan)
+		{
+			return;
+		}
 		if (_interactedCaravans.ContainsKey(mobileParty))
 		{
 			_interactedCaravans.Remove(mobileParty);
@@ -734,9 +889,9 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				_tradeActionLogPool.ReleaseLog(log);
 			}
 		}
-		if (_previouslyChangedCaravanTargetsDueToEnemyOnWay.ContainsKey(mobileParty))
+		if (_caravanLastHomeTownVisitTime.ContainsKey(mobileParty))
 		{
-			_previouslyChangedCaravanTargetsDueToEnemyOnWay.Remove(mobileParty);
+			_caravanLastHomeTownVisitTime.Remove(mobileParty);
 		}
 	}
 
@@ -744,113 +899,158 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		if (mobileParty.IsCaravan)
 		{
-			_previouslyChangedCaravanTargetsDueToEnemyOnWay.Add(mobileParty, new List<Settlement>());
+			_caravanLastHomeTownVisitTime.Add(mobileParty, CampaignTime.Now);
 		}
 	}
 
-	private Town ThinkNextDestination(MobileParty caravanParty)
+	private Town ThinkNextDestination(MobileParty caravanParty, out MobileParty.NavigationType bestNavigationType, out bool isFromPort, out bool isTargetingPort)
 	{
 		RefreshTotalValueOfItemsAtCategoryForParty(caravanParty);
-		return FindNextDestinationForCaravan(caravanParty, distanceCut: true) ?? FindNextDestinationForCaravan(caravanParty, distanceCut: false);
+		Town town = FindNextDestinationForCaravan(caravanParty, distanceCut: true, out bestNavigationType, out isFromPort, out isTargetingPort);
+		if (town == null)
+		{
+			town = FindNextDestinationForCaravan(caravanParty, distanceCut: false, out bestNavigationType, out isFromPort, out isTargetingPort);
+		}
+		return town;
 	}
 
-	private Town FindNextDestinationForCaravan(MobileParty caravanParty, bool distanceCut)
+	private Town FindNextDestinationForCaravan(MobileParty caravanParty, bool distanceCut, out MobileParty.NavigationType bestNavigationType, out bool isFromPort, out bool isTargetingPort)
 	{
 		float num = 0f;
 		Town result = null;
-		float caravanFullness = caravanParty.ItemRoster.TotalWeight / (float)caravanParty.InventoryCapacity;
+		bestNavigationType = MobileParty.NavigationType.None;
+		isTargetingPort = false;
+		float input = caravanParty.TotalWeightCarried / (float)caravanParty.InventoryCapacity;
+		input = MBMath.Map(input, 0f, 1f, 0f, 0.9f);
 		_caravanLastHomeTownVisitTime.TryGetValue(caravanParty, out var value);
+		bool hasNavalNavigationCapability = caravanParty.HasNavalNavigationCapability;
 		foreach (Town allTown in Town.AllTowns)
 		{
-			if (allTown.Owner.Settlement != caravanParty.CurrentSettlement && !allTown.IsUnderSiege && !allTown.MapFaction.IsAtWarWith(caravanParty.MapFaction) && (!allTown.Settlement.Parties.Contains(MobileParty.MainParty) || !MobileParty.MainParty.MapFaction.IsAtWarWith(caravanParty.MapFaction)) && !_previouslyChangedCaravanTargetsDueToEnemyOnWay[caravanParty].Contains(allTown.Settlement))
+			if (allTown.Owner.Settlement != caravanParty.CurrentSettlement && (!allTown.IsUnderSiege || (!allTown.Settlement.SiegeEvent.IsBlockadeActive && hasNavalNavigationCapability)) && CanTradeWith(caravanParty.MapFaction, allTown.MapFaction) && (allTown.Settlement.HasPort || !hasNavalNavigationCapability) && (!allTown.Settlement.Parties.Contains(MobileParty.MainParty) || !MobileParty.MainParty.MapFaction.IsAtWarWith(caravanParty.MapFaction)))
 			{
-				float tradeScoreForTown = GetTradeScoreForTown(caravanParty, allTown, value, caravanFullness, distanceCut);
+				MobileParty.NavigationType bestNavigationType2;
+				bool isTargetingPort2;
+				float tradeScoreForTown = GetTradeScoreForTown(caravanParty, allTown, value, input, distanceCut, out bestNavigationType2, out isTargetingPort2);
 				if (tradeScoreForTown > num)
 				{
 					num = tradeScoreForTown;
 					result = allTown;
+					isTargetingPort = isTargetingPort2;
+					bestNavigationType = bestNavigationType2;
 				}
 			}
 		}
+		isFromPort = isTargetingPort && caravanParty.CurrentSettlement != null;
 		return result;
 	}
 
-	private void AdjustVeryFarAddition(float distance, float minimumAddition, ref float veryFarAddition)
+	private void AdjustVeryFarAddition(bool isNavalCaravan, float distanceAsDays, float minimumAddition, ref float veryFarAddition)
 	{
-		if (distance > DistanceLimitVeryFar)
+		float distanceLimitVeryFarAsDaysForNavigationType = GetDistanceLimitVeryFarAsDaysForNavigationType(isNavalCaravan);
+		if (distanceAsDays > distanceLimitVeryFarAsDaysForNavigationType)
 		{
-			veryFarAddition += (distance - DistanceLimitVeryFar) * minimumAddition * 4f;
+			veryFarAddition += (distanceAsDays - distanceLimitVeryFarAsDaysForNavigationType) * minimumAddition * 4f;
 		}
-		if (distance > DistanceLimitFar)
+		float distanceLimitFarAsDaysForNavigationType = GetDistanceLimitFarAsDaysForNavigationType(isNavalCaravan);
+		if (distanceAsDays > distanceLimitFarAsDaysForNavigationType)
 		{
-			veryFarAddition += (distance - DistanceLimitFar) * minimumAddition * 3f;
+			veryFarAddition += (distanceAsDays - distanceLimitFarAsDaysForNavigationType) * minimumAddition * 3f;
 		}
-		if (distance > DistanceLimitMedium)
+		float distanceLimitMediumAsDaysForNavigationType = GetDistanceLimitMediumAsDaysForNavigationType(isNavalCaravan);
+		if (distanceAsDays > distanceLimitMediumAsDaysForNavigationType)
 		{
-			veryFarAddition += (distance - DistanceLimitMedium) * minimumAddition * 2f;
+			veryFarAddition += (distanceAsDays - distanceLimitMediumAsDaysForNavigationType) * minimumAddition * 2f;
 		}
-		if (distance > DistanceLimitClose)
+		float distanceLimitCloseAsDaysForNavigationType = GetDistanceLimitCloseAsDaysForNavigationType(isNavalCaravan);
+		if (distanceAsDays > distanceLimitCloseAsDaysForNavigationType)
 		{
-			veryFarAddition += (distance - DistanceLimitClose) * minimumAddition;
+			veryFarAddition += (distanceAsDays - distanceLimitCloseAsDaysForNavigationType) * minimumAddition;
 		}
 	}
 
-	private float GetTradeScoreForTown(MobileParty caravanParty, Town town, CampaignTime lastHomeVisitTimeOfCaravan, float caravanFullness, bool distanceCut)
+	private float GetTradeScoreForTown(MobileParty caravanParty, Town town, CampaignTime lastHomeVisitTimeOfCaravan, float caravanFullness, bool distanceCut, out MobileParty.NavigationType bestNavigationType, out bool isTargetingPort)
 	{
-		float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(caravanParty, town.Owner.Settlement);
-		float veryFarAddition = 0f;
-		AdjustVeryFarAddition(distance, 0.15f, ref veryFarAddition);
-		float elapsedDaysUntilNow = lastHomeVisitTimeOfCaravan.ElapsedDaysUntilNow;
-		bool flag = elapsedDaysUntilNow > 2f;
-		if (flag)
+		bool flag = (isTargetingPort = caravanParty.HasNavalNavigationCapability);
+		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(caravanParty, town.Settlement, isTargetingPort, out bestNavigationType, out var bestNavigationDistance, out var _);
+		if (bestNavigationType != 0)
 		{
-			float distance2 = Campaign.Current.Models.MapDistanceModel.GetDistance(town.Owner.Settlement, caravanParty.HomeSettlement);
-			AdjustVeryFarAddition(distance2, ((elapsedDaysUntilNow - 1f) * TaleWorlds.Library.MathF.Sqrt(elapsedDaysUntilNow - 1f) - 1f) * 0.008f, ref veryFarAddition);
-		}
-		float num = 1f / (distance + veryFarAddition + 8f);
-		if (distanceCut && (town.Owner.Settlement != caravanParty.HomeSettlement || !flag) && num < 1f / DistanceScoreDivider)
-		{
-			return -1f;
-		}
-		float num2 = 1f;
-		if (caravanParty.HomeSettlement == town.Owner.Settlement)
-		{
-			num2 = 1f + elapsedDaysUntilNow * 0.1f * (elapsedDaysUntilNow * 0.1f);
-		}
-		TownMarketData marketData = town.MarketData;
-		float num3 = 0f;
-		for (int i = 0; i < caravanParty.Party.ItemRoster.Count; i++)
-		{
-			ItemObject item = caravanParty.ItemRoster.GetElementCopyAtIndex(i).EquipmentElement.Item;
-			float limitValue = 1.1f - TaleWorlds.Library.MathF.Sqrt((float)TaleWorlds.Library.MathF.Min(_totalValueOfItemsAtCategory[item.ItemCategory], 5000) / 5000f) * 0.2f;
-			num3 += CalculateTownSellScoreForCategory(caravanParty, marketData, i, limitValue);
-		}
-		num3 *= 0.3f + caravanFullness;
-		float num4 = 0f;
-		for (int j = 0; j < ItemCategories.All.Count; j++)
-		{
-			ItemCategory itemCategory = ItemCategories.All[j];
-			if (itemCategory.IsTradeGood || itemCategory.IsAnimal)
+			float num = bestNavigationDistance / ((flag ? Campaign.Current.EstimatedAverageCaravanPartyNavalSpeed : Campaign.Current.EstimatedAverageCaravanPartySpeed) * (float)CampaignTime.HoursInDay);
+			float veryFarAddition = 0f;
+			AdjustVeryFarAddition(flag, num, 0.15f, ref veryFarAddition);
+			float elapsedDaysUntilNow = lastHomeVisitTimeOfCaravan.ElapsedDaysUntilNow;
+			bool flag2 = elapsedDaysUntilNow > GetDistanceLimitVeryFarAsDaysForNavigationType(flag);
+			if (flag2)
 			{
-				num4 += CalculateTownBuyScoreForCategory(marketData, j);
+				float distanceAsDays = bestNavigationDistance / ((flag ? Campaign.Current.EstimatedAverageCaravanPartyNavalSpeed : Campaign.Current.EstimatedAverageCaravanPartySpeed) * (float)CampaignTime.HoursInDay);
+				AdjustVeryFarAddition(flag, distanceAsDays, ((elapsedDaysUntilNow - 1f) * TaleWorlds.Library.MathF.Sqrt(elapsedDaysUntilNow - 1f) - 1f) * 0.008f, ref veryFarAddition);
 			}
+			ExplainedNumber result = default(ExplainedNumber);
+			town.AddEffectOfBuildings(BuildingEffectEnum.CaravanAccessibility, ref result);
+			float num2 = Math.Max(1f, result.ResultNumber);
+			float distanceLimitVeryFarAsDaysForNavigationType = GetDistanceLimitVeryFarAsDaysForNavigationType(flag);
+			float num3 = num + veryFarAddition;
+			if (distanceCut && (town.Owner.Settlement != caravanParty.HomeSettlement || !flag2) && num3 > distanceLimitVeryFarAsDaysForNavigationType)
+			{
+				bestNavigationType = MobileParty.NavigationType.None;
+				isTargetingPort = false;
+				return -1f;
+			}
+			float num4 = (flag ? TaleWorlds.Library.MathF.Max(0.1f, 1f - num3 / (2f * distanceLimitVeryFarAsDaysForNavigationType)) : (1f / num3));
+			float num5 = 1f;
+			if (caravanParty.HomeSettlement == town.Owner.Settlement)
+			{
+				num5 = 1f + elapsedDaysUntilNow * 0.1f * (elapsedDaysUntilNow * 0.1f);
+				if (num4 < 0.5f)
+				{
+					num4 = 0.5f;
+				}
+			}
+			TownMarketData marketData = town.MarketData;
+			float num6 = 1.1f;
+			float num7 = 0f;
+			for (int i = 0; i < caravanParty.Party.ItemRoster.Count; i++)
+			{
+				ItemObject item = caravanParty.ItemRoster.GetElementCopyAtIndex(i).EquipmentElement.Item;
+				float limitValue = num6 - TaleWorlds.Library.MathF.Sqrt((float)TaleWorlds.Library.MathF.Min(_totalValueOfItemsAtCategory[item.ItemCategory], 5000) / 5000f) * 0.2f;
+				num7 += CalculateTownSellScoreForCategory(caravanParty, marketData, i, limitValue);
+			}
+			num7 *= (flag ? 0.5f : 0.3f) + caravanFullness;
+			float num8 = 0f;
+			for (int j = 0; j < ItemCategories.All.Count; j++)
+			{
+				ItemCategory itemCategory = ItemCategories.All[j];
+				if (itemCategory.IsTradeGood || itemCategory.IsAnimal)
+				{
+					num8 += CalculateTownBuyScoreForCategory(marketData, j, caravanParty);
+				}
+			}
+			num8 *= TaleWorlds.Library.MathF.Max(0.1f, 1f - 2f * (caravanFullness - (flag ? 0.5f : 0.3f) * TaleWorlds.Library.MathF.Min(num7, 1000f) / 1000f));
+			num8 = TaleWorlds.Library.MathF.Min(num8, (float)(int)(0.5f * (float)caravanParty.PartyTradeGold));
+			float num9 = ((caravanParty.IsCurrentlyUsedByAQuest && town.Settlement == caravanParty.HomeSettlement && caravanParty.Position.Distance(caravanParty.HomeSettlement.Position) < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringTown * 5f) ? 0.1f : 1f);
+			float num10 = 1f;
+			float num11 = ((town.Security >= 75f) ? (1f + TaleWorlds.Library.MathF.Clamp((town.Security - 75f) * 0.002f, 0f, 0.05f)) : 1f);
+			float num12 = ((caravanParty.Owner != null) ? caravanParty.Owner.RandomFloat(1f, 1.03f) : 1f);
+			float num13 = 1f;
+			if (TradeAgreementsCampaignBehavior != null && caravanParty.MapFaction.IsKingdomFaction && town.MapFaction.IsKingdomFaction && TradeAgreementsCampaignBehavior.HasTradeAgreement((Kingdom)caravanParty.MapFaction, (Kingdom)town.MapFaction))
+			{
+				num13 = (flag ? 1.5f : 2f);
+			}
+			return (num7 + num8) * num4 * num13 * num5 * num9 * num10 * num11 * num12 * num2;
 		}
-		num4 *= TaleWorlds.Library.MathF.Max(0.1f, 1f - (caravanFullness - 0.2f * TaleWorlds.Library.MathF.Min(num3, 1000f) / 1000f));
-		num4 = TaleWorlds.Library.MathF.Min(num4, (float)(int)(0.5f * (float)caravanParty.PartyTradeGold));
-		float num5 = ((caravanParty.Ai.NeedTargetReset && caravanParty.TargetSettlement == town.Settlement) ? 0.1f : 1f);
-		float num6 = ((caravanParty.IsCurrentlyUsedByAQuest && town.Settlement == caravanParty.HomeSettlement && caravanParty.Position2D.Distance(caravanParty.HomeSettlement.GatePosition) < 3f) ? 0.1f : 1f);
-		return (num3 + num4) * num5 * num * num2 * num6;
+		bestNavigationType = MobileParty.NavigationType.None;
+		isTargetingPort = false;
+		return -1f;
 	}
 
 	private float CalculateTownSellScoreForCategory(MobileParty party, TownMarketData marketData, int i, float limitValue)
 	{
 		ItemRosterElement itemRosterElement = party.Party.ItemRoster[i];
 		ItemCategory itemCategory = itemRosterElement.EquipmentElement.Item.ItemCategory;
-		PriceIndexData categoryPriceData = GetCategoryPriceData(itemCategory);
-		float num = marketData.GetPriceFactor(itemCategory) - categoryPriceData.AverageBuySellPriceIndex * limitValue;
+		GetCategoryPriceData(itemCategory, party, out var priceIndex);
+		float num = marketData.GetPriceFactor(itemCategory) - priceIndex.AverageBuySellPriceIndex * limitValue;
 		if (num > 0f)
 		{
-			int num2 = ((itemRosterElement.EquipmentElement.Item.ItemCategory != DefaultItemCategories.PackAnimal) ? itemRosterElement.Amount : TaleWorlds.Library.MathF.Max(0, itemRosterElement.Amount - party.MemberRoster.TotalManCount));
+			int num2 = ((itemRosterElement.EquipmentElement.Item.ItemCategory != DefaultItemCategories.PackAnimal || !party.HasLandNavigationCapability) ? itemRosterElement.Amount : TaleWorlds.Library.MathF.Max(0, itemRosterElement.Amount - party.MemberRoster.TotalManCount));
 			float num3 = ((itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) ? 1.1f : 1f);
 			return num * num3 * (float)TaleWorlds.Library.MathF.Min(4000, itemRosterElement.EquipmentElement.Item.Value * num2);
 		}
@@ -878,12 +1078,12 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		return PlayerInteraction.None;
 	}
 
-	private float CalculateTownBuyScoreForCategory(TownMarketData marketData, int categoryIndex)
+	private float CalculateTownBuyScoreForCategory(TownMarketData marketData, int categoryIndex, MobileParty mobileParty)
 	{
 		ItemCategory itemCategory = ItemCategories.All[categoryIndex];
-		PriceIndexData categoryPriceData = GetCategoryPriceData(itemCategory);
+		GetCategoryPriceData(itemCategory, mobileParty, out var priceIndex);
 		float priceFactor = marketData.GetPriceFactor(itemCategory);
-		float num = categoryPriceData.AverageBuySellPriceIndex / priceFactor;
+		float num = priceIndex.AverageBuySellPriceIndex / priceFactor;
 		float num2 = num * num - 1.1f;
 		if (num2 > 0f)
 		{
@@ -892,13 +1092,15 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		return 0f;
 	}
 
-	private PriceIndexData GetCategoryPriceData(ItemCategory category)
+	private bool GetCategoryPriceData(ItemCategory category, MobileParty mobileParty, out PriceIndexData priceIndex)
 	{
-		if (!_priceDictionary.TryGetValue(category, out var value))
+		bool result = true;
+		if (!(ShouldPartyUseCoastalPrices(mobileParty) ? _coastalPriceDictionary : _priceDictionary).TryGetValue(category, out priceIndex))
 		{
-			return new PriceIndexData(1f, 1f);
+			result = false;
+			priceIndex = new PriceIndexData(1f, 1f);
 		}
-		return value;
+		return result;
 	}
 
 	private void RefreshTotalValueOfItemsAtCategoryForParty(MobileParty caravanParty)
@@ -920,83 +1122,90 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void SellGoods(MobileParty caravanParty, Town town, float priceIndexSellLimit = 1.1f, bool toLoseWeight = false)
+	private bool ShouldPartyUseCoastalPrices(MobileParty mobileParty)
 	{
-		int gold = town.Gold;
-		int num = (int)((float)caravanParty.ItemRoster.NumberOfPackAnimals - (float)caravanParty.Party.NumberOfAllMembers * 0.6f);
-		int num2 = (int)((float)caravanParty.ItemRoster.NumberOfLivestockAnimals - (float)caravanParty.Party.NumberOfAllMembers * 0.6f);
-		int itemAverageWeight = Campaign.Current.Models.InventoryCapacityModel.GetItemAverageWeight();
-		RefreshTotalValueOfItemsAtCategoryForParty(caravanParty);
-		List<(EquipmentElement, int)> list = new List<(EquipmentElement, int)>();
-		for (int i = 0; i < 2; i++)
+		if (mobileParty.IsCaravan)
 		{
-			for (int num3 = caravanParty.ItemRoster.Count - 1; num3 >= 0; num3--)
+			return mobileParty.CaravanPartyComponent.CanHaveNavalNavigationCapability;
+		}
+		return false;
+	}
+
+	private void SellGoodsInternal(MobileParty mobileParty, Town town, bool sellHorses, List<(EquipmentElement, int)> soldItems, float priceIndexSellLimit = 1.1f, bool toLoseWeight = false)
+	{
+		int itemAverageWeight = Campaign.Current.Models.InventoryCapacityModel.GetItemAverageWeight();
+		RefreshTotalValueOfItemsAtCategoryForParty(mobileParty);
+		for (int num = mobileParty.ItemRoster.Count - 1; num >= 0; num--)
+		{
+			int num2 = (int)((float)mobileParty.ItemRoster.NumberOfPackAnimals - (float)mobileParty.Party.NumberOfAllMembers * 0.6f);
+			int num3 = (int)((float)mobileParty.ItemRoster.NumberOfLivestockAnimals - (float)mobileParty.Party.NumberOfAllMembers * 0.6f);
+			ItemRosterElement elementCopyAtIndex = mobileParty.ItemRoster.GetElementCopyAtIndex(num);
+			ItemObject item = elementCopyAtIndex.EquipmentElement.Item;
+			if (GetCategoryPriceData(item.GetItemCategory(), mobileParty, out var priceIndex) && sellHorses == (item.HasHorseComponent || item.ItemCategory == DefaultItemCategories.PackAnimal) && (!toLoseWeight || !item.HasHorseComponent || !mobileParty.HasLandNavigationCapability))
 			{
-				ItemRosterElement elementCopyAtIndex = caravanParty.ItemRoster.GetElementCopyAtIndex(num3);
-				ItemObject item = elementCopyAtIndex.EquipmentElement.Item;
-				if (_priceDictionary.TryGetValue(item.GetItemCategory(), out var value) && (i != 0 || (!item.HasHorseComponent && item.ItemCategory != DefaultItemCategories.PackAnimal)) && (i != 1 || item.HasHorseComponent || item.ItemCategory == DefaultItemCategories.PackAnimal) && (!toLoseWeight || !item.HasHorseComponent))
+				bool flag = item.ItemCategory == DefaultItemCategories.PackAnimal;
+				if (!flag || num2 > 0 || !mobileParty.HasLandNavigationCapability)
 				{
-					bool flag = item.ItemCategory == DefaultItemCategories.PackAnimal;
-					if (!flag || num > 0)
+					float priceFactor = town.MarketData.GetPriceFactor(item.ItemCategory);
+					float num4 = priceFactor / priceIndex.AverageBuySellPriceIndex;
+					float num5 = priceIndexSellLimit - (Campaign.Current.GameStarted ? (TaleWorlds.Library.MathF.Sqrt((float)TaleWorlds.Library.MathF.Min(_totalValueOfItemsAtCategory[item.ItemCategory], 5000) / 5000f) * 0.4f) : 0f);
+					bool flag2 = num2 > 0 && flag;
+					bool flag3 = num3 > 0 && item.HorseComponent != null && item.HorseComponent.IsLiveStock;
+					if (!(num4 < num5) || (mobileParty.HasLandNavigationCapability && (flag3 || flag2)))
 					{
-						bool flag2 = item.HorseComponent != null && item.HorseComponent.IsLiveStock;
-						float priceFactor = town.MarketData.GetPriceFactor(elementCopyAtIndex.EquipmentElement.Item.GetItemCategory());
-						float demand = town.MarketData.GetDemand(elementCopyAtIndex.EquipmentElement.Item.GetItemCategory());
-						float num4 = priceFactor / value.AverageBuySellPriceIndex;
-						float num5 = (Campaign.Current.GameStarted ? (TaleWorlds.Library.MathF.Sqrt((float)TaleWorlds.Library.MathF.Min(_totalValueOfItemsAtCategory[item.ItemCategory], 5000) / 5000f) * 0.4f) : 0f);
-						float num6 = priceIndexSellLimit - num5;
-						if (!(num4 < num6) || (num2 > 0 && flag2) || (num > 0 && flag))
+						float num6 = 0.8f * priceIndex.AverageBuySellPriceIndex + 0.2f * priceIndex.MinBuySellPriceIndex;
+						if (!(priceFactor < num6 * num5) || (mobileParty.HasLandNavigationCapability && (flag3 || flag2)))
 						{
-							float num7 = 0.8f * value.AverageBuySellPriceIndex + 0.2f * value.MinBuySellPriceIndex;
-							if (!(priceFactor < num7 * num6) || (num2 > 0 && flag2) || (num > 0 && flag))
+							float num7 = priceFactor - num6 * num5;
+							float demand = town.MarketData.GetDemand(item.ItemCategory);
+							float num8 = Campaign.Current.Models.SettlementEconomyModel.CalculateDailySettlementBudgetForItemCategory(town, demand, item.ItemCategory) + (float)(2 * item.Value);
+							int itemPrice = town.GetItemPrice(item, mobileParty, isSelling: true);
+							float num9 = ((item.ItemCategory == DefaultItemCategories.PackAnimal) ? 1.5f : 1f);
+							float num10 = (mobileParty.HasNavalNavigationCapability ? 5f : 3f);
+							float num11 = num8 * num7 * num4 * num9 * num10;
+							if (num11 > 0f || flag3 || flag2)
 							{
-								float num8 = priceFactor - num7 * num6;
-								float num9 = num8 * (float)item.Value;
-								float num10 = num8 * 200f;
-								float num11 = num9 + num10;
-								int itemPrice = town.GetItemPrice(item, caravanParty, isSelling: true);
-								float num12 = ((item.ItemCategory.Properties == ItemCategory.Property.BonusToFoodStores) ? 1.1f : 1f);
-								float num13 = ((item.ItemCategory == DefaultItemCategories.PackAnimal) ? 1.5f : 1f);
-								float num14 = ((num4 > 1f) ? TaleWorlds.Library.MathF.Pow(num4, 0.67f) : num4) * num11 * num12 * num13 * 3f;
-								if (num14 > demand * 20f)
+								int num12 = MBRandom.RoundRandomized(num11 / (float)itemPrice);
+								if (mobileParty.HasLandNavigationCapability)
 								{
-									num14 = demand * 20f;
+									if (flag2)
+									{
+										num12 = num2;
+									}
+									else if (flag3)
+									{
+										num12 = num3;
+									}
 								}
-								if (num14 > 0f || (num2 > 0 && flag2) || (num > 0 && flag))
+								int amount = elementCopyAtIndex.Amount;
+								if (num12 > amount)
 								{
-									int num15 = ((num > 0 && flag) ? num : ((num2 > 0 && flag2) ? num2 : MBRandom.RoundRandomized(num14 / (float)itemPrice)));
-									int amount = elementCopyAtIndex.Amount;
-									if (num15 > amount)
+									num12 = amount;
+								}
+								if (num12 * itemPrice > town.Gold)
+								{
+									num12 = town.Gold / itemPrice;
+								}
+								if (toLoseWeight && mobileParty.TotalWeightCarried - (float)(num12 * itemAverageWeight) < (float)mobileParty.InventoryCapacity)
+								{
+									num12 = (int)((mobileParty.TotalWeightCarried - (float)mobileParty.InventoryCapacity) / (float)itemAverageWeight + 0.99f);
+								}
+								if (num12 > elementCopyAtIndex.Amount)
+								{
+									num12 = elementCopyAtIndex.Amount;
+								}
+								if (num12 * itemPrice > town.Gold)
+								{
+									num12 = town.Gold / itemPrice;
+								}
+								if (num12 > 0)
+								{
+									soldItems.Add((elementCopyAtIndex.EquipmentElement, num12));
+									if (Campaign.Current.GameStarted)
 									{
-										num15 = amount;
+										OnSellItems(mobileParty, elementCopyAtIndex, town);
 									}
-									if (num15 * itemPrice > gold)
-									{
-										num15 = gold / itemPrice;
-									}
-									if (toLoseWeight && caravanParty.ItemRoster.TotalWeight - (float)(num15 * itemAverageWeight) < (float)caravanParty.InventoryCapacity)
-									{
-										num15 = (int)((caravanParty.ItemRoster.TotalWeight - (float)caravanParty.InventoryCapacity) / (float)itemAverageWeight + 0.99f);
-									}
-									if (num15 > elementCopyAtIndex.Amount)
-									{
-										num15 = elementCopyAtIndex.Amount;
-									}
-									if (num15 * itemPrice > gold)
-									{
-										num15 = gold / itemPrice;
-									}
-									if (num15 > 0)
-									{
-										list.Add((elementCopyAtIndex.EquipmentElement, num15));
-										if (Campaign.Current.GameStarted)
-										{
-											OnSellItems(caravanParty, elementCopyAtIndex, town);
-										}
-										SellItemsAction.Apply(caravanParty.Party, town.Owner, elementCopyAtIndex, num15, town.Owner.Settlement);
-										num = (int)((float)caravanParty.ItemRoster.NumberOfPackAnimals - (float)caravanParty.Party.NumberOfAllMembers * 0.6f);
-										num2 = (int)((float)caravanParty.ItemRoster.NumberOfLivestockAnimals - (float)caravanParty.Party.NumberOfAllMembers * 0.6f);
-									}
+									SellItemsAction.Apply(mobileParty.Party, town.Owner, elementCopyAtIndex, num12, town.Owner.Settlement);
 								}
 							}
 						}
@@ -1004,9 +1213,17 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 		}
-		if (!list.IsEmpty() && caravanParty.IsCaravan)
+	}
+
+	private void SellGoods(MobileParty mobileParty, Town town, float priceIndexSellLimit = 1.1f, bool toLoseWeight = false)
+	{
+		RefreshTotalValueOfItemsAtCategoryForParty(mobileParty);
+		List<(EquipmentElement, int)> list = new List<(EquipmentElement, int)>();
+		SellGoodsInternal(mobileParty, town, sellHorses: false, list, priceIndexSellLimit, toLoseWeight);
+		SellGoodsInternal(mobileParty, town, sellHorses: true, list, priceIndexSellLimit, toLoseWeight);
+		if (!list.IsEmpty() && mobileParty.IsCaravan)
 		{
-			CampaignEventDispatcher.Instance.OnCaravanTransactionCompleted(caravanParty, town, list);
+			CampaignEventDispatcher.Instance.OnCaravanTransactionCompleted(mobileParty, town, list);
 		}
 	}
 
@@ -1028,33 +1245,22 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private void BuyGoods(MobileParty caravanParty, Town town)
 	{
-		CaravanTotalValue(caravanParty);
 		List<(EquipmentElement, int)> list = new List<(EquipmentElement, int)>();
 		float capacityFactor = CalculateCapacityFactor(caravanParty);
 		float budgetFactor = CalculateBudgetFactor(caravanParty);
 		RefreshTotalValueOfItemsAtCategoryForParty(caravanParty);
-		var (itemCategory, itemCategory2, itemCategory3, itemCategory4, itemCategory5) = MBMath.MaxElements5(ItemCategories.All, (ItemCategory x) => CalculateBuyValue(x, town, budgetFactor, capacityFactor));
-		if (itemCategory != null)
+		MBList<ItemCategory> mBList = ItemCategories.All.OrderByDescending((ItemCategory x) => CalculateBuyValue(x, town, caravanParty, budgetFactor, capacityFactor)).ToMBList();
+		int num = (caravanParty.HasNavalNavigationCapability ? 10 : 5);
+		for (int i = 0; i < num; i++)
 		{
-			BuyCategory(caravanParty, town, itemCategory, budgetFactor, capacityFactor, list);
+			BuyCategory(caravanParty, town, mBList[i], budgetFactor, capacityFactor, list);
 		}
-		if (itemCategory2 != null)
+		if (caravanParty.HasNavalNavigationCapability)
 		{
-			BuyCategory(caravanParty, town, itemCategory2, budgetFactor, capacityFactor, list);
+			BuyCategory(caravanParty, town, DefaultItemCategories.Grain, budgetFactor, capacityFactor, list);
+			BuyCategory(caravanParty, town, DefaultItemCategories.Fish, budgetFactor, capacityFactor, list);
 		}
-		if (itemCategory3 != null)
-		{
-			BuyCategory(caravanParty, town, itemCategory3, budgetFactor, capacityFactor, list);
-		}
-		if (itemCategory4 != null)
-		{
-			BuyCategory(caravanParty, town, itemCategory4, budgetFactor, capacityFactor, list);
-		}
-		if (itemCategory5 != null)
-		{
-			BuyCategory(caravanParty, town, itemCategory5, budgetFactor, capacityFactor, list);
-		}
-		if ((float)(caravanParty.ItemRoster.NumberOfPackAnimals + caravanParty.ItemRoster.NumberOfLivestockAnimals) < (float)caravanParty.Party.NumberOfAllMembers * 2f && caravanParty.ItemRoster.NumberOfPackAnimals < caravanParty.Party.NumberOfAllMembers && _packAnimalCategoryIndex >= 0 && caravanParty.PartyTradeGold > 1000)
+		else if ((float)(caravanParty.ItemRoster.NumberOfPackAnimals + caravanParty.ItemRoster.NumberOfLivestockAnimals) < (float)caravanParty.Party.NumberOfAllMembers * 2f && caravanParty.ItemRoster.NumberOfPackAnimals < caravanParty.Party.NumberOfAllMembers && _packAnimalCategoryIndex >= 0 && caravanParty.PartyTradeGold > 1000)
 		{
 			BuyCategory(caravanParty, town, DefaultItemCategories.PackAnimal, budgetFactor, capacityFactor, list);
 		}
@@ -1066,79 +1272,86 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private float CalculateBudgetFactor(MobileParty caravanParty)
 	{
-		return 0.1f + TaleWorlds.Library.MathF.Clamp((float)caravanParty.PartyTradeGold / ReferenceBudgetValue, 0f, 1f);
+		return 0.1f + TaleWorlds.Library.MathF.Clamp((float)caravanParty.PartyTradeGold / 5000f, 0f, 1f);
 	}
 
 	private float CalculateCapacityFactor(MobileParty caravanParty)
 	{
-		float value = caravanParty.Party.ItemRoster.TotalWeight / ((float)caravanParty.InventoryCapacity + 1f);
-		return 1.1f - TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+		float num = caravanParty.TotalWeightCarried / ((float)caravanParty.InventoryCapacity + 1f);
+		num *= 0.9f;
+		return 1.1f - TaleWorlds.Library.MathF.Clamp(num, 0f, 1f);
 	}
 
 	private void BuyCategory(MobileParty caravanParty, Town town, ItemCategory category, float budgetFactor, float capacityFactor, List<(EquipmentElement, int)> boughtItems)
 	{
-		float num = CalculateBuyValue(category, town, budgetFactor, capacityFactor);
-		if (num < 7f || (caravanParty.TotalWeightCarried / (float)caravanParty.InventoryCapacity > 0.8f && !category.IsAnimal) || town.MarketData.GetCategoryData(category).InStore == 0)
+		float num = CalculateBuyValue(category, town, caravanParty, budgetFactor, capacityFactor);
+		if (num < 7f || (caravanParty.TotalWeightCarried / (float)caravanParty.InventoryCapacity > 0.9f && !category.IsAnimal) || town.MarketData.GetCategoryData(category).InStore == 0)
 		{
 			return;
 		}
-		float num2 = TaleWorlds.Library.MathF.Min((float)caravanParty.PartyTradeGold * 0.5f, num * 1.5f);
-		if (num2 > 1500f)
-		{
-			num2 = 1500f;
-		}
+		float num2 = TaleWorlds.Library.MathF.Min(TaleWorlds.Library.MathF.Min((float)caravanParty.PartyTradeGold * 0.5f, num * 1.5f), (float)Campaign.Current.Models.CaravanModel.GetMaxGoldToSpendOnOneItemCategory(caravanParty, category));
 		if (!Campaign.Current.GameStarted)
 		{
 			num2 *= 0.5f;
 		}
 		float num3 = num2;
-		int num4;
+		int num4 = 0;
+		int num5;
 		do
 		{
-			num4 = 0;
+			num5 = 0;
 			int x2 = (int)(MBRandom.RandomFloat * (float)town.Owner.ItemRoster.Count);
-			int num5 = town.Owner.ItemRoster.FindIndexFirstAfterXthElement((ItemObject x) => x.ItemCategory == category, x2);
-			if (num5 < 0)
+			int num6 = town.Owner.ItemRoster.FindIndexFirstAfterXthElement((ItemObject x) => x.ItemCategory == category, x2);
+			if (num6 < 0)
 			{
 				break;
 			}
-			ItemRosterElement elementCopyAtIndex = town.Owner.ItemRoster.GetElementCopyAtIndex(num5);
-			ItemObject item = elementCopyAtIndex.EquipmentElement.Item;
+			ItemRosterElement rosterElement = town.Owner.ItemRoster.GetElementCopyAtIndex(num6);
+			ItemObject item = rosterElement.EquipmentElement.Item;
 			int itemPrice = town.GetItemPrice(item, caravanParty);
-			int num6 = MBRandom.RoundRandomized(num3 / (float)itemPrice);
-			if (num6 > elementCopyAtIndex.Amount)
+			int num7 = MBRandom.RoundRandomized(num3 / (float)itemPrice);
+			if (num7 > rosterElement.Amount)
 			{
-				num6 = elementCopyAtIndex.Amount;
+				num7 = rosterElement.Amount;
 			}
-			if (num6 > 100)
+			if (num7 > MaxNumberOfItemsToBuyFromSingleCategory)
 			{
-				num6 = 100;
+				num7 = MaxNumberOfItemsToBuyFromSingleCategory;
 			}
-			if (!category.IsAnimal && caravanParty.TotalWeightCarried + (float)num6 * item.Weight > (float)caravanParty.InventoryCapacity)
+			if ((!category.IsAnimal || !caravanParty.HasLandNavigationCapability) && caravanParty.TotalWeightCarried + (float)num7 * item.Weight > (float)caravanParty.InventoryCapacity)
 			{
-				num6 = (int)(((float)caravanParty.InventoryCapacity * 0.8f - caravanParty.TotalWeightCarried) / item.Weight);
+				num7 = (int)(((float)caravanParty.InventoryCapacity * 0.9f - caravanParty.TotalWeightCarried) / item.Weight);
 			}
-			if (elementCopyAtIndex.EquipmentElement.Item.HorseComponent != null && (elementCopyAtIndex.EquipmentElement.Item.HorseComponent.IsLiveStock || elementCopyAtIndex.EquipmentElement.Item.HorseComponent.IsPackAnimal))
+			if (caravanParty.HasLandNavigationCapability && rosterElement.EquipmentElement.Item.HorseComponent != null && (rosterElement.EquipmentElement.Item.HorseComponent.IsLiveStock || rosterElement.EquipmentElement.Item.HorseComponent.IsPackAnimal))
 			{
 				int numberOfPackAnimals = caravanParty.ItemRoster.NumberOfPackAnimals;
 				int numberOfLivestockAnimals = caravanParty.ItemRoster.NumberOfLivestockAnimals;
-				if (elementCopyAtIndex.EquipmentElement.Item.HorseComponent.IsLiveStock && (float)(numberOfLivestockAnimals + num6) > (float)caravanParty.Party.NumberOfAllMembers * 0.6f)
+				if (rosterElement.EquipmentElement.Item.HorseComponent.IsLiveStock && (float)(numberOfLivestockAnimals + num7) > (float)caravanParty.Party.NumberOfAllMembers * 0.6f)
 				{
-					num6 = (int)((float)caravanParty.Party.NumberOfAllMembers * 0.6f) - numberOfLivestockAnimals;
+					num7 = (int)((float)caravanParty.Party.NumberOfAllMembers * 0.6f) - numberOfLivestockAnimals;
 				}
-				else if (elementCopyAtIndex.EquipmentElement.Item.HorseComponent.IsPackAnimal && numberOfPackAnimals + num6 > caravanParty.Party.NumberOfAllMembers)
+				else if (rosterElement.EquipmentElement.Item.HorseComponent.IsPackAnimal && numberOfPackAnimals + num7 > caravanParty.Party.NumberOfAllMembers)
 				{
-					num6 = caravanParty.Party.NumberOfAllMembers - numberOfPackAnimals;
+					num7 = caravanParty.Party.NumberOfAllMembers - numberOfPackAnimals;
 				}
 			}
-			if (num6 <= 0)
+			if (num7 <= 0)
 			{
 				continue;
 			}
-			SellItemsAction.Apply(town.Owner, caravanParty.Party, elementCopyAtIndex, num6, town.Owner.Settlement);
-			boughtItems.Add((elementCopyAtIndex.EquipmentElement, -num6));
-			num4 = num6;
-			num3 -= (float)((num6 + 1) * itemPrice);
+			SellItemsAction.Apply(town.Owner, caravanParty.Party, rosterElement, num7, town.Owner.Settlement);
+			int num8 = boughtItems.FindIndex(((EquipmentElement, int) x) => x.Item1.IsEqualTo(rosterElement.EquipmentElement));
+			if (num8 == -1)
+			{
+				boughtItems.Add((rosterElement.EquipmentElement, -num7));
+			}
+			else
+			{
+				boughtItems[num8] = (rosterElement.EquipmentElement, -num7 + boughtItems[num8].Item2);
+			}
+			num4 += num7;
+			num3 -= (float)(num7 * itemPrice + 1);
+			num5 = num7 * itemPrice;
 			Town destinationForMobileParty = GetDestinationForMobileParty(caravanParty);
 			if (caravanParty.LastVisitedSettlement != null && destinationForMobileParty != null && Campaign.Current.GameStarted)
 			{
@@ -1147,11 +1360,11 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 					value = new List<TradeActionLog>();
 					_tradeActionLogs.Add(caravanParty, value);
 				}
-				int itemPrice2 = town.GetItemPrice(elementCopyAtIndex.EquipmentElement, caravanParty);
-				value.Add(_tradeActionLogPool.CreateNewLog(town.Settlement, itemPrice2, elementCopyAtIndex));
+				int itemPrice2 = town.GetItemPrice(rosterElement.EquipmentElement, caravanParty);
+				value.Add(_tradeActionLogPool.CreateNewLog(town.Settlement, itemPrice2, rosterElement));
 			}
 		}
-		while (num3 > 0f && num4 > 0 && num4 < 100);
+		while (num3 > 0f && num5 > 0 && num4 < Campaign.Current.Models.CaravanModel.MaxNumberOfItemsToBuyFromSingleCategory);
 	}
 
 	private int CaravanTotalValue(MobileParty caravanParty)
@@ -1160,18 +1373,18 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		for (int i = 0; i < caravanParty.ItemRoster.Count; i++)
 		{
 			ItemRosterElement itemRosterElement = caravanParty.ItemRoster[i];
-			num += GetGlobalItemSellPrice(itemRosterElement.EquipmentElement.Item) * (float)itemRosterElement.Amount;
+			num += GetGlobalItemSellPrice(itemRosterElement.EquipmentElement.Item, caravanParty) * (float)itemRosterElement.Amount;
 		}
 		return (int)num + caravanParty.PartyTradeGold;
 	}
 
-	private float CalculateBuyValue(ItemCategory category, Town town, float budgetFactor, float capacityFactor)
+	private float CalculateBuyValue(ItemCategory category, Town town, MobileParty caravanParty, float budgetFactor, float capacityFactor)
 	{
 		if (!category.IsTradeGood && !category.IsAnimal)
 		{
 			return 0f;
 		}
-		if (!_priceDictionary.TryGetValue(category, out var value))
+		if (!GetCategoryPriceData(category, caravanParty, out var priceIndex))
 		{
 			return 0f;
 		}
@@ -1185,40 +1398,93 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			num = TaleWorlds.Library.MathF.Sqrt((float)TaleWorlds.Library.MathF.Min(_totalValueOfItemsAtCategory[category], 5000) / 5000f) * 0.4f;
 		}
 		float itemCategoryPriceIndex = town.GetItemCategoryPriceIndex(category);
-		float averageBuySellPriceIndex = value.AverageBuySellPriceIndex;
+		float averageBuySellPriceIndex = priceIndex.AverageBuySellPriceIndex;
 		float num2 = averageBuySellPriceIndex * (1f - num) - itemCategoryPriceIndex;
-		float demand = town.MarketData.GetDemand(category);
-		float num3 = 0.1f * TaleWorlds.Library.MathF.Pow(demand, 0.5f);
 		if (num2 < 0f)
 		{
 			return 0f;
 		}
+		float demand = town.MarketData.GetDemand(category);
+		float num3 = 0.1f * TaleWorlds.Library.MathF.Pow(demand, 0.5f);
 		float num4 = num2 * _averageValuesCached[category];
 		float num5 = num2 * 200f;
 		float num6 = averageBuySellPriceIndex / itemCategoryPriceIndex;
 		float num7 = ((category.Properties == ItemCategory.Property.BonusToFoodStores) ? 1.1f : 1f);
-		return ((category == DefaultItemCategories.PackAnimal) ? 1.5f : 1f) * num7 * num6 * num3 * (num4 * budgetFactor + num5 * capacityFactor);
+		return ((category == DefaultItemCategories.PackAnimal && caravanParty.HasLandNavigationCapability) ? 1.5f : 1f) * num7 * num6 * num3 * (num4 * budgetFactor + num5 * capacityFactor);
 	}
 
-	private float GetGlobalItemSellPrice(ItemObject item)
+	private float GetGlobalItemSellPrice(ItemObject item, MobileParty mobileParty)
 	{
-		if (!_priceDictionary.TryGetValue(item.ItemCategory, out var value))
+		if (!GetCategoryPriceData(item.ItemCategory, mobileParty, out var priceIndex))
 		{
 			return 1f;
 		}
-		return value.AverageBuySellPriceIndex * (float)item.Value;
+		return priceIndex.AverageBuySellPriceIndex * (float)item.Value;
+	}
+
+	private List<Kingdom> GetSuitableKingdomsAsTradePartnerForPlayerCaravans()
+	{
+		List<Kingdom> list = new List<Kingdom>();
+		foreach (Kingdom kingdom in Campaign.Current.Kingdoms)
+		{
+			if (!kingdom.IsEliminated)
+			{
+				list.Add(kingdom);
+			}
+		}
+		return list;
+	}
+
+	private List<Kingdom> GetSuitableKingdomsForHomeSettlement()
+	{
+		List<Kingdom> list = new List<Kingdom>();
+		foreach (Kingdom suitableKingdomsAsTradePartnerForPlayerCaravan in GetSuitableKingdomsAsTradePartnerForPlayerCaravans())
+		{
+			if (GetSuitableHomeSettlementsForKingdom(suitableKingdomsAsTradePartnerForPlayerCaravan).Count > 0)
+			{
+				list.Add(suitableKingdomsAsTradePartnerForPlayerCaravan);
+			}
+		}
+		return list;
+	}
+
+	private List<Settlement> GetSuitableHomeSettlementsForKingdom(Kingdom kingdom)
+	{
+		List<Settlement> list = new List<Settlement>();
+		MobileParty conversationParty = MobileParty.ConversationParty;
+		bool hasNavalNavigationCapability = conversationParty.HasNavalNavigationCapability;
+		foreach (Settlement settlement in kingdom.Settlements)
+		{
+			if (settlement.IsTown && settlement != conversationParty.HomeSettlement && (!hasNavalNavigationCapability || settlement.HasPort))
+			{
+				list.Add(settlement);
+			}
+		}
+		return list;
 	}
 
 	protected void AddDialogs(CampaignGameStarter starter)
 	{
 		starter.AddPlayerLine("caravan_companion_talk_start", "hero_main_options", "caravan_companion_talk_start", "{=q0RY0dQG}We need to talk business.", companion_is_caravan_leader_on_condition, null);
 		starter.AddDialogLine("caravan_companion_talk_start_reply", "caravan_companion_talk_start", "caravan_companion_talk_start_reply", "{=9RiXgPc1}Certainly. What do you need to know?", null, null);
+		starter.AddPlayerLine("caravan_companion_change_home_settlement", "caravan_companion_talk_start_reply", "caravan_companion_ask_change_home_settlement", "{=dMQ1u6l2}I would like you to start trading out of a different town.", caravan_companion_change_home_settlement_on_condition, caravan_companion_change_home_settlement_on_consequence, 100, caravan_companion_change_home_settlement_clickable_condition);
+		starter.AddPlayerLine("caravan_companion_prohibit_kingdoms", "caravan_companion_talk_start_reply", "caravan_companion_prohibit_kingdoms_selected", "{=5LhfbFpX}Let's discuss our trade partners.", caravan_companion_prohibit_kingdoms_on_condition, caravan_companion_prohibit_kingdoms_on_consequence, 100, caravan_companion_prohibit_kingdoms_clickable_condition);
 		starter.AddPlayerLine("caravan_companion_trade_rumors", "caravan_companion_talk_start_reply", "caravan_companion_ask_trade_rumors", "{=oMuxr3X6}What news of the markets? Any good deals to be had?", null, null);
 		starter.AddDialogLine("caravan_companion_ask_trade_rumors", "caravan_companion_ask_trade_rumors", "caravan_companion_anything_else", "{=sC4ZLZ8x}{COMMENT}", null, caravan_ask_trade_rumors_on_consequence);
 		starter.AddDialogLine("caravan_companion_talk_player_thank", "caravan_companion_anything_else", "caravan_companion_talk_end", "{=DQBaaC0e}Is there anything else?", null, null);
 		starter.AddPlayerLine("caravan_companion_talk_not_leave", "caravan_companion_talk_end", "lord_pretalk", "{=i2FwKPmC}Yes, I wanted to talk about something else..", null, null);
 		starter.AddPlayerLine("caravan_companion_talk_leave", "caravan_companion_talk_end", "close_window", "{=1IJouNaM}Carry on, then. Farewell.", null, caravan_player_leave_encounter_on_consequence);
 		starter.AddPlayerLine("caravan_companion_nevermind", "caravan_companion_talk_start_reply", "lord_pretalk", "{=D33fIGQe}Never mind.", null, null);
+		starter.AddDialogLine("caravan_companion_ask_change_home_settlement", "caravan_companion_ask_change_home_settlement", "caravan_companion_ask_change_home_settlement_2", "{=8oJYCDbO}Certainly. We currently trade out of {HOME_SETTLEMENT}. In which realm shall we make our new home?", caravan_companion_ask_change_home_settlement_2_on_condition, null);
+		starter.AddRepeatablePlayerLine("caravan_companion_ask_change_home_settlement_2", "caravan_companion_ask_change_home_settlement_2", "caravan_companion_ask_change_home_settlement_3", "{=!}{KINGDOM_NAME}", "{=bKqka5Uj}I am thinking of a different realm.", "caravan_companion_ask_change_home_settlement", caravan_companion_ask_change_home_settlement_3_on_condition, caravan_companion_ask_change_home_settlement_3_on_consequence);
+		starter.AddDialogLine("caravan_companion_ask_change_home_settlement_3", "caravan_companion_ask_change_home_settlement_3", "caravan_companion_ask_change_home_settlement_4", "{=SuQSy6g2}And which town there did you have in mind?", null, null);
+		starter.AddRepeatablePlayerLine("caravan_companion_ask_change_home_settlement_4", "caravan_companion_ask_change_home_settlement_4", "caravan_companion_change_home_settlement_end", "{=!}{SETTLEMENT.NAME}", "{=aE4JAqn0}I am thinking of a different settlement.", "caravan_companion_ask_change_home_settlement_3", caravan_companion_ask_change_home_settlement_4_on_condition, caravan_companion_ask_change_home_settlement_4_on_consequence);
+		starter.AddPlayerLine("caravan_companion_ask_change_home_settlement_cancel", "caravan_companion_ask_change_home_settlement_2", "lord_pretalk", "{=PznWhAdU}Actually, never mind.", null, null);
+		starter.AddPlayerLine("caravan_companion_ask_change_home_settlement_cancel_2", "caravan_companion_ask_change_home_settlement_4", "lord_pretalk", "{=PznWhAdU}Actually, never mind.", null, null);
+		starter.AddDialogLine("caravan_companion_change_home_settlement_end", "caravan_companion_change_home_settlement_end", "caravan_companion_anything_else", "{=cWwYmaw7}Understood. {NEW_HOME_SETTLEMENT_LINE}", caravan_companion_change_home_settlement_end_on_condition, null);
+		starter.AddDialogLine("caravan_companion_prohibit_kingdoms_selected", "caravan_companion_prohibit_kingdoms_selected", "caravan_companion_prohibit_kingdoms_selected_2", "{=cK0yctTy}Certainly. {DESPITE_WAR}", null, null);
+		starter.AddRepeatablePlayerLine("caravan_companion_prohibit_kingdoms_selected_2", "caravan_companion_prohibit_kingdoms_selected_2", "caravan_companion_prohibit_kingdoms_selected", "{=!}{CONTINUE_OR_STOP_TRADE}", "{=bKqka5Uj}I am thinking of a different realm.", "caravan_companion_prohibit_kingdoms_selected", caravan_companion_prohibit_kingdoms_selected_2_on_condition, caravan_companion_prohibit_kingdoms_selected_2_on_consequence);
+		starter.AddPlayerLine("caravan_companion_prohibit_kingdoms_selected_cancel", "caravan_companion_prohibit_kingdoms_selected_2", "lord_pretalk", "{=FM7YZaOa}Alright, that is all.", null, null);
 		starter.AddDialogLine("player_caravan_talk_start", "start", "player_caravan_talk_start", "{=BsVXQEhj}How may I help you?", player_caravan_talk_start_on_condition, null);
 		starter.AddPlayerLine("player_caravan_trade_rumors", "player_caravan_talk_start", "player_caravan_ask_trade_rumors", "{=shNl2Npf}What news of the markets?", null, null);
 		starter.AddDialogLine("player_caravan_ask_trade_rumors", "player_caravan_ask_trade_rumors", "player_caravan_anything_else", "{=sC4ZLZ8x}{COMMENT}", null, caravan_ask_trade_rumors_on_consequence);
@@ -1229,7 +1495,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("caravan_hero_leader_talk_start", "start", "caravan_talk", "{=!}{CARAVAN_GREETING}", caravan_start_talk_on_condition, null);
 		starter.AddDialogLine("caravan_pretalk", "caravan_pretalk", "caravan_talk", "{=3cBfSJOI}Is there anything else?[ib:normal]", null, null);
 		starter.AddPlayerLine("caravan_buy_products", "caravan_talk", "caravan_player_trade", "{=t0UGXPV4}I'm interested in trading. What kind of products do you have?", caravan_buy_products_on_condition, null);
-		starter.AddPlayerLine("caravan_trade_rumors", "caravan_talk", "caravan_ask_trade_rumors", "{=b5Ucatkb}Tell me about your journeys. What news of the markets?", null, null);
+		starter.AddPlayerLine("caravan_trade_rumors", "caravan_talk", "caravan_ask_trade_rumors", "{=b5Ucatkb}Tell me about your journeys. What news of the markets?", caravan_ask_trade_rumors_on_condition, null);
 		starter.AddDialogLine("caravan_ask_trade_rumors", "caravan_ask_trade_rumors", "caravan_trade_rumors_player_answer", "{=sC4ZLZ8x}{COMMENT}", null, caravan_ask_trade_rumors_on_consequence);
 		starter.AddPlayerLine("caravan_trade_rumors_player_answer", "caravan_trade_rumors_player_answer", "caravan_talk_player_thank", "{=ha7EmrU9}Thank you for that information.", null, null);
 		starter.AddDialogLine("caravan_talk_player_thank", "caravan_talk_player_thank", "caravan_talk", "{=BQuVWKvq}You're welcome. Is there anything we need to discuss?", null, null);
@@ -1237,17 +1503,39 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("caravan_talk_leave", "caravan_talk", "close_window", "{=1IJouNaM}Carry on, then. Farewell.", null, caravan_talk_leave_on_consequence);
 		starter.AddDialogLine("caravan_player_trade_end", "caravan_player_trade", "caravan_pretalk", "{=tlLDHAIu}Very well. A pleasure doing business with you.[rf:convo_relaxed_happy][ib:demure]", conversation_caravan_player_trade_end_on_condition, null);
 		starter.AddDialogLine("caravan_player_trade_end_response", "caravan_player_trade_response", "close_window", "{=2g2FhKb5}Farewell.", null, null);
-		starter.AddDialogLine("caravan_fight", "caravan_loot_talk", "caravan_do_not_bribe", "{=QNaKmkt9}We're paid to guard this caravan. If you want to rob it, it's going to be over our dead bodies![rf:idle_angry][ib:aggressive]", conversation_caravan_not_bribe_on_condition, null);
+		starter.AddDialogLine("caravan_fight", "caravan_loot_talk", "caravan_do_not_bribe", "{=!}{CARAVAN_DEFIANCE}", conversation_caravan_not_bribe_on_condition, null);
 		starter.AddPlayerLine("player_decided_to_fight", "caravan_do_not_bribe", "close_window", "{=EhxS7NQ4}So be it. Attack!", null, conversation_caravan_fight_on_consequence);
 		starter.AddPlayerLine("player_decided_to_not_fight_1", "caravan_do_not_bribe", "close_window", "{=bfPsE9M1}You must have misunderstood me. Go in peace.", null, caravan_talk_leave_on_consequence);
 		starter.AddDialogLine("caravan_accepted_to_give_some_goods", "caravan_loot_talk", "caravan_give_some_goods", "{=dMc3SjOK}We can pay you. {TAKE_MONEY_AND_PRODUCT_STRING}[rf:idle_angry][ib:nervous]", conversation_caravan_give_goods_on_condition, null);
-		starter.AddPlayerLine("player_decided_to_take_some_goods", "caravan_give_some_goods", "caravan_end_talk_bribe", "{=0Pd84h4W}I'll accept that.", null, null);
-		starter.AddPlayerLine("player_decided_to_take_everything", "caravan_give_some_goods", "player_wants_everything", "{=QZ6IcCIm}I want everything you've got.", null, null);
+		starter.AddPlayerLine("player_decided_to_take_some_goods", "caravan_give_some_goods", "caravan_end_talk_bribe", "{=0Pd84h4W}I'll accept that.", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			return true;
+		});
+		starter.AddPlayerLine("player_decided_to_take_everything", "caravan_give_some_goods", "player_wants_everything", "{=QZ6IcCIm}I want everything you've got.", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			return true;
+		});
 		starter.AddPlayerLine("player_decided_to_not_fight_2", "caravan_give_some_goods", "close_window", "{=bfPsE9M1}You must have misunderstood me. Go in peace.", null, caravan_talk_leave_on_consequence);
 		starter.AddDialogLine("caravan_fight_no_surrender", "player_wants_everything", "close_window", "{=3JfCwL31}You will have to fight us first![rf:idle_angry][ib:aggressive]", conversation_caravan_not_surrender_on_condition, conversation_caravan_fight_on_consequence);
 		starter.AddDialogLine("caravan_accepted_to_give_everything", "player_wants_everything", "player_decision_to_take_prisoners", "{=hbtbSag8}We can't fight you. We surrender. Please don't hurt us. Take what you want.[if:idle_angry][ib:nervous]", conversation_caravan_give_goods_on_condition, null);
-		starter.AddPlayerLine("player_do_not_take_prisoners", "player_decision_to_take_prisoners", "caravan_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null);
-		starter.AddPlayerLine("player_decided_to_take_prisoner", "player_decision_to_take_prisoners", "caravan_taken_prisoner_warning_check", "{=1gv0AVUN}You are my prisoners now.", null, null);
+		starter.AddPlayerLine("player_do_not_take_prisoners", "player_decision_to_take_prisoners", "caravan_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			return true;
+		});
+		starter.AddPlayerLine("player_decided_to_take_prisoner", "player_decision_to_take_prisoners", "caravan_taken_prisoner_warning_check", "{=1gv0AVUN}You are my prisoners now.", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			return true;
+		});
+		starter.AddPlayerLine("player_decided_to_force_fight", "player_decision_to_take_prisoners", "caravan_force_start_encounter", "{=ha53qb7v}Don't bother pleading for your lives. At them, lads!", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			return true;
+		});
+		starter.AddDialogLine("caravan_force_fight_encounter", "caravan_force_start_encounter", "close_window", "{=yoWl6w1I}Heaven will avenge us, you butcher!", null, conversation_caravan_fight_forced_on_consequence);
 		starter.AddDialogLine("caravan_warn_player_to_take_prisoner", "caravan_taken_prisoner_warning_check", "caravan_taken_prisoner_warning_answer", "{=NuYzgBZB}You are going too far. The {KINGDOM} won't stand for the destruction of its caravans.", conversation_warn_player_on_condition, null);
 		starter.AddDialogLine("caravan_do_not_warn_player", "caravan_taken_prisoner_warning_check", "close_window", "{=BvytaDUJ}Heaven protect us from the likes of you.", null, delegate
 		{
@@ -1257,6 +1545,147 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("player_decided_to_take_prisoner_leave", "caravan_taken_prisoner_warning_answer", "caravan_loot_talk", "{=D33fIGQe}Never mind.", null, null);
 		starter.AddDialogLine("caravan_bribery_leave", "caravan_end_talk_bribe", "close_window", "{=uPwKhAps}Can we leave now?", conversation_caravan_looted_leave_on_condition, conversation_caravan_looted_leave_on_consequence);
 		starter.AddDialogLine("caravan_surrender_leave", "caravan_end_talk_surrender", "close_window", "{=uPwKhAps}Can we leave now?", conversation_caravan_looted_leave_on_condition, conversation_caravan_surrender_leave_on_consequence);
+	}
+
+	private bool caravan_companion_change_home_settlement_on_condition()
+	{
+		if (MobileParty.ConversationParty.IsCurrentlyUsedByAQuest)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	private bool caravan_companion_change_home_settlement_clickable_condition(out TextObject explanation)
+	{
+		if (GetSuitableKingdomsForHomeSettlement().Count == 0)
+		{
+			explanation = new TextObject("{=MQM5SxdI}There is no suitable kingdom to select a new home settlement from.");
+			return false;
+		}
+		explanation = null;
+		return true;
+	}
+
+	private void caravan_companion_change_home_settlement_on_consequence()
+	{
+		ConversationSentence.SetObjectsToRepeatOver(GetSuitableKingdomsForHomeSettlement());
+	}
+
+	private bool caravan_companion_ask_change_home_settlement_2_on_condition()
+	{
+		MobileParty conversationParty = MobileParty.ConversationParty;
+		MBTextManager.SetTextVariable("HOME_SETTLEMENT", conversationParty.HomeSettlement?.Name);
+		return true;
+	}
+
+	private bool caravan_companion_ask_change_home_settlement_3_on_condition()
+	{
+		if (ConversationSentence.CurrentProcessedRepeatObject is Kingdom kingdom)
+		{
+			ConversationSentence.SelectedRepeatLine.SetTextVariable("KINGDOM_NAME", kingdom.Name);
+			return true;
+		}
+		return false;
+	}
+
+	private void caravan_companion_ask_change_home_settlement_3_on_consequence()
+	{
+		Kingdom kingdom = ConversationSentence.SelectedRepeatObject as Kingdom;
+		ConversationSentence.SetObjectsToRepeatOver(GetSuitableHomeSettlementsForKingdom(kingdom));
+	}
+
+	private bool caravan_companion_ask_change_home_settlement_4_on_condition()
+	{
+		if (ConversationSentence.CurrentProcessedRepeatObject is Settlement settlement)
+		{
+			StringHelpers.SetSettlementProperties("SETTLEMENT", settlement, null, isRepeatable: true);
+			return true;
+		}
+		return false;
+	}
+
+	private void caravan_companion_ask_change_home_settlement_4_on_consequence()
+	{
+		Settlement settlement = ConversationSentence.SelectedRepeatObject as Settlement;
+		StringHelpers.SetSettlementProperties("SETTLEMENT", settlement);
+		MobileParty.ConversationParty.CaravanPartyComponent.ChangeHomeSettlement(settlement);
+	}
+
+	private bool caravan_companion_change_home_settlement_end_on_condition()
+	{
+		MobileParty conversationParty = MobileParty.ConversationParty;
+		TextObject empty = TextObject.GetEmpty();
+		empty = ((!conversationParty.HomeSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction)) ? new TextObject("{=JIPKLzsx}Our new home is {SETTLEMENT_NAME}.") : new TextObject("{=Qyqurdka}Although it is inside enemy territory, our new home is {SETTLEMENT_NAME}."));
+		empty.SetTextVariable("SETTLEMENT_NAME", conversationParty.HomeSettlement.Name);
+		MBTextManager.SetTextVariable("NEW_HOME_SETTLEMENT_LINE", empty);
+		return true;
+	}
+
+	private bool caravan_companion_prohibit_kingdoms_on_condition()
+	{
+		if (MobileParty.ConversationParty.IsCurrentlyUsedByAQuest)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	private void caravan_companion_prohibit_kingdoms_on_consequence()
+	{
+		ConversationSentence.SetObjectsToRepeatOver(GetSuitableKingdomsAsTradePartnerForPlayerCaravans());
+	}
+
+	private bool caravan_companion_prohibit_kingdoms_clickable_condition(out TextObject explanation)
+	{
+		if (GetSuitableKingdomsAsTradePartnerForPlayerCaravans().Count == 0)
+		{
+			explanation = new TextObject("{=vUmhym4n}There is no suitable kingdom to discuss as a trade partner.");
+			return false;
+		}
+		explanation = null;
+		return true;
+	}
+
+	private bool caravan_companion_prohibit_kingdoms_selected_2_on_condition()
+	{
+		if (ConversationSentence.CurrentProcessedRepeatObject is Kingdom kingdom)
+		{
+			bool num = _prohibitedKingdomsForPlayerCaravans.Contains(kingdom);
+			TextObject empty = TextObject.GetEmpty();
+			empty = ((!num) ? new TextObject("{=KsFOH8vo}Let's stop trading with {KINGDOM_NAME}.") : new TextObject("{=1QBbbq4h}Let's continue trading with {KINGDOM_NAME}."));
+			empty.SetTextVariable("KINGDOM_NAME", kingdom.Name);
+			ConversationSentence.SelectedRepeatLine.SetTextVariable("CONTINUE_OR_STOP_TRADE", empty);
+			return true;
+		}
+		return false;
+	}
+
+	private void caravan_companion_prohibit_kingdoms_selected_2_on_consequence()
+	{
+		Kingdom kingdom = ConversationSentence.SelectedRepeatObject as Kingdom;
+		bool num = _prohibitedKingdomsForPlayerCaravans.Contains(kingdom);
+		TextObject textObject = TextObject.GetEmpty();
+		if (num)
+		{
+			_prohibitedKingdomsForPlayerCaravans.Remove(kingdom);
+		}
+		else
+		{
+			_prohibitedKingdomsForPlayerCaravans.Add(kingdom);
+			if (kingdom.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+			{
+				textObject = new TextObject("{=y9sgoggj}We are currently at war with {KINGDOM_NAME}, and we shall not start trading with them even if we make peace.");
+				textObject.SetTextVariable("KINGDOM_NAME", kingdom.Name);
+			}
+		}
+		MBTextManager.SetTextVariable("DESPITE_WAR", textObject);
+	}
+
+	private void conversation_caravan_fight_forced_on_consequence()
+	{
+		SetPlayerInteraction(MobileParty.ConversationParty, PlayerInteraction.Hostile);
+		BeHostileAction.ApplyEncounterHostileAction(MobileParty.MainParty.Party, MobileParty.ConversationParty.Party);
 	}
 
 	private bool companion_is_caravan_leader_on_condition()
@@ -1328,6 +1757,10 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			StringHelpers.SetCharacterProperties("MERCHANT", MobileParty.ConversationParty.Party.Owner.CharacterObject);
 			StringHelpers.SetCharacterProperties("PROTECTOR", MobileParty.ConversationParty.HomeSettlement.OwnerClan.Leader.CharacterObject);
 			TextObject text = new TextObject("{=FpUybbSk}Greetings. This caravan is owned by {MERCHANT.LINK}. We trade under the protection of {PROTECTOR.LINK}, master of {HOMETOWN}. How may we help you?[if:convo_normal]");
+			if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCurrentlyAtSea)
+			{
+				text = new TextObject("{=yGttYe7g}Greetings. This ship is owned by {MERCHANT.LINK}. We sail under the protection of {PROTECTOR.LINK}, master of {HOMETOWN}. How may we help you?[if:convo_normal]");
+			}
 			MBTextManager.SetTextVariable("CARAVAN_GREETING", text);
 			break;
 		}
@@ -1351,7 +1784,6 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			explanation = new TextObject("{=il2khBNl}You just looted this party.");
 			return false;
 		}
-		explanation = TextObject.Empty;
 		BribeAmount(MobileParty.ConversationParty.Party, out var gold, out var items);
 		bool flag = gold > 0;
 		bool flag2 = !items.IsEmpty();
@@ -1373,7 +1805,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 					textObject.SetTextVariable("LEFT", textObject3);
 					if (items.Count == 1)
 					{
-						textObject.SetTextVariable("RIGHT", TextObject.Empty);
+						textObject.SetTextVariable("RIGHT", TextObject.GetEmpty());
 					}
 					else if (items.Count - 2 > i)
 					{
@@ -1412,7 +1844,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				textObject7.SetTextVariable("LEFT", textObject9);
 				if (items.Count == 1)
 				{
-					textObject7.SetTextVariable("RIGHT", TextObject.Empty);
+					textObject7.SetTextVariable("RIGHT", TextObject.GetEmpty());
 				}
 				else if (items.Count - 2 > j)
 				{
@@ -1434,6 +1866,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			explanation = new TextObject("{=pbRwAjUN}They seem to have no valuable goods.");
 			return false;
 		}
+		explanation = null;
 		return true;
 	}
 
@@ -1441,6 +1874,10 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCaravan)
 		{
+			if (MobileParty.ConversationParty.IsInRaftState)
+			{
+				return false;
+			}
 			for (int i = 0; i < MobileParty.ConversationParty.ItemRoster.Count; i++)
 			{
 				if (MobileParty.ConversationParty.ItemRoster.GetElementNumber(i) > 0)
@@ -1455,6 +1892,11 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	private void caravan_player_leave_encounter_on_consequence()
 	{
 		PlayerEncounter.LeaveEncounter = true;
+	}
+
+	private bool caravan_ask_trade_rumors_on_condition()
+	{
+		return !MobileParty.ConversationParty.IsInRaftState;
 	}
 
 	private void caravan_ask_trade_rumors_on_consequence()
@@ -1530,7 +1972,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCaravan)
 		{
-			InventoryManager.OpenTradeWithCaravanOrAlleyParty(MobileParty.ConversationParty);
+			InventoryScreenHelper.OpenTradeWithCaravanOrAlleyParty(MobileParty.ConversationParty);
 		}
 		return true;
 	}
@@ -1539,6 +1981,18 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCaravan)
 		{
+			if (MobileParty.ConversationParty.IsInRaftState)
+			{
+				return false;
+			}
+			if (MobileParty.ConversationParty.IsCurrentlyAtSea)
+			{
+				MBTextManager.SetTextVariable("CARAVAN_DEFIANCE", "{=jfKTahGa}If you want our wares you'll have to take this ship, you damned pirate![rf: idle_angry][ib: aggressive]");
+			}
+			else
+			{
+				MBTextManager.SetTextVariable("CARAVAN_DEFIANCE", "{=QNaKmkt9}We're paid to guard this caravan. If you want to rob it, it's going to be over our dead bodies![rf: idle_angry][ib: aggressive]");
+			}
 			return !IsBribeFeasible();
 		}
 		return false;
@@ -1548,7 +2002,11 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCaravan)
 		{
-			return !IsSurrenderFeasible(MobileParty.ConversationParty, MobileParty.MainParty);
+			if (MobileParty.ConversationParty.IsInRaftState)
+			{
+				return false;
+			}
+			return !IsSurrenderFeasible();
 		}
 		return false;
 	}
@@ -1556,7 +2014,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	private void conversation_caravan_fight_on_consequence()
 	{
 		SetPlayerInteraction(MobileParty.ConversationParty, PlayerInteraction.Hostile);
-		PlayerEncounter.Current.IsEnemy = true;
+		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, MobileParty.ConversationParty.Party);
 	}
 
 	private bool conversation_caravan_give_goods_on_condition()
@@ -1612,7 +2070,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 		if (flag)
 		{
-			InventoryManager.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
+			InventoryScreenHelper.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
 			{
 				PartyBase.MainParty,
 				itemRoster
@@ -1645,7 +2103,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 		if (flag)
 		{
-			InventoryManager.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
+			InventoryScreenHelper.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
 			{
 				PartyBase.MainParty,
 				itemRoster
@@ -1663,7 +2121,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		{
 			troopRoster.AddToCounts(item.Character, item.Number);
 		}
-		PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, encounteredMobileParty.Name, troopRoster.TotalManCount);
+		PartyScreenHelper.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, encounteredMobileParty.Name, troopRoster.TotalManCount);
 		SkillLevelingManager.OnLoot(MobileParty.MainParty, encounteredMobileParty, itemRoster, attacked: false);
 		DestroyPartyAction.Apply(MobileParty.MainParty.Party, encounteredMobileParty);
 		PlayerEncounter.LeaveEncounter = true;
@@ -1671,30 +2129,22 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 
 	private bool IsBribeFeasible()
 	{
-		int num = (PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty) ? 33 : 67);
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
-		{
-			num = TaleWorlds.Library.MathF.Round((float)num * (1f - DefaultPerks.Roguery.Scarface.PrimaryBonus));
-		}
-		if (MobileParty.ConversationParty.Party.RandomIntWithSeed(5u, 100) > 100 - num)
+		float resultNumber = Campaign.Current.Models.EncounterModel.GetBribeChance(MobileParty.ConversationParty, MobileParty.MainParty).ResultNumber;
+		if (MobileParty.ConversationParty.Party.RandomFloatWithSeed(5u, 1f) > resultNumber)
 		{
 			return false;
 		}
-		return PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty, 0.6f);
+		return true;
 	}
 
-	private bool IsSurrenderFeasible(MobileParty conversationParty, MobileParty mainParty)
+	private bool IsSurrenderFeasible()
 	{
-		int num = (PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty) ? 33 : 67);
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
-		{
-			num = TaleWorlds.Library.MathF.Round((float)num * (1f - DefaultPerks.Roguery.Scarface.PrimaryBonus));
-		}
-		if (conversationParty.Party.RandomIntWithSeed(7u, 100) > 100 - num)
+		float surrenderChance = Campaign.Current.Models.EncounterModel.GetSurrenderChance(MobileParty.ConversationParty, MobileParty.MainParty);
+		if (MobileParty.ConversationParty.Party.RandomFloatWithSeed(7u, 1f) > surrenderChance)
 		{
 			return false;
 		}
-		return PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty);
+		return true;
 	}
 
 	private void BribeAmount(PartyBase party, out int gold, out ItemRoster items)
@@ -1750,5 +2200,22 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 		gold = num3;
 		items = itemRoster;
+	}
+
+	private bool CanTradeWith(IFaction caravanFaction, IFaction targetFaction)
+	{
+		if (caravanFaction.IsAtWarWith(targetFaction))
+		{
+			return false;
+		}
+		if (caravanFaction == Hero.MainHero.MapFaction)
+		{
+			if (targetFaction is Kingdom item)
+			{
+				return !_prohibitedKingdomsForPlayerCaravans.Contains(item);
+			}
+			return true;
+		}
+		return true;
 	}
 }

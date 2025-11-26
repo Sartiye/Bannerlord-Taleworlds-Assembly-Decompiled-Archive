@@ -193,7 +193,7 @@ public class FoodConsumptionBehavior : CampaignBehaviorBase
 		}
 		mobileParty.Party.RemainingFoodPercentage = num2;
 		bool isStarving2 = mobileParty.Party.IsStarving;
-		if ((int)CampaignData.CampaignStartTime.ToDays != (int)CampaignTime.Now.ToDays)
+		if ((int)Campaign.Current.Models.CampaignTimeModel.CampaignStartTime.ToDays != (int)CampaignTime.Now.ToDays)
 		{
 			if (isStarving && isStarving2)
 			{
@@ -255,7 +255,7 @@ public class FoodConsumptionBehavior : CampaignBehaviorBase
 
 	private void CheckAnimalBreeding(MobileParty party)
 	{
-		if (party.HasPerk(DefaultPerks.Riding.Breeder) && MBRandom.RandomFloat < DefaultPerks.Riding.Breeder.PrimaryBonus && (party.ItemRoster.NumberOfLivestockAnimals > 1 || party.ItemRoster.NumberOfPackAnimals > 1 || party.ItemRoster.NumberOfMounts > 1))
+		if (MBRandom.RandomFloat < DefaultPerks.Riding.Breeder.PrimaryBonus && !party.IsCurrentlyAtSea && party.HasPerk(DefaultPerks.Riding.Breeder) && (party.ItemRoster.NumberOfLivestockAnimals > 1 || party.ItemRoster.NumberOfPackAnimals > 1 || party.ItemRoster.NumberOfMounts > 1))
 		{
 			int num = party.ItemRoster.NumberOfLivestockAnimals + party.ItemRoster.NumberOfPackAnimals + party.ItemRoster.NumberOfMounts;
 			ItemRosterElement randomElementWithPredicate = party.ItemRoster.GetRandomElementWithPredicate((ItemRosterElement x) => x.EquipmentElement.Item.HasHorseComponent);

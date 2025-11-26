@@ -1,15 +1,16 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection;
 
 public class HeroVM : ViewModel
 {
-	private ImageIdentifierVM _imageIdentifier;
+	private CharacterImageIdentifierVM _imageIdentifier;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
-	private ImageIdentifierVM _clanBanner_9;
+	private BannerImageIdentifierVM _clanBanner_9;
 
 	private string _nameText;
 
@@ -18,6 +19,8 @@ public class HeroVM : ViewModel
 	private bool _isDead = true;
 
 	private bool _isChild;
+
+	private bool _isKingdomLeader;
 
 	public Hero Hero { get; }
 
@@ -56,6 +59,23 @@ public class HeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsKingdomLeader
+	{
+		get
+		{
+			return _isKingdomLeader;
+		}
+		set
+		{
+			if (value != _isKingdomLeader)
+			{
+				_isKingdomLeader = value;
+				OnPropertyChangedWithValue(value, "IsKingdomLeader");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public int Relation
 	{
 		get
@@ -73,7 +93,7 @@ public class HeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public CharacterImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -107,7 +127,7 @@ public class HeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -124,7 +144,7 @@ public class HeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner_9
+	public BannerImageIdentifierVM ClanBanner_9
 	{
 		get
 		{
@@ -145,18 +165,19 @@ public class HeroVM : ViewModel
 		if (hero != null)
 		{
 			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(hero.CharacterObject, useCivilian);
-			ImageIdentifier = new ImageIdentifierVM(characterCode);
-			ClanBanner = new ImageIdentifierVM(hero.ClanBanner);
-			ClanBanner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(hero.ClanBanner), nineGrid: true);
+			ImageIdentifier = new CharacterImageIdentifierVM(characterCode);
+			ClanBanner = new BannerImageIdentifierVM(hero.ClanBanner);
+			ClanBanner_9 = new BannerImageIdentifierVM(hero.ClanBanner, nineGrid: true);
 			Relation = GetRelation(hero);
 			IsDead = !hero.IsAlive;
 			IsChild = !CampaignUIHelper.IsHeroInformationHidden(hero, out var _) && FaceGen.GetMaturityTypeWithAge(hero.Age) <= BodyMeshMaturityType.Child;
+			IsKingdomLeader = hero.IsKingdomLeader;
 		}
 		else
 		{
-			ImageIdentifier = new ImageIdentifierVM();
-			ClanBanner = new ImageIdentifierVM();
-			ClanBanner_9 = new ImageIdentifierVM();
+			ImageIdentifier = new CharacterImageIdentifierVM(null);
+			ClanBanner = new BannerImageIdentifierVM(null);
+			ClanBanner_9 = new BannerImageIdentifierVM(null);
 			Relation = 0;
 		}
 		Hero = hero;

@@ -108,9 +108,9 @@ public class TacticDefensiveEngagement : TacticComponent
 
 	private bool HasBattleBeenJoined()
 	{
-		if (_mainInfantry?.QuerySystem.ClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
+		if (_mainInfantry?.CachedClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
 		{
-			return _mainInfantry.QuerySystem.MedianPosition.AsVec2.Distance(_mainInfantry.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / _mainInfantry.QuerySystem.ClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
+			return _mainInfantry.CachedMedianPosition.AsVec2.Distance(_mainInfantry.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / _mainInfantry.CachedClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
 		}
 		return true;
 	}
@@ -143,39 +143,29 @@ public class TacticDefensiveEngagement : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
-		if (!base.AreFormationsCreated)
+		if (base.AreFormationsCreated)
 		{
-			return;
-		}
-		bool flag = HasBattleBeenJoined();
-		if (CheckAndSetAvailableFormationsChanged())
-		{
-			_hasBattleBeenJoined = flag;
-			ManageFormationCounts();
-			if (_hasBattleBeenJoined)
+			bool flag = HasBattleBeenJoined();
+			bool flag2 = CheckAndSetAvailableFormationsChanged();
+			if (flag2 || flag != _hasBattleBeenJoined || IsTacticReapplyNeeded)
 			{
-				Engage();
+				_hasBattleBeenJoined = flag;
+				if (flag2)
+				{
+					ManageFormationCounts();
+				}
+				if (_hasBattleBeenJoined)
+				{
+					Engage();
+				}
+				else
+				{
+					Defend();
+				}
+				IsTacticReapplyNeeded = false;
 			}
-			else
-			{
-				Defend();
-			}
-			IsTacticReapplyNeeded = false;
-		}
-		if (flag != _hasBattleBeenJoined || IsTacticReapplyNeeded)
-		{
-			_hasBattleBeenJoined = flag;
-			if (_hasBattleBeenJoined)
-			{
-				Engage();
-			}
-			else
-			{
-				Defend();
-			}
-			IsTacticReapplyNeeded = false;
 		}
 		base.TickOccasionally();
 	}
@@ -186,7 +176,7 @@ public class TacticDefensiveEngagement : TacticComponent
 		{
 			return 0f;
 		}
-		Formation formation = _mainInfantry ?? base.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsInfantryFormation).MaxBy((Formation f) => f.CountOfUnits);
+		Formation formation = _mainInfantry ?? TaleWorlds.Core.Extensions.MaxBy(base.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsInfantryFormation), (Formation f) => f.CountOfUnits);
 		if (formation == null)
 		{
 			return 0f;
@@ -196,7 +186,7 @@ public class TacticDefensiveEngagement : TacticComponent
 			_mainInfantry = formation;
 		}
 		float num = base.Team.QuerySystem.InfantryRatio + base.Team.QuerySystem.RangedRatio;
-		float value = _mainInfantry.QuerySystem.AveragePosition.Distance(_mainInfantry.QuerySystem.HighGroundCloseToForeseenBattleGround);
+		float value = _mainInfantry.CachedAveragePosition.Distance(_mainInfantry.QuerySystem.HighGroundCloseToForeseenBattleGround);
 		float num2 = MBMath.Lerp(0.7f, 1f, (150f - MBMath.ClampFloat(value, 50f, 150f)) / 100f);
 		return num * 1.1f * TacticComponent.CalculateNotEngagingTacticalAdvantage(base.Team.QuerySystem) * num2 / MathF.Sqrt(base.Team.QuerySystem.RemainingPowerRatio);
 	}

@@ -25,7 +25,7 @@ public static class CrashInformationCollector
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	public static string CollectInformation()
 	{
 		List<CrashInformation> list = new List<CrashInformation>();

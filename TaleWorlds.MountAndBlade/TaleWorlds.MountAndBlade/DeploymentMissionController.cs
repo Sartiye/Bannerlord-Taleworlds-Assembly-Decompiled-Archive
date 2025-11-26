@@ -1,85 +1,100 @@
+using System;
 using System.Diagnostics;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
 
 namespace TaleWorlds.MountAndBlade;
 
-public class DeploymentMissionController : MissionLogic
+public abstract class DeploymentMissionController : MissionLogic
 {
-	private BattleDeploymentHandler _battleDeploymentHandler;
+	protected readonly bool IsPlayerAttacker;
 
-	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
+	protected bool IsPlayerControllerSetToNone;
 
-	private readonly bool _isPlayerAttacker;
+	protected BattleSideEnum PlayerSide;
 
-	protected bool TeamSetupOver;
+	protected BattleSideEnum EnemySide;
 
-	private bool _isPlayerControllerSetToAI;
+	protected bool AfterSetupTeamsCalled;
+
+	public bool TeamSetupOver { get; private set; }
+
+	public event Action OnAfterSetupTeams;
 
 	public DeploymentMissionController(bool isPlayerAttacker)
 	{
-		_isPlayerAttacker = isPlayerAttacker;
+		IsPlayerAttacker = isPlayerAttacker;
+		PlayerSide = (IsPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		EnemySide = ((!IsPlayerAttacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+	}
+
+	public override void AfterStart()
+	{
+		base.Mission.AllowAiTicking = false;
+		OnAfterStart();
 	}
 
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
-		_battleDeploymentHandler = base.Mission.GetMissionBehavior<BattleDeploymentHandler>();
-		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		base.Mission.AreOrderGesturesEnabled_AdditionalCondition += AreOrderGesturesEnabled_AdditionalCondition;
 	}
 
-	public override void AfterStart()
+	public void FinishDeployment()
 	{
-		base.AfterStart();
-		base.Mission.AllowAiTicking = false;
-		for (int i = 0; i < 2; i++)
+		BeforeDeploymentFinished();
+		if (IsPlayerAttacker)
 		{
-			MissionAgentSpawnLogic.SetSpawnTroops((BattleSideEnum)i, spawnTroops: false);
+			UnhideAgentsOfSide(BattleSideEnum.Defender);
 		}
-		MissionAgentSpawnLogic.SetReinforcementsSpawnEnabled(value: false);
-	}
-
-	private void SetupTeams()
-	{
-		Utilities.SetLoadingScreenPercentage(0.92f);
-		base.Mission.DisableDying = true;
-		BattleSideEnum battleSideEnum = ((!_isPlayerAttacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		BattleSideEnum side = (_isPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		SetupTeamsOfSide(battleSideEnum);
-		OnSideDeploymentFinished(battleSideEnum);
-		if (_isPlayerAttacker)
+		Mission.Current.OnDeploymentFinished();
+		foreach (Team team in base.Mission.Teams)
 		{
-			foreach (Agent agent in base.Mission.Agents)
+			foreach (Formation item in team.FormationsIncludingSpecialAndEmpty)
 			{
-				if (agent.IsHuman && agent.Team != null && agent.Team.Side == battleSideEnum)
+				if (item.CountOfUnits <= 0)
 				{
-					agent.SetRenderCheckEnabled(value: false);
-					agent.AgentVisuals.SetVisible(value: false);
-					agent.MountAgent?.SetRenderCheckEnabled(value: false);
-					agent.MountAgent?.AgentVisuals.SetVisible(value: false);
+					continue;
 				}
+				item.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					if (agent.IsAIControlled)
+					{
+						agent.SetAlarmState(Agent.AIStateFlag.Alarmed);
+						agent.SetIsAIPaused(isPaused: false);
+						if (agent.GetAgentFlags().HasAnyFlag(AgentFlag.CanWieldWeapon))
+						{
+							agent.ResetEnemyCaches();
+						}
+						agent.HumanAIComponent?.SyncBehaviorParamsIfNecessary();
+					}
+				});
 			}
 		}
-		SetupTeamsOfSide(side);
-		base.Mission.IsTeleportingAgents = true;
-		Utilities.SetLoadingScreenPercentage(0.96f);
-		if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
+		Agent mainAgent = base.Mission.MainAgent;
+		if (mainAgent != null)
 		{
-			FinishDeployment();
+			mainAgent.SetDetachableFromFormation(value: true);
+			mainAgent.Controller = AgentControllerType.Player;
 		}
+		base.Mission.AllowAiTicking = true;
+		base.Mission.DisableDying = false;
+		base.Mission.SetFallAvoidSystemActive(fallAvoidActive: false);
+		Mission.Current.OnAfterDeploymentFinished();
+		AfterDeploymentFinished();
+		base.Mission.RemoveMissionBehavior(this);
 	}
 
 	public override void OnAgentControllerSetToPlayer(Agent agent)
 	{
-		if (!_isPlayerControllerSetToAI)
+		if (!IsPlayerControllerSetToNone)
 		{
-			agent.Controller = Agent.ControllerType.AI;
+			agent.Controller = AgentControllerType.None;
 			agent.SetIsAIPaused(isPaused: true);
 			agent.SetDetachableFromFormation(value: false);
-			_isPlayerControllerSetToAI = true;
+			IsPlayerControllerSetToNone = true;
 		}
 	}
 
@@ -91,46 +106,18 @@ public class DeploymentMissionController : MissionLogic
 			SetupTeams();
 			TeamSetupOver = true;
 		}
-	}
-
-	[Conditional("DEBUG")]
-	private void DebugTick()
-	{
-		if (Input.DebugInput.IsHotKeyPressed("SwapToEnemy"))
+		if (TeamSetupOver && !AfterSetupTeamsCalled)
 		{
-			base.Mission.MainAgent.Controller = Agent.ControllerType.AI;
-			base.Mission.PlayerEnemyTeam.Leader.Controller = Agent.ControllerType.Player;
-			SwapTeams();
+			this.OnAfterSetupTeams?.Invoke();
+			AfterSetupTeamsCalled = true;
 		}
 	}
 
-	private void SwapTeams()
+	protected void SetupAgentAIStatesForSide(BattleSideEnum battleSide)
 	{
-		base.Mission.PlayerTeam = base.Mission.PlayerEnemyTeam;
-	}
-
-	protected void SetupTeamsOfSideAux(BattleSideEnum side)
-	{
-		Team team = ((side == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
-		foreach (Formation item in team.FormationsIncludingSpecialAndEmpty)
+		foreach (Team item in Mission.GetTeamsOfSide(battleSide))
 		{
-			if (item.CountOfUnits <= 0)
-			{
-				continue;
-			}
-			item.ApplyActionOnEachUnit(delegate(Agent agent)
-			{
-				if (agent.IsAIControlled)
-				{
-					agent.AIStateFlags &= ~Agent.AIStateFlag.Alarmed;
-					agent.SetIsAIPaused(isPaused: true);
-				}
-			});
-		}
-		Team team2 = ((side == BattleSideEnum.Attacker) ? base.Mission.AttackerAllyTeam : base.Mission.DefenderAllyTeam);
-		if (team2 != null)
-		{
-			foreach (Formation item2 in team2.FormationsIncludingSpecialAndEmpty)
+			foreach (Formation item2 in item.FormationsIncludingSpecialAndEmpty)
 			{
 				if (item2.CountOfUnits <= 0)
 				{
@@ -140,38 +127,36 @@ public class DeploymentMissionController : MissionLogic
 				{
 					if (agent.IsAIControlled)
 					{
-						agent.AIStateFlags &= ~Agent.AIStateFlag.Alarmed;
+						agent.SetAlarmState(Agent.AIStateFlag.None);
 						agent.SetIsAIPaused(isPaused: true);
 					}
 				});
 			}
 		}
-		MissionAgentSpawnLogic.OnBattleSideDeployed(team.Side);
 	}
 
-	protected virtual void SetupTeamsOfSide(BattleSideEnum side)
-	{
-		MissionAgentSpawnLogic.SetSpawnTroops(side, spawnTroops: true, enforceSpawning: true);
-		SetupTeamsOfSideAux(side);
-	}
+	protected abstract void OnAfterStart();
 
-	protected void OnSideDeploymentFinished(BattleSideEnum side)
+	protected abstract void OnSetupTeamsOfSide(BattleSideEnum side);
+
+	protected abstract void OnSetupTeamsFinished();
+
+	protected abstract void BeforeDeploymentFinished();
+
+	protected abstract void AfterDeploymentFinished();
+
+	protected virtual void SetupAIOfEnemySide(BattleSideEnum enemySide)
 	{
-		Team team = ((side == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
-		if (side != base.Mission.PlayerTeam.Side)
+		Team team = ((enemySide == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
+		SetupAIOfEnemyTeam(team);
+		Team team2 = ((enemySide == BattleSideEnum.Attacker) ? base.Mission.AttackerAllyTeam : base.Mission.DefenderAllyTeam);
+		if (team2 != null)
 		{
-			base.Mission.IsTeleportingAgents = true;
-			DeployFormationsOfTeam(team);
-			Team team2 = ((side == BattleSideEnum.Attacker) ? base.Mission.AttackerAllyTeam : base.Mission.DefenderAllyTeam);
-			if (team2 != null)
-			{
-				DeployFormationsOfTeam(team2);
-			}
-			base.Mission.IsTeleportingAgents = false;
+			SetupAIOfEnemyTeam(team2);
 		}
 	}
 
-	protected void DeployFormationsOfTeam(Team team)
+	protected virtual void SetupAIOfEnemyTeam(Team team)
 	{
 		foreach (Formation item in team.FormationsIncludingEmpty)
 		{
@@ -192,57 +177,73 @@ public class DeploymentMissionController : MissionLogic
 		base.Mission.ForceTickOccasionally = false;
 	}
 
-	public void FinishDeployment()
+	private void SetupTeams()
 	{
-		OnBeforeDeploymentFinished();
-		if (_isPlayerAttacker)
+		Utilities.SetLoadingScreenPercentage(0.92f);
+		base.Mission.DisableDying = true;
+		base.Mission.SetFallAvoidSystemActive(fallAvoidActive: true);
+		OnSetupTeamsOfSide(EnemySide);
+		SetupAIOfEnemySide(EnemySide);
+		if (IsPlayerAttacker)
 		{
-			foreach (Agent agent in base.Mission.Agents)
-			{
-				if (agent.IsHuman && agent.Team != null && agent.Team.Side == BattleSideEnum.Defender)
-				{
-					agent.SetRenderCheckEnabled(value: true);
-					agent.AgentVisuals.SetVisible(value: true);
-					agent.MountAgent?.SetRenderCheckEnabled(value: true);
-					agent.MountAgent?.AgentVisuals.SetVisible(value: true);
-				}
-			}
+			HideAgentsOfSide(BattleSideEnum.Defender);
 		}
-		base.Mission.IsTeleportingAgents = false;
-		Mission.Current.OnDeploymentFinished();
-		foreach (Agent agent2 in base.Mission.Agents)
+		OnSetupTeamsOfSide(PlayerSide);
+		OnSetupTeamsFinished();
+		base.Mission.AreOrderGesturesEnabled_AdditionalCondition -= AreOrderGesturesEnabled_AdditionalCondition;
+		Utilities.SetLoadingScreenPercentage(0.96f);
+		if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
 		{
-			if (agent2.IsAIControlled)
-			{
-				agent2.AIStateFlags |= Agent.AIStateFlag.Alarmed;
-				agent2.SetIsAIPaused(isPaused: false);
-				if (agent2.GetAgentFlags().HasAnyFlag(AgentFlag.CanWieldWeapon))
-				{
-					agent2.ResetEnemyCaches();
-				}
-				agent2.HumanAIComponent?.SyncBehaviorParamsIfNecessary();
-			}
+			FinishDeployment();
 		}
-		Agent mainAgent = base.Mission.MainAgent;
-		if (mainAgent != null)
-		{
-			mainAgent.SetDetachableFromFormation(value: true);
-			mainAgent.Controller = Agent.ControllerType.Player;
-		}
-		base.Mission.AllowAiTicking = true;
-		base.Mission.DisableDying = false;
-		MissionAgentSpawnLogic.SetReinforcementsSpawnEnabled(value: true);
-		OnAfterDeploymentFinished();
-		base.Mission.RemoveMissionBehavior(this);
 	}
 
-	public virtual void OnBeforeDeploymentFinished()
+	private void HideAgentsOfSide(BattleSideEnum side)
 	{
-		OnSideDeploymentFinished(base.Mission.PlayerTeam.Side);
+		foreach (Agent agent in base.Mission.Agents)
+		{
+			if (agent.IsHuman && agent.Team != null && agent.Team.Side == side)
+			{
+				agent.SetRenderCheckEnabled(value: false);
+				agent.AgentVisuals.SetVisible(value: false);
+				agent.MountAgent?.SetRenderCheckEnabled(value: false);
+				agent.MountAgent?.AgentVisuals.SetVisible(value: false);
+			}
+		}
 	}
 
-	public virtual void OnAfterDeploymentFinished()
+	private void UnhideAgentsOfSide(BattleSideEnum side)
 	{
-		base.Mission.RemoveMissionBehavior(_battleDeploymentHandler);
+		foreach (Agent agent in base.Mission.Agents)
+		{
+			if (agent.IsHuman && agent.Team != null && agent.Team.Side == side)
+			{
+				agent.SetRenderCheckEnabled(value: true);
+				agent.AgentVisuals.SetVisible(value: true);
+				agent.MountAgent?.SetRenderCheckEnabled(value: true);
+				agent.MountAgent?.AgentVisuals.SetVisible(value: true);
+			}
+		}
+	}
+
+	private bool AreOrderGesturesEnabled_AdditionalCondition()
+	{
+		return false;
+	}
+
+	[Conditional("DEBUG")]
+	private void DebugTick()
+	{
+		if (Input.DebugInput.IsHotKeyPressed("SwapToEnemy"))
+		{
+			base.Mission.MainAgent.Controller = AgentControllerType.AI;
+			base.Mission.PlayerEnemyTeam.Leader.Controller = AgentControllerType.Player;
+			SwapTeams();
+		}
+	}
+
+	private void SwapTeams()
+	{
+		base.Mission.PlayerTeam = base.Mission.PlayerEnemyTeam;
 	}
 }

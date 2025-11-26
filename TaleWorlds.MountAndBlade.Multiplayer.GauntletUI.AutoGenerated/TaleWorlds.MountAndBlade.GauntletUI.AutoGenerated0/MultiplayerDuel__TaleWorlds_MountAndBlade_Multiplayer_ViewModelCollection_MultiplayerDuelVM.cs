@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
@@ -110,13 +110,13 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 
 	private MPPlayerVM _datasource_Root_PlayerDuelMatch_FirstPlayer;
 
-	private ImageIdentifierVM _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
+	private PlayerAvatarImageIdentifierVM _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
 
 	private MPTeammateCompassTargetVM _datasource_Root_PlayerDuelMatch_FirstPlayer_CompassElement;
 
 	private MPPlayerVM _datasource_Root_PlayerDuelMatch_SecondPlayer;
 
-	private ImageIdentifierVM _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
+	private PlayerAvatarImageIdentifierVM _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
 
 	private MPTeammateCompassTargetVM _datasource_Root_PlayerDuelMatch_SecondPlayer_CompassElement;
 
@@ -1638,9 +1638,17 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 
 	private void HandleWidgetPropertyChangeOf_widget_5_2_0_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.AdditionalArgs = _widget_5_2_0_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id = _widget_5_2_0_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName = _widget_5_2_0_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -1797,9 +1805,17 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 
 	private void HandleWidgetPropertyChangeOf_widget_5_2_2_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.AdditionalArgs = _widget_5_2_2_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id = _widget_5_2_2_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName = _widget_5_2_2_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -2179,8 +2195,8 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		case "Id":
 			_widget_5_2_0_0.ImageId = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_5_2_0_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_5_2_0_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName;
 			break;
 		}
 	}
@@ -2354,8 +2370,8 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		case "Id":
 			_widget_5_2_2_0.ImageId = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_5_2_2_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_5_2_2_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName;
 			break;
 		}
 	}
@@ -3050,7 +3066,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
 				_widget_5_2_0_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_0_0.ImageId = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id;
-				_widget_5_2_0_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_0_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName;
 				_widget_5_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_0_0;
@@ -3121,7 +3137,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
 				_widget_5_2_2_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_2_0.ImageId = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id;
-				_widget_5_2_2_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_2_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName;
 				_widget_5_2_2_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_2_0;
@@ -3555,7 +3571,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
 				_widget_5_2_0_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_0_0.ImageId = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id;
-				_widget_5_2_0_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_0_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName;
 				_widget_5_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_0_0;
@@ -3626,7 +3642,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
 				_widget_5_2_2_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_2_0.ImageId = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id;
-				_widget_5_2_2_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_2_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName;
 				_widget_5_2_2_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_2_0;
@@ -3768,7 +3784,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
 				_widget_5_2_0_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_0_0.ImageId = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id;
-				_widget_5_2_0_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_0_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName;
 				_widget_5_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_0_0;
 				_widget_5_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_0_0;
@@ -3805,7 +3821,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar(PlayerAvatarImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar != null)
 		{
@@ -3844,7 +3860,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 			_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar;
 			_widget_5_2_0_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.AdditionalArgs;
 			_widget_5_2_0_0.ImageId = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.Id;
-			_widget_5_2_0_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.ImageTypeCode;
+			_widget_5_2_0_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_FirstPlayer_Avatar.TextureProviderName;
 			_widget_5_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_0_0;
 			_widget_5_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_0_0;
 			_widget_5_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_0_0;
@@ -4012,7 +4028,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 				_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
 				_widget_5_2_2_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.AdditionalArgs;
 				_widget_5_2_2_0.ImageId = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id;
-				_widget_5_2_2_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.ImageTypeCode;
+				_widget_5_2_2_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName;
 				_widget_5_2_2_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_2_0;
 				_widget_5_2_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_2_0;
@@ -4049,7 +4065,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar(PlayerAvatarImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar != null)
 		{
@@ -4088,7 +4104,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 			_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar;
 			_widget_5_2_2_0.AdditionalArgs = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.AdditionalArgs;
 			_widget_5_2_2_0.ImageId = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.Id;
-			_widget_5_2_2_0.ImageTypeCode = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.ImageTypeCode;
+			_widget_5_2_2_0.TextureProviderName = _datasource_Root_PlayerDuelMatch_SecondPlayer_Avatar.TextureProviderName;
 			_widget_5_2_2_0.PropertyChanged += PropertyChangedListenerOf_widget_5_2_2_0;
 			_widget_5_2_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_5_2_2_0;
 			_widget_5_2_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_5_2_2_0;

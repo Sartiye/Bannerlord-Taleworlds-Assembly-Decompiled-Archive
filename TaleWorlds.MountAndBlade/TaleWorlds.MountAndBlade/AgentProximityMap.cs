@@ -1,6 +1,7 @@
 using System;
 using TaleWorlds.DotNet;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -23,7 +24,7 @@ public class AgentProximityMap
 	}
 
 	[Serializable]
-	[EngineStruct("Managed_proximity_map_search_struct", false)]
+	[EngineStruct("Managed_proximity_map_search_struct", false, null)]
 	internal struct ProximityMapSearchStructInternal
 	{
 		internal int CurrentElementIndex;
@@ -65,7 +66,7 @@ public class AgentProximityMap
 			result.SearchStructInternal.SearchDistSq = searchRadius * searchRadius;
 			result.LastAgentLoopIndex = 0;
 			result.LastFoundAgent = null;
-			MBReadOnlyList<Agent> agents = mission.Agents;
+			AgentReadOnlyList agents = mission.Agents;
 			while (agents.Count > result.LastAgentLoopIndex)
 			{
 				Agent agent = agents[result.LastAgentLoopIndex];
@@ -91,7 +92,7 @@ public class AgentProximityMap
 		{
 			searchStruct.LastAgentLoopIndex++;
 			searchStruct.LastFoundAgent = null;
-			MBReadOnlyList<Agent> agents = mission.Agents;
+			AgentReadOnlyList agents = mission.Agents;
 			while (agents.Count > searchStruct.LastAgentLoopIndex)
 			{
 				Agent agent = agents[searchStruct.LastAgentLoopIndex];

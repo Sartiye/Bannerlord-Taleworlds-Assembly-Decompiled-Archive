@@ -21,6 +21,11 @@ public class EmptyGamepadNavigationContext : IGamepadNavigationContext
 	{
 	}
 
+	public void OnFinalize()
+	{
+		GauntletGamepadNavigationManager.Instance?.OnContextFinalized(this);
+	}
+
 	public bool GetIsBlockedAtPosition(Vector2 position)
 	{
 		return true;
@@ -44,10 +49,6 @@ public class EmptyGamepadNavigationContext : IGamepadNavigationContext
 	public bool IsAvailableForNavigation()
 	{
 		return false;
-	}
-
-	public void OnFinalize()
-	{
 	}
 
 	public void OnGainNavigation()

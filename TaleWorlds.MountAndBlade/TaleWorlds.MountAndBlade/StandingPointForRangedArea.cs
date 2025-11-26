@@ -22,13 +22,13 @@ public class StandingPointForRangedArea : StandingPoint
 
 	public override bool IsDisabledForAgent(Agent agent)
 	{
-		EquipmentIndex wieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		if (wieldedItemIndex != EquipmentIndex.None)
+		EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
+		if (primaryWieldedItemIndex != EquipmentIndex.None)
 		{
-			WeaponComponentData currentUsageItem = agent.Equipment[wieldedItemIndex].CurrentUsageItem;
+			WeaponComponentData currentUsageItem = agent.Equipment[primaryWieldedItemIndex].CurrentUsageItem;
 			if (currentUsageItem != null && currentUsageItem.IsRangedWeapon)
 			{
-				if (wieldedItemIndex == EquipmentIndex.ExtraWeaponSlot)
+				if (primaryWieldedItemIndex == EquipmentIndex.ExtraWeaponSlot)
 				{
 					if (!(ThrowingValueMultiplier <= 0f))
 					{
@@ -49,11 +49,11 @@ public class StandingPointForRangedArea : StandingPoint
 
 	public override float GetUsageScoreForAgent(Agent agent)
 	{
-		EquipmentIndex wieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+		EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
 		float num = 0f;
-		if (wieldedItemIndex != EquipmentIndex.None && agent.Equipment[wieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
+		if (primaryWieldedItemIndex != EquipmentIndex.None && agent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
 		{
-			num = ((wieldedItemIndex == EquipmentIndex.ExtraWeaponSlot) ? ThrowingValueMultiplier : RangedWeaponValueMultiplier);
+			num = ((primaryWieldedItemIndex == EquipmentIndex.ExtraWeaponSlot) ? ThrowingValueMultiplier : RangedWeaponValueMultiplier);
 		}
 		return base.GetUsageScoreForAgent(agent) + num;
 	}

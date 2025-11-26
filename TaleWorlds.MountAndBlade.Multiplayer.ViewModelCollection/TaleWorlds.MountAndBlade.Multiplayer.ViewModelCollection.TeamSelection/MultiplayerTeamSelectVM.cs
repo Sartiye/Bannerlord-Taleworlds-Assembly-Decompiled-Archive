@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.TeamSelection;
@@ -194,15 +195,16 @@ public class MultiplayerTeamSelectVM : ViewModel
 		IsRoundCountdownAvailable = _gameMode.IsGameModeUsingRoundCountdown;
 		Debug.Print("MultiplayerTeamSelectVM 3", 0, Debug.DebugColor.White, 17179869184uL);
 		Team team = teams.FirstOrDefault((Team t) => t.Side == BattleSideEnum.None);
-		TeamSpectators = new TeamSelectTeamInstanceVM(missionBehavior, team, null, null, onChangeTeamTo, useSecondary: false);
+		TeamSpectators = new TeamSelectTeamInstanceVM(missionBehavior, team, null, null, onChangeTeamTo, new MultiplayerBattleColors.MultiplayerCultureColorInfo(null, swapColors: false));
 		Debug.Print("MultiplayerTeamSelectVM 4", 0, Debug.DebugColor.White, 17179869184uL);
 		Team team2 = teams.FirstOrDefault((Team t) => t.Side == BattleSideEnum.Attacker);
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
-		Team1 = new TeamSelectTeamInstanceVM(missionBehavior, team2, @object, BannerCode.CreateFrom(team2.Banner), onChangeTeamTo, useSecondary: false);
 		Debug.Print("MultiplayerTeamSelectVM 5", 0, Debug.DebugColor.White, 17179869184uL);
 		Team team3 = teams.FirstOrDefault((Team t) => t.Side == BattleSideEnum.Defender);
-		@object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
-		Team2 = new TeamSelectTeamInstanceVM(missionBehavior, team3, @object, BannerCode.CreateFrom(team3.Banner), onChangeTeamTo, useSecondary: true);
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
+		Team1 = new TeamSelectTeamInstanceVM(missionBehavior, team2, @object, team2.Banner, onChangeTeamTo, multiplayerBattleColors.AttackerColors);
+		Team2 = new TeamSelectTeamInstanceVM(missionBehavior, team3, object2, team3.Banner, onChangeTeamTo, multiplayerBattleColors.DefenderColors);
 		Debug.Print("MultiplayerTeamSelectVM 6", 0, Debug.DebugColor.White, 17179869184uL);
 		if (GameNetwork.IsMyPeerReady)
 		{

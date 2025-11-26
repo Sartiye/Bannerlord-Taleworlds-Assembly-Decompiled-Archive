@@ -340,14 +340,14 @@ public class PopupSceneCameraPath : ScriptComponentBehavior
 		}
 		if (base.GameEntity.Skeleton != null && !string.IsNullOrEmpty(state.animationName))
 		{
-			MatrixFrame boneEntitialFrame = base.GameEntity.Skeleton.GetBoneEntitialFrame((sbyte)BoneIndex);
-			boneEntitialFrame = _localFrameIdentity.TransformToParent(boneEntitialFrame);
+			MatrixFrame m = base.GameEntity.Skeleton.GetBoneEntitialFrame((sbyte)BoneIndex);
+			m = _localFrameIdentity.TransformToParent(in m);
 			MatrixFrame frame = default(MatrixFrame);
-			frame.rotation = boneEntitialFrame.rotation;
-			frame.rotation.u = -boneEntitialFrame.rotation.s;
-			frame.rotation.f = -boneEntitialFrame.rotation.u;
-			frame.rotation.s = boneEntitialFrame.rotation.f;
-			frame.origin = boneEntitialFrame.origin + AttachmentOffset;
+			frame.rotation = m.rotation;
+			frame.rotation.u = -m.rotation.s;
+			frame.rotation.f = -m.rotation.u;
+			frame.rotation.s = m.rotation.f;
+			frame.origin = m.origin + AttachmentOffset;
 			gameEntity.SetFrame(ref frame);
 			SoundManager.SetListenerFrame(frame);
 		}
@@ -355,7 +355,7 @@ public class PopupSceneCameraPath : ScriptComponentBehavior
 		{
 			float distance = num * state.totalDistance;
 			Vec3 origin = state.path.GetFrameForDistance(distance).origin;
-			MatrixFrame frame2 = MatrixFrame.Identity;
+			MatrixFrame frame2 = gameEntity.GetGlobalFrame();
 			if (_lookAtEntity != null)
 			{
 				frame2 = CreateLookAt(origin, _lookAtEntity.GetGlobalFrame().origin, Vec3.Up);

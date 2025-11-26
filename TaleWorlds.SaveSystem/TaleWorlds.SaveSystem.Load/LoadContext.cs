@@ -235,7 +235,9 @@ public class LoadContext
 			GC.Collect();
 			if (!loadAsLateInitialize)
 			{
-				CreateLoadCallbackInitializator(loadData).InitializeObjects();
+				LoadCallbackInitializator loadCallbackInitializator = CreateLoadCallbackInitializator(loadData);
+				loadCallbackInitializator.InitializeObjects();
+				loadCallbackInitializator.AfterInitializeObjects();
 			}
 			return true;
 		}

@@ -16,7 +16,8 @@ public class SPPersonalKillNotificationItemVM : ViewModel
 		Assist,
 		MakeUnconscious,
 		NormalKillHeadshot,
-		MakeUnconsciousHeadshot
+		MakeUnconsciousHeadshot,
+		Message
 	}
 
 	private Action<SPPersonalKillNotificationItemVM> _onRemoveItem;
@@ -30,6 +31,8 @@ public class SPPersonalKillNotificationItemVM : ViewModel
 	private int _amount;
 
 	private int _itemType;
+
+	private bool _isPaused;
 
 	private ItemTypes ItemTypeAsEnum
 	{
@@ -112,6 +115,23 @@ public class SPPersonalKillNotificationItemVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsPaused
+	{
+		get
+		{
+			return _isPaused;
+		}
+		set
+		{
+			if (value != _isPaused)
+			{
+				_isPaused = value;
+				OnPropertyChangedWithValue(value, "IsPaused");
+			}
+		}
+	}
+
 	public SPPersonalKillNotificationItemVM(int damageAmount, bool isMountDamage, bool isFriendlyFire, bool isHeadshot, string killedAgentName, bool isUnconscious, Action<SPPersonalKillNotificationItemVM> onRemoveItem)
 	{
 		_onRemoveItem = onRemoveItem;
@@ -159,7 +179,7 @@ public class SPPersonalKillNotificationItemVM : ViewModel
 		_onRemoveItem = onRemoveItem;
 		Amount = -1;
 		Message = victimAgentName;
-		ItemTypeAsEnum = ItemTypes.Assist;
+		ItemTypeAsEnum = ItemTypes.Message;
 	}
 
 	public void ExecuteRemove()

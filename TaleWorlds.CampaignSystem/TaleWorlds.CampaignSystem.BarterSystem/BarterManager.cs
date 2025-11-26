@@ -73,7 +73,7 @@ public class BarterManager
 		{
 			if (!CanPlayerBarterWithHero(other))
 			{
-				Debug.FailedAssert("Barter with the hero is on cooldown.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\BarterManager.cs", "StartBarterOffer", 83);
+				Debug.FailedAssert("Barter with the hero is on cooldown.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\BarterManager.cs", "StartBarterOffer", 83);
 				return;
 			}
 			ClearHeroCooldowns();
@@ -81,6 +81,7 @@ public class BarterManager
 		BarterData args = new BarterData(offerer, beneficiaryOfOtherHero ?? other, offererParty, otherParty, InitContext, persuasionCostReduction);
 		AddBaseBarterables(args, defaultBarterables);
 		CampaignEventDispatcher.Instance.OnBarterablesRequested(args);
+		Campaign.Current.ConversationManager.CurrentConversationIsFirst = false;
 		if (!isAIBarter)
 		{
 			Campaign.Current.BarterManager.BeginPlayerBarter(args);

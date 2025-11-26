@@ -8,6 +8,10 @@ public class TwoDimensionEngineResourceContext : ITwoDimensionResourceContext
 	TaleWorlds.TwoDimension.Texture ITwoDimensionResourceContext.LoadTexture(ResourceDepot resourceDepot, string name)
 	{
 		Texture fromResource = Texture.GetFromResource(name.Split(new char[1] { '\\' })[^1]);
+		if (fromResource == null)
+		{
+			return null;
+		}
 		fromResource.SetTextureAsAlwaysValid();
 		bool flag = true;
 		flag = true;

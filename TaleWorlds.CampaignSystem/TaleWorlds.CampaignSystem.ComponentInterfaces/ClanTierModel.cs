@@ -3,7 +3,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ClanTierModel : GameModel
+public abstract class ClanTierModel : MBGameModel<ClanTierModel>
 {
 	public abstract int MinClanTier { get; }
 

@@ -14,7 +14,7 @@ public class DefaultCrimeModel : CrimeModel
 
 	private const float SevereCrimeRatingThreshold = 65f;
 
-	public override int DeclareWarCrimeRatingThreshold => 60;
+	public override float DeclareWarCrimeRatingThreshold => 60f;
 
 	public override bool DoesPlayerHaveAnyCrimeRating(IFaction faction)
 	{
@@ -67,27 +67,27 @@ public class DefaultCrimeModel : CrimeModel
 		Clan clan = faction as Clan;
 		if (Hero.MainHero.Clan == faction)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : TextObject.Empty);
+			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : TextObject.GetEmpty());
 		}
 		else if (faction.IsKingdomFaction && faction.Leader == Hero.MainHero)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : TextObject.Empty);
+			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : TextObject.GetEmpty());
 		}
 		else if (Hero.MainHero.MapFaction == faction)
 		{
-			bonuses.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : TextObject.Empty);
+			bonuses.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : TextObject.GetEmpty());
 		}
 		else if (clan != null && Hero.MainHero.MapFaction == clan.Kingdom)
 		{
-			bonuses.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : TextObject.Empty);
+			bonuses.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : TextObject.GetEmpty());
 		}
 		else if (Hero.MainHero.Clan.IsAtWarWith(faction))
 		{
-			bonuses.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : TextObject.Empty);
+			bonuses.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : TextObject.GetEmpty());
 		}
 		else
 		{
-			bonuses.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : TextObject.Empty);
+			bonuses.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : TextObject.GetEmpty());
 		}
 		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.WhiteLies, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		return bonuses;
@@ -105,5 +105,10 @@ public class DefaultCrimeModel : CrimeModel
 			return 30f;
 		}
 		return 20f;
+	}
+
+	public override float GetCrimeRatingAfterPunishment()
+	{
+		return 25f;
 	}
 }

@@ -391,7 +391,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsRemainingSelected = true;
+		IsRemainingSelected = RemainingState != 0;
 	}
 
 	public void ExecuteSortByKill()
@@ -409,7 +409,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsKillSelected = true;
+		IsKillSelected = KillState != 0;
 	}
 
 	public void ExecuteSortByUpgrade()
@@ -427,7 +427,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsUpgradeSelected = true;
+		IsUpgradeSelected = UpgradeState != 0;
 	}
 
 	public void ExecuteSortByDead()
@@ -445,7 +445,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsDeadSelected = true;
+		IsDeadSelected = DeadState != 0;
 	}
 
 	public void ExecuteSortByWounded()
@@ -463,7 +463,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsWoundedSelected = true;
+		IsWoundedSelected = WoundedState != 0;
 	}
 
 	public void ExecuteSortByRouted()
@@ -481,7 +481,7 @@ public class SPScoreboardSortControllerVM : ViewModel
 		{
 			item.Members.Sort(comparer);
 		}
-		IsRoutedSelected = true;
+		IsRoutedSelected = RoutedState != 0;
 	}
 
 	private void SetAllStates(SortState state)

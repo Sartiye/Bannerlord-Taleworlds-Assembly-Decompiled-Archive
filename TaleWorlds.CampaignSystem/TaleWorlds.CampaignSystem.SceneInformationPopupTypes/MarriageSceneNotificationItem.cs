@@ -35,9 +35,9 @@ public class MarriageSceneNotificationItem : SceneNotificationData
 
 	public override RelevantContextType RelevantContext { get; }
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner>
+		return new Banner[4]
 		{
 			(GroomHero.Father != null) ? GroomHero.Father.ClanBanner : GroomHero.ClanBanner,
 			(BrideHero.Father != null) ? BrideHero.Father.ClanBanner : BrideHero.ClanBanner,
@@ -46,14 +46,22 @@ public class MarriageSceneNotificationItem : SceneNotificationData
 		};
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = GroomHero.CivilianEquipment.Clone();
 		CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment);
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(GroomHero, equipment));
-		string brideEquipmentIDFromCulture = GetBrideEquipmentIDFromCulture(BrideHero.Culture);
-		Equipment equipment2 = MBObjectManager.Instance.GetObject<MBEquipmentRoster>(brideEquipmentIDFromCulture).DefaultEquipment.Clone();
+		Equipment equipment2;
+		if (BrideHero.Culture.MarriageBrideEquipmentRoster != null)
+		{
+			equipment2 = BrideHero.Culture.MarriageBrideEquipmentRoster.DefaultEquipment.Clone();
+		}
+		else
+		{
+			equipment2 = MBEquipmentRoster.EmptyEquipment.Clone();
+			Debug.FailedAssert("Could not find marriage equipment for culture: " + BrideHero.Culture.StringId + ".", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\MarriageSceneNotificationItem.cs", "GetSceneNotificationCharacters", 61);
+		}
 		CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2);
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(BrideHero, equipment2));
 		CharacterObject @object = MBObjectManager.Instance.GetObject<CharacterObject>("cutscene_monk");
@@ -75,7 +83,7 @@ public class MarriageSceneNotificationItem : SceneNotificationData
 				list.Add(new SceneNotificationCharacter(null));
 			}
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public MarriageSceneNotificationItem(Hero groomHero, Hero brideHero, CampaignTime creationTime, RelevantContextType relevantContextType = RelevantContextType.Any)
@@ -168,19 +176,5 @@ public class MarriageSceneNotificationItem : SceneNotificationData
 			}
 		}
 		return list;
-	}
-
-	private static string GetBrideEquipmentIDFromCulture(CultureObject brideCulture)
-	{
-		return brideCulture.StringId switch
-		{
-			"empire" => "marriage_female_emp_cutscene_template", 
-			"aserai" => "marriage_female_ase_cutscene_template", 
-			"battania" => "marriage_female_bat_cutscene_template", 
-			"khuzait" => "marriage_female_khu_cutscene_template", 
-			"sturgia" => "marriage_female_stu_cutscene_template", 
-			"vlandia" => "marriage_female_vla_cutscene_template", 
-			_ => "marriage_female_emp_cutscene_template", 
-		};
 	}
 }

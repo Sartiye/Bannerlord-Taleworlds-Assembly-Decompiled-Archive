@@ -1,4 +1,5 @@
 using System.Linq;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.Core;
@@ -8,6 +9,20 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors.BarterBehaviors;
 
 public class DiplomaticBartersBehavior : CampaignBehaviorBase
 {
+	private const int MinimumDaysOfTributeNeededForPeace = 5;
+
+	private const float IndependentClanLikelihoodThresholdToMakePeace = 0.5f;
+
+	private const float IndependentClanPeaceConsiderChance = 0.5f;
+
+	private const float IndependentClanConsiderPeaceWithAnotherClanChance = 0.5f;
+
+	private const float ClanLeaveKingdomChance = 0.4f;
+
+	private const float ClanConsideringWarDeclarationChance = 0.7f;
+
+	private const int IndependentClanLeaderMinimumRelationForDeclaringPeaceWithKingdom = -65;
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.DailyTickClanEvent.AddNonSerializedListener(this, DailyTickClan);
@@ -25,16 +40,38 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 			}
 		}
 		MBList<Clan> e = Clan.NonBanditFactions.ToMBList();
-		if (clan == Clan.PlayerClan || clan.TotalStrength <= 0f || clan.IsEliminated || clan.IsBanditFaction || clan.IsRebelClan)
+		if (clan == Clan.PlayerClan || clan.CurrentTotalStrength <= 0f || clan.IsEliminated || clan.IsBanditFaction || clan.IsRebelClan)
 		{
 			return;
 		}
 		if (clan.Kingdom == null && MBRandom.RandomFloat < 0.5f)
 		{
-			Clan randomElement = e.GetRandomElement();
-			if (randomElement.Kingdom == null && randomElement != Clan.PlayerClan && clan.IsAtWarWith(randomElement) && !clan.IsMinorFaction && !randomElement.IsMinorFaction)
+			if (MBRandom.RandomFloat < 0.5f)
 			{
-				ConsiderPeace(clan, randomElement);
+				Clan randomElement = e.GetRandomElement();
+				if (randomElement.Kingdom == null && randomElement != Clan.PlayerClan && clan.IsAtWarWith(randomElement) && !clan.IsMinorFaction && !randomElement.IsMinorFaction)
+				{
+					ConsiderPeace(clan, randomElement);
+				}
+				return;
+			}
+			bool flag2 = true;
+			if (clan.Settlements.Count > 0 && MBRandom.RandomFloat < 0.5f)
+			{
+				flag2 = false;
+			}
+			if (!flag2)
+			{
+				return;
+			}
+			Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate((Kingdom x) => x.IsAtWarWith(clan) && !x.IsAtConstantWarWith(clan));
+			if (randomElementWithPredicate != null && randomElementWithPredicate != Clan.PlayerClan.Kingdom)
+			{
+				int relation = clan.Leader.GetRelation(randomElementWithPredicate.Leader);
+				if (relation > -65 && MBMath.Map(relation, -100f, 100f, 0f, 1f) < MBRandom.RandomFloat)
+				{
+					MakePeaceAction.Apply(clan, randomElementWithPredicate);
+				}
 			}
 		}
 		else if (MBRandom.RandomFloat < 0.2f && !clan.IsUnderMercenaryService && clan.Kingdom != null && !clan.IsClanTypeMercenary)
@@ -54,7 +91,7 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 					break;
 				}
 			}
-			if (randomElement2.Kingdom != null && clan.Kingdom != randomElement2.Kingdom && !clan.GetStanceWith(randomElement2.Kingdom).IsAtConstantWar && !flag && randomElement2.MapFaction.IsKingdomFaction && !randomElement2.IsEliminated && randomElement2 != Clan.PlayerClan && randomElement2.MapFaction.Leader != Hero.MainHero && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
+			if (randomElement2.Kingdom != null && clan.Kingdom != randomElement2.Kingdom && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, randomElement2.Kingdom) && !flag && randomElement2.MapFaction.IsKingdomFaction && !randomElement2.IsEliminated && randomElement2 != Clan.PlayerClan && randomElement2.MapFaction.Leader != Hero.MainHero && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
 			{
 				ConsiderDefection(clan, randomElement2.MapFaction as Kingdom);
 			}
@@ -77,23 +114,23 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 					break;
 				}
 			}
-			if (kingdom.Leader == Hero.MainHero || kingdom.IsEliminated || (clan.Kingdom != null && !clan.IsUnderMercenaryService) || clan.MapFaction == kingdom || clan.MapFaction.IsAtWarWith(kingdom) || clan.GetStanceWith(kingdom).IsAtConstantWar || !clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
+			if (kingdom.Leader == Hero.MainHero || kingdom.IsEliminated || (clan.Kingdom != null && !clan.IsUnderMercenaryService) || clan.MapFaction == kingdom || clan.MapFaction.IsAtWarWith(kingdom) || Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, kingdom) || !clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null) || !clan.ShouldStayInKingdomUntil.IsPast)
 			{
 				return;
 			}
-			bool flag2 = true;
+			bool flag3 = true;
 			if (!clan.IsMinorFaction)
 			{
 				foreach (Kingdom item3 in Kingdom.All)
 				{
-					if (item3 != kingdom && clan.IsAtWarWith(item3) && !item3.IsAtWarWith(kingdom) && !(kingdom.TotalStrength > 10f * item3.TotalStrength))
+					if (item3 != kingdom && clan.IsAtWarWith(item3) && !item3.IsAtWarWith(kingdom) && !(kingdom.CurrentTotalStrength > 10f * item3.CurrentTotalStrength))
 					{
-						flag2 = false;
+						flag3 = false;
 						break;
 					}
 				}
 			}
-			if (flag2)
+			if (flag3)
 			{
 				if (clan.IsMinorFaction)
 				{
@@ -107,7 +144,7 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 		}
 		else if (MBRandom.RandomFloat < 0.4f)
 		{
-			if (clan.Kingdom != null && !flag && clan.Kingdom.RulingClan != clan && clan != Clan.PlayerClan && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
+			if (clan.Kingdom != null && !flag && clan.Kingdom.RulingClan != clan && clan != Clan.PlayerClan && clan.ShouldStayInKingdomUntil.IsPast && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
 			{
 				if (clan.IsMinorFaction)
 				{
@@ -168,7 +205,7 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 
 	private void ConsiderDefection(Clan clan1, Kingdom kingdom)
 	{
-		JoinKingdomAsClanBarterable joinKingdomAsClanBarterable = new JoinKingdomAsClanBarterable(clan1.Leader, kingdom);
+		JoinKingdomAsClanBarterable joinKingdomAsClanBarterable = new JoinKingdomAsClanBarterable(clan1.Leader, kingdom, isDefecting: true);
 		int valueForFaction = joinKingdomAsClanBarterable.GetValueForFaction(clan1);
 		int valueForFaction2 = joinKingdomAsClanBarterable.GetValueForFaction(kingdom);
 		int num = valueForFaction + valueForFaction2;
@@ -179,8 +216,6 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 		}
 		if (num > 0 && (float)num2 <= (float)kingdom.Leader.Gold * 0.5f)
 		{
-			clan1.Leader.GetRelation(clan1.MapFaction.Leader);
-			clan1.Leader.GetRelation(kingdom.Leader);
 			Campaign.Current.BarterManager.ExecuteAiBarter(clan1, kingdom, clan1.Leader, kingdom.Leader, joinKingdomAsClanBarterable);
 		}
 	}

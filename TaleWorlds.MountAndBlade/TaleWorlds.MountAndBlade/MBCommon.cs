@@ -14,10 +14,12 @@ public class MBCommon
 		SingleRecord
 	}
 
-	[EngineStruct("rglTimer_type", false)]
+	[EngineStruct("rglTimer_type", false, null)]
 	public enum TimeType
 	{
+		[CustomEngineStructMemberData("Real_timer")]
 		Application,
+		[CustomEngineStructMemberData("Tactical_timer")]
 		Mission
 	}
 

@@ -82,8 +82,9 @@ public class VariableCollection
 			string name = value.Name;
 			float transitionDuration = value.TransitionDuration;
 			float delayOnBegin = value.DelayOnBegin;
-			string text = value.EaseIn.ToString().ToLower();
-			methodCode.AddLine("var visualDefinition = new TaleWorlds.GauntletUI.VisualDefinition(\"" + name + "\", " + transitionDuration + "f, " + delayOnBegin + "f, " + text + ");");
+			string text = "TaleWorlds.GauntletUI.AnimationInterpolation.Type." + value.EaseType;
+			string text2 = "TaleWorlds.GauntletUI.AnimationInterpolation.Function." + value.EaseFunction;
+			methodCode.AddLine("var visualDefinition = new TaleWorlds.GauntletUI.VisualDefinition(\"" + name + "\", " + transitionDuration + "f, " + delayOnBegin + "f, " + text + ", " + text2 + ");");
 			foreach (VisualStateTemplate value2 in value.VisualStates.Values)
 			{
 				methodCode.AddLine("");

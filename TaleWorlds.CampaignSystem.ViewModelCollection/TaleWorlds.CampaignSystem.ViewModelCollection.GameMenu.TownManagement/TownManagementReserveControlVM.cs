@@ -181,7 +181,7 @@ public class TownManagementReserveControlVM : ViewModel
 		ReserveBonusText = textObject.ToString();
 	}
 
-	public void ExecuteUpdateReserve()
+	public void ExecuteConfirm()
 	{
 		IsEnabled = false;
 		BuildingHelper.BoostBuildingProcessWithGold(CurrentReserveAmount + CurrentGivenAmount, Settlement.CurrentSettlement.Town);
@@ -191,5 +191,10 @@ public class TownManagementReserveControlVM : ViewModel
 		MaxReserveAmount = TaleWorlds.Library.MathF.Min(Hero.MainHero.Gold, 10000);
 		CurrentReserveAmount = Settlement.CurrentSettlement.Town.BoostBuildingProcess;
 		_onReserveUpdated?.Invoke();
+	}
+
+	public void ExecuteCancel()
+	{
+		IsEnabled = false;
 	}
 }

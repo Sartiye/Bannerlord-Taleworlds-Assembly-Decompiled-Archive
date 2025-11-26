@@ -1,15 +1,18 @@
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class CombatSimulationModel : GameModel
+public abstract class CombatSimulationModel : MBGameModel<CombatSimulationModel>
 {
-	public abstract int SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle);
+	public abstract ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, float strikerSideMorale, float struckSideMorale);
 
-	public abstract (int defenderRounds, int attackerRounds) GetSimulationRoundsForBattle(MapEvent mapEvent, int numDefenders, int numAttackers);
+	public abstract ExplainedNumber SimulateHit(Ship strikerShip, Ship struckShip, PartyBase strikerParty, PartyBase struckParty, SiegeEngineType siegeEngine, float strikerAdvantage, MapEvent battle, out int troopCasualties);
+
+	public abstract (int defenderRounds, int attackerRounds) GetSimulationTicksForBattleRound(MapEvent mapEvent);
 
 	public abstract int GetNumberOfEquipmentsBuilt(Settlement settlement);
 
@@ -17,5 +20,11 @@ public abstract class CombatSimulationModel : GameModel
 
 	public abstract float GetSettlementAdvantage(Settlement settlement);
 
-	public abstract (float defenderAdvantage, float attackerAdvantage) GetBattleAdvantage(PartyBase defenderParty, PartyBase attackerParty, MapEvent.BattleTypes mapEventType, Settlement settlement);
+	public abstract void GetBattleAdvantage(MapEvent mapEvent, out ExplainedNumber defenderAdvantage, out ExplainedNumber attackerAdvantage);
+
+	public abstract float GetShipSiegeEngineHitChance(Ship ship, SiegeEngineType siegeEngineType, BattleSideEnum battleSide);
+
+	public abstract int GetPursuitRoundCount(MapEvent mapEvent);
+
+	public abstract float GetBluntDamageChance(CharacterObject strikerTroop, CharacterObject strikedTroop, PartyBase strikerParty, PartyBase strikedParty, MapEvent battle);
 }

@@ -49,12 +49,9 @@ public class MissionGauntletCultureSelection : MissionView
 	private void OnOpen()
 	{
 		_dataSource = new MultiplayerCultureSelectVM(OnCultureSelected, OnClose);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerCultureSelection", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerCultureSelection", _dataSource);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
-		_ = UIResourceManager.SpriteData;
-		_ = UIResourceManager.ResourceContext;
-		_ = UIResourceManager.UIResourceDepot;
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}
 

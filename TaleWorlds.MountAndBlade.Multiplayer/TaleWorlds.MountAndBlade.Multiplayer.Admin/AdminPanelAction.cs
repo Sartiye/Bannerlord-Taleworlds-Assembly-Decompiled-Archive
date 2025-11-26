@@ -13,11 +13,11 @@ internal class AdminPanelAction : IAdminPanelActionInternal, IAdminPanelAction
 
 	private Action _onActionExecuted;
 
-	string IAdminPanelAction.UniqueId => _uniqueId;
+	public string UniqueId => _uniqueId;
 
-	string IAdminPanelAction.Name => _nameTextObj?.ToString() ?? string.Empty;
+	public string Name => _nameTextObj?.ToString() ?? string.Empty;
 
-	string IAdminPanelAction.Description => _descriptionTextObj?.ToString() ?? string.Empty;
+	public string Description => _descriptionTextObj?.ToString() ?? string.Empty;
 
 	public AdminPanelAction(string uniqueId)
 	{

@@ -29,7 +29,7 @@ public class FlagCapturePoint : SynchedMissionObject
 
 	private CaptureTheFlagFlagDirection _currentDirection = CaptureTheFlagFlagDirection.None;
 
-	[EditableScriptComponentVariable(false)]
+	[EditableScriptComponentVariable(false, "")]
 	public Vec3 Position => base.GameEntity.GlobalPosition;
 
 	public int FlagChar => 65 + FlagIndex;
@@ -60,16 +60,14 @@ public class FlagCapturePoint : SynchedMissionObject
 
 	protected internal override void OnInit()
 	{
-		_flagHolder = base.GameEntity.CollectChildrenEntitiesWithTag("score_stand").SingleOrDefault().GetScriptComponents<SynchedMissionObject>()
-			.SingleOrDefault();
-		_theFlag = _flagHolder.GameEntity.CollectChildrenEntitiesWithTag("flag_white").SingleOrDefault().GetScriptComponents<SynchedMissionObject>()
-			.SingleOrDefault();
-		_flagBottomBoundary = base.GameEntity.GetChildren().Single((GameEntity q) => q.HasTag("flag_raising_bottom"));
-		_flagTopBoundary = base.GameEntity.GetChildren().Single((GameEntity q) => q.HasTag("flag_raising_top"));
+		_flagHolder = base.GameEntity.GetFirstChildEntityWithTag("score_stand").GetFirstScriptOfType<SynchedMissionObject>();
+		_theFlag = _flagHolder.GameEntity.GetFirstChildEntityWithTag("flag_white").GetFirstScriptOfType<SynchedMissionObject>();
+		_flagBottomBoundary = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("flag_raising_bottom"));
+		_flagTopBoundary = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("flag_raising_top"));
 		MatrixFrame frame = _flagTopBoundary.GetGlobalFrame();
 		_flagHolder.GameEntity.SetGlobalFrame(in frame);
 		_flagDependentObjects = new List<SynchedMissionObject>();
-		foreach (GameEntity item in Mission.Current.Scene.FindEntitiesWithTag("depends_flag_" + FlagIndex).ToList())
+		foreach (WeakGameEntity item in Mission.Current.Scene.FindWeakEntitiesWithTag("depends_flag_" + FlagIndex).ToList())
 		{
 			_flagDependentObjects.Add(item.GetScriptComponents<SynchedMissionObject>().SingleOrDefault());
 		}

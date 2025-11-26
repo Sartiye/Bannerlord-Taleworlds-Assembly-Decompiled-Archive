@@ -14,7 +14,7 @@ internal class PropertyLoadData : MemberLoadData
 	public void FillObject()
 	{
 		PropertyDefinition propertyDefinitionWithId;
-		if (base.ObjectLoadData.TypeDefinition != null && (propertyDefinitionWithId = base.ObjectLoadData.TypeDefinition.GetPropertyDefinitionWithId(base.MemberSaveId)) != null)
+		if (base.ObjectLoadData.TypeDefinition != null && (propertyDefinitionWithId = base.ObjectLoadData.TypeDefinition.GetPropertyDefinitionWithId(GetMemberTypeId())) != null)
 		{
 			MethodInfo setMethod = propertyDefinitionWithId.SetMethod;
 			object target = base.ObjectLoadData.Target;
@@ -24,5 +24,12 @@ internal class PropertyLoadData : MemberLoadData
 				setMethod.Invoke(target, new object[1] { data });
 			}
 		}
+	}
+
+	private MemberTypeId GetMemberTypeId()
+	{
+		MemberTypeId memberTypeId = base.MemberSaveId;
+		base.Context.DefinitionContext.GetConflictedPropertyMemberTypeId(base.ObjectLoadData.TypeDefinition, ref memberTypeId);
+		return memberTypeId;
 	}
 }

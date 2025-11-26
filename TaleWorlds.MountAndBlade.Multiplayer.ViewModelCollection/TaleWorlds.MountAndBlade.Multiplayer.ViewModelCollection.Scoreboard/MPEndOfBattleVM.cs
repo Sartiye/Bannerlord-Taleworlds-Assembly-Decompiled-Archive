@@ -2,6 +2,7 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Scoreboard;
@@ -249,16 +250,19 @@ public class MPEndOfBattleVM : ViewModel
 			}
 		}
 		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == _allyBattleSide);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide2 = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == _enemyBattleSide);
+		string text = ((missionScoreboardSide != null && missionScoreboardSide.Side == BattleSideEnum.Attacker) ? MultiplayerOptions.OptionType.CultureTeam1.GetStrValue() : MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		string text2 = ((missionScoreboardSide2 != null && missionScoreboardSide2.Side == BattleSideEnum.Attacker) ? MultiplayerOptions.OptionType.CultureTeam1.GetStrValue() : MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		BasicCultureObject attackerCulture = (string.IsNullOrEmpty(text) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(text));
+		BasicCultureObject defenderCulture = (string.IsNullOrEmpty(text2) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(text2));
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(attackerCulture, defenderCulture);
 		if (missionScoreboardSide != null)
 		{
-			string objectName = ((missionScoreboardSide.Side == BattleSideEnum.Attacker) ? MultiplayerOptions.OptionType.CultureTeam1.GetStrValue() : MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
-			AllySide = new MPEndOfBattleSideVM(_missionScoreboardComponent, missionScoreboardSide, MBObjectManager.Instance.GetObject<BasicCultureObject>(objectName), missionScoreboardSide.Side == BattleSideEnum.Defender);
+			AllySide = new MPEndOfBattleSideVM(_missionScoreboardComponent, missionScoreboardSide, multiplayerBattleColors.AttackerColors);
 		}
-		missionScoreboardSide = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == _enemyBattleSide);
-		if (missionScoreboardSide != null)
+		if (missionScoreboardSide2 != null)
 		{
-			string objectName2 = ((missionScoreboardSide.Side == BattleSideEnum.Attacker) ? MultiplayerOptions.OptionType.CultureTeam1.GetStrValue() : MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
-			EnemySide = new MPEndOfBattleSideVM(_missionScoreboardComponent, missionScoreboardSide, MBObjectManager.Instance.GetObject<BasicCultureObject>(objectName2), missionScoreboardSide.Side == BattleSideEnum.Defender);
+			EnemySide = new MPEndOfBattleSideVM(_missionScoreboardComponent, missionScoreboardSide2, multiplayerBattleColors.DefenderColors);
 		}
 	}
 }

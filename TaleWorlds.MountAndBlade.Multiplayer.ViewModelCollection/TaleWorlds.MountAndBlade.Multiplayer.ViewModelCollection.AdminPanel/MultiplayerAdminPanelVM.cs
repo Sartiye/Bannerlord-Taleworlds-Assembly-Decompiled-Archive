@@ -169,8 +169,8 @@ public class MultiplayerAdminPanelVM : ViewModel
 		TitleText = new TextObject("{=xILeUbY3}Admin Panel").ToString();
 		CancelText = new TextObject("{=3CpNUnVl}Cancel").ToString();
 		ApplyText = new TextObject("{=WZQnNSwV}Apply Changes").ToString();
-		StartMissionText = new TextObject("{=wkIVxzV6}Apply and Start Mission").ToString();
-		ApplyDisabledHint = new HintViewModel(new TextObject("{=*}Please select valid values for options."));
+		StartMissionText = new TextObject("{=kwo09aDm}Apply and Start Mission").ToString();
+		ApplyDisabledHint = new HintViewModel(new TextObject("{=TrY4VS1R}Please select valid values for options."));
 		OptionGroups.ApplyActionOnAllItems(delegate(MultiplayerAdminPanelOptionGroupVM o)
 		{
 			o.RefreshValues();

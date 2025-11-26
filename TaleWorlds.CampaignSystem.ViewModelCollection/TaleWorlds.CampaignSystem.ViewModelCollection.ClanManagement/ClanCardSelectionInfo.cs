@@ -14,11 +14,17 @@ public readonly struct ClanCardSelectionInfo
 
 	public readonly bool IsMultiSelection;
 
-	public ClanCardSelectionInfo(TextObject title, IEnumerable<ClanCardSelectionItemInfo> items, Action<List<object>, Action> onClosedAction, bool isMultiSelection)
+	public readonly int MinimumSelection;
+
+	public readonly int MaximumSelection;
+
+	public ClanCardSelectionInfo(TextObject title, IEnumerable<ClanCardSelectionItemInfo> items, Action<List<object>, Action> onClosedAction, bool isMultiSelection, int minimumSelection = 1, int maximumSelection = 0)
 	{
 		Title = title;
 		Items = items;
 		OnClosedAction = onClosedAction;
 		IsMultiSelection = isMultiSelection;
+		MinimumSelection = minimumSelection;
+		MaximumSelection = maximumSelection;
 	}
 }

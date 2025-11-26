@@ -6,7 +6,6 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Options;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -18,6 +17,7 @@ using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Armory.Cosm
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.CustomGame;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.Screens;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.AuxiliaryKeys;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.GameKeys;
@@ -28,7 +28,7 @@ using TaleWorlds.TwoDimension;
 namespace TaleWorlds.MountAndBlade.Multiplayer.GauntletUI;
 
 [GameStateScreen(typeof(LobbyState))]
-public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, ILobbyStateHandler, IGauntletChatLogHandlerScreen
+public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, ILobbyStateHandler, IChatLogHandlerScreen
 {
 	private List<KeyValuePair<string, InquiryData>> _feedbackInquiries;
 
@@ -46,7 +46,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	private BrightnessOptionVM _brightnessOptionDataSource;
 
-	private IGauntletMovie _brightnessOptionMovie;
+	private GauntletMovieIdentifier _brightnessOptionMovie;
 
 	private LobbyState _lobbyState;
 
@@ -60,7 +60,11 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	private MPCustomGameSortControllerVM.CustomServerSortOption? _cachedCustomServerSortOption;
 
+	private MPCustomGameSortControllerVM.SortState _cachedCustomServerSortState;
+
 	private MPCustomGameSortControllerVM.CustomServerSortOption? _cachedPremadeGameSortOption;
+
+	private MPCustomGameSortControllerVM.SortState _cachedPremadeGameSortState;
 
 	private bool _isLobbyActive;
 
@@ -92,14 +96,26 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	public MultiplayerLobbyGauntletScreen(LobbyState lobbyState)
 	{
+		AvatarThumbnailCache.Current?.FlushCache();
 		_feedbackInquiries = new List<KeyValuePair<string, InquiryData>>();
 		_lobbyState = lobbyState;
 		_lobbyState.Handler = this;
-		GauntletGameNotification.Current?.LoadMovie(forMultiplayer: true);
+		GauntletFullScreenNoticeView.Initialize();
+		MultiplayerGauntletGameNotification.Initialize();
 		GauntletChatLogView.Current?.LoadMovie(forMultiplayer: true);
 		GauntletChatLogView.Current?.SetEnabled(isEnabled: false);
 		MultiplayerAdminInformationScreen.OnInitialize();
 		MultiplayerReportPlayerScreen.OnInitialize();
+	}
+
+	protected override void OnInitialize()
+	{
+		base.OnInitialize();
+		LoadingWindow.DisableGlobalLoadingWindow();
+		_keybindingPopup = new KeybindingPopup(SetHotKey, this);
+		_lobbyDataSource?.RefreshPlayerData(_lobbyState.LobbyClient.PlayerData);
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+		InformationManager.HideAllMessages();
 	}
 
 	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
@@ -114,107 +130,6 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		}
 	}
 
-	private void CreateView()
-	{
-		if (!(GameStateManager.Current.ActiveState is MissionState))
-		{
-			LoadingWindow.DisableGlobalLoadingWindow();
-		}
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_mplobbyCategory = spriteData.SpriteCategories["ui_mplobby"];
-		_mplobbyCategory.Load(resourceContext, uIResourceDepot);
-		_bannerIconsCategory = spriteData.SpriteCategories["ui_bannericons"];
-		_bannerIconsCategory.Load(resourceContext, uIResourceDepot);
-		_badgesCategory = spriteData.SpriteCategories["ui_mpbadges"];
-		_badgesCategory.Load(resourceContext, uIResourceDepot);
-		_lobbyDataSource = new MPLobbyVM(_lobbyState, OnOpenFacegen, OnForceCloseFacegen, OnKeybindRequest, GetContinueKeyText, SetNavigationRestriction);
-		GameKeyContext category = HotKeyManager.GetCategory("GenericPanelGameKeyCategory");
-		_lobbyDataSource.CreateInputKeyVisuals(category.GetHotKey("Exit"), category.GetHotKey("Confirm"), category.GetHotKey("SwitchToPreviousTab"), category.GetHotKey("SwitchToNextTab"), category.GetHotKey("TakeAll"), category.GetHotKey("GiveAll"));
-		_lobbyLayer = new GauntletLayer(10, "GauntletLayer", shouldClear: true);
-		_lobbyLayer.LoadMovie("Lobby", _lobbyDataSource);
-		_lobbyLayer.InputRestrictions.SetInputRestrictions();
-		_lobbyLayer.IsFocusLayer = true;
-		AddLayer(_lobbyLayer);
-		ScreenManager.TrySetFocus(_lobbyLayer);
-		_lobbyLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
-		_lobbyLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("MultiplayerHotkeyCategory"));
-		GameKeyContext category2 = HotKeyManager.GetCategory("MultiplayerHotkeyCategory");
-		GameKeyContext geneircPanelCategory = HotKeyManager.GetCategory("GenericPanelGameKeyCategory");
-		_lobbyDataSource.BadgeSelectionPopup.RefreshKeyBindings(category2.GetHotKey("InspectBadgeProgression"));
-		_lobbyDataSource.Armory.Cosmetics.RefreshKeyBindings(category2.GetHotKey("PerformActionOnCosmeticItem"), category2.GetHotKey("PreviewCosmeticItem"));
-		_lobbyDataSource.Armory.Cosmetics.TauntSlots.ApplyActionOnAllItems(delegate(MPArmoryCosmeticTauntSlotVM t)
-		{
-			t.SetSelectKeyVisual(geneircPanelCategory.GetHotKey("GiveAll"));
-		});
-		_lobbyDataSource.Armory.Cosmetics.TauntSlots.ApplyActionOnAllItems(delegate(MPArmoryCosmeticTauntSlotVM t)
-		{
-			t.SetEmptySlotKeyVisual(geneircPanelCategory.GetHotKey("TakeAll"));
-		});
-		_lobbyDataSource.Friends.SetToggleFriendListKey(category2.RegisteredHotKeys.FirstOrDefault((HotKey g) => g?.Id == "ToggleFriendsList"));
-		_lobbyDataSource.Matchmaking.CustomServer.SortController.SetSortOption(_cachedCustomServerSortOption);
-		_lobbyDataSource.Matchmaking.PremadeMatches.SortController.SetSortOption(_cachedPremadeGameSortOption);
-		_lobbyDataSource.Options.SetDoneInputKey(geneircPanelCategory.GetHotKey("Confirm"));
-		_lobbyDataSource.Options.SetCancelInputKey(geneircPanelCategory.GetHotKey("Exit"));
-		_lobbyDataSource.Options.SetResetInputKey(geneircPanelCategory.GetHotKey("Reset"));
-		_lobbyDataSource.Options.SetPreviousTabInputKey(geneircPanelCategory.GetHotKey("TakeAll"));
-		_lobbyDataSource.Options.SetNextTabInputKey(geneircPanelCategory.GetHotKey("GiveAll"));
-		_lobbyDataSource.Matchmaking.CustomServer.SetRefreshInputKey(geneircPanelCategory.GetHotKey("Reset"));
-		if (NativeOptions.GetConfig(NativeOptions.NativeOptionsType.BrightnessCalibrated) < 2f)
-		{
-			_brightnessOptionDataSource = new BrightnessOptionVM(OnCloseBrightness)
-			{
-				Visible = true
-			};
-			_gauntletBrightnessLayer = new GauntletLayer(11);
-			_gauntletBrightnessLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
-			_brightnessOptionMovie = _gauntletBrightnessLayer.LoadMovie("BrightnessOption", _brightnessOptionDataSource);
-			AddLayer(_gauntletBrightnessLayer);
-		}
-		_optionsSpriteCategory = spriteData.SpriteCategories["ui_options"];
-		_optionsSpriteCategory.Load(resourceContext, uIResourceDepot);
-		_multiplayerSpriteCategory = spriteData.SpriteCategories["ui_mpmission"];
-		_multiplayerSpriteCategory.Load(resourceContext, uIResourceDepot);
-	}
-
-	private void OnCloseBrightness(bool isConfirm)
-	{
-		_gauntletBrightnessLayer.ReleaseMovie(_brightnessOptionMovie);
-		RemoveLayer(_gauntletBrightnessLayer);
-		_brightnessOptionDataSource = null;
-		_gauntletBrightnessLayer = null;
-		NativeOptions.SaveConfig();
-	}
-
-	protected override void OnInitialize()
-	{
-		base.OnInitialize();
-		LoadingWindow.DisableGlobalLoadingWindow();
-		_keybindingPopup = new KeybindingPopup(SetHotKey, this);
-		_lobbyDataSource?.RefreshPlayerData(_lobbyState.LobbyClient.PlayerData);
-		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
-	}
-
-	protected override void OnFinalize()
-	{
-		if (_lobbyDataSource != null)
-		{
-			_lobbyDataSource.OnFinalize();
-			_lobbyDataSource = null;
-		}
-		_mplobbyCategory?.Unload();
-		_optionsSpriteCategory.Unload();
-		_multiplayerSpriteCategory.Unload();
-		_badgesCategory?.Unload();
-		MultiplayerReportPlayerScreen.OnFinalize();
-		MultiplayerAdminInformationScreen.OnRemove();
-		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
-		_lobbyState.Handler = null;
-		_lobbyState = null;
-		base.OnFinalize();
-	}
-
 	protected override void OnActivate()
 	{
 		if (_lobbyDataSource != null && _isFacegenOpen)
@@ -227,10 +142,109 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		LoadingWindow.DisableGlobalLoadingWindow();
 	}
 
+	protected override void OnFinalize()
+	{
+		AvatarThumbnailCache.Current?.FlushCache();
+		if (_lobbyDataSource != null)
+		{
+			_lobbyDataSource.OnFinalize();
+			_lobbyDataSource = null;
+		}
+		_mplobbyCategory?.Unload();
+		_optionsSpriteCategory.Unload();
+		_multiplayerSpriteCategory.Unload();
+		_badgesCategory?.Unload();
+		GauntletGameNotification.Initialize();
+		MultiplayerReportPlayerScreen.OnFinalize();
+		MultiplayerAdminInformationScreen.OnRemove();
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+		_lobbyState.Handler = null;
+		_lobbyState = null;
+		base.OnFinalize();
+	}
+
 	protected override void OnDeactivate()
 	{
 		base.OnDeactivate();
 		_lobbyDataSource?.OnDeactivate();
+	}
+
+	void IChatLogHandlerScreen.TryUpdateChatLogLayerParameters(ref bool isTeamChatAvailable, ref bool inputEnabled, ref bool isToggleChatHintAvailable, ref bool isMouseVisible, ref InputContext inputContext)
+	{
+		if (LobbyLayer != null)
+		{
+			inputEnabled = true;
+			inputContext = LobbyLayer.Input;
+		}
+	}
+
+	private void CreateView()
+	{
+		_musicSoundEvent = SoundEvent.CreateEventFromString("event:/multiplayer/lobby_music", null);
+		_musicSoundEvent.Play();
+		if (!(GameStateManager.Current.ActiveState is MissionState))
+		{
+			LoadingWindow.DisableGlobalLoadingWindow();
+		}
+		_mplobbyCategory = UIResourceManager.LoadSpriteCategory("ui_mplobby");
+		_bannerIconsCategory = UIResourceManager.LoadSpriteCategory("ui_bannericons");
+		_badgesCategory = UIResourceManager.LoadSpriteCategory("ui_mpbadges");
+		_lobbyDataSource = new MPLobbyVM(_lobbyState, OnOpenFacegen, OnForceCloseFacegen, OnLogout, OnKeybindRequest, GetContinueKeyText, SetNavigationRestriction);
+		GameKeyContext category = HotKeyManager.GetCategory("GenericPanelGameKeyCategory");
+		_lobbyDataSource.CreateInputKeyVisuals(category.GetHotKey("Exit"), category.GetHotKey("Confirm"), category.GetHotKey("SwitchToPreviousTab"), category.GetHotKey("SwitchToNextTab"), category.GetHotKey("TakeAll"), category.GetHotKey("GiveAll"));
+		_lobbyLayer = new GauntletLayer("LobbyScreen", 10, shouldClear: true);
+		_lobbyLayer.LoadMovie("Lobby", _lobbyDataSource);
+		_lobbyLayer.InputRestrictions.SetInputRestrictions();
+		_lobbyLayer.IsFocusLayer = true;
+		AddLayer(_lobbyLayer);
+		ScreenManager.TrySetFocus(_lobbyLayer);
+		_lobbyLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
+		_lobbyLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("MultiplayerHotkeyCategory"));
+		GameKeyContext category2 = HotKeyManager.GetCategory("MultiplayerHotkeyCategory");
+		GameKeyContext genericPanelCategory = HotKeyManager.GetCategory("GenericPanelGameKeyCategory");
+		_lobbyDataSource.BadgeSelectionPopup.RefreshKeyBindings(category2.GetHotKey("InspectBadgeProgression"));
+		_lobbyDataSource.BadgeProgressionInformation.SetPreviousTabInputKey(genericPanelCategory.GetHotKey("SwitchToPreviousTab"));
+		_lobbyDataSource.BadgeProgressionInformation.SetNextTabInputKey(genericPanelCategory.GetHotKey("SwitchToNextTab"));
+		_lobbyDataSource.Armory.Cosmetics.RefreshKeyBindings(category2.GetHotKey("PerformActionOnCosmeticItem"), category2.GetHotKey("PreviewCosmeticItem"));
+		_lobbyDataSource.Armory.Cosmetics.TauntSlots.ApplyActionOnAllItems(delegate(MPArmoryCosmeticTauntSlotVM t)
+		{
+			t.SetSelectKeyVisual(genericPanelCategory.GetHotKey("GiveAll"));
+		});
+		_lobbyDataSource.Armory.Cosmetics.TauntSlots.ApplyActionOnAllItems(delegate(MPArmoryCosmeticTauntSlotVM t)
+		{
+			t.SetEmptySlotKeyVisual(genericPanelCategory.GetHotKey("TakeAll"));
+		});
+		_lobbyDataSource.Friends.SetToggleFriendListKey(category2.RegisteredHotKeys.FirstOrDefault((HotKey g) => g?.Id == "ToggleFriendsList"));
+		_lobbyDataSource.Matchmaking.CustomServer.SortController.InitializeWithSortState(_cachedCustomServerSortOption, _cachedCustomServerSortState);
+		_lobbyDataSource.Matchmaking.PremadeMatches.SortController.InitializeWithSortState(_cachedPremadeGameSortOption, _cachedPremadeGameSortState);
+		_lobbyDataSource.Options.SetDoneInputKey(genericPanelCategory.GetHotKey("Confirm"));
+		_lobbyDataSource.Options.SetCancelInputKey(genericPanelCategory.GetHotKey("Exit"));
+		_lobbyDataSource.Options.SetResetInputKey(genericPanelCategory.GetHotKey("Reset"));
+		_lobbyDataSource.Options.SetPreviousTabInputKey(genericPanelCategory.GetHotKey("TakeAll"));
+		_lobbyDataSource.Options.SetNextTabInputKey(genericPanelCategory.GetHotKey("GiveAll"));
+		_lobbyDataSource.Matchmaking.CustomServer.SetRefreshInputKey(genericPanelCategory.GetHotKey("Reset"));
+		if (NativeOptions.GetConfig(NativeOptions.NativeOptionsType.BrightnessCalibrated) < 2f)
+		{
+			_brightnessOptionDataSource = new BrightnessOptionVM(OnCloseBrightness)
+			{
+				Visible = true
+			};
+			_gauntletBrightnessLayer = new GauntletLayer("MultiplayerBrightness", 11);
+			_gauntletBrightnessLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
+			_brightnessOptionMovie = _gauntletBrightnessLayer.LoadMovie("BrightnessOption", _brightnessOptionDataSource);
+			AddLayer(_gauntletBrightnessLayer);
+		}
+		_optionsSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_options");
+		_multiplayerSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_mpmission");
+	}
+
+	private void OnCloseBrightness(bool isConfirm)
+	{
+		_gauntletBrightnessLayer.ReleaseMovie(_brightnessOptionMovie);
+		RemoveLayer(_gauntletBrightnessLayer);
+		_brightnessOptionDataSource = null;
+		_gauntletBrightnessLayer = null;
+		NativeOptions.SaveConfig();
 	}
 
 	private void OnOpenFacegen(BasicCharacterObject character)
@@ -272,6 +286,11 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		return GameTexts.FindText("str_click_to_exit").ToString();
 	}
 
+	private void OnLogout()
+	{
+		GauntletChatLogView.Current?.SetEnabled(isEnabled: false);
+	}
+
 	private void SetNavigationRestriction(bool isRestricted)
 	{
 		if (_isNavigationRestricted != isRestricted)
@@ -293,44 +312,25 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		{
 			ShowNextFeedback();
 		}
-		if (_lobbyLayer == null)
+		if (_lobbyLayer != null)
 		{
-			return;
-		}
-		MPLobbyVM lobbyDataSource = _lobbyDataSource;
-		MPOptionsVM options;
-		int areHotkeysEnabled;
-		if (lobbyDataSource != null && lobbyDataSource.Options?.IsEnabled == true)
-		{
-			options = _lobbyDataSource.Options;
-			KeybindingPopup keybindingPopup = _keybindingPopup;
-			if ((keybindingPopup == null || !keybindingPopup.IsActive) && !_lobbyLayer.IsFocusedOnInput())
+			MPLobbyVM lobbyDataSource = _lobbyDataSource;
+			if (lobbyDataSource != null && lobbyDataSource.Options?.IsEnabled == true)
 			{
-				Func<bool> isAnyInquiryActive = InformationManager.IsAnyInquiryActive;
-				if (isAnyInquiryActive == null || !isAnyInquiryActive())
-				{
-					areHotkeysEnabled = (_lobbyDataSource.HasNoPopupOpen() ? 1 : 0);
-					goto IL_00cc;
-				}
+				MPOptionsVM options = _lobbyDataSource.Options;
+				KeybindingPopup keybindingPopup = _keybindingPopup;
+				options.AreHotkeysEnabled = (keybindingPopup == null || !keybindingPopup.IsActive) && !_lobbyLayer.IsFocusedOnInput() && !InformationManager.IsAnyInquiryActive() && _lobbyDataSource.HasNoPopupOpen();
 			}
-			areHotkeysEnabled = 0;
-			goto IL_00cc;
+			KeybindingPopup keybindingPopup2 = _keybindingPopup;
+			if (keybindingPopup2 != null && keybindingPopup2.IsActive)
+			{
+				_keybindingPopup.Tick();
+			}
+			else if (_lobbyDataSource != null && !_lobbyState.IsLoggingIn && !_lobbyDataSource.BlockerState.IsEnabled && !_lobbyLayer.IsFocusedOnInput())
+			{
+				HandleInput(dt);
+			}
 		}
-		goto IL_00d1;
-		IL_00d1:
-		KeybindingPopup keybindingPopup2 = _keybindingPopup;
-		if (keybindingPopup2 != null && keybindingPopup2.IsActive)
-		{
-			_keybindingPopup.Tick();
-		}
-		else if (_lobbyDataSource != null && !_lobbyLayer.IsFocusedOnInput())
-		{
-			HandleInput(dt);
-		}
-		return;
-		IL_00cc:
-		options.AreHotkeysEnabled = (byte)areHotkeysEnabled != 0;
-		goto IL_00d1;
 	}
 
 	private void HandleInput(float dt)
@@ -352,7 +352,6 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 			else if (!_lobbyDataSource.HasNoPopupOpen() && flag)
 			{
 				_lobbyDataSource.OnConfirm();
-				UISoundsHelper.PlayUISound("event:/ui/default");
 			}
 			else if (flag2)
 			{
@@ -363,7 +362,6 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		}
 		else if (_lobbyLayer.Input.IsHotKeyReleased("Exit"))
 		{
-			UISoundsHelper.PlayUISound("event:/ui/sort");
 			_lobbyDataSource.OnEscape();
 		}
 		else if (_lobbyLayer.Input.IsHotKeyPressed("TakeAll"))
@@ -422,6 +420,14 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 				}
 				_lobbyDataSource.RankLeaderboard.ExecuteLoadPreviousPage();
 			}
+			else if (_lobbyDataSource.BadgeProgressionInformation.IsEnabled)
+			{
+				if (_lobbyDataSource.BadgeProgressionInformation.CanDecreaseBadgeIndices)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/checkbox");
+					_lobbyDataSource.BadgeProgressionInformation.ExecuteDecreaseActiveBadgeIndices();
+				}
+			}
 			else if (!_isNavigationRestricted)
 			{
 				SelectPreviousPage();
@@ -437,6 +443,14 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 				}
 				_lobbyDataSource.RankLeaderboard.ExecuteLoadNextPage();
 			}
+			else if (_lobbyDataSource.BadgeProgressionInformation.IsEnabled)
+			{
+				if (_lobbyDataSource.BadgeProgressionInformation.CanIncreaseBadgeIndices)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/checkbox");
+					_lobbyDataSource.BadgeProgressionInformation.ExecuteIncreaseActiveBadgeIndices();
+				}
+			}
 			else if (!_isNavigationRestricted)
 			{
 				SelectNextPage();
@@ -449,7 +463,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 				UISoundsHelper.PlayUISound("event:/ui/default");
 				_lobbyDataSource.Options.ExecuteCancel();
 			}
-			else if (_lobbyDataSource.Matchmaking.CustomServer.IsEnabled && !_lobbyDataSource.Matchmaking.CustomServer.HostGame.IsEnabled)
+			else if (_lobbyDataSource.Matchmaking.CustomServer.IsEnabled && !_lobbyDataSource.Matchmaking.CustomServer.HostGame.IsEnabled && !_lobbyDataSource.Matchmaking.CustomServer.IsRefreshing)
 			{
 				_lobbyDataSource.Matchmaking.CustomServer.ExecuteRefresh();
 			}
@@ -801,7 +815,11 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	void ILobbyStateHandler.OnPremadeGameListReceived()
 	{
-		_lobbyDataSource?.Matchmaking.PremadeMatches.RefreshPremadeGameList();
+		PremadeGameEntry[] array = NetworkMain.GameClient?.AvailablePremadeGames?.PremadeGameEntries;
+		if (array != null)
+		{
+			_lobbyDataSource?.Matchmaking.PremadeMatches.SetPremadeGameList(array);
+		}
 	}
 
 	void ILobbyStateHandler.OnPremadeGameCreationCancelled()
@@ -844,7 +862,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	void ILobbyStateHandler.OnCustomGameServerListReceived(AvailableCustomGames customGameServerList)
 	{
-		_lobbyDataSource.Matchmaking.CustomServer.RefreshCustomGameServerList(customGameServerList);
+		_lobbyDataSource.Matchmaking.CustomServer.SetCustomGameServerList(customGameServerList);
 	}
 
 	void ILobbyStateHandler.OnMatchmakerGameOver(int oldExperience, int newExperience, List<string> badgesEarned, int lootGained, RankBarInfo oldRankBarInfo, RankBarInfo newRankBarInfo, BattleCancelReason battleCancelReason)
@@ -856,8 +874,8 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 			break;
 		case BattleCancelReason.PlayerLeaveDuringWarmup:
 		{
-			TextObject textObject = new TextObject("{=*}Game is cancelled");
-			InformationManager.ShowInquiry(new InquiryData(text: new TextObject("{=*}Matchmaked game is cancelled due to a player leaving during warmup.").ToString(), titleText: textObject.ToString(), isAffirmativeOptionShown: false, isNegativeOptionShown: true, affirmativeText: "", negativeText: GameTexts.FindText("str_dismiss").ToString(), affirmativeAction: null, negativeAction: null));
+			TextObject textObject = new TextObject("{=CtMEl2NP}Game is cancelled");
+			InformationManager.ShowInquiry(new InquiryData(text: new TextObject("{=A6OFgTIU}Game is cancelled due to a player leaving during warmup.").ToString(), titleText: textObject.ToString(), isAffirmativeOptionShown: false, isNegativeOptionShown: true, affirmativeText: "", negativeText: GameTexts.FindText("str_dismiss").ToString(), affirmativeAction: null, negativeAction: null));
 			break;
 		}
 		}
@@ -1033,7 +1051,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		GameKeyOptionVM gameKey;
 		if (key.IsControllerInput)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1239);
+			TaleWorlds.Library.Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1281);
 			MBInformationManager.AddQuickInformation(new TextObject("{=B41vvGuo}Invalid key"));
 			_keybindingPopup.OnToggle(isActive: false);
 		}
@@ -1042,24 +1060,27 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 			GameKeyGroupVM gameKeyGroupVM = _lobbyDataSource?.Options.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey));
 			if (gameKeyGroupVM == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1251);
+				TaleWorlds.Library.Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1293);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 				return;
 			}
-			GauntletLayer lobbyLayer = _lobbyLayer;
-			if (lobbyLayer != null && lobbyLayer.Input.IsHotKeyReleased("Exit"))
+			if (key.InputKey != gameKey.CurrentKey.InputKey)
 			{
-				_keybindingPopup.OnToggle(isActive: false);
-				return;
+				GauntletLayer lobbyLayer = _lobbyLayer;
+				if (lobbyLayer == null || !lobbyLayer.Input.IsHotKeyReleased("Exit"))
+				{
+					if (gameKeyGroupVM.GameKeys.Any((GameKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey))
+					{
+						InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=n4UUrd1p}Already in use").ToString()));
+						return;
+					}
+					gameKey?.Set(key.InputKey);
+					gameKey = null;
+					_keybindingPopup.OnToggle(isActive: false);
+					return;
+				}
 			}
-			if (gameKeyGroupVM.GameKeys.Any((GameKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey))
-			{
-				InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=n4UUrd1p}Already in use").ToString()));
-				return;
-			}
-			gameKey?.Set(key.InputKey);
-			gameKey = null;
 			_keybindingPopup.OnToggle(isActive: false);
 		}
 		else
@@ -1072,59 +1093,70 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 			AuxiliaryKeyGroupVM auxiliaryKeyGroupVM = _lobbyDataSource.Options.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey));
 			if (auxiliaryKeyGroupVM == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1278);
+				TaleWorlds.Library.Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1320);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 				return;
 			}
-			GauntletLayer lobbyLayer2 = _lobbyLayer;
-			if (lobbyLayer2 != null && lobbyLayer2.Input.IsHotKeyReleased("Exit"))
+			if (key.InputKey != auxiliaryKey.CurrentKey.InputKey)
 			{
-				_keybindingPopup.OnToggle(isActive: false);
-				return;
+				GauntletLayer lobbyLayer2 = _lobbyLayer;
+				if (lobbyLayer2 == null || !lobbyLayer2.Input.IsHotKeyReleased("Exit"))
+				{
+					if (auxiliaryKeyGroupVM.HotKeys.Any((AuxiliaryKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey && k.CurrentHotKey.HasSameModifiers(auxiliaryKey.CurrentHotKey)))
+					{
+						InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=n4UUrd1p}Already in use").ToString()));
+						return;
+					}
+					auxiliaryKey?.Set(key.InputKey);
+					auxiliaryKey = null;
+					_keybindingPopup.OnToggle(isActive: false);
+					return;
+				}
 			}
-			if (auxiliaryKeyGroupVM.HotKeys.Any((AuxiliaryKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey && k.CurrentHotKey.HasSameModifiers(auxiliaryKey.CurrentHotKey)))
-			{
-				InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=n4UUrd1p}Already in use").ToString()));
-				return;
-			}
-			auxiliaryKey?.Set(key.InputKey);
-			auxiliaryKey = null;
 			_keybindingPopup.OnToggle(isActive: false);
 		}
 	}
 
 	void IGameStateListener.OnActivate()
 	{
-		_musicSoundEvent = SoundEvent.CreateEventFromString("event:/multiplayer/lobby_music", null);
-		_musicSoundEvent.Play();
 		if (_lobbyDataSource == null)
 		{
 			CreateView();
 			_lobbyDataSource.SetPage(MPLobbyVM.LobbyPage.Authentication);
-			return;
 		}
-		_optionsSpriteCategory = UIResourceManager.SpriteData.SpriteCategories["ui_options"];
-		_optionsSpriteCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
-		_multiplayerSpriteCategory = UIResourceManager.SpriteData.SpriteCategories["ui_mpmission"];
-		_multiplayerSpriteCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
+		else
+		{
+			_optionsSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_options");
+			_multiplayerSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_mpmission");
+		}
 	}
 
 	void IGameStateListener.OnDeactivate()
 	{
-		RemoveLayer(_lobbyLayer);
 		if (_lobbyDataSource != null)
 		{
-			_cachedCustomServerSortOption = _lobbyDataSource.Matchmaking.CustomServer.SortController.CurrentSortOption;
-			_cachedPremadeGameSortOption = _lobbyDataSource.Matchmaking.PremadeMatches.SortController.CurrentSortOption;
-			_lobbyDataSource.OnFinalize();
-			_lobbyDataSource = null;
+			MPCustomGameSortControllerVM sortController = _lobbyDataSource.Matchmaking.CustomServer.SortController;
+			_cachedCustomServerSortOption = sortController.CurrentSortOption;
+			_cachedCustomServerSortState = (MPCustomGameSortControllerVM.SortState)sortController.CurrentSortState;
+			MPCustomGameSortControllerVM sortController2 = _lobbyDataSource.Matchmaking.PremadeMatches.SortController;
+			_cachedPremadeGameSortOption = sortController2.CurrentSortOption;
+			_cachedPremadeGameSortState = (MPCustomGameSortControllerVM.SortState)sortController2.CurrentSortState;
 		}
-		_lobbyLayer = null;
-		_mplobbyCategory?.Unload();
-		_bannerIconsCategory?.Unload();
-		_musicSoundEvent.Stop();
-		_musicSoundEvent = null;
+		if (_lobbyState.GameStateManager.LastOrDefault<LobbyPracticeState>() == null)
+		{
+			RemoveLayer(_lobbyLayer);
+			if (_lobbyDataSource != null)
+			{
+				_lobbyDataSource.OnFinalize();
+				_lobbyDataSource = null;
+			}
+			_lobbyLayer = null;
+			_mplobbyCategory?.Unload();
+			_bannerIconsCategory?.Unload();
+			_musicSoundEvent.Stop();
+			_musicSoundEvent = null;
+		}
 	}
 
 	void IGameStateListener.OnInitialize()
@@ -1133,14 +1165,5 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 
 	void IGameStateListener.OnFinalize()
 	{
-	}
-
-	void IGauntletChatLogHandlerScreen.TryUpdateChatLogLayerParameters(ref bool isTeamChatAvailable, ref bool inputEnabled, ref InputContext inputContext)
-	{
-		if (LobbyLayer != null)
-		{
-			inputEnabled = true;
-			inputContext = LobbyLayer.Input;
-		}
 	}
 }

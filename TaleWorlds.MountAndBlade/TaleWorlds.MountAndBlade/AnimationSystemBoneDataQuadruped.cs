@@ -5,7 +5,7 @@ using TaleWorlds.DotNet;
 namespace TaleWorlds.MountAndBlade;
 
 [Serializable]
-[EngineStruct("Animation_system_bone_data_quadruped", false)]
+[EngineStruct("Animation_system_bone_data_quadruped", false, null)]
 public struct AnimationSystemBoneDataQuadruped
 {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 7)]

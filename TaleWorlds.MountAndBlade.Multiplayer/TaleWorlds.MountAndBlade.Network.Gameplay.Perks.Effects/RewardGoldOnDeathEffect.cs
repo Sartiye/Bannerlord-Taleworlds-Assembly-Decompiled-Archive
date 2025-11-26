@@ -35,19 +35,19 @@ public class RewardGoldOnDeathEffect : MPPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !int.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 41);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 41);
 		}
 		string text2 = node?.Attributes?["number_of_receivers"]?.Value;
 		if (text2 == null || !int.TryParse(text2, out _count))
 		{
-			Debug.FailedAssert("provided 'number_of_receivers' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 47);
+			Debug.FailedAssert("provided 'number_of_receivers' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 47);
 		}
 		string text3 = node?.Attributes?["order_by"]?.Value;
 		_orderBy = OrderBy.Random;
 		if (text3 != null && !Enum.TryParse<OrderBy>(text3, ignoreCase: true, out _orderBy))
 		{
 			_orderBy = OrderBy.Random;
-			Debug.FailedAssert("provided 'order_by' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 55);
+			Debug.FailedAssert("provided 'order_by' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\RewardGoldOnDeathEffect.cs", "Deserialize", 55);
 		}
 	}
 

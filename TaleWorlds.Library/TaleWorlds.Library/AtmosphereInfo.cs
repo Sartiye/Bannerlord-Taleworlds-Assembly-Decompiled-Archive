@@ -4,6 +4,8 @@ namespace TaleWorlds.Library;
 
 public struct AtmosphereInfo
 {
+	public uint Seed;
+
 	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
 	public string AtmosphereName;
 
@@ -18,6 +20,8 @@ public struct AtmosphereInfo
 	public FogInformation FogInfo;
 
 	public SkyInformation SkyInfo;
+
+	public NauticalInformation NauticalInfo;
 
 	public TimeInformation TimeInfo;
 
@@ -45,6 +49,7 @@ public struct AtmosphereInfo
 		AmbientInfo.DeserializeFrom(reader);
 		FogInfo.DeserializeFrom(reader);
 		SkyInfo.DeserializeFrom(reader);
+		NauticalInfo.DeserializeFrom(reader);
 		TimeInfo.DeserializeFrom(reader);
 		AreaInfo.DeserializeFrom(reader);
 		PostProInfo.DeserializeFrom(reader);
@@ -58,6 +63,7 @@ public struct AtmosphereInfo
 		AmbientInfo.SerializeTo(writer);
 		FogInfo.SerializeTo(writer);
 		SkyInfo.SerializeTo(writer);
+		NauticalInfo.SerializeTo(writer);
 		TimeInfo.SerializeTo(writer);
 		AreaInfo.SerializeTo(writer);
 		PostProInfo.SerializeTo(writer);

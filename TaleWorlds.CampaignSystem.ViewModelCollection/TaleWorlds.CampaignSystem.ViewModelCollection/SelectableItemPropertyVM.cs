@@ -15,7 +15,10 @@ public class SelectableItemPropertyVM : ViewModel
 		Prosperity,
 		Food,
 		Loyalty,
-		Security
+		Security,
+		Shipyard,
+		Patrol,
+		CoastalPatrol
 	}
 
 	private int _type;

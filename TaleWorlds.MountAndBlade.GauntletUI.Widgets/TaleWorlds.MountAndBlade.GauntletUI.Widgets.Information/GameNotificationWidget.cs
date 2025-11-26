@@ -8,8 +8,6 @@ public class GameNotificationWidget : BrushWidget
 {
 	private bool _textWidgetAlignmentDirty = true;
 
-	private float _totalDt;
-
 	private int _notificationId;
 
 	private RichTextWidget _textWidget;
@@ -17,6 +15,8 @@ public class GameNotificationWidget : BrushWidget
 	private ImageIdentifierWidget _announcerImageIdentifier;
 
 	private float _totalTime;
+
+	private float _totalDt;
 
 	public float RampUpInSeconds { get; set; }
 
@@ -51,7 +51,6 @@ public class GameNotificationWidget : BrushWidget
 				_notificationId = value;
 				OnPropertyChanged(value, "NotificationId");
 				_textWidgetAlignmentDirty = true;
-				_totalDt = 0f;
 			}
 		}
 	}
@@ -87,6 +86,22 @@ public class GameNotificationWidget : BrushWidget
 		}
 	}
 
+	public float TotalDt
+	{
+		get
+		{
+			return _totalDt;
+		}
+		set
+		{
+			if (_totalDt != value)
+			{
+				_totalDt = value;
+				OnPropertyChanged(value, "TotalDt");
+			}
+		}
+	}
+
 	public GameNotificationWidget(UIContext context)
 		: base(context)
 	{
@@ -97,7 +112,8 @@ public class GameNotificationWidget : BrushWidget
 		base.OnLateUpdate(dt);
 		if (_textWidgetAlignmentDirty)
 		{
-			if (AnnouncerImageIdentifier.ImageTypeCode != 0)
+			ImageIdentifierWidget announcerImageIdentifier = AnnouncerImageIdentifier;
+			if (announcerImageIdentifier != null && announcerImageIdentifier.IsVisible)
 			{
 				TextWidget.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
 			}
@@ -106,27 +122,22 @@ public class GameNotificationWidget : BrushWidget
 				TextWidget.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
 			}
 		}
-		if (TotalTime > 0f && _totalDt <= TotalTime)
+		if (base.IsVisible && TotalTime > 0f && TotalDt <= TotalTime)
 		{
-			if (_totalDt <= RampUpInSeconds)
+			if (TotalDt <= RampUpInSeconds)
 			{
-				float alphaFactor = Mathf.Lerp(0f, 1f, _totalDt / RampUpInSeconds);
+				float alphaFactor = Mathf.Lerp(0f, 1f, TotalDt / RampUpInSeconds);
 				this.SetGlobalAlphaRecursively(alphaFactor);
 			}
-			else if (_totalDt > RampUpInSeconds && _totalDt < TotalTime - RampDownInSeconds)
+			else if (TotalDt < TotalTime - RampDownInSeconds)
 			{
 				this.SetGlobalAlphaRecursively(1f);
 			}
-			else if (TotalTime - _totalDt < RampDownInSeconds)
-			{
-				float alphaFactor2 = Mathf.Lerp(1f, 0f, 1f - (TotalTime - _totalDt) / RampUpInSeconds);
-				this.SetGlobalAlphaRecursively(alphaFactor2);
-			}
 			else
 			{
-				this.SetGlobalAlphaRecursively(0f);
+				float alphaFactor2 = Mathf.Lerp(1f, 0f, 1f - (TotalTime - TotalDt) / RampDownInSeconds);
+				this.SetGlobalAlphaRecursively(alphaFactor2);
 			}
-			_totalDt += dt;
 		}
 	}
 }

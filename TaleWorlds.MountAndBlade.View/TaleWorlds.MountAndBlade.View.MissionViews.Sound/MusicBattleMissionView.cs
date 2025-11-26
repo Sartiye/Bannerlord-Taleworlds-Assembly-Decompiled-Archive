@@ -109,11 +109,11 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 				float num = (float)array[0] / (float)array[1];
 				if (num < _startingBattleRatio * MusicParameters.BattleRatioTresholdOnIntensity)
 				{
-					musicTheme = MBMusicManager.Current.GetBattleTurnsOneSideTheme(base.Mission.MusicCulture.GetCultureCode(), PlayerSide != BattleSideEnum.Defender, _isPaganBattle);
+					musicTheme = MBMusicManager.Current.GetBattleTurnsOneSideTheme(base.Mission.MusicCulture, PlayerSide != BattleSideEnum.Defender, _isPaganBattle);
 				}
 				else if (num > _startingBattleRatio / MusicParameters.BattleRatioTresholdOnIntensity)
 				{
-					musicTheme = MBMusicManager.Current.GetBattleTurnsOneSideTheme(base.Mission.MusicCulture.GetCultureCode(), PlayerSide == BattleSideEnum.Defender, _isPaganBattle);
+					musicTheme = MBMusicManager.Current.GetBattleTurnsOneSideTheme(base.Mission.MusicCulture, PlayerSide == BattleSideEnum.Defender, _isPaganBattle);
 				}
 			}
 			if (musicTheme != MusicTheme.None)
@@ -211,7 +211,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 		{
 			float num5 = (float)num4 / 1000f;
 			float startIntensity = MusicParameters.DefaultStartIntensity + num5 * MusicParameters.BattleSizeEffectOnStartIntensity + (MBRandom.RandomFloat - 0.5f) * (MusicParameters.RandomEffectMultiplierOnStartIntensity * 2f);
-			MusicTheme theme = (_isSiegeBattle ? MBMusicManager.Current.GetSiegeTheme(base.Mission.MusicCulture.GetCultureCode()) : MBMusicManager.Current.GetBattleTheme(base.Mission.MusicCulture.GetCultureCode(), num4, out _isPaganBattle));
+			MusicTheme theme = (_isSiegeBattle ? MBMusicManager.Current.GetSiegeTheme(base.Mission.MusicCulture) : MBMusicManager.Current.GetBattleTheme(base.Mission.MusicCulture, num4, out _isPaganBattle));
 			MBMusicManager.Current.StartTheme(theme, startIntensity);
 			_battleState = BattleState.Started;
 		}
@@ -223,7 +223,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 		{
 			if (Mission.Current.MissionResult != null)
 			{
-				MusicTheme battleEndTheme = MBMusicManager.Current.GetBattleEndTheme(base.Mission.MusicCulture.GetCultureCode(), Mission.Current.MissionResult.PlayerVictory);
+				MusicTheme battleEndTheme = MBMusicManager.Current.GetBattleEndTheme(base.Mission.MusicCulture, Mission.Current.MissionResult.PlayerVictory);
 				MBMusicManager.Current.StartTheme(battleEndTheme, PsaiCore.Instance.GetPsaiInfo().currentIntensity, queueEndSegment: true);
 				_battleState = BattleState.Ending;
 			}

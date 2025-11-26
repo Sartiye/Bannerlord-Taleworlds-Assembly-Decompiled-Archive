@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
 
@@ -32,11 +33,16 @@ public class Banner
 
 	public const int BannerIconDataIndex = 1;
 
+	[CachedData]
+	private string _bannerCode;
+
 	[SaveableField(1)]
 	private readonly MBList<BannerData> _bannerDataList;
 
 	[CachedData]
 	private IBannerVisual _bannerVisual;
+
+	public string BannerCode => _bannerCode ?? (_bannerCode = Serialize());
 
 	public MBReadOnlyList<BannerData> BannerDataList => _bannerDataList;
 
@@ -48,24 +54,38 @@ public class Banner
 	}
 
 	public Banner(Banner banner)
+		: this()
 	{
-		_bannerDataList = new MBList<BannerData>();
-		foreach (BannerData bannerData in banner.BannerDataList)
+		_bannerCode = banner._bannerCode;
+		foreach (BannerData bannerData in banner._bannerDataList)
 		{
 			_bannerDataList.Add(new BannerData(bannerData));
 		}
 	}
 
-	public Banner(string bannerKey)
+	public Banner(Banner banner, uint color1, uint color2)
+		: this(banner)
 	{
-		_bannerDataList = new MBList<BannerData>();
-		Deserialize(bannerKey);
+		ChangePrimaryColor(color1);
+		ChangeIconColors(color2);
+	}
+
+	public Banner(string bannerKey)
+		: this()
+	{
+		if (string.IsNullOrEmpty(bannerKey))
+		{
+			Debug.FailedAssert("Banner key is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Banner.cs", ".ctor", 73);
+		}
+		else
+		{
+			Deserialize(bannerKey);
+		}
 	}
 
 	public Banner(string bannerKey, uint color1, uint color2)
+		: this(bannerKey)
 	{
-		_bannerDataList = new MBList<BannerData>();
-		Deserialize(bannerKey);
 		ChangePrimaryColor(color1);
 		ChangeIconColors(color2);
 	}
@@ -75,13 +95,78 @@ public class Banner
 		_bannerVisual = visual;
 	}
 
+	public BannerData GetBannerDataAtIndex(int index)
+	{
+		_bannerCode = null;
+		if (_bannerDataList.Count <= index)
+		{
+			return null;
+		}
+		return _bannerDataList[index];
+	}
+
+	public int GetBannerDataListCount()
+	{
+		return _bannerDataList.Count;
+	}
+
+	public bool IsBannerDataListEmpty()
+	{
+		return _bannerDataList.IsEmpty();
+	}
+
+	public int GetPrimaryColorId()
+	{
+		return _bannerDataList[0].ColorId;
+	}
+
+	public int GetSecondaryColorId()
+	{
+		return _bannerDataList[0].ColorId2;
+	}
+
+	public int GetIconColorId()
+	{
+		return _bannerDataList[1].ColorId;
+	}
+
+	public Vec2 GetIconSize()
+	{
+		return _bannerDataList[1].Size;
+	}
+
+	public void SetPrimaryColorId(int colorId)
+	{
+		_bannerCode = null;
+		_bannerDataList[0].ColorId = colorId;
+	}
+
+	public void SetSecondaryColorId(int colorId)
+	{
+		_bannerCode = null;
+		_bannerDataList[0].ColorId2 = colorId;
+	}
+
+	public void SetIconColorId(int colorId)
+	{
+		_bannerCode = null;
+		_bannerDataList[1].ColorId = colorId;
+	}
+
+	public void SetIconSize(int newSize)
+	{
+		_bannerCode = null;
+		_bannerDataList[1].Size = new Vec2(newSize, newSize);
+	}
+
 	public void ChangePrimaryColor(uint mainColor)
 	{
 		int colorId = BannerManager.GetColorId(mainColor);
 		if (colorId >= 0)
 		{
-			BannerDataList[0].ColorId = colorId;
-			BannerDataList[0].ColorId2 = colorId;
+			_bannerCode = null;
+			_bannerDataList[0].ColorId = colorId;
+			_bannerDataList[0].ColorId2 = colorId;
 		}
 	}
 
@@ -91,8 +176,9 @@ public class Banner
 		int colorId2 = BannerManager.GetColorId(secondaryColor);
 		if (colorId >= 0 && colorId2 >= 0)
 		{
-			BannerDataList[0].ColorId = colorId;
-			BannerDataList[0].ColorId2 = colorId2;
+			_bannerCode = null;
+			_bannerDataList[0].ColorId = colorId;
+			_bannerDataList[0].ColorId2 = colorId2;
 		}
 	}
 
@@ -101,29 +187,49 @@ public class Banner
 		int colorId = BannerManager.GetColorId(color);
 		if (colorId >= 0)
 		{
-			for (int i = 1; i < BannerDataList.Count; i++)
+			_bannerCode = null;
+			for (int i = 1; i < _bannerDataList.Count; i++)
 			{
-				BannerDataList[i].ColorId = colorId;
-				BannerDataList[i].ColorId2 = colorId;
+				_bannerDataList[i].ColorId = colorId;
+				_bannerDataList[i].ColorId2 = colorId;
 			}
 		}
 	}
 
 	public void RotateBackgroundToRight()
 	{
-		BannerDataList[0].RotationValue -= 0.00278f;
-		BannerDataList[0].RotationValue = ((BannerDataList[0].RotationValue < 0f) ? (BannerDataList[0].RotationValue + 1f) : BannerDataList[0].RotationValue);
+		_bannerCode = null;
+		_bannerDataList[0].RotationValue -= 0.0027777778f;
+		_bannerDataList[0].RotationValue = ((_bannerDataList[0].RotationValue < 0f) ? (_bannerDataList[0].RotationValue + 1f) : _bannerDataList[0].RotationValue);
 	}
 
 	public void RotateBackgroundToLeft()
 	{
-		BannerDataList[0].RotationValue += 0.00278f;
-		BannerDataList[0].RotationValue = ((BannerDataList[0].RotationValue > 0f) ? (BannerDataList[0].RotationValue - 1f) : BannerDataList[0].RotationValue);
+		_bannerCode = null;
+		_bannerDataList[0].RotationValue += 0.0027777778f;
+		_bannerDataList[0].RotationValue = ((_bannerDataList[0].RotationValue > 0f) ? (_bannerDataList[0].RotationValue - 1f) : _bannerDataList[0].RotationValue);
+	}
+
+	public int GetBackgroundMeshId()
+	{
+		return _bannerDataList[0].MeshId;
+	}
+
+	public int GetIconMeshId()
+	{
+		return _bannerDataList[1].MeshId;
 	}
 
 	public void SetBackgroundMeshId(int meshId)
 	{
-		BannerDataList[0].MeshId = meshId;
+		_bannerCode = null;
+		_bannerDataList[0].MeshId = meshId;
+	}
+
+	public void SetIconMeshId(int meshId)
+	{
+		_bannerCode = null;
+		_bannerDataList[1].MeshId = meshId;
 	}
 
 	public string Serialize()
@@ -133,13 +239,18 @@ public class Banner
 
 	public void Deserialize(string message)
 	{
+		_bannerCode = message;
 		_bannerVisual = null;
 		_bannerDataList.Clear();
-		_bannerDataList.AddRange(GetBannerDataFromBannerCode(message));
+		if (TryGetBannerDataFromCode(message, out var bannerDataList))
+		{
+			_bannerDataList.AddRange(bannerDataList);
+		}
 	}
 
 	public void ClearAllIcons()
 	{
+		_bannerCode = null;
 		BannerData item = _bannerDataList[0];
 		_bannerDataList.Clear();
 		_bannerDataList.Add(item);
@@ -149,6 +260,7 @@ public class Banner
 	{
 		if (_bannerDataList.Count < 33)
 		{
+			_bannerCode = null;
 			_bannerDataList.Add(iconData);
 		}
 	}
@@ -184,7 +296,7 @@ public class Banner
 		_ = Game.Current;
 		MBFastRandom mBFastRandom = ((seed == -1) ? new MBFastRandom() : new MBFastRandom((uint)seed));
 		Banner banner = new Banner();
-		BannerData iconData = new BannerData(BannerManager.Instance.GetRandomBackgroundId(mBFastRandom), mBFastRandom.Next(BannerManager.ColorPalette.Count), mBFastRandom.Next(BannerManager.ColorPalette.Count), new Vec2(1528f, 1528f), new Vec2(764f, 764f), drawStroke: false, mirror: false, 0f);
+		BannerData iconData = new BannerData(BannerManager.Instance.GetRandomBackgroundId(mBFastRandom), BannerManager.Instance.GetRandomColorId(mBFastRandom), BannerManager.Instance.GetRandomColorId(mBFastRandom), new Vec2(1528f, 1528f), new Vec2(764f, 764f), drawStroke: false, mirror: false, 0f);
 		banner.AddIconData(iconData);
 		switch ((BannerIconOrientation)((orientation == BannerIconOrientation.None) ? mBFastRandom.Next(6) : ((int)orientation)))
 		{
@@ -232,9 +344,9 @@ public class Banner
 	private void CentralPositionedOneIcon(MBFastRandom random)
 	{
 		int randomBannerIconId = BannerManager.Instance.GetRandomBannerIconId(random);
-		int colorId = random.Next(BannerManager.ColorPalette.Count);
+		int randomColorId = BannerManager.Instance.GetRandomColorId(random);
 		bool flag = random.NextFloat() < 0.5f;
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag, random);
+		int colorId = (flag ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
 		bool mirror = random.Next(2) == 0;
 		float num = random.NextFloat();
 		float rotationValue = 0f;
@@ -250,7 +362,7 @@ public class Banner
 		{
 			rotationValue = 0.75f;
 		}
-		BannerData iconData = new BannerData(randomBannerIconId, colorId, randomColorIdForStroke, new Vec2(512f, 512f), new Vec2(764f, 764f), flag, mirror, rotationValue);
+		BannerData iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(512f, 512f), new Vec2(764f, 764f), flag, mirror, rotationValue);
 		AddIconData(iconData);
 	}
 
@@ -260,23 +372,23 @@ public class Banner
 		bool flag = random.NextFloat() < 0.5f;
 		int num2 = (512 - 20 * (num + 1)) / num;
 		int num3 = BannerManager.Instance.GetRandomBannerIconId(random);
-		int num4 = random.Next(BannerManager.ColorPalette.Count);
+		int num4 = BannerManager.Instance.GetRandomColorId(random);
 		bool flag2 = random.NextFloat() < 0.5f;
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag2, random);
+		int colorId = (flag2 ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
 		int num5 = (512 - num * num2) / (num + 1);
 		bool flag3 = random.NextFloat() < 0.3f;
 		bool flag4 = flag3 || random.NextFloat() < 0.3f;
 		for (int i = 0; i < num; i++)
 		{
 			num3 = (flag3 ? BannerManager.Instance.GetRandomBannerIconId(random) : num3);
-			num4 = (flag4 ? random.Next(BannerManager.ColorPalette.Count) : num4);
+			num4 = (flag4 ? BannerManager.Instance.GetRandomColorId(random) : num4);
 			int num6 = i * (num2 + num5) + num5 + num2 / 2;
 			int num7 = i * (num2 + num5) + num5 + num2 / 2;
 			if (flag)
 			{
 				num7 = 512 - num7;
 			}
-			BannerData iconData = new BannerData(num3, num4, randomColorIdForStroke, new Vec2(num2, num2), new Vec2(num6 + 508, num7 + 508), flag2, mirror: false, 0f);
+			BannerData iconData = new BannerData(num3, num4, colorId, new Vec2(num2, num2), new Vec2(num6 + 508, num7 + 508), flag2, mirror: false, 0f);
 			AddIconData(iconData);
 		}
 	}
@@ -286,18 +398,18 @@ public class Banner
 		int num = ((random.NextFloat() < 0.5f) ? 2 : 3);
 		int num2 = (512 - 20 * (num + 1)) / num;
 		int num3 = BannerManager.Instance.GetRandomBannerIconId(random);
-		int num4 = random.Next(BannerManager.ColorPalette.Count);
+		int num4 = BannerManager.Instance.GetRandomColorId(random);
 		bool flag = random.NextFloat() < 0.5f;
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag, random);
+		int colorId = (flag ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
 		int num5 = (512 - num * num2) / (num + 1);
 		bool flag2 = random.NextFloat() < 0.3f;
 		bool flag3 = flag2 || random.NextFloat() < 0.3f;
 		for (int i = 0; i < num; i++)
 		{
 			num3 = (flag2 ? BannerManager.Instance.GetRandomBannerIconId(random) : num3);
-			num4 = (flag3 ? random.Next(BannerManager.ColorPalette.Count) : num4);
+			num4 = (flag3 ? BannerManager.Instance.GetRandomColorId(random) : num4);
 			int num6 = i * (num2 + num5) + num5 + num2 / 2;
-			BannerData iconData = new BannerData(num3, num4, randomColorIdForStroke, new Vec2(num2, num2), new Vec2(num6 + 508, 764f), flag, mirror: false, 0f);
+			BannerData iconData = new BannerData(num3, num4, colorId, new Vec2(num2, num2), new Vec2(num6 + 508, 764f), flag, mirror: false, 0f);
 			AddIconData(iconData);
 		}
 	}
@@ -307,18 +419,18 @@ public class Banner
 		int num = ((random.NextFloat() < 0.5f) ? 2 : 3);
 		int num2 = (512 - 20 * (num + 1)) / num;
 		int num3 = BannerManager.Instance.GetRandomBannerIconId(random);
-		int num4 = random.Next(BannerManager.ColorPalette.Count);
+		int num4 = BannerManager.Instance.GetRandomColorId(random);
 		bool flag = random.NextFloat() < 0.5f;
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag, random);
+		int colorId = (flag ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
 		int num5 = (512 - num * num2) / (num + 1);
 		bool flag2 = random.NextFloat() < 0.3f;
 		bool flag3 = flag2 || random.NextFloat() < 0.3f;
 		for (int i = 0; i < num; i++)
 		{
 			num3 = (flag2 ? BannerManager.Instance.GetRandomBannerIconId(random) : num3);
-			num4 = (flag3 ? random.Next(BannerManager.ColorPalette.Count) : num4);
+			num4 = (flag3 ? BannerManager.Instance.GetRandomColorId(random) : num4);
 			int num6 = i * (num2 + num5) + num5 + num2 / 2;
-			BannerData iconData = new BannerData(num3, num4, randomColorIdForStroke, new Vec2(num2, num2), new Vec2(764f, num6 + 508), flag, mirror: false, 0f);
+			BannerData iconData = new BannerData(num3, num4, colorId, new Vec2(num2, num2), new Vec2(764f, num6 + 508), flag, mirror: false, 0f);
 			AddIconData(iconData);
 		}
 	}
@@ -347,21 +459,21 @@ public class Banner
 		bool flag2 = (byte)num2 != 0;
 		bool flag3 = random.NextFloat() < 0.5f;
 		int randomBannerIconId = BannerManager.Instance.GetRandomBannerIconId(random);
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag3, random);
-		int num3 = random.Next(BannerManager.ColorPalette.Count);
-		BannerData iconData = new BannerData(randomBannerIconId, num3, randomColorIdForStroke, new Vec2(220f, 220f), new Vec2(654f, 654f), flag3, mirror: false, 0f);
+		int colorId = (flag3 ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
+		int randomColorId = BannerManager.Instance.GetRandomColorId(random);
+		BannerData iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(220f, 220f), new Vec2(654f, 654f), flag3, mirror: false, 0f);
 		AddIconData(iconData);
 		randomBannerIconId = ((num != 0) ? BannerManager.Instance.GetRandomBannerIconId(random) : randomBannerIconId);
-		num3 = (flag2 ? random.Next(BannerManager.ColorPalette.Count) : num3);
-		iconData = new BannerData(randomBannerIconId, num3, randomColorIdForStroke, new Vec2(220f, 220f), new Vec2(874f, 654f), flag3, flag, 0f);
+		randomColorId = (flag2 ? BannerManager.Instance.GetRandomColorId(random) : randomColorId);
+		iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(220f, 220f), new Vec2(874f, 654f), flag3, flag, 0f);
 		AddIconData(iconData);
 		randomBannerIconId = ((num != 0) ? BannerManager.Instance.GetRandomBannerIconId(random) : randomBannerIconId);
-		num3 = (flag2 ? random.Next(BannerManager.ColorPalette.Count) : num3);
-		iconData = new BannerData(randomBannerIconId, num3, randomColorIdForStroke, new Vec2(220f, 220f), new Vec2(654f, 874f), flag3, flag, flag ? 0.5f : 0f);
+		randomColorId = (flag2 ? BannerManager.Instance.GetRandomColorId(random) : randomColorId);
+		iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(220f, 220f), new Vec2(654f, 874f), flag3, flag, flag ? 0.5f : 0f);
 		AddIconData(iconData);
 		randomBannerIconId = ((num != 0) ? BannerManager.Instance.GetRandomBannerIconId(random) : randomBannerIconId);
-		num3 = (flag2 ? random.Next(BannerManager.ColorPalette.Count) : num3);
-		iconData = new BannerData(randomBannerIconId, num3, randomColorIdForStroke, new Vec2(220f, 220f), new Vec2(874f, 874f), flag3, mirror: false, flag ? 0.5f : 0f);
+		randomColorId = (flag2 ? BannerManager.Instance.GetRandomColorId(random) : randomColorId);
+		iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(220f, 220f), new Vec2(874f, 874f), flag3, mirror: false, flag ? 0.5f : 0f);
 		AddIconData(iconData);
 	}
 
@@ -370,49 +482,40 @@ public class Banner
 		bool flag = random.NextFloat() < 0.5f;
 		bool flag2 = random.NextFloat() < 0.5f;
 		int randomBannerIconId = BannerManager.Instance.GetRandomBannerIconId(random);
-		int randomColorIdForStroke = GetRandomColorIdForStroke(flag2, random);
-		int num = random.Next(BannerManager.ColorPalette.Count);
-		BannerData iconData = new BannerData(randomBannerIconId, num, randomColorIdForStroke, new Vec2(200f, 200f), new Vec2(664f, 764f), flag2, mirror: false, 0f);
+		int colorId = (flag2 ? BannerManager.Instance.GetRandomColorId(random) : BannerManager.Instance.ReadOnlyColorPalette.Last().Key);
+		int randomColorId = BannerManager.Instance.GetRandomColorId(random);
+		BannerData iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(200f, 200f), new Vec2(664f, 764f), flag2, mirror: false, 0f);
 		AddIconData(iconData);
-		num = (flag ? random.Next(BannerManager.ColorPalette.Count) : num);
-		iconData = new BannerData(randomBannerIconId, num, randomColorIdForStroke, new Vec2(200f, 200f), new Vec2(864f, 764f), flag2, mirror: true, 0f);
+		randomColorId = (flag ? BannerManager.Instance.GetRandomColorId(random) : randomColorId);
+		iconData = new BannerData(randomBannerIconId, randomColorId, colorId, new Vec2(200f, 200f), new Vec2(864f, 764f), flag2, mirror: true, 0f);
 		AddIconData(iconData);
-	}
-
-	private int GetRandomColorIdForStroke(bool hasStroke, MBFastRandom random)
-	{
-		if (!hasStroke)
-		{
-			return BannerManager.ColorPalette.Count - 1;
-		}
-		return random.Next(BannerManager.ColorPalette.Count);
 	}
 
 	public uint GetPrimaryColor()
 	{
-		if (BannerDataList.Count <= 0)
+		if (_bannerDataList.Count <= 0)
 		{
 			return uint.MaxValue;
 		}
-		return BannerManager.GetColor(BannerDataList[0].ColorId);
+		return BannerManager.GetColor(_bannerDataList[0].ColorId);
 	}
 
 	public uint GetSecondaryColor()
 	{
-		if (BannerDataList.Count <= 0)
+		if (_bannerDataList.Count <= 0)
 		{
 			return uint.MaxValue;
 		}
-		return BannerManager.GetColor(BannerDataList[0].ColorId2);
+		return BannerManager.GetColor(_bannerDataList[0].ColorId2);
 	}
 
 	public uint GetFirstIconColor()
 	{
-		if (BannerDataList.Count <= 1)
+		if (_bannerDataList.Count <= 1)
 		{
 			return uint.MaxValue;
 		}
-		return BannerManager.GetColor(BannerDataList[1].ColorId);
+		return BannerManager.GetColor(_bannerDataList[1].ColorId);
 	}
 
 	public int GetVersionNo()
@@ -455,21 +558,41 @@ public class Banner
 			mBStringBuilder.Append('.');
 			mBStringBuilder.Append(bannerData.Mirror ? 1 : 0);
 			mBStringBuilder.Append('.');
-			mBStringBuilder.Append((int)(bannerData.RotationValue / 0.00278f));
+			mBStringBuilder.Append((int)(bannerData.RotationValue / 0.0027777778f));
 		}
 		return mBStringBuilder.ToStringAndRelease();
 	}
 
-	public static List<BannerData> GetBannerDataFromBannerCode(string bannerCode)
+	public static bool IsValidBannerCode(string bannerCode)
 	{
-		List<BannerData> list = new List<BannerData>();
+		if (string.IsNullOrEmpty(bannerCode))
+		{
+			return false;
+		}
+		List<BannerData> bannerDataList;
+		return TryGetBannerDataFromCode(bannerCode, out bannerDataList);
+	}
+
+	public static bool TryGetBannerDataFromCode(string bannerCode, out List<BannerData> bannerDataList)
+	{
+		bannerDataList = new List<BannerData>();
 		string[] array = bannerCode.Split(new char[1] { '.' });
 		for (int i = 0; i + 10 <= array.Length; i += 10)
 		{
-			BannerData item = new BannerData(int.Parse(array[i]), int.Parse(array[i + 1]), int.Parse(array[i + 2]), new Vec2(int.Parse(array[i + 3]), int.Parse(array[i + 4])), new Vec2(int.Parse(array[i + 5]), int.Parse(array[i + 6])), int.Parse(array[i + 7]) == 1, int.Parse(array[i + 8]) == 1, (float)int.Parse(array[i + 9]) * 0.00278f);
-			list.Add(item);
+			if (int.TryParse(array[i], out var result) && int.TryParse(array[i + 1], out var result2) && int.TryParse(array[i + 2], out var result3) && int.TryParse(array[i + 3], out var result4) && int.TryParse(array[i + 4], out var result5) && int.TryParse(array[i + 5], out var result6) && int.TryParse(array[i + 6], out var result7) && int.TryParse(array[i + 7], out var result8) && int.TryParse(array[i + 8], out var result9) && int.TryParse(array[i + 9], out var result10))
+			{
+				BannerData item = new BannerData(result, result2, result3, new Vec2(result4, result5), new Vec2(result6, result7), result8 == 1, result9 == 1, (float)result10 * 0.0027777778f);
+				bannerDataList.Add(item);
+				continue;
+			}
+			bannerDataList.Clear();
+			return false;
 		}
-		return list;
+		if (bannerDataList.Count > 32)
+		{
+			bannerDataList.RemoveRange(31, bannerDataList.Count - 32);
+		}
+		return true;
 	}
 
 	internal static void AutoGeneratedStaticCollectObjectsBanner(object o, List<object> collectedObjects)

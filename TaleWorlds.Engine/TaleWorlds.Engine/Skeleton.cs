@@ -286,6 +286,11 @@ public sealed class Skeleton : NativeObject
 		return EngineApplicationInterface.ISkeleton.GetAnimationIndexAtChannel(base.Pointer, channelNo);
 	}
 
+	public void EnableScriptDrivenPostIntegrateCallback()
+	{
+		EngineApplicationInterface.ISkeleton.EnableScriptDrivenPostIntegrateCallback(base.Pointer);
+	}
+
 	public void ResetCloths()
 	{
 		EngineApplicationInterface.ISkeleton.ResetCloths(base.Pointer);
@@ -304,5 +309,20 @@ public sealed class Skeleton : NativeObject
 	public static sbyte GetBoneIndexFromName(string skeletonModelName, string boneName)
 	{
 		return EngineApplicationInterface.ISkeleton.GetBoneIndexFromName(skeletonModelName, boneName);
+	}
+
+	internal Transformation GetEntitialOutTransform(UIntPtr animResultPointer, sbyte boneIndex)
+	{
+		return EngineApplicationInterface.ISkeleton.GetEntitialOutTransform(base.Pointer, animResultPointer, boneIndex);
+	}
+
+	internal void SetOutBoneDisplacement(UIntPtr animResultPointer, sbyte boneIndex, Vec3 displacement)
+	{
+		EngineApplicationInterface.ISkeleton.SetOutBoneDisplacement(base.Pointer, animResultPointer, boneIndex, displacement);
+	}
+
+	internal void SetOutQuat(UIntPtr animResultPointer, sbyte boneIndex, Mat3 rotation)
+	{
+		EngineApplicationInterface.ISkeleton.SetOutQuat(base.Pointer, animResultPointer, boneIndex, rotation);
 	}
 }

@@ -12,10 +12,10 @@ public static class SellPrisonersAction
 		Settlement settlement = sellerParty.Settlement ?? buyerParty?.Settlement;
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		int num = 0;
+		bool flag = false;
 		foreach (TroopRosterElement item in prisoners.GetTroopRoster())
 		{
 			CharacterObject character = item.Character;
-			bool flag = false;
 			if (!character.IsHero)
 			{
 				if (applyConsequences)
@@ -48,6 +48,10 @@ public static class SellPrisonersAction
 						TransferPrisonerAction.Apply(character, sellerParty, buyerParty);
 					}
 				}
+				else
+				{
+					EndCaptivityAction.ApplyByRansom(character.HeroObject, null);
+				}
 				if (settlement != null)
 				{
 					CampaignEventDispatcher.Instance.OnPrisonersChangeInSettlement(settlement, null, character.HeroObject, takenFromDungeon: false);
@@ -59,15 +63,29 @@ public static class SellPrisonersAction
 				num += item.Number * num2;
 			}
 		}
-		if (applyConsequences)
+		if (applyConsequences && !flag && num > 0)
 		{
 			if (sellerParty.IsMobile)
 			{
-				GiveGoldAction.ApplyBetweenCharacters(null, sellerParty.LeaderHero ?? sellerParty.Owner, num);
+				Hero recipientHero = null;
+				if (sellerParty.LeaderHero != null && sellerParty.LeaderHero.HeroState == Hero.CharacterStates.Active)
+				{
+					recipientHero = sellerParty.LeaderHero;
+				}
+				else if (sellerParty.Owner != null && sellerParty.Owner.HeroState == Hero.CharacterStates.Active)
+				{
+					recipientHero = sellerParty.Owner;
+				}
+				else if (sellerParty.MobileParty.ActualClan?.Leader != null)
+				{
+					recipientHero = sellerParty.MobileParty.ActualClan.Leader;
+				}
+				GiveGoldAction.ApplyBetweenCharacters(null, recipientHero, num);
 			}
 			else
 			{
-				GiveGoldAction.ApplyForPartyToSettlement(null, sellerParty.Settlement, num, buyerParty?.Settlement?.OwnerClan != Clan.PlayerClan);
+				bool disableNotification = buyerParty?.Settlement?.OwnerClan != Clan.PlayerClan;
+				GiveGoldAction.ApplyForPartyToSettlement(null, sellerParty.Settlement, num, disableNotification);
 			}
 		}
 		if (sellerParty.IsMobile)

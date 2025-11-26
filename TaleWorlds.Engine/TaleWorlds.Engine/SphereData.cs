@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("ftlSphere_data", false)]
+[EngineStruct("ftlSphere_data", false, null)]
 public struct SphereData
 {
 	public Vec3 Origin;

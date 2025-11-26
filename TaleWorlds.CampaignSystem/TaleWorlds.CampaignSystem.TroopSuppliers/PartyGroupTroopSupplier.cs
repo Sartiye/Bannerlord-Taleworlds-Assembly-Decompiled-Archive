@@ -20,6 +20,8 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 
 	private int _numRouted;
 
+	private bool _isPlayerSide;
+
 	private Func<UniqueTroopDescriptor, MapEventParty, bool> _customAllocationConditions;
 
 	private bool _anyTroopRemainsToBeSupplied = true;
@@ -36,6 +38,7 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 	{
 		_customAllocationConditions = customAllocationConditions;
 		PartyGroup = mapEvent.GetMapEventSide(side);
+		_isPlayerSide = mapEvent.PlayerSide == side;
 		_initialTroopCount = PartyGroup.TroopCount;
 		PartyGroup.MakeReadyForMission(priorTroops);
 	}
@@ -55,6 +58,18 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 			_anyTroopRemainsToBeSupplied = false;
 		}
 		return array;
+	}
+
+	public IAgentOriginBase SupplyOneTroop()
+	{
+		if (PartyGroup.AllocateTroop(_customAllocationConditions, out var troopDescriptor))
+		{
+			PartyGroupAgentOrigin result = new PartyGroupAgentOrigin(this, troopDescriptor, 0);
+			_anyTroopRemainsToBeSupplied = _anyTroopRemainsToBeSupplied && PartyGroup.HasReadyTroops;
+			return result;
+		}
+		_anyTroopRemainsToBeSupplied = false;
+		return null;
 	}
 
 	public IEnumerable<IAgentOriginBase> GetAllTroops()
@@ -80,7 +95,7 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 		foreach (MapEventParty party2 in PartyGroup.Parties)
 		{
 			PartyBase party = party2.Party;
-			if (PartyGroupAgentOrigin.IsPartyUnderPlayerCommand(party) || (party.Side == PartyBase.MainParty.Side && PartyGroup.MapEvent.IsPlayerSergeant()))
+			if (PartyBase.IsPartyUnderPlayerCommand(party) || (party.Side == PartyBase.MainParty.Side && PartyGroup.MapEvent.IsPlayerSergeant()))
 			{
 				num += party.NumberOfHealthyMembers;
 			}
@@ -100,10 +115,10 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 		PartyGroup.OnTroopKilled(troopDescriptor);
 	}
 
-	public void OnTroopRouted(UniqueTroopDescriptor troopDescriptor)
+	public void OnTroopRouted(UniqueTroopDescriptor troopDescriptor, bool isOrderRetreat)
 	{
 		_numRouted++;
-		PartyGroup.OnTroopRouted(troopDescriptor);
+		PartyGroup.OnTroopRouted(troopDescriptor, isOrderRetreat);
 	}
 
 	internal CharacterObject GetTroop(UniqueTroopDescriptor troopDescriptor)

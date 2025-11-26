@@ -5,6 +5,7 @@ using NetworkMessages.FromServer;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.MountAndBlade.Network.Messages;
 using TaleWorlds.ObjectSystem;
 
@@ -27,7 +28,9 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		if (GameNetwork.IsClientOrReplay)
 		{
 			registerer.RegisterBaseHandler<CreateFreeMountAgent>(HandleServerEventCreateFreeMountAgentEvent);
+			registerer.RegisterBaseHandler<CreateFreeCorpseMountAgent>(HandleServerEventCreateFreeCorpseMountAgentEvent);
 			registerer.RegisterBaseHandler<CreateAgent>(HandleServerEventCreateAgent);
+			registerer.RegisterBaseHandler<CreateCorpseAgent>(HandleServerEventCreateCorpseAgent);
 			registerer.RegisterBaseHandler<SynchronizeAgentSpawnEquipment>(HandleServerEventSynchronizeAgentEquipment);
 			registerer.RegisterBaseHandler<CreateAgentVisuals>(HandleServerEventCreateAgentVisuals);
 			registerer.RegisterBaseHandler<RemoveAgentVisualsForPeer>(HandleServerEventRemoveAgentVisualsForPeer);
@@ -114,6 +117,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			registerer.RegisterBaseHandler<CreateMissile>(HandleServerEventCreateMissile);
 			registerer.RegisterBaseHandler<CombatLogNetworkMessage>(HandleServerEventAgentHit);
 			registerer.RegisterBaseHandler<ConsumeWeaponAmount>(HandleServerEventConsumeWeaponAmount);
+			registerer.RegisterBaseHandler<SetAgentOwningMissionPeer>(HandleServerEventSetAgentOwningMissionPeer);
 		}
 		else if (GameNetwork.IsServer)
 		{
@@ -200,6 +204,26 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		mission.SpawnMonster(horseItem, horseHarnessItem, in initialPosition, in initialDirection, createFreeMountAgent.AgentIndex);
 	}
 
+	private void HandleServerEventCreateFreeCorpseMountAgentEvent(GameNetworkMessage baseMessage)
+	{
+		CreateFreeCorpseMountAgent createFreeCorpseMountAgent = (CreateFreeCorpseMountAgent)baseMessage;
+		Mission mission = base.Mission;
+		EquipmentElement horseItem = createFreeCorpseMountAgent.HorseItem;
+		EquipmentElement horseHarnessItem = createFreeCorpseMountAgent.HorseHarnessItem;
+		Vec3 initialPosition = createFreeCorpseMountAgent.Position;
+		Vec2 initialDirection = createFreeCorpseMountAgent.Direction.Normalized();
+		Agent agent = mission.SpawnMonster(horseItem, horseHarnessItem, in initialPosition, in initialDirection, createFreeCorpseMountAgent.AgentIndex);
+		int attachedWeaponCount = createFreeCorpseMountAgent.AttachedWeaponCount;
+		for (int i = 0; i < attachedWeaponCount; i++)
+		{
+			MatrixFrame attachLocalFrame = createFreeCorpseMountAgent.AttachedWeaponsLocalFrames[i];
+			sbyte boneIndex = createFreeCorpseMountAgent.AttachedWeaponsBoneIndices[i];
+			MissionWeapon weapon = createFreeCorpseMountAgent.AttachedWeapons[i];
+			agent.AttachWeaponToBone(weapon, null, boneIndex, ref attachLocalFrame);
+		}
+		agent.MakeDead(isKilled: true, (createFreeCorpseMountAgent.DeathActionIndex == ActionIndexCache.act_none) ? ActionIndexCache.act_horse_fall_right : createFreeCorpseMountAgent.DeathActionIndex);
+	}
+
 	private void HandleServerEventCreateAgent(GameNetworkMessage baseMessage)
 	{
 		CreateAgent createAgent = (CreateAgent)baseMessage;
@@ -231,7 +255,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		else
 		{
-			agentBuildData3.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData3.AgentRace, agentBuildData3.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData3.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData3.AgentEquipmentSeed, character.HairTags, character.BeardTags, character.TattooTags));
+			agentBuildData3.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData3.AgentRace, agentBuildData3.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData3.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData3.AgentEquipmentSeed, character.BodyPropertyRange.HairTags, character.BodyPropertyRange.BeardTags, character.BodyPropertyRange.TattooTags));
 		}
 		Banner banner = null;
 		if (formation != null)
@@ -249,6 +273,67 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		_ = base.Mission.SpawnAgent(agentBuildData3).MountAgent;
 	}
 
+	private void HandleServerEventCreateCorpseAgent(GameNetworkMessage baseMessage)
+	{
+		CreateCorpseAgent createCorpseAgent = (CreateCorpseAgent)baseMessage;
+		BasicCharacterObject character = createCorpseAgent.Character;
+		MissionPeer missionPeer = createCorpseAgent.Peer?.GetComponent<MissionPeer>();
+		Team teamFromTeamIndex = Mission.MissionNetworkHelper.GetTeamFromTeamIndex(createCorpseAgent.TeamIndex);
+		AgentBuildData agentBuildData = new AgentBuildData(character).MissionPeer(createCorpseAgent.IsPlayerAgent ? missionPeer : null).Monster(createCorpseAgent.Monster).TroopOrigin(new BasicBattleAgentOrigin(character))
+			.Equipment(createCorpseAgent.SpawnEquipment)
+			.EquipmentSeed(createCorpseAgent.BodyPropertiesSeed);
+		Vec3 position = createCorpseAgent.Position;
+		AgentBuildData agentBuildData2 = agentBuildData.InitialPosition(in position);
+		Vec2 direction = createCorpseAgent.Direction.Normalized();
+		AgentBuildData agentBuildData3 = agentBuildData2.InitialDirection(in direction).MissionEquipment(createCorpseAgent.MissionEquipment).Team(teamFromTeamIndex)
+			.Index(createCorpseAgent.AgentIndex)
+			.MountIndex(createCorpseAgent.MountAgentIndex)
+			.IsFemale(createCorpseAgent.IsFemale)
+			.ClothingColor1(createCorpseAgent.ClothingColor1)
+			.ClothingColor2(createCorpseAgent.ClothingColor2);
+		Formation formation = null;
+		if (teamFromTeamIndex != null && createCorpseAgent.FormationIndex >= 0 && !GameNetwork.IsReplay)
+		{
+			formation = teamFromTeamIndex.GetFormation((FormationClass)createCorpseAgent.FormationIndex);
+			agentBuildData3.Formation(formation);
+		}
+		if (createCorpseAgent.IsPlayerAgent)
+		{
+			agentBuildData3.BodyProperties(missionPeer.Peer.BodyProperties);
+			agentBuildData3.Age((int)agentBuildData3.AgentBodyProperties.Age);
+		}
+		else
+		{
+			agentBuildData3.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData3.AgentRace, agentBuildData3.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData3.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData3.AgentEquipmentSeed, character.BodyPropertyRange.HairTags, character.BodyPropertyRange.BeardTags, character.BodyPropertyRange.TattooTags));
+		}
+		Banner banner = null;
+		if (formation != null)
+		{
+			if (!string.IsNullOrEmpty(formation.BannerCode))
+			{
+				banner = ((formation.Banner != null) ? formation.Banner : (formation.Banner = new Banner(formation.BannerCode, teamFromTeamIndex.Color, teamFromTeamIndex.Color2)));
+			}
+		}
+		else if (missionPeer != null)
+		{
+			banner = new Banner(missionPeer.Peer.BannerCode, teamFromTeamIndex.Color, teamFromTeamIndex.Color2);
+		}
+		agentBuildData3.Banner(banner);
+		Agent agent = base.Mission.SpawnAgent(agentBuildData3);
+		int attachedWeaponCount = createCorpseAgent.AttachedWeaponCount;
+		for (int i = 0; i < attachedWeaponCount; i++)
+		{
+			MatrixFrame attachLocalFrame = createCorpseAgent.AttachedWeaponsLocalFrames[i];
+			sbyte boneIndex = createCorpseAgent.AttachedWeaponsBoneIndices[i];
+			MissionWeapon weapon = createCorpseAgent.AttachedWeapons[i];
+			agent.AttachWeaponToBone(weapon, null, boneIndex, ref attachLocalFrame);
+		}
+		MBActionSet actionSet = MBActionSet.GetActionSet("as_human_warrior");
+		AnimationSystemData animationSystemData = agent.Monster.FillAnimationSystemData(actionSet, agent.Character.GetStepSize(), hasClippingPlane: false);
+		agent.SetActionSet(ref animationSystemData);
+		agent.MakeDead(isKilled: true, (createCorpseAgent.DeathActionIndex == ActionIndexCache.act_none) ? ActionIndexCache.act_death_by_arrow_pelvis : createCorpseAgent.DeathActionIndex, createCorpseAgent.CorpsesToFadeIndex);
+	}
+
 	private void HandleServerEventSynchronizeAgentEquipment(GameNetworkMessage baseMessage)
 	{
 		SynchronizeAgentSpawnEquipment synchronizeAgentSpawnEquipment = (SynchronizeAgentSpawnEquipment)baseMessage;
@@ -259,20 +344,23 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		CreateAgentVisuals createAgentVisuals = (CreateAgentVisuals)baseMessage;
 		MissionPeer component = createAgentVisuals.Peer.GetComponent<MissionPeer>();
-		BattleSideEnum side = component.Team.Side;
+		_ = component.Team.Side;
 		BasicCharacterObject character = createAgentVisuals.Character;
-		BasicCultureObject culture = character.Culture;
+		_ = character.Culture;
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = MultiplayerBattleColors.CreateWith(@object, object2).GetPeerColors(component);
 		AgentBuildData agentBuildData = new AgentBuildData(character).VisualsIndex(createAgentVisuals.VisualsIndex).Equipment(createAgentVisuals.Equipment).EquipmentSeed(createAgentVisuals.BodyPropertiesSeed)
 			.IsFemale(createAgentVisuals.IsFemale)
-			.ClothingColor1((side == BattleSideEnum.Attacker) ? culture.Color : culture.ClothAlternativeColor)
-			.ClothingColor2((side == BattleSideEnum.Attacker) ? culture.Color2 : culture.ClothAlternativeColor2);
+			.ClothingColor1(peerColors.ClothingColor1Uint)
+			.ClothingColor2(peerColors.ClothingColor2Uint);
 		if (createAgentVisuals.VisualsIndex == 0)
 		{
 			agentBuildData.BodyProperties(component.Peer.BodyProperties);
 		}
 		else
 		{
-			agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, createAgentVisuals.BodyPropertiesSeed, character.HairTags, character.BeardTags, character.TattooTags));
+			agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, createAgentVisuals.BodyPropertiesSeed, character.BodyPropertyRange.HairTags, character.BodyPropertyRange.BeardTags, character.BodyPropertyRange.TattooTags));
 		}
 		base.Mission.GetMissionBehavior<MultiplayerMissionAgentVisualSpawnComponent>().SpawnAgentVisualsForPeer(component, agentBuildData, createAgentVisuals.SelectedEquipmentSetIndex, isBot: false, createAgentVisuals.TroopCountInFormation);
 		if (agentBuildData.AgentVisualsIndex == 0)
@@ -355,7 +443,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid item type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 463);
+			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 579);
 		}
 	}
 
@@ -457,7 +545,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		StopPhysicsAndSetFrameOfMissionObject message = (StopPhysicsAndSetFrameOfMissionObject)baseMessage;
 		SpawnedItemEntity obj = (SpawnedItemEntity)base.Mission.MissionObjects.FirstOrDefault((MissionObject mo) => mo.Id == message.ObjectId);
 		MissionObject missionObjectFromMissionObjectId = Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(message.ParentId);
-		obj?.StopPhysicsAndSetFrameForClient(message.Frame, missionObjectFromMissionObjectId?.GameEntity);
+		obj?.StopPhysicsAndSetFrameForClient(message.Frame, GameEntity.CreateFromWeakEntity(missionObjectFromMissionObjectId?.GameEntity ?? WeakGameEntity.Invalid));
 	}
 
 	private void HandleServerEventBurstMissionObjectParticles(GameNetworkMessage baseMessage)
@@ -724,15 +812,15 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		SetAgentIsPlayer setAgentIsPlayer = (SetAgentIsPlayer)baseMessage;
 		Agent agentFromIndex = Mission.MissionNetworkHelper.GetAgentFromIndex(setAgentIsPlayer.AgentIndex);
-		if (agentFromIndex.Controller == Agent.ControllerType.Player != setAgentIsPlayer.IsPlayer)
+		if (agentFromIndex.Controller == AgentControllerType.Player != setAgentIsPlayer.IsPlayer)
 		{
 			if (!agentFromIndex.IsMine)
 			{
-				agentFromIndex.Controller = Agent.ControllerType.None;
+				agentFromIndex.Controller = AgentControllerType.None;
 			}
 			else
 			{
-				agentFromIndex.Controller = Agent.ControllerType.Player;
+				agentFromIndex.Controller = AgentControllerType.Player;
 			}
 		}
 	}
@@ -766,7 +854,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	private void HandleServerEventMakeAgentDead(GameNetworkMessage baseMessage)
 	{
 		MakeAgentDead makeAgentDead = (MakeAgentDead)baseMessage;
-		Mission.MissionNetworkHelper.GetAgentFromIndex(makeAgentDead.AgentIndex).MakeDead(makeAgentDead.IsKilled, makeAgentDead.ActionCodeIndex);
+		Mission.MissionNetworkHelper.GetAgentFromIndex(makeAgentDead.AgentIndex).MakeDead(makeAgentDead.IsKilled, makeAgentDead.ActionCodeIndex, makeAgentDead.CorpsesToFadeIndex);
 	}
 
 	private void HandleServerEventAddPrefabComponentToAgentBone(GameNetworkMessage baseMessage)
@@ -871,9 +959,9 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		SpawnWeaponAsDropFromAgent spawnWeaponAsDropFromAgent = (SpawnWeaponAsDropFromAgent)baseMessage;
 		Agent agentFromIndex = Mission.MissionNetworkHelper.GetAgentFromIndex(spawnWeaponAsDropFromAgent.AgentIndex);
-		Vec3 velocity = spawnWeaponAsDropFromAgent.Velocity;
-		Vec3 angularVelocity = spawnWeaponAsDropFromAgent.AngularVelocity;
-		base.Mission.SpawnWeaponAsDropFromAgentAux(agentFromIndex, spawnWeaponAsDropFromAgent.EquipmentIndex, ref velocity, ref angularVelocity, spawnWeaponAsDropFromAgent.WeaponSpawnFlags, spawnWeaponAsDropFromAgent.ForcedIndex);
+		Vec3 globalVelocity = spawnWeaponAsDropFromAgent.Velocity;
+		Vec3 globalAngularVelocity = spawnWeaponAsDropFromAgent.AngularVelocity;
+		base.Mission.SpawnWeaponAsDropFromAgentAux(agentFromIndex, spawnWeaponAsDropFromAgent.EquipmentIndex, ref globalVelocity, ref globalAngularVelocity, spawnWeaponAsDropFromAgent.WeaponSpawnFlags, spawnWeaponAsDropFromAgent.ForcedIndex);
 	}
 
 	private void HandleServerEventSpawnAttachedWeaponOnSpawnedWeapon(GameNetworkMessage baseMessage)
@@ -903,7 +991,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		agentFromIndex.HandleBark(barkAgent.IndexOfBark);
 		if (!_chatBox.IsPlayerMuted(agentFromIndex.MissionPeer.Peer.Id))
 		{
-			GameTexts.SetVariable("LEFT", agentFromIndex.Name);
+			GameTexts.SetVariable("LEFT", agentFromIndex.NameTextObject);
 			GameTexts.SetVariable("RIGHT", SkinVoiceManager.VoiceType.MpBarks[barkAgent.IndexOfBark].GetName());
 			InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString(), Color.White, "Bark"));
 		}
@@ -961,12 +1049,23 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		(Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(consumeWeaponAmount.SpawnedItemEntityId) as SpawnedItemEntity).ConsumeWeaponAmount(consumeWeaponAmount.ConsumedAmount);
 	}
 
+	private void HandleServerEventSetAgentOwningMissionPeer(GameNetworkMessage baseMessage)
+	{
+		SetAgentOwningMissionPeer setAgentOwningMissionPeer = (SetAgentOwningMissionPeer)baseMessage;
+		Agent agent = Mission.Current.FindAgentWithIndex(setAgentOwningMissionPeer.AgentIndex);
+		MissionPeer owningAgentMissionPeer = setAgentOwningMissionPeer.Peer?.GetComponent<MissionPeer>();
+		agent.SetOwningAgentMissionPeer(owningAgentMissionPeer);
+	}
+
 	private bool HandleClientEventSetFollowedAgent(NetworkCommunicator networkPeer, GameNetworkMessage baseMessage)
 	{
-		SetFollowedAgent obj = (SetFollowedAgent)baseMessage;
+		SetFollowedAgent setFollowedAgent = (SetFollowedAgent)baseMessage;
 		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-		Agent agentFromIndex = Mission.MissionNetworkHelper.GetAgentFromIndex(obj.AgentIndex, canBeNull: true);
-		component.FollowedAgent = agentFromIndex;
+		if (component != null)
+		{
+			Agent agentFromIndex = Mission.MissionNetworkHelper.GetAgentFromIndex(setFollowedAgent.AgentIndex, canBeNull: true);
+			component.FollowedAgent = agentFromIndex;
+		}
 		return true;
 	}
 
@@ -994,10 +1093,10 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			Vec3 position = component.ControlledAgent.Position;
 			Vec3 globalPosition = usableMissionObject.InteractionEntity.GlobalPosition;
-			float num = 0f;
+			float num;
 			if (usableMissionObject is StandingPoint)
 			{
-				num = usableMissionObject.GetUserFrameForAgent(component.ControlledAgent).Origin.AsVec2.DistanceSquared(component.ControlledAgent.Position.AsVec2);
+				num = usableMissionObject.GetUserFrameForAgent(component.ControlledAgent).Origin.AsVec2.Distance(component.ControlledAgent.Position.AsVec2);
 			}
 			else
 			{
@@ -1317,7 +1416,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			MBDebug.Print("Syncing a team to peer: " + networkPeer.UserName + " with index: " + networkPeer.Index, 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginModuleEventAsServer(networkPeer);
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? BannerCode.CreateFrom(team.Banner).Code : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
 			GameNetwork.EndModuleEventAsServer();
 		}
 	}
@@ -1406,8 +1505,9 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		foreach (Agent agent in base.Mission.AllAgents)
 		{
 			bool isMount = agent.IsMount;
+			bool num = agent.IsAddedAsCorpse();
 			AgentState state = agent.State;
-			if (state != AgentState.Active && ((state != AgentState.Killed && state != AgentState.Unconscious) || (agent.GetAttachedWeaponsCount() <= 0 && (isMount || (agent.GetWieldedItemIndex(Agent.HandIndex.MainHand) < EquipmentIndex.WeaponItemBeginSlot && agent.GetWieldedItemIndex(Agent.HandIndex.OffHand) < EquipmentIndex.WeaponItemBeginSlot)) && !base.Mission.IsAgentInProximityMap(agent))) && (state == AgentState.Active || !base.Mission.Missiles.Any((Mission.Missile m) => m.ShooterAgent == agent)))
+			if (num || (state != AgentState.Active && ((state != AgentState.Killed && state != AgentState.Unconscious) || (agent.GetAttachedWeaponsCount() <= 0 && (isMount || (agent.GetPrimaryWieldedItemIndex() < EquipmentIndex.WeaponItemBeginSlot && agent.GetOffhandWieldedItemIndex() < EquipmentIndex.WeaponItemBeginSlot)) && !base.Mission.IsAgentInProximityMap(agent))) && !base.Mission.MissilesList.Any((Mission.Missile m) => m.ShooterAgent == agent)))
 			{
 				continue;
 			}
@@ -1428,7 +1528,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 				if (!agent.IsActive())
 				{
 					GameNetwork.BeginModuleEventAsServer(networkPeer);
-					GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, agent.GetCurrentActionValue(0)));
+					GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, agent.GetCurrentAction(0)));
 					GameNetwork.EndModuleEventAsServer();
 				}
 			}
@@ -1471,13 +1571,13 @@ public sealed class MissionNetworkComponent : MissionNetwork
 						GameNetwork.EndModuleEventAsServer();
 					}
 				}
-				EquipmentIndex wieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-				int mainHandCurUsageIndex = ((wieldedItemIndex != EquipmentIndex.None) ? agent.Equipment[wieldedItemIndex].CurrentUsageIndex : 0);
+				EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
+				int mainHandCurUsageIndex = ((primaryWieldedItemIndex != EquipmentIndex.None) ? agent.Equipment[primaryWieldedItemIndex].CurrentUsageIndex : 0);
 				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new SetWieldedItemIndex(agent.Index, isLeftHand: false, isWieldedInstantly: true, isWieldedOnSpawn: true, wieldedItemIndex, mainHandCurUsageIndex));
+				GameNetwork.WriteMessage(new SetWieldedItemIndex(agent.Index, isLeftHand: false, isWieldedInstantly: true, isWieldedOnSpawn: true, primaryWieldedItemIndex, mainHandCurUsageIndex));
 				GameNetwork.EndModuleEventAsServer();
 				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new SetWieldedItemIndex(agent.Index, isLeftHand: true, isWieldedInstantly: true, isWieldedOnSpawn: true, agent.GetWieldedItemIndex(Agent.HandIndex.OffHand), mainHandCurUsageIndex));
+				GameNetwork.WriteMessage(new SetWieldedItemIndex(agent.Index, isLeftHand: true, isWieldedInstantly: true, isWieldedOnSpawn: true, agent.GetOffhandWieldedItemIndex(), mainHandCurUsageIndex));
 				GameNetwork.EndModuleEventAsServer();
 				MBActionSet actionSet = agent.ActionSet;
 				if (actionSet.IsValid)
@@ -1489,21 +1589,41 @@ public sealed class MissionNetworkComponent : MissionNetwork
 					if (!agent.IsActive())
 					{
 						GameNetwork.BeginModuleEventAsServer(networkPeer);
-						GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, agent.GetCurrentActionValue(0)));
+						GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, agent.GetCurrentAction(0)));
 						GameNetwork.EndModuleEventAsServer();
 					}
 				}
 				else
 				{
-					Debug.FailedAssert("Checking to see if we enter this condition.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "SendAgentsToPeer", 1975);
+					actionSet = MBActionSet.GetActionSet("as_human_warrior");
+					AnimationSystemData animationSystemData2 = agent.Monster.FillAnimationSystemData(actionSet, agent.Character.GetStepSize(), hasClippingPlane: false);
 					GameNetwork.BeginModuleEventAsServer(networkPeer);
-					GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, ActionIndexValueCache.act_none));
+					GameNetwork.WriteMessage(new SetAgentActionSet(agent.Index, animationSystemData2));
+					GameNetwork.EndModuleEventAsServer();
+					GameNetwork.BeginModuleEventAsServer(networkPeer);
+					GameNetwork.WriteMessage(new MakeAgentDead(agent.Index, state == AgentState.Killed, ActionIndexCache.act_death_by_arrow_pelvis));
 					GameNetwork.EndModuleEventAsServer();
 				}
 			}
 			else
 			{
 				MBDebug.Print("agent not sending " + agent.Index, 0, Debug.DebugColor.White, 17179869184uL);
+			}
+		}
+		for (int n = 0; n < base.Mission.CorpseAgentInfos.Count; n++)
+		{
+			Mission.CorpseAgentInfo corpseAgentInfo = base.Mission.CorpseAgentInfos[n];
+			if (corpseAgentInfo.IsMount)
+			{
+				GameNetwork.BeginModuleEventAsServer(networkPeer);
+				GameNetwork.WriteMessage(new CreateFreeCorpseMountAgent(-1, corpseAgentInfo.CorpseSpawnEquipment.GetEquipmentFromSlot(EquipmentIndex.ArmorItemEndSlot), corpseAgentInfo.CorpseSpawnEquipment.GetEquipmentFromSlot(EquipmentIndex.HorseHarness), corpseAgentInfo.CorpsePosition, corpseAgentInfo.CorpseMovementDirection, n, corpseAgentInfo.CorpseDeathActionIndex, corpseAgentInfo.AttachedWeapons.Count, corpseAgentInfo.AttachedWeapons, corpseAgentInfo.AttachedWeaponBoneIndices, corpseAgentInfo.AttachedWeaponFrames));
+				GameNetwork.EndModuleEventAsServer();
+			}
+			else
+			{
+				GameNetwork.BeginModuleEventAsServer(networkPeer);
+				GameNetwork.WriteMessage(new CreateCorpseAgent(-1, corpseAgentInfo.CorpseBasicCharacterObject, corpseAgentInfo.CorpseMonster, corpseAgentInfo.CorpseSpawnEquipment, corpseAgentInfo.CorpseMissionEquipment, corpseAgentInfo.CorpseBodyPropertiesValue, corpseAgentInfo.CorpseBodyPropertiesSeed, corpseAgentInfo.CorpseIsFemale, corpseAgentInfo.CorpseTeamIndex, corpseAgentInfo.CorpseFormationIndex, corpseAgentInfo.CorpseClothingColor1, corpseAgentInfo.CorpseClothingColor2, -1, null, isPlayerAgent: false, corpseAgentInfo.CorpsePosition, corpseAgentInfo.CorpseMovementDirection, corpseAgentInfo.CorpseMissionPeer?.GetNetworkPeer() ?? corpseAgentInfo.CorpseOwningAgentMissionPeer?.GetNetworkPeer(), corpseAgentInfo.CorpseDeathActionIndex, n, corpseAgentInfo.AttachedWeapons.Count, corpseAgentInfo.AttachedWeapons, corpseAgentInfo.AttachedWeaponBoneIndices, corpseAgentInfo.AttachedWeaponFrames));
+				GameNetwork.EndModuleEventAsServer();
 			}
 		}
 		MBDebug.Print("agents sending end-", 0, Debug.DebugColor.White, 17179869184uL);
@@ -1513,21 +1633,21 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		foreach (MissionObject missionObject in base.Mission.MissionObjects)
 		{
-			if (missionObject is SpawnedItemEntity { GameEntity: var gameEntity } spawnedItemEntity)
+			if (missionObject is SpawnedItemEntity { GameEntity: { Parent: var parent } gameEntity } spawnedItemEntity)
 			{
-				if (!(gameEntity.Parent == null) && gameEntity.Parent.HasScriptOfType<SpawnedItemEntity>())
+				if (parent.IsValid && gameEntity.Parent.HasScriptOfType<SpawnedItemEntity>())
 				{
 					continue;
 				}
 				MissionObject missionObject2 = null;
-				if (spawnedItemEntity.GameEntity.Parent != null)
+				if (spawnedItemEntity.GameEntity.Parent.IsValid)
 				{
 					missionObject2 = gameEntity.Parent.GetFirstScriptOfType<MissionObject>();
 				}
 				MatrixFrame frame = gameEntity.GetGlobalFrame();
 				if (missionObject2 != null)
 				{
-					frame = missionObject2.GameEntity.GetGlobalFrame().TransformToLocalNonOrthogonal(ref frame);
+					frame = missionObject2.GameEntity.GetGlobalFrame().TransformToLocalNonOrthogonal(in frame);
 				}
 				frame.origin.z = TaleWorlds.Library.MathF.Max(frame.origin.z, CompressionBasic.PositionCompressionInfo.GetMinimumValue() + 1f);
 				Mission.WeaponSpawnFlags weaponSpawnFlags = spawnedItemEntity.SpawnFlags;
@@ -1536,7 +1656,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 					weaponSpawnFlags = (weaponSpawnFlags & ~Mission.WeaponSpawnFlags.WithPhysics) | Mission.WeaponSpawnFlags.WithStaticPhysics;
 				}
 				bool hasLifeTime = true;
-				bool isVisible = gameEntity.Parent == null || missionObject2 != null;
+				bool isVisible = !gameEntity.Parent.IsValid || missionObject2 != null;
 				GameNetwork.BeginModuleEventAsServer(networkPeer);
 				GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(spawnedItemEntity.WeaponCopy, weaponSpawnFlags, spawnedItemEntity.Id.Id, frame, missionObject2?.Id ?? MissionObjectId.Invalid, isVisible, hasLifeTime));
 				GameNetwork.EndModuleEventAsServer();
@@ -1547,7 +1667,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 					GameNetwork.EndModuleEventAsServer();
 					if (spawnedItemEntity.WeaponCopy.GetAttachedWeapon(i).Item.ItemFlags.HasAnyFlag(ItemFlags.CanBePickedUpFromCorpse))
 					{
-						if (gameEntity.GetChild(i) == null)
+						if (!gameEntity.GetChild(i).IsValid)
 						{
 							Debug.Print("spawnedItemGameEntity child is null. item: " + spawnedItemEntity.WeaponCopy.Item.StringId + " attached item: " + spawnedItemEntity.WeaponCopy.GetAttachedWeapon(i).Item.StringId + " attachment index: " + i);
 						}
@@ -1589,15 +1709,15 @@ public sealed class MissionNetworkComponent : MissionNetwork
 
 	private void SendMissilesToPeer(NetworkCommunicator networkPeer)
 	{
-		foreach (Mission.Missile missile in base.Mission.Missiles)
+		foreach (Mission.Missile missiles in base.Mission.MissilesList)
 		{
-			Vec3 velocity = missile.GetVelocity();
+			Vec3 velocity = missiles.GetVelocity();
 			float speed = velocity.Normalize();
 			Mat3 identity = Mat3.Identity;
 			identity.f = velocity;
 			identity.Orthonormalize();
 			GameNetwork.BeginModuleEventAsServer(networkPeer);
-			GameNetwork.WriteMessage(new CreateMissile(missile.Index, missile.ShooterAgent.Index, EquipmentIndex.None, missile.Weapon, missile.GetPosition(), velocity, speed, identity, missile.GetHasRigidBody(), missile.MissionObjectToIgnore?.Id ?? MissionObjectId.Invalid, isPrimaryWeaponShot: false));
+			GameNetwork.WriteMessage(new CreateMissile(missiles.Index, missiles.ShooterAgent.Index, EquipmentIndex.None, missiles.Weapon, missiles.GetPosition(), velocity, speed, identity, missiles.GetHasRigidBody(), missiles.MissionObjectToIgnore?.Id ?? MissionObjectId.Invalid, isPrimaryWeaponShot: false));
 			GameNetwork.EndModuleEventAsServer();
 		}
 	}
@@ -1694,7 +1814,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 				}
 				if (allAgent.OwningAgentMissionPeer == component)
 				{
-					allAgent.OwningAgentMissionPeer = null;
+					allAgent.SetOwningAgentMissionPeer(null);
 				}
 			}
 		}
@@ -1712,7 +1832,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			MBDebug.Print("----------OnAddTeam-");
 			MBDebug.Print("Adding a team and sending it to all clients", 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? BannerCode.CreateFrom(team.Banner).Code : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
 		else if (team.Side != BattleSideEnum.Attacker && team.Side != 0 && base.Mission.SpectatorTeam == null)

@@ -148,7 +148,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_0_3_2.SuggestedHeight = 50f;
 		_widget_0_3_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_3_2.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_3_2.MaxLength = 499;
 		_widget_0_3_2.MarginTop = 25f;
 		_widget_0_3_2.Brush = base.Context.GetBrush("Report.Popup.TextBox");
 		_widget_0_3_2.Brush.TextVerticalAlignment = TextVerticalAlignment.Center;

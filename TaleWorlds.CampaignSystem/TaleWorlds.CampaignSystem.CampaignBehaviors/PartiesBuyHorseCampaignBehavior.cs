@@ -61,7 +61,7 @@ public class PartiesBuyHorseCampaignBehavior : CampaignBehaviorBase
 	{
 		if (mobileParty != null && mobileParty.MapFaction != null && !mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction) && mobileParty != MobileParty.MainParty && mobileParty.IsLordParty && mobileParty.LeaderHero != null && !mobileParty.IsDisbanding && settlement.IsTown)
 		{
-			int num = MathF.Min(100000, mobileParty.LeaderHero.Gold);
+			int num = MathF.Min(100000, mobileParty.PartyTradeGold);
 			int numberOfMounts = mobileParty.Party.NumberOfMounts;
 			if (numberOfMounts > mobileParty.Party.NumberOfRegularMembers)
 			{
@@ -103,7 +103,7 @@ public class PartiesBuyHorseCampaignBehavior : CampaignBehaviorBase
 				SellItemsAction.Apply(mobileParty.Party, settlement.Party, subject, subject.Amount, settlement);
 			}
 		}
-		int num6 = MathF.Min(100000, mobileParty.LeaderHero.Gold);
+		int num6 = MathF.Min(100000, mobileParty.PartyTradeGold);
 		if (!(num4 > (float)num6 * 0.1f))
 		{
 			return;

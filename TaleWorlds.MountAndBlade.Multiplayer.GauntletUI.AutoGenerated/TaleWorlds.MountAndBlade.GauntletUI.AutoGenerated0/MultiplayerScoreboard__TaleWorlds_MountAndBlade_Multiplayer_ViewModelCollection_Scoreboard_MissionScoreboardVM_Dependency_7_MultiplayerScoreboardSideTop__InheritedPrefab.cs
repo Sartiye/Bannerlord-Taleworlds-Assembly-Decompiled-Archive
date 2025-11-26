@@ -19,7 +19,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private ListPanel _widget_0_0;
 
-	private RichTextWidget _widget_0_0_0;
+	private TextWidget _widget_0_0_0;
 
 	private Widget _widget_0_0_1;
 
@@ -31,7 +31,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private ListPanel _widget_1;
 
-	private RichTextWidget _widget_1_0;
+	private TextWidget _widget_1_0;
 
 	private TextWidget _widget_1_1;
 
@@ -77,7 +77,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new ListPanel(base.Context);
 		_widget_0.AddChild(_widget_0_0);
-		_widget_0_0_0 = new RichTextWidget(base.Context);
+		_widget_0_0_0 = new TextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
 		_widget_0_0_1 = new Widget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);
@@ -89,7 +89,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_0.AddChild(_widget_0_1);
 		_widget_1 = new ListPanel(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_1_0 = new RichTextWidget(base.Context);
+		_widget_1_0 = new TextWidget(base.Context);
 		_widget_1.AddChild(_widget_1_0);
 		_widget_1_1 = new TextWidget(base.Context);
 		_widget_1.AddChild(_widget_1_1);

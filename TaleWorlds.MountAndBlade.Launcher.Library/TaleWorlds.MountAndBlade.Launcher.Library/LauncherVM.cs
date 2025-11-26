@@ -470,10 +470,10 @@ public class LauncherVM : ViewModel
 
 	private bool GameModExists(string modId)
 	{
-		List<ModuleInfo> list = ModuleHelper.GetModules().ToList();
-		for (int i = 0; i < list.Count; i++)
+		List<ModuleInfo> modulesForLauncher = ModuleHelper.GetModulesForLauncher();
+		for (int i = 0; i < modulesForLauncher.Count; i++)
 		{
-			if (list[i].Id == modId)
+			if (modulesForLauncher[i].Id == modId)
 			{
 				return true;
 			}
@@ -498,7 +498,7 @@ public class LauncherVM : ViewModel
 		Refresh();
 	}
 
-	private void ExecuteStartGame(int mode)
+	public void ExecuteStartGame(int mode)
 	{
 		_isContinueSelected = mode == 1;
 		UpdateAndSaveUserModsData(IsMultiplayer);
@@ -518,6 +518,10 @@ public class LauncherVM : ViewModel
 					{
 						list.Add(subModule.Info);
 					}
+				}
+				if (module.Info.IsOfficial)
+				{
+					continue;
 				}
 				List<Tuple<DependedModule, ApplicationVersion>> list3 = new List<Tuple<DependedModule, ApplicationVersion>>();
 				foreach (DependedModule dependedModule in module.Info.DependedModules)
@@ -558,13 +562,13 @@ public class LauncherVM : ViewModel
 		Program.StartGame();
 	}
 
-	private void ExecuteClose()
+	public void ExecuteClose()
 	{
 		UpdateAndSaveUserModsData(IsMultiplayer);
 		_onClose?.Invoke();
 	}
 
-	private void ExecuteMinimize()
+	public void ExecuteMinimize()
 	{
 		_onMinimize?.Invoke();
 	}

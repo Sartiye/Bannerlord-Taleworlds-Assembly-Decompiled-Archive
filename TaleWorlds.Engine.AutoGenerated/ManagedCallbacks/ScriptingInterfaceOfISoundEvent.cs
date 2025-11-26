@@ -18,12 +18,12 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int CreateEventFromExternalFileDelegate(byte[] programmerSoundEventName, byte[] filePath, UIntPtr scene);
+	public delegate int CreateEventFromExternalFileDelegate(byte[] programmerSoundEventName, byte[] filePath, UIntPtr scene, [MarshalAs(UnmanagedType.U1)] bool is3d, [MarshalAs(UnmanagedType.U1)] bool isBlocking);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int CreateEventFromSoundBufferDelegate(byte[] programmerSoundEventName, ManagedArray soundBuffer, UIntPtr scene);
+	public delegate int CreateEventFromSoundBufferDelegate(byte[] programmerSoundEventName, ManagedArray soundBuffer, UIntPtr scene, [MarshalAs(UnmanagedType.U1)] bool is3d, [MarshalAs(UnmanagedType.U1)] bool isBlocking);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -198,7 +198,7 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 		return call_CreateEventDelegate(fmodEventIndex, scene);
 	}
 
-	public int CreateEventFromExternalFile(string programmerSoundEventName, string filePath, UIntPtr scene)
+	public int CreateEventFromExternalFile(string programmerSoundEventName, string filePath, UIntPtr scene, bool is3d, bool isBlocking)
 	{
 		byte[] array = null;
 		if (programmerSoundEventName != null)
@@ -216,10 +216,10 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 			_utf8.GetBytes(filePath, 0, filePath.Length, array2, 0);
 			array2[byteCount2] = 0;
 		}
-		return call_CreateEventFromExternalFileDelegate(array, array2, scene);
+		return call_CreateEventFromExternalFileDelegate(array, array2, scene, is3d, isBlocking);
 	}
 
-	public int CreateEventFromSoundBuffer(string programmerSoundEventName, byte[] soundBuffer, UIntPtr scene)
+	public int CreateEventFromSoundBuffer(string programmerSoundEventName, byte[] soundBuffer, UIntPtr scene, bool is3d, bool isBlocking)
 	{
 		byte[] array = null;
 		if (programmerSoundEventName != null)
@@ -232,7 +232,7 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 		PinnedArrayData<byte> pinnedArrayData = new PinnedArrayData<byte>(soundBuffer);
 		IntPtr pointer = pinnedArrayData.Pointer;
 		ManagedArray soundBuffer2 = new ManagedArray(pointer, (soundBuffer != null) ? soundBuffer.Length : 0);
-		int result = call_CreateEventFromSoundBufferDelegate(array, soundBuffer2, scene);
+		int result = call_CreateEventFromSoundBufferDelegate(array, soundBuffer2, scene, is3d, isBlocking);
 		pinnedArrayData.Dispose();
 		return result;
 	}

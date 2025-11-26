@@ -1,11 +1,9 @@
+using TaleWorlds.Library;
+
 namespace TaleWorlds.TwoDimension;
 
 public abstract class Sprite
 {
-	protected DrawObject2D CachedDrawObject;
-
-	protected SpriteDrawData CachedDrawData;
-
 	public abstract Texture Texture { get; }
 
 	public string Name { get; private set; }
@@ -14,17 +12,19 @@ public abstract class Sprite
 
 	public int Height { get; private set; }
 
-	protected Sprite(string name, int width, int height)
+	public SpriteNinePatchParameters NinePatchParameters { get; private set; }
+
+	public abstract Vec2 GetMinUvs();
+
+	public abstract Vec2 GetMaxUvs();
+
+	protected Sprite(string name, int width, int height, SpriteNinePatchParameters ninePatchParameters)
 	{
 		Name = name;
 		Width = width;
 		Height = height;
-		CachedDrawObject = null;
+		NinePatchParameters = ninePatchParameters;
 	}
-
-	public abstract float GetScaleToUse(float width, float height, float scale);
-
-	protected internal abstract DrawObject2D GetArrays(SpriteDrawData spriteDrawData);
 
 	public override string ToString()
 	{

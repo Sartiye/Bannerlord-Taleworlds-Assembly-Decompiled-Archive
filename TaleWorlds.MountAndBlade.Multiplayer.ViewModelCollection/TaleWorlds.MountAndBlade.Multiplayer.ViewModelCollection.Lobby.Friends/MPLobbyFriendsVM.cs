@@ -589,7 +589,6 @@ public class MPLobbyFriendsVM : ViewModel
 			{
 				MPLobbyFriendServiceVM mPLobbyFriendServiceVM2 = new MPLobbyFriendServiceVM(friendListService, OnFriendRequestAnswered, ActivatePlayerActions);
 				FriendServices.Insert(friendListServices.Length - 2, mPLobbyFriendServiceVM2);
-				mPLobbyFriendServiceVM2.IsInGameStatusActive = true;
 				mPLobbyFriendServiceVM2.ForceRefresh();
 			}
 		}
@@ -767,46 +766,23 @@ public class MPLobbyFriendsVM : ViewModel
 		}
 	}
 
-	public void ProcessNotification(LobbyNotification notification, PlayerId notificationPlayerID, bool allowed)
+	private void ProcessNotification(LobbyNotification notification, PlayerId notificationPlayerID, bool allowed)
 	{
 		if (!allowed)
 		{
 			NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
-			return;
 		}
-		if (MultiplayerPlayerHelper.IsBlocked(notificationPlayerID))
+		else if (MultiplayerPlayerHelper.IsBlocked(notificationPlayerID))
 		{
 			bool dontUseNameForUnknownPlayer = BannerlordConfig.EnableGenericNames && !NetworkMain.GameClient.IsKnownPlayer(notificationPlayerID);
 			NetworkMain.GameClient.RespondToFriendRequest(notificationPlayerID, dontUseNameForUnknownPlayer, isAccepted: false, isBlocked: true);
 			NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
-			return;
 		}
-		bool flag = false;
-		foreach (MPLobbyFriendServiceVM friendService in FriendServices)
+		else
 		{
-			if (friendService.FriendListService.IncludeInAllFriends)
-			{
-				foreach (MPLobbyPlayerBaseVM allFriend in friendService.AllFriends)
-				{
-					if (allFriend.ProvidedID == notificationPlayerID)
-					{
-						flag = true;
-						break;
-					}
-				}
-			}
-			if (flag)
-			{
-				break;
-			}
+			_activeNotifications.Add(notification);
+			NotificationCount++;
 		}
-		if (flag)
-		{
-			NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
-			return;
-		}
-		_activeNotifications.Add(notification);
-		NotificationCount++;
 	}
 
 	private void OnFriendRequestAnswered(PlayerId playerID)
@@ -916,8 +892,13 @@ public class MPLobbyFriendsVM : ViewModel
 
 	private void ExecuteSwitchToNextService()
 	{
+		if (FriendServices.Count == 0)
+		{
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToNextService", 557);
+			return;
+		}
 		_activeServiceIndex++;
-		if (_activeServiceIndex == FriendServices.Count)
+		if (_activeServiceIndex >= FriendServices.Count)
 		{
 			_activeServiceIndex = 0;
 		}
@@ -926,6 +907,11 @@ public class MPLobbyFriendsVM : ViewModel
 
 	private void ExecuteSwitchToPreviousService()
 	{
+		if (FriendServices.Count == 0)
+		{
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToPreviousService", 574);
+			return;
+		}
 		_activeServiceIndex--;
 		if (_activeServiceIndex < 0)
 		{
@@ -936,6 +922,17 @@ public class MPLobbyFriendsVM : ViewModel
 
 	private void UpdateActiveService()
 	{
+		if (_activeServiceIndex < 0 || _activeServiceIndex >= FriendServices.Count)
+		{
+			Debug.FailedAssert($"Multiplayer service index is invalid: {_activeServiceIndex}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 591);
+			if (FriendServices.Count <= 0)
+			{
+				Debug.FailedAssert("Cancelling service update request.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 599);
+				return;
+			}
+			Debug.FailedAssert("Defaulting to first available service: " + FriendServices[0].ServiceName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 594);
+			_activeServiceIndex = 0;
+		}
 		ActiveService = FriendServices[_activeServiceIndex];
 	}
 }

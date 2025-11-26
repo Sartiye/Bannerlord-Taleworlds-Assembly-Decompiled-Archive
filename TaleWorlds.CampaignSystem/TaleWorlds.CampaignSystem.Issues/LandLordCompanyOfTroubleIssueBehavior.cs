@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -182,7 +183,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 
 		public override TextObject Title => new TextObject("{=PV7RHgUl}Company of Trouble");
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -192,7 +193,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _questSuccessPlayerSoldCompany
+		private TextObject QuestSuccessPlayerSoldCompany
 		{
 			get
 			{
@@ -202,7 +203,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _allCompanyDiedLogText
+		private TextObject AllCompanyDiedLogText
 		{
 			get
 			{
@@ -212,11 +213,11 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDefeatedAgainstCompany => new TextObject("{=7naLQmq1}You have lost the battle against the mercenaries. You have failed to get rid of them as you promised. Now they've turned bandit and are starting to plunder the countryside");
+		private TextObject PlayerDefeatedAgainstCompany => new TextObject("{=7naLQmq1}You have lost the battle against the mercenaries. You have failed to get rid of them as you promised. Now they've turned bandit and are starting to plunder the countryside");
 
-		private TextObject _questFailCompanyLeft => new TextObject("{=k9SksaXg}The mercenaries left your party, as you failed to get rid of them as you promised. Now the mercenaries have turned bandit and start to plunder countryside.");
+		private TextObject QuestFailCompanyLeft => new TextObject("{=k9SksaXg}The mercenaries left your party, as you failed to get rid of them as you promised. Now the mercenaries have turned bandit and start to plunder countryside.");
 
-		private TextObject _questCanceledWarDeclared
+		private TextObject QuestCanceledWarDeclared
 		{
 			get
 			{
@@ -227,7 +228,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -590,7 +591,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_selectedTask.Options.Count > 0)
 			{
-				hintText = (_selectedTask.Options.ElementAt(0).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_selectedTask.Options.ElementAt(0).IsBlocked ? hintText : null);
 				return !_selectedTask.Options.ElementAt(0).IsBlocked;
 			}
 			return false;
@@ -601,7 +602,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_selectedTask.Options.Count > 1)
 			{
-				hintText = (_selectedTask.Options.ElementAt(1).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_selectedTask.Options.ElementAt(1).IsBlocked ? hintText : null);
 				return !_selectedTask.Options.ElementAt(1).IsBlocked;
 			}
 			return false;
@@ -612,7 +613,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_selectedTask.Options.Count > 2)
 			{
-				hintText = (_selectedTask.Options.ElementAt(2).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_selectedTask.Options.ElementAt(2).IsBlocked ? hintText : null);
 				return !_selectedTask.Options.ElementAt(2).IsBlocked;
 			}
 			return false;
@@ -638,7 +639,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			MobileParty.MainParty.MemberRoster.AddToCounts(_troubleCharacterObject, -_companyTroopCount);
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _demandGold);
 			RelationshipChangeWithQuestGiver = 5;
-			AddLog(_questSuccessPlayerSoldCompany);
+			AddLog(QuestSuccessPlayerSoldCompany);
 			CompleteQuestWithSuccess();
 		}
 
@@ -685,20 +686,20 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 		{
 			MobileParty.MainParty.MemberRoster.AddToCounts(_troubleCharacterObject, -_companyTroopCount);
 			Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsHideout);
-			_companyOfTroubleParty = BanditPartyComponent.CreateBanditParty("company_of_trouble_" + base.StringId, settlement.OwnerClan, settlement.Hideout, isBossParty: false);
-			TextObject customName = new TextObject("{=PV7RHgUl}Company of Trouble");
-			_companyOfTroubleParty.InitializeMobilePartyAtPosition(new TroopRoster(_companyOfTroubleParty.Party), new TroopRoster(_companyOfTroubleParty.Party), MobileParty.MainParty.Position2D);
-			_companyOfTroubleParty.SetCustomName(customName);
-			_companyOfTroubleParty.SetPartyUsedByQuest(isActivelyUsed: true);
+			_companyOfTroubleParty = BanditPartyComponent.CreateBanditParty("company_of_trouble_" + base.StringId, settlement.OwnerClan, settlement.Hideout, isBossParty: false, null, MobileParty.MainParty.Position);
 			_companyOfTroubleParty.MemberRoster.AddToCounts(_troubleCharacterObject, _companyTroopCount);
+			TextObject customName = new TextObject("{=PV7RHgUl}Company of Trouble");
+			_companyOfTroubleParty.Party.SetCustomName(customName);
+			_companyOfTroubleParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			_battleWillStart = true;
 		}
 
 		internal void CompanyLeftQuestFail()
 		{
+			RelationshipChangeWithQuestGiver = -2;
 			UpdateCompanyTroopCount();
 			MobileParty.MainParty.MemberRoster.AddToCounts(_troubleCharacterObject, -_companyTroopCount);
-			AddLog(_questFailCompanyLeft);
+			AddLog(QuestFailCompanyLeft);
 			CompleteQuestWithFail();
 			_companyLeftQuestWillFail = false;
 			GameMenu.ExitToLast();
@@ -707,14 +708,13 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			AddLog(_playerStartsQuestLogText);
+			AddLog(PlayerStartsQuestLogText);
 			MobileParty.MainParty.MemberRoster.AddToCounts(_troubleCharacterObject, _companyTroopCount);
 			MBInformationManager.AddQuickInformation(new TextObject("{=jGIxKb99}Mercenaries have joined your party."));
 		}
 
 		protected override void RegisterEvents()
 		{
-			CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
 			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
@@ -733,13 +733,13 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_questCanceledWarDeclared);
+				CompleteQuestWithCancel(QuestCanceledWarDeclared);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _questCanceledWarDeclared);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, QuestCanceledWarDeclared);
 		}
 
 		private void OnMapEventEnded(MapEvent mapEvent)
@@ -749,7 +749,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 				UpdateCompanyTroopCount();
 				if (_companyTroopCount == 0)
 				{
-					AddLog(_allCompanyDiedLogText);
+					AddLog(AllCompanyDiedLogText);
 					RelationshipChangeWithQuestGiver = 5;
 					GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 					CompleteQuestWithSuccess();
@@ -762,7 +762,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			if (base.IsOngoing)
 			{
 				UpdateCompanyTroopCount();
-				if (MobileParty.MainParty.MemberRoster.TotalManCount - _companyTroopCount <= _companyTroopCount && MapEvent.PlayerMapEvent == null && Settlement.CurrentSettlement == null && PlayerEncounter.Current == null && !Hero.MainHero.IsWounded)
+				if (MobileParty.MainParty.MemberRoster.TotalManCount - _companyTroopCount <= _companyTroopCount && MapEvent.PlayerMapEvent == null && Settlement.CurrentSettlement == null && PlayerEncounter.Current == null && !Hero.MainHero.IsWounded && !MobileParty.MainParty.IsCurrentlyAtSea)
 				{
 					_triggerCompanyOfTroubleConversation = true;
 					GameMenu.ActivateGameMenu("company_of_trouble_menu");
@@ -798,7 +798,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		public void DailyTick()
+		protected override void DailyTick()
 		{
 			if (MBRandom.RandomFloat > 0.5f)
 			{
@@ -826,7 +826,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 
 		internal void QuestSuccessWithPlayerDefeatedCompany()
 		{
-			AddLog(_allCompanyDiedLogText);
+			AddLog(AllCompanyDiedLogText);
 			RelationshipChangeWithQuestGiver = 5;
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			CompleteQuestWithSuccess();
@@ -834,7 +834,8 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 
 		internal void QuestFailWithPlayerDefeatedAgainstCompany()
 		{
-			AddLog(_playerDefeatedAgainstCompany);
+			RelationshipChangeWithQuestGiver = -2;
+			AddLog(PlayerDefeatedAgainstCompany);
 			CompleteQuestWithFail();
 		}
 
@@ -934,7 +935,10 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			PlayerEncounter.Start();
 			PlayerEncounter.Current.SetupFields(PartyBase.MainParty, Instance._companyOfTroubleParty.Party);
 			PlayerEncounter.StartBattle();
-			CampaignMission.OpenBattleMission(PlayerEncounter.GetBattleSceneForMapPatch(Campaign.Current.MapSceneWrapper.GetMapPatchAtPosition(MobileParty.MainParty.Position2D)), usesTownDecalAtlas: false);
+			IMapScene mapSceneWrapper = Campaign.Current.MapSceneWrapper;
+			CampaignVec2 position = MobileParty.MainParty.Position;
+			MapPatchData mapPatchAtPosition = mapSceneWrapper.GetMapPatchAtPosition(in position);
+			CampaignMission.OpenBattleMission(Campaign.Current.Models.SceneModel.GetBattleSceneForMapPatch(mapPatchAtPosition, PlayerEncounter.IsNavalEncounter()), usesTownDecalAtlas: false);
 			Instance._battleWillStart = false;
 			Instance._checkForBattleResults = true;
 		}
@@ -942,6 +946,12 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 		{
 			Instance.CompanyLeftQuestFail();
 		}
+	}
+
+	[GameMenuInitializationHandler("company_of_trouble_menu")]
+	public static void company_of_trouble_menu_game_menu_on_init_background(MenuCallbackArgs args)
+	{
+		args.MenuContext.SetBackgroundMeshName("wait_ambush");
 	}
 
 	public void OnCheckForIssue(Hero hero)

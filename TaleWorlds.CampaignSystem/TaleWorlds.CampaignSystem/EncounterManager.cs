@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem;
 
@@ -34,14 +35,21 @@ public static class EncounterManager
 
 	public static void HandleEncounterForMobileParty(MobileParty mobileParty, float dt)
 	{
-		if (mobileParty.IsActive && mobileParty.AttachedTo == null && mobileParty.MapEventSide == null && (mobileParty.CurrentSettlement == null || mobileParty.IsGarrison) && (mobileParty.BesiegedSettlement == null || mobileParty.ShortTermBehavior == AiBehavior.AssaultSettlement) && (mobileParty.IsCurrentlyEngagingParty || mobileParty.IsCurrentlyEngagingSettlement || (mobileParty.Ai.AiBehaviorMapEntity != null && mobileParty.ShortTermBehavior == AiBehavior.GoToPoint && !(mobileParty.Ai.AiBehaviorMapEntity is Settlement) && !(mobileParty.Ai.AiBehaviorMapEntity is MobileParty) && (mobileParty.Party != PartyBase.MainParty || PlayerEncounter.Current == null))) && (!mobileParty.IsCurrentlyEngagingSettlement || mobileParty.ShortTermTargetSettlement == null || mobileParty.ShortTermTargetSettlement != mobileParty.CurrentSettlement) && (!mobileParty.IsCurrentlyEngagingParty || (mobileParty.ShortTermTargetParty.IsActive && (mobileParty.ShortTermTargetParty.CurrentSettlement == null || (mobileParty.ShortTermTargetParty.MapEvent != null && (mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker).MapFaction == mobileParty.MapFaction || mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender).MapFaction == mobileParty.MapFaction))))))
+		if (!mobileParty.IsActive || mobileParty.AttachedTo != null || mobileParty.MapEventSide != null || (mobileParty.CurrentSettlement != null && !mobileParty.IsGarrison) || (mobileParty.BesiegedSettlement != null && mobileParty.ShortTermBehavior != AiBehavior.AssaultSettlement) || (!mobileParty.IsCurrentlyEngagingParty && !mobileParty.IsCurrentlyEngagingSettlement && (mobileParty.Ai.AiBehaviorInteractable == null || mobileParty.ShortTermBehavior != AiBehavior.GoToPoint || mobileParty.Ai.AiBehaviorInteractable is PartyBase { IsSettlement: not false } || mobileParty.Ai.AiBehaviorInteractable is PartyBase { IsMobile: not false } || (mobileParty.Party == PartyBase.MainParty && PlayerEncounter.Current != null))))
 		{
-			GetEncounterTargetPoint(dt, mobileParty, out var targetPoint, out var neededMaximumDistanceForEncountering);
-			float length = (mobileParty.Position2D - targetPoint).Length;
-			if ((mobileParty.BesiegedSettlement != null && mobileParty.BesiegedSettlement == mobileParty.TargetSettlement) || length < neededMaximumDistanceForEncountering)
+			return;
+		}
+		if (PlayerEncounter.EncounteredMobileParty == mobileParty)
+		{
+			PlayerEncounter current = PlayerEncounter.Current;
+			if (current == null || current.PlayerSide != 0)
 			{
-				mobileParty.Ai.AiBehaviorMapEntity.OnPartyInteraction(mobileParty);
+				return;
 			}
+		}
+		if ((!mobileParty.IsCurrentlyEngagingSettlement || mobileParty.ShortTermTargetSettlement == null || mobileParty.ShortTermTargetSettlement != mobileParty.CurrentSettlement) && (!mobileParty.IsCurrentlyEngagingParty || (mobileParty.ShortTermTargetParty.IsActive && (mobileParty.ShortTermTargetParty.CurrentSettlement == null || (mobileParty.ShortTermTargetParty.MapEvent != null && (mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker).MapFaction == mobileParty.MapFaction || mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender).MapFaction == mobileParty.MapFaction))))) && mobileParty.Ai.AiBehaviorInteractable.CanPartyInteract(mobileParty, dt))
+		{
+			mobileParty.Ai.AiBehaviorInteractable.OnPartyInteraction(mobileParty);
 		}
 	}
 
@@ -52,9 +60,10 @@ public static class EncounterManager
 		{
 			Debug.Print("\nPlayerSiege is interrupted\n", 0, Debug.DebugColor.DarkGreen, 64uL);
 		}
-		if (attackerParty == PartyBase.MainParty || defenderParty == PartyBase.MainParty || flag)
+		if (attackerParty == PartyBase.MainParty || defenderParty == PartyBase.MainParty)
 		{
-			if (PartyBase.MainParty.MapEvent != null && PlayerEncounter.IsActive && ((PartyBase.MainParty.MapEvent.AttackerSide.TroopCount > 0 && PartyBase.MainParty.MapEvent.DefenderSide.TroopCount > 0) || PartyBase.MainParty.MapEvent.PartiesOnSide(PlayerEncounter.Current.OpponentSide).FindIndex((MapEventParty party) => party.Party == defenderParty) >= 0 || (PartyBase.MainParty.MapEvent.AttackerSide.LeaderParty != MobileParty.MainParty.Party && PartyBase.MainParty.MapEvent.DefenderSide.LeaderParty != MobileParty.MainParty.Party)))
+			MapEvent mapEvent = PartyBase.MainParty.MapEvent;
+			if (mapEvent != null && PlayerEncounter.IsActive && mapEvent.AttackerSide.TroopCount > 0 && mapEvent.DefenderSide.TroopCount > 0)
 			{
 				PlayerEncounter.Current.OnPartyJoinEncounter(attackerParty.MobileParty);
 			}
@@ -63,11 +72,15 @@ public static class EncounterManager
 				RestartPlayerEncounter(attackerParty, defenderParty);
 			}
 		}
-		else if (attackerParty.IsActive && defenderParty.IsActive)
+		else if (flag)
 		{
-			if (attackerParty.MobileParty.Army != null && defenderParty == PartyBase.MainParty)
+			RestartPlayerEncounter(attackerParty, defenderParty);
+		}
+		else if (attackerParty.IsActive && defenderParty.IsActive && (attackerParty.MobileParty.Army == null || defenderParty != PartyBase.MainParty))
+		{
+			if (attackerParty.MapFaction == defenderParty.MapFaction)
 			{
-				MergePartiesAction.Apply(defenderParty, attackerParty);
+				attackerParty.MapEventSide = defenderParty.MapEventSide;
 			}
 			else
 			{
@@ -109,15 +122,71 @@ public static class EncounterManager
 				return;
 			}
 		}
+		if (attackerParty.DefaultBehavior == AiBehavior.DefendSettlement && attackerParty.IsCurrentlyAtSea && attackerParty.IsTargetingPort && settlement.SiegeEvent != null)
+		{
+			if (settlement.SiegeEvent.IsBlockadeActive)
+			{
+				if (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEventSide == null)
+				{
+					BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty.Party, settlement.SiegeEvent.BesiegerCamp.LeaderParty.Party, isSallyOut: false);
+				}
+				else
+				{
+					attackerParty.Party.MapEventSide = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEventSide.OtherSide;
+				}
+				return;
+			}
+			if (settlement.Party.MapEvent != null)
+			{
+				EnterSettlementAction.ApplyForParty(attackerParty, settlement);
+				attackerParty.Party.MapEventSide = settlement.Party.MapEventSide;
+				return;
+			}
+		}
 		if (!attackerParty.IsVillager && attackerParty != MobileParty.MainParty && settlement.IsVillage && settlement.Village.VillageState == Village.VillageStates.Looted)
 		{
-			attackerParty.Ai.SetMoveModeHold();
+			attackerParty.SetMoveModeHold();
 			return;
 		}
 		if (attackerParty == MobileParty.MainParty)
 		{
 			PlayerEncounter.Start();
-			PlayerEncounter.Current.Init(attackerParty.Party, settlement.Party, settlement);
+			MapEvent mapEvent = settlement.Party.MapEvent;
+			if (mapEvent != null && mapEvent.IsRaid && attackerParty.MapFaction.IsAtWarWith(settlement.MapFaction))
+			{
+				MBList<MapEventParty> mBList = mapEvent.DefenderSide.Parties.WhereQ((MapEventParty x) => x.Party.IsMobile && x.Party.MobileParty.IsLordParty && x.Party.MemberRoster.TotalHealthyCount > 0).ToMBList();
+				if (mBList.AnyQ())
+				{
+					PartyBase party = mBList[0].Party;
+					PartyBase leaderParty = mapEvent.GetLeaderParty(BattleSideEnum.Attacker);
+					MBReadOnlyList<MapEventParty> mBReadOnlyList = mapEvent.PartiesOnSide(BattleSideEnum.Attacker);
+					mapEvent.FinalizeEvent();
+					StartBattleAction.Apply(party, leaderParty);
+					foreach (MapEventParty item in mBList)
+					{
+						if (item.Party != party)
+						{
+							item.Party.MapEventSide = party.MapEventSide;
+						}
+					}
+					foreach (MapEventParty item2 in mBReadOnlyList)
+					{
+						if (item2.Party != leaderParty)
+						{
+							item2.Party.MapEventSide = leaderParty.MapEventSide;
+						}
+					}
+					PlayerEncounter.Current.Init(leaderParty, party);
+				}
+				else
+				{
+					PlayerEncounter.Current.Init(attackerParty.Party, settlement.Party, settlement);
+				}
+			}
+			else
+			{
+				PlayerEncounter.Current.Init(attackerParty.Party, settlement.Party, settlement);
+			}
 			return;
 		}
 		if (attackerParty.Aggressiveness > 0.01f && PartyBase.MainParty.MapEvent != null && PartyBase.MainParty.MapEvent.MapEventSettlement == settlement)
@@ -141,14 +210,14 @@ public static class EncounterManager
 		else
 		{
 			bool flag = MobileParty.MainParty.CurrentSettlement == settlement;
-			MapEvent mapEvent = settlement.Party.MapEvent;
-			if (mapEvent != null && !mapEvent.IsFinalized && (mapEvent.AttackerSide.MapFaction == attackerParty.MapFaction || mapEvent.DefenderSide.MapFaction == attackerParty.MapFaction))
+			MapEvent mapEvent2 = settlement.Party.MapEvent;
+			if (mapEvent2 != null && !mapEvent2.IsFinalized && (mapEvent2.AttackerSide.MapFaction == attackerParty.MapFaction || mapEvent2.DefenderSide.MapFaction == attackerParty.MapFaction))
 			{
 				if (flag && attackerParty.AttachedTo == null)
 				{
 					PlayerEncounter.Finish();
 				}
-				settlement.Party.MapEventSide = ((mapEvent.AttackerSide.MapFaction == attackerParty.MapFaction) ? mapEvent.DefenderSide : mapEvent.AttackerSide);
+				settlement.Party.MapEventSide = ((mapEvent2.AttackerSide.MapFaction == attackerParty.MapFaction) ? mapEvent2.DefenderSide : mapEvent2.AttackerSide);
 			}
 			else if (settlement.Party.MapEvent == null && attackerParty != MobileParty.MainParty && attackerParty.ShortTermBehavior == AiBehavior.RaidSettlement && attackerParty.ShortTermTargetSettlement == settlement && FactionManager.IsAtWarAgainstFaction(attackerParty.MapFaction, settlement.MapFaction))
 			{
@@ -187,6 +256,7 @@ public static class EncounterManager
 					if (num && PlayerEncounter.Current == null)
 					{
 						StartSettlementEncounter((MobileParty.MainParty.Army != null) ? MobileParty.MainParty.Army.LeaderParty : MobileParty.MainParty, settlement);
+						MobileParty.MainParty.MapEventSide = ((PlayerSiege.PlayerSide != 0) ? attackerParty.MapEventSide : attackerParty.MapEventSide.OtherSide);
 					}
 					attackerParty.MapEvent.SetOverrideWinner(BattleSideEnum.Attacker);
 					attackerParty.MapEvent.FinalizeEvent();
@@ -217,7 +287,7 @@ public static class EncounterManager
 					}
 				}
 			}
-			else if ((attackerParty.ShortTermBehavior == AiBehavior.GoToSettlement && attackerParty.ShortTermTargetSettlement == settlement) || attackerParty.Ai.IsDisabled || (attackerParty.Army != null && attackerParty.Army.LeaderParty.AttachedParties.Contains(attackerParty) && attackerParty.Army.LeaderParty.CurrentSettlement == settlement))
+			else if (((attackerParty.ShortTermBehavior == AiBehavior.GoToSettlement || attackerParty.ShortTermBehavior == AiBehavior.FleeToGate) && attackerParty.ShortTermTargetSettlement == settlement) || attackerParty.Ai.IsDisabled || (attackerParty.Army != null && attackerParty.Army.LeaderParty.AttachedParties.Contains(attackerParty) && attackerParty.Army.LeaderParty.CurrentSettlement == settlement))
 			{
 				EnterSettlementAction.ApplyForParty(attackerParty, settlement);
 			}
@@ -236,40 +306,11 @@ public static class EncounterManager
 		if (flag3)
 		{
 			LeaveSettlementAction.ApplyForParty(attackerParty);
-			attackerParty.Ai.SetMoveModeHold();
+			attackerParty.SetMoveModeHold();
 			if (attackerParty != MobileParty.MainParty && (MobileParty.MainParty.Army == null || attackerParty != MobileParty.MainParty.Army.LeaderParty))
 			{
 				attackerParty.Ai.RethinkAtNextHourlyTick = true;
 			}
-		}
-	}
-
-	private static void GetEncounterTargetPoint(float dt, MobileParty mobileParty, out Vec2 targetPoint, out float neededMaximumDistanceForEncountering)
-	{
-		if (mobileParty.Army != null)
-		{
-			neededMaximumDistanceForEncountering = MathF.Clamp(EncounterModel.NeededMaximumDistanceForEncounteringMobileParty * MathF.Sqrt(mobileParty.Army.LeaderParty.AttachedParties.Count + 1), MathF.Max(EncounterModel.NeededMaximumDistanceForEncounteringMobileParty, dt * EncounterModel.EstimatedMaximumMobilePartySpeedExceptPlayer), MathF.Max(EncounterModel.MaximumAllowedDistanceForEncounteringMobilePartyInArmy, dt * (EncounterModel.EstimatedMaximumMobilePartySpeedExceptPlayer + 0.01f)));
-		}
-		else
-		{
-			neededMaximumDistanceForEncountering = MathF.Max(EncounterModel.NeededMaximumDistanceForEncounteringMobileParty, dt * EncounterModel.EstimatedMaximumMobilePartySpeedExceptPlayer);
-		}
-		if (mobileParty.IsCurrentlyEngagingSettlement)
-		{
-			targetPoint = mobileParty.ShortTermTargetSettlement.GatePosition;
-			neededMaximumDistanceForEncountering = (mobileParty.ShortTermTargetSettlement.IsTown ? EncounterModel.NeededMaximumDistanceForEncounteringTown : EncounterModel.NeededMaximumDistanceForEncounteringVillage);
-		}
-		else if (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty && mobileParty.ShortTermTargetParty.MapEvent != null && mobileParty.ShortTermTargetParty.MapEvent == mobileParty.Army.LeaderParty.MapEvent && mobileParty.Army.LeaderParty.AttachedParties.Contains(mobileParty))
-		{
-			targetPoint = mobileParty.Position2D;
-		}
-		else if (mobileParty.CurrentSettlement != null && mobileParty.ShortTermTargetParty.BesiegedSettlement == mobileParty.CurrentSettlement)
-		{
-			targetPoint = mobileParty.CurrentSettlement.GatePosition;
-		}
-		else
-		{
-			targetPoint = mobileParty.Ai.AiBehaviorMapEntity.InteractionPosition;
 		}
 	}
 

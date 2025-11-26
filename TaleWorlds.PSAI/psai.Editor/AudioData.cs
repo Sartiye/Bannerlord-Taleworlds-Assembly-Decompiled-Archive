@@ -32,6 +32,9 @@ public class AudioData : ICloneable
 	}
 
 	[XmlIgnore]
+	public string ModuleID { get; set; }
+
+	[XmlIgnore]
 	public string FilePathRelativeToProjectDirForCurrentSystem => _filePathRelativeToProjectDir.Replace('/', Path.DirectorySeparatorChar);
 
 	public float Bpm { get; set; }
@@ -108,6 +111,7 @@ public class AudioData : ICloneable
 	{
 		psai.net.AudioData audioData = new psai.net.AudioData();
 		audioData.filePathRelativeToProjectDir = FilePathRelativeToProjectDir;
+		audioData.moduleId = ModuleID;
 		if (CalculatePostAndPrebeatLengthBasedOnBeats)
 		{
 			audioData.sampleCountPreBeat = GetPrebeatLengthInSamplesBasedOnBeats();

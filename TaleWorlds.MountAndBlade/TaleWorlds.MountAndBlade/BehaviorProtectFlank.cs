@@ -37,7 +37,7 @@ public class BehaviorProtectFlank : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		if (_mainFormation == null || base.Formation.AI.IsMainFormation || base.Formation.QuerySystem.ClosestEnemyFormation == null)
+		if (_mainFormation == null || base.Formation.AI.IsMainFormation || base.Formation.CachedClosestEnemyFormation == null)
 		{
 			base.CurrentOrder = MovementOrder.MovementOrderStop;
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
@@ -45,7 +45,7 @@ public class BehaviorProtectFlank : BehaviorComponent
 		else if (_protectFlankState == BehaviorState.HoldingFlank || _protectFlankState == BehaviorState.Returning)
 		{
 			Vec2 direction = _mainFormation.Direction;
-			Vec2 vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.QuerySystem.MedianPosition.AsVec2).Normalized();
+			Vec2 vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.CachedMedianPosition.AsVec2).Normalized();
 			Vec2 vec2;
 			if (_behaviorSide == FormationAI.BehaviorSide.Right || FlankSide == FormationAI.BehaviorSide.Right)
 			{
@@ -61,9 +61,9 @@ public class BehaviorProtectFlank : BehaviorComponent
 			{
 				vec2 = _mainFormation.CurrentPosition + vec * ((_mainFormation.Depth + base.Formation.Depth) * 0.5f + 10f);
 			}
-			WorldPosition medianPosition = _mainFormation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(vec2);
-			_movementOrder = MovementOrder.MovementOrderMove(medianPosition);
+			WorldPosition cachedMedianPosition = _mainFormation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(vec2);
+			_movementOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 			base.CurrentOrder = _movementOrder;
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 		}
@@ -75,27 +75,31 @@ public class BehaviorProtectFlank : BehaviorComponent
 		switch (_protectFlankState)
 		{
 		case BehaviorState.HoldingFlank:
-			if (base.Formation.QuerySystem.ClosestEnemyFormation != null)
+		{
+			FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+			if (cachedClosestEnemyFormation != null)
 			{
-				float num = 50f + (base.Formation.Depth + base.Formation.QuerySystem.ClosestEnemyFormation.Formation.Depth) / 2f;
-				if (base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2.DistanceSquared(position) < num * num)
+				float num = 50f + (base.Formation.Depth + cachedClosestEnemyFormation.Formation.Depth) / 2f;
+				if (cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2.DistanceSquared(position) < num * num)
 				{
-					_chargeToTargetOrder = MovementOrder.MovementOrderChargeToTarget(base.Formation.QuerySystem.ClosestEnemyFormation.Formation);
+					_chargeToTargetOrder = MovementOrder.MovementOrderChargeToTarget(cachedClosestEnemyFormation.Formation);
 					base.CurrentOrder = _chargeToTargetOrder;
 					_protectFlankState = BehaviorState.Charging;
 				}
 			}
 			break;
+		}
 		case BehaviorState.Charging:
 		{
-			if (base.Formation.QuerySystem.ClosestEnemyFormation == null)
+			FormationQuerySystem cachedClosestEnemyFormation2 = base.Formation.CachedClosestEnemyFormation;
+			if (cachedClosestEnemyFormation2 == null)
 			{
 				base.CurrentOrder = _movementOrder;
 				_protectFlankState = BehaviorState.Returning;
 				break;
 			}
-			float num2 = 60f + (base.Formation.Depth + base.Formation.QuerySystem.ClosestEnemyFormation.Formation.Depth) / 2f;
-			if (base.Formation.QuerySystem.AveragePosition.DistanceSquared(position) > num2 * num2)
+			float num2 = 60f + (base.Formation.Depth + cachedClosestEnemyFormation2.Formation.Depth) / 2f;
+			if (base.Formation.CachedAveragePosition.DistanceSquared(position) > num2 * num2)
 			{
 				base.CurrentOrder = _movementOrder;
 				_protectFlankState = BehaviorState.Returning;
@@ -103,7 +107,7 @@ public class BehaviorProtectFlank : BehaviorComponent
 			break;
 		}
 		case BehaviorState.Returning:
-			if (base.Formation.QuerySystem.AveragePosition.DistanceSquared(position) < 400f)
+			if (base.Formation.CachedAveragePosition.DistanceSquared(position) < 400f)
 			{
 				_protectFlankState = BehaviorState.HoldingFlank;
 			}
@@ -122,14 +126,14 @@ public class BehaviorProtectFlank : BehaviorComponent
 		CheckAndChangeState();
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		if (_protectFlankState == BehaviorState.HoldingFlank && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2) > 1600f && base.Formation.QuerySystem.UnderRangedAttackRatio > 0.2f - ((base.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.Loose) ? 0.1f : 0f))
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		if (_protectFlankState == BehaviorState.HoldingFlank && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.CachedAveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2) > 1600f && base.Formation.QuerySystem.UnderRangedAttackRatio > 0.2f - ((base.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.Loose) ? 0.1f : 0f))
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
 		}
 		else
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 		}
 	}
 
@@ -137,10 +141,10 @@ public class BehaviorProtectFlank : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	public override TextObject GetBehaviorString()

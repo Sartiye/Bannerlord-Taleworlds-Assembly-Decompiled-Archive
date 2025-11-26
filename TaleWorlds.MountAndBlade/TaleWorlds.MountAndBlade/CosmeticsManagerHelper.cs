@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 using TaleWorlds.ObjectSystem;
@@ -62,14 +61,14 @@ public static class CosmeticsManagerHelper
 		}
 		WeaponComponentData currentUsageItem = agent.WieldedWeapon.CurrentUsageItem;
 		WeaponComponentData currentUsageItem2 = agent.WieldedOffhandWeapon.CurrentUsageItem;
-		return ActionIndexCache.Create(TauntUsageManager.GetAction(tauntIndex, agent.GetIsLeftStance(), !agent.HasMount, currentUsageItem, currentUsageItem2));
+		return ActionIndexCache.Create(TauntUsageManager.Instance.GetAction(tauntIndex, agent.GetIsLeftStance(), !agent.HasMount, currentUsageItem, currentUsageItem2));
 	}
 
 	public static TauntUsageManager.TauntUsage.TauntUsageFlag GetActionNotUsableReason(Agent agent, int tauntIndex)
 	{
 		WeaponComponentData currentUsageItem = agent.WieldedWeapon.CurrentUsageItem;
 		WeaponComponentData currentUsageItem2 = agent.WieldedOffhandWeapon.CurrentUsageItem;
-		return TauntUsageManager.GetIsActionNotSuitableReason(tauntIndex, agent.GetIsLeftStance(), !agent.HasMount, currentUsageItem, currentUsageItem2);
+		return TauntUsageManager.Instance.GetIsActionNotSuitableReason(tauntIndex, agent.GetIsLeftStance(), !agent.HasMount, currentUsageItem, currentUsageItem2);
 	}
 
 	public static string GetSuitableTauntActionForEquipment(Equipment equipment, TauntCosmeticElement taunt)
@@ -81,7 +80,7 @@ public static class CosmeticsManagerHelper
 		equipment.GetInitialWeaponIndicesToEquip(out var mainHandWeaponIndex, out var offHandWeaponIndex, out var _);
 		WeaponComponentData mainHandWeapon = ((mainHandWeaponIndex == EquipmentIndex.None) ? null : equipment[mainHandWeaponIndex].Item?.PrimaryWeapon);
 		WeaponComponentData offhandWeapon = ((offHandWeaponIndex == EquipmentIndex.None) ? null : equipment[offHandWeaponIndex].Item?.PrimaryWeapon);
-		return TauntUsageManager.GetAction(TauntUsageManager.GetIndexOfAction(taunt.Id), isLeftStance: false, onFoot: true, mainHandWeapon, offhandWeapon);
+		return TauntUsageManager.Instance.GetAction(TauntUsageManager.Instance.GetIndexOfAction(taunt.Id), isLeftStance: false, onFoot: true, mainHandWeapon, offhandWeapon);
 	}
 
 	public static bool IsWeaponClassOneHanded(WeaponClass weaponClass)
@@ -135,6 +134,7 @@ public static class CosmeticsManagerHelper
 		case WeaponClass.ThrowingAxe:
 		case WeaponClass.ThrowingKnife:
 		case WeaponClass.Javelin:
+		case WeaponClass.BallistaStone:
 			return new WeaponClass[2]
 			{
 				WeaponClass.SmallShield,
@@ -144,10 +144,14 @@ public static class CosmeticsManagerHelper
 			return new WeaponClass[1] { WeaponClass.Bow };
 		case WeaponClass.Bolt:
 			return new WeaponClass[1] { WeaponClass.Crossbow };
+		case WeaponClass.SlingStone:
+			return new WeaponClass[1] { WeaponClass.Sling };
 		case WeaponClass.Bow:
 			return new WeaponClass[1] { WeaponClass.Arrow };
 		case WeaponClass.Crossbow:
 			return new WeaponClass[1] { WeaponClass.Bolt };
+		case WeaponClass.Sling:
+			return new WeaponClass[1] { WeaponClass.SlingStone };
 		case WeaponClass.SmallShield:
 		case WeaponClass.LargeShield:
 			return new WeaponClass[4]

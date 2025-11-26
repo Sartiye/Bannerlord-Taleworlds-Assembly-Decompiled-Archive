@@ -187,19 +187,14 @@ public class OptionsItemWidget : Widget
 			RegisterHoverEvents();
 			_eventsRegistered = true;
 		}
-		if (!_isEnabledStateDirty)
+		if (_isEnabledStateDirty)
 		{
-			return;
-		}
-		Widget currentOptionWidget = GetCurrentOptionWidget();
-		if (currentOptionWidget != null)
-		{
-			foreach (Widget allChildrenAndThi in currentOptionWidget.AllChildrenAndThis)
+			GetCurrentOptionWidget()?.ApplyActionToAllChildrenRecursive(delegate(Widget child)
 			{
-				allChildrenAndThi.IsEnabled = IsOptionEnabled;
-			}
+				child.IsEnabled = IsOptionEnabled;
+			});
+			_isEnabledStateDirty = false;
 		}
-		_isEnabledStateDirty = false;
 	}
 
 	protected override void OnHoverBegin()
@@ -259,25 +254,21 @@ public class OptionsItemWidget : Widget
 
 	private void RegisterHoverEvents()
 	{
-		foreach (Widget allChild in base.AllChildren)
+		ApplyActionToAllChildrenRecursive(delegate(Widget child)
 		{
-			allChild.boolPropertyChanged += Child_PropertyChanged;
-		}
+			child.boolPropertyChanged += Child_PropertyChanged;
+		});
 		if (OptionTypeID == 0)
 		{
 			BooleanToggleButtonWidget.boolPropertyChanged += BooleanOption_PropertyChanged;
 		}
-		else
+		else if (OptionTypeID == 3)
 		{
-			if (OptionTypeID != 3)
-			{
-				return;
-			}
 			_dropdownExtensionParentWidget = DropdownWidget.DropdownClipWidget;
-			foreach (Widget allChild2 in _dropdownExtensionParentWidget.AllChildren)
+			_dropdownExtensionParentWidget.ApplyActionToAllChildrenRecursive(delegate(Widget child)
 			{
-				allChild2.boolPropertyChanged += DropdownItem_PropertyChanged1;
-			}
+				child.boolPropertyChanged += DropdownItem_PropertyChanged1;
+			});
 		}
 	}
 
@@ -411,7 +402,7 @@ public class OptionsItemWidget : Widget
 		}
 		else
 		{
-			Debug.FailedAssert("No option type is visible for: " + GetType().Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\OptionsItemWidget.cs", "ResetNavigationIndices", 325);
+			Debug.FailedAssert("No option type is visible for: " + GetType().Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\OptionsItemWidget.cs", "ResetNavigationIndices", 316);
 		}
 	}
 

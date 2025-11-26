@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
@@ -10,11 +12,37 @@ using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ObjectSystem;
 
 namespace Helpers;
 
 public static class CharacterHelper
 {
+	public static TextObject GetDeathNotification(Hero victimHero, Hero killer, KillCharacterAction.KillCharacterActionDetail detail)
+	{
+		TextObject empty = TextObject.GetEmpty();
+		if (detail == KillCharacterAction.KillCharacterActionDetail.DiedInLabor || detail == KillCharacterAction.KillCharacterActionDetail.Murdered || detail == KillCharacterAction.KillCharacterActionDetail.DiedInBattle || detail == KillCharacterAction.KillCharacterActionDetail.DiedOfOldAge)
+		{
+			empty = GameTexts.FindText("str_on_hero_killed", detail.ToString());
+		}
+		else if ((detail == KillCharacterAction.KillCharacterActionDetail.Executed || detail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) && killer != null)
+		{
+			empty = GameTexts.FindText("str_on_hero_killed", detail.ToString());
+			StringHelpers.SetCharacterProperties("KILLER", killer.CharacterObject, empty);
+		}
+		else if (detail == KillCharacterAction.KillCharacterActionDetail.Lost)
+		{
+			empty = GameTexts.FindText("str_on_hero_killed", detail.ToString());
+			StringHelpers.SetCharacterProperties("VICTIM", victimHero.CharacterObject, empty);
+		}
+		else
+		{
+			empty = GameTexts.FindText("str_on_hero_killed", "Default");
+		}
+		StringHelpers.SetCharacterProperties("HERO", victimHero.CharacterObject, empty);
+		return empty;
+	}
+
 	public static DynamicBodyProperties GetDynamicBodyPropertiesBetweenMinMaxRange(CharacterObject character)
 	{
 		BodyProperties bodyPropertyMin = character.BodyPropertyRange.BodyPropertyMin;
@@ -198,7 +226,7 @@ public static class CharacterHelper
 		return result;
 	}
 
-	public static string GetStandingBodyIdle(CharacterObject character)
+	public static string GetStandingBodyIdle(CharacterObject character, PartyBase party)
 	{
 		HeroHelper.WillLordAttack();
 		string result = "normal";
@@ -267,6 +295,14 @@ public static class CharacterHelper
 						result = ((!flag) ? "normal" : ((!flag2) ? ((MBRandom.RandomFloat <= 0.2f) ? "normal" : "confident") : ((MBRandom.RandomFloat <= 0.6f) ? "normal" : "confident")));
 					}
 				}
+			}
+		}
+		if (party != null)
+		{
+			MobileParty mobileParty = party.MobileParty;
+			if (mobileParty != null && mobileParty.IsCurrentlyAtSea && party != PartyBase.MainParty)
+			{
+				return "naval";
 			}
 		}
 		if (character.Occupation == Occupation.Bandit || character.Occupation == Occupation.Gangster)
@@ -465,13 +501,9 @@ public static class CharacterHelper
 	private static bool MorePowerThanPlayer(CharacterObject otherCharacter)
 	{
 		float num = 0f;
-		num = ((otherCharacter.HeroObject.PartyBelongedTo == null) ? otherCharacter.HeroObject.Power : otherCharacter.HeroObject.PartyBelongedTo.Party.TotalStrength);
-		float totalStrength = MobileParty.MainParty.Party.TotalStrength;
-		if (num > totalStrength)
-		{
-			return true;
-		}
-		return false;
+		num = ((otherCharacter.HeroObject.PartyBelongedTo == null) ? otherCharacter.HeroObject.Power : otherCharacter.HeroObject.PartyBelongedTo.Party.CalculateCurrentStrength());
+		float num2 = MobileParty.MainParty.Party.CalculateCurrentStrength();
+		return num > num2;
 	}
 
 	public static CharacterObject FindUpgradeRootOf(CharacterObject character)
@@ -597,5 +629,14 @@ public static class CharacterHelper
 			}
 		}
 		Game.Current.ObjectManager.UnregisterObject(character);
+	}
+
+	public static CharacterObject GetRandomCompanionTemplateWithPredicate(Func<CharacterObject, bool> predicate = null)
+	{
+		if (predicate == null)
+		{
+			return MBObjectManager.Instance.GetObjectTypeList<CharacterObject>().GetRandomElementWithPredicate((CharacterObject x) => x.IsTemplate && x.Occupation == Occupation.Wanderer);
+		}
+		return MBObjectManager.Instance.GetObjectTypeList<CharacterObject>().GetRandomElementWithPredicate((CharacterObject x) => x.IsTemplate && x.Occupation == Occupation.Wanderer && predicate(x));
 	}
 }

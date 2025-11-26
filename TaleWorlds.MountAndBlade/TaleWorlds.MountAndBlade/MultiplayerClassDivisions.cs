@@ -245,7 +245,7 @@ public class MultiplayerClassDivisions
 		{
 			return GetMPHeroClasses(peer.Culture).ToList()[peer.SelectedTroopIndex];
 		}
-		Debug.FailedAssert("This should not be seen.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerClassDivisions.cs", "GetMPHeroClassForPeer", 255);
+		Debug.FailedAssert("This should not be seen.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerClassDivisions.cs", "GetMPHeroClassForPeer", 255);
 		return null;
 	}
 

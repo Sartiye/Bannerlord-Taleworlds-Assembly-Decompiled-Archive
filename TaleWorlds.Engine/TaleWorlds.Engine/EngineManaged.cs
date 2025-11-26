@@ -76,19 +76,19 @@ internal class EngineManaged : IManagedComponent
 		EngineScreenManager.Initialize();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void EngineApiMethodInterfaceInitializer(int id, IntPtr pointer)
 	{
 		_engineApiPointers.Add(id, pointer);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void CheckSharedStructureSizes()
 	{
 		_callbackManager.CheckSharedStructureSizes();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void FillEngineApiPointers()
 	{
 		foreach (KeyValuePair<int, IntPtr> engineApiPointer in _engineApiPointers)

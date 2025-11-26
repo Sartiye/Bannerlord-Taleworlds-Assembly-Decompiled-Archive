@@ -219,6 +219,12 @@ public abstract class KingdomDecision
 		return false;
 	}
 
+	public virtual bool CanMakeDecision(out TextObject reason)
+	{
+		reason = TextObject.GetEmpty();
+		return true;
+	}
+
 	public bool ShouldBeCancelled()
 	{
 		if (Kingdom.IsEliminated)
@@ -381,7 +387,7 @@ public abstract class KingdomDecision
 			result = GetInfluenceCostOfSupport(clan, Supporter.SupportWeights.FullyPush);
 			break;
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecision.cs", "GetInfluenceCost", 339);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecision.cs", "GetInfluenceCost", 345);
 			break;
 		}
 		return result;

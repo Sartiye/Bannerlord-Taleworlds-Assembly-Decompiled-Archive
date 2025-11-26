@@ -48,7 +48,7 @@ public sealed class AttachWeaponToAgent : GameNetworkMessage
 		Mat3 rot = GameNetworkMessage.ReadRotationMatrixFromPacket(ref bufferReadValid);
 		if (bufferReadValid)
 		{
-			AttachLocalFrame = new MatrixFrame(rot, o);
+			AttachLocalFrame = new MatrixFrame(in rot, in o);
 		}
 		return bufferReadValid;
 	}
@@ -60,6 +60,6 @@ public sealed class AttachWeaponToAgent : GameNetworkMessage
 
 	protected override string OnGetLogFormat()
 	{
-		return string.Concat("AttachWeaponToAgent with name: ", (!Weapon.IsEmpty) ? Weapon.Item.Name : TextObject.Empty, " to bone index: ", BoneIndex, " on agent agent-index: ", AgentIndex);
+		return string.Concat("AttachWeaponToAgent with name: ", (!Weapon.IsEmpty) ? Weapon.Item.Name : TextObject.GetEmpty(), " to bone index: ", BoneIndex, " on agent agent-index: ", AgentIndex);
 	}
 }

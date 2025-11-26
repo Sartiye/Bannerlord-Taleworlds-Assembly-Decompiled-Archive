@@ -7,7 +7,7 @@ using TaleWorlds.Library;
 namespace TaleWorlds.MountAndBlade;
 
 [Serializable]
-[EngineStruct("Navigation_data", false)]
+[EngineStruct("Navigation_data", false, null)]
 public struct NavigationData
 {
 	private const int MaxPathSize = 1024;

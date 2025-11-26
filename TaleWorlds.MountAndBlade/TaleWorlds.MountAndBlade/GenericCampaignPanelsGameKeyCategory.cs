@@ -29,15 +29,16 @@ public sealed class GenericCampaignPanelsGameKeyCategory : GameKeyContext
 
 	public const int FacegenWindow = 44;
 
+	public const int ManageFleetWindow = 45;
+
 	public static GenericCampaignPanelsGameKeyCategory Current { get; private set; }
 
 	public GenericCampaignPanelsGameKeyCategory(string categoryId = "GenericCampaignPanelsGameKeyCategory")
-		: base(categoryId, 108)
+		: base(categoryId, 111)
 	{
 		Current = this;
 		RegisterHotKeys();
 		RegisterGameKeys();
-		RegisterGameAxisKeys();
 	}
 
 	private void RegisterHotKeys()
@@ -67,9 +68,6 @@ public sealed class GenericCampaignPanelsGameKeyCategory : GameKeyContext
 		RegisterGameKey(new GameKey(42, "QuestsWindow", "GenericCampaignPanelsGameKeyCategory", InputKey.J, GameKeyMainCategories.MenuShortcutCategory));
 		RegisterGameKey(new GameKey(43, "PartyWindow", "GenericCampaignPanelsGameKeyCategory", InputKey.P, GameKeyMainCategories.MenuShortcutCategory));
 		RegisterGameKey(new GameKey(44, "FacegenWindow", "GenericCampaignPanelsGameKeyCategory", InputKey.V, GameKeyMainCategories.MenuShortcutCategory));
-	}
-
-	private void RegisterGameAxisKeys()
-	{
+		RegisterGameKey(new GameKey(45, "ManageFleetWindow", "GenericCampaignPanelsGameKeyCategory", InputKey.U, GameKeyMainCategories.MenuShortcutCategory));
 	}
 }

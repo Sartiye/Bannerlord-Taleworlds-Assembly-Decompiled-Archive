@@ -13,11 +13,14 @@ internal class LoadCallbackInitializator
 
 	private LoadData _loadData;
 
+	private Dictionary<int, ObjectLoadData> _objectLoadDatas;
+
 	public LoadCallbackInitializator(LoadData loadData, ObjectHeaderLoadData[] objectHeaderLoadDatas, int objectCount)
 	{
 		_loadData = loadData;
 		_objectHeaderLoadDatas = objectHeaderLoadDatas;
 		_objectCount = objectCount;
+		_objectLoadDatas = new Dictionary<int, ObjectLoadData>();
 	}
 
 	public void InitializeObjects()
@@ -41,7 +44,7 @@ internal class LoadCallbackInitializator
 					ParameterInfo[] parameters = item.GetParameters();
 					if (parameters.Length > 1 && parameters[1].ParameterType == typeof(ObjectLoadData))
 					{
-						ObjectLoadData objectLoadData = LoadContext.CreateLoadData(_loadData, i, objectHeaderLoadData);
+						ObjectLoadData objectLoadData = GetObjectLoadData(objectHeaderLoadData, i);
 						item.Invoke(objectHeaderLoadData.Target, new object[2] { _loadData.MetaData, objectLoadData });
 					}
 					else if (parameters.Length == 1)
@@ -56,7 +59,6 @@ internal class LoadCallbackInitializator
 			}
 		}
 		GC.Collect();
-		AfterInitializeObjects();
 	}
 
 	public void AfterInitializeObjects()
@@ -80,7 +82,7 @@ internal class LoadCallbackInitializator
 					ParameterInfo[] parameters = item.GetParameters();
 					if (parameters.Length > 1 && parameters[1].ParameterType == typeof(ObjectLoadData))
 					{
-						ObjectLoadData objectLoadData = LoadContext.CreateLoadData(_loadData, i, objectHeaderLoadData);
+						ObjectLoadData objectLoadData = GetObjectLoadData(objectHeaderLoadData, i);
 						item.Invoke(objectHeaderLoadData.Target, new object[2] { _loadData.MetaData, objectLoadData });
 					}
 					else if (parameters.Length == 1)
@@ -94,6 +96,17 @@ internal class LoadCallbackInitializator
 				}
 			}
 		}
+		_objectLoadDatas.Clear();
 		GC.Collect();
+	}
+
+	private ObjectLoadData GetObjectLoadData(ObjectHeaderLoadData objectHeaderLoadData, int i)
+	{
+		if (!_objectLoadDatas.TryGetValue(i, out var value))
+		{
+			value = LoadContext.CreateLoadData(_loadData, i, objectHeaderLoadData);
+			_objectLoadDatas[i] = value;
+		}
+		return value;
 	}
 }

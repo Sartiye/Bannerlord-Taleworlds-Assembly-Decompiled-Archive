@@ -67,13 +67,19 @@ public abstract class ScoreboardBaseVM : ViewModel
 
 	private string _fastForwardText;
 
+	private string _moraleText;
+
 	private bool _isFastForwarding;
+
+	private bool _isPaused;
 
 	private bool _isMainCharacterDead;
 
 	private bool _showScoreboard;
 
 	private bool _isSimulation = true;
+
+	private bool _isNavalBattle;
 
 	private bool _isMouseEnabled;
 
@@ -101,11 +107,15 @@ public abstract class ScoreboardBaseVM : ViewModel
 
 	private SPScoreboardSideVM _defenders;
 
+	private SPScoreboardSideVM _neutralTroops;
+
 	private bool _isPowerComparerEnabled;
 
 	private int _missionTimeInSeconds;
 
 	private string _missionTimeStr;
+
+	private string _simulationResult;
 
 	private InputKeyItemVM _showMouseKey;
 
@@ -114,6 +124,8 @@ public abstract class ScoreboardBaseVM : ViewModel
 	private InputKeyItemVM _doneInputKey;
 
 	private InputKeyItemVM _fastForwardKey;
+
+	private InputKeyItemVM _pauseInputKey;
 
 	protected int MissionTimeInSeconds
 	{
@@ -217,6 +229,23 @@ public abstract class ScoreboardBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string MoraleText
+	{
+		get
+		{
+			return _moraleText;
+		}
+		set
+		{
+			if (value != _moraleText)
+			{
+				_moraleText = value;
+				OnPropertyChangedWithValue(value, "MoraleText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public SPScoreboardSideVM Attackers
 	{
 		get
@@ -246,6 +275,23 @@ public abstract class ScoreboardBaseVM : ViewModel
 			{
 				_defenders = value;
 				OnPropertyChangedWithValue(value, "Defenders");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public SPScoreboardSideVM NeutralTroops
+	{
+		get
+		{
+			return _neutralTroops;
+		}
+		set
+		{
+			if (value != _neutralTroops)
+			{
+				_neutralTroops = value;
+				OnPropertyChangedWithValue(value, "NeutralTroops");
 			}
 		}
 	}
@@ -422,18 +468,18 @@ public abstract class ScoreboardBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsFastForwarding
+	public string SimulationResult
 	{
 		get
 		{
-			return _isFastForwarding;
+			return _simulationResult;
 		}
 		set
 		{
-			if (value != _isFastForwarding)
+			if (value != _simulationResult)
 			{
-				_isFastForwarding = value;
-				OnPropertyChangedWithValue(value, "IsFastForwarding");
+				_simulationResult = value;
+				OnPropertyChangedWithValue(value, "SimulationResult");
 			}
 		}
 	}
@@ -457,6 +503,23 @@ public abstract class ScoreboardBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool ShowScoreboard
+	{
+		get
+		{
+			return _showScoreboard;
+		}
+		set
+		{
+			if (value != _showScoreboard)
+			{
+				_showScoreboard = value;
+				OnPropertyChangedWithValue(value, "ShowScoreboard");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool IsSimulation
 	{
 		get
@@ -469,6 +532,57 @@ public abstract class ScoreboardBaseVM : ViewModel
 			{
 				_isSimulation = value;
 				OnPropertyChangedWithValue(value, "IsSimulation");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsNavalBattle
+	{
+		get
+		{
+			return _isNavalBattle;
+		}
+		set
+		{
+			if (value != _isNavalBattle)
+			{
+				_isNavalBattle = value;
+				OnPropertyChangedWithValue(value, "IsNavalBattle");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsFastForwarding
+	{
+		get
+		{
+			return _isFastForwarding;
+		}
+		set
+		{
+			if (value != _isFastForwarding)
+			{
+				_isFastForwarding = value;
+				OnPropertyChangedWithValue(value, "IsFastForwarding");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsPaused
+	{
+		get
+		{
+			return _isPaused;
+		}
+		set
+		{
+			if (value != _isPaused)
+			{
+				_isPaused = value;
+				OnPropertyChangedWithValue(value, "IsPaused");
 			}
 		}
 	}
@@ -503,23 +617,6 @@ public abstract class ScoreboardBaseVM : ViewModel
 			{
 				_showMouseKey = value;
 				OnPropertyChangedWithValue(value, "ShowMouseKey");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool ShowScoreboard
-	{
-		get
-		{
-			return _showScoreboard;
-		}
-		set
-		{
-			if (value != _showScoreboard)
-			{
-				_showScoreboard = value;
-				OnPropertyChangedWithValue(value, "ShowScoreboard");
 			}
 		}
 	}
@@ -576,6 +673,23 @@ public abstract class ScoreboardBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public InputKeyItemVM PauseInputKey
+	{
+		get
+		{
+			return _pauseInputKey;
+		}
+		set
+		{
+			if (value != _pauseInputKey)
+			{
+				_pauseInputKey = value;
+				OnPropertyChangedWithValue(value, "PauseInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public virtual MBBindingList<BattleResultVM> BattleResults
 	{
 		get
@@ -596,22 +710,30 @@ public abstract class ScoreboardBaseVM : ViewModel
 		RoutedHint = new HintViewModel(GameTexts.FindText("str_battle_result_score_sort_button", "3"));
 		RemainingHint = new HintViewModel(GameTexts.FindText("str_battle_result_score_sort_button", "4"));
 		UpgradeHint = new HintViewModel(GameTexts.FindText("str_battle_result_score_sort_button", "5"));
-		QuitText = GameTexts.FindText("str_retreat").ToString();
+		UpdateQuitText();
 		GameTexts.SetVariable("KEY", Game.Current.GameTextManager.GetHotKeyGameText("Generic", 4));
 		_retreatInquiryData = new InquiryData("", GameTexts.FindText("str_can_not_retreat").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), "", null, null);
 		Attackers?.RefreshValues();
 		Defenders?.RefreshValues();
 		ShowScoreboardText = new TextObject("{=5Ixsvn3s}Toggle scoreboard").ToString();
 		FastForwardText = new TextObject("{=HH7LDwlK}Toggle Fast Forward").ToString();
+		MoraleText = GameTexts.FindText("str_morale").ToString();
 		ShowMouseKey?.RefreshValues();
 		ShowScoreboardKey?.RefreshValues();
 		DoneInputKey?.RefreshValues();
 		FastForwardKey?.RefreshValues();
+		PauseInputKey?.RefreshValues();
 	}
 
 	public void OnMainHeroDeath()
 	{
 		IsMainCharacterDead = true;
+		_missionScreen?.SetOrderFlagVisibility(value: false);
+	}
+
+	public void OnTakenControlOfAnotherAgent()
+	{
+		IsMainCharacterDead = false;
 		_missionScreen?.SetOrderFlagVisibility(value: false);
 	}
 
@@ -630,11 +752,12 @@ public abstract class ScoreboardBaseVM : ViewModel
 		{
 			_battleEndLogic = _mission.GetMissionBehavior<BattleEndLogic>();
 		}
+		NeutralTroops = new SPScoreboardSideVM(null, null, isSimulation: false);
 		PowerComparer = new PowerLevelComparer(1.0, 1.0);
 		RefreshValues();
 	}
 
-	private void UpdateQuitText()
+	protected virtual void UpdateQuitText()
 	{
 		if (IsOver)
 		{
@@ -644,17 +767,42 @@ public abstract class ScoreboardBaseVM : ViewModel
 		{
 			QuitText = GameTexts.FindText("str_end_battle").ToString();
 		}
+		else
+		{
+			QuitText = GameTexts.FindText("str_retreat").ToString();
+		}
 	}
 
-	public abstract void Tick(float dt);
+	public virtual void OnDeploymentFinished()
+	{
+	}
+
+	protected virtual bool IsPowerComparerRelevant()
+	{
+		if (Mission.Current != null)
+		{
+			return Mission.Current.Mode != MissionMode.Deployment;
+		}
+		return false;
+	}
+
+	public void Tick(float dt)
+	{
+		PowerComparer.IsEnabled = IsPowerComparerRelevant();
+		IsPowerComparerEnabled = PowerComparer.IsEnabled && !BannerlordConfig.HideBattleUI && !MBCommon.IsPaused;
+		OnTick(dt);
+	}
+
+	protected abstract void OnTick(float dt);
 
 	protected SPScoreboardSideVM GetSide(BattleSideEnum side)
 	{
-		if (side != 0)
+		return side switch
 		{
-			return Attackers;
-		}
-		return Defenders;
+			BattleSideEnum.Defender => Defenders, 
+			BattleSideEnum.Attacker => Attackers, 
+			_ => NeutralTroops, 
+		};
 	}
 
 	public void SetMouseState(bool visible)
@@ -675,6 +823,50 @@ public abstract class ScoreboardBaseVM : ViewModel
 		return text + $"{timeSpan.Seconds:D2}{_secondAbbrString}";
 	}
 
+	protected float GetBattleMoraleOfSide(BattleSideEnum side)
+	{
+		if (Mission.Current == null)
+		{
+			return 0f;
+		}
+		float num = 0f;
+		int num2 = 0;
+		bool flag = false;
+		for (int i = 0; i < Mission.Current.Teams.Count; i++)
+		{
+			Team team = Mission.Current.Teams[i];
+			if (team.Side != side)
+			{
+				continue;
+			}
+			for (int j = 0; j < team.ActiveAgents.Count; j++)
+			{
+				Agent agent = team.ActiveAgents[j];
+				if (agent.IsHuman)
+				{
+					if (agent.IsAIControlled)
+					{
+						num2++;
+						num += agent.GetMorale();
+					}
+					else
+					{
+						flag = true;
+					}
+				}
+			}
+		}
+		if (num2 > 0)
+		{
+			return MBMath.ClampFloat(num / (float)num2, 0f, 100f);
+		}
+		if (flag)
+		{
+			return 50f;
+		}
+		return 0f;
+	}
+
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
@@ -682,6 +874,7 @@ public abstract class ScoreboardBaseVM : ViewModel
 		ShowScoreboardKey?.OnFinalize();
 		DoneInputKey?.OnFinalize();
 		FastForwardKey?.OnFinalize();
+		PauseInputKey?.OnFinalize();
 	}
 
 	public virtual void ExecuteShowScoreboardAction()
@@ -694,6 +887,10 @@ public abstract class ScoreboardBaseVM : ViewModel
 	}
 
 	public virtual void ExecuteFastForwardAction()
+	{
+	}
+
+	public virtual void ExecutePauseSimulationAction()
 	{
 	}
 
@@ -711,5 +908,6 @@ public abstract class ScoreboardBaseVM : ViewModel
 		ShowScoreboardKey = InputKeyItemVM.CreateFromGameKey(shortcuts.ShowScoreboardHotkey, isConsoleOnly: false);
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(shortcuts.DoneInputKey, isConsoleOnly: true);
 		FastForwardKey = InputKeyItemVM.CreateFromHotKey(shortcuts.FastForwardKey, isConsoleOnly: true);
+		PauseInputKey = InputKeyItemVM.CreateFromHotKey(shortcuts.PauseInputKey, isConsoleOnly: true);
 	}
 }

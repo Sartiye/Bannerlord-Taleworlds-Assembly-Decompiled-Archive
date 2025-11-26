@@ -28,7 +28,7 @@ public abstract class MPCombatPerkEffect : MPPerkEffect
 		if (text != null && !Enum.TryParse<HitType>(text, ignoreCase: true, out EffectHitType))
 		{
 			EffectHitType = HitType.Any;
-			Debug.FailedAssert("provided 'hit_type' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 31);
+			Debug.FailedAssert("provided 'hit_type' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 31);
 		}
 		string text2 = node?.Attributes?["damage_type"]?.Value;
 		DamageTypes result;
@@ -42,7 +42,7 @@ public abstract class MPCombatPerkEffect : MPPerkEffect
 		}
 		else
 		{
-			Debug.FailedAssert("provided 'damage_type' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 47);
+			Debug.FailedAssert("provided 'damage_type' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 47);
 			DamageType = null;
 		}
 		string text3 = node?.Attributes?["weapon_class"]?.Value;
@@ -56,7 +56,7 @@ public abstract class MPCombatPerkEffect : MPPerkEffect
 			WeaponClass = result2;
 			return;
 		}
-		Debug.FailedAssert("provided 'weapon_class' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 65);
+		Debug.FailedAssert("provided 'weapon_class' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\MPCombatPerkEffect.cs", "Deserialize", 65);
 		WeaponClass = null;
 	}
 

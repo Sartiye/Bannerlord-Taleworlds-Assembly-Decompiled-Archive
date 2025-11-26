@@ -32,9 +32,9 @@ public class ScriptedMovementComponent : AgentComponent
 		_targetAgent = targetAgent;
 	}
 
-	public override void OnTickAsAI(float dt)
+	public override void OnTick(float dt)
 	{
-		if (_targetAgent == null)
+		if (!Agent.Mission.AllowAiTicking || !Agent.IsAIControlled || _targetAgent == null)
 		{
 			return;
 		}
@@ -67,10 +67,16 @@ public class ScriptedMovementComponent : AgentComponent
 
 	public bool ShouldConversationStartWithAgent()
 	{
-		if (_isInDialogueRange)
+		if (_targetAgent != null && _isInDialogueRange)
 		{
 			return _isCharacterToTalkTo;
 		}
 		return false;
+	}
+
+	public void Reset()
+	{
+		_targetAgent = null;
+		_isInDialogueRange = false;
 	}
 }

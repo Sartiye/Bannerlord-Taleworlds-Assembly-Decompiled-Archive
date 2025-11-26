@@ -4,7 +4,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Attack_collision_data", false)]
+[EngineStruct("Attack_collision_data", false, null)]
 public struct AttackCollisionData
 {
 	[MarshalAs(UnmanagedType.U1)]
@@ -43,6 +43,9 @@ public struct AttackCollisionData
 	[MarshalAs(UnmanagedType.U1)]
 	private bool _missileGoneOutOfBorder;
 
+	[MarshalAs(UnmanagedType.U1)]
+	private bool _collidedWithLastBoneSegment;
+
 	private int _collisionResult;
 
 	private Vec3 _weaponBlowDir;
@@ -65,6 +68,10 @@ public struct AttackCollisionData
 	[MarshalAs(UnmanagedType.U1)]
 	[CustomEngineStructMemberData(true)]
 	public bool IsShieldBroken;
+
+	[MarshalAs(UnmanagedType.U1)]
+	[CustomEngineStructMemberData(true)]
+	public bool IsSneakAttack;
 
 	public bool AttackBlockedWithShield => _attackBlockedWithShield;
 
@@ -89,6 +96,8 @@ public struct AttackCollisionData
 	public bool MissileGoneUnderWater => _missileGoneUnderWater;
 
 	public bool MissileGoneOutOfBorder => _missileGoneOutOfBorder;
+
+	public bool CollidedWithLastBoneSegment => _collidedWithLastBoneSegment;
 
 	public bool IsHorseCharge => ChargeVelocity > 0f;
 
@@ -144,6 +153,10 @@ public struct AttackCollisionData
 
 	public Vec3 CollisionGlobalNormal { get; }
 
+	public Vec3 LastBoneSegmentRotUp { get; }
+
+	public Vec3 LastBoneSegmentSwingDir { get; }
+
 	public void SetCollisionBoneIndexForAreaDamage(sbyte boneIndex)
 	{
 		CollisionBoneIndex = boneIndex;
@@ -156,7 +169,7 @@ public struct AttackCollisionData
 		AttackBoneIndex = boneIndex;
 	}
 
-	private AttackCollisionData(bool attackBlockedWithShield, bool correctSideShieldBlock, bool isAlternativeAttack, bool isColliderAgent, bool collidedWithShieldOnBack, bool isMissile, bool missileBlockedWithWeapon, bool missileHasPhysics, bool entityExists, bool thrustTipHit, bool missileGoneUnderWater, bool missileGoneOutOfBorder, CombatCollisionResult collisionResult, int affectorWeaponSlotOrMissileIndex, int StrikeType, int DamageType, sbyte CollisionBoneIndex, BoneBodyPartType VictimHitBodyPart, sbyte AttackBoneIndex, Agent.UsageDirection AttackDirection, int PhysicsMaterialIndex, CombatHitResultFlags CollisionHitResultFlags, float AttackProgress, float CollisionDistanceOnWeapon, float AttackerStunPeriod, float DefenderStunPeriod, float MissileTotalDamage, float MissileStartingBaseSpeed, float ChargeVelocity, float FallSpeed, Vec3 WeaponRotUp, Vec3 weaponBlowDir, Vec3 CollisionGlobalPosition, Vec3 MissileVelocity, Vec3 MissileStartingPosition, Vec3 VictimAgentCurVelocity, Vec3 GroundNormal)
+	private AttackCollisionData(bool attackBlockedWithShield, bool correctSideShieldBlock, bool isAlternativeAttack, bool isColliderAgent, bool collidedWithShieldOnBack, bool isMissile, bool missileBlockedWithWeapon, bool missileHasPhysics, bool entityExists, bool thrustTipHit, bool missileGoneUnderWater, bool missileGoneOutOfBorder, bool collidedWithLastBoneSegment, CombatCollisionResult collisionResult, int affectorWeaponSlotOrMissileIndex, int StrikeType, int DamageType, sbyte CollisionBoneIndex, BoneBodyPartType VictimHitBodyPart, sbyte AttackBoneIndex, Agent.UsageDirection AttackDirection, int PhysicsMaterialIndex, CombatHitResultFlags CollisionHitResultFlags, float AttackProgress, float CollisionDistanceOnWeapon, float AttackerStunPeriod, float DefenderStunPeriod, float MissileTotalDamage, float MissileStartingBaseSpeed, float ChargeVelocity, float FallSpeed, Vec3 WeaponRotUp, Vec3 weaponBlowDir, Vec3 CollisionGlobalPosition, Vec3 MissileVelocity, Vec3 MissileStartingPosition, Vec3 VictimAgentCurVelocity, Vec3 GroundNormal, Vec3 LastBoneSegmentRotUp, Vec3 LastBoneSegmentSwingDir)
 	{
 		_attackBlockedWithShield = attackBlockedWithShield;
 		_correctSideShieldBlock = correctSideShieldBlock;
@@ -170,6 +183,7 @@ public struct AttackCollisionData
 		_thrustTipHit = thrustTipHit;
 		_missileGoneUnderWater = missileGoneUnderWater;
 		_missileGoneOutOfBorder = missileGoneOutOfBorder;
+		_collidedWithLastBoneSegment = collidedWithLastBoneSegment;
 		_collisionResult = (int)collisionResult;
 		AffectorWeaponSlotOrMissileIndex = affectorWeaponSlotOrMissileIndex;
 		this.StrikeType = StrikeType;
@@ -195,16 +209,19 @@ public struct AttackCollisionData
 		this.MissileStartingPosition = MissileStartingPosition;
 		this.VictimAgentCurVelocity = VictimAgentCurVelocity;
 		CollisionGlobalNormal = GroundNormal;
+		this.LastBoneSegmentRotUp = LastBoneSegmentRotUp;
+		this.LastBoneSegmentSwingDir = LastBoneSegmentSwingDir;
 		BaseMagnitude = 0f;
 		MovementSpeedDamageModifier = 0f;
 		AbsorbedByArmor = 0;
 		InflictedDamage = 0;
 		SelfInflictedDamage = 0;
 		IsShieldBroken = false;
+		IsSneakAttack = false;
 	}
 
 	public static AttackCollisionData GetAttackCollisionDataForDebugPurpose(bool _attackBlockedWithShield, bool _correctSideShieldBlock, bool _isAlternativeAttack, bool _isColliderAgent, bool _collidedWithShieldOnBack, bool _isMissile, bool _isMissileBlockedWithWeapon, bool _missileHasPhysics, bool _entityExists, bool _thrustTipHit, bool _missileGoneUnderWater, bool _missileGoneOutOfBorder, CombatCollisionResult collisionResult, int affectorWeaponSlotOrMissileIndex, int StrikeType, int DamageType, sbyte CollisionBoneIndex, BoneBodyPartType VictimHitBodyPart, sbyte AttackBoneIndex, Agent.UsageDirection AttackDirection, int PhysicsMaterialIndex, CombatHitResultFlags CollisionHitResultFlags, float AttackProgress, float CollisionDistanceOnWeapon, float AttackerStunPeriod, float DefenderStunPeriod, float MissileTotalDamage, float MissileInitialSpeed, float ChargeVelocity, float FallSpeed, Vec3 WeaponRotUp, Vec3 _weaponBlowDir, Vec3 CollisionGlobalPosition, Vec3 MissileVelocity, Vec3 MissileStartingPosition, Vec3 VictimAgentCurVelocity, Vec3 GroundNormal)
 	{
-		return new AttackCollisionData(_attackBlockedWithShield, _correctSideShieldBlock, _isAlternativeAttack, _isColliderAgent, _collidedWithShieldOnBack, _isMissile, _isMissileBlockedWithWeapon, _missileHasPhysics, _entityExists, _thrustTipHit, _missileGoneUnderWater, _missileGoneOutOfBorder, collisionResult, affectorWeaponSlotOrMissileIndex, StrikeType, DamageType, CollisionBoneIndex, VictimHitBodyPart, AttackBoneIndex, AttackDirection, PhysicsMaterialIndex, CollisionHitResultFlags, AttackProgress, CollisionDistanceOnWeapon, AttackerStunPeriod, DefenderStunPeriod, MissileTotalDamage, MissileInitialSpeed, ChargeVelocity, FallSpeed, WeaponRotUp, _weaponBlowDir, CollisionGlobalPosition, MissileVelocity, MissileStartingPosition, VictimAgentCurVelocity, GroundNormal);
+		return new AttackCollisionData(_attackBlockedWithShield, _correctSideShieldBlock, _isAlternativeAttack, _isColliderAgent, _collidedWithShieldOnBack, _isMissile, _isMissileBlockedWithWeapon, _missileHasPhysics, _entityExists, _thrustTipHit, _missileGoneUnderWater, _missileGoneOutOfBorder, collidedWithLastBoneSegment: false, collisionResult, affectorWeaponSlotOrMissileIndex, StrikeType, DamageType, CollisionBoneIndex, VictimHitBodyPart, AttackBoneIndex, AttackDirection, PhysicsMaterialIndex, CollisionHitResultFlags, AttackProgress, CollisionDistanceOnWeapon, AttackerStunPeriod, DefenderStunPeriod, MissileTotalDamage, MissileInitialSpeed, ChargeVelocity, FallSpeed, WeaponRotUp, _weaponBlowDir, CollisionGlobalPosition, MissileVelocity, MissileStartingPosition, VictimAgentCurVelocity, GroundNormal, Vec3.Zero, Vec3.Zero);
 	}
 }

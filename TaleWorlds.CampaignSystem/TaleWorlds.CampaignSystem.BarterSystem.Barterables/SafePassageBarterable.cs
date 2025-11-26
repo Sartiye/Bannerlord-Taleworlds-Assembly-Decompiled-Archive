@@ -4,10 +4,11 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -49,7 +50,7 @@ public class SafePassageBarterable : Barterable
 
 	public override int GetUnitValueForFaction(IFaction faction)
 	{
-		float num = MathF.Clamp(PlayerEncounter.Current.GetPlayerStrengthRatioInEncounter(), 0f, 1f);
+		float num = MathF.Clamp(GetPlayerStrengthRatioInEncounter(), 0f, 1f);
 		int num2 = (int)MathF.Clamp(Hero.MainHero.Gold + PartyBase.MainParty.ItemRoster.Sum((ItemRosterElement t) => t.EquipmentElement.Item.Value * t.Amount), 0f, 2.1474836E+09f);
 		float num3 = ((num < 1f) ? (0.05f + (1f - num) * 0.2f) : 0.1f);
 		float num4 = ((faction.Leader == null) ? 1f : MathF.Clamp((50f + (float)faction.Leader.GetRelation(_otherHero)) / 50f, 0.05f, 1.1f));
@@ -67,7 +68,7 @@ public class SafePassageBarterable : Barterable
 		if (mobileParty != null && mobileParty.IsBandit)
 		{
 			num5 /= 8;
-			if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SweetTalker))
+			if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SweetTalker) && !MobileParty.MainParty.IsCurrentlyAtSea)
 			{
 				num5 += MathF.Round((float)num5 * DefaultPerks.Roguery.SweetTalker.PrimaryBonus);
 			}
@@ -93,6 +94,51 @@ public class SafePassageBarterable : Barterable
 		return num5;
 	}
 
+	public float GetPlayerStrengthRatioInEncounter()
+	{
+		List<MobileParty> list = new List<MobileParty>();
+		List<MobileParty> list2 = new List<MobileParty>();
+		PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list, list2);
+		if (!list.Contains(MobileParty.MainParty))
+		{
+			list.Add(MobileParty.MainParty);
+		}
+		if (!list2.Contains(base.OriginalParty.MobileParty))
+		{
+			list2.Add(base.OriginalParty.MobileParty);
+		}
+		float num = 0f;
+		float num2 = 0f;
+		MapEvent.PowerCalculationContext context = (PlayerEncounter.IsNavalEncounter() ? MapEvent.PowerCalculationContext.SeaBattle : MapEvent.PowerCalculationContext.PlainBattle);
+		foreach (MobileParty item in list)
+		{
+			if (item != null)
+			{
+				num += item.Party.GetCustomStrength(BattleSideEnum.Defender, context);
+			}
+			else
+			{
+				Debug.FailedAssert("Player side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 145);
+			}
+		}
+		foreach (MobileParty item2 in list2)
+		{
+			if (item2 != null)
+			{
+				num2 += item2.Party.GetCustomStrength(BattleSideEnum.Attacker, context);
+			}
+			else
+			{
+				Debug.FailedAssert("Opponent side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 157);
+			}
+		}
+		if (num2 <= 0f)
+		{
+			num2 = 1E-05f;
+		}
+		return num / num2;
+	}
+
 	public override bool IsCompatible(Barterable barterable)
 	{
 		return true;
@@ -108,8 +154,12 @@ public class SafePassageBarterable : Barterable
 		if (PlayerEncounter.Current != null)
 		{
 			List<MobileParty> partiesToJoinPlayerSide = new List<MobileParty>();
-			List<MobileParty> partiesToJoinEnemySide = new List<MobileParty> { base.OriginalParty.MobileParty };
-			PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(ref partiesToJoinPlayerSide, ref partiesToJoinEnemySide);
+			List<MobileParty> list = new List<MobileParty>();
+			PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(partiesToJoinPlayerSide, list);
+			if (!list.Contains(base.OriginalParty.MobileParty))
+			{
+				list.Add(base.OriginalParty.MobileParty);
+			}
 			if (base.OriginalParty?.SiegeEvent != null && base.OriginalParty.SiegeEvent.BesiegerCamp.HasInvolvedPartyForEventType(base.OriginalParty) && _otherParty != null && base.OriginalParty.SiegeEvent.BesiegedSettlement.HasInvolvedPartyForEventType(_otherParty))
 			{
 				if (base.OriginalParty.SiegeEvent.BesiegedSettlement.MapFaction == Hero.MainHero.MapFaction)
@@ -117,28 +167,21 @@ public class SafePassageBarterable : Barterable
 					GainKingdomInfluenceAction.ApplyForSiegeSafePassageBarter(MobileParty.MainParty, -10f);
 				}
 				Campaign.Current.GameMenuManager.SetNextMenu("menu_siege_safe_passage_accepted");
-				PlayerSiege.ClosePlayerSiege();
+				PlayerSiege.FinalizePlayerSiege();
 				{
-					foreach (MobileParty item in partiesToJoinEnemySide)
+					foreach (MobileParty item in list)
 					{
 						item.Ai.SetDoNotAttackMainParty(32);
 					}
 					return;
 				}
 			}
-			Settlement settlement = (from t in Settlement.All.Where((Settlement t) => base.OriginalParty.MobileParty.IsBandit == t.IsHideout && !base.OriginalParty.MobileParty.MapFaction.IsAtWarWith(t.MapFaction)).ToList()
-				orderby t.GatePosition.DistanceSquared(base.OriginalParty.Position2D)
-				select t).First();
-			foreach (MobileParty item2 in partiesToJoinEnemySide)
+			foreach (MobileParty item2 in list)
 			{
 				item2.Ai.SetDoNotAttackMainParty(32);
-				item2.Ai.SetMoveModeHold();
+				item2.SetMoveModeHold();
 				item2.IgnoreForHours(32f);
 				item2.Ai.SetInitiative(0f, 0.8f, 8f);
-				if (settlement != null)
-				{
-					item2.Ai.SetMovePatrolAroundSettlement(settlement);
-				}
 			}
 			PlayerEncounter.LeaveEncounter = true;
 			if (MobileParty.MainParty.SiegeEvent != null && MobileParty.MainParty.SiegeEvent.BesiegerCamp.HasInvolvedPartyForEventType(PartyBase.MainParty))
@@ -147,16 +190,16 @@ public class SafePassageBarterable : Barterable
 			}
 			if (base.OriginalParty?.MobileParty?.Ai.AiBehaviorPartyBase != null && base.OriginalParty != PartyBase.MainParty)
 			{
-				base.OriginalParty.MobileParty.Ai.SetMoveModeHold();
+				base.OriginalParty.MobileParty.SetMoveModeHold();
 				if (base.OriginalParty.MobileParty.Army != null && MobileParty.MainParty.Army != base.OriginalParty.MobileParty.Army)
 				{
-					base.OriginalParty.MobileParty.Army.LeaderParty.Ai.SetMoveModeHold();
+					base.OriginalParty.MobileParty.Army.LeaderParty.SetMoveModeHold();
 				}
 			}
 		}
 		else
 		{
-			Debug.FailedAssert("Can not find player encounter for safe passage barterable", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "Apply", 189);
+			Debug.FailedAssert("Can not find player encounter for safe passage barterable", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "Apply", 243);
 		}
 	}
 

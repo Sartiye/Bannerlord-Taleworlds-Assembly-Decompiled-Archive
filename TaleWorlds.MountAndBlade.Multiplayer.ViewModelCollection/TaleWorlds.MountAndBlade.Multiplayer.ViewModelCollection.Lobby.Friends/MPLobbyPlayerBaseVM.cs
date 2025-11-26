@@ -4,6 +4,7 @@ using System.Linq;
 using TaleWorlds.Avatar.PlayerServices;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -131,6 +132,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 
 	private string _ratingText;
 
+	private string _gameTypeText;
+
 	private string _ratingID;
 
 	private string _clanName;
@@ -185,9 +188,9 @@ public class MPLobbyPlayerBaseVM : ViewModel
 
 	private HintViewModel _clanLeaderboardHint;
 
-	private ImageIdentifierVM _avatar;
+	private PlayerAvatarImageIdentifierVM _avatar;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
 	private MPLobbySigilItemVM _sigil;
 
@@ -655,6 +658,23 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string GameTypeText
+	{
+		get
+		{
+			return _gameTypeText;
+		}
+		set
+		{
+			if (value != _gameTypeText)
+			{
+				_gameTypeText = value;
+				OnPropertyChangedWithValue(value, "GameTypeText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string RatingID
 	{
 		get
@@ -1114,7 +1134,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Avatar
+	public PlayerAvatarImageIdentifierVM Avatar
 	{
 		get
 		{
@@ -1131,7 +1151,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -1263,6 +1283,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 		AvatarInfoTitleText = new TextObject("{=5tbWdY1j}Avatar").ToString();
 		ChangeText = new TextObject("{=Ba50zU7Z}Change").ToString();
 		LevelTitleText = new TextObject("{=OKUTPdaa}Level").ToString();
+		GameTypeText = new TextObject("{=JPimShCw}Game Type").ToString();
 		InviteToPartyHint = new HintViewModel(new TextObject("{=aZnS9ECC}Invite"));
 		InviteToClanHint = new HintViewModel(new TextObject("{=fLddxLjh}Invite to Clan"));
 		RemoveFriendHint = new HintViewModel(new TextObject("{=d7ysGcsN}Remove Friend"));
@@ -1330,10 +1351,10 @@ public class MPLobbyPlayerBaseVM : ViewModel
 		if (ProvidedID != NetworkMain.GameClient.PlayerID)
 		{
 			LobbyState obj = Game.Current?.GameStateManager?.ActiveState as LobbyState;
-			if (obj != null && obj.HasUserGeneratedContentPrivilege == false)
+			if (obj != null && obj.HasUserGeneratedContentPrivilege == false && ProvidedID.ProvidedType != PlayerIdProvidedTypes.PS && ProvidedID.ProvidedType != PlayerIdProvidedTypes.GDK)
 			{
 				Name = genericName;
-				goto IL_0255;
+				goto IL_0279;
 			}
 		}
 		if (_forcedName != string.Empty && !BannerlordConfig.EnableGenericNames)
@@ -1368,15 +1389,15 @@ public class MPLobbyPlayerBaseVM : ViewModel
 			}
 			Name = foundName;
 		}
-		goto IL_0255;
-		IL_0255:
+		goto IL_0279;
+		IL_0279:
 		NameHint.HintText = new TextObject("{=!}" + Name);
 	}
 
 	protected void UpdateAvatar(bool isKnownPlayer)
 	{
 		UpdateForcedAvatarIndex(isKnownPlayer);
-		Avatar = new ImageIdentifierVM(ProvidedID, _forcedAvatarIndex);
+		Avatar = new PlayerAvatarImageIdentifierVM(ProvidedID, _forcedAvatarIndex);
 	}
 
 	public void UpdatePlayerState(AnotherPlayerData playerData)
@@ -1396,7 +1417,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	{
 		if (playerData == null)
 		{
-			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 276);
+			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 280);
 			return;
 		}
 		PlayerData = playerData;
@@ -1545,7 +1566,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 			RatingID = "norank";
 			RatingText = new TextObject("{=GXosklej}Casual").ToString();
 			RankText = new TextObject("{=56FyokuX}Game mode is casual").ToString();
-			RatingHint.HintText = TextObject.Empty;
+			RatingHint.HintText = TextObject.GetEmpty();
 		}
 		OnRankInfoChanged?.Invoke(gameType);
 		IsRankInfoCasual = gameType != "Skirmish" && gameType != "Captain";
@@ -1559,14 +1580,14 @@ public class MPLobbyPlayerBaseVM : ViewModel
 			ClanInfo clanInfo = ((!isSelfPlayer) ? (await NetworkMain.GameClient.GetPlayerClanInfo(ProvidedID)) : NetworkMain.GameClient.ClanInfo);
 			if (clanInfo != null && (isSelfPlayer || (!isSelfPlayer && clanInfo.Players.Length != 0)))
 			{
-				ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(clanInfo.Sigil), nineGrid: true);
+				ClanBanner = new BannerImageIdentifierVM(new Banner(clanInfo.Sigil), nineGrid: true);
 				ClanName = clanInfo.Name;
 				GameTexts.SetVariable("STR", clanInfo.Tag);
 				ClanTag = new TextObject("{=uTXYEAOg}[{STR}]").ToString();
 			}
 			else
 			{
-				ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(Banner.CreateOneColoredEmptyBanner(99)));
+				ClanBanner = new BannerImageIdentifierVM(Banner.CreateOneColoredEmptyBanner(99));
 				ClanName = new TextObject("{=0DnHFlia}Not In a Clan").ToString();
 				ClanTag = string.Empty;
 			}

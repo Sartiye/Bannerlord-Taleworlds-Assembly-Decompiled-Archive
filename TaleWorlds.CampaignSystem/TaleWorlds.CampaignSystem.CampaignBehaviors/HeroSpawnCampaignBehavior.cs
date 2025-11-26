@@ -6,17 +6,14 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 {
-	public const float DefaultHealingPercentage = 0.015f;
+	private const float DefaultHealingPercentage = 0.015f;
 
 	private const float MinimumScoreForSafeSettlement = 10f;
-
-	private const float CompanionMoveGoodEnoughScore = 1000f;
 
 	public override void RegisterEvents()
 	{
@@ -55,11 +52,11 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 		for (int k = 0; k < num2; k++)
 		{
-			OnNonBanditClanDailyTick(Clan.NonBanditFactions.ElementAt(num3 + k));
+			TrySpawnHeroesAndParties(Clan.NonBanditFactions.ElementAt(num3 + k), isNewGame: true);
 		}
 	}
 
-	private void OnNewGameCreated(CampaignGameStarter starter)
+	private static void OnNewGameCreated(CampaignGameStarter starter)
 	{
 		foreach (Clan nonBanditFaction in Clan.NonBanditFactions)
 		{
@@ -67,7 +64,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 			{
 				SpawnMinorFactionHeroes(nonBanditFaction, firstTime: true);
 				CheckAndAssignClanLeader(nonBanditFaction);
-				nonBanditFaction.UpdateHomeSettlement(null);
+				nonBanditFaction.ConsiderAndUpdateHomeSettlement();
 			}
 		}
 	}
@@ -83,7 +80,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnHeroComesOfAge(Hero hero)
+	private static void OnHeroComesOfAge(Hero hero)
 	{
 		if (!hero.IsDisabled && hero.HeroState != Hero.CharacterStates.Active && !hero.IsTraveling)
 		{
@@ -102,7 +99,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		Settlement settlement = FindASuitableSettlementToTeleportForHero(companion);
+		Settlement settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(companion);
 		if (settlement == null)
 		{
 			settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown);
@@ -117,7 +114,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			if (!hero.IsSpecial && (hero.IsPlayerCompanion || MBRandom.RandomFloat < 0.3f || (hero.CurrentSettlement != null && hero.CurrentSettlement.MapFaction.IsAtWarWith(hero.MapFaction))))
 			{
-				settlement = FindASuitableSettlementToTeleportForHero(hero);
+				settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero);
 			}
 		}
 		else if (hero.IsActive)
@@ -131,12 +128,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 				}
 				else
 				{
-					settlement = FindASuitableSettlementToTeleportForHero(hero);
+					settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero);
 				}
 			}
 			else if (CanHeroMoveToAnotherSettlement(hero))
 			{
-				settlement = FindASuitableSettlementToTeleportForHero(hero, 10f);
+				settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero, 10f);
 			}
 		}
 		if (settlement != null)
@@ -151,17 +148,22 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private void OnNonBanditClanDailyTick(Clan clan)
 	{
+		TrySpawnHeroesAndParties(clan, isNewGame: false);
+	}
+
+	private void TrySpawnHeroesAndParties(Clan clan, bool isNewGame)
+	{
 		if (!clan.IsEliminated && clan != Clan.PlayerClan)
 		{
 			if (clan.IsMinorFaction)
 			{
 				SpawnMinorFactionHeroes(clan, firstTime: false);
 			}
-			ConsiderSpawningLordParties(clan);
+			ConsiderSpawningLordParties(clan, isNewGame);
 		}
 	}
 
-	private bool CanHeroMoveToAnotherSettlement(Hero hero)
+	private static bool CanHeroMoveToAnotherSettlement(Hero hero)
 	{
 		if (hero.Clan != Clan.PlayerClan && !hero.IsTemplate && hero.IsAlive && !hero.IsNotable && !hero.IsHumanPlayerCharacter && !hero.IsPartyLeader && !hero.IsPrisoner && hero.HeroState != Hero.CharacterStates.Disabled && hero.GovernorOf == null && hero.PartyBelongedTo == null && !hero.IsWanderer && hero.PartyBelongedToAsPrisoner == null && hero.CharacterObject.Occupation != Occupation.Special && hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && (hero.CurrentSettlement?.Town == null || (!hero.CurrentSettlement.Town.HasTournament && !hero.CurrentSettlement.IsUnderSiege)))
 		{
@@ -170,111 +172,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private Settlement FindASuitableSettlementToTeleportForHero(Hero hero, float minimumScore = 0f)
+	private static float GetHeroPartyCommandScore(Hero hero)
 	{
-		Settlement settlement = null;
-		if (hero.IsNotable)
-		{
-			settlement = hero.BornSettlement;
-		}
-		else
-		{
-			List<Settlement> list = hero.MapFaction.Settlements.Where((Settlement x) => x.IsTown).ToList();
-			if (list.Count > 0)
-			{
-				List<(Settlement, float)> list2 = new List<(Settlement, float)>();
-				foreach (Settlement item in list)
-				{
-					float moveScoreForHero = GetMoveScoreForHero(hero, item.Town);
-					list2.Add((item, (moveScoreForHero >= minimumScore) ? moveScoreForHero : 0f));
-				}
-				settlement = MBRandom.ChooseWeighted(list2);
-			}
-			else
-			{
-				List<Settlement> list3 = new List<Settlement>();
-				List<Settlement> list4 = new List<Settlement>();
-				foreach (Town allTown in Town.AllTowns)
-				{
-					if (allTown.MapFaction.IsAtWarWith(hero.MapFaction))
-					{
-						list4.Add(allTown.Settlement);
-					}
-					else if (allTown.MapFaction != hero.MapFaction)
-					{
-						list3.Add(allTown.Settlement);
-					}
-				}
-				List<(Settlement, float)> list5 = new List<(Settlement, float)>();
-				foreach (Settlement item2 in list3)
-				{
-					float moveScoreForHero2 = GetMoveScoreForHero(hero, item2.Town);
-					list5.Add((item2, (moveScoreForHero2 >= minimumScore) ? moveScoreForHero2 : 0f));
-				}
-				settlement = MBRandom.ChooseWeighted(list5);
-				if (settlement == null)
-				{
-					list5 = new List<(Settlement, float)>();
-					foreach (Settlement item3 in list4)
-					{
-						float moveScoreForHero3 = GetMoveScoreForHero(hero, item3.Town);
-						list5.Add((item3, (moveScoreForHero3 >= minimumScore) ? moveScoreForHero3 : 0f));
-					}
-					settlement = MBRandom.ChooseWeighted(list5);
-				}
-			}
-		}
-		return settlement;
+		return 3f * (float)hero.GetSkillValue(DefaultSkills.Tactics) + 2f * (float)hero.GetSkillValue(DefaultSkills.Leadership) + (float)hero.GetSkillValue(DefaultSkills.Scouting) + (float)hero.GetSkillValue(DefaultSkills.Steward) + (float)hero.GetSkillValue(DefaultSkills.OneHanded) + (float)hero.GetSkillValue(DefaultSkills.TwoHanded) + (float)hero.GetSkillValue(DefaultSkills.Polearm) + (float)hero.GetSkillValue(DefaultSkills.Riding) + ((hero.Clan.Leader == hero) ? 1000f : 0f) + ((hero.GovernorOf == null) ? 500f : 0f) + (float)(hero.IsNoncombatant ? (-5000) : 0);
 	}
 
-	private float GetHeroPartyCommandScore(Hero hero)
-	{
-		return 3f * (float)hero.GetSkillValue(DefaultSkills.Tactics) + 2f * (float)hero.GetSkillValue(DefaultSkills.Leadership) + (float)hero.GetSkillValue(DefaultSkills.Scouting) + (float)hero.GetSkillValue(DefaultSkills.Steward) + (float)hero.GetSkillValue(DefaultSkills.OneHanded) + (float)hero.GetSkillValue(DefaultSkills.TwoHanded) + (float)hero.GetSkillValue(DefaultSkills.Polearm) + (float)hero.GetSkillValue(DefaultSkills.Riding) + ((hero.Clan.Leader == hero) ? 1000f : 0f) + ((hero.GovernorOf == null) ? 500f : 0f);
-	}
-
-	private float GetMoveScoreForHero(Hero hero, Town fief)
-	{
-		Clan clan = hero.Clan;
-		float num = 1E-06f;
-		if (!fief.IsUnderSiege && !fief.MapFaction.IsAtWarWith(hero.MapFaction))
-		{
-			num = (FactionManager.IsAlliedWithFaction(fief.MapFaction, hero.MapFaction) ? 0.01f : 1E-05f);
-			if (fief.MapFaction == hero.MapFaction)
-			{
-				num += 10f;
-				if (fief.IsTown)
-				{
-					num += 100f;
-				}
-				if (fief.OwnerClan == clan)
-				{
-					num += (fief.IsTown ? 500f : 100f);
-				}
-				if (fief.HasTournament)
-				{
-					num += 400f;
-				}
-			}
-			foreach (Hero item in fief.Settlement.HeroesWithoutParty)
-			{
-				if (clan != null && item.Clan == clan)
-				{
-					num += (fief.IsTown ? 100f : 10f);
-				}
-			}
-			if (fief.Settlement.IsStarving)
-			{
-				num *= 0.1f;
-			}
-			if (hero.CurrentSettlement == fief.Settlement)
-			{
-				num *= 3f;
-			}
-		}
-		return num;
-	}
-
-	private void ConsiderSpawningLordParties(Clan clan)
+	private void ConsiderSpawningLordParties(Clan clan, bool isNewGame)
 	{
 		int partyLimitForTier = Campaign.Current.Models.ClanTierModel.GetPartyLimitForTier(clan, clan.Tier);
 		int count = clan.WarPartyComponents.Count;
@@ -293,7 +196,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 			float num2 = CalculateScoreToCreateParty(clan);
 			if (GetHeroPartyCommandScore(bestAvailableCommander) + num2 > 100f)
 			{
-				MobileParty mobileParty = SpawnLordParty(bestAvailableCommander);
+				MobileParty mobileParty = SpawnLordParty(bestAvailableCommander, isNewGame);
 				if (mobileParty != null)
 				{
 					GiveInitialItemsToParty(mobileParty);
@@ -302,12 +205,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private float CalculateScoreToCreateParty(Clan clan)
+	private static float CalculateScoreToCreateParty(Clan clan)
 	{
 		return (float)(clan.Fiefs.Count * 100 - clan.WarPartyComponents.Count * 100) + (float)clan.Gold * 0.01f + (clan.IsMinorFaction ? 200f : 0f) + ((clan.WarPartyComponents.Count > 0) ? 0f : 200f);
 	}
 
-	private Hero GetBestAvailableCommander(Clan clan)
+	private static Hero GetBestAvailableCommander(Clan clan)
 	{
 		Hero hero = null;
 		float num = 0f;
@@ -345,47 +248,52 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		return hero;
 	}
 
-	private MobileParty SpawnLordParty(Hero hero)
+	private MobileParty SpawnLordParty(Hero hero, bool isNewGame)
 	{
 		if (hero.GovernorOf != null)
 		{
 			ChangeGovernorAction.RemoveGovernorOf(hero);
 		}
 		Settlement settlement = SettlementHelper.GetBestSettlementToSpawnAround(hero);
-		if (settlement != null && settlement.MapFaction == hero.MapFaction)
+		if (settlement == null || settlement.MapFaction != hero.MapFaction)
 		{
-			return MobilePartyHelper.SpawnLordParty(hero, settlement);
+			settlement = hero.MapFaction.InitialHomeSettlement;
 		}
-		if (hero.MapFaction.InitialPosition.IsValid)
+		if (settlement == null)
 		{
-			return MobilePartyHelper.SpawnLordParty(hero, hero.MapFaction.InitialPosition, 30f);
+			settlement = Settlement.All.First((Settlement x) => x.Culture == hero.Culture);
 		}
-		foreach (Settlement item in Settlement.All)
+		MobileParty mobileParty = MobilePartyHelper.SpawnLordParty(hero, settlement.GatePosition, Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) / 2f);
+		if (isNewGame)
 		{
-			if (item.Culture == hero.Culture)
+			int num = (int)((float)(mobileParty.Party.PartySizeLimit - mobileParty.MemberRoster.TotalManCount) * MBRandom.RandomFloatRanged(0.75f, 0.9f));
+			PartyTemplateObject defaultPartyTemplate = mobileParty.LordPartyComponent.Owner.Clan.DefaultPartyTemplate;
+			List<(CharacterObject, float)> list = new List<(CharacterObject, float)>();
+			foreach (PartyTemplateStack stack in defaultPartyTemplate.Stacks)
 			{
-				settlement = item;
-				break;
+				list.Add((stack.Character, (float)(stack.MinValue + stack.MaxValue) / 2f));
+			}
+			for (int i = 0; i < num; i++)
+			{
+				CharacterObject element = MBRandom.ChooseWeighted(list);
+				mobileParty.AddElementToMemberRoster(element, 1);
 			}
 		}
-		if (settlement != null)
-		{
-			return MobilePartyHelper.SpawnLordParty(hero, settlement);
-		}
-		return MobilePartyHelper.SpawnLordParty(hero, Settlement.All.GetRandomElement());
+		return mobileParty;
 	}
 
 	private void GiveInitialItemsToParty(MobileParty heroParty)
 	{
-		float num = (254f + Campaign.AverageDistanceBetweenTwoFortifications * 4.54f) / 2f;
+		float num = 2f * Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
 		foreach (Settlement settlement in Campaign.Current.Settlements)
 		{
 			if (!settlement.IsVillage)
 			{
 				continue;
 			}
-			float num2 = heroParty.Position2D.Distance(settlement.Position2D);
-			if (!(num2 < num))
+			float estimatedLandRatio;
+			float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(heroParty, settlement, isTargetingPort: false, heroParty.NavigationCapability, out estimatedLandRatio);
+			if (!(distance < num))
 			{
 				continue;
 			}
@@ -393,13 +301,13 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 			{
 				ItemObject item = production.Item1;
 				float item2 = production.Item2;
-				float num3 = ((item.ItemType == ItemObject.ItemTypeEnum.Horse && item.HorseComponent.IsRideable && !item.HorseComponent.IsPackAnimal) ? 7f : (item.IsFood ? 0.1f : 0f));
-				float num4 = ((float)heroParty.MemberRoster.TotalManCount + 2f) / 200f;
-				float num5 = 1f - num2 / num;
-				int num6 = MBRandom.RoundRandomized(num3 * item2 * num5 * num4);
-				if (num6 > 0)
+				float num2 = ((item.ItemType == ItemObject.ItemTypeEnum.Horse && item.HorseComponent.IsRideable && !item.HorseComponent.IsPackAnimal) ? 7f : (item.IsFood ? 0.1f : 0f));
+				float num3 = ((float)heroParty.MemberRoster.TotalManCount + 2f) / 200f;
+				float num4 = 1f - distance / num;
+				int num5 = MBRandom.RoundRandomized(num2 * item2 * num4 * num3);
+				if (num5 > 0)
 				{
-					heroParty.ItemRoster.AddToCounts(item, num6);
+					heroParty.ItemRoster.AddToCounts(item, num5);
 				}
 			}
 		}
@@ -409,14 +317,14 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 	{
 		if (clan.Leader == null || clan.Leader.IsDead)
 		{
-			Hero hero = clan.Lords.FirstOrDefaultQ((Hero x) => x.IsAlive);
+			Hero hero = clan.AliveLords.FirstOrDefault();
 			if (hero != null)
 			{
 				clan.SetLeader(hero);
 			}
 			else
 			{
-				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 598);
+				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 428);
 			}
 		}
 	}
@@ -431,7 +339,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private static void SpawnMinorFactionHeroes(Clan clan, bool firstTime)
 	{
-		int num = Campaign.Current.Models.MinorFactionsModel.MinorFactionHeroLimit - clan.Lords.Count((Hero x) => x.IsAlive);
+		int num = Campaign.Current.Models.MinorFactionsModel.MinorFactionHeroLimit - clan.AliveLords.Count;
 		if (num <= 0)
 		{
 			return;
@@ -454,7 +362,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 		if (clan.MinorFactionCharacterTemplates == null || clan.MinorFactionCharacterTemplates.IsEmpty())
 		{
-			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 631);
+			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 466);
 			return;
 		}
 		for (int j = 0; j < num; j++)
@@ -466,7 +374,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	public void OnGovernorChanged(Town fortification, Hero oldGovernor, Hero newGovernor)
+	private void OnGovernorChanged(Town fortification, Hero oldGovernor, Hero newGovernor)
 	{
 		if (oldGovernor != null && oldGovernor.Clan != null)
 		{

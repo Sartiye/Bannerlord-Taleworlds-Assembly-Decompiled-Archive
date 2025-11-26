@@ -22,7 +22,7 @@ public class AgentVisualHolder : IAgentVisual
 		_bodyProperties = bodyProperties;
 	}
 
-	public void SetAction(ActionIndexCache actionName, float startProgress = 0f, bool forceFaceMorphRestart = true)
+	public void SetAction(in ActionIndexCache actionName, float startProgress = 0f, bool forceFaceMorphRestart = true)
 	{
 	}
 
@@ -98,5 +98,10 @@ public class AgentVisualHolder : IAgentVisual
 
 	public void Refresh(bool needBatchedVersionForWeaponMeshes, AgentVisualsData data, bool forceUseFaceCache = false)
 	{
+	}
+
+	void IAgentVisual.SetAction(in ActionIndexCache actionName, float startProgress, bool forceFaceMorphRestart)
+	{
+		SetAction(in actionName, startProgress, forceFaceMorphRestart);
 	}
 }

@@ -4,7 +4,7 @@ public enum ConversationContext
 {
 	Default,
 	CapturedLord,
-	FreedHero,
+	FreeOrCapturePrisonerHero,
 	PartyEncounter,
 	BarterResult
 }

@@ -8,7 +8,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.CharacterDevelopment;
 
-public class TraitLevelingHelper
+public static class TraitLevelingHelper
 {
 	private const int LordExecutedHonorPenalty = -1000;
 
@@ -24,30 +24,27 @@ public class TraitLevelingHelper
 
 	private const int PersuasionDefectionCalculatingBonus = 20;
 
-	private static void AddPlayerTraitXPAndLogEntry(TraitObject trait, int xpValue, ActionNotes context, Hero referenceHero)
+	public static void UpdateTraitXPAccordingToTraitLevels()
 	{
-		int traitLevel = Hero.MainHero.GetTraitLevel(trait);
-		Campaign.Current.PlayerTraitDeveloper.AddTraitXp(trait, xpValue);
-		if (traitLevel != Hero.MainHero.GetTraitLevel(trait))
+		foreach (TraitObject item in TraitObject.All)
 		{
-			CampaignEventDispatcher.Instance.OnPlayerTraitChanged(trait, traitLevel);
-		}
-		if (TaleWorlds.Library.MathF.Abs(xpValue) >= 10)
-		{
-			LogEntry.AddLogEntry(new PlayerReputationChangesLogEntry(trait, referenceHero, context));
+			int traitLevel = Hero.MainHero.GetTraitLevel(item);
+			if (traitLevel != 0)
+			{
+				int traitXpRequiredForTraitLevel = Campaign.Current.Models.CharacterDevelopmentModel.GetTraitXpRequiredForTraitLevel(item, traitLevel);
+				Campaign.Current.PlayerTraitDeveloper.SetPropertyValue(item, traitXpRequiredForTraitLevel);
+			}
 		}
 	}
 
 	public static void OnBattleWon(MapEvent mapEvent, float contribution)
 	{
-		float num = 0f;
 		float strengthRatio = mapEvent.GetMapEventSide(PlayerEncounter.Current.PlayerSide).StrengthRatio;
-		if (strengthRatio > 0.9f)
+		if (strengthRatio > 9f)
 		{
-			num = TaleWorlds.Library.MathF.Min(20f, TaleWorlds.Library.MathF.Sqrt(mapEvent.StrengthOfSide[(int)mapEvent.GetOtherSide(PlayerEncounter.Current.PlayerSide)]) * strengthRatio);
+			int xpValue = (int)(MBMath.Map(strengthRatio, 9f, 10f, 5f, 20f) * contribution);
+			AddPlayerTraitXPAndLogEntry(DefaultTraits.Valor, xpValue, ActionNotes.BattleValor, null);
 		}
-		int xpValue = (int)(num * contribution);
-		AddPlayerTraitXPAndLogEntry(DefaultTraits.Valor, xpValue, ActionNotes.BattleValor, null);
 	}
 
 	public static void OnTroopsSacrificed()
@@ -97,6 +94,11 @@ public class TraitLevelingHelper
 		}
 	}
 
+	public static void OnIssueSolvedThroughQuest(Hero targetHero, TraitObject trait, int xp)
+	{
+		AddPlayerTraitXPAndLogEntry(trait, xp, ActionNotes.QuestSuccess, targetHero);
+	}
+
 	public static void OnIssueSolvedThroughAlternativeSolution(Hero targetHero, Tuple<TraitObject, int>[] effectedTraits)
 	{
 		foreach (Tuple<TraitObject, int> tuple in effectedTraits)
@@ -128,6 +130,36 @@ public class TraitLevelingHelper
 		foreach (TraitObject trait in effectedTraits)
 		{
 			AddPlayerTraitXPAndLogEntry(trait, Campaign.Current.Models.SiegeAftermathModel.GetSiegeAftermathTraitXpChangeForPlayer(trait, settlement, aftermathType), ActionNotes.SiegeAftermath, null);
+		}
+	}
+
+	public static void OnIncidentResolved(TraitObject trait, int xpValue)
+	{
+		AddPlayerTraitXPAndLogEntry(trait, xpValue, ActionNotes.DefaultNote, Hero.MainHero);
+	}
+
+	private static void AddPlayerTraitXPAndLogEntry(TraitObject trait, int xpValue, ActionNotes context, Hero referenceHero)
+	{
+		int traitLevel = Hero.MainHero.GetTraitLevel(trait);
+		AddTraitXp(trait, xpValue);
+		if (traitLevel != Hero.MainHero.GetTraitLevel(trait))
+		{
+			CampaignEventDispatcher.Instance.OnPlayerTraitChanged(trait, traitLevel);
+		}
+		if (TaleWorlds.Library.MathF.Abs(xpValue) >= 10)
+		{
+			LogEntry.AddLogEntry(new PlayerReputationChangesLogEntry(trait, referenceHero, context));
+		}
+	}
+
+	private static void AddTraitXp(TraitObject trait, int xpAmount)
+	{
+		xpAmount += Campaign.Current.PlayerTraitDeveloper.GetPropertyValue(trait);
+		Campaign.Current.Models.CharacterDevelopmentModel.GetTraitLevelForTraitXp(Hero.MainHero, trait, xpAmount, out var traitLevel, out var traitXp);
+		Campaign.Current.PlayerTraitDeveloper.SetPropertyValue(trait, traitXp);
+		if (traitLevel != Hero.MainHero.GetTraitLevel(trait))
+		{
+			Hero.MainHero.SetTraitLevel(trait, traitLevel);
 		}
 	}
 }

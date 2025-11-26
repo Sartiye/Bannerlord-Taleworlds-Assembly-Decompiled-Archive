@@ -80,9 +80,9 @@ public class OptionsGamepadVisualWidget : Widget
 		}
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 		_isKeysDirty = true;
 		if (child is OptionsGamepadOptionItemListPanel optionsGamepadOptionItemListPanel && _allChildKeyItems.Contains(optionsGamepadOptionItemListPanel))
 		{

@@ -26,7 +26,7 @@ public class NewBornFemaleHeroSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		CharacterObject characterObject = CharacterObject.All.First((CharacterObject h) => h.StringId == "cutscene_midwife");
@@ -39,7 +39,7 @@ public class NewBornFemaleHeroSceneNotificationItem : SceneNotificationData
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(MaleHero, equipment));
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(FemaleHero, equipment2));
 		list.Add(new SceneNotificationCharacter(characterObject, equipment3));
-		return list;
+		return list.ToArray();
 	}
 
 	public NewBornFemaleHeroSceneNotificationItem(Hero maleHero, Hero femaleHero, CampaignTime creationTime)

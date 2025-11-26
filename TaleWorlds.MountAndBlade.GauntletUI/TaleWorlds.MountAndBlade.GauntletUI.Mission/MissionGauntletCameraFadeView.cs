@@ -18,7 +18,7 @@ public class MissionGauntletCameraFadeView : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		_dataSource = new BindingListFloatItem(0f);
-		_layer = new GauntletLayer(100000);
+		_layer = new GauntletLayer("MissionCameraFade", 100000);
 		_layer.LoadMovie("CameraFade", _dataSource);
 		base.MissionScreen.AddLayer(_layer);
 	}

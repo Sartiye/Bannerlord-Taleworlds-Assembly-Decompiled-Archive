@@ -68,7 +68,7 @@ public class LauncherOnlineImageTextureProvider : TextureProvider
 		{
 			if (_retryCount > 10)
 			{
-				Debug.FailedAssert("Couldn't download " + _onlineSourceUrl, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\LauncherOnlineImageTextureProvider.cs", "Tick", 68);
+				Debug.FailedAssert("Couldn't download " + _onlineSourceUrl, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\LauncherOnlineImageTextureProvider.cs", "Tick", 68);
 				_requiresRetry = false;
 			}
 			else
@@ -125,11 +125,11 @@ public class LauncherOnlineImageTextureProvider : TextureProvider
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\LauncherOnlineImageTextureProvider.cs", "RefreshOnlineImage", 130);
+			Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\LauncherOnlineImageTextureProvider.cs", "RefreshOnlineImage", 130);
 		}
 	}
 
-	public override Texture GetTexture(TwoDimensionContext twoDimensionContext, string name)
+	protected override Texture OnGetTextureForRender(TwoDimensionContext twoDimensionContext, string name)
 	{
 		return _texture;
 	}

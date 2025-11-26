@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class EquipmentSelectionModel : GameModel
+public abstract class EquipmentSelectionModel : MBGameModel<EquipmentSelectionModel>
 {
 	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForHeroComeOfAge(Hero hero, bool isCivilian);
 

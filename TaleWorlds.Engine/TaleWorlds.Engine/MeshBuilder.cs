@@ -7,7 +7,7 @@ namespace TaleWorlds.Engine;
 
 public class MeshBuilder
 {
-	[EngineStruct("rglMeshBuilder_face_corner", false)]
+	[EngineStruct("rglMeshBuilder_face_corner", false, null)]
 	public struct FaceCorner
 	{
 		public int vertexIndex;
@@ -19,7 +19,7 @@ public class MeshBuilder
 		public uint color;
 	}
 
-	[EngineStruct("rglMeshBuilder_face", false)]
+	[EngineStruct("rglMeshBuilder_face", false, null)]
 	public struct Face
 	{
 		public int fc0;

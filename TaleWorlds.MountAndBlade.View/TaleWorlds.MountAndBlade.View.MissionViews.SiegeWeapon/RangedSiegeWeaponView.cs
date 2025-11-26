@@ -30,11 +30,11 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 
 	public Camera Camera { get; private set; }
 
-	public GameEntity CameraHolder => RangedSiegeWeapon.cameraHolder;
+	public GameEntity CameraHolder => RangedSiegeWeapon.CameraHolder;
 
 	public Agent PilotAgent => RangedSiegeWeapon.PilotAgent;
 
-	internal void Initialize(RangedSiegeWeapon rangedSiegeWeapon, MissionScreen missionScreen)
+	public void Initialize(RangedSiegeWeapon rangedSiegeWeapon, MissionScreen missionScreen)
 	{
 		RangedSiegeWeapon = rangedSiegeWeapon;
 		MissionScreen = missionScreen;
@@ -78,16 +78,19 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 
 	protected virtual void HandleUserInput(float dt)
 	{
-		if (PilotAgent != null && PilotAgent.IsMainAgent && CameraHolder != null)
+		if (CameraHolder != null && ((PilotAgent != null && PilotAgent.IsMainAgent) || RangedSiegeWeapon.PlayerForceUse))
 		{
 			if (!_isInWeaponCameraMode)
 			{
 				_isInWeaponCameraMode = true;
 				StartUsingWeaponCamera();
 			}
-			HandleUserCameraRotation(dt);
+			if (RangedSiegeWeapon.PlayerForceUse)
+			{
+				HandleUserCameraRotation(dt);
+			}
 		}
-		if (_isInWeaponCameraMode && (PilotAgent == null || !PilotAgent.IsMainAgent))
+		if (_isInWeaponCameraMode && (PilotAgent == null || !PilotAgent.IsMainAgent) && !RangedSiegeWeapon.PlayerForceUse)
 		{
 			_isInWeaponCameraMode = false;
 			ResetCamera();
@@ -99,7 +102,7 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 	{
 		Camera = Camera.CreateCamera();
 		float aspectRatio = Screen.AspectRatio;
-		Camera.SetFovVertical(System.MathF.PI / 3f, aspectRatio, 0.1f, 1000f);
+		Camera.SetFovVertical(System.MathF.PI / 3f, aspectRatio, 0.1f, 12500f);
 		Camera.Entity = CameraHolder;
 		MatrixFrame frame = CameraHolder.GetFrame();
 		Vec3 eulerAngles = frame.rotation.GetEulerAngles();
@@ -116,15 +119,8 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 
 	protected virtual void StartUsingWeaponCamera()
 	{
-		if (CameraHolder != null && Camera.Entity != null)
-		{
-			MissionScreen.CustomCamera = Camera;
-			Agent.Main.IsLookDirectionLocked = true;
-		}
-		else
-		{
-			Debug.FailedAssert("Camera entities are null.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\SiegeWeapon\\RangedSiegeWeaponView.cs", "StartUsingWeaponCamera", 140);
-		}
+		MissionScreen.CustomCamera = Camera;
+		Agent.Main.IsLookDirectionLocked = true;
 	}
 
 	private void ResetCamera()
@@ -176,12 +172,12 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 		bool flag = false;
 		float num = 0f;
 		float num2 = 0f;
-		if (PilotAgent != null && PilotAgent.IsMainAgent)
+		if (PilotAgent != null && (PilotAgent.IsMainAgent || RangedSiegeWeapon.PlayerForceUse))
 		{
 			if (UsesMouseForAiming)
 			{
 				InputContext input = MissionScreen.SceneLayer.Input;
-				float num3 = dt / 0.0006f;
+				float num3 = dt * 1666.6666f;
 				float num4 = input.GetMouseMoveX() + num3 * input.GetGameKeyAxis("CameraAxisX");
 				float num5 = input.GetMouseMoveY() + (0f - num3) * input.GetGameKeyAxis("CameraAxisY");
 				if (NativeConfig.InvertMouse)

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.BarterSystem.Barterables;
@@ -49,7 +50,7 @@ public class LeaveKingdomAsClanBarterable : Barterable
 			float num3 = 0.01f;
 			float num4 = -0.5f;
 			float clanStrength = Campaign.Current.Models.DiplomacyModel.GetClanStrength(base.OriginalOwner.Clan);
-			num = ((faction.IsClan && FactionManager.IsAtWarAgainstFaction(faction, base.OriginalOwner.Clan.Kingdom)) ? (clanStrength * num2) : ((!FactionManager.IsAlliedWithFaction(faction, base.OriginalOwner.Clan.Kingdom)) ? (clanStrength * num3) : (clanStrength * num4)));
+			num = ((faction.IsClan && FactionManager.IsAtWarAgainstFaction(faction, base.OriginalOwner.Clan.Kingdom)) ? (clanStrength * num2) : ((!DiplomacyHelper.IsSameFactionAndNotEliminated(faction, base.OriginalOwner.Clan.Kingdom)) ? (clanStrength * num3) : (clanStrength * num4)));
 		}
 		return (int)num;
 	}
@@ -69,7 +70,7 @@ public class LeaveKingdomAsClanBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(BannerCode.CreateFrom(base.OriginalOwner.Clan.Banner));
+		return new BannerImageIdentifier(base.OriginalOwner.Clan.Banner);
 	}
 
 	public override string GetEncyclopediaLink()

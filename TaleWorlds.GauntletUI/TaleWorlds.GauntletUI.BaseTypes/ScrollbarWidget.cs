@@ -161,7 +161,9 @@ public class ScrollbarWidget : ImageWidget
 			if (!_handleClicked)
 			{
 				_handleClicked = true;
-				_localClickPos = base.EventManager.MousePosition - Handle.GlobalPosition;
+				ref Rectangle2D areaRect = ref Handle.AreaRect;
+				Vector2 screenPosition = base.EventManager.MousePosition;
+				_localClickPos = areaRect.TransformScreenPositionToLocal(in screenPosition);
 			}
 			HandleMouseMove();
 		}
@@ -179,8 +181,8 @@ public class ScrollbarWidget : ImageWidget
 		if (Handle != null)
 		{
 			base.IsPressed = true;
-			Vector2 mousePosition = base.EventManager.MousePosition;
-			_localClickPos = mousePosition - Handle.GlobalPosition;
+			Vector2 screenPosition = base.EventManager.MousePosition;
+			_localClickPos = Handle.AreaRect.TransformScreenPositionToLocal(in screenPosition);
 			if (_localClickPos.X < -5f)
 			{
 				_localClickPos.X = -5f;

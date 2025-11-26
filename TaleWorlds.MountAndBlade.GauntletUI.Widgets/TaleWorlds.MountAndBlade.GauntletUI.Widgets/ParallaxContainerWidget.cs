@@ -34,9 +34,9 @@ public class ParallaxContainerWidget : Widget
 		}
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 		if (child is ParallaxItemBrushWidget item)
 		{
 			_parallaxItems.Remove(item);

@@ -32,6 +32,8 @@ public class CampaignTickCacheDataStore
 
 	private MobileParty[] _exitingSettlementMobilePartyList;
 
+	private MobileParty[] _navigationTransitionedMobilePartyList;
+
 	private int[] _movingPartyIndices;
 
 	private int _currentFrameMovingPartyCount;
@@ -40,15 +42,29 @@ public class CampaignTickCacheDataStore
 
 	private int _currentFrameStationaryPartyCount;
 
+	private int[] _transitioningArmyLeaderPartyIndices;
+
+	private int _currentFrameTransitioningArmyLeaderCount;
+
+	private int[] _transitioningPartyIndices;
+
+	private int _currentFrameTransitioningCount;
+
 	private int[] _movingArmyLeaderPartyIndices;
 
 	private int _currentFrameMovingArmyLeaderCount;
+
+	private int[] _stationaryArmyLeaderPartyIndices;
+
+	private int _currentFrameStationaryArmyLeaderCount;
 
 	private int _currentTotalMobilePartyCapacity;
 
 	private int _gridChangeCount;
 
 	private int _exitingSettlementCount;
+
+	private int _navigationTransitionedCount;
 
 	private float _currentDt;
 
@@ -60,13 +76,19 @@ public class CampaignTickCacheDataStore
 
 	private readonly TWParallel.ParallelForAuxPredicate _parallelArrangePartyIndicesPredicate;
 
-	private readonly TWParallel.ParallelForAuxPredicate _parallelTickArmiesPredicate;
+	private readonly TWParallel.ParallelForAuxPredicate _parallelTickMovingArmiesPredicate;
+
+	private readonly TWParallel.ParallelForAuxPredicate _parallelTickTransitioningArmiesPredicate;
+
+	private readonly TWParallel.ParallelForAuxPredicate _parallelTickTransitioningPredicate;
 
 	private readonly TWParallel.ParallelForAuxPredicate _parallelTickMovingPartiesPredicate;
 
 	private readonly TWParallel.ParallelForAuxPredicate _parallelTickStationaryPartiesPredicate;
 
 	private readonly TWParallel.ParallelForAuxPredicate _parallelCheckExitingSettlementsPredicate;
+
+	private readonly TWParallel.ParallelForAuxPredicate _parallelTickStationaryArmyLeaderPredicate;
 
 	private readonly MobilePartyComparer _mobilePartyComparer;
 
@@ -76,10 +98,13 @@ public class CampaignTickCacheDataStore
 		_parallelInitializeCachedPartyVariablesPredicate = ParallelInitializeCachedPartyVariables;
 		_parallelCacheTargetPartyVariablesAtFrameStartPredicate = ParallelCacheTargetPartyVariablesAtFrameStart;
 		_parallelArrangePartyIndicesPredicate = ParallelArrangePartyIndices;
-		_parallelTickArmiesPredicate = ParallelTickArmies;
+		_parallelTickMovingArmiesPredicate = ParallelTickMovingArmies;
 		_parallelTickMovingPartiesPredicate = ParallelTickMovingParties;
+		_parallelTickStationaryArmyLeaderPredicate = ParallelTickStationaryArmyLeaderParties;
 		_parallelTickStationaryPartiesPredicate = ParallelTickStationaryParties;
 		_parallelCheckExitingSettlementsPredicate = ParallelCheckExitingSettlements;
+		_parallelTickTransitioningArmiesPredicate = ParallelTickTransitioningArmyLeaders;
+		_parallelTickTransitioningPredicate = ParallelTickTransitioningParties;
 	}
 
 	internal void ValidateMobilePartyTickDataCache(int currentTotalMobilePartyCount)
@@ -93,6 +118,10 @@ public class CampaignTickCacheDataStore
 		_currentFrameMovingArmyLeaderCount = -1;
 		_gridChangeCount = -1;
 		_exitingSettlementCount = -1;
+		_currentFrameStationaryArmyLeaderCount = -1;
+		_navigationTransitionedCount = -1;
+		_currentFrameTransitioningArmyLeaderCount = -1;
+		_currentFrameTransitioningCount = -1;
 	}
 
 	private void InitializeCacheArrays()
@@ -102,9 +131,13 @@ public class CampaignTickCacheDataStore
 		_gridChangeMobilePartyList = new MobileParty[num];
 		_exitingSettlementMobilePartyList = new MobileParty[num];
 		_currentTotalMobilePartyCapacity = num;
+		_navigationTransitionedMobilePartyList = new MobileParty[num];
 		_movingPartyIndices = new int[num];
 		_stationaryPartyIndices = new int[num];
+		_transitioningArmyLeaderPartyIndices = new int[num];
+		_transitioningPartyIndices = new int[num];
 		_movingArmyLeaderPartyIndices = new int[num];
+		_stationaryArmyLeaderPartyIndices = new int[num];
 	}
 
 	internal void InitializeDataCache()
@@ -115,11 +148,33 @@ public class CampaignTickCacheDataStore
 		InitializeCacheArrays();
 	}
 
+	private void ParallelTickTransitioningArmyLeaders(int startInclusive, int endExclusive)
+	{
+		for (int i = startInclusive; i < endExclusive; i++)
+		{
+			int num = _transitioningArmyLeaderPartyIndices[i];
+			MobileParty.CachedPartyVariables variables = _cacheData[num].LocalVariables;
+			Campaign.Current.MobileParties[num].FillCurrentTickMoveDataForMovingArmyLeader(ref variables, _currentDt, _currentRealDt);
+			Campaign.Current.MobileParties[num].CommonTransitioningPartyTick(ref variables, ref _navigationTransitionedCount, ref _navigationTransitionedMobilePartyList, _currentDt);
+		}
+	}
+
+	private void ParallelTickTransitioningParties(int startInclusive, int endExclusive)
+	{
+		for (int i = startInclusive; i < endExclusive; i++)
+		{
+			int num = _transitioningPartyIndices[i];
+			MobileParty.CachedPartyVariables variables = _cacheData[num].LocalVariables;
+			Campaign.Current.MobileParties[num].FillCurrentTickMoveDataForMovingMobileParty(ref variables, _currentDt, _currentRealDt);
+			Campaign.Current.MobileParties[num].CommonTransitioningPartyTick(ref variables, ref _navigationTransitionedCount, ref _navigationTransitionedMobilePartyList, _currentDt);
+		}
+	}
+
 	private void ParallelCheckExitingSettlements(int startInclusive, int endExclusive)
 	{
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
-			Campaign.Current.MobileParties[i].CheckExitingSettlementParallel(ref _exitingSettlementCount, ref _exitingSettlementMobilePartyList);
+			Campaign.Current.MobileParties[i].CheckExitingSettlementParallel(ref _exitingSettlementCount, ref _exitingSettlementMobilePartyList, ref _gridChangeCount, ref _gridChangeMobilePartyList);
 		}
 	}
 
@@ -137,7 +192,7 @@ public class CampaignTickCacheDataStore
 	{
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
-			_cacheData[i].MobileParty.Ai.CacheTargetPartyVariablesAtFrameStart(ref _cacheData[i].LocalVariables);
+			_cacheData[i].MobileParty.CacheTargetPartyVariablesAtFrameStart(ref _cacheData[i].LocalVariables);
 		}
 	}
 
@@ -145,7 +200,12 @@ public class CampaignTickCacheDataStore
 	{
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
+			MobileParty mobileParty = _cacheData[i].MobileParty;
 			MobileParty.CachedPartyVariables localVariables = _cacheData[i].LocalVariables;
+			if (!mobileParty.IsActive)
+			{
+				continue;
+			}
 			if (localVariables.IsMoving)
 			{
 				if (localVariables.IsArmyLeader)
@@ -159,15 +219,33 @@ public class CampaignTickCacheDataStore
 					_movingPartyIndices[num2] = i;
 				}
 			}
+			else if (localVariables.IsArmyLeader)
+			{
+				if (localVariables.IsTransitionInProgress)
+				{
+					int num3 = Interlocked.Increment(ref _currentFrameTransitioningArmyLeaderCount);
+					_transitioningArmyLeaderPartyIndices[num3] = i;
+				}
+				else
+				{
+					int num4 = Interlocked.Increment(ref _currentFrameStationaryArmyLeaderCount);
+					_stationaryArmyLeaderPartyIndices[num4] = i;
+				}
+			}
+			else if (localVariables.IsTransitionInProgress && !localVariables.IsAttachedArmyMember)
+			{
+				int num5 = Interlocked.Increment(ref _currentFrameTransitioningCount);
+				_transitioningPartyIndices[num5] = i;
+			}
 			else
 			{
-				int num3 = Interlocked.Increment(ref _currentFrameStationaryPartyCount);
-				_stationaryPartyIndices[num3] = i;
+				int num6 = Interlocked.Increment(ref _currentFrameStationaryPartyCount);
+				_stationaryPartyIndices[num6] = i;
 			}
 		}
 	}
 
-	private void ParallelTickArmies(int startInclusive, int endExclusive)
+	private void ParallelTickMovingArmies(int startInclusive, int endExclusive)
 	{
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
@@ -175,8 +253,9 @@ public class CampaignTickCacheDataStore
 			PartyTickCachePerParty partyTickCachePerParty = _cacheData[num];
 			MobileParty mobileParty = partyTickCachePerParty.MobileParty;
 			MobileParty.CachedPartyVariables variables = partyTickCachePerParty.LocalVariables;
-			mobileParty.TickForMovingArmyLeader(ref variables, _currentDt, _currentRealDt);
-			mobileParty.TickForMobileParty2(ref variables, _currentRealDt, ref _gridChangeCount, ref _gridChangeMobilePartyList);
+			mobileParty.FillCurrentTickMoveDataForMovingArmyLeader(ref variables, _currentDt, _currentRealDt);
+			mobileParty.TryToMoveThePartyWithCurrentTickMoveData(ref variables, ref _gridChangeCount, ref _gridChangeMobilePartyList);
+			_cacheData[num].LocalVariables = variables;
 			mobileParty.ValidateSpeed();
 		}
 	}
@@ -189,8 +268,9 @@ public class CampaignTickCacheDataStore
 			PartyTickCachePerParty partyTickCachePerParty = _cacheData[num];
 			MobileParty mobileParty = partyTickCachePerParty.MobileParty;
 			MobileParty.CachedPartyVariables variables = partyTickCachePerParty.LocalVariables;
-			mobileParty.TickForMovingMobileParty(ref variables, _currentDt, _currentRealDt);
-			mobileParty.TickForMobileParty2(ref variables, _currentRealDt, ref _gridChangeCount, ref _gridChangeMobilePartyList);
+			mobileParty.FillCurrentTickMoveDataForMovingMobileParty(ref variables, _currentDt, _currentRealDt);
+			mobileParty.TryToMoveThePartyWithCurrentTickMoveData(ref variables, ref _gridChangeCount, ref _gridChangeMobilePartyList);
+			_cacheData[num].LocalVariables = variables;
 		}
 	}
 
@@ -203,7 +283,20 @@ public class CampaignTickCacheDataStore
 			MobileParty mobileParty = partyTickCachePerParty.MobileParty;
 			MobileParty.CachedPartyVariables variables = partyTickCachePerParty.LocalVariables;
 			mobileParty.TickForStationaryMobileParty(ref variables, _currentDt, _currentRealDt);
-			mobileParty.TickForMobileParty2(ref variables, _currentRealDt, ref _gridChangeCount, ref _gridChangeMobilePartyList);
+			_cacheData[num].LocalVariables = variables;
+		}
+	}
+
+	private void ParallelTickStationaryArmyLeaderParties(int startInclusive, int endExclusive)
+	{
+		for (int i = startInclusive; i < endExclusive; i++)
+		{
+			int num = _stationaryArmyLeaderPartyIndices[i];
+			PartyTickCachePerParty partyTickCachePerParty = _cacheData[num];
+			MobileParty mobileParty = partyTickCachePerParty.MobileParty;
+			MobileParty.CachedPartyVariables variables = partyTickCachePerParty.LocalVariables;
+			mobileParty.TickForStationaryMobileParty(ref variables, _currentDt, _currentRealDt);
+			_cacheData[num].LocalVariables = variables;
 		}
 	}
 
@@ -226,8 +319,11 @@ public class CampaignTickCacheDataStore
 		TWParallel.For(0, count, _parallelInitializeCachedPartyVariablesPredicate);
 		TWParallel.For(0, count, _parallelCacheTargetPartyVariablesAtFrameStartPredicate);
 		TWParallel.For(0, count, _parallelArrangePartyIndicesPredicate);
-		TWParallel.For(0, _currentFrameMovingArmyLeaderCount + 1, _parallelTickArmiesPredicate);
+		TWParallel.For(0, _currentFrameMovingArmyLeaderCount + 1, _parallelTickMovingArmiesPredicate);
+		TWParallel.For(0, _currentFrameTransitioningArmyLeaderCount + 1, _parallelTickTransitioningArmiesPredicate);
 		TWParallel.For(0, _currentFrameMovingPartyCount + 1, _parallelTickMovingPartiesPredicate);
+		TWParallel.For(0, _currentFrameTransitioningCount + 1, _parallelTickTransitioningPredicate);
+		TWParallel.For(0, _currentFrameStationaryArmyLeaderCount + 1, _parallelTickStationaryArmyLeaderPredicate);
 		TWParallel.For(0, _currentFrameStationaryPartyCount + 1, _parallelTickStationaryPartiesPredicate);
 		UpdateVisibilitiesAroundMainParty();
 		Array.Sort(_gridChangeMobilePartyList, 0, _gridChangeCount + 1, _mobilePartyComparer);
@@ -236,27 +332,42 @@ public class CampaignTickCacheDataStore
 		{
 			current.MobilePartyLocator.UpdateLocator(_gridChangeMobilePartyList[i]);
 		}
+		Array.Sort(_navigationTransitionedMobilePartyList, 0, _navigationTransitionedCount + 1, _mobilePartyComparer);
+		for (int j = 0; j < _navigationTransitionedCount + 1; j++)
+		{
+			_navigationTransitionedMobilePartyList[j].FinishNavigationTransitionInternal();
+		}
 	}
 
 	private void UpdateVisibilitiesAroundMainParty()
 	{
-		if (!MobileParty.MainParty.CurrentNavigationFace.IsValid() || Campaign.Current.GetSimplifiedTimeControlMode() == CampaignTimeControlMode.Stop)
+		if (MobileParty.MainParty.Position.IsValid() && Campaign.Current.GetSimplifiedTimeControlMode() != 0)
 		{
-			return;
+			if (MobileParty.MainParty.SiegeEvent != null && MobileParty.MainParty.SiegeEvent.BesiegedSettlement.HasPort)
+			{
+				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
+			}
+			else
+			{
+				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.Position, MobileParty.MainParty.SeeingRange);
+			}
 		}
-		float seeingRange = MobileParty.MainParty.SeeingRange;
-		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position2D, seeingRange + 25f);
+	}
+
+	private void UpdateVisibilitiesBasedOnPoint(CampaignVec2 point, float mainPartyVisibilityRange)
+	{
+		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(point.ToVec2(), Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange() + 5f);
 		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
 		{
 			if (!mobileParty.IsMilitia && !mobileParty.IsGarrison)
 			{
-				mobileParty.Party.UpdateVisibilityAndInspected(seeingRange);
+				mobileParty.Party.UpdateVisibilityAndInspected(point, mainPartyVisibilityRange);
 			}
 		}
-		LocatableSearchData<Settlement> data2 = Settlement.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position2D, seeingRange + 25f);
+		LocatableSearchData<Settlement> data2 = Settlement.StartFindingLocatablesAroundPosition(point.ToVec2(), Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange() + 5f);
 		for (Settlement settlement = Settlement.FindNextLocatable(ref data2); settlement != null; settlement = Settlement.FindNextLocatable(ref data2))
 		{
-			settlement.Party.UpdateVisibilityAndInspected(seeingRange);
+			settlement.Party.UpdateVisibilityAndInspected(point, mainPartyVisibilityRange);
 		}
 	}
 }

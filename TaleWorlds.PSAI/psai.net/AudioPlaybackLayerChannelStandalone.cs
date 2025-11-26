@@ -1,5 +1,6 @@
 using System.IO;
 using TaleWorlds.Engine;
+using TaleWorlds.ModuleManager;
 
 namespace psai.net;
 
@@ -30,8 +31,7 @@ public class AudioPlaybackLayerChannelStandalone : IAudioPlaybackLayerChannel
 	public PsaiResult LoadSegment(Segment segment)
 	{
 		_audioData = segment.audioData;
-		_ = Logik.Instance.m_psaiCoreSoundtrackDirectoryName;
-		string pathToClip = System.IO.Path.Combine(Logik.Instance.m_psaiCoreSoundtrackDirectoryName, _audioData.filePathRelativeToProjectDir);
+		string pathToClip = System.IO.Path.Combine(ModuleHelper.GetModuleFullPath(_audioData.moduleId) + "Music/", _audioData.filePathRelativeToProjectDir);
 		Music.LoadClip(index, pathToClip);
 		return PsaiResult.OK;
 	}

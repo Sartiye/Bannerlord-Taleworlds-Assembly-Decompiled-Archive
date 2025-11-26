@@ -96,14 +96,14 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	public override void CalculateGoldGainDueToHighLoyalty(Town town, ref ExplainedNumber explainedNumber)
 	{
-		float num = MBMath.Map(town.Loyalty, ThresholdForTaxBoost, 100f, 0f, 20f);
-		explainedNumber.AddFactor(num * 0.01f, LoyaltyText);
+		float value = MBMath.Map(town.Loyalty, ThresholdForTaxBoost, 100f, 0f, 0.2f);
+		explainedNumber.AddFactor(value, LoyaltyText);
 	}
 
 	public override void CalculateGoldCutDueToLowLoyalty(Town town, ref ExplainedNumber explainedNumber)
 	{
-		float num = MBMath.Map(town.Loyalty, ThresholdForHigherTaxCorruption, ThresholdForTaxCorruption, 50f, 0f);
-		explainedNumber.AddFactor(-1f * num * 0.01f, CorruptionText);
+		float value = MBMath.Map(town.Loyalty, ThresholdForHigherTaxCorruption, ThresholdForTaxCorruption, -0.5f, 0f);
+		explainedNumber.AddFactor(value, CorruptionText);
 	}
 
 	private ExplainedNumber CalculateLoyaltyChangeInternal(Town town, bool includeDescriptions = false)
@@ -177,7 +177,7 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 				{
 					num += 0.5f;
 				}
-				else if (town.Settlement.OwnerClan.IsAtWarWith(notable.SupporterOf))
+				else if (town.MapFaction.IsAtWarWith(notable.SupporterOf.MapFaction))
 				{
 					num += -0.5f;
 				}
@@ -242,7 +242,7 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 		{
 			explainedNumber.Add(2f, DefaultPolicies.ForgivenessOfDebts.Name);
 		}
-		if (kingdom.ActivePolicies.Contains(DefaultPolicies.TribunesOfThePeople))
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.TribunesOfThePeople) && town.IsTown)
 		{
 			explainedNumber.Add(1f, DefaultPolicies.TribunesOfThePeople.Name);
 		}
@@ -275,25 +275,13 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	private void GetSettlementLoyaltyChangeDueToSecurity(Town town, ref ExplainedNumber explainedNumber)
 	{
-		float num = 0f;
-		num = ((town.Security > (float)SettlementLoyaltyChangeDueToSecurityThreshold) ? MBMath.Map(town.Security, SettlementLoyaltyChangeDueToSecurityThreshold, MaximumLoyaltyInSettlement, 0f, HighSecurityLoyaltyEffect) : MBMath.Map(town.Security, 0f, SettlementLoyaltyChangeDueToSecurityThreshold, LowSecurityLoyaltyEffect, 0f));
-		explainedNumber.Add(num, SecurityText);
+		float value = ((town.Security > (float)SettlementLoyaltyChangeDueToSecurityThreshold) ? MBMath.Map(town.Security, SettlementLoyaltyChangeDueToSecurityThreshold, MaximumLoyaltyInSettlement, 0f, HighSecurityLoyaltyEffect) : MBMath.Map(town.Security, 0f, SettlementLoyaltyChangeDueToSecurityThreshold, LowSecurityLoyaltyEffect, 0f));
+		explainedNumber.Add(value, SecurityText);
 	}
 
 	private void GetSettlementLoyaltyChangeDueToProjects(Town town, ref ExplainedNumber explainedNumber)
 	{
-		if (town.BuildingsInProgress.IsEmpty())
-		{
-			BuildingHelper.AddDefaultDailyBonus(town, BuildingEffectEnum.LoyaltyDaily, ref explainedNumber);
-		}
-		foreach (Building building in town.Buildings)
-		{
-			float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.Loyalty);
-			if (!building.BuildingType.IsDefaultProject && buildingEffectAmount > 0f)
-			{
-				explainedNumber.Add(buildingEffectAmount, building.Name);
-			}
-		}
+		town.AddEffectOfBuildings(BuildingEffectEnum.Loyalty, ref explainedNumber);
 	}
 
 	private void GetSettlementLoyaltyChangeDueToIssues(Town town, ref ExplainedNumber explainedNumber)
@@ -303,6 +291,6 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	private void GetSettlementLoyaltyChangeDueToLoyaltyDrift(Town town, ref ExplainedNumber explainedNumber)
 	{
-		explainedNumber.Add(-1f * (town.Loyalty - (float)LoyaltyDriftMedium) * 0.1f, LoyaltyDriftText);
+		explainedNumber.Add(-0.1f * (town.Loyalty - (float)LoyaltyDriftMedium), LoyaltyDriftText);
 	}
 }

@@ -7,7 +7,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.FromBattleServer.ToBattleServerManager;
 
 [Serializable]
-[MessageDescription("BattleServer", "BattleServerManager")]
+[MessageDescription("BattleServer", "BattleServerManager", false)]
 public class BattleServerStatsUpdateMessage : Message
 {
 	[JsonProperty]

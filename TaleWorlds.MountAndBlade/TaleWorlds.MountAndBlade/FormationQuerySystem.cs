@@ -8,38 +8,19 @@ namespace TaleWorlds.MountAndBlade;
 
 public class FormationQuerySystem
 {
-	public struct FormationIntegrityDataGroup
-	{
-		public Vec2 AverageVelocityExcludeFarAgents;
-
-		public float DeviationOfPositionsExcludeFarAgents;
-
-		public float AverageMaxUnlimitedSpeedExcludeFarAgents;
-	}
-
 	public readonly Formation Formation;
 
 	private readonly QueryData<float> _formationPower;
 
 	private readonly QueryData<float> _formationMeleeFightingPower;
 
-	private readonly QueryData<Vec2> _averagePosition;
-
-	private readonly QueryData<Vec2> _currentVelocity;
-
-	private float _lastAveragePositionCalculateTime;
-
 	private readonly QueryData<Vec2> _estimatedDirection;
 
 	private readonly QueryData<float> _estimatedInterval;
 
-	private readonly QueryData<WorldPosition> _medianPosition;
-
 	private readonly QueryData<Vec2> _averageAllyPosition;
 
 	private readonly QueryData<float> _idealAverageDisplacement;
-
-	private readonly QueryData<FormationIntegrityDataGroup> _formationIntegrityData;
 
 	private readonly QueryData<MBList<Agent>> _localAllyUnits;
 
@@ -79,8 +60,6 @@ public class FormationQuerySystem
 
 	private readonly QueryData<float> _movementSpeedMaximum;
 
-	private readonly QueryData<float> _movementSpeed;
-
 	private readonly QueryData<float> _maximumMissileRange;
 
 	private readonly QueryData<float> _missileRangeAdjusted;
@@ -115,8 +94,6 @@ public class FormationQuerySystem
 
 	private readonly QueryData<Agent> _closestEnemyAgent;
 
-	private readonly QueryData<Formation> _closestEnemyFormation;
-
 	private readonly QueryData<Formation> _closestSignificantlyLargeEnemyFormation;
 
 	private readonly QueryData<Formation> _fastestSignificantlyLargeEnemyFormation;
@@ -127,113 +104,171 @@ public class FormationQuerySystem
 
 	public float FormationPower => _formationPower.Value;
 
+	public float FormationPowerReadOnly => _formationPower.GetCachedValueUnlessTooOld();
+
 	public float FormationMeleeFightingPower => _formationMeleeFightingPower.Value;
 
-	public Vec2 AveragePosition => _averagePosition.Value;
-
-	public Vec2 CurrentVelocity => _currentVelocity.Value;
+	public float FormationMeleeFightingPowerReadOnly => _formationMeleeFightingPower.GetCachedValueUnlessTooOld();
 
 	public Vec2 EstimatedDirection => _estimatedDirection.Value;
 
+	public Vec2 EstimatedDirectionReadOnly => _estimatedDirection.GetCachedValueUnlessTooOld();
+
 	public float EstimatedInterval => _estimatedInterval.Value;
 
-	public WorldPosition MedianPosition => _medianPosition.Value;
+	public float EstimatedIntervalReadOnly => _estimatedInterval.GetCachedValueUnlessTooOld();
 
 	public Vec2 AverageAllyPosition => _averageAllyPosition.Value;
 
+	public Vec2 AverageAllyPositionReadOnly => _averageAllyPosition.GetCachedValueUnlessTooOld();
+
 	public float IdealAverageDisplacement => _idealAverageDisplacement.Value;
 
-	public FormationIntegrityDataGroup FormationIntegrityData => _formationIntegrityData.Value;
+	public float IdealAverageDisplacementReadOnly => _idealAverageDisplacement.GetCachedValueUnlessTooOld();
 
 	public MBList<Agent> LocalAllyUnits => _localAllyUnits.Value;
 
+	public MBList<Agent> LocalAllyUnitsReadOnly => _localAllyUnits.GetCachedValueUnlessTooOld();
+
 	public MBList<Agent> LocalEnemyUnits => _localEnemyUnits.Value;
+
+	public MBList<Agent> LocalEnemyUnitsReadOnly => _localEnemyUnits.GetCachedValueUnlessTooOld();
 
 	public FormationClass MainClass => _mainClass.Value;
 
+	public FormationClass MainClassReadOnly => _mainClass.GetCachedValueUnlessTooOld();
+
 	public float InfantryUnitRatio => _infantryUnitRatio.Value;
+
+	public float InfantryUnitRatioReadOnly => _infantryUnitRatio.GetCachedValueUnlessTooOld();
 
 	public float HasShieldUnitRatio => _hasShieldUnitRatio.Value;
 
+	public float HasShieldUnitRatioReadOnly => _hasShieldUnitRatio.GetCachedValueUnlessTooOld();
+
 	public float HasThrowingUnitRatio => _hasThrowingUnitRatio.Value;
+
+	public float HasThrowingUnitRatioReadOnly => _hasThrowingUnitRatio.GetCachedValueUnlessTooOld();
 
 	public float RangedUnitRatio => _rangedUnitRatio.Value;
 
+	public float RangedUnitRatioReadOnly => _rangedUnitRatio.GetCachedValueUnlessTooOld();
+
 	public int InsideCastleUnitCountIncludingUnpositioned => _insideCastleUnitCountIncludingUnpositioned.Value;
+
+	public int InsideCastleUnitCountIncludingUnpositionedReadOnly => _insideCastleUnitCountIncludingUnpositioned.GetCachedValueUnlessTooOld();
 
 	public int InsideCastleUnitCountPositioned => _insideCastleUnitCountPositioned.Value;
 
+	public int InsideCastleUnitCountPositionedReadOnly => _insideCastleUnitCountPositioned.GetCachedValueUnlessTooOld();
+
 	public float CavalryUnitRatio => _cavalryUnitRatio.Value;
 
-	public float GetCavalryUnitRatioWithoutExpiration => _cavalryUnitRatio.GetCachedValue();
+	public float CavalryUnitRatioReadOnly => _cavalryUnitRatio.GetCachedValueUnlessTooOld();
 
 	public float RangedCavalryUnitRatio => _rangedCavalryUnitRatio.Value;
 
-	public float GetRangedCavalryUnitRatioWithoutExpiration => _rangedCavalryUnitRatio.GetCachedValue();
+	public float RangedCavalryUnitRatioReadOnly => _rangedCavalryUnitRatio.GetCachedValueUnlessTooOld();
 
 	public bool IsMeleeFormation => _isMeleeFormation.Value;
 
+	public bool IsMeleeFormationReadOnly => _isMeleeFormation.GetCachedValueUnlessTooOld();
+
 	public bool IsInfantryFormation => _isInfantryFormation.Value;
+
+	public bool IsInfantryFormationReadOnly => _isInfantryFormation.GetCachedValueUnlessTooOld();
 
 	public bool HasShield => _hasShield.Value;
 
+	public bool HasShieldReadOnly => _hasShield.GetCachedValueUnlessTooOld();
+
 	public bool HasThrowing => _hasThrowing.Value;
+
+	public bool HasThrowingReadOnly => _hasThrowing.GetCachedValueUnlessTooOld();
 
 	public bool IsRangedFormation => _isRangedFormation.Value;
 
+	public bool IsRangedFormationReadOnly => _isRangedFormation.GetCachedValueUnlessTooOld();
+
 	public bool IsCavalryFormation => _isCavalryFormation.Value;
+
+	public bool IsCavalryFormationReadOnly => _isCavalryFormation.GetCachedValueUnlessTooOld();
 
 	public bool IsRangedCavalryFormation => _isRangedCavalryFormation.Value;
 
+	public bool IsRangedCavalryFormationReadOnly => _isRangedCavalryFormation.GetCachedValueUnlessTooOld();
+
 	public float MovementSpeedMaximum => _movementSpeedMaximum.Value;
 
-	public float MovementSpeed => _movementSpeed.Value;
+	public float MovementSpeedMaximumReadOnly => _movementSpeedMaximum.GetCachedValueUnlessTooOld();
 
 	public float MaximumMissileRange => _maximumMissileRange.Value;
 
+	public float MaximumMissileRangeReadOnly => _maximumMissileRange.GetCachedValueUnlessTooOld();
+
 	public float MissileRangeAdjusted => _missileRangeAdjusted.Value;
+
+	public float MissileRangeAdjustedReadOnly => _missileRangeAdjusted.GetCachedValueUnlessTooOld();
 
 	public float LocalInfantryUnitRatio => _localInfantryUnitRatio.Value;
 
+	public float LocalInfantryUnitRatioReadOnly => _localInfantryUnitRatio.GetCachedValueUnlessTooOld();
+
 	public float LocalRangedUnitRatio => _localRangedUnitRatio.Value;
+
+	public float LocalRangedUnitRatioReadOnly => _localRangedUnitRatio.GetCachedValueUnlessTooOld();
 
 	public float LocalCavalryUnitRatio => _localCavalryUnitRatio.Value;
 
+	public float LocalCavalryUnitRatioReadOnly => _localCavalryUnitRatio.GetCachedValueUnlessTooOld();
+
 	public float LocalRangedCavalryUnitRatio => _localRangedCavalryUnitRatio.Value;
+
+	public float LocalRangedCavalryUnitRatioReadOnly => _localRangedCavalryUnitRatio.GetCachedValueUnlessTooOld();
 
 	public float LocalAllyPower => _localAllyPower.Value;
 
+	public float LocalAllyPowerReadOnly => _localAllyPower.GetCachedValueUnlessTooOld();
+
 	public float LocalEnemyPower => _localEnemyPower.Value;
+
+	public float LocalEnemyPowerReadOnly => _localEnemyPower.GetCachedValueUnlessTooOld();
 
 	public float LocalPowerRatio => _localPowerRatio.Value;
 
+	public float LocalPowerRatioReadOnly => _localPowerRatio.GetCachedValueUnlessTooOld();
+
 	public float CasualtyRatio => _casualtyRatio.Value;
+
+	public float CasualtyRatioReadOnly => _casualtyRatio.GetCachedValueUnlessTooOld();
 
 	public bool IsUnderRangedAttack => _isUnderRangedAttack.Value;
 
+	public bool IsUnderRangedAttackReadOnly => _isUnderRangedAttack.GetCachedValueUnlessTooOld();
+
 	public float UnderRangedAttackRatio => _underRangedAttackRatio.Value;
+
+	public float UnderRangedAttackRatioReadOnly => _underRangedAttackRatio.GetCachedValueUnlessTooOld();
 
 	public float MakingRangedAttackRatio => _makingRangedAttackRatio.Value;
 
+	public float MakingRangedAttackRatioReadOnly => _makingRangedAttackRatio.GetCachedValueUnlessTooOld();
+
 	public Formation MainFormation => _mainFormation.Value;
+
+	public Formation MainFormationReadOnly => _mainFormation.GetCachedValueUnlessTooOld();
 
 	public float MainFormationReliabilityFactor => _mainFormationReliabilityFactor.Value;
 
+	public float MainFormationReliabilityFactorReadOnly => _mainFormationReliabilityFactor.GetCachedValueUnlessTooOld();
+
 	public Vec2 WeightedAverageEnemyPosition => _weightedAverageEnemyPosition.Value;
+
+	public Vec2 WeightedAverageEnemyPositionReadOnly => _weightedAverageEnemyPosition.GetCachedValueUnlessTooOld();
 
 	public Agent ClosestEnemyAgent => _closestEnemyAgent.Value;
 
-	public FormationQuerySystem ClosestEnemyFormation
-	{
-		get
-		{
-			if (_closestEnemyFormation.Value == null || _closestEnemyFormation.Value.CountOfUnits == 0)
-			{
-				_closestEnemyFormation.Expire();
-			}
-			return _closestEnemyFormation.Value?.QuerySystem;
-		}
-	}
+	public Agent ClosestEnemyAgentReadOnly => _closestEnemyAgent.GetCachedValueUnlessTooOld();
 
 	public FormationQuerySystem ClosestSignificantlyLargeEnemyFormation
 	{
@@ -247,6 +282,8 @@ public class FormationQuerySystem
 		}
 	}
 
+	public FormationQuerySystem ClosestSignificantlyLargeEnemyFormationReadOnly => _closestSignificantlyLargeEnemyFormation.GetCachedValueUnlessTooOld()?.QuerySystem;
+
 	public FormationQuerySystem FastestSignificantlyLargeEnemyFormation
 	{
 		get
@@ -259,7 +296,11 @@ public class FormationQuerySystem
 		}
 	}
 
+	public FormationQuerySystem FastestSignificantlyLargeEnemyFormationReadOnly => _fastestSignificantlyLargeEnemyFormation.GetCachedValueUnlessTooOld()?.QuerySystem;
+
 	public Vec2 HighGroundCloseToForeseenBattleGround => _highGroundCloseToForeseenBattleGround.Value;
+
+	public Vec2 HighGroundCloseToForeseenBattleGroundReadOnly => _highGroundCloseToForeseenBattleGround.GetCachedValueUnlessTooOld();
 
 	public FormationQuerySystem(Formation formation)
 	{
@@ -268,32 +309,15 @@ public class FormationQuerySystem
 		Mission mission = Mission.Current;
 		_formationPower = new QueryData<float>(formation.GetFormationPower, 2.5f);
 		_formationMeleeFightingPower = new QueryData<float>(formation.GetFormationMeleeFightingPower, 2.5f);
-		_averagePosition = new QueryData<Vec2>(delegate
-		{
-			Vec2 vec5 = ((formation.CountOfUnitsWithoutDetachedOnes > 1) ? formation.GetAveragePositionOfUnits(excludeDetachedUnits: true, excludePlayer: true) : ((formation.CountOfUnitsWithoutDetachedOnes > 0) ? formation.GetAveragePositionOfUnits(excludeDetachedUnits: true, excludePlayer: false) : formation.OrderPosition));
-			float currentTime3 = Mission.Current.CurrentTime;
-			float num35 = currentTime3 - formationQuerySystem._lastAveragePositionCalculateTime;
-			if (num35 > 0f)
-			{
-				formationQuerySystem._currentVelocity.SetValue((vec5 - formationQuerySystem._averagePosition.GetCachedValue()) * (1f / num35), currentTime3);
-			}
-			formationQuerySystem._lastAveragePositionCalculateTime = currentTime3;
-			return vec5;
-		}, 0.05f);
-		_currentVelocity = new QueryData<Vec2>(delegate
-		{
-			formationQuerySystem._averagePosition.Evaluate(Mission.Current.CurrentTime);
-			return formationQuerySystem._currentVelocity.GetCachedValue();
-		}, 1f);
 		_estimatedDirection = new QueryData<Vec2>(delegate
 		{
 			if (formation.CountOfUnitsWithoutDetachedOnes > 0)
 			{
 				Vec2 averagePositionOfUnits = formation.GetAveragePositionOfUnits(excludeDetachedUnits: true, excludePlayer: true);
-				float num27 = 0f;
-				float num28 = 0f;
+				float num20 = 0f;
+				float num21 = 0f;
 				Vec2 orderLocalAveragePosition = formation.OrderLocalAveragePosition;
-				int num29 = 0;
+				int num22 = 0;
 				foreach (Agent unitsWithoutLooseDetachedOne in formation.UnitsWithoutLooseDetachedOnes)
 				{
 					Vec2? localPositionOfUnitOrDefault2 = formation.Arrangement.GetLocalPositionOfUnitOrDefault(unitsWithoutLooseDetachedOne);
@@ -301,41 +325,41 @@ public class FormationQuerySystem
 					{
 						Vec2 value = localPositionOfUnitOrDefault2.Value;
 						Vec2 asVec = unitsWithoutLooseDetachedOne.Position.AsVec2;
-						num27 += (value.x - orderLocalAveragePosition.x) * (asVec.x - averagePositionOfUnits.x) + (value.y - orderLocalAveragePosition.y) * (asVec.y - averagePositionOfUnits.y);
-						num28 += (value.x - orderLocalAveragePosition.x) * (asVec.y - averagePositionOfUnits.y) - (value.y - orderLocalAveragePosition.y) * (asVec.x - averagePositionOfUnits.x);
-						num29++;
+						num20 += (value.x - orderLocalAveragePosition.x) * (asVec.x - averagePositionOfUnits.x) + (value.y - orderLocalAveragePosition.y) * (asVec.y - averagePositionOfUnits.y);
+						num21 += (value.x - orderLocalAveragePosition.x) * (asVec.y - averagePositionOfUnits.y) - (value.y - orderLocalAveragePosition.y) * (asVec.x - averagePositionOfUnits.x);
+						num22++;
 					}
 				}
-				if (num29 > 0)
+				if (num22 > 0)
 				{
-					float num30 = 1f / (float)num29;
-					num27 *= num30;
-					num28 *= num30;
-					float num31 = TaleWorlds.Library.MathF.Sqrt(num27 * num27 + num28 * num28);
-					if (num31 > 0f)
+					float num23 = 1f / (float)num22;
+					num20 *= num23;
+					num21 *= num23;
+					float num24 = TaleWorlds.Library.MathF.Sqrt(num20 * num20 + num21 * num21);
+					if (num24 > 0f)
 					{
-						float num32 = TaleWorlds.Library.MathF.Acos(MBMath.ClampFloat(num27 / num31, -1f, 1f));
-						Vec2 result5 = Vec2.FromRotation(num32);
-						Vec2 result6 = Vec2.FromRotation(0f - num32);
-						float num33 = 0f;
-						float num34 = 0f;
+						float num25 = TaleWorlds.Library.MathF.Acos(MBMath.ClampFloat(num20 / num24, -1f, 1f));
+						Vec2 result3 = Vec2.FromRotation(num25);
+						Vec2 result4 = Vec2.FromRotation(0f - num25);
+						float num26 = 0f;
+						float num27 = 0f;
 						foreach (Agent unitsWithoutLooseDetachedOne2 in formation.UnitsWithoutLooseDetachedOnes)
 						{
 							Vec2? localPositionOfUnitOrDefault3 = formation.Arrangement.GetLocalPositionOfUnitOrDefault(unitsWithoutLooseDetachedOne2);
 							if (localPositionOfUnitOrDefault3.HasValue)
 							{
-								Vec2 vec3 = result5.TransformToParentUnitF(localPositionOfUnitOrDefault3.Value - orderLocalAveragePosition);
-								Vec2 vec4 = result6.TransformToParentUnitF(localPositionOfUnitOrDefault3.Value - orderLocalAveragePosition);
+								Vec2 vec2 = result3.TransformToParentUnitF(localPositionOfUnitOrDefault3.Value - orderLocalAveragePosition);
+								Vec2 vec3 = result4.TransformToParentUnitF(localPositionOfUnitOrDefault3.Value - orderLocalAveragePosition);
 								Vec2 asVec2 = unitsWithoutLooseDetachedOne2.Position.AsVec2;
-								num33 += (vec3 - asVec2 + averagePositionOfUnits).LengthSquared;
-								num34 += (vec4 - asVec2 + averagePositionOfUnits).LengthSquared;
+								num26 += (vec2 - asVec2 + averagePositionOfUnits).LengthSquared;
+								num27 += (vec3 - asVec2 + averagePositionOfUnits).LengthSquared;
 							}
 						}
-						if (!(num33 < num34))
+						if (!(num26 < num27))
 						{
-							return result6;
+							return result4;
 						}
-						return result5;
+						return result3;
 					}
 				}
 			}
@@ -347,48 +371,36 @@ public class FormationQuerySystem
 			{
 				Vec2 estimatedDirection = formation.QuerySystem.EstimatedDirection;
 				Vec2 currentPosition = formation.CurrentPosition;
-				float num23 = 0f;
-				float num24 = 0f;
+				float num16 = 0f;
+				float num17 = 0f;
 				foreach (Agent unitsWithoutLooseDetachedOne3 in formation.UnitsWithoutLooseDetachedOnes)
 				{
 					Vec2? localPositionOfUnitOrDefault = formation.Arrangement.GetLocalPositionOfUnitOrDefault(unitsWithoutLooseDetachedOne3);
 					if (localPositionOfUnitOrDefault.HasValue)
 					{
-						Vec2 vec2 = estimatedDirection.TransformToLocalUnitF(unitsWithoutLooseDetachedOne3.Position.AsVec2 - currentPosition);
-						Vec2 va = localPositionOfUnitOrDefault.Value - vec2;
+						Vec2 vec = estimatedDirection.TransformToLocalUnitF(unitsWithoutLooseDetachedOne3.Position.AsVec2 - currentPosition);
+						Vec2 va = localPositionOfUnitOrDefault.Value - vec;
 						Vec2 vb = formation.Arrangement.GetLocalPositionOfUnitOrDefaultWithAdjustment(unitsWithoutLooseDetachedOne3, 1f).Value - localPositionOfUnitOrDefault.Value;
 						if (vb.IsNonZero())
 						{
-							float num25 = vb.Normalize();
-							float num26 = Vec2.DotProduct(va, vb);
-							num23 += num26 * num25;
-							num24 += num25 * num25;
+							float num18 = vb.Normalize();
+							float num19 = Vec2.DotProduct(va, vb);
+							num16 += num19 * num18;
+							num17 += num18 * num18;
 						}
 					}
 				}
-				if (num24 != 0f)
+				if (num17 != 0f)
 				{
-					return Math.Max(0f, (0f - num23) / num24 + formation.Interval);
+					return Math.Max(0f, (0f - num16) / num17 + formation.Interval);
 				}
 			}
 			return formation.Interval;
 		}, 0.2f);
-		_medianPosition = new QueryData<WorldPosition>(delegate
-		{
-			if (formation.CountOfUnitsWithoutDetachedOnes != 0)
-			{
-				if (formation.CountOfUnitsWithoutDetachedOnes != 1)
-				{
-					return formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, formationQuerySystem.AveragePosition).GetWorldPosition();
-				}
-				return formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: false, formationQuerySystem.AveragePosition).GetWorldPosition();
-			}
-			return (formation.CountOfUnits != 0) ? ((formation.CountOfUnits != 1) ? formation.GetMedianAgent(excludeDetachedUnits: false, excludePlayer: true, formationQuerySystem.AveragePosition).GetWorldPosition() : formation.GetFirstUnit().GetWorldPosition()) : formation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None);
-		}, 0.05f);
 		_averageAllyPosition = new QueryData<Vec2>(delegate
 		{
-			int num22 = 0;
-			Vec2 zero2 = Vec2.Zero;
+			int num15 = 0;
+			Vec2 zero = Vec2.Zero;
 			foreach (Team team in mission.Teams)
 			{
 				if (team.IsFriendOf(formation.Team))
@@ -397,75 +409,17 @@ public class FormationQuerySystem
 					{
 						if (item.CountOfUnits > 0 && item != formation)
 						{
-							num22 += item.CountOfUnits;
-							zero2 += item.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false) * item.CountOfUnits;
+							num15 += item.CountOfUnits;
+							zero += item.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false) * item.CountOfUnits;
 						}
 					}
 				}
 			}
-			return (num22 > 0) ? (zero2 * (1f / (float)num22)) : formationQuerySystem.AveragePosition;
+			return (num15 > 0) ? (zero * (1f / (float)num15)) : formationQuerySystem.Formation.CachedAveragePosition;
 		}, 5f);
 		_idealAverageDisplacement = new QueryData<float>(() => TaleWorlds.Library.MathF.Sqrt(formation.Width * formation.Width * 0.5f * 0.5f + formation.Depth * formation.Depth * 0.5f * 0.5f) / 2f, 5f);
-		_formationIntegrityData = new QueryData<FormationIntegrityDataGroup>(delegate
-		{
-			FormationIntegrityDataGroup result4 = default(FormationIntegrityDataGroup);
-			if (formation.CountOfUnitsWithoutDetachedOnes > 0)
-			{
-				float num17 = 0f;
-				MBReadOnlyList<IFormationUnit> allUnits = formation.Arrangement.GetAllUnits();
-				int num18 = 0;
-				float distanceBetweenAgentsAdjustment = formation.QuerySystem.EstimatedInterval - formation.Interval;
-				foreach (Agent item2 in allUnits)
-				{
-					Vec2? localPositionOfUnitOrDefaultWithAdjustment = formation.Arrangement.GetLocalPositionOfUnitOrDefaultWithAdjustment(item2, distanceBetweenAgentsAdjustment);
-					if (localPositionOfUnitOrDefaultWithAdjustment.HasValue)
-					{
-						Vec2 vec = formation.QuerySystem.EstimatedDirection.TransformToParentUnitF(localPositionOfUnitOrDefaultWithAdjustment.Value) + formation.CurrentPosition;
-						num18++;
-						num17 += (vec - item2.Position.AsVec2).LengthSquared;
-					}
-				}
-				if (num18 > 0)
-				{
-					float num19 = num17 / (float)num18 * 4f;
-					float num20 = 0f;
-					Vec2 zero = Vec2.Zero;
-					float num21 = 0f;
-					num18 = 0;
-					foreach (Agent item3 in allUnits)
-					{
-						Vec2? localPositionOfUnitOrDefaultWithAdjustment2 = formation.Arrangement.GetLocalPositionOfUnitOrDefaultWithAdjustment(item3, distanceBetweenAgentsAdjustment);
-						if (localPositionOfUnitOrDefaultWithAdjustment2.HasValue)
-						{
-							float lengthSquared = (formation.QuerySystem.EstimatedDirection.TransformToParentUnitF(localPositionOfUnitOrDefaultWithAdjustment2.Value) + formation.CurrentPosition - item3.Position.AsVec2).LengthSquared;
-							if (lengthSquared < num19)
-							{
-								num20 += lengthSquared;
-								zero += item3.AverageVelocity.AsVec2;
-								num21 += item3.MaximumForwardUnlimitedSpeed;
-								num18++;
-							}
-						}
-					}
-					if (num18 > 0)
-					{
-						zero *= 1f / (float)num18;
-						num20 /= (float)num18;
-						num21 /= (float)num18;
-						result4.AverageVelocityExcludeFarAgents = zero;
-						result4.DeviationOfPositionsExcludeFarAgents = TaleWorlds.Library.MathF.Sqrt(num20);
-						result4.AverageMaxUnlimitedSpeedExcludeFarAgents = num21;
-						return result4;
-					}
-				}
-			}
-			result4.AverageVelocityExcludeFarAgents = Vec2.Zero;
-			result4.DeviationOfPositionsExcludeFarAgents = 0f;
-			result4.AverageMaxUnlimitedSpeedExcludeFarAgents = 0f;
-			return result4;
-		}, 1f);
-		_localAllyUnits = new QueryData<MBList<Agent>>(() => mission.GetNearbyAllyAgents(formationQuerySystem.AveragePosition, 30f, formation.Team, formationQuerySystem._localAllyUnits.GetCachedValue()), 5f, new MBList<Agent>());
-		_localEnemyUnits = new QueryData<MBList<Agent>>(() => mission.GetNearbyEnemyAgents(formationQuerySystem.AveragePosition, 30f, formation.Team, formationQuerySystem._localEnemyUnits.GetCachedValue()), 5f, new MBList<Agent>());
+		_localAllyUnits = new QueryData<MBList<Agent>>(() => mission.GetNearbyAllyAgents(formationQuerySystem.Formation.CachedAveragePosition, 30f, formation.Team, formationQuerySystem._localAllyUnits.GetCachedValue()), 5f, new MBList<Agent>());
+		_localEnemyUnits = new QueryData<MBList<Agent>>(() => mission.GetNearbyEnemyAgents(formationQuerySystem.Formation.CachedAveragePosition, 30f, formation.Team, formationQuerySystem._localEnemyUnits.GetCachedValue()), 5f, new MBList<Agent>());
 		_infantryUnitRatio = new QueryData<float>(() => (formation.CountOfUnits > 0) ? ((float)formation.GetCountOfUnitsBelongingToPhysicalClass(FormationClass.Infantry, excludeBannerBearers: false) / (float)formation.CountOfUnits) : 0f, 2.5f);
 		_hasShieldUnitRatio = new QueryData<float>(() => (formation.CountOfUnits > 0) ? ((float)formation.GetCountOfUnitsWithCondition(QueryLibrary.HasShield) / (float)formation.CountOfUnits) : 0f, 2.5f);
 		_hasThrowingUnitRatio = new QueryData<float>(() => (formation.CountOfUnits > 0) ? ((float)formation.GetCountOfUnitsWithCondition(QueryLibrary.HasThrown) / (float)formation.CountOfUnits) : 0f, 2.5f);
@@ -481,7 +435,6 @@ public class FormationQuerySystem
 		_isRangedCavalryFormation = new QueryData<bool>(() => formationQuerySystem.RangedCavalryUnitRatio > formationQuerySystem.InfantryUnitRatio && formationQuerySystem.RangedCavalryUnitRatio > formationQuerySystem.RangedUnitRatio && formationQuerySystem.RangedCavalryUnitRatio > formationQuerySystem.CavalryUnitRatio, 5f);
 		QueryData<float>.SetupSyncGroup(_infantryUnitRatio, _hasShieldUnitRatio, _rangedUnitRatio, _cavalryUnitRatio, _rangedCavalryUnitRatio, _isMeleeFormation, _isInfantryFormation, _hasShield, _isRangedFormation, _isCavalryFormation, _isRangedCavalryFormation);
 		_movementSpeedMaximum = new QueryData<float>(formation.GetAverageMaximumMovementSpeedOfUnits, 10f);
-		_movementSpeed = new QueryData<float>(formation.GetMovementSpeedOfUnits, 2f);
 		_maximumMissileRange = new QueryData<float>(delegate
 		{
 			if (formation.CountOfUnits == 0)
@@ -525,8 +478,8 @@ public class FormationQuerySystem
 			{
 				return 0f;
 			}
-			int num16 = mission.GetMissionBehavior<CasualtyHandler>()?.GetCasualtyCountOfFormation(formation) ?? 0;
-			return 1f - (float)num16 * 1f / (float)(num16 + formation.CountOfUnits);
+			int num14 = mission.GetMissionBehavior<CasualtyHandler>()?.GetCasualtyCountOfFormation(formation) ?? 0;
+			return 1f - (float)num14 * 1f / (float)(num14 + formation.CountOfUnits);
 		}, 10f);
 		_isUnderRangedAttack = new QueryData<bool>(() => formation.GetUnderAttackTypeOfUnits(10f) == Agent.UnderAttackType.UnderRangedAttack, 3f);
 		_underRangedAttackRatio = new QueryData<float>(delegate
@@ -543,43 +496,19 @@ public class FormationQuerySystem
 		}, 3f);
 		_closestEnemyAgent = new QueryData<Agent>(delegate
 		{
-			float num14 = float.MaxValue;
-			Agent result3 = null;
+			float num12 = float.MaxValue;
+			Agent result2 = null;
 			foreach (Team team2 in mission.Teams)
 			{
 				if (team2.IsEnemyOf(formation.Team))
 				{
 					foreach (Agent activeAgent in team2.ActiveAgents)
 					{
-						float num15 = activeAgent.Position.DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ()));
-						if (num15 < num14)
+						float num13 = activeAgent.Position.DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ()));
+						if (num13 < num12)
 						{
-							num14 = num15;
-							result3 = activeAgent;
-						}
-					}
-				}
-			}
-			return result3;
-		}, 1.5f);
-		_closestEnemyFormation = new QueryData<Formation>(delegate
-		{
-			float num12 = float.MaxValue;
-			Formation result2 = null;
-			foreach (Team team3 in mission.Teams)
-			{
-				if (team3.IsEnemyOf(formation.Team))
-				{
-					foreach (Formation item4 in team3.FormationsIncludingSpecialAndEmpty)
-					{
-						if (item4.CountOfUnits > 0)
-						{
-							float num13 = item4.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ()));
-							if (num13 < num12)
-							{
-								num12 = num13;
-								result2 = item4;
-							}
+							num12 = num13;
+							result2 = activeAgent;
 						}
 					}
 				}
@@ -592,37 +521,37 @@ public class FormationQuerySystem
 			Formation formation4 = null;
 			float num9 = float.MaxValue;
 			Formation formation5 = null;
-			foreach (Team team4 in mission.Teams)
+			foreach (Team team3 in mission.Teams)
 			{
-				if (team4.IsEnemyOf(formation.Team))
+				if (team3.IsEnemyOf(formation.Team))
 				{
-					foreach (Formation item5 in team4.FormationsIncludingSpecialAndEmpty)
+					foreach (Formation item2 in team3.FormationsIncludingSpecialAndEmpty)
 					{
-						if (item5.CountOfUnits > 0)
+						if (item2.CountOfUnits > 0)
 						{
-							if (item5.QuerySystem.FormationPower / formationQuerySystem.FormationPower > 0.2f || item5.QuerySystem.FormationPower * formationQuerySystem.Team.TeamPower / (item5.Team.QuerySystem.TeamPower * formationQuerySystem.FormationPower) > 0.2f)
+							if (item2.QuerySystem.FormationPower / formationQuerySystem.FormationPower > 0.2f || item2.QuerySystem.FormationPower * formationQuerySystem.Team.TeamPower / (item2.Team.QuerySystem.TeamPower * formationQuerySystem.FormationPower) > 0.2f)
 							{
-								float num10 = item5.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ()));
+								float num10 = item2.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ()));
 								if (num10 < num8)
 								{
 									num8 = num10;
-									formation4 = item5;
+									formation4 = item2;
 								}
 							}
 							else if (formation4 == null)
 							{
-								float num11 = item5.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ()));
+								float num11 = item2.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ()));
 								if (num11 < num9)
 								{
 									num9 = num11;
-									formation5 = item5;
+									formation5 = item2;
 								}
 							}
 						}
 					}
 				}
 			}
-			return (formation4 != null) ? formation4 : formation5;
+			return formation4 ?? formation5;
 		}, 1.5f);
 		_fastestSignificantlyLargeEnemyFormation = new QueryData<Formation>(delegate
 		{
@@ -630,37 +559,37 @@ public class FormationQuerySystem
 			Formation formation2 = null;
 			float num5 = float.MaxValue;
 			Formation formation3 = null;
-			foreach (Team team5 in mission.Teams)
+			foreach (Team team4 in mission.Teams)
 			{
-				if (team5.IsEnemyOf(formation.Team))
+				if (team4.IsEnemyOf(formation.Team))
 				{
-					foreach (Formation item6 in team5.FormationsIncludingSpecialAndEmpty)
+					foreach (Formation item3 in team4.FormationsIncludingSpecialAndEmpty)
 					{
-						if (item6.CountOfUnits > 0)
+						if (item3.CountOfUnits > 0)
 						{
-							if (item6.QuerySystem.FormationPower / formationQuerySystem.FormationPower > 0.2f || item6.QuerySystem.FormationPower * formationQuerySystem.Team.TeamPower / (item6.Team.QuerySystem.TeamPower * formationQuerySystem.FormationPower) > 0.2f)
+							if (item3.QuerySystem.FormationPower / formationQuerySystem.FormationPower > 0.2f || item3.QuerySystem.FormationPower * formationQuerySystem.Team.TeamPower / (item3.Team.QuerySystem.TeamPower * formationQuerySystem.FormationPower) > 0.2f)
 							{
-								float num6 = item6.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ())) / (item6.QuerySystem.MovementSpeed * item6.QuerySystem.MovementSpeed);
+								float num6 = item3.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ())) / (item3.CachedMovementSpeed * item3.CachedMovementSpeed);
 								if (num6 < num4)
 								{
 									num4 = num6;
-									formation2 = item6;
+									formation2 = item3;
 								}
 							}
 							else if (formation2 == null)
 							{
-								float num7 = item6.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.AveragePosition, formationQuerySystem.MedianPosition.GetNavMeshZ())) / (item6.QuerySystem.MovementSpeed * item6.QuerySystem.MovementSpeed);
+								float num7 = item3.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ())) / (item3.CachedMovementSpeed * item3.CachedMovementSpeed);
 								if (num7 < num5)
 								{
 									num5 = num7;
-									formation3 = item6;
+									formation3 = item3;
 								}
 							}
 						}
 					}
 				}
 			}
-			return (formation2 != null) ? formation2 : formation3;
+			return formation2 ?? formation3;
 		}, 1.5f);
 		_mainClass = new QueryData<FormationClass>(delegate
 		{
@@ -696,10 +625,10 @@ public class FormationQuerySystem
 		_weightedAverageEnemyPosition = new QueryData<Vec2>(() => formationQuerySystem.Formation.Team.GetWeightedAverageOfEnemies(formationQuerySystem.Formation.CurrentPosition), 0.5f);
 		_highGroundCloseToForeseenBattleGround = new QueryData<Vec2>(delegate
 		{
-			WorldPosition center = formationQuerySystem.MedianPosition;
-			center.SetVec2(formationQuerySystem.AveragePosition);
+			WorldPosition center = formationQuerySystem.Formation.CachedMedianPosition;
+			center.SetVec2(formationQuerySystem.Formation.CachedAveragePosition);
 			WorldPosition referencePosition = formationQuerySystem.Team.MedianTargetFormationPosition;
-			return mission.FindPositionWithBiggestSlopeTowardsDirectionInSquare(ref center, formationQuerySystem.AveragePosition.Distance(formationQuerySystem.Team.MedianTargetFormationPosition.AsVec2) * 0.5f, ref referencePosition).AsVec2;
+			return mission.FindPositionWithBiggestSlopeTowardsDirectionInSquare(ref center, formationQuerySystem.Formation.CachedAveragePosition.Distance(formationQuerySystem.Team.MedianTargetFormationPosition.AsVec2) * 0.5f, ref referencePosition).AsVec2;
 		}, 10f);
 		_insideCastleUnitCountIncludingUnpositioned = new QueryData<int>(() => formationQuerySystem.Formation.CountUnitsOnNavMeshIDMod10(1, includeOnlyPositionedUnits: false), 3f);
 		_insideCastleUnitCountPositioned = new QueryData<int>(() => formationQuerySystem.Formation.CountUnitsOnNavMeshIDMod10(1, includeOnlyPositionedUnits: true), 3f);
@@ -731,13 +660,9 @@ public class FormationQuerySystem
 	{
 		_formationPower.Expire();
 		_formationMeleeFightingPower.Expire();
-		_averagePosition.Expire();
-		_currentVelocity.Expire();
 		_estimatedDirection.Expire();
-		_medianPosition.Expire();
 		_averageAllyPosition.Expire();
 		_idealAverageDisplacement.Expire();
-		_formationIntegrityData.Expire();
 		_localAllyUnits.Expire();
 		_localEnemyUnits.Expire();
 		_mainClass.Expire();
@@ -753,7 +678,6 @@ public class FormationQuerySystem
 		_isCavalryFormation.Expire();
 		_isRangedCavalryFormation.Expire();
 		_movementSpeedMaximum.Expire();
-		_movementSpeed.Expire();
 		_maximumMissileRange.Expire();
 		_missileRangeAdjusted.Expire();
 		_localInfantryUnitRatio.Expire();
@@ -770,7 +694,6 @@ public class FormationQuerySystem
 		_mainFormation.Expire();
 		_mainFormationReliabilityFactor.Expire();
 		_weightedAverageEnemyPosition.Expire();
-		_closestEnemyFormation.Expire();
 		_closestSignificantlyLargeEnemyFormation.Expire();
 		_fastestSignificantlyLargeEnemyFormation.Expire();
 		_highGroundCloseToForeseenBattleGround.Expire();
@@ -810,11 +733,6 @@ public class FormationQuerySystem
 
 	private void InitializeTelemetryScopeNames()
 	{
-	}
-
-	public Vec2 GetAveragePositionWithMaxAge(float age)
-	{
-		return _averagePosition.GetCachedValueWithMaxAge(age);
 	}
 
 	public float GetClassWeightedFactor(float infantryWeight, float rangedWeight, float cavalryWeight, float rangedCavalryWeight)

@@ -1,28 +1,52 @@
 using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
-using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 using TaleWorlds.MountAndBlade.ViewModelCollection;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Missions.Interaction.InteractionItems;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission;
 
 [OverrideView(typeof(MissionAgentStatusUIHandler))]
-public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
+public class MissionGauntletAgentStatus : MissionAgentStatusUIHandler
 {
-	private GauntletLayer _gauntletLayer;
+	protected GauntletLayer _gauntletLayer;
 
-	private MissionAgentStatusVM _dataSource;
+	protected MissionAgentStatusVM _dataSource;
 
-	private MissionMainAgentController _missionMainAgentController;
+	protected MissionMainAgentController _missionMainAgentController;
 
-	private MissionGauntletMainAgentEquipmentControllerView _missionMainAgentEquipmentControllerView;
+	protected MissionGauntletMainAgentEquipmentControllerView _missionMainAgentEquipmentControllerView;
 
-	private DeploymentMissionView _deploymentMissionView;
+	protected MissionHintLogic _missionHintLogic;
 
-	private bool _isInDeployement;
+	protected bool _isInDeployment;
+
+	public MissionAgentStatusVM DataSource => _dataSource;
+
+	public override void AddInteractionMessage(MissionInteractionItemBaseVM message)
+	{
+		base.AddInteractionMessage(message);
+		_dataSource?.InteractionInterface.AddSecondaryMessage(message);
+	}
+
+	public override void RemoveInteractionMessage(MissionInteractionItemBaseVM message)
+	{
+		base.RemoveInteractionMessage(message);
+		_dataSource?.InteractionInterface.RemoveSecondaryMessage(message);
+	}
+
+	public override bool HasInteractionMessage(MissionInteractionItemBaseVM message)
+	{
+		if (_dataSource == null)
+		{
+			return false;
+		}
+		return _dataSource.InteractionInterface.HasSecondaryInteractionMessage(message);
+	}
 
 	public override void OnMissionStateActivated()
 	{
@@ -34,7 +58,7 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 	{
 		base.EarlyStart();
 		_dataSource = new MissionAgentStatusVM(base.Mission, base.MissionScreen.CombatCamera, base.MissionScreen.GetCameraToggleProgress);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MainAgentHUD", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MainAgentHUD", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		_dataSource.TakenDamageController.SetIsEnabled(BannerlordConfig.EnableDamageTakenVisuals);
@@ -51,6 +75,22 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 	protected override void OnDestroyView()
 	{
 		_dataSource.IsAgentStatusAvailable = false;
+	}
+
+	protected override void OnSuspendView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+		}
 	}
 
 	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
@@ -70,23 +110,13 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		_isInDeployement = base.Mission.GetMissionBehavior<BattleDeploymentHandler>() != null;
-		if (_isInDeployement)
-		{
-			_deploymentMissionView = base.Mission.GetMissionBehavior<DeploymentMissionView>();
-			if (_deploymentMissionView != null)
-			{
-				DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-				deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Combine(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
-			}
-		}
+		_isInDeployment = base.Mission.Mode == MissionMode.Deployment;
 	}
 
-	private void OnDeploymentFinish()
+	public override void OnDeploymentFinished()
 	{
-		_isInDeployement = false;
-		DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-		deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Remove(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
+		base.OnDeploymentFinished();
+		_isInDeployment = false;
 	}
 
 	public override void OnMissionScreenFinalize()
@@ -105,8 +135,9 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		_dataSource.IsInDeployement = _isInDeployement;
+		_dataSource.IsInDeployement = _isInDeployment;
 		_dataSource.Tick(dt);
+		_dataSource.InteractionInterface.DisplayInteractionText = !base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen;
 	}
 
 	public override void OnFocusGained(Agent mainAgent, IFocusable focusableObject, bool isInteractable)
@@ -115,10 +146,10 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 		_dataSource?.OnFocusGained(mainAgent, focusableObject, isInteractable);
 	}
 
-	public override void OnAgentInteraction(Agent userAgent, Agent agent)
+	public override void OnAgentInteraction(Agent userAgent, Agent agent, sbyte agentBoneIndex)
 	{
-		base.OnAgentInteraction(userAgent, agent);
-		_dataSource?.OnAgentInteraction(userAgent, agent);
+		base.OnAgentInteraction(userAgent, agent, agentBoneIndex);
+		_dataSource?.OnAgentInteraction(userAgent, agent, agentBoneIndex);
 	}
 
 	public override void OnFocusLost(Agent agent, IFocusable focusableObject)
@@ -160,6 +191,11 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 			_missionMainAgentEquipmentControllerView.OnEquipmentDropInteractionViewToggled += _dataSource.OnEquipmentInteractionViewToggled;
 			_missionMainAgentEquipmentControllerView.OnEquipmentEquipInteractionViewToggled += _dataSource.OnEquipmentInteractionViewToggled;
 		}
+		_missionHintLogic = base.Mission.GetMissionBehavior<MissionHintLogic>();
+		if (_missionHintLogic != null)
+		{
+			_missionHintLogic.OnActiveHintChanged += _dataSource.InteractionInterface.OnActiveMissionHintChanged;
+		}
 	}
 
 	private void UnregisterInteractionEvents()
@@ -175,17 +211,30 @@ public class MissionGauntletAgentStatus : MissionGauntletBattleUIBase
 			_missionMainAgentEquipmentControllerView.OnEquipmentDropInteractionViewToggled -= _dataSource.OnEquipmentInteractionViewToggled;
 			_missionMainAgentEquipmentControllerView.OnEquipmentEquipInteractionViewToggled -= _dataSource.OnEquipmentInteractionViewToggled;
 		}
+		_missionHintLogic = base.Mission.GetMissionBehavior<MissionHintLogic>();
+		if (_missionHintLogic != null)
+		{
+			_missionHintLogic.OnActiveHintChanged -= _dataSource.InteractionInterface.OnActiveMissionHintChanged;
+		}
 	}
 
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
+		UnregisterInteractionEvents();
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
+		RegisterInteractionEvents();
 	}
 }

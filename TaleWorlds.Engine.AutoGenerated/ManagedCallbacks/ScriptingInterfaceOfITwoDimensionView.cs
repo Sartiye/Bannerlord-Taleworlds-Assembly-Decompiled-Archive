@@ -19,7 +19,7 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void AddNewMeshDelegate(UIntPtr pointer, IntPtr vertices, IntPtr uvs, IntPtr indices, int vertexCount, int indexCount, UIntPtr material, ref TwoDimensionMeshDrawData meshDrawData);
+	public delegate void AddNewMeshDelegate(UIntPtr pointer, UIntPtr material, ref TwoDimensionMeshDrawData meshDrawData);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -44,12 +44,17 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateTwoDimensionViewDelegate();
+	public delegate NativeObjectPointer CreateTwoDimensionViewDelegate(byte[] viewName);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void EndFrameDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate NativeObjectPointer GetOrCreateMaterialDelegate(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -69,23 +74,16 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 
 	public static EndFrameDelegate call_EndFrameDelegate;
 
+	public static GetOrCreateMaterialDelegate call_GetOrCreateMaterialDelegate;
+
 	public bool AddCachedTextMesh(UIntPtr pointer, UIntPtr material, ref TwoDimensionTextMeshDrawData meshDrawData)
 	{
 		return call_AddCachedTextMeshDelegate(pointer, material, ref meshDrawData);
 	}
 
-	public void AddNewMesh(UIntPtr pointer, float[] vertices, float[] uvs, uint[] indices, int vertexCount, int indexCount, UIntPtr material, ref TwoDimensionMeshDrawData meshDrawData)
+	public void AddNewMesh(UIntPtr pointer, UIntPtr material, ref TwoDimensionMeshDrawData meshDrawData)
 	{
-		PinnedArrayData<float> pinnedArrayData = new PinnedArrayData<float>(vertices);
-		IntPtr pointer2 = pinnedArrayData.Pointer;
-		PinnedArrayData<float> pinnedArrayData2 = new PinnedArrayData<float>(uvs);
-		IntPtr pointer3 = pinnedArrayData2.Pointer;
-		PinnedArrayData<uint> pinnedArrayData3 = new PinnedArrayData<uint>(indices);
-		IntPtr pointer4 = pinnedArrayData3.Pointer;
-		call_AddNewMeshDelegate(pointer, pointer2, pointer3, pointer4, vertexCount, indexCount, material, ref meshDrawData);
-		pinnedArrayData.Dispose();
-		pinnedArrayData2.Dispose();
-		pinnedArrayData3.Dispose();
+		call_AddNewMeshDelegate(pointer, material, ref meshDrawData);
 	}
 
 	public void AddNewQuadMesh(UIntPtr pointer, UIntPtr material, ref TwoDimensionMeshDrawData meshDrawData)
@@ -117,9 +115,17 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 		call_ClearDelegate(pointer);
 	}
 
-	public TwoDimensionView CreateTwoDimensionView()
+	public TwoDimensionView CreateTwoDimensionView(string viewName)
 	{
-		NativeObjectPointer nativeObjectPointer = call_CreateTwoDimensionViewDelegate();
+		byte[] array = null;
+		if (viewName != null)
+		{
+			int byteCount = _utf8.GetByteCount(viewName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(viewName, 0, viewName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		NativeObjectPointer nativeObjectPointer = call_CreateTwoDimensionViewDelegate(array);
 		TwoDimensionView result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -132,5 +138,17 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 	public void EndFrame(UIntPtr pointer)
 	{
 		call_EndFrameDelegate(pointer);
+	}
+
+	public Material GetOrCreateMaterial(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture)
+	{
+		NativeObjectPointer nativeObjectPointer = call_GetOrCreateMaterialDelegate(pointer, mainTexture, overlayTexture);
+		Material result = null;
+		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
+		{
+			result = new Material(nativeObjectPointer.Pointer);
+			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
+		}
+		return result;
 	}
 }

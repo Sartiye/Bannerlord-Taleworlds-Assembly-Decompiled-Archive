@@ -18,9 +18,9 @@ public class MultiplayerGeneralKillFeedWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (_normalWidgetHeight <= 0f && base.ChildCount > 1)
 		{
 			_normalWidgetHeight = GetChild(0).ScaledSuggestedHeight * base._inverseScaleToUse;

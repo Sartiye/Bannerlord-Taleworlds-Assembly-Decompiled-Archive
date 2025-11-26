@@ -20,7 +20,7 @@ public class MissionGauntletServerStatus : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		_dataSource = new MultiplayerMissionServerStatusVM();
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerServerStatus", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerServerStatus", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		NetworkCommunicator.OnPeerAveragePingUpdated += OnPeerPingUpdated;

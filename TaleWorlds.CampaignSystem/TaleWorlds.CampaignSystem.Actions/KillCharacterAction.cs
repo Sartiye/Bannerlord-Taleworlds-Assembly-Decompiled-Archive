@@ -24,6 +24,7 @@ public static class KillCharacterAction
 		DiedInBattle,
 		WoundedInBattle,
 		Executed,
+		ExecutionAfterMapEvent,
 		Lost
 	}
 
@@ -35,59 +36,66 @@ public static class KillCharacterAction
 		}
 		if (!victim.IsAlive)
 		{
-			Debug.FailedAssert(string.Concat("Victim: ", victim.Name, " is already dead!"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\KillCharacterAction.cs", "ApplyInternal", 40);
+			Debug.FailedAssert(string.Concat("Victim: ", victim.Name, " is already dead!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\KillCharacterAction.cs", "ApplyInternal", 41);
 			return;
 		}
 		if (victim.IsNotable && victim.Issue?.IssueQuest != null)
 		{
-			Debug.FailedAssert("Trying to kill a notable that has quest!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\KillCharacterAction.cs", "ApplyInternal", 47);
+			Debug.FailedAssert("Trying to kill a notable that has quest!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\KillCharacterAction.cs", "ApplyInternal", 48);
 		}
-		if ((victim.PartyBelongedTo?.MapEvent != null || victim.PartyBelongedTo?.SiegeEvent != null) && victim.DeathMark == KillCharacterActionDetail.None)
+		if ((victim.PartyBelongedTo?.MapEvent != null || victim.PartyBelongedTo?.SiegeEvent != null || actionDetail == KillCharacterActionDetail.ExecutionAfterMapEvent) && victim.DeathMark == KillCharacterActionDetail.None)
 		{
 			victim.AddDeathMark(killer, actionDetail);
 			return;
 		}
-		CampaignEventDispatcher.Instance.OnBeforeHeroKilled(victim, killer, actionDetail, showNotification);
 		if (victim.IsHumanPlayerCharacter && !isForced)
 		{
 			CampaignEventDispatcher.Instance.OnBeforeMainCharacterDied(victim, killer, actionDetail, showNotification);
 			return;
 		}
+		CampaignEventDispatcher.Instance.OnBeforeHeroKilled(victim, killer, actionDetail, showNotification);
 		victim.AddDeathMark(killer, actionDetail);
 		victim.EncyclopediaText = CreateObituary(victim, actionDetail);
-		if (victim.Clan != null && (victim.Clan.Leader == victim || victim == Hero.MainHero))
+		if (victim.Clan != null)
 		{
-			if (!victim.Clan.IsEliminated && victim != Hero.MainHero && victim.Clan.Heroes.Any((Hero x) => !x.IsChild && x != victim && x.IsAlive && x.IsLord))
+			if (victim.Clan.Leader == victim || victim == Hero.MainHero)
 			{
-				ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(victim.Clan);
-			}
-			if (victim.Clan.Kingdom != null && victim.Clan.Kingdom.RulingClan == victim.Clan)
-			{
-				List<Clan> list = victim.Clan.Kingdom.Clans.Where((Clan t) => !t.IsEliminated && t.Leader != victim && !t.IsUnderMercenaryService).ToList();
-				if (list.IsEmpty())
+				if (!victim.Clan.IsEliminated && victim != Hero.MainHero && victim.Clan.Heroes.Any((Hero x) => !x.IsChild && x != victim && x.IsAlive && x.IsLord))
 				{
-					if (!victim.Clan.Kingdom.IsEliminated)
-					{
-						DestroyKingdomAction.ApplyByKingdomLeaderDeath(victim.Clan.Kingdom);
-					}
+					ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(victim.Clan);
 				}
-				else if (!victim.Clan.Kingdom.IsEliminated)
+				if (victim.Clan.Kingdom != null && victim.Clan.Kingdom.RulingClan == victim.Clan)
 				{
-					if (list.Count > 1)
+					List<Clan> list = victim.Clan.Kingdom.Clans.Where((Clan t) => !t.IsEliminated && t.Leader != victim && !t.IsUnderMercenaryService).ToList();
+					if (list.IsEmpty())
 					{
-						Clan clanToExclude = ((victim.Clan.Leader == victim || victim.Clan.Leader == null) ? victim.Clan : null);
-						victim.Clan.Kingdom.AddDecision(new KingSelectionKingdomDecision(victim.Clan, clanToExclude), ignoreInfluenceCost: true);
-						if (clanToExclude != null)
+						if (!victim.Clan.Kingdom.IsEliminated)
 						{
-							Clan randomElementWithPredicate = victim.Clan.Kingdom.Clans.GetRandomElementWithPredicate((Clan t) => t != clanToExclude && Campaign.Current.Models.DiplomacyModel.IsClanEligibleToBecomeRuler(t));
-							ChangeRulingClanAction.Apply(victim.Clan.Kingdom, randomElementWithPredicate);
+							DestroyKingdomAction.ApplyByKingdomLeaderDeath(victim.Clan.Kingdom);
 						}
 					}
-					else
+					else if (!victim.Clan.Kingdom.IsEliminated)
 					{
-						ChangeRulingClanAction.Apply(victim.Clan.Kingdom, list[0]);
+						if (list.Count > 1)
+						{
+							Clan clanToExclude = ((victim.Clan.Leader == victim || victim.Clan.Leader == null) ? victim.Clan : null);
+							victim.Clan.Kingdom.AddDecision(new KingSelectionKingdomDecision(victim.Clan, clanToExclude), ignoreInfluenceCost: true);
+							if (clanToExclude != null)
+							{
+								Clan randomElementWithPredicate = victim.Clan.Kingdom.Clans.GetRandomElementWithPredicate((Clan t) => t != clanToExclude && Campaign.Current.Models.DiplomacyModel.IsClanEligibleToBecomeRuler(t));
+								ChangeRulingClanAction.Apply(victim.Clan.Kingdom, randomElementWithPredicate);
+							}
+						}
+						else
+						{
+							ChangeRulingClanAction.Apply(victim.Clan.Kingdom, list[0]);
+						}
 					}
 				}
+			}
+			else
+			{
+				GiveGoldAction.ApplyBetweenCharacters(victim, victim.Clan.Leader, victim.Gold);
 			}
 		}
 		if (victim.PartyBelongedTo != null && (victim.PartyBelongedTo.LeaderHero == victim || victim == Hero.MainHero))
@@ -106,7 +114,7 @@ public static class KillCharacterAction
 			}
 			if (partyBelongedTo != MobileParty.MainParty)
 			{
-				partyBelongedTo.Ai.SetMoveModeHold();
+				partyBelongedTo.SetMoveModeHold();
 				if (victim.Clan != null && victim.Clan.IsRebelClan)
 				{
 					DestroyPartyAction.Apply(null, partyBelongedTo);
@@ -118,24 +126,9 @@ public static class KillCharacterAction
 		{
 			ChangeGovernorAction.RemoveGovernorOf(victim);
 		}
-		if (actionDetail == KillCharacterActionDetail.Executed && killer == Hero.MainHero && victim.Clan != null)
+		if ((actionDetail == KillCharacterActionDetail.Executed || actionDetail == KillCharacterActionDetail.ExecutionAfterMapEvent) && killer == Hero.MainHero && victim.Clan != null && victim.GetTraitLevel(DefaultTraits.Honor) >= 0)
 		{
-			if (victim.GetTraitLevel(DefaultTraits.Honor) >= 0)
-			{
-				TraitLevelingHelper.OnLordExecuted();
-			}
-			foreach (Clan item in Clan.All)
-			{
-				if (!item.IsEliminated && !item.IsBanditFaction && item != Clan.PlayerClan)
-				{
-					bool showQuickNotification;
-					int relationChangeForExecutingHero = Campaign.Current.Models.ExecutionRelationModel.GetRelationChangeForExecutingHero(victim, item.Leader, out showQuickNotification);
-					if (relationChangeForExecutingHero != 0)
-					{
-						ChangeRelationAction.ApplyPlayerRelation(item.Leader, relationChangeForExecutingHero, showQuickNotification);
-					}
-				}
-			}
+			TraitLevelingHelper.OnLordExecuted();
 		}
 		if (victim.Clan != null && !victim.Clan.IsEliminated && !victim.Clan.IsBanditFaction && victim.Clan != Clan.PlayerClan)
 		{
@@ -167,6 +160,10 @@ public static class KillCharacterAction
 			{
 				victim.StayingInSettlement = null;
 			}
+		}
+		if (!victim.IsHumanPlayerCharacter)
+		{
+			victim.OnDeath();
 		}
 	}
 
@@ -200,6 +197,11 @@ public static class KillCharacterAction
 		ApplyInternal(victim, executer, KillCharacterActionDetail.Executed, showNotification, isForced);
 	}
 
+	public static void ApplyByExecutionAfterMapEvent(Hero victim, Hero executer, bool showNotification = true, bool isForced = false)
+	{
+		ApplyInternal(victim, executer, KillCharacterActionDetail.ExecutionAfterMapEvent, showNotification, isForced);
+	}
+
 	public static void ApplyByRemove(Hero victim, bool showNotification = false, bool isForced = true)
 	{
 		ApplyInternal(victim, null, KillCharacterActionDetail.Lost, showNotification, isForced);
@@ -223,11 +225,7 @@ public static class KillCharacterAction
 	private static void MakeDead(Hero victim, bool disbandVictimParty = true)
 	{
 		victim.ChangeState(Hero.CharacterStates.Dead);
-		victim.DeathDay = CampaignTime.Now;
-		if (!victim.IsHumanPlayerCharacter)
-		{
-			victim.OnDeath();
-		}
+		victim.SetDeathDay(CampaignTime.Now);
 		if (victim.PartyBelongedToAsPrisoner != null)
 		{
 			EndCaptivityAction.ApplyByDeath(victim);
@@ -308,9 +306,15 @@ public static class KillCharacterAction
 			{
 				textObject = new TextObject("{=L7qd6qfv}{CHARACTER.FIRSTNAME} was a member of the {CHARACTER.FACTION}. {FURTHER_DETAILS}.");
 			}
-			else
+			else if (hero.Clan != null && hero.Clan.Leader == hero)
 			{
 				textObject = new TextObject("{=mfYzCeGR}{CHARACTER.NAME} was {TITLE} of the {CHARACTER_FACTION_SHORT}. {FURTHER_DETAILS}.");
+				textObject.SetTextVariable("CHARACTER_FACTION_SHORT", hero.MapFaction.InformalName);
+				textObject.SetTextVariable("TITLE", HeroHelper.GetTitleInIndefiniteCase(hero));
+			}
+			else
+			{
+				textObject = new TextObject("{=uWdj1X2c}{CHARACTER.NAME} was a member of the {CHARACTER_FACTION_SHORT}. {FURTHER_DETAILS}.");
 				textObject.SetTextVariable("CHARACTER_FACTION_SHORT", hero.MapFaction.InformalName);
 				textObject.SetTextVariable("TITLE", HeroHelper.GetTitleInIndefiniteCase(hero));
 			}
@@ -326,17 +330,32 @@ public static class KillCharacterAction
 			textObject = new TextObject("{=!}{FURTHER_DETAILS}.");
 		}
 		StringHelpers.SetCharacterProperties("CHARACTER", hero.CharacterObject, textObject, includeDetails: true);
-		TextObject empty = TextObject.Empty;
-		empty = detail switch
+		TextObject empty = TextObject.GetEmpty();
+		switch (detail)
 		{
-			KillCharacterActionDetail.DiedInBattle => new TextObject("{=6pCABUme}{?CHARACTER.GENDER}She{?}He{\\?} died in battle in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			KillCharacterActionDetail.DiedInLabor => new TextObject("{=7Vw6iYNI}{?CHARACTER.GENDER}She{?}He{\\?} died in childbirth in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			KillCharacterActionDetail.Executed => new TextObject("{=9Tq3IAiz}{?CHARACTER.GENDER}She{?}He{\\?} was executed in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			KillCharacterActionDetail.Lost => new TextObject("{=SausWqM5}{?CHARACTER.GENDER}She{?}He{\\?} disappeared in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			KillCharacterActionDetail.Murdered => new TextObject("{=TUDAvcTR}{?CHARACTER.GENDER}She{?}He{\\?} was assassinated in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			KillCharacterActionDetail.WoundedInBattle => new TextObject("{=LsBCQtVX}{?CHARACTER.GENDER}She{?}He{\\?} died of war-wounds in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-			_ => new TextObject("{=HU5n5KTW}{?CHARACTER.GENDER}She{?}He{\\?} died of natural causes in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
-		};
+		case KillCharacterActionDetail.DiedInBattle:
+			empty = new TextObject("{=6pCABUme}{?CHARACTER.GENDER}She{?}He{\\?} died in battle in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		case KillCharacterActionDetail.DiedInLabor:
+			empty = new TextObject("{=7Vw6iYNI}{?CHARACTER.GENDER}She{?}He{\\?} died in childbirth in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		case KillCharacterActionDetail.Executed:
+		case KillCharacterActionDetail.ExecutionAfterMapEvent:
+			empty = new TextObject("{=9Tq3IAiz}{?CHARACTER.GENDER}She{?}He{\\?} was executed in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		case KillCharacterActionDetail.Lost:
+			empty = new TextObject("{=SausWqM5}{?CHARACTER.GENDER}She{?}He{\\?} disappeared in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		case KillCharacterActionDetail.Murdered:
+			empty = new TextObject("{=TUDAvcTR}{?CHARACTER.GENDER}She{?}He{\\?} was assassinated in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		case KillCharacterActionDetail.WoundedInBattle:
+			empty = new TextObject("{=LsBCQtVX}{?CHARACTER.GENDER}She{?}He{\\?} died of war-wounds in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		default:
+			empty = new TextObject("{=HU5n5KTW}{?CHARACTER.GENDER}She{?}He{\\?} died of natural causes in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
+			break;
+		}
 		StringHelpers.SetCharacterProperties("CHARACTER", hero.CharacterObject, empty, includeDetails: true);
 		empty.SetTextVariable("REPUTATION", CharacterHelper.GetReputationDescription(hero.CharacterObject));
 		empty.SetTextVariable("YEAR", CampaignTime.Now.GetYear.ToString());

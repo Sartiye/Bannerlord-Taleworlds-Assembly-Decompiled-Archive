@@ -8,7 +8,9 @@ public class RichTextPart
 
 	internal TextMeshGenerator TextMeshGenerator { get; set; }
 
-	public DrawObject2D DrawObject2D { get; set; }
+	public ImageDrawObject ImageDrawObject { get; set; }
+
+	public TextDrawObject TextDrawObject { get; set; }
 
 	public Font DefaultFont { get; set; }
 

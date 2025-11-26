@@ -5,8 +5,8 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglScript_component_field_holder", false)]
-internal struct ScriptComponentFieldHolder
+[EngineStruct("rglScript_component_field_holder", false, null)]
+public struct ScriptComponentFieldHolder
 {
 	public MatrixFrame matrixFrame;
 

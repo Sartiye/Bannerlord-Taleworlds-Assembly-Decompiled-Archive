@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -86,9 +87,10 @@ public class OptionsKeyItemListPanel : ListPanel
 
 	private void RegisterHoverEvents()
 	{
-		foreach (Widget allChild in base.AllChildren)
+		List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			allChild.boolPropertyChanged += Child_PropertyChanged;
+			allChildrenRecursive[i].boolPropertyChanged += Child_PropertyChanged;
 		}
 	}
 

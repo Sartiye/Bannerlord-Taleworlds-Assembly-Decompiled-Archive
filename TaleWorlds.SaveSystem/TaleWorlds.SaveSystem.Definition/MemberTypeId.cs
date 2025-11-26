@@ -20,4 +20,36 @@ public struct MemberTypeId
 		TypeLevel = typeLevel;
 		LocalSaveId = localSaveId;
 	}
+
+	public override bool Equals(object obj)
+	{
+		if (obj is MemberTypeId memberTypeId)
+		{
+			if (memberTypeId.TypeLevel == TypeLevel)
+			{
+				return memberTypeId.LocalSaveId == LocalSaveId;
+			}
+			return false;
+		}
+		return false;
+	}
+
+	public static bool operator ==(MemberTypeId m1, MemberTypeId m2)
+	{
+		if ((object)m1 == null)
+		{
+			return (object)m2 == null;
+		}
+		return m1.Equals(m2);
+	}
+
+	public static bool operator !=(MemberTypeId m1, MemberTypeId m2)
+	{
+		return !(m1 == m2);
+	}
+
+	public override int GetHashCode()
+	{
+		return (17 * 31 + TypeLevel) * 31 + LocalSaveId;
+	}
 }

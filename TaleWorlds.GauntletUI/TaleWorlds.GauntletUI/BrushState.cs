@@ -105,10 +105,10 @@ public struct BrushState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.FontColor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextGlowColor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextOutlineColor:
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsFloat", 102);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsFloat", 102);
 			return 0f;
 		default:
-			Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsFloat", 106);
+			Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsFloat", 106);
 			return 0f;
 		}
 	}
@@ -133,10 +133,10 @@ public struct BrushState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextHueFactor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextSaturationFactor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsColor", 132);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsColor", 132);
 			return Color.Black;
 		default:
-			Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsColor", 135);
+			Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsColor", 135);
 			return Color.Black;
 		}
 	}
@@ -145,10 +145,10 @@ public struct BrushState : IBrushAnimationState, IDataSource
 	{
 		if (propertyType == BrushAnimationProperty.BrushAnimationPropertyType.FontColor || (uint)(propertyType - 10) <= 11u)
 		{
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsSprite", 157);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsSprite", 157);
 			return null;
 		}
-		Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsSprite", 161);
+		Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "GetValueAsSprite", 161);
 		return null;
 	}
 
@@ -189,10 +189,10 @@ public struct BrushState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.FontColor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextGlowColor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextOutlineColor:
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsFloat", 204);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsFloat", 204);
 			break;
 		default:
-			Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsFloat", 208);
+			Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsFloat", 208);
 			break;
 		}
 	}
@@ -220,10 +220,10 @@ public struct BrushState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextHueFactor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextSaturationFactor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsColor", 237);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsColor", 237);
 			break;
 		default:
-			Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsColor", 240);
+			Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsColor", 240);
 			break;
 		}
 	}
@@ -232,11 +232,11 @@ public struct BrushState : IBrushAnimationState, IDataSource
 	{
 		if (propertyType == BrushAnimationProperty.BrushAnimationPropertyType.FontColor || (uint)(propertyType - 10) <= 11u)
 		{
-			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsSprite", 262);
+			Debug.FailedAssert("Invalid value type for BrushState.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsSprite", 262);
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid BrushState property.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsSprite", 265);
+			Debug.FailedAssert("Invalid BrushState property.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushState.cs", "SetValueAsSprite", 265);
 		}
 	}
 

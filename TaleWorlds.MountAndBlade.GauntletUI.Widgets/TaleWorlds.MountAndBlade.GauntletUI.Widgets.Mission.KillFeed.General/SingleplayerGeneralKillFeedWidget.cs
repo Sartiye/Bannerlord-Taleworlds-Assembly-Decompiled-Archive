@@ -1,14 +1,13 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.KillFeed.General;
 
 public class SingleplayerGeneralKillFeedWidget : Widget
 {
-	private float _normalWidgetHeight;
-
-	private int _speedUpWidgetLimit = 10;
+	private float _normalWidgetHeight = -1f;
 
 	public float VerticalPaddingAmount { get; set; } = 3f;
 
@@ -18,9 +17,9 @@ public class SingleplayerGeneralKillFeedWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (_normalWidgetHeight <= 0f && base.ChildCount > 1)
 		{
 			_normalWidgetHeight = GetChild(0).ScaledSuggestedHeight * base._inverseScaleToUse;
@@ -28,31 +27,29 @@ public class SingleplayerGeneralKillFeedWidget : Widget
 		for (int i = 0; i < base.ChildCount; i++)
 		{
 			Widget child = GetChild(i);
-			child.PositionYOffset = Mathf.Lerp(child.PositionYOffset, GetVerticalPositionOfChildByIndex(i, base.ChildCount), 0.35f);
+			child.PositionYOffset = Mathf.Lerp(child.PositionYOffset, GetVerticalPositionOfChildByIndex(i), 0.35f);
 		}
 	}
 
 	protected override void OnChildAdded(Widget child)
 	{
 		base.OnChildAdded(child);
-		child.PositionYOffset = GetVerticalPositionOfChildByIndex(child.GetSiblingIndex(), base.ChildCount);
+		child.PositionYOffset = GetVerticalPositionOfChildByIndex(child.GetSiblingIndex());
 		UpdateSpeedModifiers();
 	}
 
-	private float GetVerticalPositionOfChildByIndex(int indexOfChild, int numOfTotalChild)
+	private float GetVerticalPositionOfChildByIndex(int indexOfChild)
 	{
-		return (_normalWidgetHeight + VerticalPaddingAmount) * (float)(numOfTotalChild - 1 - indexOfChild);
+		return (_normalWidgetHeight + VerticalPaddingAmount) * (float)(base.ChildCount - indexOfChild - 1);
 	}
 
 	private void UpdateSpeedModifiers()
 	{
-		if (base.ChildCount > _speedUpWidgetLimit)
+		for (int i = 0; i < base.ChildCount; i++)
 		{
-			float speedModifier = (float)(base.ChildCount - _speedUpWidgetLimit) / 20f + 1f;
-			for (int i = 0; i < base.ChildCount - _speedUpWidgetLimit; i++)
-			{
-				(GetChild(i) as SingleplayerGeneralKillFeedItemWidget).SetSpeedModifier(speedModifier);
-			}
+			SingleplayerGeneralKillFeedItemWidget obj = GetChild(i) as SingleplayerGeneralKillFeedItemWidget;
+			float speedModifier = MathF.Pow(base.ChildCount - i, 0.33f);
+			obj.SetSpeedModifier(speedModifier);
 		}
 	}
 }

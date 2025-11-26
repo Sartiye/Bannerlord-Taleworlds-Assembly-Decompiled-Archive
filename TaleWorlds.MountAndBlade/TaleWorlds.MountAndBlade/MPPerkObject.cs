@@ -538,7 +538,7 @@ public class MPPerkObject : IReadOnlyPerkObject
 				}
 				else
 				{
-					Debug.FailedAssert("Unknown child element", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPPerkObject.cs", ".ctor", 750);
+					Debug.FailedAssert("Unknown child element", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPPerkObject.cs", ".ctor", 750);
 				}
 			}
 		}

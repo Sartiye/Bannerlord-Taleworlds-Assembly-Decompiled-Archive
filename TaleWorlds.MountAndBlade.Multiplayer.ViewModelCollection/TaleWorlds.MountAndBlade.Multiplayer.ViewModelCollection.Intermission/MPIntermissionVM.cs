@@ -5,6 +5,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.MountAndBlade.Multiplayer.NetworkComponents;
 using TaleWorlds.ObjectSystem;
 
@@ -691,13 +692,14 @@ public class MPIntermissionVM : ViewModel
 			MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam1).GetValue(out string value);
 			MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam2).GetValue(out string value2);
 			NextFactionACultureID = value;
-			BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionACultureID);
-			NextFactionACultureColor1 = Color.FromUint(@object?.Color ?? 0);
-			NextFactionACultureColor2 = Color.FromUint(@object?.Color2 ?? 0);
 			NextFactionBCultureID = value2;
-			BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionBCultureID);
-			NextFactionBCultureColor1 = Color.FromUint(object2?.Color2 ?? 0);
-			NextFactionBCultureColor2 = Color.FromUint(object2?.Color ?? 0);
+			BasicCultureObject attackerCulture = (string.IsNullOrEmpty(NextFactionACultureID) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionACultureID));
+			BasicCultureObject defenderCulture = (string.IsNullOrEmpty(NextFactionACultureID) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionBCultureID));
+			MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(attackerCulture, defenderCulture);
+			NextFactionACultureColor1 = multiplayerBattleColors.AttackerColors.Color1;
+			NextFactionACultureColor2 = multiplayerBattleColors.AttackerColors.Color2;
+			NextFactionBCultureColor1 = multiplayerBattleColors.DefenderColors.Color1;
+			NextFactionBCultureColor2 = multiplayerBattleColors.DefenderColors.Color2;
 		}
 		if (_currentIntermissionState == MultiplayerIntermissionState.CountingForMission)
 		{
@@ -742,20 +744,25 @@ public class MPIntermissionVM : ViewModel
 			MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam1).GetValue(out string value4);
 			IsFactionAValid = !IsEndGameTimerEnabled && !string.IsNullOrEmpty(value4) && _currentIntermissionState != MultiplayerIntermissionState.CountingForMapVote;
 			NextFactionACultureID = (IsEndGameTimerEnabled ? string.Empty : value4);
+			BasicCultureObject attackerCulture2 = (string.IsNullOrEmpty(NextFactionACultureID) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionACultureID));
+			BasicCultureObject defenderCulture2 = (string.IsNullOrEmpty(NextFactionACultureID) ? null : MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionBCultureID));
+			MultiplayerBattleColors multiplayerBattleColors2 = MultiplayerBattleColors.CreateWith(attackerCulture2, defenderCulture2);
+			NextFactionACultureColor1 = multiplayerBattleColors2.AttackerColors.Color1;
+			NextFactionACultureColor2 = multiplayerBattleColors2.AttackerColors.Color2;
+			NextFactionBCultureColor1 = multiplayerBattleColors2.DefenderColors.Color1;
+			NextFactionBCultureColor2 = multiplayerBattleColors2.DefenderColors.Color2;
 			if (!string.IsNullOrEmpty(NextFactionACultureID))
 			{
-				BasicCultureObject object3 = MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionACultureID);
-				NextFactionACultureColor1 = Color.FromUint(object3?.Color ?? 0);
-				NextFactionACultureColor2 = Color.FromUint(object3?.Color2 ?? 0);
+				NextFactionACultureColor1 = multiplayerBattleColors2.AttackerColors.Color1;
+				NextFactionACultureColor2 = multiplayerBattleColors2.AttackerColors.Color2;
 			}
 			MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam2).GetValue(out string value5);
 			IsFactionBValid = !IsEndGameTimerEnabled && !string.IsNullOrEmpty(value5) && _currentIntermissionState != MultiplayerIntermissionState.CountingForMapVote;
 			NextFactionBCultureID = (IsEndGameTimerEnabled ? string.Empty : value5);
 			if (!string.IsNullOrEmpty(NextFactionBCultureID))
 			{
-				BasicCultureObject object4 = MBObjectManager.Instance.GetObject<BasicCultureObject>(NextFactionBCultureID);
-				NextFactionBCultureColor1 = Color.FromUint(object4?.Color2 ?? 0);
-				NextFactionBCultureColor2 = Color.FromUint(object4?.Color ?? 0);
+				NextFactionBCultureColor1 = multiplayerBattleColors2.DefenderColors.Color1;
+				NextFactionBCultureColor2 = multiplayerBattleColors2.DefenderColors.Color2;
 			}
 		}
 		else

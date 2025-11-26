@@ -259,8 +259,8 @@ public class WeaponDesignResultPropertyItemVM : ViewModel
 		textObject.SetTextVariable("STR", CampaignUIHelper.GetFormattedItemPropertyText(TargetValue, ShowFloatingPoint));
 		RequiredValueText = ((TargetValue == 0f) ? string.Empty : textObject.ToString());
 		HasBenefit = (_isExceedingBeneficial ? (InitialValue + ChangeAmount >= TargetValue) : (InitialValue + ChangeAmount <= TargetValue));
-		OrderRequirementTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_order_requirement_tooltip") : TextObject.Empty);
-		CraftedValueTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_crafted_value_tooltip") : TextObject.Empty);
-		BonusPenaltyTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_bonus_penalty_tooltip") : TextObject.Empty);
+		OrderRequirementTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_order_requirement_tooltip") : TextObject.GetEmpty());
+		CraftedValueTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_crafted_value_tooltip") : TextObject.GetEmpty());
+		BonusPenaltyTooltip.HintText = (_showTooltip ? GameTexts.FindText("str_crafting_bonus_penalty_tooltip") : TextObject.GetEmpty());
 	}
 }

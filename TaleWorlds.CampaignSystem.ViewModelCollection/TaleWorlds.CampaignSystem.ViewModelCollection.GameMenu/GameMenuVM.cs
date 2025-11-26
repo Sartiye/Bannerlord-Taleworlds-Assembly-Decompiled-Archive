@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Siege;
@@ -15,7 +14,45 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 
 public class GameMenuVM : ViewModel
 {
-	private bool _isInspected;
+	private class GameMenuItemPool<TItem> where TItem : class, new()
+	{
+		private readonly List<TItem> _pool;
+
+		public GameMenuItemPool(int initialCapacity)
+		{
+			_pool = new List<TItem>(initialCapacity);
+		}
+
+		public TItem Get()
+		{
+			TItem result;
+			if (_pool.Count > 0)
+			{
+				result = _pool[_pool.Count - 1];
+				_pool.RemoveAt(_pool.Count - 1);
+			}
+			else
+			{
+				result = new TItem();
+			}
+			return result;
+		}
+
+		public void Release(TItem item)
+		{
+			_pool.Add(item);
+		}
+	}
+
+	private class GameMenuItemComparer : IComparer<GameMenuItemVM>
+	{
+		public int Compare(GameMenuItemVM x, GameMenuItemVM y)
+		{
+			return x.Index.CompareTo(y.Index);
+		}
+	}
+
+	private bool _isIdle;
 
 	private bool _plunderEventRegistered;
 
@@ -27,7 +64,17 @@ public class GameMenuVM : ViewModel
 
 	private Dictionary<string, object> _menuTextAttributes;
 
-	private TextObject _menuText = TextObject.Empty;
+	private TextObject _menuText = TextObject.GetEmpty();
+
+	private GameMenuItemComparer _cachedItemComparer;
+
+	private IViewDataTracker _viewDataTracker;
+
+	private GameMenuItemPool<GameMenuItemVM> _gameMenuItemPool;
+
+	private GameMenuItemPool<GameMenuItemProgressVM> _progressItemPool;
+
+	private List<GameMenuItemVM.GameMenuItemCreationData> _newOptionsCache;
 
 	private MBBindingList<GameMenuItemVM> _itemList;
 
@@ -38,6 +85,10 @@ public class GameMenuVM : ViewModel
 	private string _contextText;
 
 	private string _background;
+
+	private string _backgroundCopy;
+
+	private string _menuId;
 
 	private bool _isNight;
 
@@ -64,17 +115,6 @@ public class GameMenuVM : ViewModel
 	private bool _isEnterTutorialVillageButtonHighlightApplied;
 
 	private bool _requireContextTextUpdate;
-
-	public bool IsInspected
-	{
-		set
-		{
-			if (_isInspected != value)
-			{
-				_isInspected = value;
-			}
-		}
-	}
 
 	public MenuContext MenuContext { get; private set; }
 
@@ -210,6 +250,41 @@ public class GameMenuVM : ViewModel
 			{
 				_background = value;
 				OnPropertyChangedWithValue(value, "Background");
+				BackgroundCopy = value;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string BackgroundCopy
+	{
+		get
+		{
+			return _backgroundCopy;
+		}
+		set
+		{
+			if (value != _backgroundCopy)
+			{
+				_backgroundCopy = value;
+				OnPropertyChangedWithValue(value, "BackgroundCopy");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MenuId
+	{
+		get
+		{
+			return _menuId;
+		}
+		set
+		{
+			if (value != _menuId)
+			{
+				_menuId = value;
+				OnPropertyChangedWithValue(value, "MenuId");
 			}
 		}
 	}
@@ -233,43 +308,63 @@ public class GameMenuVM : ViewModel
 
 	public GameMenuVM(MenuContext menuContext)
 	{
-		MenuContext = menuContext;
 		_gameMenuManager = Campaign.Current.GameMenuManager;
-		ItemList = new MBBindingList<GameMenuItemVM>();
-		ProgressItemList = new MBBindingList<GameMenuItemProgressVM>();
 		_shortcutKeys = new Dictionary<GameMenuOption.LeaveType, GameKey>();
+		_gameMenuItemPool = new GameMenuItemPool<GameMenuItemVM>(10);
+		_progressItemPool = new GameMenuItemPool<GameMenuItemProgressVM>(10);
+		_newOptionsCache = new List<GameMenuItemVM.GameMenuItemCreationData>();
+		_cachedItemComparer = new GameMenuItemComparer();
 		_menuTextAttributeStrings = new Dictionary<string, string>();
 		_menuTextAttributes = new Dictionary<string, object>();
+		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
+		MenuContext = menuContext;
+		MenuId = menuContext.GameMenu.StringId;
 		Background = menuContext.CurrentBackgroundMeshName;
+		ItemList = new MBBindingList<GameMenuItemVM>();
+		ProgressItemList = new MBBindingList<GameMenuItemProgressVM>();
+		PlunderItems = new MBBindingList<GameMenuPlunderItemVM>();
 		IsInSiegeMode = PlayerSiege.PlayerSiegeEvent != null;
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 	}
 
 	public override void RefreshValues()
 	{
-		base.RefreshValues();
-		ItemList.ApplyActionOnAllItems(delegate(GameMenuItemVM x)
+		if (!_isIdle)
 		{
-			x.RefreshValues();
-		});
-		ProgressItemList.ApplyActionOnAllItems(delegate(GameMenuItemProgressVM x)
-		{
-			x.RefreshValues();
-		});
-		Refresh(forceUpdateItems: true);
+			base.RefreshValues();
+			ItemList.ApplyActionOnAllItems(delegate(GameMenuItemVM x)
+			{
+				x.RefreshValues();
+			});
+			ProgressItemList.ApplyActionOnAllItems(delegate(GameMenuItemProgressVM x)
+			{
+				x.RefreshValues();
+			});
+			Refresh(forceUpdateItems: true);
+		}
+	}
+
+	public void SetIdleMode(bool isIdle)
+	{
+		_isIdle = isIdle;
 	}
 
 	public void Refresh(bool forceUpdateItems)
 	{
 		TitleText = MenuContext.GameMenu.MenuTitle?.ToString();
+		MenuId = MenuContext.GameMenu.StringId;
 		TaleWorlds.CampaignSystem.GameMenus.GameMenu gameMenu = MenuContext.GameMenu;
-		IsEncounterMenu = gameMenu != null && gameMenu.OverlayType == GameOverlays.MenuOverlayType.Encounter;
+		IsEncounterMenu = gameMenu != null && gameMenu.OverlayType == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType.Encounter;
 		Background = (string.IsNullOrEmpty(MenuContext.CurrentBackgroundMeshName) ? "wait_guards_stop" : MenuContext.CurrentBackgroundMeshName);
 		if (forceUpdateItems)
 		{
-			ItemList.Clear();
-			ProgressItemList.Clear();
+			_newOptionsCache.Clear();
 			int virtualMenuOptionAmount = _gameMenuManager.GetVirtualMenuOptionAmount(MenuContext);
+			for (int num = ProgressItemList.Count - 1; num >= 0; num--)
+			{
+				_progressItemPool.Release(ProgressItemList[num]);
+				ProgressItemList.RemoveAt(num);
+			}
 			for (int i = 0; i < virtualMenuOptionAmount; i++)
 			{
 				_gameMenuManager.SetCurrentRepeatableIndex(MenuContext, i);
@@ -294,45 +389,93 @@ public class GameMenuVM : ViewModel
 					TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType virtualMenuAndOptionType = _gameMenuManager.GetVirtualMenuAndOptionType(MenuContext);
 					GameMenuOption virtualGameMenuOption = _gameMenuManager.GetVirtualGameMenuOption(MenuContext, i);
 					GameKey shortcutKey = (_shortcutKeys.ContainsKey(virtualGameMenuOption.OptionLeaveType) ? _shortcutKeys[virtualGameMenuOption.OptionLeaveType] : null);
-					GameMenuItemVM gameMenuItemVM = new GameMenuItemVM(MenuContext, i, textObject3, (textObject4 == TextObject.Empty) ? textObject3 : textObject4, tooltip, virtualMenuAndOptionType, virtualGameMenuOption, shortcutKey);
-					if (!string.IsNullOrEmpty(_latestTutorialElementID))
-					{
-						gameMenuItemVM.IsHighlightEnabled = gameMenuItemVM.OptionID == _latestTutorialElementID;
-					}
-					ItemList.Add(gameMenuItemVM);
+					GameMenuItemVM.GameMenuItemCreationData item = new GameMenuItemVM.GameMenuItemCreationData(MenuContext, i, textObject3, textObject4.IsEmpty() ? textObject3 : textObject4, tooltip, virtualMenuAndOptionType, virtualGameMenuOption, shortcutKey);
+					_newOptionsCache.Add(item);
 					if (virtualMenuAndOptionType == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption || virtualMenuAndOptionType == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.WaitMenuShowProgressAndHoursOption)
 					{
-						ProgressItemList.Add(new GameMenuItemProgressVM(MenuContext, i));
+						GameMenuItemProgressVM gameMenuItemProgressVM = _progressItemPool.Get();
+						gameMenuItemProgressVM.InitializeWith(MenuContext, i);
+						ProgressItemList.Add(gameMenuItemProgressVM);
 					}
 				}
 			}
-		}
-		if (MobileParty.MainParty?.MapEvent != null)
-		{
-			int[] array = new int[2];
-			foreach (PartyBase involvedParty in MobileParty.MainParty.MapEvent.InvolvedParties)
+			for (int num2 = ItemList.Count - 1; num2 >= 0; num2--)
 			{
-				_ = involvedParty.Side;
-				_ = PartyBase.MainParty.Side;
-				if (involvedParty.Side != BattleSideEnum.None)
+				GameMenuItemVM gameMenuItemVM = ItemList[num2];
+				if (gameMenuItemVM.GameMenuOption.IsRepeatable)
 				{
-					array[(int)involvedParty.Side] += involvedParty.NumberOfHealthyMembers;
+					ItemList.RemoveAt(num2);
+					_gameMenuItemPool.Release(gameMenuItemVM);
+				}
+				else
+				{
+					bool flag = true;
+					for (int num3 = _newOptionsCache.Count - 1; num3 >= 0; num3--)
+					{
+						GameMenuItemVM.GameMenuItemCreationData data = _newOptionsCache[num3];
+						if (data.OptionID == gameMenuItemVM.OptionID)
+						{
+							flag = false;
+							gameMenuItemVM.InitializeWith(in data);
+							if (!string.IsNullOrEmpty(_latestTutorialElementID))
+							{
+								gameMenuItemVM.IsHighlightEnabled = data.OptionID == _latestTutorialElementID;
+							}
+							_newOptionsCache.RemoveAt(num3);
+							break;
+						}
+					}
+					if (flag)
+					{
+						ItemList.RemoveAt(num2);
+						_gameMenuItemPool.Release(gameMenuItemVM);
+					}
 				}
 			}
-			if (MobileParty.MainParty.MapEvent.IsRaid && !_plunderEventRegistered)
+			for (int j = 0; j < _newOptionsCache.Count; j++)
 			{
-				PlunderItems = new MBBindingList<GameMenuPlunderItemVM>();
-				CampaignEvents.ItemsLooted.AddNonSerializedListener(this, OnItemsPlundered);
-				_plunderEventRegistered = true;
+				GameMenuItemVM.GameMenuItemCreationData data2 = _newOptionsCache[j];
+				GameMenuItemVM gameMenuItemVM2 = _gameMenuItemPool.Get();
+				gameMenuItemVM2.InitializeWith(in data2);
+				if (!string.IsNullOrEmpty(_latestTutorialElementID))
+				{
+					gameMenuItemVM2.IsHighlightEnabled = data2.OptionID == _latestTutorialElementID;
+				}
+				ItemList.Add(gameMenuItemVM2);
 			}
+			ItemList.Sort(_cachedItemComparer);
+		}
+		RefreshPlunderStatus();
+		_requireContextTextUpdate = true;
+	}
+
+	private void RefreshPlunderStatus()
+	{
+		if (Campaign.Current.Models.EncounterGameMenuModel.IsPlunderMenu(MenuContext.GameMenu.StringId))
+		{
+			if (_plunderEventRegistered)
+			{
+				return;
+			}
+			PlunderItems.Clear();
+			CampaignEvents.ItemsLooted.AddNonSerializedListener(this, OnItemsPlundered);
+			MBReadOnlyList<ItemRosterElement> plunderItems = _viewDataTracker.GetPlunderItems();
+			if (plunderItems != null)
+			{
+				for (int i = 0; i < plunderItems.Count; i++)
+				{
+					ItemRosterElement item = plunderItems[i];
+					AddPlunderedItem(item);
+				}
+			}
+			_plunderEventRegistered = true;
 		}
 		else if (_plunderEventRegistered)
 		{
+			PlunderItems.Clear();
 			CampaignEvents.ItemsLooted.ClearListeners(this);
 			_plunderEventRegistered = false;
-			PlunderItems?.Clear();
 		}
-		_requireContextTextUpdate = true;
 	}
 
 	public void OnFrameTick()
@@ -354,13 +497,13 @@ public class GameMenuVM : ViewModel
 			}
 			_requireContextTextUpdate = false;
 		}
-		foreach (GameMenuItemVM item in ItemList)
+		for (int i = 0; i < ItemList.Count; i++)
 		{
-			item.Refresh();
+			ItemList[i].Refresh();
 		}
-		foreach (GameMenuItemProgressVM progressItem in ProgressItemList)
+		for (int j = 0; j < ProgressItemList.Count; j++)
 		{
-			progressItem.OnTick();
+			ProgressItemList[j].OnTick();
 		}
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign)
 		{
@@ -380,12 +523,13 @@ public class GameMenuVM : ViewModel
 		{
 			return true;
 		}
-		foreach (string key in _menuTextAttributes.Keys)
+		foreach (KeyValuePair<string, object> menuTextAttribute in _menuTextAttributes)
 		{
+			string key = menuTextAttribute.Key;
 			object value = null;
 			object obj = _menuTextAttributes[key];
 			TextObject menuText = _menuText;
-			if (menuText == null || !menuText.Attributes.TryGetValue(key, out value))
+			if ((object)menuText == null || !menuText.Attributes.TryGetValue(key, out value))
 			{
 				return true;
 			}
@@ -404,6 +548,8 @@ public class GameMenuVM : ViewModel
 	public void UpdateMenuContext(MenuContext newMenuContext)
 	{
 		MenuContext = newMenuContext;
+		ItemList.Clear();
+		ProgressItemList.Clear();
 		Refresh(forceUpdateItems: true);
 	}
 
@@ -435,29 +581,32 @@ public class GameMenuVM : ViewModel
 
 	private void OnItemsPlundered(MobileParty mobileParty, ItemRoster newItems)
 	{
-		if (mobileParty != MobileParty.MainParty)
+		if (mobileParty == MobileParty.MainParty)
 		{
-			return;
-		}
-		foreach (ItemRosterElement newItem in newItems)
-		{
-			for (int i = 0; i < newItem.Amount; i++)
+			for (int i = 0; i < newItems.Count; i++)
 			{
-				PlunderItems.Add(new GameMenuPlunderItemVM(newItem));
+				ItemRosterElement item = newItems[i];
+				AddPlunderedItem(item);
 			}
+		}
+	}
+
+	private void AddPlunderedItem(ItemRosterElement item)
+	{
+		int num = PlunderItems.FindIndex((GameMenuPlunderItemVM x) => x.Item.IsEqualTo(item.EquipmentElement));
+		if (num != -1)
+		{
+			PlunderItems[num].Amount += item.Amount;
+		}
+		else
+		{
+			PlunderItems.Add(new GameMenuPlunderItemVM(item.EquipmentElement, item.Amount));
 		}
 	}
 
 	public void ExecuteLink(string link)
 	{
 		Campaign.Current.EncyclopediaManager.GoToLink(link);
-	}
-
-	protected virtual GameMenuItemVM CreateGameMenuItemVM(int indexOfMenuCondition)
-	{
-		GameMenuOption virtualGameMenuOption = _gameMenuManager.GetVirtualGameMenuOption(MenuContext, indexOfMenuCondition);
-		GameKey shortcutKey = (_shortcutKeys.ContainsKey(virtualGameMenuOption.OptionLeaveType) ? _shortcutKeys[virtualGameMenuOption.OptionLeaveType] : null);
-		return new GameMenuItemVM(MenuContext, indexOfMenuCondition, TextObject.Empty, TextObject.Empty, TextObject.Empty, TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.RegularMenuOption, virtualGameMenuOption, shortcutKey);
 	}
 
 	private void OnTutorialNotificationElementIDChange(TutorialNotificationElementChangeEvent obj)
@@ -594,11 +743,12 @@ public class GameMenuVM : ViewModel
 
 	private bool SetGameMenuButtonHighlightState(string buttonID, bool state)
 	{
-		foreach (GameMenuItemVM item in ItemList)
+		for (int i = 0; i < ItemList.Count; i++)
 		{
-			if (item.OptionID == buttonID)
+			GameMenuItemVM gameMenuItemVM = ItemList[i];
+			if (gameMenuItemVM.OptionID == buttonID)
 			{
-				item.IsHighlightEnabled = state;
+				gameMenuItemVM.IsHighlightEnabled = state;
 				return true;
 			}
 		}

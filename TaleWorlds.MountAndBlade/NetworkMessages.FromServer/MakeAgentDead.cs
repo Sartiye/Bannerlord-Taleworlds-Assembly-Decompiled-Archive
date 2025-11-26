@@ -10,13 +10,16 @@ public sealed class MakeAgentDead : GameNetworkMessage
 
 	public bool IsKilled { get; private set; }
 
-	public ActionIndexValueCache ActionCodeIndex { get; private set; }
+	public ActionIndexCache ActionCodeIndex { get; private set; }
 
-	public MakeAgentDead(int agentIndex, bool isKilled, ActionIndexValueCache actionCodeIndex)
+	public int CorpsesToFadeIndex { get; private set; }
+
+	public MakeAgentDead(int agentIndex, bool isKilled, ActionIndexCache actionCodeIndex, int corpsesToFadeIndex = -1)
 	{
 		AgentIndex = agentIndex;
 		IsKilled = isKilled;
 		ActionCodeIndex = actionCodeIndex;
+		CorpsesToFadeIndex = corpsesToFadeIndex;
 	}
 
 	public MakeAgentDead()
@@ -28,7 +31,8 @@ public sealed class MakeAgentDead : GameNetworkMessage
 		bool bufferReadValid = true;
 		AgentIndex = GameNetworkMessage.ReadAgentIndexFromPacket(ref bufferReadValid);
 		IsKilled = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
-		ActionCodeIndex = new ActionIndexValueCache(GameNetworkMessage.ReadIntFromPacket(CompressionBasic.ActionCodeCompressionInfo, ref bufferReadValid));
+		ActionCodeIndex = new ActionIndexCache(GameNetworkMessage.ReadIntFromPacket(CompressionBasic.ActionCodeCompressionInfo, ref bufferReadValid));
+		CorpsesToFadeIndex = GameNetworkMessage.ReadAgentIndexFromPacket(ref bufferReadValid);
 		return bufferReadValid;
 	}
 
@@ -37,6 +41,7 @@ public sealed class MakeAgentDead : GameNetworkMessage
 		GameNetworkMessage.WriteAgentIndexToPacket(AgentIndex);
 		GameNetworkMessage.WriteBoolToPacket(IsKilled);
 		GameNetworkMessage.WriteIntToPacket(ActionCodeIndex.Index, CompressionBasic.ActionCodeCompressionInfo);
+		GameNetworkMessage.WriteAgentIndexToPacket(CorpsesToFadeIndex);
 	}
 
 	protected override MultiplayerMessageFilter OnGetLogFilter()

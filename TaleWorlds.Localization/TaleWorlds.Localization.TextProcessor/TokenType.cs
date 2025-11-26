@@ -62,5 +62,5 @@ internal enum TokenType
 	QualifiedIdentifier,
 	ParameterWithAttribute,
 	StartsWith,
-	textId
+	TextId
 }

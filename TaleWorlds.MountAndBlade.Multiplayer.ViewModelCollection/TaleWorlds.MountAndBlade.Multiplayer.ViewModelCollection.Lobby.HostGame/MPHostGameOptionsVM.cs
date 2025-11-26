@@ -229,7 +229,7 @@ public class MPHostGameOptionsVM : ViewModel
 		}
 		if (genericHostGameOptionDataVM == null)
 		{
-			Debug.FailedAssert("Item was not added to host game options because it has an invalid type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\HostGame\\MPHostGameOptionsVM.cs", "CreateOption", 218);
+			Debug.FailedAssert("Item was not added to host game options because it has an invalid type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\HostGame\\MPHostGameOptionsVM.cs", "CreateOption", 218);
 			return null;
 		}
 		return genericHostGameOptionDataVM;

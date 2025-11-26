@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -282,6 +283,7 @@ public class CraftingVM : ViewModel
 				{
 					_currentCraftingHero.IsSelected = true;
 				}
+				_craftingBehavior.SetActiveCraftingHero(_currentCraftingHero?.Hero);
 				OnPropertyChangedWithValue(value, "CurrentCraftingHero");
 			}
 		}
@@ -743,11 +745,21 @@ public class CraftingVM : ViewModel
 		CameraControlKeys = new MBBindingList<InputKeyItemVM>();
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign)
 		{
-			foreach (Hero item in CraftingHelper.GetAvailableHeroesForCrafting())
+			IEnumerable<Hero> availableHeroesForCrafting = CraftingHelper.GetAvailableHeroesForCrafting();
+			Hero activeCraftingHero = _craftingBehavior.GetActiveCraftingHero();
+			foreach (Hero item in availableHeroesForCrafting)
 			{
-				AvailableCharactersForSmithing.Add(new CraftingAvailableHeroItemVM(item, UpdateCraftingHero));
+				CraftingAvailableHeroItemVM craftingAvailableHeroItemVM = new CraftingAvailableHeroItemVM(item, UpdateCraftingHero);
+				AvailableCharactersForSmithing.Add(craftingAvailableHeroItemVM);
+				if (item == activeCraftingHero)
+				{
+					CurrentCraftingHero = craftingAvailableHeroItemVM;
+				}
 			}
-			CurrentCraftingHero = AvailableCharactersForSmithing.FirstOrDefault();
+			if (CurrentCraftingHero == null)
+			{
+				CurrentCraftingHero = AvailableCharactersForSmithing.FirstOrDefault();
+			}
 		}
 		else
 		{
@@ -795,6 +807,7 @@ public class CraftingVM : ViewModel
 	{
 		base.OnFinalize();
 		WeaponDesign.OnFinalize();
+		CraftingHeroPopup.OnFinalize();
 		ConfirmInputKey?.OnFinalize();
 		ExitInputKey?.OnFinalize();
 		PreviousTabInputKey?.OnFinalize();

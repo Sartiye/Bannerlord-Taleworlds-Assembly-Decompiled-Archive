@@ -4,6 +4,5 @@ public enum MoveModeType
 {
 	Hold,
 	Point,
-	Party,
-	Escort
+	Party
 }

@@ -52,6 +52,10 @@ public class PerkActivationHandlerCampaignBehavior : CampaignBehaviorBase
 			{
 				PartyBase.MainParty.MemberRoster.UpdateVersion();
 			}
+			if (perk.PrimaryRole == PartyRole.Captain)
+			{
+				hero.UpdatePowerModifier();
+			}
 		}
 	}
 

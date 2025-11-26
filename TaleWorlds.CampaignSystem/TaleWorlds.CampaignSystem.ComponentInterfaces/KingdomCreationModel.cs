@@ -4,7 +4,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class KingdomCreationModel : GameModel
+public abstract class KingdomCreationModel : MBGameModel<KingdomCreationModel>
 {
 	public abstract int MinimumClanTierToCreateKingdom { get; }
 

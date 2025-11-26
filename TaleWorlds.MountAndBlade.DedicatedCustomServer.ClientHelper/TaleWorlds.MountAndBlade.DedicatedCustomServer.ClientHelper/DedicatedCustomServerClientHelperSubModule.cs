@@ -136,6 +136,7 @@ public class DedicatedCustomServerClientHelperSubModule : MBSubModuleBase
 	{
 		Instance = this;
 		base.OnSubModuleLoad();
+		TauntUsageManager.Initialize();
 		ModLogger.Log("Loaded");
 	}
 

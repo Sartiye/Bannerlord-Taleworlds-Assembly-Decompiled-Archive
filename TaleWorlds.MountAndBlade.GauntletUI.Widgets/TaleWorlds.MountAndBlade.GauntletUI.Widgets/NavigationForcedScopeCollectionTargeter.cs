@@ -6,7 +6,28 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
 public class NavigationForcedScopeCollectionTargeter : Widget
 {
-	private GamepadNavigationForcedScopeCollection _collection;
+	private bool _useRootAsTarget;
+
+	private readonly GamepadNavigationForcedScopeCollection _collection;
+
+	public bool UseRootAsTarget
+	{
+		get
+		{
+			return _useRootAsTarget;
+		}
+		set
+		{
+			if (_useRootAsTarget != value)
+			{
+				_useRootAsTarget = value;
+				if (base.Context.Root != null && _useRootAsTarget)
+				{
+					CollectionParent = base.Context.Root;
+				}
+			}
+		}
+	}
 
 	public bool IsCollectionEnabled
 	{
@@ -82,8 +103,11 @@ public class NavigationForcedScopeCollectionTargeter : Widget
 				{
 					base.GamepadNavigationContext.RemoveForcedScopeCollection(_collection);
 				}
-				_collection.ParentWidget = value;
-				if (value != null)
+				if (!UseRootAsTarget || value == base.Context.Root)
+				{
+					_collection.ParentWidget = value;
+				}
+				if (_collection.ParentWidget != null)
 				{
 					base.GamepadNavigationContext.AddForcedScopeCollection(_collection);
 				}
@@ -100,5 +124,19 @@ public class NavigationForcedScopeCollectionTargeter : Widget
 		base.SuggestedHeight = 0f;
 		base.SuggestedWidth = 0f;
 		base.IsVisible = false;
+	}
+
+	protected override void OnConnectedToRoot()
+	{
+		base.OnConnectedToRoot();
+		if (UseRootAsTarget)
+		{
+			CollectionParent = base.Context.Root;
+		}
+	}
+
+	protected override void OnDisconnectedFromRoot()
+	{
+		CollectionParent = null;
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.BannerEditor;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -27,7 +28,7 @@ public class BannerBuilderVM : ViewModel
 
 	private readonly Action _copyBannerCode;
 
-	private ImageIdentifierVM _bannerImageIdentifier;
+	private BannerImageIdentifierVM _bannerImageIdentifier;
 
 	private string _iconCodes;
 
@@ -90,7 +91,7 @@ public class BannerBuilderVM : ViewModel
 	public Banner CurrentBanner { get; private set; }
 
 	[DataSourceProperty]
-	public ImageIdentifierVM BannerImageIdentifier
+	public BannerImageIdentifierVM BannerImageIdentifier
 	{
 		get
 		{
@@ -619,7 +620,7 @@ public class BannerBuilderVM : ViewModel
 		PopulateLayers();
 		OnLayerSelection(Layers[0]);
 		BannerCodeAsString = initialKey;
-		BannerImageIdentifier = new ImageIdentifierVM(BannerCode.CreateFrom(initialKey), nineGrid: true);
+		BannerImageIdentifier = new BannerImageIdentifierVM(CurrentBanner, nineGrid: true);
 		RefreshValues();
 		IsEditorPreviewActive = true;
 		IsLayerPreviewActive = true;
@@ -654,9 +655,9 @@ public class BannerBuilderVM : ViewModel
 	private void PopulateLayers()
 	{
 		Layers.Clear();
-		for (int i = 0; i < CurrentBanner.BannerDataList.Count; i++)
+		for (int i = 0; i < CurrentBanner.GetBannerDataListCount(); i++)
 		{
-			Layers.Add(new BannerBuilderLayerVM(CurrentBanner.BannerDataList[i], i));
+			Layers.Add(new BannerBuilderLayerVM(CurrentBanner.GetBannerDataAtIndex(i), i));
 		}
 	}
 
@@ -713,7 +714,7 @@ public class BannerBuilderVM : ViewModel
 	{
 		if (CurrentSelectedLayer != null)
 		{
-			CurrentBanner.BannerDataList[CurrentSelectedLayer.LayerIndex].MeshId = selectedItem.MeshID;
+			CurrentBanner.GetBannerDataAtIndex(CurrentSelectedLayer.LayerIndex).MeshId = selectedItem.MeshID;
 			UpdateSelectedItem();
 			CurrentSelectedLayer.Refresh();
 			Refresh();
@@ -726,7 +727,7 @@ public class BannerBuilderVM : ViewModel
 		{
 			return;
 		}
-		int meshId = CurrentBanner.BannerDataList[CurrentSelectedLayer.LayerIndex].MeshId;
+		int meshId = CurrentBanner.GetBannerDataAtIndex(CurrentSelectedLayer.LayerIndex).MeshId;
 		for (int i = 0; i < Categories.Count; i++)
 		{
 			BannerBuilderCategoryVM bannerBuilderCategoryVM = Categories[i];
@@ -832,7 +833,7 @@ public class BannerBuilderVM : ViewModel
 	private void Refresh()
 	{
 		_refresh?.Invoke();
-		BannerImageIdentifier = new ImageIdentifierVM(BannerCode.CreateFrom(BannerCodeAsString), nineGrid: true);
+		BannerImageIdentifier = new BannerImageIdentifierVM(CurrentBanner, nineGrid: true);
 	}
 
 	private BannerBuilderItemVM GetItemFromID(int id)

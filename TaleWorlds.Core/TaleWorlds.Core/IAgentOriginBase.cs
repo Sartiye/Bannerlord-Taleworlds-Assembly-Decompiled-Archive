@@ -18,15 +18,25 @@ public interface IAgentOriginBase
 
 	BasicCharacterObject Troop { get; }
 
+	bool HasThrownWeapon { get; }
+
+	bool HasHeavyArmor { get; }
+
+	bool HasShield { get; }
+
+	bool HasSpear { get; }
+
 	void SetWounded();
 
 	void SetKilled();
 
-	void SetRouted();
+	void SetRouted(bool isOrderRetreat);
 
 	void OnAgentRemoved(float agentHealth);
 
 	void OnScoreHit(BasicCharacterObject victim, BasicCharacterObject formationCaptain, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon);
 
 	void SetBanner(Banner banner);
+
+	TroopTraitsMask GetTraitsMask();
 }

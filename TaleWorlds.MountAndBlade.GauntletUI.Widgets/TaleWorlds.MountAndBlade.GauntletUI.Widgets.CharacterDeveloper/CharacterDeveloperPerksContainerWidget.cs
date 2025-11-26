@@ -132,7 +132,7 @@ public class CharacterDeveloperPerksContainerWidget : Widget
 		}
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
 		if (child is PerkItemButtonWidget item)
 		{

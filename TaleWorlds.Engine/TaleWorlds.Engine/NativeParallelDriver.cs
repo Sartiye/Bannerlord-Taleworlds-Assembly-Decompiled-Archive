@@ -23,9 +23,9 @@ public sealed class NativeParallelDriver : IParallelDriver
 
 	private const int K = 256;
 
-	private static LoopBodyHolder[] _loopBodyCache = new LoopBodyHolder[256];
+	private static readonly LoopBodyHolder[] _loopBodyCache = new LoopBodyHolder[256];
 
-	private static LoopBodyWithDtHolder[] _loopBodyWithDtCache = new LoopBodyWithDtHolder[256];
+	private static readonly LoopBodyWithDtHolder[] _loopBodyWithDtCache = new LoopBodyWithDtHolder[256];
 
 	public void For(int fromInclusive, int toExclusive, TWParallel.ParallelForAuxPredicate loopBody, int grainSize)
 	{
@@ -35,7 +35,15 @@ public sealed class NativeParallelDriver : IParallelDriver
 		_loopBodyCache[num].LoopBody = null;
 	}
 
-	[EngineCallback]
+	public void ForWithoutRenderThread(int fromInclusive, int toExclusive, TWParallel.ParallelForAuxPredicate loopBody, int grainSize)
+	{
+		long num = Interlocked.Increment(ref LoopBodyHolder.UniqueLoopBodyKeySeed) % 256;
+		_loopBodyCache[num].LoopBody = loopBody;
+		Utilities.ParallelForWithoutRenderThread(fromInclusive, toExclusive, num, grainSize);
+		_loopBodyCache[num].LoopBody = null;
+	}
+
+	[EngineCallback(null, false)]
 	internal static void ParalelForLoopBodyCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
 	{
 		_loopBodyCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex);
@@ -50,7 +58,7 @@ public sealed class NativeParallelDriver : IParallelDriver
 		_loopBodyWithDtCache[num].LoopBody = null;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void ParalelForLoopBodyWithDtCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
 	{
 		_loopBodyWithDtCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex, _loopBodyWithDtCache[loopBodyKey].DeltaTime);

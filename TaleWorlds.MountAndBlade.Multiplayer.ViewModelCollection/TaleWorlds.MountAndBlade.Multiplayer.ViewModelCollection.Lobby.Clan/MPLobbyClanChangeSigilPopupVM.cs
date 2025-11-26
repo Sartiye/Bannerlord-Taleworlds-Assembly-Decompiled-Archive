@@ -206,8 +206,8 @@ public class MPLobbyClanChangeSigilPopupVM : ViewModel
 	public void ExecuteChangeSigil()
 	{
 		BasicCultureObject @object = Game.Current.ObjectManager.GetObject<BasicCultureObject>(NetworkMain.GameClient.ClanInfo.Faction);
-		Banner banner = new Banner(@object.BannerKey, @object.BackgroundColor1, @object.ForegroundColor1);
-		banner.BannerDataList[1].MeshId = _selectedSigilIcon.IconID;
+		Banner banner = new Banner(@object.Banner, @object.BackgroundColor1, @object.ForegroundColor1);
+		banner.SetIconMeshId(_selectedSigilIcon.IconID);
 		NetworkMain.GameClient.ChangeClanSigil(banner.Serialize());
 		ExecuteClosePopup();
 	}

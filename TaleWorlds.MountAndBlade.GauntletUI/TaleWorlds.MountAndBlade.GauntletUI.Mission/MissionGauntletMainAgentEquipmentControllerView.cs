@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using NetworkMessages.FromClient;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
@@ -55,7 +54,14 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 		set
 		{
 			_equipHoldHandled = value;
-			base.MissionScreen?.SetRadialMenuActiveState(value);
+			if (_equipHoldHandled)
+			{
+				base.MissionScreen?.RegisterRadialMenuObject(this);
+			}
+			else
+			{
+				base.MissionScreen?.UnregisterRadialMenuObject(this);
+			}
 		}
 	}
 
@@ -68,7 +74,14 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 		set
 		{
 			_dropHoldHandled = value;
-			base.MissionScreen?.SetRadialMenuActiveState(value);
+			if (_dropHoldHandled)
+			{
+				base.MissionScreen?.RegisterRadialMenuObject(this);
+			}
+			else
+			{
+				base.MissionScreen?.UnregisterRadialMenuObject(this);
+			}
 		}
 	}
 
@@ -86,7 +99,7 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		_gauntletLayer = new GauntletLayer(2);
+		_gauntletLayer = new GauntletLayer("MissionEquipmentController", ViewOrderPriority);
 		_dataSource = new MissionMainAgentEquipmentControllerVM(OnDropEquipment, OnEquipItem);
 		_gauntletLayer.LoadMovie("MainAgentEquipmentController", _dataSource);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Invalid);
@@ -140,18 +153,18 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 		_isCurrentFocusedItemInteractable = false;
 		_isFocusedOnEquipment = false;
 		_focusedWeaponItem = null;
-		_dataSource.SetCurrentFocusedWeaponEntity(_focusedWeaponItem);
+		_dataSource?.SetCurrentFocusedWeaponEntity(_focusedWeaponItem);
 		if (EquipHoldHandled)
 		{
 			EquipHoldHandled = false;
 			_equipHoldTime = 0f;
-			_dataSource.OnCancelEquipController();
+			_dataSource?.OnCancelEquipController();
 			this.OnEquipmentEquipInteractionViewToggled?.Invoke(obj: false);
 			_equipmentWasInFocusFirstFrameOfEquipDown = false;
 		}
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
 		if (base.Mission.MainAgent == null)
 		{
@@ -290,7 +303,7 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 
 	private void OnEquipItem(SpawnedItemEntity itemToEquip, EquipmentIndex indexToEquipItTo)
 	{
-		if (itemToEquip.GameEntity != null)
+		if (itemToEquip.GameEntity.IsValid)
 		{
 			Agent.Main?.HandleStartUsingAction(itemToEquip, (int)indexToEquipItTo);
 		}
@@ -330,12 +343,18 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 }

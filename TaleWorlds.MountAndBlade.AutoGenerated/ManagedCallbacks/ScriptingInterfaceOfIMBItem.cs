@@ -33,7 +33,7 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int GetItemUsageReloadActionCodeDelegate(byte[] itemUsageName, int usageDirection, [MarshalAs(UnmanagedType.U1)] bool isMounted, int leftHandUsageSetIndex, [MarshalAs(UnmanagedType.U1)] bool isLeftStance);
+	public delegate int GetItemUsageReloadActionCodeDelegate(byte[] itemUsageName, int usageDirection, [MarshalAs(UnmanagedType.U1)] bool isMounted, int leftHandUsageSetIndex, [MarshalAs(UnmanagedType.U1)] bool isLeftStance, [MarshalAs(UnmanagedType.U1)] bool isLowLookDirection);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -43,12 +43,12 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int GetItemUsageStrikeTypeDelegate(byte[] itemUsageName, int usageDirection, [MarshalAs(UnmanagedType.U1)] bool isMounted, int leftHandUsageSetIndex, [MarshalAs(UnmanagedType.U1)] bool isLeftStance);
+	public delegate int GetItemUsageStrikeTypeDelegate(byte[] itemUsageName, int usageDirection, [MarshalAs(UnmanagedType.U1)] bool isMounted, int leftHandUsageSetIndex, [MarshalAs(UnmanagedType.U1)] bool isLeftStance, [MarshalAs(UnmanagedType.U1)] bool isLowLookDirection);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetMissileRangeDelegate(float shot_speed, float z_diff);
+	public delegate float GetMissileRangeDelegate(float shootSpeed, float zDiff);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -112,7 +112,7 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 		return call_GetItemUsageIndexDelegate(array);
 	}
 
-	public int GetItemUsageReloadActionCode(string itemUsageName, int usageDirection, bool isMounted, int leftHandUsageSetIndex, bool isLeftStance)
+	public int GetItemUsageReloadActionCode(string itemUsageName, int usageDirection, bool isMounted, int leftHandUsageSetIndex, bool isLeftStance, bool isLowLookDirection)
 	{
 		byte[] array = null;
 		if (itemUsageName != null)
@@ -122,7 +122,7 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 			_utf8.GetBytes(itemUsageName, 0, itemUsageName.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		return call_GetItemUsageReloadActionCodeDelegate(array, usageDirection, isMounted, leftHandUsageSetIndex, isLeftStance);
+		return call_GetItemUsageReloadActionCodeDelegate(array, usageDirection, isMounted, leftHandUsageSetIndex, isLeftStance, isLowLookDirection);
 	}
 
 	public int GetItemUsageSetFlags(string ItemUsageName)
@@ -138,7 +138,7 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 		return call_GetItemUsageSetFlagsDelegate(array);
 	}
 
-	public int GetItemUsageStrikeType(string itemUsageName, int usageDirection, bool isMounted, int leftHandUsageSetIndex, bool isLeftStance)
+	public int GetItemUsageStrikeType(string itemUsageName, int usageDirection, bool isMounted, int leftHandUsageSetIndex, bool isLeftStance, bool isLowLookDirection)
 	{
 		byte[] array = null;
 		if (itemUsageName != null)
@@ -148,11 +148,11 @@ internal class ScriptingInterfaceOfIMBItem : IMBItem
 			_utf8.GetBytes(itemUsageName, 0, itemUsageName.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		return call_GetItemUsageStrikeTypeDelegate(array, usageDirection, isMounted, leftHandUsageSetIndex, isLeftStance);
+		return call_GetItemUsageStrikeTypeDelegate(array, usageDirection, isMounted, leftHandUsageSetIndex, isLeftStance, isLowLookDirection);
 	}
 
-	public float GetMissileRange(float shot_speed, float z_diff)
+	public float GetMissileRange(float shootSpeed, float zDiff)
 	{
-		return call_GetMissileRangeDelegate(shot_speed, z_diff);
+		return call_GetMissileRangeDelegate(shootSpeed, zDiff);
 	}
 }

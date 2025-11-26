@@ -58,13 +58,18 @@ public static class AssemblyLoader
 				assembly = Assembly.LoadFrom(assemblyFile);
 			}
 		}
-		catch
+		catch (Exception ex2)
 		{
 			if (show_error)
 			{
 				string lpText = "Cannot load: " + assemblyFile;
 				string lpCaption = "ERROR";
 				Debug.ShowMessageBox(lpText, lpCaption, 4u);
+			}
+			Debug.Print("ERROR: " + assemblyFile + ": " + ex2.Message);
+			if (ex2.InnerException != null)
+			{
+				Debug.Print($"ERROR: {assemblyFile}: {ex2.InnerException}");
 			}
 		}
 		Debug.Print("Assembly load result: " + ((assembly == null) ? "NULL" : "SUCCESS"));

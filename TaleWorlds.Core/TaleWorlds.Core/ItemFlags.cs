@@ -23,5 +23,7 @@ public enum ItemFlags : uint
 	Civilian = 0x400000u,
 	DoNotScaleBodyAccordingToWeaponLength = 0x800000u,
 	DoesNotHideChest = 0x1000000u,
-	NotStackable = 0x2000000u
+	NotStackable = 0x2000000u,
+	Stealth = 0x4000000u,
+	DoesNotSpawnWhenDropped = 0x8000000u
 }

@@ -1,5 +1,6 @@
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.EndOfRound;
 
@@ -8,8 +9,6 @@ public class MultiplayerEndOfRoundSideVM : ViewModel
 	private BasicCultureObject _culture;
 
 	private bool _isWinner;
-
-	private bool _useSecondary;
 
 	private string _cultureID;
 
@@ -34,23 +33,6 @@ public class MultiplayerEndOfRoundSideVM : ViewModel
 			{
 				_isWinner = value;
 				OnPropertyChangedWithValue(value, "IsWinner");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool UseSecondary
-	{
-		get
-		{
-			return _useSecondary;
-		}
-		set
-		{
-			if (value != _useSecondary)
-			{
-				_useSecondary = value;
-				OnPropertyChangedWithValue(value, "UseSecondary");
 			}
 		}
 	}
@@ -140,15 +122,14 @@ public class MultiplayerEndOfRoundSideVM : ViewModel
 		}
 	}
 
-	public void SetData(BasicCultureObject culture, int score, bool isWinner, bool useSecondary)
+	public void SetData(BasicCultureObject culture, int score, bool isWinner, MultiplayerBattleColors.MultiplayerCultureColorInfo cultureColors)
 	{
 		_culture = culture;
 		CultureID = culture.StringId;
 		Score = score;
 		IsWinner = isWinner;
-		UseSecondary = useSecondary;
-		CultureColor1 = Color.FromUint(UseSecondary ? culture.Color2 : culture.Color);
-		CultureColor2 = Color.FromUint(UseSecondary ? culture.Color : culture.Color2);
+		CultureColor1 = cultureColors.Color1;
+		CultureColor2 = cultureColors.Color2;
 		RefreshValues();
 	}
 

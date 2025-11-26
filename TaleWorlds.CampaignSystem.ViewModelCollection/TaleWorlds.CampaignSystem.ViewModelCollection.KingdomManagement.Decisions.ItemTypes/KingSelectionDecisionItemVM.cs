@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -15,7 +16,7 @@ public class KingSelectionDecisionItemVM : DecisionItemBaseVM
 
 	private string _factionName;
 
-	private ImageIdentifierVM _factionBanner;
+	private BannerImageIdentifierVM _factionBanner;
 
 	private string _settlementsText;
 
@@ -70,7 +71,7 @@ public class KingSelectionDecisionItemVM : DecisionItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM FactionBanner
+	public BannerImageIdentifierVM FactionBanner
 	{
 		get
 		{
@@ -235,7 +236,7 @@ public class KingSelectionDecisionItemVM : DecisionItemBaseVM
 		TextObject textObject = GameTexts.FindText("str_kingdom_decision_king_selection");
 		textObject.SetTextVariable("FACTION", TargetFaction.Name);
 		NameText = textObject.ToString();
-		FactionBanner = new ImageIdentifierVM(BannerCode.CreateFrom(TargetFaction.Banner), nineGrid: true);
+		FactionBanner = new BannerImageIdentifierVM(TargetFaction.Banner, nineGrid: true);
 		FactionName = TargetFaction.Culture.Name.ToString();
 		bool flag = true;
 		bool flag2 = true;
@@ -289,7 +290,7 @@ public class KingSelectionDecisionItemVM : DecisionItemBaseVM
 		textObject5.SetTextVariable("RIGHT", textObject4);
 		CastlesText = textObject5.ToString();
 		TotalStrengthText = GameTexts.FindText("str_total_strength").ToString();
-		TotalStrength = (int)TargetFaction.TotalStrength;
+		TotalStrength = (int)TargetFaction.CurrentTotalStrength;
 		ActivePoliciesText = GameTexts.FindText("str_active_policies").ToString();
 		Kingdom kingdom = TargetFaction as Kingdom;
 		foreach (PolicyObject activePolicy in kingdom.ActivePolicies)

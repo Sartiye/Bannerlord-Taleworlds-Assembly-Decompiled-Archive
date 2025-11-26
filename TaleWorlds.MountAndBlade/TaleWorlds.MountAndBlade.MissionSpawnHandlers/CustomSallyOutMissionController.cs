@@ -7,6 +7,7 @@ public class CustomSallyOutMissionController : SallyOutMissionController
 	private readonly CustomBattleCombatant[] _battleCombatants;
 
 	public CustomSallyOutMissionController(IBattleCombatant defenderBattleCombatant, IBattleCombatant attackerBattleCombatant)
+		: base(isSallyOutAmbush: true)
 	{
 		_battleCombatants = new CustomBattleCombatant[2]
 		{

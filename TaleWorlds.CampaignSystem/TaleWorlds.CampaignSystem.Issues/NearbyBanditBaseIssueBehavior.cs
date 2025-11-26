@@ -19,6 +19,8 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 {
 	public class NearbyBanditBaseIssue : IssueBase
 	{
+		private const int QuestSolutionNeededMinimumHealthyMenCount = 25;
+
 		private const int AlternativeSolutionFinalMenCount = 10;
 
 		private const int AlternativeSolutionMinimumTroopTier = 2;
@@ -153,7 +155,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=SN3pjZiK}You received a message from {QUEST_GIVER.LINK}.\n\"Thank you for clearing out that bandits' nest. Please accept these {REWARD}{GOLD_ICON} denars with our gratitude.\"");
+				TextObject textObject = new TextObject("{=SN3pjZiK}You received a message from {QUEST_GIVER.LINK}.{newline}\"Thank you for clearing out that bandits' nest. Please accept these {REWARD}{GOLD_ICON} denars with our gratitude.\"");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.IssueOwner.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", RewardGold);
 				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
@@ -242,8 +244,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -253,8 +254,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -308,6 +308,10 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			{
 				flags |= PreconditionFlags.AtWar;
 			}
+			if (MobileParty.MainParty.MemberRoster.TotalHealthyCount - 1 < 25)
+			{
+				flags |= PreconditionFlags.NotEnoughTroops;
+			}
 			return flags == PreconditionFlags.None;
 		}
 
@@ -331,15 +335,25 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		private const int QuestGiverRelationPenalty = -5;
 
+		private const int WarCausedByPlayerQuestGiverRelationPenalty = -5;
+
 		private const int QuestGiverPowerBonus = 5;
 
 		private const int QuestGiverPowerPenalty = -5;
+
+		private const int WarCausedByPlayerQuestGiverPowerPenalty = -10;
 
 		private const int TownProsperityBonus = 10;
 
 		private const int TownProsperityPenalty = -10;
 
+		private const int WarCausedByPlayerTownProsperityPenalty = -10;
+
 		private const int TownSecurityPenalty = -5;
+
+		private const int WarCausedByPlayerTownSecurityPenalty = -10;
+
+		private const int WarCausedByPlayerFailHonorPenalty = -50;
 
 		private const int QuestGuid = 1056731;
 
@@ -361,7 +375,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _onQuestStartedLogText
+		private TextObject OnQuestStartedLogText
 		{
 			get
 			{
@@ -372,11 +386,11 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestSucceededLogText
+		private TextObject OnQuestSucceededLogText
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=SN3pjZiK}You received a message from {QUEST_GIVER.LINK}.\n\"Thank you for clearing out that bandits' nest. Please accept these {REWARD}{GOLD_ICON} denars with our gratitude.\"");
+				TextObject textObject = new TextObject("{=SN3pjZiK}You received a message from {QUEST_GIVER.LINK}.{newline}\"Thank you for clearing out that bandits' nest. Please accept these {REWARD}{GOLD_ICON} denars with our gratitude.\"");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", RewardGold);
 				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
@@ -384,7 +398,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestFailedLogText
+		private TextObject OnQuestFailedLogText
 		{
 			get
 			{
@@ -394,7 +408,18 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestCanceledLogText
+		private TextObject OnQuestFailedFromWarCausedByPlayerLogText
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=B8KZ6tx2}You are accused in {SETTLEMENT} of a crime. This has angered {QUEST_GIVER.LINK} and {?QUEST_GIVER.GENDER}she{?}he{\\?} broke off your agreement.");
+				textObject.SetTextVariable("SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
+				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
+				return textObject;
+			}
+		}
+
+		private TextObject OnQuestCanceledLogText
 		{
 			get
 			{
@@ -467,16 +492,16 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			_targetHideout.Hideout.IsSpotted = true;
 			_targetHideout.IsVisible = true;
 			AddTrackedObject(_targetHideout);
-			QuestHelper.AddMapArrowFromPointToTarget(new TextObject("{=xpsQyPaV}Direction to Bandits"), _questSettlement.Position2D, _targetHideout.Position2D, 5f, 0.1f);
+			QuestHelper.AddMapArrowFromPointToTarget(new TextObject("{=xpsQyPaV}Direction to Bandits"), _questSettlement.Position, _targetHideout.Position, 5f, 0.1f);
 			TextObject textObject = new TextObject("{=XGa8MkbJ}{QUEST_GIVER.NAME} has marked the hideout on your map");
 			StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 			MBInformationManager.AddQuickInformation(textObject);
-			AddLog(_onQuestStartedLogText);
+			AddLog(OnQuestStartedLogText);
 		}
 
 		private void OnQuestSucceeded()
 		{
-			AddLog(_onQuestSucceededLogText);
+			AddLog(OnQuestSucceededLogText);
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			GainRenownAction.Apply(Hero.MainHero, 1f);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[1]
@@ -491,7 +516,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		private void OnQuestFailed(bool isTimedOut)
 		{
-			AddLog(_onQuestFailedLogText);
+			AddLog(OnQuestFailedLogText);
 			RelationshipChangeWithQuestGiver = -5;
 			base.QuestGiver.AddPower(-5f);
 			_questSettlement.Village.Bound.Town.Prosperity += -10f;
@@ -504,7 +529,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		private void OnQuestCanceled()
 		{
-			AddLog(_onQuestCanceledLogText);
+			AddLog(OnQuestCanceledLogText);
 			CompleteQuestWithFail();
 		}
 
@@ -518,6 +543,28 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 			CampaignEvents.OnHideoutDeactivatedEvent.AddNonSerializedListener(this, OnHideoutCleared);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
+		}
+
+		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
+		{
+			if (DiplomacyHelper.IsWarCausedByPlayer(faction1, faction2, detail))
+			{
+				WarCausedByPlayerFail();
+			}
+		}
+
+		private void WarCausedByPlayerFail()
+		{
+			base.QuestGiver.AddPower(-10f);
+			RelationshipChangeWithQuestGiver = -5;
+			TraitLevelingHelper.OnIssueFailed(Hero.MainHero, new Tuple<TraitObject, int>[1]
+			{
+				new Tuple<TraitObject, int>(DefaultTraits.Honor, -50)
+			});
+			_questSettlement.Village.Bound.Town.Prosperity += -10f;
+			_questSettlement.Village.Bound.Town.Security += -10f;
+			CompleteQuestWithFail(OnQuestFailedFromWarCausedByPlayerLogText);
 		}
 
 		private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
@@ -574,21 +621,25 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private const int NearbyHideoutMaxRange = 35;
-
 	private const IssueBase.IssueFrequency NearbyHideoutIssueFrequency = IssueBase.IssueFrequency.VeryCommon;
+
+	private float NearbyHideoutMaxRange => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 0.5f;
 
 	private Settlement FindSuitableHideout(Hero issueOwner)
 	{
 		Settlement result = null;
 		float num = float.MaxValue;
-		foreach (Hideout item in Campaign.Current.AllHideouts.Where((Hideout t) => t.IsInfested))
+		for (int i = 0; i < Campaign.Current.AllHideouts.Count; i++)
 		{
-			float num2 = item.Settlement.GatePosition.DistanceSquared(issueOwner.GetMapPoint().Position2D);
-			if (num2 <= 1225f && num2 < num)
+			Hideout hideout = Campaign.Current.AllHideouts[i];
+			if (hideout.IsInfested)
 			{
-				num = num2;
-				result = item.Settlement;
+				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(hideout.Settlement, issueOwner.CurrentSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+				if (distance <= NearbyHideoutMaxRange && distance < num)
+				{
+					num = distance;
+					result = hideout.Settlement;
+				}
 			}
 		}
 		return result;
@@ -596,10 +647,14 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 	private void OnCheckForIssue(Hero hero)
 	{
-		if (hero.IsNotable)
+		if (!hero.IsNotable)
+		{
+			return;
+		}
+		if (ConditionsHold(hero))
 		{
 			Settlement settlement = FindSuitableHideout(hero);
-			if (ConditionsHold(hero) && settlement != null)
+			if (settlement != null)
 			{
 				Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(OnIssueSelected, typeof(NearbyBanditBaseIssue), IssueBase.IssueFrequency.VeryCommon, settlement));
 			}
@@ -607,6 +662,10 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 			{
 				Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(typeof(NearbyBanditBaseIssue), IssueBase.IssueFrequency.VeryCommon));
 			}
+		}
+		else
+		{
+			Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(typeof(NearbyBanditBaseIssue), IssueBase.IssueFrequency.VeryCommon));
 		}
 	}
 
@@ -632,7 +691,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 		}
 		foreach (MobileParty party in nearbyBanditBaseIssue.TargetHideout.Parties)
 		{
-			party.Ai.SetMovePatrolAroundSettlement(nearbyBanditBaseIssue.TargetHideout);
+			party.SetMovePatrolAroundSettlement(nearbyBanditBaseIssue.TargetHideout, MobileParty.NavigationType.Default, isTargetingPort: false);
 		}
 	}
 

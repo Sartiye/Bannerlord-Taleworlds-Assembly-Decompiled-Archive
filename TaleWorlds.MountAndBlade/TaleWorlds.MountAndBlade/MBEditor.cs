@@ -18,7 +18,7 @@ public class MBEditor
 
 	public static bool EditModeEnabled => MBAPI.IMBEditor.IsEditModeEnabled();
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void SetEditorScene(Scene scene)
 	{
 		if (_editorScene != null)
@@ -30,10 +30,10 @@ public class MBEditor
 			_editorScene.ClearAll();
 		}
 		_editorScene = scene;
-		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_editorScene, 32);
+		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_editorScene);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void CloseEditorScene()
 	{
 		if (_agentRendererSceneController != null)
@@ -44,7 +44,7 @@ public class MBEditor
 		_editorScene = null;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void DestroyEditor(Scene scene)
 	{
 		MBAgentRendererSceneController.DestructAgentRendererSceneController(_editorScene, _agentRendererSceneController, deleteThisFrame: false);
@@ -53,9 +53,9 @@ public class MBEditor
 		_agentRendererSceneController = null;
 	}
 
-	public static void UpdateSceneTree()
+	public static void UpdateSceneTree(bool doNextFrame)
 	{
-		MBAPI.IMBEditor.UpdateSceneTree();
+		MBAPI.IMBEditor.UpdateSceneTree(doNextFrame);
 	}
 
 	public static bool IsEntitySelected(GameEntity entity)
@@ -63,9 +63,19 @@ public class MBEditor
 		return MBAPI.IMBEditor.IsEntitySelected(entity.Pointer);
 	}
 
+	public static bool IsEntitySelected(WeakGameEntity entity)
+	{
+		return MBAPI.IMBEditor.IsEntitySelected(entity.Pointer);
+	}
+
 	public static void RenderEditorMesh(MetaMesh mesh, MatrixFrame frame)
 	{
 		MBAPI.IMBEditor.RenderEditorMesh(mesh.Pointer, ref frame);
+	}
+
+	public static void ApplyDeltaToEditorCamera(Vec3 delta)
+	{
+		MBAPI.IMBEditor.ApplyDeltaToEditorCamera(in delta);
 	}
 
 	public static void EnterEditMode(SceneView sceneView, MatrixFrame initialCameraFrame, float initialCameraElevation, float initialCameraBearing)
@@ -169,9 +179,14 @@ public class MBEditor
 		MBAPI.IMBEditor.AddEditorWarning(msg);
 	}
 
-	public static void AddEntityWarning(GameEntity entityId, string msg)
+	public static void AddEntityWarning(WeakGameEntity entityId, string msg)
 	{
 		MBAPI.IMBEditor.AddEntityWarning(entityId.Pointer, msg);
+	}
+
+	public static void AddNavMeshWarning(Scene scene, PathFaceRecord record, string msg)
+	{
+		MBAPI.IMBEditor.AddNavMeshWarning(scene.Pointer, in record, msg);
 	}
 
 	public static string GetAllPrefabsAndChildWithTag(string tag)
@@ -197,5 +212,10 @@ public class MBEditor
 
 	public static void SetLevelVisibility(List<string> levels)
 	{
+	}
+
+	public static void ToggleEnableEditorPhysics()
+	{
+		MBAPI.IMBEditor.ToggleEnableEditorPhysics();
 	}
 }

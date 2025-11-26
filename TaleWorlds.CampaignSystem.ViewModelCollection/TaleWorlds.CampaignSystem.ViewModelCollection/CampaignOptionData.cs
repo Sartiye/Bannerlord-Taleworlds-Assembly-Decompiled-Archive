@@ -46,7 +46,7 @@ public abstract class CampaignOptionData : ICampaignOptionData
 
 	public static TextObject GetNameOfOption(string optionIdentifier)
 	{
-		if (TaleWorlds.InputSystem.Input.IsGamepadActive && CheckIsPlayStation() && GameTexts.TryGetText("str_campaign_options_type", out var textObject, optionIdentifier + "_ps"))
+		if (CheckIsPlayStation() && GameTexts.TryGetText("str_campaign_options_type", out var textObject, optionIdentifier + "_ps"))
 		{
 			return textObject;
 		}
@@ -55,7 +55,7 @@ public abstract class CampaignOptionData : ICampaignOptionData
 
 	public static TextObject GetDescriptionOfOption(string optionIdentifier)
 	{
-		if (TaleWorlds.InputSystem.Input.IsGamepadActive && CheckIsPlayStation() && GameTexts.TryGetText("str_campaign_options_description", out var textObject, optionIdentifier + "_ps"))
+		if (CheckIsPlayStation() && GameTexts.TryGetText("str_campaign_options_description", out var textObject, optionIdentifier + "_ps"))
 		{
 			return textObject;
 		}

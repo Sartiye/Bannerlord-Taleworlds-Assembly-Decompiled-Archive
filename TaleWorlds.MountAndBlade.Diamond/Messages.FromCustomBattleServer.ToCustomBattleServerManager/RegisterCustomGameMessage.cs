@@ -5,7 +5,7 @@ using TaleWorlds.Diamond;
 namespace Messages.FromCustomBattleServer.ToCustomBattleServerManager;
 
 [Serializable]
-[MessageDescription("CustomBattleServer", "CustomBattleServerManager")]
+[MessageDescription("CustomBattleServer", "CustomBattleServerManager", true)]
 public class RegisterCustomGameMessage : Message
 {
 	[JsonProperty]

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.CampaignSystem.CharacterCreationContent;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -14,13 +14,13 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterCreation;
 
 public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 {
-	private readonly CharacterCreationContentBase _currentContent;
-
 	private bool _isBannerAndClanNameSet;
 
 	private InputKeyItemVM _cancelInputKey;
 
 	private InputKeyItemVM _doneInputKey;
+
+	private MBBindingList<InputKeyItemVM> _cameraControlKeys;
 
 	private string _name = "";
 
@@ -30,9 +30,11 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 
 	private CharacterCreationGainedPropertiesVM _gainedPropertiesController;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
 	private HintViewModel _cannotAdvanceReasonHint;
+
+	private bool _characterGamepadControlsEnabled;
 
 	[DataSourceProperty]
 	public InputKeyItemVM CancelInputKey
@@ -69,6 +71,23 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 	}
 
 	[DataSourceProperty]
+	public MBBindingList<InputKeyItemVM> CameraControlKeys
+	{
+		get
+		{
+			return _cameraControlKeys;
+		}
+		set
+		{
+			if (value != _cameraControlKeys)
+			{
+				_cameraControlKeys = value;
+				OnPropertyChangedWithValue(value, "CameraControlKeys");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string Name
 	{
 		get
@@ -80,7 +99,7 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 			if (value != _name)
 			{
 				_name = value;
-				_characterCreation.Name = value;
+				CharacterCreationManager.CharacterCreationContent.SetMainCharacterName(value);
 				OnPropertyChangedWithValue(value, "Name");
 				OnRefresh();
 			}
@@ -139,7 +158,7 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -172,26 +191,43 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 		}
 	}
 
-	public CharacterCreationReviewStageVM(TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText, int currentStageIndex, int totalStagesCount, int furthestIndex, Action<int> goToIndex, bool isBannerAndClanNameSet)
-		: base(characterCreation, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText, currentStageIndex, totalStagesCount, furthestIndex, goToIndex)
+	[DataSourceProperty]
+	public bool CharacterGamepadControlsEnabled
+	{
+		get
+		{
+			return _characterGamepadControlsEnabled;
+		}
+		set
+		{
+			if (value != _characterGamepadControlsEnabled)
+			{
+				_characterGamepadControlsEnabled = value;
+				OnPropertyChangedWithValue(value, "CharacterGamepadControlsEnabled");
+			}
+		}
+	}
+
+	public CharacterCreationReviewStageVM(CharacterCreationManager characterCreationManager, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText, bool isBannerAndClanNameSet)
+		: base(characterCreationManager, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText)
 	{
 		ReviewList = new MBBindingList<CharacterCreationReviewStageItemVM>();
 		base.Title = new TextObject("{=txjiykNa}Review").ToString();
-		base.Description = CharacterCreationContentBase.Instance.ReviewPageDescription.ToString();
-		_currentContent = (GameStateManager.Current.ActiveState as CharacterCreationState).CurrentCharacterCreationContent;
+		base.Description = characterCreationManager.CharacterCreationContent.ReviewPageDescription.ToString();
 		_isBannerAndClanNameSet = isBannerAndClanNameSet;
-		Name = _characterCreation.Name;
+		CannotAdvanceReasonHint = new HintViewModel();
+		ClanBanner = new BannerImageIdentifierVM(Clan.PlayerClan.Banner);
+		GainedPropertiesController = new CharacterCreationGainedPropertiesVM(CharacterCreationManager);
+		Name = characterCreationManager.CharacterCreationContent.MainCharacterName;
 		NameTextQuestion = new TextObject("{=mHVmrwRQ}Enter your name").ToString();
 		AddReviewedItems();
-		GainedPropertiesController = new CharacterCreationGainedPropertiesVM(_characterCreation, -1);
-		ClanBanner = new ImageIdentifierVM(Clan.PlayerClan.Banner);
-		CannotAdvanceReasonHint = new HintViewModel();
+		CameraControlKeys = new MBBindingList<InputKeyItemVM>();
 	}
 
 	private void AddReviewedItems()
 	{
 		string text = string.Empty;
-		CultureObject selectedCulture = _currentContent.GetSelectedCulture();
+		CultureObject selectedCulture = CharacterCreationManager.CharacterCreationContent.SelectedCulture;
 		IEnumerable<FeatObject> culturalFeats = selectedCulture.GetCulturalFeats((FeatObject x) => x.IsPositive);
 		IEnumerable<FeatObject> culturalFeats2 = selectedCulture.GetCulturalFeats((FeatObject x) => !x.IsPositive);
 		foreach (FeatObject item3 in culturalFeats)
@@ -206,30 +242,25 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 			GameTexts.SetVariable("STR2", item4.Description);
 			text = GameTexts.FindText("str_string_newline_string").ToString();
 		}
-		CharacterCreationReviewStageItemVM item = new CharacterCreationReviewStageItemVM(new TextObject("{=K6GYskvJ}Culture:").ToString(), _currentContent.GetSelectedCulture().Name.ToString(), text);
+		CharacterCreationReviewStageItemVM item = new CharacterCreationReviewStageItemVM(new TextObject("{=K6GYskvJ}Culture:").ToString(), CharacterCreationManager.CharacterCreationContent.SelectedCulture.Name.ToString(), text);
 		ReviewList.Add(item);
-		for (int i = 0; i < _characterCreation.CharacterCreationMenuCount; i++)
+		foreach (KeyValuePair<NarrativeMenu, NarrativeMenuOption> selectedOption in CharacterCreationManager.SelectedOptions)
 		{
-			IEnumerable<int> selectedOptions = _characterCreation.GetSelectedOptions(i);
-			foreach (CharacterCreationOption item5 in from s in _characterCreation.GetCurrentMenuOptions(i)
-				where selectedOptions.Contains(s.Id)
-				select s)
-			{
-				item = new CharacterCreationReviewStageItemVM(_characterCreation.GetCurrentMenuTitle(i).ToString(), item5.Text.ToString(), item5.PositiveEffectText.ToString());
-				ReviewList.Add(item);
-			}
+			NarrativeMenu key = selectedOption.Key;
+			NarrativeMenuOption value = selectedOption.Value;
+			item = new CharacterCreationReviewStageItemVM(key.Title.ToString(), value.Text.ToString(), value.PositiveEffectText.ToString());
+			ReviewList.Add(item);
 		}
 		if (_isBannerAndClanNameSet)
 		{
-			CharacterCreationReviewStageItemVM item2 = new CharacterCreationReviewStageItemVM(new ImageIdentifierVM(BannerCode.CreateFrom(Clan.PlayerClan.Banner), nineGrid: true), GameTexts.FindText("str_clan").ToString(), Clan.PlayerClan.Name.ToString(), null);
+			CharacterCreationReviewStageItemVM item2 = new CharacterCreationReviewStageItemVM(new BannerImageIdentifierVM(Clan.PlayerClan.Banner, nineGrid: true), GameTexts.FindText("str_clan").ToString(), Clan.PlayerClan.Name.ToString(), null);
 			ReviewList.Add(item2);
 		}
 	}
 
 	public void ExecuteRandomizeName()
 	{
-		CharacterCreationContentBase currentCharacterCreationContent = (GameStateManager.Current.ActiveState as CharacterCreationState).CurrentCharacterCreationContent;
-		Name = NameGenerator.Current.GenerateFirstNameForPlayer(currentCharacterCreationContent.GetSelectedCulture(), Hero.MainHero.IsFemale).ToString();
+		Name = NameGenerator.Current.GenerateFirstNameForPlayer(CharacterCreationManager.CharacterCreationContent.SelectedCulture, Hero.MainHero.IsFemale).ToString();
 	}
 
 	private void OnRefresh()
@@ -241,7 +272,7 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 		textObject2.SetTextVariable("CHARACTER_GENDER", Hero.MainHero.IsFemale ? 1 : 0);
 		textObject.SetTextVariable("CHARACTER_GENDER", Hero.MainHero.IsFemale ? 1 : 0);
 		Hero.MainHero.SetName(textObject2, textObject);
-		OnPropertyChanged("CanAdvance");
+		base.CanAdvance = CanAdvanceToNextStage();
 	}
 
 	public override void OnNextStage()
@@ -256,7 +287,7 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 
 	public override bool CanAdvanceToNextStage()
 	{
-		TextObject hintText = TextObject.Empty;
+		TextObject hintText = TextObject.GetEmpty();
 		bool result = true;
 		if (string.IsNullOrEmpty(Name) || string.IsNullOrWhiteSpace(Name))
 		{
@@ -281,6 +312,10 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 		base.OnFinalize();
 		CancelInputKey?.OnFinalize();
 		DoneInputKey?.OnFinalize();
+		foreach (InputKeyItemVM cameraControlKey in CameraControlKeys)
+		{
+			cameraControlKey.OnFinalize();
+		}
 	}
 
 	public void SetCancelInputKey(HotKey hotKey)
@@ -291,5 +326,23 @@ public class CharacterCreationReviewStageVM : CharacterCreationStageBaseVM
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void AddCameraControlInputKey(HotKey hotKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameKey gameKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameAxisKey gameAxisKey, TextObject keyName)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromForcedID(gameAxisKey.AxisKey.ToString(), keyName, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
 	}
 }

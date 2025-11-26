@@ -1,4 +1,5 @@
 using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -18,7 +19,7 @@ public class ItemVM : ViewModel
 
 	public static Action<ItemVM> ProcessItemTooltip;
 
-	private int _typeId;
+	private string _typeName;
 
 	private int _itemCost = -1;
 
@@ -30,11 +31,13 @@ public class ItemVM : ViewModel
 
 	public EquipmentIndex _itemType = EquipmentIndex.None;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private ItemImageIdentifierVM _imageIdentifier;
 
 	private HintViewModel _previewHint;
 
 	private HintViewModel _equipHint;
+
+	private HintViewModel _unequipHint;
 
 	private BasicTooltipViewModel _buyAndEquip;
 
@@ -50,6 +53,10 @@ public class ItemVM : ViewModel
 
 	private string _stringId;
 
+	public int TypeId { get; private set; }
+
+	public int Version { get; protected set; }
+
 	[DataSourceProperty]
 	public EquipmentIndex ItemType
 	{
@@ -64,7 +71,7 @@ public class ItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public ItemImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -149,18 +156,18 @@ public class ItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public int TypeId
+	public string TypeName
 	{
 		get
 		{
-			return _typeId;
+			return _typeName;
 		}
 		set
 		{
-			if (value != _typeId)
+			if (value != _typeName)
 			{
-				_typeId = value;
-				OnPropertyChangedWithValue(value, "TypeId");
+				_typeName = value;
+				OnPropertyChangedWithValue(value, "TypeName");
 			}
 		}
 	}
@@ -195,6 +202,23 @@ public class ItemVM : ViewModel
 			{
 				_equipHint = value;
 				OnPropertyChangedWithValue(value, "EquipHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel UnequipHint
+	{
+		get
+		{
+			return _unequipHint;
+		}
+		set
+		{
+			if (value != _unequipHint)
+			{
+				_unequipHint = value;
+				OnPropertyChangedWithValue(value, "UnequipHint");
 			}
 		}
 	}
@@ -396,15 +420,15 @@ public class ItemVM : ViewModel
 		case ItemObject.ItemTypeEnum.Horse:
 			return EquipmentIndex.ArmorItemEndSlot;
 		case ItemObject.ItemTypeEnum.Arrows:
-			return EquipmentIndex.WeaponItemBeginSlot;
 		case ItemObject.ItemTypeEnum.Bolts:
+		case ItemObject.ItemTypeEnum.SlingStones:
 			return EquipmentIndex.WeaponItemBeginSlot;
 		case ItemObject.ItemTypeEnum.Banner:
 			return EquipmentIndex.ExtraWeaponSlot;
 		case ItemObject.ItemTypeEnum.Shield:
-			if (_typeId == 0)
+			if (_typeName == ItemObject.ItemTypeEnum.Invalid.ToString())
 			{
-				_typeId = 1;
+				_typeName = ItemObject.ItemTypeEnum.Horse.ToString();
 			}
 			return EquipmentIndex.WeaponItemBeginSlot;
 		default:
@@ -416,8 +440,9 @@ public class ItemVM : ViewModel
 		}
 	}
 
-	protected void SetItemTypeId()
+	protected void OnItemTypeUpdated()
 	{
 		TypeId = (int)ItemRosterElement.EquipmentElement.Item.Type;
+		TypeName = ItemRosterElement.EquipmentElement.Item.Type.ToString();
 	}
 }

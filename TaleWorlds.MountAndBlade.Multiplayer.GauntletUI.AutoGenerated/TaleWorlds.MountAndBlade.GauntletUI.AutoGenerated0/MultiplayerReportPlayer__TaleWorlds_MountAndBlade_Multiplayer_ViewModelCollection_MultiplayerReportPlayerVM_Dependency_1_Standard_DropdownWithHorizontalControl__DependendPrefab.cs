@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
@@ -29,7 +28,11 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 
 	private ScrollingRichTextWidget _widget_1_0_0_0;
 
-	private HintWidget _widget_1_0_1;
+	private HintWidget _widget_1_0_0_1;
+
+	private Widget _widget_1_0_1;
+
+	private HintWidget _widget_1_0_1_0;
 
 	private Widget _widget_1_1;
 
@@ -57,8 +60,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 
 	private MBBindingList<SelectorItemVM> _datasource_Root_ReportReasons_ItemList;
 
-	private HintViewModel _datasource_Root_DisabledReasonHint;
-
 	public MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_1_Standard_DropdownWithHorizontalControl__DependendPrefab(UIContext context)
 		: base(context)
 	{
@@ -79,8 +80,12 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_1_0.AddChild(_widget_1_0_0);
 		_widget_1_0_0_0 = new ScrollingRichTextWidget(base.Context);
 		_widget_1_0_0.AddChild(_widget_1_0_0_0);
-		_widget_1_0_1 = new HintWidget(base.Context);
+		_widget_1_0_0_1 = new HintWidget(base.Context);
+		_widget_1_0_0.AddChild(_widget_1_0_0_1);
+		_widget_1_0_1 = new Widget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_1);
+		_widget_1_0_1_0 = new HintWidget(base.Context);
+		_widget_1_0_1.AddChild(_widget_1_0_1_0);
 		_widget_1_1 = new Widget(base.Context);
 		_widget_1.AddChild(_widget_1_1);
 		_widget_1_1_0 = new BrushWidget(base.Context);
@@ -169,9 +174,13 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_1_0_0_0.Brush = base.Context.GetBrush("MPLobby.CustomServer.CreateGamePanel.DropdownText");
 		_widget_1_0_0_0.IsAutoScrolling = false;
 		_widget_1_0_0_0.ScrollOnHoverWidget = _widget_1_0_0;
+		_widget_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1.IsDisabled = true;
+		_widget_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1.ClipContents = true;
@@ -189,12 +198,11 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_1_1_0_0.MarginBottom = 20f;
 		_widget_1_1_0_0.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_1_0_0.InnerPanel = _widget_1_1_0_0_0_0;
-		_widget_1_1_0_0.MaxHeight = 355f;
 		_widget_1_1_0_0.VerticalScrollbar = _widget_1_1_0_1;
 		_widget_1_1_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_0_0.ClipContents = true;
-		_widget_1_1_0_0_0.MaxHeight = 355f;
+		_widget_1_1_0_0_0.MaxHeight = 348f;
 		_widget_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -204,8 +212,9 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_1_1_0_1.SuggestedWidth = 8f;
 		_widget_1_1_0_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_1_0_1.MarginTop = 15f;
-		_widget_1_1_0_1.MarginBottom = 15f;
+		_widget_1_1_0_1.MarginTop = 8f;
+		_widget_1_1_0_1.MarginBottom = 18f;
+		_widget_1_1_0_1.MarginRight = 5f;
 		_widget_1_1_0_1.AlignmentAxis = AlignmentAxis.Vertical;
 		_widget_1_1_0_1.Handle = _widget_1_1_0_1_1;
 		_widget_1_1_0_1.IsVisible = false;
@@ -278,6 +287,8 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+			_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 			if (_datasource_Root_ReportReasons_ItemList != null)
 			{
@@ -291,20 +302,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 				_datasource_Root_ReportReasons_ItemList = null;
 			}
 			_datasource_Root_ReportReasons = null;
-		}
-		if (_datasource_Root_DisabledReasonHint != null)
-		{
-			_datasource_Root_DisabledReasonHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint;
-			_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
-			_datasource_Root_DisabledReasonHint = null;
 		}
 		_datasource_Root = null;
 	}
@@ -327,23 +324,23 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_ = commandName == "OnDropdownClick";
 	}
 
+	private void EventListenerOf_widget_1_0_0_1(Widget widget, string commandName, object[] args)
+	{
+		_ = commandName == "HoverBegin";
+		_ = commandName == "HoverEnd";
+	}
+
+	private void EventListenerOf_widget_1_0_1_0(Widget widget, string commandName, object[] args)
+	{
+		_ = commandName == "HoverBegin";
+		_ = commandName == "HoverEnd";
+	}
+
 	private void EventListenerOf_widget_2_0(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
 			_datasource_Root_ReportReasons.ExecuteSelectNextItem();
-		}
-	}
-
-	private void EventListenerOf_widget_1_0_1(Widget widget, string commandName, object[] args)
-	{
-		if (commandName == "HoverBegin")
-		{
-			_datasource_Root_DisabledReasonHint.ExecuteBeginHint();
-		}
-		if (commandName == "HoverEnd")
-		{
-			_datasource_Root_DisabledReasonHint.ExecuteEndHint();
 		}
 	}
 
@@ -457,55 +454,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		}
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithBoolValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithFloatValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithUIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithColorValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(e.PropertyName);
-	}
-
-	private void HandleViewModelPropertyChangeOf_datasource_Root_DisabledReasonHint(string propertyName)
-	{
-	}
-
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
 	{
 		HandleViewModelPropertyChangeOf_datasource_Root(e.PropertyName);
@@ -556,10 +504,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		if (propertyName == "ReportReasons")
 		{
 			RefreshDataSource_datasource_Root_ReportReasons(_datasource_Root.ReportReasons);
-		}
-		else if (propertyName == "DisabledReasonHint")
-		{
-			RefreshDataSource_datasource_Root_DisabledReasonHint(_datasource_Root.DisabledReasonHint);
 		}
 	}
 
@@ -643,6 +587,8 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+			_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 			if (_datasource_Root_ReportReasons_ItemList != null)
 			{
@@ -686,6 +632,8 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 		_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 		_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
+		_widget_1_0_0_1.EventFire += EventListenerOf_widget_1_0_0_1;
+		_widget_1_0_1_0.EventFire += EventListenerOf_widget_1_0_1_0;
 		_widget_2_0.EventFire += EventListenerOf_widget_2_0;
 		_datasource_Root_ReportReasons_ItemList = _datasource_Root_ReportReasons.ItemList;
 		if (_datasource_Root_ReportReasons_ItemList != null)
@@ -703,39 +651,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetAttributes();
 				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
 			}
-		}
-	}
-
-	private void RefreshDataSource_datasource_Root_DisabledReasonHint(HintViewModel newDataSource)
-	{
-		if (_datasource_Root_DisabledReasonHint != null)
-		{
-			_datasource_Root_DisabledReasonHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint;
-			_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
-			_datasource_Root_DisabledReasonHint = null;
-		}
-		_datasource_Root_DisabledReasonHint = newDataSource;
-		_datasource_Root_DisabledReasonHint = _datasource_Root.DisabledReasonHint;
-		if (_datasource_Root_DisabledReasonHint != null)
-		{
-			_datasource_Root_DisabledReasonHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint;
-			_widget_1_0_1.EventFire += EventListenerOf_widget_1_0_1;
 		}
 	}
 
@@ -809,6 +724,8 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 				_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 				_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 				_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+				_widget_1_0_0_1.EventFire -= EventListenerOf_widget_1_0_0_1;
+				_widget_1_0_1_0.EventFire -= EventListenerOf_widget_1_0_1_0;
 				_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
 				if (_datasource_Root_ReportReasons_ItemList != null)
 				{
@@ -824,20 +741,6 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 					_datasource_Root_ReportReasons_ItemList = null;
 				}
 				_datasource_Root_ReportReasons = null;
-			}
-			if (_datasource_Root_DisabledReasonHint != null)
-			{
-				_datasource_Root_DisabledReasonHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint;
-				_datasource_Root_DisabledReasonHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint;
-				_widget_1_0_1.EventFire -= EventListenerOf_widget_1_0_1;
-				_datasource_Root_DisabledReasonHint = null;
 			}
 			_datasource_Root = null;
 		}
@@ -856,61 +759,50 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 		_datasource_Root_ReportReasons = _datasource_Root.ReportReasons;
-		if (_datasource_Root_ReportReasons != null)
+		if (_datasource_Root_ReportReasons == null)
 		{
-			_datasource_Root_ReportReasons.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReportReasons;
-			_datasource_Root_ReportReasons.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReportReasons;
-			_widget_0_0.EventFire += EventListenerOf_widget_0_0;
-			_widget_1.CurrentSelectedIndex = _datasource_Root_ReportReasons.SelectedIndex;
-			_widget_1.EventFire += EventListenerOf_widget_1;
-			_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
-			_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
-			_widget_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1;
-			_widget_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1;
-			_widget_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1;
-			_widget_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1;
-			_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
-			_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
-			_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
-			_widget_2_0.EventFire += EventListenerOf_widget_2_0;
-			_datasource_Root_ReportReasons_ItemList = _datasource_Root_ReportReasons.ItemList;
-			if (_datasource_Root_ReportReasons_ItemList != null)
-			{
-				_datasource_Root_ReportReasons_ItemList.ListChanged += OnList_datasource_Root_ReportReasons_ItemListChanged;
-				for (int i = 0; i < _datasource_Root_ReportReasons_ItemList.Count; i++)
-				{
-					MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate = new MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate);
-					SelectorItemVM dataSource = (SelectorItemVM)(generatedWidgetData.Data = _datasource_Root_ReportReasons_ItemList[i]);
-					multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.AddComponent(generatedWidgetData);
-					_widget_1_1_0_0_0_0.AddChildAtIndex(multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate, i);
-					multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.CreateWidgets();
-					multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetIds();
-					multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetAttributes();
-					multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
-				}
-			}
+			return;
 		}
-		_datasource_Root_DisabledReasonHint = _datasource_Root.DisabledReasonHint;
-		if (_datasource_Root_DisabledReasonHint != null)
+		_datasource_Root_ReportReasons.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReportReasons;
+		_datasource_Root_ReportReasons.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReportReasons;
+		_widget_0_0.EventFire += EventListenerOf_widget_0_0;
+		_widget_1.CurrentSelectedIndex = _datasource_Root_ReportReasons.SelectedIndex;
+		_widget_1.EventFire += EventListenerOf_widget_1;
+		_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
+		_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
+		_widget_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1;
+		_widget_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1;
+		_widget_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1;
+		_widget_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1;
+		_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
+		_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
+		_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
+		_widget_1_0_0_1.EventFire += EventListenerOf_widget_1_0_0_1;
+		_widget_1_0_1_0.EventFire += EventListenerOf_widget_1_0_1_0;
+		_widget_2_0.EventFire += EventListenerOf_widget_2_0;
+		_datasource_Root_ReportReasons_ItemList = _datasource_Root_ReportReasons.ItemList;
+		if (_datasource_Root_ReportReasons_ItemList != null)
 		{
-			_datasource_Root_DisabledReasonHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_DisabledReasonHint;
-			_datasource_Root_DisabledReasonHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_DisabledReasonHint;
-			_widget_1_0_1.EventFire += EventListenerOf_widget_1_0_1;
+			_datasource_Root_ReportReasons_ItemList.ListChanged += OnList_datasource_Root_ReportReasons_ItemListChanged;
+			for (int i = 0; i < _datasource_Root_ReportReasons_ItemList.Count; i++)
+			{
+				MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate = new MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate);
+				SelectorItemVM dataSource = (SelectorItemVM)(generatedWidgetData.Data = _datasource_Root_ReportReasons_ItemList[i]);
+				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_1_0_0_0_0.AddChildAtIndex(multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate, i);
+				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.CreateWidgets();
+				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetIds();
+				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetAttributes();
+				multiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MultiplayerReportPlayerVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
+			}
 		}
 	}
 }

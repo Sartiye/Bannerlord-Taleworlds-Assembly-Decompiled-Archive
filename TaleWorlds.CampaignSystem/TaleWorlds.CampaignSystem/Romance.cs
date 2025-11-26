@@ -122,7 +122,7 @@ public class Romance
 
 	public static Hero GetCourtedHeroInOtherClan(Hero person1, Hero person2)
 	{
-		foreach (Hero item in person2.Clan.Lords.Where((Hero x) => x != person2))
+		foreach (Hero item in person2.Clan.AliveLords.Where((Hero x) => x != person2))
 		{
 			if (GetRomanticLevel(person1, item) >= RomanceLevelEnum.MatchMadeByFamily)
 			{

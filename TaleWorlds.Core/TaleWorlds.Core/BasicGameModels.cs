@@ -6,8 +6,6 @@ public class BasicGameModels : GameModelsManager
 {
 	public RidingModel RidingModel { get; private set; }
 
-	public BattleSurvivalModel BattleSurvivalModel { get; private set; }
-
 	public ItemCategorySelector ItemCategorySelector { get; private set; }
 
 	public ItemValueModel ItemValueModel { get; private set; }

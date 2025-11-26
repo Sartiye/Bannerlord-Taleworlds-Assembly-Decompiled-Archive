@@ -1,5 +1,5 @@
+using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Diamond;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -117,6 +117,8 @@ public static class CompressionMission
 
 	public static CompressionInfo.Integer AgentPrefabComponentIndexCompressionInfo;
 
+	public static CompressionInfo.Integer AttachedWeaponsCompressionInfo;
+
 	public static CompressionInfo.Integer MultiplayerPollRejectReasonCompressionInfo;
 
 	public static CompressionInfo.Integer MultiplayerNotificationCompressionInfo;
@@ -192,11 +194,11 @@ public static class CompressionMission
 		ItemDataCompressionInfo = new CompressionInfo.Integer(0, 10);
 		WeaponReloadPhaseCompressionInfo = new CompressionInfo.Integer(0, 9, maximumValueGiven: true);
 		WeaponUsageIndexCompressionInfo = new CompressionInfo.Integer(0, 2);
-		TauntIndexCompressionInfo = new CompressionInfo.Integer(0, TauntUsageManager.GetTauntItemCount() - 1, maximumValueGiven: true);
+		TauntIndexCompressionInfo = new CompressionInfo.Integer(0, TauntUsageManager.Instance.GetTauntItemCount() - 1, maximumValueGiven: true);
 		BarkIndexCompressionInfo = new CompressionInfo.Integer(0, SkinVoiceManager.VoiceType.MpBarks.Length - 1, maximumValueGiven: true);
 		UsageDirectionCompressionInfo = new CompressionInfo.Integer(-1, 9, maximumValueGiven: true);
-		SpawnedItemVelocityCompressionInfo = new CompressionInfo.Float(-100f, 100f, 12);
-		SpawnedItemAngularVelocityCompressionInfo = new CompressionInfo.Float(-100f, 100f, 12);
+		SpawnedItemVelocityCompressionInfo = new CompressionInfo.Float(-50f, 50f, 12);
+		SpawnedItemAngularVelocityCompressionInfo = new CompressionInfo.Float(-10f, 10f, 12);
 		SpawnedItemWeaponSpawnFlagCompressionInfo = new CompressionInfo.UnsignedInteger(0u, EnumHelper.GetCombinedUIntEnumFlagsValue(typeof(Mission.WeaponSpawnFlags)), maximumValueGiven: true);
 		RangedSiegeWeaponAmmoCompressionInfo = new CompressionInfo.Integer(0, 7);
 		RangedSiegeWeaponAmmoIndexCompressionInfo = new CompressionInfo.Integer(0, 3);
@@ -211,6 +213,7 @@ public static class CompressionMission
 		StepSizeCompressionInfo = new CompressionInfo.Float(-0.01f, 7, 0.01f);
 		BoneIndexCompressionInfo = new CompressionInfo.Integer(0, 63, maximumValueGiven: true);
 		AgentPrefabComponentIndexCompressionInfo = new CompressionInfo.Integer(0, 4);
+		AttachedWeaponsCompressionInfo = new CompressionInfo.Integer(-1, 11);
 		MultiplayerPollRejectReasonCompressionInfo = new CompressionInfo.Integer(0, 3, maximumValueGiven: true);
 		MultiplayerNotificationCompressionInfo = new CompressionInfo.Integer(0, MultiplayerGameNotificationsComponent.NotificationCount, maximumValueGiven: true);
 		MultiplayerNotificationParameterCompressionInfo = new CompressionInfo.Integer(-1, 8);
@@ -223,7 +226,7 @@ public static class CompressionMission
 		AutomatedBattleIndexCompressionInfo = new CompressionInfo.Integer(0, 10, maximumValueGiven: true);
 		SiegeMoraleCompressionInfo = new CompressionInfo.Integer(0, 1440, maximumValueGiven: true);
 		SiegeMoralePerFlagCompressionInfo = new CompressionInfo.Integer(0, 90, maximumValueGiven: true);
-		OrderTypeCompressionInfo = new CompressionInfo.Integer(0, 42, maximumValueGiven: true);
+		OrderTypeCompressionInfo = new CompressionInfo.Integer(0, 41, maximumValueGiven: true);
 		FormationClassCompressionInfo = new CompressionInfo.Integer(-1, 10, maximumValueGiven: true);
 		OrderPositionCompressionInfo = new CompressionInfo.Float(-100000f, 100000f, 24);
 		SynchedMissionObjectReadableRecordTypeIndex = new CompressionInfo.Integer(-1, 8);

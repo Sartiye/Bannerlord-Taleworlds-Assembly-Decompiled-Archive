@@ -28,6 +28,8 @@ public class AgentData
 
 	public uint AgentClothingColor2 { get; private set; }
 
+	public bool PrepareImmediately { get; private set; }
+
 	public bool BodyPropertiesOverriden { get; private set; }
 
 	public BodyProperties AgentBodyProperties { get; private set; }
@@ -128,6 +130,12 @@ public class AgentData
 	public AgentData CivilianEquipment(bool civilianEquipment)
 	{
 		AgentCivilianEquipment = civilianEquipment;
+		return this;
+	}
+
+	public AgentData SetPrepareImmediately()
+	{
+		PrepareImmediately = true;
 		return this;
 	}
 

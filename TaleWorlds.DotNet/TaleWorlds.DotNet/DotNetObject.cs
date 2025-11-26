@@ -1,16 +1,37 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.DotNet;
 
 public class DotNetObject
 {
+	private struct DotNetObjectReferenceCounter
+	{
+		internal int ReferenceCount;
+
+		internal long CreationFrame;
+
+		internal DotNetObject DotNetObject;
+	}
+
+	private class DotNetObjectKeeper
+	{
+		internal DotNetObject DotNetObject;
+
+		internal int TimerToReleaseStrongRef;
+
+		internal GCHandle gcHandle;
+	}
+
 	private static readonly object Locker;
 
 	private const int DotnetObjectFirstReferencesTickCount = 200;
 
-	private static readonly List<Dictionary<int, DotNetObject>> DotnetObjectFirstReferences;
+	private static long _frameNo;
+
+	private static Dictionary<int, DotNetObjectKeeper> DotnetKeepReferences;
 
 	private static readonly Dictionary<int, DotNetObjectReferenceCounter> DotnetObjectReferences;
 
@@ -26,11 +47,7 @@ public class DotNetObject
 	{
 		Locker = new object();
 		DotnetObjectReferences = new Dictionary<int, DotNetObjectReferenceCounter>();
-		DotnetObjectFirstReferences = new List<Dictionary<int, DotNetObject>>();
-		for (int i = 0; i < 200; i++)
-		{
-			DotnetObjectFirstReferences.Add(new Dictionary<int, DotNetObject>());
-		}
+		DotnetKeepReferences = new Dictionary<int, DotNetObjectKeeper>();
 	}
 
 	protected DotNetObject()
@@ -39,7 +56,20 @@ public class DotNetObject
 		{
 			_totalCreatedObjectCount++;
 			_objectId = _totalCreatedObjectCount;
-			DotnetObjectFirstReferences[0].Add(_objectId, this);
+			DotNetObjectReferenceCounter value = new DotNetObjectReferenceCounter
+			{
+				DotNetObject = this,
+				ReferenceCount = 0,
+				CreationFrame = _frameNo
+			};
+			DotnetObjectReferences.Add(_objectId, value);
+			DotNetObjectKeeper value2 = new DotNetObjectKeeper
+			{
+				DotNetObject = this,
+				TimerToReleaseStrongRef = 200,
+				gcHandle = GCHandle.Alloc(this, GCHandleType.Normal)
+			};
+			DotnetKeepReferences.Add(_objectId, value2);
 			_numberOfAliveDotNetObjects++;
 		}
 	}
@@ -52,13 +82,13 @@ public class DotNetObject
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static int GetAliveDotNetObjectCount()
 	{
 		return _numberOfAliveDotNetObjects;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void IncreaseReferenceCount(int dotnetObjectId)
 	{
 		lock (Locker)
@@ -69,18 +99,10 @@ public class DotNetObject
 				value.ReferenceCount++;
 				DotnetObjectReferences[dotnetObjectId] = value;
 			}
-			else
-			{
-				DotNetObject dotNetObjectFromFirstReferences = GetDotNetObjectFromFirstReferences(dotnetObjectId);
-				DotNetObjectReferenceCounter value2 = default(DotNetObjectReferenceCounter);
-				value2.ReferenceCount = 1;
-				value2.DotNetObject = dotNetObjectFromFirstReferences;
-				DotnetObjectReferences.Add(dotnetObjectId, value2);
-			}
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static void DecreaseReferenceCount(int dotnetObjectId)
 	{
 		lock (Locker)
@@ -90,6 +112,11 @@ public class DotNetObject
 			if (value.ReferenceCount == 0)
 			{
 				DotnetObjectReferences.Remove(dotnetObjectId);
+				if (DotnetKeepReferences.TryGetValue(dotnetObjectId, out var value2))
+				{
+					value2.gcHandle.Free();
+					DotnetKeepReferences.Remove(dotnetObjectId);
+				}
 			}
 			else
 			{
@@ -106,20 +133,12 @@ public class DotNetObject
 			{
 				return value.DotNetObject;
 			}
-			return GetDotNetObjectFromFirstReferences(dotnetObjectId);
-		}
-	}
-
-	private static DotNetObject GetDotNetObjectFromFirstReferences(int dotnetObjectId)
-	{
-		foreach (Dictionary<int, DotNetObject> dotnetObjectFirstReference in DotnetObjectFirstReferences)
-		{
-			if (dotnetObjectFirstReference.TryGetValue(dotnetObjectId, out var value))
+			if (dotnetObjectId == 0)
 			{
-				return value;
+				return null;
 			}
+			return new DotNetObject();
 		}
-		return null;
 	}
 
 	internal int GetManagedId()
@@ -127,7 +146,7 @@ public class DotNetObject
 		return _objectId;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetAliveDotNetObjectNames()
 	{
 		MBStringBuilder mBStringBuilder = default(MBStringBuilder);
@@ -159,13 +178,21 @@ public class DotNetObject
 	{
 		lock (Locker)
 		{
-			Dictionary<int, DotNetObject> dictionary = DotnetObjectFirstReferences[199];
-			for (int num = 199; num > 0; num--)
+			_frameNo++;
+			List<int> list = new List<int>();
+			foreach (KeyValuePair<int, DotNetObjectKeeper> dotnetKeepReference in DotnetKeepReferences)
 			{
-				DotnetObjectFirstReferences[num] = DotnetObjectFirstReferences[num - 1];
+				dotnetKeepReference.Value.TimerToReleaseStrongRef--;
+				if (dotnetKeepReference.Value.TimerToReleaseStrongRef == 0)
+				{
+					dotnetKeepReference.Value.gcHandle.Free();
+					list.Add(dotnetKeepReference.Key);
+				}
 			}
-			dictionary.Clear();
-			DotnetObjectFirstReferences[0] = dictionary;
+			foreach (int item in list)
+			{
+				DotnetKeepReferences.Remove(item);
+			}
 		}
 	}
 }

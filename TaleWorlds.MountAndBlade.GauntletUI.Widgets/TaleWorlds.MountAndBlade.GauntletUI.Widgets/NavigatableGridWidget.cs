@@ -19,9 +19,13 @@ public class NavigatableGridWidget : GridWidget
 
 	public ScrollablePanel ParentPanel { get; set; }
 
-	public int AutoScrollXOffset { get; set; }
+	public int AutoScrollTopOffset { get; set; }
 
-	public int AutoScrollYOffset { get; set; }
+	public int AutoScrollBottomOffset { get; set; }
+
+	public int AutoScrollLeftOffset { get; set; }
+
+	public int AutoScrollRightOffset { get; set; }
 
 	public int MinIndex
 	{
@@ -147,9 +151,9 @@ public class NavigatableGridWidget : GridWidget
 		UpdateEmptyNavigationWidget();
 	}
 
-	protected override void OnAfterChildRemoved(Widget child)
+	protected override void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
-		base.OnAfterChildRemoved(child);
+		base.OnAfterChildRemoved(child, previousIndexOfChild);
 		child.OnGamepadNavigationFocusGained = null;
 		child.EventFire -= OnChildSiblingIndexChanged;
 		child.boolPropertyChanged -= OnChildVisibilityChanged;
@@ -188,7 +192,8 @@ public class NavigatableGridWidget : GridWidget
 	{
 		if (ParentPanel != null)
 		{
-			ParentPanel.ScrollToChild(widget, -1f, -1f, AutoScrollXOffset, AutoScrollYOffset);
+			ScrollablePanel.AutoScrollParameters scrollParameters = new ScrollablePanel.AutoScrollParameters(AutoScrollTopOffset, AutoScrollBottomOffset, AutoScrollLeftOffset, AutoScrollRightOffset);
+			ParentPanel.ScrollToChild(widget, scrollParameters);
 		}
 	}
 

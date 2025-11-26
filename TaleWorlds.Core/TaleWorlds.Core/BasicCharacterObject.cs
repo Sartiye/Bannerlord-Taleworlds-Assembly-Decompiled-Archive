@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
@@ -10,11 +11,15 @@ namespace TaleWorlds.Core;
 
 public class BasicCharacterObject : MBObjectBase
 {
+	public static readonly int SkillAffectingMaxLevel = 32;
+
 	public const float DefaultKnockbackResistance = 25f;
 
 	public const float DefaultKnockdownResistance = 50f;
 
 	public const float DefaultDismountResistance = 50f;
+
+	public const int MaxBattleTier = 7;
 
 	protected TextObject _basicName;
 
@@ -66,13 +71,15 @@ public class BasicCharacterObject : MBObjectBase
 
 	public virtual bool IsRanged => _isRanged;
 
+	public float SkillFactor => (float)TaleWorlds.Library.MathF.Min(Level, SkillAffectingMaxLevel) / (float)SkillAffectingMaxLevel;
+
 	public int Race { get; set; }
 
 	public virtual bool IsFemale { get; set; }
 
 	public bool FaceMeshCache { get; private set; }
 
-	public virtual MBReadOnlyList<Equipment> AllEquipments
+	protected virtual MBReadOnlyList<Equipment> AllEquipments
 	{
 		get
 		{
@@ -96,6 +103,20 @@ public class BasicCharacterObject : MBObjectBase
 		}
 	}
 
+	public virtual IEnumerable<Equipment> BattleEquipments => AllEquipments.WhereQ((Equipment e) => e.IsBattle);
+
+	public virtual Equipment FirstBattleEquipment => AllEquipments.FirstOrDefaultQ((Equipment e) => e.IsBattle);
+
+	public virtual Equipment RandomBattleEquipment => AllEquipments.GetRandomElementWithPredicate((Equipment e) => e.IsBattle);
+
+	public virtual IEnumerable<Equipment> CivilianEquipments => AllEquipments.WhereQ((Equipment e) => e.IsCivilian);
+
+	public virtual Equipment FirstCivilianEquipment => AllEquipments.FirstOrDefaultQ((Equipment e) => e.IsCivilian);
+
+	public virtual Equipment RandomCivilianEquipment => AllEquipments.GetRandomElementWithPredicate((Equipment e) => e.IsCivilian);
+
+	public virtual Equipment GetRandomEquipment => AllEquipments.GetRandomElementWithPredicate((Equipment x) => !x.IsEmpty());
+
 	public bool IsObsolete { get; private set; }
 
 	public virtual int Level { get; set; }
@@ -112,7 +133,7 @@ public class BasicCharacterObject : MBObjectBase
 		}
 	}
 
-	public virtual bool IsPlayerCharacter => false;
+	public virtual bool IsPlayerCharacter => Game.Current.PlayerTroop == this;
 
 	public virtual float Age
 	{
@@ -129,15 +150,6 @@ public class BasicCharacterObject : MBObjectBase
 	public virtual int HitPoints => MaxHitPoints();
 
 	public float FaceDirtAmount { get; set; }
-
-	public virtual string HairTags { get; set; } = "";
-
-
-	public virtual string BeardTags { get; set; } = "";
-
-
-	public virtual string TattooTags { get; set; } = "";
-
 
 	public virtual bool IsHero => _isBasicHero;
 
@@ -158,27 +170,19 @@ public class BasicCharacterObject : MBObjectBase
 		return Name.ToString();
 	}
 
-	private bool HasCivilianEquipment()
-	{
-		return AllEquipments.Any((Equipment eq) => eq.IsCivilian);
-	}
-
 	public void InitializeEquipmentsOnLoad(BasicCharacterObject character)
 	{
 		_equipmentRoster = character._equipmentRoster;
 	}
 
-	public Equipment GetFirstEquipment(bool civilianSet)
+	public Equipment GetFirstEquipment(Func<Equipment, bool> predicate)
 	{
-		if (!civilianSet)
+		Equipment equipment = AllEquipments.FirstOrDefault(predicate);
+		if (equipment != null)
 		{
-			return Equipment;
+			return equipment;
 		}
-		if (!HasCivilianEquipment())
-		{
-			return Equipment;
-		}
-		return AllEquipments.FirstOrDefault((Equipment eq) => eq.IsCivilian);
+		return Equipment;
 	}
 
 	public virtual BodyProperties GetBodyPropertiesMin(bool returnBaseValue = false)
@@ -202,12 +206,10 @@ public class BasicCharacterObject : MBObjectBase
 		KnockdownResistance = character.KnockdownResistance;
 		DismountResistance = character.DismountResistance;
 		DefaultCharacterSkills = character.DefaultCharacterSkills;
-		HairTags = character.HairTags;
-		BeardTags = character.BeardTags;
 		InitializeEquipmentsOnLoad(character);
 	}
 
-	public virtual BodyProperties GetBodyPropertiesMax()
+	public virtual BodyProperties GetBodyPropertiesMax(bool returnBaseValue = false)
 	{
 		return BodyPropertyRange.BodyPropertyMax;
 	}
@@ -216,7 +218,7 @@ public class BasicCharacterObject : MBObjectBase
 	{
 		BodyProperties bodyPropertiesMin = GetBodyPropertiesMin();
 		BodyProperties bodyPropertiesMax = GetBodyPropertiesMax();
-		return FaceGen.GetRandomBodyProperties(Race, IsFemale, bodyPropertiesMin, bodyPropertiesMax, (int)(equipment?.HairCoverType ?? ArmorComponent.HairCoverTypes.None), seed, HairTags, BeardTags, TattooTags);
+		return FaceGen.GetRandomBodyProperties(Race, IsFemale, bodyPropertiesMin, bodyPropertiesMax, (int)(equipment?.HairCoverType ?? ArmorComponent.HairCoverTypes.None), seed, BodyPropertyRange.HairTags, BodyPropertyRange.BeardTags, BodyPropertyRange.TattooTags, 0f);
 	}
 
 	public virtual void UpdatePlayerCharacterBodyProperties(BodyProperties properties, int race, bool isFemale)
@@ -282,6 +284,11 @@ public class BasicCharacterObject : MBObjectBase
 		return TaleWorlds.Library.MathF.Min(TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Ceiling(((float)Level - 5f) / 5f), 0), 7);
 	}
 
+	public MBCharacterSkills GetDefaultCharacterSkills()
+	{
+		return DefaultCharacterSkills;
+	}
+
 	public virtual int GetSkillValue(SkillObject skill)
 	{
 		return DefaultCharacterSkills.Skills.GetPropertyValue(skill);
@@ -292,9 +299,6 @@ public class BasicCharacterObject : MBObjectBase
 		IsSoldier = originCharacter.IsSoldier;
 		_isBasicHero = originCharacter._isBasicHero;
 		DefaultCharacterSkills = originCharacter.DefaultCharacterSkills;
-		HairTags = originCharacter.HairTags;
-		BeardTags = originCharacter.BeardTags;
-		TattooTags = originCharacter.TattooTags;
 		BodyPropertyRange = originCharacter.BodyPropertyRange;
 		IsFemale = originCharacter.IsFemale;
 		Race = originCharacter.Race;
@@ -316,9 +320,6 @@ public class BasicCharacterObject : MBObjectBase
 		{
 			SetName(new TextObject(xmlAttribute.Value));
 		}
-		HairTags = "";
-		BeardTags = "";
-		TattooTags = "";
 		Race = 0;
 		XmlAttribute xmlAttribute2 = node.Attributes["race"];
 		if (xmlAttribute2 != null)
@@ -344,6 +345,9 @@ public class BasicCharacterObject : MBObjectBase
 		}
 		BodyProperties bodyProperties = default(BodyProperties);
 		BodyProperties bodyProperties2 = default(BodyProperties);
+		string text = "";
+		string text2 = "";
+		string text3 = "";
 		foreach (XmlNode childNode in node.ChildNodes)
 		{
 			if (childNode.Name == "Skills" || childNode.Name == "skills")
@@ -373,15 +377,30 @@ public class BasicCharacterObject : MBObjectBase
 						}
 						_equipmentRoster.Init(objectManager, childNode3);
 					}
-					else if (childNode3.Name == "EquipmentSet" || childNode3.Name == "equipmentSet")
+					else
 					{
+						if (!(childNode3.Name == "EquipmentSet") && !(childNode3.Name == "equipmentSet"))
+						{
+							continue;
+						}
 						string innerText = childNode3.Attributes["id"].InnerText;
-						bool isCivilian = childNode3.Attributes["civilian"] != null && bool.Parse(childNode3.Attributes["civilian"].InnerText);
+						Equipment.EquipmentType result = Equipment.EquipmentType.Battle;
+						if (childNode3.Attributes["equipmentType"] != null)
+						{
+							if (!Enum.TryParse<Equipment.EquipmentType>(childNode3.Attributes["equipmentType"].Value, out result))
+							{
+								Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 450);
+							}
+						}
+						else if (childNode3.Attributes["civilian"] != null && bool.Parse(childNode3.Attributes["civilian"].InnerText))
+						{
+							result = Equipment.EquipmentType.Civilian;
+						}
 						if (_equipmentRoster == null)
 						{
 							_equipmentRoster = MBObjectManager.Instance.CreateObject<MBEquipmentRoster>(base.StringId);
 						}
-						_equipmentRoster.AddEquipmentRoster(MBObjectManager.Instance.GetObject<MBEquipmentRoster>(innerText), isCivilian);
+						_equipmentRoster.AddEquipmentRoster(MBObjectManager.Instance.GetObject<MBEquipmentRoster>(innerText), result);
 					}
 				}
 				if (list.Count > 0)
@@ -397,28 +416,28 @@ public class BasicCharacterObject : MBObjectBase
 					{
 						foreach (XmlNode childNode5 in childNode4.ChildNodes)
 						{
-							HairTags = HairTags + childNode5.Attributes["name"].Value + ",";
+							text = text + childNode5.Attributes["name"].Value + ",";
 						}
 					}
 					else if (childNode4.Name == "beard_tags")
 					{
 						foreach (XmlNode childNode6 in childNode4.ChildNodes)
 						{
-							BeardTags = BeardTags + childNode6.Attributes["name"].Value + ",";
+							text2 = text2 + childNode6.Attributes["name"].Value + ",";
 						}
 					}
 					else if (childNode4.Name == "tattoo_tags")
 					{
 						foreach (XmlNode childNode7 in childNode4.ChildNodes)
 						{
-							TattooTags = TattooTags + childNode7.Attributes["name"].Value + ",";
+							text3 = text3 + childNode7.Attributes["name"].Value + ",";
 						}
 					}
 					else if (childNode4.Name == "BodyProperties")
 					{
 						if (!BodyProperties.FromXmlNode(childNode4, out bodyProperties))
 						{
-							Debug.FailedAssert("cannot read body properties", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 428);
+							Debug.FailedAssert("cannot read body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 509);
 						}
 					}
 					else if (childNode4.Name == "BodyPropertiesMax")
@@ -426,7 +445,7 @@ public class BasicCharacterObject : MBObjectBase
 						if (!BodyProperties.FromXmlNode(childNode4, out bodyProperties2))
 						{
 							bodyProperties = bodyProperties2;
-							Debug.FailedAssert("cannot read max body properties", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 437);
+							Debug.FailedAssert("cannot read max body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 518);
 						}
 					}
 					else if (childNode4.Name == "face_key_template")
@@ -473,12 +492,39 @@ public class BasicCharacterObject : MBObjectBase
 		_isMounted = DefaultFormationClass.IsMounted();
 		XmlNode xmlNode13 = node.Attributes["formation_position_preference"];
 		FormationPositionPreference = ((xmlNode13 == null) ? FormationPositionPreference.Middle : ((FormationPositionPreference)Enum.Parse(typeof(FormationPositionPreference), xmlNode13.InnerText)));
+		bool flag = !string.IsNullOrEmpty(text);
+		bool flag2 = !string.IsNullOrEmpty(text2);
+		bool flag3 = !string.IsNullOrEmpty(text3);
+		if (flag || flag2 || flag3)
+		{
+			if (BodyPropertyRange.HairTags != text || BodyPropertyRange.BeardTags != text2 || BodyPropertyRange.TattooTags != text3)
+			{
+				BodyPropertyRange = MBBodyProperty.CreateFrom(BodyPropertyRange);
+			}
+			if (flag)
+			{
+				BodyPropertyRange.HairTags = text;
+			}
+			if (flag2)
+			{
+				BodyPropertyRange.BeardTags = text2;
+			}
+			if (flag3)
+			{
+				BodyPropertyRange.TattooTags = text3;
+			}
+		}
 		XmlNode xmlNode14 = node.Attributes["default_equipment_set"];
 		if (xmlNode14 != null)
 		{
 			_equipmentRoster.InitializeDefaultEquipment(xmlNode14.Value);
 		}
 		_equipmentRoster?.OrderEquipments();
+	}
+
+	protected void AddEquipment(MBEquipmentRoster equipmentRoster, Equipment.EquipmentType equipmentType)
+	{
+		_equipmentRoster.AddEquipmentRoster(equipmentRoster, equipmentType);
 	}
 
 	protected int FetchDefaultFormationGroup(string innerText)

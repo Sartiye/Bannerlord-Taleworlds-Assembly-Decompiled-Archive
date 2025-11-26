@@ -18,16 +18,17 @@ public class BehaviorDefensiveRing : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		Vec2 direction = ((TacticalDefendPosition != null) ? TacticalDefendPosition.Direction : ((base.Formation.QuerySystem.ClosestEnemyFormation != null) ? ((base.Formation.Direction.DotProduct((base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized()) < 0.5f) ? (base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition) : base.Formation.Direction).Normalized() : base.Formation.Direction));
+		Vec2 direction = ((TacticalDefendPosition != null) ? TacticalDefendPosition.Direction : ((base.Formation.CachedClosestEnemyFormation != null) ? ((base.Formation.Direction.DotProduct((base.Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized()) < 0.5f) ? (base.Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition) : base.Formation.Direction).Normalized() : base.Formation.Direction));
 		if (TacticalDefendPosition != null)
 		{
 			base.CurrentOrder = MovementOrder.MovementOrderMove(TacticalDefendPosition.Position);
-			CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
-			return;
 		}
-		WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-		medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		else
+		{
+			WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
+		}
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 	}
 
@@ -35,10 +36,10 @@ public class BehaviorDefensiveRing : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		if (base.Formation.QuerySystem.AveragePosition.Distance(base.CurrentOrder.GetPosition(base.Formation)) - base.Formation.Arrangement.Depth * 0.5f < 10f)
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		if (base.Formation.CachedAveragePosition.Distance(base.CurrentOrder.GetPosition(base.Formation)) - base.Formation.Arrangement.Depth * 0.5f < 10f)
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderCircle;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderCircle);
 			if (base.Formation.Team.FormationsIncludingEmpty.AnyQ((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsRangedFormation))
 			{
 				Formation formation = base.Formation.Team.FormationsIncludingEmpty.WhereQ((Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsRangedFormation).MaxBy((Formation f) => f.CountOfUnits);
@@ -53,12 +54,12 @@ public class BehaviorDefensiveRing : BehaviorComponent
 					num4++;
 				}
 				float num5 = num2 + (float)num4 * base.Formation.UnitDiameter + (float)(num4 - 1) * base.Formation.Distance;
-				base.Formation.FormOrder = FormOrder.FormOrderCustom(num5 * 2f);
+				base.Formation.SetFormOrder(FormOrder.FormOrderCustom(num5 * 2f));
 			}
 		}
 		else
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
 		}
 	}
 
@@ -66,10 +67,10 @@ public class BehaviorDefensiveRing : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	public override void ResetBehavior()

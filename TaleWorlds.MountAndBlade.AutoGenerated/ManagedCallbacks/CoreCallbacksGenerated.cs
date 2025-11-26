@@ -25,6 +25,8 @@ internal static class CoreCallbacksGenerated
 
 	internal delegate void Agent_OnAgentAlarmedStateChanged_delegate(int thisPointer, Agent.AIStateFlag flag);
 
+	internal delegate void Agent_OnAIInputSet_delegate(int thisPointer, ref Agent.EventControlFlag eventFlag, ref Agent.MovementControlFlag movementFlag, ref Vec2 inputVector);
+
 	internal delegate void Agent_OnDismount_delegate(int thisPointer, int mount);
 
 	internal delegate void Agent_OnMount_delegate(int thisPointer, int mount);
@@ -117,6 +119,9 @@ internal static class CoreCallbacksGenerated
 
 	internal delegate void Mission_ApplySkeletonScaleToAllEquippedItems_delegate(int thisPointer, IntPtr itemName);
 
+	[return: MarshalAs(UnmanagedType.U1)]
+	internal delegate bool Mission_CanPhysicsCollideBetweenTwoEntities_delegate(int thisPointer, UIntPtr entity0Ptr, UIntPtr entity1Ptr);
+
 	internal delegate void Mission_ChargeDamageCallback_delegate(int thisPointer, ref AttackCollisionData collisionData, Blow blow, int attacker, int victim);
 
 	internal delegate void Mission_DebugLogNativeMissionNetworkEvent_delegate(int eventEnum, IntPtr eventName, int bitCount);
@@ -140,7 +145,7 @@ internal static class CoreCallbacksGenerated
 	[return: MarshalAs(UnmanagedType.U1)]
 	internal delegate bool Mission_MissileHitCallback_delegate(int thisPointer, out int extraHitParticleIndex, ref AttackCollisionData collisionData, Vec3 missileStartingPosition, Vec3 missilePosition, Vec3 missileAngularVelocity, Vec3 movementVelocity, MatrixFrame attachGlobalFrame, MatrixFrame affectedShieldGlobalFrame, int numDamagedAgents, int attacker, int victim, NativeObjectPointer hitEntity);
 
-	internal delegate void Mission_OnAgentAddedAsCorpse_delegate(int thisPointer, int affectedAgent);
+	internal delegate void Mission_OnAgentAddedAsCorpse_delegate(int thisPointer, int affectedAgent, int corpsesToFadeIndex);
 
 	internal delegate void Mission_OnAgentDeleted_delegate(int thisPointer, int affectedAgent);
 
@@ -149,6 +154,10 @@ internal static class CoreCallbacksGenerated
 	internal delegate void Mission_OnAgentRemoved_delegate(int thisPointer, int affectedAgent, int affectorAgent, AgentState agentState, KillingBlow killingBlow);
 
 	internal delegate void Mission_OnAgentShootMissile_delegate(int thisPointer, int shooterAgent, EquipmentIndex weaponIndex, Vec3 position, Vec3 velocity, Mat3 orientation, [MarshalAs(UnmanagedType.U1)] bool hasRigidBody, [MarshalAs(UnmanagedType.U1)] bool isPrimaryWeaponShot, int forcedMissileIndex);
+
+	internal delegate void Mission_OnCorpseRemoved_delegate(int thisPointer, int corpsesToFadeIndex);
+
+	internal delegate void Mission_OnFixedTick_delegate(int thisPointer, float fixedDt);
 
 	internal delegate void Mission_OnMissileRemoved_delegate(int thisPointer, int missileIndex);
 
@@ -160,9 +169,9 @@ internal static class CoreCallbacksGenerated
 
 	internal delegate void Mission_ResetMission_delegate(int thisPointer);
 
-	internal delegate void Mission_SpawnWeaponAsDropFromAgent_delegate(int thisPointer, int agent, EquipmentIndex equipmentIndex, ref Vec3 velocity, ref Vec3 angularVelocity, Mission.WeaponSpawnFlags spawnFlags);
+	internal delegate void Mission_SpawnWeaponAsDropFromAgent_delegate(int thisPointer, int agent, EquipmentIndex equipmentIndex, ref Vec3 globalVelocity, ref Vec3 globalAngularVelocity, Mission.WeaponSpawnFlags spawnFlags);
 
-	internal delegate void Mission_TickAgentsAndTeams_delegate(int thisPointer, float dt);
+	internal delegate void Mission_TickAgentsAndTeams_delegate(int thisPointer, float dt, [MarshalAs(UnmanagedType.U1)] bool tickPaused);
 
 	internal delegate void Mission_UpdateMissionTimeCache_delegate(int thisPointer, float curTime);
 
@@ -175,6 +184,10 @@ internal static class CoreCallbacksGenerated
 	internal delegate UIntPtr Module_CreateProcessedModuleDataXMLForNative_delegate(IntPtr xmlType);
 
 	internal delegate UIntPtr Module_CreateProcessedSkinsXMLForNative_delegate(out string baseSkinsXmlPath);
+
+	internal delegate UIntPtr Module_CreateProcessedSoundEventDataXMLForNative_delegate();
+
+	internal delegate UIntPtr Module_CreateProcessedSoundParamsXMLForNative_delegate();
 
 	internal delegate UIntPtr Module_CreateProcessedVoiceDefinitionsXMLForNative_delegate();
 
@@ -191,6 +204,8 @@ internal static class CoreCallbacksGenerated
 	internal delegate UIntPtr Module_GetMissionControllerClassNames_delegate(int thisPointer);
 
 	internal delegate void Module_Initialize_delegate(int thisPointer);
+
+	internal delegate void Module_LoadSingleModule_delegate(int thisPointer, IntPtr modulePath);
 
 	internal delegate void Module_MBThrowException_delegate();
 
@@ -227,7 +242,7 @@ internal static class CoreCallbacksGenerated
 
 	public static void Initialize()
 	{
-		Delegates = new Delegate[104];
+		Delegates = new Delegate[111];
 		Delegates[0] = new Agent_DebugGetHealth_delegate(Agent_DebugGetHealth);
 		Delegates[1] = new Agent_GetFormationUnitSpacing_delegate(Agent_GetFormationUnitSpacing);
 		Delegates[2] = new Agent_GetMissileRangeWithHeightDifferenceAux_delegate(Agent_GetMissileRangeWithHeightDifferenceAux);
@@ -235,103 +250,110 @@ internal static class CoreCallbacksGenerated
 		Delegates[4] = new Agent_GetWeaponInaccuracy_delegate(Agent_GetWeaponInaccuracy);
 		Delegates[5] = new Agent_IsInSameFormationWith_delegate(Agent_IsInSameFormationWith);
 		Delegates[6] = new Agent_OnAgentAlarmedStateChanged_delegate(Agent_OnAgentAlarmedStateChanged);
-		Delegates[7] = new Agent_OnDismount_delegate(Agent_OnDismount);
-		Delegates[8] = new Agent_OnMount_delegate(Agent_OnMount);
-		Delegates[9] = new Agent_OnRemoveWeapon_delegate(Agent_OnRemoveWeapon);
-		Delegates[10] = new Agent_OnRetreating_delegate(Agent_OnRetreating);
-		Delegates[11] = new Agent_OnShieldDamaged_delegate(Agent_OnShieldDamaged);
-		Delegates[12] = new Agent_OnWeaponAmmoConsume_delegate(Agent_OnWeaponAmmoConsume);
-		Delegates[13] = new Agent_OnWeaponAmmoReload_delegate(Agent_OnWeaponAmmoReload);
-		Delegates[14] = new Agent_OnWeaponAmmoRemoved_delegate(Agent_OnWeaponAmmoRemoved);
-		Delegates[15] = new Agent_OnWeaponAmountChange_delegate(Agent_OnWeaponAmountChange);
-		Delegates[16] = new Agent_OnWeaponReloadPhaseChange_delegate(Agent_OnWeaponReloadPhaseChange);
-		Delegates[17] = new Agent_OnWeaponSwitchingToAlternativeStart_delegate(Agent_OnWeaponSwitchingToAlternativeStart);
-		Delegates[18] = new Agent_OnWeaponUsageIndexChange_delegate(Agent_OnWeaponUsageIndexChange);
-		Delegates[19] = new Agent_OnWieldedItemIndexChange_delegate(Agent_OnWieldedItemIndexChange);
-		Delegates[20] = new Agent_SetAgentAIPerformingRetreatBehavior_delegate(Agent_SetAgentAIPerformingRetreatBehavior);
-		Delegates[21] = new Agent_UpdateAgentStats_delegate(Agent_UpdateAgentStats);
-		Delegates[22] = new Agent_UpdateMountAgentCache_delegate(Agent_UpdateMountAgentCache);
-		Delegates[23] = new Agent_UpdateRiderAgentCache_delegate(Agent_UpdateRiderAgentCache);
-		Delegates[24] = new BannerlordTableauManager_RegisterCharacterTableauScene_delegate(BannerlordTableauManager_RegisterCharacterTableauScene);
-		Delegates[25] = new BannerlordTableauManager_RequestCharacterTableauSetup_delegate(BannerlordTableauManager_RequestCharacterTableauSetup);
-		Delegates[26] = new CoreManaged_CheckSharedStructureSizes_delegate(CoreManaged_CheckSharedStructureSizes);
-		Delegates[27] = new CoreManaged_EngineApiMethodInterfaceInitializer_delegate(CoreManaged_EngineApiMethodInterfaceInitializer);
-		Delegates[28] = new CoreManaged_FillEngineApiPointers_delegate(CoreManaged_FillEngineApiPointers);
-		Delegates[29] = new CoreManaged_Finalize_delegate(CoreManaged_Finalize);
-		Delegates[30] = new CoreManaged_OnLoadCommonFinished_delegate(CoreManaged_OnLoadCommonFinished);
-		Delegates[31] = new CoreManaged_Start_delegate(CoreManaged_Start);
-		Delegates[32] = new GameNetwork_HandleConsoleCommand_delegate(GameNetwork_HandleConsoleCommand);
-		Delegates[33] = new GameNetwork_HandleDisconnect_delegate(GameNetwork_HandleDisconnect);
-		Delegates[34] = new GameNetwork_HandleNetworkPacketAsClient_delegate(GameNetwork_HandleNetworkPacketAsClient);
-		Delegates[35] = new GameNetwork_HandleNetworkPacketAsServer_delegate(GameNetwork_HandleNetworkPacketAsServer);
-		Delegates[36] = new GameNetwork_HandleRemovePlayer_delegate(GameNetwork_HandleRemovePlayer);
-		Delegates[37] = new GameNetwork_SyncRelevantGameOptionsToServer_delegate(GameNetwork_SyncRelevantGameOptionsToServer);
-		Delegates[38] = new ManagedOptions_GetConfigCount_delegate(ManagedOptions_GetConfigCount);
-		Delegates[39] = new ManagedOptions_GetConfigValue_delegate(ManagedOptions_GetConfigValue);
-		Delegates[40] = new MBEditor_CloseEditorScene_delegate(MBEditor_CloseEditorScene);
-		Delegates[41] = new MBEditor_DestroyEditor_delegate(MBEditor_DestroyEditor);
-		Delegates[42] = new MBEditor_SetEditorScene_delegate(MBEditor_SetEditorScene);
-		Delegates[43] = new MBMultiplayerData_GetCurrentPlayerCount_delegate(MBMultiplayerData_GetCurrentPlayerCount);
-		Delegates[44] = new MBMultiplayerData_GetGameModule_delegate(MBMultiplayerData_GetGameModule);
-		Delegates[45] = new MBMultiplayerData_GetGameType_delegate(MBMultiplayerData_GetGameType);
-		Delegates[46] = new MBMultiplayerData_GetMap_delegate(MBMultiplayerData_GetMap);
-		Delegates[47] = new MBMultiplayerData_GetPlayerCountLimit_delegate(MBMultiplayerData_GetPlayerCountLimit);
-		Delegates[48] = new MBMultiplayerData_GetServerId_delegate(MBMultiplayerData_GetServerId);
-		Delegates[49] = new MBMultiplayerData_GetServerName_delegate(MBMultiplayerData_GetServerName);
-		Delegates[50] = new MBMultiplayerData_UpdateGameServerInfo_delegate(MBMultiplayerData_UpdateGameServerInfo);
-		Delegates[51] = new Mission_ApplySkeletonScaleToAllEquippedItems_delegate(Mission_ApplySkeletonScaleToAllEquippedItems);
-		Delegates[52] = new Mission_ChargeDamageCallback_delegate(Mission_ChargeDamageCallback);
-		Delegates[53] = new Mission_DebugLogNativeMissionNetworkEvent_delegate(Mission_DebugLogNativeMissionNetworkEvent);
-		Delegates[54] = new Mission_EndMission_delegate(Mission_EndMission);
-		Delegates[55] = new Mission_FallDamageCallback_delegate(Mission_FallDamageCallback);
-		Delegates[56] = new Mission_GetAgentState_delegate(Mission_GetAgentState);
-		Delegates[57] = new Mission_GetClosestFleePositionForAgent_delegate(Mission_GetClosestFleePositionForAgent);
-		Delegates[58] = new Mission_GetDefendCollisionResults_delegate(Mission_GetDefendCollisionResults);
-		Delegates[59] = new Mission_MeleeHitCallback_delegate(Mission_MeleeHitCallback);
-		Delegates[60] = new Mission_MissileAreaDamageCallback_delegate(Mission_MissileAreaDamageCallback);
-		Delegates[61] = new Mission_MissileCalculatePassbySoundParametersCallbackMT_delegate(Mission_MissileCalculatePassbySoundParametersCallbackMT);
-		Delegates[62] = new Mission_MissileHitCallback_delegate(Mission_MissileHitCallback);
-		Delegates[63] = new Mission_OnAgentAddedAsCorpse_delegate(Mission_OnAgentAddedAsCorpse);
-		Delegates[64] = new Mission_OnAgentDeleted_delegate(Mission_OnAgentDeleted);
-		Delegates[65] = new Mission_OnAgentHitBlocked_delegate(Mission_OnAgentHitBlocked);
-		Delegates[66] = new Mission_OnAgentRemoved_delegate(Mission_OnAgentRemoved);
-		Delegates[67] = new Mission_OnAgentShootMissile_delegate(Mission_OnAgentShootMissile);
-		Delegates[68] = new Mission_OnMissileRemoved_delegate(Mission_OnMissileRemoved);
-		Delegates[69] = new Mission_OnPreTick_delegate(Mission_OnPreTick);
-		Delegates[70] = new Mission_OnSceneCreated_delegate(Mission_OnSceneCreated);
-		Delegates[71] = new Mission_PauseMission_delegate(Mission_PauseMission);
-		Delegates[72] = new Mission_ResetMission_delegate(Mission_ResetMission);
-		Delegates[73] = new Mission_SpawnWeaponAsDropFromAgent_delegate(Mission_SpawnWeaponAsDropFromAgent);
-		Delegates[74] = new Mission_TickAgentsAndTeams_delegate(Mission_TickAgentsAndTeams);
-		Delegates[75] = new Mission_UpdateMissionTimeCache_delegate(Mission_UpdateMissionTimeCache);
-		Delegates[76] = new Module_CreateProcessedActionSetsXMLForNative_delegate(Module_CreateProcessedActionSetsXMLForNative);
-		Delegates[77] = new Module_CreateProcessedActionTypesXMLForNative_delegate(Module_CreateProcessedActionTypesXMLForNative);
-		Delegates[78] = new Module_CreateProcessedAnimationsXMLForNative_delegate(Module_CreateProcessedAnimationsXMLForNative);
-		Delegates[79] = new Module_CreateProcessedModuleDataXMLForNative_delegate(Module_CreateProcessedModuleDataXMLForNative);
-		Delegates[80] = new Module_CreateProcessedSkinsXMLForNative_delegate(Module_CreateProcessedSkinsXMLForNative);
-		Delegates[81] = new Module_CreateProcessedVoiceDefinitionsXMLForNative_delegate(Module_CreateProcessedVoiceDefinitionsXMLForNative);
-		Delegates[82] = new Module_GetGameStatus_delegate(Module_GetGameStatus);
-		Delegates[83] = new Module_GetHorseMaterialNames_delegate(Module_GetHorseMaterialNames);
-		Delegates[84] = new Module_GetInstance_delegate(Module_GetInstance);
-		Delegates[85] = new Module_GetItemMeshNames_delegate(Module_GetItemMeshNames);
-		Delegates[86] = new Module_GetMetaMeshPackageMapping_delegate(Module_GetMetaMeshPackageMapping);
-		Delegates[87] = new Module_GetMissionControllerClassNames_delegate(Module_GetMissionControllerClassNames);
-		Delegates[88] = new Module_Initialize_delegate(Module_Initialize);
-		Delegates[89] = new Module_MBThrowException_delegate(Module_MBThrowException);
-		Delegates[90] = new Module_OnCloseSceneEditorPresentation_delegate(Module_OnCloseSceneEditorPresentation);
-		Delegates[91] = new Module_OnDumpCreated_delegate(Module_OnDumpCreated);
-		Delegates[92] = new Module_OnDumpCreationStarted_delegate(Module_OnDumpCreationStarted);
-		Delegates[93] = new Module_OnEnterEditMode_delegate(Module_OnEnterEditMode);
-		Delegates[94] = new Module_OnImguiProfilerTick_delegate(Module_OnImguiProfilerTick);
-		Delegates[95] = new Module_OnSceneEditorModeOver_delegate(Module_OnSceneEditorModeOver);
-		Delegates[96] = new Module_OnSkinsXMLHasChanged_delegate(Module_OnSkinsXMLHasChanged);
-		Delegates[97] = new Module_RunTest_delegate(Module_RunTest);
-		Delegates[98] = new Module_SetEditorScreenAsRootScreen_delegate(Module_SetEditorScreenAsRootScreen);
-		Delegates[99] = new Module_SetLoadingFinished_delegate(Module_SetLoadingFinished);
-		Delegates[100] = new Module_StartMissionForEditor_delegate(Module_StartMissionForEditor);
-		Delegates[101] = new Module_StartMissionForReplayEditor_delegate(Module_StartMissionForReplayEditor);
-		Delegates[102] = new Module_TickTest_delegate(Module_TickTest);
-		Delegates[103] = new WeaponComponentMissionExtensions_CalculateCenterOfMass_delegate(WeaponComponentMissionExtensions_CalculateCenterOfMass);
+		Delegates[7] = new Agent_OnAIInputSet_delegate(Agent_OnAIInputSet);
+		Delegates[8] = new Agent_OnDismount_delegate(Agent_OnDismount);
+		Delegates[9] = new Agent_OnMount_delegate(Agent_OnMount);
+		Delegates[10] = new Agent_OnRemoveWeapon_delegate(Agent_OnRemoveWeapon);
+		Delegates[11] = new Agent_OnRetreating_delegate(Agent_OnRetreating);
+		Delegates[12] = new Agent_OnShieldDamaged_delegate(Agent_OnShieldDamaged);
+		Delegates[13] = new Agent_OnWeaponAmmoConsume_delegate(Agent_OnWeaponAmmoConsume);
+		Delegates[14] = new Agent_OnWeaponAmmoReload_delegate(Agent_OnWeaponAmmoReload);
+		Delegates[15] = new Agent_OnWeaponAmmoRemoved_delegate(Agent_OnWeaponAmmoRemoved);
+		Delegates[16] = new Agent_OnWeaponAmountChange_delegate(Agent_OnWeaponAmountChange);
+		Delegates[17] = new Agent_OnWeaponReloadPhaseChange_delegate(Agent_OnWeaponReloadPhaseChange);
+		Delegates[18] = new Agent_OnWeaponSwitchingToAlternativeStart_delegate(Agent_OnWeaponSwitchingToAlternativeStart);
+		Delegates[19] = new Agent_OnWeaponUsageIndexChange_delegate(Agent_OnWeaponUsageIndexChange);
+		Delegates[20] = new Agent_OnWieldedItemIndexChange_delegate(Agent_OnWieldedItemIndexChange);
+		Delegates[21] = new Agent_SetAgentAIPerformingRetreatBehavior_delegate(Agent_SetAgentAIPerformingRetreatBehavior);
+		Delegates[22] = new Agent_UpdateAgentStats_delegate(Agent_UpdateAgentStats);
+		Delegates[23] = new Agent_UpdateMountAgentCache_delegate(Agent_UpdateMountAgentCache);
+		Delegates[24] = new Agent_UpdateRiderAgentCache_delegate(Agent_UpdateRiderAgentCache);
+		Delegates[25] = new BannerlordTableauManager_RegisterCharacterTableauScene_delegate(BannerlordTableauManager_RegisterCharacterTableauScene);
+		Delegates[26] = new BannerlordTableauManager_RequestCharacterTableauSetup_delegate(BannerlordTableauManager_RequestCharacterTableauSetup);
+		Delegates[27] = new CoreManaged_CheckSharedStructureSizes_delegate(CoreManaged_CheckSharedStructureSizes);
+		Delegates[28] = new CoreManaged_EngineApiMethodInterfaceInitializer_delegate(CoreManaged_EngineApiMethodInterfaceInitializer);
+		Delegates[29] = new CoreManaged_FillEngineApiPointers_delegate(CoreManaged_FillEngineApiPointers);
+		Delegates[30] = new CoreManaged_Finalize_delegate(CoreManaged_Finalize);
+		Delegates[31] = new CoreManaged_OnLoadCommonFinished_delegate(CoreManaged_OnLoadCommonFinished);
+		Delegates[32] = new CoreManaged_Start_delegate(CoreManaged_Start);
+		Delegates[33] = new GameNetwork_HandleConsoleCommand_delegate(GameNetwork_HandleConsoleCommand);
+		Delegates[34] = new GameNetwork_HandleDisconnect_delegate(GameNetwork_HandleDisconnect);
+		Delegates[35] = new GameNetwork_HandleNetworkPacketAsClient_delegate(GameNetwork_HandleNetworkPacketAsClient);
+		Delegates[36] = new GameNetwork_HandleNetworkPacketAsServer_delegate(GameNetwork_HandleNetworkPacketAsServer);
+		Delegates[37] = new GameNetwork_HandleRemovePlayer_delegate(GameNetwork_HandleRemovePlayer);
+		Delegates[38] = new GameNetwork_SyncRelevantGameOptionsToServer_delegate(GameNetwork_SyncRelevantGameOptionsToServer);
+		Delegates[39] = new ManagedOptions_GetConfigCount_delegate(ManagedOptions_GetConfigCount);
+		Delegates[40] = new ManagedOptions_GetConfigValue_delegate(ManagedOptions_GetConfigValue);
+		Delegates[41] = new MBEditor_CloseEditorScene_delegate(MBEditor_CloseEditorScene);
+		Delegates[42] = new MBEditor_DestroyEditor_delegate(MBEditor_DestroyEditor);
+		Delegates[43] = new MBEditor_SetEditorScene_delegate(MBEditor_SetEditorScene);
+		Delegates[44] = new MBMultiplayerData_GetCurrentPlayerCount_delegate(MBMultiplayerData_GetCurrentPlayerCount);
+		Delegates[45] = new MBMultiplayerData_GetGameModule_delegate(MBMultiplayerData_GetGameModule);
+		Delegates[46] = new MBMultiplayerData_GetGameType_delegate(MBMultiplayerData_GetGameType);
+		Delegates[47] = new MBMultiplayerData_GetMap_delegate(MBMultiplayerData_GetMap);
+		Delegates[48] = new MBMultiplayerData_GetPlayerCountLimit_delegate(MBMultiplayerData_GetPlayerCountLimit);
+		Delegates[49] = new MBMultiplayerData_GetServerId_delegate(MBMultiplayerData_GetServerId);
+		Delegates[50] = new MBMultiplayerData_GetServerName_delegate(MBMultiplayerData_GetServerName);
+		Delegates[51] = new MBMultiplayerData_UpdateGameServerInfo_delegate(MBMultiplayerData_UpdateGameServerInfo);
+		Delegates[52] = new Mission_ApplySkeletonScaleToAllEquippedItems_delegate(Mission_ApplySkeletonScaleToAllEquippedItems);
+		Delegates[53] = new Mission_CanPhysicsCollideBetweenTwoEntities_delegate(Mission_CanPhysicsCollideBetweenTwoEntities);
+		Delegates[54] = new Mission_ChargeDamageCallback_delegate(Mission_ChargeDamageCallback);
+		Delegates[55] = new Mission_DebugLogNativeMissionNetworkEvent_delegate(Mission_DebugLogNativeMissionNetworkEvent);
+		Delegates[56] = new Mission_EndMission_delegate(Mission_EndMission);
+		Delegates[57] = new Mission_FallDamageCallback_delegate(Mission_FallDamageCallback);
+		Delegates[58] = new Mission_GetAgentState_delegate(Mission_GetAgentState);
+		Delegates[59] = new Mission_GetClosestFleePositionForAgent_delegate(Mission_GetClosestFleePositionForAgent);
+		Delegates[60] = new Mission_GetDefendCollisionResults_delegate(Mission_GetDefendCollisionResults);
+		Delegates[61] = new Mission_MeleeHitCallback_delegate(Mission_MeleeHitCallback);
+		Delegates[62] = new Mission_MissileAreaDamageCallback_delegate(Mission_MissileAreaDamageCallback);
+		Delegates[63] = new Mission_MissileCalculatePassbySoundParametersCallbackMT_delegate(Mission_MissileCalculatePassbySoundParametersCallbackMT);
+		Delegates[64] = new Mission_MissileHitCallback_delegate(Mission_MissileHitCallback);
+		Delegates[65] = new Mission_OnAgentAddedAsCorpse_delegate(Mission_OnAgentAddedAsCorpse);
+		Delegates[66] = new Mission_OnAgentDeleted_delegate(Mission_OnAgentDeleted);
+		Delegates[67] = new Mission_OnAgentHitBlocked_delegate(Mission_OnAgentHitBlocked);
+		Delegates[68] = new Mission_OnAgentRemoved_delegate(Mission_OnAgentRemoved);
+		Delegates[69] = new Mission_OnAgentShootMissile_delegate(Mission_OnAgentShootMissile);
+		Delegates[70] = new Mission_OnCorpseRemoved_delegate(Mission_OnCorpseRemoved);
+		Delegates[71] = new Mission_OnFixedTick_delegate(Mission_OnFixedTick);
+		Delegates[72] = new Mission_OnMissileRemoved_delegate(Mission_OnMissileRemoved);
+		Delegates[73] = new Mission_OnPreTick_delegate(Mission_OnPreTick);
+		Delegates[74] = new Mission_OnSceneCreated_delegate(Mission_OnSceneCreated);
+		Delegates[75] = new Mission_PauseMission_delegate(Mission_PauseMission);
+		Delegates[76] = new Mission_ResetMission_delegate(Mission_ResetMission);
+		Delegates[77] = new Mission_SpawnWeaponAsDropFromAgent_delegate(Mission_SpawnWeaponAsDropFromAgent);
+		Delegates[78] = new Mission_TickAgentsAndTeams_delegate(Mission_TickAgentsAndTeams);
+		Delegates[79] = new Mission_UpdateMissionTimeCache_delegate(Mission_UpdateMissionTimeCache);
+		Delegates[80] = new Module_CreateProcessedActionSetsXMLForNative_delegate(Module_CreateProcessedActionSetsXMLForNative);
+		Delegates[81] = new Module_CreateProcessedActionTypesXMLForNative_delegate(Module_CreateProcessedActionTypesXMLForNative);
+		Delegates[82] = new Module_CreateProcessedAnimationsXMLForNative_delegate(Module_CreateProcessedAnimationsXMLForNative);
+		Delegates[83] = new Module_CreateProcessedModuleDataXMLForNative_delegate(Module_CreateProcessedModuleDataXMLForNative);
+		Delegates[84] = new Module_CreateProcessedSkinsXMLForNative_delegate(Module_CreateProcessedSkinsXMLForNative);
+		Delegates[85] = new Module_CreateProcessedSoundEventDataXMLForNative_delegate(Module_CreateProcessedSoundEventDataXMLForNative);
+		Delegates[86] = new Module_CreateProcessedSoundParamsXMLForNative_delegate(Module_CreateProcessedSoundParamsXMLForNative);
+		Delegates[87] = new Module_CreateProcessedVoiceDefinitionsXMLForNative_delegate(Module_CreateProcessedVoiceDefinitionsXMLForNative);
+		Delegates[88] = new Module_GetGameStatus_delegate(Module_GetGameStatus);
+		Delegates[89] = new Module_GetHorseMaterialNames_delegate(Module_GetHorseMaterialNames);
+		Delegates[90] = new Module_GetInstance_delegate(Module_GetInstance);
+		Delegates[91] = new Module_GetItemMeshNames_delegate(Module_GetItemMeshNames);
+		Delegates[92] = new Module_GetMetaMeshPackageMapping_delegate(Module_GetMetaMeshPackageMapping);
+		Delegates[93] = new Module_GetMissionControllerClassNames_delegate(Module_GetMissionControllerClassNames);
+		Delegates[94] = new Module_Initialize_delegate(Module_Initialize);
+		Delegates[95] = new Module_LoadSingleModule_delegate(Module_LoadSingleModule);
+		Delegates[96] = new Module_MBThrowException_delegate(Module_MBThrowException);
+		Delegates[97] = new Module_OnCloseSceneEditorPresentation_delegate(Module_OnCloseSceneEditorPresentation);
+		Delegates[98] = new Module_OnDumpCreated_delegate(Module_OnDumpCreated);
+		Delegates[99] = new Module_OnDumpCreationStarted_delegate(Module_OnDumpCreationStarted);
+		Delegates[100] = new Module_OnEnterEditMode_delegate(Module_OnEnterEditMode);
+		Delegates[101] = new Module_OnImguiProfilerTick_delegate(Module_OnImguiProfilerTick);
+		Delegates[102] = new Module_OnSceneEditorModeOver_delegate(Module_OnSceneEditorModeOver);
+		Delegates[103] = new Module_OnSkinsXMLHasChanged_delegate(Module_OnSkinsXMLHasChanged);
+		Delegates[104] = new Module_RunTest_delegate(Module_RunTest);
+		Delegates[105] = new Module_SetEditorScreenAsRootScreen_delegate(Module_SetEditorScreenAsRootScreen);
+		Delegates[106] = new Module_SetLoadingFinished_delegate(Module_SetLoadingFinished);
+		Delegates[107] = new Module_StartMissionForEditor_delegate(Module_StartMissionForEditor);
+		Delegates[108] = new Module_StartMissionForReplayEditor_delegate(Module_StartMissionForReplayEditor);
+		Delegates[109] = new Module_TickTest_delegate(Module_TickTest);
+		Delegates[110] = new WeaponComponentMissionExtensions_CalculateCenterOfMass_delegate(WeaponComponentMissionExtensions_CalculateCenterOfMass);
 	}
 
 	[MonoPInvokeCallback(typeof(Agent_DebugGetHealth_delegate))]
@@ -379,6 +401,12 @@ internal static class CoreCallbacksGenerated
 	internal static void Agent_OnAgentAlarmedStateChanged(int thisPointer, Agent.AIStateFlag flag)
 	{
 		(DotNetObject.GetManagedObjectWithId(thisPointer) as Agent).OnAgentAlarmedStateChanged(flag);
+	}
+
+	[MonoPInvokeCallback(typeof(Agent_OnAIInputSet_delegate))]
+	internal static void Agent_OnAIInputSet(int thisPointer, ref Agent.EventControlFlag eventFlag, ref Agent.MovementControlFlag movementFlag, ref Vec2 inputVector)
+	{
+		(DotNetObject.GetManagedObjectWithId(thisPointer) as Agent).OnAIInputSet(ref eventFlag, ref movementFlag, ref inputVector);
 	}
 
 	[MonoPInvokeCallback(typeof(Agent_OnDismount_delegate))]
@@ -707,6 +735,12 @@ internal static class CoreCallbacksGenerated
 		obj.ApplySkeletonScaleToAllEquippedItems(itemName2);
 	}
 
+	[MonoPInvokeCallback(typeof(Mission_CanPhysicsCollideBetweenTwoEntities_delegate))]
+	internal static bool Mission_CanPhysicsCollideBetweenTwoEntities(int thisPointer, UIntPtr entity0Ptr, UIntPtr entity1Ptr)
+	{
+		return (DotNetObject.GetManagedObjectWithId(thisPointer) as Mission).CanPhysicsCollideBetweenTwoEntities(entity0Ptr, entity1Ptr);
+	}
+
 	[MonoPInvokeCallback(typeof(Mission_ChargeDamageCallback_delegate))]
 	internal static void Mission_ChargeDamageCallback(int thisPointer, ref AttackCollisionData collisionData, Blow blow, int attacker, int victim)
 	{
@@ -808,11 +842,11 @@ internal static class CoreCallbacksGenerated
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_OnAgentAddedAsCorpse_delegate))]
-	internal static void Mission_OnAgentAddedAsCorpse(int thisPointer, int affectedAgent)
+	internal static void Mission_OnAgentAddedAsCorpse(int thisPointer, int affectedAgent, int corpsesToFadeIndex)
 	{
 		Mission obj = DotNetObject.GetManagedObjectWithId(thisPointer) as Mission;
 		Agent affectedAgent2 = DotNetObject.GetManagedObjectWithId(affectedAgent) as Agent;
-		obj.OnAgentAddedAsCorpse(affectedAgent2);
+		obj.OnAgentAddedAsCorpse(affectedAgent2, corpsesToFadeIndex);
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_OnAgentDeleted_delegate))]
@@ -847,6 +881,18 @@ internal static class CoreCallbacksGenerated
 		Mission obj = DotNetObject.GetManagedObjectWithId(thisPointer) as Mission;
 		Agent shooterAgent2 = DotNetObject.GetManagedObjectWithId(shooterAgent) as Agent;
 		obj.OnAgentShootMissile(shooterAgent2, weaponIndex, position, velocity, orientation, hasRigidBody, isPrimaryWeaponShot, forcedMissileIndex);
+	}
+
+	[MonoPInvokeCallback(typeof(Mission_OnCorpseRemoved_delegate))]
+	internal static void Mission_OnCorpseRemoved(int thisPointer, int corpsesToFadeIndex)
+	{
+		(DotNetObject.GetManagedObjectWithId(thisPointer) as Mission).OnCorpseRemoved(corpsesToFadeIndex);
+	}
+
+	[MonoPInvokeCallback(typeof(Mission_OnFixedTick_delegate))]
+	internal static void Mission_OnFixedTick(int thisPointer, float fixedDt)
+	{
+		(DotNetObject.GetManagedObjectWithId(thisPointer) as Mission).OnFixedTick(fixedDt);
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_OnMissileRemoved_delegate))]
@@ -886,17 +932,17 @@ internal static class CoreCallbacksGenerated
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_SpawnWeaponAsDropFromAgent_delegate))]
-	internal static void Mission_SpawnWeaponAsDropFromAgent(int thisPointer, int agent, EquipmentIndex equipmentIndex, ref Vec3 velocity, ref Vec3 angularVelocity, Mission.WeaponSpawnFlags spawnFlags)
+	internal static void Mission_SpawnWeaponAsDropFromAgent(int thisPointer, int agent, EquipmentIndex equipmentIndex, ref Vec3 globalVelocity, ref Vec3 globalAngularVelocity, Mission.WeaponSpawnFlags spawnFlags)
 	{
 		Mission obj = DotNetObject.GetManagedObjectWithId(thisPointer) as Mission;
 		Agent agent2 = DotNetObject.GetManagedObjectWithId(agent) as Agent;
-		obj.SpawnWeaponAsDropFromAgent(agent2, equipmentIndex, ref velocity, ref angularVelocity, spawnFlags);
+		obj.SpawnWeaponAsDropFromAgent(agent2, equipmentIndex, ref globalVelocity, ref globalAngularVelocity, spawnFlags);
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_TickAgentsAndTeams_delegate))]
-	internal static void Mission_TickAgentsAndTeams(int thisPointer, float dt)
+	internal static void Mission_TickAgentsAndTeams(int thisPointer, float dt, bool tickPaused)
 	{
-		(DotNetObject.GetManagedObjectWithId(thisPointer) as Mission).TickAgentsAndTeams(dt);
+		(DotNetObject.GetManagedObjectWithId(thisPointer) as Mission).TickAgentsAndTeams(dt, tickPaused);
 	}
 
 	[MonoPInvokeCallback(typeof(Mission_UpdateMissionTimeCache_delegate))]
@@ -945,6 +991,24 @@ internal static class CoreCallbacksGenerated
 	internal static UIntPtr Module_CreateProcessedSkinsXMLForNative(out string baseSkinsXmlPath)
 	{
 		string text = Module.CreateProcessedSkinsXMLForNative(out baseSkinsXmlPath);
+		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
+		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, text);
+		return threadLocalCachedRglVarString;
+	}
+
+	[MonoPInvokeCallback(typeof(Module_CreateProcessedSoundEventDataXMLForNative_delegate))]
+	internal static UIntPtr Module_CreateProcessedSoundEventDataXMLForNative()
+	{
+		string text = Module.CreateProcessedSoundEventDataXMLForNative();
+		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
+		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, text);
+		return threadLocalCachedRglVarString;
+	}
+
+	[MonoPInvokeCallback(typeof(Module_CreateProcessedSoundParamsXMLForNative_delegate))]
+	internal static UIntPtr Module_CreateProcessedSoundParamsXMLForNative()
+	{
+		string text = Module.CreateProcessedSoundParamsXMLForNative();
 		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
 		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, text);
 		return threadLocalCachedRglVarString;
@@ -1014,6 +1078,14 @@ internal static class CoreCallbacksGenerated
 	internal static void Module_Initialize(int thisPointer)
 	{
 		(DotNetObject.GetManagedObjectWithId(thisPointer) as Module).Initialize();
+	}
+
+	[MonoPInvokeCallback(typeof(Module_LoadSingleModule_delegate))]
+	internal static void Module_LoadSingleModule(int thisPointer, IntPtr modulePath)
+	{
+		Module obj = DotNetObject.GetManagedObjectWithId(thisPointer) as Module;
+		string modulePath2 = Marshal.PtrToStringAnsi(modulePath);
+		obj.LoadSingleModule(modulePath2);
 	}
 
 	[MonoPInvokeCallback(typeof(Module_MBThrowException_delegate))]

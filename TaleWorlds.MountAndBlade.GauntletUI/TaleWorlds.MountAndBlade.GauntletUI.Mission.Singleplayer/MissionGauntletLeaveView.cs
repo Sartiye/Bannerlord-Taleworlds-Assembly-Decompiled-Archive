@@ -18,7 +18,7 @@ public class MissionGauntletLeaveView : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		_dataSource = new MissionLeaveVM(base.Mission.GetMissionEndTimerValue, base.Mission.GetMissionEndTimeInSeconds);
-		_gauntletLayer = new GauntletLayer(47);
+		_gauntletLayer = new GauntletLayer("MissionLeave", 47);
 		_gauntletLayer.LoadMovie("LeaveUI", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}
@@ -45,12 +45,18 @@ public class MissionGauntletLeaveView : MissionView
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 }

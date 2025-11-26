@@ -1,26 +1,54 @@
-using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
 public interface IMissionDeploymentPlan
 {
-	bool IsPlanMadeForBattleSide(BattleSideEnum side, DeploymentPlanType planType);
+	void Initialize();
 
-	bool IsPositionInsideDeploymentBoundaries(BattleSideEnum battleSide, in Vec2 position);
+	void ClearAll();
 
-	bool HasDeploymentBoundaries(BattleSideEnum side);
+	void MakeDefaultDeploymentPlans();
 
-	MBReadOnlyList<(string id, List<Vec2> points)> GetDeploymentBoundaries(BattleSideEnum side);
+	void MakeDeploymentPlan(Team team, float spawnPathOffset = 0f, float targetOffset = 0f);
 
-	Vec2 GetClosestDeploymentBoundaryPosition(BattleSideEnum battleSide, in Vec2 position, bool withNavMesh = false, float positionZ = 0f);
+	bool RemakeDeploymentPlan(Team team);
 
-	int GetTroopCountForSide(BattleSideEnum side, DeploymentPlanType planType);
+	void ClearDeploymentPlan(Team team);
 
-	Vec3 GetMeanPositionOfPlan(BattleSideEnum battleSide, DeploymentPlanType planType);
+	bool IsPlanMade(Team team);
 
-	MatrixFrame GetBattleSideDeploymentFrame(BattleSideEnum side);
+	bool IsPlanMade(Team team, out bool isFirstPlan);
 
-	IFormationDeploymentPlan GetFormationPlan(BattleSideEnum side, FormationClass fClass, DeploymentPlanType planType);
+	bool IsPositionInsideDeploymentBoundaries(Team team, in Vec2 position);
+
+	bool HasDeploymentBoundaries(Team team);
+
+	MBReadOnlyList<(string id, MBList<Vec2> points)> GetDeploymentBoundaries(Team team);
+
+	bool SupportsReinforcements();
+
+	bool SupportsNavmesh();
+
+	bool HasPlayerSpawnFrame(BattleSideEnum battleSide);
+
+	bool GetPlayerSpawnFrame(BattleSideEnum battleSide, out WorldPosition position, out Vec2 direction);
+
+	Vec2 GetClosestDeploymentBoundaryPosition(Team team, in Vec2 position);
+
+	void ProjectPositionToDeploymentBoundaries(Team team, ref WorldPosition position);
+
+	bool GetPathDeploymentBoundaryIntersection(Team team, in WorldPosition startPosition, in WorldPosition endPosition, out WorldPosition intersection);
+
+	MatrixFrame GetDeploymentFrame(Team team);
+
+	IFormationDeploymentPlan GetFormationPlan(Team team, FormationClass fClass, bool isReinforcement = false);
+
+	float GetSpawnPathOffset(Team team);
+
+	MatrixFrame GetZoomFocusFrame(Team team);
+
+	float GetZoomOffset(Team team, float fovAngle);
 }

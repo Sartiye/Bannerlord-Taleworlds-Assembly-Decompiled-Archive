@@ -17,7 +17,7 @@ public class JoinKingdomSceneNotificationItem : SceneNotificationData
 
 	public override string SceneID => "scn_cutscene_factionjoin";
 
-	public override RelevantContextType RelevantContext => RelevantContextType.Map;
+	public override RelevantContextType RelevantContext => RelevantContextType.Any;
 
 	public override TextObject TitleText
 	{
@@ -31,12 +31,12 @@ public class JoinKingdomSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { KingdomToUse.Banner, KingdomToUse.Banner };
+		return new Banner[2] { KingdomToUse.Banner, KingdomToUse.Banner };
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Hero leader = NewMemberClan.Leader;
@@ -49,7 +49,7 @@ public class JoinKingdomSceneNotificationItem : SceneNotificationData
 			CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2, removeHelmet: true);
 			list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(item, equipment2));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public JoinKingdomSceneNotificationItem(Clan newMember, Kingdom kingdom)

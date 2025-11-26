@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
@@ -30,7 +31,9 @@ public class InventoryLogic
 	{
 		OtherInventory = 0,
 		PlayerInventory = 1,
-		Equipment = 2,
+		CivilianEquipment = 2,
+		BattleEquipment = 3,
+		StealthEquipment = 4,
 		None = -1
 	}
 
@@ -58,10 +61,11 @@ public class InventoryLogic
 				CharacterObject character = party.MemberRoster.GetElementCopyAtIndex(i).Character;
 				if (character.IsHero)
 				{
-					CharacterEquipments.Add(character, new Equipment[2]
+					CharacterEquipments.Add(character, new Equipment[3]
 					{
-						new Equipment(character.Equipment),
-						new Equipment(character.FirstCivilianEquipment)
+						new Equipment(character.FirstBattleEquipment),
+						new Equipment(character.FirstCivilianEquipment),
+						new Equipment(character.FirstStealthEquipment)
 					});
 				}
 			}
@@ -71,8 +75,26 @@ public class InventoryLogic
 		{
 			foreach (KeyValuePair<CharacterObject, Equipment[]> characterEquipment in CharacterEquipments)
 			{
-				characterEquipment.Key.Equipment.FillFrom(characterEquipment.Value[0]);
-				characterEquipment.Key.FirstCivilianEquipment.FillFrom(characterEquipment.Value[1]);
+				Equipment[] value = characterEquipment.Value;
+				foreach (Equipment equipment in value)
+				{
+					if (equipment.IsBattle)
+					{
+						characterEquipment.Key.FirstBattleEquipment.FillFrom(equipment);
+					}
+					else if (equipment.IsCivilian)
+					{
+						characterEquipment.Key.FirstCivilianEquipment.FillFrom(equipment);
+					}
+					else if (equipment.IsStealth)
+					{
+						characterEquipment.Key.FirstStealthEquipment.FillFrom(equipment);
+					}
+					else
+					{
+						Debug.FailedAssert("Equipment type cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "ResetEquipment", 1166);
+					}
+				}
 			}
 		}
 
@@ -141,7 +163,7 @@ public class InventoryLogic
 			}
 			else
 			{
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1177);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1246);
 			}
 		}
 
@@ -189,16 +211,24 @@ public class InventoryLogic
 
 		private readonly Func<TextObject> _getCapacityExceededHintText;
 
-		public CapacityData(Func<int> getCapacity, Func<TextObject> getCapacityExceededWarningText, Func<TextObject> getCapacityExceededHintText)
+		private readonly bool _forceTransaction;
+
+		public CapacityData(Func<int> getCapacity, Func<TextObject> getCapacityExceededWarningText, Func<TextObject> getCapacityExceededHintText, bool forceTransaction = false)
 		{
 			_getCapacity = getCapacity;
-			_getCapacityExceededWarningText = getCapacityExceededHintText;
-			_getCapacityExceededHintText = getCapacityExceededWarningText;
+			_getCapacityExceededWarningText = getCapacityExceededWarningText;
+			_getCapacityExceededHintText = getCapacityExceededHintText;
+			_forceTransaction = forceTransaction;
 		}
 
 		public int GetCapacity()
 		{
 			return _getCapacity?.Invoke() ?? (-1);
+		}
+
+		public bool CanForceTransaction()
+		{
+			return _forceTransaction;
 		}
 
 		public TextObject GetCapacityExceededWarningText()
@@ -275,6 +305,8 @@ public class InventoryLogic
 
 	private ItemRoster[] _rostersBackup;
 
+	private IWorkshopWarehouseCampaignBehavior _workshopWarehouseBehavior;
+
 	public bool IsPreviewingItem;
 
 	private PartyEquipment _partyInitialEquipment;
@@ -291,7 +323,9 @@ public class InventoryLogic
 
 	private bool _useBasePrices;
 
-	public InventoryManager.InventoryCategoryType MerchantItemType = InventoryManager.InventoryCategoryType.None;
+	public InventoryScreenHelper.InventoryCategoryType MerchantItemType = InventoryScreenHelper.InventoryCategoryType.None;
+
+	private InventoryScreenHelper.InventoryMode _inventoryMode;
 
 	public bool DisableNetwork { get; set; }
 
@@ -318,6 +352,29 @@ public class InventoryLogic
 	public IMarketData MarketData { get; private set; }
 
 	public CapacityData OtherSideCapacityData { get; private set; }
+
+	public int OtherSideCurrentWeight
+	{
+		get
+		{
+			float num = 0f;
+			MobileParty mobileParty = OtherParty?.MobileParty;
+			if (mobileParty != null)
+			{
+				ItemRoster itemRoster = _rosters[0];
+				InventoryCapacityModel inventoryCapacityModel = Campaign.Current.Models.InventoryCapacityModel;
+				for (int i = 0; i < itemRoster.Count; i++)
+				{
+					num += inventoryCapacityModel.GetItemEffectiveWeight(itemRoster[i].EquipmentElement, mobileParty, out var _) * (float)itemRoster[i].Amount;
+				}
+			}
+			else if (_inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse && _workshopWarehouseBehavior != null)
+			{
+				num = _workshopWarehouseBehavior.GetWarehouseItemRosterWeight(MobileParty.MainParty.CurrentSettlement);
+			}
+			return TaleWorlds.Library.MathF.Ceiling(num);
+		}
+	}
 
 	public TextObject LeftRosterName { get; private set; }
 
@@ -403,12 +460,12 @@ public class InventoryLogic
 	{
 	}
 
-	public void Initialize(ItemRoster leftItemRoster, MobileParty party, bool isTrading, bool isSpecialActionsPermitted, CharacterObject initialCharacterOfRightRoster, InventoryManager.InventoryCategoryType merchantItemType, IMarketData marketData, bool useBasePrices, TextObject leftRosterName = null, TroopRoster leftMemberRoster = null, CapacityData otherSideCapacityData = null)
+	public void Initialize(ItemRoster leftItemRoster, MobileParty party, bool isTrading, bool isSpecialActionsPermitted, CharacterObject initialCharacterOfRightRoster, InventoryScreenHelper.InventoryCategoryType merchantItemType, IMarketData marketData, bool useBasePrices, InventoryScreenHelper.InventoryMode inventoryMode, TextObject leftRosterName = null, TroopRoster leftMemberRoster = null, CapacityData otherSideCapacityData = null)
 	{
-		Initialize(leftItemRoster, party.ItemRoster, party.MemberRoster, isTrading, isSpecialActionsPermitted, initialCharacterOfRightRoster, merchantItemType, marketData, useBasePrices, leftRosterName, leftMemberRoster, otherSideCapacityData);
+		Initialize(leftItemRoster, party.ItemRoster, party.MemberRoster, isTrading, isSpecialActionsPermitted, initialCharacterOfRightRoster, merchantItemType, marketData, useBasePrices, inventoryMode, leftRosterName, leftMemberRoster, otherSideCapacityData);
 	}
 
-	public void Initialize(ItemRoster leftItemRoster, ItemRoster rightItemRoster, TroopRoster rightMemberRoster, bool isTrading, bool isSpecialActionsPermitted, CharacterObject initialCharacterOfRightRoster, InventoryManager.InventoryCategoryType merchantItemType, IMarketData marketData, bool useBasePrices, TextObject leftRosterName = null, TroopRoster leftMemberRoster = null, CapacityData otherSideCapacityData = null)
+	public void Initialize(ItemRoster leftItemRoster, ItemRoster rightItemRoster, TroopRoster rightMemberRoster, bool isTrading, bool isSpecialActionsPermitted, CharacterObject initialCharacterOfRightRoster, InventoryScreenHelper.InventoryCategoryType merchantItemType, IMarketData marketData, bool useBasePrices, InventoryScreenHelper.InventoryMode inventoryMode, TextObject leftRosterName = null, TroopRoster leftMemberRoster = null, CapacityData otherSideCapacityData = null)
 	{
 		OtherSideCapacityData = otherSideCapacityData;
 		MarketData = marketData;
@@ -419,14 +476,19 @@ public class InventoryLogic
 		LeftRosterName = leftRosterName;
 		IsTrading = isTrading;
 		IsSpecialActionsPermitted = isSpecialActionsPermitted;
+		_inventoryMode = inventoryMode;
 		InitializeRosters(leftItemRoster, rightItemRoster, rightMemberRoster, initialCharacterOfRightRoster, leftMemberRoster);
 		_transactionHistory.Clear();
 		InitializeCategoryAverages();
-		IsDiscardDonating = (InventoryManager.Instance.CurrentMode == InventoryMode.Default && !Game.Current.CheatMode) || InventoryManager.Instance.CurrentMode == InventoryMode.Loot;
+		IsDiscardDonating = (_inventoryMode == InventoryScreenHelper.InventoryMode.Default && !Game.Current.CheatMode) || _inventoryMode == InventoryScreenHelper.InventoryMode.Loot;
 		InitializeXpGainFromDonations();
 		if (OtherParty?.MobileParty?.ActualClan == Hero.MainHero.Clan)
 		{
 			IsOtherPartyFromPlayerClan = true;
+		}
+		if (_inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse)
+		{
+			_workshopWarehouseBehavior = Campaign.Current.GetCampaignBehavior<IWorkshopWarehouseCampaignBehavior>();
 		}
 	}
 
@@ -552,7 +614,7 @@ public class InventoryLogic
 
 	public bool CanInventoryCapacityIncrease(InventorySide side)
 	{
-		if (InventoryManager.Instance.CurrentMode == InventoryMode.Warehouse)
+		if (_inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse)
 		{
 			return side != InventorySide.OtherInventory;
 		}
@@ -591,7 +653,7 @@ public class InventoryLogic
 	{
 		XpGainFromDonations = 0f;
 		bool num = PerkHelper.PlayerHasAnyItemDonationPerk();
-		bool flag = InventoryManager.Instance.CurrentMode == InventoryMode.Loot;
+		bool flag = _inventoryMode == InventoryScreenHelper.InventoryMode.Loot;
 		if (num && flag)
 		{
 			XpGainFromDonations = Campaign.Current.Models.ItemDiscardModel.GetXpBonusForDiscardingItems(_rosters[0]);
@@ -670,7 +732,7 @@ public class InventoryLogic
 	public bool CanPlayerCompleteTransaction()
 	{
 		int num = OtherSideCapacityData?.GetCapacity() ?? (-1);
-		if (num != -1 && _rosters[0].Sum((ItemRosterElement x) => x.GetRosterElementWeight()) > (float)num)
+		if (num != -1 && OtherSideCurrentWeight > num && !OtherSideCapacityData.CanForceTransaction())
 		{
 			return false;
 		}
@@ -718,7 +780,7 @@ public class InventoryLogic
 
 	public bool IsDonatable(ItemObject item)
 	{
-		if (item.Type != ItemObject.ItemTypeEnum.Arrows && item.Type != ItemObject.ItemTypeEnum.BodyArmor && item.Type != ItemObject.ItemTypeEnum.Bolts && item.Type != ItemObject.ItemTypeEnum.Bow && item.Type != ItemObject.ItemTypeEnum.Bullets && item.Type != ItemObject.ItemTypeEnum.Cape && item.Type != ItemObject.ItemTypeEnum.ChestArmor && item.Type != ItemObject.ItemTypeEnum.Crossbow && item.Type != ItemObject.ItemTypeEnum.HandArmor && item.Type != ItemObject.ItemTypeEnum.HeadArmor && item.Type != ItemObject.ItemTypeEnum.HorseHarness && item.Type != ItemObject.ItemTypeEnum.LegArmor && item.Type != ItemObject.ItemTypeEnum.Musket && item.Type != ItemObject.ItemTypeEnum.OneHandedWeapon && item.Type != ItemObject.ItemTypeEnum.Pistol && item.Type != ItemObject.ItemTypeEnum.Polearm && item.Type != ItemObject.ItemTypeEnum.Shield && item.Type != ItemObject.ItemTypeEnum.Thrown)
+		if (item.Type != ItemObject.ItemTypeEnum.Arrows && item.Type != ItemObject.ItemTypeEnum.BodyArmor && item.Type != ItemObject.ItemTypeEnum.Bolts && item.Type != ItemObject.ItemTypeEnum.SlingStones && item.Type != ItemObject.ItemTypeEnum.Bow && item.Type != ItemObject.ItemTypeEnum.Bullets && item.Type != ItemObject.ItemTypeEnum.Cape && item.Type != ItemObject.ItemTypeEnum.ChestArmor && item.Type != ItemObject.ItemTypeEnum.Crossbow && item.Type != ItemObject.ItemTypeEnum.Sling && item.Type != ItemObject.ItemTypeEnum.HandArmor && item.Type != ItemObject.ItemTypeEnum.HeadArmor && item.Type != ItemObject.ItemTypeEnum.HorseHarness && item.Type != ItemObject.ItemTypeEnum.LegArmor && item.Type != ItemObject.ItemTypeEnum.Musket && item.Type != ItemObject.ItemTypeEnum.OneHandedWeapon && item.Type != ItemObject.ItemTypeEnum.Pistol && item.Type != ItemObject.ItemTypeEnum.Polearm && item.Type != ItemObject.ItemTypeEnum.Shield && item.Type != ItemObject.ItemTypeEnum.Thrown)
 		{
 			return item.Type == ItemObject.ItemTypeEnum.TwoHandedWeapon;
 		}
@@ -801,12 +863,12 @@ public class InventoryLogic
 	private List<TransferCommandResult> TransferItem(ref TransferCommand transferCommand)
 	{
 		List<TransferCommandResult> list = new List<TransferCommandResult>();
-		Debug.Print($"TransferItem Name: {transferCommand.ElementToTransfer.EquipmentElement.Item.Name.ToString()} | From: {transferCommand.FromSide} To: {transferCommand.ToSide} | Amount: {transferCommand.Amount}");
+		Debug.Print(string.Format("TransferItem Name: {0} | From: {1} To: {2} | Amount: {3}", transferCommand.ElementToTransfer.EquipmentElement.Item?.Name.ToString() ?? "null", transferCommand.FromSide, transferCommand.ToSide, transferCommand.Amount));
 		if (transferCommand.ElementToTransfer.EquipmentElement.Item != null && TransferIsMovementValid(ref transferCommand) && DoesTransferItemExist(ref transferCommand))
 		{
 			int num = 0;
 			bool flag = false;
-			if (transferCommand.FromSide != InventorySide.Equipment && transferCommand.FromSide != InventorySide.None)
+			if (!IsEquipmentSide(transferCommand.FromSide) && transferCommand.FromSide != InventorySide.None)
 			{
 				int index = _rosters[(int)transferCommand.FromSide].FindIndexOfElement(transferCommand.ElementToTransfer.EquipmentElement);
 				ItemRosterElement elementCopyAtIndex = _rosters[(int)transferCommand.FromSide].GetElementCopyAtIndex(index);
@@ -816,9 +878,9 @@ public class InventoryLogic
 			bool flag3 = IsBuy(transferCommand.FromSide, transferCommand.ToSide);
 			for (int i = 0; i < transferCommand.Amount; i++)
 			{
-				if (transferCommand.ToSide == InventorySide.Equipment && transferCommand.CharacterEquipment[(int)transferCommand.ToEquipmentIndex].Item != null)
+				if (IsEquipmentSide(transferCommand.ToSide) && transferCommand.ToSideEquipment[(int)transferCommand.ToEquipmentIndex].Item != null)
 				{
-					TransferCommand transferCommand2 = TransferCommand.Transfer(1, InventorySide.Equipment, InventorySide.PlayerInventory, new ItemRosterElement(transferCommand.CharacterEquipment[(int)transferCommand.ToEquipmentIndex], 1), transferCommand.ToEquipmentIndex, EquipmentIndex.None, transferCommand.Character, transferCommand.IsCivilianEquipment);
+					TransferCommand transferCommand2 = TransferCommand.Transfer(1, transferCommand.ToSide, InventorySide.PlayerInventory, new ItemRosterElement(transferCommand.ToSideEquipment[(int)transferCommand.ToEquipmentIndex], 1), transferCommand.ToEquipmentIndex, EquipmentIndex.None, transferCommand.Character);
 					list.AddRange(TransferItem(ref transferCommand2));
 				}
 				EquipmentElement equipmentElement = transferCommand.ElementToTransfer.EquipmentElement;
@@ -838,57 +900,57 @@ public class InventoryLogic
 						num -= itemPrice;
 					}
 				}
-				if (transferCommand.FromSide == InventorySide.Equipment)
+				if (IsEquipmentSide(transferCommand.FromSide))
 				{
-					ItemRosterElement itemRosterElement = new ItemRosterElement(transferCommand.CharacterEquipment[(int)transferCommand.FromEquipmentIndex], transferCommand.Amount);
+					ItemRosterElement itemRosterElement = new ItemRosterElement(transferCommand.FromSideEquipment[(int)transferCommand.FromEquipmentIndex], transferCommand.Amount);
 					itemRosterElement.Amount--;
-					transferCommand.CharacterEquipment[(int)transferCommand.FromEquipmentIndex] = itemRosterElement.EquipmentElement;
+					transferCommand.FromSideEquipment[(int)transferCommand.FromEquipmentIndex] = itemRosterElement.EquipmentElement;
 				}
 				else if (transferCommand.FromSide == InventorySide.PlayerInventory || transferCommand.FromSide == InventorySide.OtherInventory)
 				{
 					_rosters[(int)transferCommand.FromSide].AddToCounts(transferCommand.ElementToTransfer.EquipmentElement, -1);
 				}
-				if (transferCommand.ToSide == InventorySide.Equipment)
+				if (IsEquipmentSide(transferCommand.ToSide))
 				{
 					ItemRosterElement elementToTransfer = transferCommand.ElementToTransfer;
 					elementToTransfer.Amount = 1;
-					transferCommand.CharacterEquipment[(int)transferCommand.ToEquipmentIndex] = elementToTransfer.EquipmentElement;
+					transferCommand.ToSideEquipment[(int)transferCommand.ToEquipmentIndex] = elementToTransfer.EquipmentElement;
 				}
 				else if (transferCommand.ToSide == InventorySide.PlayerInventory || transferCommand.ToSide == InventorySide.OtherInventory)
 				{
 					_rosters[(int)transferCommand.ToSide].AddToCounts(transferCommand.ElementToTransfer.EquipmentElement, 1);
 				}
 			}
-			if (transferCommand.FromSide == InventorySide.Equipment)
+			if (IsEquipmentSide(transferCommand.FromSide))
 			{
-				ItemRosterElement effectedItemRosterElement = new ItemRosterElement(transferCommand.CharacterEquipment[(int)transferCommand.FromEquipmentIndex], transferCommand.Amount);
+				ItemRosterElement effectedItemRosterElement = new ItemRosterElement(transferCommand.FromSideEquipment[(int)transferCommand.FromEquipmentIndex], transferCommand.Amount);
 				effectedItemRosterElement.Amount--;
-				list.Add(new TransferCommandResult(transferCommand.FromSide, effectedItemRosterElement, -transferCommand.Amount, effectedItemRosterElement.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment));
+				list.Add(new TransferCommandResult(transferCommand.FromSide, effectedItemRosterElement, -transferCommand.Amount, effectedItemRosterElement.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character));
 			}
 			else if (transferCommand.FromSide == InventorySide.PlayerInventory || transferCommand.FromSide == InventorySide.OtherInventory)
 			{
 				if (flag)
 				{
-					list.Add(new TransferCommandResult(transferCommand.FromSide, new ItemRosterElement(transferCommand.ElementToTransfer.EquipmentElement, 0), -transferCommand.Amount, 0, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment));
+					list.Add(new TransferCommandResult(transferCommand.FromSide, new ItemRosterElement(transferCommand.ElementToTransfer.EquipmentElement, 0), -transferCommand.Amount, 0, transferCommand.FromEquipmentIndex, transferCommand.Character));
 				}
 				else
 				{
 					int index2 = _rosters[(int)transferCommand.FromSide].FindIndexOfElement(transferCommand.ElementToTransfer.EquipmentElement);
 					ItemRosterElement elementCopyAtIndex2 = _rosters[(int)transferCommand.FromSide].GetElementCopyAtIndex(index2);
-					list.Add(new TransferCommandResult(transferCommand.FromSide, elementCopyAtIndex2, -transferCommand.Amount, elementCopyAtIndex2.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment));
+					list.Add(new TransferCommandResult(transferCommand.FromSide, elementCopyAtIndex2, -transferCommand.Amount, elementCopyAtIndex2.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character));
 				}
 			}
-			if (transferCommand.ToSide == InventorySide.Equipment)
+			if (IsEquipmentSide(transferCommand.ToSide))
 			{
 				ItemRosterElement elementToTransfer2 = transferCommand.ElementToTransfer;
 				elementToTransfer2.Amount = 1;
-				list.Add(new TransferCommandResult(transferCommand.ToSide, elementToTransfer2, 1, 1, transferCommand.ToEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment));
+				list.Add(new TransferCommandResult(transferCommand.ToSide, elementToTransfer2, 1, 1, transferCommand.ToEquipmentIndex, transferCommand.Character));
 			}
 			else if (transferCommand.ToSide == InventorySide.PlayerInventory || transferCommand.ToSide == InventorySide.OtherInventory)
 			{
 				int index3 = _rosters[(int)transferCommand.ToSide].FindIndexOfElement(transferCommand.ElementToTransfer.EquipmentElement);
 				ItemRosterElement elementCopyAtIndex3 = _rosters[(int)transferCommand.ToSide].GetElementCopyAtIndex(index3);
-				list.Add(new TransferCommandResult(transferCommand.ToSide, elementCopyAtIndex3, transferCommand.Amount, elementCopyAtIndex3.Amount, transferCommand.ToEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment));
+				list.Add(new TransferCommandResult(transferCommand.ToSide, elementCopyAtIndex3, transferCommand.Amount, elementCopyAtIndex3.Amount, transferCommand.ToEquipmentIndex, transferCommand.Character));
 			}
 			HandleDonationOnTransferItem(transferCommand.ElementToTransfer, transferCommand.Amount, flag3, flag2);
 			TransactionDebt += num;
@@ -896,11 +958,20 @@ public class InventoryLogic
 		return list;
 	}
 
+	public static bool IsEquipmentSide(InventorySide side)
+	{
+		if (side != InventorySide.CivilianEquipment && side != InventorySide.BattleEquipment)
+		{
+			return side == InventorySide.StealthEquipment;
+		}
+		return true;
+	}
+
 	private bool IsSell(InventorySide fromSide, InventorySide toSide)
 	{
 		if (toSide == InventorySide.OtherInventory)
 		{
-			if (fromSide != InventorySide.Equipment)
+			if (!IsEquipmentSide(fromSide))
 			{
 				return fromSide == InventorySide.PlayerInventory;
 			}
@@ -913,7 +984,7 @@ public class InventoryLogic
 	{
 		if (fromSide == InventorySide.OtherInventory)
 		{
-			if (toSide != InventorySide.Equipment)
+			if (!IsEquipmentSide(toSide))
 			{
 				return toSide == InventorySide.PlayerInventory;
 			}
@@ -934,19 +1005,19 @@ public class InventoryLogic
 		int index2 = _rosters[1].AddToCounts(itemRosterElement.EquipmentElement, -1);
 		if (num)
 		{
-			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, new ItemRosterElement(equipmentElement, 0), -1, 0, EquipmentIndex.None, null, equipmentElement.Item.IsCivilian));
+			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, new ItemRosterElement(equipmentElement, 0), -1, 0, EquipmentIndex.None, null));
 		}
 		else
 		{
 			ItemRosterElement elementCopyAtIndex2 = _rosters[1].GetElementCopyAtIndex(index2);
-			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex2, -1, elementCopyAtIndex2.Amount, EquipmentIndex.None, null, elementCopyAtIndex2.EquipmentElement.Item.IsCivilian));
+			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex2, -1, elementCopyAtIndex2.Amount, EquipmentIndex.None, null));
 		}
-		list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex, meatCount, elementCopyAtIndex.Amount, EquipmentIndex.None, null, elementCopyAtIndex.EquipmentElement.Item.IsCivilian));
+		list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex, meatCount, elementCopyAtIndex.Amount, EquipmentIndex.None, null));
 		if (hideCount > 0)
 		{
 			int index3 = _rosters[1].AddToCounts(DefaultItems.Hides, hideCount);
 			ItemRosterElement elementCopyAtIndex3 = _rosters[1].GetElementCopyAtIndex(index3);
-			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex3, hideCount, elementCopyAtIndex3.Amount, EquipmentIndex.None, null, elementCopyAtIndex3.EquipmentElement.Item.IsCivilian));
+			list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex3, hideCount, elementCopyAtIndex3.Amount, EquipmentIndex.None, null));
 		}
 		SetCurrentStateAsInitial();
 		OnAfterTransfer(list);
@@ -960,13 +1031,13 @@ public class InventoryLogic
 		InventorySide inventorySide = InventorySide.PlayerInventory;
 		int index = _rosters[(int)inventorySide].AddToCounts(itemRosterElement.EquipmentElement, -1);
 		ItemRosterElement elementCopyAtIndex = _rosters[(int)inventorySide].GetElementCopyAtIndex(index);
-		list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex, -1, elementCopyAtIndex.Amount, EquipmentIndex.None, null, elementCopyAtIndex.EquipmentElement.Item.IsCivilian));
+		list.Add(new TransferCommandResult(InventorySide.PlayerInventory, elementCopyAtIndex, -1, elementCopyAtIndex.Amount, EquipmentIndex.None, null));
 		if (num > 0)
 		{
 			TroopRosterElement randomElementWithPredicate = PartyBase.MainParty.MemberRoster.GetTroopRoster().GetRandomElementWithPredicate((TroopRosterElement m) => !m.Character.IsHero && m.Character.UpgradeTargets.Length != 0);
 			if (randomElementWithPredicate.Character != null)
 			{
-				PartyBase.MainParty.MemberRoster.AddXpToTroop(num, randomElementWithPredicate.Character);
+				PartyBase.MainParty.MemberRoster.AddXpToTroop(randomElementWithPredicate.Character, num);
 				TextObject textObject = new TextObject("{=Kwja0a4s}Added {XPAMOUNT} amount of xp to {TROOPNAME}");
 				textObject.SetTextVariable("XPAMOUNT", num);
 				textObject.SetTextVariable("TROOPNAME", randomElementWithPredicate.Character.Name.ToString());
@@ -980,45 +1051,45 @@ public class InventoryLogic
 
 	private static bool TransferIsMovementValid(ref TransferCommand transferCommand)
 	{
-		if (transferCommand.ElementToTransfer.EquipmentElement.IsQuestItem && (transferCommand.ElementToTransfer.EquipmentElement.Item.BannerComponent?.BannerEffect == null || ((transferCommand.FromSide != InventorySide.PlayerInventory || transferCommand.ToSide != InventorySide.Equipment) && (transferCommand.FromSide != InventorySide.Equipment || transferCommand.ToSide != InventorySide.PlayerInventory))))
+		if (transferCommand.ElementToTransfer.EquipmentElement.IsQuestItem && (transferCommand.ElementToTransfer.EquipmentElement.Item.BannerComponent?.BannerEffect == null || ((transferCommand.FromSide != InventorySide.PlayerInventory || !IsEquipmentSide(transferCommand.ToSide)) && (!IsEquipmentSide(transferCommand.FromSide) || transferCommand.ToSide != InventorySide.PlayerInventory))))
 		{
 			return false;
 		}
 		bool result = false;
-		if (transferCommand.ToSide == InventorySide.Equipment)
+		if (IsEquipmentSide(transferCommand.ToSide))
 		{
-			InventoryItemType inventoryItemTypeOfItem = InventoryManager.GetInventoryItemTypeOfItem(transferCommand.ElementToTransfer.EquipmentElement.Item);
+			InventoryScreenHelper.InventoryItemType inventoryItemTypeOfItem = InventoryScreenHelper.GetInventoryItemTypeOfItem(transferCommand.ElementToTransfer.EquipmentElement.Item);
 			switch (transferCommand.ToEquipmentIndex)
 			{
 			case EquipmentIndex.WeaponItemBeginSlot:
 			case EquipmentIndex.Weapon1:
 			case EquipmentIndex.Weapon2:
 			case EquipmentIndex.Weapon3:
-				result = inventoryItemTypeOfItem == InventoryItemType.Weapon || inventoryItemTypeOfItem == InventoryItemType.Shield;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.Weapon || inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.Shield;
 				break;
 			case EquipmentIndex.NumAllWeaponSlots:
-				result = inventoryItemTypeOfItem == InventoryItemType.HeadArmor;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.HeadArmor;
 				break;
 			case EquipmentIndex.Body:
-				result = inventoryItemTypeOfItem == InventoryItemType.BodyArmor;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.BodyArmor;
 				break;
 			case EquipmentIndex.Leg:
-				result = inventoryItemTypeOfItem == InventoryItemType.LegArmor;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.LegArmor;
 				break;
 			case EquipmentIndex.Gloves:
-				result = inventoryItemTypeOfItem == InventoryItemType.HandArmor;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.HandArmor;
 				break;
 			case EquipmentIndex.Cape:
-				result = inventoryItemTypeOfItem == InventoryItemType.Cape;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.Cape;
 				break;
 			case EquipmentIndex.ArmorItemEndSlot:
-				result = inventoryItemTypeOfItem == InventoryItemType.Horse;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.Horse;
 				break;
 			case EquipmentIndex.HorseHarness:
-				result = inventoryItemTypeOfItem == InventoryItemType.HorseHarness;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.HorseHarness;
 				break;
 			case EquipmentIndex.ExtraWeaponSlot:
-				result = inventoryItemTypeOfItem == InventoryItemType.Banner;
+				result = inventoryItemTypeOfItem == InventoryScreenHelper.InventoryItemType.Banner;
 				break;
 			}
 		}
@@ -1035,11 +1106,11 @@ public class InventoryLogic
 		{
 			return CheckItemRosterHasElement(transferCommand.FromSide, transferCommand.ElementToTransfer, transferCommand.Amount);
 		}
-		if (transferCommand.FromSide == InventorySide.Equipment)
+		if (transferCommand.FromSide != InventorySide.None)
 		{
-			if (transferCommand.CharacterEquipment[(int)transferCommand.FromEquipmentIndex].Item != null)
+			if (transferCommand.FromSideEquipment[(int)transferCommand.FromEquipmentIndex].Item != null)
 			{
-				return transferCommand.ElementToTransfer.EquipmentElement.IsEqualTo(transferCommand.CharacterEquipment[(int)transferCommand.FromEquipmentIndex]);
+				return transferCommand.ElementToTransfer.EquipmentElement.IsEqualTo(transferCommand.FromSideEquipment[(int)transferCommand.FromEquipmentIndex]);
 			}
 			return false;
 		}
@@ -1055,12 +1126,12 @@ public class InventoryLogic
 		return _rosters[(int)side].Count;
 	}
 
-	public IEnumerable<ItemRosterElement> GetElementsInInitialRoster(InventorySide side)
+	public IReadOnlyList<ItemRosterElement> GetElementsInInitialRoster(InventorySide side)
 	{
 		return _rostersBackup[(int)side];
 	}
 
-	public IEnumerable<ItemRosterElement> GetElementsInRoster(InventorySide side)
+	public IReadOnlyList<ItemRosterElement> GetElementsInRoster(InventorySide side)
 	{
 		return _rosters[(int)side];
 	}

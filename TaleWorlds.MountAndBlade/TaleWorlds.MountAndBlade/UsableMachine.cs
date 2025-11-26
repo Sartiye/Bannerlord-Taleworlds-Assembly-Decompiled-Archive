@@ -48,11 +48,9 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	private StandingPoint _currentlyUsedAmmoPickUpPoint;
 
-	private QueryData<bool> _isDisabledForAttackerAIDueToEnemyInRange;
+	protected QueryData<bool> IsDisabledForAttackerAIDueToEnemyInRange;
 
-	private QueryData<bool> _isDisabledForDefenderAIDueToEnemyInRange;
-
-	protected bool _isDisabledForAI;
+	protected QueryData<bool> IsDisabledForDefenderAIDueToEnemyInRange;
 
 	protected MBList<Formation> _userFormations;
 
@@ -61,6 +59,8 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	public MBList<StandingPoint> StandingPoints { get; private set; }
 
 	public StandingPoint PilotStandingPoint { get; private set; }
+
+	public int PilotStandingPointSlotIndex { get; private set; }
 
 	protected internal List<StandingPoint> AmmoPickUpPoints { get; private set; }
 
@@ -86,6 +86,8 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public bool IsLoose => false;
 
+	public virtual float SinkingReferenceOffset => base.GameEntity.GetGlobalScale().z * 0.5f;
+
 	public UsableMachineAIBase Ai
 	{
 		get
@@ -99,6 +101,8 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	}
 
 	public virtual FocusableObjectType FocusableObjectType => FocusableObjectType.Item;
+
+	public virtual bool IsFocusable => true;
 
 	public StandingPoint CurrentlyUsedAmmoPickUpPoint
 	{
@@ -114,6 +118,8 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	}
 
 	public bool HasAIPickingUpAmmo => CurrentlyUsedAmmoPickUpPoint != null;
+
+	public bool IsDisabledForAI { get; protected set; }
 
 	public MBReadOnlyList<Formation> UserFormations => _userFormations;
 
@@ -161,7 +167,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			{
 				return ActiveWaitStandingPoint.GetGlobalFrame();
 			}
-			return default(MatrixFrame);
+			return MatrixFrame.Identity;
 		}
 	}
 
@@ -200,7 +206,14 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public T GetComponent<T>() where T : UsableMissionObjectComponent
 	{
-		return _components.Find((UsableMissionObjectComponent c) => c is T) as T;
+		foreach (UsableMissionObjectComponent component in _components)
+		{
+			if (component is T result)
+			{
+				return result;
+			}
+		}
+		return null;
 	}
 
 	public virtual OrderType GetOrder(BattleSideEnum side)
@@ -213,7 +226,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		return null;
 	}
 
-	public GameEntity GetValidStandingPointForAgent(Agent agent)
+	public WeakGameEntity GetValidStandingPointForAgent(Agent agent)
 	{
 		float num = float.MaxValue;
 		StandingPoint standingPoint = null;
@@ -222,17 +235,23 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			if (!standingPoint2.IsDisabledForAgent(agent) && (!standingPoint2.HasUser || standingPoint2.HasAIUser))
 			{
 				float num2 = standingPoint2.GetUserFrameForAgent(agent).Origin.AsVec2.DistanceSquared(agent.Position.AsVec2);
-				if (agent.CanReachAndUseObject(standingPoint2, num2) && num2 < num && TaleWorlds.Library.MathF.Abs(standingPoint2.GetUserFrameForAgent(agent).Origin.GetGroundVec3().z - agent.Position.z) < 1.5f)
+				float num3 = ((!standingPoint2.UseOwnPositionInsteadOfWorldPosition) ? standingPoint2.GetUserFrameForAgent(agent).Origin.GetGroundVec3().z : standingPoint2.GameEntity.GlobalPosition.z);
+				if (agent.CanReachAndUseObject(standingPoint2, num2) && num2 < num && TaleWorlds.Library.MathF.Abs(num3 - agent.Position.z) < 1.5f)
 				{
 					num = num2;
 					standingPoint = standingPoint2;
 				}
 			}
 		}
-		return standingPoint?.GameEntity;
+		return standingPoint?.GameEntity ?? WeakGameEntity.Invalid;
 	}
 
-	public GameEntity GetValidStandingPointForAgentWithoutDistanceCheck(Agent agent)
+	public void SetAI(UsableMachineAIBase ai)
+	{
+		_ai = ai;
+	}
+
+	public WeakGameEntity GetValidStandingPointForAgentWithoutDistanceCheck(Agent agent)
 	{
 		float num = float.MaxValue;
 		StandingPoint standingPoint = null;
@@ -248,7 +267,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				}
 			}
 		}
-		return standingPoint?.GameEntity;
+		return standingPoint?.GameEntity ?? WeakGameEntity.Invalid;
 	}
 
 	public StandingPoint GetVacantStandingPointForAI(Agent agent)
@@ -335,24 +354,30 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		_isDisabledForAttackerAIDueToEnemyInRange = new QueryData<bool>(delegate
+		IsDisabledForAttackerAIDueToEnemyInRange = new QueryData<bool>(delegate
 		{
 			bool result2 = false;
-			if (EnemyRangeToStopUsing > 0f)
+			if (EnemyRangeToStopUsing > 0f && base.GameEntity != null)
 			{
-				Vec3 vec2 = base.GameEntity.GetGlobalFrame().rotation.TransformToParent(new Vec3(MachinePositionOffsetToStopUsingLocal));
+				MatrixFrame globalFrame2 = base.GameEntity.GetGlobalFrame();
+				ref Mat3 rotation2 = ref globalFrame2.rotation;
+				Vec3 v2 = new Vec3(MachinePositionOffsetToStopUsingLocal);
+				Vec3 vec2 = rotation2.TransformToParent(in v2);
 				Vec3 position2 = base.GameEntity.GlobalPosition + vec2;
 				Agent closestEnemyAgent2 = Mission.Current.GetClosestEnemyAgent(Mission.Current.Teams.Attacker, position2, EnemyRangeToStopUsing);
 				result2 = closestEnemyAgent2 != null && closestEnemyAgent2.Position.z > position2.z - 2f && closestEnemyAgent2.Position.z < position2.z + 4f;
 			}
 			return result2;
 		}, 1f);
-		_isDisabledForDefenderAIDueToEnemyInRange = new QueryData<bool>(delegate
+		IsDisabledForDefenderAIDueToEnemyInRange = new QueryData<bool>(delegate
 		{
 			bool result = false;
-			if (EnemyRangeToStopUsing > 0f)
+			if (EnemyRangeToStopUsing > 0f && base.GameEntity != null)
 			{
-				Vec3 vec = base.GameEntity.GetGlobalFrame().rotation.TransformToParent(new Vec3(MachinePositionOffsetToStopUsingLocal));
+				MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
+				ref Mat3 rotation = ref globalFrame.rotation;
+				Vec3 v = new Vec3(MachinePositionOffsetToStopUsingLocal);
+				Vec3 vec = rotation.TransformToParent(in v);
 				Vec3 position = base.GameEntity.GlobalPosition + vec;
 				Agent closestEnemyAgent = Mission.Current.GetClosestEnemyAgent(Mission.Current.Teams.Defender, position, EnemyRangeToStopUsing);
 				result = closestEnemyAgent != null && closestEnemyAgent.Position.z > position.z - 2f && closestEnemyAgent.Position.z < position.z + 4f;
@@ -363,11 +388,13 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		AmmoPickUpPoints = new List<StandingPoint>();
 		_destructionComponent = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
 		PilotStandingPoint = null;
-		foreach (StandingPoint standingPoint in StandingPoints)
+		for (int i = 0; i < StandingPoints.Count; i++)
 		{
+			StandingPoint standingPoint = StandingPoints[i];
 			if (standingPoint.GameEntity.HasTag(PilotStandingPointTag))
 			{
 				PilotStandingPoint = standingPoint;
+				PilotStandingPointSlotIndex = i;
 			}
 			if (standingPoint.GameEntity.HasTag(AmmoPickUpTag))
 			{
@@ -375,7 +402,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			}
 			standingPoint.InitializeDefendingAgents();
 		}
-		WaitStandingPoints = base.GameEntity.CollectChildrenEntitiesWithTag(WaitStandingPointTag);
+		WaitStandingPoints = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity).CollectChildrenEntitiesWithTag(WaitStandingPointTag);
 		if (WaitStandingPoints.Count > 0)
 		{
 			ActiveWaitStandingPoint = WaitStandingPoints[0];
@@ -387,14 +414,13 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	private void CollectAndSetStandingPoints()
 	{
-		GameEntity parent = base.GameEntity.Parent;
-		if ((object)parent != null && parent.HasTag("machine_parent"))
+		if (base.GameEntity.Parent.IsValid && base.GameEntity.Parent.HasTag("machine_parent"))
 		{
-			StandingPoints = base.GameEntity.Parent.CollectObjects<StandingPoint>();
+			StandingPoints = base.GameEntity.Parent.CollectScriptComponentsIncludingChildrenRecursive<StandingPoint>();
 		}
 		else
 		{
-			StandingPoints = base.GameEntity.CollectObjects<StandingPoint>();
+			StandingPoints = base.GameEntity.CollectScriptComponentsIncludingChildrenRecursive<StandingPoint>();
 		}
 	}
 
@@ -409,7 +435,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				break;
 			}
 		}
-		if (base.GameEntity.IsVisibleIncludeParents() && (flag || (!GameNetwork.IsClientOrReplay && HasAIPickingUpAmmo)))
+		if (base.GameEntity.IsVisibleIncludeParents() && (flag || (!GameNetwork.IsClientOrReplay && HasAIPickingUpAmmo) || base.GameEntity.BodyFlag.HasAnyFlag(BodyFlags.Sinking)))
 		{
 			return base.GetTickRequirement() | TickRequirement.Tick;
 		}
@@ -422,6 +448,10 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		if (MakeVisibilityCheck && !base.GameEntity.IsVisibleIncludeParents())
 		{
 			return;
+		}
+		if (base.GameEntity.BodyFlag.HasAnyFlag(BodyFlags.Sinking) && base.GameEntity.GetGlobalFrame().origin.z + SinkingReferenceOffset < base.Scene.GetWaterLevelAtPosition(base.GameEntity.GetFrame().origin.AsVec2, !GameNetwork.IsMultiplayer, checkWaterBodyEntities: false))
+		{
+			Disable();
 		}
 		if (!GameNetwork.IsClientOrReplay && HasAIPickingUpAmmo && !CurrentlyUsedAmmoPickUpPoint.HasAIMovingTo && !CurrentlyUsedAmmoPickUpPoint.HasAIUser)
 		{
@@ -533,9 +563,14 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}
 	}
 
+	public virtual void OnPilotAssignedDuringSpawn()
+	{
+		TaleWorlds.Library.Debug.FailedAssert("This method must have been overridden", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "OnPilotAssignedDuringSpawn", 624);
+	}
+
 	public virtual TextObject GetInfoTextForBeingNotInteractable(Agent userAgent)
 	{
-		return TextObject.Empty;
+		return null;
 	}
 
 	protected internal override void OnMissionReset()
@@ -572,7 +607,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public virtual bool IsDisabledForBattleSideAI(BattleSideEnum sideEnum)
 	{
-		if (_isDisabledForAI)
+		if (base.IsDisabled || IsDisabledForAI || IsDeactivated)
 		{
 			return true;
 		}
@@ -596,9 +631,9 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	{
 		if (sideEnum == BattleSideEnum.Attacker)
 		{
-			return _isDisabledForAttackerAIDueToEnemyInRange.Value;
+			return IsDisabledForAttackerAIDueToEnemyInRange.Value;
 		}
-		return _isDisabledForDefenderAIDueToEnemyInRange.Value;
+		return IsDisabledForDefenderAIDueToEnemyInRange.Value;
 	}
 
 	public virtual bool AutoAttachUserToFormation(BattleSideEnum sideEnum)
@@ -628,6 +663,11 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				standingPoint.SetIsDeactivatedSynched(value: true);
 			}
 		}
+		if (ShouldDisableTickIfMachineDisabled())
+		{
+			SetScriptComponentToTick(TickRequirement.None);
+		}
+		SetDisabled();
 	}
 
 	protected override void OnRemoved(int removeReason)
@@ -841,10 +881,18 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				}
 			}
 		}
-		((IDetachment)this).AddAgent(agent, slotIndex);
+		((IDetachment)this).AddAgent(agent, slotIndex, Agent.AIScriptedFrameFlags.None);
 		agent.Formation?.DetachUnit(agent, isLoose: false);
 		agent.Detachment = this;
-		agent.DetachmentWeight = 1f;
+		agent.SetDetachmentWeight(1f);
+	}
+
+	public void SetIsDisabledForAI(bool isDisabledForAI)
+	{
+		if (IsDisabledForAI != isDisabledForAI)
+		{
+			IsDisabledForAI = isDisabledForAI;
+		}
 	}
 
 	Agent IDetachment.GetMovingAgentAtSlotIndex(int slotIndex)
@@ -1023,16 +1071,24 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		return null;
 	}
 
-	void IDetachment.AddAgent(Agent agent, int slotIndex)
+	void IDetachment.AddAgent(Agent agent, int slotIndex, Agent.AIScriptedFrameFlags customFlags)
 	{
 		StandingPoint standingPoint = ((slotIndex == -1) ? GetSuitableStandingPointFor(agent.Team.Side, agent) : StandingPoints[slotIndex]);
 		if (standingPoint != null)
 		{
 			if (standingPoint.HasAIMovingTo && !standingPoint.IsInstantUse)
 			{
-				standingPoint.MovingAgent.StopUsingGameObject();
+				standingPoint.MovingAgent.StopUsingGameObjectMT();
 			}
-			agent.AIMoveToGameObjectEnable(standingPoint, this, Ai.GetScriptedFrameFlags(agent));
+			while (standingPoint.HasDefendingAgent)
+			{
+				standingPoint.DefendingAgents[0].StopUsingGameObjectMT();
+			}
+			if (customFlags == Agent.AIScriptedFrameFlags.None)
+			{
+				customFlags = Ai.GetScriptedFrameFlags(agent);
+			}
+			agent.AIMoveToGameObjectEnable(standingPoint, this, customFlags);
 			if (standingPoint.GameEntity.HasTag(AmmoPickUpTag))
 			{
 				CurrentlyUsedAmmoPickUpPoint = standingPoint;
@@ -1040,7 +1096,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1367);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1440);
 		}
 	}
 
@@ -1107,5 +1163,15 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		return StandingPoints.FirstOrDefault((StandingPoint sp) => !sp.IsDeactivated && (sp.IsInstantUse || (!sp.HasUser && !sp.HasAIMovingTo)) && (agent == null || !sp.IsDisabledForAgent(agent)) && (agents == null || agents.Any((Agent a) => !sp.IsDisabledForAgent(a))) && (agentValuePairs == null || agentValuePairs.Any(((Agent, float) avp) => !sp.IsDisabledForAgent(avp.Item1))) && !IsStandingPointNotUsedOnAccountOfBeingAmmoLoad(sp));
 	}
 
-	public abstract string GetDescriptionText(GameEntity gameEntity = null);
+	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity);
+
+	protected virtual bool ShouldDisableTickIfMachineDisabled()
+	{
+		return true;
+	}
+
+	public void SetEnemyRangeToStopUsing(float value)
+	{
+		EnemyRangeToStopUsing = value;
+	}
 }

@@ -78,7 +78,7 @@ public class Mover : ScriptComponentBehavior
 			base.GameEntity.SetLocalPosition(_tracker.CurrentFrame.origin);
 			if (_moverGhost == null)
 			{
-				_moverGhost = GameEntity.CopyFrom(base.GameEntity.Scene, base.GameEntity);
+				_moverGhost = TaleWorlds.Engine.GameEntity.CopyFrom(base.GameEntity.Scene, base.GameEntity);
 				_moverGhost.EntityFlags |= EntityFlags.IsHelper | EntityFlags.DontSaveToScene | EntityFlags.DoNotTick;
 				_moverGhost.SetAlpha(0.2f);
 			}

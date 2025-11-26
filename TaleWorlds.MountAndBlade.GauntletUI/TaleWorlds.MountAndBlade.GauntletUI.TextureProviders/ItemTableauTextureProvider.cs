@@ -131,7 +131,7 @@ public class ItemTableauTextureProvider : TextureProvider
 		}
 	}
 
-	public override TaleWorlds.TwoDimension.Texture GetTexture(TwoDimensionContext twoDimensionContext, string name)
+	protected override TaleWorlds.TwoDimension.Texture OnGetTextureForRender(TwoDimensionContext twoDimensionContext, string name)
 	{
 		CheckTexture();
 		return _providedTexture;

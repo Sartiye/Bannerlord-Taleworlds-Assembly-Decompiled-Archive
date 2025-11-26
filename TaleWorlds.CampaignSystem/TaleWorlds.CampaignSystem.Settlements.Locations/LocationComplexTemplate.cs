@@ -14,7 +14,6 @@ public sealed class LocationComplexTemplate : MBObjectBase
 
 	public override void Deserialize(MBObjectManager objectManager, XmlNode node)
 	{
-		List<string> list = new List<string>();
 		base.Deserialize(objectManager, node);
 		foreach (XmlNode childNode in node.ChildNodes)
 		{
@@ -40,7 +39,6 @@ public sealed class LocationComplexTemplate : MBObjectBase
 				string innerText2 = childNode.Attributes["player_can_see"].InnerText;
 				string innerText3 = childNode.Attributes["ai_can_exit"].InnerText;
 				string innerText4 = childNode.Attributes["ai_can_enter"].InnerText;
-				list.Add(value);
 				Locations.Add(new Location(value, textObject, textObject, prosperityMax, isIndoor, canBeReserved, innerText, innerText2, innerText3, innerText4, sceneNames, null));
 			}
 			if (!(childNode.Name == "Passages"))
@@ -56,18 +54,14 @@ public sealed class LocationComplexTemplate : MBObjectBase
 						throw new TWXmlLoadException("node.Attributes != null");
 					}
 					string value2 = childNode2.Attributes["location_1"].Value;
-					if (!list.Contains(value2))
-					{
-						throw new TWXmlLoadException("Passage location does not exist with id :" + value2);
-					}
 					string value3 = childNode2.Attributes["location_2"].Value;
-					if (!list.Contains(value3))
-					{
-						throw new TWXmlLoadException("Passage location does not exist with id :" + value2);
-					}
 					Passages.Add(new KeyValuePair<string, string>(value2, value3));
 				}
 			}
+		}
+		foreach (KeyValuePair<string, string> passage in Passages)
+		{
+			_ = passage;
 		}
 	}
 }

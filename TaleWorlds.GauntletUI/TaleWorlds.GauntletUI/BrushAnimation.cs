@@ -12,6 +12,10 @@ public class BrushAnimation
 
 	public bool Loop { get; set; }
 
+	public AnimationInterpolation.Type InterpolationType { get; set; }
+
+	public AnimationInterpolation.Function InterpolationFunction { get; set; }
+
 	public BrushLayerAnimation StyleAnimation { get; set; }
 
 	public BrushAnimation()
@@ -70,6 +74,8 @@ public class BrushAnimation
 		Name = animation.Name;
 		Duration = animation.Duration;
 		Loop = animation.Loop;
+		InterpolationType = animation.InterpolationType;
+		InterpolationFunction = animation.InterpolationFunction;
 		if (animation.StyleAnimation != null)
 		{
 			StyleAnimation = animation.StyleAnimation.Clone();

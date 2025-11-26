@@ -5,5 +5,9 @@ namespace TaleWorlds.Library;
 
 public interface ICache
 {
-	TItem GetOrUpdate<TItem>(string key, Func<Task<TItem>> factory, TimeSpan absoluteExpirationRelativeToNow);
+	Task<TItem> GetOrUpdate<TItem>(string key, Func<Task<TItem>> factory, TimeSpan absoluteExpirationRelativeToNow, bool getFromFactoryIfCacheFails = true);
+
+	Task SetString(string key, string value, TimeSpan? absoluteExpirationRelativeToNow);
+
+	Task<string> GetString(string key);
 }

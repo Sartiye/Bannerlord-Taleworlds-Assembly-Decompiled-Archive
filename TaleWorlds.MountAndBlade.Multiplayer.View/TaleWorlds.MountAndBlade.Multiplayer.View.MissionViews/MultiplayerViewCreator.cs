@@ -46,6 +46,11 @@ public static class MultiplayerViewCreator
 		return ViewCreatorManager.CreateMissionView<MissionMultiplayerEscapeMenu>(isNetwork: false, null, new object[1] { gameType });
 	}
 
+	public static MissionView CreateMissionMultiplayerPracticeEscapeMenu()
+	{
+		return ViewCreatorManager.CreateMissionView<MissionMultiplayerPracticeEscapeMenu>(isNetwork: false, null, Array.Empty<object>());
+	}
+
 	public static MissionView CreateMissionKillNotificationUIHandler()
 	{
 		return ViewCreatorManager.CreateMissionView<MissionMultiplayerKillNotificationUIHandler>(isNetwork: false, null, Array.Empty<object>());
@@ -89,11 +94,6 @@ public static class MultiplayerViewCreator
 	public static MissionView CreateMissionMultiplayerDuelUI()
 	{
 		return ViewCreatorManager.CreateMissionView<MissionMultiplayerDuelUI>(isNetwork: false, null, Array.Empty<object>());
-	}
-
-	public static MissionView CreateMissionMultiplayerFFAView()
-	{
-		return ViewCreatorManager.CreateMissionView<MissionMultiplayerFreeForAllUIHandler>(isNetwork: false, null, Array.Empty<object>());
 	}
 
 	public static MissionView CreateMultiplayerEndOfBattleUIHandler()

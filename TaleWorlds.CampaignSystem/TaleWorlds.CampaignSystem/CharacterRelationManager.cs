@@ -144,7 +144,7 @@ public class CharacterRelationManager
 		}
 		else
 		{
-			Debug.FailedAssert("hero1 != hero2", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterRelationManager.cs", "SetHeroRelation", 262);
+			Debug.FailedAssert("hero1 != hero2", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterRelationManager.cs", "SetHeroRelation", 262);
 		}
 	}
 

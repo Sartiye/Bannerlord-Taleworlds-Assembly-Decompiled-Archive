@@ -28,6 +28,8 @@ public class CustomBattleCombatant : IBattleCombatant
 
 	public IEnumerable<BasicCharacterObject> Characters => _characters.AsReadOnly();
 
+	public int CountOfCharacters => _characters.Count();
+
 	public int NumberOfAllMembers { get; private set; }
 
 	public int NumberOfHealthyMembers => _characters.Count;
@@ -62,10 +64,5 @@ public class CustomBattleCombatant : IBattleCombatant
 	public void SetGeneral(BasicCharacterObject generalCharacter)
 	{
 		_general = generalCharacter;
-	}
-
-	public void KillCharacter(BasicCharacterObject character)
-	{
-		_characters.Remove(character);
 	}
 }

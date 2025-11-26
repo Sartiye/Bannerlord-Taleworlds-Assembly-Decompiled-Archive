@@ -18,11 +18,11 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 
 	private CreditsItemWidget _widget_0_0;
 
-	private RichTextWidget _widget_0_0_0;
+	private CreditsTextWidget _widget_0_0_0;
 
-	private RichTextWidget _widget_0_0_1;
+	private CreditsTextWidget _widget_0_0_1;
 
-	private RichTextWidget _widget_0_0_2;
+	private CreditsTextWidget _widget_0_0_2;
 
 	private Widget _widget_0_0_3;
 
@@ -46,11 +46,11 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new CreditsItemWidget(base.Context);
 		_widget_0.AddChild(_widget_0_0);
-		_widget_0_0_0 = new RichTextWidget(base.Context);
+		_widget_0_0_0 = new CreditsTextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
-		_widget_0_0_1 = new RichTextWidget(base.Context);
+		_widget_0_0_1 = new CreditsTextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);
-		_widget_0_0_2 = new RichTextWidget(base.Context);
+		_widget_0_0_2 = new CreditsTextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_2);
 		_widget_0_0_3 = new Widget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_3);
@@ -96,18 +96,21 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_0_0_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_0_0.MarginTop = 30f;
 		_widget_0_0_0.MarginBottom = 5f;
+		_widget_0_0_0.OverrideFont = "FiraSansExtraCondensed-Regular";
 		_widget_0_0_1.IsVisible = false;
 		_widget_0_0_1.Brush = base.Context.GetBrush("Credits.Section.Text");
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_1.OverrideFont = "FiraSansExtraCondensed-Regular";
 		_widget_0_0_2.IsVisible = false;
 		_widget_0_0_2.Brush = base.Context.GetBrush("Credits.Entry.Text");
 		_widget_0_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_2.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_2.OverrideFont = "FiraSansExtraCondensed-Regular";
 		_widget_0_0_3.IsVisible = false;
 		_widget_0_0_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_3.HeightSizePolicy = SizePolicy.Fixed;

@@ -14,6 +14,8 @@ public class TurkishTextProcessor : LanguageSpecificTextProcessor
 
 	private static char[] BackVowels = new char[4] { 'a', 'ı', 'o', 'u' };
 
+	private static int[] BackNumbers = new int[7] { 6, 9, 10, 30, 40, 60, 90 };
+
 	private static char[] FrontVowels = new char[4] { 'e', 'i', 'ö', 'ü' };
 
 	private static char[] OpenVowels = new char[4] { 'a', 'e', 'o', 'ö' };
@@ -70,12 +72,43 @@ public class TurkishTextProcessor : LanguageSpecificTextProcessor
 		{
 			return value;
 		}
+		if (int.TryParse(lastWord, out var result))
+		{
+			return GetNextVowel(result);
+		}
 		value = GetLastVowel(stringBuilder);
 		if (!BackVowels.Contains(char.ToLower(value, CultureInfoForLanguage)))
 		{
 			return 'e';
 		}
 		return 'a';
+	}
+
+	private char GetNextVowel(int number)
+	{
+		int num = Math.Abs(number) % 10;
+		int num2 = Math.Abs(number) % 100;
+		if (number == 0)
+		{
+			return 'a';
+		}
+		if (num != 0)
+		{
+			if (!BackNumbers.Contains(num))
+			{
+				return 'e';
+			}
+			return 'a';
+		}
+		if (num2 != 0)
+		{
+			if (!BackNumbers.Contains(num2))
+			{
+				return 'e';
+			}
+			return 'a';
+		}
+		return 'e';
 	}
 
 	private bool IsFrontVowel(char c)
@@ -516,7 +549,7 @@ public class TurkishTextProcessor : LanguageSpecificTextProcessor
 		}
 		if (num < outputString.Length - 1)
 		{
-			return outputString.ToString(num + 1, outputString.Length - num - 1).Trim(new char[1] { '\n' });
+			return outputString.ToString(num + 1, outputString.Length - num - 1).Trim('\n', '\'');
 		}
 		return null;
 	}

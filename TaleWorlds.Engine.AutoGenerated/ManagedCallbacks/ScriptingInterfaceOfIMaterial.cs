@@ -37,7 +37,7 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetFlagsDelegate(UIntPtr materialPointer);
+	public delegate MaterialFlags GetFlagsDelegate(UIntPtr materialPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -77,6 +77,11 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void RemoveMaterialShaderFlagDelegate(UIntPtr materialPointer, byte[] flagName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetAlphaBlendModeDelegate(UIntPtr materialPointer, int alphaBlendMode);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -97,7 +102,7 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetFlagsDelegate(UIntPtr materialPointer, uint flags);
+	public delegate void SetFlagsDelegate(UIntPtr materialPointer, MaterialFlags flags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -162,6 +167,8 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 	public static GetTextureDelegate call_GetTextureDelegate;
 
 	public static ReleaseDelegate call_ReleaseDelegate;
+
+	public static RemoveMaterialShaderFlagDelegate call_RemoveMaterialShaderFlagDelegate;
 
 	public static SetAlphaBlendModeDelegate call_SetAlphaBlendModeDelegate;
 
@@ -234,7 +241,7 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 		return result;
 	}
 
-	public uint GetFlags(UIntPtr materialPointer)
+	public MaterialFlags GetFlags(UIntPtr materialPointer)
 	{
 		return call_GetFlagsDelegate(materialPointer);
 	}
@@ -314,6 +321,19 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 		call_ReleaseDelegate(materialPointer);
 	}
 
+	public void RemoveMaterialShaderFlag(UIntPtr materialPointer, string flagName)
+	{
+		byte[] array = null;
+		if (flagName != null)
+		{
+			int byteCount = _utf8.GetByteCount(flagName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(flagName, 0, flagName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_RemoveMaterialShaderFlagDelegate(materialPointer, array);
+	}
+
 	public void SetAlphaBlendMode(UIntPtr materialPointer, int alphaBlendMode)
 	{
 		call_SetAlphaBlendModeDelegate(materialPointer, alphaBlendMode);
@@ -334,7 +354,7 @@ internal class ScriptingInterfaceOfIMaterial : IMaterial
 		call_SetEnableSkinningDelegate(materialPointer, enable);
 	}
 
-	public void SetFlags(UIntPtr materialPointer, uint flags)
+	public void SetFlags(UIntPtr materialPointer, MaterialFlags flags)
 	{
 		call_SetFlagsDelegate(materialPointer, flags);
 	}

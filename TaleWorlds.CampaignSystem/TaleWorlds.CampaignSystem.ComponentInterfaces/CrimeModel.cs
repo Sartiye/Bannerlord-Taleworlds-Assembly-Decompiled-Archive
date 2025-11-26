@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class CrimeModel : GameModel
+public abstract class CrimeModel : MBGameModel<CrimeModel>
 {
 	[Flags]
 	public enum PaymentMethod : uint
@@ -15,11 +15,13 @@ public abstract class CrimeModel : GameModel
 		Execution = 8u
 	}
 
-	public abstract int DeclareWarCrimeRatingThreshold { get; }
+	public abstract float DeclareWarCrimeRatingThreshold { get; }
 
 	public abstract float GetMaxCrimeRating();
 
 	public abstract float GetMinAcceptableCrimeRating(IFaction faction);
+
+	public abstract float GetCrimeRatingAfterPunishment();
 
 	public abstract bool DoesPlayerHaveAnyCrimeRating(IFaction faction);
 

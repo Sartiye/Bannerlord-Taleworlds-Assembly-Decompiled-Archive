@@ -4,6 +4,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.CampaignSystem.Settlements.Workshops;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -29,22 +30,26 @@ public class DefaultWorkshopModel : WorkshopModel
 
 	public override ExplainedNumber GetEffectiveConversionSpeedOfProduction(Workshop workshop, float speed, bool includeDescription)
 	{
-		ExplainedNumber bonuses = new ExplainedNumber(speed, includeDescription, new TextObject("{=basevalue}Base"));
+		ExplainedNumber result = new ExplainedNumber(speed, includeDescription, new TextObject("{=basevalue}Base"));
 		Settlement settlement = workshop.Settlement;
 		if (settlement.OwnerClan.Kingdom != null)
 		{
 			if (settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.ForgivenessOfDebts))
 			{
-				bonuses.AddFactor(-0.05f, DefaultPolicies.ForgivenessOfDebts.Name);
+				result.AddFactor(-0.05f, DefaultPolicies.ForgivenessOfDebts.Name);
 			}
 			if (settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.StateMonopolies))
 			{
-				bonuses.AddFactor(-0.1f, DefaultPolicies.StateMonopolies.Name);
+				result.AddFactor(-0.1f, DefaultPolicies.StateMonopolies.Name);
 			}
 		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.MercenaryConnections, settlement.Town, ref bonuses);
-		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Steward.Sweatshops, workshop.Owner.CharacterObject, isPrimaryBonus: true, ref bonuses);
-		return bonuses;
+		if (settlement.IsFortification)
+		{
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.WorkshopProduction, ref result);
+		}
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.MercenaryConnections, settlement.Town, ref result);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Steward.Sweatshops, workshop.Owner.CharacterObject, isPrimaryBonus: true, ref result);
+		return result;
 	}
 
 	public override int GetMaxWorkshopCountForClanTier(int tier)
@@ -54,7 +59,7 @@ public class DefaultWorkshopModel : WorkshopModel
 
 	public override int GetCostForPlayer(Workshop workshop)
 	{
-		return workshop.WorkshopType.EquipmentCost + (int)workshop.Settlement.Town.Prosperity * 3 + InitialCapital;
+		return workshop.WorkshopType.EquipmentCost + (int)workshop.Settlement.Town.Prosperity * 4 + InitialCapital / 5;
 	}
 
 	public override int GetCostForNotable(Workshop workshop)
@@ -86,7 +91,7 @@ public class DefaultWorkshopModel : WorkshopModel
 	{
 		Campaign.Current.Models.WorkshopModel.GetCostForNotable(workshop);
 		Hero notableOwnerForWorkshop = Campaign.Current.Models.WorkshopModel.GetNotableOwnerForWorkshop(workshop);
-		explanation = ((notableOwnerForWorkshop == null) ? new TextObject("{=oqPf2Gdp}There isn't any prospective buyer in the town.") : TextObject.Empty);
+		explanation = ((notableOwnerForWorkshop == null) ? new TextObject("{=oqPf2Gdp}There isn't any prospective buyer in the town.") : null);
 		return notableOwnerForWorkshop != null;
 	}
 

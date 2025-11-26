@@ -12,9 +12,7 @@ public class InventoryScreenWidget : Widget
 {
 	private readonly int TooltipHideFrameLength = 2;
 
-	private InventoryItemButtonWidget _currentSelectedItemWidget;
-
-	private InventoryItemButtonWidget _currentSelectedOtherItemWidget;
+	private Widget _latestMouseDownWidget;
 
 	private InventoryItemButtonWidget _currentHoveredItemWidget;
 
@@ -24,15 +22,13 @@ public class InventoryScreenWidget : Widget
 
 	private int _tooltipHiddenFrameCount;
 
-	private bool _eventsRegistered;
-
 	private int _scrollToBannersInFrames = -1;
+
+	private float _scrollToItemInSeconds = -1f;
 
 	private InputKeyVisualWidget _previousCharacterInputKeyVisual;
 
 	private InputKeyVisualWidget _nextCharacterInputKeyVisual;
-
-	private InventoryItemTupleWidget _newAddedItem;
 
 	private Widget _previousCharacterInputVisualParent;
 
@@ -44,19 +40,13 @@ public class InventoryScreenWidget : Widget
 
 	private Widget _inventoryTooltip;
 
-	private InventoryEquippedItemControlsBrushWidget _equippedItemControls;
-
 	private InventoryItemPreviewWidget _itemPreviewWidget;
 
 	private int _transactionCount;
 
-	private bool _isInWarSet;
+	private int _equipmentMode;
 
 	private int _targetEquipmentIndex;
-
-	private TextWidget _otherInventoryGoldText;
-
-	private Widget _otherInventoryGoldImage;
 
 	private ScrollablePanel _otherInventoryListWidget;
 
@@ -68,7 +58,11 @@ public class InventoryScreenWidget : Widget
 
 	private bool _isBannerTutorialActive;
 
-	private int _bannerTypeCode;
+	private bool _scrollToItem;
+
+	private string _bannerTypeName;
+
+	private string _scrollItemId;
 
 	[Editor(false)]
 	public InputKeyVisualWidget TransferInputKeyVisualWidget
@@ -153,33 +147,6 @@ public class InventoryScreenWidget : Widget
 	}
 
 	[Editor(false)]
-	public InventoryEquippedItemControlsBrushWidget EquippedItemControls
-	{
-		get
-		{
-			return _equippedItemControls;
-		}
-		set
-		{
-			if (_equippedItemControls != value)
-			{
-				if (_equippedItemControls != null)
-				{
-					_equippedItemControls.OnPreviewClick -= EquippedItemControlsOnPreviewClick;
-					_equippedItemControls.OnHidePanel -= OnEquipmentControlsHidden;
-				}
-				_equippedItemControls = value;
-				if (_equippedItemControls != null)
-				{
-					_equippedItemControls.OnPreviewClick += EquippedItemControlsOnPreviewClick;
-					_equippedItemControls.OnHidePanel += OnEquipmentControlsHidden;
-				}
-				OnPropertyChanged(value, "EquippedItemControls");
-			}
-		}
-	}
-
-	[Editor(false)]
 	public Widget InventoryTooltip
 	{
 		get
@@ -231,18 +198,18 @@ public class InventoryScreenWidget : Widget
 	}
 
 	[Editor(false)]
-	public bool IsInWarSet
+	public int EquipmentMode
 	{
 		get
 		{
-			return _isInWarSet;
+			return _equipmentMode;
 		}
 		set
 		{
-			if (_isInWarSet != value)
+			if (_equipmentMode != value)
 			{
-				_isInWarSet = value;
-				OnPropertyChanged(value, "IsInWarSet");
+				_equipmentMode = value;
+				OnPropertyChanged(value, "EquipmentMode");
 			}
 		}
 	}
@@ -260,48 +227,6 @@ public class InventoryScreenWidget : Widget
 			{
 				_targetEquipmentIndex = value;
 				OnPropertyChanged(value, "TargetEquipmentIndex");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public TextWidget OtherInventoryGoldText
-	{
-		get
-		{
-			return _otherInventoryGoldText;
-		}
-		set
-		{
-			if (value != _otherInventoryGoldText)
-			{
-				if (_otherInventoryGoldText != null)
-				{
-					_otherInventoryGoldText.intPropertyChanged -= OtherInventoryGoldTextOnPropertyChanged;
-				}
-				_otherInventoryGoldText = value;
-				if (_otherInventoryGoldText != null)
-				{
-					_otherInventoryGoldText.intPropertyChanged += OtherInventoryGoldTextOnPropertyChanged;
-				}
-				OnPropertyChanged(value, "OtherInventoryGoldText");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public Widget OtherInventoryGoldImage
-	{
-		get
-		{
-			return _otherInventoryGoldImage;
-		}
-		set
-		{
-			if (value != _otherInventoryGoldImage)
-			{
-				_otherInventoryGoldImage = value;
-				OnPropertyChanged(value, "OtherInventoryGoldImage");
 			}
 		}
 	}
@@ -379,18 +304,52 @@ public class InventoryScreenWidget : Widget
 	}
 
 	[Editor(false)]
-	public int BannerTypeCode
+	public string BannerTypeName
 	{
 		get
 		{
-			return _bannerTypeCode;
+			return _bannerTypeName;
 		}
 		set
 		{
-			if (value != _bannerTypeCode)
+			if (value != _bannerTypeName)
 			{
-				_bannerTypeCode = value;
-				OnPropertyChanged(value, "BannerTypeCode");
+				_bannerTypeName = value;
+				OnPropertyChanged(value, "BannerTypeName");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool ScrollToItem
+	{
+		get
+		{
+			return _scrollToItem;
+		}
+		set
+		{
+			if (value != _scrollToItem)
+			{
+				_scrollToItem = value;
+				OnPropertyChanged(value, "ScrollToItem");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public string ScrollItemId
+	{
+		get
+		{
+			return _scrollItemId;
+		}
+		set
+		{
+			if (value != _scrollItemId)
+			{
+				_scrollItemId = value;
+				OnPropertyChanged(value, "ScrollItemId");
 			}
 		}
 	}
@@ -453,53 +412,31 @@ public class InventoryScreenWidget : Widget
 
 	private Widget GetFirstBannerItem()
 	{
-		return ((OtherInventoryListWidget.InnerPanel as ListPanel)?.GetChild(0) as ListPanel)?.FindChild((Widget x) => (x as InventoryItemTupleWidget).ItemType == BannerTypeCode);
+		return ((OtherInventoryListWidget.InnerPanel as ListPanel)?.GetChild(0) as ListPanel)?.FindChild((Widget x) => (x as InventoryItemTupleWidget).ItemType == BannerTypeName);
+	}
+
+	private Widget GetItemWithId(ScrollablePanel listWidget, string id)
+	{
+		return ((listWidget.InnerPanel as ListPanel)?.GetChild(0) as ListPanel)?.FindChild((Widget x) => (x as InventoryItemTupleWidget).ItemID == id);
 	}
 
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
-		if (!_eventsRegistered)
-		{
-			((OtherInventoryListWidget.InnerPanel as ListPanel)?.GetChild(0) as ListPanel)?.ItemAddEventHandlers.Add(OnNewInventoryItemAdded);
-			((PlayerInventoryListWidget.InnerPanel as ListPanel)?.GetChild(0) as ListPanel)?.ItemAddEventHandlers.Add(OnNewInventoryItemAdded);
-			_eventsRegistered = true;
-		}
 		if (base.EventManager.DraggedWidget == null)
 		{
 			TargetEquipmentIndex = -1;
 			_currentDraggedItemWidget = null;
 		}
-		Widget latestMouseDownWidget = base.EventManager.LatestMouseDownWidget;
-		int num;
-		if (latestMouseDownWidget != null)
+		if (_latestMouseDownWidget != base.EventManager.LatestMouseDownWidget)
 		{
-			if (!(latestMouseDownWidget is InventoryItemButtonWidget))
+			_latestMouseDownWidget = base.EventManager.LatestMouseDownWidget;
+			bool flag = _latestMouseDownWidget != null && (_latestMouseDownWidget is InventoryItemButtonWidget || _latestMouseDownWidget is InventoryEquippedItemControlsBrushWidget || _latestMouseDownWidget.GetAllParents().Any((Widget x) => x is InventoryItemButtonWidget || x is InventoryEquippedItemControlsBrushWidget));
+			bool flag2 = IsWidgetChildOf(InventoryTooltip, _latestMouseDownWidget);
+			if (_latestMouseDownWidget == null || (!flag && !flag2 && !ItemPreviewWidget.IsVisible))
 			{
-				InventoryEquippedItemControlsBrushWidget equippedItemControls = EquippedItemControls;
-				if (equippedItemControls == null || !equippedItemControls.CheckIsMyChildRecursive(latestMouseDownWidget))
-				{
-					InventoryItemButtonWidget currentSelectedItemWidget = _currentSelectedItemWidget;
-					if (currentSelectedItemWidget == null || !currentSelectedItemWidget.CheckIsMyChildRecursive(latestMouseDownWidget))
-					{
-						num = ((_currentSelectedOtherItemWidget?.CheckIsMyChildRecursive(latestMouseDownWidget) ?? false) ? 1 : 0);
-						goto IL_010a;
-					}
-				}
+				EventFired("OnEmptyClick");
 			}
-			num = 1;
-		}
-		else
-		{
-			num = 0;
-		}
-		goto IL_010a;
-		IL_010a:
-		bool flag = (byte)num != 0;
-		bool flag2 = IsWidgetChildOf(InventoryTooltip, latestMouseDownWidget);
-		if (latestMouseDownWidget == null || (_currentSelectedItemWidget != null && !flag && !flag2 && !ItemPreviewWidget.IsVisible))
-		{
-			SetCurrentTuple(null, isLeftSide: false);
 		}
 		Widget hoveredView = base.EventManager.HoveredView;
 		if (hoveredView != null)
@@ -541,12 +478,12 @@ public class InventoryScreenWidget : Widget
 				if (inventoryItemTupleWidget.IsRightSide)
 				{
 					TransferInputKeyVisualWidget.KeyID = _nextCharacterInputKeyVisual?.KeyID ?? "";
-					vector = _currentHoveredItemWidget.GlobalPosition - new Vector2(base.EventManager.LeftUsableAreaStart, base.EventManager.TopUsableAreaStart + 20f * base._scaleToUse);
+					vector = _currentHoveredItemWidget.GlobalPosition - new Vector2(0f, 20f * base._scaleToUse);
 				}
 				else
 				{
 					TransferInputKeyVisualWidget.KeyID = _previousCharacterInputKeyVisual?.KeyID ?? "";
-					vector = _currentHoveredItemWidget.GlobalPosition - new Vector2(base.EventManager.LeftUsableAreaStart + 60f * base._scaleToUse - _currentHoveredItemWidget.Size.X, base.EventManager.TopUsableAreaStart + 20f * base._scaleToUse);
+					vector = _currentHoveredItemWidget.GlobalPosition - new Vector2(60f * base._scaleToUse - _currentHoveredItemWidget.Size.X, 20f * base._scaleToUse);
 				}
 				TransferInputKeyVisualWidget.ScaledPositionXOffset = vector.X;
 				TransferInputKeyVisualWidget.ScaledPositionYOffset = vector.Y;
@@ -567,24 +504,29 @@ public class InventoryScreenWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_newAddedItem != null)
-		{
-			if (_newAddedItem.ItemID == (_currentSelectedItemWidget as InventoryItemTupleWidget)?.ItemID)
-			{
-				_currentSelectedOtherItemWidget = _newAddedItem;
-				(_currentSelectedOtherItemWidget as InventoryItemTupleWidget).TransferRequestHandlers.Add(OnTransferItemRequested);
-				_newAddedItem.IsSelected = true;
-				UpdateScrollTarget(_newAddedItem.IsRightSide);
-			}
-			_newAddedItem = null;
-		}
 		if (_scrollToBannersInFrames > -1)
 		{
 			if (_scrollToBannersInFrames == 0)
 			{
-				OtherInventoryListWidget.ScrollToChild(GetFirstBannerItem(), -1f, 0.2f, 0, 0, 0.35f);
+				ScrollablePanel.AutoScrollParameters scrollParameters = new ScrollablePanel.AutoScrollParameters(0f, 0f, 0f, 0f, -1f, 0.2f, 0.35f);
+				OtherInventoryListWidget.ScrollToChild(GetFirstBannerItem(), scrollParameters);
 			}
 			_scrollToBannersInFrames--;
+		}
+		if (ScrollToItem)
+		{
+			_scrollToItemInSeconds = 0.2f;
+			ScrollToItem = false;
+		}
+		if (_scrollToItemInSeconds >= 0f)
+		{
+			_scrollToItemInSeconds -= dt;
+			if (_scrollToItemInSeconds <= 0f)
+			{
+				ScrollablePanel.AutoScrollParameters scrollParameters2 = new ScrollablePanel.AutoScrollParameters(100f, 100f, 0f, 0f, -1f, -1f, 0.35f);
+				OtherInventoryListWidget.ScrollToChild(GetItemWithId(OtherInventoryListWidget, ScrollItemId), scrollParameters2);
+				PlayerInventoryListWidget.ScrollToChild(GetItemWithId(PlayerInventoryListWidget, ScrollItemId), scrollParameters2);
+			}
 		}
 		if (_focusLostThisFrame)
 		{
@@ -611,14 +553,14 @@ public class InventoryScreenWidget : Widget
 			}
 			if (_currentHoveredItemWidget.IsRightSide)
 			{
-				InventoryTooltip.ScaledPositionXOffset = _currentHoveredItemWidget.ParentWidget.GlobalPosition.X - InventoryTooltip.Size.X + 10f * base._scaleToUse - base.EventManager.LeftUsableAreaStart;
+				InventoryTooltip.ScaledPositionXOffset = _currentHoveredItemWidget.ParentWidget.GlobalPosition.X - InventoryTooltip.Size.X + 10f * base._scaleToUse;
 			}
 			else
 			{
-				InventoryTooltip.ScaledPositionXOffset = _currentHoveredItemWidget.ParentWidget.GlobalPosition.X + _currentHoveredItemWidget.ParentWidget.Size.X - 10f * base._scaleToUse - base.EventManager.LeftUsableAreaStart;
+				InventoryTooltip.ScaledPositionXOffset = _currentHoveredItemWidget.ParentWidget.GlobalPosition.X + _currentHoveredItemWidget.ParentWidget.Size.X - 10f * base._scaleToUse;
 			}
 			float max = base.EventManager.PageSize.Y - InventoryTooltip.MeasuredSize.Y;
-			InventoryTooltip.ScaledPositionYOffset = Mathf.Clamp(_currentHoveredItemWidget.GlobalPosition.Y - base.EventManager.TopUsableAreaStart, 0f, max);
+			InventoryTooltip.ScaledPositionYOffset = Mathf.Clamp(_currentHoveredItemWidget.GlobalPosition.Y, 0f, max);
 			_lastDisplayedTooltipItem = _currentHoveredItemWidget;
 		}
 		else
@@ -627,119 +569,12 @@ public class InventoryScreenWidget : Widget
 		}
 	}
 
-	public void SetCurrentTuple(InventoryItemButtonWidget itemWidget, bool isLeftSide)
-	{
-		_focusLostThisFrame = itemWidget == null;
-		if (_currentSelectedItemWidget != null && _currentSelectedItemWidget != itemWidget)
-		{
-			_currentSelectedItemWidget.IsSelected = false;
-			if (_currentSelectedItemWidget is InventoryItemTupleWidget inventoryItemTupleWidget)
-			{
-				inventoryItemTupleWidget.TransferRequestHandlers.Remove(OnTransferItemRequested);
-			}
-			if (_currentSelectedOtherItemWidget != null)
-			{
-				_currentSelectedOtherItemWidget.IsSelected = false;
-			}
-		}
-		if (itemWidget == null || (itemWidget is InventoryItemTupleWidget inventoryItemTupleWidget2 && _currentSelectedOtherItemWidget is InventoryItemTupleWidget inventoryItemTupleWidget3 && inventoryItemTupleWidget2.ItemID == inventoryItemTupleWidget3.ItemID))
-		{
-			_equippedItemControls.HidePanel();
-			if (_currentSelectedItemWidget != null)
-			{
-				_currentSelectedItemWidget.IsSelected = false;
-			}
-			_currentSelectedItemWidget = null;
-			if (_currentSelectedOtherItemWidget != null)
-			{
-				_currentSelectedOtherItemWidget.IsSelected = false;
-				(_currentSelectedOtherItemWidget as InventoryItemTupleWidget).TransferRequestHandlers.Remove(OnTransferItemRequested);
-			}
-			_currentSelectedOtherItemWidget = null;
-			return;
-		}
-		if (_currentSelectedItemWidget == itemWidget)
-		{
-			SetCurrentTuple(null, isLeftSide: false);
-			if (_currentSelectedOtherItemWidget != null)
-			{
-				_currentSelectedOtherItemWidget.IsSelected = false;
-			}
-			_currentSelectedOtherItemWidget = null;
-			return;
-		}
-		_currentSelectedItemWidget = itemWidget;
-		TargetEquipmentIndex = -1;
-		TransactionCount = 1;
-		if (_currentSelectedItemWidget is InventoryEquippedItemSlotWidget)
-		{
-			_equippedItemControls.ShowPanel(itemWidget);
-			_currentSelectedOtherItemWidget = null;
-		}
-		else
-		{
-			_equippedItemControls.HidePanel();
-			if (_currentSelectedItemWidget is InventoryItemTupleWidget inventoryItemTupleWidget4)
-			{
-				inventoryItemTupleWidget4.TransferRequestHandlers.Add(OnTransferItemRequested);
-				if (isLeftSide)
-				{
-					foreach (Widget allChild in PlayerInventoryListWidget.AllChildren)
-					{
-						if (allChild is InventoryItemTupleWidget inventoryItemTupleWidget5 && inventoryItemTupleWidget5.ItemID == inventoryItemTupleWidget4.ItemID)
-						{
-							_currentSelectedOtherItemWidget = inventoryItemTupleWidget5;
-							_currentSelectedOtherItemWidget.IsSelected = true;
-							(_currentSelectedOtherItemWidget as InventoryItemTupleWidget).TransferRequestHandlers.Add(OnTransferItemRequested);
-							break;
-						}
-					}
-				}
-				else
-				{
-					foreach (Widget allChild2 in OtherInventoryListWidget.AllChildren)
-					{
-						if (allChild2 is InventoryItemTupleWidget inventoryItemTupleWidget6 && inventoryItemTupleWidget6.ItemID == inventoryItemTupleWidget4.ItemID)
-						{
-							_currentSelectedOtherItemWidget = inventoryItemTupleWidget6;
-							_currentSelectedOtherItemWidget.IsSelected = true;
-							(_currentSelectedOtherItemWidget as InventoryItemTupleWidget).TransferRequestHandlers.Add(OnTransferItemRequested);
-							break;
-						}
-					}
-				}
-			}
-		}
-		UpdateScrollTarget(isLeftSide);
-	}
-
-	private void OnEquipmentControlsHidden()
-	{
-		_currentSelectedItemWidget = null;
-		if (_currentSelectedOtherItemWidget != null)
-		{
-			_currentSelectedOtherItemWidget.IsSelected = false;
-			(_currentSelectedOtherItemWidget as InventoryItemTupleWidget).TransferRequestHandlers.Remove(OnTransferItemRequested);
-		}
-		_currentSelectedOtherItemWidget = null;
-	}
-
-	private void OnTransferItemRequested(InventoryItemTupleWidget owner)
-	{
-		UpdateScrollTarget(!owner.IsRightSide);
-	}
-
 	private void TradeLabelOnPropertyChanged(PropertyOwnerObject owner, string propertyName, object value)
 	{
 		if (propertyName == "Text")
 		{
 			TradeLabel.IsDisabled = string.IsNullOrEmpty(TradeLabel.Text);
 		}
-	}
-
-	private void EquippedItemControlsOnPreviewClick(Widget itemwidget)
-	{
-		ItemPreviewWidget.SetLastFocusedItem(null);
 	}
 
 	private void ItemWidgetHoverBegin(InventoryItemButtonWidget itemWidget)
@@ -774,7 +609,7 @@ public class InventoryScreenWidget : Widget
 
 	public void ItemWidgetDragBegin(InventoryItemButtonWidget itemWidget)
 	{
-		EquippedItemControls?.HidePanel();
+		EventFired("OnEmptyClick");
 		_currentDraggedItemWidget = itemWidget;
 		if (itemWidget is InventoryEquippedItemSlotWidget inventoryEquippedItemSlotWidget)
 		{
@@ -792,39 +627,6 @@ public class InventoryScreenWidget : Widget
 		{
 			_currentDraggedItemWidget = null;
 			TargetEquipmentIndex = -1;
-		}
-	}
-
-	private void OtherInventoryGoldTextOnPropertyChanged(PropertyOwnerObject owner, string propertyName, int value)
-	{
-		if (propertyName == "IntText")
-		{
-			bool isVisible = OtherInventoryGoldText.IntText > 0;
-			OtherInventoryGoldText.IsVisible = isVisible;
-			OtherInventoryGoldImage.IsVisible = isVisible;
-		}
-	}
-
-	private void UpdateScrollTarget(bool isLeftSide)
-	{
-		if (_currentSelectedOtherItemWidget != null)
-		{
-			if (isLeftSide)
-			{
-				PlayerInventoryListWidget.ScrollToChild(_currentSelectedOtherItemWidget, -1f, 1f, 0, 400, 0.35f);
-			}
-			else
-			{
-				OtherInventoryListWidget.ScrollToChild(_currentSelectedOtherItemWidget, -1f, 1f, 0, 400, 0.35f);
-			}
-		}
-	}
-
-	private void OnNewInventoryItemAdded(Widget parentWidget, Widget addedWidget)
-	{
-		if (_currentSelectedItemWidget != null && addedWidget is InventoryItemTupleWidget newAddedItem)
-		{
-			_newAddedItem = newAddedItem;
 		}
 	}
 }

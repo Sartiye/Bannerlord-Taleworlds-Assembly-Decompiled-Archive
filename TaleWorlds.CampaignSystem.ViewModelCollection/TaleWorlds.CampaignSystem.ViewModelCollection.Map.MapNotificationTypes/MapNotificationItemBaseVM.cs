@@ -35,7 +35,7 @@ public class MapNotificationItemBaseVM : ViewModel
 
 	public INavigationHandler NavigationHandler { get; private set; }
 
-	protected Action<Vec2> FastMoveCameraToPosition { get; private set; }
+	protected Action<CampaignVec2> FastMoveCameraToPosition { get; private set; }
 
 	public InformationData Data { get; private set; }
 
@@ -184,7 +184,7 @@ public class MapNotificationItemBaseVM : ViewModel
 		NavigationHandler = navigationHandler;
 	}
 
-	public void SetFastMoveCameraToPosition(Action<Vec2> fastMoveCameraToPosition)
+	public void SetFastMoveCameraToPosition(Action<CampaignVec2> fastMoveCameraToPosition)
 	{
 		FastMoveCameraToPosition = fastMoveCameraToPosition;
 	}
@@ -216,7 +216,7 @@ public class MapNotificationItemBaseVM : ViewModel
 	{
 	}
 
-	internal void GoToMapPosition(Vec2 position)
+	internal void GoToMapPosition(CampaignVec2 position)
 	{
 		FastMoveCameraToPosition?.Invoke(position);
 	}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
@@ -93,14 +94,62 @@ public class SiegeQuerySystem
 		Team defenderTeam = mission.DefenderTeam;
 		SiegeLane siegeLane = lanes.FirstOrDefault((SiegeLane l) => l.LaneSide == FormationAI.BehaviorSide.Left);
 		SiegeLane siegeLane2 = lanes.FirstOrDefault((SiegeLane l) => l.LaneSide == FormationAI.BehaviorSide.Middle);
-		SiegeLane siegeLane3 = lanes.FirstOrDefault((SiegeLane l) => l.LaneSide == FormationAI.BehaviorSide.Right);
+		lanes.FirstOrDefault((SiegeLane l) => l.LaneSide == FormationAI.BehaviorSide.Right);
 		Mission current = Mission.Current;
-		LeftDefenderOrigin = current.Scene.FindEntityWithTag("left_defender_origin")?.GlobalPosition ?? (siegeLane.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane.DefenderOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
-		LeftAttackerOrigin = current.Scene.FindEntityWithTag("left_attacker_origin")?.GlobalPosition ?? (siegeLane.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane.AttackerOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
-		MidDefenderOrigin = current.Scene.FindEntityWithTag("middle_defender_origin")?.GlobalPosition ?? (siegeLane2.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane2.DefenderOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
-		MiddleAttackerOrigin = current.Scene.FindEntityWithTag("middle_attacker_origin")?.GlobalPosition ?? (siegeLane2.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane2.AttackerOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
-		RightDefenderOrigin = current.Scene.FindEntityWithTag("right_defender_origin")?.GlobalPosition ?? (siegeLane3.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane3.DefenderOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
-		RightAttackerOrigin = current.Scene.FindEntityWithTag("right_attacker_origin")?.GlobalPosition ?? (siegeLane3.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane3.AttackerOrigin.GetGroundVec3() : new Vec3(0f, 0f, 0f, -1f));
+		WeakGameEntity weakGameEntity = current.Scene.FindWeakEntityWithTag("left_defender_origin");
+		if (weakGameEntity.IsValid)
+		{
+			LeftDefenderOrigin = weakGameEntity.GlobalPosition;
+		}
+		else
+		{
+			LeftDefenderOrigin = (siegeLane.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane.DefenderOrigin.GetGroundVec3() : Vec3.Zero);
+		}
+		WeakGameEntity weakGameEntity2 = current.Scene.FindWeakEntityWithTag("left_attacker_origin");
+		if (weakGameEntity2.IsValid)
+		{
+			LeftAttackerOrigin = weakGameEntity2.GlobalPosition;
+		}
+		else
+		{
+			LeftAttackerOrigin = (siegeLane.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane.AttackerOrigin.GetGroundVec3() : Vec3.Zero);
+		}
+		WeakGameEntity weakGameEntity3 = current.Scene.FindWeakEntityWithTag("middle_defender_origin");
+		if (weakGameEntity3.IsValid)
+		{
+			MidDefenderOrigin = weakGameEntity3.GlobalPosition;
+		}
+		else
+		{
+			MidDefenderOrigin = (siegeLane2.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane2.DefenderOrigin.GetGroundVec3() : Vec3.Zero);
+		}
+		WeakGameEntity weakGameEntity4 = current.Scene.FindWeakEntityWithTag("middle_attacker_origin");
+		if (weakGameEntity4.IsValid)
+		{
+			MiddleAttackerOrigin = weakGameEntity4.GlobalPosition;
+		}
+		else
+		{
+			MiddleAttackerOrigin = (siegeLane2.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane2.AttackerOrigin.GetGroundVec3() : Vec3.Zero);
+		}
+		WeakGameEntity weakGameEntity5 = current.Scene.FindWeakEntityWithTag("right_defender_origin");
+		if (weakGameEntity5.IsValid)
+		{
+			RightDefenderOrigin = weakGameEntity5.GlobalPosition;
+		}
+		else
+		{
+			RightDefenderOrigin = (siegeLane2.DefenderOrigin.AsVec2.IsNonZero() ? siegeLane2.DefenderOrigin.GetGroundVec3() : Vec3.Zero);
+		}
+		WeakGameEntity weakGameEntity6 = current.Scene.FindWeakEntityWithTag("right_attacker_origin");
+		if (weakGameEntity6.IsValid)
+		{
+			RightAttackerOrigin = weakGameEntity6.GlobalPosition;
+		}
+		else
+		{
+			RightAttackerOrigin = (siegeLane2.AttackerOrigin.AsVec2.IsNonZero() ? siegeLane2.AttackerOrigin.GetGroundVec3() : Vec3.Zero);
+		}
 		LeftToMidDir = (MiddleAttackerOrigin.AsVec2 - LeftDefenderOrigin.AsVec2).Normalized();
 		MidToLeftDir = (LeftAttackerOrigin.AsVec2 - MidDefenderOrigin.AsVec2).Normalized();
 		MidToRightDir = (RightAttackerOrigin.AsVec2 - MidDefenderOrigin.AsVec2).Normalized();

@@ -74,10 +74,6 @@ public sealed class Camera : NativeObject
 		ReleaseCamera();
 	}
 
-	~Camera()
-	{
-	}
-
 	public void LookAt(Vec3 position, Vec3 target, Vec3 upVector)
 	{
 		EngineApplicationInterface.ICamera.LookAt(base.Pointer, position, target, upVector);
@@ -88,8 +84,8 @@ public sealed class Camera : NativeObject
 		EngineApplicationInterface.ICamera.ScreenSpaceRayProjection(base.Pointer, screenPosition, ref rayBegin, ref rayEnd);
 		if (Entity != null)
 		{
-			rayBegin = Entity.GetGlobalFrame().TransformToParent(rayBegin);
-			rayEnd = Entity.GetGlobalFrame().TransformToParent(rayEnd);
+			rayBegin = Entity.GetGlobalFrame().TransformToParent(in rayBegin);
+			rayEnd = Entity.GetGlobalFrame().TransformToParent(in rayEnd);
 		}
 	}
 

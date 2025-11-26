@@ -3,6 +3,7 @@ using System.Linq;
 using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -17,14 +18,14 @@ public abstract class MissionObject : ScriptComponentBehavior
 		Extra1,
 		Extra2,
 		Extra3,
+		ConditionalBlocker,
 		Reserved1,
-		Reserved2,
 		Count
 	}
 
-	public const int MaxNavMeshPerDynamicObject = 10;
+	public const int MaxNavMeshPerDynamicObject = 50;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string NavMeshPrefabName = "";
 
 	protected int DynamicNavmeshIdStart;
@@ -34,6 +35,8 @@ public abstract class MissionObject : ScriptComponentBehavior
 	public MissionObjectId Id { get; set; }
 
 	public bool IsDisabled { get; private set; }
+
+	public virtual TextObject HitObjectName { get; }
 
 	public bool CreatedAtRuntime => Id.CreatedAtRuntime;
 
@@ -47,13 +50,18 @@ public abstract class MissionObject : ScriptComponentBehavior
 	{
 		if (DynamicNavmeshIdStart > 0)
 		{
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 1, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 2, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 3, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 4, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 5, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 6, enabled);
-			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 7, enabled);
+			for (int i = DynamicNavmeshIdStart; i < DynamicNavmeshIdStart + 10; i++)
+			{
+				base.GameEntity.Scene.SetAbilityOfFacesWithId(i, enabled);
+			}
+		}
+	}
+
+	protected void SetAbilityOfConditionalFaces(bool enabled)
+	{
+		if (DynamicNavmeshIdStart > 0)
+		{
+			base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 8, enabled);
 		}
 	}
 
@@ -63,7 +71,8 @@ public abstract class MissionObject : ScriptComponentBehavior
 		if (!GameNetwork.IsClientOrReplay)
 		{
 			AttachDynamicNavmeshToEntity();
-			SetAbilityOfFaces(base.GameEntity != null && base.GameEntity.IsVisibleIncludeParents());
+			SetAbilityOfFaces(base.GameEntity.IsValid && base.GameEntity.IsVisibleIncludeParents());
+			SetAbilityOfConditionalFaces(base.GameEntity.IsValid && base.GameEntity.IsVisibleIncludeParents());
 		}
 	}
 
@@ -76,12 +85,13 @@ public abstract class MissionObject : ScriptComponentBehavior
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 1, isConnected: false);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 2, isConnected: true);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 3, isConnected: true);
-			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 4, isConnected: false, isBlocker: true);
-			SetAbilityOfFaces(base.GameEntity != null && base.GameEntity.GetPhysicsState());
+			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 4, isConnected: false, isBlocker: true, autoLocalize: false, finalizeBlockerConvexHullComputation: false, updateEntityFrame: false);
+			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 8, isConnected: false, isBlocker: true, autoLocalize: false, finalizeBlockerConvexHullComputation: true);
+			SetAbilityOfFaces(base.GameEntity.IsValid && base.GameEntity.GetPhysicsState());
 		}
 	}
 
-	protected virtual GameEntity GetEntityToAttachNavMeshFaces()
+	protected virtual WeakGameEntity GetEntityToAttachNavMeshFaces()
 	{
 		return base.GameEntity;
 	}
@@ -90,11 +100,11 @@ public abstract class MissionObject : ScriptComponentBehavior
 	{
 		base.OnCheckForProblems();
 		bool result = false;
-		List<GameEntity> children = new List<GameEntity>();
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
 		children.Add(base.GameEntity);
 		base.GameEntity.GetChildrenRecursive(ref children);
 		bool flag = false;
-		foreach (GameEntity item in children)
+		foreach (WeakGameEntity item in children)
 		{
 			flag = flag || (item.HasPhysicsDefinitionWithoutFlags(1) && !item.PhysicsDescBodyFlag.HasAnyFlag(BodyFlags.CommonCollisionExcludeFlagsForMissile));
 		}
@@ -132,6 +142,20 @@ public abstract class MissionObject : ScriptComponentBehavior
 			Mission.AddActiveMissionObject(this);
 		}
 		base.GameEntity.SetAsReplayEntity();
+		WeakGameEntity firstChildEntityWithTag = base.GameEntity.GetFirstChildEntityWithTag("batched_physics_entity");
+		if (firstChildEntityWithTag != WeakGameEntity.Invalid)
+		{
+			firstChildEntityWithTag.CreateVariableRatePhysics(forChildren: true);
+		}
+		_ = base.GameEntity.Name;
+		foreach (WeakGameEntity child in base.GameEntity.GetChildren())
+		{
+			_ = child.BodyFlag;
+			if (child != firstChildEntityWithTag)
+			{
+				child.CreateVariableRatePhysics(forChildren: true);
+			}
+		}
 	}
 
 	public override int GetHashCode()
@@ -151,23 +175,100 @@ public abstract class MissionObject : ScriptComponentBehavior
 	{
 	}
 
-	protected internal virtual bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+	public virtual void OnDeploymentFinished()
+	{
+	}
+
+	protected internal virtual bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage)
 	{
 		reportDamage = false;
+		finalDamage = damage;
 		return false;
+	}
+
+	public void SetEnabled(bool isParentObject = false)
+	{
+		if (!IsDisabled)
+		{
+			return;
+		}
+		if (!GameNetwork.IsClientOrReplay)
+		{
+			SetAbilityOfFaces(enabled: true);
+		}
+		if (isParentObject && base.GameEntity != null)
+		{
+			List<WeakGameEntity> children = new List<WeakGameEntity>();
+			base.GameEntity.GetChildrenRecursive(ref children);
+			foreach (MissionObject item in from sc in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents())
+				where sc is MissionObject
+				select sc as MissionObject)
+			{
+				item.SetEnabled();
+			}
+		}
+		Mission.Current.ActivateMissionObject(this);
+		IsDisabled = false;
+	}
+
+	public void SetEnabledAndMakeVisible(bool isParentObject = false, bool enableFaces = false)
+	{
+		SetEnabledAndMakeVisibleAux(isParentObject, enableFaces);
+		SetScriptComponentToTick(GetTickRequirement());
+		if (!(base.GameEntity != null))
+		{
+			return;
+		}
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
+		base.GameEntity.GetChildrenRecursive(ref children);
+		foreach (WeakGameEntity item in children)
+		{
+			foreach (ScriptComponentBehavior scriptComponent in item.GetScriptComponents())
+			{
+				scriptComponent?.SetScriptComponentToTick(scriptComponent.GetTickRequirement());
+			}
+		}
+	}
+
+	private void SetEnabledAndMakeVisibleAux(bool isParentObject, bool enableFaces)
+	{
+		if (enableFaces && !GameNetwork.IsClientOrReplay)
+		{
+			SetAbilityOfFaces(enabled: true);
+		}
+		if (isParentObject && base.GameEntity != null)
+		{
+			List<WeakGameEntity> children = new List<WeakGameEntity>();
+			base.GameEntity.GetChildrenRecursive(ref children);
+			foreach (MissionObject item in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents()).OfType<MissionObject>())
+			{
+				item.SetEnabledAndMakeVisibleAux(isParentObject: false, enableFaces);
+			}
+		}
+		Mission.Current.ActivateMissionObject(this);
+		IsDisabled = false;
+		if (base.GameEntity != null)
+		{
+			base.GameEntity.SetVisibilityExcludeParents(visible: true);
+			base.GameEntity.SetPhysicsState(isEnabled: true, setChildren: false);
+		}
 	}
 
 	public void SetDisabled(bool isParentObject = false)
 	{
+		if (IsDisabled)
+		{
+			return;
+		}
 		if (!GameNetwork.IsClientOrReplay)
 		{
 			SetAbilityOfFaces(enabled: false);
 		}
-		if (isParentObject && base.GameEntity != null)
+		if (isParentObject && base.GameEntity.IsValid)
 		{
-			List<GameEntity> children = new List<GameEntity>();
+			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (MissionObject item in from sc in children.SelectMany((GameEntity ac) => ac.GetScriptComponents())
+			foreach (MissionObject item in from sc in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents())
 				where sc is MissionObject
 				select sc as MissionObject)
 			{
@@ -178,24 +279,29 @@ public abstract class MissionObject : ScriptComponentBehavior
 		IsDisabled = true;
 	}
 
-	public void SetDisabledAndMakeInvisible(bool isParentObject = false)
+	public void SetDisabledAndMakeInvisible(bool isParentObject = false, bool disableFaces = false)
 	{
-		if (isParentObject && base.GameEntity != null)
+		if (disableFaces && !GameNetwork.IsClientOrReplay)
 		{
-			List<GameEntity> children = new List<GameEntity>();
+			SetAbilityOfFaces(enabled: false);
+		}
+		if (isParentObject && base.GameEntity.IsValid)
+		{
+			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (MissionObject item in from sc in children.SelectMany((GameEntity ac) => ac.GetScriptComponents())
+			foreach (MissionObject item in from sc in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents())
 				where sc is MissionObject
 				select sc as MissionObject)
 			{
-				item.SetDisabledAndMakeInvisible();
+				item.SetDisabledAndMakeInvisible(isParentObject: false, disableFaces);
 			}
 		}
 		Mission.Current.DeactivateMissionObject(this);
 		IsDisabled = true;
-		if (base.GameEntity != null)
+		if (base.GameEntity.IsValid)
 		{
 			base.GameEntity.SetVisibilityExcludeParents(visible: false);
+			base.GameEntity.SetPhysicsState(isEnabled: false, setChildren: false);
 			SetScriptComponentToTick(GetTickRequirement());
 		}
 	}
@@ -224,6 +330,6 @@ public abstract class MissionObject : ScriptComponentBehavior
 
 	public virtual void AddStuckMissile(GameEntity missileEntity)
 	{
-		base.GameEntity.AddChild(missileEntity);
+		base.GameEntity.AddChild(missileEntity.WeakEntity);
 	}
 }

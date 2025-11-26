@@ -80,6 +80,12 @@ public static class ActionSetCode
 
 	public const string VillagerCarryOverHead2Suffix = "_villager_carry_over_head_v2";
 
+	public const string WorkerCarryOnShoulderSuffix = "_worker_carry_wood_on_shoulder";
+
+	public const string VillagerCarryBucketLeftHand = "_villager_carry_bucket_on_lefthand";
+
+	public const string VillagerCarryFishBucketsLeftHand = "_villager_carry_fish_buckets";
+
 	public const string PosesSuffix = "_poses";
 
 	public const string FaceGenActionSetSuffix = "_facegen";

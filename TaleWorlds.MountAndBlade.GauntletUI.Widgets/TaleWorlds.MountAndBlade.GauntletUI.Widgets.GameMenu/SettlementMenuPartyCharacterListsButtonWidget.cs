@@ -77,9 +77,9 @@ public class SettlementMenuPartyCharacterListsButtonWidget : ButtonWidget
 		}
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (!PartiesList.IsVisible && CharactersList.IsVisible)
 		{
 			SetPartyListVisible();

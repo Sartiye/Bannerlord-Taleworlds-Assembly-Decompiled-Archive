@@ -1,33 +1,20 @@
 using System;
-using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Tutorial;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MapBar;
 
 public class MapBarVM : ViewModel
 {
+	protected INavigationHandler _navigationHandler;
+
 	private IMapStateHandler _mapStateHandler;
 
-	private readonly TextObject _needToBePartOfKingdomText;
-
-	private readonly TextObject _cannotGatherWhileInEventText;
-
-	private readonly TextObject _needToBeLeaderToManageText;
-
-	private readonly TextObject _mercenaryCannotManageText;
-
-	private readonly TextObject _cannotGatherWhileInConversationText;
-
-	private readonly TextObject _cannotGatherWhileInSiegeText;
-
-	private readonly Action _openArmyManagement;
+	private Action _openArmyManagement;
 
 	private float _refreshTimeSpan;
 
@@ -242,19 +229,19 @@ public class MapBarVM : ViewModel
 		}
 	}
 
-	public MapBarVM(INavigationHandler navigationHandler, IMapStateHandler mapStateHandler, Func<MapBarShortcuts> getMapBarShortcuts, Action openArmyManagement)
+	protected virtual MapInfoVM CreateInfoVM()
 	{
+		return new MapInfoVM();
+	}
+
+	public void Initialize(INavigationHandler navigationHandler, IMapStateHandler mapStateHandler, Func<MapBarShortcuts> getMapBarShortcuts, Action openArmyManagement)
+	{
+		_navigationHandler = navigationHandler;
+		_refreshTimeSpan = ((Campaign.Current.GetSimplifiedTimeControlMode() == CampaignTimeControlMode.UnstoppableFastForward) ? 0.1f : 2f);
 		_openArmyManagement = openArmyManagement;
 		_mapStateHandler = mapStateHandler;
-		_refreshTimeSpan = ((Campaign.Current.GetSimplifiedTimeControlMode() == CampaignTimeControlMode.UnstoppableFastForward) ? 0.1f : 2f);
-		_needToBePartOfKingdomText = GameTexts.FindText("str_need_to_be_a_part_of_kingdom");
-		_cannotGatherWhileInEventText = GameTexts.FindText("str_cannot_gather_army_while_in_event");
-		_needToBeLeaderToManageText = GameTexts.FindText("str_need_to_be_leader_of_army_to_manage");
-		_mercenaryCannotManageText = GameTexts.FindText("str_mercenary_cannot_manage_army");
-		_cannotGatherWhileInConversationText = GameTexts.FindText("str_cannot_gather_army_during_conversation");
-		_cannotGatherWhileInSiegeText = GameTexts.FindText("str_cannot_gather_army_during_siege");
 		TutorialNotification = new ElementNotificationVM();
-		MapInfo = new MapInfoVM();
+		MapInfo = CreateInfoVM();
 		MapTimeControl = new MapTimeControlVM(getMapBarShortcuts, OnTimeControlChange, delegate
 		{
 			mapStateHandler.ResetCamera(resetDistance: false, teleportToMainParty: false);
@@ -306,41 +293,8 @@ public class MapBarVM : ViewModel
 
 	private void UpdateCanGatherArmyAndReason()
 	{
-		bool canGatherArmy = true;
-		TextObject textObject = null;
-		IFaction mapFaction = Hero.MainHero.MapFaction;
-		if (mapFaction != null && !mapFaction.IsKingdomFaction)
-		{
-			textObject = _needToBePartOfKingdomText;
-			canGatherArmy = false;
-		}
-		else if (MobileParty.MainParty.MapEvent != null)
-		{
-			textObject = _cannotGatherWhileInEventText;
-			canGatherArmy = false;
-		}
-		else if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
-		{
-			textObject = _needToBeLeaderToManageText;
-			canGatherArmy = false;
-		}
-		else if (Clan.PlayerClan.IsUnderMercenaryService)
-		{
-			textObject = _mercenaryCannotManageText;
-			canGatherArmy = false;
-		}
-		else if (PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement == null)
-		{
-			textObject = _cannotGatherWhileInConversationText;
-			canGatherArmy = false;
-		}
-		else if (PlayerSiege.PlayerSiegeEvent != null)
-		{
-			textObject = _cannotGatherWhileInSiegeText;
-			canGatherArmy = false;
-		}
-		CanGatherArmy = canGatherArmy;
-		GatherArmyHint.HintText = (CanGatherArmy ? TextObject.Empty : textObject);
+		CanGatherArmy = Campaign.Current.Models.ArmyManagementCalculationModel.CanPlayerCreateArmy(out var disabledReason);
+		GatherArmyHint.HintText = disabledReason;
 	}
 
 	private bool GetIsGatherArmyVisible()

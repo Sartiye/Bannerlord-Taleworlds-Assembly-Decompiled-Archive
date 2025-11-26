@@ -56,14 +56,16 @@ public class Program
 			{
 				Common.PlatformFileHelper = new PlatformFileHelperPC("Mount and Blade II Bannerlord");
 				Common.SetInvariantCulture();
-				LauncherPlatform.Initialize();
+				LauncherPlatform.Initialize(_args);
 				LauncherPlatform.SetLauncherMode(isLauncherModeActive: true);
 				ResourceDepot resourceDepot = new ResourceDepot();
 				resourceDepot.AddLocation(BasePath.Name, "Modules/Native/LauncherGUI/");
 				resourceDepot.CollectResources();
 				resourceDepot.StartWatchingChangesInDepot();
 				string name = "M&B II: Bannerlord";
-				_graphicsForm = new GraphicsForm(1154, 701, resourceDepot, borderlessWindow: true, enableWindowBlur: true, layeredWindow: true, name);
+				User32.GetClientRect(User32.GetDesktopWindow(), out var lpRect);
+				float num = (float)lpRect.Height / 1350f;
+				_graphicsForm = new GraphicsForm((int)(num * 1154f), (int)(num * 701f), resourceDepot, borderlessWindow: true, enableWindowBlur: true, layeredWindow: true, name);
 				_windowsFramework = new WindowsFramework();
 				_windowsFramework.ThreadConfig = WindowsFrameworkThreadConfig.NoThread;
 				_standaloneUIDomain = new StandaloneUIDomain(_graphicsForm, resourceDepot);

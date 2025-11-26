@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MapNotificationTypes;
@@ -36,7 +37,7 @@ public class MercenaryOfferMapNotificationItemVM : MapNotificationItemBaseVM
 		CampaignEventDispatcher.Instance.RemoveListeners(this);
 		if (!_playerInspectedNotification)
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_offeredKingdom);
+			Campaign.Current.GetCampaignBehavior<IVassalAndMercenaryOfferCampaignBehavior>()?.CancelVassalOrMercenaryServiceOffer(_offeredKingdom);
 		}
 	}
 }

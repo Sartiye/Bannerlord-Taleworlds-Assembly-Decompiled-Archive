@@ -6,7 +6,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.FromCustomBattleServer.ToCustomBattleServerManager;
 
 [Serializable]
-[MessageDescription("CustomBattleServer", "CustomBattleServerManager")]
+[MessageDescription("CustomBattleServer", "CustomBattleServerManager", false)]
 public class ResponseCustomGameClientConnectionMessage : Message
 {
 	[JsonProperty]

@@ -7,21 +7,21 @@ namespace TaleWorlds.SaveSystem.Load;
 
 public class ObjectHeaderLoadData
 {
-	private SaveId _saveId;
-
 	public int Id { get; private set; }
 
 	public object LoadedObject { get; private set; }
 
 	public object Target { get; private set; }
 
-	public int PropertyCount { get; private set; }
+	public short PropertyCount { get; private set; }
 
-	public int ChildStructCount { get; private set; }
+	public short ChildStructCount { get; private set; }
 
 	public TypeDefinition TypeDefinition { get; private set; }
 
 	public LoadContext Context { get; private set; }
+
+	public SaveId SaveId { get; private set; }
 
 	public ObjectHeaderLoadData(LoadContext context, int id)
 	{
@@ -32,14 +32,14 @@ public class ObjectHeaderLoadData
 	public void InitialieReaders(SaveEntryFolder saveEntryFolder)
 	{
 		BinaryReader binaryReader = saveEntryFolder.GetEntry(new EntryId(-1, SaveEntryExtension.Basics)).GetBinaryReader();
-		_saveId = SaveId.ReadSaveIdFrom(binaryReader);
+		SaveId = SaveId.ReadSaveIdFrom(binaryReader);
 		PropertyCount = binaryReader.ReadShort();
 		ChildStructCount = binaryReader.ReadShort();
 	}
 
 	public void CreateObject()
 	{
-		TypeDefinition = Context.DefinitionContext.TryGetTypeDefinition(_saveId) as TypeDefinition;
+		TypeDefinition = Context.DefinitionContext.TryGetTypeDefinition(SaveId) as TypeDefinition;
 		if (TypeDefinition != null)
 		{
 			Type type = TypeDefinition.Type;

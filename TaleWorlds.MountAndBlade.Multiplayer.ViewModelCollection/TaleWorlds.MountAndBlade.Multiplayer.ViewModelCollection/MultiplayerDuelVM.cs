@@ -549,7 +549,7 @@ public class MultiplayerDuelVM : ViewModel
 		case TroopType.Cavalry:
 			return "cavalry";
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeName", 363);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeName", 363);
 			return "";
 		}
 	}
@@ -565,8 +565,8 @@ public class MultiplayerDuelVM : ViewModel
 		case TroopType.Cavalry:
 			return new TextObject("{=YVGtcLHF}Cavalry");
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeLocalizedName", 379);
-			return TextObject.Empty;
+			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeLocalizedName", 379);
+			return TextObject.GetEmpty();
 		}
 	}
 
@@ -582,7 +582,7 @@ public class MultiplayerDuelVM : ViewModel
 		else
 		{
 			result.Index = 0;
-			TaleWorlds.Library.Debug.FailedAssert("Flag has duel_area Tag Missing!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaPropertiesOfFlagEntity", 397);
+			TaleWorlds.Library.Debug.FailedAssert("Flag has duel_area Tag Missing!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaPropertiesOfFlagEntity", 397);
 		}
 		result.ArenaTroopType = TroopType.Infantry;
 		for (TroopType troopType = TroopType.Infantry; troopType < TroopType.NumberOfTroopTypes; troopType++)

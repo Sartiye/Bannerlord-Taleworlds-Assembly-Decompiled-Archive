@@ -49,4 +49,17 @@ public class CharacterBecameFugitiveLogEntry : LogEntry, IEncyclopediaLog
 		StringHelpers.SetCharacterProperties("HERO", Hero.CharacterObject, textObject);
 		return textObject;
 	}
+
+	public override bool IsValid()
+	{
+		if (Hero != null)
+		{
+			if (Hero.IsRebel)
+			{
+				return Hero.IsAlive;
+			}
+			return true;
+		}
+		return false;
+	}
 }

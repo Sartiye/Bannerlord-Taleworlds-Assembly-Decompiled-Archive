@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Issues;
@@ -7,6 +8,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
 namespace TaleWorlds.CampaignSystem;
@@ -109,17 +111,24 @@ public class QuestManager : CampaignEventReceiver
 		return false;
 	}
 
+	internal void PreAfterLoad()
+	{
+		for (int num = Quests.Count - 1; num >= 0; num--)
+		{
+			if (Quests[num] == null)
+			{
+				_quests.RemoveAt(num);
+			}
+		}
+	}
+
 	public override void OnGameLoaded(CampaignGameStarter campaignGameStarter)
 	{
 		List<QuestBase> list = new List<QuestBase>();
 		for (int num = Quests.Count - 1; num >= 0; num--)
 		{
 			QuestBase questBase = Quests[num];
-			if (questBase == null)
-			{
-				_quests.Remove(questBase);
-			}
-			else if (!questBase.IsFinalized)
+			if (!questBase.IsFinalized)
 			{
 				bool flag = false;
 				foreach (KeyValuePair<Hero, IssueBase> issue in Campaign.Current.IssueManager.Issues)
@@ -145,13 +154,21 @@ public class QuestManager : CampaignEventReceiver
 				else
 				{
 					list.Add(questBase);
-					Debug.FailedAssert(string.Concat("There is not active issue for quest: ", questBase.Title, " string id: ", questBase.StringId, ". Quest will be canceled."), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "OnGameLoaded", 127);
+					Debug.FailedAssert(string.Concat("There is not active issue for quest: ", questBase.Title, " string id: ", questBase.StringId, ". Quest will be canceled."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "OnGameLoaded", 135);
 				}
 			}
 		}
 		foreach (QuestBase item in list)
 		{
 			item.CompleteQuestWithCancel();
+		}
+		for (int num2 = _trackedObjects.Count - 1; num2 >= 0; num2--)
+		{
+			ITrackableCampaignObject key = _trackedObjects.ElementAt(num2).Key;
+			if (!key.IsReady)
+			{
+				_trackedObjects.Remove(key);
+			}
 		}
 	}
 
@@ -184,8 +201,28 @@ public class QuestManager : CampaignEventReceiver
 		}
 	}
 
+	public override void HourlyTickParty(MobileParty mobileParty)
+	{
+		for (int num = Quests.Count - 1; num >= 0; num--)
+		{
+			Quests[num].HourlyTickPartyWithQuestManager(mobileParty);
+		}
+	}
+
 	public override void DailyTick()
 	{
+		for (int num = Quests.Count - 1; num >= 0; num--)
+		{
+			Quests[num].DailyTickWithQuestManager();
+		}
+	}
+
+	public override void WeeklyTick()
+	{
+		for (int num = Quests.Count - 1; num >= 0; num--)
+		{
+			Quests[num].WeeklyTickWithQuestManager();
+		}
 	}
 
 	public GameMenuOption.IssueQuestFlags CheckQuestForMenuLocations(List<Location> currentLocations)
@@ -245,12 +282,12 @@ public class QuestManager : CampaignEventReceiver
 			QuestBase questBase = Quests[num];
 			if (questBase.IsOngoing && !questBase.IsSpecialQuest)
 			{
-				questBase.CompleteQuestWithFail();
+				questBase.CompleteQuestWithCancel(new TextObject("{=bYdhYidf}The quest was canceled because your clan leader, who made the original agreement, is no longer head of the clan.\""));
 			}
 		}
 	}
 
-	public override void CanHaveQuestsOrIssues(Hero hero, ref bool result)
+	public override void CanHaveCampaignIssues(Hero hero, ref bool result)
 	{
 		foreach (QuestBase quest in Quests)
 		{
@@ -259,7 +296,7 @@ public class QuestManager : CampaignEventReceiver
 				result = false;
 				break;
 			}
-			quest.OnHeroCanHaveQuestOrIssueInfoIsRequested(hero, ref result);
+			quest.OnHeroCanHaveCampaignIssuesInfoIsRequested(hero, ref result);
 			if (!result)
 			{
 				break;
@@ -361,7 +398,7 @@ public class QuestManager : CampaignEventReceiver
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " already contains quest: ", relatedQuest.Title), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "AddTrackedObjectForQuest", 362);
+				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " already contains quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "AddTrackedObjectForQuest", 413);
 			}
 		}
 		else
@@ -385,12 +422,12 @@ public class QuestManager : CampaignEventReceiver
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " is not tracked by quest: ", relatedQuest.Title), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 386);
+				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " is not tracked by quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 437);
 			}
 		}
 		else
 		{
-			Debug.FailedAssert(string.Concat(trackedObject.GetName(), " does not track any quests."), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 391);
+			Debug.FailedAssert(string.Concat(trackedObject.GetName(), " does not track any quests."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 442);
 		}
 	}
 
@@ -448,9 +485,9 @@ public class QuestManager : CampaignEventReceiver
 
 	public static bool QuestExistInClan(QuestBase questBase, Clan clan)
 	{
-		foreach (Hero lord in clan.Lords)
+		foreach (Hero aliveLord in clan.AliveLords)
 		{
-			if (questBase.QuestGiver == lord)
+			if (questBase.QuestGiver == aliveLord)
 			{
 				return true;
 			}

@@ -2,7 +2,6 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -23,7 +22,7 @@ public class GauntletOptionsScreen : ScreenBase
 
 	private OptionsVM _dataSource;
 
-	private IGauntletMovie _gauntletMovie;
+	private GauntletMovieIdentifier _gauntletMovie;
 
 	private KeybindingPopup _keybindingPopup;
 
@@ -41,11 +40,7 @@ public class GauntletOptionsScreen : ScreenBase
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_optionsSpriteCategory = spriteData.SpriteCategories["ui_options"];
-		_optionsSpriteCategory.Load(resourceContext, uIResourceDepot);
+		_optionsSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_options");
 		OptionsVM.OptionsMode optionsMode = ((!_isFromMainMenu) ? OptionsVM.OptionsMode.Singleplayer : OptionsVM.OptionsMode.MainMenu);
 		_dataSource = new OptionsVM(autoHandleClose: true, optionsMode, OnKeybindRequest);
 		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
@@ -57,7 +52,7 @@ public class GauntletOptionsScreen : ScreenBase
 		_dataSource.ExposurePopUp.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
 		_dataSource.BrightnessPopUp.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		_dataSource.BrightnessPopUp.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
-		_gauntletLayer = new GauntletLayer(4000);
+		_gauntletLayer = new GauntletLayer("OptionsScreen", 4000);
 		_gauntletMovie = _gauntletLayer.LoadMovie("Options", _dataSource);
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericCampaignPanelsGameKeyCategory"));
@@ -71,6 +66,7 @@ public class GauntletOptionsScreen : ScreenBase
 			Utilities.SetForceVsync(value: true);
 		}
 		Game.Current?.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.OptionsScreen));
+		InformationManager.HideAllMessages();
 	}
 
 	protected override void OnFinalize()
@@ -150,7 +146,7 @@ public class GauntletOptionsScreen : ScreenBase
 		AuxiliaryKeyOptionVM auxiliaryKey;
 		if (key.IsControllerInput)
 		{
-			Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 161);
+			Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 158);
 			MBInformationManager.AddQuickInformation(new TextObject("{=B41vvGuo}Invalid key"));
 			_keybindingPopup.OnToggle(isActive: false);
 		}
@@ -159,11 +155,15 @@ public class GauntletOptionsScreen : ScreenBase
 			GameKeyGroupVM gameKeyGroupVM = _dataSource.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey));
 			if (gameKeyGroupVM == null)
 			{
-				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 173);
+				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 170);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 			}
 			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			{
+				_keybindingPopup.OnToggle(isActive: false);
+			}
+			else if (key.InputKey == gameKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
 			}
@@ -183,11 +183,15 @@ public class GauntletOptionsScreen : ScreenBase
 			AuxiliaryKeyGroupVM auxiliaryKeyGroupVM = _dataSource.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey));
 			if (auxiliaryKeyGroupVM == null)
 			{
-				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 200);
+				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOptionsScreen.cs", "SetHotKey", 201);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 			}
 			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			{
+				_keybindingPopup.OnToggle(isActive: false);
+			}
+			else if (key.InputKey == auxiliaryKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
 			}

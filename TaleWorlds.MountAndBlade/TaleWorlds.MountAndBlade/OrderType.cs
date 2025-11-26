@@ -11,7 +11,6 @@ public enum OrderType
 	StandYourGround,
 	FollowMe,
 	FollowEntity,
-	GuardMe,
 	Retreat,
 	AdvanceTenPaces,
 	FallBackTenPaces,

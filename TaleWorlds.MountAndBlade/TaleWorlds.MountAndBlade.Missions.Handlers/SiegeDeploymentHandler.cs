@@ -15,6 +15,8 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 
 	private IMissionSiegeWeaponsController _attackerSiegeWeaponsController;
 
+	private WorldPosition _defenderReferencePosition;
+
 	public IEnumerable<DeploymentPoint> PlayerDeploymentPoints { get; private set; }
 
 	public IEnumerable<DeploymentPoint> AllDeploymentPoints { get; private set; }
@@ -26,27 +28,29 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 
 	public override void OnBehaviorInitialize()
 	{
+		base.OnBehaviorInitialize();
 		MissionSiegeEnginesLogic missionBehavior = base.Mission.GetMissionBehavior<MissionSiegeEnginesLogic>();
 		_defenderSiegeWeaponsController = missionBehavior.GetSiegeWeaponsController(BattleSideEnum.Defender);
 		_attackerSiegeWeaponsController = missionBehavior.GetSiegeWeaponsController(BattleSideEnum.Attacker);
-	}
-
-	public override void AfterStart()
-	{
-		base.AfterStart();
-		AllDeploymentPoints = Mission.Current.ActiveMissionObjects.FindAllWithType<DeploymentPoint>();
-		PlayerDeploymentPoints = AllDeploymentPoints.Where((DeploymentPoint dp) => dp.Side == base.team.Side);
-		foreach (DeploymentPoint allDeploymentPoint in AllDeploymentPoints)
-		{
-			allDeploymentPoint.OnDeploymentStateChanged += OnDeploymentStateChange;
-		}
-		base.Mission.IsFormationUnitPositionAvailable_AdditionalCondition += Mission_IsFormationUnitPositionAvailable_AdditionalCondition;
+		_defenderReferencePosition = WorldPosition.Invalid;
 	}
 
 	public override void OnRemoveBehavior()
 	{
 		base.OnRemoveBehavior();
 		base.Mission.IsFormationUnitPositionAvailable_AdditionalCondition -= Mission_IsFormationUnitPositionAvailable_AdditionalCondition;
+	}
+
+	public override void AfterStart()
+	{
+		base.AfterStart();
+		AllDeploymentPoints = Mission.Current.ActiveMissionObjects.FindAllWithType<DeploymentPoint>();
+		PlayerDeploymentPoints = AllDeploymentPoints.Where((DeploymentPoint dp) => dp.Side == base.PlayerTeam.Side);
+		foreach (DeploymentPoint allDeploymentPoint in AllDeploymentPoints)
+		{
+			allDeploymentPoint.OnDeploymentStateChanged += OnDeploymentStateChange;
+		}
+		base.Mission.IsFormationUnitPositionAvailable_AdditionalCondition += Mission_IsFormationUnitPositionAvailable_AdditionalCondition;
 	}
 
 	public override void FinishDeployment()
@@ -60,7 +64,7 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 
 	public void DeployAllSiegeWeaponsOfPlayer()
 	{
-		BattleSideEnum side = (isPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		BattleSideEnum side = (IsPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 		new SiegeWeaponAutoDeployer((from dp in base.Mission.ActiveMissionObjects.FindAllWithType<DeploymentPoint>()
 			where dp.Side == side
 			select dp).ToList(), GetWeaponsControllerOfSide(side)).DeployAll(side);
@@ -68,12 +72,12 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 
 	public int GetMaxDeployableWeaponCountOfPlayer(Type weapon)
 	{
-		return GetWeaponsControllerOfSide(isPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender).GetMaxDeployableWeaponCount(weapon);
+		return GetWeaponsControllerOfSide(IsPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender).GetMaxDeployableWeaponCount(weapon);
 	}
 
 	public void DeployAllSiegeWeaponsOfAi()
 	{
-		BattleSideEnum side = ((!isPlayerAttacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		BattleSideEnum side = ((!IsPlayerAttacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 		new SiegeWeaponAutoDeployer((from dp in base.Mission.ActiveMissionObjects.FindAllWithType<DeploymentPoint>()
 			where dp.Side == side
 			select dp).ToList(), GetWeaponsControllerOfSide(side)).DeployAll(side);
@@ -131,7 +135,84 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 
 	public int GetDeployableWeaponCountOfPlayer(Type weapon)
 	{
-		return GetWeaponsControllerOfSide(isPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender).GetMaxDeployableWeaponCount(weapon) - PlayerDeploymentPoints.Count((DeploymentPoint dp) => dp.IsDeployed && MissionSiegeWeaponsController.GetWeaponType(dp.DeployedWeapon) == weapon);
+		return GetWeaponsControllerOfSide(IsPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender).GetMaxDeployableWeaponCount(weapon) - PlayerDeploymentPoints.Count((DeploymentPoint dp) => dp.IsDeployed && MissionSiegeWeaponsController.GetWeaponType(dp.DeployedWeapon) == weapon);
+	}
+
+	public void AutoDeployTeamUsingTeamAI(Team team, bool autoAssignDetachments = true)
+	{
+		List<Formation> list = team.FormationsIncludingEmpty.ToList();
+		bool allowAiTicking = base.Mission.AllowAiTicking;
+		bool forceTickOccasionally = base.Mission.ForceTickOccasionally;
+		bool isTeleportingAgents = base.Mission.IsTeleportingAgents;
+		base.Mission.AllowAiTicking = true;
+		base.Mission.ForceTickOccasionally = true;
+		base.Mission.IsTeleportingAgents = true;
+		OrderController orderController = (team.IsPlayerTeam ? team.PlayerOrderController : team.MasterOrderController);
+		orderController.SelectAllFormations();
+		SetDefaultFormationOrders(orderController);
+		team.ResetTactic();
+		team.Tick(0f);
+		foreach (Formation item in list)
+		{
+			item.ApplyActionOnEachUnit(delegate(Agent agent)
+			{
+				agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+			});
+			item.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
+		}
+		orderController.ClearSelectedFormations();
+		if (autoAssignDetachments)
+		{
+			AutoAssignDetachmentsForDeployment(team);
+		}
+		base.Mission.IsTeleportingAgents = isTeleportingAgents;
+		base.Mission.ForceTickOccasionally = forceTickOccasionally;
+		base.Mission.AllowAiTicking = allowAiTicking;
+	}
+
+	public void AutoAssignDetachmentsForDeployment(Team team)
+	{
+		List<Formation> list = team.FormationsIncludingEmpty.ToList();
+		bool allowAiTicking = base.Mission.AllowAiTicking;
+		bool isTeleportingAgents = base.Mission.IsTeleportingAgents;
+		base.Mission.AllowAiTicking = true;
+		base.Mission.IsTeleportingAgents = true;
+		if (!team.DetachmentManager.Detachments.IsEmpty())
+		{
+			foreach (Formation item in list)
+			{
+				item.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.Formation?.Team.DetachmentManager.TickAgent(agent);
+				});
+			}
+			int num = 0;
+			int num2 = 0;
+			foreach (var detachment in team.DetachmentManager.Detachments)
+			{
+				num += detachment.Item1.GetNumberOfUsableSlots();
+			}
+			foreach (Formation item2 in team.FormationsIncludingEmpty)
+			{
+				num2 += item2.CountOfDetachableNonPlayerUnits;
+			}
+			for (int i = 0; i < TaleWorlds.Library.MathF.Min(num, num2); i++)
+			{
+				team.DetachmentManager.TickDetachments();
+			}
+			foreach (Formation item3 in list)
+			{
+				item3.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					if (agent.Detachment != null && !(agent.Detachment is UsableMachine))
+					{
+						agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+					}
+				});
+			}
+		}
+		base.Mission.IsTeleportingAgents = isTeleportingAgents;
+		base.Mission.AllowAiTicking = allowAiTicking;
 	}
 
 	protected bool Mission_IsFormationUnitPositionAvailable_AdditionalCondition(WorldPosition position, Team team)
@@ -139,18 +220,21 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 		if (team != null && team.Side == BattleSideEnum.Defender)
 		{
 			Scene scene = base.Mission.Scene;
-			Vec3 globalPosition = scene.FindEntityWithTag("defender_infantry").GlobalPosition;
-			WorldPosition position2 = new WorldPosition(scene, UIntPtr.Zero, globalPosition, hasValidZ: false);
-			return scene.DoesPathExistBetweenPositions(position2, position);
+			if (!_defenderReferencePosition.IsValid)
+			{
+				WeakGameEntity weakGameEntity = scene.FindWeakEntityWithTag("defender_infantry");
+				_defenderReferencePosition = new WorldPosition(scene, UIntPtr.Zero, weakGameEntity.GlobalPosition, hasValidZ: false);
+			}
+			return scene.DoesPathExistBetweenPositions(_defenderReferencePosition, position);
 		}
 		return true;
 	}
 
 	private void OnDeploymentStateChange(DeploymentPoint deploymentPoint, SynchedMissionObject targetObject)
 	{
-		if (!deploymentPoint.IsDeployed && base.team.DetachmentManager.ContainsDetachment(deploymentPoint.DisbandedWeapon as IDetachment))
+		if (!deploymentPoint.IsDeployed && base.PlayerTeam.DetachmentManager.ContainsDetachment(deploymentPoint.DisbandedWeapon as IDetachment))
 		{
-			base.team.DetachmentManager.DestroyDetachment(deploymentPoint.DisbandedWeapon as IDetachment);
+			base.PlayerTeam.DetachmentManager.DestroyDetachment(deploymentPoint.DisbandedWeapon as IDetachment);
 		}
 		if (targetObject is SiegeWeapon missionWeapon)
 		{
@@ -173,6 +257,12 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 			return _attackerSiegeWeaponsController;
 		}
 		return _defenderSiegeWeaponsController;
+	}
+
+	public Vec2 GetEstimatedAverageDefenderPosition()
+	{
+		base.Mission.GetFormationSpawnFrame(Mission.Current.DefenderTeam, FormationClass.Infantry, isReinforcement: false, out var spawnPosition, out var _);
+		return spawnPosition.AsVec2;
 	}
 
 	[Conditional("DEBUG")]

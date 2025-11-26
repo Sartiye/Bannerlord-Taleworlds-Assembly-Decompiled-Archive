@@ -4,6 +4,10 @@ namespace TaleWorlds.MountAndBlade;
 
 public class TransposedLineFormation : LineFormation
 {
+	public override float IntervalMultiplier => 1.5f;
+
+	public override float DistanceMultiplier => 1.5f;
+
 	public TransposedLineFormation(IFormation owner)
 		: base(owner)
 	{
@@ -18,18 +22,14 @@ public class TransposedLineFormation : LineFormation
 
 	public override void RearrangeFrom(IFormationArrangement arrangement)
 	{
-		if (arrangement is ColumnFormation)
+		if (arrangement is ColumnFormation columnFormation)
 		{
-			int unitCount = arrangement.UnitCount;
-			if (unitCount > 0)
-			{
-				int? fileCountStatic = FormOrder.GetFileCountStatic(((Formation)owner).FormOrder.OrderEnum, unitCount);
-				if (fileCountStatic.HasValue)
-				{
-					int unitCountOnLine = MathF.Ceiling((float)unitCount * 1f / (float)fileCountStatic.Value);
-					FormFromFlankWidth(unitCountOnLine);
-				}
-			}
+			FormFromFlankWidth(columnFormation.ColumnCount);
+		}
+		else
+		{
+			int unitCountOnLine = MathF.Ceiling(MathF.Sqrt(arrangement.UnitCount / ColumnFormation.ArrangementAspectRatio));
+			FormFromFlankWidth(unitCountOnLine);
 		}
 		base.RearrangeFrom(arrangement);
 	}

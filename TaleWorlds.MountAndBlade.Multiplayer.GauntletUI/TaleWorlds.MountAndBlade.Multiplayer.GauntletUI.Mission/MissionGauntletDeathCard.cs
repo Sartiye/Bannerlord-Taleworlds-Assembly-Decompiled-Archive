@@ -21,7 +21,7 @@ public class MissionGauntletDeathCard : MissionView
 		base.OnMissionScreenInitialize();
 		MissionMultiplayerGameModeBaseClient missionBehavior = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 		_dataSource = new MPDeathCardVM(missionBehavior.GameType);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerDeathCard", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerDeathCard", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		base.Mission.GetMissionBehavior<MultiplayerMissionAgentVisualSpawnComponent>().OnMyAgentVisualSpawned += OnMainAgentVisualSpawned;

@@ -6,7 +6,7 @@ using TaleWorlds.PlayerServices;
 namespace Messages.FromClient.ToLobbyServer;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class GetRecentPlayersStatusMessage : Message
 {
 	[JsonProperty]

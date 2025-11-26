@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -52,7 +53,7 @@ public class TransferPrisonerBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(CharacterCode.CreateFrom(_prisonerCharacter.CharacterObject));
+		return new CharacterImageIdentifier(CharacterCode.CreateFrom(_prisonerCharacter.CharacterObject));
 	}
 
 	public override string GetEncyclopediaLink()
@@ -68,7 +69,7 @@ public class TransferPrisonerBarterable : Barterable
 		}
 		else
 		{
-			Debug.FailedAssert("Failed to transfer prisoner through barter", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\TransferPrisonerBarterable.cs", "Apply", 70);
+			Debug.FailedAssert("Failed to transfer prisoner through barter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\TransferPrisonerBarterable.cs", "Apply", 71);
 		}
 	}
 

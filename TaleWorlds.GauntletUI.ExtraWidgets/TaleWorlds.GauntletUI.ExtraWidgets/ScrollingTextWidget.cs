@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
@@ -34,7 +33,8 @@ public class ScrollingTextWidget : TextWidget
 
 	private TextHorizontalAlignment _defaultTextHorizontalAlignment;
 
-	public string ActualText { get; private set; }
+	public string ActualText { get; private set; } = string.Empty;
+
 
 	[Editor(false)]
 	public Widget ScrollOnHoverWidget
@@ -170,16 +170,21 @@ public class ScrollingTextWidget : TextWidget
 			if (!IsAutoScrolling)
 			{
 				_text.Value = ActualText;
-				_shouldScroll = _wordWidth > base.Size.X;
+				UpdateWordWidth();
+				_shouldScroll = _wordWidth > GetMaximumAllowedWidth();
 			}
 			_isHovering = true;
 		}
 		else if (base.EventManager.HoveredView != ScrollOnHoverWidget && _isHovering)
 		{
-			ResetScroll();
-			UpdateScrollable();
+			if (!IsAutoScrolling)
+			{
+				ResetScroll();
+			}
 			_isHovering = false;
+			UpdateScrollable();
 		}
+		_renderOffset.x = 0f - _currentScrollAmount;
 	}
 
 	public override void OnBrushChanged()
@@ -192,37 +197,29 @@ public class ScrollingTextWidget : TextWidget
 	{
 		base.SetText(value);
 		_text.SkipLineOnContainerExceeded = false;
+		_text.ResizeTextOnOverflow = false;
 		ActualText = _text.Value;
-		UpdateScrollable();
-	}
-
-	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
-	{
-		RefreshTextParameters();
-		TextMaterial textMaterial = base.BrushRenderer.CreateTextMaterial(drawContext);
-		textMaterial.AlphaFactor *= base.Context.ContextAlpha;
-		Vector2 cachedGlobalPosition = _cachedGlobalPosition;
-		drawContext.Draw(_text, textMaterial, cachedGlobalPosition.X - _currentScrollAmount, cachedGlobalPosition.Y, base.Size.X, base.Size.Y);
+		_currentSize = Vec2.Zero;
+		ResetScroll();
 	}
 
 	private void UpdateScrollable()
 	{
 		UpdateWordWidth();
-		if (_wordWidth > base.Size.X)
+		if (_wordWidth > GetMaximumAllowedWidth())
 		{
 			_shouldScroll = IsAutoScrolling;
-			_totalScrollAmount = _wordWidth - base.Size.X;
+			_totalScrollAmount = _wordWidth - GetMaximumAllowedWidth();
 			base.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
 			if (IsAutoScrolling)
 			{
 				return;
 			}
-			Font mappedFontForLocalization = base.Context.FontFactory.GetMappedFontForLocalization(base.Brush?.Font?.Name);
-			for (int num = _text.Value.Length; num > 3; num--)
+			for (int num = ActualText.Length; num > 3; num--)
 			{
-				if (mappedFontForLocalization.GetWordWidth(_text.Value.Substring(0, num - 3) + "...", 0.25f) * ((float)base.Brush.FontSize / (float)mappedFontForLocalization.Size) * base._scaleToUse < base.Size.X)
+				if (GetWordWidth(ActualText.Substring(0, num - 3) + "...", 0.25f) * base._scaleToUse <= GetMaximumAllowedWidth())
 				{
-					_text.Value = _text.Value.Substring(0, num - 3) + "...";
+					_text.Value = ActualText.Substring(0, num - 3) + "...";
 					break;
 				}
 			}
@@ -233,10 +230,51 @@ public class ScrollingTextWidget : TextWidget
 		}
 	}
 
+	private float GetMaximumAllowedWidth()
+	{
+		if (base.WidthSizePolicy == SizePolicy.CoverChildren)
+		{
+			if (base.ScaledMaxWidth == 0f)
+			{
+				return 2.1474836E+09f;
+			}
+			return base.ScaledMaxWidth;
+		}
+		return base.Size.X;
+	}
+
 	private void UpdateWordWidth()
 	{
+		float padding = 0.5f;
+		if (base.WidthSizePolicy == SizePolicy.CoverChildren)
+		{
+			padding = 0f;
+		}
+		_wordWidth = GetWordWidth(_text.Value, padding) * base._scaleToUse;
+	}
+
+	private float GetWordWidth(string word, float padding)
+	{
+		float num = padding * 2f;
+		for (int i = 0; i < word.Length; i++)
+		{
+			num += GetCharacterWidth(word[i]);
+		}
+		return num;
+	}
+
+	private float GetCharacterWidth(char character)
+	{
 		Font mappedFontForLocalization = base.Context.FontFactory.GetMappedFontForLocalization(base.Brush?.Font?.Name);
-		_wordWidth = mappedFontForLocalization.GetWordWidth(_text.Value, 0.5f) * ((float)base.Brush.FontSize / (float)mappedFontForLocalization.Size) * base._scaleToUse;
+		float num;
+		if (!mappedFontForLocalization.Characters.ContainsKey(character))
+		{
+			Font font = base.Context.FontFactory.GetUsableFontForCharacter(character) ?? mappedFontForLocalization;
+			num = (float)base.Brush.FontSize / (float)font.Size;
+			return font.GetCharacterWidth(character, 0.5f) * num;
+		}
+		num = (float)base.Brush.FontSize / (float)mappedFontForLocalization.Size;
+		return mappedFontForLocalization.GetCharacterWidth(character, 0.5f) * num;
 	}
 
 	private void ResetScroll()
@@ -244,6 +282,7 @@ public class ScrollingTextWidget : TextWidget
 		_shouldScroll = false;
 		_scrollTimeElapsed = 0f;
 		_currentScrollAmount = 0f;
+		_renderOffset.x = 0f;
 		base.Brush.TextHorizontalAlignment = DefaultTextHorizontalAlignment;
 	}
 }

@@ -1,3 +1,5 @@
+using TaleWorlds.Core.ImageIdentifiers;
+
 namespace TaleWorlds.Core;
 
 public class InquiryElement

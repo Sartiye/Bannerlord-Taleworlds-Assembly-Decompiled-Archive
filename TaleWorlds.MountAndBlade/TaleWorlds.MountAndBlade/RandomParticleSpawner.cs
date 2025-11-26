@@ -25,11 +25,11 @@ public class RandomParticleSpawner : ScriptComponentBehavior
 		if (childCount > 0)
 		{
 			int index = MBRandom.RandomInt(childCount);
-			GameEntity child = base.GameEntity.GetChild(index);
-			int componentCount = child.GetComponentCount(GameEntity.ComponentType.ParticleSystemInstanced);
+			WeakGameEntity child = base.GameEntity.GetChild(index);
+			int componentCount = child.GetComponentCount(TaleWorlds.Engine.GameEntity.ComponentType.ParticleSystemInstanced);
 			for (int i = 0; i < componentCount; i++)
 			{
-				((ParticleSystem)child.GetComponentAtIndex(i, GameEntity.ComponentType.ParticleSystemInstanced)).Restart();
+				((ParticleSystem)child.GetComponentAtIndex(i, TaleWorlds.Engine.GameEntity.ComponentType.ParticleSystemInstanced)).Restart();
 			}
 		}
 		_timeUntilNextParticleSpawn += spawnInterval;

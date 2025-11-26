@@ -9,7 +9,7 @@ public class CraftingPieceListVM : ViewModel
 {
 	public CraftingPiece.PieceTypes PieceType;
 
-	private Action<CraftingPiece.PieceTypes> _onSelect;
+	private Action<CraftingPiece.PieceTypes, bool> _onSelect;
 
 	private bool _hasNewlyUnlockedPieces;
 
@@ -106,7 +106,7 @@ public class CraftingPieceListVM : ViewModel
 		}
 	}
 
-	public CraftingPieceListVM(MBBindingList<CraftingPieceVM> pieceList, CraftingPiece.PieceTypes pieceType, Action<CraftingPiece.PieceTypes> onSelect)
+	public CraftingPieceListVM(MBBindingList<CraftingPieceVM> pieceList, CraftingPiece.PieceTypes pieceType, Action<CraftingPiece.PieceTypes, bool> onSelect)
 	{
 		Pieces = pieceList;
 		PieceType = pieceType;
@@ -115,7 +115,7 @@ public class CraftingPieceListVM : ViewModel
 
 	public void ExecuteSelect()
 	{
-		_onSelect?.Invoke(PieceType);
+		_onSelect?.Invoke(PieceType, arg2: true);
 		HasNewlyUnlockedPieces = false;
 	}
 

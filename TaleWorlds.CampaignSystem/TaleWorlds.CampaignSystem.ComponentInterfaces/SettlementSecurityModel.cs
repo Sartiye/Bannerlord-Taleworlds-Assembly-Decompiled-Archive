@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SettlementSecurityModel : GameModel
+public abstract class SettlementSecurityModel : MBGameModel<SettlementSecurityModel>
 {
 	public abstract int MaximumSecurityInSettlement { get; }
 

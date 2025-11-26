@@ -1110,12 +1110,9 @@ public class BarterVM : ViewModel
 			}
 		}
 		InitBarterList(_barterData);
-		LeftNameLbl = _otherCharacter.Name.ToString();
-		RightNameLbl = Hero.MainHero.Name.ToString();
-		LeftMaxGold = ((_otherCharacter.HeroObject != null) ? _otherCharacter.HeroObject.Gold : _otherParty.MobileParty.PartyTradeGold);
-		RightMaxGold = Hero.MainHero.Gold;
 		SendOffer();
 		InitializationIsOver = true;
+		RefreshValues();
 	}
 
 	private void TransferItem(BarterItemVM item, bool offerAll)

@@ -118,7 +118,7 @@ public class TestContext
 	{
 		if (_asyncTask != null && _asyncTask.Status == TaskStatus.Faulted)
 		{
-			string text = "TestRunTaskFailed\n";
+			string text = "ERROR: Mono exception occurred at async Test Run\n";
 			if (_asyncTask.Exception.InnerException != null)
 			{
 				text += _asyncTask.Exception.InnerException.Message;
@@ -127,7 +127,7 @@ public class TestContext
 			}
 			_asyncTask = null;
 			Debug.Print(text, 5);
-			Debug.FailedAssert(text, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 173);
+			Debug.FailedAssert(text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 180);
 			Debug.DoDelayedexit(5);
 		}
 	}

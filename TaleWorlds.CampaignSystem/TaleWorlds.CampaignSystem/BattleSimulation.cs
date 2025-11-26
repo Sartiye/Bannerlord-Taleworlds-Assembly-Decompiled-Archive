@@ -16,30 +16,29 @@ public class BattleSimulation : IBattleObserver
 	{
 		Play,
 		FastForward,
-		Skip
+		Skip,
+		Pause
 	}
 
 	private readonly MapEvent _mapEvent;
 
-	public List<TroopRoster> tempRosterRefs;
+	private bool _isPlayerRetreated;
+
+	private float _numTicks;
 
 	private IBattleObserver _battleObserver;
-
-	private Timer _timer;
 
 	public readonly FlattenedTroopRoster[] SelectedTroops = new FlattenedTroopRoster[2];
 
 	private SimulationState _simulationState;
-
-	private float _numTicks;
-
-	public bool IsSimulationPaused { get; private set; }
 
 	public bool IsSimulationFinished { get; private set; }
 
 	private bool IsPlayerJoinedBattle => PlayerEncounter.Current.IsJoinedBattle;
 
 	public MapEvent MapEvent => _mapEvent;
+
+	public bool IsPlayerRetreated => _isPlayerRetreated;
 
 	public IBattleObserver BattleObserver
 	{
@@ -57,9 +56,6 @@ public class BattleSimulation : IBattleObserver
 
 	public BattleSimulation(FlattenedTroopRoster selectedTroopsForPlayerSide, FlattenedTroopRoster selectedTroopsForOtherSide)
 	{
-		IsSimulationPaused = true;
-		float applicationTime = Game.Current.ApplicationTime;
-		_timer = new Timer(applicationTime, 1f);
 		_mapEvent = PlayerEncounter.Battle ?? PlayerEncounter.StartBattle();
 		_mapEvent.IsPlayerSimulation = true;
 		_mapEvent.BattleObserver = this;
@@ -103,11 +99,6 @@ public class BattleSimulation : IBattleObserver
 			}
 		}
 		Teams = list;
-		tempRosterRefs = new List<TroopRoster>();
-		foreach (PartyBase involvedParty2 in _mapEvent.InvolvedParties)
-		{
-			tempRosterRefs.Add(involvedParty2.MemberRoster);
-		}
 	}
 
 	public void Play()
@@ -125,7 +116,12 @@ public class BattleSimulation : IBattleObserver
 		_simulationState = SimulationState.Skip;
 	}
 
-	public void OnReturn()
+	public void Pause()
+	{
+		_simulationState = SimulationState.Pause;
+	}
+
+	public void OnFinished()
 	{
 		foreach (PartyBase involvedParty in _mapEvent.InvolvedParties)
 		{
@@ -134,29 +130,12 @@ public class BattleSimulation : IBattleObserver
 		GameMenu.ActivateGameMenu("encounter");
 	}
 
-	private void BattleEndLogic()
+	public void OnPlayerRetreat()
 	{
-		if (PlayerEncounter.Battle != null)
-		{
-			BattleSideEnum side = PartyBase.MainParty.Side;
-			if (PlayerEncounter.Battle.GetMapEventSide(side).NumRemainingSimulationTroops > 0)
-			{
-				GameMenu.SwitchToMenu("encounter");
-			}
-			else
-			{
-				PlayerEncounter.Finish();
-			}
-		}
-		else
-		{
-			GameMenu.SwitchToMenu("encounter");
-		}
-	}
-
-	private void TickSimulateBattle()
-	{
-		SimulateBattleFromUi();
+		_isPlayerRetreated = true;
+		_mapEvent.AttackerSide.CommitXpGains();
+		_mapEvent.DefenderSide.CommitXpGains();
+		OnFinished();
 	}
 
 	public void Tick(float dt)
@@ -167,65 +146,37 @@ public class BattleSimulation : IBattleObserver
 		}
 		if (PlayerEncounter.Current == null)
 		{
-			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 222);
+			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 160);
 			IsSimulationFinished = true;
 			return;
 		}
-		int num = 0;
-		if (PlayerEncounter.BattleState == BattleState.None)
-		{
-			foreach (PartyBase involvedParty in MapEvent.InvolvedParties)
-			{
-				if (involvedParty.Side == MobileParty.MainParty.Party.Side && involvedParty != MobileParty.MainParty.Party)
-				{
-					num += involvedParty.NumberOfHealthyMembers;
-				}
-			}
-		}
-		if ((MobileParty.MainParty.MapEvent == MapEvent && MobileParty.MainParty.Party.NumberOfHealthyMembers == 1 && !Hero.MainHero.IsWounded && num == 0) || PlayerEncounter.BattleState == BattleState.AttackerVictory || PlayerEncounter.BattleState == BattleState.DefenderVictory)
+		if (ShouldFinishSimulation())
 		{
 			IsSimulationFinished = true;
+			return;
 		}
-		else if (_simulationState == SimulationState.Skip)
+		if (_simulationState == SimulationState.Skip)
 		{
-			while (PlayerEncounter.BattleState == BattleState.None || PlayerEncounter.BattleState == BattleState.DefenderPullBack)
+			while (!ShouldFinishSimulation())
 			{
-				TickSimulateBattle();
-				num = 0;
-				if (PlayerEncounter.BattleState == BattleState.None || PlayerEncounter.BattleState == BattleState.DefenderPullBack)
-				{
-					foreach (PartyBase involvedParty2 in MapEvent.InvolvedParties)
-					{
-						if (involvedParty2.Side == MobileParty.MainParty.Party.Side && involvedParty2 != MobileParty.MainParty.Party)
-						{
-							num += involvedParty2.NumberOfHealthyMembers;
-						}
-					}
-				}
-				if (MobileParty.MainParty.MapEvent == MapEvent && MobileParty.MainParty.Party.NumberOfHealthyMembers <= 1 && num == 0)
-				{
-					break;
-				}
+				SimulateBattle();
 			}
+			return;
 		}
-		else
+		if (_simulationState == SimulationState.FastForward)
 		{
-			_numTicks += dt;
-			if (_simulationState == SimulationState.FastForward)
-			{
-				_numTicks *= 3f;
-			}
-			while (_numTicks >= 1f)
-			{
-				TickSimulateBattle();
-				_numTicks -= 1f;
-			}
+			dt *= 6f;
 		}
-	}
-
-	public static void SimulateBattleFromUi()
-	{
-		PlayerEncounter.SimulateBattle();
+		else if (_simulationState == SimulationState.Pause)
+		{
+			dt = 0f;
+		}
+		_numTicks += dt;
+		while (_numTicks >= 1f && !ShouldFinishSimulation())
+		{
+			SimulateBattle();
+			_numTicks -= 1f;
+		}
 	}
 
 	public void ResetSimulation()
@@ -251,5 +202,15 @@ public class BattleSimulation : IBattleObserver
 	public void TroopSideChanged(BattleSideEnum prevSide, BattleSideEnum newSide, IBattleCombatant battleCombatant, BasicCharacterObject character)
 	{
 		BattleObserver?.TroopSideChanged(prevSide, newSide, battleCombatant, character);
+	}
+
+	private void SimulateBattle()
+	{
+		_mapEvent.SimulatePlayerEncounterBattle();
+	}
+
+	private static bool ShouldFinishSimulation()
+	{
+		return PlayerEncounter.Battle.HasWinner;
 	}
 }

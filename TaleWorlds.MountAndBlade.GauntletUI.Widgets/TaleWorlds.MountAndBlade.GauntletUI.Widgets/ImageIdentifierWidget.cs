@@ -9,8 +9,6 @@ public class ImageIdentifierWidget : TextureWidget
 
 	private string _additionalArgs;
 
-	private int _imageTypeCode;
-
 	private bool _isBig;
 
 	private bool _hideWhenNull;
@@ -33,10 +31,11 @@ public class ImageIdentifierWidget : TextureWidget
 				_imageId = value;
 				OnPropertyChanged(value, "ImageId");
 				SetTextureProviderProperty("ImageId", value);
-				SetTextureProviderProperty("IsReleased", false);
+				if (!string.IsNullOrEmpty(_imageId))
+				{
+					SetTextureProviderProperty("IsReleased", false);
+				}
 				RefreshVisibility();
-				base.Texture = null;
-				base.TextureProvider?.Clear(clearNextFrame: true);
 			}
 		}
 	}
@@ -52,38 +51,15 @@ public class ImageIdentifierWidget : TextureWidget
 		{
 			if (_additionalArgs != value)
 			{
-				if (!string.IsNullOrEmpty(_additionalArgs))
-				{
-					SetTextureProviderProperty("IsReleased", true);
-				}
+				SetTextureProviderProperty("IsReleased", true);
 				_additionalArgs = value;
 				OnPropertyChanged(value, "AdditionalArgs");
 				SetTextureProviderProperty("AdditionalArgs", value);
-				SetTextureProviderProperty("IsReleased", false);
+				if (!string.IsNullOrEmpty(_additionalArgs))
+				{
+					SetTextureProviderProperty("IsReleased", false);
+				}
 				RefreshVisibility();
-				base.Texture = null;
-				base.TextureProvider?.Clear(clearNextFrame: true);
-			}
-		}
-	}
-
-	[Editor(false)]
-	public int ImageTypeCode
-	{
-		get
-		{
-			return _imageTypeCode;
-		}
-		set
-		{
-			if (_imageTypeCode != value)
-			{
-				_imageTypeCode = value;
-				OnPropertyChanged(value, "ImageTypeCode");
-				SetTextureProviderProperty("ImageTypeCode", value);
-				RefreshVisibility();
-				base.Texture = null;
-				base.TextureProvider?.Clear(clearNextFrame: true);
 			}
 		}
 	}
@@ -99,12 +75,12 @@ public class ImageIdentifierWidget : TextureWidget
 		{
 			if (_isBig != value)
 			{
+				SetTextureProviderProperty("IsReleased", true);
+				SetTextureProviderProperty("IsReleased", false);
 				_isBig = value;
 				OnPropertyChanged(value, "IsBig");
 				SetTextureProviderProperty("IsBig", value);
 				RefreshVisibility();
-				base.Texture = null;
-				base.TextureProvider?.Clear(clearNextFrame: true);
 			}
 		}
 	}
@@ -123,8 +99,6 @@ public class ImageIdentifierWidget : TextureWidget
 				_hideWhenNull = value;
 				OnPropertyChanged(value, "HideWhenNull");
 				RefreshVisibility();
-				base.Texture = null;
-				base.TextureProvider?.Clear(clearNextFrame: true);
 			}
 		}
 	}
@@ -132,21 +106,39 @@ public class ImageIdentifierWidget : TextureWidget
 	public ImageIdentifierWidget(UIContext context)
 		: base(context)
 	{
-		base.TextureProviderName = "ImageIdentifierTextureProvider";
+		base.TextureProviderName = "";
 		_calculateSizeFirstFrame = false;
+	}
+
+	protected override void OnContextActivated()
+	{
+		base.OnContextActivated();
+		string imageId = ImageId;
+		ImageId = string.Empty;
+		ImageId = imageId;
+	}
+
+	protected override void OnContextDeactivated()
+	{
+		base.OnContextDeactivated();
+		SetTextureProviderProperty("IsReleased", true);
 	}
 
 	private void RefreshVisibility()
 	{
 		if (HideWhenNull)
 		{
-			base.IsVisible = ImageTypeCode != 0;
+			base.IsVisible = !string.IsNullOrEmpty(ImageId);
+		}
+		else
+		{
+			base.IsVisible = true;
 		}
 	}
 
-	protected override void OnDisconnectedFromRoot()
+	public override void OnClearTextureProvider()
 	{
 		SetTextureProviderProperty("IsReleased", true);
-		base.OnDisconnectedFromRoot();
+		base.OnClearTextureProvider();
 	}
 }

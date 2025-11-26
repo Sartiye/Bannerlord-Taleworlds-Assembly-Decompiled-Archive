@@ -86,6 +86,11 @@ public struct FormOrder
 			{
 				columnFormation.FormFromWidth(GetRankVerticalFormFileCount(formation));
 			}
+			if (OrderEnum == FormOrderEnum.Custom && TaleWorlds.Library.MathF.Abs(CustomFlankWidth - arrangement.FlankWidth) > 0.01f)
+			{
+				ArrangementOrder.TransposeLineFormation(formation);
+				formation.OnTick += formation.TickForColumnArrangementInitialPositioning;
+			}
 		}
 		else if (arrangement is RectilinearSchiltronFormation)
 		{
@@ -99,11 +104,11 @@ public struct FormOrder
 		{
 			CircularFormation circularFormation = arrangement as CircularFormation;
 			int unitCountOf = GetUnitCountOf(formation);
-			int? fileCount = GetFileCount(unitCountOf);
+			int? maxFileCount = GetMaxFileCount(unitCountOf);
 			float num = 0f;
-			if (fileCount.HasValue)
+			if (maxFileCount.HasValue)
 			{
-				int rankCount = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Ceiling((float)unitCountOf * 1f / (float)fileCount.Value));
+				int rankCount = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Ceiling((float)unitCountOf * 1f / (float)maxFileCount.Value));
 				num = circularFormation.GetCircumferenceFromRankCount(rankCount);
 			}
 			else
@@ -116,10 +121,10 @@ public struct FormOrder
 		{
 			SquareFormation squareFormation = arrangement as SquareFormation;
 			int unitCountOf2 = GetUnitCountOf(formation);
-			int? fileCount2 = GetFileCount(unitCountOf2);
-			if (fileCount2.HasValue)
+			int? maxFileCount2 = GetMaxFileCount(unitCountOf2);
+			if (maxFileCount2.HasValue)
 			{
-				int rankCount2 = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Ceiling((float)unitCountOf2 * 1f / (float)fileCount2.Value));
+				int rankCount2 = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Ceiling((float)unitCountOf2 * 1f / (float)maxFileCount2.Value));
 				squareFormation.FormFromRankCount(rankCount2);
 			}
 			else
@@ -131,10 +136,10 @@ public struct FormOrder
 		{
 			SkeinFormation skeinFormation = arrangement as SkeinFormation;
 			int unitCountOf3 = GetUnitCountOf(formation);
-			int? fileCount3 = GetFileCount(unitCountOf3);
-			if (fileCount3.HasValue)
+			int? maxFileCount3 = GetMaxFileCount(unitCountOf3);
+			if (maxFileCount3.HasValue)
 			{
-				skeinFormation.FormFromFlankWidth(fileCount3.Value);
+				skeinFormation.FormFromFlankWidth(maxFileCount3.Value);
 			}
 			else
 			{
@@ -145,10 +150,10 @@ public struct FormOrder
 		{
 			WedgeFormation wedgeFormation = arrangement as WedgeFormation;
 			int unitCountOf4 = GetUnitCountOf(formation);
-			int? fileCount4 = GetFileCount(unitCountOf4);
-			if (fileCount4.HasValue)
+			int? maxFileCount4 = GetMaxFileCount(unitCountOf4);
+			if (maxFileCount4.HasValue)
 			{
-				wedgeFormation.FormFromFlankWidth(fileCount4.Value);
+				wedgeFormation.FormFromFlankWidth(maxFileCount4.Value);
 			}
 			else
 			{
@@ -161,7 +166,7 @@ public struct FormOrder
 			int unitCountOf5 = GetUnitCountOf(formation);
 			if (unitCountOf5 > 0)
 			{
-				int? num2 = GetFileCount(unitCountOf5);
+				int? num2 = GetMaxFileCount(unitCountOf5);
 				if (!num2.HasValue)
 				{
 					num2 = transposedLineFormation.GetFileCountFromWidth(CustomFlankWidth);
@@ -174,10 +179,10 @@ public struct FormOrder
 		{
 			LineFormation lineFormation = arrangement as LineFormation;
 			int unitCountOf6 = GetUnitCountOf(formation);
-			int? fileCount5 = GetFileCount(unitCountOf6);
-			if (fileCount5.HasValue)
+			int? maxFileCount5 = GetMaxFileCount(unitCountOf6);
+			if (maxFileCount5.HasValue)
 			{
-				lineFormation.FormFromFlankWidth(fileCount5.Value, unitCountOf6 > 40);
+				lineFormation.FormFromFlankWidth(maxFileCount5.Value, unitCountOf6 > 40);
 			}
 			else
 			{
@@ -186,18 +191,18 @@ public struct FormOrder
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "OnApplyToArrangement", 224);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "OnApplyToArrangement", 230);
 		}
 	}
 
-	private int? GetFileCount(int unitCount)
+	private int? GetMaxFileCount(int unitCount)
 	{
-		return GetFileCountStatic(OrderEnum, unitCount);
+		return GetMaxFileCountStatic(OrderEnum, unitCount);
 	}
 
-	public static int? GetFileCountStatic(FormOrderEnum order, int unitCount)
+	public static int? GetMaxFileCountStatic(FormOrderEnum order, int unitCount)
 	{
-		return GetFileCountAux(order, unitCount);
+		return GetMaxFileCountAux(order, unitCount);
 	}
 
 	private int GetRankVerticalFormFileCount(IFormation formation)
@@ -213,27 +218,31 @@ public struct FormOrder
 		case FormOrderEnum.Custom:
 			return TaleWorlds.Library.MathF.Floor((_customFlankWidth + formation.Interval) / (formation.UnitDiameter + formation.Interval));
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "GetRankVerticalFormFileCount", 265);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "GetRankVerticalFormFileCount", 271);
 			return 1;
 		}
 	}
 
-	private static int? GetFileCountAux(FormOrderEnum order, int unitCount)
+	private static int? GetMaxFileCountAux(FormOrderEnum order, int unitCount)
 	{
+		if (order == FormOrderEnum.Custom)
+		{
+			return null;
+		}
+		int value = 0;
 		switch (order)
 		{
 		case FormOrderEnum.Wide:
-			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 16f)), 1) * 16;
+			value = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 16f)), 1) * 16;
+			break;
 		case FormOrderEnum.Wider:
-			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 64f)), 1) * 64;
+			value = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 64f)), 1) * 64;
+			break;
 		case FormOrderEnum.Deep:
-			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 4f)), 1) * 4;
-		case FormOrderEnum.Custom:
-			return null;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "GetFileCountAux", 285);
-			return null;
+			value = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)unitCount / 4f)), 1) * 4;
+			break;
 		}
+		return value;
 	}
 
 	public override bool Equals(object obj)

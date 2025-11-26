@@ -73,34 +73,15 @@ public class BattleEndLogic : MissionLogic, IBattleEndLogic
 		}
 	}
 
-	private bool _notificationsDisabled { get; set; }
-
 	public bool IsEnemySideRetreating => _isEnemySideRetreating;
 
-	public override bool MissionEnded(ref MissionResult missionResult)
+	private bool _notificationsDisabled { get; set; }
+
+	public override void OnBehaviorInitialize()
 	{
-		bool flag = false;
-		if (_isEnemySideDepleted && _isEnemyDefenderPulledBack)
-		{
-			missionResult = MissionResult.CreateDefenderPushedBack();
-			flag = true;
-		}
-		else if (_isEnemySideRetreating || _isEnemySideDepleted)
-		{
-			missionResult = MissionResult.CreateSuccessful(base.Mission, _isEnemySideRetreating);
-			flag = true;
-		}
-		else if (_isPlayerSideRetreating || _isPlayerSideDepleted)
-		{
-			missionResult = MissionResult.CreateDefeated(base.Mission);
-			flag = true;
-		}
-		if (flag)
-		{
-			_missionAgentSpawnLogic.StopSpawner(BattleSideEnum.Attacker);
-			_missionAgentSpawnLogic.StopSpawner(BattleSideEnum.Defender);
-		}
-		return flag;
+		base.OnBehaviorInitialize();
+		_checkRetreatingTimer = new BasicMissionTimer();
+		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<IMissionAgentSpawnLogic>();
 	}
 
 	public override void OnMissionTick(float dt)
@@ -205,9 +186,94 @@ public class BattleEndLogic : MissionLogic, IBattleEndLogic
 		}
 	}
 
+	public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow killingBlow)
+	{
+		if (_enemyDefenderPullbackEnabled && _troopNumberNeededForEnemyDefenderPullBack > 0 && affectedAgent.IsHuman && agentState == AgentState.Routed && affectedAgent.Team != null && affectedAgent.Team.Side == BattleSideEnum.Defender && affectedAgent.Team.Side != base.Mission.PlayerTeam.Side)
+		{
+			_troopNumberNeededForEnemyDefenderPullBack--;
+			_isEnemyDefenderPulledBack = _troopNumberNeededForEnemyDefenderPullBack <= 0;
+		}
+	}
+
+	public override bool MissionEnded(ref MissionResult missionResult)
+	{
+		bool flag = false;
+		if (_isEnemySideDepleted && _isEnemyDefenderPulledBack)
+		{
+			missionResult = MissionResult.CreateDefenderPushedBack();
+			flag = true;
+		}
+		else if (_isEnemySideRetreating || _isEnemySideDepleted)
+		{
+			missionResult = MissionResult.CreateSuccessful(base.Mission, _isEnemySideRetreating);
+			flag = true;
+		}
+		else if (_isPlayerSideRetreating || _isPlayerSideDepleted)
+		{
+			missionResult = MissionResult.CreateDefeated(base.Mission);
+			flag = true;
+		}
+		if (flag)
+		{
+			_missionAgentSpawnLogic.StopSpawner(BattleSideEnum.Attacker);
+			_missionAgentSpawnLogic.StopSpawner(BattleSideEnum.Defender);
+		}
+		return flag;
+	}
+
+	protected override void OnEndMission()
+	{
+		if (!_isEnemySideRetreating)
+		{
+			return;
+		}
+		foreach (Agent activeAgent in base.Mission.PlayerEnemyTeam.ActiveAgents)
+		{
+			bool flag = activeAgent.GetMorale() < 0.01f;
+			activeAgent.Origin?.SetRouted(!flag);
+		}
+	}
+
 	public void ChangeCanCheckForEndCondition(bool canCheckForEndCondition)
 	{
 		_canCheckForEndCondition = canCheckForEndCondition;
+	}
+
+	public ExitResult TryExit()
+	{
+		if (GameNetwork.IsClientOrReplay)
+		{
+			return ExitResult.False;
+		}
+		if (base.Mission.MissionEnded || (!PlayerVictory && !EnemyVictory))
+		{
+			Agent mainAgent = base.Mission.MainAgent;
+			if (mainAgent == null || !mainAgent.IsActive() || !base.Mission.IsPlayerCloseToAnEnemy())
+			{
+				if (!base.Mission.MissionEnded && !_isEnemySideRetreating)
+				{
+					if (Mission.Current.IsSiegeBattle && base.Mission.PlayerTeam.IsDefender)
+					{
+						return ExitResult.SurrenderSiege;
+					}
+					return ExitResult.NeedsPlayerConfirmation;
+				}
+				base.Mission.EndMission();
+				return ExitResult.True;
+			}
+		}
+		return ExitResult.False;
+	}
+
+	public void EnableEnemyDefenderPullBack(int neededTroopNumber)
+	{
+		_enemyDefenderPullbackEnabled = true;
+		_troopNumberNeededForEnemyDefenderPullBack = neededTroopNumber;
+	}
+
+	public void SetNotificationDisabled(bool value)
+	{
+		_notificationsDisabled = value;
 	}
 
 	private void CheckIsEnemySideRetreatingOrOneSideDepleted()
@@ -292,67 +358,5 @@ public class BattleEndLogic : MissionLogic, IBattleEndLogic
 				_isEnemySideRetreating = true;
 			}
 		}
-	}
-
-	public ExitResult TryExit()
-	{
-		if (GameNetwork.IsClientOrReplay)
-		{
-			return ExitResult.False;
-		}
-		Agent mainAgent = base.Mission.MainAgent;
-		if ((mainAgent != null && mainAgent.IsActive() && base.Mission.IsPlayerCloseToAnEnemy()) || (!base.Mission.MissionEnded && (PlayerVictory || EnemyVictory)))
-		{
-			return ExitResult.False;
-		}
-		if (!base.Mission.MissionEnded && !_isEnemySideRetreating)
-		{
-			if (Mission.Current.IsSiegeBattle && base.Mission.PlayerTeam.IsDefender)
-			{
-				return ExitResult.SurrenderSiege;
-			}
-			return ExitResult.NeedsPlayerConfirmation;
-		}
-		base.Mission.EndMission();
-		return ExitResult.True;
-	}
-
-	public override void OnBehaviorInitialize()
-	{
-		base.OnBehaviorInitialize();
-		_checkRetreatingTimer = new BasicMissionTimer();
-		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<IMissionAgentSpawnLogic>();
-	}
-
-	protected override void OnEndMission()
-	{
-		if (!_isEnemySideRetreating)
-		{
-			return;
-		}
-		foreach (Agent activeAgent in base.Mission.PlayerEnemyTeam.ActiveAgents)
-		{
-			activeAgent.Origin?.SetRouted();
-		}
-	}
-
-	public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow killingBlow)
-	{
-		if (_enemyDefenderPullbackEnabled && _troopNumberNeededForEnemyDefenderPullBack > 0 && affectedAgent.IsHuman && agentState == AgentState.Routed && affectedAgent.Team != null && affectedAgent.Team.Side == BattleSideEnum.Defender && affectedAgent.Team.Side != base.Mission.PlayerTeam.Side)
-		{
-			_troopNumberNeededForEnemyDefenderPullBack--;
-			_isEnemyDefenderPulledBack = _troopNumberNeededForEnemyDefenderPullBack <= 0;
-		}
-	}
-
-	public void EnableEnemyDefenderPullBack(int neededTroopNumber)
-	{
-		_enemyDefenderPullbackEnabled = true;
-		_troopNumberNeededForEnemyDefenderPullBack = neededTroopNumber;
-	}
-
-	public void SetNotificationDisabled(bool value)
-	{
-		_notificationsDisabled = value;
 	}
 }

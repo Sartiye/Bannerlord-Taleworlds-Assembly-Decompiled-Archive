@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Xml;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
@@ -24,8 +25,9 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	[SaveableField(10)]
 	private MBList<KingdomDecision> _unresolvedDecisions = new MBList<KingdomDecision>();
 
-	[CachedData]
-	private List<StanceLink> _stances;
+	private MBList<IFaction> _factionsAtWarWith;
+
+	private MBList<Kingdom> _alliedKingdoms;
 
 	[CachedData]
 	private MBList<Town> _fiefsCache;
@@ -40,7 +42,10 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	private MBList<Hero> _heroesCache;
 
 	[CachedData]
-	private MBList<Hero> _lordsCache;
+	private MBList<Hero> _aliveLordsCache;
+
+	[CachedData]
+	private MBList<Hero> _deadLordsCache;
 
 	[CachedData]
 	private MBList<WarPartyComponent> _warPartyComponentsCache;
@@ -55,10 +60,13 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	private MBList<Army> _armies;
 
 	[CachedData]
+	private Settlement _midSettlement;
+
+	[CachedData]
 	private float _distanceToClosestNonAllyFortificationCache;
 
 	[CachedData]
-	internal bool _distanceToClosestNonAllyFortificationCacheDirty = true;
+	private bool _distanceToClosestNonAllyFortificationCacheDirty = true;
 
 	[SaveableField(23)]
 	public int PoliticalStagnation;
@@ -72,14 +80,14 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	[SaveableField(60)]
 	private float _aggressiveness;
 
-	[CachedData]
-	private Settlement _kingdomMidSettlement;
-
 	[SaveableField(80)]
 	private int _tributeWallet;
 
 	[SaveableField(81)]
 	private int _kingdomBudgetWallet;
+
+	[SaveableField(82)]
+	private int _callToWarWallet;
 
 	[SaveableProperty(1)]
 	public TextObject Name { get; private set; }
@@ -106,26 +114,17 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	public CultureObject Culture { get; private set; }
 
 	[SaveableProperty(17)]
-	public Settlement InitialHomeLand { get; private set; }
-
-	public Vec2 InitialPosition => InitialHomeLand.GatePosition;
+	public Settlement InitialHomeSettlement { get; private set; }
 
 	public bool IsMapFaction => true;
 
-	[SaveableProperty(8)]
-	public uint LabelColor { get; private set; }
+	public bool HasNavalNavigationCapability => Culture.DefaultPartyTemplate.ShipHulls.Any();
 
 	[SaveableProperty(9)]
 	public uint Color { get; private set; }
 
 	[SaveableProperty(10)]
 	public uint Color2 { get; private set; }
-
-	[SaveableProperty(11)]
-	public uint AlternativeColor { get; private set; }
-
-	[SaveableProperty(12)]
-	public uint AlternativeColor2 { get; private set; }
 
 	[SaveableProperty(13)]
 	public uint PrimaryBannerColor { get; private set; }
@@ -136,7 +135,9 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	[SaveableProperty(15)]
 	public float MainHeroCrimeRating { get; set; }
 
-	public IEnumerable<StanceLink> Stances => _stances;
+	public MBReadOnlyList<IFaction> FactionsAtWarWith => _factionsAtWarWith;
+
+	public MBReadOnlyList<Kingdom> AlliedKingdoms => _alliedKingdoms;
 
 	public MBReadOnlyList<Town> Fiefs => _fiefsCache;
 
@@ -146,7 +147,9 @@ public sealed class Kingdom : MBObjectBase, IFaction
 
 	public MBReadOnlyList<Hero> Heroes => _heroesCache;
 
-	public MBReadOnlyList<Hero> Lords => _lordsCache;
+	public MBReadOnlyList<Hero> AliveLords => _aliveLordsCache;
+
+	public MBReadOnlyList<Hero> DeadLords => _deadLordsCache;
 
 	public MBReadOnlyList<WarPartyComponent> WarPartyComponents => _warPartyComponentsCache;
 
@@ -159,9 +162,19 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	public Hero Leader => _rulingClan?.Leader;
 
 	[SaveableProperty(16)]
-	public Banner Banner { get; private set; }
+	public Banner Banner { get; set; }
 
-	public bool IsBanditFaction => false;
+	public bool IsBanditFaction
+	{
+		get
+		{
+			if (_rulingClan != null)
+			{
+				return _rulingClan.IsBanditFaction;
+			}
+			return false;
+		}
+	}
 
 	public bool IsMinorFaction => false;
 
@@ -171,7 +184,17 @@ public sealed class Kingdom : MBObjectBase, IFaction
 
 	public bool IsClan => false;
 
-	public bool IsOutlaw => false;
+	public bool IsOutlaw
+	{
+		get
+		{
+			if (_rulingClan != null)
+			{
+				return _rulingClan.IsOutlaw;
+			}
+			return false;
+		}
+	}
 
 	public MBReadOnlyList<Clan> Clans => _clans;
 
@@ -192,7 +215,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 
 	public MBReadOnlyList<Army> Armies => _armies;
 
-	public float TotalStrength
+	public float CurrentTotalStrength
 	{
 		get
 		{
@@ -200,14 +223,13 @@ public sealed class Kingdom : MBObjectBase, IFaction
 			int count = _clans.Count;
 			for (int i = 0; i < count; i++)
 			{
-				num += _clans[i].TotalStrength;
+				num += _clans[i].CurrentTotalStrength;
 			}
 			return num;
 		}
 	}
 
-	[CachedData]
-	internal bool _midPointCalculated { get; set; }
+	public Settlement FactionMidSettlement => _midSettlement;
 
 	public float DistanceToClosestNonAllyFortification
 	{
@@ -265,18 +287,6 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		}
 	}
 
-	public Settlement FactionMidSettlement
-	{
-		get
-		{
-			if (!_midPointCalculated)
-			{
-				UpdateFactionMidPoint();
-			}
-			return _kingdomMidSettlement;
-		}
-	}
-
 	[SaveableProperty(70)]
 	public int MercenaryWallet { get; internal set; }
 
@@ -304,6 +314,18 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		}
 	}
 
+	public int CallToWarWallet
+	{
+		get
+		{
+			return _callToWarWallet;
+		}
+		set
+		{
+			_callToWarWallet = value;
+		}
+	}
+
 	internal static void AutoGeneratedStaticCollectObjectsKingdom(object o, List<object> collectedObjects)
 	{
 		((Kingdom)o).AutoGeneratedInstanceCollectObjects(collectedObjects);
@@ -322,7 +344,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		collectedObjects.Add(EncyclopediaTitle);
 		collectedObjects.Add(EncyclopediaRulerTitle);
 		collectedObjects.Add(Culture);
-		collectedObjects.Add(InitialHomeLand);
+		collectedObjects.Add(InitialHomeSettlement);
 		collectedObjects.Add(Banner);
 		CampaignTime.AutoGeneratedStaticCollectObjectsCampaignTime(LastKingdomDecisionConclusionDate, collectedObjects);
 		CampaignTime.AutoGeneratedStaticCollectObjectsCampaignTime(LastMercenaryOfferTime, collectedObjects);
@@ -359,14 +381,9 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		return ((Kingdom)o).Culture;
 	}
 
-	internal static object AutoGeneratedGetMemberValueInitialHomeLand(object o)
+	internal static object AutoGeneratedGetMemberValueInitialHomeSettlement(object o)
 	{
-		return ((Kingdom)o).InitialHomeLand;
-	}
-
-	internal static object AutoGeneratedGetMemberValueLabelColor(object o)
-	{
-		return ((Kingdom)o).LabelColor;
+		return ((Kingdom)o).InitialHomeSettlement;
 	}
 
 	internal static object AutoGeneratedGetMemberValueColor(object o)
@@ -377,16 +394,6 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	internal static object AutoGeneratedGetMemberValueColor2(object o)
 	{
 		return ((Kingdom)o).Color2;
-	}
-
-	internal static object AutoGeneratedGetMemberValueAlternativeColor(object o)
-	{
-		return ((Kingdom)o).AlternativeColor;
-	}
-
-	internal static object AutoGeneratedGetMemberValueAlternativeColor2(object o)
-	{
-		return ((Kingdom)o).AlternativeColor2;
 	}
 
 	internal static object AutoGeneratedGetMemberValuePrimaryBannerColor(object o)
@@ -479,9 +486,51 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		return ((Kingdom)o)._kingdomBudgetWallet;
 	}
 
+	internal static object AutoGeneratedGetMemberValue_callToWarWallet(object o)
+	{
+		return ((Kingdom)o)._callToWarWallet;
+	}
+
+	public override TextObject GetName()
+	{
+		return Name;
+	}
+
 	public override string ToString()
 	{
 		return Name.ToString();
+	}
+
+	public void UpdateFactionsAtWarWith()
+	{
+		_factionsAtWarWith.Clear();
+		foreach (Kingdom item in All)
+		{
+			if (!item.IsEliminated && IsAtWarWith(item))
+			{
+				_factionsAtWarWith.Add(item);
+			}
+		}
+		foreach (Clan item2 in Clan.All)
+		{
+			if (!item2.IsEliminated && IsAtWarWith(item2))
+			{
+				_factionsAtWarWith.Add(item2);
+			}
+		}
+		UpdateAlliedKingdoms();
+	}
+
+	public void UpdateAlliedKingdoms()
+	{
+		_alliedKingdoms.Clear();
+		foreach (Kingdom item in All)
+		{
+			if (!item.IsEliminated && IsAllyWith(item))
+			{
+				_alliedKingdoms.Add(item);
+			}
+		}
 	}
 
 	public Kingdom()
@@ -489,18 +538,16 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		_activePolicies = new MBList<PolicyObject>();
 		_armies = new MBList<Army>();
 		InitializeCachedLists();
-		EncyclopediaText = TextObject.Empty;
-		EncyclopediaTitle = TextObject.Empty;
-		EncyclopediaRulerTitle = TextObject.Empty;
+		EncyclopediaText = TextObject.GetEmpty();
+		EncyclopediaTitle = TextObject.GetEmpty();
+		EncyclopediaRulerTitle = TextObject.GetEmpty();
 		float randomFloat = MBRandom.RandomFloat;
 		float randomFloat2 = MBRandom.RandomFloat;
 		PoliticalStagnation = 10 + (int)(randomFloat * randomFloat2 * 100f);
-		_midPointCalculated = false;
 		_distanceToClosestNonAllyFortificationCacheDirty = true;
 		_isEliminated = false;
 		NotAttackableByPlayerUntilTime = CampaignTime.Zero;
 		LastArmyCreationDay = (int)CampaignTime.Now.ToDays;
-		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
 	}
 
 	public static Kingdom CreateKingdom(string stringID)
@@ -512,7 +559,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		return kingdom;
 	}
 
-	public void InitializeKingdom(TextObject name, TextObject informalName, CultureObject culture, Banner banner, uint kingdomColor1, uint kingdomColor2, Settlement initialHomeland, TextObject encyclopediaText, TextObject encyclopediaTitle, TextObject encyclopediaRulerTitle)
+	public void InitializeKingdom(TextObject name, TextObject informalName, CultureObject culture, Banner banner, uint kingdomColor1, uint kingdomColor2, Settlement initialHomeSettlement, TextObject encyclopediaText, TextObject encyclopediaTitle, TextObject encyclopediaRulerTitle)
 	{
 		ChangeKingdomName(name, informalName);
 		Culture = culture;
@@ -521,11 +568,11 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		Color2 = kingdomColor2;
 		PrimaryBannerColor = Color;
 		SecondaryBannerColor = Color2;
-		InitialHomeLand = initialHomeland;
 		PoliticalStagnation = 100;
 		EncyclopediaText = encyclopediaText;
 		EncyclopediaTitle = encyclopediaTitle;
 		EncyclopediaRulerTitle = encyclopediaRulerTitle;
+		InitialHomeSettlement = initialHomeSettlement;
 		foreach (PolicyObject defaultPolicy in Culture.DefaultPolicyList)
 		{
 			AddPolicy(defaultPolicy);
@@ -535,13 +582,15 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	private void InitializeCachedLists()
 	{
 		_clans = new MBList<Clan>();
-		_stances = new List<StanceLink>();
+		_factionsAtWarWith = new MBList<IFaction>();
 		_fiefsCache = new MBList<Town>();
 		_villagesCache = new MBList<Village>();
 		_settlementsCache = new MBList<Settlement>();
 		_heroesCache = new MBList<Hero>();
-		_lordsCache = new MBList<Hero>();
+		_aliveLordsCache = new MBList<Hero>();
+		_deadLordsCache = new MBList<Hero>();
 		_warPartyComponentsCache = new MBList<WarPartyComponent>();
+		_alliedKingdoms = new MBList<Kingdom>();
 	}
 
 	public void ChangeKingdomName(TextObject name, TextObject informalName)
@@ -550,9 +599,13 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		InformalName = informalName;
 	}
 
-	public void OnNewGameCreated(CampaignGameStarter starter)
+	public void OnHeroChangedState(Hero hero, Hero.CharacterStates oldState)
 	{
-		InitialHomeLand = Leader.HomeSettlement;
+		if (hero.IsDead && oldState != Hero.CharacterStates.Dead)
+		{
+			_aliveLordsCache.Remove(hero);
+			_deadLordsCache.Add(hero);
+		}
 	}
 
 	[LoadInitializationCallback]
@@ -573,7 +626,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		for (int num2 = Clans.Count - 1; num2 >= 0; num2--)
 		{
 			Clan clan = Clans[num2];
-			if (clan.GetStanceWith(this).IsAtConstantWar)
+			if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, this))
 			{
 				foreach (WarPartyComponent item in clan.WarPartyComponents.ToList())
 				{
@@ -584,6 +637,17 @@ public sealed class Kingdom : MBObjectBase, IFaction
 				}
 			}
 		}
+		CalculateMidSettlement();
+	}
+
+	public bool IsAllyWith(Kingdom other)
+	{
+		return Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.IsAllyWithKingdom(this, other) ?? false;
+	}
+
+	public bool HasCalledToWar(Kingdom other)
+	{
+		return Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.HasCalledToWar(this, other) ?? false;
 	}
 
 	public bool IsAtWarWith(IFaction other)
@@ -591,14 +655,9 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		return FactionManager.IsAtWarAgainstFaction(this, other);
 	}
 
-	internal void AddStanceInternal(StanceLink stanceLink)
+	public bool IsAtConstantWarWith(IFaction other)
 	{
-		_stances.Add(stanceLink);
-	}
-
-	internal void RemoveStanceInternal(StanceLink stanceLink)
-	{
-		_stances.Remove(stanceLink);
+		return FactionManager.IsAtConstantWarAgainstFaction(this, other);
 	}
 
 	public StanceLink GetStanceWith(IFaction other)
@@ -616,7 +675,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		_armies.Remove(army);
 	}
 
-	public void CreateArmy(Hero armyLeader, Settlement targetSettlement, Army.ArmyTypes selectedArmyType)
+	public void CreateArmy(Hero armyLeader, Settlement targetSettlement, Army.ArmyTypes selectedArmyType, MBReadOnlyList<MobileParty> partiesToCallToArmy = null)
 	{
 		if (!armyLeader.IsActive)
 		{
@@ -625,11 +684,8 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		}
 		if (armyLeader?.PartyBelongedTo.LeaderHero != null)
 		{
-			Army army = new Army(this, armyLeader.PartyBelongedTo, selectedArmyType)
-			{
-				AIBehavior = Army.AIBehaviorFlags.Gathering
-			};
-			army.Gather(targetSettlement);
+			Army army = new Army(this, armyLeader.PartyBelongedTo, selectedArmyType);
+			army.Gather(targetSettlement, partiesToCallToArmy);
 			LastArmyCreationDay = (int)CampaignTime.Now.ToDays;
 			CampaignEventDispatcher.Instance.OnArmyCreated(army);
 		}
@@ -637,12 +693,6 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		{
 			(Game.Current.GameStateManager.GameStates.Single((TaleWorlds.Core.GameState S) => S is MapState) as MapState)?.OnArmyCreated(MobileParty.MainParty);
 		}
-	}
-
-	private void UpdateFactionMidPoint()
-	{
-		_kingdomMidSettlement = FactionHelper.FactionMidSettlement(this);
-		_midPointCalculated = _kingdomMidSettlement != null;
 	}
 
 	public void AddDecision(KingdomDecision kingdomDecision, bool ignoreInfluenceCost = false)
@@ -706,14 +756,16 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	public override void Deserialize(MBObjectManager objectManager, XmlNode node)
 	{
 		base.Deserialize(objectManager, node);
-		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.Empty);
-		EncyclopediaTitle = ((node.Attributes["title"] != null) ? new TextObject(node.Attributes["title"].Value) : TextObject.Empty);
-		EncyclopediaRulerTitle = ((node.Attributes["ruler_title"] != null) ? new TextObject(node.Attributes["ruler_title"].Value) : TextObject.Empty);
-		InitializeKingdom(new TextObject(node.Attributes["name"].Value), (node.Attributes["short_name"] != null) ? new TextObject(node.Attributes["short_name"].Value) : new TextObject(node.Attributes["name"].Value), (CultureObject)objectManager.ReadObjectReferenceFromXml("culture", typeof(CultureObject), node), null, (node.Attributes["color"] != null) ? Convert.ToUInt32(node.Attributes["color"].Value, 16) : 0u, (node.Attributes["color2"] != null) ? Convert.ToUInt32(node.Attributes["color2"].Value, 16) : 0u, null, EncyclopediaText, EncyclopediaTitle, EncyclopediaRulerTitle);
+		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.GetEmpty());
+		EncyclopediaTitle = ((node.Attributes["title"] != null) ? new TextObject(node.Attributes["title"].Value) : TextObject.GetEmpty());
+		EncyclopediaRulerTitle = ((node.Attributes["ruler_title"] != null) ? new TextObject(node.Attributes["ruler_title"].Value) : TextObject.GetEmpty());
+		Settlement initialHomeSettlement = null;
+		if (node.Attributes["initial_home_settlement"] != null)
+		{
+			initialHomeSettlement = (Settlement)objectManager.ReadObjectReferenceFromXml("initial_home_settlement", typeof(Settlement), node);
+		}
+		InitializeKingdom(new TextObject(node.Attributes["name"].Value), (node.Attributes["short_name"] != null) ? new TextObject(node.Attributes["short_name"].Value) : new TextObject(node.Attributes["name"].Value), (CultureObject)objectManager.ReadObjectReferenceFromXml("culture", typeof(CultureObject), node), null, (node.Attributes["color"] != null) ? Convert.ToUInt32(node.Attributes["color"].Value, 16) : 0u, (node.Attributes["color2"] != null) ? Convert.ToUInt32(node.Attributes["color2"].Value, 16) : 0u, initialHomeSettlement, EncyclopediaText, EncyclopediaTitle, EncyclopediaRulerTitle);
 		RulingClan = (objectManager.ReadObjectReferenceFromXml("owner", typeof(Hero), node) as Hero)?.Clan;
-		LabelColor = ((node.Attributes["label_color"] != null) ? Convert.ToUInt32(node.Attributes["label_color"].Value, 16) : 0u);
-		AlternativeColor = ((node.Attributes["alternative_color"] != null) ? Convert.ToUInt32(node.Attributes["alternative_color"].Value, 16) : 0u);
-		AlternativeColor2 = ((node.Attributes["alternative_color2"] != null) ? Convert.ToUInt32(node.Attributes["alternative_color2"].Value, 16) : 0u);
 		PrimaryBannerColor = ((node.Attributes["primary_banner_color"] != null) ? Convert.ToUInt32(node.Attributes["primary_banner_color"].Value, 16) : 0u);
 		SecondaryBannerColor = ((node.Attributes["secondary_banner_color"] != null) ? Convert.ToUInt32(node.Attributes["secondary_banner_color"].Value, 16) : 0u);
 		if (node.Attributes["banner_key"] != null)
@@ -732,12 +784,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 				foreach (XmlNode childNode2 in childNode.ChildNodes)
 				{
 					IFaction faction = ((childNode2.Attributes["clan"] == null) ? ((IFaction)(Kingdom)objectManager.ReadObjectReferenceFromXml("kingdom", typeof(Kingdom), childNode2)) : ((IFaction)(Clan)objectManager.ReadObjectReferenceFromXml("clan", typeof(Clan), childNode2)));
-					int num = Convert.ToInt32(childNode2.Attributes["value"].InnerText);
-					if (num > 0)
-					{
-						FactionManager.DeclareAlliance(this, faction);
-					}
-					else if (num < 0)
+					if (Convert.ToInt32(childNode2.Attributes["value"].InnerText) < 0)
 					{
 						FactionManager.DeclareWar(this, faction);
 					}
@@ -772,36 +819,45 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	internal void AddClanInternal(Clan clan)
 	{
 		_clans.Add(clan);
-		_midPointCalculated = false;
+		CalculateMidSettlement();
 		_distanceToClosestNonAllyFortificationCacheDirty = true;
 	}
 
 	internal void RemoveClanInternal(Clan clan)
 	{
 		_clans.Remove(clan);
-		_midPointCalculated = false;
+		CalculateMidSettlement();
 		_distanceToClosestNonAllyFortificationCacheDirty = true;
 	}
 
-	public void OnFortificationAdded(Town fief)
+	public void OnFortificationAdded(Town fortification)
 	{
-		_fiefsCache.Add(fief);
-		_settlementsCache.Add(fief.Settlement);
-		foreach (Village boundVillage in fief.Settlement.BoundVillages)
+		_distanceToClosestNonAllyFortificationCacheDirty = true;
+		_fiefsCache.Add(fortification);
+		_settlementsCache.Add(fortification.Settlement);
+		foreach (Village boundVillage in fortification.Settlement.BoundVillages)
 		{
 			OnBoundVillageAdded(boundVillage);
 		}
+		CalculateMidSettlement();
 	}
 
-	public void OnFiefRemoved(Town fief)
+	public void OnFortificationRemoved(Town fortification)
 	{
-		_fiefsCache.Remove(fief);
-		_settlementsCache.Remove(fief.Settlement);
-		foreach (Village boundVillage in fief.Settlement.BoundVillages)
+		_distanceToClosestNonAllyFortificationCacheDirty = true;
+		_fiefsCache.Remove(fortification);
+		_settlementsCache.Remove(fortification.Settlement);
+		foreach (Village boundVillage in fortification.Settlement.BoundVillages)
 		{
-			_villagesCache.Remove(boundVillage);
-			_settlementsCache.Remove(boundVillage.Settlement);
+			OnBoundVillageRemoved(boundVillage);
 		}
+		CalculateMidSettlement();
+	}
+
+	private void OnBoundVillageRemoved(Village village)
+	{
+		_villagesCache.Remove(village);
+		_settlementsCache.Remove(village.Settlement);
 	}
 
 	internal void OnBoundVillageAdded(Village village)
@@ -815,7 +871,7 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		_heroesCache.Add(hero);
 		if (hero.Occupation == Occupation.Lord)
 		{
-			_lordsCache.Add(hero);
+			OnLordAdded(hero);
 		}
 	}
 
@@ -824,7 +880,31 @@ public sealed class Kingdom : MBObjectBase, IFaction
 		_heroesCache.Remove(hero);
 		if (hero.Occupation == Occupation.Lord)
 		{
-			_lordsCache.Remove(hero);
+			OnLordRemoved(hero);
+		}
+	}
+
+	private void OnLordAdded(Hero hero)
+	{
+		if (hero.IsDead)
+		{
+			_deadLordsCache.Add(hero);
+		}
+		else
+		{
+			_aliveLordsCache.Add(hero);
+		}
+	}
+
+	private void OnLordRemoved(Hero hero)
+	{
+		if (hero.IsDead)
+		{
+			_deadLordsCache.Remove(hero);
+		}
+		else
+		{
+			_aliveLordsCache.Remove(hero);
 		}
 	}
 
@@ -836,6 +916,14 @@ public sealed class Kingdom : MBObjectBase, IFaction
 	public void OnWarPartyRemoved(WarPartyComponent warPartyComponent)
 	{
 		_warPartyComponentsCache.Remove(warPartyComponent);
+	}
+
+	public void CalculateMidSettlement()
+	{
+		if (Campaign.Current.MapSceneWrapper != null)
+		{
+			_midSettlement = FactionHelper.GetMidSettlementOfFaction(this);
+		}
 	}
 
 	public void ReactivateKingdom()

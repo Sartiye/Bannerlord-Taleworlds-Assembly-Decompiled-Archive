@@ -15,5 +15,6 @@ public enum FormationClass
 	General = 8,
 	Bodyguard = 9,
 	NumberOfAllFormations = 10,
-	Unset = 10
+	Unset = 10,
+	NumberOfAllFormationsWithUnset = 11
 }

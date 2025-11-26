@@ -108,26 +108,60 @@ public class InputKeyItemVM : ViewModel
 	private void ForceRefresh()
 	{
 		UpdateVisibility();
-		if (GameKey != null && Game.Current != null)
-		{
-			KeyID = ((!TaleWorlds.InputSystem.Input.IsGamepadActive) ? GameKey.KeyboardKey?.InputKey.ToString() : GameKey.ControllerKey?.InputKey.ToString());
-			KeyName = _forcedName?.ToString() ?? Game.Current.GameTextManager.FindText("str_key_name", GameKey.GroupId + "_" + GameKey.StringId).ToString();
-		}
-		else if (HotKey != null && Game.Current != null)
-		{
-			KeyID = ((!TaleWorlds.InputSystem.Input.IsGamepadActive) ? HotKey.Keys.Find((Key k) => !k.IsControllerInput)?.InputKey.ToString() : HotKey.Keys.Find((Key k) => k.IsControllerInput)?.InputKey.ToString());
-			KeyName = _forcedName?.ToString() ?? Game.Current.GameTextManager.FindText("str_key_name", HotKey.GroupId + "_" + HotKey.Id).ToString();
-		}
-		else if (_forcedID != null)
+		if (_forcedID != null)
 		{
 			KeyID = _forcedID;
 			KeyName = _forcedName?.ToString() ?? string.Empty;
 		}
 		else
 		{
-			KeyID = string.Empty;
-			KeyName = string.Empty;
+			KeyID = GetKeyId();
+			KeyName = GetKeyName().ToString();
 		}
+	}
+
+	private string GetKeyId()
+	{
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+		{
+			if (GameKey != null)
+			{
+				return GameKey.ControllerKey?.InputKey.ToString();
+			}
+			if (HotKey != null)
+			{
+				return HotKey.Keys.Find((Key k) => k.IsControllerInput)?.InputKey.ToString();
+			}
+		}
+		if (GameKey != null)
+		{
+			return GameKey.KeyboardKey?.InputKey.ToString();
+		}
+		if (HotKey != null)
+		{
+			return HotKey.Keys.Find((Key k) => !k.IsControllerInput)?.InputKey.ToString();
+		}
+		return string.Empty;
+	}
+
+	private TextObject GetKeyName()
+	{
+		if (_forcedName != null)
+		{
+			return _forcedName;
+		}
+		if (Game.Current != null)
+		{
+			if (HotKey != null)
+			{
+				return Game.Current.GameTextManager.FindText("str_key_name", HotKey.GroupId + "_" + HotKey.Id);
+			}
+			if (GameKey != null)
+			{
+				return Game.Current.GameTextManager.FindText("str_key_name", GameKey.GroupId + "_" + GameKey.StringId);
+			}
+		}
+		return TextObject.GetEmpty();
 	}
 
 	private void UpdateVisibility()

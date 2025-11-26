@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -37,9 +38,10 @@ public class SetPrisonerFreeBarterable : Barterable
 
 	public override int GetUnitValueForFaction(IFaction faction)
 	{
-		float num = (float)Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(_prisonerCharacter.CharacterObject) * (1f + MBMath.ClampFloat(_prisonerCharacter.CaptivityStartTime.ElapsedWeeksUntilNow, 0f, 8f) * 0.3f) * 0.9f;
+		float num = (float)Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(_prisonerCharacter.CharacterObject) * 0.9f;
 		if (faction == _prisonerCharacter.MapFaction || faction == _prisonerCharacter.Clan)
 		{
+			num *= 1f + (float)(int)MBMath.ClampFloat(_prisonerCharacter.CaptivityStartTime.ElapsedWeeksUntilNow * MBRandom.RandomFloatRanged(0.875f, 1.75f), 0f, 8f) * 0.3f;
 			return (int)num;
 		}
 		if (faction.MapFaction == _prisonerCharacter.PartyBelongedToAsPrisoner.MapFaction)
@@ -51,7 +53,7 @@ public class SetPrisonerFreeBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(CharacterCode.CreateFrom(_prisonerCharacter.CharacterObject));
+		return new CharacterImageIdentifier(CharacterCode.CreateFrom(_prisonerCharacter.CharacterObject));
 	}
 
 	public override string GetEncyclopediaLink()

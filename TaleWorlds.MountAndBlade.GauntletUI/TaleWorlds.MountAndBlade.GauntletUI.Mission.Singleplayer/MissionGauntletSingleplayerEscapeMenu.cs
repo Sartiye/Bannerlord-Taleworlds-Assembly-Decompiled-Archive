@@ -73,12 +73,12 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 		list.Add(new EscapeMenuItemVM(new TextObject("{=e139gKZc}Return to the Game"), delegate
 		{
 			OnEscapeMenuToggled(isOpened: false);
-		}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty), isPositiveBehaviored: true));
+		}, null, () => new Tuple<bool, TextObject>(item1: false, null), isPositiveBehaviored: true));
 		list.Add(new EscapeMenuItemVM(new TextObject("{=NqarFr4P}Options"), delegate
 		{
 			OnEscapeMenuToggled(isOpened: false);
 			_missionOptionsComponent?.OnAddOptionsUIHandler();
-		}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+		}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		if (BannerlordConfig.HideBattleUI)
 		{
 			list.Add(new EscapeMenuItemVM(new TextObject("{=asCeKZXx}Re-enable Battle UI"), delegate
@@ -86,7 +86,7 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 				ManagedOptions.SetConfig(ManagedOptions.ManagedOptionsType.HideBattleUI, 0f);
 				ManagedOptions.SaveConfig();
 				DataSource.RefreshItems(GetEscapeMenuItems());
-			}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+			}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		}
 		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
@@ -96,7 +96,7 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 				list.Add(new EscapeMenuItemVM(new TextObject("{=WA6Sk6cH}Cheat Menu"), delegate
 				{
 					base.MissionScreen.Mission.GetMissionBehavior<MissionCheatView>().InitializeScreen();
-				}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+				}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 			}
 		}
 		list.Add(new EscapeMenuItemVM(new TextObject("{=VklN5Wm6}Photo Mode"), delegate
@@ -104,7 +104,7 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 			OnEscapeMenuToggled(isOpened: false);
 			base.MissionScreen.SetPhotoModeEnabled(isEnabled: true);
 			base.Mission.IsInPhotoMode = true;
-			InformationManager.ClearAllMessages();
+			InformationManager.HideAllMessages();
 		}, null, () => GetIsPhotoModeDisabled()));
 		list.Add(new EscapeMenuItemVM(new TextObject("{=RamV6yLM}Exit to Main Menu"), delegate
 		{
@@ -141,7 +141,15 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 		{
 			return new Tuple<bool, TextObject>(item1: true, new TextObject("{=V8BXjyYq}Disabled during installation."));
 		}
-		return new Tuple<bool, TextObject>(item1: false, TextObject.Empty);
+		if (base.MissionScreen.Mission.Mode == MissionMode.CutScene)
+		{
+			return new Tuple<bool, TextObject>(item1: true, new TextObject("{=WazbgBDJ}Disabled during cutscenes."));
+		}
+		if (!base.MissionScreen.IsPhotoModeAllowed())
+		{
+			return new Tuple<bool, TextObject>(item1: true, new TextObject("{=7xU2wu7M}Photo mode isn't allowed."));
+		}
+		return new Tuple<bool, TextObject>(item1: false, null);
 	}
 
 	private void OnExitToMainMenu()

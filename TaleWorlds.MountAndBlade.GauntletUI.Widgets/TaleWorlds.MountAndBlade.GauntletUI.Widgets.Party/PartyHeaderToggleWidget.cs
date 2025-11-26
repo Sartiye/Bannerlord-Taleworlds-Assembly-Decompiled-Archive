@@ -160,7 +160,7 @@ public class PartyHeaderToggleWidget : ToggleButtonWidget
 			}
 			if (_listPanel.ChildCount > _latestChildCount && !base.WidgetToClose.IsVisible)
 			{
-				OnClick();
+				HandleClick();
 			}
 		}
 		else

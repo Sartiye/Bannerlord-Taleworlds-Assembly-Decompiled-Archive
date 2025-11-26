@@ -23,13 +23,13 @@ public class BadgeCondition
 		if (!Enum.TryParse<ConditionType>(node.Attributes?["type"].Value, ignoreCase: true, out var result))
 		{
 			result = ConditionType.Custom;
-			Debug.FailedAssert("No 'type' was provided for a condition", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", ".ctor", 47);
+			Debug.FailedAssert("No 'type' was provided for a condition", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", ".ctor", 47);
 		}
 		Type = result;
 		ConditionGroupType result2 = ConditionGroupType.Any;
 		if (node.Attributes?["group_type"]?.Value != null && !Enum.TryParse<ConditionGroupType>(node.Attributes["group_type"].Value, ignoreCase: true, out result2))
 		{
-			Debug.FailedAssert("Provided 'group_type' was wrong for a condition", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", ".ctor", 54);
+			Debug.FailedAssert("Provided 'group_type' was wrong for a condition", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", ".ctor", 54);
 		}
 		GroupType = result2;
 		Description = new TextObject(node.Attributes?["description"].Value);
@@ -62,7 +62,7 @@ public class BadgeCondition
 		{
 			if (!Parameters.TryGetValue("value", out var value2))
 			{
-				Debug.FailedAssert("Given condition doesn't have a value parameter", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 94);
+				Debug.FailedAssert("Given condition doesn't have a value parameter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 94);
 				return false;
 			}
 			return value == value2;
@@ -79,7 +79,7 @@ public class BadgeCondition
 			{
 				if (!int.TryParse(value2, out var result))
 				{
-					Debug.FailedAssert("Given condition value parameter is not valid number", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 115);
+					Debug.FailedAssert("Given condition value parameter is not valid number", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 115);
 					return false;
 				}
 				return value == result;
@@ -92,12 +92,12 @@ public class BadgeCondition
 			int result3 = int.MaxValue;
 			if (flag && !int.TryParse(value3, out result2))
 			{
-				Debug.FailedAssert("Given condition min_value parameter is not valid number", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 129);
+				Debug.FailedAssert("Given condition min_value parameter is not valid number", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 129);
 				return false;
 			}
 			if (flag2 && !int.TryParse(value4, out result3))
 			{
-				Debug.FailedAssert("Given condition max_value parameter is not valid number", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 134);
+				Debug.FailedAssert("Given condition max_value parameter is not valid number", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeCondition.cs", "Check", 134);
 				return false;
 			}
 			if ((flag || flag2) && value >= result2)

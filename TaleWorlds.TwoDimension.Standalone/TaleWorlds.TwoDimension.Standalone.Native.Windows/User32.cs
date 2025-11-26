@@ -79,11 +79,11 @@ public static class User32
 	public static extern IntPtr GetDesktopWindow();
 
 	[DllImport("user32.dll")]
-	public static extern bool GetClientRect(IntPtr hWnd, out System.Drawing.Rectangle lpRect);
+	public static extern bool GetClientRect(IntPtr hWnd, out Rectangle lpRect);
 
 	[DllImport("user32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool GetWindowRect(IntPtr hWnd, out System.Drawing.Rectangle lpRect);
+	public static extern bool GetWindowRect(IntPtr hWnd, out Rectangle lpRect);
 
 	[DllImport("user32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]

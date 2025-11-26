@@ -95,7 +95,7 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 		if (side1Faction == Hero.MainHero.MapFaction || side2Faction == Hero.MainHero.MapFaction)
 		{
 			IFaction faction = ((side1Faction == Hero.MainHero.MapFaction) ? side2Faction : side1Faction);
-			float num = (float)Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold * 0.5f;
+			float num = Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold * 0.5f;
 			if (faction.MainHeroCrimeRating > num)
 			{
 				ChangeCrimeRatingAction.Apply(faction, num - faction.MainHeroCrimeRating);
@@ -186,6 +186,7 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 	public static bool criminal_inside_menu_pay_by_punishment_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Surrender;
+		args.Tooltip = new TextObject("{=yGvsbUWc}Beware that you may die from punishment!");
 		return CanPayCriminalRatingValueWith(Settlement.CurrentSettlement.MapFaction, CrimeModel.PaymentMethod.Punishment);
 	}
 
@@ -277,6 +278,10 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 		{
 			args.Tooltip = new TextObject("{=ETKyjOkJ}You don't have enough denars to pay the fine.");
 			args.IsEnabled = false;
+		}
+		else
+		{
+			args.Tooltip = new TextObject("{=yGvsbUWc}Beware that you may die from punishment!");
 		}
 		return CanPayCriminalRatingValueWith(Settlement.CurrentSettlement.MapFaction, CrimeModel.PaymentMethod.Gold | CrimeModel.PaymentMethod.Punishment);
 	}

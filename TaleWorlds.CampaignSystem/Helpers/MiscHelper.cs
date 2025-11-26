@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Xml;
 using TaleWorlds.Library;
 
@@ -22,20 +20,14 @@ public static class MiscHelper
 
 	public static string GenerateCampaignId(int length)
 	{
-		using MD5 mD = MD5.Create();
-		string s = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
-		byte[] bytes = Encoding.ASCII.GetBytes(s);
-		byte[] array = mD.ComputeHash(bytes);
-		MBStringBuilder mBStringBuilder = default(MBStringBuilder);
-		mBStringBuilder.Initialize(16, "GenerateCampaignId");
-		for (int i = 0; i < array.Length; i++)
+		Random random = new Random((int)(DateTime.Now.Ticks & 0xFFFF));
+		char[] array = new char[length];
+		for (int i = 0; i < length; i++)
 		{
-			if (mBStringBuilder.Length >= length)
-			{
-				break;
-			}
-			mBStringBuilder.Append(array[i].ToString("x2"));
+			array[i] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"[random.Next("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".Length)];
 		}
-		return mBStringBuilder.ToStringAndRelease();
+		string text = new string(array);
+		Debug.Print("Campaign id: " + text, 1, Debug.DebugColor.Green);
+		return text;
 	}
 }

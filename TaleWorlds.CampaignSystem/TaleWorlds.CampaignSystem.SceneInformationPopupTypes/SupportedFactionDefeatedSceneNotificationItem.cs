@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -26,9 +25,9 @@ public class SupportedFactionDefeatedSceneNotificationItem : SceneNotificationDa
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { Faction.Banner, Faction.Banner };
+		return new Banner[2] { Faction.Banner, Faction.Banner };
 	}
 
 	public SupportedFactionDefeatedSceneNotificationItem(Kingdom faction, bool playerWantsRestore)

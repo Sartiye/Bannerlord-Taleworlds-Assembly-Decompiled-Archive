@@ -36,7 +36,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleBackground()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 84f,
@@ -67,7 +67,7 @@ public class MainAgentCheerBarkController__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleGlow()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 125f,

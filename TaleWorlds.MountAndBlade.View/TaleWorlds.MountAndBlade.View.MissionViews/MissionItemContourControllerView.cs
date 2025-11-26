@@ -9,11 +9,13 @@ namespace TaleWorlds.MountAndBlade.View.MissionViews;
 
 public class MissionItemContourControllerView : MissionView
 {
-	private GameEntity[] _tempPickableEntities = new GameEntity[128];
+	private const float SceneItemQueryFreq = 1f;
 
-	private UIntPtr[] _pickableItemsId = new UIntPtr[128];
+	private readonly WeakGameEntity[] _tempPickableEntities = new WeakGameEntity[128];
 
-	private List<GameEntity> _contourItems;
+	private readonly UIntPtr[] _pickableItemsId = new UIntPtr[128];
+
+	private readonly List<GameEntity> _contourItems = new List<GameEntity>();
 
 	private GameEntity _focusedGameEntity;
 
@@ -23,21 +25,19 @@ public class MissionItemContourControllerView : MissionView
 
 	private bool _isContourAppliedToFocusedItem;
 
-	private uint _nonFocusedDefaultContourColor = new Color(0.85f, 0.85f, 0.85f).ToUnsignedInteger();
+	private readonly uint _nonFocusedDefaultContourColor = new Color(0.85f, 0.85f, 0.85f).ToUnsignedInteger();
 
-	private uint _nonFocusedAmmoContourColor = new Color(0f, 0.73f, 1f).ToUnsignedInteger();
+	private readonly uint _nonFocusedAmmoContourColor = new Color(0f, 0.73f, 1f).ToUnsignedInteger();
 
-	private uint _nonFocusedThrowableContourColor = new Color(0.051f, 0.988f, 0.18f).ToUnsignedInteger();
+	private readonly uint _nonFocusedThrowableContourColor = new Color(0.051f, 0.988f, 0.18f).ToUnsignedInteger();
 
-	private uint _nonFocusedBannerContourColor = new Color(0.521f, 0.988f, 0.521f).ToUnsignedInteger();
+	private readonly uint _nonFocusedBannerContourColor = new Color(0.521f, 0.988f, 0.521f).ToUnsignedInteger();
 
-	private uint _focusedContourColor = new Color(1f, 0.84f, 0.35f).ToUnsignedInteger();
+	private readonly uint _focusedContourColor = new Color(1f, 0.84f, 0.35f).ToUnsignedInteger();
 
 	private float _lastItemQueryTime;
 
-	private float _sceneItemQueryFreq = 1f;
-
-	private bool _isAllowedByOption
+	private static bool IsAllowedByOption
 	{
 		get
 		{
@@ -49,15 +49,10 @@ public class MissionItemContourControllerView : MissionView
 		}
 	}
 
-	public MissionItemContourControllerView()
-	{
-		_contourItems = new List<GameEntity>();
-	}
-
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (!_isAllowedByOption)
+		if (!IsAllowedByOption)
 		{
 			return;
 		}
@@ -76,7 +71,7 @@ public class MissionItemContourControllerView : MissionView
 		if (_isContourAppliedToAllItems)
 		{
 			float currentTime = base.Mission.CurrentTime;
-			if (currentTime - _lastItemQueryTime > _sceneItemQueryFreq)
+			if (currentTime - _lastItemQueryTime > 1f)
 			{
 				RemoveContourFromAllItems();
 				PopulateContourListWithNearbyItems();
@@ -88,7 +83,7 @@ public class MissionItemContourControllerView : MissionView
 	public override void OnFocusGained(Agent agent, IFocusable focusableObject, bool isInteractable)
 	{
 		base.OnFocusGained(agent, focusableObject, isInteractable);
-		if (!(_isAllowedByOption && focusableObject != _currentFocusedObject && isInteractable))
+		if (!(IsAllowedByOption && focusableObject != _currentFocusedObject && isInteractable))
 		{
 			return;
 		}
@@ -97,18 +92,18 @@ public class MissionItemContourControllerView : MissionView
 		{
 			if (usableMissionObject is SpawnedItemEntity spawnedItemEntity)
 			{
-				_focusedGameEntity = spawnedItemEntity.GameEntity;
+				_focusedGameEntity = GameEntity.CreateFromWeakEntity(spawnedItemEntity.GameEntity);
 			}
 			else if (!string.IsNullOrEmpty(usableMissionObject.ActionMessage.ToString()) && !string.IsNullOrEmpty(usableMissionObject.DescriptionMessage.ToString()))
 			{
-				_focusedGameEntity = usableMissionObject.GameEntity;
+				_focusedGameEntity = GameEntity.CreateFromWeakEntity(usableMissionObject.GameEntity);
 			}
 			else
 			{
 				UsableMachine usableMachineFromPoint = GetUsableMachineFromPoint(usableMissionObject);
 				if (usableMachineFromPoint != null)
 				{
-					_focusedGameEntity = usableMachineFromPoint.GameEntity;
+					_focusedGameEntity = GameEntity.CreateFromWeakEntity(usableMachineFromPoint.GameEntity);
 				}
 			}
 		}
@@ -118,7 +113,7 @@ public class MissionItemContourControllerView : MissionView
 	public override void OnFocusLost(Agent agent, IFocusable focusableObject)
 	{
 		base.OnFocusLost(agent, focusableObject);
-		if (_isAllowedByOption)
+		if (IsAllowedByOption)
 		{
 			RemoveContourFromFocusedItem();
 			_currentFocusedObject = null;
@@ -130,39 +125,54 @@ public class MissionItemContourControllerView : MissionView
 	{
 		_contourItems.Clear();
 		float num = (GameNetwork.IsSessionActive ? 1f : 3f);
-		float num2 = Agent.Main.MaximumForwardUnlimitedSpeed * num;
-		Vec3 boundingBoxMin = Agent.Main.Position - new Vec3(num2, num2, 1f);
-		Vec3 boundingBoxMax = Agent.Main.Position + new Vec3(num2, num2, 1.8f);
+		Agent main = Agent.Main;
+		float num2 = main.GetMaximumForwardUnlimitedSpeed() * num;
+		Vec3 boundingBoxMin = main.Position - new Vec3(num2, num2, 1f);
+		Vec3 boundingBoxMax = main.Position + new Vec3(num2, num2, 2.5f);
 		int num3 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId);
+		Vec3 position = base.MissionScreen.CombatCamera.Position;
+		Vec3 position2 = main.Position;
+		float num4 = new Vec3(position.x, position.y).Distance(new Vec3(position2.x, position2.y));
+		Vec3 vec = position * (1f - num4) + (position + base.MissionScreen.CombatCamera.Direction) * num4;
 		for (int i = 0; i < num3; i++)
 		{
-			SpawnedItemEntity firstScriptOfType = _tempPickableEntities[i].GetFirstScriptOfType<SpawnedItemEntity>();
+			WeakGameEntity weakGameEntity = _tempPickableEntities[i];
+			SpawnedItemEntity firstScriptOfType = weakGameEntity.GetFirstScriptOfType<SpawnedItemEntity>();
 			if (firstScriptOfType == null)
+			{
+				continue;
+			}
+			Vec3 vec2 = weakGameEntity.ComputeGlobalPhysicsBoundingBoxCenter();
+			Vec3 vec3 = (vec2 - vec).NormalizedCopy();
+			Vec3 origin = weakGameEntity.GetBodyWorldTransform().origin;
+			Vec3 vec4 = (origin - vec).NormalizedCopy();
+			if ((!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec3 * 0.2f, vec2, out float collisionDistance, out WeakGameEntity collidedEntity, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity.IsValid || !(collidedEntity == weakGameEntity)) && (!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec4 * 0.2f, origin, out collisionDistance, out WeakGameEntity collidedEntity2, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity2.IsValid || !(collidedEntity2 == weakGameEntity)))
 			{
 				continue;
 			}
 			if (firstScriptOfType.IsBanner())
 			{
-				if (MissionGameModels.Current.BattleBannerBearersModel.IsInteractableFormationBanner(firstScriptOfType, Agent.Main))
+				if (MissionGameModels.Current.BattleBannerBearersModel.IsInteractableFormationBanner(firstScriptOfType, main))
 				{
-					_contourItems.Add(firstScriptOfType.GameEntity);
+					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity));
 				}
 			}
 			else
 			{
-				_contourItems.Add(firstScriptOfType.GameEntity);
+				_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity));
 			}
 		}
-		int num4 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<UsableMachine>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId);
-		for (int j = 0; j < num4; j++)
+		int num5 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<UsableMachine>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId);
+		for (int j = 0; j < num5; j++)
 		{
-			UsableMachine firstScriptOfType2 = _tempPickableEntities[j].GetFirstScriptOfType<UsableMachine>();
+			WeakGameEntity weakEntity = _tempPickableEntities[j];
+			UsableMachine firstScriptOfType2 = weakEntity.GetFirstScriptOfType<UsableMachine>();
 			if (firstScriptOfType2 != null && !firstScriptOfType2.IsDisabled)
 			{
-				GameEntity validStandingPointForAgentWithoutDistanceCheck = firstScriptOfType2.GetValidStandingPointForAgentWithoutDistanceCheck(Agent.Main);
-				if (validStandingPointForAgentWithoutDistanceCheck != null && !(validStandingPointForAgentWithoutDistanceCheck.GetFirstScriptOfType<UsableMissionObject>() is SpawnedItemEntity) && validStandingPointForAgentWithoutDistanceCheck.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable focusable && focusable is UsableMissionObject)
+				WeakGameEntity validStandingPointForAgentWithoutDistanceCheck = firstScriptOfType2.GetValidStandingPointForAgentWithoutDistanceCheck(main);
+				if (validStandingPointForAgentWithoutDistanceCheck.IsValid && !(validStandingPointForAgentWithoutDistanceCheck.GetFirstScriptOfType<UsableMissionObject>() is SpawnedItemEntity) && validStandingPointForAgentWithoutDistanceCheck.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable focusable && focusable is UsableMissionObject)
 				{
-					_contourItems.Add(firstScriptOfType2.GameEntity);
+					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakEntity));
 				}
 			}
 		}
@@ -192,7 +202,7 @@ public class MissionItemContourControllerView : MissionView
 		{
 			return _nonFocusedBannerContourColor;
 		}
-		if ((weaponComponentData != null && weaponComponentData.IsAmmo) || itemTypeEnum == ItemObject.ItemTypeEnum.Arrows || itemTypeEnum == ItemObject.ItemTypeEnum.Bolts || itemTypeEnum == ItemObject.ItemTypeEnum.Bullets)
+		if ((weaponComponentData != null && weaponComponentData.IsAmmo) || itemTypeEnum == ItemObject.ItemTypeEnum.Arrows || itemTypeEnum == ItemObject.ItemTypeEnum.Bolts || itemTypeEnum == ItemObject.ItemTypeEnum.SlingStones || itemTypeEnum == ItemObject.ItemTypeEnum.Bullets)
 		{
 			return _nonFocusedAmmoContourColor;
 		}
@@ -246,14 +256,14 @@ public class MissionItemContourControllerView : MissionView
 
 	private UsableMachine GetUsableMachineFromPoint(UsableMissionObject standingPoint)
 	{
-		GameEntity gameEntity = standingPoint.GameEntity;
-		while ((object)gameEntity != null && !gameEntity.HasScriptOfType<UsableMachine>())
+		WeakGameEntity weakGameEntity = standingPoint.GameEntity;
+		while (weakGameEntity.IsValid && !weakGameEntity.HasScriptOfType<UsableMachine>())
 		{
-			gameEntity = gameEntity.Parent;
+			weakGameEntity = weakGameEntity.Parent;
 		}
-		if (gameEntity != null)
+		if (weakGameEntity.IsValid)
 		{
-			UsableMachine firstScriptOfType = gameEntity.GetFirstScriptOfType<UsableMachine>();
+			UsableMachine firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 			if (firstScriptOfType != null)
 			{
 				return firstScriptOfType;

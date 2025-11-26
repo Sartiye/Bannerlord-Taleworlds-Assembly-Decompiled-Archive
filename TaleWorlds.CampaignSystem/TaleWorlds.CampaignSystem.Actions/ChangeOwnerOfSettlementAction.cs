@@ -11,7 +11,6 @@ public static class ChangeOwnerOfSettlementAction
 		Default,
 		BySiege,
 		ByBarter,
-		ByRevolt,
 		ByLeaveFaction,
 		ByKingDecision,
 		ByGift,
@@ -22,6 +21,10 @@ public static class ChangeOwnerOfSettlementAction
 	private static void ApplyInternal(Settlement settlement, Hero newOwner, Hero capturerHero, ChangeOwnerOfSettlementDetail detail)
 	{
 		Hero oldOwner = settlement.OwnerClan?.Leader;
+		if (settlement.Town != null)
+		{
+			settlement.Town.IsOwnerUnassigned = false;
+		}
 		if (settlement.IsFortification)
 		{
 			settlement.Town.OwnerClan = newOwner.Clan;
@@ -46,11 +49,11 @@ public static class ChangeOwnerOfSettlementAction
 			{
 				if (item.MapEvent == null && item != MobileParty.MainParty && item.ShortTermTargetParty == boundVillage.VillagerPartyComponent.MobileParty && !item.MapFaction.IsAtWarWith(newOwner.MapFaction))
 				{
-					item.Ai.SetMoveModeHold();
+					item.SetMoveModeHold();
 				}
 			}
 		}
-		bool openToClaim = (detail == ChangeOwnerOfSettlementDetail.BySiege || detail == ChangeOwnerOfSettlementDetail.ByRevolt || detail == ChangeOwnerOfSettlementDetail.ByClanDestruction || detail == ChangeOwnerOfSettlementDetail.ByLeaveFaction) && settlement.IsFortification;
+		bool openToClaim = (detail == ChangeOwnerOfSettlementDetail.BySiege || detail == ChangeOwnerOfSettlementDetail.ByClanDestruction || detail == ChangeOwnerOfSettlementDetail.ByLeaveFaction) && settlement.IsFortification;
 		if (newOwner != null)
 		{
 			IFaction mapFaction = newOwner.MapFaction;
@@ -62,7 +65,7 @@ public static class ChangeOwnerOfSettlementAction
 					MobileParty mobileParty = warPartyComponent.MobileParty;
 					if (mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty.TargetSettlement == settlement && mobileParty.CurrentSettlement == null)
 					{
-						mobileParty.Ai.SetMoveModeHold();
+						mobileParty.SetMoveModeHold();
 					}
 				}
 				settlement.Party.MapEvent.Update();
@@ -79,7 +82,7 @@ public static class ChangeOwnerOfSettlementAction
 					if (mobileParty2.BesiegedSettlement != settlement && (mobileParty2.DefaultBehavior == AiBehavior.RaidSettlement || mobileParty2.DefaultBehavior == AiBehavior.BesiegeSettlement || mobileParty2.DefaultBehavior == AiBehavior.AssaultSettlement) && mobileParty2.TargetSettlement == settlement)
 					{
 						mobileParty2.Army?.FinishArmyObjective();
-						mobileParty2.Ai.SetMoveModeHold();
+						mobileParty2.SetMoveModeHold();
 					}
 				}
 			}

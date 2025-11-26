@@ -46,6 +46,8 @@ public class ScoreboardScreenWidget : Widget
 
 	private DelayedStateChanger _shieldStateChanger;
 
+	private DelayedStateChanger _shipsStateChanger;
+
 	private DelayedStateChanger _titleStateChanger;
 
 	private DelayedStateChanger _titleBackgroundStateChanger;
@@ -382,6 +384,23 @@ public class ScoreboardScreenWidget : Widget
 	}
 
 	[Editor(false)]
+	public DelayedStateChanger ShipsStateChanger
+	{
+		get
+		{
+			return _shipsStateChanger;
+		}
+		set
+		{
+			if (_shipsStateChanger != value)
+			{
+				_shipsStateChanger = value;
+				OnPropertyChanged(value, "ShipsStateChanger");
+			}
+		}
+	}
+
+	[Editor(false)]
 	public DelayedStateChanger TitleStateChanger
 	{
 		get
@@ -451,19 +470,29 @@ public class ScoreboardScreenWidget : Widget
 		_isAnimationActive = true;
 		BattleRewardsWidget?.StartAnimation();
 		ShieldStateChanger?.Start();
+		ShipsStateChanger?.Start();
 		TitleStateChanger?.Start();
 		TitleBackgroundStateChanger?.Start();
 		if (BattleResult == 0)
 		{
-			FlagsDefeat?.Start();
+			if (FlagsDefeat != null)
+			{
+				FlagsDefeat.IsVisible = true;
+				FlagsDefeat.Start();
+			}
 		}
 		else if (BattleResult == 1)
 		{
-			FlagsSuccess?.Start();
+			if (FlagsSuccess != null)
+			{
+				FlagsSuccess.IsVisible = true;
+				FlagsSuccess.Start();
+			}
 		}
-		else if (BattleResult == 2)
+		else if (BattleResult == 2 && FlagsRetreat != null)
 		{
-			FlagsRetreat?.Start();
+			FlagsRetreat.IsVisible = true;
+			FlagsRetreat.Start();
 		}
 	}
 }

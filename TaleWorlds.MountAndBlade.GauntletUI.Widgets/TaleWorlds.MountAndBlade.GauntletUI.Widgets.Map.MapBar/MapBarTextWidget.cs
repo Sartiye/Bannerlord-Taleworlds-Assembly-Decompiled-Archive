@@ -23,18 +23,11 @@ public class MapBarTextWidget : TextWidget
 		}
 		set
 		{
-			if (value == _isWarning)
+			if (value != _isWarning)
 			{
-				return;
-			}
-			_isWarning = value;
-			OnPropertyChanged(value, "IsWarning");
-			base.ReadOnlyBrush.GetStyleOrDefault(base.CurrentState);
-			Color black = Color.Black;
-			black = ((!value) ? NormalColor : WarningColor);
-			foreach (Style style in base.Brush.Styles)
-			{
-				style.FontColor = black;
+				_isWarning = value;
+				OnPropertyChanged(value, "IsWarning");
+				RefreshFontColor();
 			}
 		}
 	}
@@ -48,10 +41,11 @@ public class MapBarTextWidget : TextWidget
 		}
 		set
 		{
-			if (value.Alpha != _normalColor.Alpha || value.Blue != _normalColor.Blue || value.Red != _normalColor.Red || value.Green != _normalColor.Green)
+			if (value != _normalColor)
 			{
 				_normalColor = value;
 				OnPropertyChanged(value, "NormalColor");
+				RefreshFontColor();
 			}
 		}
 	}
@@ -65,10 +59,11 @@ public class MapBarTextWidget : TextWidget
 		}
 		set
 		{
-			if (value.Alpha != _warningColor.Alpha || value.Blue != _warningColor.Blue || value.Red != _warningColor.Red || value.Green != _warningColor.Green)
+			if (value != _warningColor)
 			{
 				_warningColor = value;
 				OnPropertyChanged(value, "WarningColor");
+				RefreshFontColor();
 			}
 		}
 	}
@@ -112,5 +107,14 @@ public class MapBarTextWidget : TextWidget
 			}
 		}
 		_prevValue = propertyValue;
+	}
+
+	private void RefreshFontColor()
+	{
+		Color fontColor = ((!IsWarning) ? NormalColor : WarningColor);
+		foreach (Style style in base.Brush.Styles)
+		{
+			style.FontColor = fontColor;
+		}
 	}
 }

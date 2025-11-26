@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SettlementLoyaltyModel : GameModel
+public abstract class SettlementLoyaltyModel : MBGameModel<SettlementLoyaltyModel>
 {
 	public abstract int SettlementLoyaltyChangeDueToSecurityThreshold { get; }
 

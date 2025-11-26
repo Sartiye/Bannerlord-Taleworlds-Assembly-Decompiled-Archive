@@ -125,8 +125,8 @@ public class NameGenerator
 		}
 		textObject.SetTextVariable("FEMALE", hero.IsFemale ? 1 : 0);
 		textObject.SetTextVariable("IMPERIAL", (hero.Culture.StringId == "empire") ? 1 : 0);
-		textObject.SetTextVariable("COASTAL", (hero.Culture.StringId == "empire" || hero.Culture.StringId == "vlandia") ? 1 : 0);
-		textObject.SetTextVariable("NORTHERN", (hero.Culture.StringId == "battania" || hero.Culture.StringId == "sturgia") ? 1 : 0);
+		textObject.SetTextVariable("COASTAL", (hero.Culture.StringId == "empire" || hero.Culture.StringId == "nord" || hero.Culture.StringId == "vlandia") ? 1 : 0);
+		textObject.SetTextVariable("NORTHERN", (hero.Culture.StringId == "battania" || hero.Culture.StringId == "nord" || hero.Culture.StringId == "sturgia") ? 1 : 0);
 		if (textObject != heroFirstName)
 		{
 			textObject.SetTextVariable("FIRSTNAME", heroFirstName);
@@ -168,7 +168,7 @@ public class NameGenerator
 			}
 			else
 			{
-				Debug.FailedAssert("Duplicate name in Clan Name list", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\NameGenerator.cs", "GenerateClanName", 196);
+				Debug.FailedAssert("Duplicate name in Clan Name list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\NameGenerator.cs", "GenerateClanName", 196);
 			}
 		}
 		int num2 = dictionary.Values.Max() + 1;
@@ -499,7 +499,7 @@ public class NameGenerator
 		}
 		else
 		{
-			Debug.FailedAssert("Missing culture in clan name generation", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\NameGenerator.cs", "GetClanNameListForCulture", 810);
+			Debug.FailedAssert("Missing culture in clan name generation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\NameGenerator.cs", "GetClanNameListForCulture", 810);
 		}
 		return result;
 	}
@@ -533,7 +533,7 @@ public class NameGenerator
 		{
 			if (!hero.IsNotable)
 			{
-				enumerable = ((hero.Template != null && hero.Occupation == Occupation.Wanderer) ? Hero.AllAliveHeroes.WhereQ((Hero h) => hero.Template.Equals(h.Template)) : ((hero.Clan == null || hero.Occupation != Occupation.Lord) ? new List<Hero>() : hero.Clan.Lords));
+				enumerable = ((hero.Template != null && hero.Occupation == Occupation.Wanderer) ? Hero.AllAliveHeroes.WhereQ((Hero h) => hero.Template.Equals(h.Template)) : ((hero.Clan == null || hero.Occupation != Occupation.Lord) ? new List<Hero>() : hero.Clan.AliveLords));
 			}
 			else if (hero.IsMerchant && hero.OwnedWorkshops.Count > 0)
 			{

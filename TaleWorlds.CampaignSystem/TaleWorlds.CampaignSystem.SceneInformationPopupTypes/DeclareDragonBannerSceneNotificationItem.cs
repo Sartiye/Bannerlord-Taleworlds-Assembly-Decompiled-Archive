@@ -27,7 +27,12 @@ public class DeclareDragonBannerSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override Banner[] GetBanners()
+	{
+		return new Banner[1] { Hero.MainHero.ClanBanner };
+	}
+
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		IOrderedEnumerable<Hero> clanHeroesPool = from h in Hero.MainHero.Clan.Heroes
@@ -39,12 +44,7 @@ public class DeclareDragonBannerSceneNotificationItem : SceneNotificationData
 			SceneNotificationCharacter characterAtIndex = GetCharacterAtIndex(i, clanHeroesPool);
 			list.Add(characterAtIndex);
 		}
-		return list;
-	}
-
-	public override IEnumerable<Banner> GetBanners()
-	{
-		return new List<Banner> { Hero.MainHero.ClanBanner };
+		return list.ToArray();
 	}
 
 	public DeclareDragonBannerSceneNotificationItem(bool playerWantsToRestore)

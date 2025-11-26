@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -18,18 +19,18 @@ public static class HeroHelper
 {
 	public static TextObject GetLastSeenText(Hero hero)
 	{
-		TextObject empty = TextObject.Empty;
+		TextObject textObject;
 		if (hero.LastKnownClosestSettlement == null)
 		{
-			empty = GameTexts.FindText("str_never_seen_encyclopedia_entry");
+			textObject = GameTexts.FindText("str_never_seen_encyclopedia_entry");
 		}
 		else
 		{
-			empty = GameTexts.FindText("str_last_seen_encyclopedia_entry");
-			empty.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
-			empty.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+			textObject = GameTexts.FindText("str_last_seen_encyclopedia_entry");
+			textObject.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			textObject.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
 		}
-		return empty;
+		return textObject;
 	}
 
 	public static Settlement GetClosestSettlement(Hero hero)
@@ -51,28 +52,45 @@ public static class HeroHelper
 				else if (partyBase.IsMobile)
 				{
 					MobileParty mobileParty = partyBase.MobileParty;
-					if (mobileParty.CurrentNavigationFace.IsValid())
+					float averageDistanceBetweenClosestTwoTownsWithNavigationType = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All);
+					if (mobileParty.Position.IsValid())
 					{
-						settlement = SettlementHelper.FindNearestSettlement((Settlement x) => x.IsVillage || x.IsFortification, mobileParty);
+						float num = Campaign.MapDiagonalSquared;
+						LocatableSearchData<Settlement> data = Settlement.StartFindingLocatablesAroundPosition(mobileParty.Position.ToVec2(), averageDistanceBetweenClosestTwoTownsWithNavigationType * 1.5f);
+						Settlement settlement2 = Settlement.FindNextLocatable(ref data);
+						while (settlement2 != null && (settlement2.IsVillage || settlement2.IsFortification))
+						{
+							float num2 = settlement2.Position.DistanceSquared(mobileParty.Position);
+							if (num2 < num)
+							{
+								num = num2;
+							}
+							settlement2 = Settlement.FindNextLocatable(ref data);
+						}
+						settlement = settlement2 ?? SettlementHelper.FindNearestSettlementToMobileParty(mobileParty, MobileParty.NavigationType.All, (Settlement x) => x.IsVillage || x.IsFortification);
 					}
 					else
 					{
-						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 1802);
+						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2297);
 					}
 				}
 			}
 			else if (PlayerEncounter.Current != null && PlayerEncounter.Battle != null)
 			{
+				if (PlayerEncounter.Current.EncounterSettlementAux != null)
+				{
+					return PlayerEncounter.Current.EncounterSettlementAux;
+				}
 				BattleSideEnum otherSide = PlayerEncounter.Battle.GetOtherSide(PlayerEncounter.Battle.PlayerSide);
 				if (PlayerEncounter.Battle.PartiesOnSide(otherSide).Any((MapEventParty x) => x.Party.Owner == hero))
 				{
-					settlement = SettlementHelper.FindNearestSettlement((Settlement x) => x.IsVillage || x.IsFortification, MobileParty.MainParty);
+					settlement = SettlementHelper.FindNearestSettlementToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.All, (Settlement x) => x.IsVillage || x.IsFortification);
 				}
 			}
 		}
 		if (settlement != null && !settlement.IsVillage && !settlement.IsFortification)
 		{
-			settlement = SettlementHelper.FindNearestSettlement((Settlement x) => x.IsVillage || x.IsFortification, settlement);
+			settlement = SettlementHelper.FindNearestSettlementToSettlement(settlement, MobileParty.NavigationType.All, (Settlement x) => x.IsVillage || x.IsFortification);
 		}
 		return settlement;
 	}
@@ -189,21 +207,32 @@ public static class HeroHelper
 
 	public static TextObject GetOccupiedEventReasonText(Hero hero)
 	{
-		if (!hero.CanHaveQuestsOrIssues())
+		if (!hero.CanHaveCampaignIssues())
 		{
 			return GameTexts.FindText("str_hero_busy_issue_quest");
 		}
 		return GameTexts.FindText("str_hero_busy");
 	}
 
-	public static List<string> OrderHeroesOnPlayerSideByPriority()
+	public static List<string> OrderHeroesOnPlayerSideByPriority(bool includeArmyLeader = false, bool includePlayerCompanions = false)
 	{
 		List<Hero> list = new List<Hero>();
 		foreach (MapEventParty item in MobileParty.MainParty.MapEvent.PartiesOnSide(MobileParty.MainParty.MapEvent.PlayerSide))
 		{
-			if (item.Party.LeaderHero != null && item.Party.MobileParty?.Army?.LeaderParty != item.Party.MobileParty)
+			if (item.Party.LeaderHero != null && (includeArmyLeader || item.Party.MobileParty?.Army?.LeaderParty != item.Party.MobileParty))
 			{
 				list.Add(item.Party.LeaderHero);
+			}
+			if (!(item.Party.MobileParty == MobileParty.MainParty && includePlayerCompanions))
+			{
+				continue;
+			}
+			foreach (Hero companion in Clan.PlayerClan.Companions)
+			{
+				if (companion.PartyBelongedTo == MobileParty.MainParty)
+				{
+					list.Add(companion);
+				}
 			}
 		}
 		return list.OrderByDescending((Hero t) => Campaign.Current.Models.EncounterModel.GetCharacterSergeantScore(t)).ToList().ConvertAll((Hero t) => t.CharacterObject.StringId);
@@ -213,6 +242,14 @@ public static class HeroHelper
 	{
 		if (PlayerEncounter.Current != null && PlayerEncounter.Current.PlayerSide == BattleSideEnum.Defender && (PlayerEncounter.EncounteredMobileParty == null || PlayerEncounter.EncounteredMobileParty.Ai.DoNotAttackMainPartyUntil.IsPast))
 		{
+			if (Hero.OneToOneConversationHero == null)
+			{
+				return false;
+			}
+			if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord || Hero.OneToOneConversationHero.IsPrisoner)
+			{
+				return false;
+			}
 			PartyBase partyBase = ((Campaign.Current.ConversationManager.ConversationParty == null) ? PlayerEncounter.EncounteredParty : Campaign.Current.ConversationManager.ConversationParty.Party);
 			if (partyBase.Owner != null && partyBase.LeaderHero != null && FactionManager.IsAtWarAgainstFaction(partyBase.MapFaction, Hero.MainHero.MapFaction))
 			{
@@ -251,15 +288,16 @@ public static class HeroHelper
 
 	public static int DefaultRelation(Hero hero, Hero otherHero)
 	{
+		int middleAdultHoodAge = Campaign.Current.Models.AgeModel.MiddleAdultHoodAge;
 		if (hero.Clan != null && hero.Clan.IsNoble && hero.Clan == otherHero.Clan)
 		{
 			return 40;
 		}
-		if (hero.MapFaction == otherHero.MapFaction && hero.CharacterObject.Culture == otherHero.CharacterObject.Culture && hero.Age > 35f && otherHero.Age > 35f && NPCPersonalityClashWithNPC(hero, otherHero) > 40)
+		if (hero.MapFaction == otherHero.MapFaction && hero.CharacterObject.Culture == otherHero.CharacterObject.Culture && hero.Age > (float)middleAdultHoodAge && otherHero.Age > (float)middleAdultHoodAge && NPCPersonalityClashWithNPC(hero, otherHero) > 40)
 		{
 			return -5;
 		}
-		if (hero.MapFaction == otherHero.MapFaction && hero.CharacterObject.Culture == otherHero.CharacterObject.Culture && hero.Age > 35f && otherHero.Age > 35f)
+		if (hero.MapFaction == otherHero.MapFaction && hero.CharacterObject.Culture == otherHero.CharacterObject.Culture && hero.Age > (float)middleAdultHoodAge && otherHero.Age > (float)middleAdultHoodAge)
 		{
 			return 25;
 		}
@@ -268,26 +306,6 @@ public static class HeroHelper
 			return 10;
 		}
 		return 0;
-	}
-
-	public static int CalculateTotalStrength(Hero hero)
-	{
-		float num = 1f;
-		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.LeaderHero == hero)
-		{
-			num += hero.PartyBelongedTo.Party.TotalStrength;
-		}
-		if (hero.Clan != null && hero.Clan.Leader == hero)
-		{
-			foreach (Hero companion in hero.Clan.Companions)
-			{
-				if (companion.PartyBelongedTo != null && companion.PartyBelongedTo.LeaderHero == companion)
-				{
-					num += companion.PartyBelongedTo.Party.TotalStrength;
-				}
-			}
-		}
-		return MathF.Round(num);
 	}
 
 	public static bool IsCompanionInPlayerParty(Hero hero)
@@ -438,10 +456,6 @@ public static class HeroHelper
 	{
 		float num = 0f;
 		List<Clan> list = new List<Clan>();
-		_ = notable.IsWanderer;
-		_ = notable.IsMerchant;
-		_ = notable.IsRuralNotable;
-		_ = notable.IsArtisan;
 		if (notable.IsPreacher)
 		{
 			num = 0.5f;
@@ -464,7 +478,7 @@ public static class HeroHelper
 			}
 		}
 		float num2 = 0f;
-		ILookup<Clan, Settlement> lookup = Settlement.All.Where((Settlement x) => (x.IsVillage && x.Village.IsCastle) || x.IsTown || x.IsHideout).ToLookup((Settlement x) => x.OwnerClan);
+		ILookup<Clan, Settlement> lookup = Settlement.All.Where((Settlement x) => x.IsTown || x.IsHideout).ToLookup((Settlement x) => x.OwnerClan);
 		foreach (Clan item in list)
 		{
 			num2 += GetProbabilityForClan(item, lookup[item], notable);
@@ -481,7 +495,7 @@ public static class HeroHelper
 		return null;
 	}
 
-	public static float GetProbabilityForClan(Clan clan, IEnumerable<Settlement> applicableSettlements, Hero notable)
+	private static float GetProbabilityForClan(Clan clan, IEnumerable<Settlement> applicableSettlements, Hero notable)
 	{
 		float num = 1f;
 		if (clan.Culture == notable.Culture)
@@ -491,13 +505,13 @@ public static class HeroHelper
 		float num2 = float.MaxValue;
 		foreach (Settlement applicableSettlement in applicableSettlements)
 		{
-			float num3 = applicableSettlement.Position2D.DistanceSquared(notable.HomeSettlement.Position2D);
+			float num3 = applicableSettlement.Position.DistanceSquared(notable.HomeSettlement.Position);
 			if (num3 < num2)
 			{
 				num2 = num3;
 			}
 		}
-		return num / (50f + num2);
+		return num / num2;
 	}
 
 	public static CampaignTime GetRandomBirthDayForAge(float age)
@@ -509,10 +523,10 @@ public static class HeroHelper
 
 	public static void GetRandomDeathDayAndBirthDay(int deathAge, out CampaignTime birthday, out CampaignTime deathday)
 	{
-		int num = 84;
-		int num2 = MBRandom.RandomInt(num);
-		birthday = CampaignTime.Years(CampaignTime.Now.GetYear - deathAge - 1) - CampaignTime.Days(num2);
-		deathday = birthday + CampaignTime.Years(deathAge) + CampaignTime.Days(MBRandom.RandomInt(num - 1));
+		int daysInYear = CampaignTime.DaysInYear;
+		int num = MBRandom.RandomInt(daysInYear);
+		birthday = CampaignTime.Years(CampaignTime.Now.GetYear - deathAge - 1) - CampaignTime.Days(num);
+		deathday = birthday + CampaignTime.Years(deathAge) + CampaignTime.Days(MBRandom.RandomInt(daysInYear - 1));
 	}
 
 	public static float StartRecruitingMoneyLimit(Hero hero)
@@ -531,5 +545,129 @@ public static class HeroHelper
 			return 0f;
 		}
 		return 50f + ((hero.Clan != null && hero.Clan.Leader != null && hero.Clan.Leader.PartyBelongedTo != null) ? ((float)hero.Clan.Leader.PartyBelongedTo.TotalWage + (float)hero.Clan.Leader.PartyBelongedTo.MemberRoster.TotalManCount * 40f) : 0f);
+	}
+
+	public static TextObject GetPersonalityTraitChangeName(TraitObject traitObject, Hero hero, bool isPositive)
+	{
+		if (DefaultTraits.Personality.Contains(traitObject))
+		{
+			int traitLevel = hero.GetTraitLevel(traitObject);
+			string id = "str_trait_name_" + traitObject.StringId.ToLower();
+			string variation = (isPositive ? "3" : "1");
+			if (traitLevel < 0)
+			{
+				variation = (isPositive ? "3" : "0");
+			}
+			else if (traitLevel > 0)
+			{
+				variation = (isPositive ? "4" : "1");
+			}
+			return GameTexts.FindText(id, variation);
+		}
+		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2899);
+		return TextObject.GetEmpty();
+	}
+
+	public static Settlement FindASuitableSettlementToTeleportForHero(Hero hero, float minimumScore = 0f)
+	{
+		Settlement settlement = null;
+		if (hero.IsNotable)
+		{
+			settlement = hero.BornSettlement;
+		}
+		else
+		{
+			List<Settlement> list = hero.MapFaction.Settlements.Where((Settlement x) => x.IsTown).ToList();
+			if (list.Count > 0)
+			{
+				List<(Settlement, float)> list2 = new List<(Settlement, float)>();
+				foreach (Settlement item in list)
+				{
+					float moveScoreForHero = GetMoveScoreForHero(hero, item.Town);
+					list2.Add((item, (moveScoreForHero >= minimumScore) ? moveScoreForHero : 0f));
+				}
+				settlement = MBRandom.ChooseWeighted(list2);
+			}
+			else
+			{
+				List<Settlement> list3 = new List<Settlement>();
+				List<Settlement> list4 = new List<Settlement>();
+				foreach (Town allTown in Town.AllTowns)
+				{
+					if (allTown.MapFaction.IsAtWarWith(hero.MapFaction))
+					{
+						list4.Add(allTown.Settlement);
+					}
+					else if (allTown.MapFaction != hero.MapFaction)
+					{
+						list3.Add(allTown.Settlement);
+					}
+				}
+				List<(Settlement, float)> list5 = new List<(Settlement, float)>();
+				foreach (Settlement item2 in list3)
+				{
+					float moveScoreForHero2 = GetMoveScoreForHero(hero, item2.Town);
+					list5.Add((item2, (moveScoreForHero2 >= minimumScore) ? moveScoreForHero2 : 0f));
+				}
+				settlement = MBRandom.ChooseWeighted(list5);
+				if (settlement == null)
+				{
+					list5 = new List<(Settlement, float)>();
+					foreach (Settlement item3 in list4)
+					{
+						float moveScoreForHero3 = GetMoveScoreForHero(hero, item3.Town);
+						list5.Add((item3, (moveScoreForHero3 >= minimumScore) ? moveScoreForHero3 : 0f));
+					}
+					settlement = MBRandom.ChooseWeighted(list5);
+				}
+			}
+		}
+		return settlement;
+	}
+
+	private static float GetMoveScoreForHero(Hero hero, Town fief)
+	{
+		Clan clan = hero.Clan;
+		float num = 1E-06f;
+		if (!fief.IsUnderSiege && !fief.MapFaction.IsAtWarWith(hero.MapFaction))
+		{
+			num = (DiplomacyHelper.IsSameFactionAndNotEliminated(fief.MapFaction, hero.MapFaction) ? 0.01f : 1E-05f);
+			if (fief.MapFaction == hero.MapFaction)
+			{
+				num += 10f;
+				if (fief.IsTown)
+				{
+					num += 100f;
+				}
+				if (fief.OwnerClan == clan)
+				{
+					num += (fief.IsTown ? 500f : 100f);
+				}
+				if (fief.HasTournament)
+				{
+					num += 400f;
+				}
+			}
+			foreach (Hero item in fief.Settlement.HeroesWithoutParty)
+			{
+				if (clan != null && item.Clan == clan)
+				{
+					num += (fief.IsTown ? 100f : 10f);
+				}
+			}
+			if (hero.IsFugitive && hero.HomeSettlement?.Town == fief)
+			{
+				num += 100f;
+			}
+			if (fief.Settlement.IsStarving)
+			{
+				num *= 0.1f;
+			}
+			if (hero.CurrentSettlement == fief.Settlement)
+			{
+				num *= 3f;
+			}
+		}
+		return num;
 	}
 }

@@ -188,8 +188,8 @@ public class OrderSiegeDeploymentItemButtonWidget : ButtonWidget
 	{
 		if (IsInsideWindow)
 		{
-			base.ScaledPositionXOffset = Position.x - base.Size.X / 2f - base.EventManager.LeftUsableAreaStart;
-			base.ScaledPositionYOffset = Position.y - base.Size.Y - base.EventManager.TopUsableAreaStart;
+			base.ScaledPositionXOffset = Position.x - base.Size.X / 2f;
+			base.ScaledPositionYOffset = Position.y - base.Size.Y;
 		}
 	}
 

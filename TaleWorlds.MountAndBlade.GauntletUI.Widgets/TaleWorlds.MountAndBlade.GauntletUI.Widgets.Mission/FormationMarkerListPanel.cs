@@ -11,29 +11,27 @@ public class FormationMarkerListPanel : ListPanel
 {
 	private bool _isMarkersDirty = true;
 
-	private float _distance;
-
-	private TextWidget _nameTextWidget;
-
-	private TextWidget _distanceTextWidget;
-
-	private Vec2 _position;
-
 	private bool _isMarkerEnabled;
 
 	private bool _isTargetingAFormation;
-
-	private bool _isInsideScreenBoundaries;
-
-	private string _markerType;
 
 	private int _teamType;
 
 	private int _wSign;
 
+	private float _distance;
+
+	private string _markerType;
+
+	private Vec2 _position;
+
+	private Brush _iconBrush;
+
 	private Widget _formationTypeMarker;
 
 	private Widget _teamTypeMarker;
+
+	private TextWidget _nameTextWidget;
 
 	public float FarAlphaTarget { get; set; } = 0.2f;
 
@@ -47,36 +45,146 @@ public class FormationMarkerListPanel : ListPanel
 	public float ClosestFadeoutRange { get; set; } = 3f;
 
 
+	public float FarSizeTarget { get; set; } = 20f;
+
+
+	public float CloseSizeTarget { get; set; } = 50f;
+
+
 	[DataSourceProperty]
-	public TextWidget NameTextWidget
+	public bool IsMarkerEnabled
 	{
 		get
 		{
-			return _nameTextWidget;
+			return _isMarkerEnabled;
 		}
 		set
 		{
-			if (_nameTextWidget != value)
+			if (_isMarkerEnabled != value)
 			{
-				_nameTextWidget = value;
-				OnPropertyChanged(value, "NameTextWidget");
+				_isMarkerEnabled = value;
+				OnPropertyChanged(value, "IsMarkerEnabled");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public TextWidget DistanceTextWidget
+	public bool IsTargetingAFormation
 	{
 		get
 		{
-			return _distanceTextWidget;
+			return _isTargetingAFormation;
 		}
 		set
 		{
-			if (_distanceTextWidget != value)
+			if (_isTargetingAFormation != value)
 			{
-				_distanceTextWidget = value;
-				OnPropertyChanged(value, "DistanceTextWidget");
+				_isTargetingAFormation = value;
+				OnPropertyChanged(value, "IsTargetingAFormation");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int TeamType
+	{
+		get
+		{
+			return _teamType;
+		}
+		set
+		{
+			if (_teamType != value)
+			{
+				_teamType = value;
+				OnPropertyChanged(value, "TeamType");
+				_isMarkersDirty = true;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int WSign
+	{
+		get
+		{
+			return _wSign;
+		}
+		set
+		{
+			if (_wSign != value)
+			{
+				_wSign = value;
+				OnPropertyChanged(value, "WSign");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float Distance
+	{
+		get
+		{
+			return _distance;
+		}
+		set
+		{
+			if (_distance != value)
+			{
+				_distance = value;
+				OnPropertyChanged(value, "Distance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MarkerType
+	{
+		get
+		{
+			return _markerType;
+		}
+		set
+		{
+			if (_markerType != value)
+			{
+				_markerType = value;
+				OnPropertyChanged(value, "MarkerType");
+				_isMarkersDirty = true;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public Vec2 Position
+	{
+		get
+		{
+			return _position;
+		}
+		set
+		{
+			if (_position != value)
+			{
+				_position = value;
+				OnPropertyChanged(value, "Position");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public Brush IconBrush
+	{
+		get
+		{
+			return _iconBrush;
+		}
+		set
+		{
+			if (_iconBrush != value)
+			{
+				_iconBrush = value;
+				OnPropertyChanged(value, "IconBrush");
 			}
 		}
 	}
@@ -118,139 +226,18 @@ public class FormationMarkerListPanel : ListPanel
 	}
 
 	[DataSourceProperty]
-	public Vec2 Position
+	public TextWidget NameTextWidget
 	{
 		get
 		{
-			return _position;
+			return _nameTextWidget;
 		}
 		set
 		{
-			if (_position != value)
+			if (_nameTextWidget != value)
 			{
-				_position = value;
-				OnPropertyChanged(value, "Position");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public float Distance
-	{
-		get
-		{
-			return _distance;
-		}
-		set
-		{
-			if (_distance != value)
-			{
-				_distance = value;
-				OnPropertyChanged(value, "Distance");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int TeamType
-	{
-		get
-		{
-			return _teamType;
-		}
-		set
-		{
-			if (_teamType != value)
-			{
-				_teamType = value;
-				OnPropertyChanged(value, "TeamType");
-				_isMarkersDirty = true;
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int WSign
-	{
-		get
-		{
-			return _wSign;
-		}
-		set
-		{
-			if (_teamType != value)
-			{
-				_wSign = value;
-				OnPropertyChanged(value, "WSign");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string MarkerType
-	{
-		get
-		{
-			return _markerType;
-		}
-		set
-		{
-			if (_markerType != value)
-			{
-				_markerType = value;
-				OnPropertyChanged(value, "MarkerType");
-				_isMarkersDirty = true;
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsMarkerEnabled
-	{
-		get
-		{
-			return _isMarkerEnabled;
-		}
-		set
-		{
-			if (_isMarkerEnabled != value)
-			{
-				_isMarkerEnabled = value;
-				OnPropertyChanged(value, "IsMarkerEnabled");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsTargetingAFormation
-	{
-		get
-		{
-			return _isTargetingAFormation;
-		}
-		set
-		{
-			if (_isTargetingAFormation != value)
-			{
-				_isTargetingAFormation = value;
-				OnPropertyChanged(value, "IsTargetingAFormation");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsInsideScreenBoundaries
-	{
-		get
-		{
-			return _isInsideScreenBoundaries;
-		}
-		set
-		{
-			if (_isInsideScreenBoundaries != value)
-			{
-				_isInsideScreenBoundaries = value;
-				OnPropertyChanged(value, "IsInsideScreenBoundaries");
+				_nameTextWidget = value;
+				OnPropertyChanged(value, "NameTextWidget");
 			}
 		}
 	}
@@ -267,9 +254,9 @@ public class FormationMarkerListPanel : ListPanel
 		if (_isMarkersDirty)
 		{
 			Sprite sprite = null;
-			if (!string.IsNullOrEmpty(MarkerType))
+			if (!string.IsNullOrEmpty(MarkerType) && IconBrush != null)
 			{
-				sprite = base.Context.SpriteData.GetSprite("General\\compass\\" + MarkerType);
+				sprite = IconBrush.GetLayer(MarkerType)?.Sprite;
 			}
 			if (sprite != null && FormationTypeMarker != null)
 			{
@@ -277,7 +264,7 @@ public class FormationMarkerListPanel : ListPanel
 			}
 			else
 			{
-				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 48);
+				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 50);
 			}
 			if (TeamTypeMarker != null)
 			{
@@ -301,70 +288,86 @@ public class FormationMarkerListPanel : ListPanel
 		{
 			float distanceRelatedAlphaTarget = GetDistanceRelatedAlphaTarget(Distance);
 			this.SetGlobalAlphaRecursively(distanceRelatedAlphaTarget);
-			base.IsVisible = (double)distanceRelatedAlphaTarget > 0.05;
+			float distanceRelatedSize = GetDistanceRelatedSize(Distance);
+			TeamTypeMarker.SuggestedWidth = distanceRelatedSize;
+			TeamTypeMarker.SuggestedHeight = distanceRelatedSize;
 		}
 		else
 		{
 			float alphaFactor = LocalLerp(base.AlphaFactor, 0f, delta);
 			this.SetGlobalAlphaRecursively(alphaFactor);
-			base.IsVisible = (double)base.AlphaFactor > 0.05;
 		}
-		UpdateVisibility();
-		if (base.IsVisible)
+		if ((double)base.AlphaFactor > 0.05)
 		{
 			UpdateScreenPosition();
-			DistanceTextWidget.Text = ((int)Distance).ToString();
-		}
-	}
-
-	private void UpdateVisibility()
-	{
-		base.IsVisible = IsInsideScreenBoundaries || IsTargetingAFormation;
-	}
-
-	private void UpdateScreenPosition()
-	{
-		float num = Position.X - base.Size.X / 2f;
-		float num2 = Position.Y - base.Size.Y / 2f;
-		if (WSign > 0 && num - base.Size.X / 2f > 0f && num + base.Size.X / 2f < base.Context.EventManager.PageSize.X && num2 > 0f && num2 + base.Size.Y < base.Context.EventManager.PageSize.Y)
-		{
-			base.IsVisible = true;
-			base.ScaledPositionXOffset = num;
-			base.ScaledPositionYOffset = num2;
-		}
-		else if (IsTargetingAFormation)
-		{
-			base.IsVisible = true;
-			Vec2 position = Position;
-			Vector2 pageSize = base.Context.EventManager.PageSize;
-			Vec2 vec = new Vec2(base.Context.EventManager.PageSize.X / 2f, base.Context.EventManager.PageSize.Y / 2f);
-			position -= vec;
-			if (WSign < 0)
-			{
-				position *= -1f;
-			}
-			float radian = Mathf.Atan2(position.y, position.x) - System.MathF.PI / 2f;
-			float num3 = Mathf.Cos(radian);
-			float num4 = Mathf.Sin(radian);
-			float num5 = num3 / num4;
-			Vec2 vec2 = vec * 1f;
-			position = ((num3 > 0f) ? new Vec2((0f - vec2.y) / num5, vec.y) : new Vec2(vec2.y / num5, 0f - vec.y));
-			if (position.x > vec2.x)
-			{
-				position = new Vec2(vec2.x, (0f - vec2.x) * num5);
-			}
-			else if (position.x < 0f - vec2.x)
-			{
-				position = new Vec2(0f - vec2.x, vec2.x * num5);
-			}
-			position += vec;
-			base.ScaledPositionXOffset = Mathf.Clamp(position.x - base.Size.X / 2f, 0f, pageSize.X - base.Size.X);
-			base.ScaledPositionYOffset = Mathf.Clamp(position.y - base.Size.Y, 0f, pageSize.Y - base.Size.Y);
 		}
 		else
 		{
 			base.IsVisible = false;
 		}
+	}
+
+	private void UpdateScreenPosition()
+	{
+		float num = Position.X - base.Size.X / 2f;
+		float num2 = Position.X + base.Size.X / 2f;
+		float num3 = Position.Y - base.Size.Y / 2f;
+		float num4 = Position.Y + base.Size.Y / 2f;
+		bool flag = WSign > 0 && num > 0f && num2 < base.Context.EventManager.PageSize.X && num3 > 0f && num4 < base.Context.EventManager.PageSize.Y;
+		bool flag2 = WSign > 0 && (num2 > 0f || num < base.Context.EventManager.PageSize.X) && (num4 > 0f || num3 < base.Context.EventManager.PageSize.Y);
+		if (!flag && IsTargetingAFormation)
+		{
+			base.IsVisible = true;
+			Vec2 vec = new Vec2(num, num3);
+			Vector2 vector = base.Context.EventManager.PageSize - base.Size;
+			Vec2 vec2 = vector / 2f;
+			vec -= vec2;
+			if (WSign < 0)
+			{
+				vec *= -1f;
+			}
+			float radian = Mathf.Atan2(vec.y, vec.x) - System.MathF.PI / 2f;
+			float num5 = Mathf.Cos(radian);
+			float num6 = Mathf.Sin(radian);
+			float num7 = num5 / num6;
+			Vec2 vec3 = vec2 * 1f;
+			vec = ((num5 > 0f) ? new Vec2((0f - vec3.y) / num7, vec2.y) : new Vec2(vec3.y / num7, 0f - vec2.y));
+			if (vec.x > vec3.x)
+			{
+				vec = new Vec2(vec3.x, (0f - vec3.x) * num7);
+			}
+			else if (vec.x < 0f - vec3.x)
+			{
+				vec = new Vec2(0f - vec3.x, vec3.x * num7);
+			}
+			vec += vec2;
+			base.ScaledPositionXOffset = Mathf.Clamp(vec.x, 0f, vector.X);
+			base.ScaledPositionYOffset = Mathf.Clamp(vec.y, 0f, vector.Y);
+		}
+		else if (flag || flag2)
+		{
+			base.IsVisible = true;
+			base.ScaledPositionXOffset = num;
+			base.ScaledPositionYOffset = num3;
+		}
+		else
+		{
+			base.IsVisible = false;
+		}
+	}
+
+	private float GetDistanceRelatedSize(float distance)
+	{
+		if (distance > FarDistanceCutoff)
+		{
+			return FarSizeTarget;
+		}
+		if (distance <= FarDistanceCutoff && distance >= CloseDistanceCutoff)
+		{
+			float amount = (float)Math.Pow((distance - CloseDistanceCutoff) / (FarDistanceCutoff - CloseDistanceCutoff), 1.0 / 3.0);
+			return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(CloseSizeTarget, FarSizeTarget, amount), FarSizeTarget, CloseSizeTarget);
+		}
+		return CloseSizeTarget;
 	}
 
 	private float GetDistanceRelatedAlphaTarget(float distance)

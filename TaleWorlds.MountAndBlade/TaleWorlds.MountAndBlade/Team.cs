@@ -11,64 +11,6 @@ namespace TaleWorlds.MountAndBlade;
 
 public class Team : IMissionTeam
 {
-	[Flags]
-	public enum TroopFilter
-	{
-		HighTier = 0x100,
-		LowTier = 0x80,
-		Mount = 0x40,
-		Ranged = 0x20,
-		Melee = 0x10,
-		Shield = 8,
-		Spear = 4,
-		Thrown = 2,
-		Armor = 1
-	}
-
-	private class FormationPocket
-	{
-		public int ScoreToSeek;
-
-		public int BestFitSoFar;
-
-		public Func<Agent, int> PriorityFunction { get; private set; }
-
-		public int MaxValue { get; private set; }
-
-		public int TroopCount { get; private set; }
-
-		public int Index { get; private set; }
-
-		public int AddedTroopCount { get; private set; }
-
-		public FormationPocket(Func<Agent, int> priorityFunction, int maxValue, int troopCount, int index)
-		{
-			PriorityFunction = priorityFunction;
-			MaxValue = maxValue;
-			TroopCount = troopCount;
-			Index = index;
-			AddedTroopCount = 0;
-			ScoreToSeek = maxValue;
-			BestFitSoFar = 0;
-		}
-
-		public void AddTroop()
-		{
-			AddedTroopCount++;
-		}
-
-		public bool IsFormationPocketFilled()
-		{
-			return AddedTroopCount >= TroopCount;
-		}
-
-		public void UpdateScoreToSeek()
-		{
-			ScoreToSeek = BestFitSoFar;
-			BestFitSoFar = 0;
-		}
-	}
-
 	public readonly MBTeam MBTeam;
 
 	private List<OrderController> _orderControllers;
@@ -77,7 +19,11 @@ public class Team : IMissionTeam
 
 	private MBList<Agent> _teamAgents;
 
+	private bool _tickDetachments = true;
+
 	private MBList<(float, WorldPosition, int, Vec2, Vec2, bool)> _cachedEnemyDataForFleeing;
+
+	private bool _alreadyHasCustomOrderController;
 
 	private static Team _invalid;
 
@@ -91,17 +37,43 @@ public class Team : IMissionTeam
 
 	public TeamAIComponent TeamAI { get; private set; }
 
-	public bool IsPlayerTeam => Mission.PlayerTeam == this;
+	public bool IsPlayerTeam
+	{
+		get
+		{
+			if (Mission != null)
+			{
+				return Mission.PlayerTeam == this;
+			}
+			return false;
+		}
+	}
 
 	public bool IsPlayerAlly
 	{
 		get
 		{
-			if (Mission.PlayerTeam != null)
+			if (Mission != null && Mission.PlayerTeam != null)
 			{
 				return Mission.PlayerTeam.Side == Side;
 			}
 			return false;
+		}
+	}
+
+	public TeamSideEnum TeamSide
+	{
+		get
+		{
+			if (!IsPlayerTeam)
+			{
+				if (!IsPlayerAlly)
+				{
+					return TeamSideEnum.EnemyTeam;
+				}
+				return TeamSideEnum.PlayerAllyTeam;
+			}
+			return TeamSideEnum.PlayerTeam;
 		}
 	}
 
@@ -159,16 +131,14 @@ public class Team : IMissionTeam
 	{
 		get
 		{
-			bool result = false;
-			for (int i = 0; i < ActiveAgents.Count; i++)
+			foreach (Agent activeAgent in ActiveAgents)
 			{
-				if (!ActiveAgents[i].IsMount && !ActiveAgents[i].IsPlayerControlled)
+				if (!activeAgent.IsMount && !activeAgent.IsPlayerControlled)
 				{
-					result = true;
-					break;
+					return true;
 				}
 			}
-			return result;
+			return false;
 		}
 	}
 
@@ -181,11 +151,11 @@ public class Team : IMissionTeam
 				return Agent.Main;
 			}
 			Agent agent = null;
-			for (int i = 0; i < ActiveAgents.Count; i++)
+			foreach (Agent activeAgent in ActiveAgents)
 			{
-				if (agent == null || ActiveAgents[i].IsHero)
+				if (agent == null || activeAgent.IsHero)
 				{
-					agent = ActiveAgents[i];
+					agent = activeAgent;
 					if (agent.IsHero)
 					{
 						break;
@@ -200,11 +170,7 @@ public class Team : IMissionTeam
 	{
 		get
 		{
-			if (_invalid == null)
-			{
-				_invalid = new Team(MBTeam.InvalidTeam, BattleSideEnum.None, null);
-			}
-			return _invalid;
+			return _invalid ?? (_invalid = new Team(MBTeam.InvalidTeam, BattleSideEnum.None, null));
 		}
 		internal set
 		{
@@ -239,6 +205,18 @@ public class Team : IMissionTeam
 		MoraleChangeFactor = 1f;
 	}
 
+	public void SetCustomOrderController(OrderController customMasterOrderController, OrderController customPlayerOrderController)
+	{
+		_alreadyHasCustomOrderController = true;
+		OrderController orderController = ((_orderControllers.Count > 0) ? _orderControllers[0] : null);
+		OrderController obj = ((_orderControllers.Count > 1) ? _orderControllers[1] : null);
+		_orderControllers.Clear();
+		_orderControllers.Add(customMasterOrderController);
+		_orderControllers.Add(customPlayerOrderController);
+		orderController?.AssignDelegatesToController(customMasterOrderController);
+		obj?.AssignDelegatesToController(customPlayerOrderController);
+	}
+
 	public void UpdateCachedEnemyDataForFleeing()
 	{
 		if (!_cachedEnemyDataForFleeing.IsEmpty())
@@ -256,20 +234,20 @@ public class Team : IMissionTeam
 				int countOfUnits = item4.CountOfUnits;
 				if (countOfUnits > 0)
 				{
-					WorldPosition medianPosition = item4.QuerySystem.MedianPosition;
+					WorldPosition cachedMedianPosition = item4.CachedMedianPosition;
 					float movementSpeedMaximum = item4.QuerySystem.MovementSpeedMaximum;
 					bool item = (item4.QuerySystem.IsCavalryFormation || item4.QuerySystem.IsRangedCavalryFormation) && item4.HasAnyMountedUnit;
 					if (countOfUnits == 1)
 					{
-						Vec2 asVec = medianPosition.AsVec2;
-						_cachedEnemyDataForFleeing.Add((movementSpeedMaximum, medianPosition, countOfUnits, asVec, asVec, item));
+						Vec2 asVec = cachedMedianPosition.AsVec2;
+						_cachedEnemyDataForFleeing.Add((movementSpeedMaximum, cachedMedianPosition, countOfUnits, asVec, asVec, item));
 						continue;
 					}
 					Vec2 vec = item4.QuerySystem.EstimatedDirection.LeftVec();
 					float num = item4.Width / 2f;
-					Vec2 item2 = medianPosition.AsVec2 - vec * num;
-					Vec2 item3 = medianPosition.AsVec2 + vec * num;
-					_cachedEnemyDataForFleeing.Add((movementSpeedMaximum, medianPosition, countOfUnits, item2, item3, item));
+					Vec2 item2 = cachedMedianPosition.AsVec2 - vec * num;
+					Vec2 item3 = cachedMedianPosition.AsVec2 + vec * num;
+					_cachedEnemyDataForFleeing.Add((movementSpeedMaximum, cachedMedianPosition, countOfUnits, item2, item3, item));
 				}
 			}
 		}
@@ -382,11 +360,11 @@ public class Team : IMissionTeam
 		{
 			return FormationClass.Ranged;
 		}
-		if (mainAgent.HasMount)
+		if (!mainAgent.HasMount)
 		{
-			return FormationClass.Cavalry;
+			return FormationClass.Infantry;
 		}
-		return FormationClass.Infantry;
+		return FormationClass.Cavalry;
 	}
 
 	public void AssignPlayerAsSergeantOfFormation(MissionPeer peer, FormationClass formationClass)
@@ -414,7 +392,7 @@ public class Team : IMissionTeam
 		peer.ControlledFormation = formation;
 		if (GameNetwork.IsServer)
 		{
-			peer.ControlledAgent.UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+			peer.ControlledAgent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
 			if (!peer.IsMine)
 			{
 				GameNetwork.BeginModuleEventAsServer(peer.GetNetworkPeer());
@@ -492,16 +470,16 @@ public class Team : IMissionTeam
 		}
 	}
 
-	public void RearrangeFormationsAccordingToFilters(List<Tuple<Formation, int, TroopFilter, List<Agent>>> MassTransferData)
+	public void RearrangeFormationsAccordingToFilter(List<(Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents)> MassTransferData)
 	{
 		List<Formation> list = new List<Formation>();
-		foreach (Tuple<Formation, int, TroopFilter, List<Agent>> MassTransferDatum in MassTransferData)
+		foreach (var MassTransferDatum in MassTransferData)
 		{
-			MassTransferDatum.Item1.OnMassUnitTransferStart();
-			if (MassTransferDatum.Item1.GetReadonlyMovementOrderReference() == MovementOrder.MovementOrderStop && MassTransferDatum.Item1.CountOfUnits > 0)
+			MassTransferDatum.formation.OnMassUnitTransferStart();
+			if (MassTransferDatum.formation.GetReadonlyMovementOrderReference() == MovementOrder.MovementOrderStop && MassTransferDatum.formation.CountOfUnits > 0)
 			{
-				list.Add(MassTransferDatum.Item1);
-				MassTransferDatum.Item1.SetMovementOrder(MovementOrder.MovementOrderMove(MassTransferDatum.Item1.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None)));
+				list.Add(MassTransferDatum.formation);
+				MassTransferDatum.formation.SetMovementOrder(MovementOrder.MovementOrderMove(MassTransferDatum.formation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None)));
 			}
 		}
 		List<Agent>[] array = new List<Agent>[MassTransferData.Count];
@@ -512,31 +490,31 @@ public class Team : IMissionTeam
 		List<FormationPocket> list2 = new List<FormationPocket>();
 		for (int j = 0; j < MassTransferData.Count; j++)
 		{
-			TroopFilter filter = MassTransferData[j].Item3;
-			Func<Agent, int> func = (Agent agent) => (agent?.Character != null) ? ((((filter & TroopFilter.HighTier) == TroopFilter.HighTier) ? agent.Character.GetBattleTier() : 0) + (((filter & TroopFilter.LowTier) == TroopFilter.LowTier) ? (7 - agent.Character.GetBattleTier()) : 0) + (((filter & TroopFilter.Shield) == TroopFilter.Shield && agent.HasShieldCached) ? 10 : 0) + (((filter & TroopFilter.Spear) == TroopFilter.Spear && agent.HasSpearCached) ? 10 : 0) + (((filter & TroopFilter.Thrown) == TroopFilter.Thrown && agent.HasThrownCached) ? 10 : 0) + (((filter & TroopFilter.Armor) == TroopFilter.Armor && MissionGameModels.Current.AgentStatCalculateModel.HasHeavyArmor(agent)) ? 10 : 0) + ((((filter & TroopFilter.Melee) == TroopFilter.Melee && (filter & TroopFilter.Ranged) == 0 && !agent.IsRangedCached) || ((filter & TroopFilter.Ranged) == TroopFilter.Ranged && (filter & TroopFilter.Melee) == 0 && agent.IsRangedCached)) ? 100 : 0) + (((filter & TroopFilter.Mount) == TroopFilter.Mount == agent.HasMount) ? 1000 : 0)) : ((((filter & TroopFilter.HighTier) == TroopFilter.HighTier) ? 7 : 0) + (((filter & TroopFilter.LowTier) == TroopFilter.LowTier) ? 7 : 0) + (((filter & TroopFilter.Shield) == TroopFilter.Shield) ? 10 : 0) + (((filter & TroopFilter.Spear) == TroopFilter.Spear) ? 10 : 0) + (((filter & TroopFilter.Thrown) == TroopFilter.Thrown) ? 10 : 0) + (((filter & TroopFilter.Armor) == TroopFilter.Armor) ? 10 : 0) + (((filter & TroopFilter.Melee) == 0 || (filter & TroopFilter.Ranged) == 0) ? 100 : 0) + 1000);
-			int maxValue = func(null);
-			list2.Add(new FormationPocket(func, maxValue, MassTransferData[j].Item2, j));
+			TroopTraitsMask item = MassTransferData[j].troopFilter;
+			TroopFilteringUtilities.GetPriorityFunction(item, out Func<Agent, int> priorityFunc);
+			int maxPriority = TroopFilteringUtilities.GetMaxPriority(item);
+			list2.Add(new FormationPocket(priorityFunc, maxPriority, MassTransferData[j].troopCount, j));
 		}
 		list2.RemoveAll((FormationPocket pfamv) => pfamv.TroopCount <= 0);
 		list2 = list2.OrderBy((FormationPocket pfamv) => pfamv.TroopCount).ToList();
 		list2 = list2.OrderByDescending((FormationPocket pfamv) => pfamv.ScoreToSeek).ToList();
 		List<IFormationUnit> list3 = new List<IFormationUnit>();
-		list3 = MassTransferData.SelectMany((Tuple<Formation, int, TroopFilter, List<Agent>> mtd) => mtd.Item1.DetachedUnits.Concat(mtd.Item1.Arrangement.GetAllUnits()).Except(mtd.Item4)).ToList();
-		int num = MassTransferData.Sum((Tuple<Formation, int, TroopFilter, List<Agent>> mtd) => mtd.Item4.Count);
-		int num2 = MassTransferData.Sum((Tuple<Formation, int, TroopFilter, List<Agent>> mtd) => mtd.Item1.CountOfUnits) - num;
+		list3 = MassTransferData.SelectMany(((Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents) mtd) => mtd.formation.DetachedUnits.Concat(mtd.formation.Arrangement.GetAllUnits()).Except(mtd.excludedAgents)).ToList();
+		int num = MassTransferData.Sum(((Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents) mtd) => mtd.excludedAgents.Count);
+		int num2 = MassTransferData.Sum(((Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents) mtd) => mtd.formation.CountOfUnits) - num;
 		int scoreToSeek = list2[0].ScoreToSeek;
 		while (num2 > 0)
 		{
 			for (int k = 0; k < num2; k++)
 			{
-				Agent agent2 = list3[k] as Agent;
+				Agent agent = list3[k] as Agent;
 				for (int l = 0; l < list2.Count; l++)
 				{
 					FormationPocket formationPocket = list2[l];
-					int num3 = formationPocket.PriorityFunction(agent2);
+					int num3 = formationPocket.PriorityFunction(agent);
 					if (scoreToSeek <= formationPocket.ScoreToSeek && num3 >= scoreToSeek)
 					{
-						array[formationPocket.Index].Add(agent2);
+						array[formationPocket.Index].Add(agent);
 						formationPocket.AddTroop();
 						if (formationPocket.IsFormationPocketFilled())
 						{
@@ -547,9 +525,9 @@ public class Team : IMissionTeam
 						k--;
 						break;
 					}
-					if (num3 > formationPocket.BestFitSoFar)
+					if (num3 > formationPocket.BestScoreSoFar)
 					{
-						formationPocket.BestFitSoFar = num3;
+						formationPocket.SetBestScoreSoFar(num3);
 					}
 				}
 			}
@@ -566,35 +544,27 @@ public class Team : IMissionTeam
 		}
 		for (int n = 0; n < array.Length; n++)
 		{
-			foreach (Agent item in array[n])
+			foreach (Agent item2 in array[n])
 			{
-				item.Formation = MassTransferData[n].Item1;
+				item2.Formation = MassTransferData[n].formation;
 			}
 		}
-		foreach (Tuple<Formation, int, TroopFilter, List<Agent>> MassTransferDatum2 in MassTransferData)
+		foreach (var MassTransferDatum2 in MassTransferData)
 		{
-			TriggerOnFormationsChanged(MassTransferDatum2.Item1);
-			MassTransferDatum2.Item1.OnMassUnitTransferEnd();
-			if (MassTransferDatum2.Item1.CountOfUnits > 0 && !MassTransferDatum2.Item1.OrderPositionIsValid)
+			TriggerOnFormationsChanged(MassTransferDatum2.formation);
+			MassTransferDatum2.formation.OnMassUnitTransferEnd();
+			if (MassTransferDatum2.formation.CountOfUnits > 0 && !MassTransferDatum2.formation.OrderPositionIsValid)
 			{
-				Vec2 averagePositionOfUnits = MassTransferDatum2.Item1.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false);
+				Vec2 averagePositionOfUnits = MassTransferDatum2.formation.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false);
 				float height = Mission.Scene.GetTerrainHeight(averagePositionOfUnits);
 				Mission.Scene.GetHeightAtPoint(averagePositionOfUnits, BodyFlags.None, ref height);
 				WorldPosition value = new WorldPosition(position: new Vec3(averagePositionOfUnits, height), scene: Mission.Scene, navMesh: UIntPtr.Zero, hasValidZ: false);
-				MassTransferDatum2.Item1.SetPositioning(value);
+				MassTransferDatum2.formation.SetPositioning(value);
 			}
 		}
-		foreach (Formation item2 in list)
+		foreach (Formation item3 in list)
 		{
-			item2.SetMovementOrder(MovementOrder.MovementOrderStop);
-		}
-	}
-
-	public void OnDeployed()
-	{
-		foreach (MissionBehavior missionBehavior in Mission.MissionBehaviors)
-		{
-			missionBehavior.OnTeamDeployed(this);
+			item3.SetMovementOrder(MovementOrder.MovementOrderStop);
 		}
 	}
 
@@ -625,7 +595,10 @@ public class Team : IMissionTeam
 		{
 			return;
 		}
-		DetachmentManager.TickDetachments();
+		if (_tickDetachments)
+		{
+			DetachmentManager.TickDetachments();
+		}
 		foreach (Formation item2 in FormationsIncludingSpecialAndEmpty)
 		{
 			if (item2.CountOfUnits > 0)
@@ -635,9 +608,9 @@ public class Team : IMissionTeam
 		}
 	}
 
-	public Formation GetFormation(FormationClass formationClass)
+	public Formation GetFormation(FormationClass formationIndex)
 	{
-		return FormationsIncludingSpecialAndEmpty[(int)formationClass];
+		return FormationsIncludingSpecialAndEmpty[(int)formationIndex];
 	}
 
 	public void SetIsEnemyOf(Team otherTeam, bool isEnemyOf)
@@ -722,11 +695,6 @@ public class Team : IMissionTeam
 			orderController.OnOrderIssued += OrderController_OnOrderIssued;
 		}
 		return orderController;
-	}
-
-	public void ExpireAIQuerySystem()
-	{
-		QuerySystem.Expire();
 	}
 
 	public void SetPlayerRole(bool isPlayerGeneral, bool isPlayerSergeant)
@@ -881,6 +849,11 @@ public class Team : IMissionTeam
 			return zero * (1f / num);
 		}
 		return Vec2.Invalid;
+	}
+
+	public void DisableDetachmentTicking()
+	{
+		_tickDetachments = false;
 	}
 
 	[Conditional("DEBUG")]

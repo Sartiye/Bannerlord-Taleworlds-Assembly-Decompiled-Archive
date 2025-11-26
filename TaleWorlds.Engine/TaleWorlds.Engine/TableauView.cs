@@ -11,9 +11,9 @@ public sealed class TableauView : SceneView
 	{
 	}
 
-	public static TableauView CreateTableauView()
+	public static TableauView CreateTableauView(string viewName)
 	{
-		return EngineApplicationInterface.ITableauView.CreateTableauView();
+		return EngineApplicationInterface.ITableauView.CreateTableauView(viewName);
 	}
 
 	public void SetSortingEnabled(bool value)

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -18,10 +18,6 @@ public class MissionGauntletBattleScore : MissionView
 	private ScoreboardBaseVM _dataSource;
 
 	private GauntletLayer _gauntletLayer;
-
-	private bool _isPreparationEnded;
-
-	private bool _isSiegeScoreboard;
 
 	private bool _toOpen;
 
@@ -42,7 +38,6 @@ public class MissionGauntletBattleScore : MissionView
 		base.OnMissionScreenInitialize();
 		base.Mission.IsFriendlyMission = false;
 		_dataSource.Initialize(base.MissionScreen, base.Mission, null, ToggleScoreboard);
-		_isSiegeScoreboard = base.Mission.HasMissionBehavior<SiegeDeploymentMissionController>();
 		CreateView();
 		_dataSource.SetShortcuts(new ScoreboardHotkeys
 		{
@@ -55,7 +50,7 @@ public class MissionGauntletBattleScore : MissionView
 
 	private void CreateView()
 	{
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("Scoreboard", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("SPScoreboard", _dataSource);
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
@@ -95,16 +90,15 @@ public class MissionGauntletBattleScore : MissionView
 		base.Mission.OnMainAgentChanged += Mission_OnMainAgentChanged;
 	}
 
-	public override void OnDeploymentFinished()
-	{
-		_isPreparationEnded = true;
-	}
-
-	private void Mission_OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void Mission_OnMainAgentChanged(Agent oldAgent)
 	{
 		if (base.Mission.MainAgent == null)
 		{
 			_dataSource.OnMainHeroDeath();
+		}
+		else if (base.Mission.MainAgent.Character != Game.Current.PlayerTroop)
+		{
+			_dataSource.OnTakenControlOfAnotherAgent();
 		}
 	}
 
@@ -175,7 +169,7 @@ public class MissionGauntletBattleScore : MissionView
 		}
 		goto IL_020d;
 		IL_020d:
-		if (_toOpen && base.MissionScreen.SetDisplayDialog(value: true))
+		if (_toOpen)
 		{
 			OnOpen();
 		}
@@ -186,7 +180,7 @@ public class MissionGauntletBattleScore : MissionView
 		}
 		if (_dataSource.IsOver && _dataSource.ShowScoreboard && (base.Mission.InputManager.IsHotKeyPressed("Confirm") || _gauntletLayer.Input.IsHotKeyPressed("Confirm")))
 		{
-			_dataSource.ExecuteQuitAction();
+			ExecuteQuitAction();
 		}
 		if (_dataSource.ShowScoreboard && !base.DebugInput.IsControlDown() && base.DebugInput.IsHotKeyPressed("ShowHighlightsSummary"))
 		{
@@ -205,6 +199,11 @@ public class MissionGauntletBattleScore : MissionView
 			OnClose();
 		}
 		goto IL_020d;
+	}
+
+	private void ExecuteQuitAction()
+	{
+		_dataSource.ExecuteQuitAction();
 	}
 
 	private bool CanOpenScoreboard()
@@ -231,17 +230,16 @@ public class MissionGauntletBattleScore : MissionView
 	private void OnOpen()
 	{
 		_toOpen = false;
-		if (_dataSource.ShowScoreboard || (_isSiegeScoreboard && !_isPreparationEnded))
+		if (!_dataSource.ShowScoreboard && base.Mission.Mode != MissionMode.Deployment)
 		{
-			base.MissionScreen.SetDisplayDialog(value: false);
-			return;
-		}
-		_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
-		_dataSource.ShowScoreboard = true;
-		base.MissionScreen.SetCameraLockState(isLocked: true);
-		if (_dataSource.IsOver || _dataSource.IsMainCharacterDead)
-		{
-			SetMouseState(isEnabled: true);
+			base.MissionScreen.SetDisplayDialog(value: true);
+			_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
+			_dataSource.ShowScoreboard = true;
+			base.MissionScreen.SetCameraLockState(isLocked: true);
+			if (_dataSource.IsOver || _dataSource.IsMainCharacterDead || ScreenManager.GetMouseVisibility())
+			{
+				SetMouseState(isEnabled: true);
+			}
 		}
 	}
 
@@ -273,16 +271,28 @@ public class MissionGauntletBattleScore : MissionView
 		_isMouseEnabled = isEnabled;
 	}
 
+	public override void OnDeploymentFinished()
+	{
+		base.OnDeploymentFinished();
+		_dataSource?.OnDeploymentFinished();
+	}
+
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("force_toggle", "scoreboard")]

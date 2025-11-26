@@ -1,7 +1,10 @@
+using TaleWorlds.DotNet;
+
 namespace TaleWorlds.Engine;
 
-public enum EditDataPolicy
+[EngineStruct("rglMesh::Edit_data_policy", false, null)]
+public enum EditDataPolicy : sbyte
 {
-	Keep_in_file,
-	Keep_until_first_render
+	KeepInFile,
+	KeepUntilFirstRender
 }

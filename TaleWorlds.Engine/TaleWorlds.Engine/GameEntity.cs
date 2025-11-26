@@ -9,7 +9,7 @@ namespace TaleWorlds.Engine;
 [EngineClass("rglEntity")]
 public sealed class GameEntity : NativeObject
 {
-	[EngineStruct("rglEntity_component_type", false)]
+	[EngineStruct("rglEntity_component_type", true, "rgl_ecomp", false)]
 	public enum ComponentType : uint
 	{
 		MetaMesh,
@@ -22,11 +22,12 @@ public sealed class GameEntity : NativeObject
 		Decal
 	}
 
-	public enum Mobility
+	[EngineStruct("rglEntity::Mobility", false, null)]
+	public enum Mobility : sbyte
 	{
-		stationary,
-		dynamic,
-		dynamic_forced
+		Stationary,
+		Dynamic,
+		DynamicForced
 	}
 
 	[Flags]
@@ -41,6 +42,8 @@ public sealed class GameEntity : NativeObject
 	}
 
 	public Scene Scene => EngineApplicationInterface.IGameEntity.GetScene(base.Pointer);
+
+	public WeakGameEntity WeakEntity => new WeakGameEntity(base.Pointer);
 
 	private int ScriptCount => EngineApplicationInterface.IGameEntity.GetScriptComponentCount(base.Pointer);
 
@@ -60,11 +63,11 @@ public sealed class GameEntity : NativeObject
 	{
 		get
 		{
-			return (EntityFlags)EngineApplicationInterface.IGameEntity.GetEntityFlags(base.Pointer);
+			return EngineApplicationInterface.IGameEntity.GetEntityFlags(base.Pointer);
 		}
 		set
 		{
-			EngineApplicationInterface.IGameEntity.SetEntityFlags(base.Pointer, (uint)value);
+			EngineApplicationInterface.IGameEntity.SetEntityFlags(base.Pointer, value);
 		}
 	}
 
@@ -72,11 +75,11 @@ public sealed class GameEntity : NativeObject
 	{
 		get
 		{
-			return (EntityVisibilityFlags)EngineApplicationInterface.IGameEntity.GetEntityVisibilityFlags(base.Pointer);
+			return EngineApplicationInterface.IGameEntity.GetEntityVisibilityFlags(base.Pointer);
 		}
 		set
 		{
-			EngineApplicationInterface.IGameEntity.SetEntityVisibilityFlags(base.Pointer, (uint)value);
+			EngineApplicationInterface.IGameEntity.SetEntityVisibilityFlags(base.Pointer, value);
 		}
 	}
 
@@ -110,12 +113,12 @@ public sealed class GameEntity : NativeObject
 	{
 		get
 		{
-			GameEntity gameEntity = this;
-			while (gameEntity.Parent != null)
+			UIntPtr rootParentPointer = EngineApplicationInterface.IGameEntity.GetRootParentPointer(base.Pointer);
+			if (!(rootParentPointer != UIntPtr.Zero))
 			{
-				gameEntity = gameEntity.Parent;
+				return null;
 			}
-			return gameEntity;
+			return new GameEntity(rootParentPointer);
 		}
 	}
 
@@ -124,10 +127,6 @@ public sealed class GameEntity : NativeObject
 	public int ClothSimulatorComponentCount => EngineApplicationInterface.IGameEntity.GetComponentCount(base.Pointer, ComponentType.ClothSimulator);
 
 	public Vec3 GlobalBoxMax => EngineApplicationInterface.IGameEntity.GetGlobalBoxMax(base.Pointer);
-
-	public Vec3 PhysicsGlobalBoxMax => EngineApplicationInterface.IGameEntity.GetPhysicsBoundingBoxMax(base.Pointer);
-
-	public Vec3 PhysicsGlobalBoxMin => EngineApplicationInterface.IGameEntity.GetPhysicsBoundingBoxMin(base.Pointer);
 
 	public Vec3 GlobalBoxMin => EngineApplicationInterface.IGameEntity.GetGlobalBoxMin(base.Pointer);
 
@@ -150,6 +149,15 @@ public sealed class GameEntity : NativeObject
 	internal GameEntity(UIntPtr pointer)
 	{
 		Construct(pointer);
+	}
+
+	public static GameEntity CreateFromWeakEntity(WeakGameEntity weakEntity)
+	{
+		if (!weakEntity.IsValid)
+		{
+			return null;
+		}
+		return new GameEntity(weakEntity.Pointer);
 	}
 
 	public UIntPtr GetScenePointer()
@@ -184,7 +192,12 @@ public sealed class GameEntity : NativeObject
 
 	public void SetMobility(Mobility mobility)
 	{
-		EngineApplicationInterface.IGameEntity.SetMobility(base.Pointer, (int)mobility);
+		EngineApplicationInterface.IGameEntity.SetMobility(base.Pointer, mobility);
+	}
+
+	public Mobility GetMobility()
+	{
+		return EngineApplicationInterface.IGameEntity.GetMobility(base.Pointer);
 	}
 
 	public void AddMesh(Mesh mesh, bool recomputeBoundingBox = true)
@@ -200,6 +213,11 @@ public sealed class GameEntity : NativeObject
 	public void AddMultiMeshToSkeletonBone(MetaMesh metaMesh, sbyte boneIndex)
 	{
 		EngineApplicationInterface.IGameEntity.AddMultiMeshToSkeletonBone(base.Pointer, metaMesh.Pointer, boneIndex);
+	}
+
+	public void SetColorToAllMeshesWithTagRecursive(uint color, string tag)
+	{
+		EngineApplicationInterface.IGameEntity.SetColorToAllMeshesWithTagRecursive(base.Pointer, color, tag);
 	}
 
 	public IEnumerable<Mesh> GetAllMeshesWithTag(string tag)
@@ -291,6 +309,11 @@ public sealed class GameEntity : NativeObject
 		return EngineApplicationInterface.IGameEntity.HasComponent(base.Pointer, component.Pointer);
 	}
 
+	public bool IsInEditorScene()
+	{
+		return false;
+	}
+
 	public bool RemoveComponent(GameEntityComponent component)
 	{
 		return EngineApplicationInterface.IGameEntity.RemoveComponent(base.Pointer, component.Pointer);
@@ -316,9 +339,9 @@ public sealed class GameEntity : NativeObject
 		return EngineApplicationInterface.IGameEntity.GetLodLevelForDistanceSq(base.Pointer, distSq);
 	}
 
-	public void GetQuickBoneEntitialFrame(sbyte index, ref MatrixFrame frame)
+	public void GetQuickBoneEntitialFrame(sbyte index, out MatrixFrame frame)
 	{
-		EngineApplicationInterface.IGameEntity.GetQuickBoneEntitialFrame(base.Pointer, index, ref frame);
+		EngineApplicationInterface.IGameEntity.GetQuickBoneEntitialFrame(base.Pointer, index, out frame);
 	}
 
 	public void UpdateVisibilityMask()
@@ -326,15 +349,15 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.UpdateVisibilityMask(base.Pointer);
 	}
 
-	public static GameEntity CreateEmpty(Scene scene, bool isModifiableFromEditor = true)
+	public static GameEntity CreateEmpty(Scene scene, bool isModifiableFromEditor = true, bool createPhysics = true, bool callScriptCallbacks = true)
 	{
-		return EngineApplicationInterface.IGameEntity.CreateEmpty(scene.Pointer, isModifiableFromEditor, (UIntPtr)0uL);
+		return EngineApplicationInterface.IGameEntity.CreateEmpty(scene.Pointer, isModifiableFromEditor, (UIntPtr)0uL, createPhysics, callScriptCallbacks);
 	}
 
 	public static GameEntity CreateEmptyDynamic(Scene scene, bool isModifiableFromEditor = true)
 	{
 		GameEntity gameEntity = CreateEmpty(scene, isModifiableFromEditor);
-		gameEntity.SetMobility(Mobility.dynamic);
+		gameEntity.SetMobility(Mobility.Dynamic);
 		return gameEntity;
 	}
 
@@ -343,28 +366,38 @@ public sealed class GameEntity : NativeObject
 		return EngineApplicationInterface.IGameEntity.CreateEmptyWithoutScene();
 	}
 
-	public static GameEntity CopyFrom(Scene scene, GameEntity entity)
+	public static GameEntity CopyFrom(Scene scene, GameEntity entity, bool createPhysics = true, bool callScriptCallbacks = true)
 	{
-		return EngineApplicationInterface.IGameEntity.CreateEmpty(scene.Pointer, isModifiableFromEditor: false, entity.Pointer);
+		return EngineApplicationInterface.IGameEntity.CreateEmpty(scene.Pointer, isModifiableFromEditor: false, entity.Pointer, createPhysics, callScriptCallbacks);
 	}
 
-	public static GameEntity Instantiate(Scene scene, string prefabName, bool callScriptCallbacks)
+	public static GameEntity CopyFrom(Scene scene, WeakGameEntity entity, bool createPhysics = true, bool callScriptCallbacks = true)
 	{
+		return EngineApplicationInterface.IGameEntity.CreateEmpty(scene.Pointer, isModifiableFromEditor: false, entity.Pointer, createPhysics, callScriptCallbacks);
+	}
+
+	public static GameEntity Instantiate(Scene scene, string prefabName, bool callScriptCallbacks, bool createPhysics = true, string scriptInclusingTag = "")
+	{
+		uint scriptInclusionHashTag = uint.MaxValue;
+		if (scriptInclusingTag.Length > 0)
+		{
+			scriptInclusionHashTag = Managed.GetStringHashCode(scriptInclusingTag);
+		}
 		if (scene != null)
 		{
-			return EngineApplicationInterface.IGameEntity.CreateFromPrefab(scene.Pointer, prefabName, callScriptCallbacks);
+			return EngineApplicationInterface.IGameEntity.CreateFromPrefab(scene.Pointer, prefabName, callScriptCallbacks, createPhysics, scriptInclusionHashTag);
 		}
-		return EngineApplicationInterface.IGameEntity.CreateFromPrefab(new UIntPtr(0u), prefabName, callScriptCallbacks);
+		return EngineApplicationInterface.IGameEntity.CreateFromPrefab(new UIntPtr(0u), prefabName, callScriptCallbacks, createPhysics, scriptInclusionHashTag);
 	}
 
-	public void CallScriptCallbacks()
+	public void CallScriptCallbacks(bool registerScriptComponents)
 	{
-		EngineApplicationInterface.IGameEntity.CallScriptCallbacks(base.Pointer);
+		EngineApplicationInterface.IGameEntity.CallScriptCallbacks(base.Pointer, registerScriptComponents);
 	}
 
-	public static GameEntity Instantiate(Scene scene, string prefabName, MatrixFrame frame)
+	public static GameEntity Instantiate(Scene scene, string prefabName, MatrixFrame frame, bool callScriptCallbacks = true, string scriptInclusingTag = "")
 	{
-		return EngineApplicationInterface.IGameEntity.CreateFromPrefabWithInitialFrame(scene.Pointer, prefabName, ref frame);
+		return EngineApplicationInterface.IGameEntity.CreateFromPrefabWithInitialFrame(scene.Pointer, prefabName, ref frame, callScriptCallbacks);
 	}
 
 	public bool IsGhostObject()
@@ -372,9 +405,9 @@ public sealed class GameEntity : NativeObject
 		return EngineApplicationInterface.IGameEntity.IsGhostObject(base.Pointer);
 	}
 
-	public void CreateAndAddScriptComponent(string name)
+	public void CreateAndAddScriptComponent(string name, bool callScriptCallbacks)
 	{
-		EngineApplicationInterface.IGameEntity.CreateAndAddScriptComponent(base.Pointer, name);
+		EngineApplicationInterface.IGameEntity.CreateAndAddScriptComponent(base.Pointer, name, callScriptCallbacks);
 	}
 
 	public static bool PrefabExists(string name)
@@ -441,6 +474,18 @@ public sealed class GameEntity : NativeObject
 		return false;
 	}
 
+	public GameEntity GetFirstChildEntityWithTag(string tag)
+	{
+		foreach (GameEntity child in GetChildren())
+		{
+			if (child.HasTag(tag))
+			{
+				return child;
+			}
+		}
+		return null;
+	}
+
 	public bool HasScriptOfType(Type t)
 	{
 		return GetScriptComponents().Any((ScriptComponentBehavior sc) => sc.GetType().IsAssignableFrom(t));
@@ -449,11 +494,11 @@ public sealed class GameEntity : NativeObject
 	public T GetFirstScriptOfTypeInFamily<T>() where T : ScriptComponentBehavior
 	{
 		T firstScriptOfType = GetFirstScriptOfType<T>();
-		GameEntity gameEntity = this;
-		while (firstScriptOfType == null && gameEntity.Parent != null)
+		WeakGameEntity weakGameEntity = WeakEntity;
+		while (firstScriptOfType == null && weakGameEntity.Parent != null)
 		{
-			gameEntity = gameEntity.Parent;
-			firstScriptOfType = gameEntity.GetFirstScriptOfType<T>();
+			weakGameEntity = weakGameEntity.Parent;
+			firstScriptOfType = weakGameEntity.GetFirstScriptOfType<T>();
 		}
 		return firstScriptOfType;
 	}
@@ -469,6 +514,47 @@ public sealed class GameEntity : NativeObject
 			}
 		}
 		return null;
+	}
+
+	public T GetFirstScriptOfTypeRecursive<T>() where T : ScriptComponentBehavior
+	{
+		int scriptCount = ScriptCount;
+		for (int i = 0; i < scriptCount; i++)
+		{
+			if (GetScriptAtIndex(i) is T result)
+			{
+				return result;
+			}
+		}
+		scriptCount = ChildCount;
+		for (int j = 0; j < scriptCount; j++)
+		{
+			T firstScriptOfTypeRecursive = GetChild(j).GetFirstScriptOfTypeRecursive<T>();
+			if (firstScriptOfTypeRecursive != null)
+			{
+				return firstScriptOfTypeRecursive;
+			}
+		}
+		return null;
+	}
+
+	public int GetScriptCountOfTypeRecursive<T>() where T : ScriptComponentBehavior
+	{
+		int scriptCount = ScriptCount;
+		int num = 0;
+		for (int i = 0; i < scriptCount; i++)
+		{
+			if (GetScriptAtIndex(i) is T)
+			{
+				num++;
+			}
+		}
+		scriptCount = ChildCount;
+		for (int j = 0; j < scriptCount; j++)
+		{
+			num += GetChild(j).GetScriptCountOfTypeRecursive<T>();
+		}
+		return num;
 	}
 
 	internal static GameEntity GetFirstEntityWithName(Scene scene, string entityName)
@@ -518,30 +604,45 @@ public sealed class GameEntity : NativeObject
 
 	internal static GameEntity GetFirstEntityWithTag(Scene scene, string tag)
 	{
-		return EngineApplicationInterface.IGameEntity.GetFirstEntityWithTag(scene.Pointer, tag);
+		UIntPtr firstEntityWithTag = EngineApplicationInterface.IGameEntity.GetFirstEntityWithTag(scene.Pointer, tag);
+		if (firstEntityWithTag != UIntPtr.Zero)
+		{
+			return new GameEntity(firstEntityWithTag);
+		}
+		return null;
 	}
 
 	internal static GameEntity GetNextEntityWithTag(Scene scene, GameEntity startEntity, string tag)
 	{
-		if (!(startEntity == null))
+		if (startEntity != null)
 		{
-			return EngineApplicationInterface.IGameEntity.GetNextEntityWithTag(startEntity.Pointer, tag);
+			UIntPtr nextEntityWithTag = EngineApplicationInterface.IGameEntity.GetNextEntityWithTag(startEntity.Pointer, tag);
+			if (nextEntityWithTag != UIntPtr.Zero)
+			{
+				return new GameEntity(nextEntityWithTag);
+			}
+			return null;
 		}
 		return GetFirstEntityWithTag(scene, tag);
 	}
 
 	internal static GameEntity GetFirstEntityWithTagExpression(Scene scene, string tagExpression)
 	{
-		return EngineApplicationInterface.IGameEntity.GetFirstEntityWithTagExpression(scene.Pointer, tagExpression);
+		return new GameEntity(EngineApplicationInterface.IGameEntity.GetFirstEntityWithTagExpression(scene.Pointer, tagExpression));
 	}
 
 	internal static GameEntity GetNextEntityWithTagExpression(Scene scene, GameEntity startEntity, string tagExpression)
 	{
-		if (!(startEntity == null))
+		if (startEntity == null)
 		{
-			return EngineApplicationInterface.IGameEntity.GetNextEntityWithTagExpression(startEntity.Pointer, tagExpression);
+			return GetFirstEntityWithTagExpression(scene, tagExpression);
 		}
-		return GetFirstEntityWithTagExpression(scene, tagExpression);
+		UIntPtr nextEntityWithTagExpression = EngineApplicationInterface.IGameEntity.GetNextEntityWithTagExpression(startEntity.Pointer, tagExpression);
+		if (nextEntityWithTagExpression != UIntPtr.Zero)
+		{
+			return new GameEntity(nextEntityWithTagExpression);
+		}
+		return null;
 	}
 
 	internal static GameEntity GetNextPrefab(GameEntity current)
@@ -550,6 +651,15 @@ public sealed class GameEntity : NativeObject
 	}
 
 	public static GameEntity CopyFromPrefab(GameEntity prefab)
+	{
+		if (!(prefab != null))
+		{
+			return null;
+		}
+		return EngineApplicationInterface.IGameEntity.CopyFromPrefab(prefab.Pointer);
+	}
+
+	public static GameEntity CopyFromPrefab(WeakGameEntity prefab)
 	{
 		if (!(prefab != null))
 		{
@@ -630,9 +740,14 @@ public sealed class GameEntity : NativeObject
 		}
 	}
 
-	public void SetFrame(ref MatrixFrame frame)
+	public void SetFrame(ref MatrixFrame frame, bool isTeleportation = true)
 	{
-		EngineApplicationInterface.IGameEntity.SetFrame(base.Pointer, ref frame);
+		SetLocalFrame(ref frame, isTeleportation);
+	}
+
+	public void SetLocalFrame(ref MatrixFrame frame, bool isTeleportation)
+	{
+		EngineApplicationInterface.IGameEntity.SetLocalFrame(base.Pointer, ref frame, isTeleportation);
 	}
 
 	public void SetClothComponentKeepState(MetaMesh metaMesh, bool state)
@@ -652,14 +767,70 @@ public sealed class GameEntity : NativeObject
 
 	public MatrixFrame GetFrame()
 	{
-		MatrixFrame outFrame = default(MatrixFrame);
-		EngineApplicationInterface.IGameEntity.GetFrame(base.Pointer, ref outFrame);
+		return GetLocalFrame();
+	}
+
+	public void GetLocalFrame(out MatrixFrame frame)
+	{
+		EngineApplicationInterface.IGameEntity.GetLocalFrame(base.Pointer, out frame);
+	}
+
+	public MatrixFrame GetLocalFrame()
+	{
+		EngineApplicationInterface.IGameEntity.GetLocalFrame(base.Pointer, out var outFrame);
 		return outFrame;
 	}
 
-	public void GetFrame(out MatrixFrame frame)
+	public MatrixFrame GetGlobalFrame()
 	{
-		frame = GetFrame();
+		EngineApplicationInterface.IGameEntity.GetGlobalFrame(base.Pointer, out var outFrame);
+		return outFrame;
+	}
+
+	public MatrixFrame GetGlobalFrameImpreciseForFixedTick()
+	{
+		EngineApplicationInterface.IGameEntity.GetGlobalFrameImpreciseForFixedTick(base.Pointer, out var outFrame);
+		return outFrame;
+	}
+
+	public MatrixFrame ComputePreciseGlobalFrameForFixedTickSlow()
+	{
+		MatrixFrame m = GetLocalFrame();
+		WeakGameEntity parent = WeakEntity.Parent;
+		while (parent.Parent != null)
+		{
+			m = parent.GetLocalFrame().TransformToParent(in m);
+			parent = parent.Parent;
+		}
+		return parent.GetBodyWorldTransform().TransformToParent(in m);
+	}
+
+	public void SetGlobalFrame(in MatrixFrame frame, bool isTeleportation = true)
+	{
+		EngineApplicationInterface.IGameEntity.SetGlobalFrame(base.Pointer, in frame, isTeleportation);
+	}
+
+	public MatrixFrame GetPreviousGlobalFrame()
+	{
+		EngineApplicationInterface.IGameEntity.GetPreviousGlobalFrame(base.Pointer, out var frame);
+		return frame;
+	}
+
+	public MatrixFrame GetBodyWorldTransform()
+	{
+		EngineApplicationInterface.IGameEntity.GetBodyWorldTransform(base.Pointer, out var frame);
+		return frame;
+	}
+
+	public MatrixFrame GetBodyVisualWorldTransform()
+	{
+		EngineApplicationInterface.IGameEntity.GetBodyVisualWorldTransform(base.Pointer, out var frame);
+		return frame;
+	}
+
+	public void SetLocalPosition(Vec3 position)
+	{
+		EngineApplicationInterface.IGameEntity.SetLocalPosition(base.Pointer, position);
 	}
 
 	public void UpdateTriadFrameForEditor()
@@ -678,39 +849,9 @@ public sealed class GameEntity : NativeObject
 		}
 	}
 
-	public MatrixFrame GetGlobalFrame()
+	public PhysicsMaterial GetPhysicsMaterial()
 	{
-		EngineApplicationInterface.IGameEntity.GetGlobalFrame(base.Pointer, out var outFrame);
-		return outFrame;
-	}
-
-	public void SetGlobalFrame(in MatrixFrame frame)
-	{
-		EngineApplicationInterface.IGameEntity.SetGlobalFrame(base.Pointer, in frame);
-	}
-
-	public void SetGlobalFrameMT(in MatrixFrame frame)
-	{
-		using (new TWSharedMutexReadLock(Scene.PhysicsAndRayCastLock))
-		{
-			EngineApplicationInterface.IGameEntity.SetGlobalFrame(base.Pointer, in frame);
-		}
-	}
-
-	public MatrixFrame GetPreviousGlobalFrame()
-	{
-		EngineApplicationInterface.IGameEntity.GetPreviousGlobalFrame(base.Pointer, out var frame);
-		return frame;
-	}
-
-	public bool HasPhysicsBody()
-	{
-		return EngineApplicationInterface.IGameEntity.HasPhysicsBody(base.Pointer);
-	}
-
-	public void SetLocalPosition(Vec3 position)
-	{
-		EngineApplicationInterface.IGameEntity.SetLocalPosition(base.Pointer, position);
+		return PhysicsMaterial.GetFromIndex(EngineApplicationInterface.IGameEntity.GetPhysicsMaterialIndex(base.Pointer));
 	}
 
 	public void SetBodyFlags(BodyFlags bodyFlags)
@@ -751,12 +892,12 @@ public sealed class GameEntity : NativeObject
 
 	public Vec3 GetGlobalScale()
 	{
-		return EngineApplicationInterface.IGameEntity.GetGlobalScale(this);
+		return EngineApplicationInterface.IGameEntity.GetGlobalScale(base.Pointer);
 	}
 
 	public Vec3 GetLocalScale()
 	{
-		return GetFrame().rotation.GetScaleVector();
+		return GetLocalFrame().rotation.GetScaleVector();
 	}
 
 	public void SetAnimationSoundActivation(bool activate)
@@ -801,6 +942,11 @@ public sealed class GameEntity : NativeObject
 	public sbyte GetBoneCount()
 	{
 		return EngineApplicationInterface.IGameEntity.GetBoneCount(base.Pointer);
+	}
+
+	public float GetWaterLevelAtPosition(Vec2 position, bool useWaterRenderer, bool checkWaterBodyEntities)
+	{
+		return EngineApplicationInterface.IGameEntity.GetWaterLevelAtPosition(base.Pointer, in position, useWaterRenderer, checkWaterBodyEntities);
 	}
 
 	public MatrixFrame GetBoneEntitialFrameWithIndex(sbyte boneIndex)
@@ -952,29 +1098,34 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.SetRuntimeEmissionRateMultiplier(base.Pointer, emissionRateMultiplier);
 	}
 
+	public BoundingBox GetLocalBoundingBox()
+	{
+		return EngineApplicationInterface.IGameEntity.GetLocalBoundingBox(base.Pointer);
+	}
+
+	public BoundingBox GetGlobalBoundingBox()
+	{
+		return EngineApplicationInterface.IGameEntity.GetGlobalBoundingBox(base.Pointer);
+	}
+
 	public Vec3 GetBoundingBoxMin()
 	{
 		return EngineApplicationInterface.IGameEntity.GetBoundingBoxMin(base.Pointer);
 	}
 
-	public float GetBoundingBoxRadius()
+	public void SetHasCustomBoundingBoxValidationSystem(bool hasCustomBoundingBox)
 	{
-		return EngineApplicationInterface.IGameEntity.GetRadius(base.Pointer);
+		EngineApplicationInterface.IGameEntity.SetHasCustomBoundingBoxValidationSystem(base.Pointer, hasCustomBoundingBox);
+	}
+
+	public void ValidateBoundingBox()
+	{
+		EngineApplicationInterface.IGameEntity.ValidateBoundingBox(base.Pointer);
 	}
 
 	public Vec3 GetBoundingBoxMax()
 	{
 		return EngineApplicationInterface.IGameEntity.GetBoundingBoxMax(base.Pointer);
-	}
-
-	public Vec3 GetPhysicsBoundingBoxMax()
-	{
-		return EngineApplicationInterface.IGameEntity.GetPhysicsBoundingBoxMax(base.Pointer);
-	}
-
-	public Vec3 GetPhysicsBoundingBoxMin()
-	{
-		return EngineApplicationInterface.IGameEntity.GetPhysicsBoundingBoxMin(base.Pointer);
 	}
 
 	public void UpdateGlobalBounds()
@@ -984,17 +1135,12 @@ public sealed class GameEntity : NativeObject
 
 	public void RecomputeBoundingBox()
 	{
-		EngineApplicationInterface.IGameEntity.RecomputeBoundingBox(this);
+		EngineApplicationInterface.IGameEntity.RecomputeBoundingBox(base.Pointer);
 	}
 
-	public void ValidateBoundingBox()
+	public float GetBoundingBoxRadius()
 	{
-		EngineApplicationInterface.IGameEntity.ValidateBoundingBox(base.Pointer);
-	}
-
-	public bool GetHasFrameChanged()
-	{
-		return EngineApplicationInterface.IGameEntity.HasFrameChanged(base.Pointer);
+		return EngineApplicationInterface.IGameEntity.GetRadius(base.Pointer);
 	}
 
 	public void SetBoundingboxDirty()
@@ -1002,9 +1148,13 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.SetBoundingboxDirty(base.Pointer);
 	}
 
-	public Mesh GetFirstMesh()
+	public (Vec3, Vec3) ComputeGlobalPhysicsBoundingBoxMinMax()
 	{
-		return EngineApplicationInterface.IGameEntity.GetFirstMesh(base.Pointer);
+		MatrixFrame globalFrame = GetGlobalFrame();
+		BoundingBox localPhysicsBoundingBox = this.GetLocalPhysicsBoundingBox(includeChildren: true);
+		Vec3 item = globalFrame.TransformToParent(in localPhysicsBoundingBox.min);
+		Vec3 item2 = globalFrame.TransformToParent(in localPhysicsBoundingBox.max);
+		return (item, item2);
 	}
 
 	public void SetContourColor(uint? color, bool alwaysVisible = true)
@@ -1018,6 +1168,26 @@ public sealed class GameEntity : NativeObject
 		{
 			EngineApplicationInterface.IGameEntity.DisableContour(base.Pointer);
 		}
+	}
+
+	public bool GetHasFrameChanged()
+	{
+		return EngineApplicationInterface.IGameEntity.HasFrameChanged(base.Pointer);
+	}
+
+	public Mesh GetFirstMesh()
+	{
+		return EngineApplicationInterface.IGameEntity.GetFirstMesh(base.Pointer);
+	}
+
+	public int GetAttachedNavmeshFaceCount()
+	{
+		return EngineApplicationInterface.IGameEntity.GetAttachedNavmeshFaceCount(base.Pointer);
+	}
+
+	public void GetAttachedNavmeshFaceRecords(PathFaceRecord[] faceRecords)
+	{
+		EngineApplicationInterface.IGameEntity.GetAttachedNavmeshFaceRecords(base.Pointer, faceRecords);
 	}
 
 	public void SetExternalReferencesUsage(bool value)
@@ -1065,9 +1235,24 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.ChangeMetaMeshOrRemoveItIfNotExists(base.Pointer, (entityMetaMesh != null) ? entityMetaMesh.Pointer : UIntPtr.Zero, (newMetaMesh != null) ? newMetaMesh.Pointer : UIntPtr.Zero);
 	}
 
-	public void AttachNavigationMeshFaces(int faceGroupId, bool isConnected, bool isBlocker = false, bool autoLocalize = false)
+	public void SetUpdateValidtyOnFrameChangedOfFacesWithId(int faceGroupId, bool updateValidity)
 	{
-		EngineApplicationInterface.IGameEntity.AttachNavigationMeshFaces(base.Pointer, faceGroupId, isConnected, isBlocker, autoLocalize);
+		EngineApplicationInterface.IGameEntity.SetUpdateValidityOnFrameChangedOfFacesWithId(base.Pointer, faceGroupId, updateValidity);
+	}
+
+	public void AttachNavigationMeshFaces(int faceGroupId, bool isConnected, bool isBlocker = false, bool autoLocalize = false, bool finalizeBlockerConvexHullComputation = false, bool updateEntityFrame = true)
+	{
+		EngineApplicationInterface.IGameEntity.AttachNavigationMeshFaces(base.Pointer, faceGroupId, isConnected, isBlocker, autoLocalize, finalizeBlockerConvexHullComputation, updateEntityFrame);
+	}
+
+	public void DetachAllAttachedNavigationMeshFaces()
+	{
+		EngineApplicationInterface.IGameEntity.DetachAllAttachedNavigationMeshFaces(base.Pointer);
+	}
+
+	public void UpdateAttachedNavigationMeshFaces()
+	{
+		EngineApplicationInterface.IGameEntity.UpdateAttachedNavigationMeshFaces(base.Pointer);
 	}
 
 	public void RemoveSkeleton()
@@ -1110,6 +1295,20 @@ public sealed class GameEntity : NativeObject
 		}
 	}
 
+	public void GetChildrenWithTagRecursive(List<GameEntity> children, string tag)
+	{
+		int childCount = ChildCount;
+		for (int i = 0; i < childCount; i++)
+		{
+			GameEntity child = GetChild(i);
+			if (child.HasTag(tag))
+			{
+				children.Add(child);
+			}
+			child.GetChildrenWithTagRecursive(children, tag);
+		}
+	}
+
 	public bool IsSelectedOnEditor()
 	{
 		return EngineApplicationInterface.IGameEntity.IsEntitySelectedOnEditor(base.Pointer);
@@ -1135,15 +1334,194 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.RemoveFromPredisplayEntity(base.Pointer);
 	}
 
-	public void GetPhysicsMinMax(bool includeChildren, out Vec3 bbmin, out Vec3 bbmax, bool returnLocal)
+	public void SetNativeScriptComponentVariable(string className, string fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType)
 	{
-		bbmin = Vec3.Zero;
-		bbmax = Vec3.Zero;
-		EngineApplicationInterface.IGameEntity.GetPhysicsMinMax(base.Pointer, includeChildren, ref bbmin, ref bbmax, returnLocal);
+		EngineApplicationInterface.IGameEntity.SetNativeScriptComponentVariable(base.Pointer, className, fieldName, ref data, variableType);
+	}
+
+	public void SetManualGlobalBoundingBox(Vec3 boundingBoxStartGlobal, Vec3 boundingBoxEndGlobal)
+	{
+		EngineApplicationInterface.IGameEntity.SetManualGlobalBoundingBox(base.Pointer, boundingBoxStartGlobal, boundingBoxEndGlobal);
+	}
+
+	public bool RayHitEntity(Vec3 rayOrigin, Vec3 rayDirection, float maxLength, ref float resultLength)
+	{
+		return EngineApplicationInterface.IGameEntity.RayHitEntity(base.Pointer, in rayOrigin, in rayDirection, maxLength, ref resultLength);
+	}
+
+	public bool RayHitEntityWithNormal(Vec3 rayOrigin, Vec3 rayDirection, float maxLength, ref Vec3 resultNormal, ref float resultLength)
+	{
+		return EngineApplicationInterface.IGameEntity.RayHitEntityWithNormal(base.Pointer, in rayOrigin, in rayDirection, maxLength, ref resultNormal, ref resultLength);
+	}
+
+	public void GetNativeScriptComponentVariable(string className, string fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType)
+	{
+		EngineApplicationInterface.IGameEntity.GetNativeScriptComponentVariable(base.Pointer, className, fieldName, ref data, variableType);
+	}
+
+	public void SetCustomClipPlane(Vec3 clipPosition, Vec3 clipNormal, bool setForChildren)
+	{
+		EngineApplicationInterface.IGameEntity.SetCustomClipPlane(base.Pointer, clipPosition, clipNormal, setForChildren);
+	}
+
+	public float GetBoundingBoxLongestHalfDimension()
+	{
+		return BoundingBox.GetLongestHalfDimensionOfBoundingBox(GetLocalBoundingBox());
+	}
+
+	public BoundingBox ComputeBoundingBoxFromLongestHalfDimension(float longestHalfDimensionCoefficient)
+	{
+		BoundingBox localBoundingBox = GetLocalBoundingBox();
+		BoundingBox result = default(BoundingBox);
+		float num = GetBoundingBoxLongestHalfDimension() * longestHalfDimensionCoefficient;
+		Vec3 vec = new Vec3(num, num, num);
+		result.min = localBoundingBox.center - vec;
+		result.max = localBoundingBox.center + vec;
+		result.RecomputeRadius();
+		return result;
+	}
+
+	public BoundingBox ComputeBoundingBoxIncludeChildren()
+	{
+		BoundingBox result = default(BoundingBox);
+		result.BeginRelaxation();
+		foreach (GameEntity child in GetChildren())
+		{
+			child.ValidateBoundingBox();
+			BoundingBox localBoundingBox = child.GetLocalBoundingBox();
+			result.RelaxWithChildBoundingBox(localBoundingBox, child.GetLocalFrame());
+		}
+		result.RecomputeRadius();
+		return result;
+	}
+
+	public void SetManualLocalBoundingBox(in BoundingBox boundingBox)
+	{
+		EngineApplicationInterface.IGameEntity.SetManualLocalBoundingBox(base.Pointer, in boundingBox);
+	}
+
+	public void RelaxLocalBoundingBox(in BoundingBox boundingBox)
+	{
+		EngineApplicationInterface.IGameEntity.RelaxLocalBoundingBox(base.Pointer, in boundingBox);
 	}
 
 	public void SetCullMode(MBMeshCullingMode cullMode)
 	{
 		EngineApplicationInterface.IGameEntity.SetCullMode(base.Pointer, cullMode);
+	}
+
+	public GameEntity GetFirstChildEntityWithTagRecursive(string tag)
+	{
+		UIntPtr firstChildWithTagRecursive = EngineApplicationInterface.IGameEntity.GetFirstChildWithTagRecursive(base.Pointer, tag);
+		if (firstChildWithTagRecursive != UIntPtr.Zero)
+		{
+			return new GameEntity(firstChildWithTagRecursive);
+		}
+		return null;
+	}
+
+	public override bool Equals(object obj)
+	{
+		return (((GameEntity)obj)?.Pointer ?? UIntPtr.Zero) == (this?.Pointer ?? UIntPtr.Zero);
+	}
+
+	public override int GetHashCode()
+	{
+		return base.Pointer.GetHashCode();
+	}
+
+	public static bool operator ==(GameEntity gameEntity, WeakGameEntity weakGameEntity)
+	{
+		return weakGameEntity.Pointer == (gameEntity?.Pointer ?? UIntPtr.Zero);
+	}
+
+	public static bool operator !=(GameEntity gameEntity, WeakGameEntity weakGameEntity)
+	{
+		return weakGameEntity.Pointer != (gameEntity?.Pointer ?? UIntPtr.Zero);
+	}
+
+	public void SetDoNotCheckVisibility(bool value)
+	{
+		EngineApplicationInterface.IGameEntity.SetDoNotCheckVisibility(base.Pointer, value);
+	}
+
+	public static bool operator !=(GameEntity gameEntity1, GameEntity gameEntity2)
+	{
+		return (gameEntity1?.Pointer ?? UIntPtr.Zero) != (gameEntity2?.Pointer ?? UIntPtr.Zero);
+	}
+
+	public static bool operator ==(GameEntity gameEntity1, GameEntity gameEntity2)
+	{
+		return (gameEntity1?.Pointer ?? UIntPtr.Zero) == (gameEntity2?.Pointer ?? UIntPtr.Zero);
+	}
+
+	public void SetBoneFrameToAllMeshes(int boneIndex, in MatrixFrame frame)
+	{
+		EngineApplicationInterface.IGameEntity.SetBoneFrameToAllMeshes(base.Pointer, boneIndex, in frame);
+	}
+
+	public Vec2 GetGlobalWindStrengthVectorOfScene()
+	{
+		return EngineApplicationInterface.IGameEntity.GetGlobalWindStrengthVectorOfScene(base.Pointer);
+	}
+
+	public Vec2 GetGlobalWindVelocityOfScene()
+	{
+		return EngineApplicationInterface.IGameEntity.GetGlobalWindVelocityOfScene(base.Pointer);
+	}
+
+	public Vec3 GetLastFinalRenderCameraPositionOfScene()
+	{
+		return EngineApplicationInterface.IGameEntity.GetLastFinalRenderCameraPositionOfScene(base.Pointer);
+	}
+
+	public void SetForceDecalsToRender(bool value)
+	{
+		EngineApplicationInterface.IGameEntity.SetForceDecalsToRender(base.Pointer, value);
+	}
+
+	public void SetForceNotAffectedBySeason(bool value)
+	{
+		EngineApplicationInterface.IGameEntity.SetForceNotAffectedBySeason(base.Pointer, value);
+	}
+
+	public bool CheckIsPrefabLinkRootPrefab(int depth)
+	{
+		return EngineApplicationInterface.IGameEntity.CheckIsPrefabLinkRootPrefab(base.Pointer, depth);
+	}
+
+	public void SetupAdditionalBoneBufferForMeshes(int boneCount)
+	{
+		EngineApplicationInterface.IGameEntity.SetupAdditionalBoneBufferForMeshes(base.Pointer, boneCount);
+	}
+
+	public static UIntPtr CreatePhysxCookingInstance()
+	{
+		return EngineApplicationInterface.IGameEntity.CreatePhysxCookingInstance();
+	}
+
+	public static void DeletePhysxCookingInstance(UIntPtr pointer)
+	{
+		EngineApplicationInterface.IGameEntity.DeletePhysxCookingInstance(pointer);
+	}
+
+	public void DeleteEmptyShape(UIntPtr shape1, UIntPtr shape2)
+	{
+		EngineApplicationInterface.IGameEntity.DeleteEmptyShape(base.Pointer, shape1, shape2);
+	}
+
+	public UIntPtr CreateEmptyPhysxShape(bool isVariable, int physxMaterialIndex)
+	{
+		return EngineApplicationInterface.IGameEntity.CreateEmptyPhysxShape(base.Pointer, isVariable, physxMaterialIndex);
+	}
+
+	public void SwapPhysxShapeInEntity(UIntPtr oldShape, UIntPtr newShape, bool isVariable)
+	{
+		EngineApplicationInterface.IGameEntity.SwapPhysxShapeInEntity(base.Pointer, oldShape, newShape, isVariable);
+	}
+
+	public static void CookTrianglePhysxMesh(UIntPtr cookingInstancePointer, UIntPtr shapePointer, UIntPtr quadPinnedPointer, int physicsMaterial, int numberOfVertices, UIntPtr indicesPinnedPointer, int numberOfIndices)
+	{
+		EngineApplicationInterface.IGameEntity.CookTrianglePhysxMesh(cookingInstancePointer, shapePointer, quadPinnedPointer, physicsMaterial, numberOfVertices, indicesPinnedPointer, numberOfIndices);
 	}
 }

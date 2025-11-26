@@ -76,12 +76,9 @@ public class TradeCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		foreach (Settlement item in Settlement.All)
+		foreach (Town allTown in Campaign.Current.AllTowns)
 		{
-			if (item.IsTown)
-			{
-				UpdateMarketStores(item.Town);
-			}
+			UpdateMarketStores(allTown);
 		}
 	}
 

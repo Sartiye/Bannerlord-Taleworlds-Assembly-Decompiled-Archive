@@ -13,12 +13,14 @@ public class MarriageNotificationItemVM : MapNotificationItemBaseVM
 	public MarriageNotificationItemVM(MarriageMapNotification data)
 		: base(data)
 	{
+		MarriageNotificationItemVM marriageNotificationItemVM = this;
 		Suitor = data.Suitor;
 		Maiden = data.Maiden;
 		base.NotificationIdentifier = "marriage";
 		_onInspect = delegate
 		{
 			MBInformationManager.ShowSceneNotification(new MarriageSceneNotificationItem(data.Suitor, data.Maiden, data.CreationTime));
+			marriageNotificationItemVM.ExecuteRemove();
 		};
 	}
 }

@@ -31,7 +31,7 @@ public class SiegeWeaponAutoDeployer
 			DeployAllForDefenders();
 			break;
 		default:
-			Debug.FailedAssert("Invalid side", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponAutoDeployer.cs", "DeployAll", 32);
+			Debug.FailedAssert("Invalid side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponAutoDeployer.cs", "DeployAll", 32);
 			break;
 		}
 	}
@@ -41,7 +41,7 @@ public class SiegeWeaponAutoDeployer
 		IEnumerable<Type> source = dp.DeployableWeaponTypes.Where((Type t) => deploymentPoints.Count((DeploymentPoint dep) => dep.IsDeployed && MissionSiegeWeaponsController.GetWeaponType(dep.DeployedWeapon) == t) < siegeWeaponsController.GetMaxDeployableWeaponCount(t));
 		if (!source.IsEmpty())
 		{
-			Type t2 = source.MaxBy((Type t) => GetWeaponValue(t));
+			Type t2 = TaleWorlds.Core.Extensions.MaxBy(source, (Type t) => GetWeaponValue(t));
 			dp.Deploy(t2);
 			return true;
 		}
@@ -80,8 +80,8 @@ public class SiegeWeaponAutoDeployer
 		while (!list.IsEmpty())
 		{
 			Threat maxThreat = RangedSiegeWeaponAi.ThreatSeeker.GetMaxThreat(castleKeyPositions);
-			Vec3 mostDangerousThreatPosition = maxThreat.Position;
-			DeploymentPoint deploymentPoint = list.MinBy((DeploymentPoint dp) => dp.GameEntity.GlobalPosition.DistanceSquared(mostDangerousThreatPosition));
+			Vec3 mostDangerousThreatPosition = maxThreat.TargetingPosition;
+			DeploymentPoint deploymentPoint = TaleWorlds.Core.Extensions.MinBy(list, (DeploymentPoint dp) => dp.GameEntity.GlobalPosition.DistanceSquared(mostDangerousThreatPosition));
 			if (DeployWeaponFrom(deploymentPoint))
 			{
 				maxThreat.ThreatValue *= 0.5f;

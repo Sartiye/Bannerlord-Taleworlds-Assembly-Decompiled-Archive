@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MarriageModel : GameModel
+public abstract class MarriageModel : MBGameModel<MarriageModel>
 {
 	public abstract int MinimumMarriageAgeMale { get; }
 

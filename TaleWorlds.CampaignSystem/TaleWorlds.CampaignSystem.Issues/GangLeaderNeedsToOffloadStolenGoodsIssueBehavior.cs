@@ -95,7 +95,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=izuhKnXy}Purchase stolen goods from {ISSUE_GIVER.NAME}");
+				TextObject textObject = new TextObject("{=izuhKnXy}Purchase Stolen Goods from {ISSUE_GIVER.NAME}");
 				textObject.SetCharacterProperties("ISSUE_GIVER", base.IssueOwner.CharacterObject);
 				return textObject;
 			}
@@ -175,13 +175,12 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			List<SkillObject> alternativeSolutionMeleeSkills = QuestHelper.GetAlternativeSolutionMeleeSkills();
 			alternativeSolutionMeleeSkills.Add(DefaultSkills.Roguery);
 			alternativeSolutionMeleeSkills.Add(DefaultSkills.Tactics);
-			return (alternativeSolutionMeleeSkills.MaxBy(hero.GetSkillValue), 120);
+			return (TaleWorlds.Core.Extensions.MaxBy(alternativeSolutionMeleeSkills, hero.GetSkillValue), 120);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -203,8 +202,12 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
+		}
+
+		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
+		{
+			return character.Tier >= 2;
 		}
 
 		public GangLeaderNeedsToOffloadStolenGoodsIssue(Hero issueOwner, Settlement hideout)
@@ -212,7 +215,6 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		{
 			_randomForStolenTradeGood = MBRandom.RandomInt(0, PossibleStolenItems.Length);
 			_issueHideout = hideout;
-			Campaign.Current.BusyHideouts.Add(hideout);
 		}
 
 		protected override float GetIssueEffectAmountInternal(IssueEffect issueEffect)
@@ -252,9 +254,13 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			{
 				Campaign.Current.IssueManager.DeactivateIssue(this);
 			}
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && !Campaign.Current.BusyHideouts.Contains(_issueHideout))
+		}
+
+		public override void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == _issueHideout)
 			{
-				Campaign.Current.BusyHideouts.Add(_issueHideout);
+				priority = Math.Max(priority, 100);
 			}
 		}
 
@@ -295,7 +301,6 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 
 		protected override void OnIssueFinalized()
 		{
-			Campaign.Current.BusyHideouts.Remove(_issueHideout);
 		}
 	}
 
@@ -398,8 +403,8 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=AtHjW2lY}Purchase stolen goods from {QUEST_GIVER.NAME}");
-				textObject.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
+				TextObject textObject = new TextObject("{=izuhKnXy}Purchase Stolen Goods from {ISSUE_GIVER.NAME}");
+				textObject.SetCharacterProperties("ISSUE_GIVER", base.QuestGiver.CharacterObject);
 				return textObject;
 			}
 		}
@@ -519,7 +524,6 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			_counterOfferGold = TaleWorlds.Library.MathF.Round((float)(questGiver.CurrentSettlement.Town.GetItemPrice(_stolenTradeGood) * _stolenTradeGoodAmount) * 0.4f);
 			_counterOfferHero = counterOfferHero;
 			_questHideout = questHideout;
-			Campaign.Current.BusyHideouts.Add(questHideout);
 			SetDialogs();
 			InitializeQuestOnCreation();
 			AddGameMenuOptions();
@@ -564,7 +568,6 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 
 		protected override void OnFinalize()
 		{
-			Campaign.Current.BusyHideouts.Remove(_questHideout);
 		}
 
 		private DialogFlow GetCounterOfferDialogFlow()
@@ -574,7 +577,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			textObject.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
 			textObject.SetTextVariable("STOLEN_GOODS_SIZE", _stolenTradeGoodAmount);
 			textObject.SetTextVariable("STOLEN_GOOD", _stolenTradeGood.Name);
-			return DialogFlow.CreateDialogFlow("start", 125).NpcLine(textObject).Condition(() => _counterOfferHero == Hero.OneToOneConversationHero && !_talkedWithBanditLeader && !_playerHasTheGoods)
+			return DialogFlow.CreateDialogFlow("start", 125).NpcLine(textObject).Condition(() => _counterOfferHero == Hero.OneToOneConversationHero && !_talkedWithBanditLeader && !_playerHasTheGoods && !_counterOfferGiven)
 				.BeginPlayerOptions()
 				.PlayerOption(new TextObject("{=Fk9nVX8t}Yes... Well, I will see what I can do."))
 				.NpcLine(new TextObject("{=WotPuijV}That's the right decision. Thank you.[if:convo_calm_friendly][ib:closed]"))
@@ -641,7 +644,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 				.NpcLine(new TextObject("{=21Y4tWE9}Good, good. All the best to you, friend."))
 				.Consequence(delegate
 				{
-					GiveGoldAction.ApplyForQuestBetweenCharacters(Hero.MainHero, null, _stolenTradeGoodPrice);
+					GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, _stolenTradeGoodPrice);
 					_isPayingForGoods = true;
 					_playerHasTheGoods = true;
 				})
@@ -725,7 +728,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		private void SucceedQuestByPayingAndGivingTheGoodsBack()
 		{
 			AddLog(SuccessByGivingBackTheGoodsQuestLogText);
-			GiveGoldAction.ApplyForQuestBetweenCharacters(_counterOfferHero, Hero.MainHero, _counterOfferGold);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _counterOfferGold);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(Hero.MainHero, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Calculating, 150)
@@ -759,7 +762,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 
 		private void FailQuestByGivingBackTheGoods()
 		{
-			GiveGoldAction.ApplyForQuestBetweenCharacters(_counterOfferHero, Hero.MainHero, _counterOfferGold);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _counterOfferGold);
 			base.QuestGiver.AddPower(-5f);
 			_counterOfferHero.AddPower(5f);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(Hero.MainHero, new Tuple<TraitObject, int>[1]
@@ -790,19 +793,22 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			CampaignEvents.OnHideoutBattleCompletedEvent.AddNonSerializedListener(this, OnHideoutBattleCompleted);
 			CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.IsSettlementBusyEvent.AddNonSerializedListener(this, IsSettlementBusy);
+		}
+
+		private void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == _questHideout)
+			{
+				priority = Math.Max(priority, 200);
+			}
 		}
 
 		private void OnSessionStarted(CampaignGameStarter campaignGameStarter)
 		{
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9"))
+			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && _questHideout.IsSettlementBusy(this))
 			{
-				if (!Campaign.Current.BusyHideouts.Contains(_questHideout))
-				{
-					Campaign.Current.BusyHideouts.Add(_questHideout);
-					return;
-				}
 				CompleteQuestWithCancel();
-				Campaign.Current.BusyHideouts.Add(_questHideout);
 			}
 		}
 
@@ -886,7 +892,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			return false;
 		}
 
-		public override void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 		{
 			if (hero == _counterOfferHero)
 			{
@@ -911,9 +917,9 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 
 	private const int IssueDuration = 15;
 
-	private const int MaxHideoutDistance = 60;
-
 	private const IssueBase.IssueFrequency GangLeaderNeedsToOffloadStolenGoodsIssueFrequency = IssueBase.IssueFrequency.Common;
+
+	private static float MaxHideoutDistance => Campaign.Current.EstimatedAverageBanditPartySpeed * (float)CampaignTime.HoursInDay;
 
 	public override void RegisterEvents()
 	{
@@ -947,10 +953,10 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		float num = float.MaxValue;
 		foreach (Hideout item in Campaign.Current.AllHideouts.Where((Hideout t) => t.IsInfested))
 		{
-			if (!Campaign.Current.BusyHideouts.Contains(item.Settlement))
+			if (!item.Settlement.IsSettlementBusy(null))
 			{
-				float num2 = item.Settlement.GatePosition.DistanceSquared(settlement.Position2D);
-				if (num2 <= 3600f && num2 < num)
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(settlement, item.Settlement, MobileParty.NavigationType.Default);
+				if (num2 <= MaxHideoutDistance && num2 < num)
 				{
 					num = num2;
 					result = item.Settlement;

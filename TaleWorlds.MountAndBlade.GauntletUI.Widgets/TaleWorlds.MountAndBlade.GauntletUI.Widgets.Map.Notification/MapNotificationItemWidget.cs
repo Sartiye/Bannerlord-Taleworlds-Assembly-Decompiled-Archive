@@ -392,11 +392,11 @@ public class MapNotificationItemWidget : BrushWidget
 
 	private void InspectionWidgetsEventFire(Widget widget, string eventName, object[] eventParameters)
 	{
-		if (eventName == "MouseUp")
+		if (eventName == "Click")
 		{
 			OnInspectionClick(widget);
 		}
-		else if (eventName == "MouseAlternateUp")
+		else if (eventName == "AlternateClick")
 		{
 			OnRemoveClick(this);
 		}

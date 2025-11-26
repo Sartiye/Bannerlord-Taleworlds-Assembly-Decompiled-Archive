@@ -9,7 +9,7 @@ public sealed class InventoryHotKeyCategory : GameKeyContext
 	public const string SwitchAlternative = "SwitchAlternative";
 
 	public InventoryHotKeyCategory()
-		: base("InventoryHotKeyCategory", 108)
+		: base("InventoryHotKeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

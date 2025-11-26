@@ -125,7 +125,7 @@ public sealed class Game : IGameStateManagerOwner
 	{
 		if (!_defaultEquipments.ContainsKey(equipmentName))
 		{
-			Debug.FailedAssert("Equipment with name \"" + equipmentName + "\" could not be found.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Game.cs", "GetDefaultEquipmentWithName", 130);
+			Debug.FailedAssert("Equipment with name \"" + equipmentName + "\" could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Game.cs", "GetDefaultEquipmentWithName", 128);
 			return null;
 		}
 		return _defaultEquipments[equipmentName].Clone();
@@ -162,7 +162,7 @@ public sealed class Game : IGameStateManagerOwner
 	public static Game CreateGame(GameType gameType, GameManagerBase gameManager)
 	{
 		MBObjectManager objectManager = MBObjectManager.Init();
-		RegisterTypes(gameType, objectManager);
+		RegisterTypes(gameType, objectManager, gameManager);
 		return new Game(gameType, gameManager, objectManager);
 	}
 
@@ -171,9 +171,10 @@ public sealed class Game : IGameStateManagerOwner
 		MBSaveLoad.OnStartGame(loadResult);
 		MBObjectManager objectManager = MBObjectManager.Init();
 		Game obj = (Game)loadResult.Root;
-		RegisterTypes(obj.GameType, objectManager);
+		RegisterTypes(obj.GameType, objectManager, gameManager);
 		loadResult.InitializeObjects();
 		MBObjectManager.Instance.ReInitialize();
+		loadResult.AfterInitializeObjects();
 		GC.Collect();
 		obj.ObjectManager = objectManager;
 		obj.BeginLoading(gameManager);
@@ -304,7 +305,7 @@ public sealed class Game : IGameStateManagerOwner
 		GameType.OnInitialize();
 	}
 
-	public static void RegisterTypes(GameType gameType, MBObjectManager objectManager)
+	public static void RegisterTypes(GameType gameType, MBObjectManager objectManager, GameManagerBase gameManager)
 	{
 		gameType?.BeforeRegisterTypes(objectManager);
 		objectManager.RegisterType<Monster>("Monster", "Monsters", 2u);
@@ -324,6 +325,7 @@ public sealed class Game : IGameStateManagerOwner
 		objectManager.RegisterType<MBCharacterSkills>("SkillSet", "SkillSets", 52u);
 		objectManager.RegisterType<BannerEffect>("BannerEffect", "BannerEffects", 53u);
 		gameType?.OnRegisterTypes(objectManager);
+		gameManager?.RegisterSubModuleTypes();
 	}
 
 	public void SetBasicModels(IEnumerable<GameModel> models)
@@ -431,6 +433,7 @@ public sealed class Game : IGameStateManagerOwner
 		DefaultBannerEffects = new DefaultBannerEffects();
 		DefaultItemCategories = new DefaultItemCategories();
 		DefaultSiegeEngineTypes = new DefaultSiegeEngineTypes();
+		GameManager.InitializeSubModuleGameObjects(Current);
 	}
 
 	public void LoadBasicFiles()

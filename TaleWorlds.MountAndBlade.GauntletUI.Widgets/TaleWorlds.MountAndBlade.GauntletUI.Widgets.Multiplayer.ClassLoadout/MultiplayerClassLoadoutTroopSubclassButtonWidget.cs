@@ -9,6 +9,8 @@ public class MultiplayerClassLoadoutTroopSubclassButtonWidget : ButtonWidget
 {
 	private string _troopType;
 
+	private Brush _iconBrush;
+
 	private BrushWidget _iconWidget;
 
 	private NavigationScopeTargeter _perksNavigationScopeTargeter;
@@ -26,6 +28,24 @@ public class MultiplayerClassLoadoutTroopSubclassButtonWidget : ButtonWidget
 			{
 				_troopType = value;
 				OnPropertyChanged(value, "TroopType");
+				UpdateIcon();
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public Brush IconBrush
+	{
+		get
+		{
+			return _iconBrush;
+		}
+		set
+		{
+			if (value != _iconBrush)
+			{
+				_iconBrush = value;
+				OnPropertyChanged(value, "IconBrush");
 				UpdateIcon();
 			}
 		}
@@ -80,7 +100,7 @@ public class MultiplayerClassLoadoutTroopSubclassButtonWidget : ButtonWidget
 		{
 			return;
 		}
-		Sprite sprite = base.Context.SpriteData.GetSprite("General\\compass\\" + TroopType);
+		Sprite sprite = IconBrush?.GetLayer(TroopType)?.Sprite;
 		foreach (Style style in IconWidget.Brush.Styles)
 		{
 			StyleLayer[] layers = style.GetLayers();

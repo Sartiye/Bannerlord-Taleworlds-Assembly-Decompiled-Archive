@@ -197,15 +197,22 @@ public class FlattenedTroopRoster : IEnumerable<FlattenedTroopRosterElement>, IE
 		_elementDictionary[troopSeed] = new FlattenedTroopRosterElement(flattenedTroopRosterElement.Troop, RosterTroopState.Routed, flattenedTroopRosterElement.Xp, flattenedTroopRosterElement.Descriptor);
 	}
 
-	public int OnTroopGainXp(UniqueTroopDescriptor troopSeed, int xpAmount)
+	public void OnTroopGainXp(UniqueTroopDescriptor troopSeed, int xpGained)
 	{
 		FlattenedTroopRosterElement flattenedTroopRosterElement = _elementDictionary[troopSeed];
-		int num = flattenedTroopRosterElement.XpGained + xpAmount;
-		int num2 = num - flattenedTroopRosterElement.XpGained;
-		if (num2 != 0)
+		int xpGain = flattenedTroopRosterElement.XpGained + xpGained;
+		_elementDictionary[troopSeed] = new FlattenedTroopRosterElement(flattenedTroopRosterElement.Troop, flattenedTroopRosterElement.State, flattenedTroopRosterElement.Xp, flattenedTroopRosterElement.Descriptor, xpGain);
+	}
+
+	public void ResetTroopXP()
+	{
+		foreach (KeyValuePair<UniqueTroopDescriptor, FlattenedTroopRosterElement> item in _elementDictionary.ToMBList())
 		{
-			_elementDictionary[troopSeed] = new FlattenedTroopRosterElement(flattenedTroopRosterElement.Troop, flattenedTroopRosterElement.State, flattenedTroopRosterElement.Xp, flattenedTroopRosterElement.Descriptor, num);
+			if (item.Value.XpGained > 0)
+			{
+				FlattenedTroopRosterElement value = item.Value;
+				_elementDictionary[item.Key] = new FlattenedTroopRosterElement(value.Troop, value.State, value.Xp, value.Descriptor);
+			}
 		}
-		return num2;
 	}
 }

@@ -18,24 +18,21 @@ public class FiefBarterBehavior : CampaignBehaviorBase
 
 	public void CheckForBarters(BarterData args)
 	{
-		if (args.OffererHero == null || args.OtherHero == null || !args.OffererHero.GetPerkValue(DefaultPerks.Trade.EverythingHasAPrice))
+		if (args.OffererHero == null || args.OtherHero == null || !args.OffererHero.GetPerkValue(DefaultPerks.Trade.EverythingHasAPrice) || (args.OtherHero.Clan.IsMinorFaction && args.OtherHero.Clan != Clan.PlayerClan) || args.OtherHero.Clan.IsUnderMercenaryService || args.OffererHero.Clan.IsUnderMercenaryService)
 		{
 			return;
 		}
-		foreach (Settlement item in Settlement.All)
+		foreach (Town allFief in Town.AllFiefs)
 		{
-			if (!item.IsVillage)
+			if (allFief.OwnerClan?.Leader == args.OffererHero)
 			{
-				if (item.OwnerClan?.Leader == args.OffererHero && !args.OtherHero.Clan.IsUnderMercenaryService)
-				{
-					Barterable barterable = new FiefBarterable(item, args.OffererHero, args.OtherHero);
-					args.AddBarterable<FiefBarterGroup>(barterable);
-				}
-				else if (item.OwnerClan?.Leader == args.OtherHero && !args.OffererHero.Clan.IsUnderMercenaryService)
-				{
-					Barterable barterable2 = new FiefBarterable(item, args.OtherHero, args.OffererHero);
-					args.AddBarterable<FiefBarterGroup>(barterable2);
-				}
+				Barterable barterable = new FiefBarterable(allFief.Settlement, args.OffererHero, args.OtherHero);
+				args.AddBarterable<FiefBarterGroup>(barterable);
+			}
+			else if (allFief.OwnerClan?.Leader == args.OtherHero)
+			{
+				Barterable barterable2 = new FiefBarterable(allFief.Settlement, args.OtherHero, args.OffererHero);
+				args.AddBarterable<FiefBarterGroup>(barterable2);
 			}
 		}
 	}

@@ -20,6 +20,10 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 
 	private const int RelationIncreaseBetweenHeroesAfterMarriage = 30;
 
+	private const int RelationChangeForLeavingWithRebellion = -40;
+
+	private const int RelationChangeForLeaveKingdom = -20;
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
@@ -30,8 +34,49 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, MapEventEnded);
 		CampaignEvents.OnPrisonerDonatedToSettlementEvent.AddNonSerializedListener(this, OnPrisonerDonatedToSettlement);
 		CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, OnHeroRelationChanged);
-		CampaignEvents.HeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
+		CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
 		CampaignEvents.OnHeroUnregisteredEvent.AddNonSerializedListener(this, OnHeroUnregistered);
+		CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
+		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
+	}
+
+	private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification = true)
+	{
+		if ((detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) || killer != Hero.MainHero || victim.Clan == null)
+		{
+			return;
+		}
+		int num = 0;
+		foreach (Clan item in Clan.All)
+		{
+			if (item.IsEliminated || item.IsBanditFaction || item == Clan.PlayerClan)
+			{
+				continue;
+			}
+			bool showQuickNotification;
+			int relationChangeForExecutingHero = Campaign.Current.Models.ExecutionRelationModel.GetRelationChangeForExecutingHero(victim, item.Leader, out showQuickNotification);
+			if (relationChangeForExecutingHero != 0)
+			{
+				Hero leader = item.Leader;
+				ChangeRelationAction.ApplyPlayerRelation(leader, relationChangeForExecutingHero, affectRelatives: true, showQuickNotification: false);
+				if (showQuickNotification)
+				{
+					num++;
+					TextObject textObject = GameTexts.FindText("str_your_relation_decreased_with_clan");
+					textObject.SetTextVariable("CLAN_LEADER", item.Name);
+					textObject.SetTextVariable("VALUE", leader.GetRelation(killer));
+					textObject.SetTextVariable("MAGNITUDE", MathF.Abs(relationChangeForExecutingHero));
+					InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
+				}
+			}
+		}
+		if (num > 0)
+		{
+			TextObject textObject2 = new TextObject("{=oqO9kjeW}The execution has hurt your relations with {COUNT} {?IS_PLURAL}clans{?}clan{\\?}.");
+			MBTextManager.SetTextVariable("IS_PLURAL", (num > 1) ? 1 : 0);
+			textObject2.SetTextVariable("COUNT", num);
+			MBInformationManager.AddQuickInformation(textObject2);
+		}
 	}
 
 	private void OnHeroUnregistered(Hero hero)
@@ -80,7 +125,7 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 		Hero leaderHero2 = winnerSide.LeaderParty.LeaderHero;
 		if (leaderHero2 != null && leaderHero2.GetPerkValue(DefaultPerks.Charm.Warlord))
 		{
-			Hero randomElementWithPredicate2 = winnerSide.LeaderParty.MapFaction.Lords.GetRandomElementWithPredicate((Hero x) => x.IsAlive && x != winnerSide.LeaderParty.LeaderHero);
+			Hero randomElementWithPredicate2 = winnerSide.LeaderParty.MapFaction.AliveLords.GetRandomElementWithPredicate((Hero x) => x != winnerSide.LeaderParty.LeaderHero);
 			if (randomElementWithPredicate2 != null)
 			{
 				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(winnerSide.LeaderParty.LeaderHero, randomElementWithPredicate2, (int)DefaultPerks.Charm.Warlord.SecondaryBonus);
@@ -113,7 +158,7 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 
 	private void UpdateFriendshipAndEnemies(CampaignGameStarter campaignGameStarter)
 	{
-		List<Hero> list = new List<Hero>(Campaign.Current.AliveHeroes.Count + Campaign.Current.DeadOrDisabledHeroes.Count);
+		List<Hero> list = new List<Hero>(512);
 		foreach (Hero aliveHero in Campaign.Current.AliveHeroes)
 		{
 			if (aliveHero.IsLord && aliveHero != Hero.MainHero && aliveHero.MapFaction != null && aliveHero.MapFaction?.Leader != Hero.MainHero)
@@ -134,8 +179,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 			for (int j = i + 1; j < list.Count; j++)
 			{
 				Hero hero2 = list[j];
-				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(hero.MapFaction.FactionMidSettlement, hero2.MapFaction.FactionMidSettlement);
-				float num = 1f / (2f + 5f * (distance / Campaign.MaximumDistanceBetweenTwoSettlements));
+				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(hero.MapFaction.FactionMidSettlement, hero2.MapFaction.FactionMidSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
+				float num = 1f / (2f + 5f * (distance / Campaign.Current.Models.MapDistanceModel.GetMaximumDistanceBetweenTwoConnectedSettlements(MobileParty.NavigationType.All)));
 				if (hero == hero.MapFaction.Leader || hero2 == hero2.MapFaction.Leader)
 				{
 					num = MathF.Sqrt(num);
@@ -217,7 +262,7 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 		}
-		if (mobileParty.Army == null || !mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Charm.Parade) || !(MBRandom.RandomFloat < DefaultPerks.Charm.Parade.SecondaryBonus))
+		if (mobileParty.Army == null || !(MBRandom.RandomFloat < DefaultPerks.Charm.Parade.SecondaryBonus) || !mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Charm.Parade))
 		{
 			return;
 		}
@@ -320,7 +365,7 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 
 	public void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
 	{
-		if ((detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege || detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.ByBarter || detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.ByRevolt) && oldOwner != null && oldOwner.MapFaction != null && oldOwner.MapFaction.Leader != oldOwner && oldOwner.IsAlive && oldOwner.MapFaction.Leader != Hero.MainHero)
+		if ((detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege || detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.ByBarter) && oldOwner != null && oldOwner.MapFaction != null && oldOwner.MapFaction.Leader != oldOwner && oldOwner.IsAlive && oldOwner.MapFaction.Leader != Hero.MainHero)
 		{
 			float value = settlement.GetValue();
 			int num = (int)((1f + MathF.Max(1f, MathF.Sqrt(value / 100000f))) * ((newOwner.MapFaction != oldOwner.MapFaction) ? 1f : 0.5f));
@@ -365,5 +410,19 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 	private static void OnHeroesMarried(Hero firstHero, Hero secondHero, bool showNotification)
 	{
 		ChangeRelationAction.ApplyRelationChangeBetweenHeroes(firstHero, secondHero, 30, showQuickNotification: false);
+	}
+
+	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification)
+	{
+		if (detail != ChangeKingdomAction.ChangeKingdomActionDetail.LeaveWithRebellion && detail != ChangeKingdomAction.ChangeKingdomActionDetail.LeaveKingdom)
+		{
+			return;
+		}
+		int relationChange = ((detail == ChangeKingdomAction.ChangeKingdomActionDetail.LeaveWithRebellion) ? (-40) : (-20));
+		Hero leader = clan.Leader;
+		foreach (Clan clan2 in oldKingdom.Clans)
+		{
+			ChangeRelationAction.ApplyRelationChangeBetweenHeroes(leader, clan2.Leader, relationChange);
+		}
 	}
 }

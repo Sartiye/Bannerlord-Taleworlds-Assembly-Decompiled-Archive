@@ -1,10 +1,12 @@
 using System.Linq;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Encyclopedia;
 using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -20,17 +22,25 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 
 	private MBBindingList<EncyclopediaFactionVM> _enemies;
 
+	private MBBindingList<EncyclopediaFactionVM> _tradeAgreements;
+
+	private MBBindingList<EncyclopediaFactionVM> _alliances;
+
 	private MBBindingList<EncyclopediaSettlementVM> _settlements;
 
 	private MBBindingList<EncyclopediaHistoryEventVM> _history;
 
 	private HeroVM _leader;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
 	private string _membersText;
 
 	private string _enemiesText;
+
+	private string _tradeAgreementsText;
+
+	private string _alliancesText;
 
 	private string _clansText;
 
@@ -89,6 +99,40 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 	}
 
 	[DataSourceProperty]
+	public MBBindingList<EncyclopediaFactionVM> TradeAgreements
+	{
+		get
+		{
+			return _tradeAgreements;
+		}
+		set
+		{
+			if (value != _tradeAgreements)
+			{
+				_tradeAgreements = value;
+				OnPropertyChangedWithValue(value, "TradeAgreements");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<EncyclopediaFactionVM> Alliances
+	{
+		get
+		{
+			return _alliances;
+		}
+		set
+		{
+			if (value != _alliances)
+			{
+				_alliances = value;
+				OnPropertyChangedWithValue(value, "Alliances");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MBBindingList<EncyclopediaSettlementVM> Settlements
 	{
 		get
@@ -140,7 +184,7 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -203,6 +247,40 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 			{
 				_enemiesText = value;
 				OnPropertyChangedWithValue(value, "EnemiesText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string TradeAgreementsText
+	{
+		get
+		{
+			return _tradeAgreementsText;
+		}
+		set
+		{
+			if (value != _tradeAgreementsText)
+			{
+				_tradeAgreementsText = value;
+				OnPropertyChangedWithValue(value, "TradeAgreementsText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string AlliancesText
+	{
+		get
+		{
+			return _alliancesText;
+		}
+		set
+		{
+			if (value != _alliancesText)
+			{
+				_alliancesText = value;
+				OnPropertyChangedWithValue(value, "AlliancesText");
 			}
 		}
 	}
@@ -383,6 +461,8 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		_faction = base.Obj as Kingdom;
 		Clans = new MBBindingList<EncyclopediaFactionVM>();
 		Enemies = new MBBindingList<EncyclopediaFactionVM>();
+		TradeAgreements = new MBBindingList<EncyclopediaFactionVM>();
+		Alliances = new MBBindingList<EncyclopediaFactionVM>();
 		Settlements = new MBBindingList<EncyclopediaSettlementVM>();
 		History = new MBBindingList<EncyclopediaHistoryEventVM>();
 		base.IsBookmarked = Campaign.Current.EncyclopediaManager.ViewDataTracker.IsEncyclopediaBookmarked(_faction);
@@ -397,6 +477,8 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		MembersText = GameTexts.FindText("str_members").ToString();
 		ClansText = new TextObject("{=bfQLwMUp}Clans").ToString();
 		EnemiesText = new TextObject("{=zZlWRZjO}Wars").ToString();
+		TradeAgreementsText = new TextObject("{=pWyRg13f}Trade Agreements").ToString();
+		AlliancesText = new TextObject("{=f90A6PGd}Alliances").ToString();
 		SettlementsText = new TextObject("{=LBNzsqyb}Fiefs").ToString();
 		VillagesText = GameTexts.FindText("str_villages").ToString();
 		InformationText = _faction.EncyclopediaText?.ToString() ?? string.Empty;
@@ -409,6 +491,8 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		base.IsLoadingOver = false;
 		Clans.Clear();
 		Enemies.Clear();
+		TradeAgreements.Clear();
+		Alliances.Clear();
 		Settlements.Clear();
 		History.Clear();
 		Leader = new HeroVM(_faction.Leader);
@@ -418,19 +502,19 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		int num = 0;
 		float num2 = 0f;
 		EncyclopediaPage pageOf = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Hero));
-		foreach (Hero lord in _faction.Lords)
+		foreach (Hero aliveLord in _faction.AliveLords)
 		{
-			if (pageOf.IsValidEncyclopediaItem(lord))
+			if (pageOf.IsValidEncyclopediaItem(aliveLord))
 			{
-				num += lord.Gold;
+				num += aliveLord.Gold;
 			}
 		}
-		Banner = new ImageIdentifierVM(BannerCode.CreateFrom(_faction.Banner), nineGrid: true);
+		Banner = new BannerImageIdentifierVM(_faction.Banner, nineGrid: true);
 		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
 		{
 			if (allLordParty.MapFaction == _faction && !allLordParty.IsDisbanding)
 			{
-				num2 += allLordParty.Party.TotalStrength;
+				num2 += allLordParty.Party.CalculateCurrentStrength();
 			}
 		}
 		ProsperityText = num.ToString();
@@ -443,29 +527,63 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 			}
 		}
 		EncyclopediaPage pageOf2 = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Clan));
-		foreach (IFaction factionObject in Campaign.Current.Factions.OrderBy((IFaction x) => !x.IsKingdomFaction).ThenBy((IFaction f) => f.Name.ToString()))
+		IOrderedEnumerable<IFaction> orderedEnumerable = Campaign.Current.Factions.OrderBy((IFaction x) => !x.IsKingdomFaction).ThenBy((IFaction f) => f.Name.ToString());
+		foreach (IFaction factionObject in orderedEnumerable)
 		{
 			if (pageOf2.IsValidEncyclopediaItem(factionObject) && factionObject != _faction && !factionObject.IsBanditFaction && FactionManager.IsAtWarAgainstFaction(_faction, factionObject.MapFaction) && !Enemies.Any((EncyclopediaFactionVM x) => x.Faction == factionObject.MapFaction))
 			{
 				Enemies.Add(new EncyclopediaFactionVM(factionObject.MapFaction));
 			}
 		}
-		foreach (Clan item in Campaign.Current.Clans.Where((Clan c) => c.Kingdom == _faction))
+		foreach (IFaction item in orderedEnumerable.Where((IFaction x) => x.IsKingdomFaction))
 		{
-			Clans.Add(new EncyclopediaFactionVM(item));
+			Kingdom kingdom;
+			if (pageOf2.IsValidEncyclopediaItem(item) && item != _faction && (kingdom = item as Kingdom) != null)
+			{
+				if (HasTradeAgreementWithFaction(_faction, kingdom.MapFaction) && !TradeAgreements.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
+				{
+					TradeAgreements.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
+				}
+				if (HasAllianceWithFaction(_faction, kingdom.MapFaction) && !Alliances.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
+				{
+					Alliances.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
+				}
+			}
+		}
+		foreach (Clan item2 in Campaign.Current.Clans.Where((Clan c) => c.Kingdom == _faction))
+		{
+			Clans.Add(new EncyclopediaFactionVM(item2));
 		}
 		EncyclopediaPage pageOf3 = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Settlement));
-		foreach (Settlement item2 in from s in Settlement.All
+		foreach (Settlement item3 in from s in Settlement.All
 			where s.IsTown || s.IsCastle
 			orderby s.IsCastle, s.IsTown
 			select s)
 		{
-			if ((item2.MapFaction == _faction || (item2.OwnerClan == _faction.RulingClan && item2.OwnerClan.Leader != null)) && pageOf3.IsValidEncyclopediaItem(item2))
+			if ((item3.MapFaction == _faction || (item3.OwnerClan == _faction.RulingClan && item3.OwnerClan.Leader != null)) && pageOf3.IsValidEncyclopediaItem(item3))
 			{
-				Settlements.Add(new EncyclopediaSettlementVM(item2));
+				Settlements.Add(new EncyclopediaSettlementVM(item3));
 			}
 		}
 		base.IsLoadingOver = true;
+	}
+
+	private bool HasTradeAgreementWithFaction(IFaction faction1, IFaction faction2)
+	{
+		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated || !faction1.IsKingdomFaction || !faction2.IsKingdomFaction)
+		{
+			return false;
+		}
+		return Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().HasTradeAgreement(faction1 as Kingdom, faction2 as Kingdom);
+	}
+
+	private bool HasAllianceWithFaction(IFaction faction1, IFaction faction2)
+	{
+		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated || !faction1.IsKingdomFaction || !faction2.IsKingdomFaction)
+		{
+			return false;
+		}
+		return Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().IsAllyWithKingdom(faction1 as Kingdom, faction2 as Kingdom);
 	}
 
 	public override string GetName()

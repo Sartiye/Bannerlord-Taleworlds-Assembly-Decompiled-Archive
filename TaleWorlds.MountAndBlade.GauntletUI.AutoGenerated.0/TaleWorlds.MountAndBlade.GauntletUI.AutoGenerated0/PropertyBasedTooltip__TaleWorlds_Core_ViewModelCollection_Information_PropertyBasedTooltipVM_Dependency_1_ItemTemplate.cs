@@ -86,8 +86,10 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Right;
@@ -95,11 +97,12 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0_0_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_1.PositionYOffset = -3f;
 		_widget_0_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_0_0_1_0.Brush = base.Context.GetBrush("Tooltip.Text");
-		_widget_0_0_1_0.PositionYOffset = -2f;
 		_widget_0_0_1_0.VerticalAlignment = VerticalAlignment.Center;
 	}
 

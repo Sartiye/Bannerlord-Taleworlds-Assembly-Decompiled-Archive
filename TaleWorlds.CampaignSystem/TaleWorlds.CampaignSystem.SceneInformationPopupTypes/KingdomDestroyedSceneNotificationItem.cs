@@ -25,12 +25,12 @@ public class KingdomDestroyedSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { DestroyedKingdom.Banner };
+		return new Banner[1] { DestroyedKingdom.Banner };
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		for (int i = 0; i < 2; i++)
@@ -41,7 +41,7 @@ public class KingdomDestroyedSceneNotificationItem : SceneNotificationData
 			BodyProperties bodyProperties = randomTroopForCulture.GetBodyProperties(equipment, MBRandom.RandomInt(100));
 			list.Add(new SceneNotificationCharacter(randomTroopForCulture, equipment, bodyProperties));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public KingdomDestroyedSceneNotificationItem(Kingdom destroyedKingdom, CampaignTime creationTime)

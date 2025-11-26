@@ -56,6 +56,10 @@ public abstract class SettlementComponent : MBObjectBase
 
 	public Settlement Settlement => _owner.Settlement;
 
+	public Banner Banner => Settlement.Banner;
+
+	public abstract IFaction MapFaction { get; }
+
 	public TextObject Name => Owner.Name;
 
 	[SaveableProperty(80)]
@@ -85,7 +89,14 @@ public abstract class SettlementComponent : MBObjectBase
 		return ProsperityLevel.Mid;
 	}
 
-	protected abstract void OnInventoryUpdated(ItemRosterElement item, int count);
+	public virtual Banner GetDefaultComponentBanner()
+	{
+		return null;
+	}
+
+	protected virtual void OnInventoryUpdated(ItemRosterElement item, int count)
+	{
+	}
 
 	public virtual void OnPartyEntered(MobileParty mobileParty)
 	{
@@ -96,6 +107,10 @@ public abstract class SettlementComponent : MBObjectBase
 	}
 
 	public virtual void OnInit()
+	{
+	}
+
+	public virtual void OnSessionStart()
 	{
 	}
 

@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade;
 
-public class BattlePowerCalculationLogic : MissionLogic
+public class BattlePowerCalculationLogic : MissionLogic, IBattlePowerCalculationLogic, IMissionBehavior
 {
 	private Dictionary<Team, float>[] _sidePowerData;
 
@@ -35,7 +35,7 @@ public class BattlePowerCalculationLogic : MissionLogic
 		{
 			_sidePowerData[(int)item.Side].Add(item, 0f);
 		}
-		MissionAgentSpawnLogic missionBehavior = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		IMissionAgentSpawnLogic missionBehavior = base.Mission.GetMissionBehavior<IMissionAgentSpawnLogic>();
 		for (int i = 0; i < 2; i++)
 		{
 			BattleSideEnum battleSideEnum = (BattleSideEnum)i;

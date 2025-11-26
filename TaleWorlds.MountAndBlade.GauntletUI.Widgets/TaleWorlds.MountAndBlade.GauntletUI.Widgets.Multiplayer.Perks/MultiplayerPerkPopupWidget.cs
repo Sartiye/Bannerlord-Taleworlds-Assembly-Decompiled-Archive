@@ -18,7 +18,7 @@ public class MultiplayerPerkPopupWidget : Widget
 	public void SetPopupPerksContainer(MultiplayerPerkContainerPanelWidget container)
 	{
 		_latestContainer = container;
-		ApplyActionOnAllChildren(SetContainersOfChildren);
+		ApplyActionToAllChildrenRecursive(SetContainersOfChildren);
 	}
 
 	protected override void OnLateUpdate(float dt)
@@ -26,8 +26,8 @@ public class MultiplayerPerkPopupWidget : Widget
 		base.OnLateUpdate(dt);
 		if (base.IsVisible && _latestContainer != null)
 		{
-			float num = _latestContainer.GlobalPosition.X - (base.Size.X / 2f - _latestContainer.Size.X / 2f);
-			base.ScaledPositionXOffset = Mathf.Clamp(num - base.EventManager.LeftUsableAreaStart, 0f, base.Context.EventManager.PageSize.X - base.Size.X);
+			float value = _latestContainer.GlobalPosition.X - (base.Size.X / 2f - _latestContainer.Size.X / 2f);
+			base.ScaledPositionXOffset = Mathf.Clamp(value, 0f, base.Context.EventManager.PageSize.X - base.Size.X);
 			if (!ShowAboveContainer)
 			{
 				base.ScaledPositionYOffset = _latestContainer.GlobalPosition.Y + _latestContainer.Size.Y - base.EventManager.TopUsableAreaStart;

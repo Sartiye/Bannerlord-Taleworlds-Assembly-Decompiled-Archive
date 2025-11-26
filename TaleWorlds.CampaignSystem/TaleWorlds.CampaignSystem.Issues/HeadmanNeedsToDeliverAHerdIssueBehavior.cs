@@ -19,10 +19,6 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 {
 	public class HeadmanNeedsToDeliverAHerdIssue : IssueBase
 	{
-		private const float MaxDistanceForSettlementSelection = 250f;
-
-		private const float MinDistanceForSettlementSelection = 100f;
-
 		private const int IssueDuration = 30;
 
 		private const int QuestTimeLimit = 30;
@@ -42,6 +38,10 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 
 		[SaveableField(30)]
 		private ItemObject _herdTypeToDeliver;
+
+		private float MaxDistanceForSettlementSelection => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 3.75f;
+
+		private float MinDistanceForSettlementSelection => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 1.5f;
 
 		public override AlternativeSolutionScaleFlag AlternativeSolutionScaleFlags => AlternativeSolutionScaleFlag.Duration;
 
@@ -192,7 +192,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=KhUkmIrH}Deliver the herd to {TARGET_SETTLEMENT}");
+				TextObject textObject = new TextObject("{=KhUkmIrH}Deliver the Herd to {TARGET_SETTLEMENT}");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
 			}
@@ -230,13 +230,12 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			: base(issueOwner, CampaignTime.DaysFromNow(30f))
 		{
 			HeadmanNeedsToDeliverAHerdIssue headmanNeedsToDeliverAHerdIssue = this;
-			float distance;
-			Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown && x.Notables.Any((Hero y) => y.CanHaveQuestsOrIssues()) && !x.MapFaction.IsAtWarWith(issueOwner.MapFaction) && !Campaign.Current.Models.MapDistanceModel.GetDistance(x, headmanNeedsToDeliverAHerdIssue.IssueSettlement, 100f, out distance) && Campaign.Current.Models.MapDistanceModel.GetDistance(x, headmanNeedsToDeliverAHerdIssue.IssueSettlement, 250f, out distance));
+			Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown && x.Notables.Any((Hero y) => y.CanHaveCampaignIssues()) && !x.MapFaction.IsAtWarWith(issueOwner.MapFaction) && Campaign.Current.Models.MapDistanceModel.GetDistance(x, headmanNeedsToDeliverAHerdIssue.IssueSettlement, isFromPort: false, isTargetingPort: false, MobileParty.MainParty.NavigationCapability) > headmanNeedsToDeliverAHerdIssue.MinDistanceForSettlementSelection && Campaign.Current.Models.MapDistanceModel.GetDistance(x, headmanNeedsToDeliverAHerdIssue.IssueSettlement, isFromPort: false, isTargetingPort: false, MobileParty.MainParty.NavigationCapability) < headmanNeedsToDeliverAHerdIssue.MaxDistanceForSettlementSelection);
 			_targetSettlement = settlement ?? base.IssueSettlement.Village.Bound;
 			_herdTypeToDeliver = Campaign.Current.ObjectManager.GetObject<ItemObject>(_possibleHerdTypes.GetRandomElement());
 			if (_targetSettlement != null)
 			{
-				_targetHero = _targetSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x.CanHaveQuestsOrIssues()) ?? _targetSettlement.Notables.GetRandomElement();
+				_targetHero = _targetSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x.CanHaveCampaignIssues()) ?? _targetSettlement.Notables.GetRandomElement();
 			}
 		}
 
@@ -256,8 +255,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -280,8 +278,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -356,7 +353,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=KhUkmIrH}Deliver the herd to {TARGET_SETTLEMENT}");
+				TextObject textObject = new TextObject("{=KhUkmIrH}Deliver the Herd to {TARGET_SETTLEMENT}");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
 			}
@@ -364,7 +361,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -381,7 +378,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _successQuestLogText
+		private TextObject SuccessQuestLogText
 		{
 			get
 			{
@@ -393,7 +390,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _failByTimeOutQuestLogText
+		private TextObject FailByTimeOutQuestLogText
 		{
 			get
 			{
@@ -404,7 +401,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _failByRejectQuestLogText
+		private TextObject FailByRejectQuestLogText
 		{
 			get
 			{
@@ -415,7 +412,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _questCanceledWarDeclaredLog
+		private TextObject QuestCanceledWarDeclaredLog
 		{
 			get
 			{
@@ -425,7 +422,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -515,7 +512,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			_playerStartsQuestLog = AddLog(_playerStartsQuestLogText);
+			_playerStartsQuestLog = AddLog(PlayerStartsQuestLogText);
 			AddHerdAndShepherdsToMainParty();
 			AddTrackedObject(_targetSettlement);
 			AddTrackedObject(_targetHero);
@@ -550,8 +547,8 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 					_targetSettlement.ItemRoster.AddToCounts(item.EquipmentElement, amount);
 				}
 			}
-			GiveGoldAction.ApplyForQuestBetweenCharacters(base.QuestGiver, Hero.MainHero, _rewardGold);
-			AddLog(_successQuestLogText);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _rewardGold);
+			AddLog(SuccessQuestLogText);
 		}
 
 		protected override void OnFinalize()
@@ -608,8 +605,8 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 
 		private void DeliverHerdRejectOnConsequence()
 		{
-			ChangeCrimeRatingAction.Apply(base.QuestGiver.CurrentSettlement.MapFaction, 20f);
 			CompleteQuestWithFail();
+			ChangeCrimeRatingAction.Apply(base.QuestGiver.CurrentSettlement.MapFaction, 20f);
 		}
 
 		private void DeliverHerdOnConsequence()
@@ -639,7 +636,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		protected override void OnTimedOut()
 		{
 			ApplyFailureEffects(isTimedOut: true);
-			AddLog(_failByTimeOutQuestLogText);
+			AddLog(FailByTimeOutQuestLogText);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -10)
@@ -650,7 +647,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		public override void OnFailed()
 		{
 			ApplyFailureEffects();
-			AddLog(_failByRejectQuestLogText);
+			AddLog(FailByRejectQuestLogText);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -30)
@@ -711,7 +708,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
 		}
 
-		public override void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 		{
 			if (hero == _targetHero)
 			{
@@ -743,13 +740,13 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_questCanceledWarDeclaredLog);
+				CompleteQuestWithCancel(QuestCanceledWarDeclaredLog);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _questCanceledWarDeclaredLog);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, QuestCanceledWarDeclaredLog);
 		}
 	}
 

@@ -61,7 +61,7 @@ public static class SellGoodsForTradeAction
 				}
 			}
 		}
-		if (!list.IsEmpty())
+		if (!list.IsEmpty() && mobileParty.IsCaravan)
 		{
 			CampaignEventDispatcher.Instance.OnCaravanTransactionCompleted(mobileParty, town, list);
 		}

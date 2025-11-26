@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
@@ -21,37 +19,50 @@ public static class MobilePartyHelper
 		return SpawnLordPartyAux(hero, spawnSettlement.GatePosition, 0f, spawnSettlement);
 	}
 
-	public static MobileParty SpawnLordParty(Hero hero, Vec2 position, float spawnRadius)
+	public static MobileParty SpawnLordParty(Hero hero, CampaignVec2 position, float spawnRadius)
 	{
 		return SpawnLordPartyAux(hero, position, spawnRadius, null);
 	}
 
-	private static MobileParty SpawnLordPartyAux(Hero hero, Vec2 position, float spawnRadius, Settlement spawnSettlement)
+	private static MobileParty SpawnLordPartyAux(Hero hero, CampaignVec2 position, float spawnRadius, Settlement spawnSettlement)
 	{
 		return LordPartyComponent.CreateLordParty(hero.CharacterObject.StringId, hero, position, spawnRadius, spawnSettlement, hero);
 	}
 
-	public static void CreateNewClanMobileParty(Hero partyLeader, Clan clan, out bool leaderCameFromMainParty)
+	public static MobileParty CreateNewClanMobileParty(Hero hero, Clan clan)
 	{
-		leaderCameFromMainParty = PartyBase.MainParty.MemberRoster.Contains(partyLeader.CharacterObject);
-		GiveGoldAction.ApplyBetweenCharacters(null, partyLeader, 3000, disableNotification: true);
-		clan.CreateNewMobileParty(partyLeader).Ai.SetMoveModeHold();
-	}
-
-	public static void DesertTroopsFromParty(MobileParty party, int stackNo, int numberOfDeserters, int numberOfWoundedDeserters, ref TroopRoster desertedTroopList)
-	{
-		TroopRosterElement elementCopyAtIndex = party.MemberRoster.GetElementCopyAtIndex(stackNo);
-		party.MemberRoster.AddToCounts(elementCopyAtIndex.Character, -(numberOfDeserters + numberOfWoundedDeserters), insertAtFront: false, -numberOfWoundedDeserters);
-		if (desertedTroopList == null)
+		if (hero.CurrentSettlement != null)
 		{
-			desertedTroopList = TroopRoster.CreateDummyTroopRoster();
+			Settlement currentSettlement = hero.CurrentSettlement;
+			if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.IsMainParty)
+			{
+				PartyBase.MainParty.MemberRoster.RemoveTroop(hero.CharacterObject);
+			}
+			return SpawnLordParty(hero, currentSettlement);
 		}
-		desertedTroopList.AddToCounts(elementCopyAtIndex.Character, numberOfDeserters + numberOfWoundedDeserters, insertAtFront: false, numberOfWoundedDeserters);
+		MobileParty partyBelongedTo = hero.PartyBelongedTo;
+		partyBelongedTo?.AddElementToMemberRoster(hero.CharacterObject, -1);
+		MobileParty.NavigationType navigationType = MobileParty.NavigationType.Default;
+		Settlement bestSettlementToSpawnAround = SettlementHelper.GetBestSettlementToSpawnAround(hero);
+		CampaignVec2 position = CampaignVec2.Invalid;
+		if (partyBelongedTo != null && NavigationHelper.IsPositionValidForNavigationType(partyBelongedTo.Position, navigationType))
+		{
+			position = partyBelongedTo.Position;
+		}
+		else if (bestSettlementToSpawnAround != null)
+		{
+			position = bestSettlementToSpawnAround.GatePosition;
+		}
+		else
+		{
+			Debug.FailedAssert("Cant find a position to spawn mobile party.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CreateNewClanMobileParty", 3741);
+		}
+		return SpawnLordParty(hero, position, Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 2f);
 	}
 
 	public static bool IsHeroAssignableForScoutInParty(Hero hero, MobileParty party)
 	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(SkillEffect.PerkRole.Scout))
+		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Scout))
 		{
 			return hero.GetSkillValue(DefaultSkills.Scouting) >= 0;
 		}
@@ -60,7 +71,7 @@ public static class MobilePartyHelper
 
 	public static bool IsHeroAssignableForEngineerInParty(Hero hero, MobileParty party)
 	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(SkillEffect.PerkRole.Engineer))
+		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Engineer))
 		{
 			return hero.GetSkillValue(DefaultSkills.Engineering) >= 0;
 		}
@@ -69,7 +80,7 @@ public static class MobilePartyHelper
 
 	public static bool IsHeroAssignableForSurgeonInParty(Hero hero, MobileParty party)
 	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(SkillEffect.PerkRole.Surgeon))
+		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Surgeon))
 		{
 			return hero.GetSkillValue(DefaultSkills.Medicine) >= 0;
 		}
@@ -78,7 +89,7 @@ public static class MobilePartyHelper
 
 	public static bool IsHeroAssignableForQuartermasterInParty(Hero hero, MobileParty party)
 	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(SkillEffect.PerkRole.Quartermaster))
+		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Quartermaster))
 		{
 			return hero.GetSkillValue(DefaultSkills.Trade) >= 0;
 		}
@@ -125,7 +136,7 @@ public static class MobilePartyHelper
 			}
 		}
 		List<CharacterObject> list2 = list.Where((CharacterObject x) => x.IsNotTransferableInPartyScreen && x.IsHero).ToList();
-		int num = TaleWorlds.Library.MathF.Min(list2.Count, maxTroopCount);
+		int num = MathF.Min(list2.Count, maxTroopCount);
 		for (int i = 0; i < num; i++)
 		{
 			troopRoster.AddToCounts(list2[i], 1);
@@ -156,10 +167,6 @@ public static class MobilePartyHelper
 
 	public static void PartyAddSharedXp(MobileParty party, float xpToDistribute)
 	{
-		if (!(xpToDistribute > 0f))
-		{
-			return;
-		}
 		TroopRoster memberRoster = party.MemberRoster;
 		int num = 0;
 		for (int i = 0; i < memberRoster.Count; i++)
@@ -183,18 +190,43 @@ public static class MobilePartyHelper
 			TroopRosterElement elementCopyAtIndex2 = memberRoster.GetElementCopyAtIndex(j);
 			if (CanTroopGainXp(party.Party, elementCopyAtIndex2.Character, out var gainableMaxXp2))
 			{
-				int num2 = TaleWorlds.Library.MathF.Floor(TaleWorlds.Library.MathF.Max(1f, xpToDistribute * (float)gainableMaxXp2 / (float)num));
-				memberRoster.AddXpToTroopAtIndex(num2, j);
+				int num2 = MathF.Floor(MathF.Max(1f, xpToDistribute * (float)gainableMaxXp2 / (float)num));
+				memberRoster.AddXpToTroopAtIndex(j, num2);
 				xpToDistribute -= (float)num2;
 				num -= gainableMaxXp2;
 			}
 		}
 	}
 
+	public static void WoundNumberOfNonHeroTroopsRandomlyWithChanceOfDeath(TroopRoster roster, int numberOfMen, float chanceOfDeathPerUnit, out int deathAmount)
+	{
+		deathAmount = 0;
+		for (int i = 0; i < numberOfMen; i++)
+		{
+			if (MBRandom.RandomFloat < chanceOfDeathPerUnit)
+			{
+				deathAmount++;
+			}
+		}
+		if (deathAmount > 0)
+		{
+			roster.RemoveNumberOfNonHeroTroopsRandomly(deathAmount);
+		}
+		if (numberOfMen > deathAmount)
+		{
+			roster.WoundNumberOfNonHeroTroopsRandomly(numberOfMen - deathAmount);
+		}
+	}
+
 	public static bool CanTroopGainXp(PartyBase owner, CharacterObject character, out int gainableMaxXp)
 	{
-		bool result = false;
 		gainableMaxXp = 0;
+		if (character.UpgradeTargets == null)
+		{
+			Debug.FailedAssert("Upgrade target is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CanTroopGainXp", 3914);
+			return false;
+		}
+		bool result = false;
 		int index = owner.MemberRoster.FindIndexOfTroop(character);
 		int elementNumber = owner.MemberRoster.GetElementNumber(index);
 		int elementXp = owner.MemberRoster.GetElementXp(index);
@@ -214,45 +246,19 @@ public static class MobilePartyHelper
 		return result;
 	}
 
-	public static Vec2 FindReachablePointAroundPosition(Vec2 centerPosition, float maxDistance, float minDistance = 0f)
-	{
-		Vec2 vec = new Vec2(centerPosition.x, centerPosition.y);
-		PathFaceRecord faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(centerPosition);
-		Vec2 vec2 = centerPosition;
-		if (maxDistance > 0f)
-		{
-			int num = 0;
-			do
-			{
-				num++;
-				Vec2 vec3 = Vec2.One.Normalized();
-				vec3.RotateCCW(MBRandom.RandomFloatRanged(0f, System.MathF.PI * 2f));
-				vec3 *= MBRandom.RandomFloatRanged(minDistance, maxDistance);
-				vec = centerPosition + vec3;
-				PathFaceRecord faceIndex2 = Campaign.Current.MapSceneWrapper.GetFaceIndex(vec);
-				if (faceIndex2.IsValid() && Campaign.Current.MapSceneWrapper.AreFacesOnSameIsland(faceIndex2, faceIndex, ignoreDisabled: false))
-				{
-					vec2 = vec;
-				}
-			}
-			while (vec2 == centerPosition && num < 250);
-		}
-		return vec2;
-	}
-
 	public static void TryMatchPartySpeedWithItemWeight(MobileParty party, float targetPartySpeed, ItemObject itemToUse = null)
 	{
-		targetPartySpeed = TaleWorlds.Library.MathF.Max(1f, targetPartySpeed);
+		targetPartySpeed = MathF.Max(1f, targetPartySpeed);
 		ItemObject item = itemToUse ?? DefaultItems.HardWood;
 		float speed = party.Speed;
-		int num = TaleWorlds.Library.MathF.Sign(speed - targetPartySpeed);
+		int num = MathF.Sign(speed - targetPartySpeed);
 		for (int i = 0; i < 200; i++)
 		{
-			if (TaleWorlds.Library.MathF.Abs(speed - targetPartySpeed) < 0.1f)
+			if (MathF.Abs(speed - targetPartySpeed) < 0.1f)
 			{
 				break;
 			}
-			if (TaleWorlds.Library.MathF.Sign(speed - targetPartySpeed) != num)
+			if (MathF.Sign(speed - targetPartySpeed) != num)
 			{
 				break;
 			}
@@ -269,25 +275,6 @@ public static class MobilePartyHelper
 				party.ItemRoster.AddToCounts(item, -1);
 			}
 			speed = party.Speed;
-		}
-	}
-
-	public static void UtilizePartyEscortBehavior(MobileParty escortedParty, MobileParty escortParty, ref bool isWaitingForEscortParty, float innerRadius, float outerRadius, ResumePartyEscortBehaviorDelegate onPartyEscortBehaviorResumed, bool showDebugSpheres = false)
-	{
-		if (!isWaitingForEscortParty)
-		{
-			if (escortParty.Position2D.DistanceSquared(escortedParty.Position2D) >= outerRadius * outerRadius)
-			{
-				escortedParty.Ai.SetMoveGoToPoint(escortedParty.Position2D);
-				escortedParty.Ai.CheckPartyNeedsUpdate();
-				isWaitingForEscortParty = true;
-			}
-		}
-		else if (escortParty.Position2D.DistanceSquared(escortedParty.Position2D) <= innerRadius * innerRadius)
-		{
-			onPartyEscortBehaviorResumed();
-			escortedParty.Ai.CheckPartyNeedsUpdate();
-			isWaitingForEscortParty = false;
 		}
 	}
 
@@ -317,7 +304,7 @@ public static class MobilePartyHelper
 		Settlement settlement = mobileParty.CurrentSettlement;
 		if (settlement == null)
 		{
-			if (mobileParty.LastVisitedSettlement == null || !(mobileParty.LastVisitedSettlement.Position2D.DistanceSquared(mobileParty.Position2D) < 1f))
+			if (mobileParty.LastVisitedSettlement == null || !(mobileParty.LastVisitedSettlement.Position.DistanceSquared(mobileParty.Position) < 1f))
 			{
 				return null;
 			}
@@ -338,5 +325,67 @@ public static class MobilePartyHelper
 			}
 		}
 		return troopRoster;
+	}
+
+	public static void FillPartyManuallyAfterCreation(MobileParty mobileParty, PartyTemplateObject partyTemplate, int desiredMenCount)
+	{
+		mobileParty.MemberRoster.Clear();
+		float num = 0f;
+		int num2 = partyTemplate.Stacks.Sum((PartyTemplateStack s) => s.MinValue);
+		int num3 = partyTemplate.Stacks.Sum((PartyTemplateStack s) => s.MaxValue);
+		num = ((desiredMenCount < num2) ? ((float)desiredMenCount / (float)num2 - 1f) : ((num2 > desiredMenCount || desiredMenCount > num3) ? ((float)desiredMenCount / (float)num3) : ((float)(desiredMenCount - num2) / (float)(num3 - num2))));
+		for (int i = 0; i < partyTemplate.Stacks.Count; i++)
+		{
+			PartyTemplateStack partyTemplateStack = partyTemplate.Stacks[i];
+			int minValue = partyTemplateStack.MinValue;
+			int maxValue = partyTemplateStack.MaxValue;
+			int num4 = ((-1f <= num && num < 0f) ? MBRandom.RoundRandomized((float)minValue + (float)minValue * num) : ((!(0f <= num) || !(num <= 1f)) ? MBRandom.RoundRandomized((float)maxValue * num) : MBRandom.RoundRandomized((float)minValue + (float)(maxValue - minValue) * num)));
+			if (num4 > 0)
+			{
+				mobileParty.MemberRoster.AddToCounts(partyTemplateStack.Character, num4);
+			}
+		}
+		float maxVal = partyTemplate.Stacks.Sum((PartyTemplateStack x) => (float)(x.MaxValue + x.MinValue) / 2f);
+		while (mobileParty.MemberRoster.TotalManCount > desiredMenCount)
+		{
+			int index = 0;
+			float num5 = MBRandom.RandomFloatRanged(maxVal);
+			for (int j = 0; j < partyTemplate.Stacks.Count; j++)
+			{
+				PartyTemplateStack partyTemplateStack2 = partyTemplate.Stacks[j];
+				float num6 = (float)(partyTemplateStack2.MaxValue + partyTemplateStack2.MinValue) / 2f;
+				num5 -= num6;
+				if (num5 <= 0f)
+				{
+					index = j;
+					break;
+				}
+			}
+			CharacterObject character = partyTemplate.Stacks[index].Character;
+			mobileParty.MemberRoster.AddToCounts(character, -1);
+		}
+		while (mobileParty.MemberRoster.TotalManCount < desiredMenCount)
+		{
+			int index2 = 0;
+			float num7 = MBRandom.RandomFloatRanged(maxVal);
+			for (int k = 0; k < partyTemplate.Stacks.Count; k++)
+			{
+				PartyTemplateStack partyTemplateStack3 = partyTemplate.Stacks[k];
+				float num8 = (float)(partyTemplateStack3.MaxValue + partyTemplateStack3.MinValue) / 2f;
+				num7 -= num8;
+				if (num7 <= 0f)
+				{
+					index2 = k;
+					break;
+				}
+			}
+			CharacterObject character2 = partyTemplate.Stacks[index2].Character;
+			mobileParty.MemberRoster.AddToCounts(character2, 1);
+		}
+	}
+
+	public static bool CanPartyAttackWithCurrentMorale(MobileParty mobileParty)
+	{
+		return mobileParty.Morale > 0f;
 	}
 }

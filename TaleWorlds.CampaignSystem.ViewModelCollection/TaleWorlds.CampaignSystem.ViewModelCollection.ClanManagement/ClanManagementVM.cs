@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem.Settlements.Workshops;
 using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categories;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Tutorial;
 using TaleWorlds.InputSystem;
@@ -41,7 +42,7 @@ public class ClanManagementVM : ViewModel
 
 	private HeroVM _leader;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
 	private ClanCardSelectionPopupVM _cardSelectionPopup;
 
@@ -165,7 +166,7 @@ public class ClanManagementVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -1122,7 +1123,7 @@ public class ClanManagementVM : ViewModel
 		_clan = Hero.MainHero.Clan;
 		CardSelectionPopup = new ClanCardSelectionPopupVM();
 		ClanMembers = new ClanMembersVM(RefreshCategoryValues, _showHeroOnMap);
-		ClanFiefs = new ClanFiefsVM(RefreshCategoryValues, CardSelectionPopup.Open);
+		ClanFiefs = CreateFiefsDataSource(RefreshCategoryValues, CardSelectionPopup.Open);
 		ClanParties = new ClanPartiesVM(OnAnyExpenseChange, _openPartyAsManage, RefreshCategoryValues, CardSelectionPopup.Open);
 		ClanIncome = new ClanIncomeVM(RefreshCategoryValues, CardSelectionPopup.Open);
 		_categoryCount = 4;
@@ -1157,6 +1158,11 @@ public class ClanManagementVM : ViewModel
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 	}
 
+	protected virtual ClanFiefsVM CreateFiefsDataSource(Action onRefresh, Action<ClanCardSelectionInfo> openCardSelectionPopup)
+	{
+		return new ClanFiefsVM(onRefresh, openCardSelectionPopup);
+	}
+
 	private bool GetPlayerCanChangeClanNameWithReason(out TextObject disabledReason)
 	{
 		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
@@ -1169,7 +1175,7 @@ public class ClanManagementVM : ViewModel
 			disabledReason = new TextObject("{=GCaYjA5W}You need to be the leader of the clan to change it's name.");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -1249,7 +1255,7 @@ public class ClanManagementVM : ViewModel
 
 	public void UpdateBannerVisuals()
 	{
-		ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(_clan.Banner), nineGrid: true);
+		ClanBanner = new BannerImageIdentifierVM(_clan.Banner, nineGrid: true);
 		ClanBannerHint = new HintViewModel(new TextObject("{=t1lSXN9O}Your clan's standard carried into battle"));
 		RefreshValues();
 	}
@@ -1305,7 +1311,7 @@ public class ClanManagementVM : ViewModel
 		{
 			IsKingdomActionEnabled = Campaign.Current.Models.KingdomCreationModel.IsPlayerKingdomCreationPossible(out var kingdomCreationDisabledReasons);
 			KingdomActionText = GameTexts.FindText("str_create_kingdom").ToString();
-			KingdomActionDisabledReasonHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetHintTextFromReasons(kingdomCreationDisabledReasons));
+			KingdomActionDisabledReasonHint = new BasicTooltipViewModel(() => CampaignUIHelper.MergeTextObjectsWithNewline(kingdomCreationDisabledReasons));
 		}
 		UpdateBannerVisuals();
 	}
@@ -1369,7 +1375,7 @@ public class ClanManagementVM : ViewModel
 	{
 		TextObject textObject = GameTexts.FindText("str_generic_clan_name");
 		textObject.SetTextVariable("CLAN_NAME", new TextObject(newClanName));
-		_clan.InitializeClan(textObject, textObject, _clan.Culture, _clan.Banner);
+		_clan.ChangeClanName(textObject, textObject);
 		RefreshCategoryValues();
 		RefreshValues();
 	}
@@ -1401,6 +1407,11 @@ public class ClanManagementVM : ViewModel
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: true);
 		CardSelectionPopup.SetDoneInputKey(hotkey);
+	}
+
+	public void SetCancelInputKey(HotKey hotkey)
+	{
+		CardSelectionPopup.SetCancelInputKey(hotkey);
 	}
 
 	public void SetPreviousTabInputKey(HotKey hotkey)

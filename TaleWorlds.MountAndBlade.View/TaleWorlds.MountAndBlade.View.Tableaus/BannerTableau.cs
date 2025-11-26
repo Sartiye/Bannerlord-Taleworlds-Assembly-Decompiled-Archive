@@ -8,6 +8,8 @@ namespace TaleWorlds.MountAndBlade.View.Tableaus;
 
 public class BannerTableau
 {
+	private static int _tableauIndex;
+
 	private bool _isFinalized;
 
 	private bool _isEnabled;
@@ -89,28 +91,36 @@ public class BannerTableau
 		_scene.DisableStaticShadows(value: true);
 		_scene.SetName("BannerTableau.Scene");
 		_scene.SetDefaultLighting();
-		_defaultCamera = TableauCacheManager.CreateDefaultBannerCamera();
-		_nineGridCamera = TableauCacheManager.CreateNineGridBannerCamera();
+		_defaultCamera = BannerTextureCreator.CreateDefaultBannerCamera();
+		_nineGridCamera = BannerTextureCreator.CreateNineGridBannerCamera();
 		_isDirty = true;
 	}
 
 	private void Refresh()
 	{
-		if (_isDirty)
+		if (!_isDirty)
 		{
-			if (_currentMeshEntity != null)
+			return;
+		}
+		if (_currentMeshEntity != null)
+		{
+			_scene.RemoveEntity(_currentMeshEntity, 111);
+		}
+		if (_banner != null)
+		{
+			MatrixFrame placementFrame = MatrixFrame.Identity;
+			if (Banner.IsValidBannerCode(_banner.BannerCode))
 			{
-				_scene.RemoveEntity(_currentMeshEntity, 111);
-			}
-			if (_banner != null)
-			{
-				MatrixFrame placementFrame = MatrixFrame.Identity;
 				_currentMultiMesh = _banner.ConvertToMultiMesh();
 				_currentMeshEntity = _scene.AddItemEntity(ref placementFrame, _currentMultiMesh);
 				_currentMeshEntity.ManualInvalidate();
 				_currentMultiMesh.ManualInvalidate();
-				_isDirty = false;
 			}
+			else
+			{
+				Debug.FailedAssert("Banner code is not valid: " + _banner.BannerCode, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BannerTableau.cs", "Refresh", 109);
+			}
+			_isDirty = false;
 		}
 	}
 
@@ -137,8 +147,8 @@ public class BannerTableau
 		}
 		View?.SetEnable(value: false);
 		View?.AddClearTask(clearOnlySceneview: true);
-		Texture?.ReleaseNextFrame();
-		Texture = TableauView.AddTableau("BannerTableau", BannerTableauContinuousRenderFunction, _scene, _tableauSizeX, _tableauSizeY);
+		Texture?.Release();
+		Texture = TableauView.AddTableau($"BannerTableau_{_tableauIndex++}", BannerTableauContinuousRenderFunction, _scene, _tableauSizeX, _tableauSizeY);
 		Texture.TableauView.SetSceneUsesContour(value: false);
 	}
 
@@ -150,7 +160,7 @@ public class BannerTableau
 		}
 		else
 		{
-			_banner = BannerCode.CreateFrom(value).CalculateBanner();
+			_banner = new Banner(value);
 		}
 		_isDirty = true;
 	}
@@ -164,7 +174,7 @@ public class BannerTableau
 			_scene?.ManualInvalidate();
 			_scene = null;
 			View?.SetEnable(value: false);
-			Texture?.ReleaseNextFrame();
+			Texture?.Release();
 			Texture = null;
 			_defaultCamera?.ReleaseCamera();
 			_defaultCamera = null;
@@ -246,8 +256,10 @@ public class BannerTableau
 			float y = value.Y / 1528f / meshAtIndex.GetBoundingBoxHeight();
 			Vec3 eulerAngles = localFrame.rotation.GetEulerAngles();
 			localFrame.rotation = Mat3.Identity;
-			localFrame.rotation.ApplyEulerAngles(eulerAngles);
-			localFrame.rotation.ApplyScaleLocal(new Vec3(x, y, 1f));
+			localFrame.rotation.ApplyEulerAngles(in eulerAngles);
+			ref Mat3 rotation = ref localFrame.rotation;
+			Vec3 scaleAmountXYZ = new Vec3(x, y, 1f);
+			rotation.ApplyScaleLocal(in scaleAmountXYZ);
 			meshAtIndex.SetLocalFrame(localFrame);
 		}
 	}
@@ -259,10 +271,10 @@ public class BannerTableau
 			Mesh meshAtIndex = _currentMultiMesh.GetMeshAtIndex(_meshIndexToUpdate);
 			MatrixFrame localFrame = meshAtIndex.GetLocalFrame();
 			float a = value.Item1 * 2f * System.MathF.PI;
-			Vec3 scaleVector = localFrame.rotation.GetScaleVector();
+			Vec3 scaleAmountXYZ = localFrame.rotation.GetScaleVector();
 			localFrame.rotation = Mat3.Identity;
 			localFrame.rotation.RotateAboutUp(a);
-			localFrame.rotation.ApplyScaleLocal(scaleVector);
+			localFrame.rotation.ApplyScaleLocal(in scaleAmountXYZ);
 			if (value.Item2)
 			{
 				localFrame.rotation.RotateAboutForward(System.MathF.PI);

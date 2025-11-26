@@ -35,9 +35,9 @@ public class RichText : IText
 
 	private float _widthSize = -1f;
 
-	private const float ExtraLetterPaddingHorizontal = 0.5f;
+	protected const float ExtraLetterPaddingHorizontal = 0.5f;
 
-	private const float ExtraLetterPaddingVertical = 5f;
+	protected const float ExtraLetterPaddingVertical = 5f;
 
 	private const float RichTextIconHorizontalPadding = 8f;
 
@@ -57,7 +57,7 @@ public class RichText : IText
 
 	private int _numOfAddedSeparators;
 
-	private readonly Func<int, Font> _getUsableFontForCharacter;
+	protected readonly Func<int, Font> _getUsableFontForCharacter;
 
 	private bool _shouldAddNewLineWhenExceedingContainerWidth = true;
 
@@ -175,8 +175,7 @@ public class RichText : IText
 			if (value != _shouldAddNewLineWhenExceedingContainerWidth)
 			{
 				_shouldAddNewLineWhenExceedingContainerWidth = value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
 			}
 		}
 	}
@@ -192,8 +191,7 @@ public class RichText : IText
 			if (value != _canBreakWords)
 			{
 				_canBreakWords = value;
-				_meshNeedsUpdate = true;
-				_preferredSizeNeedsUpdate = true;
+				SetAllDirty();
 			}
 		}
 	}
@@ -216,16 +214,19 @@ public class RichText : IText
 		StyleFontContainer.Add("Default", font, 1f);
 	}
 
-	public virtual void Update(SpriteData spriteData, Vector2 focusPosition, bool focus, bool isFixedWidth, bool isFixedHeight, float renderScale)
+	public virtual void Update(float dt, SpriteData spriteData, Vector2 focusPosition, bool focus, bool isFixedWidth, bool isFixedHeight, float renderScale)
 	{
 		bool flag = false;
-		if (string.IsNullOrEmpty(_text))
+		bool num = string.IsNullOrEmpty(_text);
+		_isFixedWidth = isFixedWidth;
+		_isFixedHeight = isFixedHeight;
+		if (num)
 		{
 			return;
 		}
 		if (_tokensNeedUpdate)
 		{
-			CalculateTextOutput(isFixedWidth, isFixedHeight, WidthSize, Height, spriteData, renderScale);
+			CalculateTextOutput(WidthSize, Height, spriteData, renderScale);
 			flag = true;
 		}
 		if (_gotFocus != focus)
@@ -287,7 +288,7 @@ public class RichText : IText
 		{
 			if (_tokensNeedUpdate)
 			{
-				CalculateTextOutput(fixedWidth, fixedHeight, WidthSize, heightSize, spriteData, renderScale);
+				CalculateTextOutput(WidthSize, heightSize, spriteData, renderScale);
 			}
 			if (_preferredSizeNeedsUpdate)
 			{
@@ -309,7 +310,7 @@ public class RichText : IText
 		return _preferredSize;
 	}
 
-	public void CalculateTextOutput(bool fixedWidth, bool fixedHeight, float width, float height, SpriteData spriteData, float renderScale)
+	public void CalculateTextOutput(float width, float height, SpriteData spriteData, float renderScale)
 	{
 		if (!_tokensNeedUpdate)
 		{
@@ -322,7 +323,6 @@ public class RichText : IText
 		for (int i = 0; i < _tokens.Count; i++)
 		{
 			TextToken textToken = _tokens[i];
-			bool flag = i == _tokens.Count - 1;
 			string style = _styleStack.Peek();
 			StyleFontContainer.FontData fontData = StyleFontContainer.GetFontData(style);
 			Font font = fontData.Font;
@@ -335,10 +335,10 @@ public class RichText : IText
 			else if (textToken.Type == TextToken.TokenType.EmptyCharacter)
 			{
 				float emptyCharacterWidth = GetEmptyCharacterWidth(font, num);
-				bool flag2 = TextOutput.LastLineWidth + emptyCharacterWidth > width;
+				bool flag = TextOutput.LastLineWidth + emptyCharacterWidth > width;
 				float num3 = TextOutput.TextHeight + num2;
-				bool flag3 = !fixedHeight || num3 < height;
-				if (fixedWidth && flag2 && flag3 && SkipLineOnContainerExceeded)
+				bool flag2 = !_isFixedHeight || num3 <= height;
+				if (_isFixedWidth && flag && flag2 && SkipLineOnContainerExceeded)
 				{
 					TextOutput.AddNewLine(currentLineEnded: false, num2);
 				}
@@ -375,8 +375,8 @@ public class RichText : IText
 					num = fontData.FontSize / (float)font.Size;
 					num4 = font.GetCharacterWidth(token, 0.5f) * num;
 				}
-				bool flag4 = TextOutput.LastLineWidth + num4 > width;
-				if (fixedWidth && flag4 && SkipLineOnContainerExceeded)
+				bool flag3 = TextOutput.LastLineWidth + num4 > width;
+				if (_isFixedWidth && flag3 && SkipLineOnContainerExceeded)
 				{
 					List<TextToken> list = TextOutput.Tokens.Select((TextTokenOutput t) => t.Token).ToList();
 					int indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex = TextHelper.GetIndexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex(list, list.Count - 1, CurrentLanguage, CanBreakWords);
@@ -388,40 +388,64 @@ public class RichText : IText
 						{
 							num5 = _tokens.Count;
 						}
-						num6 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, num5, _tokens, GetFontForTextToken, 0.5f, num);
+						num6 = TextHelper.GetTotalWordWidthBetweenIndices(indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex, num5, _tokens, GetFontForTextToken, 0.5f, fontData.FontSize);
 					}
-					bool flag5 = num4 <= width;
-					if (!flag5 || (num6 != 0f && (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1 || !(num6 <= width))) || indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1)
+					bool flag4 = num4 <= width;
+					bool flag5 = flag4 && (num6 == 0f || (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1 && num6 <= width));
+					if (CanBreakWords && (!flag5 || indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex == -1))
 					{
-						_numOfAddedSeparators++;
-						float tokenWidth = fontData.Font.GetCharacterWidth(CurrentLanguage.GetLineSeperatorChar(), 0.5f) * num;
-						if (!flag5)
+						float num7 = fontData.FontSize / (float)font.Size;
+						float num8 = fontData.Font.GetCharacterWidth(CurrentLanguage.GetLineSeperatorChar(), 0.5f) * num7;
+						if (!flag4)
 						{
 							TextOutput.AddToken(textToken, num4, num, style, num2);
-							if (!flag)
+							if (i != _tokens.Count - 1)
 							{
-								TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), tokenWidth, num);
+								if (_tokens[i + 1].Type == TextToken.TokenType.Character && !TextHelper.IsTokenEqualToSeparatorChar(textToken, CurrentLanguage) && !TextHelper.IsTokenEqualToSeparatorChar(_tokens[i + 1], CurrentLanguage))
+								{
+									_numOfAddedSeparators++;
+									TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), num8, num7, style);
+								}
 								TextOutput.AddNewLine(currentLineEnded: false, num2);
 							}
 						}
 						else if (TextOutput.Tokens.Any())
 						{
-							List<TextTokenOutput> list2 = TextOutput.RemoveTokensFromEnd(1);
-							TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), tokenWidth, num);
+							TextTokenOutput? textTokenOutput = TextOutput.Tokens.LastOrDefault();
+							bool num9 = textTokenOutput == null || textTokenOutput.Token.Type != TextToken.TokenType.Character || TextHelper.IsTokenEqualToSeparatorChar(TextOutput.Tokens.LastOrDefault()?.Token, CurrentLanguage) || TextHelper.IsTokenEqualToSeparatorChar(textToken, CurrentLanguage);
+							bool flag6 = TextOutput.LastLineWidth + num8 > width;
+							TextTokenOutput textTokenOutput2 = null;
+							if (!num9 && flag6)
+							{
+								textTokenOutput2 = TextOutput.RemoveTokensFromEnd(1).First();
+							}
+							TextToken token2 = textTokenOutput2?.Token ?? textToken;
+							TextTokenOutput? textTokenOutput3 = TextOutput.Tokens.LastOrDefault();
+							if (textTokenOutput3 != null && textTokenOutput3.Token.Type == TextToken.TokenType.Character && !TextHelper.IsTokenEqualToSeparatorChar(TextOutput.Tokens.LastOrDefault()?.Token, CurrentLanguage) && !TextHelper.IsTokenEqualToSeparatorChar(token2, CurrentLanguage))
+							{
+								_numOfAddedSeparators++;
+								TextOutput.AddToken(TextToken.CreateCharacter(CurrentLanguage.GetLineSeperatorChar()), num8, num7, style);
+							}
 							TextOutput.AddNewLine(currentLineEnded: false, num2);
-							TextOutput.AddToken(list2[0].Token, list2[0].Width, num);
+							if (textTokenOutput2 != null)
+							{
+								TextOutput.AddToken(textTokenOutput2.Token, textTokenOutput2.Width, textTokenOutput2.Scale, textTokenOutput2.Style);
+							}
 							TextOutput.AddToken(textToken, num4, num, style, num2);
 						}
 						continue;
 					}
-					List<TextTokenOutput> list3 = TextOutput.RemoveTokensFromEnd(list.Count - indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex);
-					TextOutput.AddNewLine(currentLineEnded: false, num2);
-					for (int num7 = list3.Count - 1; num7 >= 0; num7--)
+					if (indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex != -1)
 					{
-						TextTokenOutput textTokenOutput = list3[num7];
-						if (textTokenOutput.Token.Type != 0 && textTokenOutput.Token.Type != TextToken.TokenType.ZeroWidthSpace)
+						List<TextTokenOutput> list2 = TextOutput.RemoveTokensFromEnd(list.Count - indexOfFirstAppropriateCharacterToMoveToNextLineBackwardsFromIndex);
+						TextOutput.AddNewLine(currentLineEnded: false, num2);
+						for (int num10 = list2.Count - 1; num10 >= 0; num10--)
 						{
-							TextOutput.AddToken(textTokenOutput.Token, textTokenOutput.Width, textTokenOutput.Scale, textTokenOutput.Style, num2);
+							TextTokenOutput textTokenOutput4 = list2[num10];
+							if (textTokenOutput4.Token.Type != 0 && textTokenOutput4.Token.Type != TextToken.TokenType.ZeroWidthSpace)
+							{
+								TextOutput.AddToken(textTokenOutput4.Token, textTokenOutput4.Width, textTokenOutput4.Scale, textTokenOutput4.Style, num2);
+							}
 						}
 					}
 					TextOutput.AddToken(textToken, num4, num, style, num2);
@@ -446,18 +470,19 @@ public class RichText : IText
 					{
 						sprite = spriteData.GetSprite(attribute);
 					}
-					float num8 = 0f;
+					float num11 = 0f;
 					if (sprite != null)
 					{
-						num8 = ((float)fontData.Font.Base + 0f) * num * ((float)sprite.Height / (float)sprite.Width) + 8f * renderScale;
+						num11 = ((float)fontData.Font.Base + 0f) * num * ((float)sprite.Height / (float)sprite.Width) + 8f * renderScale;
 					}
-					bool flag6 = TextOutput.LastLineWidth + num8 > width;
-					bool flag7 = TextOutput.TextHeight + num2 < height;
-					if (fixedWidth && flag6 && flag7 && SkipLineOnContainerExceeded)
+					bool flag7 = TextOutput.LastLineWidth + num11 > width;
+					float num12 = TextOutput.TextHeight + num2;
+					bool flag8 = !_isFixedHeight || num12 <= height;
+					if (_isFixedWidth && flag7 && flag8 && SkipLineOnContainerExceeded)
 					{
 						TextOutput.AddNewLine(currentLineEnded: false, num2);
 					}
-					TextOutput.AddToken(textToken, num8, num, style, num2);
+					TextOutput.AddToken(textToken, num11, num, style, num2);
 				}
 				else if (tag.Name == "a")
 				{
@@ -516,7 +541,7 @@ public class RichText : IText
 			{
 				if (token == null)
 				{
-					Debug.FailedAssert("TextOutputToken returned null. This shouldn't happen.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.TwoDimension\\BitmapFont\\RichText.cs", "GetTokenUnderPosition", 561);
+					Debug.FailedAssert("TextOutputToken returned null. This shouldn't happen.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.TwoDimension\\BitmapFont\\RichText.cs", "GetTokenUnderPosition", 608);
 				}
 				else if (token.Rectangle.IsPointInside(position))
 				{
@@ -685,19 +710,17 @@ public class RichText : IText
 		}
 	}
 
-	private RichTextPart GetOrCreatTextPartyOfStyle(string style, Font font, float x, float y)
+	private RichTextPart GetOrCreateTextPartOfStyle(string style, Font font, float x, float y)
 	{
-		foreach (RichTextPart richTextPart2 in _richTextParts)
+		RichTextPart richTextPart = _richTextParts.LastOrDefault();
+		if (richTextPart != null && richTextPart.Type == RichTextPartType.Text && richTextPart.Style == style && richTextPart.DefaultFont == font)
 		{
-			if (richTextPart2.Type == RichTextPartType.Text && richTextPart2.Style == style && richTextPart2.DefaultFont == font)
-			{
-				return richTextPart2;
-			}
+			return richTextPart;
 		}
 		float scaleValue = StyleFontContainer.GetFontData(style).FontSize / (float)font.Size;
 		TextMeshGenerator textMeshGenerator = new TextMeshGenerator();
 		textMeshGenerator.Refresh(font, _textLength, scaleValue);
-		RichTextPart richTextPart = new RichTextPart
+		RichTextPart richTextPart2 = new RichTextPart
 		{
 			TextMeshGenerator = textMeshGenerator,
 			Type = RichTextPartType.Text,
@@ -706,8 +729,8 @@ public class RichText : IText
 			PartPosition = new Vector2(x, y),
 			DefaultFont = font
 		};
-		_richTextParts.Add(richTextPart);
-		return richTextPart;
+		_richTextParts.Add(richTextPart2);
+		return richTextPart2;
 	}
 
 	private void FillPartsWithTokens(SpriteData spriteData, float renderScale)
@@ -749,18 +772,18 @@ public class RichText : IText
 				{
 					text = ((!_gotFocus) ? (text + ".MouseOver") : (text + ".MouseDown"));
 				}
-				RichTextPart orCreatTextPartyOfStyle = GetOrCreatTextPartyOfStyle(text, font, x, y);
-				TextMeshGenerator textMeshGenerator = orCreatTextPartyOfStyle.TextMeshGenerator;
+				RichTextPart orCreateTextPartOfStyle = GetOrCreateTextPartOfStyle(text, font, x, y);
+				TextMeshGenerator textMeshGenerator = orCreateTextPartOfStyle.TextMeshGenerator;
 				BitmapFontCharacter fontCharacter = font.Characters[num4];
 				float x2 = num2 + (float)fontCharacter.XOffset * num;
 				float y2 = num3 + (float)fontCharacter.YOffset * num;
 				textMeshGenerator.AddCharacterToMesh(x2, y2, fontCharacter);
-				orCreatTextPartyOfStyle.WordWidth += ((float)fontCharacter.XAdvance + 0.5f) * num;
+				orCreateTextPartOfStyle.WordWidth += ((float)fontCharacter.XAdvance + 0.5f) * num;
 				num2 += ((float)fontCharacter.XAdvance + 0.5f) * num;
 			}
 			else if (token.Type == TextToken.TokenType.EmptyCharacter || token.Type == TextToken.TokenType.NonBreakingSpace)
 			{
-				GetOrCreatTextPartyOfStyle(text, font, x, y).WordWidth += GetEmptyCharacterWidth(font, num);
+				GetOrCreateTextPartOfStyle(text, font, x, y).WordWidth += GetEmptyCharacterWidth(font, num);
 			}
 			else
 			{
@@ -813,20 +836,30 @@ public class RichText : IText
 				StyleFontContainer.FontData fontData = StyleFontContainer.GetFontData(richTextPart.Style);
 				float num = fontData.FontSize / (float)fontData.Font.Size;
 				float num2 = (float)fontData.Font.Base * num * 0.8f + richTextPart.Extend * 2f * renderScale;
-				float width = num2 * ((float)sprite.Height / (float)sprite.Width);
-				DrawObject2D arrays = sprite.GetArrays(new SpriteDrawData(richTextPart.SpritePosition.X, richTextPart.SpritePosition.Y, num, width, num2, horizontalFlip: false, verticalFlip: false));
-				richTextPart.DrawObject2D = arrays;
+				float x = num2 * ((float)sprite.Height / (float)sprite.Width);
+				Rectangle2D rectangle = Rectangle2D.Create();
+				rectangle.LocalScale = new Vector2(x, num2);
+				Vec2 uvMin = sprite.GetMinUvs();
+				Vec2 uvMax = sprite.GetMaxUvs();
+				ImageDrawObject imageDrawObject = ImageDrawObject.Create(in rectangle, in uvMin, in uvMax);
+				imageDrawObject.Scale = num;
+				richTextPart.ImageDrawObject = imageDrawObject;
 			}
 			if (textMeshGenerator != null)
 			{
-				DrawObject2D drawObject2D = textMeshGenerator.GenerateMesh();
-				richTextPart.DrawObject2D = drawObject2D;
+				TextDrawObject textDrawObject = textMeshGenerator.GenerateMesh();
+				richTextPart.TextDrawObject = textDrawObject;
 			}
 		}
 	}
 
 	private Font GetFontForTextToken(TextToken token)
 	{
+		Font font = StyleFontContainer.GetFontData("Default").Font;
+		if (font.Characters.ContainsKey(token.Token))
+		{
+			return font;
+		}
 		return _getUsableFontForCharacter(token.Token);
 	}
 

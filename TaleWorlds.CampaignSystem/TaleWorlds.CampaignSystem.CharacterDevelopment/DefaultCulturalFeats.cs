@@ -28,9 +28,9 @@ public class DefaultCulturalFeats
 
 	private FeatObject _khuzaitDecreasedTaxFeat;
 
-	private FeatObject _sturgianCheaperRecruitsFeat;
+	private FeatObject _sturgianGrainProductionFeat;
 
-	private FeatObject _sturgianArmyCohesionFeat;
+	private FeatObject _sturgianArmyInfluenceCostFeat;
 
 	private FeatObject _sturgianDecisionPenaltyFeat;
 
@@ -66,9 +66,9 @@ public class DefaultCulturalFeats
 
 	public static FeatObject KhuzaitDecreasedTaxFeat => Instance._khuzaitDecreasedTaxFeat;
 
-	public static FeatObject SturgianRecruitUpgradeFeat => Instance._sturgianCheaperRecruitsFeat;
+	public static FeatObject SturgianGrainProductionFeat => Instance._sturgianGrainProductionFeat;
 
-	public static FeatObject SturgianArmyCohesionFeat => Instance._sturgianArmyCohesionFeat;
+	public static FeatObject SturgianArmyInfluenceCostFeat => Instance._sturgianArmyInfluenceCostFeat;
 
 	public static FeatObject SturgianDecisionPenaltyFeat => Instance._sturgianDecisionPenaltyFeat;
 
@@ -97,8 +97,8 @@ public class DefaultCulturalFeats
 		_khuzaitCheaperRecruitsFeat = Create("khuzait_cheaper_recruits_mounted");
 		_khuzaitAnimalProductionFeat = Create("khuzait_increased_animal_production");
 		_khuzaitDecreasedTaxFeat = Create("khuzait_decreased_town_tax");
-		_sturgianCheaperRecruitsFeat = Create("sturgian_cheaper_recruits_infantry");
-		_sturgianArmyCohesionFeat = Create("sturgian_decreased_cohesion_rate");
+		_sturgianGrainProductionFeat = Create("sturgian_increased_grain_production");
+		_sturgianArmyInfluenceCostFeat = Create("sturgian_decreased_army_influence_cost");
 		_sturgianDecisionPenaltyFeat = Create("sturgian_increased_decision_penalty");
 		_vlandianRenownIncomeFeat = Create("vlandian_renown_mercenary_income");
 		_vlandianVillageProductionFeat = Create("vlandian_villages_production_bonus");
@@ -117,7 +117,7 @@ public class DefaultCulturalFeats
 		_aseraiDesertSpeedFeat.Initialize("{=!}aserai_desert_speed", "{=6aFTN1Nb}No speed penalty on desert.", 1f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_aseraiWageFeat.Initialize("{=!}aserai_increased_wages", "{=GacrZ1Jl}Daily wages of troops in the party are increased by 5%.", 0.05f, isPositiveEffect: false, FeatObject.AdditionType.AddFactor);
 		_battaniaForestSpeedFeat.Initialize("{=!}battanian_forest_speed", "{=38W2WloI}50% less speed penalty and 15% sight range bonus in forests.", 0.5f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
-		_battaniaMilitiaFeat.Initialize("{=!}battanian_militia_production", "{=1qUFMK28}Towns owned by Battanian rulers have +1 militia production.", 1f, isPositiveEffect: true, FeatObject.AdditionType.Add);
+		_battaniaMilitiaFeat.Initialize("{=!}battanian_militia_production", "{=HLI5zAMV}Towns owned by Battanian rulers will have +20% chance of militias to spawn as veteran militias.", 0.2f, isPositiveEffect: true, FeatObject.AdditionType.Add);
 		_battaniaConstructionFeat.Initialize("{=!}battanian_slower_construction", "{=ruP9jbSq}10% slower build rate for town projects in settlements.", -0.1f, isPositiveEffect: false, FeatObject.AdditionType.AddFactor);
 		_empireGarrisonWageFeat.Initialize("{=!}empire_decreased_garrison_wage", "{=a2eM0QUb}20% less garrison troop wage.", -0.2f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_empireArmyInfluenceFeat.Initialize("{=!}empire_army_influence", "{=xgPNGOa8}Being in army brings 25% more influence.", 0.25f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
@@ -125,8 +125,8 @@ public class DefaultCulturalFeats
 		_khuzaitCheaperRecruitsFeat.Initialize("{=!}khuzait_cheaper_recruits_mounted", "{=JUpZuals}Recruiting and upgrading mounted troops are 10% cheaper.", -0.1f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_khuzaitAnimalProductionFeat.Initialize("{=!}khuzait_increased_animal_production", "{=Xaw2CoCG}25% production bonus to horse, mule, cow and sheep in villages owned by Khuzait rulers.", 0.25f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_khuzaitDecreasedTaxFeat.Initialize("{=!}khuzait_decreased_town_tax", "{=8PsaGhI8}20% less tax income from towns.", -0.2f, isPositiveEffect: false, FeatObject.AdditionType.AddFactor);
-		_sturgianCheaperRecruitsFeat.Initialize("{=!}sturgian_cheaper_recruits_infantry", "{=CJ5pLHaL}Recruiting and upgrading infantry troops are 25% cheaper.", -0.25f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
-		_sturgianArmyCohesionFeat.Initialize("{=!}sturgian_decreased_cohesion_rate", "{=QiHaWd75}Armies lose 20% less daily cohesion.", -0.2f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
+		_sturgianGrainProductionFeat.Initialize("{=!}sturgian_increased_grain_production", "{=5BabRyaa}Villages grain production is increased by 10%.", 0.1f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
+		_sturgianArmyInfluenceCostFeat.Initialize("{=!}sturgian_decreased_army_influence_cost", "{=Lmjm5Q9D}Armies are gathered with 50% less influence.", -0.5f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_sturgianDecisionPenaltyFeat.Initialize("{=!}sturgian_increased_decision_penalty", "{=fB7kS9Cx}20% more relationship penalty from kingdom decisions.", 0.2f, isPositiveEffect: false, FeatObject.AdditionType.AddFactor);
 		_vlandianRenownIncomeFeat.Initialize("{=!}vlandian_renown_mercenary_income", "{=ppdrgOL8}5% more renown from the battles, 15% more income while serving as a mercenary.", 0.05f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);
 		_vlandianVillageProductionFeat.Initialize("{=!}vlandian_villages_production_bonus", "{=3GsZXXOi}10% production bonus to villages that are bound to castles.", 0.1f, isPositiveEffect: true, FeatObject.AdditionType.AddFactor);

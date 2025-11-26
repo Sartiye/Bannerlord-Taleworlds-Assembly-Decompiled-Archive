@@ -14,7 +14,7 @@ internal class FieldLoadData : MemberLoadData
 	public void FillObject()
 	{
 		FieldDefinition fieldDefinitionWithId;
-		if (base.ObjectLoadData.TypeDefinition != null && (fieldDefinitionWithId = base.ObjectLoadData.TypeDefinition.GetFieldDefinitionWithId(base.MemberSaveId)) != null)
+		if (base.ObjectLoadData.TypeDefinition != null && (fieldDefinitionWithId = base.ObjectLoadData.TypeDefinition.GetFieldDefinitionWithId(GetMemberTypeId())) != null)
 		{
 			FieldInfo fieldInfo = fieldDefinitionWithId.FieldInfo;
 			object target = base.ObjectLoadData.Target;
@@ -24,5 +24,12 @@ internal class FieldLoadData : MemberLoadData
 				fieldInfo.SetValue(target, data);
 			}
 		}
+	}
+
+	private MemberTypeId GetMemberTypeId()
+	{
+		MemberTypeId memberTypeId = base.MemberSaveId;
+		base.Context.DefinitionContext.GetConflictedFieldMemberTypeId(base.ObjectLoadData.TypeDefinition, ref memberTypeId);
+		return memberTypeId;
 	}
 }

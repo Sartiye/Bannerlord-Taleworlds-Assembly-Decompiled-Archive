@@ -13,7 +13,17 @@ public static class EngineController
 
 	public static event Action<bool> OnConstrainedStateChanged;
 
-	[EngineCallback]
+	public static event Action OnDLCInstalledCallback;
+
+	public static event Action OnDLCLoadedCallback;
+
+	internal static void OnApplicationTick(float dt)
+	{
+		Input.Update();
+		Screen.Update();
+	}
+
+	[EngineCallback(null, false)]
 	internal static void Initialize()
 	{
 		IInputContext debugInput = null;
@@ -21,7 +31,7 @@ public static class EngineController
 		Common.PlatformFileHelper = new PlatformFileHelperPC(Utilities.GetApplicationName());
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnConfigChange()
 	{
 		NativeConfig.OnConfigChanged();
@@ -31,31 +41,37 @@ public static class EngineController
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnConstrainedStateChange(bool isConstrained)
 	{
 		EngineController.OnConstrainedStateChanged?.Invoke(isConstrained);
 	}
 
-	internal static void OnApplicationTick(float dt)
+	[EngineCallback(null, false)]
+	internal static void OnDLCInstalled()
 	{
-		Input.Update();
-		Screen.Update();
+		EngineController.OnDLCInstalledCallback?.Invoke();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
+	internal static void OnDLCLoaded()
+	{
+		EngineController.OnDLCLoadedCallback?.Invoke();
+	}
+
+	[EngineCallback(null, false)]
 	public static string GetVersionStr()
 	{
 		return ApplicationVersion.FromParametersFile().ToString();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	public static string GetApplicationPlatformName()
 	{
 		return ApplicationPlatform.CurrentPlatform.ToString();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	public static string GetModulesVersionStr()
 	{
 		string text = "";
@@ -66,7 +82,7 @@ public static class EngineController
 		return text;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnControllerDisconnection()
 	{
 		ScreenManager.OnControllerDisconnect();

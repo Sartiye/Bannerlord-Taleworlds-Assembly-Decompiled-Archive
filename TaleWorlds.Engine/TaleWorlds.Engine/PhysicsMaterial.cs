@@ -2,8 +2,8 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("int", false)]
-public struct PhysicsMaterial
+[EngineStruct("int", false, null)]
+public readonly struct PhysicsMaterial
 {
 	[CustomEngineStructMemberData("ignoredMember", true)]
 	public readonly int Index;
@@ -35,14 +35,19 @@ public struct PhysicsMaterial
 		return GetStaticFrictionAtIndex(Index);
 	}
 
-	public float GetSoftness()
-	{
-		return GetSoftnessAtIndex(Index);
-	}
-
 	public float GetRestitution()
 	{
 		return GetRestitutionAtIndex(Index);
+	}
+
+	public float GetLinearDamping()
+	{
+		return GetLinearDampingAtIndex(Index);
+	}
+
+	public float GetAngularDamping()
+	{
+		return GetAngularDampingAtIndex(Index);
 	}
 
 	public bool Equals(PhysicsMaterial m)
@@ -75,11 +80,6 @@ public struct PhysicsMaterial
 		return EngineApplicationInterface.IPhysicsMaterial.GetRestitutionAtIndex(index);
 	}
 
-	public static float GetSoftnessAtIndex(int index)
-	{
-		return EngineApplicationInterface.IPhysicsMaterial.GetSoftnessAtIndex(index);
-	}
-
 	public static float GetDynamicFrictionAtIndex(int index)
 	{
 		return EngineApplicationInterface.IPhysicsMaterial.GetDynamicFrictionAtIndex(index);
@@ -88,6 +88,16 @@ public struct PhysicsMaterial
 	public static float GetStaticFrictionAtIndex(int index)
 	{
 		return EngineApplicationInterface.IPhysicsMaterial.GetStaticFrictionAtIndex(index);
+	}
+
+	public static float GetLinearDampingAtIndex(int index)
+	{
+		return EngineApplicationInterface.IPhysicsMaterial.GetLinearDampingAtIndex(index);
+	}
+
+	public static float GetAngularDampingAtIndex(int index)
+	{
+		return EngineApplicationInterface.IPhysicsMaterial.GetAngularDampingAtIndex(index);
 	}
 
 	public static PhysicsMaterial GetFromIndex(int index)

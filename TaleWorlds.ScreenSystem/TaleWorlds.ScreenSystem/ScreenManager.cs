@@ -18,11 +18,11 @@ public static class ScreenManager
 
 	public delegate void OnControllerDisconnectedEvent();
 
+	public delegate bool OnPlatformTextRequestedDelegate(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum);
+
 	private static IScreenManagerEngineConnection _engineInterface;
 
 	private static Vec2 _usableArea;
-
-	private static List<ScreenLayer> _lateTickLayers;
 
 	private static ObservableCollection<ScreenBase> _screenList;
 
@@ -34,17 +34,19 @@ public static class ScreenManager
 
 	private static bool _isSortedActiveLayersDirty;
 
-	private static bool _focusedLayerChangedThisFrame;
-
-	private static bool _isMouseInputActiveLastFrame;
-
 	private static bool _isScreenDebugInformationEnabled;
+
+	private static List<InputKey> _lastMouseActiveKeys;
 
 	private static bool _activeMouseVisible;
 
 	private static IReadOnlyList<int> _lastPressedKeys;
 
 	private static bool _globalOrderDirty;
+
+	private static ScreenLayer _mouseDownLayer;
+
+	private static bool _isWindowFocused;
 
 	private static bool _isRefreshActive;
 
@@ -70,13 +72,14 @@ public static class ScreenManager
 
 	public static bool IsEnterButtonRDown => _engineInterface.GetIsEnterButtonRDown();
 
+	public static bool IsLateTickInProgress { get; private set; }
+
 	public static List<ScreenLayer> SortedLayers
 	{
 		get
 		{
 			if (_isSortedActiveLayersDirty || _sortedLayers.Count != TopScreen?.Layers.Count + _globalLayers?.Count)
 			{
-				_isMouseInputActiveLastFrame = false;
 				_sortedLayers.Clear();
 				if (TopScreen != null)
 				{
@@ -106,6 +109,8 @@ public static class ScreenManager
 
 	public static ScreenLayer FirstHitLayer { get; private set; }
 
+	public static bool IsWindowFocused => _isWindowFocused;
+
 	public static event OnPushScreenEvent OnPushScreen;
 
 	public static event OnPopScreenEvent OnPopScreen;
@@ -114,7 +119,7 @@ public static class ScreenManager
 
 	public static event Action FocusGained;
 
-	public static event Action<string, string, int, int> PlatformTextRequested;
+	public static event OnPlatformTextRequestedDelegate PlatformTextRequested;
 
 	static ScreenManager()
 	{
@@ -123,14 +128,21 @@ public static class ScreenManager
 		_sortedLayers = new List<ScreenLayer>(16);
 		_sortedActiveLayersCopyForUpdate = new ScreenLayer[16];
 		_isSortedActiveLayersDirty = true;
-		_activeMouseVisible = true;
 		_isRefreshActive = false;
 		_globalLayers = new ObservableCollection<GlobalLayer>();
 		_screenList = new ObservableCollection<ScreenBase>();
+		_lastMouseActiveKeys = new List<InputKey>();
 		_screenList.CollectionChanged += OnScreenListChanged;
 		_globalLayers.CollectionChanged += OnGlobalListChanged;
+		ScreenLayer.OnLayerActiveStateChanged += OnLayerActiveStateChanged;
 		FocusedLayer = null;
 		FirstHitLayer = null;
+		_isWindowFocused = true;
+	}
+
+	private static void OnLayerActiveStateChanged(ScreenLayer layer)
+	{
+		SetSortedLayersDirty();
 	}
 
 	public static void Initialize(IScreenManagerEngineConnection engineInterface)
@@ -153,7 +165,7 @@ public static class ScreenManager
 			{
 				continue;
 			}
-			if (!SortedLayers[i].Finalized)
+			if (!SortedLayers[i].IsFinalized)
 			{
 				ScreenLayer screenLayer = SortedLayers[i];
 				if (screenLayer != null && screenLayer.IsActive)
@@ -244,6 +256,7 @@ public static class ScreenManager
 		DeactivateAndFinalizeAllScreens();
 		_screenList.CollectionChanged -= OnScreenListChanged;
 		_globalLayers.CollectionChanged -= OnGlobalListChanged;
+		ScreenLayer.OnLayerActiveStateChanged -= OnLayerActiveStateChanged;
 		_screenList = null;
 		_globalLayers = null;
 		FocusedLayer = null;
@@ -255,82 +268,97 @@ public static class ScreenManager
 		for (int num = _screenList.Count - 1; num >= 0; num--)
 		{
 			_screenList[num].HandlePause();
+			_screenList[num].HandleDeactivate();
+			_screenList[num].HandleFinalize();
+			ScreenManager.OnPopScreen?.Invoke(_screenList[num]);
+			_screenList.RemoveAt(num);
 		}
-		for (int num2 = _screenList.Count - 1; num2 >= 0; num2--)
-		{
-			_screenList[num2].HandleDeactivate();
-		}
-		for (int num3 = _screenList.Count - 1; num3 >= 0; num3--)
-		{
-			_screenList[num3].HandleFinalize();
-		}
-		_screenList.Clear();
 		Common.MemoryCleanupGC();
 	}
 
-	internal static void UpdateLateTickLayers(List<ScreenLayer> layers)
-	{
-		_lateTickLayers = layers;
-	}
-
-	public static void Tick(float dt, bool activeMouseVisible)
+	public static void Tick(float dt)
 	{
 		for (int i = 0; i < _globalLayers.Count; i++)
 		{
 			_globalLayers[i]?.EarlyTick(dt);
 		}
 		Update();
-		_lateTickLayers = null;
 		if (TopScreen != null)
 		{
 			TopScreen.FrameTick(dt);
 			FindPredecessor(TopScreen)?.IdleTick(dt);
 		}
-		for (int j = 0; j < _globalLayers.Count; j++)
+		for (int j = 0; j < SortedLayers.Count; j++)
 		{
-			_globalLayers[j]?.Tick(dt);
+			ScreenLayer screenLayer = SortedLayers[j];
+			if (screenLayer != null && screenLayer.IsActive && !screenLayer.IsFinalized)
+			{
+				screenLayer.Tick(dt);
+			}
 		}
-		LateUpdate(dt, activeMouseVisible);
+		for (int k = 0; k < _globalLayers.Count; k++)
+		{
+			_globalLayers[k]?.Tick(dt);
+		}
+		LateUpdate(dt);
+		for (int l = 0; l < _globalLayers.Count; l++)
+		{
+			_globalLayers[l]?.LateTick(dt);
+		}
+		if (TopScreen != null)
+		{
+			TopScreen.PostFrameTick(dt);
+		}
 		ShowScreenDebugInformation();
 	}
 
 	public static void LateTick(float dt)
 	{
-		if (_lateTickLayers != null)
+		IsLateTickInProgress = true;
+		for (int i = 0; i < SortedLayers.Count; i++)
 		{
-			for (int i = 0; i < _lateTickLayers.Count; i++)
+			ScreenLayer screenLayer = SortedLayers[i];
+			if (screenLayer != null && screenLayer.IsActive && !screenLayer.IsFinalized)
 			{
-				if (!_lateTickLayers[i].Finalized)
-				{
-					_lateTickLayers[i].LateTick(dt);
-				}
+				screenLayer.RenderTick(dt);
 			}
-			_lateTickLayers.Clear();
 		}
-		for (int j = 0; j < _globalLayers.Count; j++)
+		for (int j = 0; j < SortedLayers.Count; j++)
 		{
-			_globalLayers[j].LateTick(dt);
+			ScreenLayer screenLayer2 = SortedLayers[j];
+			if (screenLayer2 != null && screenLayer2.IsFocusLayer)
+			{
+				screenLayer2.Input.UnregisterReleasedKeys();
+			}
 		}
+		IsLateTickInProgress = false;
 	}
 
-	public static void OnPlatformScreenKeyboardRequested(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
+	public static bool OnPlatformScreenKeyboardRequested(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
 	{
-		ScreenManager.PlatformTextRequested?.Invoke(initialText, descriptionText, maxLength, keyboardTypeEnum);
+		return ScreenManager.PlatformTextRequested?.Invoke(initialText, descriptionText, maxLength, keyboardTypeEnum) ?? false;
 	}
 
 	public static void OnOnscreenKeyboardDone(string inputText)
 	{
+		Input.IsOnScreenKeyboardActive = false;
 		FocusedLayer?.OnOnScreenKeyboardDone(inputText);
 	}
 
 	public static void OnOnscreenKeyboardCanceled()
 	{
+		Input.IsOnScreenKeyboardActive = false;
 		FocusedLayer?.OnOnScreenKeyboardCanceled();
 	}
 
 	public static void OnGameWindowFocusChange(bool focusGained)
 	{
-		TaleWorlds.Library.Debug.Print("OnGameWindowFocusChange: " + focusGained);
+		_isWindowFocused = focusGained;
+		if (_isWindowFocused)
+		{
+			_activeMouseVisible = EngineInterface.GetMouseVisible();
+		}
+		TaleWorlds.Library.Debug.Print("OnGameWindowFocusChange: " + _isWindowFocused);
 		TaleWorlds.Library.Debug.Print("TopScreen: " + TopScreen?.GetType()?.Name);
 		bool flag = false;
 		if (!Debugger.IsAttached && !flag)
@@ -341,6 +369,7 @@ public static class ScreenManager
 		{
 			ScreenManager.FocusGained?.Invoke();
 		}
+		FocusedLayer?.Input.ResetLastDownKeys();
 	}
 
 	public static void ReplaceTopScreen(ScreenBase screen)
@@ -524,25 +553,39 @@ public static class ScreenManager
 
 	private static bool? GetMouseInput()
 	{
-		bool flag = false;
-		if (Input.IsKeyDown(InputKey.LeftMouseButton) || Input.IsKeyDown(InputKey.RightMouseButton) || Input.IsKeyDown(InputKey.MiddleMouseButton) || Input.IsKeyDown(InputKey.X1MouseButton) || Input.IsKeyDown(InputKey.X2MouseButton) || Input.IsKeyDown(IsEnterButtonRDown ? InputKey.ControllerRDown : InputKey.ControllerRRight))
+		bool? result = null;
+		List<InputKey> activeMouseKeys = GetActiveMouseKeys();
+		if (_lastMouseActiveKeys.Count != activeMouseKeys.Count || !_lastMouseActiveKeys.SequenceEqual(activeMouseKeys))
 		{
-			flag = true;
+			result = activeMouseKeys.Count > 0;
 		}
-		if (!_isMouseInputActiveLastFrame && flag)
+		_lastMouseActiveKeys = activeMouseKeys;
+		return result;
+	}
+
+	private static List<InputKey> GetActiveMouseKeys()
+	{
+		List<InputKey> list = new List<InputKey>();
+		InputKey inputKey = (IsEnterButtonRDown ? InputKey.ControllerRDown : InputKey.ControllerRRight);
+		InputKey[] obj = new InputKey[6]
 		{
-			flag = true;
-		}
-		else
+			InputKey.LeftMouseButton,
+			InputKey.RightMouseButton,
+			InputKey.MiddleMouseButton,
+			InputKey.X1MouseButton,
+			InputKey.X2MouseButton,
+			(InputKey)0
+		};
+		obj[5] = inputKey;
+		InputKey[] array = obj;
+		for (int i = 0; i < array.Length; i++)
 		{
-			if (!_isMouseInputActiveLastFrame || flag)
+			if (Input.IsKeyDown(array[i]))
 			{
-				return null;
+				list.Add(array[i]);
 			}
-			flag = false;
 		}
-		_isMouseInputActiveLastFrame = flag;
-		return flag;
+		return list;
 	}
 
 	public static void EarlyUpdate(Vec2 usableArea)
@@ -550,56 +593,72 @@ public static class ScreenManager
 		UsableArea = usableArea;
 		RefreshGlobalOrder();
 		InputType inputType = InputType.None;
-		for (int i = 0; i < SortedLayers.Count; i++)
-		{
-			ScreenLayer screenLayer = SortedLayers[i];
-			if (screenLayer != null && screenLayer.IsActive)
-			{
-				SortedLayers[i].MouseEnabled = true;
-			}
-		}
 		bool? mouseInput = GetMouseInput();
+		if (mouseInput == false)
+		{
+			_mouseDownLayer = null;
+		}
 		for (int num = SortedLayers.Count - 1; num >= 0; num--)
 		{
-			ScreenLayer screenLayer2 = SortedLayers[num];
-			if (screenLayer2 != null && screenLayer2.IsActive && !screenLayer2.Finalized)
+			ScreenLayer screenLayer = SortedLayers[num];
+			if (screenLayer != null && screenLayer.IsActive && !screenLayer.IsFinalized)
 			{
-				bool? isMousePressed = null;
-				if (mouseInput == false)
-				{
-					isMousePressed = false;
-				}
 				InputType inputType2 = InputType.None;
-				InputUsageMask inputUsageMask = screenLayer2.InputUsageMask;
-				screenLayer2.ScreenOrderInLastFrame = num;
-				screenLayer2.IsHitThisFrame = false;
-				if (screenLayer2.HitTest())
+				InputUsageMask inputUsageMask = screenLayer.InputUsageMask;
+				screenLayer.ScreenOrderInLastFrame = num;
+				_ = screenLayer.IsHitThisFrame;
+				screenLayer.IsHitThisFrame = false;
+				if (screenLayer.HitTest())
 				{
 					if (FirstHitLayer == null)
 					{
-						FirstHitLayer = screenLayer2;
-						_engineInterface.ActivateMouseCursor(screenLayer2.ActiveCursor);
+						FirstHitLayer = screenLayer;
+						_engineInterface.ActivateMouseCursor(screenLayer.ActiveCursor);
 					}
-					if (!inputType.HasAnyFlag(InputType.MouseButton) && inputUsageMask.HasAnyFlag(InputUsageMask.MouseButtons))
+					if (_mouseDownLayer == screenLayer || (_mouseDownLayer == null && !inputType.HasAnyFlag(InputType.MouseButton) && inputUsageMask.HasAnyFlag(InputUsageMask.MouseButtons)))
 					{
-						isMousePressed = mouseInput;
 						inputType2 |= InputType.MouseButton;
 						inputType |= InputType.MouseButton;
-						screenLayer2.IsHitThisFrame = true;
+						screenLayer.IsHitThisFrame = true;
+						if (mouseInput == true)
+						{
+							_mouseDownLayer = screenLayer;
+						}
 					}
 					if (!inputType.HasAnyFlag(InputType.MouseWheel) && inputUsageMask.HasAnyFlag(InputUsageMask.MouseWheels))
 					{
 						inputType2 |= InputType.MouseWheel;
 						inputType |= InputType.MouseWheel;
-						screenLayer2.IsHitThisFrame = true;
+						screenLayer.IsHitThisFrame = true;
 					}
 				}
-				if (!inputType.HasAnyFlag(InputType.Key) && FocusTest(screenLayer2))
+				if (!inputType.HasAnyFlag(InputType.Key) && FocusTest(screenLayer))
 				{
 					inputType2 |= InputType.Key;
 					inputType |= InputType.Key;
 				}
-				screenLayer2.EarlyProcessEvents(inputType2, isMousePressed);
+				screenLayer.EarlyProcessEvents(inputType2);
+			}
+			if (_mouseDownLayer == screenLayer)
+			{
+				screenLayer.IsHitThisFrame = true;
+				screenLayer.Input.MouseOnMe = true;
+			}
+			else
+			{
+				screenLayer.Input.MouseOnMe = screenLayer.IsActive && screenLayer.IsHitThisFrame;
+			}
+		}
+		for (int num2 = _sortedLayers.Count - 1; num2 >= 0; num2--)
+		{
+			ScreenLayer screenLayer2 = _sortedLayers[num2];
+			if (screenLayer2.IsFocusLayer)
+			{
+				screenLayer2.Input.RegisterDownKeys();
+			}
+			else
+			{
+				screenLayer2.Input.ResetLastDownKeys();
 			}
 		}
 	}
@@ -631,7 +690,7 @@ public static class ScreenManager
 		for (int num3 = num2 - 1; num3 >= 0; num3--)
 		{
 			ScreenLayer screenLayer2 = _sortedActiveLayersCopyForUpdate[num3];
-			if (!screenLayer2.Finalized)
+			if (!screenLayer2.IsFinalized)
 			{
 				screenLayer2.ProcessEvents();
 			}
@@ -642,42 +701,25 @@ public static class ScreenManager
 		}
 	}
 
-	private static void LateUpdate(float dt, bool activeMouseVisible)
+	private static void LateUpdate(float dt)
 	{
 		for (int i = 0; i < SortedLayers.Count; i++)
 		{
 			ScreenLayer screenLayer = SortedLayers[i];
-			if (screenLayer != null && screenLayer.IsActive)
+			if (screenLayer != null && screenLayer.IsActive && !screenLayer.IsFinalized)
 			{
-				screenLayer.LateProcessEvents();
+				screenLayer.LateUpdate(dt);
 			}
 		}
-		for (int j = 0; j < SortedLayers.Count; j++)
-		{
-			ScreenLayer screenLayer2 = SortedLayers[j];
-			if (screenLayer2 != null && screenLayer2.IsActive)
-			{
-				screenLayer2.OnLateUpdate(dt);
-				if (screenLayer2 != FocusedLayer || _focusedLayerChangedThisFrame)
-				{
-					screenLayer2.Input.ResetLastDownKeys();
-				}
-			}
-		}
-		if (!_focusedLayerChangedThisFrame)
-		{
-			FocusedLayer?.Input?.UpdateLastDownKeys();
-		}
-		_focusedLayerChangedThisFrame = false;
 		FirstHitLayer = null;
-		UpdateMouseVisibility(activeMouseVisible);
+		UpdateMouseVisibility();
 		if (_globalOrderDirty)
 		{
 			RefreshGlobalOrder();
 		}
 	}
 
-	internal static void UpdateMouseVisibility(bool activeMouseVisible)
+	internal static void UpdateMouseVisibility()
 	{
 		for (int i = 0; i < SortedLayers.Count; i++)
 		{
@@ -733,7 +775,7 @@ public static class ScreenManager
 			{
 				return false;
 			}
-			if (screenLayer != null && screenLayer.IsActive && !screenLayer.Finalized && screenLayer.HitTest(position))
+			if (screenLayer != null && screenLayer.IsActive && !screenLayer.IsFinalized && screenLayer.HitTest(position))
 			{
 				if (screenLayer.InputUsageMask.HasAnyFlag(InputUsageMask.MouseButtons))
 				{
@@ -761,19 +803,12 @@ public static class ScreenManager
 
 	public static void TrySetFocus(ScreenLayer layer)
 	{
-		if ((FocusedLayer != null && FocusedLayer.InputRestrictions.Order > layer.InputRestrictions.Order && layer.IsActive) || (!layer.IsFocusLayer && !layer.FocusTest()))
+		if ((FocusedLayer == null || FocusedLayer.InputRestrictions.Order <= layer.InputRestrictions.Order || !layer.IsActive) && (layer.IsFocusLayer || layer.FocusTest()) && FocusedLayer != layer)
 		{
-			return;
+			FocusedLayer?.HandleLoseFocus();
+			FocusedLayer = layer;
+			FocusedLayer?.HandleGainFocus();
 		}
-		if (FocusedLayer != layer)
-		{
-			_focusedLayerChangedThisFrame = true;
-			if (FocusedLayer != null)
-			{
-				FocusedLayer.OnLoseFocus();
-			}
-		}
-		FocusedLayer = layer;
 	}
 
 	public static void TryLoseFocus(ScreenLayer layer)
@@ -782,14 +817,14 @@ public static class ScreenManager
 		{
 			return;
 		}
-		FocusedLayer?.OnLoseFocus();
+		FocusedLayer?.HandleLoseFocus();
 		for (int num = SortedLayers.Count - 1; num >= 0; num--)
 		{
 			ScreenLayer screenLayer = SortedLayers[num];
 			if (screenLayer.IsActive && screenLayer.IsFocusLayer && layer != screenLayer)
 			{
+				FocusedLayer?.HandleGainFocus();
 				FocusedLayer = screenLayer;
-				_focusedLayerChangedThisFrame = true;
 				return;
 			}
 		}
@@ -798,15 +833,7 @@ public static class ScreenManager
 
 	private static bool FocusTest(ScreenLayer layer)
 	{
-		if (Input.IsGamepadActive && layer.InputRestrictions.CanOverrideFocusOnHit)
-		{
-			return layer.IsHitThisFrame;
-		}
-		if (FocusedLayer == layer)
-		{
-			return true;
-		}
-		return false;
+		return FocusedLayer == layer;
 	}
 
 	public static void OnScaleChange(float newScale)
@@ -827,10 +854,15 @@ public static class ScreenManager
 		ScreenManager.OnControllerDisconnected?.Invoke();
 	}
 
+	private static void SetSortedLayersDirty()
+	{
+		_isSortedActiveLayersDirty = true;
+	}
+
 	private static void OnScreenListChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
 		TaleWorlds.Library.Debug.Print("OnScreenListChanged");
-		_isSortedActiveLayersDirty = true;
+		SetSortedLayersDirty();
 		ObservableCollection<ScreenBase> screenList = _screenList;
 		if (screenList != null && screenList.Count > 0)
 		{
@@ -855,22 +887,22 @@ public static class ScreenManager
 			}
 			TopScreen = null;
 		}
-		_isSortedActiveLayersDirty = true;
+		SetSortedLayersDirty();
 	}
 
 	private static void OnLayerAddedToTopLayer(ScreenLayer layer)
 	{
-		_isSortedActiveLayersDirty = true;
+		SetSortedLayersDirty();
 	}
 
 	private static void OnLayerRemovedFromTopLayer(ScreenLayer layer)
 	{
-		_isSortedActiveLayersDirty = true;
+		SetSortedLayersDirty();
 	}
 
 	private static void OnGlobalListChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
-		_isSortedActiveLayersDirty = true;
+		SetSortedLayersDirty();
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("set_screen_debug_information_enabled", "ui")]
@@ -904,7 +936,23 @@ public static class ScreenManager
 		for (int i = 0; i < SortedLayers.Count; i++)
 		{
 			ScreenLayer screenLayer = SortedLayers[i];
-			if (_engineInterface.DrawDebugTreeNode($"{screenLayer.GetType().Name}###{screenLayer.Name}.{i}.{screenLayer.Name.GetDeterministicHashCode()}"))
+			List<string> list = new List<string>();
+			_ = screenLayer.InputRestrictions.InputUsageMask;
+			if (screenLayer.IsFocusLayer && FocusedLayer == screenLayer)
+			{
+				list.Add("(FocusLayer)");
+			}
+			list.Add(screenLayer.Name);
+			if (screenLayer.InputRestrictions.MouseVisibility)
+			{
+				list.Add("MouseVisibile");
+			}
+			if (screenLayer.InputRestrictions.InputUsageMask != 0)
+			{
+				list.Add("Input");
+			}
+			string text = string.Join(" - ", list);
+			if (_engineInterface.DrawDebugTreeNode($"{text}###{screenLayer.Name}.{i}.{screenLayer.Name.GetDeterministicHashCode()}"))
 			{
 				screenLayer.DrawDebugInfo();
 				_engineInterface.PopDebugTreeNode();

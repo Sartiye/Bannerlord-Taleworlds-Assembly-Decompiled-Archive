@@ -91,7 +91,7 @@ public class PregnancyCampaignBehavior : CampaignBehaviorBase
 	{
 		if (hero.IsFemale && !CampaignOptions.IsLifeDeathCycleDisabled && hero.IsAlive && hero.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && (hero.Clan == null || !hero.Clan.IsRebelClan))
 		{
-			if (hero.Age > 18f && hero.Spouse != null && hero.Spouse.IsAlive && !hero.IsPregnant)
+			if (hero.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && hero.Spouse != null && hero.Spouse.IsAlive && !hero.IsPregnant)
 			{
 				RefreshSpouseVisit(hero);
 			}

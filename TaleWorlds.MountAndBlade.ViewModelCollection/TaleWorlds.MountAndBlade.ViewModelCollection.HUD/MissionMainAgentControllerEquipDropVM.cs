@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -17,7 +16,11 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 
 	private MBBindingList<ControllerEquippedItemVM> _equipActions;
 
+	private ControllerEquippedItemVM _equippedExtraWeapon;
+
 	private bool _isActive;
+
+	private bool _haveExtraWeapon;
 
 	private string _holdToDropText;
 
@@ -36,6 +39,23 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 			{
 				_equipActions = value;
 				OnPropertyChangedWithValue(value, "EquippedWeapons");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public ControllerEquippedItemVM EquippedExtraWeapon
+	{
+		get
+		{
+			return _equippedExtraWeapon;
+		}
+		set
+		{
+			if (value != _equippedExtraWeapon)
+			{
+				_equippedExtraWeapon = value;
+				OnPropertyChangedWithValue(value, "EquippedExtraWeapon");
 			}
 		}
 	}
@@ -91,6 +111,23 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool HaveExtraWeapon
+	{
+		get
+		{
+			return _haveExtraWeapon;
+		}
+		set
+		{
+			if (value != _haveExtraWeapon)
+			{
+				_haveExtraWeapon = value;
+				OnPropertyChangedWithValue(value, "HaveExtraWeapon");
+			}
+		}
+	}
+
 	public MissionMainAgentControllerEquipDropVM(Action<EquipmentIndex> toggleItem)
 	{
 		_toggleItem = toggleItem;
@@ -102,16 +139,31 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 	{
 		base.RefreshValues();
 		PressToEquipText = new TextObject("{=HEEZhL90}Press to Equip").ToString();
+		HoldToDropText = _dropTextObject.ToString();
+	}
+
+	private bool IsMainAgentAvailable()
+	{
+		Agent main = Agent.Main;
+		if (main != null && main.IsActive() && !Agent.Main.IsUsingGameObject)
+		{
+			return !Agent.Main.IsInWater();
+		}
+		return false;
 	}
 
 	public void InitializeMainAgentPropterties()
 	{
 		Mission.Current.OnMainAgentChanged += OnMainAgentChanged;
-		OnMainAgentChanged(null, null);
+		OnMainAgentChanged(null);
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
+		if (oldAgent != null)
+		{
+			oldAgent.OnMainAgentWieldedItemChange = (Agent.OnMainAgentWieldedItemChangeDelegate)Delegate.Remove(oldAgent.OnMainAgentWieldedItemChange, new Agent.OnMainAgentWieldedItemChangeDelegate(OnMainAgentWeaponChange));
+		}
 		if (Agent.Main != null)
 		{
 			Agent main = Agent.Main;
@@ -131,8 +183,11 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 			o.OnFinalize();
 		});
 		EquippedWeapons.Clear();
+		EquippedExtraWeapon = null;
+		HaveExtraWeapon = false;
 		if (isEnabled)
 		{
+			PressToEquipText = (IsMainAgentAvailable() ? new TextObject("{=HEEZhL90}Press to Equip").ToString() : string.Empty);
 			EquippedWeapons.Add(new ControllerEquippedItemVM(GameTexts.FindText("str_cancel").ToString(), null, "None", null, OnItemSelected));
 			int num = 0;
 			int totalNumberOfWeaponsOnMainAgent = GetTotalNumberOfWeaponsOnMainAgent();
@@ -146,6 +201,15 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 					EquippedWeapons.Add(new ControllerEquippedItemVM(weaponName, itemTypeAsString, equipmentIndex, GetWeaponHotKey(num, totalNumberOfWeaponsOnMainAgent), OnItemSelected));
 					num++;
 				}
+			}
+			MissionWeapon weapon2 = Agent.Main.Equipment[EquipmentIndex.ExtraWeaponSlot];
+			HaveExtraWeapon = !weapon2.IsEmpty;
+			if (HaveExtraWeapon)
+			{
+				string itemTypeAsString2 = MissionMainAgentEquipmentControllerVM.GetItemTypeAsString(weapon2.Item);
+				string weaponName2 = GetWeaponName(weapon2);
+				EquippedExtraWeapon = new ControllerEquippedItemVM(weaponName2, itemTypeAsString2, EquipmentIndex.ExtraWeaponSlot, GetWeaponHotKey(4, totalNumberOfWeaponsOnMainAgent), OnItemSelected);
+				num++;
 			}
 			UpdateItemsWieldStatus();
 		}
@@ -179,9 +243,9 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 
 	private bool IsWieldedWeaponAtIndex(EquipmentIndex index)
 	{
-		if (index != Agent.Main.GetWieldedItemIndex(Agent.HandIndex.MainHand))
+		if (index != Agent.Main.GetPrimaryWieldedItemIndex())
 		{
-			return index == Agent.Main.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+			return index == Agent.Main.GetOffhandWieldedItemIndex();
 		}
 		return true;
 	}
@@ -197,6 +261,11 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 		{
 			float dropProgress = ((EquippedWeapons[i].Identifier is EquipmentIndex equipmentIndex && equipmentIndex == eqIndex && progress > 0.2f) ? progress : 0f);
 			EquippedWeapons[i].DropProgress = dropProgress;
+		}
+		if (HaveExtraWeapon)
+		{
+			float dropProgress2 = ((EquippedExtraWeapon.Identifier is EquipmentIndex equipmentIndex2 && equipmentIndex2 == eqIndex && progress > 0.2f) ? progress : 0f);
+			EquippedExtraWeapon.DropProgress = dropProgress2;
 		}
 	}
 
@@ -233,6 +302,12 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
+		if (Agent.Main != null)
+		{
+			Agent main = Agent.Main;
+			main.OnMainAgentWieldedItemChange = (Agent.OnMainAgentWieldedItemChangeDelegate)Delegate.Remove(main.OnMainAgentWieldedItemChange, new Agent.OnMainAgentWieldedItemChangeDelegate(OnMainAgentWeaponChange));
+		}
+		Mission.Current.OnMainAgentChanged -= OnMainAgentChanged;
 		EquippedWeapons.ApplyActionOnAllItems(delegate(ControllerEquippedItemVM o)
 		{
 			o.OnFinalize();
@@ -253,7 +328,7 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 			{
 				return HotKeyManager.GetCategory("CombatHotKeyCategory").GetHotKey("ControllerEquipDropWeapon1");
 			}
-			Debug.FailedAssert("Wrong number of total weapons!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentControllerEquipDropVM.cs", "GetWeaponHotKey", 182);
+			Debug.FailedAssert("Wrong number of total weapons!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentControllerEquipDropVM.cs", "GetWeaponHotKey", 222);
 			break;
 		case 1:
 			if (totalNumOfWeapons == 2)
@@ -269,8 +344,10 @@ public class MissionMainAgentControllerEquipDropVM : ViewModel
 			return HotKeyManager.GetCategory("CombatHotKeyCategory").GetHotKey("ControllerEquipDropWeapon3");
 		case 3:
 			return HotKeyManager.GetCategory("CombatHotKeyCategory").GetHotKey("ControllerEquipDropWeapon2");
+		case 4:
+			return HotKeyManager.GetCategory("CombatHotKeyCategory").GetHotKey("ControllerEquipDropExtraWeapon");
 		default:
-			Debug.FailedAssert("Wrong index of current weapon. Cannot be higher than 3", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentControllerEquipDropVM.cs", "GetWeaponHotKey", 206);
+			Debug.FailedAssert("Wrong index of current weapon. Cannot be higher than 3", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentControllerEquipDropVM.cs", "GetWeaponHotKey", 250);
 			break;
 		}
 		return null;

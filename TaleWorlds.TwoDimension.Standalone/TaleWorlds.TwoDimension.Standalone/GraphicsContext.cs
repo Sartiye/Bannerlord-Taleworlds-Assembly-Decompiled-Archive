@@ -234,19 +234,14 @@ public class GraphicsContext
 	public void SetScissor(ScissorTestInfo scissorTestInfo)
 	{
 		Opengl32.GetInteger(Target.VIEWPORT, _scissorParameters);
-		Opengl32.Scissor(scissorTestInfo.X, _scissorParameters[3] - scissorTestInfo.Height - scissorTestInfo.Y, scissorTestInfo.Width, scissorTestInfo.Height);
+		SimpleRectangle simpleRectangle = scissorTestInfo.GetSimpleRectangle();
+		Opengl32.Scissor((int)simpleRectangle.X, _scissorParameters[3] - (int)simpleRectangle.Height - (int)simpleRectangle.Y, (int)simpleRectangle.Width, (int)simpleRectangle.Height);
 		Opengl32.Enable(Target.SCISSOR_TEST);
 	}
 
 	public void ResetScissor()
 	{
 		Opengl32.Disable(Target.SCISSOR_TEST);
-	}
-
-	public void DrawElements(float x, float y, Material material, DrawObject2D drawObject2D)
-	{
-		ModelMatrix = Matrix4x4.CreateTranslation(x, y, 0f);
-		DrawElements(material, drawObject2D);
 	}
 
 	public Shader GetOrLoadShader(string shaderName)
@@ -264,109 +259,134 @@ public class GraphicsContext
 		return _loadedShaders[shaderName];
 	}
 
-	public void DrawElements(Material material, DrawObject2D drawObject2D)
+	public void DrawImage(SimpleMaterial material, in ImageDrawObject drawObject)
 	{
-		bool blending = material.Blending;
+		Shader shader = PrepareRender(material, in drawObject.Rectangle);
+		DrawImageAux(shader, material, in drawObject);
+		VertexArrayObject.UnBind();
+		shader.StopUsing();
+	}
+
+	public void DrawText(TextMaterial material, in TextDrawObject drawObject)
+	{
+		Shader shader = PrepareRender(material, in drawObject.Rectangle);
+		DrawTextAux(shader, material, in drawObject);
+		VertexArrayObject.UnBind();
+		shader.StopUsing();
+	}
+
+	public void DrawPolygon(PrimitivePolygonMaterial material, in ImageDrawObject drawObject)
+	{
+		Shader shader = PrepareRender(material, in drawObject.Rectangle);
+		DrawPolygonAux(shader, material, in drawObject);
+		VertexArrayObject.UnBind();
+		shader.StopUsing();
+	}
+
+	private Shader PrepareRender(Material material, in Rectangle2D rect)
+	{
 		Shader orLoadShader = GetOrLoadShader(material.GetType().Name);
+		MatrixFrame cachedVisualMatrixFrame = rect.GetCachedVisualMatrixFrame();
+		ModelMatrix = new Matrix4x4(cachedVisualMatrixFrame.rotation.s.x, cachedVisualMatrixFrame.rotation.s.y, cachedVisualMatrixFrame.rotation.s.z, cachedVisualMatrixFrame.rotation.s.w, cachedVisualMatrixFrame.rotation.f.x, cachedVisualMatrixFrame.rotation.f.y, cachedVisualMatrixFrame.rotation.f.z, cachedVisualMatrixFrame.rotation.f.w, cachedVisualMatrixFrame.rotation.u.x, cachedVisualMatrixFrame.rotation.u.y, cachedVisualMatrixFrame.rotation.u.z, cachedVisualMatrixFrame.rotation.u.w, cachedVisualMatrixFrame.origin.x, cachedVisualMatrixFrame.origin.y, 0f, cachedVisualMatrixFrame.origin.w);
 		orLoadShader.Use();
 		Matrix4x4 matrix = _modelMatrix * _viewMatrix * _projectionMatrix;
 		orLoadShader.SetMatrix("MVP", matrix);
-		MeshTopology topology = drawObject2D.Topology;
-		if (material is SimpleMaterial)
-		{
-			SimpleMaterial simpleMaterial = (SimpleMaterial)material;
-			if (simpleMaterial.Texture != null)
-			{
-				OpenGLTexture texture = simpleMaterial.Texture.PlatformTexture as OpenGLTexture;
-				orLoadShader.SetTexture("Texture", texture);
-			}
-			orLoadShader.SetBoolean("OverlayEnabled", simpleMaterial.OverlayEnabled);
-			if (simpleMaterial.OverlayEnabled)
-			{
-				OpenGLTexture texture2 = simpleMaterial.OverlayTexture.PlatformTexture as OpenGLTexture;
-				orLoadShader.SetVector2("StartCoord", simpleMaterial.StartCoordinate);
-				orLoadShader.SetVector2("Size", simpleMaterial.Size);
-				orLoadShader.SetTexture("OverlayTexture", texture2);
-				orLoadShader.SetVector2("OverlayOffset", new Vector2(simpleMaterial.OverlayXOffset, simpleMaterial.OverlayYOffset));
-			}
-			float value = TaleWorlds.Library.MathF.Clamp(simpleMaterial.HueFactor / 360f, -0.5f, 0.5f);
-			float value2 = TaleWorlds.Library.MathF.Clamp(simpleMaterial.SaturationFactor / 360f, -0.5f, 0.5f);
-			float value3 = TaleWorlds.Library.MathF.Clamp(simpleMaterial.ValueFactor / 360f, -0.5f, 0.5f);
-			orLoadShader.SetColor("InputColor", simpleMaterial.Color);
-			orLoadShader.SetFloat("ColorFactor", simpleMaterial.ColorFactor);
-			orLoadShader.SetFloat("AlphaFactor", simpleMaterial.AlphaFactor);
-			orLoadShader.SetFloat("HueFactor", value);
-			orLoadShader.SetFloat("SaturationFactor", value2);
-			orLoadShader.SetFloat("ValueFactor", value3);
-			_textureVAO.Bind();
-			if (simpleMaterial.CircularMaskingEnabled)
-			{
-				orLoadShader.SetBoolean("CircularMaskingEnabled", value: true);
-				orLoadShader.SetVector2("MaskingCenter", simpleMaterial.CircularMaskingCenter);
-				orLoadShader.SetFloat("MaskingRadius", simpleMaterial.CircularMaskingRadius);
-				orLoadShader.SetFloat("MaskingSmoothingRadius", simpleMaterial.CircularMaskingSmoothingRadius);
-			}
-			else
-			{
-				orLoadShader.SetBoolean("CircularMaskingEnabled", value: false);
-			}
-			_textureVAO.LoadVertexData(drawObject2D.Vertices);
-			_textureVAO.LoadUVData(drawObject2D.TextureCoordinates);
-			_textureVAO.LoadIndexData(drawObject2D.Indices);
-		}
-		else if (material is TextMaterial)
-		{
-			TextMaterial textMaterial = (TextMaterial)material;
-			if (textMaterial.Texture != null)
-			{
-				OpenGLTexture texture3 = textMaterial.Texture.PlatformTexture as OpenGLTexture;
-				orLoadShader.SetTexture("Texture", texture3);
-			}
-			orLoadShader.SetColor("InputColor", textMaterial.Color);
-			orLoadShader.SetColor("GlowColor", textMaterial.GlowColor);
-			orLoadShader.SetColor("OutlineColor", textMaterial.OutlineColor);
-			orLoadShader.SetFloat("OutlineAmount", textMaterial.OutlineAmount);
-			orLoadShader.SetFloat("ScaleFactor", 1.5f / textMaterial.ScaleFactor);
-			orLoadShader.SetFloat("SmoothingConstant", textMaterial.SmoothingConstant);
-			orLoadShader.SetFloat("GlowRadius", textMaterial.GlowRadius);
-			orLoadShader.SetFloat("Blur", textMaterial.Blur);
-			orLoadShader.SetFloat("ShadowOffset", textMaterial.ShadowOffset);
-			orLoadShader.SetFloat("ShadowAngle", textMaterial.ShadowAngle);
-			orLoadShader.SetFloat("ColorFactor", textMaterial.ColorFactor);
-			orLoadShader.SetFloat("AlphaFactor", textMaterial.AlphaFactor);
-			_textureVAO.Bind();
-			_textureVAO.LoadVertexData(drawObject2D.Vertices);
-			_textureVAO.LoadUVData(drawObject2D.TextureCoordinates);
-			_textureVAO.LoadIndexData(drawObject2D.Indices);
-		}
-		else if (material is PrimitivePolygonMaterial)
-		{
-			Color color = ((PrimitivePolygonMaterial)material).Color;
-			orLoadShader.SetColor("Color", color);
-			_simpleVAO.Bind();
-			_simpleVAO.LoadVertexData(drawObject2D.Vertices);
-		}
-		DrawElements(drawObject2D.Indices, topology, blending);
-		VertexArrayObject.UnBind();
-		orLoadShader.StopUsing();
+		return orLoadShader;
 	}
 
-	private void DrawElements(uint[] indices, MeshTopology meshTopology, bool blending)
+	private void DrawImageAux(Shader shader, SimpleMaterial material, in ImageDrawObject drawObject)
+	{
+		if (material.Texture != null)
+		{
+			OpenGLTexture texture = material.Texture.PlatformTexture as OpenGLTexture;
+			shader.SetTexture("Texture", texture);
+		}
+		shader.SetBoolean("OverlayEnabled", material.OverlayEnabled);
+		if (material.OverlayEnabled)
+		{
+			OpenGLTexture texture2 = material.OverlayTexture.PlatformTexture as OpenGLTexture;
+			shader.SetVector2("StartCoord", material.StartCoordinate);
+			shader.SetVector2("Size", material.Size);
+			shader.SetTexture("OverlayTexture", texture2);
+			shader.SetVector2("OverlayOffset", new Vector2(material.OverlayXOffset, material.OverlayYOffset));
+		}
+		float value = TaleWorlds.Library.MathF.Clamp(material.HueFactor / 360f, -0.5f, 0.5f);
+		float value2 = TaleWorlds.Library.MathF.Clamp(material.SaturationFactor / 360f, -0.5f, 0.5f);
+		float value3 = TaleWorlds.Library.MathF.Clamp(material.ValueFactor / 360f, -0.5f, 0.5f);
+		shader.SetColor("InputColor", material.Color);
+		shader.SetFloat("ColorFactor", material.ColorFactor);
+		shader.SetFloat("AlphaFactor", material.AlphaFactor);
+		shader.SetFloat("HueFactor", value);
+		shader.SetFloat("SaturationFactor", value2);
+		shader.SetFloat("ValueFactor", value3);
+		_textureVAO.Bind();
+		if (material.CircularMaskingEnabled)
+		{
+			shader.SetBoolean("CircularMaskingEnabled", value: true);
+			shader.SetVector2("MaskingCenter", material.CircularMaskingCenter);
+			shader.SetFloat("MaskingRadius", material.CircularMaskingRadius);
+			shader.SetFloat("MaskingSmoothingRadius", material.CircularMaskingSmoothingRadius);
+		}
+		else
+		{
+			shader.SetBoolean("CircularMaskingEnabled", value: false);
+		}
+		Vector2 vector = new Vector2(drawObject.Uvs.x, drawObject.Uvs.y);
+		Vector2 vector2 = new Vector2(drawObject.Uvs.z, drawObject.Uvs.w);
+		float[] vertices = new float[8] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f };
+		uint[] indices = new uint[6] { 0u, 1u, 2u, 0u, 2u, 3u };
+		float[] uvs = new float[8] { vector.X, vector.Y, vector.X, vector2.Y, vector2.X, vector2.Y, vector2.X, vector.Y };
+		_textureVAO.LoadVertexData(vertices);
+		_textureVAO.LoadUVData(uvs);
+		_textureVAO.LoadIndexData(indices);
+		DrawElements(indices, material.Blending);
+	}
+
+	private void DrawTextAux(Shader shader, TextMaterial textMaterial, in TextDrawObject drawObject)
+	{
+		if (textMaterial.Texture != null)
+		{
+			OpenGLTexture texture = textMaterial.Texture.PlatformTexture as OpenGLTexture;
+			shader.SetTexture("Texture", texture);
+		}
+		shader.SetColor("InputColor", textMaterial.Color);
+		shader.SetColor("GlowColor", textMaterial.GlowColor);
+		shader.SetColor("OutlineColor", textMaterial.OutlineColor);
+		shader.SetFloat("OutlineAmount", textMaterial.OutlineAmount);
+		shader.SetFloat("ScaleFactor", 1.5f / textMaterial.ScaleFactor);
+		shader.SetFloat("SmoothingConstant", textMaterial.SmoothingConstant);
+		shader.SetFloat("GlowRadius", textMaterial.GlowRadius);
+		shader.SetFloat("Blur", textMaterial.Blur);
+		shader.SetFloat("ShadowOffset", textMaterial.ShadowOffset);
+		shader.SetFloat("ShadowAngle", textMaterial.ShadowAngle);
+		shader.SetFloat("ColorFactor", textMaterial.ColorFactor);
+		shader.SetFloat("AlphaFactor", textMaterial.AlphaFactor);
+		_textureVAO.Bind();
+		_textureVAO.LoadVertexData(drawObject.Text_Vertices);
+		_textureVAO.LoadUVData(drawObject.Text_TextureCoordinates);
+		_textureVAO.LoadIndexData(drawObject.Text_Indices);
+		DrawElements(drawObject.Text_Indices, textMaterial.Blending);
+	}
+
+	private void DrawPolygonAux(Shader shader, PrimitivePolygonMaterial material, in ImageDrawObject drawObject)
+	{
+		Color color = material.Color;
+		shader.SetColor("Color", color);
+		new Vector2(drawObject.Uvs.x, drawObject.Uvs.y);
+		new Vector2(drawObject.Uvs.z, drawObject.Uvs.w);
+		float[] vertices = new float[8] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f };
+		uint[] indices = new uint[6] { 0u, 1u, 2u, 0u, 2u, 3u };
+		_simpleVAO.Bind();
+		_textureVAO.LoadVertexData(vertices);
+		DrawElements(indices, material.Blending);
+	}
+
+	private void DrawElements(uint[] indices, bool blending)
 	{
 		SetBlending(blending);
 		using (new AutoPinner(indices))
 		{
-			BeginMode mode = BeginMode.Quads;
-			switch (meshTopology)
-			{
-			case MeshTopology.Lines:
-				mode = BeginMode.Lines;
-				break;
-			case MeshTopology.Triangles:
-				mode = BeginMode.Triangles;
-				break;
-			}
-			Opengl32.DrawElements(mode, indices.Length, DataType.UnsignedInt, null);
+			Opengl32.DrawElements(BeginMode.Triangles, indices.Length, DataType.UnsignedInt, null);
 		}
 	}
 

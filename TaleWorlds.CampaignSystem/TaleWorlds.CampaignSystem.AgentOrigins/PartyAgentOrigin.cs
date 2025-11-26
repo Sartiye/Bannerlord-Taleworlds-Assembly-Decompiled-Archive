@@ -1,4 +1,3 @@
-using System;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -11,11 +10,23 @@ public class PartyAgentOrigin : IAgentOriginBase
 {
 	private PartyBase _party;
 
+	private Banner _banner;
+
 	private CharacterObject _troop;
+
+	private bool _hasThrownWeapon;
+
+	private bool _hasHeavyArmor;
+
+	private bool _hasShield;
+
+	private bool _hasSpear;
 
 	private readonly UniqueTroopDescriptor _descriptor;
 
 	private readonly bool _alwaysWounded;
+
+	private readonly bool _isInvincible;
 
 	public PartyBase Party
 	{
@@ -40,21 +51,34 @@ public class PartyAgentOrigin : IAgentOriginBase
 	{
 		get
 		{
-			if (Party == null)
+			Banner banner = _banner;
+			if (banner == null)
 			{
-				if (!_troop.IsHero)
+				if (Party == null)
 				{
-					return null;
+					if (!_troop.IsHero)
+					{
+						return null;
+					}
+					return _troop.HeroObject.MapFaction.Banner;
 				}
-				return _troop.HeroObject.MapFaction.Banner;
+				if (Party.LeaderHero == null)
+				{
+					return Party.MapFaction.Banner;
+				}
+				banner = Party.LeaderHero.ClanBanner;
 			}
-			if (Party.LeaderHero == null)
-			{
-				return Party.MapFaction.Banner;
-			}
-			return Party.LeaderHero.ClanBanner;
+			return banner;
 		}
 	}
+
+	bool IAgentOriginBase.HasThrownWeapon => _hasThrownWeapon;
+
+	bool IAgentOriginBase.HasHeavyArmor => _hasHeavyArmor;
+
+	bool IAgentOriginBase.HasShield => _hasShield;
+
+	bool IAgentOriginBase.HasSpear => _hasSpear;
 
 	public BasicCharacterObject Troop => _troop;
 
@@ -111,52 +135,60 @@ public class PartyAgentOrigin : IAgentOriginBase
 
 	public int UniqueSeed => _descriptor.UniqueSeed;
 
-	public PartyAgentOrigin(PartyBase partyBase, CharacterObject characterObject, int rank = -1, UniqueTroopDescriptor uniqueNo = default(UniqueTroopDescriptor), bool alwaysWounded = false)
+	public PartyAgentOrigin(PartyBase partyBase, CharacterObject characterObject, int rank = -1, UniqueTroopDescriptor uniqueNo = default(UniqueTroopDescriptor), bool alwaysWounded = false, bool isInvincible = false)
 	{
 		Party = partyBase;
 		_troop = characterObject;
 		_descriptor = ((!uniqueNo.IsValid) ? new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed) : uniqueNo);
 		Rank = ((rank == -1) ? MBRandom.RandomInt(10000) : rank);
 		_alwaysWounded = alwaysWounded;
+		_isInvincible = isInvincible;
+		AgentOriginUtilities.GetDefaultTroopTraits(Troop, out _hasThrownWeapon, out _hasSpear, out _hasShield, out _hasHeavyArmor);
 	}
 
 	public void SetWounded()
 	{
-		if (_troop.IsHero)
+		if (!_isInvincible)
 		{
-			_troop.HeroObject.MakeWounded();
-		}
-		if (Party != null)
-		{
-			Party.MemberRoster.AddToCounts(_troop, 0, insertAtFront: false, 1);
+			if (_troop.IsHero)
+			{
+				_troop.HeroObject.MakeWounded();
+			}
+			if (Party != null)
+			{
+				Party.MemberRoster.AddToCounts(_troop, 0, insertAtFront: false, 1);
+			}
 		}
 	}
 
 	public void SetKilled()
 	{
-		if (_alwaysWounded)
+		if (!_isInvincible)
 		{
-			SetWounded();
-		}
-		else if (_troop.IsHero)
-		{
-			KillCharacterAction.ApplyByBattle(_troop.HeroObject, null);
-		}
-		else if (!_troop.IsHero)
-		{
-			Party?.MemberRoster.AddToCounts(_troop, -1);
+			if (_alwaysWounded)
+			{
+				SetWounded();
+			}
+			else if (_troop.IsHero)
+			{
+				KillCharacterAction.ApplyByBattle(_troop.HeroObject, null);
+			}
+			else if (!_troop.IsHero)
+			{
+				Party?.MemberRoster.AddToCounts(_troop, -1);
+			}
 		}
 	}
 
-	public void SetRouted()
+	public void SetRouted(bool isOrderRetreat)
 	{
 	}
 
 	public void OnAgentRemoved(float agentHealth)
 	{
-		if (_troop.IsHero && _troop.HeroObject.HeroState != Hero.CharacterStates.Dead)
+		if (_troop.IsHero && _troop.HeroObject.HeroState != Hero.CharacterStates.Dead && !_isInvincible)
 		{
-			_troop.HeroObject.HitPoints = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Round(agentHealth));
+			_troop.HeroObject.HitPoints = MathF.Max(1, MathF.Round(agentHealth));
 		}
 	}
 
@@ -166,6 +198,11 @@ public class PartyAgentOrigin : IAgentOriginBase
 
 	public void SetBanner(Banner banner)
 	{
-		throw new NotImplementedException();
+		_banner = banner;
+	}
+
+	TroopTraitsMask IAgentOriginBase.GetTraitsMask()
+	{
+		return AgentOriginUtilities.GetDefaultTraitsMask(this);
 	}
 }

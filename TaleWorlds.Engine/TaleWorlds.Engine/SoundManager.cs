@@ -43,6 +43,11 @@ public static class SoundManager
 		return EngineApplicationInterface.ISoundManager.StartOneShotEvent(eventFullName, position);
 	}
 
+	public static bool StartOneShotEventWithIndex(int index, in Vec3 position)
+	{
+		return EngineApplicationInterface.ISoundManager.StartOneShotEventWithIndex(index, position);
+	}
+
 	public static void SetState(string stateGroup, string state)
 	{
 		EngineApplicationInterface.ISoundManager.SetState(stateGroup, state);
@@ -84,6 +89,16 @@ public static class SoundManager
 			return -1;
 		}
 		return EngineApplicationInterface.ISoundManager.GetGlobalIndexOfEvent(eventFullName);
+	}
+
+	public static void PauseBus(string busName)
+	{
+		EngineApplicationInterface.ISoundManager.PauseBus(busName);
+	}
+
+	public static void UnpauseBus(string busName)
+	{
+		EngineApplicationInterface.ISoundManager.UnpauseBus(busName);
 	}
 
 	public static void InitializeVoicePlayEvent()

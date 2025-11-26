@@ -4,7 +4,6 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
 using TaleWorlds.CampaignSystem.Encounters;
@@ -12,6 +11,7 @@ using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -29,7 +29,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		private const int IssueDuration = 20;
 
-		private const int QuestTimeLimit = 100;
+		private const int QuestTimeLimit = 60;
 
 		private const int AlternativeSolutionTroopTierRequirement = 2;
 
@@ -99,6 +99,18 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
+		public override TextObject IssueAlternativeSolutionSuccessLog
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=aKrzoAsh}You have defeated {MALE_LESSER_NOBLE_NAME} and helped {ISSUE_OWNER.LINK} as promised. You received {REWARD}{GOLD_ICON} in return for your service.");
+				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.IssueOwner.CharacterObject, textObject);
+				textObject.SetTextVariable("MALE_LESSER_NOBLE_NAME", _lesserNobleName);
+				textObject.SetTextVariable("REWARD", RewardGold);
+				return textObject;
+			}
+		}
+
 		public override TextObject Title
 		{
 			get
@@ -161,8 +173,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -172,8 +183,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override IssueFrequency GetFrequency()
@@ -229,7 +239,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		protected override QuestBase GenerateIssueQuest(string questId)
 		{
-			return new LesserNobleRevoltIssueQuest(questId, base.IssueOwner, CampaignTime.DaysFromNow(100f), RewardGold, _lesserNobleName);
+			return new LesserNobleRevoltIssueQuest(questId, base.IssueOwner, CampaignTime.DaysFromNow(60f), RewardGold, _lesserNobleName);
 		}
 
 		protected override void CompleteIssueWithTimedOutConsequences()
@@ -323,7 +333,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		private TextObject LesserNobleTitle => GetLesserNobleTitle(base.QuestGiver);
 
-		public override bool IsRemainingTimeHidden => true;
+		public override bool IsRemainingTimeHidden => false;
 
 		private TextObject QuestStartedLogText
 		{
@@ -526,40 +536,27 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 					_suitableVillagesToVisitList.Add(settlement);
 				}
 			}
-			IMapPoint questGiverLocation = base.QuestGiver.GetMapPoint();
-			if (questGiverLocation == null)
+			IMapPoint questGiverMapPoint = base.QuestGiver.GetMapPoint();
+			if (questGiverMapPoint == null)
 			{
-				questGiverLocation = base.QuestGiver.HomeSettlement;
+				questGiverMapPoint = base.QuestGiver.HomeSettlement;
 			}
-			_suitableVillagesToVisitList = _suitableVillagesToVisitList.OrderBy(delegate(Settlement x)
-			{
-				MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-				Vec2 toPoint = questGiverLocation.Position2D;
-				float distance;
-				return mapDistanceModel.GetDistance(x, in toPoint, 150f, out distance);
-			}).ToList();
+			_suitableVillagesToVisitList = _suitableVillagesToVisitList.OrderBy((Settlement x) => Campaign.Current.Models.MapDistanceModel.GetDistance(x, questGiverMapPoint as Settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default)).ToList();
 		}
 
 		private void SpawnLesserNobleParty()
 		{
-			_lesserNobleParty = MobileParty.CreateParty("lesser_noble_party_" + base.StringId, null, OnLesserPartySpawned);
-		}
-
-		private void OnLesserPartySpawned(MobileParty lesserNobleParty)
-		{
-			lesserNobleParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			TextObject textObject = new TextObject("{=WhHDg7ag}{MALE_LESSER_NOBLE_NAME}{.o} Party");
 			textObject.SetTextVariable("MALE_LESSER_NOBLE_NAME", _lesserNobleName);
 			Settlement settlement = _suitableVillagesToVisitList[1];
-			lesserNobleParty.InitializeMobilePartyAtPosition(new TroopRoster(lesserNobleParty.Party), new TroopRoster(lesserNobleParty.Party), settlement.Position2D);
-			lesserNobleParty.SetCustomName(textObject);
-			AddTrackedObject(lesserNobleParty);
+			_lesserNobleParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(settlement.GatePosition, 1f, base.QuestGiver.HomeSettlement, textObject, null, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), null);
+			_lesserNobleParty.SetPartyUsedByQuest(isActivelyUsed: true);
+			AddTrackedObject(_lesserNobleParty);
 			AddTrackedObject(settlement);
-			lesserNobleParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
-			lesserNobleParty.IgnoreByOtherPartiesTill(CampaignTime.Never);
-			lesserNobleParty.SetCustomHomeSettlement(base.QuestGiver.HomeSettlement);
-			lesserNobleParty.MemberRoster.AddToCounts(_tier5Troop, TaleWorlds.Library.MathF.Min(40, MobileParty.MainParty.Party.PartySizeLimit / 2));
-			SetPartyAiAction.GetActionForVisitingSettlement(lesserNobleParty, settlement);
+			_lesserNobleParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
+			_lesserNobleParty.IgnoreByOtherPartiesTill(CampaignTime.Never);
+			_lesserNobleParty.MemberRoster.AddToCounts(_tier5Troop, TaleWorlds.Library.MathF.Min(40, MobileParty.MainParty.Party.PartySizeLimit / 2));
+			SetPartyAiAction.GetActionForVisitingSettlement(_lesserNobleParty, settlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 			TextObject textObject2 = new TextObject("{=Y2Z6F5Fj}Support level of {MALE_LESSER_NOBLE_NAME}");
 			textObject2.SetTextVariable("MALE_LESSER_NOBLE_NAME", _lesserNobleName);
 			_discreteLog = AddDiscreteLog(QuestStartedLogText, textObject2, 0, 20);
@@ -573,7 +570,9 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			TextObject npcText = new TextObject("{=p14S00jq}Consequences? You would shed the blood of {RULER.NAME}'s loyal servants just for raising their voices against oppression?[if:convo_confused_normal][ib:closed]");
 			StringHelpers.SetCharacterProperties("RULER", base.QuestGiver.MapFaction.Leader.CharacterObject);
 			DialogFlow dialogFlow = DialogFlow.CreateDialogFlow("start", 125).NpcLine(new TextObject("{=!}{MALE_LESSER_NOBLE_PARTY_START_LINE}")).Condition(SetStartDialogOnCondition)
-				.PlayerLine(new TextObject("{=XkjRNMam}You have no right to go around, under arms, spreading sedition. Disperse!"))
+				.BeginPlayerOptions()
+				.PlayerOption(new TextObject("{=XkjRNMam}You have no right to go around, under arms, spreading sedition. Disperse!"))
+				.Condition(() => !_firstTalkIsDone)
 				.NpcLine(textObject)
 				.Consequence(delegate
 				{
@@ -606,6 +605,24 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 					_persuasionTriedOnce = true;
 				})
 				.GotoDialogState("start_lesser_noble_party_persuasion")
+				.EndPlayerOptions()
+				.PlayerOption(new TextObject("{=tm0GQosH}It is time your revolt ends!"))
+				.Condition(() => _firstTalkIsDone)
+				.NpcLine(new TextObject("{=Fs8KhPuh}We shall see!"))
+				.Consequence(delegate
+				{
+					EncounterManager.StartPartyEncounter(PartyBase.MainParty, _lesserNobleParty.Party);
+					Campaign.Current.GameMenuManager.SetNextMenu("encounter");
+				})
+				.CloseDialog()
+				.PlayerOption(new TextObject("{=7PQOzmgb}I don’t want no confrontation with you."))
+				.Condition(() => _firstTalkIsDone)
+				.NpcLine(new TextObject("{=6m14pQbt}Good, begone then![if:convo_undecided_closed][ib:normal]"))
+				.Consequence(delegate
+				{
+					PlayerEncounter.Finish();
+				})
+				.CloseDialog()
 				.EndPlayerOptions();
 			AddPersuasionDialogs(dialogFlow);
 			return dialogFlow;
@@ -615,12 +632,18 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 		{
 			if (_lesserNobleParty != null && CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_lesserNobleParty.Party))
 			{
-				MBTextManager.SetTextVariable("MALE_LESSER_NOBLE_PARTY_START_LINE", "{=ZqjiBjYJ}Greetings, {?PLAYER.GENDER}madame{?}sir{\\?}. May I help you?");
-				if (_persuasionTriedOnce || _firstTalkIsDone)
+				if (_firstTalkIsDone)
+				{
+					MBTextManager.SetTextVariable("MALE_LESSER_NOBLE_PARTY_START_LINE", "{=iKhmpTgq}What is it that you want from me you snake! Get out of my way or you’ll be meeting my wroth.[ib:warrior][if:convo_contemptuous]");
+				}
+				else if (_persuasionTriedOnce)
 				{
 					MBTextManager.SetTextVariable("MALE_LESSER_NOBLE_PARTY_START_LINE", "{=Nn06TSq9}Anything else to say?");
 				}
-				_firstTalkIsDone = true;
+				else
+				{
+					MBTextManager.SetTextVariable("MALE_LESSER_NOBLE_PARTY_START_LINE", "{=ZqjiBjYJ}Greetings, {?PLAYER.GENDER}madame{?}sir{\\?}. May I help you?");
+				}
 				return true;
 			}
 			return false;
@@ -665,7 +688,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			PersuasionTask persuasionTask = new PersuasionTask(0)
 			{
 				FinalFailLine = new TextObject("{=W7c3BfIX}Thus always spoke the tyrant to the oppressed! We can only pray that the Heavens help the just. Now stay out of my way.[if:convo_undecided_closed][ib:closed]"),
-				TryLaterLine = TextObject.Empty,
+				TryLaterLine = TextObject.GetEmpty(),
 				SpokenLine = new TextObject("{=wM77S68a}What's there to discuss?")
 			};
 			PersuasionOptionArgs option = new PersuasionOptionArgs(DefaultSkills.Charm, DefaultTraits.Mercy, TraitEffect.Positive, PersuasionArgumentStrength.Normal, givesCriticalSuccess: false, new TextObject("{=JDGz56HX}If you start a rebellion, you're just going to get a lot of peasants around here killed..."));
@@ -821,7 +844,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 0)
 			{
-				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(0).IsBlocked;
 			}
 			return false;
@@ -832,7 +855,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 1)
 			{
-				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(1).IsBlocked;
 			}
 			return false;
@@ -843,7 +866,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 2)
 			{
-				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(2).IsBlocked;
 			}
 			return false;
@@ -854,7 +877,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 3)
 			{
-				hintText = (_task.Options.ElementAt(3).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(3).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(3).IsBlocked;
 			}
 			return false;
@@ -910,7 +933,6 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 		{
 			PlayerEncounter.Finish();
 			AddLog(QuestFailedAfterTalkingWithLesserNoblePartyLog);
-			RelationshipChangeWithQuestGiver = -5;
 			ChangeRelationWithRuralNotables(1);
 			CompleteQuestWithFail();
 		}
@@ -935,7 +957,6 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -15)
 			});
-			RelationshipChangeWithQuestGiver = -5;
 			CompleteQuestWithFail();
 		}
 
@@ -974,7 +995,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -10)
 			});
-			RelationshipChangeWithQuestGiver = -5;
+			CompleteQuestWithFail();
 		}
 
 		public override void OnFailed()
@@ -989,7 +1010,6 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 		protected override void RegisterEvents()
 		{
 			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
-			CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
@@ -1008,13 +1028,13 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 
 		private void OnMapEventEnd(MapEvent obj)
 		{
-			if (_checkForEventEnd)
+			if (!_checkForEventEnd)
 			{
-				if (PlayerEncounter.Battle.WinningSide == BattleSideEnum.None)
-				{
-					QuestFailWithPlayerDefeatedAgainstLesserNobleParty();
-				}
-				else if (PlayerEncounter.Battle.WinningSide == PlayerEncounter.Battle.PlayerSide)
+				return;
+			}
+			if (PlayerEncounter.Battle.WinningSide != BattleSideEnum.None)
+			{
+				if (PlayerEncounter.Battle.WinningSide == PlayerEncounter.Battle.PlayerSide)
 				{
 					QuestSuccessWithPlayerDefeatedLesserNobleParty();
 				}
@@ -1022,12 +1042,9 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 				{
 					QuestFailWithPlayerDefeatedAgainstLesserNobleParty();
 				}
-				if (_lesserNobleParty.IsActive)
-				{
-					DestroyPartyAction.Apply(PartyBase.MainParty, _lesserNobleParty);
-				}
-				_checkForEventEnd = false;
 			}
+			_firstTalkIsDone = true;
+			_checkForEventEnd = false;
 		}
 
 		private void OnGameMenuOpened(MenuCallbackArgs args)
@@ -1057,7 +1074,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private void HourlyTickParty(MobileParty mobileParty)
+		protected override void HourlyTickParty(MobileParty mobileParty)
 		{
 			if (mobileParty != _lesserNobleParty)
 			{
@@ -1077,8 +1094,8 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 					}
 					if (_suitableVillagesToVisitList.Count > 0)
 					{
-						IOrderedEnumerable<Settlement> source = _suitableVillagesToVisitList.OrderBy((Settlement x) => x.Position2D.DistanceSquared(_lesserNobleParty.Position2D));
-						SetPartyAiAction.GetActionForVisitingSettlement(_lesserNobleParty, source.First());
+						IOrderedEnumerable<Settlement> source = _suitableVillagesToVisitList.OrderBy((Settlement x) => DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(_lesserNobleParty, x.Village.Settlement, MobileParty.NavigationType.Default));
+						SetPartyAiAction.GetActionForVisitingSettlement(_lesserNobleParty, source.First(), MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 					}
 					else
 					{
@@ -1126,7 +1143,6 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 				if (_discreteLog.CurrentProgress == 20)
 				{
 					OnTimedOut();
-					CompleteQuestWithFail();
 				}
 			}
 		}
@@ -1225,6 +1241,7 @@ public class LesserNobleRevoltIssueBehavior : CampaignBehaviorBase
 			"empire" => new TextObject("{=5qRuGS2P}Equite"), 
 			"khuzait" => new TextObject("{=ZaIBcQxa}Kheshig"), 
 			"aserai" => new TextObject("{=1UBNuatk}Faris"), 
+			"nord" => new TextObject("{=DHbF9JvO}Huscarl"), 
 			_ => null, 
 		};
 	}

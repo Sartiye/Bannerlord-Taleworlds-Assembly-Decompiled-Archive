@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -15,73 +15,78 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 {
 	private const float TacticsXpCoefficient = 0.02f;
 
-	public void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge)
+	private const int RogueryXpGainOnSneakAttack = 78;
+
+	public void OnCombatHit(CharacterObject affectorCharacter, CharacterObject affectedCharacter, CharacterObject captain, Hero commander, float speedBonusFromMovement, float shotDifficulty, WeaponComponentData affectorWeapon, float hitPointRatio, CombatXpModel.MissionTypeEnum missionType, bool isAffectorMounted, bool isTeamKill, bool isAffectorUnderCommand, float damageAmount, bool isFatal, bool isSiegeEngineHit, bool isHorseCharge, bool isSneakAttack)
 	{
 		if (isTeamKill)
 		{
 			return;
 		}
-		float num = 1f;
+		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
 		if (affectorCharacter.IsHero)
 		{
 			Hero heroObject = affectorCharacter.HeroObject;
-			Campaign.Current.Models.CombatXpModel.GetXpFromHit(heroObject.CharacterObject, captain, affectedCharacter, heroObject.PartyBelongedTo?.Party, (int)damageAmount, isFatal, missionType, out var xpAmount);
-			num = xpAmount;
+			explainedNumber = new ExplainedNumber(Campaign.Current.Models.CombatXpModel.GetXpFromHit(heroObject.CharacterObject, captain, affectedCharacter, heroObject.PartyBelongedTo?.Party, (int)damageAmount, isFatal, missionType).ResultNumber);
 			SkillObject skillObject = null;
 			if (affectorWeapon != null)
 			{
 				skillObject = Campaign.Current.Models.CombatXpModel.GetSkillForWeapon(affectorWeapon, isSiegeEngineHit);
-				float num2 = ((skillObject == DefaultSkills.Bow) ? 0.5f : 1f);
+				float num = ((skillObject == DefaultSkills.Bow) ? 0.5f : 1f);
 				if (shotDifficulty > 0f)
 				{
-					num += (float)MathF.Floor(num * num2 * Campaign.Current.Models.CombatXpModel.GetXpMultiplierFromShotDifficulty(shotDifficulty));
+					explainedNumber.AddFactor(num * Campaign.Current.Models.CombatXpModel.GetXpMultiplierFromShotDifficulty(shotDifficulty));
 				}
 			}
 			else
 			{
 				skillObject = (isHorseCharge ? DefaultSkills.Riding : DefaultSkills.Athletics);
 			}
-			heroObject.AddSkillXp(skillObject, MBRandom.RoundRandomized(num));
+			heroObject.AddSkillXp(skillObject, MBRandom.RoundRandomized(explainedNumber.RoundedResultNumber));
 			if (!isSiegeEngineHit && !isHorseCharge)
 			{
-				float num3 = shotDifficulty * 0.15f;
+				float num2 = shotDifficulty * 0.15f;
 				if (isAffectorMounted)
 				{
-					float num4 = 0.5f;
-					if (num3 > 0f)
+					float num3 = 0.5f;
+					if (num2 > 0f)
 					{
-						num4 += num3;
+						num3 += num2;
 					}
 					if (speedBonusFromMovement > 0f)
 					{
-						num4 *= 1f + speedBonusFromMovement;
+						num3 *= 1f + speedBonusFromMovement;
 					}
-					if (num4 > 0f)
+					if (num3 > 0f)
 					{
-						OnGainingRidingExperience(heroObject, MBRandom.RoundRandomized(num4 * num), heroObject.CharacterObject.Equipment.Horse.Item);
+						OnGainingRidingExperience(heroObject, MBRandom.RoundRandomized(num3 * (float)explainedNumber.RoundedResultNumber), heroObject.CharacterObject.Equipment.Horse.Item);
 					}
 				}
 				else
 				{
-					float num5 = 1f;
-					if (num3 > 0f)
+					float num4 = 1f;
+					if (num2 > 0f)
 					{
-						num5 += num3;
+						num4 += num2;
 					}
 					if (speedBonusFromMovement > 0f)
 					{
-						num5 += 1.5f * speedBonusFromMovement;
+						num4 += 1.5f * speedBonusFromMovement;
 					}
-					if (num5 > 0f)
+					if (num4 > 0f)
 					{
-						heroObject.AddSkillXp(DefaultSkills.Athletics, MBRandom.RoundRandomized(num5 * num));
+						heroObject.AddSkillXp(DefaultSkills.Athletics, MBRandom.RoundRandomized(num4 * explainedNumber.ResultNumber));
 					}
 				}
+			}
+			if (isSneakAttack)
+			{
+				heroObject.AddSkillXp(DefaultSkills.Roguery, 78f);
 			}
 		}
 		if (commander != null && commander != affectorCharacter.HeroObject && commander.PartyBelongedTo != null)
 		{
-			OnTacticsUsed(commander.PartyBelongedTo, MathF.Ceiling(0.02f * num));
+			OnTacticsUsed(commander.PartyBelongedTo, MathF.Ceiling(0.02f * (float)explainedNumber.RoundedResultNumber));
 		}
 	}
 
@@ -90,7 +95,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		if (party?.EffectiveEngineer != null)
 		{
 			float skillXp = (float)destroyedSiegeEngine.ManDayCost * 20f;
-			OnPartySkillExercised(party, DefaultSkills.Engineering, skillXp, SkillEffect.PerkRole.Engineer);
+			OnPartySkillExercised(party, DefaultSkills.Engineering, skillXp, PartyRole.Engineer);
 		}
 	}
 
@@ -117,7 +122,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 				heroObject.AddSkillXp(DefaultSkills.Athletics, MBRandom.RoundRandomized(f2));
 			}
 		}
-		if (commanderParty != null && commanderParty.IsMobile && commanderParty.LeaderHero != null && commanderParty.LeaderHero != affectedCharacter.HeroObject)
+		if (commanderParty != null && commanderParty.IsMobile && !commanderParty.MapEvent.IsNavalMapEvent && commanderParty.LeaderHero != null && commanderParty.LeaderHero != affectedCharacter.HeroObject)
 		{
 			OnTacticsUsed(commanderParty.MobileParty, MathF.Ceiling(0.02f * (float)xpReward));
 		}
@@ -229,7 +234,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	{
 		if (attackerParty.LeaderHero != null)
 		{
-			float skillXp = (float)lootedItems.TradeGoodsTotalValue * 0.5f;
+			float skillXp = (float)lootedItems.TradeGoodsTotalValue * 0.5f + (float)(lootedItems.NumberOfMounts * 100) + (float)(lootedItems.NumberOfLivestockAnimals * 25) + (float)(lootedItems.NumberOfPackAnimals * 25);
 			OnPersonalSkillExercised(attackerParty.LeaderHero, DefaultSkills.Roguery, skillXp);
 		}
 	}
@@ -247,7 +252,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 			{
 				num = (attacked ? 0.15f : 0.1f);
 			}
-			float skillXp = (float)lootedItems.TradeGoodsTotalValue * num;
+			float skillXp = (float)(lootedItems.TradeGoodsTotalValue + lootedItems.NumberOfMounts * 200 + lootedItems.NumberOfLivestockAnimals * 50 + lootedItems.NumberOfPackAnimals * 50) * num;
 			OnPersonalSkillExercised(attackerParty.LeaderHero, DefaultSkills.Roguery, skillXp);
 		}
 	}
@@ -266,7 +271,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	public void OnSurgeryApplied(MobileParty party, bool surgerySuccess, int troopTier)
 	{
 		float skillXp = (surgerySuccess ? (10 * troopTier) : (5 * troopTier));
-		OnPartySkillExercised(party, DefaultSkills.Medicine, skillXp, SkillEffect.PerkRole.Surgeon);
+		OnPartySkillExercised(party, DefaultSkills.Medicine, skillXp, PartyRole.Surgeon);
 	}
 
 	public void OnTacticsUsed(MobileParty party, float xp)
@@ -279,13 +284,13 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 
 	public void OnHideoutSpotted(MobileParty party, PartyBase spottedParty)
 	{
-		OnPartySkillExercised(party, DefaultSkills.Scouting, 100f, SkillEffect.PerkRole.Scout);
+		OnPartySkillExercised(party, DefaultSkills.Scouting, 100f, PartyRole.Scout);
 	}
 
 	public void OnTrackDetected(Track track)
 	{
 		float skillFromTrackDetected = Campaign.Current.Models.MapTrackModel.GetSkillFromTrackDetected(track);
-		OnPartySkillExercised(MobileParty.MainParty, DefaultSkills.Scouting, skillFromTrackDetected, SkillEffect.PerkRole.Scout);
+		OnPartySkillExercised(MobileParty.MainParty, DefaultSkills.Scouting, skillFromTrackDetected, PartyRole.Scout);
 	}
 
 	public void OnTravelOnFoot(Hero hero, float speed)
@@ -299,6 +304,10 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		OnGainingRidingExperience(hero, MBRandom.RoundRandomized(0.3f * speed), item);
 	}
 
+	public void OnTravelOnWater(Hero hero, float speed)
+	{
+	}
+
 	public void OnHeroHealedWhileWaiting(Hero hero, int healingAmount)
 	{
 		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.EffectiveSurgeon != null)
@@ -306,7 +315,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 			float num = Campaign.Current.Models.PartyHealingModel.GetSkillXpFromHealingTroop(hero.PartyBelongedTo.Party);
 			float num2 = ((hero.PartyBelongedTo.CurrentSettlement != null && !hero.PartyBelongedTo.CurrentSettlement.IsCastle) ? 0.2f : 0.1f);
 			num *= (float)healingAmount * num2 * (1f + (float)hero.PartyBelongedTo.EffectiveSurgeon.Level * 0.1f);
-			OnPartySkillExercised(hero.PartyBelongedTo, DefaultSkills.Medicine, num, SkillEffect.PerkRole.Surgeon);
+			OnPartySkillExercised(hero.PartyBelongedTo, DefaultSkills.Medicine, num, PartyRole.Surgeon);
 		}
 	}
 
@@ -315,12 +324,12 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		float num = (float)(Campaign.Current.Models.PartyHealingModel.GetSkillXpFromHealingTroop(mobileParty.Party) * healedTroopCount) * averageTier;
 		float num2 = ((mobileParty.CurrentSettlement != null && !mobileParty.CurrentSettlement.IsCastle) ? 2f : 1f);
 		num *= num2;
-		OnPartySkillExercised(mobileParty, DefaultSkills.Medicine, num, SkillEffect.PerkRole.Surgeon);
+		OnPartySkillExercised(mobileParty, DefaultSkills.Medicine, num, PartyRole.Surgeon);
 	}
 
 	public void OnLeadingArmy(MobileParty mobileParty)
 	{
-		float skillXp = mobileParty.GetTotalStrengthWithFollowers() * 0.0004f * mobileParty.Army.Morale;
+		float skillXp = (mobileParty.Army?.EstimatedStrength ?? mobileParty.Party.EstimatedStrength) * 0.0004f * mobileParty.Army.Morale;
 		OnPartySkillExercised(mobileParty, DefaultSkills.Leadership, skillXp);
 	}
 
@@ -338,13 +347,13 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 			}
 		}
 		float skillXp = 0.25f * MathF.Sqrt(num);
-		OnPartySkillExercised(mobileParty, DefaultSkills.Engineering, skillXp, SkillEffect.PerkRole.Engineer);
+		OnPartySkillExercised(mobileParty, DefaultSkills.Engineering, skillXp, PartyRole.Engineer);
 	}
 
 	public void OnSiegeEngineBuilt(MobileParty mobileParty, SiegeEngineType siegeEngine)
 	{
 		float skillXp = 30f + 2f * (float)siegeEngine.Difficulty;
-		OnPartySkillExercised(mobileParty, DefaultSkills.Engineering, skillXp, SkillEffect.PerkRole.Engineer);
+		OnPartySkillExercised(mobileParty, DefaultSkills.Engineering, skillXp, PartyRole.Engineer);
 	}
 
 	public void OnUpgradeTroops(PartyBase party, CharacterObject troop, CharacterObject upgrade, int numberOfTroops)
@@ -386,7 +395,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	{
 		if (party?.EffectiveEngineer != null)
 		{
-			OnPartySkillExercised(party, DefaultSkills.Engineering, 250f, SkillEffect.PerkRole.Engineer);
+			OnPartySkillExercised(party, DefaultSkills.Engineering, 250f, PartyRole.Engineer);
 		}
 	}
 
@@ -404,7 +413,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		if (attackerParty.LeaderHero != null)
 		{
 			float num = (attacked ? 0.75f : 0.5f);
-			float skillXp = (float)lootedItems.TradeGoodsTotalValue * num;
+			float skillXp = (float)(lootedItems.TradeGoodsTotalValue + lootedItems.NumberOfMounts * 200 + lootedItems.NumberOfLivestockAnimals * 50 + lootedItems.NumberOfPackAnimals * 50) * num;
 			OnPersonalSkillExercised(attackerParty.LeaderHero, DefaultSkills.Roguery, skillXp);
 		}
 	}
@@ -418,11 +427,11 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	public void OnTraverseTerrain(MobileParty mobileParty, TerrainType currentTerrainType)
 	{
 		float num = 0f;
-		float speed = mobileParty.Speed;
-		if (speed > 1f)
+		float lastCalculatedSpeed = mobileParty._lastCalculatedSpeed;
+		if (lastCalculatedSpeed > 1f)
 		{
 			bool flag = currentTerrainType == TerrainType.Desert || currentTerrainType == TerrainType.Dune || currentTerrainType == TerrainType.Forest || currentTerrainType == TerrainType.Snow;
-			num = speed * (1f + MathF.Pow(mobileParty.MemberRoster.TotalManCount, 0.66f)) * (flag ? 0.25f : 0.15f);
+			num = lastCalculatedSpeed * (1f + MathF.Pow(mobileParty.MemberRoster.TotalManCount, 0.66f)) * (flag ? 0.25f : 0.15f);
 		}
 		if (mobileParty.IsCaravan)
 		{
@@ -430,53 +439,30 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		}
 		if (num >= 5f)
 		{
-			OnPartySkillExercised(mobileParty, DefaultSkills.Scouting, num, SkillEffect.PerkRole.Scout);
+			OnPartySkillExercised(mobileParty, DefaultSkills.Scouting, num, PartyRole.Scout);
 		}
 	}
 
-	public void OnBattleEnd(PartyBase party, FlattenedTroopRoster flattenedTroopRoster)
+	public void OnBattleEnded(PartyBase party, CharacterObject troop, int excessXp)
 	{
-		Hero hero = party.LeaderHero ?? party.Owner;
-		if (hero == null || !hero.IsAlive)
+		Hero obj = party.LeaderHero ?? party.Owner;
+		float num = 0.025f;
+		SkillObject skill = DefaultSkills.Leadership;
+		if (troop.Occupation == Occupation.Bandit)
 		{
-			return;
+			num = 0.05f;
+			skill = DefaultSkills.Roguery;
 		}
-		Dictionary<SkillObject, float> dictionary = new Dictionary<SkillObject, float>();
-		foreach (FlattenedTroopRosterElement item in flattenedTroopRoster)
-		{
-			CharacterObject troop = item.Troop;
-			int gainableMaxXp;
-			bool flag = MobilePartyHelper.CanTroopGainXp(party, troop, out gainableMaxXp);
-			if (!item.IsKilled && item.XpGained > 0 && !flag)
-			{
-				float num = ((troop.Occupation == Occupation.Bandit) ? 0.05f : 0.025f);
-				float num2 = (float)item.XpGained * num;
-				SkillObject key = ((troop.Occupation == Occupation.Bandit) ? DefaultSkills.Roguery : DefaultSkills.Leadership);
-				if (dictionary.TryGetValue(key, out var value))
-				{
-					dictionary[key] = value + num2;
-				}
-				else
-				{
-					dictionary[key] = num2;
-				}
-			}
-		}
-		foreach (SkillObject key2 in dictionary.Keys)
-		{
-			if (dictionary[key2] > 0f)
-			{
-				hero.AddSkillXp(key2, dictionary[key2]);
-			}
-		}
+		float xpAmount = (float)excessXp * num;
+		obj.AddSkillXp(skill, xpAmount);
 	}
 
 	public void OnFoodConsumed(MobileParty mobileParty, bool wasStarving)
 	{
 		if (!wasStarving && mobileParty.ItemRoster.FoodVariety > 3 && mobileParty.EffectiveQuartermaster != null)
 		{
-			float skillXp = MathF.Round((0f - mobileParty.BaseFoodChange) * 100f) * (mobileParty.ItemRoster.FoodVariety - 2) / 3;
-			OnPartySkillExercised(mobileParty, DefaultSkills.Steward, skillXp, SkillEffect.PerkRole.Quartermaster);
+			float skillXp = (float)MathF.Round((0f - mobileParty.BaseFoodChange) * 100f) * ((float)mobileParty.ItemRoster.FoodVariety - 2f) / 3f;
+			OnPartySkillExercised(mobileParty, DefaultSkills.Steward, skillXp, PartyRole.Quartermaster);
 		}
 	}
 
@@ -514,9 +500,41 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		}
 	}
 
+	public void OnShipDamaged(Ship ship, float rawDamage, float finalDamage)
+	{
+	}
+
+	public void OnHideoutMissionEnd(bool isSucceeded)
+	{
+		float rogueryXpGainOnHideoutMissionEnd = Campaign.Current.Models.HideoutModel.GetRogueryXpGainOnHideoutMissionEnd(isSucceeded);
+		Hero.MainHero.AddSkillXp(DefaultSkills.Roguery, rogueryXpGainOnHideoutMissionEnd);
+	}
+
 	public void OnWarehouseProduction(EquipmentElement production)
 	{
 		Hero.MainHero.AddSkillXp(DefaultSkills.Trade, Campaign.Current.Models.WorkshopModel.GetTradeXpPerWarehouseProduction(production));
+	}
+
+	public void OnAIPartyLootCasualties(int goldAmount, Hero winnerPartyLeader, PartyBase defeatedParty)
+	{
+		if (defeatedParty.IsMobile)
+		{
+			float num = -1f;
+			MobileParty mobileParty = defeatedParty.MobileParty;
+			if (mobileParty.IsVillager)
+			{
+				num = 0.75f;
+			}
+			else if (mobileParty.IsCaravan)
+			{
+				num = 0.15f;
+			}
+			if (num > 0f)
+			{
+				float rawXp = (float)goldAmount * num;
+				winnerPartyLeader.HeroDeveloper.AddSkillXp(DefaultSkills.Roguery, rawXp, isAffectedByFocusFactor: true, shouldNotify: false);
+			}
+		}
 	}
 
 	private static void OnPersonalSkillExercised(Hero hero, SkillObject skill, float skillXp, bool shouldNotify = true)
@@ -538,9 +556,9 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		}
 	}
 
-	private static void OnPartySkillExercised(MobileParty party, SkillObject skill, float skillXp, SkillEffect.PerkRole perkRole = SkillEffect.PerkRole.PartyLeader)
+	private static void OnPartySkillExercised(MobileParty party, SkillObject skill, float skillXp, PartyRole partyRole = PartyRole.PartyLeader)
 	{
-		party.GetEffectiveRoleHolder(perkRole)?.AddSkillXp(skill, skillXp);
+		party.GetEffectiveRoleHolder(partyRole)?.AddSkillXp(skill, skillXp);
 	}
 
 	void ISkillLevelingManager.OnPrisonerSell(MobileParty mobileParty, in TroopRoster prisonerRoster)

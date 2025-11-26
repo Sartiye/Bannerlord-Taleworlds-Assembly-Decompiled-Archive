@@ -29,11 +29,11 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 				stat.Add(10f + (float)troop.Character.Tier * 2f);
 			}
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Leadership.CombatTips))
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Leadership.CombatTips))
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Leadership.CombatTips));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Leadership.RaiseTheMeek) && troop.Character.Tier < 3)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Leadership.RaiseTheMeek) && troop.Character.Tier < 3)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Leadership.RaiseTheMeek));
 		}
@@ -45,11 +45,11 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Polearm.Drills));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.OneHanded.MilitaryTradition) && troop.Character.IsInfantry)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.OneHanded.MilitaryTradition) && troop.Character.IsInfantry)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.OneHanded.MilitaryTradition));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Athletics.WalkItOff, checkSecondaryRole: true) && !troop.Character.IsMounted && mobileParty.IsMoving)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Athletics.WalkItOff, checkSecondaryRole: true) && !troop.Character.IsMounted && mobileParty.IsMoving)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Athletics.WalkItOff));
 		}
@@ -61,11 +61,11 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Athletics.AGoodDaysRest));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Bow.Trainer, checkSecondaryRole: true) && troop.Character.IsRanged)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Bow.Trainer, checkSecondaryRole: true) && troop.Character.IsRanged)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Bow.Trainer));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Crossbow.RenownMarksmen) && troop.Character.IsRanged)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Crossbow.RenownMarksmen) && troop.Character.IsRanged)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Crossbow.RenownMarksmen));
 		}
@@ -75,16 +75,16 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 			{
 				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.ForcedMarch, mobileParty, isPrimaryBonus: false, ref stat);
 			}
-			if (mobileParty.ItemRoster.TotalWeight > (float)mobileParty.InventoryCapacity)
+			if (mobileParty.TotalWeightCarried > (float)mobileParty.InventoryCapacity && !mobileParty.IsCurrentlyAtSea)
 			{
 				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Unburdened, mobileParty, isPrimaryBonus: false, ref stat);
 			}
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Steward.SevenVeterans) && troop.Character.Tier >= 4)
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Steward.SevenVeterans) && troop.Character.Tier >= 4)
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Steward.SevenVeterans));
 		}
-		if (mobileParty.IsActive && mobileParty.HasPerk(DefaultPerks.Steward.DrillSergant))
+		if (mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Steward.DrillSergant))
 		{
 			stat.Add(GetPerkExperiencesForTroops(DefaultPerks.Steward.DrillSergant));
 		}
@@ -97,7 +97,7 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 
 	private int GetPerkExperiencesForTroops(PerkObject perk)
 	{
-		if (perk == DefaultPerks.Leadership.CombatTips || perk == DefaultPerks.Leadership.RaiseTheMeek || perk == DefaultPerks.OneHanded.MilitaryTradition || perk == DefaultPerks.Crossbow.RenownMarksmen || perk == DefaultPerks.Steward.SevenVeterans || perk == DefaultPerks.Steward.DrillSergant)
+		if (perk == DefaultPerks.Leadership.CombatTips || perk == DefaultPerks.Leadership.RaiseTheMeek || perk == DefaultPerks.OneHanded.MilitaryTradition || perk == DefaultPerks.Crossbow.RenownMarksmen || perk == DefaultPerks.Steward.DrillSergant)
 		{
 			return MathF.Round(perk.PrimaryBonus);
 		}
@@ -110,29 +110,29 @@ public class DefaultPartyTrainingModel : PartyTrainingModel
 
 	public override int GenerateSharedXp(CharacterObject troop, int xp, MobileParty mobileParty)
 	{
-		float num = (float)xp * DefaultPerks.Leadership.LeaderOfMasses.SecondaryBonus;
-		if (troop.IsHero && !mobileParty.HasPerk(DefaultPerks.Leadership.LeaderOfMasses, checkSecondaryRole: true))
+		ExplainedNumber stat = new ExplainedNumber(xp);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeaderOfMasses, mobileParty, isPrimaryBonus: false, ref stat, mobileParty.IsCurrentlyAtSea);
+		if (troop.IsRegular)
 		{
-			return 0;
+			if (troop.IsMounted && !mobileParty.IsCurrentlyAtSea)
+			{
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, mobileParty, isPrimaryBonus: false, ref stat);
+			}
+			if (troop.IsRanged)
+			{
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.MakeADifference, mobileParty, isPrimaryBonus: false, ref stat, mobileParty.IsCurrentlyAtSea);
+			}
 		}
-		if (troop.IsRanged && troop.IsRegular && mobileParty.HasPerk(DefaultPerks.Leadership.MakeADifference, checkSecondaryRole: true))
-		{
-			num += num * DefaultPerks.Leadership.MakeADifference.SecondaryBonus;
-		}
-		if (troop.IsMounted && troop.IsRegular && mobileParty.HasPerk(DefaultPerks.Leadership.LeadByExample, checkSecondaryRole: true))
-		{
-			num += num * DefaultPerks.Leadership.LeadByExample.SecondaryBonus;
-		}
-		return (int)num;
+		return (int)(stat.ResultNumber - (float)xp);
 	}
 
-	public override int CalculateXpGainFromBattles(FlattenedTroopRosterElement troopRosterElement, PartyBase party)
+	public override ExplainedNumber CalculateXpGainFromBattles(FlattenedTroopRosterElement troopRosterElement, PartyBase party)
 	{
-		int num = troopRosterElement.XpGained;
-		if ((party.MapEvent.IsPlayerSimulation || !party.MapEvent.IsPlayerMapEvent) && party.MobileParty.HasPerk(DefaultPerks.Leadership.TrustedCommander, checkSecondaryRole: true))
+		ExplainedNumber stat = new ExplainedNumber(troopRosterElement.XpGained);
+		if ((party.MapEvent.IsPlayerSimulation || !party.MapEvent.IsPlayerMapEvent) && party.IsMobile && !party.MobileParty.IsCurrentlyAtSea)
 		{
-			num += MathF.Round((float)num * DefaultPerks.Leadership.TrustedCommander.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		return num;
+		return stat;
 	}
 }

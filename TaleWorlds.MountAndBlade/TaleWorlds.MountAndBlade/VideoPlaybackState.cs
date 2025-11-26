@@ -31,8 +31,14 @@ public class VideoPlaybackState : GameState
 		_onVideoFinised = onVideoFinised;
 	}
 
+	public void OnVideoStarted()
+	{
+		MBMusicManager.Current.PauseMusicManagerSystem();
+	}
+
 	public void OnVideoFinished()
 	{
+		MBMusicManager.Current.UnpauseMusicManagerSystem();
 		_onVideoFinised?.Invoke();
 	}
 }

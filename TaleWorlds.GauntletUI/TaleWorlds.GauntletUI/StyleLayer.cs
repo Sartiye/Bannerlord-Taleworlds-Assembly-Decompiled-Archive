@@ -27,6 +27,8 @@ public class StyleLayer : IBrushLayerData, IDataSource
 
 	private bool _isYOffsetChanged;
 
+	private bool _isRotationChanged;
+
 	private bool _isExtendLeftChanged;
 
 	private bool _isExtendRightChanged;
@@ -82,6 +84,8 @@ public class StyleLayer : IBrushLayerData, IDataSource
 	private float _xOffset;
 
 	private float _yOffset;
+
+	private float _rotation;
 
 	private float _extendLeft;
 
@@ -368,6 +372,28 @@ public class StyleLayer : IBrushLayerData, IDataSource
 			{
 				_isYOffsetChanged = MathF.Abs(SourceLayer.YOffset - value) > 1E-05f;
 				_yOffset = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public float Rotation
+	{
+		get
+		{
+			if (_isRotationChanged)
+			{
+				return _rotation;
+			}
+			return SourceLayer.Rotation;
+		}
+		set
+		{
+			if (Rotation != value)
+			{
+				_isRotationChanged = MathF.Abs(SourceLayer.Rotation - value) > 1E-05f;
+				_rotation = value;
 				_localVersion++;
 			}
 		}
@@ -748,6 +774,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		IsHidden = source.IsHidden;
 		XOffset = source.XOffset;
 		YOffset = source.YOffset;
+		Rotation = source.Rotation;
 		ExtendLeft = source.ExtendLeft;
 		ExtendRight = source.ExtendRight;
 		ExtendTop = source.ExtendTop;
@@ -784,6 +811,8 @@ public class StyleLayer : IBrushLayerData, IDataSource
 			return XOffset;
 		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
 			return YOffset;
+		case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
+			return Rotation;
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth:
 			return OverridenWidth;
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight:
@@ -801,7 +830,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlayYOffset:
 			return OverlayYOffset;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsFloat", 830);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsFloat", 862);
 			return 0f;
 		}
 	}
@@ -812,7 +841,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		{
 			return Color;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsColor", 844);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsColor", 876);
 		return Color.Black;
 	}
 
@@ -825,7 +854,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlaySprite:
 			return OverlaySprite;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsSprite", 861);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsSprite", 893);
 			return null;
 		}
 	}
@@ -845,6 +874,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 			BrushAnimationProperty.BrushAnimationPropertyType.IsHidden => _isIsHiddenChanged, 
 			BrushAnimationProperty.BrushAnimationPropertyType.XOffset => _isXOffsetChanged, 
 			BrushAnimationProperty.BrushAnimationPropertyType.YOffset => _isYOffsetChanged, 
+			BrushAnimationProperty.BrushAnimationPropertyType.Rotation => _isRotationChanged, 
 			BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth => _isOverridenWidthChanged, 
 			BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight => _isOverridenHeightChanged, 
 			BrushAnimationProperty.BrushAnimationPropertyType.WidthPolicy => _isWidthPolicyChanged, 

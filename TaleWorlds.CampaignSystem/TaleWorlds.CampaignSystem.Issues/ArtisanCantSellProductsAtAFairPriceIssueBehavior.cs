@@ -163,7 +163,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=qfClYYjK}Artisans can't sell their products in {ISSUE_GIVER_SETTLEMENT}");
+				TextObject textObject = new TextObject("{=qfClYYjK}Artisans Can't Sell Their Products in {ISSUE_GIVER_SETTLEMENT}");
 				textObject.SetTextVariable("ISSUE_GIVER_SETTLEMENT", base.IssueSettlement.Name);
 				return textObject;
 			}
@@ -258,7 +258,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			: base(issueOwner, CampaignTime.DaysFromNow(30f))
 		{
 			_targetSettlement = SelectTargetSettlement(issueOwner);
-			_targetHero = _targetSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x.CanHaveQuestsOrIssues());
+			_targetHero = _targetSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x.CanHaveCampaignIssues());
 			_rawMaterialsToBeDelivered = Campaign.Current.ObjectManager.GetObject<ItemObject>(_possibleDeliveryItems.GetRandomElement());
 			CounterOfferHero = SelectCounterOfferHero(issueOwner);
 		}
@@ -307,7 +307,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 		{
 			if (base.IssueOwner.CurrentSettlement.OwnerClan == Clan.PlayerClan)
 			{
-				explanation = TextObject.Empty;
+				explanation = null;
 				return true;
 			}
 			explanation = new TextObject("{=9y0zpKUF}You need to be the owner of this settlement!");
@@ -316,14 +316,12 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation);
 		}
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -362,7 +360,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 					}
 				}
 			}
-			base.IssueOwner.CurrentSettlement.Town.Prosperity += 3f;
+			base.IssueOwner.CurrentSettlement.Town.Prosperity += 30f;
 		}
 
 		private void ApplyFailureEffects()
@@ -372,7 +370,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			{
 				item.AddPower(3f);
 			}
-			base.IssueOwner.CurrentSettlement.Town.Prosperity -= 20f;
+			base.IssueOwner.CurrentSettlement.Town.Prosperity -= 10f;
 		}
 
 		protected override void OnGameLoad()
@@ -455,9 +453,9 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 
 		public override bool IsRemainingTimeHidden => false;
 
-		public override TextObject Title => new TextObject("{=sfW7oT9e}Artisan can't sell products");
+		public override TextObject Title => new TextObject("{=sfW7oT9e}Artisan Can't Sell Products");
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -472,7 +470,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _successQuestLogText
+		private TextObject SuccessQuestLogText
 		{
 			get
 			{
@@ -484,7 +482,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _failQuestLogText
+		private TextObject FailQuestLogText
 		{
 			get
 			{
@@ -498,7 +496,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _failQuestLogCounterOfferText
+		private TextObject FailQuestLogCounterOfferText
 		{
 			get
 			{
@@ -508,7 +506,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _onQuestCancelledDueToWarLogText
+		private TextObject OnQuestCancelledDueToWarLogText
 		{
 			get
 			{
@@ -518,7 +516,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -640,7 +638,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			StartQuest();
 			TextObject textObject = new TextObject("{=L700FNht}Delivered {RAW_MATERIAL}");
 			textObject.SetTextVariable("RAW_MATERIAL", _rawMaterialsToBeDelivered.Name);
-			_playerStartsQuestLog = AddDiscreteLog(_playerStartsQuestLogText, textObject, _deliveredRawGoods, _amountOfRawGoodsToBeDelivered, null, hideInformation: true);
+			_playerStartsQuestLog = AddDiscreteLog(PlayerStartsQuestLogText, textObject, _deliveredRawGoods, _amountOfRawGoodsToBeDelivered, null, hideInformation: true);
 			PartyBase.MainParty.ItemRoster.AddToCounts(_rawMaterialsToBeDelivered, _amountOfRawGoodsToBeDelivered);
 			AddTrackedObject(_targetSettlement);
 			AddTrackedObject(_targetHero);
@@ -838,7 +836,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -50)
 			});
-			CompleteQuestWithFail(_failQuestLogCounterOfferText);
+			CompleteQuestWithFail(FailQuestLogCounterOfferText);
 			RemoveRequestedItemsFromPlayer();
 		}
 
@@ -860,7 +858,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 		}
 
-		public override void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 		{
 			if (hero == _targetHero)
 			{
@@ -872,13 +870,13 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_onQuestCancelledDueToWarLogText);
+				CompleteQuestWithCancel(OnQuestCancelledDueToWarLogText);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _onQuestCancelledDueToWarLogText);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, OnQuestCancelledDueToWarLogText);
 		}
 
 		private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification)
@@ -907,7 +905,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 		public override void OnFailed()
 		{
 			base.QuestGiver.AddPower(-10f);
-			base.QuestGiver.CurrentSettlement.Town.Prosperity -= 20f;
+			base.QuestGiver.CurrentSettlement.Town.Prosperity -= 10f;
 			foreach (Hero item in base.QuestGiver.CurrentSettlement.Notables.Where((Hero x) => x.IsMerchant))
 			{
 				item.AddPower(5f);
@@ -935,8 +933,8 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 				item.AddPower(-5f);
 				ChangeRelationAction.ApplyPlayerRelation(item, -5);
 			}
-			base.QuestGiver.CurrentSettlement.Town.Prosperity += 20f;
-			AddLog(_successQuestLogText);
+			base.QuestGiver.CurrentSettlement.Town.Prosperity += 30f;
+			AddLog(SuccessQuestLogText);
 			RemoveTrackedObject(_targetSettlement);
 			RemoveTrackedObject(_targetHero);
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _rewardGold);
@@ -946,11 +944,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 		{
 			OnFailed();
 			RelationshipChangeWithQuestGiver = -5;
-			AddLog(_failQuestLogText);
-		}
-
-		public override void OnCanceled()
-		{
+			AddLog(FailQuestLogText);
 		}
 	}
 
@@ -967,8 +961,6 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			AddClassDefinition(typeof(ArtisanCantSellProductsAtAFairPriceIssueQuest), 2);
 		}
 	}
-
-	private const float MaxDistanceForSettlementSelection = 150f;
 
 	private const IssueBase.IssueFrequency ArtisanCantSellProductsAtAFairPriceIssueFrequency = IssueBase.IssueFrequency.Common;
 
@@ -1000,14 +992,15 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 
 	private static Hero SelectCounterOfferHero(Hero issueGiver)
 	{
-		return issueGiver.CurrentSettlement.Notables.FirstOrDefault((Hero x) => x.CharacterObject.IsHero && x.CanHaveQuestsOrIssues() && x.CharacterObject.HeroObject != issueGiver && x.CharacterObject.HeroObject.IsMerchant);
+		return issueGiver.CurrentSettlement.Notables.FirstOrDefault((Hero x) => x.CharacterObject.IsHero && x.CanHaveCampaignIssues() && x.CharacterObject.HeroObject != issueGiver && x.CharacterObject.HeroObject.IsMerchant);
 	}
 
 	private static Settlement SelectTargetSettlement(Hero issueGiver)
 	{
 		Settlement issueSettlement = issueGiver.CurrentSettlement;
-		float distance;
-		return SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown && x != issueSettlement && x.Notables.Any((Hero y) => y.CanHaveQuestsOrIssues()) && Campaign.Current.Models.MapDistanceModel.GetDistance(x, issueSettlement, 150f, out distance));
+		MobileParty.NavigationType navigationType = ((!issueSettlement.OwnerClan.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.All);
+		float maximumDistanceForSettlementSelection = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType) * 2.25f;
+		return SettlementHelper.FindNearestSettlementToMobileParty(MobileParty.MainParty, navigationType, (Settlement x) => x.IsTown && x != issueSettlement && x.Notables.Any((Hero y) => y.CanHaveCampaignIssues()) && Campaign.Current.Models.MapDistanceModel.GetDistance(x, issueSettlement, isFromPort: false, isTargetingPort: false, navigationType) < maximumDistanceForSettlementSelection);
 	}
 
 	private IssueBase OnStartIssue(in PotentialIssueData pid, Hero issueOwner)

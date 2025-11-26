@@ -7,6 +7,8 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -29,7 +31,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 
 	private HintViewModel _manageAlleyHint;
 
-	private ImageIdentifierVM _ownerVisual;
+	private CharacterImageIdentifierVM _ownerVisual;
 
 	private string _incomeText;
 
@@ -53,7 +55,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM OwnerVisual
+	public CharacterImageIdentifierVM OwnerVisual
 	{
 		get
 		{
@@ -118,7 +120,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 		{
 			_alleyOwner = Alley.Owner;
 		}
-		OwnerVisual = new ImageIdentifierVM(CharacterCode.CreateFrom(_alleyOwner.CharacterObject));
+		OwnerVisual = new CharacterImageIdentifierVM(CharacterCode.CreateFrom(_alleyOwner.CharacterObject));
 		base.ImageName = ((Alley.Settlement?.SettlementComponent != null) ? Alley.Settlement.SettlementComponent.WaitMeshName : "");
 		RefreshValues();
 	}
@@ -163,7 +165,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 		string result = string.Empty;
 		List<(Hero, DefaultAlleyModel.AlleyMemberAvailabilityDetail)> clanMembersAndAvailabilityDetailsForLeadingAnAlley = _alleyModel.GetClanMembersAndAvailabilityDetailsForLeadingAnAlley(Alley);
 		Hero assignedClanMemberOfAlley = _alleyBehavior.GetAssignedClanMemberOfAlley(Alley);
-		if (_alleyBehavior.GetIsAlleyUnderAttack(Alley))
+		if (_alleyBehavior.GetIsPlayerAlleyUnderAttack(Alley))
 		{
 			TextObject textObject = new TextObject("{=q1DVNQS7}Under Attack! ({RESPONSE_TIME} {?RESPONSE_TIME>1}days{?}day{\\?} left.)");
 			textObject.SetTextVariable("RESPONSE_TIME", _alleyBehavior.GetResponseTimeLeftForAttackInDays(Alley));
@@ -196,7 +198,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 	private ClanCardSelectionItemPropertyInfo GetSkillProperty(Hero hero, SkillObject skill)
 	{
 		TextObject value = ClanCardSelectionItemPropertyInfo.CreateLabeledValueText(skill.Name, new TextObject("{=!}" + hero.GetSkillValue(skill)));
-		return new ClanCardSelectionItemPropertyInfo(TextObject.Empty, value);
+		return new ClanCardSelectionItemPropertyInfo(TextObject.GetEmpty(), value);
 	}
 
 	private IEnumerable<ClanCardSelectionItemPropertyInfo> GetHeroProperties(Hero hero, Alley alley, DefaultAlleyModel.AlleyMemberAvailabilityDetail detail)
@@ -206,7 +208,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 			string partyDistanceByTimeText = CampaignUIHelper.GetPartyDistanceByTimeText(Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, alley.Settlement.Party).ResultNumber, Campaign.Current.Models.DelayedTeleportationModel.DefaultTeleportationSpeed);
 			yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=!}" + partyDistanceByTimeText));
 		}
-		yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=bz7Glmsm}Skills"), TextObject.Empty);
+		yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=bz7Glmsm}Skills"), TextObject.GetEmpty());
 		yield return GetSkillProperty(hero, DefaultSkills.Tactics);
 		yield return GetSkillProperty(hero, DefaultSkills.Leadership);
 		yield return GetSkillProperty(hero, DefaultSkills.Steward);
@@ -215,7 +217,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 
 	private IEnumerable<ClanCardSelectionItemInfo> GetAvailableMembers()
 	{
-		yield return new ClanCardSelectionItemInfo(new TextObject("{=W3hmFcfv}Abandon Alley"), isDisabled: false, TextObject.Empty, TextObject.Empty);
+		yield return new ClanCardSelectionItemInfo(new TextObject("{=W3hmFcfv}Abandon Alley"), isDisabled: false, TextObject.GetEmpty(), TextObject.GetEmpty());
 		List<(Hero, DefaultAlleyModel.AlleyMemberAvailabilityDetail)> availabilityDetails = _alleyModel.GetClanMembersAndAvailabilityDetailsForLeadingAnAlley(Alley);
 		foreach (Hero member in Clan.PlayerClan.Heroes)
 		{
@@ -224,7 +226,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 			{
 				CharacterCode characterCode = CharacterCode.CreateFrom(member.CharacterObject);
 				bool isDisabled = tuple.Item2 != 0 && tuple.Item2 != DefaultAlleyModel.AlleyMemberAvailabilityDetail.AvailableWithDelay;
-				yield return new ClanCardSelectionItemInfo(member, member.Name, new ImageIdentifier(characterCode), CardSelectionItemSpriteType.None, null, null, GetHeroProperties(member, Alley, tuple.Item2), isDisabled, _alleyModel.GetDisabledReasonTextForHero(member, Alley, tuple.Item2), null);
+				yield return new ClanCardSelectionItemInfo(member, member.Name, new CharacterImageIdentifier(characterCode), CardSelectionItemSpriteType.None, null, null, GetHeroProperties(member, Alley, tuple.Item2), isDisabled, _alleyModel.GetDisabledReasonTextForHero(member, Alley, tuple.Item2), null);
 			}
 		}
 	}

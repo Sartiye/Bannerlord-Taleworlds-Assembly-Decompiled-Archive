@@ -2,9 +2,8 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
-using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.GauntletUI;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Intermission;
+using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
@@ -13,7 +12,7 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.GauntletUI;
 
 [GameStateScreen(typeof(LobbyGameStateCustomGameClient))]
 [GameStateScreen(typeof(LobbyGameStateCommunityClient))]
-public class MultiplayerIntermissionScreen : ScreenBase, IGameStateListener, IGauntletChatLogHandlerScreen
+public class MultiplayerIntermissionScreen : ScreenBase, IGameStateListener, IChatLogHandlerScreen
 {
 	private MPIntermissionVM _dataSource;
 
@@ -33,13 +32,9 @@ public class MultiplayerIntermissionScreen : ScreenBase, IGameStateListener, IGa
 
 	private void Construct()
 	{
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_customGameClientCategory = spriteData.SpriteCategories["ui_mpintermission"];
-		_customGameClientCategory.Load(resourceContext, uIResourceDepot);
+		_customGameClientCategory = UIResourceManager.LoadSpriteCategory("ui_mpintermission");
 		_dataSource = new MPIntermissionVM();
-		Layer = new GauntletLayer(100);
+		Layer = new GauntletLayer("MultiplayerIntermission", 100);
 		Layer.IsFocusLayer = true;
 		AddLayer(Layer);
 		Layer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
@@ -81,7 +76,7 @@ public class MultiplayerIntermissionScreen : ScreenBase, IGameStateListener, IGa
 	{
 	}
 
-	void IGauntletChatLogHandlerScreen.TryUpdateChatLogLayerParameters(ref bool isTeamChatAvailable, ref bool inputEnabled, ref InputContext inputContext)
+	void IChatLogHandlerScreen.TryUpdateChatLogLayerParameters(ref bool isTeamChatAvailable, ref bool inputEnabled, ref bool isToggleChatHintAvailable, ref bool isMouseVisible, ref InputContext inputContext)
 	{
 		if (Layer != null)
 		{

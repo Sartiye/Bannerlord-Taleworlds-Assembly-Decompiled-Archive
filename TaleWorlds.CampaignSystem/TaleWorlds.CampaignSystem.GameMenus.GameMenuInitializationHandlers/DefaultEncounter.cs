@@ -1,4 +1,5 @@
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -22,7 +23,19 @@ public class DefaultEncounter
 	[GameMenuInitializationHandler("menu_captivity_end_propose_ransom_wilderness")]
 	public static void game_menu_taken_prisoner_ui_on_init(MenuCallbackArgs args)
 	{
-		if (Hero.MainHero.IsFemale)
+		PartyBase partyBelongedToAsPrisoner = Hero.MainHero.PartyBelongedToAsPrisoner;
+		if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.MobileParty?.IsCurrentlyAtSea == true)
+		{
+			if (Hero.MainHero.IsFemale)
+			{
+				args.MenuContext.SetBackgroundMeshName("wait_captive_at_sea_female");
+			}
+			else
+			{
+				args.MenuContext.SetBackgroundMeshName("wait_captive_at_sea_male");
+			}
+		}
+		else if (Hero.MainHero.IsFemale)
 		{
 			args.MenuContext.SetBackgroundMeshName("wait_captive_female");
 		}
@@ -68,11 +81,19 @@ public class DefaultEncounter
 		MobileParty mobileParty = PlayerEncounter.EncounteredParty.MobileParty;
 		if (mobileParty != null && mobileParty.IsCaravan)
 		{
-			args.MenuContext.SetBackgroundMeshName("encounter_caravan");
+			if (PlayerEncounter.IsNavalEncounter())
+			{
+				args.MenuContext.SetBackgroundMeshName("encounter_naval");
+			}
+			else
+			{
+				args.MenuContext.SetBackgroundMeshName("encounter_caravan");
+			}
 		}
 		else
 		{
-			args.MenuContext.SetBackgroundMeshName(PlayerEncounter.EncounteredParty.MapFaction.Culture.EncounterBackgroundMesh);
+			string encounterCultureBackgroundMesh = MenuHelper.GetEncounterCultureBackgroundMesh(PlayerEncounter.EncounteredParty.MapFaction.Culture);
+			args.MenuContext.SetBackgroundMeshName(encounterCultureBackgroundMesh);
 		}
 	}
 
@@ -93,7 +114,11 @@ public class DefaultEncounter
 		}
 		else if (PlayerEncounter.EncounteredParty != null && PlayerEncounter.EncounteredParty.IsMobile)
 		{
-			if (PlayerEncounter.EncounteredParty.MobileParty.IsVillager)
+			if (PlayerEncounter.IsNavalEncounter() && (PlayerEncounter.EncounteredParty.MobileParty.IsVillager || PlayerEncounter.EncounteredParty.MobileParty.IsCaravan || PlayerEncounter.EncounteredParty.MapFaction == null))
+			{
+				args.MenuContext.SetBackgroundMeshName("encounter_naval");
+			}
+			else if (PlayerEncounter.EncounteredParty.MobileParty.IsVillager)
 			{
 				args.MenuContext.SetBackgroundMeshName("encounter_peasant");
 			}
@@ -108,10 +133,11 @@ public class DefaultEncounter
 			}
 			else
 			{
-				args.MenuContext.SetBackgroundMeshName(PlayerEncounter.EncounteredParty.MapFaction.Culture.EncounterBackgroundMesh);
+				string encounterCultureBackgroundMesh = MenuHelper.GetEncounterCultureBackgroundMesh(PlayerEncounter.EncounteredParty.MobileParty.MapFaction.Culture);
+				args.MenuContext.SetBackgroundMeshName(encounterCultureBackgroundMesh);
 			}
 		}
-		if (PartyBase.MainParty.Side == BattleSideEnum.Defender && PartyBase.MainParty.NumberOfHealthyMembers == 0)
+		if (PartyBase.MainParty.Side == BattleSideEnum.Defender && (PartyBase.MainParty.NumberOfHealthyMembers == 0 || PartyBase.MainParty.MobileParty.IsInRaftState))
 		{
 			int num = 0;
 			foreach (MapEventParty item in PartyBase.MainParty.MapEvent.PartiesOnSide(PartyBase.MainParty.Side))
@@ -124,6 +150,10 @@ public class DefaultEncounter
 			if (num > 0)
 			{
 				MBTextManager.SetTextVariable("ENCOUNTER_TEXT", GameTexts.FindText("str_you_have_encountered_no_health_men_but_allies_has"), sendClients: true);
+			}
+			else if (MobileParty.MainParty.IsInRaftState)
+			{
+				MBTextManager.SetTextVariable("ENCOUNTER_TEXT", GameTexts.FindText("str_you_have_encountered_but_in_raft_state"), sendClients: true);
 			}
 			else
 			{
@@ -159,7 +189,7 @@ public class DefaultEncounter
 				}
 				else
 				{
-					textObject = ((MobileParty.MainParty.MapFaction == currentSettlement.MapFaction) ? new TextObject("{=HMt8Xo5p}{PARTY} is raiding {SETTLEMENT}. You decide to...") : ((MobileParty.MainParty.MapFaction == PlayerEncounter.Battle.AttackerSide.MapFaction) ? GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_war") : (MobileParty.MainParty.MapFaction.IsAtWarWith(PlayerEncounter.Battle.AttackerSide.MapFaction) ? GameTexts.FindText("str_you_have_encountered_enemy_party_while_raiding") : (MobileParty.MainParty.MapFaction.IsAtWarWith(currentSettlement.MapFaction) ? GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_war") : GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_peace")))));
+					textObject = ((MobileParty.MainParty.MapFaction == PlayerEncounter.Battle.AttackerSide.MapFaction) ? GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_war") : (MobileParty.MainParty.MapFaction.IsAtWarWith(PlayerEncounter.Battle.AttackerSide.MapFaction) ? ((!PlayerEncounter.Battle.IsRaid) ? GameTexts.FindText("str_you_have_encountered_enemy_party_while_you_are_raiding") : GameTexts.FindText("str_you_have_encountered_enemy_party_while_enemy_is_raiding")) : (MobileParty.MainParty.MapFaction.IsAtWarWith(currentSettlement.MapFaction) ? GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_war") : GameTexts.FindText("str_you_have_encountered_settlement_to_raid_with_resisting_on_peace"))));
 					textObject.SetTextVariable("PARTY", PlayerEncounter.Battle.AttackerSide.LeaderParty.Name);
 				}
 				textObject.SetTextVariable("SETTLEMENT", currentSettlement.Name);
@@ -204,7 +234,7 @@ public class DefaultEncounter
 						textObject4.SetTextVariable("PARTY", PlayerEncounter.Battle.GetLeaderParty(PartyBase.MainParty.OpponentSide).Name);
 						MBTextManager.SetTextVariable("ENCOUNTER_TEXT", textObject4, sendClients: true);
 					}
-					else if (PlayerEncounter.Battle.IsSallyOut && PlayerEncounter.Battle.PlayerSide == BattleSideEnum.Attacker)
+					else if ((PlayerEncounter.Battle.IsSallyOut || PlayerEncounter.Battle.IsBlockadeSallyOut) && PlayerEncounter.Battle.PlayerSide == BattleSideEnum.Attacker)
 					{
 						TextObject textObject5 = GameTexts.FindText("str_you_have_encountered_PARTY_sally_out");
 						textObject5.SetTextVariable("PARTY", PlayerEncounter.Battle.GetLeaderParty(PartyBase.MainParty.OpponentSide).Name);
@@ -219,7 +249,7 @@ public class DefaultEncounter
 				}
 				else
 				{
-					Debug.FailedAssert("settlement encounter, but there is no MapEvent, menu text will be wrong", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuInitializationHandlers\\DefaultEncounter.cs", "game_menu_encounter_on_init", 291);
+					Debug.FailedAssert("settlement encounter, but there is no MapEvent, menu text will be wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuInitializationHandlers\\DefaultEncounter.cs", "game_menu_encounter_on_init", 326);
 					TextObject textObject7 = GameTexts.FindText("str_you_have_encountered_settlement_to_siege");
 					textObject7.SetTextVariable("SETTLEMENT", currentSettlement.Name);
 					MBTextManager.SetTextVariable("ENCOUNTER_TEXT", textObject7, sendClients: true);
@@ -230,7 +260,7 @@ public class DefaultEncounter
 				MBTextManager.SetTextVariable("ENCOUNTER_TEXT", GameTexts.FindText("str_you_are_trapped_by_enemies"), sendClients: true);
 			}
 		}
-		else if (MobileParty.MainParty.MapEvent != null && PlayerEncounter.CheckIfLeadingAvaliable() && PlayerEncounter.GetLeadingHero() != Hero.MainHero)
+		else if (MobileParty.MainParty.MapEvent != null && !MobileParty.MainParty.MapEvent.IsSallyOut && PlayerEncounter.CheckIfLeadingAvaliable() && PlayerEncounter.GetLeadingHero() != Hero.MainHero)
 		{
 			Hero leadingHero = PlayerEncounter.GetLeadingHero();
 			TextObject textObject8 = GameTexts.FindText("str_army_leader_encounter");
@@ -250,8 +280,25 @@ public class DefaultEncounter
 			{
 				if (PlayerEncounter.EncounteredMobileParty.Army.LeaderParty == PlayerEncounter.EncounteredMobileParty)
 				{
-					textObject9 = GameTexts.FindText("str_you_have_encountered_ARMY");
-					textObject9.SetTextVariable("ARMY", PlayerEncounter.EncounteredMobileParty.Army.Name);
+					if (PlayerEncounter.Battle != null && PlayerEncounter.Battle.IsSallyOut)
+					{
+						textObject9 = new TextObject("{=zmLD6wIj}{RELIEF_PARTY} has come to support {SETTLEMENT}. {FURTHER_EXPLANATION}.");
+						textObject9.SetTextVariable("RELIEF_PARTY", PlayerEncounter.Battle.GetLeaderParty(PartyBase.MainParty.OpponentSide).Name);
+						textObject9.SetTextVariable("SETTLEMENT", MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Name);
+						if (MobileParty.MainParty.SiegeEvent.BesiegedSettlement.IsCastle)
+						{
+							textObject9.SetTextVariable("FURTHER_EXPLANATION", "{=urOywsiw}Castle garrison decided to sally out");
+						}
+						else
+						{
+							textObject9.SetTextVariable("FURTHER_EXPLANATION", "{=xdtwRyfB}Town garrison decided to sally out");
+						}
+					}
+					else
+					{
+						textObject9 = GameTexts.FindText("str_you_have_encountered_ARMY");
+						textObject9.SetTextVariable("ARMY", PlayerEncounter.EncounteredMobileParty.Army.Name);
+					}
 				}
 				else
 				{
@@ -266,7 +313,7 @@ public class DefaultEncounter
 				textObject9.SetTextVariable("KINGDOM", mapFaction.IsKingdomFaction ? ((Kingdom)mapFaction).EncyclopediaTitle : mapFaction.Name);
 				textObject9.SetTextVariable("PARTY", PlayerEncounter.EncounteredMobileParty.Name);
 			}
-			else if (PlayerEncounter.Battle != null && PlayerEncounter.Battle.IsSallyOut && MobileParty.MainParty.BesiegedSettlement != null)
+			else if (PlayerEncounter.Battle != null && (PlayerEncounter.Battle.IsSallyOut || PlayerEncounter.Battle.IsBlockadeSallyOut) && MobileParty.MainParty.BesiegedSettlement != null)
 			{
 				if (PlayerEncounter.EncounteredMobileParty.IsGarrison)
 				{
@@ -303,10 +350,21 @@ public class DefaultEncounter
 		MBTextManager.SetTextVariable("ATTACK_TEXT", flag ? new TextObject("{=Ky03jg94}Fight") : new TextObject("{=zxMOqlhs}Attack"));
 	}
 
+	[GameMenuInitializationHandler("naval_town_outside")]
+	private static void game_menu_naval_town_outside_on_init(MenuCallbackArgs args)
+	{
+		args.MenuContext.SetBackgroundMeshName("town_blockade");
+	}
+
 	[GameMenuInitializationHandler("join_siege_event")]
 	[GameMenuInitializationHandler("join_sally_out")]
 	private static void game_menu_join_siege_event_on_init(MenuCallbackArgs args)
 	{
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0") && PlayerEncounter.Current == null)
+		{
+			GameMenu.ExitToLast();
+			return;
+		}
 		args.MenuContext.SetBackgroundMeshName(PlayerEncounter.EncounteredParty.MapFaction.Culture.EncounterBackgroundMesh);
 		MobileParty leaderParty = Settlement.CurrentSettlement.SiegeEvent.BesiegerCamp.LeaderParty;
 		if (((leaderParty == MobileParty.MainParty) ? 1 : 0) == 1)
@@ -332,13 +390,6 @@ public class DefaultEncounter
 	private static void game_menu_village_loot_complete_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetBackgroundMeshName(Settlement.CurrentSettlement.Village.WaitMeshName);
-	}
-
-	[GameMenuInitializationHandler("village_start_attack")]
-	public static void game_menu_village_start_attack_on_init(MenuCallbackArgs args)
-	{
-		Village village = Settlement.CurrentSettlement.Village;
-		args.MenuContext.SetBackgroundMeshName(village.WaitMeshName);
 	}
 
 	[GameMenuInitializationHandler("town_wait")]

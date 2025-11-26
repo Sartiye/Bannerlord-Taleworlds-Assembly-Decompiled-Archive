@@ -3,6 +3,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View.Tableaus;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View;
 
@@ -19,14 +20,22 @@ public class BannerVisual : IBannerVisual
 	{
 	}
 
-	public Texture GetTableauTextureSmall(Action<Texture> setAction, bool isTableauOrNineGrid = true)
+	public Texture GetTableauTextureSmall(in BannerDebugInfo debugInfo, Action<Texture> setAction, bool isTableauOrNineGrid = true)
 	{
-		return TableauCacheManager.Current.BeginCreateBannerTexture(BannerCode.CreateFrom(Banner), setAction, isTableauOrNineGrid);
+		BannerTextureCreationData thumbnailCreationData = new BannerTextureCreationData(Banner, setAction, null, debugInfo, isTableauOrNineGrid, isLarge: false);
+		return ThumbnailCacheManager.Current.CreateTexture(thumbnailCreationData).Texture;
 	}
 
-	public Texture GetTableauTextureLarge(Action<Texture> setAction, bool isTableauOrNineGrid = true)
+	public Texture GetTableauTextureLarge(in BannerDebugInfo debugInfo, Action<Texture> setAction, bool isTableauOrNineGrid = true)
 	{
-		return TableauCacheManager.Current.BeginCreateBannerTexture(BannerCode.CreateFrom(Banner), setAction, isTableauOrNineGrid, isLarge: true);
+		BannerTextureCreationData thumbnailCreationData = new BannerTextureCreationData(Banner, setAction, null, debugInfo, isTableauOrNineGrid, isLarge: true);
+		return ThumbnailCacheManager.Current.CreateTexture(thumbnailCreationData).Texture;
+	}
+
+	public Texture GetTableauTextureLarge(in BannerDebugInfo debugInfo, Action<Texture> setAction, out BannerTextureCreationData creationData, bool isTableauOrNineGrid = true)
+	{
+		creationData = new BannerTextureCreationData(Banner, setAction, null, debugInfo, isTableauOrNineGrid, isLarge: true);
+		return ThumbnailCacheManager.Current.CreateTexture(creationData).Texture;
 	}
 
 	public static MatrixFrame GetMeshMatrix(ref Mesh mesh, float marginLeft, float marginTop, float width, float height, bool mirrored, float rotation, float deltaZ)
@@ -41,7 +50,9 @@ public class BannerVisual : IBannerVisual
 		{
 			identity.rotation.RotateAboutForward(System.MathF.PI);
 		}
-		identity.rotation.ApplyScaleLocal(new Vec3(x, y, 1f));
+		ref Mat3 rotation2 = ref identity.rotation;
+		Vec3 scaleAmountXYZ = new Vec3(x, y, 1f);
+		rotation2.ApplyScaleLocal(in scaleAmountXYZ);
 		identity.origin.x = 0f;
 		identity.origin.y = 0f;
 		identity.origin.x += marginLeft / 1528f;
@@ -52,21 +63,21 @@ public class BannerVisual : IBannerVisual
 
 	public MetaMesh ConvertToMultiMesh()
 	{
-		BannerData bannerData = Banner.BannerDataList[0];
+		BannerData bannerDataAtIndex = Banner.GetBannerDataAtIndex(0);
 		MetaMesh metaMesh = MetaMesh.CreateMetaMesh();
-		Mesh fromResource = Mesh.GetFromResource(BannerManager.Instance.GetBackgroundMeshName(bannerData.MeshId));
+		Mesh fromResource = Mesh.GetFromResource(BannerManager.Instance.GetBackgroundMeshName(bannerDataAtIndex.MeshId));
 		Mesh mesh = fromResource.CreateCopy();
 		fromResource.ManualInvalidate();
-		mesh.Color = BannerManager.GetColor(bannerData.ColorId2);
-		mesh.Color2 = BannerManager.GetColor(bannerData.ColorId);
-		MatrixFrame meshMatrix = GetMeshMatrix(ref mesh, bannerData.Position.x, bannerData.Position.y, bannerData.Size.x, bannerData.Size.y, bannerData.Mirror, bannerData.RotationValue * 2f * System.MathF.PI, 0.5f);
+		mesh.Color = BannerManager.GetColor(bannerDataAtIndex.ColorId2);
+		mesh.Color2 = BannerManager.GetColor(bannerDataAtIndex.ColorId);
+		MatrixFrame meshMatrix = GetMeshMatrix(ref mesh, bannerDataAtIndex.Position.x, bannerDataAtIndex.Position.y, bannerDataAtIndex.Size.x, bannerDataAtIndex.Size.y, bannerDataAtIndex.Mirror, bannerDataAtIndex.RotationValue * 2f * System.MathF.PI, 0.5f);
 		mesh.SetLocalFrame(meshMatrix);
 		metaMesh.AddMesh(mesh);
 		mesh.ManualInvalidate();
-		for (int i = 1; i < Banner.BannerDataList.Count; i++)
+		for (int i = 1; i < Banner.GetBannerDataListCount(); i++)
 		{
-			BannerData bannerData2 = Banner.BannerDataList[i];
-			BannerIconData iconDataFromIconId = BannerManager.Instance.GetIconDataFromIconId(bannerData2.MeshId);
+			BannerData bannerDataAtIndex2 = Banner.GetBannerDataAtIndex(i);
+			BannerIconData iconDataFromIconId = BannerManager.Instance.GetIconDataFromIconId(bannerDataAtIndex2.MeshId);
 			Material fromResource2 = Material.GetFromResource(iconDataFromIconId.MaterialName);
 			if (fromResource2 != null)
 			{
@@ -83,8 +94,8 @@ public class BannerVisual : IBannerVisual
 				mesh2.AddFace(num3, patchNode, num4, uIntPtr);
 				mesh2.AddFace(num4, patchNode2, num3, uIntPtr);
 				mesh2.UnlockEditDataWrite(uIntPtr);
-				mesh2.SetColorAndStroke(BannerManager.GetColor(bannerData2.ColorId), BannerManager.GetColor(bannerData2.ColorId2), bannerData2.DrawStroke);
-				meshMatrix = GetMeshMatrix(ref mesh2, bannerData2.Position.x, bannerData2.Position.y, bannerData2.Size.x, bannerData2.Size.y, bannerData2.Mirror, bannerData2.RotationValue * 2f * System.MathF.PI, i);
+				mesh2.SetColorAndStroke(BannerManager.GetColor(bannerDataAtIndex2.ColorId), BannerManager.GetColor(bannerDataAtIndex2.ColorId2), bannerDataAtIndex2.DrawStroke);
+				meshMatrix = GetMeshMatrix(ref mesh2, bannerDataAtIndex2.Position.x, bannerDataAtIndex2.Position.y, bannerDataAtIndex2.Size.x, bannerDataAtIndex2.Size.y, bannerDataAtIndex2.Mirror, bannerDataAtIndex2.RotationValue * 2f * System.MathF.PI, i);
 				mesh2.SetLocalFrame(meshMatrix);
 				metaMesh.AddMesh(mesh2);
 			}

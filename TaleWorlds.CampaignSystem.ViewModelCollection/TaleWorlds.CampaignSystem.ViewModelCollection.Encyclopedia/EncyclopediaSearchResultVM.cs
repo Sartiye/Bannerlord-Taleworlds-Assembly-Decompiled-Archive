@@ -48,10 +48,23 @@ public class EncyclopediaSearchResultVM : ViewModel
 	public void UpdateSearchedText(string searchedText)
 	{
 		_searchedText = searchedText;
-		string text = OrgNameText.Substring(OrgNameText.IndexOf(_searchedText, StringComparison.OrdinalIgnoreCase), _searchedText.Length);
-		if (!string.IsNullOrEmpty(text))
+		if (string.IsNullOrEmpty(OrgNameText))
 		{
-			NameText = OrgNameText.Replace(text, "<a>" + text + "</a>");
+			return;
+		}
+		int num = OrgNameText.IndexOf(_searchedText, StringComparison.InvariantCultureIgnoreCase);
+		if (num < 0)
+		{
+			return;
+		}
+		int num2 = MBMath.ClampInt(_searchedText.Length, 0, OrgNameText.Length - num);
+		if (num2 != 0)
+		{
+			string text = OrgNameText.Substring(num, num2);
+			if (!string.IsNullOrEmpty(text))
+			{
+				NameText = OrgNameText.Replace(text, "<a>" + text + "</a>");
+			}
 		}
 	}
 

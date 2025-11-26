@@ -157,7 +157,7 @@ public abstract class MissionLobbyComponent : MissionNetwork
 
 	public override void AfterStart()
 	{
-		base.Mission.MakeDefaultDeploymentPlans();
+		base.Mission.DeploymentPlan.MakeDefaultDeploymentPlans();
 		_missionScoreboardComponent = base.Mission.GetMissionBehavior<MissionScoreboardComponent>();
 		_gameMode = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBase>();
 		_timerComponent = base.Mission.GetMissionBehavior<MultiplayerTimerComponent>();

@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
@@ -14,9 +14,18 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 {
 	public override void RegisterEvents()
 	{
+		CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
 		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
 		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, DailyTickSettlement);
 		CampaignEvents.OnBuildingLevelChangedEvent.AddNonSerializedListener(this, OnBuildingLevelChanged);
+	}
+
+	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
+	{
+		if (settlement.Town != null && newOwner.Clan != Clan.PlayerClan)
+		{
+			settlement.Town.BuildingsInProgress.Clear();
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -28,24 +37,25 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 		BuildDevelopmentsAtGameStart();
 	}
 
-	private void DecideProject(Town town)
+	private static void DecideDailyProject(Town town)
 	{
-		if (town.Owner.Settlement.OwnerClan == Clan.PlayerClan || town.BuildingsInProgress.Count >= 3)
+		Building nextDailyBuilding = Campaign.Current.Models.BuildingScoreCalculationModel.GetNextDailyBuilding(town);
+		if (nextDailyBuilding != null && nextDailyBuilding != town.CurrentDefaultBuilding)
 		{
-			return;
+			BuildingHelper.ChangeDefaultBuilding(nextDailyBuilding, town);
 		}
-		List<Building> list = new List<Building>(town.BuildingsInProgress);
-		int num = 100;
-		for (int i = 0; i < num; i++)
+	}
+
+	private static void DecideBuildingQueue(Town town)
+	{
+		if (town.BuildingsInProgress.IsEmpty())
 		{
 			Building nextBuilding = Campaign.Current.Models.BuildingScoreCalculationModel.GetNextBuilding(town);
 			if (nextBuilding != null)
 			{
-				list.Add(nextBuilding);
-				break;
+				town.BuildingsInProgress.Enqueue(nextBuilding);
 			}
 		}
-		BuildingHelper.ChangeCurrentBuildingQueue(list, town);
 	}
 
 	private void DailyTickSettlement(Settlement settlement)
@@ -62,18 +72,69 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 				building.HitPointChanged(10f);
 			}
 		}
-		DecideProject(town);
+		if (town.Owner.Settlement.OwnerClan != Clan.PlayerClan)
+		{
+			if (MBRandom.RandomFloat < 0.1f)
+			{
+				DecideBuildingQueue(town);
+			}
+			if (MBRandom.RandomFloat < 0.01f)
+			{
+				DecideDailyProject(town);
+			}
+		}
+		if (!town.CurrentBuilding.BuildingType.IsDailyProject)
+		{
+			TickCurrentBuildingForTown(town);
+		}
+		else if (town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Charm.Virile) && MBRandom.RandomFloat <= DefaultPerks.Charm.Virile.SecondaryBonus)
+		{
+			Hero randomElement = settlement.Notables.GetRandomElement();
+			if (randomElement != null)
+			{
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(town.Governor.Clan.Leader, randomElement, 1, showQuickNotification: false);
+			}
+		}
+	}
+
+	private void TickCurrentBuildingForTown(Town town)
+	{
+		if (town.BuildingsInProgress.Peek().CurrentLevel == 3)
+		{
+			town.BuildingsInProgress.Dequeue();
+		}
+		if (town.Owner.Settlement.IsUnderSiege || town.BuildingsInProgress.IsEmpty())
+		{
+			return;
+		}
+		BuildingConstructionModel buildingConstructionModel = Campaign.Current.Models.BuildingConstructionModel;
+		Building building = town.BuildingsInProgress.Peek();
+		building.BuildingProgress += town.Construction;
+		int num = (town.IsCastle ? buildingConstructionModel.CastleBoostCost : buildingConstructionModel.TownBoostCost);
+		if (town.BoostBuildingProcess > 0)
+		{
+			town.BoostBuildingProcess -= num;
+			if (town.BoostBuildingProcess < 0)
+			{
+				town.BoostBuildingProcess = 0;
+			}
+		}
+		BuildingHelper.CheckIfBuildingIsComplete(building);
 	}
 
 	private void OnBuildingLevelChanged(Town town, Building building, int levelChange)
 	{
+		if (building.BuildingType.HasEffect(BuildingEffectEnum.PrisonCapacity))
+		{
+			building.Town.Settlement.Party.PrisonRoster.UpdateVersion();
+		}
 		if (levelChange <= 0)
 		{
 			return;
 		}
 		if (town.Governor != null)
 		{
-			if (town.IsTown && town.Governor.GetPerkValue(DefaultPerks.Charm.MoralLeader))
+			if ((town.IsTown || town.IsCastle) && town.Governor.GetPerkValue(DefaultPerks.Charm.MoralLeader))
 			{
 				foreach (Hero notable in town.Settlement.Notables)
 				{
@@ -92,99 +153,30 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (Settlement item in Settlement.All)
 		{
-			Town town = item.Town;
-			if (town == null)
+			if (!item.IsFortification)
 			{
 				continue;
 			}
-			bool haveBuilding = false;
-			int level = 0;
-			if (town.IsTown)
+			Town town = item.Town;
+			foreach (BuildingType buildingType in BuildingType.All)
 			{
-				foreach (BuildingType item2 in BuildingType.All)
+				if (town.Buildings.All((Building b) => b.BuildingType != buildingType) && Campaign.Current.Models.BuildingModel.CanAddBuildingTypeToTown(buildingType, town))
 				{
-					if (item2.BuildingLocation != 0 || item2 == DefaultBuildingTypes.Fortifications)
-					{
-						continue;
-					}
-					GetBuildingProbability(out haveBuilding, out level);
-					if (haveBuilding)
-					{
-						if (level > 3)
-						{
-							level = 3;
-						}
-						town.Buildings.Add(new Building(item2, town, 0f, level));
-					}
-				}
-				foreach (BuildingType buildingType2 in BuildingType.All)
-				{
-					if (!town.Buildings.Any((Building k) => k.BuildingType == buildingType2) && buildingType2.BuildingLocation == BuildingLocation.Settlement)
-					{
-						town.Buildings.Add(new Building(buildingType2, town));
-					}
+					town.Buildings.Add(new Building(buildingType, town, 0f, buildingType.StartLevel));
 				}
 			}
-			else if (town.IsCastle)
+			foreach (Building building in town.Buildings)
 			{
-				foreach (BuildingType item3 in BuildingType.All)
+				BuildingType buildingType2 = building.BuildingType;
+				if (building.CurrentLevel < 3 && item.RandomFloat(1f) < buildingType2.VarianceChance)
 				{
-					if (item3.BuildingLocation != BuildingLocation.Castle || item3 == DefaultBuildingTypes.Wall)
-					{
-						continue;
-					}
-					GetBuildingProbability(out haveBuilding, out level);
-					if (haveBuilding)
-					{
-						if (level > 3)
-						{
-							level = 3;
-						}
-						town.Buildings.Add(new Building(item3, town, 0f, level));
-					}
-				}
-				foreach (BuildingType buildingType in BuildingType.All)
-				{
-					if (!town.Buildings.Any((Building k) => k.BuildingType == buildingType) && buildingType.BuildingLocation == BuildingLocation.Castle)
-					{
-						town.Buildings.Add(new Building(buildingType, town));
-					}
+					Debug.Print("Building variance roll success! SettlementId: " + item.StringId + " BuildingId: " + buildingType2.StringId + "Level: " + building.CurrentLevel);
+					building.LevelUp();
+					Debug.Print("Building level increased to " + building.CurrentLevel + ".");
 				}
 			}
-			int num = MBRandom.RandomInt(1, 4);
-			int num2 = 1;
-			foreach (BuildingType item4 in BuildingType.All)
-			{
-				if (item4.BuildingLocation == BuildingLocation.Daily)
-				{
-					Building building = new Building(item4, town, 0f, 1);
-					town.Buildings.Add(building);
-					if (num2 == num)
-					{
-						building.IsCurrentlyDefault = true;
-					}
-					num2++;
-				}
-			}
-			foreach (Building item5 in town.Buildings.OrderByDescending((Building k) => k.CurrentLevel))
-			{
-				if (item5.CurrentLevel != 3 && item5.CurrentLevel != item5.BuildingType.StartLevel && item5.BuildingType.BuildingLocation != BuildingLocation.Daily)
-				{
-					town.BuildingsInProgress.Enqueue(item5);
-				}
-			}
+			DecideDailyProject(town);
+			DecideBuildingQueue(town);
 		}
-	}
-
-	private static void GetBuildingProbability(out bool haveBuilding, out int level)
-	{
-		level = MBRandom.RandomInt(0, 7);
-		if (level < 4)
-		{
-			haveBuilding = false;
-			return;
-		}
-		haveBuilding = true;
-		level -= 3;
 	}
 }

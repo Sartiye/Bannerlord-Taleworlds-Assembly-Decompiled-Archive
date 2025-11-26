@@ -1,5 +1,4 @@
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
@@ -18,28 +17,25 @@ public class GauntletCreditsScreen : ScreenBase
 
 	private GauntletLayer _gauntletLayer;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private SpriteCategory _creditsCategory;
 
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_creditsCategory = spriteData.SpriteCategories["ui_credits"];
-		_creditsCategory.Load(resourceContext, uIResourceDepot);
+		_creditsCategory = UIResourceManager.LoadSpriteCategory("ui_credits");
 		_datasource = new CreditsVM();
 		string path = string.Concat(ModuleHelper.GetModuleFullPath("Native") + "ModuleData/", "Credits.xml");
 		_datasource.FillFromFile(path);
-		_gauntletLayer = new GauntletLayer(100);
+		_gauntletLayer = new GauntletLayer("CreditsScreen", 100);
 		_gauntletLayer.IsFocusLayer = true;
 		AddLayer(_gauntletLayer);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
 		ScreenManager.TrySetFocus(_gauntletLayer);
 		_movie = _gauntletLayer.LoadMovie("CreditsScreen", _datasource);
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
+		InformationManager.HideAllMessages();
 	}
 
 	protected override void OnFinalize()

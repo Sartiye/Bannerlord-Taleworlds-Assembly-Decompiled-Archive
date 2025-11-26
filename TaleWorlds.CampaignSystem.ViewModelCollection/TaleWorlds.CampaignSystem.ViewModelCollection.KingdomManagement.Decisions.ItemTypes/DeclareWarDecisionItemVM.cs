@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -17,9 +19,9 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 
 	private string _warDescriptionText;
 
-	private ImageIdentifierVM _sourceFactionBanner;
+	private BannerImageIdentifierVM _sourceFactionBanner;
 
-	private ImageIdentifierVM _targetFactionBanner;
+	private BannerImageIdentifierVM _targetFactionBanner;
 
 	private string _leaderText;
 
@@ -28,6 +30,10 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 	private HeroVM _targetFactionLeader;
 
 	private MBBindingList<KingdomWarComparableStatVM> _comparedStats;
+
+	private bool _isTargetFactionOtherWarsVisible;
+
+	private MBBindingList<KingdomDiplomacyFactionItemVM> _targetFactionOtherWars;
 
 	private Kingdom _sourceFaction => Hero.MainHero.Clan.Kingdom;
 
@@ -68,7 +74,7 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM SourceFactionBanner
+	public BannerImageIdentifierVM SourceFactionBanner
 	{
 		get
 		{
@@ -85,7 +91,7 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM TargetFactionBanner
+	public BannerImageIdentifierVM TargetFactionBanner
 	{
 		get
 		{
@@ -169,6 +175,40 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsTargetFactionOtherWarsVisible
+	{
+		get
+		{
+			return _isTargetFactionOtherWarsVisible;
+		}
+		set
+		{
+			if (value != _isTargetFactionOtherWarsVisible)
+			{
+				_isTargetFactionOtherWarsVisible = value;
+				OnPropertyChangedWithValue(value, "IsTargetFactionOtherWarsVisible");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<KingdomDiplomacyFactionItemVM> TargetFactionOtherWars
+	{
+		get
+		{
+			return _targetFactionOtherWars;
+		}
+		set
+		{
+			if (value != _targetFactionOtherWars)
+			{
+				_targetFactionOtherWars = value;
+				OnPropertyChangedWithValue(value, "TargetFactionOtherWars");
+			}
+		}
+	}
+
 	public DeclareWarDecisionItemVM(DeclareWarDecision decision, Action onDecisionOver)
 		: base(decision, onDecisionOver)
 	{
@@ -184,8 +224,8 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 		TextObject textObject2 = GameTexts.FindText("str_kingdom_decision_declare_war_desc");
 		textObject2.SetTextVariable("FACTION", TargetFaction.Name);
 		WarDescriptionText = textObject2.ToString();
-		SourceFactionBanner = new ImageIdentifierVM(BannerCode.CreateFrom(_sourceFaction.Banner), nineGrid: true);
-		TargetFactionBanner = new ImageIdentifierVM(BannerCode.CreateFrom(TargetFaction.Banner), nineGrid: true);
+		SourceFactionBanner = new BannerImageIdentifierVM(_sourceFaction.Banner, nineGrid: true);
+		TargetFactionBanner = new BannerImageIdentifierVM(TargetFaction.Banner, nineGrid: true);
 		LeaderText = GameTexts.FindText("str_leader").ToString();
 		SourceFactionLeader = new HeroVM(_sourceFaction.Leader);
 		TargetFactionLeader = new HeroVM(TargetFaction.Leader);
@@ -193,7 +233,7 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 		Kingdom kingdom = TargetFaction as Kingdom;
 		string faction1Color = Color.FromUint(_sourceFaction.Color).ToString();
 		string faction2Color = Color.FromUint(kingdom.Color).ToString();
-		KingdomWarComparableStatVM item = new KingdomWarComparableStatVM((int)_sourceFaction.TotalStrength, (int)kingdom.TotalStrength, GameTexts.FindText("str_strength"), faction1Color, faction2Color, 10000);
+		KingdomWarComparableStatVM item = new KingdomWarComparableStatVM((int)_sourceFaction.CurrentTotalStrength, (int)kingdom.CurrentTotalStrength, GameTexts.FindText("str_strength"), faction1Color, faction2Color, 10000);
 		ComparedStats.Add(item);
 		KingdomWarComparableStatVM item2 = new KingdomWarComparableStatVM(_sourceFaction.Armies.Count, kingdom.Armies.Count, GameTexts.FindText("str_armies"), faction1Color, faction2Color, 5);
 		ComparedStats.Add(item2);
@@ -205,5 +245,14 @@ public class DeclareWarDecisionItemVM : DecisionItemBaseVM
 		int faction2Stat2 = TargetFaction.Settlements.Count((Settlement settlement) => settlement.IsCastle);
 		KingdomWarComparableStatVM item4 = new KingdomWarComparableStatVM(faction1Stat2, faction2Stat2, GameTexts.FindText("str_castles"), faction1Color, faction2Color, 50);
 		ComparedStats.Add(item4);
+		TargetFactionOtherWars = new MBBindingList<KingdomDiplomacyFactionItemVM>();
+		foreach (StanceLink stance in FactionHelper.GetStances(TargetFaction))
+		{
+			if (stance.IsAtWar && stance.Faction1 != _sourceFaction && stance.Faction2 != _sourceFaction && (stance.Faction1.IsKingdomFaction || stance.Faction1.Leader == Hero.MainHero) && (stance.Faction2.IsKingdomFaction || stance.Faction2.Leader == Hero.MainHero) && !stance.Faction1.IsRebelClan && !stance.Faction2.IsRebelClan && !stance.Faction1.IsBanditFaction && !stance.Faction2.IsBanditFaction)
+			{
+				TargetFactionOtherWars.Add(new KingdomDiplomacyFactionItemVM((stance.Faction1 == TargetFaction) ? stance.Faction2 : stance.Faction1));
+			}
+		}
+		IsTargetFactionOtherWarsVisible = TargetFactionOtherWars.Count > 0;
 	}
 }

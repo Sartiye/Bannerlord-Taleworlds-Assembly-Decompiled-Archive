@@ -21,13 +21,29 @@ public static class GameEntityExtensions
 		gameEntity.Skeleton = MBAPI.IMBSkeletonExtensions.CreateSimpleSkeleton(skeletonName);
 	}
 
+	public static void CreateSimpleSkeleton(this WeakGameEntity gameEntity, string skeletonName)
+	{
+		gameEntity.Skeleton = MBAPI.IMBSkeletonExtensions.CreateSimpleSkeleton(skeletonName);
+	}
+
 	public static void CreateAgentSkeleton(this GameEntity gameEntity, string skeletonName, bool isHumanoid, MBActionSet actionSet, string monsterUsageSetName, Monster monster)
 	{
 		AnimationSystemData animationSystemData = monster.FillAnimationSystemData(actionSet, 1f, hasClippingPlane: false);
 		gameEntity.Skeleton = MBAPI.IMBSkeletonExtensions.CreateAgentSkeleton(skeletonName, isHumanoid, actionSet.Index, monsterUsageSetName, ref animationSystemData);
 	}
 
+	public static void CreateAgentSkeleton(this WeakGameEntity gameEntity, string skeletonName, bool isHumanoid, MBActionSet actionSet, string monsterUsageSetName, Monster monster)
+	{
+		AnimationSystemData animationSystemData = monster.FillAnimationSystemData(actionSet, 1f, hasClippingPlane: false);
+		gameEntity.Skeleton = MBAPI.IMBSkeletonExtensions.CreateAgentSkeleton(skeletonName, isHumanoid, actionSet.Index, monsterUsageSetName, ref animationSystemData);
+	}
+
 	public static void CreateSkeletonWithActionSet(this GameEntity gameEntity, ref AnimationSystemData animationSystemData)
+	{
+		gameEntity.Skeleton = MBSkeletonExtensions.CreateWithActionSet(ref animationSystemData);
+	}
+
+	public static void CreateSkeletonWithActionSet(this WeakGameEntity gameEntity, ref AnimationSystemData animationSystemData)
 	{
 		gameEntity.Skeleton = MBSkeletonExtensions.CreateWithActionSet(ref animationSystemData);
 	}

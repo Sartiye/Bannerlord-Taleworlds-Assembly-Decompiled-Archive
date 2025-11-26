@@ -26,7 +26,7 @@ public class NewBornFemaleHeroSceneAlternateNotificationItem : SceneNotification
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = FemaleHero.CivilianEquipment.Clone();
@@ -37,7 +37,7 @@ public class NewBornFemaleHeroSceneAlternateNotificationItem : SceneNotification
 		list.Add(new SceneNotificationCharacter(null));
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(FemaleHero, equipment));
 		list.Add(new SceneNotificationCharacter(characterObject, equipment2));
-		return list;
+		return list.ToArray();
 	}
 
 	public NewBornFemaleHeroSceneAlternateNotificationItem(Hero maleHero, Hero femaleHero, CampaignTime creationTime)

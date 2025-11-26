@@ -11,9 +11,9 @@ public sealed class TwoDimensionView : View
 	{
 	}
 
-	public static TwoDimensionView CreateTwoDimension()
+	public static TwoDimensionView CreateTwoDimension(string viewName)
 	{
-		return EngineApplicationInterface.ITwoDimensionView.CreateTwoDimensionView();
+		return EngineApplicationInterface.ITwoDimensionView.CreateTwoDimensionView(viewName);
 	}
 
 	public void BeginFrame()
@@ -31,14 +31,9 @@ public sealed class TwoDimensionView : View
 		EngineApplicationInterface.ITwoDimensionView.Clear(base.Pointer);
 	}
 
-	public void CreateMeshFromDescription(float[] vertices, float[] uvs, uint[] indices, int indexCount, Material material, TwoDimensionMeshDrawData meshDrawData)
-	{
-		EngineApplicationInterface.ITwoDimensionView.AddNewMesh(base.Pointer, vertices, uvs, indices, vertices.Length / 2, indexCount, material.Pointer, ref meshDrawData);
-	}
-
 	public void CreateMeshFromDescription(Material material, TwoDimensionMeshDrawData meshDrawData)
 	{
-		EngineApplicationInterface.ITwoDimensionView.AddNewQuadMesh(base.Pointer, material.Pointer, ref meshDrawData);
+		EngineApplicationInterface.ITwoDimensionView.AddNewMesh(base.Pointer, material.Pointer, ref meshDrawData);
 	}
 
 	public bool CreateTextMeshFromCache(Material material, TwoDimensionTextMeshDrawData meshDrawData)
@@ -49,5 +44,10 @@ public sealed class TwoDimensionView : View
 	public void CreateTextMeshFromDescription(float[] vertices, float[] uvs, uint[] indices, int indexCount, Material material, TwoDimensionTextMeshDrawData meshDrawData)
 	{
 		EngineApplicationInterface.ITwoDimensionView.AddNewTextMesh(base.Pointer, vertices, uvs, indices, vertices.Length / 2, indexCount, material.Pointer, ref meshDrawData);
+	}
+
+	public Material GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture)
+	{
+		return EngineApplicationInterface.ITwoDimensionView.GetOrCreateMaterial(base.Pointer, mainTexture?.Pointer ?? UIntPtr.Zero, overlayTexture?.Pointer ?? UIntPtr.Zero);
 	}
 }

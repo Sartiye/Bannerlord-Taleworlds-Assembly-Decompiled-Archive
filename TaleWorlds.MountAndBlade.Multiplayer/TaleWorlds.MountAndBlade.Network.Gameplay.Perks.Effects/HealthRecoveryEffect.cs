@@ -23,12 +23,12 @@ public class HealthRecoveryEffect : MPPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !float.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HealthRecoveryEffect.cs", "Deserialize", 29);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HealthRecoveryEffect.cs", "Deserialize", 29);
 		}
 		string text2 = node?.Attributes?["period"]?.Value;
 		if (text2 == null || !int.TryParse(text2, out _period) || _period < 1)
 		{
-			Debug.FailedAssert("provided 'period' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HealthRecoveryEffect.cs", "Deserialize", 35);
+			Debug.FailedAssert("provided 'period' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HealthRecoveryEffect.cs", "Deserialize", 35);
 		}
 	}
 

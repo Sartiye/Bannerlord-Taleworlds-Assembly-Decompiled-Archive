@@ -42,18 +42,18 @@ public class DefaultRaidModel : RaidModel
 
 	public override int GoldRewardForEachLostHearth => 4;
 
-	public override float CalculateHitDamage(MapEventSide attackerSide, float settlementHitPoints)
+	public override ExplainedNumber CalculateHitDamage(MapEventSide attackerSide, float settlementHitPoints)
 	{
-		float num = (MathF.Sqrt(attackerSide.TroopCount) + 5f) / 900f * (float)CampaignTime.DeltaTime.ToHours;
-		float num2 = 0f;
+		float num = (MathF.Sqrt(attackerSide.TroopCount) + 5f) / 900f;
+		ExplainedNumber result = new ExplainedNumber(num * (float)CampaignTime.DeltaTime.ToHours);
 		foreach (MapEventParty party in attackerSide.Parties)
 		{
 			if (party.Party.MobileParty?.LeaderHero != null && party.Party.MobileParty.LeaderHero.GetPerkValue(DefaultPerks.Roguery.NoRestForTheWicked))
 			{
-				num2 += DefaultPerks.Roguery.NoRestForTheWicked.SecondaryBonus;
+				result.AddFactor(DefaultPerks.Roguery.NoRestForTheWicked.SecondaryBonus);
 			}
 		}
-		return num + num * num2;
+		return result;
 	}
 
 	public override MBReadOnlyList<(ItemObject, float)> GetCommonLootItemScores()

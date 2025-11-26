@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
@@ -493,9 +493,17 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 
 	private void HandleWidgetPropertyChangeOf_widget_0_0_0_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_ImageIdentifier.AdditionalArgs = _widget_0_0_0_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_ImageIdentifier.Id = _widget_0_0_0_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_ImageIdentifier.TextureProviderName = _widget_0_0_0_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -627,8 +635,8 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 		case "Id":
 			_widget_0_0_0_0.ImageId = _datasource_Root_ImageIdentifier.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_0_0_0_0.ImageTypeCode = _datasource_Root_ImageIdentifier.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_0_0_0.TextureProviderName = _datasource_Root_ImageIdentifier.TextureProviderName;
 			break;
 		}
 	}
@@ -837,7 +845,7 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 				_datasource_Root_ImageIdentifier.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ImageIdentifier;
 				_widget_0_0_0_0.AdditionalArgs = _datasource_Root_ImageIdentifier.AdditionalArgs;
 				_widget_0_0_0_0.ImageId = _datasource_Root_ImageIdentifier.Id;
-				_widget_0_0_0_0.ImageTypeCode = _datasource_Root_ImageIdentifier.ImageTypeCode;
+				_widget_0_0_0_0.TextureProviderName = _datasource_Root_ImageIdentifier.TextureProviderName;
 				_widget_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0;
 				_widget_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0;
 				_widget_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0;
@@ -905,7 +913,7 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 			_datasource_Root_ImageIdentifier.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ImageIdentifier;
 			_widget_0_0_0_0.AdditionalArgs = _datasource_Root_ImageIdentifier.AdditionalArgs;
 			_widget_0_0_0_0.ImageId = _datasource_Root_ImageIdentifier.Id;
-			_widget_0_0_0_0.ImageTypeCode = _datasource_Root_ImageIdentifier.ImageTypeCode;
+			_widget_0_0_0_0.TextureProviderName = _datasource_Root_ImageIdentifier.TextureProviderName;
 			_widget_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0;
 			_widget_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0;
 			_widget_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0;

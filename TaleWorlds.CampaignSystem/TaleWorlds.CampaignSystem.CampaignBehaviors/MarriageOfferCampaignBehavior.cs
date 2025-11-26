@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -13,19 +14,25 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOfferCampaignBehavior, ICampaignBehavior
 {
-	private const int MarriageOfferCooldownDurationAsWeeks = 1;
+	private const int MarriageOfferCooldownDurationAsDays = 7;
 
 	private const int OfferRelationGainAmountWithTheMarriageClan = 10;
 
-	private const float MapNotificationAutoDeclineDurationInHours = 48f;
+	private const float MapNotificationAutoDeclineDurationInDays = 2f;
 
 	private readonly TextObject MarriageOfferPanelExplanationText = new TextObject("{=CZwrlJMJ}A courier with a marriage offer for {CLAN_MEMBER.NAME} from {OFFERING_CLAN_NAME} has arrived.");
+
+	private readonly TextObject MarriagePreparationStartedText = new TextObject("{=yz78jqbx}Ceremony is being prepared and will be conducted as soon as possible.");
+
+	private readonly TextObject MarriagePreparationCanceledText = new TextObject("{=dp044PNk}Due to the untimely death of {DEAD_HERO}, {?DEAD_HERO.GENDER}her{?}his{\\\\?} marriage with {OTHER_HERO} has been cancelled.");
 
 	private Hero _currentOfferedPlayerClanHero;
 
 	private Hero _currentOfferedOtherClanHero;
 
-	private CampaignTime _lastMarriageOfferTime = CampaignTime.Zero;
+	private CampaignTime _lastMarriageOfferTime;
+
+	private Dictionary<Hero, Hero> _acceptedMarriageOffersThatWaitingForAvailability = new Dictionary<Hero, Hero>();
 
 	internal bool IsThereActiveMarriageOffer
 	{
@@ -46,11 +53,11 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		CampaignEvents.OnMarriageOfferCanceledEvent.AddNonSerializedListener(this, OnMarriageOfferCanceled);
 		CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
 		CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnHeroPrisonerTaken);
-		CampaignEvents.HeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
+		CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
 		CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
 		CampaignEvents.ArmyCreated.AddNonSerializedListener(this, OnArmyCreated);
 		CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
-		CampaignEvents.CharacterBecameFugitive.AddNonSerializedListener(this, CharacterBecameFugitive);
+		CampaignEvents.CharacterBecameFugitiveEvent.AddNonSerializedListener(this, CharacterBecameFugitive);
 		CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 		CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, OnHeroRelationChanged);
 		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
@@ -61,6 +68,7 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		dataStore.SyncData("_currentOfferedPlayerClanHero", ref _currentOfferedPlayerClanHero);
 		dataStore.SyncData("_currentOfferedOtherClanHero", ref _currentOfferedOtherClanHero);
 		dataStore.SyncData("_lastMarriageOfferTime", ref _lastMarriageOfferTime);
+		dataStore.SyncData("_acceptedMarriageOffersThatWaitingForAvailability", ref _acceptedMarriageOffersThatWaitingForAvailability);
 	}
 
 	public void CreateMarriageOffer(Hero currentOfferedPlayerClanHero, Hero currentOfferedOtherClanHero)
@@ -95,17 +103,55 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		return mBBindingList;
 	}
 
-	public void OnMarriageOfferAcceptedOnPopUp()
+	private void DailyTickClan(Clan consideringClan)
 	{
-		if (_currentOfferedPlayerClanHero != Hero.MainHero)
+		if (!CanOfferMarriageForClan(consideringClan))
 		{
-			Hero groomHero = (_currentOfferedPlayerClanHero.IsFemale ? _currentOfferedOtherClanHero : _currentOfferedPlayerClanHero);
-			Hero brideHero = (_currentOfferedPlayerClanHero.IsFemale ? _currentOfferedPlayerClanHero : _currentOfferedOtherClanHero);
+			return;
+		}
+		MobileParty.NavigationType navigationType = ((!consideringClan.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.All);
+		float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(Clan.PlayerClan.FactionMidSettlement, consideringClan.FactionMidSettlement, isFromPort: false, isTargetingPort: false, navigationType);
+		if (!(MBRandom.RandomFloat >= distance / Campaign.Current.Models.MapDistanceModel.GetMaximumDistanceBetweenTwoConnectedSettlements(navigationType) - 0.5f))
+		{
+			return;
+		}
+		foreach (Hero hero in Clan.PlayerClan.Heroes)
+		{
+			if (hero != Hero.MainHero && hero.CanMarry() && !_acceptedMarriageOffersThatWaitingForAvailability.ContainsKey(hero) && ConsiderMarriageForPlayerClanMember(hero, consideringClan))
+			{
+				break;
+			}
+		}
+	}
+
+	private void MarryHeroesViaOffer(Hero playerClanHero, Hero otherClanHero, bool showSceneNotification)
+	{
+		if (playerClanHero != Hero.MainHero && showSceneNotification)
+		{
+			Hero groomHero = (playerClanHero.IsFemale ? otherClanHero : playerClanHero);
+			Hero brideHero = (playerClanHero.IsFemale ? playerClanHero : otherClanHero);
 			MBInformationManager.ShowSceneNotification(new MarriageSceneNotificationItem(groomHero, brideHero, CampaignTime.Now));
 		}
-		ChangeRelationAction.ApplyPlayerRelation(_currentOfferedOtherClanHero.Clan.Leader, 10);
-		MarriageAction.Apply(_currentOfferedPlayerClanHero, _currentOfferedOtherClanHero);
+		ChangeRelationAction.ApplyPlayerRelation(otherClanHero.Clan.Leader, 10);
+		MarriageAction.Apply(playerClanHero, otherClanHero);
+	}
+
+	public void OnMarriageOfferAcceptedOnPopUp()
+	{
+		if (Campaign.Current.Models.MarriageModel.IsCoupleSuitableForMarriage(_currentOfferedPlayerClanHero, _currentOfferedOtherClanHero))
+		{
+			MarryHeroesViaOffer(_currentOfferedPlayerClanHero, _currentOfferedOtherClanHero, showSceneNotification: true);
+		}
+		else
+		{
+			_acceptedMarriageOffersThatWaitingForAvailability.Add(_currentOfferedPlayerClanHero, _currentOfferedOtherClanHero);
+			InformationManager.ShowInquiry(new InquiryData(string.Empty, MarriagePreparationStartedText.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), string.Empty, null, null));
+		}
 		FinalizeMarriageOffer();
+	}
+
+	public void OnMarriageOfferedToPlayer(Hero suitor, Hero maiden)
+	{
 	}
 
 	public void OnMarriageOfferDeclinedOnPopUp()
@@ -113,40 +159,48 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		CampaignEventDispatcher.Instance.OnMarriageOfferCanceled(_currentOfferedPlayerClanHero.IsFemale ? _currentOfferedOtherClanHero : _currentOfferedPlayerClanHero, _currentOfferedPlayerClanHero.IsFemale ? _currentOfferedPlayerClanHero : _currentOfferedOtherClanHero);
 	}
 
-	public void OnMarriageOfferedToPlayer(Hero suitor, Hero maiden)
-	{
-	}
-
 	public void OnMarriageOfferCanceled(Hero suitor, Hero maiden)
 	{
 		FinalizeMarriageOffer();
 	}
 
-	private void DailyTickClan(Clan consideringClan)
+	public bool IsHeroEngaged(Hero hero)
 	{
-		if (!CanOfferMarriageForClan(consideringClan))
+		foreach (KeyValuePair<Hero, Hero> item in _acceptedMarriageOffersThatWaitingForAvailability)
 		{
-			return;
-		}
-		float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(Clan.PlayerClan.FactionMidSettlement, consideringClan.FactionMidSettlement);
-		if (!(MBRandom.RandomFloat >= distance / Campaign.MaximumDistanceBetweenTwoSettlements - 0.5f))
-		{
-			return;
-		}
-		foreach (Hero hero in Clan.PlayerClan.Heroes)
-		{
-			if (hero != Hero.MainHero && hero.CanMarry() && ConsiderMarriageForPlayerClanMember(hero, consideringClan))
+			if (item.Key == hero || item.Value == hero)
 			{
-				break;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	private void HourlyTick()
 	{
-		if (IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedHoursUntilNow >= 48f)
+		if (IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedDaysUntilNow >= 2f)
 		{
 			CampaignEventDispatcher.Instance.OnMarriageOfferCanceled(_currentOfferedPlayerClanHero.IsFemale ? _currentOfferedOtherClanHero : _currentOfferedPlayerClanHero, _currentOfferedPlayerClanHero.IsFemale ? _currentOfferedPlayerClanHero : _currentOfferedOtherClanHero);
+		}
+		MarriageModel marriageModel = Campaign.Current.Models.MarriageModel;
+		List<Hero> list = new List<Hero>();
+		foreach (KeyValuePair<Hero, Hero> item in _acceptedMarriageOffersThatWaitingForAvailability)
+		{
+			Hero key = item.Key;
+			Hero value = item.Value;
+			if (marriageModel.IsCoupleSuitableForMarriage(key, value))
+			{
+				MarryHeroesViaOffer(key, value, showSceneNotification: false);
+				list.Add(key);
+			}
+			else if (!marriageModel.ShouldNpcMarriageBetweenClansBeAllowed(Clan.PlayerClan, value.Clan))
+			{
+				list.Add(key);
+			}
+		}
+		foreach (Hero item2 in list)
+		{
+			_acceptedMarriageOffersThatWaitingForAvailability.Remove(item2);
 		}
 	}
 
@@ -172,6 +226,33 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		{
 			CampaignEventDispatcher.Instance.OnMarriageOfferCanceled(_currentOfferedPlayerClanHero.IsFemale ? _currentOfferedOtherClanHero : _currentOfferedPlayerClanHero, _currentOfferedPlayerClanHero.IsFemale ? _currentOfferedPlayerClanHero : _currentOfferedOtherClanHero);
 		}
+		Hero hero = null;
+		foreach (KeyValuePair<Hero, Hero> item in _acceptedMarriageOffersThatWaitingForAvailability)
+		{
+			if (item.Key == victim || item.Value == victim)
+			{
+				hero = item.Key;
+			}
+		}
+		if (hero != null)
+		{
+			Hero hero2 = null;
+			Hero hero3 = null;
+			if (hero.IsDead)
+			{
+				hero2 = hero;
+				hero3 = _acceptedMarriageOffersThatWaitingForAvailability[hero];
+			}
+			else if (_acceptedMarriageOffersThatWaitingForAvailability[hero].IsDead)
+			{
+				hero2 = _acceptedMarriageOffersThatWaitingForAvailability[hero];
+				hero3 = hero;
+			}
+			MarriagePreparationCanceledText.SetCharacterProperties("DEAD_HERO", hero2.CharacterObject);
+			MarriagePreparationCanceledText.SetTextVariable("OTHER_HERO", hero3.Name);
+			InformationManager.ShowInquiry(new InquiryData(string.Empty, MarriagePreparationCanceledText.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), string.Empty, null, null));
+			_acceptedMarriageOffersThatWaitingForAvailability.Remove(hero);
+		}
 	}
 
 	private void OnArmyCreated(Army army)
@@ -190,7 +271,7 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 		}
 	}
 
-	private void CharacterBecameFugitive(Hero hero)
+	private void CharacterBecameFugitive(Hero hero, bool showNotification)
 	{
 		if (IsThereActiveMarriageOffer && (!_currentOfferedPlayerClanHero.IsActive || !_currentOfferedOtherClanHero.IsActive))
 		{
@@ -224,7 +305,7 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 
 	private bool CanOfferMarriageForClan(Clan consideringClan)
 	{
-		if (!IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedWeeksUntilNow >= 1f && !Hero.MainHero.IsPrisoner && consideringClan != Clan.PlayerClan && Campaign.Current.Models.MarriageModel.IsClanSuitableForMarriage(consideringClan))
+		if (!IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedDaysUntilNow >= 7f && !Hero.MainHero.IsPrisoner && !MobileParty.MainParty.IsInRaftState && consideringClan != Clan.PlayerClan && Campaign.Current.Models.MarriageModel.IsClanSuitableForMarriage(consideringClan))
 		{
 			return Campaign.Current.Models.MarriageModel.ShouldNpcMarriageBetweenClansBeAllowed(Clan.PlayerClan, consideringClan);
 		}

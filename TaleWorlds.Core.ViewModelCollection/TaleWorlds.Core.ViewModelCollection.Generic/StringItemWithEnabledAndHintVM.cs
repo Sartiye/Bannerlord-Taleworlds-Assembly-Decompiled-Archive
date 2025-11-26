@@ -74,7 +74,7 @@ public class StringItemWithEnabledAndHintVM : ViewModel
 		Identifier = identifier;
 		ActionText = item;
 		IsEnabled = enabled;
-		Hint = new HintViewModel(hintText ?? TextObject.Empty);
+		Hint = new HintViewModel(hintText ?? TextObject.GetEmpty());
 	}
 
 	public void ExecuteAction()

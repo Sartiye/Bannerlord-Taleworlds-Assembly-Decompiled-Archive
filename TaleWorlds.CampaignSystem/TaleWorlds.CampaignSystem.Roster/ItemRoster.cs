@@ -28,9 +28,6 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 	public int VersionNo { get; private set; }
 
 	[CachedData]
-	public float TotalWeight { get; private set; }
-
-	[CachedData]
 	public int TotalFood { get; internal set; }
 
 	[CachedData]
@@ -205,7 +202,7 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		{
 			if (number < 0)
 			{
-				Debug.FailedAssert("Trying to delete an element from Item Roster that does not exist!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "AddToCounts", 174);
+				Debug.FailedAssert("Trying to delete an element from Item Roster that does not exist!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "AddToCounts", 169);
 				return -1;
 			}
 			num = AddNewElement(new ItemRosterElement(rosterElement, 0));
@@ -228,7 +225,7 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		{
 			return _data[index];
 		}
-		Debug.FailedAssert("GetElementCopyAtIndex can't find the element in ItemRoster", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementCopyAtIndex", 206);
+		Debug.FailedAssert("GetElementCopyAtIndex can't find the element in ItemRoster", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementCopyAtIndex", 201);
 		return ItemRosterElement.Invalid;
 	}
 
@@ -238,7 +235,7 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		{
 			return _data[index].EquipmentElement.Item;
 		}
-		Debug.FailedAssert("Given index for GetItemAtIndex is not valid in ItemRoster", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetItemAtIndex", 217);
+		Debug.FailedAssert("Given index for GetItemAtIndex is not valid in ItemRoster", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetItemAtIndex", 212);
 		return null;
 	}
 
@@ -248,7 +245,7 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		{
 			return _data[index].Amount;
 		}
-		Debug.FailedAssert("Given index for GetElementNumber is not valid in ItemRoster", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementNumber", 228);
+		Debug.FailedAssert("Given index for GetElementNumber is not valid in ItemRoster", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementNumber", 223);
 		return 0;
 	}
 
@@ -258,7 +255,7 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		{
 			return _data[index].EquipmentElement.ItemValue;
 		}
-		Debug.FailedAssert("Given index for GetElementUnitCost is not valid in ItemRoster", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementUnitCost", 239);
+		Debug.FailedAssert("Given index for GetElementUnitCost is not valid in ItemRoster", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Roster\\ItemRoster.cs", "GetElementUnitCost", 234);
 		return 0;
 	}
 
@@ -455,21 +452,17 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 				TotalFood += count * item.HorseComponent.MeatCount;
 			}
 		}
-		else
+		else if (item.IsFood)
 		{
-			if (item.IsFood)
+			TotalFood += count;
+			if (itemRosterElement.Amount == 0 && count > 0)
 			{
-				TotalFood += count;
-				if (itemRosterElement.Amount == 0 && count > 0)
-				{
-					FoodVariety++;
-				}
-				else if (itemRosterElement.Amount > 0 && itemRosterElement.Amount + count <= 0)
-				{
-					FoodVariety--;
-				}
+				FoodVariety++;
 			}
-			TotalWeight += item.Weight * (float)count;
+			else if (itemRosterElement.Amount > 0 && itemRosterElement.Amount + count <= 0)
+			{
+				FoodVariety--;
+			}
 		}
 		this._rosterUpdatedEvent?.Invoke(itemRosterElement, count);
 	}
@@ -527,12 +520,6 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 		}
 		for (int num = itemRoster._data.Length - 1; num >= 0; num--)
 		{
-			ItemModifier itemModifier = itemRoster._data[num].EquipmentElement.ItemModifier;
-			if (itemModifier != null && !itemModifier.IsReady)
-			{
-				itemRoster.AddToCounts(itemRoster._data[num].EquipmentElement.Item, itemRoster._data[num].Amount);
-				itemRoster._data[num].Clear();
-			}
 			ItemObject item = itemRoster._data[num].EquipmentElement.Item;
 			if (item != null && !item.IsReady)
 			{
@@ -544,12 +531,20 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 					MBObjectManager.Instance.UnregisterObject(item2);
 				}
 			}
+			else
+			{
+				ItemModifier itemModifier = itemRoster._data[num].EquipmentElement.ItemModifier;
+				if (itemModifier != null && !itemModifier.IsReady)
+				{
+					itemRoster.AddToCounts(itemRoster._data[num].EquipmentElement.Item, itemRoster._data[num].Amount);
+					itemRoster._data[num].Clear();
+				}
+			}
 		}
 	}
 
 	private void CalculateCachedStats()
 	{
-		TotalWeight = 0f;
 		NumberOfPackAnimals = 0;
 		NumberOfMounts = 0;
 		NumberOfLivestockAnimals = 0;
@@ -582,14 +577,10 @@ public class ItemRoster : IReadOnlyList<ItemRosterElement>, IEnumerable<ItemRost
 					TotalFood += amount * item.HorseComponent.MeatCount;
 				}
 			}
-			else
+			else if (item.IsFood)
 			{
-				if (item.IsFood)
-				{
-					TotalFood += amount;
-					FoodVariety++;
-				}
-				TotalWeight += item.Weight * (float)amount;
+				TotalFood += amount;
+				FoodVariety++;
 			}
 		}
 	}

@@ -73,7 +73,7 @@ public class BehaviorSallyOut : BehaviorComponent
 		}
 		else
 		{
-			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.QuerySystem.MedianPosition);
+			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.CachedMedianPosition);
 		}
 		_attackOrder = MovementOrder.MovementOrderCharge;
 		base.CurrentOrder = (_calculateShouldStartAttacking ? _attackOrder : _gatherOrder);
@@ -99,10 +99,10 @@ public class BehaviorSallyOut : BehaviorComponent
 		_behaviorSide = base.Formation.AI.Side;
 		ResetOrderPositions();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

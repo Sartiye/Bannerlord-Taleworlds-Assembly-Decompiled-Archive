@@ -31,7 +31,7 @@ public class TextQueryPopUpVM : PopUpBaseVM
 				OnPropertyChangedWithValue(value, "InputText");
 				Tuple<bool, string> tuple = _data.TextCondition?.Invoke(value);
 				base.IsButtonOkEnabled = tuple?.Item1 ?? true;
-				DoneButtonDisabledReasonHint.HintText = (string.IsNullOrEmpty(tuple?.Item2) ? TextObject.Empty : new TextObject("{=!}" + tuple.Item2));
+				DoneButtonDisabledReasonHint.HintText = (string.IsNullOrEmpty(tuple?.Item2) ? TextObject.GetEmpty() : new TextObject("{=!}" + tuple.Item2));
 			}
 		}
 	}

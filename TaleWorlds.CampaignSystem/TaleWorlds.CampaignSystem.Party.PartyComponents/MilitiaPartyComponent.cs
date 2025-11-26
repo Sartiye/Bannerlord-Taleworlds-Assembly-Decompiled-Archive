@@ -10,6 +10,17 @@ namespace TaleWorlds.CampaignSystem.Party.PartyComponents;
 
 public class MilitiaPartyComponent : PartyComponent
 {
+	protected class InitializationArgs
+	{
+		public void InitializeMilitiaPartyProperties(MobileParty mobileParty, Settlement settlement)
+		{
+			PartyTemplateObject militiaPartyTemplate = settlement.Culture.MilitiaPartyTemplate;
+			mobileParty.InitializeMobilePartyAtPosition(militiaPartyTemplate, settlement.GatePosition);
+		}
+	}
+
+	private InitializationArgs _initializationArgs;
+
 	[CachedData]
 	private TextObject _cachedName;
 
@@ -17,6 +28,8 @@ public class MilitiaPartyComponent : PartyComponent
 	public Settlement Settlement { get; private set; }
 
 	public override Hero PartyOwner => Settlement.OwnerClan.Leader;
+
+	public override bool CanHaveNavalNavigationCapability => false;
 
 	public override TextObject Name
 	{
@@ -49,14 +62,41 @@ public class MilitiaPartyComponent : PartyComponent
 		return ((MilitiaPartyComponent)o).Settlement;
 	}
 
+	public override Banner GetDefaultComponentBanner()
+	{
+		return Settlement.Banner;
+	}
+
 	public static MobileParty CreateMilitiaParty(string stringId, Settlement settlement)
 	{
-		MobileParty mobileParty2 = MobileParty.CreateParty("militias_of_" + stringId + "_aaa1", new MilitiaPartyComponent(settlement), delegate(MobileParty mobileParty)
+		InitializationArgs args = new InitializationArgs();
+		MobileParty mobileParty = MobileParty.CreateParty("militias_of_" + stringId + "_aaa1", new MilitiaPartyComponent(settlement, args));
+		mobileParty.DesiredAiNavigationType = MobileParty.NavigationType.None;
+		EnterSettlementAction.ApplyForParty(mobileParty, settlement);
+		return mobileParty;
+	}
+
+	public static void ConvertPartyToMilitiaParty(MobileParty mobileParty, Settlement settlement)
+	{
+		mobileParty.SetPartyComponent(new MilitiaPartyComponent(settlement, null));
+	}
+
+	protected override void OnMobilePartySetOnCreation()
+	{
+		base.MobileParty.Party.SetVisualAsDirty();
+		base.MobileParty.Ai.DisableAi();
+		base.MobileParty.Aggressiveness = 0f;
+		if (_initializationArgs != null)
 		{
-			(mobileParty.PartyComponent as MilitiaPartyComponent).InitializeMilitiaPartyProperties(mobileParty, settlement);
-		});
-		EnterSettlementAction.ApplyForParty(mobileParty2, settlement);
-		return mobileParty2;
+			_initializationArgs.InitializeMilitiaPartyProperties(base.MobileParty, Settlement);
+			_initializationArgs = null;
+		}
+	}
+
+	protected MilitiaPartyComponent(Settlement settlement, InitializationArgs args)
+	{
+		Settlement = settlement;
+		_initializationArgs = args;
 	}
 
 	protected override void OnInitialize()
@@ -72,19 +112,5 @@ public class MilitiaPartyComponent : PartyComponent
 	public override void ClearCachedName()
 	{
 		_cachedName = null;
-	}
-
-	private void InitializeMilitiaPartyProperties(MobileParty mobileParty, Settlement settlement)
-	{
-		PartyTemplateObject militiaPartyTemplate = settlement.Culture.MilitiaPartyTemplate;
-		mobileParty.InitializeMobilePartyAtPosition(militiaPartyTemplate, settlement.GatePosition);
-		mobileParty.Party.SetVisualAsDirty();
-		mobileParty.Ai.DisableAi();
-		mobileParty.Aggressiveness = 0f;
-	}
-
-	protected internal MilitiaPartyComponent(Settlement settlement)
-	{
-		Settlement = settlement;
 	}
 }

@@ -41,20 +41,35 @@ public class SallyOutsCampaignBehavior : CampaignBehaviorBase
 
 	private void CheckForSettlementSallyOut(Settlement settlement, bool forceForCheck = false)
 	{
-		if (!settlement.IsFortification || settlement.SiegeEvent == null || settlement.Party.MapEvent != null || settlement.Town.GarrisonParty == null || settlement.Town.GarrisonParty.MapEvent != null)
+		if (settlement.IsFortification && settlement.SiegeEvent != null && settlement.Party.MapEvent == null && settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.MapEvent == null && ((settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null && (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSiegeOutside || settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockade)) || MathF.Floor(CampaignTime.Now.ToHours) % 4 == 0) && (Hero.MainHero.CurrentSettlement != settlement || Campaign.Current.Models.EncounterModel.GetLeaderOfSiegeEvent(settlement.SiegeEvent, BattleSideEnum.Defender) != Hero.MainHero))
 		{
-			return;
+			CheckSallyOut(settlement, checkForNavalSallyOut: false, out var salliedOut);
+			if (!salliedOut && settlement.HasPort && settlement.SiegeEvent.IsBlockadeActive)
+			{
+				CheckSallyOut(settlement, checkForNavalSallyOut: true, out var _);
+			}
 		}
-		bool flag = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null && settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSiegeOutside;
-		if ((!flag && MathF.Floor(CampaignTime.Now.ToHours) % 4 != 0) || (Hero.MainHero.CurrentSettlement == settlement && Campaign.Current.Models.EncounterModel.GetLeaderOfSiegeEvent(settlement.SiegeEvent, BattleSideEnum.Defender) == Hero.MainHero))
-		{
-			return;
-		}
+	}
+
+	private void CheckSallyOut(Settlement settlement, bool checkForNavalSallyOut, out bool salliedOut)
+	{
+		salliedOut = false;
 		MobileParty leaderParty = settlement.SiegeEvent.BesiegerCamp.LeaderParty;
+		bool flag = false;
+		bool flag2 = false;
+		if (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null)
+		{
+			flag = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSiegeOutside;
+			flag2 = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockade;
+		}
+		if ((flag2 && !checkForNavalSallyOut) || (flag && checkForNavalSallyOut))
+		{
+			return;
+		}
 		float num = 0f;
 		float num2 = 0f;
-		float num3 = settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.SallyOut).Sum((PartyBase x) => x.TotalStrength);
-		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(settlement.SiegeEvent.BesiegerCamp.LeaderParty.Position2D, 3f);
+		float num3 = (checkForNavalSallyOut ? settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.BlockadeSallyOutBattle).Sum((PartyBase x) => x.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle)) : settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.SallyOut).Sum((PartyBase x) => x.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle)));
+		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(settlement.SiegeEvent.BesiegerCamp.LeaderParty.Position.ToVec2(), Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius);
 		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
 		{
 			if (mobileParty.CurrentSettlement == null && mobileParty.Aggressiveness > 0f)
@@ -62,31 +77,44 @@ public class SallyOutsCampaignBehavior : CampaignBehaviorBase
 				float num4 = ((mobileParty.Aggressiveness > 0.5f) ? 1f : (mobileParty.Aggressiveness * 2f));
 				if (mobileParty.MapFaction.IsAtWarWith(settlement.Party.MapFaction))
 				{
-					num += num4 * mobileParty.Party.TotalStrength;
+					BattleSideEnum side = BattleSideEnum.Defender;
+					num += num4 * (checkForNavalSallyOut ? mobileParty.Party.GetCustomStrength(side, MapEvent.PowerCalculationContext.SeaBattle) : mobileParty.Party.GetCustomStrength(side, MapEvent.PowerCalculationContext.PlainBattle));
 				}
-				else if (mobileParty.MapFaction == settlement.MapFaction)
+				else if (mobileParty.MapFaction == settlement.MapFaction && checkForNavalSallyOut == mobileParty.IsCurrentlyAtSea)
 				{
-					num2 += num4 * mobileParty.Party.TotalStrength;
+					BattleSideEnum side2 = BattleSideEnum.Attacker;
+					num2 += num4 * (checkForNavalSallyOut ? mobileParty.Party.GetCustomStrength(side2, MapEvent.PowerCalculationContext.SeaBattle) : mobileParty.Party.GetCustomStrength(side2, MapEvent.PowerCalculationContext.PlainBattle));
 				}
 			}
 		}
 		float num5 = num3 + num2;
-		float num6 = (flag ? 1.5f : 2f);
+		float num6 = ((flag || flag2) ? 1.5f : 2f);
 		if (!(num5 > num * num6))
 		{
 			return;
 		}
-		if (flag)
+		if (flag || flag2)
 		{
-			foreach (PartyBase item in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.SallyOut))
+			foreach (PartyBase item in settlement.GetInvolvedPartiesForEventType(checkForNavalSallyOut ? MapEvent.BattleTypes.BlockadeSallyOutBattle : MapEvent.BattleTypes.SallyOut))
 			{
 				if (item.IsMobile && !item.MobileParty.IsMainParty && item.MapEventSide == null)
 				{
+					if (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+					{
+						break;
+					}
 					item.MapEventSide = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.AttackerSide;
 				}
 			}
-			return;
 		}
-		EncounterManager.StartPartyEncounter(settlement.Town.GarrisonParty.Party, leaderParty.Party);
+		else
+		{
+			if (checkForNavalSallyOut)
+			{
+				settlement.Town.GarrisonParty.SetTargetSettlement(settlement, isTargetingPort: true);
+			}
+			EncounterManager.StartPartyEncounter(settlement.Town.GarrisonParty.Party, leaderParty.Party);
+		}
+		salliedOut = true;
 	}
 }

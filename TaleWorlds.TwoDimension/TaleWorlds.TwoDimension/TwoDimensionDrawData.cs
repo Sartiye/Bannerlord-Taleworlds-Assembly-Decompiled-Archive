@@ -6,32 +6,32 @@ internal struct TwoDimensionDrawData
 
 	private ScissorTestInfo _scissorTestInfo;
 
-	private float _x;
+	private SimpleMaterial _imageMaterial;
 
-	private float _y;
+	private ImageDrawObject _imageDrawObject;
 
-	private Material _material;
+	private TextMaterial _textMaterial;
 
-	private DrawObject2D _drawObject2D;
+	private TextDrawObject _textDrawObject;
 
-	private Rectangle _rectangle;
-
-	public Rectangle Rectangle => _rectangle;
-
-	public TwoDimensionDrawData(bool scissorTestEnabled, ScissorTestInfo scissorTestInfo, float x, float y, Material material, DrawObject2D drawObject2D, float width, float height)
+	public TwoDimensionDrawData(bool scissorTestEnabled, in ScissorTestInfo scissorTestInfo, SimpleMaterial imageMaterial, in ImageDrawObject imageDrawObject)
 	{
 		_scissorTestEnabled = scissorTestEnabled;
 		_scissorTestInfo = scissorTestInfo;
-		_x = x;
-		_y = y;
-		_material = material;
-		_drawObject2D = drawObject2D;
-		_rectangle = new Rectangle(_x, _y, width, height);
+		_imageMaterial = imageMaterial;
+		_imageDrawObject = imageDrawObject;
+		_textMaterial = null;
+		_textDrawObject = TextDrawObject.Invalid;
 	}
 
-	public bool IsIntersects(Rectangle rectangle)
+	public TwoDimensionDrawData(bool scissorTestEnabled, in ScissorTestInfo scissorTestInfo, TextMaterial textMaterial, in TextDrawObject textDrawObject)
 	{
-		return _rectangle.IsCollide(rectangle);
+		_scissorTestEnabled = scissorTestEnabled;
+		_scissorTestInfo = scissorTestInfo;
+		_imageMaterial = null;
+		_imageDrawObject = ImageDrawObject.Invalid;
+		_textMaterial = textMaterial;
+		_textDrawObject = textDrawObject;
 	}
 
 	public void DrawTo(TwoDimensionContext twoDimensionContext, int layer)
@@ -40,10 +40,29 @@ internal struct TwoDimensionDrawData
 		{
 			twoDimensionContext.SetScissor(_scissorTestInfo);
 		}
-		twoDimensionContext.Draw(_x, _y, _material, _drawObject2D, layer);
+		if (_imageDrawObject.IsValid && _imageMaterial != null)
+		{
+			twoDimensionContext.DrawImage(_imageMaterial, in _imageDrawObject, layer);
+		}
+		else if (_textDrawObject.IsValid && _textMaterial != null)
+		{
+			twoDimensionContext.DrawText(_textMaterial, in _textDrawObject, layer);
+		}
 		if (_scissorTestEnabled)
 		{
 			twoDimensionContext.ResetScissor();
+		}
+	}
+
+	public void UpdateVisualRect()
+	{
+		if (_imageDrawObject.IsValid)
+		{
+			_imageDrawObject.Rectangle.CalculateVisualMatrixFrame();
+		}
+		else if (_textDrawObject.IsValid)
+		{
+			_textDrawObject.Rectangle.CalculateVisualMatrixFrame();
 		}
 	}
 }

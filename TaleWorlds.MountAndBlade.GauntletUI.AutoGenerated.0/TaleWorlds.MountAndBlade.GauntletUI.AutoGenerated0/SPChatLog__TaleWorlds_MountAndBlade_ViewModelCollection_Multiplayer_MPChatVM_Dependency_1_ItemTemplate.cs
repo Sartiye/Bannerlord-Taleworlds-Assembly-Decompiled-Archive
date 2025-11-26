@@ -25,6 +25,20 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 	{
 	}
 
+	private VisualDefinition CreateVisualDefinitionChatLogParent()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("ChatLogParent", 0.14f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionXOffset = 0f
+		});
+		visualDefinition.AddVisualState(new VisualState("Offset")
+		{
+			PositionXOffset = 160f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;

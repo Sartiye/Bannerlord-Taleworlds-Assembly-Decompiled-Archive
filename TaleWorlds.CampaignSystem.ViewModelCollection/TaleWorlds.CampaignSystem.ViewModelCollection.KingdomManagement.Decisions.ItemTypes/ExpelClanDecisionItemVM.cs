@@ -273,7 +273,7 @@ public class ExpelClanDecisionItemVM : DecisionItemBaseVM
 		EncyclopediaPage pageOf = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Hero));
 		foreach (Hero hero in Clan.Heroes)
 		{
-			if (hero.IsAlive && hero.Age >= 18f && pageOf.IsValidEncyclopediaItem(hero))
+			if (hero.IsAlive && hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && pageOf.IsValidEncyclopediaItem(hero))
 			{
 				if (hero != Leader.Hero)
 				{
@@ -284,7 +284,7 @@ public class ExpelClanDecisionItemVM : DecisionItemBaseVM
 		}
 		foreach (Hero companion in Clan.Companions)
 		{
-			if (companion.IsAlive && companion.Age >= 18f && pageOf.IsValidEncyclopediaItem(companion))
+			if (companion.IsAlive && companion.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && pageOf.IsValidEncyclopediaItem(companion))
 			{
 				if (companion != Leader.Hero)
 				{
@@ -297,7 +297,7 @@ public class ExpelClanDecisionItemVM : DecisionItemBaseVM
 		{
 			if (allLordParty.ActualClan == Clan && !allLordParty.IsDisbanding)
 			{
-				num2 += allLordParty.Party.TotalStrength;
+				num2 += allLordParty.Party.CalculateCurrentStrength();
 			}
 		}
 		ProsperityText = num.ToString();

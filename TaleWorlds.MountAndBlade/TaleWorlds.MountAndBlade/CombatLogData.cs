@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -41,7 +43,7 @@ public struct CombatLogData
 
 	public readonly bool IsVictimAgentMount;
 
-	public bool IsVictimEntity;
+	public MissionObject MissionObjectHit;
 
 	public DamageTypes DamageType;
 
@@ -55,6 +57,10 @@ public struct CombatLogData
 
 	public bool IsFatalDamage;
 
+	public bool IsRammingDamage;
+
+	public bool IsSneakAttack;
+
 	public BoneBodyPartType BodyPartHit;
 
 	public string VictimAgentName;
@@ -66,6 +72,8 @@ public struct CombatLogData
 	public int AbsorbedDamage;
 
 	public int ModifiedDamage;
+
+	public int ReflectedDamage;
 
 	public float Distance;
 
@@ -142,6 +150,10 @@ public struct CombatLogData
 		_logStringCache.Clear();
 		if (IsValidForPlayer && ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ReportDamage) > 0f)
 		{
+			if (IsSneakAttack && IsAttackerPlayer)
+			{
+				_logStringCache.Add(ValueTuple.Create(GameTexts.FindText("combat_log_sneak_attack").ToString(), 4289612505u));
+			}
 			if (IsRangedAttack && IsAttackerPlayer && BodyPartHit == BoneBodyPartType.Head)
 			{
 				_logStringCache.Add(ValueTuple.Create(GameTexts.FindText("ui_head_shot").ToString(), 4289612505u));
@@ -171,7 +183,18 @@ public struct CombatLogData
 			GameTexts.SetVariable("DAMAGE_TYPE", GameTexts.FindText("combat_log_damage_type", damageType.ToString()));
 			MBStringBuilder mBStringBuilder = default(MBStringBuilder);
 			mBStringBuilder.Initialize(16, "GetLogString");
-			if (IsVictimAgentSameAsAttackerAgent)
+			if (IsRammingDamage)
+			{
+				if (IsAttackerPlayer)
+				{
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_delivered"));
+				}
+				else
+				{
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_received"));
+				}
+			}
+			else if (IsVictimAgentSameAsAttackerAgent)
 			{
 				mBStringBuilder.Append(GameTexts.FindText("ui_received_number_damage_fall"));
 				item = 4292917946u;
@@ -189,9 +212,30 @@ public struct CombatLogData
 					item = (IsAttackerPlayer ? 4210351871u : 4292917946u);
 				}
 			}
-			else if (IsVictimEntity)
+			else if (MissionObjectHit != null)
 			{
 				mBStringBuilder.Append(GameTexts.FindText("ui_delivered_number_damage_to_entity"));
+				WeakGameEntity weakGameEntity = MissionObjectHit.GameEntity;
+				TextObject hitObjectName = MissionObjectHit.HitObjectName;
+				while (weakGameEntity != null && TextObject.IsNullOrEmpty(hitObjectName))
+				{
+					foreach (MissionObject scriptComponent in weakGameEntity.GetScriptComponents<MissionObject>())
+					{
+						if (TextObject.IsNullOrEmpty(hitObjectName) && !TextObject.IsNullOrEmpty(scriptComponent.HitObjectName))
+						{
+							hitObjectName = scriptComponent.HitObjectName;
+							break;
+						}
+					}
+					weakGameEntity = weakGameEntity.Parent;
+				}
+				if (!TextObject.IsNullOrEmpty(hitObjectName))
+				{
+					GameTexts.SetVariable("OBJECT_NAME", hitObjectName.ToString());
+					mBStringBuilder.Append("<Detail>");
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_entity_name"));
+					mBStringBuilder.Append("</Detail>");
+				}
 			}
 			else if (IsAttackerMount)
 			{
@@ -246,12 +290,19 @@ public struct CombatLogData
 				}
 				mBStringBuilder.Append("</Detail>");
 			}
+			if (ReflectedDamage > 0)
+			{
+				GameTexts.SetVariable("REFLECTED_DAMAGE", ReflectedDamage);
+				mBStringBuilder.Append("<Detail>");
+				mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reflected_damage"));
+				mBStringBuilder.Append("</Detail>");
+			}
 			_logStringCache.Add(ValueTuple.Create(mBStringBuilder.ToStringAndRelease(), item));
 		}
 		return _logStringCache;
 	}
 
-	public CombatLogData(bool isVictimAgentSameAsAttackerAgent, bool isAttackerAgentHuman, bool isAttackerAgentMine, bool doesAttackerAgentHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentHuman, bool isVictimAgentMine, bool isVictimAgentDead, bool doesVictimAgentHaveRiderAgent, bool isVictimAgentRiderAgentIsMine, bool isVictimAgentMount, bool isVictimEntity, bool isVictimRiderAgentSameAsAttackerAgent, bool crushedThrough, bool chamber, float distance)
+	public CombatLogData(bool isVictimAgentSameAsAttackerAgent, bool isAttackerAgentHuman, bool isAttackerAgentMine, bool doesAttackerAgentHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentHuman, bool isVictimAgentMine, bool isVictimAgentDead, bool doesVictimAgentHaveRiderAgent, bool isVictimAgentRiderAgentIsMine, bool isVictimAgentMount, MissionObject missionObjectHit, bool isVictimRiderAgentSameAsAttackerAgent, bool crushedThrough, bool chamber, float distance)
 	{
 		IsVictimAgentSameAsAttackerAgent = isVictimAgentSameAsAttackerAgent;
 		IsAttackerAgentHuman = isAttackerAgentHuman;
@@ -264,19 +315,22 @@ public struct CombatLogData
 		DoesVictimAgentHaveRiderAgent = doesVictimAgentHaveRiderAgent;
 		IsVictimAgentRiderAgentMine = isVictimAgentRiderAgentIsMine;
 		IsVictimAgentMount = isVictimAgentMount;
-		IsVictimEntity = isVictimEntity;
+		MissionObjectHit = missionObjectHit;
 		IsVictimRiderAgentSameAsAttackerAgent = isVictimRiderAgentSameAsAttackerAgent;
 		IsFatalDamage = isVictimAgentDead;
+		IsRammingDamage = false;
 		DamageType = DamageTypes.Blunt;
 		CrushedThrough = crushedThrough;
 		Chamber = chamber;
 		IsRangedAttack = false;
 		IsFriendlyFire = false;
+		IsSneakAttack = false;
 		VictimAgentName = null;
 		HitSpeed = 0f;
 		InflictedDamage = 0;
 		AbsorbedDamage = 0;
 		ModifiedDamage = 0;
+		ReflectedDamage = 0;
 		AttackProgress = 0f;
 		BodyPartHit = BoneBodyPartType.None;
 		Distance = distance;

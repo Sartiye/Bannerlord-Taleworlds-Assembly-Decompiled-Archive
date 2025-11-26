@@ -197,7 +197,7 @@ public static class MissionReinforcementsHelper
 		_ = Mission.Current;
 		_localInitTime++;
 		List<(IAgentOriginBase, int)> list = new List<(IAgentOriginBase, int)>();
-		PriorityQueue<ReinforcementFormationPriority, Formation> priorityQueue = new PriorityQueue<ReinforcementFormationPriority, Formation>(new ReinforcementFormationPreferenceComparer());
+		TaleWorlds.Library.PriorityQueue<ReinforcementFormationPriority, Formation> priorityQueue = new TaleWorlds.Library.PriorityQueue<ReinforcementFormationPriority, Formation>(new ReinforcementFormationPreferenceComparer());
 		foreach (IAgentOriginBase troopOrigin in troopOrigins)
 		{
 			priorityQueue.Clear();
@@ -239,7 +239,7 @@ public static class MissionReinforcementsHelper
 		_reinforcementFormationsData = null;
 	}
 
-	private static Formation FindBestFormationAmong(PriorityQueue<ReinforcementFormationPriority, Formation> matchingFormations)
+	private static Formation FindBestFormationAmong(TaleWorlds.Library.PriorityQueue<ReinforcementFormationPriority, Formation> matchingFormations)
 	{
 		Formation formation = null;
 		float num = float.MinValue;
@@ -279,10 +279,10 @@ public static class MissionReinforcementsHelper
 		float num = (float)formation.CountOfUnits / (float)Math.Max(1, formation.Team.ActiveAgents.Count);
 		float num2 = TaleWorlds.Library.MathF.Max(0f, 1f - num);
 		float num3 = 0f;
-		BattleSideEnum side = formation.Team.Side;
-		if (formation.HasBeenPositioned && current.DeploymentPlan.IsPlanMadeForBattleSide(side, DeploymentPlanType.Reinforcement))
+		Team team = formation.Team;
+		if (current.GetDeploymentPlan<DefaultMissionDeploymentPlan>(out var deploymentPlan) && formation.HasBeenPositioned && deploymentPlan.IsReinforcementPlanMade(team))
 		{
-			Vec2 asVec = current.DeploymentPlan.GetMeanPositionOfPlan(side, DeploymentPlanType.Reinforcement).AsVec2;
+			Vec2 asVec = deploymentPlan.GetMeanPosition(team).AsVec2;
 			float num4 = formation.CurrentPosition.DistanceSquared(asVec);
 			float num5 = TaleWorlds.Library.MathF.Min(1f, num4 / 62500f);
 			num3 = TaleWorlds.Library.MathF.Max(0f, 1f - num5);

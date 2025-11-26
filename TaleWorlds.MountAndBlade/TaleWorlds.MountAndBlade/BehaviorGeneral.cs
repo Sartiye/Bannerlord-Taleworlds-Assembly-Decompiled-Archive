@@ -51,28 +51,28 @@ public class BehaviorGeneral : BehaviorComponent
 				break;
 			}
 		}
-		WorldPosition medianPosition;
+		WorldPosition position;
 		if (flag3 && base.Formation.Team.HasAnyFormationsIncludingSpecialThatIsNotEmpty())
 		{
 			float num = ((base.Formation.PhysicalClass.IsMounted() && base.Formation.Team.QuerySystem.CavalryRatio + base.Formation.Team.QuerySystem.RangedCavalryRatio >= 33.3f) ? 40f : 3f);
 			if (_mainFormation != null && _mainFormation.CountOfUnits > 0)
 			{
 				float num2 = _mainFormation.Depth + num;
-				medianPosition = _mainFormation.QuerySystem.MedianPosition;
-				medianPosition.SetVec2(medianPosition.AsVec2 - (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.QuerySystem.MedianPosition.AsVec2).Normalized() * num2);
+				position = _mainFormation.CachedMedianPosition;
+				position.SetVec2(position.AsVec2 - (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.CachedMedianPosition.AsVec2).Normalized() * num2);
 			}
 			else
 			{
-				medianPosition = base.Formation.QuerySystem.Team.MedianPosition;
-				medianPosition.SetVec2(base.Formation.QuerySystem.Team.AveragePosition - (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - base.Formation.QuerySystem.Team.AveragePosition).Normalized() * num);
+				position = base.Formation.QuerySystem.Team.MedianPosition;
+				position.SetVec2(base.Formation.QuerySystem.Team.AveragePosition - (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - base.Formation.QuerySystem.Team.AveragePosition).Normalized() * num);
 			}
 		}
 		else
 		{
-			medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			position = base.Formation.CachedMedianPosition;
+			position.SetVec2(base.Formation.CachedAveragePosition);
 		}
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(position);
 	}
 
 	public override void TickOccasionally()
@@ -85,10 +85,10 @@ public class BehaviorGeneral : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

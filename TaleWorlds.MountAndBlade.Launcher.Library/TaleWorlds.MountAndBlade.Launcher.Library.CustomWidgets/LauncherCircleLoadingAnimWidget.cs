@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -24,6 +25,8 @@ public class LauncherCircleLoadingAnimWidget : Widget
 	private bool _initialized;
 
 	private float _totalTime;
+
+	private Widget[] _cachedChildren;
 
 	public float NumOfCirclesInASecond { get; set; } = 0.5f;
 
@@ -51,17 +54,19 @@ public class LauncherCircleLoadingAnimWidget : Widget
 	public float FadeOutSeconds { get; set; } = 0.2f;
 
 
-	private float CurrentAlpha => GetChild(0).AlphaFactor;
+	private float CurrentAlpha => _cachedChildren.FirstOrDefault()?.AlphaFactor ?? 0f;
 
 	public LauncherCircleLoadingAnimWidget(UIContext context)
 		: base(context)
 	{
+		_cachedChildren = new Widget[0];
 	}
 
 	protected override void OnParallelUpdate(float dt)
 	{
 		base.OnParallelUpdate(dt);
 		_totalTime += dt;
+		_cachedChildren = base.Children.ToArray();
 		if (!_initialized)
 		{
 			_visualState = VisualState.FadeIn;
@@ -79,14 +84,14 @@ public class LauncherCircleLoadingAnimWidget : Widget
 	{
 		if (IsMovementEnabled)
 		{
-			float num = 360f / (float)base.ChildCount;
+			float num = 360f / (float)_cachedChildren.Length;
 			float num2 = _currentAngle;
-			for (int i = 0; i < base.ChildCount; i++)
+			for (int i = 0; i < _cachedChildren.Length; i++)
 			{
-				float num3 = (float)Math.Cos(num2 * (System.MathF.PI / 180f)) * CircleRadius;
-				float num4 = (float)Math.Sin(num2 * (System.MathF.PI / 180f)) * CircleRadius;
-				GetChild(i).PositionXOffset = (IsReverse ? num4 : num3);
-				GetChild(i).PositionYOffset = (IsReverse ? num3 : num4);
+				float num3 = TaleWorlds.Library.MathF.Cos(num2 * (System.MathF.PI / 180f)) * CircleRadius;
+				float num4 = TaleWorlds.Library.MathF.Sin(num2 * (System.MathF.PI / 180f)) * CircleRadius;
+				_cachedChildren[i].PositionXOffset = (IsReverse ? num4 : num3);
+				_cachedChildren[i].PositionYOffset = (IsReverse ? num3 : num4);
 				num2 += num;
 				num2 %= 360f;
 			}
@@ -125,7 +130,7 @@ public class LauncherCircleLoadingAnimWidget : Widget
 		}
 		else
 		{
-			Debug.FailedAssert("This visual state is not enabled", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\CustomWidgets\\LauncherCircleLoadingAnimWidget.cs", "UpdateAlphaValues", 113);
+			Debug.FailedAssert("This visual state is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\CustomWidgets\\LauncherCircleLoadingAnimWidget.cs", "UpdateAlphaValues", 119);
 		}
 		this.SetGlobalAlphaRecursively(alphaFactor);
 	}

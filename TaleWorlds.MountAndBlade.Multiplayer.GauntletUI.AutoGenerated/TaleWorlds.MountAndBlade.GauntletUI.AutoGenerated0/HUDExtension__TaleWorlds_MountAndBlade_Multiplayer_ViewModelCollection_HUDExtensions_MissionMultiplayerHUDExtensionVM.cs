@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
@@ -141,9 +141,9 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private MBBindingList<CapturePointVM> _datasource_Root_CommanderInfo_EnemyControlPoints;
 
-	private ImageIdentifierVM _datasource_Root_AllyBanner;
+	private BannerImageIdentifierVM _datasource_Root_AllyBanner;
 
-	private ImageIdentifierVM _datasource_Root_EnemyBanner;
+	private BannerImageIdentifierVM _datasource_Root_EnemyBanner;
 
 	private MBBindingList<MPPlayerVM> _datasource_Root_Teammates;
 
@@ -2219,9 +2219,17 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private void HandleWidgetPropertyChangeOf_widget_0_1_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_AllyBanner.AdditionalArgs = _widget_0_1_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_AllyBanner.Id = _widget_0_1_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_AllyBanner.TextureProviderName = _widget_0_1_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -2272,9 +2280,17 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private void HandleWidgetPropertyChangeOf_widget_0_3_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_EnemyBanner.AdditionalArgs = _widget_0_3_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_EnemyBanner.Id = _widget_0_3_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_EnemyBanner.TextureProviderName = _widget_0_3_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -2768,8 +2784,8 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		case "Id":
 			_widget_0_1_0.ImageId = _datasource_Root_AllyBanner.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_0_1_0.ImageTypeCode = _datasource_Root_AllyBanner.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_1_0.TextureProviderName = _datasource_Root_AllyBanner.TextureProviderName;
 			break;
 		}
 	}
@@ -2829,8 +2845,8 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		case "Id":
 			_widget_0_3_0.ImageId = _datasource_Root_EnemyBanner.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_0_3_0.ImageTypeCode = _datasource_Root_EnemyBanner.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_3_0.TextureProviderName = _datasource_Root_EnemyBanner.TextureProviderName;
 			break;
 		}
 	}
@@ -3928,7 +3944,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root_AllyBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AllyBanner;
 			_widget_0_1_0.AdditionalArgs = _datasource_Root_AllyBanner.AdditionalArgs;
 			_widget_0_1_0.ImageId = _datasource_Root_AllyBanner.Id;
-			_widget_0_1_0.ImageTypeCode = _datasource_Root_AllyBanner.ImageTypeCode;
+			_widget_0_1_0.TextureProviderName = _datasource_Root_AllyBanner.TextureProviderName;
 			_widget_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0;
@@ -3953,7 +3969,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root_EnemyBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_EnemyBanner;
 			_widget_0_3_0.AdditionalArgs = _datasource_Root_EnemyBanner.AdditionalArgs;
 			_widget_0_3_0.ImageId = _datasource_Root_EnemyBanner.Id;
-			_widget_0_3_0.ImageTypeCode = _datasource_Root_EnemyBanner.ImageTypeCode;
+			_widget_0_3_0.TextureProviderName = _datasource_Root_EnemyBanner.TextureProviderName;
 			_widget_0_3_0.PropertyChanged += PropertyChangedListenerOf_widget_0_3_0;
 			_widget_0_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_3_0;
 			_widget_0_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_3_0;
@@ -4399,7 +4415,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_AllyBanner(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_AllyBanner(BannerImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_AllyBanner != null)
 		{
@@ -4438,7 +4454,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root_AllyBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AllyBanner;
 			_widget_0_1_0.AdditionalArgs = _datasource_Root_AllyBanner.AdditionalArgs;
 			_widget_0_1_0.ImageId = _datasource_Root_AllyBanner.Id;
-			_widget_0_1_0.ImageTypeCode = _datasource_Root_AllyBanner.ImageTypeCode;
+			_widget_0_1_0.TextureProviderName = _datasource_Root_AllyBanner.TextureProviderName;
 			_widget_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0;
@@ -4451,7 +4467,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_EnemyBanner(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_EnemyBanner(BannerImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_EnemyBanner != null)
 		{
@@ -4490,7 +4506,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root_EnemyBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_EnemyBanner;
 			_widget_0_3_0.AdditionalArgs = _datasource_Root_EnemyBanner.AdditionalArgs;
 			_widget_0_3_0.ImageId = _datasource_Root_EnemyBanner.Id;
-			_widget_0_3_0.ImageTypeCode = _datasource_Root_EnemyBanner.ImageTypeCode;
+			_widget_0_3_0.TextureProviderName = _datasource_Root_EnemyBanner.TextureProviderName;
 			_widget_0_3_0.PropertyChanged += PropertyChangedListenerOf_widget_0_3_0;
 			_widget_0_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_3_0;
 			_widget_0_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_3_0;

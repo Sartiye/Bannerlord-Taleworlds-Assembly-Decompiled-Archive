@@ -12,70 +12,19 @@ public class MobilePartyTrackerItemWidget : Widget
 
 	private float _screenHeight;
 
-	private bool _initialized;
-
-	private Vec2 _position;
-
 	private bool _isActive;
 
 	private bool _isBehind;
 
-	private bool _isArmy;
-
 	private bool _isTracked;
 
-	private bool _shouldShowFullName;
+	private string _trackerType;
+
+	private Vec2 _position;
+
+	private Brush _trackerImageBrush;
 
 	public Widget FrameVisualWidget { get; set; }
-
-	public Vec2 Position
-	{
-		get
-		{
-			return _position;
-		}
-		set
-		{
-			if (_position != value)
-			{
-				_position = value;
-				OnPropertyChanged(value, "Position");
-			}
-		}
-	}
-
-	public bool ShouldShowFullName
-	{
-		get
-		{
-			return _shouldShowFullName;
-		}
-		set
-		{
-			if (_shouldShowFullName != value)
-			{
-				_shouldShowFullName = value;
-				OnPropertyChanged(value, "ShouldShowFullName");
-			}
-		}
-	}
-
-	public bool IsArmy
-	{
-		get
-		{
-			return _isArmy;
-		}
-		set
-		{
-			if (_isArmy != value)
-			{
-				_isArmy = value;
-				OnPropertyChanged(value, "IsArmy");
-				_initialized = false;
-			}
-		}
-	}
 
 	public bool IsActive
 	{
@@ -125,6 +74,56 @@ public class MobilePartyTrackerItemWidget : Widget
 		}
 	}
 
+	public string TrackerType
+	{
+		get
+		{
+			return _trackerType;
+		}
+		set
+		{
+			if (_trackerType != value)
+			{
+				_trackerType = value;
+				OnPropertyChanged(value, "TrackerType");
+				UpdateTrackerVisual();
+			}
+		}
+	}
+
+	public Vec2 Position
+	{
+		get
+		{
+			return _position;
+		}
+		set
+		{
+			if (_position != value)
+			{
+				_position = value;
+				OnPropertyChanged(value, "Position");
+			}
+		}
+	}
+
+	public Brush TrackerImageBrush
+	{
+		get
+		{
+			return _trackerImageBrush;
+		}
+		set
+		{
+			if (_trackerImageBrush != value)
+			{
+				_trackerImageBrush = value;
+				OnPropertyChanged(value, "TrackerImageBrush");
+				UpdateTrackerVisual();
+			}
+		}
+	}
+
 	public MobilePartyTrackerItemWidget(UIContext context)
 		: base(context)
 	{
@@ -133,11 +132,6 @@ public class MobilePartyTrackerItemWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (!_initialized)
-		{
-			FrameVisualWidget.Sprite = base.Context.SpriteData.GetSprite(IsArmy ? "army_track_frame_9" : "party_track_frame_9");
-			_initialized = true;
-		}
 		UpdateScreenPosition();
 	}
 
@@ -191,5 +185,13 @@ public class MobilePartyTrackerItemWidget : Widget
 			base.ScaledPositionYOffset = Position.y;
 		}
 		base.IsHidden = (!IsTracked && IsBehind) || base.ScaledPositionXOffset > base.Context.TwoDimensionContext.Width || base.ScaledPositionYOffset > base.Context.TwoDimensionContext.Height || base.ScaledPositionXOffset + base.Size.X < 0f || base.ScaledPositionYOffset + base.Size.Y < 0f;
+	}
+
+	private void UpdateTrackerVisual()
+	{
+		if (FrameVisualWidget != null && TrackerImageBrush != null && !string.IsNullOrEmpty(TrackerType))
+		{
+			FrameVisualWidget.Sprite = TrackerImageBrush.GetLayer(TrackerType)?.Sprite;
+		}
 	}
 }

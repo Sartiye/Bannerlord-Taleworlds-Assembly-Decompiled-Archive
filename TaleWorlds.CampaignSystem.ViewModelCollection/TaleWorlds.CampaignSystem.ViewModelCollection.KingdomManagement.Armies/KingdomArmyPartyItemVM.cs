@@ -1,5 +1,6 @@
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Armies;
@@ -8,12 +9,12 @@ public class KingdomArmyPartyItemVM : ViewModel
 {
 	private MobileParty _party;
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
 	private string _name;
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -49,7 +50,7 @@ public class KingdomArmyPartyItemVM : ViewModel
 	public KingdomArmyPartyItemVM(MobileParty party)
 	{
 		_party = party;
-		Visual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(party.LeaderHero?.CharacterObject));
+		Visual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(party.LeaderHero?.CharacterObject));
 		RefreshValues();
 	}
 

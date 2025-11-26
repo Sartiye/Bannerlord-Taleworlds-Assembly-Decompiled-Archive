@@ -1,12 +1,15 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
-using TaleWorlds.CampaignSystem.Overlay;
+using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
+using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
@@ -42,6 +45,8 @@ public class GameMenuOverlay : ViewModel
 	private MBBindingList<StringItemWithEnabledAndHintVM> _contextList;
 
 	protected GameMenuPartyItemVM _contextMenuItem;
+
+	private InputKeyItemVM _exitInputKey;
 
 	[DataSourceProperty]
 	public bool IsContextMenuEnabled
@@ -119,6 +124,23 @@ public class GameMenuOverlay : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public InputKeyItemVM ExitInputKey
+	{
+		get
+		{
+			return _exitInputKey;
+		}
+		set
+		{
+			if (value != _exitInputKey)
+			{
+				_exitInputKey = value;
+				OnPropertyChangedWithValue(value, "ExitInputKey");
+			}
+		}
+	}
+
 	public GameMenuOverlay()
 	{
 		ContextList = new MBBindingList<StringItemWithEnabledAndHintVM>();
@@ -156,6 +178,7 @@ public class GameMenuOverlay : ViewModel
 		{
 			ExecuteOnOverlayClosed();
 		}
+		ExitInputKey?.OnFinalize();
 	}
 
 	protected void ExecuteTroopAction(object o)
@@ -170,7 +193,7 @@ public class GameMenuOverlay : ViewModel
 					Campaign.Current.EncyclopediaManager.GoToLink(_contextMenuItem.Character.HeroObject.EncyclopediaLink);
 					break;
 				}
-				Debug.FailedAssert("Character object in menu overlay", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 101);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 100);
 				Campaign.Current.EncyclopediaManager.GoToLink(_contextMenuItem.Character.EncyclopediaLink);
 			}
 			else if (_contextMenuItem.Party != null)
@@ -210,7 +233,7 @@ public class GameMenuOverlay : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Character object in menu overlay", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 145);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 144);
 			}
 			break;
 		case MenuOverlayContextList.QuickConversation:
@@ -231,7 +254,7 @@ public class GameMenuOverlay : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Character object in menu overlay", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 168);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 167);
 			}
 			break;
 		case MenuOverlayContextList.ConverseWithLeader:
@@ -256,13 +279,13 @@ public class GameMenuOverlay : ViewModel
 					break;
 				}
 				_contextMenuItem.Party.MobileParty.Army = null;
-				_contextMenuItem.Party.MobileParty.Ai.SetMoveModeHold();
+				_contextMenuItem.Party.MobileParty.SetMoveModeHold();
 			}
 			break;
 		case MenuOverlayContextList.ManageGarrison:
 			if (_contextMenuItem.Party != null)
 			{
-				PartyScreenManager.OpenScreenAsManageTroops(_contextMenuItem.Party.MobileParty);
+				PartyScreenHelper.OpenScreenAsManageTroops(_contextMenuItem.Party.MobileParty);
 			}
 			break;
 		case MenuOverlayContextList.DonateTroops:
@@ -270,18 +293,18 @@ public class GameMenuOverlay : ViewModel
 			{
 				if (_contextMenuItem.Party.MobileParty.IsGarrison)
 				{
-					PartyScreenManager.OpenScreenAsDonateGarrisonWithCurrentSettlement();
+					PartyScreenHelper.OpenScreenAsDonateGarrisonWithCurrentSettlement();
 				}
 				else
 				{
-					PartyScreenManager.OpenScreenAsDonateTroops(_contextMenuItem.Party.MobileParty);
+					PartyScreenHelper.OpenScreenAsDonateTroops(_contextMenuItem.Party.MobileParty);
 				}
 			}
 			break;
 		case MenuOverlayContextList.ManageTroops:
 			if (_contextMenuItem.Party?.MobileParty != null && _contextMenuItem.Party.MobileParty.ActualClan == Clan.PlayerClan)
 			{
-				PartyScreenManager.OpenScreenAsManageTroopsAndPrisoners(_contextMenuItem.Party.MobileParty);
+				PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(_contextMenuItem.Party.MobileParty);
 			}
 			break;
 		case MenuOverlayContextList.JoinArmy:
@@ -332,31 +355,22 @@ public class GameMenuOverlay : ViewModel
 		bool flag = (byte)num != 0;
 		if (LocationComplex.Current == null || flag)
 		{
-			CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, mainParty1), new ConversationCharacterData(ConversationHelper.GetConversationCharacterPartyLeader(party2), party2));
-			return;
+			ConversationCharacterData playerCharacterData = new ConversationCharacterData(CharacterObject.PlayerCharacter, mainParty1);
+			ConversationCharacterData conversationPartnerData = new ConversationCharacterData(ConversationHelper.GetConversationCharacterPartyLeader(party2), party2);
+			if (PartyBase.MainParty.MobileParty.IsCurrentlyAtSea)
+			{
+				CampaignMission.OpenConversationMission(playerCharacterData, conversationPartnerData);
+			}
+			else
+			{
+				CampaignMapConversation.OpenConversation(playerCharacterData, conversationPartnerData);
+			}
 		}
-		Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(party2.LeaderHero);
-		CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(party2.LeaderHero);
-		PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, party2.LeaderHero.CharacterObject);
-	}
-
-	public void ClearOverlay()
-	{
-	}
-
-	public static GameMenuOverlay GetOverlay(GameOverlays.MenuOverlayType menuOverlayType)
-	{
-		switch (menuOverlayType)
+		else
 		{
-		case GameOverlays.MenuOverlayType.Encounter:
-			return new EncounterMenuOverlayVM();
-		case GameOverlays.MenuOverlayType.SettlementWithParties:
-		case GameOverlays.MenuOverlayType.SettlementWithCharacters:
-		case GameOverlays.MenuOverlayType.SettlementWithBoth:
-			return new SettlementMenuOverlayVM(menuOverlayType);
-		default:
-			Debug.FailedAssert("Game menu overlay: " + menuOverlayType.ToString() + " could not be found", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "GetOverlay", 295);
-			return null;
+			Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(party2.LeaderHero);
+			CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(party2.LeaderHero);
+			PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, party2.LeaderHero.CharacterObject);
 		}
 	}
 
@@ -364,7 +378,7 @@ public class GameMenuOverlay : ViewModel
 	{
 	}
 
-	public virtual void UpdateOverlayType(GameOverlays.MenuOverlayType newType)
+	public virtual void UpdateOverlayType(TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType newType)
 	{
 		Refresh();
 	}
@@ -376,5 +390,10 @@ public class GameMenuOverlay : ViewModel
 	public void HourlyTick()
 	{
 		Refresh();
+	}
+
+	public void SetExitInputKey(HotKey hotKey)
+	{
+		ExitInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

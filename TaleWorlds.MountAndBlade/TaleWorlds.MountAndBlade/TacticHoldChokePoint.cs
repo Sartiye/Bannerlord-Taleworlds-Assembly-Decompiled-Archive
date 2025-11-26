@@ -97,7 +97,7 @@ public class TacticHoldChokePoint : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (base.AreFormationsCreated)
 		{
@@ -137,7 +137,7 @@ public class TacticHoldChokePoint : TacticComponent
 		if (CheckAndDetermineFormation(ref _mainInfantry, (Formation f) => f.CountOfUnits > 0 && f.QuerySystem.IsInfantryFormation))
 		{
 			float num = base.Team.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
-			float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry.QuerySystem.AveragePosition);
+			float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry.CachedAveragePosition);
 			if (num > 20f && num > num2 * 0.5f)
 			{
 				return false;
@@ -169,7 +169,7 @@ public class TacticHoldChokePoint : TacticComponent
 			{
 				num4 = MBMath.Lerp(1f, 1.5f, (MBMath.ClampFloat(base.Team.QuerySystem.RangedRatio, 0.05f, 0.25f) - 0.05f) * 5f);
 			}
-			float value = _mainInfantry.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
+			float value = _mainInfantry.CachedAveragePosition.Distance(tacticalPosition.Position.AsVec2);
 			float num5 = MBMath.Lerp(0.7f, 1f, (150f - MBMath.ClampFloat(value, 50f, 150f)) / 100f);
 			return num * num3 * num4 * num5;
 		}
@@ -192,7 +192,7 @@ public class TacticHoldChokePoint : TacticComponent
 		IEnumerable<(TacticalPosition, float)> source = first.Concat<(TacticalPosition, float)>(second);
 		if (source.Any())
 		{
-			TacticalPosition item = source.MaxBy<(TacticalPosition, float), float>(((TacticalPosition tp, float) pst) => pst.Item2).Item1;
+			TacticalPosition item = TaleWorlds.Core.Extensions.MaxBy<(TacticalPosition, float), float>(source, ((TacticalPosition tp, float) pst) => pst.Item2).Item1;
 			if (item != _chokePointTacticalPosition)
 			{
 				_chokePointTacticalPosition = item;

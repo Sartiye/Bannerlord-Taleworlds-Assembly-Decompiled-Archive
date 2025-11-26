@@ -86,8 +86,11 @@ public static class MachineId
 				{
 					while (enumerator.MoveNext())
 					{
-						string text2 = (((ManagementBaseObject)(ManagementObject)enumerator.Current)["ProcessorId"] as string)?.Trim(new char[1] { ' ' }) ?? "";
-						text += text2.Replace("-", "");
+						if (((ManagementBaseObject)(ManagementObject)enumerator.Current)["ProcessorId"] is string text2)
+						{
+							string text3 = text2.Trim(new char[1] { ' ' });
+							text += text3.Replace("-", "");
+						}
 					}
 					return text;
 				}

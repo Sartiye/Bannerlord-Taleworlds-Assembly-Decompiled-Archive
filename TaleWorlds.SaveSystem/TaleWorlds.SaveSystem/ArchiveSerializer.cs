@@ -31,7 +31,7 @@ internal class ArchiveSerializer : IArchiveContext
 
 	public void SerializeFolder(SaveEntryFolder folder)
 	{
-		foreach (SaveEntry allEntry in folder.AllEntries)
+		foreach (SaveEntry allEntry in folder.GetAllEntries())
 		{
 			SerializeEntry(allEntry);
 		}
@@ -65,10 +65,34 @@ internal class ArchiveSerializer : IArchiveContext
 		}
 		binaryWriter.WriteInt(_entryCount);
 		binaryWriter.AppendData(_writer);
-		byte[] data = binaryWriter.Data;
+		byte[] finalData = binaryWriter.GetFinalData();
 		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
 		BinaryWriterFactory.ReleaseBinaryWriter(_writer);
 		_writer = null;
-		return data;
+		return finalData;
+	}
+
+	public byte[] GetBinaryDataDebug()
+	{
+		BinaryWriter binaryWriter = BinaryWriterFactory.GetBinaryWriter();
+		binaryWriter.WriteInt(_folderCount);
+		for (int i = 0; i < _folderCount; i++)
+		{
+			SaveEntryFolder saveEntryFolder = _folders[i];
+			int parentGlobalId = saveEntryFolder.ParentGlobalId;
+			int globalId = saveEntryFolder.GlobalId;
+			int localId = saveEntryFolder.FolderId.LocalId;
+			SaveFolderExtension extension = saveEntryFolder.FolderId.Extension;
+			binaryWriter.Write3ByteInt(parentGlobalId);
+			binaryWriter.Write3ByteInt(globalId);
+			binaryWriter.Write3ByteInt(localId);
+			binaryWriter.WriteByte((byte)extension);
+		}
+		binaryWriter.WriteInt(_entryCount);
+		binaryWriter.AppendData(_writer);
+		byte[] finalData = binaryWriter.GetFinalData();
+		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
+		_writer = null;
+		return finalData;
 	}
 }

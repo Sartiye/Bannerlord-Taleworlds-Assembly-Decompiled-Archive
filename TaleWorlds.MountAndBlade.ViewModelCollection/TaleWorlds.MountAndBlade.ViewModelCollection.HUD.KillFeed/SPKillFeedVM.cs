@@ -10,6 +10,8 @@ public class SPKillFeedVM : ViewModel
 
 	private SPPersonalKillNotificationVM _personalFeed;
 
+	private bool _isAgentStatusPrioritized;
+
 	[DataSourceProperty]
 	public SPGeneralKillNotificationVM GeneralCasualty
 	{
@@ -44,15 +46,33 @@ public class SPKillFeedVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsAgentStatusPrioritized
+	{
+		get
+		{
+			return _isAgentStatusPrioritized;
+		}
+		set
+		{
+			if (value != _isAgentStatusPrioritized)
+			{
+				_isAgentStatusPrioritized = value;
+				OnPropertyChangedWithValue(value, "IsAgentStatusPrioritized");
+			}
+		}
+	}
+
 	public SPKillFeedVM()
 	{
 		GeneralCasualty = new SPGeneralKillNotificationVM();
 		PersonalFeed = new SPPersonalKillNotificationVM();
+		IsAgentStatusPrioritized = true;
 	}
 
-	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isHeadshot)
+	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isHeadshot, bool isSuicide, bool isDrowning)
 	{
-		GeneralCasualty.OnAgentRemoved(affectedAgent, affectorAgent, null, isHeadshot);
+		GeneralCasualty.OnAgentRemoved(affectedAgent, affectorAgent, isHeadshot, isSuicide, isDrowning);
 	}
 
 	public void OnPersonalKill(int damageAmount, bool isMountDamage, bool isFriendlyFire, bool isHeadshot, string killedAgentName, bool isUnconscious)
@@ -63,5 +83,10 @@ public class SPKillFeedVM : ViewModel
 	public void OnPersonalDamage(int totalDamage, bool isVictimAgentMount, bool isFriendlyFire, string victimAgentName)
 	{
 		PersonalFeed.OnPersonalHit(totalDamage, isVictimAgentMount, isFriendlyFire, victimAgentName);
+	}
+
+	public void OnPersonalMessage(string message)
+	{
+		PersonalFeed.OnPersonalMessage(message);
 	}
 }

@@ -12,10 +12,10 @@ public class DefaultPartyTroopUpgradeModel : PartyTroopUpgradeModel
 {
 	public override bool CanPartyUpgradeTroopToTarget(PartyBase upgradingParty, CharacterObject upgradeableCharacter, CharacterObject upgradeTarget)
 	{
-		bool flag = DoesPartyHaveRequiredItemsForUpgrade(upgradingParty, upgradeTarget);
+		bool flag = Campaign.Current.Models.PartyTroopUpgradeModel.DoesPartyHaveRequiredItemsForUpgrade(upgradingParty, upgradeTarget);
 		PerkObject requiredPerk;
-		bool flag2 = DoesPartyHaveRequiredPerksForUpgrade(upgradingParty, upgradeableCharacter, upgradeTarget, out requiredPerk);
-		return IsTroopUpgradeable(upgradingParty, upgradeableCharacter) && upgradeableCharacter.UpgradeTargets.Contains(upgradeTarget) && flag2 && flag;
+		bool flag2 = Campaign.Current.Models.PartyTroopUpgradeModel.DoesPartyHaveRequiredPerksForUpgrade(upgradingParty, upgradeableCharacter, upgradeTarget, out requiredPerk);
+		return Campaign.Current.Models.PartyTroopUpgradeModel.IsTroopUpgradeable(upgradingParty, upgradeableCharacter) && upgradeableCharacter.UpgradeTargets.Contains(upgradeTarget) && flag2 && flag;
 	}
 
 	public override bool IsTroopUpgradeable(PartyBase party, CharacterObject character)
@@ -73,13 +73,13 @@ public class DefaultPartyTroopUpgradeModel : PartyTroopUpgradeModel
 		return 100000000;
 	}
 
-	public override int GetGoldCostForUpgrade(PartyBase party, CharacterObject characterObject, CharacterObject upgradeTarget)
+	public override ExplainedNumber GetGoldCostForUpgrade(PartyBase party, CharacterObject characterObject, CharacterObject upgradeTarget)
 	{
 		PartyWageModel partyWageModel = Campaign.Current.Models.PartyWageModel;
-		int troopRecruitmentCost = partyWageModel.GetTroopRecruitmentCost(upgradeTarget, null, withoutItemCost: true);
-		int troopRecruitmentCost2 = partyWageModel.GetTroopRecruitmentCost(characterObject, null, withoutItemCost: true);
+		int roundedResultNumber = partyWageModel.GetTroopRecruitmentCost(upgradeTarget, null, withoutItemCost: true).RoundedResultNumber;
+		int roundedResultNumber2 = partyWageModel.GetTroopRecruitmentCost(characterObject, null, withoutItemCost: true).RoundedResultNumber;
 		bool flag = characterObject.Occupation == Occupation.Mercenary || characterObject.Occupation == Occupation.Gangster;
-		ExplainedNumber stat = new ExplainedNumber((float)(troopRecruitmentCost - troopRecruitmentCost2) / ((!flag) ? 2f : 3f));
+		ExplainedNumber stat = new ExplainedNumber((float)(roundedResultNumber - roundedResultNumber2) / ((!flag) ? 2f : 3f));
 		if (party.MobileParty.HasPerk(DefaultPerks.Steward.SoundReserves))
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.SoundReserves, party.MobileParty, isPrimaryBonus: true, ref stat);
@@ -88,23 +88,15 @@ public class DefaultPartyTroopUpgradeModel : PartyTroopUpgradeModel
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.RenownedArcher, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		if (characterObject.IsInfantry && party.MobileParty.HasPerk(DefaultPerks.Throwing.ThrowingCompetitions))
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.ThrowingCompetitions, party.MobileParty, isPrimaryBonus: true, ref stat);
-		}
 		if (characterObject.IsMounted && PartyBaseHelper.HasFeat(party, DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat))
 		{
 			stat.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
-		}
-		else if (characterObject.IsInfantry && PartyBaseHelper.HasFeat(party, DefaultCulturalFeats.SturgianRecruitUpgradeFeat))
-		{
-			stat.AddFactor(DefaultCulturalFeats.SturgianRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
 		}
 		if (flag && party.MobileParty.HasPerk(DefaultPerks.Steward.Contractors))
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.Contractors, party.MobileParty, isPrimaryBonus: true, ref stat);
 		}
-		return (int)stat.ResultNumber;
+		return stat;
 	}
 
 	public override int GetSkillXpFromUpgradingTroops(PartyBase party, CharacterObject troop, int numberOfTroops)

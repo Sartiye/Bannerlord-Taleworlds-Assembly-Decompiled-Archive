@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -28,17 +27,11 @@ public interface IFaction
 
 	CultureObject Culture { get; }
 
-	Vec2 InitialPosition { get; }
-
-	uint LabelColor { get; }
+	Settlement InitialHomeSettlement { get; }
 
 	uint Color { get; }
 
 	uint Color2 { get; }
-
-	uint AlternativeColor { get; }
-
-	uint AlternativeColor2 { get; }
 
 	CharacterObject BasicTroop { get; }
 
@@ -50,7 +43,9 @@ public interface IFaction
 
 	MBReadOnlyList<Town> Fiefs { get; }
 
-	MBReadOnlyList<Hero> Lords { get; }
+	MBReadOnlyList<Hero> AliveLords { get; }
+
+	MBReadOnlyList<Hero> DeadLords { get; }
 
 	MBReadOnlyList<Hero> Heroes { get; }
 
@@ -70,15 +65,17 @@ public interface IFaction
 
 	bool IsMapFaction { get; }
 
+	bool HasNavalNavigationCapability { get; }
+
 	IFaction MapFaction { get; }
 
-	float TotalStrength { get; }
+	float CurrentTotalStrength { get; }
 
 	Settlement FactionMidSettlement { get; }
 
 	float DistanceToClosestNonAllyFortification { get; }
 
-	IEnumerable<StanceLink> Stances { get; }
+	MBReadOnlyList<IFaction> FactionsAtWarWith { get; }
 
 	int TributeWallet { get; set; }
 
@@ -97,4 +94,6 @@ public interface IFaction
 	bool IsAtWarWith(IFaction other);
 
 	StanceLink GetStanceWith(IFaction other);
+
+	void UpdateFactionsAtWarWith();
 }

@@ -91,12 +91,17 @@ public class CharacterCreationCultureVisualBrushWidget : BrushWidget
 		}
 		if (UseSmallVisuals)
 		{
+			Sprite sprite = base.Context.SpriteData.GetSprite("CharacterCreation\\Culture\\" + newCultureId);
+			if (sprite == null)
+			{
+				sprite = base.Context.SpriteData.GetSprite("CharacterCreation\\Culture\\blank_culture");
+			}
 			foreach (Style style in base.Brush.Styles)
 			{
 				StyleLayer[] layers = style.GetLayers();
 				for (int i = 0; i < layers.Length; i++)
 				{
-					layers[i].Sprite = base.Context.SpriteData.GetSprite("CharacterCreation\\Culture\\" + newCultureId);
+					layers[i].Sprite = sprite;
 				}
 			}
 		}

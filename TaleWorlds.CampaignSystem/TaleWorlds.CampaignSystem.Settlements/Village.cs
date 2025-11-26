@@ -110,7 +110,7 @@ public class Village : SettlementComponent
 			}
 			return _bound;
 		}
-		internal set
+		set
 		{
 			if (_tradeBound != value && !_bound.IsTown)
 			{
@@ -120,6 +120,8 @@ public class Village : SettlementComponent
 			}
 		}
 	}
+
+	public override IFaction MapFaction => Bound.MapFaction;
 
 	public VillageMarketData MarketData => _marketData;
 
@@ -243,13 +245,13 @@ public class Village : SettlementComponent
 		ChangeGold(1000);
 	}
 
-	public int GetWerehouseCapacity()
+	public int GetWarehouseCapacity()
 	{
 		float num = Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyFoodProductionAmount(this);
 		foreach (var production in VillageType.Productions)
 		{
-			float num2 = Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyProductionAmount(this, production.Item1);
-			num += num2;
+			float resultNumber = Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyProductionAmount(this, production.Item1).ResultNumber;
+			num += resultNumber;
 		}
 		return MathF.Ceiling(MathF.Max(1f, num) * 5f);
 	}
@@ -279,19 +281,22 @@ public class Village : SettlementComponent
 
 	public override void Deserialize(MBObjectManager objectManager, XmlNode node)
 	{
-		bool isInitialized = base.IsInitialized;
 		base.Deserialize(objectManager, node);
 		base.BackgroundCropPosition = float.Parse(node.Attributes["background_crop_position"].Value);
 		base.BackgroundMeshName = node.Attributes["background_mesh"].Value;
 		base.CastleBackgroundMeshName = node.Attributes["castle_background_mesh"].Value;
 		base.WaitMeshName = node.Attributes["wait_mesh"].Value;
-		if (!isInitialized)
+		if (Campaign.Current.CampaignGameLoadingType != Campaign.GameLoadingType.SavedCampaign)
 		{
 			Hearth = int.Parse(node.Attributes["hearth"].Value);
 		}
 		VillageType = (VillageType)objectManager.ReadObjectReferenceFromXml("village_type", typeof(VillageType), node);
-		if (!isInitialized)
+		if (Campaign.Current.CampaignGameLoadingType != Campaign.GameLoadingType.SavedCampaign)
 		{
+			if (Bound != null && Bound.IsTown)
+			{
+				Bound.Town.RemoveTradeBoundVillageInternal(this);
+			}
 			Bound = (Settlement)objectManager.ReadObjectReferenceFromXml("bound", typeof(Settlement), node);
 			if (Bound.IsTown)
 			{
@@ -336,9 +341,5 @@ public class Village : SettlementComponent
 			return ProsperityLevel.Mid;
 		}
 		return ProsperityLevel.Low;
-	}
-
-	protected override void OnInventoryUpdated(ItemRosterElement item, int count)
-	{
 	}
 }

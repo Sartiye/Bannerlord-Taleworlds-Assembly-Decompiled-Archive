@@ -17,6 +17,11 @@ public class TownEncounter : LocationEncounter
 		string sceneName = nextLocation.GetSceneName(wallLevel);
 		if (nextLocation.StringId == "center")
 		{
+			if (Campaign.Current.IsMainHeroDisguised)
+			{
+				string civilianUpgradeLevelTag = Campaign.Current.Models.LocationModel.GetCivilianUpgradeLevelTag(wallLevel);
+				return CampaignMission.OpenDisguiseMission(sceneName, willSetUpContact: false, civilianUpgradeLevelTag, previousLocation);
+			}
 			return CampaignMission.OpenTownCenterMission(sceneName, nextLocation, talkToChar, wallLevel, playerSpecialSpawnTag);
 		}
 		if (nextLocation.StringId == "arena")

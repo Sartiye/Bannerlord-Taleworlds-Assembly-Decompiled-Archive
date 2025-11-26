@@ -1,3 +1,4 @@
+using System.Threading;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -26,8 +27,6 @@ public class MissionEquipment
 		private const int CachedBoolCount = 5;
 
 		private const int CachedFloatCount = 1;
-
-		private const int TotalCachedCount = 6;
 
 		private float _cachedFloat;
 
@@ -108,6 +107,8 @@ public class MissionEquipment
 		}
 	}
 
+	private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
+
 	private readonly MissionWeapon[] _weaponSlots;
 
 	private MissionEquipmentCache _cache;
@@ -153,6 +154,14 @@ public class MissionEquipment
 		}
 	}
 
+	public void FillFrom(MissionEquipment sourceEquipment)
+	{
+		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumAllWeaponSlots; equipmentIndex++)
+		{
+			this[equipmentIndex] = new MissionWeapon(sourceEquipment[equipmentIndex].Item, sourceEquipment[equipmentIndex].ItemModifier, null);
+		}
+	}
+
 	public void FillFrom(Equipment sourceEquipment, Banner banner)
 	{
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumAllWeaponSlots; equipmentIndex++)
@@ -188,11 +197,31 @@ public class MissionEquipment
 
 	public float GetTotalWeightOfWeapons()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			_cache.UpdateAndMarkValid(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons, CalculateGetTotalWeightOfWeapons());
+			if (_cache.IsValid(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons))
+			{
+				_cache.UpdateAndMarkValid(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons, CalculateGetTotalWeightOfWeapons());
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedFloat.TotalWeightOfWeapons);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	public static EquipmentIndex SelectWeaponPickUpSlot(Agent agentPickingUp, MissionWeapon weaponBeingPickedUp, bool isStuckMissile)
@@ -204,61 +233,61 @@ public class MissionEquipment
 		}
 		else
 		{
-			Agent.HandIndex handIndex = (weaponBeingPickedUp.Item.ItemFlags.HasAnyFlag(ItemFlags.HeldInOffHand) ? Agent.HandIndex.OffHand : Agent.HandIndex.MainHand);
-			EquipmentIndex wieldedItemIndex = agentPickingUp.GetWieldedItemIndex(handIndex);
-			MissionWeapon missionWeapon = ((wieldedItemIndex != EquipmentIndex.None) ? agentPickingUp.Equipment[wieldedItemIndex] : MissionWeapon.Invalid);
+			bool flag = weaponBeingPickedUp.Item.ItemFlags.HasAnyFlag(ItemFlags.HeldInOffHand);
+			EquipmentIndex equipmentIndex2 = (flag ? agentPickingUp.GetOffhandWieldedItemIndex() : agentPickingUp.GetPrimaryWieldedItemIndex());
+			MissionWeapon missionWeapon = ((equipmentIndex2 != EquipmentIndex.None) ? agentPickingUp.Equipment[equipmentIndex2] : MissionWeapon.Invalid);
 			if (isStuckMissile)
 			{
-				bool flag = false;
 				bool flag2 = false;
+				bool flag3 = false;
 				bool isConsumable = weaponBeingPickedUp.Item.PrimaryWeapon.IsConsumable;
 				if (isConsumable)
 				{
-					flag = !missionWeapon.IsEmpty && missionWeapon.IsEqualTo(weaponBeingPickedUp) && missionWeapon.HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount);
-					flag2 = !missionWeapon.IsEmpty && missionWeapon.IsSameType(weaponBeingPickedUp) && missionWeapon.HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount);
+					flag2 = !missionWeapon.IsEmpty && missionWeapon.IsEqualTo(weaponBeingPickedUp) && missionWeapon.HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount);
+					flag3 = !missionWeapon.IsEmpty && missionWeapon.IsSameType(weaponBeingPickedUp) && missionWeapon.HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount);
 				}
-				EquipmentIndex equipmentIndex2 = EquipmentIndex.None;
 				EquipmentIndex equipmentIndex3 = EquipmentIndex.None;
 				EquipmentIndex equipmentIndex4 = EquipmentIndex.None;
-				for (EquipmentIndex equipmentIndex5 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex5 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex5++)
+				EquipmentIndex equipmentIndex5 = EquipmentIndex.None;
+				for (EquipmentIndex equipmentIndex6 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex6 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex6++)
 				{
 					if (isConsumable)
 					{
-						if (equipmentIndex3 != EquipmentIndex.None && !agentPickingUp.Equipment[equipmentIndex5].IsEmpty && agentPickingUp.Equipment[equipmentIndex5].IsEqualTo(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex5].HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount))
+						if (equipmentIndex4 != EquipmentIndex.None && !agentPickingUp.Equipment[equipmentIndex6].IsEmpty && agentPickingUp.Equipment[equipmentIndex6].IsEqualTo(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex6].HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount))
 						{
-							equipmentIndex3 = equipmentIndex5;
+							equipmentIndex4 = equipmentIndex6;
 							continue;
 						}
-						if (equipmentIndex4 == EquipmentIndex.None && !agentPickingUp.Equipment[equipmentIndex5].IsEmpty && agentPickingUp.Equipment[equipmentIndex5].IsSameType(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex5].HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount))
+						if (equipmentIndex5 == EquipmentIndex.None && !agentPickingUp.Equipment[equipmentIndex6].IsEmpty && agentPickingUp.Equipment[equipmentIndex6].IsSameType(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex6].HasEnoughSpaceForAmount(weaponBeingPickedUp.Amount))
 						{
-							equipmentIndex4 = equipmentIndex5;
+							equipmentIndex5 = equipmentIndex6;
 							continue;
 						}
 					}
-					if (equipmentIndex2 == EquipmentIndex.None && agentPickingUp.Equipment[equipmentIndex5].IsEmpty)
+					if (equipmentIndex3 == EquipmentIndex.None && agentPickingUp.Equipment[equipmentIndex6].IsEmpty)
 					{
-						equipmentIndex2 = equipmentIndex5;
+						equipmentIndex3 = equipmentIndex6;
 					}
 				}
-				if (flag)
+				if (flag2)
 				{
-					equipmentIndex = wieldedItemIndex;
-				}
-				else if (equipmentIndex3 != EquipmentIndex.None)
-				{
-					equipmentIndex = equipmentIndex4;
-				}
-				else if (flag2)
-				{
-					equipmentIndex = wieldedItemIndex;
+					equipmentIndex = equipmentIndex2;
 				}
 				else if (equipmentIndex4 != EquipmentIndex.None)
 				{
-					equipmentIndex = equipmentIndex4;
+					equipmentIndex = equipmentIndex5;
 				}
-				else if (equipmentIndex2 != EquipmentIndex.None)
+				else if (flag3)
 				{
 					equipmentIndex = equipmentIndex2;
+				}
+				else if (equipmentIndex5 != EquipmentIndex.None)
+				{
+					equipmentIndex = equipmentIndex5;
+				}
+				else if (equipmentIndex3 != EquipmentIndex.None)
+				{
+					equipmentIndex = equipmentIndex3;
 				}
 			}
 			else
@@ -270,33 +299,22 @@ public class MissionEquipment
 				}
 				else
 				{
-					if (handIndex == Agent.HandIndex.OffHand && wieldedItemIndex != EquipmentIndex.None)
+					if (flag && equipmentIndex2 != EquipmentIndex.None)
 					{
 						for (int i = 0; i < 4; i++)
 						{
-							if (i != (int)wieldedItemIndex && !agentPickingUp.Equipment[i].IsEmpty && agentPickingUp.Equipment[i].Item.ItemFlags.HasAnyFlag(ItemFlags.HeldInOffHand))
+							if (i != (int)equipmentIndex2 && !agentPickingUp.Equipment[i].IsEmpty && agentPickingUp.Equipment[i].Item.ItemFlags.HasAnyFlag(ItemFlags.HeldInOffHand))
 							{
-								equipmentIndex = wieldedItemIndex;
+								equipmentIndex = equipmentIndex2;
 								break;
 							}
 						}
 					}
 					if (equipmentIndex == EquipmentIndex.None && isConsumable2)
 					{
-						for (EquipmentIndex equipmentIndex6 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex6 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex6++)
-						{
-							if (!agentPickingUp.Equipment[equipmentIndex6].IsEmpty && agentPickingUp.Equipment[equipmentIndex6].IsSameType(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex6].Amount < agentPickingUp.Equipment[equipmentIndex6].ModifiedMaxAmount)
-							{
-								equipmentIndex = equipmentIndex6;
-								break;
-							}
-						}
-					}
-					if (equipmentIndex == EquipmentIndex.None)
-					{
 						for (EquipmentIndex equipmentIndex7 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex7 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex7++)
 						{
-							if (agentPickingUp.Equipment[equipmentIndex7].IsEmpty)
+							if (!agentPickingUp.Equipment[equipmentIndex7].IsEmpty && agentPickingUp.Equipment[equipmentIndex7].IsSameType(weaponBeingPickedUp) && agentPickingUp.Equipment[equipmentIndex7].Amount < agentPickingUp.Equipment[equipmentIndex7].ModifiedMaxAmount)
 							{
 								equipmentIndex = equipmentIndex7;
 								break;
@@ -307,16 +325,27 @@ public class MissionEquipment
 					{
 						for (EquipmentIndex equipmentIndex8 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex8 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex8++)
 						{
-							if (!agentPickingUp.Equipment[equipmentIndex8].IsEmpty && agentPickingUp.Equipment[equipmentIndex8].IsAnyConsumable() && agentPickingUp.Equipment[equipmentIndex8].Amount == 0)
+							if (agentPickingUp.Equipment[equipmentIndex8].IsEmpty)
 							{
 								equipmentIndex = equipmentIndex8;
 								break;
 							}
 						}
 					}
+					if (equipmentIndex == EquipmentIndex.None)
+					{
+						for (EquipmentIndex equipmentIndex9 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex9 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex9++)
+						{
+							if (!agentPickingUp.Equipment[equipmentIndex9].IsEmpty && agentPickingUp.Equipment[equipmentIndex9].IsAnyConsumable() && agentPickingUp.Equipment[equipmentIndex9].Amount == 0)
+							{
+								equipmentIndex = equipmentIndex9;
+								break;
+							}
+						}
+					}
 					if (equipmentIndex == EquipmentIndex.None && !missionWeapon.IsEmpty)
 					{
-						equipmentIndex = wieldedItemIndex;
+						equipmentIndex = equipmentIndex2;
 					}
 					if (equipmentIndex == EquipmentIndex.None)
 					{
@@ -598,47 +627,147 @@ public class MissionEquipment
 
 	public bool ContainsNonConsumableRangedWeaponWithAmmo()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			GatherInformationAndUpdateCache();
+			if (_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo))
+			{
+				GatherInformationAndUpdateCache();
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsNonConsumableRangedWeaponWithAmmo);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	public bool ContainsMeleeWeapon()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			GatherInformationAndUpdateCache();
+			if (_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon))
+			{
+				GatherInformationAndUpdateCache();
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsMeleeWeapon);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	public bool ContainsShield()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsShield))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			GatherInformationAndUpdateCache();
+			if (_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsShield))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsShield);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsShield);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsShield))
+			{
+				GatherInformationAndUpdateCache();
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsShield);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	public bool ContainsSpear()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsSpear))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			GatherInformationAndUpdateCache();
+			if (_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsSpear))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsSpear);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsSpear);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsSpear))
+			{
+				GatherInformationAndUpdateCache();
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsSpear);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	public bool ContainsThrownWeapon()
 	{
-		if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsThrownWeapon))
+		_cacheLock.EnterReadLock();
+		try
 		{
-			GatherInformationAndUpdateCache();
+			if (_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsThrownWeapon))
+			{
+				return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsThrownWeapon);
+			}
 		}
-		return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsThrownWeapon);
+		finally
+		{
+			_cacheLock.ExitReadLock();
+		}
+		_cacheLock.EnterWriteLock();
+		try
+		{
+			if (!_cache.IsValid(MissionEquipmentCache.CachedBool.ContainsThrownWeapon))
+			{
+				GatherInformationAndUpdateCache();
+			}
+			return _cache.GetValue(MissionEquipmentCache.CachedBool.ContainsThrownWeapon);
+		}
+		finally
+		{
+			_cacheLock.ExitWriteLock();
+		}
 	}
 
 	private void GatherInformationAndUpdateCache()

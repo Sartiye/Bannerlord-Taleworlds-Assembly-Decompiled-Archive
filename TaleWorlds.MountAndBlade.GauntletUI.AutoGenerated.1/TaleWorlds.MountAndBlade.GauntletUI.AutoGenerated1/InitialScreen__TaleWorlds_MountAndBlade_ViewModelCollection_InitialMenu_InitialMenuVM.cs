@@ -21,23 +21,25 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private InitialMenuAnimControllerWidget _widget_0_0_0;
 
-	private Widget _widget_0_0_1;
+	private BrushWidget _widget_0_0_1;
 
-	private Widget _widget_0_0_2;
+	private BrushWidget _widget_0_0_2;
 
-	private ScrollablePanel _widget_0_0_2_0;
+	private Widget _widget_0_0_3;
 
-	private Widget _widget_0_0_2_0_0;
+	private ScrollablePanel _widget_0_0_3_0;
 
-	private NavigationScopeTargeter _widget_0_0_2_0_0_0;
+	private Widget _widget_0_0_3_0_0;
 
-	private NavigatableListPanel _widget_0_0_2_0_0_1;
+	private NavigationScopeTargeter _widget_0_0_3_0_0_0;
 
-	private ScrollbarWidget _widget_0_0_2_1;
+	private NavigatableListPanel _widget_0_0_3_0_0_1;
 
-	private Widget _widget_0_0_2_1_0;
+	private ScrollbarWidget _widget_0_0_3_1;
 
-	private ImageWidget _widget_0_0_2_1_1;
+	private Widget _widget_0_0_3_1_0;
+
+	private ImageWidget _widget_0_0_3_1_1;
 
 	private ListPanel _widget_1;
 
@@ -47,7 +49,15 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private TextWidget _widget_2_0;
 
-	private TextWidget _widget_3;
+	private NavigationScopeTargeter _widget_3;
+
+	private ButtonWidget _widget_4;
+
+	private Widget _widget_4_0;
+
+	private BrushWidget _widget_4_0_0;
+
+	private IconBrushWidget _widget_4_0_1;
 
 	private InitialMenuVM _datasource_Root;
 
@@ -60,7 +70,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private VisualDefinition CreateVisualDefinitionMainMenu()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("MainMenu", 0.4f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("MainMenu", 0.4f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			PositionYOffset = 0f
@@ -74,7 +84,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private VisualDefinition CreateVisualDefinitionOptionFadeIn()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("OptionFadeIn", 0.3f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("OptionFadeIn", 0.3f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			PositionXOffset = -20f
@@ -82,6 +92,27 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		visualDefinition.AddVisualState(new VisualState("Activated")
 		{
 			PositionXOffset = 0f
+		});
+		return visualDefinition;
+	}
+
+	private VisualDefinition CreateVisualDefinitionWarSailsUpsellButton()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("WarSailsUpsellButton", 0.22f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			SuggestedWidth = 400f,
+			SuggestedHeight = 233f
+		});
+		visualDefinition.AddVisualState(new VisualState("Hovered")
+		{
+			SuggestedWidth = 402f,
+			SuggestedHeight = 235f
+		});
+		visualDefinition.AddVisualState(new VisualState("Pressed")
+		{
+			SuggestedWidth = 398f,
+			SuggestedHeight = 231f
 		});
 		return visualDefinition;
 	}
@@ -95,24 +126,26 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_0.AddChild(_widget_0_0);
 		_widget_0_0_0 = new InitialMenuAnimControllerWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
-		_widget_0_0_1 = new Widget(base.Context);
+		_widget_0_0_1 = new BrushWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);
-		_widget_0_0_2 = new Widget(base.Context);
+		_widget_0_0_2 = new BrushWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_2);
-		_widget_0_0_2_0 = new ScrollablePanel(base.Context);
-		_widget_0_0_2.AddChild(_widget_0_0_2_0);
-		_widget_0_0_2_0_0 = new Widget(base.Context);
-		_widget_0_0_2_0.AddChild(_widget_0_0_2_0_0);
-		_widget_0_0_2_0_0_0 = new NavigationScopeTargeter(base.Context);
-		_widget_0_0_2_0_0.AddChild(_widget_0_0_2_0_0_0);
-		_widget_0_0_2_0_0_1 = new NavigatableListPanel(base.Context);
-		_widget_0_0_2_0_0.AddChild(_widget_0_0_2_0_0_1);
-		_widget_0_0_2_1 = new ScrollbarWidget(base.Context);
-		_widget_0_0_2.AddChild(_widget_0_0_2_1);
-		_widget_0_0_2_1_0 = new Widget(base.Context);
-		_widget_0_0_2_1.AddChild(_widget_0_0_2_1_0);
-		_widget_0_0_2_1_1 = new ImageWidget(base.Context);
-		_widget_0_0_2_1.AddChild(_widget_0_0_2_1_1);
+		_widget_0_0_3 = new Widget(base.Context);
+		_widget_0_0.AddChild(_widget_0_0_3);
+		_widget_0_0_3_0 = new ScrollablePanel(base.Context);
+		_widget_0_0_3.AddChild(_widget_0_0_3_0);
+		_widget_0_0_3_0_0 = new Widget(base.Context);
+		_widget_0_0_3_0.AddChild(_widget_0_0_3_0_0);
+		_widget_0_0_3_0_0_0 = new NavigationScopeTargeter(base.Context);
+		_widget_0_0_3_0_0.AddChild(_widget_0_0_3_0_0_0);
+		_widget_0_0_3_0_0_1 = new NavigatableListPanel(base.Context);
+		_widget_0_0_3_0_0.AddChild(_widget_0_0_3_0_0_1);
+		_widget_0_0_3_1 = new ScrollbarWidget(base.Context);
+		_widget_0_0_3.AddChild(_widget_0_0_3_1);
+		_widget_0_0_3_1_0 = new Widget(base.Context);
+		_widget_0_0_3_1.AddChild(_widget_0_0_3_1_0);
+		_widget_0_0_3_1_1 = new ImageWidget(base.Context);
+		_widget_0_0_3_1.AddChild(_widget_0_0_3_1_1);
 		_widget_1 = new ListPanel(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_1_0 = new TextWidget(base.Context);
@@ -121,18 +154,27 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget.AddChild(_widget_2);
 		_widget_2_0 = new TextWidget(base.Context);
 		_widget_2.AddChild(_widget_2_0);
-		_widget_3 = new TextWidget(base.Context);
+		_widget_3 = new NavigationScopeTargeter(base.Context);
 		_widget.AddChild(_widget_3);
+		_widget_4 = new ButtonWidget(base.Context);
+		_widget.AddChild(_widget_4);
+		_widget_4_0 = new Widget(base.Context);
+		_widget_4.AddChild(_widget_4_0);
+		_widget_4_0_0 = new BrushWidget(base.Context);
+		_widget_4_0.AddChild(_widget_4_0_0);
+		_widget_4_0_1 = new IconBrushWidget(base.Context);
+		_widget_4_0.AddChild(_widget_4_0_1);
 	}
 
 	public void SetIds()
 	{
-		_widget_0_0_2.Id = "MenuItemsParent";
-		_widget_0_0_2_0.Id = "ScrollablePanel";
-		_widget_0_0_2_0_0.Id = "ClipRect";
-		_widget_0_0_2_0_0_1.Id = "MenuItems";
-		_widget_0_0_2_1.Id = "VerticalScrollbar";
-		_widget_0_0_2_1_1.Id = "VerticalScrollbarHandle";
+		_widget_0_0_3.Id = "MenuItemsParent";
+		_widget_0_0_3_0.Id = "ScrollablePanel";
+		_widget_0_0_3_0_0.Id = "ClipRect";
+		_widget_0_0_3_0_0_1.Id = "MenuItems";
+		_widget_0_0_3_1.Id = "VerticalScrollbar";
+		_widget_0_0_3_1_1.Id = "VerticalScrollbarHandle";
+		_widget_4.Id = "WarSailsUpsellButton";
 	}
 
 	public void SetAttributes()
@@ -145,84 +187,96 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_0.SuggestedWidth = 445f;
 		_widget_0.MarginLeft = 85f;
 		_widget_0.Sprite = base.Context.SpriteData.GetSprite("General\\InitialMenu\\main_menu_texture");
+		_widget_0.AlphaFactor = 0.925f;
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_0_0.OptionsList = _widget_0_0.FindChild(new BindingPath("ScrollablePanel\\ClipRect\\MenuItems"));
-		_widget_0_0_0.InitialWaitTime = 0.2f;
-		_widget_0_0_0.WaitTimeBetweenOptions = 0.1f;
-		_widget_0_0_0.OptionFadeInTime = 0.2f;
+		_widget_0_0_0.OptionsList = _widget_0_0_3_0_0_1;
+		_widget_0_0_0.InitialWaitTime = 0.1f;
+		_widget_0_0_0.WaitTimeBetweenOptions = 0.05f;
+		_widget_0_0_0.OptionFadeInTime = 0.1f;
 		_widget_0_0_0.IsAnimEnabled = false;
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_1.SuggestedWidth = 380f;
-		_widget_0_0_1.SuggestedHeight = 103f;
+		_widget_0_0_1.SuggestedWidth = 379.2f;
+		_widget_0_0_1.SuggestedHeight = 103.49f;
 		_widget_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_0_1.MarginTop = 100f;
-		_widget_0_0_1.Sprite = base.Context.SpriteData.GetSprite("General\\InitialMenu\\main_menu_logo");
-		_widget_0_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2.MarginTop = 280f;
-		_widget_0_0_2.MarginBottom = 30f;
-		_widget_0_0_2.MarginLeft = 10f;
-		_widget_0_0_2.MarginRight = 10f;
-		_widget_0_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0.AutoHideScrollBars = true;
-		_widget_0_0_2_0.ClipRect = _widget_0_0_2_0_0;
-		_widget_0_0_2_0.InnerPanel = _widget_0_0_2_0_0_1;
-		_widget_0_0_2_0.VerticalScrollbar = _widget_0_0_2_1;
-		_widget_0_0_2_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_0.ClipContents = true;
-		_widget_0_0_2_0_0_0.ScopeID = "InitialScreen";
-		_widget_0_0_2_0_0_0.ScopeParent = _widget_0_0_2_0_0_1;
-		_widget_0_0_2_0_0_0.ScopeMovements = GamepadNavigationTypes.Vertical;
-		_widget_0_0_2_0_0_0.HasCircularMovement = true;
-		_widget_0_0_2_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_2_0_0_1.MinHeight = 630f;
-		_widget_0_0_2_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_2_0_0_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_0_0_2_0_0_1.MarginLeft = 20f;
-		_widget_0_0_2_0_0_1.MarginRight = 20f;
-		_widget_0_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
-		_widget_0_0_2_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_2_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_1.SuggestedWidth = 8f;
-		_widget_0_0_2_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_0_2_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_0_0_2_1.MarginTop = 10f;
-		_widget_0_0_2_1.MarginBottom = 10f;
-		_widget_0_0_2_1.MarginRight = 10f;
-		_widget_0_0_2_1.AlignmentAxis = AlignmentAxis.Vertical;
-		_widget_0_0_2_1.Handle = _widget_0_0_2_1_1;
-		_widget_0_0_2_1.MaxValue = 100f;
-		_widget_0_0_2_1.MinValue = 0f;
-		_widget_0_0_2_1_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_1_0.SuggestedWidth = 2f;
-		_widget_0_0_2_1_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_2_1_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-		_widget_0_0_2_1_0.Color = new Color(0.3529412f, 0.2509804f, 0.2f);
-		_widget_0_0_2_1_0.AlphaFactor = 0.2f;
-		_widget_0_0_2_1_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_2_1_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_2_1_1.SuggestedHeight = 10f;
-		_widget_0_0_2_1_1.SuggestedWidth = 4f;
-		_widget_0_0_2_1_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_2_1_1.Brush = base.Context.GetBrush("FaceGen.Scrollbar.Handle");
-		_widget_0_0_2_1_1.Brush.AlphaFactor = 0.7f;
+		_widget_0_0_1.Brush = base.Context.GetBrush("InitialMenu.Logo");
+		_widget_0_0_1.ForcePixelPerfectRenderPlacement = true;
+		_widget_0_0_2.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_2.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_2.SuggestedWidth = 379.2f;
+		_widget_0_0_2.SuggestedHeight = 154.84f;
+		_widget_0_0_2.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_2.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_2.MarginTop = 100f;
+		_widget_0_0_2.Brush = base.Context.GetBrush("InitialMenu.Logo.WarSails");
+		_widget_0_0_2.ForcePixelPerfectRenderPlacement = true;
+		_widget_0_0_3.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3.MarginTop = 290f;
+		_widget_0_0_3.MarginBottom = 30f;
+		_widget_0_0_3.MarginLeft = 10f;
+		_widget_0_0_3.MarginRight = 10f;
+		_widget_0_0_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_0.AutoHideScrollBars = true;
+		_widget_0_0_3_0.ClipRect = _widget_0_0_3_0_0;
+		_widget_0_0_3_0.InnerPanel = _widget_0_0_3_0_0_1;
+		_widget_0_0_3_0.VerticalScrollbar = _widget_0_0_3_1;
+		_widget_0_0_3_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_0_0.ClipContents = true;
+		_widget_0_0_3_0_0_0.ScopeID = "InitialScreen";
+		_widget_0_0_3_0_0_0.ScopeParent = _widget_0_0_3_0_0_1;
+		_widget_0_0_3_0_0_0.ScopeMovements = GamepadNavigationTypes.Vertical;
+		_widget_0_0_3_0_0_0.HasCircularMovement = true;
+		_widget_0_0_3_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_3_0_0_1.MinHeight = 630f;
+		_widget_0_0_3_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_3_0_0_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_3_0_0_1.MarginLeft = 20f;
+		_widget_0_0_3_0_0_1.MarginRight = 20f;
+		_widget_0_0_3_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_3_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_3_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_1.SuggestedWidth = 8f;
+		_widget_0_0_3_1.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_0_0_3_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_0_0_3_1.MarginTop = 10f;
+		_widget_0_0_3_1.MarginBottom = 10f;
+		_widget_0_0_3_1.MarginRight = 10f;
+		_widget_0_0_3_1.AlignmentAxis = AlignmentAxis.Vertical;
+		_widget_0_0_3_1.Handle = _widget_0_0_3_1_1;
+		_widget_0_0_3_1.MaxValue = 100f;
+		_widget_0_0_3_1.MinValue = 0f;
+		_widget_0_0_3_1_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_3_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_3_1_0.SuggestedWidth = 2f;
+		_widget_0_0_3_1_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_3_1_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_0_0_3_1_0.Color = new Color(0.3529412f, 0.2509804f, 0.2f);
+		_widget_0_0_3_1_0.AlphaFactor = 0.2f;
+		_widget_0_0_3_1_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_3_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_3_1_1.SuggestedHeight = 10f;
+		_widget_0_0_3_1_1.SuggestedWidth = 4f;
+		_widget_0_0_3_1_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_3_1_1.Brush = base.Context.GetBrush("FaceGen.Scrollbar.Handle");
+		_widget_0_0_3_1_1.Brush.AlphaFactor = 0.7f;
 		_widget_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1.MarginBottom = 50f;
-		_widget_1.MarginRight = 50f;
+		_widget_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_1.MarginTop = 25f;
+		_widget_1.MarginRight = 15f;
 		_widget_1.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_1.Color = new Color(0f, 0f, 0f, 2f / 3f);
 		_widget_1.AlphaFactor = 0.7f;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.Brush = base.Context.GetBrush("InitialMenuButtonBrush");
@@ -231,10 +285,9 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_1_0.MarginTop = 10f;
 		_widget_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_2.MarginBottom = 250f;
-		_widget_2.MarginRight = 50f;
+		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_2.VerticalAlignment = VerticalAlignment.Top;
+		_widget_2.MarginTop = 25f;
 		_widget_2.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_2.Color = new Color(0f, 0f, 0f, 2f / 3f);
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -243,13 +296,38 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_2_0.MarginRight = 10f;
 		_widget_2_0.MarginTop = 5f;
 		_widget_2_0.MarginBottom = 5f;
-		_widget_3.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_3.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_3.MarginBottom = 15f;
-		_widget_3.MarginRight = 15f;
-		_widget_3.Brush = base.Context.GetBrush("GameVersion.Text");
+		_widget_3.ScopeID = "WarSailsUpsellButtonScope";
+		_widget_3.ScopeParent = _widget_4;
+		_widget_4.DoNotPassEventsToChildren = true;
+		_widget_4.UpdateChildrenStates = true;
+		_widget_4.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4.SuggestedWidth = 400f;
+		_widget_4.SuggestedHeight = 233f;
+		_widget_4.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_4.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_4.MarginLeft = 550f;
+		_widget_4.MarginBottom = 10f;
+		_widget_4.ExtendCursorAreaLeft = -4f;
+		_widget_4.ExtendCursorAreaRight = -4f;
+		_widget_4.ExtendCursorAreaBottom = -4f;
+		_widget_4.ExtendCursorAreaTop = -28f;
+		_widget_4.GamepadNavigationIndex = 0;
+		_widget_4_0.VisualDefinition = CreateVisualDefinitionWarSailsUpsellButton();
+		_widget_4_0.UpdateChildrenStates = true;
+		_widget_4_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_0.SuggestedWidth = 400f;
+		_widget_4_0.SuggestedHeight = 233f;
+		_widget_4_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_0_0.Brush = base.Context.GetBrush("WarSails.Upsell.Button");
+		_widget_4_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_0_1.Brush = base.Context.GetBrush("WarSails.Upsell.Button");
+		_widget_4_0_1.IconBrush = base.Context.GetBrush("WarSails.Upsell.Button.OutNow");
 	}
 
 	public void RefreshBindingWithChildren()
@@ -274,6 +352,24 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+		_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_2;
 		_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 		_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -319,14 +415,33 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
 		_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
 		_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
+		_widget_4.EventFire -= EventListenerOf_widget_4;
+		_widget_4.PropertyChanged -= PropertyChangedListenerOf_widget_4;
+		_widget_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4;
+		_widget_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4;
+		_widget_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4;
+		_widget_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4;
+		_widget_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4;
+		_widget_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4;
+		_widget_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4;
+		_widget_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4;
+		_widget_4_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1;
 		if (_datasource_Root_MenuOptions != null)
 		{
 			_datasource_Root_MenuOptions.ListChanged -= OnList_datasource_Root_MenuOptionsChanged;
-			for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_0_0_3_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = _widget_0_0_2_0_0_1.GetChild(num);
+				Widget child = _widget_0_0_3_0_0_1.GetChild(num);
 				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)_widget_0_0_2_0_0_1.GetChild(num)).DestroyDataSource();
+				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)_widget_0_0_3_0_0_1.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_MenuOptions = null;
 		}
@@ -336,6 +451,120 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 	public void SetDataSource(InitialMenuVM dataSource)
 	{
 		RefreshDataSource_datasource_Root(dataSource);
+	}
+
+	private void EventListenerOf_widget_4(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "Click")
+		{
+			_datasource_Root.ExecuteNavigateToDLCStorePage();
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_1(string propertyName)
+	{
+		if (propertyName == "IsHidden")
+		{
+			_datasource_Root.IsNavalDLCEnabled = _widget_0_0_1.IsHidden;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_2(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.IsNavalDLCEnabled = _widget_0_0_2.IsVisible;
+		}
 	}
 
 	private void PropertyChangedListenerOf_widget_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -597,9 +826,119 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private void HandleWidgetPropertyChangeOf_widget_3(string propertyName)
 	{
-		if (propertyName == "Text")
+		if (propertyName == "IsScopeEnabled")
 		{
-			_datasource_Root.GameVersionText = _widget_3.Text;
+			_datasource_Root.IsUpsellButtonActive = _widget_3.IsScopeEnabled;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_4(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.IsUpsellButtonVisible = _widget_4.IsVisible;
+		}
+		else if (propertyName == "IsEnabled")
+		{
+			_datasource_Root.IsUpsellButtonActive = _widget_4.IsEnabled;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_4_0_1(string propertyName)
+	{
+		if (propertyName == "IconID")
+		{
+			_datasource_Root.CurrentLanguageString = _widget_4_0_1.IconID;
 		}
 	}
 
@@ -655,6 +994,10 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		case "MenuOptions":
 			RefreshDataSource_datasource_Root_MenuOptions(_datasource_Root.MenuOptions);
 			break;
+		case "IsNavalDLCEnabled":
+			_widget_0_0_1.IsHidden = _datasource_Root.IsNavalDLCEnabled;
+			_widget_0_0_2.IsVisible = _datasource_Root.IsNavalDLCEnabled;
+			break;
 		case "IsProfileSelectionEnabled":
 			_widget_1.IsVisible = _datasource_Root.IsProfileSelectionEnabled;
 			break;
@@ -667,8 +1010,15 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		case "DownloadingText":
 			_widget_2_0.Text = _datasource_Root.DownloadingText;
 			break;
-		case "GameVersionText":
-			_widget_3.Text = _datasource_Root.GameVersionText;
+		case "IsUpsellButtonActive":
+			_widget_3.IsScopeEnabled = _datasource_Root.IsUpsellButtonActive;
+			_widget_4.IsEnabled = _datasource_Root.IsUpsellButtonActive;
+			break;
+		case "IsUpsellButtonVisible":
+			_widget_4.IsVisible = _datasource_Root.IsUpsellButtonVisible;
+			break;
+		case "CurrentLanguageString":
+			_widget_4_0_1.IconID = _datasource_Root.CurrentLanguageString;
 			break;
 		}
 	}
@@ -679,13 +1029,13 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		{
 		case TaleWorlds.Library.ListChangedType.Reset:
 		{
-			for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_0_0_3_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child3 = _widget_0_0_2_0_0_1.GetChild(num);
+				Widget child3 = _widget_0_0_3_0_0_1.GetChild(num);
 				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-				Widget child4 = _widget_0_0_2_0_0_1.GetChild(num);
+				Widget child4 = _widget_0_0_3_0_0_1.GetChild(num);
 				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child4).SetDataSource(null);
-				_widget_0_0_2_0_0_1.RemoveChild(child4);
+				_widget_0_0_3_0_0_1.RemoveChild(child4);
 			}
 			break;
 		}
@@ -694,7 +1044,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			for (int i = 0; i < _datasource_Root_MenuOptions.Count; i++)
 			{
 				InitialMenuOptionVM bindingObject = _datasource_Root_MenuOptions[i];
-				_widget_0_0_2_0_0_1.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+				_widget_0_0_3_0_0_1.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
 			}
 			break;
 		}
@@ -704,7 +1054,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate);
 			InitialMenuOptionVM dataSource = (InitialMenuOptionVM)(generatedWidgetData.Data = _datasource_Root_MenuOptions[e.NewIndex]);
 			initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_2_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, e.NewIndex);
+			_widget_0_0_3_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, e.NewIndex);
 			initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.CreateWidgets();
 			initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetIds();
 			initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetAttributes();
@@ -713,15 +1063,15 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
-			Widget child2 = _widget_0_0_2_0_0_1.GetChild(e.NewIndex);
+			Widget child2 = _widget_0_0_3_0_0_1.GetChild(e.NewIndex);
 			((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
-			Widget child = _widget_0_0_2_0_0_1.GetChild(e.NewIndex);
+			Widget child = _widget_0_0_3_0_0_1.GetChild(e.NewIndex);
 			((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child).SetDataSource(null);
-			_widget_0_0_2_0_0_1.RemoveChild(child);
+			_widget_0_0_3_0_0_1.RemoveChild(child);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemChanged:
@@ -742,6 +1092,24 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_2;
+			_widget_0_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_2;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -787,16 +1155,35 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
 			_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
 			_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
+			_widget_4.EventFire -= EventListenerOf_widget_4;
+			_widget_4.PropertyChanged -= PropertyChangedListenerOf_widget_4;
+			_widget_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4;
+			_widget_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4;
+			_widget_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4;
+			_widget_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4;
+			_widget_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4;
+			_widget_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4;
+			_widget_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4;
+			_widget_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4;
+			_widget_4_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1;
+			_widget_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1;
 			if (_datasource_Root_MenuOptions != null)
 			{
 				_datasource_Root_MenuOptions.ListChanged -= OnList_datasource_Root_MenuOptionsChanged;
-				for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
+				for (int num = _widget_0_0_3_0_0_1.ChildCount - 1; num >= 0; num--)
 				{
-					Widget child = _widget_0_0_2_0_0_1.GetChild(num);
+					Widget child = _widget_0_0_3_0_0_1.GetChild(num);
 					((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-					Widget child2 = _widget_0_0_2_0_0_1.GetChild(num);
+					Widget child2 = _widget_0_0_3_0_0_1.GetChild(num);
 					((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child2).SetDataSource(null);
-					_widget_0_0_2_0_0_1.RemoveChild(child2);
+					_widget_0_0_3_0_0_1.RemoveChild(child2);
 				}
 				_datasource_Root_MenuOptions = null;
 			}
@@ -816,6 +1203,26 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+		_widget_0_0_1.IsHidden = _datasource_Root.IsNavalDLCEnabled;
+		_widget_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1;
+		_widget_0_0_2.IsVisible = _datasource_Root.IsNavalDLCEnabled;
+		_widget_0_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_2;
+		_widget_0_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_2;
 		_widget_1.IsVisible = _datasource_Root.IsProfileSelectionEnabled;
 		_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
@@ -856,7 +1263,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0;
-		_widget_3.Text = _datasource_Root.GameVersionText;
+		_widget_3.IsScopeEnabled = _datasource_Root.IsUpsellButtonActive;
 		_widget_3.PropertyChanged += PropertyChangedListenerOf_widget_3;
 		_widget_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3;
 		_widget_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3;
@@ -866,6 +1273,28 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_3.intPropertyChanged += intPropertyChangedListenerOf_widget_3;
 		_widget_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3;
 		_widget_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3;
+		_widget_4.IsVisible = _datasource_Root.IsUpsellButtonVisible;
+		_widget_4.IsEnabled = _datasource_Root.IsUpsellButtonActive;
+		_widget_4.EventFire += EventListenerOf_widget_4;
+		_widget_4.PropertyChanged += PropertyChangedListenerOf_widget_4;
+		_widget_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4;
+		_widget_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4;
+		_widget_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4;
+		_widget_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4;
+		_widget_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4;
+		_widget_4.intPropertyChanged += intPropertyChangedListenerOf_widget_4;
+		_widget_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4;
+		_widget_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4;
+		_widget_4_0_1.IconID = _datasource_Root.CurrentLanguageString;
+		_widget_4_0_1.PropertyChanged += PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_1;
+		_widget_4_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_1;
 		_datasource_Root_MenuOptions = _datasource_Root.MenuOptions;
 		if (_datasource_Root_MenuOptions != null)
 		{
@@ -876,7 +1305,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate);
 				InitialMenuOptionVM dataSource = (InitialMenuOptionVM)(generatedWidgetData.Data = _datasource_Root_MenuOptions[i]);
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, i);
+				_widget_0_0_3_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, i);
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.CreateWidgets();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetIds();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetAttributes();
@@ -890,13 +1319,13 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		if (_datasource_Root_MenuOptions != null)
 		{
 			_datasource_Root_MenuOptions.ListChanged -= OnList_datasource_Root_MenuOptionsChanged;
-			for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_0_0_3_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = _widget_0_0_2_0_0_1.GetChild(num);
+				Widget child = _widget_0_0_3_0_0_1.GetChild(num);
 				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child).OnBeforeRemovedChild(child);
-				Widget child2 = _widget_0_0_2_0_0_1.GetChild(num);
+				Widget child2 = _widget_0_0_3_0_0_1.GetChild(num);
 				((InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate)child2).SetDataSource(null);
-				_widget_0_0_2_0_0_1.RemoveChild(child2);
+				_widget_0_0_3_0_0_1.RemoveChild(child2);
 			}
 			_datasource_Root_MenuOptions = null;
 		}
@@ -911,7 +1340,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate);
 				InitialMenuOptionVM dataSource = (InitialMenuOptionVM)(generatedWidgetData.Data = _datasource_Root_MenuOptions[i]);
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, i);
+				_widget_0_0_3_0_0_1.AddChildAtIndex(initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate, i);
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.CreateWidgets();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetIds();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetAttributes();

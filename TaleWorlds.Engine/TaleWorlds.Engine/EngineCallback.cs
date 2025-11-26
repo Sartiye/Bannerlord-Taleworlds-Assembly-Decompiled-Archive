@@ -1,7 +1,11 @@
-using System;
+using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
-public class EngineCallback : Attribute
+public class EngineCallback : ManagedFromNativeCallback
 {
+	public EngineCallback(string[] conditionals = null, bool isMultiThreadCallable = false)
+		: base(conditionals, isMultiThreadCallable)
+	{
+	}
 }

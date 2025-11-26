@@ -1,3 +1,4 @@
+using System.Text;
 using TaleWorlds.Library;
 using TaleWorlds.Network;
 
@@ -19,7 +20,7 @@ public class SocketMessage : MessageContract
 
 	public override void SerializeToNetworkMessage(INetworkMessageWriter networkMessage)
 	{
-		byte[] array = Common.SerializeObject(Message);
+		byte[] array = Common.SerializeObjectAsJson(Message);
 		networkMessage.Write(array.Length);
 		for (int i = 0; i < array.Length; i++)
 		{
@@ -34,6 +35,7 @@ public class SocketMessage : MessageContract
 		{
 			array[i] = networkMessage.ReadByte();
 		}
-		Message = (Message)Common.DeserializeObject(array);
+		string @string = Encoding.UTF8.GetString(array);
+		Message = Common.DeserializeObjectFromJson<Message>(@string);
 	}
 }

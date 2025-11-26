@@ -11,12 +11,15 @@ using TaleWorlds.CampaignSystem.CraftingSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameState;
+using TaleWorlds.CampaignSystem.Handlers;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Issues.IssueQuestTasks;
 using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
@@ -53,9 +56,6 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(CampaignInformationManager), 22);
 		AddClassDefinition(typeof(CampaignObjectBase), 23);
 		AddClassDefinition(typeof(MapTimeTracker), 24);
-		AddClassDefinition(typeof(CharacterPerks), 26);
-		AddClassDefinition(typeof(CharacterTraits), 27);
-		AddClassDefinition(typeof(HeroTraitDeveloper), 28);
 		AddClassDefinition(typeof(HeroDeveloper), 29);
 		AddClassDefinition(typeof(CharacterObject), 30);
 		AddClassDefinition(typeof(CharacterRelationManager), 31);
@@ -82,7 +82,6 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(MapEvent), 63);
 		AddClassDefinition(typeof(MapEventManager), 64);
 		AddClassDefinition(typeof(MapEventParty), 65);
-		AddClassDefinition(typeof(LootCollector), 66);
 		AddClassDefinition(typeof(MapEventSide), 67);
 		AddClassDefinition(typeof(FakeMarketData), 68);
 		AddClassDefinition(typeof(VillageMarketData), 69);
@@ -239,7 +238,6 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(RansomOfferMapNotification), 285);
 		AddClassDefinition(typeof(CampaignPeriodicEventManager), 286);
 		AddClassDefinition(typeof(CustomPartyComponent), 287);
-		AddClassDefinition(typeof(CharacterAttributes), 288);
 		AddClassDefinition(typeof(CraftingOrder), 289);
 		AddClassDefinition(typeof(PeaceOfferMapNotification), 291);
 		AddClassDefinition(typeof(PlayerCharacterChangedLogEntry), 292);
@@ -264,6 +262,29 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(FieldBattleEventComponent), 313);
 		AddClassDefinition(typeof(HideoutEventComponent), 314);
 		AddClassDefinition(typeof(SiegeAmbushEventComponent), 315);
+		AddClassDefinition(typeof(Ship), 316);
+		AddClassDefinition(typeof(AnchorPoint), 319);
+		AddClassDefinition(typeof(Incident), 322);
+		AddClassDefinition(typeof(BlockadeBattleMapEvent), 325);
+		AddClassDefinition(typeof(Figurehead), 326);
+		AddClassDefinition(typeof(MobilePartyAi.FleeingData), 327);
+		AddClassDefinition(typeof(MapMarker), 328);
+		AddClassDefinition(typeof(MapMarkerManager), 329);
+		AddClassDefinition(typeof(PatrolPartyComponent), 330);
+		AddClassDefinition(typeof(TradeAgreementDecision), 331);
+		AddClassDefinition(typeof(TradeAgreementDecision.TradeAgreementDecisionOutcome), 332);
+		AddClassDefinition(typeof(TradeAgreementLogEntry), 333);
+		AddClassDefinition(typeof(StartAllianceDecision), 334);
+		AddClassDefinition(typeof(ProposeCallToWarAgreementDecision), 335);
+		AddClassDefinition(typeof(StartAllianceLogEntry), 336);
+		AddClassDefinition(typeof(EndAllianceLogEntry), 337);
+		AddClassDefinition(typeof(StartCallToWarAgreementLogEntry), 338);
+		AddClassDefinition(typeof(EndCallToWarAgreementLogEntry), 339);
+		AddClassDefinition(typeof(AcceptCallToWarAgreementDecision), 340);
+		AddClassDefinition(typeof(AllianceOfferMapNotification), 341);
+		AddClassDefinition(typeof(ProposeCallToWarOfferMapNotification), 342);
+		AddClassDefinition(typeof(AcceptCallToWarOfferMapNotification), 343);
+		AddClassDefinition(typeof(TributeFinishedMapNotification), 344);
 	}
 
 	protected override void DefineStructTypes()
@@ -274,15 +295,13 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddStructDefinition(typeof(FlattenedTroopRosterElement), 1004);
 		AddStructDefinition(typeof(TroopRosterElement), 1005);
 		AddStructDefinition(typeof(Town.SellLog), 1009);
+		AddStructDefinition(typeof(CampaignVec2), 1022);
 	}
 
 	protected override void DefineEnumTypes()
 	{
 		AddEnumDefinition(typeof(CampaignTimeControlMode), 2001);
 		AddEnumDefinition(typeof(Occupation), 2002);
-		AddEnumDefinition(typeof(FacesMaleHair), 2003);
-		AddEnumDefinition(typeof(FacesFemaleHair), 2004);
-		AddEnumDefinition(typeof(FacesMaleFacialHair), 2005);
 		AddEnumDefinition(typeof(CampaignGameMode), 2008);
 		AddEnumDefinition(typeof(ImportanceEnum), 2009);
 		AddEnumDefinition(typeof(MapEventState), 2011);
@@ -290,9 +309,8 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddEnumDefinition(typeof(MoveModeType), 2014);
 		AddEnumDefinition(typeof(PlayerEncounterState), 2015);
 		AddEnumDefinition(typeof(RosterTroopState), 2016);
-		AddEnumDefinition(typeof(Army.AIBehaviorFlags), 2020);
 		AddEnumDefinition(typeof(Army.ArmyTypes), 2021);
-		AddEnumDefinition(typeof(Army.ArmyDispersionReason), 2023);
+		AddEnumDefinition(typeof(Army.ArmyDispersionReason), 2023, new ArmyDispersionReasonEnumResolver());
 		AddEnumDefinition(typeof(MobileParty.PartyObjective), 2025);
 		AddEnumDefinition(typeof(StanceType), 2029);
 		AddEnumDefinition(typeof(ActionNotes), 2030);
@@ -330,6 +348,8 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddEnumDefinition(typeof(IssueBase.IssueUpdateDetails), 2120);
 		AddEnumDefinition(typeof(DeploymentFormationClass), 2130);
 		AddEnumDefinition(typeof(FormationFilterType), 2140);
+		AddEnumDefinition(typeof(MobileParty.NavigationType), 2150);
+		AddEnumDefinition(typeof(GameAccelerationMode), 2160);
 	}
 
 	protected override void DefineInterfaceTypes()
@@ -339,6 +359,8 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddInterfaceDefinition(typeof(ILocatable<>), 3003);
 		AddInterfaceDefinition(typeof(ISiegeEventSide), 3004);
 		AddInterfaceDefinition(typeof(ISpottable), 3005);
+		AddInterfaceDefinition(typeof(ITrackableBase), 3006);
+		AddInterfaceDefinition(typeof(ICustomSystemManager), 3007);
 	}
 
 	protected override void DefineGenericClassDefinitions()
@@ -348,17 +370,30 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		ConstructGenericClassDefinition(typeof(Tuple<Kingdom, Kingdom>));
 		ConstructGenericClassDefinition(typeof(Tuple<Kingdom, CampaignTime>));
 		ConstructGenericClassDefinition(typeof(Tuple<TraitObject, int>));
-		ConstructGenericClassDefinition(typeof(PriorityQueue<int, KeyValuePair<UniqueTroopDescriptor, MapEventParty>>));
+		ConstructGenericClassDefinition(typeof(TaleWorlds.Library.PriorityQueue<int, KeyValuePair<UniqueTroopDescriptor, MapEventParty>>));
 		ConstructGenericClassDefinition(typeof(CampaignPeriodicEventManager.PeriodicTicker<MobileParty>));
 		ConstructGenericClassDefinition(typeof(CampaignPeriodicEventManager.PeriodicTicker<Settlement>));
 		ConstructGenericClassDefinition(typeof(CampaignPeriodicEventManager.PeriodicTicker<Clan>));
 		ConstructGenericClassDefinition(typeof(CampaignPeriodicEventManager.PeriodicTicker<Town>));
 		ConstructGenericClassDefinition(typeof(CampaignPeriodicEventManager.PeriodicTicker<Hero>));
+		ConstructGenericClassDefinition(typeof(PropertyOwner<PerkObject>));
+		ConstructGenericClassDefinition(typeof(PropertyOwner<TraitObject>));
+		ConstructGenericClassDefinition(typeof(PropertyOwner<PropertyObject>));
+	}
+
+	protected override void DefineConflictResolvers()
+	{
+		AddConflictResolver(26, new CharacterPerksResolver());
+		AddConflictResolver(27, new CharacterTraitsResolver());
+		AddConflictResolver(288, new CharacterAttributesResolver());
+		AddConflictResolver(28, new HeroTraitDeveloperResolver());
+		AddConflictResolver(29, new HeroDeveloperResolver());
 	}
 
 	protected override void DefineGenericStructDefinitions()
 	{
 		ConstructGenericStructDefinition(typeof((IFaction, IFaction)));
+		ConstructGenericStructDefinition(typeof((Kingdom, Kingdom)));
 		ConstructGenericStructDefinition(typeof(KeyValuePair<UniqueTroopDescriptor, MapEventParty>));
 		ConstructGenericStructDefinition(typeof(KeyValuePair<int, KeyValuePair<UniqueTroopDescriptor, MapEventParty>>));
 		ConstructGenericStructDefinition(typeof(KeyValuePair<Hero, short>));
@@ -447,6 +482,9 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(List<MapEventParty>));
 		ConstructContainerDefinition(typeof(List<CraftingOrder>));
 		ConstructContainerDefinition(typeof(List<OrderOfBattleCampaignBehavior.OrderOfBattleFormationData>));
+		ConstructContainerDefinition(typeof(List<Ship>));
+		ConstructContainerDefinition(typeof(List<Figurehead>));
+		ConstructContainerDefinition(typeof(List<MapMarker>));
 		ConstructContainerDefinition(typeof(Dictionary<Hero, short>));
 		ConstructContainerDefinition(typeof(Queue<Building>));
 		ConstructContainerDefinition(typeof(Dictionary<MBGUID, MobileParty>));
@@ -509,6 +547,7 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(Dictionary<Settlement, TournamentGame>));
 		ConstructContainerDefinition(typeof(Dictionary<CharacterObject, int>));
 		ConstructContainerDefinition(typeof(Dictionary<Settlement, float>));
+		ConstructContainerDefinition(typeof(Dictionary<Settlement, bool>));
 		ConstructContainerDefinition(typeof(Dictionary<IFaction, float>));
 		ConstructContainerDefinition(typeof(Dictionary<IFaction, int>));
 		ConstructContainerDefinition(typeof(Dictionary<TraitObject, int>));
@@ -555,5 +594,17 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(Dictionary<MobileParty, Vec2>));
 		ConstructContainerDefinition(typeof(Dictionary<Hero, (int, int)>));
 		ConstructContainerDefinition(typeof(KeyValuePair<Settlement, ItemRoster>[]));
+		ConstructContainerDefinition(typeof(Dictionary<Hero, Hero>));
+		ConstructContainerDefinition(typeof(Dictionary<ITrackableBase, TrackedObject>));
+		ConstructContainerDefinition(typeof(List<Ship>));
+		ConstructContainerDefinition(typeof(Dictionary<Incident, CampaignTime>));
+		ConstructContainerDefinition(typeof(Dictionary<MobileParty, CampaignVec2>));
+		ConstructContainerDefinition(typeof(Dictionary<Hero, Figurehead>));
+		ConstructContainerDefinition(typeof(Dictionary<MobileParty, Dictionary<MobileParty, CampaignTime>>));
+		ConstructContainerDefinition(typeof(Dictionary<MobileParty, Dictionary<Settlement, CampaignTime>>));
+		ConstructContainerDefinition(typeof(Dictionary<MobileParty, Settlement>));
+		ConstructContainerDefinition(typeof(Dictionary<MapEvent, MobileParty>));
+		ConstructContainerDefinition(typeof(List<ICustomSystemManager>));
+		ConstructContainerDefinition(typeof(Dictionary<Settlement, MobileParty>));
 	}
 }

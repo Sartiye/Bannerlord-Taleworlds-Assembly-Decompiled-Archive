@@ -87,7 +87,7 @@ public class PolicyDecisionItemVM : DecisionItemBaseVM
 		string[] array = Policy.SecondaryEffects.ToString().Split(new char[1] { '\n' });
 		foreach (string text in array)
 		{
-			PolicyEffectList.Add(new StringItemWithHintVM(text, TextObject.Empty));
+			PolicyEffectList.Add(new StringItemWithHintVM(text, TextObject.GetEmpty()));
 		}
 	}
 }

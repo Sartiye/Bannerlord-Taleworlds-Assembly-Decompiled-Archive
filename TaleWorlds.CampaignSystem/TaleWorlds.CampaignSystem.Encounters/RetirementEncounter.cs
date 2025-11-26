@@ -6,6 +6,8 @@ namespace TaleWorlds.CampaignSystem.Encounters;
 
 public class RetirementEncounter : LocationEncounter
 {
+	private const string UnconsciousGameMenuID = "retirement_after_player_knockedout";
+
 	public RetirementEncounter(Settlement settlement)
 		: base(settlement)
 	{
@@ -17,7 +19,7 @@ public class RetirementEncounter : LocationEncounter
 		if (Settlement.CurrentSettlement.SettlementComponent is RetirementSettlementComponent)
 		{
 			int upgradeLevel = ((!Settlement.CurrentSettlement.IsTown) ? 1 : Settlement.CurrentSettlement.Town.GetWallLevel());
-			result = CampaignMission.OpenRetirementMission(nextLocation.GetSceneName(upgradeLevel), nextLocation);
+			result = CampaignMission.OpenRetirementMission(nextLocation.GetSceneName(upgradeLevel), nextLocation, null, null, "retirement_after_player_knockedout");
 		}
 		return result;
 	}

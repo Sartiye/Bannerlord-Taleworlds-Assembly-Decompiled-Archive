@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
@@ -81,11 +82,11 @@ public class BehaviorDestroySiegeWeapons : BehaviorComponent
 		}
 		else
 		{
-			SiegeWeapon siegeWeapon = _targetWeapons.MinBy((SiegeWeapon tw) => base.Formation.QuerySystem.AveragePosition.DistanceSquared(tw.GameEntity.GlobalPosition.AsVec2));
+			SiegeWeapon siegeWeapon = Extensions.MinBy(_targetWeapons, (SiegeWeapon tw) => base.Formation.CachedAveragePosition.DistanceSquared(tw.GameEntity.GlobalPosition.AsVec2));
 			if (base.CurrentOrder.OrderEnum != MovementOrder.MovementOrderEnum.AttackEntity || LastTargetWeapon != siegeWeapon)
 			{
 				LastTargetWeapon = siegeWeapon;
-				base.CurrentOrder = MovementOrder.MovementOrderAttackEntity(LastTargetWeapon.GameEntity, surroundEntity: true);
+				base.CurrentOrder = MovementOrder.MovementOrderAttackEntity(GameEntity.CreateFromWeakEntity(LastTargetWeapon.GameEntity), surroundEntity: true);
 			}
 		}
 		base.Formation.SetMovementOrder(base.CurrentOrder);
@@ -94,10 +95,10 @@ public class BehaviorDestroySiegeWeapons : BehaviorComponent
 	protected override void OnBehaviorActivatedAux()
 	{
 		DetermineTargetWeapons();
-		base.Formation.ArrangementOrder = ((base.Formation.QuerySystem.IsCavalryFormation || base.Formation.QuerySystem.IsRangedCavalryFormation) ? ArrangementOrder.ArrangementOrderSkein : ArrangementOrder.ArrangementOrderLine);
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder((base.Formation.QuerySystem.IsCavalryFormation || base.Formation.QuerySystem.IsRangedCavalryFormation) ? ArrangementOrder.ArrangementOrderSkein : ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

@@ -183,7 +183,7 @@ public static class CompressionBasic
 		GUIDCompressionInfo = new CompressionInfo.UnsignedInteger(0u, 32);
 		FlagsCompressionInfo = new CompressionInfo.Integer(0, 30);
 		GUIDIntCompressionInfo = new CompressionInfo.Integer(-1, 31);
-		MissionObjectIDCompressionInfo = new CompressionInfo.Integer(-1, 4094, maximumValueGiven: true);
+		MissionObjectIDCompressionInfo = new CompressionInfo.Integer(-1, 8190, maximumValueGiven: true);
 		UnitVectorCompressionInfo = new CompressionInfo.Float(-1.024f, 10, 0.002f);
 		LowResRadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 8);
 		RadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 10);
@@ -217,7 +217,7 @@ public static class CompressionBasic
 		MapTimeLimitCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.MapTimeLimit.GetMinimumValue(), MultiplayerOptions.OptionType.MapTimeLimit.GetMaximumValue(), maximumValueGiven: true);
 		RoundTotalCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.RoundTotal.GetMinimumValue(), MultiplayerOptions.OptionType.RoundTotal.GetMaximumValue(), maximumValueGiven: true);
 		RoundTimeLimitCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.RoundTimeLimit.GetMinimumValue(), MultiplayerOptions.OptionType.RoundTimeLimit.GetMaximumValue(), maximumValueGiven: true);
-		WarmupTimeLimitCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.WarmupTimeLimit.GetMinimumValue(), MultiplayerOptions.OptionType.WarmupTimeLimit.GetMaximumValue(), maximumValueGiven: true);
+		WarmupTimeLimitCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds.GetMinimumValue(), MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds.GetMaximumValue(), maximumValueGiven: true);
 		RoundPreparationTimeLimitCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.RoundPreparationTimeLimit.GetMinimumValue(), MultiplayerOptions.OptionType.RoundPreparationTimeLimit.GetMaximumValue(), maximumValueGiven: true);
 		RespawnPeriodCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.RespawnPeriodTeam1.GetMinimumValue(), MultiplayerOptions.OptionType.RespawnPeriodTeam1.GetMaximumValue(), maximumValueGiven: true);
 		GoldGainChangePercentageCompressionInfo = new CompressionInfo.Integer(MultiplayerOptions.OptionType.GoldGainChangePercentageTeam1.GetMinimumValue(), MultiplayerOptions.OptionType.GoldGainChangePercentageTeam1.GetMaximumValue(), maximumValueGiven: true);

@@ -33,7 +33,18 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasAliveParticlesDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void RestartDelegate(UIntPtr psysPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetDontRemoveFromEntityDelegate(UIntPtr pointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -43,12 +54,17 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetLocalFrameDelegate(UIntPtr pointer, ref MatrixFrame newFrame);
+	public delegate void SetLocalFrameDelegate(UIntPtr pointer, in MatrixFrame newFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetParticleEffectByNameDelegate(UIntPtr pointer, byte[] effectName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPreviousGlobalFrameDelegate(UIntPtr pointer, in MatrixFrame newFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -65,13 +81,19 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 
 	public static GetRuntimeIdByNameDelegate call_GetRuntimeIdByNameDelegate;
 
+	public static HasAliveParticlesDelegate call_HasAliveParticlesDelegate;
+
 	public static RestartDelegate call_RestartDelegate;
+
+	public static SetDontRemoveFromEntityDelegate call_SetDontRemoveFromEntityDelegate;
 
 	public static SetEnableDelegate call_SetEnableDelegate;
 
 	public static SetLocalFrameDelegate call_SetLocalFrameDelegate;
 
 	public static SetParticleEffectByNameDelegate call_SetParticleEffectByNameDelegate;
+
+	public static SetPreviousGlobalFrameDelegate call_SetPreviousGlobalFrameDelegate;
 
 	public static SetRuntimeEmissionRateMultiplierDelegate call_SetRuntimeEmissionRateMultiplierDelegate;
 
@@ -117,9 +139,19 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 		return call_GetRuntimeIdByNameDelegate(array);
 	}
 
+	public bool HasAliveParticles(UIntPtr pointer)
+	{
+		return call_HasAliveParticlesDelegate(pointer);
+	}
+
 	public void Restart(UIntPtr psysPointer)
 	{
 		call_RestartDelegate(psysPointer);
+	}
+
+	public void SetDontRemoveFromEntity(UIntPtr pointer, bool value)
+	{
+		call_SetDontRemoveFromEntityDelegate(pointer, value);
 	}
 
 	public void SetEnable(UIntPtr psysPointer, bool enable)
@@ -127,9 +159,9 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 		call_SetEnableDelegate(psysPointer, enable);
 	}
 
-	public void SetLocalFrame(UIntPtr pointer, ref MatrixFrame newFrame)
+	public void SetLocalFrame(UIntPtr pointer, in MatrixFrame newFrame)
 	{
-		call_SetLocalFrameDelegate(pointer, ref newFrame);
+		call_SetLocalFrameDelegate(pointer, in newFrame);
 	}
 
 	public void SetParticleEffectByName(UIntPtr pointer, string effectName)
@@ -145,8 +177,23 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 		call_SetParticleEffectByNameDelegate(pointer, array);
 	}
 
+	public void SetPreviousGlobalFrame(UIntPtr pointer, in MatrixFrame newFrame)
+	{
+		call_SetPreviousGlobalFrameDelegate(pointer, in newFrame);
+	}
+
 	public void SetRuntimeEmissionRateMultiplier(UIntPtr pointer, float multiplier)
 	{
 		call_SetRuntimeEmissionRateMultiplierDelegate(pointer, multiplier);
+	}
+
+	void IParticleSystem.SetLocalFrame(UIntPtr pointer, in MatrixFrame newFrame)
+	{
+		SetLocalFrame(pointer, in newFrame);
+	}
+
+	void IParticleSystem.SetPreviousGlobalFrame(UIntPtr pointer, in MatrixFrame newFrame)
+	{
+		SetPreviousGlobalFrame(pointer, in newFrame);
 	}
 }

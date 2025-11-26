@@ -17,7 +17,7 @@ public class BehaviorFlank : BehaviorComponent
 	protected override void CalculateCurrentOrder()
 	{
 		WorldPosition position = ((base.Formation.AI.Side == FormationAI.BehaviorSide.Right) ? base.Formation.QuerySystem.Team.RightFlankEdgePosition : base.Formation.QuerySystem.Team.LeftFlankEdgePosition);
-		Vec2 direction = (position.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized();
+		Vec2 direction = (position.AsVec2 - base.Formation.CachedAveragePosition).Normalized();
 		base.CurrentOrder = MovementOrder.MovementOrderMove(position);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 	}
@@ -26,7 +26,7 @@ public class BehaviorFlank : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	public override TextObject GetBehaviorString()
@@ -42,42 +42,42 @@ public class BehaviorFlank : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()
 	{
 		FormationQuerySystem querySystem = base.Formation.QuerySystem;
-		if (querySystem.ClosestEnemyFormation == null || querySystem.ClosestEnemyFormation.ClosestEnemyFormation == querySystem)
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+		if (cachedClosestEnemyFormation == null || cachedClosestEnemyFormation.Formation.CachedClosestEnemyFormation == querySystem)
 		{
 			return 0f;
 		}
-		Vec2 vec = (querySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - querySystem.AveragePosition).Normalized();
-		Vec2 v = (querySystem.ClosestEnemyFormation.ClosestEnemyFormation.MedianPosition.AsVec2 - querySystem.ClosestEnemyFormation.MedianPosition.AsVec2).Normalized();
+		Vec2 vec = (cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized();
+		Vec2 v = (cachedClosestEnemyFormation.Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2).Normalized();
 		if (vec.DotProduct(v) > -0.5f)
 		{
 			return 0f;
 		}
 		if (Mission.Current.MissionTeamAIType != Mission.MissionTeamAITypeEnum.FieldBattle)
 		{
-			int faceGroupId = -1;
 			Vec3 position = ((base.Formation.AI.Side == FormationAI.BehaviorSide.Right) ? base.Formation.QuerySystem.Team.RightFlankEdgePosition : base.Formation.QuerySystem.Team.LeftFlankEdgePosition).GetNavMeshVec3();
-			Mission.Current.Scene.GetNavigationMeshForPosition(ref position, out faceGroupId);
+			Mission.Current.Scene.GetNavigationMeshForPosition(in position, out var faceGroupId, 1.5f, excludeDynamicNavigationMeshes: false);
 			if (faceGroupId >= 0)
 			{
-				Agent medianAgent = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.QuerySystem.AveragePosition);
+				Agent medianAgent = base.Formation.GetMedianAgent(excludeDetachedUnits: true, excludePlayer: true, base.Formation.CachedAveragePosition);
 				if ((medianAgent != null && medianAgent.GetCurrentNavigationFaceId() % 10 == 1) == (faceGroupId % 10 == 1))
 				{
-					goto IL_0158;
+					goto IL_0166;
 				}
 			}
 			return 0f;
 		}
-		goto IL_0158;
-		IL_0158:
+		goto IL_0166;
+		IL_0166:
 		return 1.2f;
 	}
 }

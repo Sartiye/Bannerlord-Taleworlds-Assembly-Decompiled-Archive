@@ -23,18 +23,18 @@ public class SiegeMachineStonePile : UsableMachine, ISpawnable
 			textObject.SetTextVariable("PILE_TYPE", new TextObject("{=1CPdu9K0}Stone"));
 			return textObject;
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
 		if (gameEntity.HasTag(AmmoPickUpTag))
 		{
 			TextObject textObject = new TextObject("{=bNYm3K6b}{KEY} Pick Up");
 			textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
-			return textObject.ToString();
+			return textObject;
 		}
-		return string.Empty;
+		return null;
 	}
 
 	public void SetSpawnedFromSpawner()

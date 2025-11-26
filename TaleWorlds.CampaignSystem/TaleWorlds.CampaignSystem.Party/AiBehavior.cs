@@ -19,5 +19,6 @@ public enum AiBehavior
 	EscortParty,
 	DefendSettlement,
 	DoOperation,
+	MoveToNearestLandOrPort,
 	NumAiBehaviors
 }

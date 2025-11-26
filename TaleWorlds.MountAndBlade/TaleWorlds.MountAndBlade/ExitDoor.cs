@@ -7,14 +7,6 @@ namespace TaleWorlds.MountAndBlade;
 
 public class ExitDoor : UsableMachine
 {
-	private static readonly ActionIndexCache act_pickup_middle_begin = ActionIndexCache.Create("act_pickup_middle_begin");
-
-	private static readonly ActionIndexCache act_pickup_middle_begin_left_stance = ActionIndexCache.Create("act_pickup_middle_begin_left_stance");
-
-	private static readonly ActionIndexCache act_pickup_middle_end = ActionIndexCache.Create("act_pickup_middle_end");
-
-	private static readonly ActionIndexCache act_pickup_middle_end_left_stance = ActionIndexCache.Create("act_pickup_middle_end_left_stance");
-
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
 	{
 		TextObject textObject = new TextObject("{=gqQPSAQZ}{KEY} Leave Area");
@@ -22,9 +14,9 @@ public class ExitDoor : UsableMachine
 		return textObject;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return string.Empty;
+		return null;
 	}
 
 	protected internal override void OnInit()
@@ -48,20 +40,27 @@ public class ExitDoor : UsableMachine
 				continue;
 			}
 			Agent userAgent = standingPoint.UserAgent;
-			ActionIndexValueCache currentActionValue = userAgent.GetCurrentActionValue(0);
-			ActionIndexValueCache currentActionValue2 = userAgent.GetCurrentActionValue(1);
-			if (!(currentActionValue2 == ActionIndexValueCache.act_none) || (!(currentActionValue == act_pickup_middle_begin) && !(currentActionValue == act_pickup_middle_begin_left_stance)))
+			ActionIndexCache currentAction = userAgent.GetCurrentAction(0);
+			ActionIndexCache currentAction2 = userAgent.GetCurrentAction(1);
+			if (currentAction2 == ActionIndexCache.act_none && (currentAction == ActionIndexCache.act_pickup_middle_begin || currentAction == ActionIndexCache.act_pickup_middle_begin_left_stance))
 			{
-				if (currentActionValue2 == ActionIndexValueCache.act_none && (currentActionValue == act_pickup_middle_end || currentActionValue == act_pickup_middle_end_left_stance))
+				continue;
+			}
+			if (currentAction2 == ActionIndexCache.act_none && (currentAction == ActionIndexCache.act_pickup_middle_end || currentAction == ActionIndexCache.act_pickup_middle_end_left_stance))
+			{
+				userAgent.StopUsingGameObject();
+				Mission.Current.EndMission();
+				continue;
+			}
+			if (!(currentAction2 != ActionIndexCache.act_none))
+			{
+				ActionIndexCache actionIndexCache = (userAgent.GetIsLeftStance() ? ActionIndexCache.act_pickup_middle_begin_left_stance : ActionIndexCache.act_pickup_middle_begin);
+				if (userAgent.SetActionChannel(0, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL))
 				{
-					userAgent.StopUsingGameObject();
-					Mission.Current.EndMission();
-				}
-				else if (currentActionValue2 != ActionIndexValueCache.act_none || !userAgent.SetActionChannel(0, userAgent.GetIsLeftStance() ? act_pickup_middle_begin_left_stance : act_pickup_middle_begin, ignorePriority: false, 0uL))
-				{
-					userAgent.StopUsingGameObject();
+					continue;
 				}
 			}
+			userAgent.StopUsingGameObject();
 		}
 	}
 }

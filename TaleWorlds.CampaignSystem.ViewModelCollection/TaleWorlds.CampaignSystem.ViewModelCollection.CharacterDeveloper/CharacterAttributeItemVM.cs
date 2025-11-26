@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -10,7 +13,7 @@ public class CharacterAttributeItemVM : ViewModel
 {
 	private readonly Hero _hero;
 
-	private readonly IHeroDeveloper _developer;
+	private readonly HeroDeveloper _developer;
 
 	private readonly int _initialAttValue;
 
@@ -18,7 +21,7 @@ public class CharacterAttributeItemVM : ViewModel
 
 	private readonly Action<CharacterAttributeItemVM> _onAddAttributePoint;
 
-	private readonly CharacterVM _characterVM;
+	private readonly CharacterDeveloperHeroItemVM _characterVM;
 
 	private int _atttributeValue;
 
@@ -233,7 +236,7 @@ public class CharacterAttributeItemVM : ViewModel
 		}
 	}
 
-	public CharacterAttributeItemVM(Hero hero, CharacterAttribute currAtt, CharacterVM developerVM, Action<CharacterAttributeItemVM> onInpectAttribute, Action<CharacterAttributeItemVM> onAddAttributePoint)
+	public CharacterAttributeItemVM(Hero hero, CharacterAttribute currAtt, CharacterDeveloperHeroItemVM developerVM, Action<CharacterAttributeItemVM> onInpectAttribute, Action<CharacterAttributeItemVM> onAddAttributePoint)
 	{
 		_hero = hero;
 		_developer = _hero.HeroDeveloper;
@@ -241,7 +244,7 @@ public class CharacterAttributeItemVM : ViewModel
 		AttributeType = currAtt;
 		_onInpectAttribute = onInpectAttribute;
 		_onAddAttributePoint = onAddAttributePoint;
-		_initialAttValue = hero.GetAttributeValue(currAtt);
+		_initialAttValue = _characterVM.CharacterAttributes.GetPropertyValue(currAtt);
 		AttributeValue = _initialAttValue;
 		BoundSkills = new MBBindingList<AttributeBoundSkillItemVM>();
 		RefreshWithCurrentValues();
@@ -262,11 +265,18 @@ public class CharacterAttributeItemVM : ViewModel
 		Description = GameTexts.FindText("str_STR1_space_STR2").ToString();
 		TextObject textObject2 = GameTexts.FindText("str_skill_attribute_increase_description");
 		textObject2.SetTextVariable("IS_SOCIAL", (AttributeType == DefaultCharacterAttributes.Social) ? 1 : 0);
+		GameTexts.SetVariable("NUMBER", UnspentAttributePoints);
+		UnspentAttributePointsText = GameTexts.FindText("str_free_attribute_points").ToString();
 		IncreaseHelpText = textObject2.ToString();
 		BoundSkills.Clear();
-		foreach (SkillObject skill in AttributeType.Skills)
+		List<SkillObject> list = Skills.All.ToList();
+		list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list)
 		{
-			BoundSkills.Add(new AttributeBoundSkillItemVM(skill));
+			if (skill.Attributes.Contains(AttributeType) && !BoundSkills.Any((AttributeBoundSkillItemVM s) => s.SkillId == skill.StringId))
+			{
+				BoundSkills.Add(new AttributeBoundSkillItemVM(skill));
+			}
 		}
 	}
 
@@ -277,7 +287,6 @@ public class CharacterAttributeItemVM : ViewModel
 
 	public void ExecuteAddAttributePoint()
 	{
-		AttributeValue++;
 		_onAddAttributePoint?.Invoke(this);
 		UnspentAttributePoints = _characterVM.UnspentAttributePoints;
 		RefreshWithCurrentValues();
@@ -285,13 +294,13 @@ public class CharacterAttributeItemVM : ViewModel
 
 	public void Reset()
 	{
-		AttributeValue = _initialAttValue;
 		RefreshWithCurrentValues();
 	}
 
 	public void RefreshWithCurrentValues()
 	{
 		UnspentAttributePoints = _characterVM.UnspentAttributePoints;
+		AttributeValue = _characterVM.CharacterAttributes.GetPropertyValue(AttributeType);
 		CanAddPoint = AttributeValue < Campaign.Current.Models.CharacterDevelopmentModel.MaxAttribute && _characterVM.UnspentAttributePoints > 0;
 		IsAttributeAtMax = AttributeValue >= Campaign.Current.Models.CharacterDevelopmentModel.MaxAttribute;
 	}

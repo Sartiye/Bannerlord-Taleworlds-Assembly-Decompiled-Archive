@@ -23,16 +23,6 @@ public static class MetaDataExtensions
 		return DateTime.MinValue;
 	}
 
-	public static ApplicationVersion GetApplicationVersion(this MetaData metaData)
-	{
-		string text = metaData?["ApplicationVersion"];
-		if (text == null)
-		{
-			return ApplicationVersion.Empty;
-		}
-		return ApplicationVersion.FromString(text);
-	}
-
 	public static string[] GetModules(this MetaData metaData)
 	{
 		if (metaData == null || !metaData.TryGetValue("Modules", out var value))
@@ -53,7 +43,7 @@ public static class MetaDataExtensions
 			}
 			catch (Exception ex)
 			{
-				Debug.FailedAssert(ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\MetaDataExtensions.cs", "GetModuleVersion", 53);
+				Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MetaDataExtensions.cs", "GetModuleVersion", 45);
 			}
 		}
 		return ApplicationVersion.Empty;

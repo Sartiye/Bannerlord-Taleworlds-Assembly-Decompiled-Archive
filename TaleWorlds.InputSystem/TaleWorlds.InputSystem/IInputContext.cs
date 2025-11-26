@@ -19,8 +19,6 @@ public interface IInputContext
 
 	bool IsGameKeyPressed(int gameKey);
 
-	bool IsGameKeyDownAndReleased(int gameKey);
-
 	float GetGameKeyAxis(string gameKey);
 
 	bool IsHotKeyDown(string gameKey);
@@ -28,8 +26,6 @@ public interface IInputContext
 	bool IsHotKeyReleased(string gameKey);
 
 	bool IsHotKeyPressed(string gameKey);
-
-	bool IsHotKeyDownAndReleased(string gameKey);
 
 	bool IsHotKeyDoublePressed(string gameKey);
 

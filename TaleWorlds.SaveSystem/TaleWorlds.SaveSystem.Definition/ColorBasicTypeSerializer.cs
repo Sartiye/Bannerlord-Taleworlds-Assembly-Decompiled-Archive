@@ -14,4 +14,9 @@ internal class ColorBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadColor();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 16;
+	}
 }

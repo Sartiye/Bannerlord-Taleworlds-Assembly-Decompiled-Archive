@@ -29,6 +29,16 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void AddNavMeshWarningDelegate(UIntPtr sceneId, in PathFaceRecord record, byte[] msg);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ApplyDeltaToEditorCameraDelegate(in Vec3 delta);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool BorderHelpersEnabledDelegate();
 
@@ -142,7 +152,12 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void UpdateSceneTreeDelegate();
+	public delegate void ToggleEnableEditorPhysicsDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void UpdateSceneTreeDelegate([MarshalAs(UnmanagedType.U1)] bool do_next_frame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -156,6 +171,10 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 	public static AddEditorWarningDelegate call_AddEditorWarningDelegate;
 
 	public static AddEntityWarningDelegate call_AddEntityWarningDelegate;
+
+	public static AddNavMeshWarningDelegate call_AddNavMeshWarningDelegate;
+
+	public static ApplyDeltaToEditorCameraDelegate call_ApplyDeltaToEditorCameraDelegate;
 
 	public static BorderHelpersEnabledDelegate call_BorderHelpersEnabledDelegate;
 
@@ -199,6 +218,8 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 
 	public static TickSceneEditorPresentationDelegate call_TickSceneEditorPresentationDelegate;
 
+	public static ToggleEnableEditorPhysicsDelegate call_ToggleEnableEditorPhysicsDelegate;
+
 	public static UpdateSceneTreeDelegate call_UpdateSceneTreeDelegate;
 
 	public static ZoomToPositionDelegate call_ZoomToPositionDelegate;
@@ -232,6 +253,24 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 			array[byteCount] = 0;
 		}
 		call_AddEntityWarningDelegate(entityId, array);
+	}
+
+	public void AddNavMeshWarning(UIntPtr sceneId, in PathFaceRecord record, string msg)
+	{
+		byte[] array = null;
+		if (msg != null)
+		{
+			int byteCount = _utf8.GetByteCount(msg);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(msg, 0, msg.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_AddNavMeshWarningDelegate(sceneId, in record, array);
+	}
+
+	public void ApplyDeltaToEditorCamera(in Vec3 delta)
+	{
+		call_ApplyDeltaToEditorCameraDelegate(in delta);
 	}
 
 	public bool BorderHelpersEnabled()
@@ -373,13 +412,28 @@ internal class ScriptingInterfaceOfIMBEditor : IMBEditor
 		call_TickSceneEditorPresentationDelegate(dt);
 	}
 
-	public void UpdateSceneTree()
+	public void ToggleEnableEditorPhysics()
 	{
-		call_UpdateSceneTreeDelegate();
+		call_ToggleEnableEditorPhysicsDelegate();
+	}
+
+	public void UpdateSceneTree(bool do_next_frame)
+	{
+		call_UpdateSceneTreeDelegate(do_next_frame);
 	}
 
 	public void ZoomToPosition(Vec3 pos)
 	{
 		call_ZoomToPositionDelegate(pos);
+	}
+
+	void IMBEditor.ApplyDeltaToEditorCamera(in Vec3 delta)
+	{
+		ApplyDeltaToEditorCamera(in delta);
+	}
+
+	void IMBEditor.AddNavMeshWarning(UIntPtr sceneId, in PathFaceRecord record, string msg)
+	{
+		AddNavMeshWarning(sceneId, in record, msg);
 	}
 }

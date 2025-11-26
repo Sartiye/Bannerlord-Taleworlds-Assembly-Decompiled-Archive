@@ -95,7 +95,6 @@ public class ToggleStateButtonWidget : ButtonWidget
 		{
 			(base.ParentWidget as Container).OnChildSelected(null);
 		}
-		OnClick();
 		EventFired("Click");
 		if (base.Context.EventManager.Time - _lastClickTime < 0.5f)
 		{

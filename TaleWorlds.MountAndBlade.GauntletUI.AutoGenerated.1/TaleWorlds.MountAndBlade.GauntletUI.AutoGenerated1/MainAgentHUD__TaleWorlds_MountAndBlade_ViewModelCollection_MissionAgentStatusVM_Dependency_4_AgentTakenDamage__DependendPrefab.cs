@@ -77,8 +77,8 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				for (int num = _widget_0.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0.GetChild(num);
-					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
-					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)_widget_0.GetChild(num)).DestroyDataSource();
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)_widget_0.GetChild(num)).DestroyDataSource();
 				}
 				_datasource_Root_TakenDamageController_TakenDamageList = null;
 			}
@@ -207,9 +207,9 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			for (int num = _widget_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0.GetChild(num);
-				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0.GetChild(num);
-				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child4).SetDataSource(null);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child4).SetDataSource(null);
 				_widget_0.RemoveChild(child4);
 			}
 			break;
@@ -225,27 +225,27 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate);
+			MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
 			MissionAgentTakenDamageItemVM dataSource = (MissionAgentTakenDamageItemVM)(generatedWidgetData.Data = _datasource_Root_TakenDamageController_TakenDamageList[e.NewIndex]);
-			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate, e.NewIndex);
-			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.CreateWidgets();
-			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetIds();
-			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetAttributes();
-			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, e.NewIndex);
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0.GetChild(e.NewIndex);
-			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0.GetChild(e.NewIndex);
-			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child).SetDataSource(null);
+			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).SetDataSource(null);
 			_widget_0.RemoveChild(child);
 			break;
 		}
@@ -273,9 +273,9 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				for (int num = _widget_0.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0.GetChild(num);
-					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0.GetChild(num);
-					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child2).SetDataSource(null);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).SetDataSource(null);
 					_widget_0.RemoveChild(child2);
 				}
 				_datasource_Root_TakenDamageController_TakenDamageList = null;
@@ -303,15 +303,15 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			_datasource_Root_TakenDamageController_TakenDamageList.ListChanged += OnList_datasource_Root_TakenDamageController_TakenDamageListChanged;
 			for (int i = 0; i < _datasource_Root_TakenDamageController_TakenDamageList.Count; i++)
 			{
-				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate);
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
 				MissionAgentTakenDamageItemVM dataSource = (MissionAgentTakenDamageItemVM)(generatedWidgetData.Data = _datasource_Root_TakenDamageController_TakenDamageList[i]);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate, i);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.CreateWidgets();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetIds();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetAttributes();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, i);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -324,9 +324,9 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			for (int num = _widget_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0.GetChild(num);
-				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0.GetChild(num);
-				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child2).SetDataSource(null);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).SetDataSource(null);
 				_widget_0.RemoveChild(child2);
 			}
 			_datasource_Root_TakenDamageController_TakenDamageList = null;
@@ -338,15 +338,15 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			_datasource_Root_TakenDamageController_TakenDamageList.ListChanged += OnList_datasource_Root_TakenDamageController_TakenDamageListChanged;
 			for (int i = 0; i < _datasource_Root_TakenDamageController_TakenDamageList.Count; i++)
 			{
-				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate);
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
 				MissionAgentTakenDamageItemVM dataSource = (MissionAgentTakenDamageItemVM)(generatedWidgetData.Data = _datasource_Root_TakenDamageController_TakenDamageList[i]);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate, i);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.CreateWidgets();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetIds();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetAttributes();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, i);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -381,9 +381,9 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 					for (int num = _widget_0.ChildCount - 1; num >= 0; num--)
 					{
 						Widget child = _widget_0.GetChild(num);
-						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
+						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).OnBeforeRemovedChild(child);
 						Widget child2 = _widget_0.GetChild(num);
-						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate)child2).SetDataSource(null);
+						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).SetDataSource(null);
 						_widget_0.RemoveChild(child2);
 					}
 					_datasource_Root_TakenDamageController_TakenDamageList = null;
@@ -426,15 +426,15 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			_datasource_Root_TakenDamageController_TakenDamageList.ListChanged += OnList_datasource_Root_TakenDamageController_TakenDamageListChanged;
 			for (int i = 0; i < _datasource_Root_TakenDamageController_TakenDamageList.Count; i++)
 			{
-				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate);
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
 				MissionAgentTakenDamageItemVM dataSource = (MissionAgentTakenDamageItemVM)(generatedWidgetData.Data = _datasource_Root_TakenDamageController_TakenDamageList[i]);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate, i);
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.CreateWidgets();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetIds();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetAttributes();
-				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, i);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

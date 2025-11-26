@@ -51,6 +51,12 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool ProjectedMousePositionOnWaterDelegate(UIntPtr pointer, out Vec3 groundPosition, [MarshalAs(UnmanagedType.U1)] bool mouseVisible);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool RayCastForClosestEntityOrTerrainDelegate(UIntPtr ptr, ref Vec3 sourcePoint, ref Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -88,6 +94,11 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetClearGbufferDelegate(UIntPtr pointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetDoQuickExposureDelegate(UIntPtr ptr, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -175,6 +186,8 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 
 	public static ProjectedMousePositionOnGroundDelegate call_ProjectedMousePositionOnGroundDelegate;
 
+	public static ProjectedMousePositionOnWaterDelegate call_ProjectedMousePositionOnWaterDelegate;
+
 	public static RayCastForClosestEntityOrTerrainDelegate call_RayCastForClosestEntityOrTerrainDelegate;
 
 	public static ReadyToRenderDelegate call_ReadyToRenderDelegate;
@@ -190,6 +203,8 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 	public static SetClearAndDisableAfterSucessfullRenderDelegate call_SetClearAndDisableAfterSucessfullRenderDelegate;
 
 	public static SetClearGbufferDelegate call_SetClearGbufferDelegate;
+
+	public static SetDoQuickExposureDelegate call_SetDoQuickExposureDelegate;
 
 	public static SetFocusedShadowmapDelegate call_SetFocusedShadowmapDelegate;
 
@@ -267,6 +282,11 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 		return call_ProjectedMousePositionOnGroundDelegate(pointer, out groundPosition, out groundNormal, mouseVisible, excludeBodyOwnerFlags, checkOccludedSurface);
 	}
 
+	public bool ProjectedMousePositionOnWater(UIntPtr pointer, out Vec3 groundPosition, bool mouseVisible)
+	{
+		return call_ProjectedMousePositionOnWaterDelegate(pointer, out groundPosition, mouseVisible);
+	}
+
 	public bool RayCastForClosestEntityOrTerrain(UIntPtr ptr, ref Vec3 sourcePoint, ref Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags)
 	{
 		return call_RayCastForClosestEntityOrTerrainDelegate(ptr, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags);
@@ -305,6 +325,11 @@ internal class ScriptingInterfaceOfISceneView : ISceneView
 	public void SetClearGbuffer(UIntPtr pointer, bool value)
 	{
 		call_SetClearGbufferDelegate(pointer, value);
+	}
+
+	public void SetDoQuickExposure(UIntPtr ptr, bool value)
+	{
+		call_SetDoQuickExposureDelegate(ptr, value);
 	}
 
 	public void SetFocusedShadowmap(UIntPtr ptr, bool enable, ref Vec3 center, float radius)

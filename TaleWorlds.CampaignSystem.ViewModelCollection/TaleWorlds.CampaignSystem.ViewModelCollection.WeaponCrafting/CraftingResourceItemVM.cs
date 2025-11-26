@@ -19,6 +19,8 @@ public class CraftingResourceItemVM : ViewModel
 
 	private HintViewModel _resourceHint;
 
+	private bool _isResourceAvailable = true;
+
 	public ItemObject ResourceItem { get; private set; }
 
 	public CraftingMaterials ResourceMaterial { get; private set; }
@@ -121,6 +123,23 @@ public class CraftingResourceItemVM : ViewModel
 			{
 				_resourceItemStringId = value;
 				OnPropertyChangedWithValue(value, "ResourceItemStringId");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsResourceAvailable
+	{
+		get
+		{
+			return _isResourceAvailable;
+		}
+		set
+		{
+			if (value != _isResourceAvailable)
+			{
+				_isResourceAvailable = value;
+				OnPropertyChangedWithValue(value, "IsResourceAvailable");
 			}
 		}
 	}

@@ -2,7 +2,7 @@ namespace TaleWorlds.MountAndBlade.Diamond;
 
 public enum ChatChannelType
 {
-	NaN = -1,
+	None = -1,
 	Private,
 	All,
 	Team,

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.FormationMarker;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
@@ -26,7 +28,11 @@ public class OrderTroopItemVM : OrderSubjectVM
 
 	private OrderTroopItemFormationClassVM _cachedHorseArcherItem;
 
-	private BasicCharacterObject _cachedCommander;
+	private BasicCharacterObject _cachedCaptain;
+
+	private bool _isValid;
+
+	private int _formationIndex;
 
 	private int _currentMemberCount;
 
@@ -42,17 +48,55 @@ public class OrderTroopItemVM : OrderSubjectVM
 
 	private bool _isTargetRelevant;
 
+	private bool _hasCaptain;
+
 	private string _currentOrderIconId;
 
 	private string _currentTargetFormationType;
 
-	private ImageIdentifierVM _commanderImageIdentifier;
+	private string _formationName;
+
+	private CharacterImageIdentifierVM _captainImageIdentifier;
 
 	private MBBindingList<OrderTroopItemFormationClassVM> _activeFormationClasses;
 
 	private MBBindingList<OrderTroopItemFilterVM> _activeFilters;
 
 	public bool ContainsDeadTroop { get; private set; }
+
+	[DataSourceProperty]
+	public bool IsValid
+	{
+		get
+		{
+			return _isValid;
+		}
+		set
+		{
+			if (value != _isValid)
+			{
+				_isValid = value;
+				OnPropertyChangedWithValue(value, "IsValid");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int FormationIndex
+	{
+		get
+		{
+			return _formationIndex;
+		}
+		set
+		{
+			if (value != _formationIndex)
+			{
+				_formationIndex = value;
+				OnPropertyChangedWithValue(value, "FormationIndex");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public int CurrentMemberCount
@@ -175,6 +219,23 @@ public class OrderTroopItemVM : OrderSubjectVM
 	}
 
 	[DataSourceProperty]
+	public bool HasCaptain
+	{
+		get
+		{
+			return _hasCaptain;
+		}
+		set
+		{
+			if (value != _hasCaptain)
+			{
+				_hasCaptain = value;
+				OnPropertyChangedWithValue(value, "HasCaptain");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string CurrentOrderIconId
 	{
 		get
@@ -209,18 +270,35 @@ public class OrderTroopItemVM : OrderSubjectVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM CommanderImageIdentifier
+	public string FormationName
 	{
 		get
 		{
-			return _commanderImageIdentifier;
+			return _formationName;
 		}
 		set
 		{
-			if (value != _commanderImageIdentifier)
+			if (value != _formationName)
 			{
-				_commanderImageIdentifier = value;
-				OnPropertyChangedWithValue(value, "CommanderImageIdentifier");
+				_formationName = value;
+				OnPropertyChangedWithValue(value, "FormationName");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public CharacterImageIdentifierVM CaptainImageIdentifier
+	{
+		get
+		{
+			return _captainImageIdentifier;
+		}
+		set
+		{
+			if (value != _captainImageIdentifier)
+			{
+				_captainImageIdentifier = value;
+				OnPropertyChangedWithValue(value, "CaptainImageIdentifier");
 			}
 		}
 	}
@@ -263,11 +341,14 @@ public class OrderTroopItemVM : OrderSubjectVM
 
 	public OrderTroopItemVM(Formation formation, Action<OrderTroopItemVM> setSelected, Func<Formation, int> getMorale)
 	{
+		IsValid = true;
 		ActiveFormationClasses = new MBBindingList<OrderTroopItemFormationClassVM>();
 		ActiveFilters = new MBBindingList<OrderTroopItemFilterVM>();
 		InitialFormationClass = formation.FormationIndex;
 		SetFormationClassFromFormation(formation);
 		Formation = formation;
+		FormationIndex = formation.Index;
+		FormationName = (FormationIndex + 1).ToString();
 		SetSelected = setSelected;
 		CurrentMemberCount = (formation.IsPlayerTroopInFormation ? (formation.CountOfUnits - 1) : formation.CountOfUnits);
 		Morale = getMorale(formation);
@@ -280,35 +361,21 @@ public class OrderTroopItemVM : OrderSubjectVM
 		else
 			_ = 0;
 		UpdateSelectionKeyInfo();
-		UpdateCommanderInfo();
+		UpdateVisuals();
 		Formation.OnUnitCountChanged += FormationOnOnUnitCountChanged;
 	}
 
-	public OrderTroopItemVM(OrderTroopItemVM troop, Action<OrderTroopItemVM> setSelected = null)
+	public OrderTroopItemVM()
 	{
-		ActiveFormationClasses = new MBBindingList<OrderTroopItemFormationClassVM>();
-		foreach (OrderTroopItemFormationClassVM activeFormationClass in troop.ActiveFormationClasses)
-		{
-			ActiveFormationClasses.Add(new OrderTroopItemFormationClassVM(troop.Formation, activeFormationClass.FormationClass));
-		}
-		ActiveFilters = new MBBindingList<OrderTroopItemFilterVM>();
-		foreach (OrderTroopItemFilterVM activeFilter in troop.ActiveFilters)
-		{
-			ActiveFilters.Add(new OrderTroopItemFilterVM(activeFilter.FilterTypeValue));
-		}
-		InitialFormationClass = troop.InitialFormationClass;
-		Formation = troop.Formation;
-		SetSelected = setSelected ?? troop.SetSelected;
-		CurrentMemberCount = (troop.Formation.IsPlayerTroopInFormation ? (troop.CurrentMemberCount - 1) : troop.CurrentMemberCount);
-		Morale = troop.Morale;
-		base.UnderAttackOfType = 0;
-		base.BehaviorType = 0;
-		UpdateCommanderInfo();
+		IsValid = false;
 	}
 
 	public override void OnFinalize()
 	{
-		Formation.OnUnitCountChanged -= FormationOnOnUnitCountChanged;
+		if (IsValid)
+		{
+			Formation.OnUnitCountChanged -= FormationOnOnUnitCountChanged;
+		}
 	}
 
 	protected override void OnSelectionStateChanged(bool isSelected)
@@ -319,7 +386,7 @@ public class OrderTroopItemVM : OrderSubjectVM
 	private void FormationOnOnUnitCountChanged(Formation formation)
 	{
 		CurrentMemberCount = (formation.IsPlayerTroopInFormation ? (formation.CountOfUnits - 1) : formation.CountOfUnits);
-		UpdateCommanderInfo();
+		UpdateVisuals();
 	}
 
 	public void OnFormationAgentRemoved(Agent agent)
@@ -328,64 +395,82 @@ public class OrderTroopItemVM : OrderSubjectVM
 		{
 			ContainsDeadTroop = true;
 		}
-		UpdateCommanderInfo();
+		UpdateVisuals();
 	}
 
-	private void UpdateCommanderInfo()
+	public virtual void UpdateVisuals()
 	{
-		if (Formation?.Captain?.Character != null && (Formation.Captain.Character != _cachedCommander || CommanderImageIdentifier == null))
+		if (Formation?.Captain?.Character != null)
 		{
-			CommanderImageIdentifier = new ImageIdentifierVM(CharacterCode.CreateFrom(Formation.Captain.Character));
-			_cachedCommander = Formation.Captain.Character;
+			if (CaptainImageIdentifier == null || Formation.Captain.Character != _cachedCaptain)
+			{
+				CaptainImageIdentifier?.OnFinalize();
+				CaptainImageIdentifier = new CharacterImageIdentifierVM(CharacterCode.CreateFrom(Formation.Captain.Character));
+				HasCaptain = true;
+				_cachedCaptain = Formation.Captain.Character;
+			}
 		}
 		else
 		{
-			CommanderImageIdentifier = null;
+			CaptainImageIdentifier?.OnFinalize();
+			CaptainImageIdentifier = null;
+			HasCaptain = false;
 		}
 	}
 
-	private void UpdateSelectionKeyInfo()
+	public virtual void Update()
 	{
-		if (Formation != null)
+	}
+
+	public void UpdateSelectionKeyInfo()
+	{
+		if (Formation == null)
 		{
-			int num = -1;
-			if (Formation.Index == 0)
-			{
-				num = 78;
-			}
-			else if (Formation.Index == 1)
-			{
-				num = 79;
-			}
-			else if (Formation.Index == 2)
-			{
-				num = 80;
-			}
-			else if (Formation.Index == 3)
-			{
-				num = 81;
-			}
-			else if (Formation.Index == 4)
-			{
-				num = 82;
-			}
-			else if (Formation.Index == 5)
-			{
-				num = 83;
-			}
-			else if (Formation.Index == 6)
-			{
-				num = 84;
-			}
-			else if (Formation.Index == 7)
-			{
-				num = 85;
-			}
-			if (num != -1)
-			{
-				GameKey gameKey = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(num);
-				base.SelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: false);
-			}
+			return;
+		}
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+		{
+			GameKey gameKey = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(92);
+			base.SelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+			return;
+		}
+		int num = -1;
+		if (Formation.Index == 0)
+		{
+			num = 79;
+		}
+		else if (Formation.Index == 1)
+		{
+			num = 80;
+		}
+		else if (Formation.Index == 2)
+		{
+			num = 81;
+		}
+		else if (Formation.Index == 3)
+		{
+			num = 82;
+		}
+		else if (Formation.Index == 4)
+		{
+			num = 83;
+		}
+		else if (Formation.Index == 5)
+		{
+			num = 84;
+		}
+		else if (Formation.Index == 6)
+		{
+			num = 85;
+		}
+		else if (Formation.Index == 7)
+		{
+			num = 86;
+		}
+		if (num != -1)
+		{
+			GameKey gameKey2 = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(num);
+			base.SelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey2, isConsoleOnly: false);
 		}
 	}
 
@@ -439,16 +524,16 @@ public class OrderTroopItemVM : OrderSubjectVM
 		{
 			activeFormationClass.UpdateTroopCount();
 		}
-		UpdateCommanderInfo();
+		UpdateVisuals();
 		return false;
 	}
 
-	public void UpdateFilterData(List<int> usedFilters)
+	public void UpdateFilterData(List<FormationFilterType> usedFilters)
 	{
 		ActiveFilters.Clear();
-		foreach (int usedFilter in usedFilters)
+		foreach (FormationFilterType usedFilter in usedFilters)
 		{
-			ActiveFilters.Add(new OrderTroopItemFilterVM(usedFilter));
+			ActiveFilters.Add(new OrderTroopItemFilterVM((int)usedFilter));
 		}
 	}
 
@@ -457,24 +542,32 @@ public class OrderTroopItemVM : OrderSubjectVM
 		SetSelected(this);
 	}
 
-	public void RefreshTargetedOrderVisual()
+	public virtual void RefreshTargetedOrderVisual()
 	{
 		bool hasTarget = false;
 		string currentOrderIconId = null;
 		string currentTargetFormationType = null;
-		Formation targetFormation = Formation.TargetFormation;
-		if (targetFormation != null)
+		for (int i = 0; i < base.ActiveOrders.Count; i++)
 		{
-			OrderSubType activeMovementOrderOfFormation = OrderUIHelper.GetActiveMovementOrderOfFormation(Formation);
-			if (activeMovementOrderOfFormation != OrderSubType.None && OrderUIHelper.CanOrderHaveTarget(activeMovementOrderOfFormation))
+			OrderItemVM orderItemVM = base.ActiveOrders[i];
+			if (orderItemVM.Order.IsTargeted())
 			{
-				hasTarget = true;
-				currentTargetFormationType = MissionFormationMarkerTargetVM.GetFormationType(targetFormation.PhysicalClass);
-				currentOrderIconId = activeMovementOrderOfFormation.ToString();
+				Formation targetFormation = Formation.TargetFormation;
+				if (targetFormation != null)
+				{
+					currentTargetFormationType = MissionFormationMarkerTargetVM.GetFormationType(targetFormation.PhysicalClass);
+					hasTarget = true;
+				}
+				currentOrderIconId = orderItemVM.OrderIconId;
 			}
 		}
 		HasTarget = hasTarget;
 		CurrentOrderIconId = currentOrderIconId;
 		CurrentTargetFormationType = currentTargetFormationType;
+	}
+
+	public virtual TextObject GetVisibleNameOfFormationForMessage()
+	{
+		return GameTexts.FindText("str_formation_class_string", Formation.PhysicalClass.GetName());
 	}
 }

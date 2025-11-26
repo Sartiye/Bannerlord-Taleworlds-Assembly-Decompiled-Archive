@@ -67,7 +67,7 @@ public class ItemTypeVisualBrushWidget : BrushWidget
 				brushName = "Item.Type.Icon." + ItemTypeAsString;
 				break;
 			default:
-				Debug.FailedAssert("Unidentified item type to show type for: " + ItemTypeAsString, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\ItemTypeVisualBrushWidget.cs", "OnLateUpdate", 66);
+				Debug.FailedAssert("Unidentified item type to show type for: " + ItemTypeAsString, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\ItemTypeVisualBrushWidget.cs", "OnLateUpdate", 66);
 				break;
 			}
 		}

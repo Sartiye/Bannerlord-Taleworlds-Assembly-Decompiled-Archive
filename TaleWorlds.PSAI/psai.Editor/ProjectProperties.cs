@@ -17,6 +17,8 @@ public class ProjectProperties : ICloneable
 
 	public bool ForceFullRebuild { get; set; }
 
+	public string ModuleIdPrefix { get; set; }
+
 	public float VolumeBoost
 	{
 		get

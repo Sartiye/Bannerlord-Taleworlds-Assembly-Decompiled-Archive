@@ -169,7 +169,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 		}
 		else
 		{
-			Debug.FailedAssert("Item is already in container: " + item, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "AddEntryAux", 234);
+			Debug.FailedAssert("Item is already in container: " + item, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "AddEntryAux", 234);
 		}
 		_isFileDirty = true;
 	}
@@ -203,7 +203,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 		}
 		else
 		{
-			Debug.FailedAssert("Item is already in container: " + item, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InsertEntryAux", 272);
+			Debug.FailedAssert("Item is already in container: " + item, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InsertEntryAux", 272);
 		}
 		_isFileDirty = true;
 	}
@@ -230,7 +230,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 		}
 		if (count == _dataList.Count)
 		{
-			Debug.FailedAssert("Item is not in container: " + item, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "RemoveEntryAux", 304);
+			Debug.FailedAssert("Item is not in container: " + item, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "RemoveEntryAux", 304);
 		}
 		_isFileDirty = true;
 	}
@@ -253,7 +253,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("An exception occured while trying to save " + GetType().Name + " data: " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "SaveFileAux", 331);
+			Debug.FailedAssert("An exception occured while trying to save " + GetType().Name + " data: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "SaveFileAux", 331);
 		}
 	}
 
@@ -280,7 +280,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 					}
 					catch
 					{
-						Debug.FailedAssert("Failed to load old data in compatibility mode", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "LoadFileAux", 362);
+						Debug.FailedAssert("Failed to load old data in compatibility mode", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "LoadFileAux", 362);
 					}
 				}
 				if (list != null)
@@ -319,7 +319,7 @@ public abstract class MultiplayerLocalDataContainer<T> where T : MultiplayerLoca
 			}
 			catch
 			{
-				Debug.FailedAssert("Failed to load file in compatibility mode", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "LoadFileAux", 403);
+				Debug.FailedAssert("Failed to load file in compatibility mode", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "LoadFileAux", 403);
 			}
 		}
 		if (list2 == null)

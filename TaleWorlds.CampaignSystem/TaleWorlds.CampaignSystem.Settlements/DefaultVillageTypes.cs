@@ -246,7 +246,7 @@ public class DefaultVillageTypes
 		AddProductions(VillageTypeSheepFarm, new(string, float)[4]
 		{
 			("sheep", 4f),
-			("wool", 6f),
+			("wool", 10f),
 			("butter", 2f),
 			("cheese", 2f)
 		});

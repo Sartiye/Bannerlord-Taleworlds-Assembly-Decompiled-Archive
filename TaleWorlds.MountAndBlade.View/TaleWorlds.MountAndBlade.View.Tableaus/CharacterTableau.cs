@@ -5,11 +5,14 @@ using TaleWorlds.Engine;
 using TaleWorlds.Engine.Options;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View.Tableaus;
 
 public class CharacterTableau
 {
+	private static int _tableauIndex;
+
 	private bool _isFinalized;
 
 	private MatrixFrame _mountSpawnPoint;
@@ -38,7 +41,7 @@ public class CharacterTableau
 
 	private int _initialLoadingCounter;
 
-	private ActionIndexCache _idleAction;
+	private ActionIndexCache _idleAction = ActionIndexCache.act_none;
 
 	private string _idleFaceAnim;
 
@@ -80,7 +83,7 @@ public class CharacterTableau
 
 	private bool _isEnabled;
 
-	private float RenderScale = 1f;
+	private float _renderScale = 1f;
 
 	private float _customRenderScale = 1f;
 
@@ -108,18 +111,6 @@ public class CharacterTableau
 
 	private GameEntity _bannerEntity;
 
-	private static readonly ActionIndexCache act_cheer_1 = ActionIndexCache.Create("act_arena_winner_1");
-
-	private static readonly ActionIndexCache act_inventory_idle_start = ActionIndexCache.Create("act_inventory_idle_start");
-
-	private static readonly ActionIndexCache act_inventory_glove_equip = ActionIndexCache.Create("act_inventory_glove_equip");
-
-	private static readonly ActionIndexCache act_inventory_cloth_equip = ActionIndexCache.Create("act_inventory_cloth_equip");
-
-	private static readonly ActionIndexCache act_horse_stand = ActionIndexCache.Create("act_inventory_idle_start");
-
-	private static readonly ActionIndexCache act_camel_stand = ActionIndexCache.Create("act_inventory_idle_start");
-
 	private int _leftHandEquipmentIndex;
 
 	private int _rightHandEquipmentIndex;
@@ -132,7 +123,7 @@ public class CharacterTableau
 
 	private string _customAnimationName;
 
-	private ActionIndexCache _customAnimation;
+	private ActionIndexCache _customAnimation = ActionIndexCache.act_none;
 
 	private MBActionSet _characterActionSet;
 
@@ -146,7 +137,7 @@ public class CharacterTableau
 	{
 		get
 		{
-			if (!(_customAnimation != null))
+			if (!(_customAnimation != ActionIndexCache.act_none))
 			{
 				return _customAnimationStartScheduled;
 			}
@@ -186,10 +177,10 @@ public class CharacterTableau
 		{
 			StartCustomAnimation();
 		}
-		if (_customAnimation != null && _characterActionSet.IsValid)
+		if (_customAnimation != ActionIndexCache.act_none && _characterActionSet.IsValid)
 		{
 			_customAnimationTimer += dt;
-			float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(_characterActionSet, _customAnimation);
+			float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(_characterActionSet, in _customAnimation);
 			if (_customAnimationTimer > actionAnimationDuration)
 			{
 				if (_customAnimationTimer > actionAnimationDuration + CustomAnimationWaitDuration)
@@ -205,7 +196,12 @@ public class CharacterTableau
 				}
 				else
 				{
-					_agentVisuals?.SetAction(GetIdleAction());
+					AgentVisuals agentVisuals = _agentVisuals;
+					if (agentVisuals != null)
+					{
+						ActionIndexCache actionIndex = GetIdleAction();
+						agentVisuals.SetAction(in actionIndex);
+					}
 				}
 			}
 		}
@@ -262,9 +258,9 @@ public class CharacterTableau
 
 	public float GetCustomAnimationProgressRatio()
 	{
-		if (_customAnimation != null && _characterActionSet.IsValid)
+		if (_customAnimation != ActionIndexCache.act_none && _characterActionSet.IsValid)
 		{
-			float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(_characterActionSet, _customAnimation);
+			float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(_characterActionSet, in _customAnimation);
 			if (actionAnimationDuration == 0f)
 			{
 				return -1f;
@@ -277,12 +273,12 @@ public class CharacterTableau
 	private void StopCustomAnimationIfCantContinue()
 	{
 		bool flag = false;
-		if (_agentVisuals != null && _customAnimation != null && _customAnimation.Index >= 0)
+		if (_agentVisuals != null && _customAnimation != ActionIndexCache.act_none)
 		{
-			ActionIndexValueCache actionAnimationContinueToAction = MBActionSet.GetActionAnimationContinueToAction(_characterActionSet, ActionIndexValueCache.Create(_customAnimation));
+			ActionIndexCache actionAnimationContinueToAction = MBActionSet.GetActionAnimationContinueToAction(_characterActionSet, in _customAnimation);
 			if (actionAnimationContinueToAction.Index >= 0)
 			{
-				_customAnimationName = actionAnimationContinueToAction.Name;
+				_customAnimationName = actionAnimationContinueToAction.GetName();
 				StartCustomAnimation();
 				flag = true;
 			}
@@ -324,25 +320,22 @@ public class CharacterTableau
 		}
 		else
 		{
-			RenderScale = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.ResolutionScale) / 100f;
-			_tableauSizeX = (int)((float)width * _customRenderScale * RenderScale);
-			_tableauSizeY = (int)((float)height * _customRenderScale * RenderScale);
+			_renderScale = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.ResolutionScale) / 100f;
+			_tableauSizeX = (int)((float)width * _customRenderScale * _renderScale);
+			_tableauSizeY = (int)((float)height * _customRenderScale * _renderScale);
 		}
 		_cameraRatio = (float)_tableauSizeX / (float)_tableauSizeY;
 		View?.SetEnable(value: false);
 		View?.AddClearTask(clearOnlySceneview: true);
-		Texture?.ReleaseNextFrame();
-		Texture = TableauView.AddTableau("CharacterTableau", CharacterTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
+		Texture?.Release();
+		Texture = TableauView.AddTableau($"CharacterTableau_{_tableauIndex++}", CharacterTableauContinuousRenderFunction, _tableauScene, _tableauSizeX, _tableauSizeY);
 		Texture.TableauView.SetSceneUsesContour(value: false);
 		Texture.TableauView.SetFocusedShadowmap(enable: true, ref _initialSpawnFrame.origin, 2.55f);
 	}
 
 	public void SetCharStringID(string charStringId)
 	{
-		if (_charStringId != charStringId)
-		{
-			_charStringId = charStringId;
-		}
+		_charStringId = charStringId;
 	}
 
 	public void OnFinalize()
@@ -381,13 +374,14 @@ public class CharacterTableau
 			}
 			else
 			{
-				TableauCacheManager.Current.ReturnCachedInventoryTableauScene();
-				TableauCacheManager.Current.ReturnCachedInventoryTableauScene();
+				ThumbnailCacheManager.Current.ReturnCachedInventoryTableauScene();
+				ThumbnailCacheManager.Current.ReturnCachedInventoryTableauScene();
 				view?.AddClearTask(clearOnlySceneview: true);
+				_tableauScene?.ManualInvalidate();
 				_tableauScene = null;
 			}
 		}
-		Texture?.ReleaseNextFrame();
+		Texture?.Release();
 		Texture = null;
 		_isFinalized = true;
 	}
@@ -432,12 +426,24 @@ public class CharacterTableau
 		switch (_stanceIndex)
 		{
 		case CharacterViewModel.StanceTypes.EmphasizeFace:
+		{
 			_camPos = _camPosGatheredFromScene;
 			_camPos.Elevate(-2f);
 			_camPos.Advance(0.5f);
-			_agentVisuals?.SetAction(GetIdleAction());
-			_oldAgentVisuals?.SetAction(GetIdleAction());
+			AgentVisuals agentVisuals4 = _agentVisuals;
+			if (agentVisuals4 != null)
+			{
+				ActionIndexCache actionIndex = GetIdleAction();
+				agentVisuals4.SetAction(in actionIndex);
+			}
+			AgentVisuals oldAgentVisuals4 = _oldAgentVisuals;
+			if (oldAgentVisuals4 != null)
+			{
+				ActionIndexCache actionIndex = GetIdleAction();
+				oldAgentVisuals4.SetAction(in actionIndex);
+			}
 			break;
+		}
 		case CharacterViewModel.StanceTypes.SideView:
 		case CharacterViewModel.StanceTypes.OnMount:
 			if (_agentVisuals != null)
@@ -446,26 +452,46 @@ public class CharacterTableau
 				if (_equipment[10].Item != null)
 				{
 					_camPos.Advance(0.5f);
-					_agentVisuals.SetAction(_mountVisuals.GetEntity().Skeleton.GetActionAtChannel(0), _mountVisuals.GetEntity().Skeleton.GetAnimationParameterAtChannel(0));
-					_oldAgentVisuals.SetAction(_mountVisuals.GetEntity().Skeleton.GetActionAtChannel(0), _mountVisuals.GetEntity().Skeleton.GetAnimationParameterAtChannel(0));
+					AgentVisuals agentVisuals2 = _agentVisuals;
+					ActionIndexCache actionIndex = _mountVisuals.GetEntity().Skeleton.GetActionAtChannel(0);
+					agentVisuals2.SetAction(in actionIndex, _mountVisuals.GetEntity().Skeleton.GetAnimationParameterAtChannel(0));
+					AgentVisuals oldAgentVisuals2 = _oldAgentVisuals;
+					actionIndex = _mountVisuals.GetEntity().Skeleton.GetActionAtChannel(0);
+					oldAgentVisuals2.SetAction(in actionIndex, _mountVisuals.GetEntity().Skeleton.GetAnimationParameterAtChannel(0));
 				}
 				else
 				{
 					_camPos.Elevate(-2f);
 					_camPos.Advance(0.5f);
-					_agentVisuals.SetAction(GetIdleAction());
-					_oldAgentVisuals.SetAction(GetIdleAction());
+					AgentVisuals agentVisuals3 = _agentVisuals;
+					ActionIndexCache actionIndex = GetIdleAction();
+					agentVisuals3.SetAction(in actionIndex);
+					AgentVisuals oldAgentVisuals3 = _oldAgentVisuals;
+					actionIndex = GetIdleAction();
+					oldAgentVisuals3.SetAction(in actionIndex);
 				}
 			}
 			break;
 		case CharacterViewModel.StanceTypes.CelebrateVictory:
-			_agentVisuals?.SetAction(act_cheer_1);
-			_oldAgentVisuals?.SetAction(act_cheer_1);
+			_agentVisuals?.SetAction(in ActionIndexCache.act_cheer_1);
+			_oldAgentVisuals?.SetAction(in ActionIndexCache.act_cheer_1);
 			break;
 		case CharacterViewModel.StanceTypes.None:
-			_agentVisuals?.SetAction(GetIdleAction());
-			_oldAgentVisuals?.SetAction(GetIdleAction());
+		{
+			AgentVisuals agentVisuals = _agentVisuals;
+			if (agentVisuals != null)
+			{
+				ActionIndexCache actionIndex = GetIdleAction();
+				agentVisuals.SetAction(in actionIndex);
+			}
+			AgentVisuals oldAgentVisuals = _oldAgentVisuals;
+			if (oldAgentVisuals != null)
+			{
+				ActionIndexCache actionIndex = GetIdleAction();
+				oldAgentVisuals.SetAction(in actionIndex);
+			}
 			break;
+		}
 		}
 		if (_agentVisuals != null)
 		{
@@ -560,25 +586,27 @@ public class CharacterTableau
 		_customAnimation = ActionIndexCache.Create(_customAnimationName);
 		if (_customAnimation.Index >= 0)
 		{
-			_agentVisuals.SetAction(_customAnimation);
+			_agentVisuals.SetAction(in _customAnimation);
 			_customAnimationStartScheduled = false;
 			_customAnimationTimer = 0f;
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid custom animation in character tableau: " + _customAnimationName, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\CharacterTableau.cs", "StartCustomAnimation", 599);
+			Debug.FailedAssert("Invalid custom animation in character tableau: " + _customAnimationName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\CharacterTableau.cs", "StartCustomAnimation", 593);
 		}
 	}
 
 	public void StopCustomAnimation()
 	{
-		if (_agentVisuals != null && _customAnimation != null)
+		if (_agentVisuals != null && _customAnimation != ActionIndexCache.act_none)
 		{
-			if (MBActionSet.GetActionAnimationContinueToAction(_characterActionSet, ActionIndexValueCache.Create(_customAnimation)).Index < 0)
+			if (MBActionSet.GetActionAnimationContinueToAction(_characterActionSet, in _customAnimation).Index < 0)
 			{
-				_agentVisuals.SetAction(GetIdleAction());
+				AgentVisuals agentVisuals = _agentVisuals;
+				ActionIndexCache actionIndex = GetIdleAction();
+				agentVisuals.SetAction(in actionIndex);
 			}
-			_customAnimation = null;
+			_customAnimation = ActionIndexCache.act_none;
 		}
 	}
 
@@ -619,14 +647,7 @@ public class CharacterTableau
 
 	public void SetBannerCode(string value)
 	{
-		if (string.IsNullOrEmpty(value))
-		{
-			_banner = null;
-		}
-		else
-		{
-			_banner = BannerCode.CreateFrom(value).CalculateBanner();
-		}
+		_banner = (string.IsNullOrEmpty(value) ? null : new Banner(value));
 		_isVisualsDirty = true;
 	}
 
@@ -650,7 +671,11 @@ public class CharacterTableau
 
 	private ActionIndexCache GetIdleAction()
 	{
-		return _idleAction ?? act_inventory_idle_start;
+		if (!(_idleAction != ActionIndexCache.act_none))
+		{
+			return ActionIndexCache.act_inventory_idle_start;
+		}
+		return _idleAction;
 	}
 
 	private void RefreshCharacterTableau(Equipment oldEquipment = null)
@@ -665,8 +690,9 @@ public class CharacterTableau
 		if (_agentVisuals != null)
 		{
 			bool visibilityExcludeParents = _oldAgentVisuals.GetEntity().GetVisibilityExcludeParents();
+			AgentVisuals oldAgentVisuals = _oldAgentVisuals;
 			AgentVisuals agentVisuals = _agentVisuals;
-			_agentVisuals = _oldAgentVisuals;
+			_agentVisuals = oldAgentVisuals;
 			_oldAgentVisuals = agentVisuals;
 			_agentVisualLoadingCounter = 1;
 			AgentVisualsData copyAgentVisualsData = _agentVisuals.GetCopyAgentVisualsData();
@@ -698,12 +724,12 @@ public class CharacterTableau
 			{
 				if (_equipment[EquipmentIndex.Gloves].Item != null && oldEquipment[EquipmentIndex.Gloves].Item != _equipment[EquipmentIndex.Gloves].Item)
 				{
-					_agentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, act_inventory_glove_equip);
+					_agentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_inventory_glove_equip);
 					_animationGap = 0f;
 				}
 				else if (_equipment[EquipmentIndex.Body].Item != null && oldEquipment[EquipmentIndex.Body].Item != _equipment[EquipmentIndex.Body].Item)
 				{
-					_agentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, act_inventory_cloth_equip);
+					_agentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_inventory_cloth_equip);
 					_animationGap = 0f;
 				}
 			}
@@ -762,13 +788,13 @@ public class CharacterTableau
 		}
 		if (_tableauScene == null)
 		{
-			if (TableauCacheManager.Current.IsCachedInventoryTableauSceneUsed())
+			if (ThumbnailCacheManager.Current.IsCachedInventoryTableauSceneUsed())
 			{
 				_tableauScene = Scene.CreateNewScene(initialize_physics: true, enable_decals: false);
 				_tableauScene.SetName("CharacterTableau");
 				_tableauScene.DisableStaticShadows(value: true);
 				_tableauScene.SetClothSimulationState(state: true);
-				_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_tableauScene, 32);
+				_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_tableauScene);
 				SceneInitializationData initData = new SceneInitializationData(initializeWithDefaults: true);
 				initData.InitPhysicsWorld = false;
 				initData.DoNotUseLoadingScreen = true;
@@ -776,17 +802,17 @@ public class CharacterTableau
 			}
 			else
 			{
-				_tableauScene = TableauCacheManager.Current.GetCachedInventoryTableauScene();
+				_tableauScene = ThumbnailCacheManager.Current.GetCachedInventoryTableauScene();
 			}
 			_tableauScene.SetShadow(shadowEnabled: true);
 			_tableauScene.SetClothSimulationState(state: true);
-			_camPos = (_camPosGatheredFromScene = TableauCacheManager.Current.InventorySceneCameraFrame);
+			_camPos = (_camPosGatheredFromScene = ThumbnailCacheManager.Current.InventorySceneCameraFrame);
 			_mountSpawnPoint = _tableauScene.FindEntityWithTag("horse_inv").GetGlobalFrame();
 			_bannerSpawnPoint = _tableauScene.FindEntityWithTag("banner_inv").GetGlobalFrame();
 			_initialSpawnFrame = _tableauScene.FindEntityWithTag("agent_inv").GetGlobalFrame();
-			_characterMountPositionFrame = new MatrixFrame(_initialSpawnFrame.rotation, _mountSpawnPoint.origin);
+			_characterMountPositionFrame = new MatrixFrame(in _initialSpawnFrame.rotation, in _mountSpawnPoint.origin);
 			_characterMountPositionFrame.Strafe(-0.25f);
-			_mountCharacterPositionFrame = new MatrixFrame(_mountSpawnPoint.rotation, _initialSpawnFrame.origin);
+			_mountCharacterPositionFrame = new MatrixFrame(in _mountSpawnPoint.rotation, in _initialSpawnFrame.origin);
 			_mountCharacterPositionFrame.Strafe(0.25f);
 			if (_agentRendererSceneController != null)
 			{
@@ -803,14 +829,13 @@ public class CharacterTableau
 	{
 		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(_race);
 		_characterActionSet = MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, _isFemale, "_warrior");
-		_oldAgentVisuals = AgentVisuals.Create(new AgentVisualsData().Banner(_banner).Equipment(_equipment).BodyProperties(_bodyProperties)
+		AgentVisualsData agentVisualsData = new AgentVisualsData().Banner(_banner).Equipment(_equipment).BodyProperties(_bodyProperties)
 			.Race(_race)
 			.Frame(_initialSpawnFrame)
 			.UseMorphAnims(useMorphAnims: true)
-			.ActionSet(_characterActionSet)
-			.ActionCode(GetIdleAction())
-			.Scene(_tableauScene)
-			.Monster(baseMonsterFromRace)
+			.ActionSet(_characterActionSet);
+		ActionIndexCache actionCode = GetIdleAction();
+		_oldAgentVisuals = AgentVisuals.Create(agentVisualsData.ActionCode(in actionCode).Scene(_tableauScene).Monster(baseMonsterFromRace)
 			.PrepareImmediately(prepareImmediately: false)
 			.SkeletonType(_isFemale ? SkeletonType.Female : SkeletonType.Male)
 			.ClothColor1(_clothColor1)
@@ -818,14 +843,13 @@ public class CharacterTableau
 			.CharacterObjectStringId(_charStringId), "CharacterTableau", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
 		_oldAgentVisuals.SetAgentLodZeroOrMaxExternal(makeZero: true);
 		_oldAgentVisuals.SetVisible(value: false);
-		_agentVisuals = AgentVisuals.Create(new AgentVisualsData().Banner(_banner).Equipment(_equipment).BodyProperties(_bodyProperties)
+		AgentVisualsData agentVisualsData2 = new AgentVisualsData().Banner(_banner).Equipment(_equipment).BodyProperties(_bodyProperties)
 			.Race(_race)
 			.Frame(_initialSpawnFrame)
 			.UseMorphAnims(useMorphAnims: true)
-			.ActionSet(_characterActionSet)
-			.ActionCode(GetIdleAction())
-			.Scene(_tableauScene)
-			.Monster(baseMonsterFromRace)
+			.ActionSet(_characterActionSet);
+		actionCode = GetIdleAction();
+		_agentVisuals = AgentVisuals.Create(agentVisualsData2.ActionCode(in actionCode).Scene(_tableauScene).Monster(baseMonsterFromRace)
 			.PrepareImmediately(prepareImmediately: false)
 			.SkeletonType(_isFemale ? SkeletonType.Female : SkeletonType.Male)
 			.ClothColor1(_clothColor1)
@@ -864,12 +888,11 @@ public class CharacterTableau
 			_oldMountVisuals = _mountVisuals;
 			_mountVisualLoadingCounter = 3;
 			AgentVisualsData agentVisualsData = new AgentVisualsData();
-			agentVisualsData.Banner(_banner).Equipment(equipment).Frame(frame)
+			AgentVisualsData agentVisualsData2 = agentVisualsData.Banner(_banner).Equipment(equipment).Frame(frame)
 				.Scale(item.ScaleFactor)
-				.ActionSet(MBGlobals.GetActionSet(monster.ActionSetCode))
-				.ActionCode((!isRiderAgentMounted) ? GetIdleAction() : ((monster.MonsterUsage == "camel") ? act_camel_stand : act_horse_stand))
-				.Scene(_tableauScene)
-				.Monster(monster)
+				.ActionSet(MBGlobals.GetActionSet(monster.ActionSetCode));
+			ActionIndexCache actionCode = ((!isRiderAgentMounted) ? GetIdleAction() : ((monster.MonsterUsage == "camel") ? ActionIndexCache.act_inventory_idle_start : ActionIndexCache.act_inventory_idle_start));
+			agentVisualsData2.ActionCode(in actionCode).Scene(_tableauScene).Monster(monster)
 				.PrepareImmediately(prepareImmediately: false)
 				.ClothColor1(_clothColor1)
 				.ClothColor2(_clothColor2)
@@ -903,7 +926,9 @@ public class CharacterTableau
 		_bannerEntity.AddMultiMesh(_bannerItem.GetMultiMeshCopy());
 		if (_banner != null)
 		{
-			_banner.GetTableauTextureLarge(delegate(Texture t)
+			Banner banner = _banner;
+			BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+			banner.GetTableauTextureLarge(in debugInfo, delegate(Texture t)
 			{
 				OnBannerTableauRenderDone(t);
 			});

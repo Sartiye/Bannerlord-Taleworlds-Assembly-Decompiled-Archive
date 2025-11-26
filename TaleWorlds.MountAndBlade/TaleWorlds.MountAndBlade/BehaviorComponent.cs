@@ -90,8 +90,8 @@ public abstract class BehaviorComponent
 		{
 			TextObject behaviorString = GetBehaviorString();
 			MBTextManager.SetTextVariable("BEHAVIOR", behaviorString);
-			MBTextManager.SetTextVariable("PLAYER_NAME", Mission.Current.MainAgent.Name);
-			MBTextManager.SetTextVariable("TEAM_LEADER", Formation.Team.GeneralAgent.Name);
+			MBTextManager.SetTextVariable("PLAYER_NAME", Mission.Current.MainAgent.NameTextObject);
+			MBTextManager.SetTextVariable("TEAM_LEADER", Formation.Team.GeneralAgent.NameTextObject);
 			MBInformationManager.AddQuickInformation(new TextObject("{=L91XKoMD}{TEAM_LEADER}: {PLAYER_NAME}, {BEHAVIOR}"), 4000, Formation.Team.GeneralAgent.Character);
 		}
 	}
@@ -121,6 +121,10 @@ public abstract class BehaviorComponent
 	}
 
 	public virtual void OnBehaviorCanceled()
+	{
+	}
+
+	public virtual void OnLostAIControl()
 	{
 	}
 

@@ -13,6 +13,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void AddAlwaysRenderedSkeletonDelegate(UIntPtr scenePointer, UIntPtr skeletonPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void AddDecalInstanceDelegate(UIntPtr scenePointer, UIntPtr decalMeshPointer, byte[] decalSetID, [MarshalAs(UnmanagedType.U1)] bool deletable);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -53,6 +58,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void AddWaterWakeWithCapsuleDelegate(UIntPtr scene, Vec3 positionA, float radiusA, Vec3 positionB, float radiusB, float wakeVisibility, float foamVisibility);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool AttachEntityDelegate(UIntPtr scenePointer, UIntPtr entity, [MarshalAs(UnmanagedType.U1)] bool showWarnings);
 
@@ -66,7 +76,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool BoxCastOnlyForCameraDelegate(UIntPtr scenePointer, IntPtr boxPoints, ref Vec3 centerPoint, ref Vec3 dir, float distance, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, [MarshalAs(UnmanagedType.U1)] bool preFilter, [MarshalAs(UnmanagedType.U1)] bool postFilter);
+	public delegate bool BoxCastOnlyForCameraDelegate(UIntPtr scenePointer, IntPtr boxPoints, in Vec3 centerPoint, in Vec3 dir, float distance, UIntPtr ignoredEntityPointer, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityPointer, BodyFlags bodyExcludeFlags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -89,7 +99,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void CheckResourcesDelegate(UIntPtr scenePointer);
+	public delegate void CheckResourcesDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool checkInvisibleEntities);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -100,6 +110,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ClearDecalsDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ClearNavMeshDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -115,7 +130,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateNewSceneDelegate([MarshalAs(UnmanagedType.U1)] bool initialize_physics, [MarshalAs(UnmanagedType.U1)] bool enable_decals, int atlasGroup, byte[] sceneName);
+	public delegate void CreateDynamicRainTextureDelegate(UIntPtr scenePointer, int w, int h);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate NativeObjectPointer CreateNewSceneDelegate([MarshalAs(UnmanagedType.U1)] bool initializePhysics, [MarshalAs(UnmanagedType.U1)] bool enableDecals, int atlasGroup, byte[] sceneName);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -131,6 +151,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void DeletePathWithNameDelegate(UIntPtr scenePointer, byte[] name);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeleteWaterWakeRendererDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeRegisterShipVisualDelegate(UIntPtr scenePointer, UIntPtr visualPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -152,7 +182,22 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void EnableFixedTickDelegate(UIntPtr scene);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void EnableInclusiveAsyncPhysxDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void EnsurePostfxSystemDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void EnsureWaterWakeRendererDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -172,17 +217,33 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec2 FindClosestExitPositionForPositionOnABoundaryFaceDelegate(UIntPtr scenePointer, Vec3 position, UIntPtr boundaryNavMeshFacePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void FinishSceneSoundsDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ForceLoadResourcesDelegate(UIntPtr scenePointer);
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool FocusRayCastForFixedPhysicsDelegate(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, [MarshalAs(UnmanagedType.U1)] bool isFixedWorld);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int GenerateContactsWithCapsuleDelegate(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags exclude_flags, IntPtr intersections);
+	public delegate void ForceLoadResourcesDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool checkInvisibleEntities);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GenerateContactsWithCapsuleDelegate(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags excludeFlags, [MarshalAs(UnmanagedType.U1)] bool isFixedTick, IntPtr intersections, IntPtr entityIds);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GenerateContactsWithCapsuleAgainstEntityDelegate(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags excludeFlags, UIntPtr entityId, IntPtr intersections);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -202,12 +263,33 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetAllNavmeshFaceRecordsDelegate(UIntPtr scenePointer, IntPtr faceRecords);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetBoundingBoxDelegate(UIntPtr scenePointer, ref Vec3 min, ref Vec3 max);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetBulkWaterLevelAtPositionsDelegate(UIntPtr scene, IntPtr waterHeightQueryArray, int arraySize, IntPtr waterHeightsAtVolumes, IntPtr waterSurfaceNormals);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetBulkWaterLevelAtVolumesDelegate(UIntPtr scene, UIntPtr volumeQueryDataArray, int volumeCount, in MatrixFrame entityFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer GetCampaignEntityWithNameDelegate(UIntPtr scenePointer, byte[] entityName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetEnginePhysicsEnabledDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -223,6 +305,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer GetEntityWithGuidDelegate(UIntPtr scenePointer, byte[] guid);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetFallDensityDelegate(UIntPtr scenepTR);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -248,6 +335,21 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate float GetFogDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetGlobalWindStrengthVectorDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetGlobalWindVelocityDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetGroundHeightAndBodyFlagsAtPositionDelegate(UIntPtr scenePointer, Vec3 position, out BodyFlags contactPointFlags, BodyFlags excludeFlags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -283,6 +385,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetInterpolationFactorForBodyWorldTransformSmoothingDelegate(UIntPtr scene, out float interpolationFactor, out float fixedDt);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetLastFinalRenderCameraFrameDelegate(UIntPtr scenePointer, ref MatrixFrame outFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -293,12 +400,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec2 GetLastPointOnNavigationMeshFromPositionToDestinationDelegate(UIntPtr scenePointer, int startingFace, Vec2 position, Vec2 destination);
+	public delegate Vec2 GetLastPointOnNavigationMeshFromPositionToDestinationDelegate(UIntPtr scenePointer, int startingFace, Vec2 position, Vec2 destination, IntPtr exclusionGroupIds, int exclusionGroupIdsCount);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate Vec3 GetLastPointOnNavigationMeshFromWorldPositionToDestinationDelegate(UIntPtr scenePointer, ref WorldPosition position, Vec2 destination);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetLastPositionOnNavMeshFaceForPointAndDirectionDelegate(UIntPtr scenePointer, in PathFaceRecord record, Vec2 position, Vec2 direction);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -318,8 +430,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetNavigationMeshFaceForPositionDelegate(UIntPtr scenePointer, ref Vec3 position, ref int faceGroupId, float heightDifferenceLimit);
+	public delegate uint GetNavigationMeshCRCDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetNavigationMeshForPositionDelegate(UIntPtr scenePointer, in Vec3 position, ref int faceGroupId, float heightDifferenceLimit, [MarshalAs(UnmanagedType.U1)] bool excludeDynamicNavigationMeshes);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -334,17 +450,37 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetNavmeshFaceCountBetweenTwoIdsDelegate(UIntPtr scenePointer, int firstId, int secondId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetNavMeshFaceFirstVertexZDelegate(UIntPtr scenePointer, int navMeshFaceIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void GetNavMeshFaceIndexDelegate(UIntPtr scenePointer, ref PathFaceRecord record, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool checkIfDisabled, [MarshalAs(UnmanagedType.U1)] bool ignoreHeight);
+	public delegate void GetNavMeshFaceIndexDelegate(UIntPtr scenePointer, ref PathFaceRecord record, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool isRegion1, [MarshalAs(UnmanagedType.U1)] bool checkIfDisabled, [MarshalAs(UnmanagedType.U1)] bool ignoreHeight);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void GetNavMeshFaceIndex3Delegate(UIntPtr scenePointer, ref PathFaceRecord record, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool checkIfDisabled);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetNavmeshFaceRecordsBetweenTwoIdsDelegate(UIntPtr scenePointer, int firstId, int secondId, IntPtr faceRecords);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate PathFaceRecord GetNavMeshPathFaceRecordDelegate(UIntPtr scenePointer, int navMeshFace);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetNearestNavigationMeshForPositionDelegate(UIntPtr scenePointer, in Vec3 position, float heightDifferenceLimit, [MarshalAs(UnmanagedType.U1)] bool excludeDynamicNavigationMeshes);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -370,25 +506,42 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetPathBetweenAIFaceIndicesDelegate(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exlusionGroupIdsCount, float extraCostMultiplier);
+	public delegate bool GetPathBetweenAIFaceIndicesDelegate(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exclusionGroupIdsCount, float extraCostMultiplier);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetPathBetweenAIFacePointersDelegate(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exlusionGroupIdsCount);
+	public delegate bool GetPathBetweenAIFaceIndicesWithRegionSwitchCostDelegate(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exclusionGroupIdsCount, float extraCostMultiplier, int regionSwitchCostTo0, int regionSwitchCostTo1);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetPathDistanceBetweenAIFacesDelegate(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance);
+	public delegate bool GetPathBetweenAIFacePointersDelegate(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exclusionGroupIdsCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetPathBetweenAIFacePointersWithRegionSwitchCostDelegate(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, IntPtr result, ref int pathSize, IntPtr exclusionGroupIds, int exclusionGroupIdsCount, int regionSwitchCostTo0, int regionSwitchCostTo1);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetPathDistanceBetweenAIFacesDelegate(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance, IntPtr exclusionGroupIds, int exclusionGroupIdsCount, int regionSwitchCostTo0, int regionSwitchCostTo1);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool GetPathDistanceBetweenPositionsDelegate(UIntPtr scenePointer, ref WorldPosition position, ref WorldPosition destination, float agentRadius, ref float pathLength);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate PathFaceRecord GetPathFaceRecordFromNavMeshFacePointerDelegate(UIntPtr scenePointer, UIntPtr navMeshFacePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -460,6 +613,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetSceneLimitsDelegate(UIntPtr scenePointer, ref Vec3 min, ref Vec3 max);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate uint GetSceneXMLCRCDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer GetScriptedEntityDelegate(UIntPtr scenePointer, int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -471,11 +634,6 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer GetSkyboxMeshDelegate(UIntPtr ptr);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate void GetSnowAmountDataDelegate(UIntPtr scenePointer, ManagedArray bytes);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -571,12 +729,39 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetWaterLevelAtPositionDelegate(UIntPtr scene, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool checkWaterBodyEntities);
+	public delegate float GetWaterLevelAtPositionDelegate(UIntPtr scene, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool useWaterRenderer, [MarshalAs(UnmanagedType.U1)] bool checkWaterBodyEntities);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetWaterSpeedAtPositionDelegate(UIntPtr scenePointer, in Vec2 position, [MarshalAs(UnmanagedType.U1)] bool doChoppinessCorrection);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetWaterStrengthDelegate(UIntPtr scene);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetWindFlowMapDataDelegate(UIntPtr scenePointer, IntPtr flowmapData);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate float GetWinterTimeFactorDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasDecalRendererDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasNavmeshFaceUnsharedEdgesDelegate(UIntPtr scenePointer, in PathFaceRecord faceRecord);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -640,7 +825,18 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsPositionOnADynamicNavMeshDelegate(UIntPtr scenePointer, Vec3 position);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void LoadNavMeshPrefabDelegate(UIntPtr scenePointer, byte[] navMeshPrefabName, int navMeshGroupIdShift);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void LoadNavMeshPrefabWithFrameDelegate(UIntPtr scenePointer, byte[] navMeshPrefabName, MatrixFrame frame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -671,7 +867,25 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool RayCastForClosestEntityOrTerrainDelegate(UIntPtr scenePointer, ref Vec3 sourcePoint, ref Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags);
+	public delegate bool RayCastExcludingTwoEntitiesDelegate(BodyFlags flags, UIntPtr scenePointer, in Ray ray, UIntPtr entity1, UIntPtr entity2);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool RayCastForClosestEntityOrTerrainDelegate(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, [MarshalAs(UnmanagedType.U1)] bool isFixedWorld);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool RayCastForClosestEntityOrTerrainIgnoreEntityDelegate(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, UIntPtr ignoredEntityPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool RayCastForRammingDelegate(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 intersectionPoint, ref UIntPtr intersectedEntityIndex, BodyFlags bodyExcludeFlags, BodyFlags bodyIncludeFlags, UIntPtr ignoredEntityPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -682,6 +896,26 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ReadAndCalculateInitialCameraDelegate(UIntPtr scenePointer, ref MatrixFrame outFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ReadInModuleDelegate(UIntPtr scenePointer, byte[] sceneName, byte[] moduleId, ref SceneInitializationData initData, byte[] forcedAtmoName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr RegisterShipVisualToWaterRendererDelegate(UIntPtr scenePointer, UIntPtr entityPointer, in Vec3 bb);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void RemoveAlwaysRenderedSkeletonDelegate(UIntPtr scenePointer, UIntPtr skeletonPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void RemoveDecalInstanceDelegate(UIntPtr scenePointer, UIntPtr decalMeshPointer, byte[] decalSetID);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -697,6 +931,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ResumeSceneSoundsDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SaveNavMeshPrefabWithFrameDelegate(UIntPtr scenePointer, byte[] navMeshPrefabName, MatrixFrame frame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool SceneHadWaterWakeRendererDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -731,7 +976,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetAbilityOfFacesWithIdDelegate(UIntPtr scenePointer, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool isEnabled);
+	public delegate int SetAbilityOfFacesWithIdDelegate(UIntPtr scenePointer, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool isEnabled);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -801,7 +1046,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetDoNotAddEntitiesToTickListDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetDoNotWaitForLoadingStatesToRenderDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetDontLoadInvisibleEntitiesDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -816,12 +1071,27 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetDynamicSnowTextureDelegate(UIntPtr scenePointer, UIntPtr texturePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetEnvironmentMultiplierDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool useMultiplier, float multiplier);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetExternalInjectionTextureDelegate(UIntPtr scenePointer, UIntPtr texturePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetFetchCrcInfoOfSceneDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetFixedTickCallbackActiveDelegate(UIntPtr scene, [MarshalAs(UnmanagedType.U1)] bool isActive);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -842,6 +1112,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetForcedSnowDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetGlobalWindStrengthVectorDelegate(UIntPtr scenePointer, in Vec2 strengthVector);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetGlobalWindVelocityDelegate(UIntPtr scenePointer, in Vec2 windVelocity);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -986,12 +1266,27 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetNavMeshRegionMapDelegate(UIntPtr scenePointer, IntPtr regionMap, int regionMapSize);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetOcclusionModeDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool mode);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetOnCollisionFilterCallbackActiveDelegate(UIntPtr scene, [MarshalAs(UnmanagedType.U1)] bool isActive);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetOwnerThreadDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPhotoAtmosphereViaTodDelegate(UIntPtr scenePointer, float tod, [MarshalAs(UnmanagedType.U1)] bool withStorm);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1181,6 +1476,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetUsesDeleteLaterSystemDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetVignetteInnerRadiusDelegate(UIntPtr scenePointer, float vignetteInnerRadius);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1196,6 +1496,21 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetWaterStrengthDelegate(UIntPtr scene, float newWaterStrength);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWaterWakeCameraOffsetDelegate(UIntPtr scenePointer, float cameraOffset);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWaterWakeWorldSizeDelegate(UIntPtr scenePointer, float worldSize, float eraseFactor);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetWinterTimeFactorDelegate(UIntPtr scenePointer, float winterTimeFactor);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1206,7 +1521,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SwapFaceConnectionsWithIdDelegate(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId);
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool SwapFaceConnectionsWithIdDelegate(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, [MarshalAs(UnmanagedType.U1)] bool canFail);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1221,6 +1537,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void TickWakeDelegate(UIntPtr scenePointer, float dt);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void WaitWaterRendererCPUSimulationDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void WorldPositionComputeNearestNavMeshDelegate(ref WorldPosition position);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1229,6 +1555,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public delegate void WorldPositionValidateZDelegate(ref WorldPosition position, int minimumValidityState);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
+
+	public static AddAlwaysRenderedSkeletonDelegate call_AddAlwaysRenderedSkeletonDelegate;
 
 	public static AddDecalInstanceDelegate call_AddDecalInstanceDelegate;
 
@@ -1245,6 +1573,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static AddPathPointDelegate call_AddPathPointDelegate;
 
 	public static AddPointLightDelegate call_AddPointLightDelegate;
+
+	public static AddWaterWakeWithCapsuleDelegate call_AddWaterWakeWithCapsuleDelegate;
 
 	public static AttachEntityDelegate call_AttachEntityDelegate;
 
@@ -1264,9 +1594,13 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static ClearDecalsDelegate call_ClearDecalsDelegate;
 
+	public static ClearNavMeshDelegate call_ClearNavMeshDelegate;
+
 	public static ContainsTerrainDelegate call_ContainsTerrainDelegate;
 
 	public static CreateBurstParticleDelegate call_CreateBurstParticleDelegate;
+
+	public static CreateDynamicRainTextureDelegate call_CreateDynamicRainTextureDelegate;
 
 	public static CreateNewSceneDelegate call_CreateNewSceneDelegate;
 
@@ -1276,13 +1610,23 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static DeletePathWithNameDelegate call_DeletePathWithNameDelegate;
 
+	public static DeleteWaterWakeRendererDelegate call_DeleteWaterWakeRendererDelegate;
+
+	public static DeRegisterShipVisualDelegate call_DeRegisterShipVisualDelegate;
+
 	public static DisableStaticShadowsDelegate call_DisableStaticShadowsDelegate;
 
 	public static DoesPathExistBetweenFacesDelegate call_DoesPathExistBetweenFacesDelegate;
 
 	public static DoesPathExistBetweenPositionsDelegate call_DoesPathExistBetweenPositionsDelegate;
 
+	public static EnableFixedTickDelegate call_EnableFixedTickDelegate;
+
+	public static EnableInclusiveAsyncPhysxDelegate call_EnableInclusiveAsyncPhysxDelegate;
+
 	public static EnsurePostfxSystemDelegate call_EnsurePostfxSystemDelegate;
+
+	public static EnsureWaterWakeRendererDelegate call_EnsureWaterWakeRendererDelegate;
 
 	public static FillEntityWithHardBorderPhysicsBarrierDelegate call_FillEntityWithHardBorderPhysicsBarrierDelegate;
 
@@ -1290,11 +1634,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static FillTerrainPhysicsMaterialIndexDataDelegate call_FillTerrainPhysicsMaterialIndexDataDelegate;
 
+	public static FindClosestExitPositionForPositionOnABoundaryFaceDelegate call_FindClosestExitPositionForPositionOnABoundaryFaceDelegate;
+
 	public static FinishSceneSoundsDelegate call_FinishSceneSoundsDelegate;
+
+	public static FocusRayCastForFixedPhysicsDelegate call_FocusRayCastForFixedPhysicsDelegate;
 
 	public static ForceLoadResourcesDelegate call_ForceLoadResourcesDelegate;
 
 	public static GenerateContactsWithCapsuleDelegate call_GenerateContactsWithCapsuleDelegate;
+
+	public static GenerateContactsWithCapsuleAgainstEntityDelegate call_GenerateContactsWithCapsuleAgainstEntityDelegate;
 
 	public static GetAllColorGradeNamesDelegate call_GetAllColorGradeNamesDelegate;
 
@@ -1302,15 +1652,25 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetAllFilterNamesDelegate call_GetAllFilterNamesDelegate;
 
+	public static GetAllNavmeshFaceRecordsDelegate call_GetAllNavmeshFaceRecordsDelegate;
+
 	public static GetBoundingBoxDelegate call_GetBoundingBoxDelegate;
 
+	public static GetBulkWaterLevelAtPositionsDelegate call_GetBulkWaterLevelAtPositionsDelegate;
+
+	public static GetBulkWaterLevelAtVolumesDelegate call_GetBulkWaterLevelAtVolumesDelegate;
+
 	public static GetCampaignEntityWithNameDelegate call_GetCampaignEntityWithNameDelegate;
+
+	public static GetEnginePhysicsEnabledDelegate call_GetEnginePhysicsEnabledDelegate;
 
 	public static GetEntitiesDelegate call_GetEntitiesDelegate;
 
 	public static GetEntityCountDelegate call_GetEntityCountDelegate;
 
 	public static GetEntityWithGuidDelegate call_GetEntityWithGuidDelegate;
+
+	public static GetFallDensityDelegate call_GetFallDensityDelegate;
 
 	public static GetFirstEntityWithNameDelegate call_GetFirstEntityWithNameDelegate;
 
@@ -1321,6 +1681,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static GetFloraRendererTextureUsageDelegate call_GetFloraRendererTextureUsageDelegate;
 
 	public static GetFogDelegate call_GetFogDelegate;
+
+	public static GetGlobalWindStrengthVectorDelegate call_GetGlobalWindStrengthVectorDelegate;
+
+	public static GetGlobalWindVelocityDelegate call_GetGlobalWindVelocityDelegate;
+
+	public static GetGroundHeightAndBodyFlagsAtPositionDelegate call_GetGroundHeightAndBodyFlagsAtPositionDelegate;
 
 	public static GetGroundHeightAndNormalAtPositionDelegate call_GetGroundHeightAndNormalAtPositionDelegate;
 
@@ -1334,6 +1700,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetIdOfNavMeshFaceDelegate call_GetIdOfNavMeshFaceDelegate;
 
+	public static GetInterpolationFactorForBodyWorldTransformSmoothingDelegate call_GetInterpolationFactorForBodyWorldTransformSmoothingDelegate;
+
 	public static GetLastFinalRenderCameraFrameDelegate call_GetLastFinalRenderCameraFrameDelegate;
 
 	public static GetLastFinalRenderCameraPositionDelegate call_GetLastFinalRenderCameraPositionDelegate;
@@ -1342,23 +1710,35 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetLastPointOnNavigationMeshFromWorldPositionToDestinationDelegate call_GetLastPointOnNavigationMeshFromWorldPositionToDestinationDelegate;
 
+	public static GetLastPositionOnNavMeshFaceForPointAndDirectionDelegate call_GetLastPositionOnNavMeshFaceForPointAndDirectionDelegate;
+
 	public static GetLoadingStateNameDelegate call_GetLoadingStateNameDelegate;
 
 	public static GetModulePathDelegate call_GetModulePathDelegate;
 
 	public static GetNameDelegate call_GetNameDelegate;
 
-	public static GetNavigationMeshFaceForPositionDelegate call_GetNavigationMeshFaceForPositionDelegate;
+	public static GetNavigationMeshCRCDelegate call_GetNavigationMeshCRCDelegate;
+
+	public static GetNavigationMeshForPositionDelegate call_GetNavigationMeshForPositionDelegate;
 
 	public static GetNavMeshFaceCenterPositionDelegate call_GetNavMeshFaceCenterPositionDelegate;
 
 	public static GetNavMeshFaceCountDelegate call_GetNavMeshFaceCountDelegate;
+
+	public static GetNavmeshFaceCountBetweenTwoIdsDelegate call_GetNavmeshFaceCountBetweenTwoIdsDelegate;
 
 	public static GetNavMeshFaceFirstVertexZDelegate call_GetNavMeshFaceFirstVertexZDelegate;
 
 	public static GetNavMeshFaceIndexDelegate call_GetNavMeshFaceIndexDelegate;
 
 	public static GetNavMeshFaceIndex3Delegate call_GetNavMeshFaceIndex3Delegate;
+
+	public static GetNavmeshFaceRecordsBetweenTwoIdsDelegate call_GetNavmeshFaceRecordsBetweenTwoIdsDelegate;
+
+	public static GetNavMeshPathFaceRecordDelegate call_GetNavMeshPathFaceRecordDelegate;
+
+	public static GetNearestNavigationMeshForPositionDelegate call_GetNearestNavigationMeshForPositionDelegate;
 
 	public static GetNodeDataCountDelegate call_GetNodeDataCountDelegate;
 
@@ -1370,11 +1750,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetPathBetweenAIFaceIndicesDelegate call_GetPathBetweenAIFaceIndicesDelegate;
 
+	public static GetPathBetweenAIFaceIndicesWithRegionSwitchCostDelegate call_GetPathBetweenAIFaceIndicesWithRegionSwitchCostDelegate;
+
 	public static GetPathBetweenAIFacePointersDelegate call_GetPathBetweenAIFacePointersDelegate;
+
+	public static GetPathBetweenAIFacePointersWithRegionSwitchCostDelegate call_GetPathBetweenAIFacePointersWithRegionSwitchCostDelegate;
 
 	public static GetPathDistanceBetweenAIFacesDelegate call_GetPathDistanceBetweenAIFacesDelegate;
 
 	public static GetPathDistanceBetweenPositionsDelegate call_GetPathDistanceBetweenPositionsDelegate;
+
+	public static GetPathFaceRecordFromNavMeshFacePointerDelegate call_GetPathFaceRecordFromNavMeshFacePointerDelegate;
 
 	public static GetPathsWithNamePrefixDelegate call_GetPathsWithNamePrefixDelegate;
 
@@ -1402,13 +1788,15 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetSceneFilterIndexDelegate call_GetSceneFilterIndexDelegate;
 
+	public static GetSceneLimitsDelegate call_GetSceneLimitsDelegate;
+
+	public static GetSceneXMLCRCDelegate call_GetSceneXMLCRCDelegate;
+
 	public static GetScriptedEntityDelegate call_GetScriptedEntityDelegate;
 
 	public static GetScriptedEntityCountDelegate call_GetScriptedEntityCountDelegate;
 
 	public static GetSkyboxMeshDelegate call_GetSkyboxMeshDelegate;
-
-	public static GetSnowAmountDataDelegate call_GetSnowAmountDataDelegate;
 
 	public static GetSnowDensityDelegate call_GetSnowDensityDelegate;
 
@@ -1448,7 +1836,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetWaterLevelAtPositionDelegate call_GetWaterLevelAtPositionDelegate;
 
+	public static GetWaterSpeedAtPositionDelegate call_GetWaterSpeedAtPositionDelegate;
+
+	public static GetWaterStrengthDelegate call_GetWaterStrengthDelegate;
+
+	public static GetWindFlowMapDataDelegate call_GetWindFlowMapDataDelegate;
+
 	public static GetWinterTimeFactorDelegate call_GetWinterTimeFactorDelegate;
+
+	public static HasDecalRendererDelegate call_HasDecalRendererDelegate;
+
+	public static HasNavmeshFaceUnsharedEdgesDelegate call_HasNavmeshFaceUnsharedEdgesDelegate;
 
 	public static HasTerrainHeightmapDelegate call_HasTerrainHeightmapDelegate;
 
@@ -1470,7 +1868,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static IsMultiplayerSceneDelegate call_IsMultiplayerSceneDelegate;
 
+	public static IsPositionOnADynamicNavMeshDelegate call_IsPositionOnADynamicNavMeshDelegate;
+
 	public static LoadNavMeshPrefabDelegate call_LoadNavMeshPrefabDelegate;
+
+	public static LoadNavMeshPrefabWithFrameDelegate call_LoadNavMeshPrefabWithFrameDelegate;
 
 	public static MarkFacesWithIdAsLadderDelegate call_MarkFacesWithIdAsLadderDelegate;
 
@@ -1482,17 +1884,35 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static PreloadForRenderingDelegate call_PreloadForRenderingDelegate;
 
+	public static RayCastExcludingTwoEntitiesDelegate call_RayCastExcludingTwoEntitiesDelegate;
+
 	public static RayCastForClosestEntityOrTerrainDelegate call_RayCastForClosestEntityOrTerrainDelegate;
+
+	public static RayCastForClosestEntityOrTerrainIgnoreEntityDelegate call_RayCastForClosestEntityOrTerrainIgnoreEntityDelegate;
+
+	public static RayCastForRammingDelegate call_RayCastForRammingDelegate;
 
 	public static ReadDelegate call_ReadDelegate;
 
 	public static ReadAndCalculateInitialCameraDelegate call_ReadAndCalculateInitialCameraDelegate;
+
+	public static ReadInModuleDelegate call_ReadInModuleDelegate;
+
+	public static RegisterShipVisualToWaterRendererDelegate call_RegisterShipVisualToWaterRendererDelegate;
+
+	public static RemoveAlwaysRenderedSkeletonDelegate call_RemoveAlwaysRenderedSkeletonDelegate;
+
+	public static RemoveDecalInstanceDelegate call_RemoveDecalInstanceDelegate;
 
 	public static RemoveEntityDelegate call_RemoveEntityDelegate;
 
 	public static ResumeLoadingRenderingsDelegate call_ResumeLoadingRenderingsDelegate;
 
 	public static ResumeSceneSoundsDelegate call_ResumeSceneSoundsDelegate;
+
+	public static SaveNavMeshPrefabWithFrameDelegate call_SaveNavMeshPrefabWithFrameDelegate;
+
+	public static SceneHadWaterWakeRendererDelegate call_SceneHadWaterWakeRendererDelegate;
 
 	public static SelectEntitiesCollidedWithDelegate call_SelectEntitiesCollidedWithDelegate;
 
@@ -1534,15 +1954,25 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static SetDofParamsDelegate call_SetDofParamsDelegate;
 
+	public static SetDoNotAddEntitiesToTickListDelegate call_SetDoNotAddEntitiesToTickListDelegate;
+
 	public static SetDoNotWaitForLoadingStatesToRenderDelegate call_SetDoNotWaitForLoadingStatesToRenderDelegate;
+
+	public static SetDontLoadInvisibleEntitiesDelegate call_SetDontLoadInvisibleEntitiesDelegate;
 
 	public static SetDrynessFactorDelegate call_SetDrynessFactorDelegate;
 
 	public static SetDynamicShadowmapCascadesRadiusMultiplierDelegate call_SetDynamicShadowmapCascadesRadiusMultiplierDelegate;
 
+	public static SetDynamicSnowTextureDelegate call_SetDynamicSnowTextureDelegate;
+
 	public static SetEnvironmentMultiplierDelegate call_SetEnvironmentMultiplierDelegate;
 
 	public static SetExternalInjectionTextureDelegate call_SetExternalInjectionTextureDelegate;
+
+	public static SetFetchCrcInfoOfSceneDelegate call_SetFetchCrcInfoOfSceneDelegate;
+
+	public static SetFixedTickCallbackActiveDelegate call_SetFixedTickCallbackActiveDelegate;
 
 	public static SetFogDelegate call_SetFogDelegate;
 
@@ -1551,6 +1981,10 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static SetFogAmbientColorDelegate call_SetFogAmbientColorDelegate;
 
 	public static SetForcedSnowDelegate call_SetForcedSnowDelegate;
+
+	public static SetGlobalWindStrengthVectorDelegate call_SetGlobalWindStrengthVectorDelegate;
+
+	public static SetGlobalWindVelocityDelegate call_SetGlobalWindVelocityDelegate;
 
 	public static SetGrainAmountDelegate call_SetGrainAmountDelegate;
 
@@ -1608,9 +2042,15 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static SetNameDelegate call_SetNameDelegate;
 
+	public static SetNavMeshRegionMapDelegate call_SetNavMeshRegionMapDelegate;
+
 	public static SetOcclusionModeDelegate call_SetOcclusionModeDelegate;
 
+	public static SetOnCollisionFilterCallbackActiveDelegate call_SetOnCollisionFilterCallbackActiveDelegate;
+
 	public static SetOwnerThreadDelegate call_SetOwnerThreadDelegate;
+
+	public static SetPhotoAtmosphereViaTodDelegate call_SetPhotoAtmosphereViaTodDelegate;
 
 	public static SetPhotoModeFocusDelegate call_SetPhotoModeFocusDelegate;
 
@@ -1686,11 +2126,19 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static SetUseConstantTimeDelegate call_SetUseConstantTimeDelegate;
 
+	public static SetUsesDeleteLaterSystemDelegate call_SetUsesDeleteLaterSystemDelegate;
+
 	public static SetVignetteInnerRadiusDelegate call_SetVignetteInnerRadiusDelegate;
 
 	public static SetVignetteOpacityDelegate call_SetVignetteOpacityDelegate;
 
 	public static SetVignetteOuterRadiusDelegate call_SetVignetteOuterRadiusDelegate;
+
+	public static SetWaterStrengthDelegate call_SetWaterStrengthDelegate;
+
+	public static SetWaterWakeCameraOffsetDelegate call_SetWaterWakeCameraOffsetDelegate;
+
+	public static SetWaterWakeWorldSizeDelegate call_SetWaterWakeWorldSizeDelegate;
 
 	public static SetWinterTimeFactorDelegate call_SetWinterTimeFactorDelegate;
 
@@ -1702,9 +2150,18 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static TickDelegate call_TickDelegate;
 
+	public static TickWakeDelegate call_TickWakeDelegate;
+
+	public static WaitWaterRendererCPUSimulationDelegate call_WaitWaterRendererCPUSimulationDelegate;
+
 	public static WorldPositionComputeNearestNavMeshDelegate call_WorldPositionComputeNearestNavMeshDelegate;
 
 	public static WorldPositionValidateZDelegate call_WorldPositionValidateZDelegate;
+
+	public void AddAlwaysRenderedSkeleton(UIntPtr scenePointer, UIntPtr skeletonPointer)
+	{
+		call_AddAlwaysRenderedSkeletonDelegate(scenePointer, skeletonPointer);
+	}
 
 	public void AddDecalInstance(UIntPtr scenePointer, UIntPtr decalMeshPointer, string decalSetID, bool deletable)
 	{
@@ -1777,6 +2234,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_AddPointLightDelegate(scenePointer, position, radius);
 	}
 
+	public void AddWaterWakeWithCapsule(Scene scene, Vec3 positionA, float radiusA, Vec3 positionB, float radiusB, float wakeVisibility, float foamVisibility)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_AddWaterWakeWithCapsuleDelegate(scene2, positionA, radiusA, positionB, radiusB, wakeVisibility, foamVisibility);
+	}
+
 	public bool AttachEntity(UIntPtr scenePointer, UIntPtr entity, bool showWarnings)
 	{
 		return call_AttachEntityDelegate(scenePointer, entity, showWarnings);
@@ -1787,11 +2250,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_BoxCastDelegate(scenePointer, ref boxPointBegin, ref boxPointEnd, ref dir, distance, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags);
 	}
 
-	public bool BoxCastOnlyForCamera(UIntPtr scenePointer, Vec3[] boxPoints, ref Vec3 centerPoint, ref Vec3 dir, float distance, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, bool preFilter, bool postFilter)
+	public bool BoxCastOnlyForCamera(UIntPtr scenePointer, Vec3[] boxPoints, in Vec3 centerPoint, in Vec3 dir, float distance, UIntPtr ignoredEntityPointer, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityPointer, BodyFlags bodyExcludeFlags)
 	{
 		PinnedArrayData<Vec3> pinnedArrayData = new PinnedArrayData<Vec3>(boxPoints);
 		IntPtr pointer = pinnedArrayData.Pointer;
-		bool result = call_BoxCastOnlyForCameraDelegate(scenePointer, pointer, ref centerPoint, ref dir, distance, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, preFilter, postFilter);
+		bool result = call_BoxCastOnlyForCameraDelegate(scenePointer, pointer, in centerPoint, in dir, distance, ignoredEntityPointer, ref collisionDistance, ref closestPoint, ref entityPointer, bodyExcludeFlags);
 		pinnedArrayData.Dispose();
 		return result;
 	}
@@ -1819,9 +2282,9 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_CheckPointCanSeePointDelegate(scenePointer, sourcePoint, targetPoint, distanceToCheck);
 	}
 
-	public void CheckResources(UIntPtr scenePointer)
+	public void CheckResources(UIntPtr scenePointer, bool checkInvisibleEntities)
 	{
-		call_CheckResourcesDelegate(scenePointer);
+		call_CheckResourcesDelegate(scenePointer, checkInvisibleEntities);
 	}
 
 	public void ClearAll(UIntPtr scenePointer)
@@ -1832,6 +2295,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void ClearDecals(UIntPtr scenePointer)
 	{
 		call_ClearDecalsDelegate(scenePointer);
+	}
+
+	public void ClearNavMesh(UIntPtr scenePointer)
+	{
+		call_ClearNavMeshDelegate(scenePointer);
 	}
 
 	public bool ContainsTerrain(UIntPtr scenePointer)
@@ -1845,7 +2313,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_CreateBurstParticleDelegate(scene2, particleId, ref frame);
 	}
 
-	public Scene CreateNewScene(bool initialize_physics, bool enable_decals, int atlasGroup, string sceneName)
+	public void CreateDynamicRainTexture(UIntPtr scenePointer, int w, int h)
+	{
+		call_CreateDynamicRainTextureDelegate(scenePointer, w, h);
+	}
+
+	public Scene CreateNewScene(bool initializePhysics, bool enableDecals, int atlasGroup, string sceneName)
 	{
 		byte[] array = null;
 		if (sceneName != null)
@@ -1855,7 +2328,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 			_utf8.GetBytes(sceneName, 0, sceneName.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_CreateNewSceneDelegate(initialize_physics, enable_decals, atlasGroup, array);
+		NativeObjectPointer nativeObjectPointer = call_CreateNewSceneDelegate(initializePhysics, enableDecals, atlasGroup, array);
 		Scene result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -1913,6 +2386,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_DeletePathWithNameDelegate(scenePointer, array);
 	}
 
+	public void DeleteWaterWakeRenderer(UIntPtr scenePointer)
+	{
+		call_DeleteWaterWakeRendererDelegate(scenePointer);
+	}
+
+	public void DeRegisterShipVisual(UIntPtr scenePointer, UIntPtr visualPointer)
+	{
+		call_DeRegisterShipVisualDelegate(scenePointer, visualPointer);
+	}
+
 	public void DisableStaticShadows(UIntPtr ptr, bool value)
 	{
 		call_DisableStaticShadowsDelegate(ptr, value);
@@ -1928,9 +2411,25 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_DoesPathExistBetweenPositionsDelegate(scenePointer, position, destination);
 	}
 
+	public void EnableFixedTick(Scene scene)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_EnableFixedTickDelegate(scene2);
+	}
+
+	public void EnableInclusiveAsyncPhysx(UIntPtr scenePointer)
+	{
+		call_EnableInclusiveAsyncPhysxDelegate(scenePointer);
+	}
+
 	public void EnsurePostfxSystem(UIntPtr scenePointer)
 	{
 		call_EnsurePostfxSystemDelegate(scenePointer);
+	}
+
+	public void EnsureWaterWakeRenderer(UIntPtr scenePointer)
+	{
+		call_EnsureWaterWakeRendererDelegate(scenePointer);
 	}
 
 	public void FillEntityWithHardBorderPhysicsBarrier(UIntPtr scenePointer, UIntPtr entityPointer)
@@ -1956,21 +2455,43 @@ internal class ScriptingInterfaceOfIScene : IScene
 		pinnedArrayData.Dispose();
 	}
 
+	public Vec2 FindClosestExitPositionForPositionOnABoundaryFace(UIntPtr scenePointer, Vec3 position, UIntPtr boundaryNavMeshFacePointer)
+	{
+		return call_FindClosestExitPositionForPositionOnABoundaryFaceDelegate(scenePointer, position, boundaryNavMeshFacePointer);
+	}
+
 	public void FinishSceneSounds(UIntPtr scenePointer)
 	{
 		call_FinishSceneSoundsDelegate(scenePointer);
 	}
 
-	public void ForceLoadResources(UIntPtr scenePointer)
+	public bool FocusRayCastForFixedPhysics(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, bool isFixedWorld)
 	{
-		call_ForceLoadResourcesDelegate(scenePointer);
+		return call_FocusRayCastForFixedPhysicsDelegate(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, isFixedWorld);
 	}
 
-	public int GenerateContactsWithCapsule(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags exclude_flags, Intersection[] intersections)
+	public void ForceLoadResources(UIntPtr scenePointer, bool checkInvisibleEntities)
+	{
+		call_ForceLoadResourcesDelegate(scenePointer, checkInvisibleEntities);
+	}
+
+	public int GenerateContactsWithCapsule(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags excludeFlags, bool isFixedTick, Intersection[] intersections, UIntPtr[] entityIds)
 	{
 		PinnedArrayData<Intersection> pinnedArrayData = new PinnedArrayData<Intersection>(intersections);
 		IntPtr pointer = pinnedArrayData.Pointer;
-		int result = call_GenerateContactsWithCapsuleDelegate(scenePointer, ref cap, exclude_flags, pointer);
+		PinnedArrayData<UIntPtr> pinnedArrayData2 = new PinnedArrayData<UIntPtr>(entityIds);
+		IntPtr pointer2 = pinnedArrayData2.Pointer;
+		int result = call_GenerateContactsWithCapsuleDelegate(scenePointer, ref cap, excludeFlags, isFixedTick, pointer, pointer2);
+		pinnedArrayData.Dispose();
+		pinnedArrayData2.Dispose();
+		return result;
+	}
+
+	public int GenerateContactsWithCapsuleAgainstEntity(UIntPtr scenePointer, ref CapsuleData cap, BodyFlags excludeFlags, UIntPtr entityId, Intersection[] intersections)
+	{
+		PinnedArrayData<Intersection> pinnedArrayData = new PinnedArrayData<Intersection>(intersections);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		int result = call_GenerateContactsWithCapsuleAgainstEntityDelegate(scenePointer, ref cap, excludeFlags, entityId, pointer);
 		pinnedArrayData.Dispose();
 		return result;
 	}
@@ -2008,9 +2529,37 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public void GetAllNavmeshFaceRecords(UIntPtr scenePointer, PathFaceRecord[] faceRecords)
+	{
+		PinnedArrayData<PathFaceRecord> pinnedArrayData = new PinnedArrayData<PathFaceRecord>(faceRecords);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_GetAllNavmeshFaceRecordsDelegate(scenePointer, pointer);
+		pinnedArrayData.Dispose();
+	}
+
 	public void GetBoundingBox(UIntPtr scenePointer, ref Vec3 min, ref Vec3 max)
 	{
 		call_GetBoundingBoxDelegate(scenePointer, ref min, ref max);
+	}
+
+	public void GetBulkWaterLevelAtPositions(Scene scene, Vec2[] waterHeightQueryArray, int arraySize, float[] waterHeightsAtVolumes, Vec3[] waterSurfaceNormals)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		PinnedArrayData<Vec2> pinnedArrayData = new PinnedArrayData<Vec2>(waterHeightQueryArray);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		PinnedArrayData<float> pinnedArrayData2 = new PinnedArrayData<float>(waterHeightsAtVolumes);
+		IntPtr pointer2 = pinnedArrayData2.Pointer;
+		PinnedArrayData<Vec3> pinnedArrayData3 = new PinnedArrayData<Vec3>(waterSurfaceNormals);
+		IntPtr pointer3 = pinnedArrayData3.Pointer;
+		call_GetBulkWaterLevelAtPositionsDelegate(scene2, pointer, arraySize, pointer2, pointer3);
+		pinnedArrayData.Dispose();
+		pinnedArrayData2.Dispose();
+		pinnedArrayData3.Dispose();
+	}
+
+	public void GetBulkWaterLevelAtVolumes(UIntPtr scene, UIntPtr volumeQueryDataArray, int volumeCount, in MatrixFrame entityFrame)
+	{
+		call_GetBulkWaterLevelAtVolumesDelegate(scene, volumeQueryDataArray, volumeCount, in entityFrame);
 	}
 
 	public GameEntity GetCampaignEntityWithName(UIntPtr scenePointer, string entityName)
@@ -2031,6 +2580,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public bool GetEnginePhysicsEnabled(UIntPtr scenePointer)
+	{
+		return call_GetEnginePhysicsEnabledDelegate(scenePointer);
 	}
 
 	public void GetEntities(UIntPtr scenePointer, UIntPtr entityObjectsArrayPointer)
@@ -2061,6 +2615,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public float GetFallDensity(UIntPtr scenepTR)
+	{
+		return call_GetFallDensityDelegate(scenepTR);
 	}
 
 	public GameEntity GetFirstEntityWithName(UIntPtr scenePointer, string entityName)
@@ -2118,6 +2677,21 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetFogDelegate(scenePointer);
 	}
 
+	public Vec2 GetGlobalWindStrengthVector(UIntPtr scenePointer)
+	{
+		return call_GetGlobalWindStrengthVectorDelegate(scenePointer);
+	}
+
+	public Vec2 GetGlobalWindVelocity(UIntPtr scenePointer)
+	{
+		return call_GetGlobalWindVelocityDelegate(scenePointer);
+	}
+
+	public float GetGroundHeightAndBodyFlagsAtPosition(UIntPtr scenePointer, Vec3 position, out BodyFlags contactPointFlags, BodyFlags excludeFlags)
+	{
+		return call_GetGroundHeightAndBodyFlagsAtPositionDelegate(scenePointer, position, out contactPointFlags, excludeFlags);
+	}
+
 	public float GetGroundHeightAndNormalAtPosition(UIntPtr scenePointer, Vec3 position, ref Vec3 normal, uint excludeFlags)
 	{
 		return call_GetGroundHeightAndNormalAtPositionDelegate(scenePointer, position, ref normal, excludeFlags);
@@ -2148,6 +2722,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetIdOfNavMeshFaceDelegate(scenePointer, navMeshFace);
 	}
 
+	public void GetInterpolationFactorForBodyWorldTransformSmoothing(Scene scene, out float interpolationFactor, out float fixedDt)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_GetInterpolationFactorForBodyWorldTransformSmoothingDelegate(scene2, out interpolationFactor, out fixedDt);
+	}
+
 	public void GetLastFinalRenderCameraFrame(UIntPtr scenePointer, ref MatrixFrame outFrame)
 	{
 		call_GetLastFinalRenderCameraFrameDelegate(scenePointer, ref outFrame);
@@ -2158,14 +2738,23 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetLastFinalRenderCameraPositionDelegate(scenePointer);
 	}
 
-	public Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(UIntPtr scenePointer, int startingFace, Vec2 position, Vec2 destination)
+	public Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(UIntPtr scenePointer, int startingFace, Vec2 position, Vec2 destination, int[] exclusionGroupIds, int exclusionGroupIdsCount)
 	{
-		return call_GetLastPointOnNavigationMeshFromPositionToDestinationDelegate(scenePointer, startingFace, position, destination);
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(exclusionGroupIds);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		Vec2 result = call_GetLastPointOnNavigationMeshFromPositionToDestinationDelegate(scenePointer, startingFace, position, destination, pointer, exclusionGroupIdsCount);
+		pinnedArrayData.Dispose();
+		return result;
 	}
 
 	public Vec3 GetLastPointOnNavigationMeshFromWorldPositionToDestination(UIntPtr scenePointer, ref WorldPosition position, Vec2 destination)
 	{
 		return call_GetLastPointOnNavigationMeshFromWorldPositionToDestinationDelegate(scenePointer, ref position, destination);
+	}
+
+	public Vec2 GetLastPositionOnNavMeshFaceForPointAndDirection(UIntPtr scenePointer, in PathFaceRecord record, Vec2 position, Vec2 direction)
+	{
+		return call_GetLastPositionOnNavMeshFaceForPointAndDirectionDelegate(scenePointer, in record, position, direction);
 	}
 
 	public string GetLoadingStateName(Scene scene)
@@ -2196,9 +2785,14 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return Managed.ReturnValueFromEngine;
 	}
 
-	public bool GetNavigationMeshFaceForPosition(UIntPtr scenePointer, ref Vec3 position, ref int faceGroupId, float heightDifferenceLimit)
+	public uint GetNavigationMeshCRC(UIntPtr scenePointer)
 	{
-		return call_GetNavigationMeshFaceForPositionDelegate(scenePointer, ref position, ref faceGroupId, heightDifferenceLimit);
+		return call_GetNavigationMeshCRCDelegate(scenePointer);
+	}
+
+	public UIntPtr GetNavigationMeshForPosition(UIntPtr scenePointer, in Vec3 position, ref int faceGroupId, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
+	{
+		return call_GetNavigationMeshForPositionDelegate(scenePointer, in position, ref faceGroupId, heightDifferenceLimit, excludeDynamicNavigationMeshes);
 	}
 
 	public void GetNavMeshFaceCenterPosition(UIntPtr scenePointer, int navMeshFace, ref Vec3 centerPos)
@@ -2211,19 +2805,42 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetNavMeshFaceCountDelegate(scenePointer);
 	}
 
+	public int GetNavmeshFaceCountBetweenTwoIds(UIntPtr scenePointer, int firstId, int secondId)
+	{
+		return call_GetNavmeshFaceCountBetweenTwoIdsDelegate(scenePointer, firstId, secondId);
+	}
+
 	public float GetNavMeshFaceFirstVertexZ(UIntPtr scenePointer, int navMeshFaceIndex)
 	{
 		return call_GetNavMeshFaceFirstVertexZDelegate(scenePointer, navMeshFaceIndex);
 	}
 
-	public void GetNavMeshFaceIndex(UIntPtr scenePointer, ref PathFaceRecord record, Vec2 position, bool checkIfDisabled, bool ignoreHeight)
+	public void GetNavMeshFaceIndex(UIntPtr scenePointer, ref PathFaceRecord record, Vec2 position, bool isRegion1, bool checkIfDisabled, bool ignoreHeight)
 	{
-		call_GetNavMeshFaceIndexDelegate(scenePointer, ref record, position, checkIfDisabled, ignoreHeight);
+		call_GetNavMeshFaceIndexDelegate(scenePointer, ref record, position, isRegion1, checkIfDisabled, ignoreHeight);
 	}
 
 	public void GetNavMeshFaceIndex3(UIntPtr scenePointer, ref PathFaceRecord record, Vec3 position, bool checkIfDisabled)
 	{
 		call_GetNavMeshFaceIndex3Delegate(scenePointer, ref record, position, checkIfDisabled);
+	}
+
+	public void GetNavmeshFaceRecordsBetweenTwoIds(UIntPtr scenePointer, int firstId, int secondId, PathFaceRecord[] faceRecords)
+	{
+		PinnedArrayData<PathFaceRecord> pinnedArrayData = new PinnedArrayData<PathFaceRecord>(faceRecords);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_GetNavmeshFaceRecordsBetweenTwoIdsDelegate(scenePointer, firstId, secondId, pointer);
+		pinnedArrayData.Dispose();
+	}
+
+	public PathFaceRecord GetNavMeshPathFaceRecord(UIntPtr scenePointer, int navMeshFace)
+	{
+		return call_GetNavMeshPathFaceRecordDelegate(scenePointer, navMeshFace);
+	}
+
+	public UIntPtr GetNearestNavigationMeshForPosition(UIntPtr scenePointer, in Vec3 position, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
+	{
+		return call_GetNearestNavigationMeshForPositionDelegate(scenePointer, in position, heightDifferenceLimit, excludeDynamicNavigationMeshes);
 	}
 
 	public int GetNodeDataCount(Scene scene, int xIndex, int yIndex)
@@ -2255,38 +2872,71 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetNumberOfPathsWithNamePrefixDelegate(ptr, array);
 	}
 
-	public bool GetPathBetweenAIFaceIndices(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exlusionGroupIdsCount, float extraCostMultiplier)
+	public bool GetPathBetweenAIFaceIndices(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exclusionGroupIdsCount, float extraCostMultiplier)
 	{
 		PinnedArrayData<Vec2> pinnedArrayData = new PinnedArrayData<Vec2>(result);
 		IntPtr pointer = pinnedArrayData.Pointer;
 		PinnedArrayData<int> pinnedArrayData2 = new PinnedArrayData<int>(exclusionGroupIds);
 		IntPtr pointer2 = pinnedArrayData2.Pointer;
-		bool result2 = call_GetPathBetweenAIFaceIndicesDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exlusionGroupIdsCount, extraCostMultiplier);
+		bool result2 = call_GetPathBetweenAIFaceIndicesDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exclusionGroupIdsCount, extraCostMultiplier);
 		pinnedArrayData.Dispose();
 		pinnedArrayData2.Dispose();
 		return result2;
 	}
 
-	public bool GetPathBetweenAIFacePointers(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exlusionGroupIdsCount)
+	public bool GetPathBetweenAIFaceIndicesWithRegionSwitchCost(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exclusionGroupIdsCount, float extraCostMultiplier, int regionSwitchCostTo0, int regionSwitchCostTo1)
 	{
 		PinnedArrayData<Vec2> pinnedArrayData = new PinnedArrayData<Vec2>(result);
 		IntPtr pointer = pinnedArrayData.Pointer;
 		PinnedArrayData<int> pinnedArrayData2 = new PinnedArrayData<int>(exclusionGroupIds);
 		IntPtr pointer2 = pinnedArrayData2.Pointer;
-		bool result2 = call_GetPathBetweenAIFacePointersDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exlusionGroupIdsCount);
+		bool result2 = call_GetPathBetweenAIFaceIndicesWithRegionSwitchCostDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exclusionGroupIdsCount, extraCostMultiplier, regionSwitchCostTo0, regionSwitchCostTo1);
 		pinnedArrayData.Dispose();
 		pinnedArrayData2.Dispose();
 		return result2;
 	}
 
-	public bool GetPathDistanceBetweenAIFaces(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance)
+	public bool GetPathBetweenAIFacePointers(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exclusionGroupIdsCount)
 	{
-		return call_GetPathDistanceBetweenAIFacesDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, distanceLimit, out distance);
+		PinnedArrayData<Vec2> pinnedArrayData = new PinnedArrayData<Vec2>(result);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		PinnedArrayData<int> pinnedArrayData2 = new PinnedArrayData<int>(exclusionGroupIds);
+		IntPtr pointer2 = pinnedArrayData2.Pointer;
+		bool result2 = call_GetPathBetweenAIFacePointersDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exclusionGroupIdsCount);
+		pinnedArrayData.Dispose();
+		pinnedArrayData2.Dispose();
+		return result2;
+	}
+
+	public bool GetPathBetweenAIFacePointersWithRegionSwitchCost(UIntPtr scenePointer, UIntPtr startingAiFace, UIntPtr endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, Vec2[] result, ref int pathSize, int[] exclusionGroupIds, int exclusionGroupIdsCount, int regionSwitchCostTo0, int regionSwitchCostTo1)
+	{
+		PinnedArrayData<Vec2> pinnedArrayData = new PinnedArrayData<Vec2>(result);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		PinnedArrayData<int> pinnedArrayData2 = new PinnedArrayData<int>(exclusionGroupIds);
+		IntPtr pointer2 = pinnedArrayData2.Pointer;
+		bool result2 = call_GetPathBetweenAIFacePointersWithRegionSwitchCostDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, pointer, ref pathSize, pointer2, exclusionGroupIdsCount, regionSwitchCostTo0, regionSwitchCostTo1);
+		pinnedArrayData.Dispose();
+		pinnedArrayData2.Dispose();
+		return result2;
+	}
+
+	public bool GetPathDistanceBetweenAIFaces(UIntPtr scenePointer, int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance, int[] exclusionGroupIds, int exclusionGroupIdsCount, int regionSwitchCostTo0, int regionSwitchCostTo1)
+	{
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(exclusionGroupIds);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		bool result = call_GetPathDistanceBetweenAIFacesDelegate(scenePointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, distanceLimit, out distance, pointer, exclusionGroupIdsCount, regionSwitchCostTo0, regionSwitchCostTo1);
+		pinnedArrayData.Dispose();
+		return result;
 	}
 
 	public bool GetPathDistanceBetweenPositions(UIntPtr scenePointer, ref WorldPosition position, ref WorldPosition destination, float agentRadius, ref float pathLength)
 	{
 		return call_GetPathDistanceBetweenPositionsDelegate(scenePointer, ref position, ref destination, agentRadius, ref pathLength);
+	}
+
+	public PathFaceRecord GetPathFaceRecordFromNavMeshFacePointer(UIntPtr scenePointer, UIntPtr navMeshFacePointer)
+	{
+		return call_GetPathFaceRecordFromNavMeshFacePointerDelegate(scenePointer, navMeshFacePointer);
 	}
 
 	public void GetPathsWithNamePrefix(UIntPtr ptr, UIntPtr[] points, string prefix)
@@ -2389,6 +3039,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetSceneFilterIndexDelegate(scene2);
 	}
 
+	public void GetSceneLimits(UIntPtr scenePointer, ref Vec3 min, ref Vec3 max)
+	{
+		call_GetSceneLimitsDelegate(scenePointer, ref min, ref max);
+	}
+
+	public uint GetSceneXMLCRC(UIntPtr scenePointer)
+	{
+		return call_GetSceneXMLCRCDelegate(scenePointer);
+	}
+
 	public GameEntity GetScriptedEntity(UIntPtr scenePointer, int index)
 	{
 		NativeObjectPointer nativeObjectPointer = call_GetScriptedEntityDelegate(scenePointer, index);
@@ -2416,15 +3076,6 @@ internal class ScriptingInterfaceOfIScene : IScene
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
-	}
-
-	public void GetSnowAmountData(UIntPtr scenePointer, byte[] bytes)
-	{
-		PinnedArrayData<byte> pinnedArrayData = new PinnedArrayData<byte>(bytes);
-		IntPtr pointer = pinnedArrayData.Pointer;
-		ManagedArray bytes2 = new ManagedArray(pointer, (bytes != null) ? bytes.Length : 0);
-		call_GetSnowAmountDataDelegate(scenePointer, bytes2);
-		pinnedArrayData.Dispose();
 	}
 
 	public float GetSnowDensity(UIntPtr scenePointer)
@@ -2534,15 +3185,44 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetWaterLevelDelegate(scene2);
 	}
 
-	public float GetWaterLevelAtPosition(Scene scene, Vec2 position, bool checkWaterBodyEntities)
+	public float GetWaterLevelAtPosition(Scene scene, Vec2 position, bool useWaterRenderer, bool checkWaterBodyEntities)
 	{
 		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
-		return call_GetWaterLevelAtPositionDelegate(scene2, position, checkWaterBodyEntities);
+		return call_GetWaterLevelAtPositionDelegate(scene2, position, useWaterRenderer, checkWaterBodyEntities);
+	}
+
+	public Vec3 GetWaterSpeedAtPosition(UIntPtr scenePointer, in Vec2 position, bool doChoppinessCorrection)
+	{
+		return call_GetWaterSpeedAtPositionDelegate(scenePointer, in position, doChoppinessCorrection);
+	}
+
+	public float GetWaterStrength(Scene scene)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		return call_GetWaterStrengthDelegate(scene2);
+	}
+
+	public void GetWindFlowMapData(UIntPtr scenePointer, float[] flowmapData)
+	{
+		PinnedArrayData<float> pinnedArrayData = new PinnedArrayData<float>(flowmapData);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_GetWindFlowMapDataDelegate(scenePointer, pointer);
+		pinnedArrayData.Dispose();
 	}
 
 	public float GetWinterTimeFactor(UIntPtr scenePointer)
 	{
 		return call_GetWinterTimeFactorDelegate(scenePointer);
+	}
+
+	public bool HasDecalRenderer(UIntPtr scenePointer)
+	{
+		return call_HasDecalRendererDelegate(scenePointer);
+	}
+
+	public bool HasNavmeshFaceUnsharedEdges(UIntPtr scenePointer, in PathFaceRecord faceRecord)
+	{
+		return call_HasNavmeshFaceUnsharedEdgesDelegate(scenePointer, in faceRecord);
 	}
 
 	public bool HasTerrainHeightmap(UIntPtr scenePointer)
@@ -2598,6 +3278,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_IsMultiplayerSceneDelegate(scene2);
 	}
 
+	public bool IsPositionOnADynamicNavMesh(UIntPtr scenePointer, Vec3 position)
+	{
+		return call_IsPositionOnADynamicNavMeshDelegate(scenePointer, position);
+	}
+
 	public void LoadNavMeshPrefab(UIntPtr scenePointer, string navMeshPrefabName, int navMeshGroupIdShift)
 	{
 		byte[] array = null;
@@ -2609,6 +3294,19 @@ internal class ScriptingInterfaceOfIScene : IScene
 			array[byteCount] = 0;
 		}
 		call_LoadNavMeshPrefabDelegate(scenePointer, array, navMeshGroupIdShift);
+	}
+
+	public void LoadNavMeshPrefabWithFrame(UIntPtr scenePointer, string navMeshPrefabName, MatrixFrame frame)
+	{
+		byte[] array = null;
+		if (navMeshPrefabName != null)
+		{
+			int byteCount = _utf8.GetByteCount(navMeshPrefabName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(navMeshPrefabName, 0, navMeshPrefabName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_LoadNavMeshPrefabWithFrameDelegate(scenePointer, array, frame);
 	}
 
 	public void MarkFacesWithIdAsLadder(UIntPtr scenePointer, int faceGroupId, bool isLadder)
@@ -2636,9 +3334,24 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_PreloadForRenderingDelegate(scenePointer);
 	}
 
-	public bool RayCastForClosestEntityOrTerrain(UIntPtr scenePointer, ref Vec3 sourcePoint, ref Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags)
+	public bool RayCastExcludingTwoEntities(BodyFlags flags, UIntPtr scenePointer, in Ray ray, UIntPtr entity1, UIntPtr entity2)
 	{
-		return call_RayCastForClosestEntityOrTerrainDelegate(scenePointer, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags);
+		return call_RayCastExcludingTwoEntitiesDelegate(flags, scenePointer, in ray, entity1, entity2);
+	}
+
+	public bool RayCastForClosestEntityOrTerrain(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, bool isFixedWorld)
+	{
+		return call_RayCastForClosestEntityOrTerrainDelegate(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, isFixedWorld);
+	}
+
+	public bool RayCastForClosestEntityOrTerrainIgnoreEntity(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, UIntPtr ignoredEntityPointer)
+	{
+		return call_RayCastForClosestEntityOrTerrainIgnoreEntityDelegate(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, ignoredEntityPointer);
+	}
+
+	public bool RayCastForRamming(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 intersectionPoint, ref UIntPtr intersectedEntityIndex, BodyFlags bodyExcludeFlags, BodyFlags bodyIncludeFlags, UIntPtr ignoredEntityPointer)
+	{
+		return call_RayCastForRammingDelegate(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref intersectionPoint, ref intersectedEntityIndex, bodyExcludeFlags, bodyIncludeFlags, ignoredEntityPointer);
 	}
 
 	public void Read(UIntPtr scenePointer, string sceneName, ref SceneInitializationData initData, string forcedAtmoName)
@@ -2667,6 +3380,58 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_ReadAndCalculateInitialCameraDelegate(scenePointer, ref outFrame);
 	}
 
+	public void ReadInModule(UIntPtr scenePointer, string sceneName, string moduleId, ref SceneInitializationData initData, string forcedAtmoName)
+	{
+		byte[] array = null;
+		if (sceneName != null)
+		{
+			int byteCount = _utf8.GetByteCount(sceneName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(sceneName, 0, sceneName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (moduleId != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(moduleId);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(moduleId, 0, moduleId.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		byte[] array3 = null;
+		if (forcedAtmoName != null)
+		{
+			int byteCount3 = _utf8.GetByteCount(forcedAtmoName);
+			array3 = ((byteCount3 < 1024) ? CallbackStringBufferManager.StringBuffer2 : new byte[byteCount3 + 1]);
+			_utf8.GetBytes(forcedAtmoName, 0, forcedAtmoName.Length, array3, 0);
+			array3[byteCount3] = 0;
+		}
+		call_ReadInModuleDelegate(scenePointer, array, array2, ref initData, array3);
+	}
+
+	public UIntPtr RegisterShipVisualToWaterRenderer(UIntPtr scenePointer, UIntPtr entityPointer, in Vec3 bb)
+	{
+		return call_RegisterShipVisualToWaterRendererDelegate(scenePointer, entityPointer, in bb);
+	}
+
+	public void RemoveAlwaysRenderedSkeleton(UIntPtr scenePointer, UIntPtr skeletonPointer)
+	{
+		call_RemoveAlwaysRenderedSkeletonDelegate(scenePointer, skeletonPointer);
+	}
+
+	public void RemoveDecalInstance(UIntPtr scenePointer, UIntPtr decalMeshPointer, string decalSetID)
+	{
+		byte[] array = null;
+		if (decalSetID != null)
+		{
+			int byteCount = _utf8.GetByteCount(decalSetID);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(decalSetID, 0, decalSetID.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_RemoveDecalInstanceDelegate(scenePointer, decalMeshPointer, array);
+	}
+
 	public void RemoveEntity(UIntPtr scenePointer, UIntPtr entityId, int removeReason)
 	{
 		call_RemoveEntityDelegate(scenePointer, entityId, removeReason);
@@ -2680,6 +3445,24 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void ResumeSceneSounds(UIntPtr scenePointer)
 	{
 		call_ResumeSceneSoundsDelegate(scenePointer);
+	}
+
+	public void SaveNavMeshPrefabWithFrame(UIntPtr scenePointer, string navMeshPrefabName, MatrixFrame frame)
+	{
+		byte[] array = null;
+		if (navMeshPrefabName != null)
+		{
+			int byteCount = _utf8.GetByteCount(navMeshPrefabName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(navMeshPrefabName, 0, navMeshPrefabName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_SaveNavMeshPrefabWithFrameDelegate(scenePointer, array, frame);
+	}
+
+	public bool SceneHadWaterWakeRenderer(UIntPtr scenePointer)
+	{
+		return call_SceneHadWaterWakeRendererDelegate(scenePointer);
 	}
 
 	public int SelectEntitiesCollidedWith(UIntPtr scenePointer, ref Ray ray, UIntPtr[] entityIds, Intersection[] intersections)
@@ -2731,9 +3514,9 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetAberrationSmoothDelegate(scenePointer, aberrationSmooth);
 	}
 
-	public void SetAbilityOfFacesWithId(UIntPtr scenePointer, int faceGroupId, bool isEnabled)
+	public int SetAbilityOfFacesWithId(UIntPtr scenePointer, int faceGroupId, bool isEnabled)
 	{
-		call_SetAbilityOfFacesWithIdDelegate(scenePointer, faceGroupId, isEnabled);
+		return call_SetAbilityOfFacesWithIdDelegate(scenePointer, faceGroupId, isEnabled);
 	}
 
 	public void SetActiveVisibilityLevels(UIntPtr scenePointer, string levelsAppended)
@@ -2833,9 +3616,19 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetDofParamsDelegate(scenePointer, dofFocusStart, dofFocusEnd, isVignetteOn);
 	}
 
+	public void SetDoNotAddEntitiesToTickList(UIntPtr scenePointer, bool value)
+	{
+		call_SetDoNotAddEntitiesToTickListDelegate(scenePointer, value);
+	}
+
 	public void SetDoNotWaitForLoadingStatesToRender(UIntPtr scenePointer, bool value)
 	{
 		call_SetDoNotWaitForLoadingStatesToRenderDelegate(scenePointer, value);
+	}
+
+	public void SetDontLoadInvisibleEntities(UIntPtr scenePointer, bool value)
+	{
+		call_SetDontLoadInvisibleEntitiesDelegate(scenePointer, value);
 	}
 
 	public void SetDrynessFactor(UIntPtr scenePointer, float drynessFactor)
@@ -2848,6 +3641,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetDynamicShadowmapCascadesRadiusMultiplierDelegate(scenePointer, extraRadius);
 	}
 
+	public void SetDynamicSnowTexture(UIntPtr scenePointer, UIntPtr texturePointer)
+	{
+		call_SetDynamicSnowTextureDelegate(scenePointer, texturePointer);
+	}
+
 	public void SetEnvironmentMultiplier(UIntPtr scenePointer, bool useMultiplier, float multiplier)
 	{
 		call_SetEnvironmentMultiplierDelegate(scenePointer, useMultiplier, multiplier);
@@ -2856,6 +3654,17 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void SetExternalInjectionTexture(UIntPtr scenePointer, UIntPtr texturePointer)
 	{
 		call_SetExternalInjectionTextureDelegate(scenePointer, texturePointer);
+	}
+
+	public void SetFetchCrcInfoOfScene(UIntPtr scenePointer, bool value)
+	{
+		call_SetFetchCrcInfoOfSceneDelegate(scenePointer, value);
+	}
+
+	public void SetFixedTickCallbackActive(Scene scene, bool isActive)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_SetFixedTickCallbackActiveDelegate(scene2, isActive);
 	}
 
 	public void SetFog(UIntPtr scenePointer, float fogDensity, ref Vec3 fogColor, float fogFalloff)
@@ -2876,6 +3685,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void SetForcedSnow(UIntPtr scenePointer, bool value)
 	{
 		call_SetForcedSnowDelegate(scenePointer, value);
+	}
+
+	public void SetGlobalWindStrengthVector(UIntPtr scenePointer, in Vec2 strengthVector)
+	{
+		call_SetGlobalWindStrengthVectorDelegate(scenePointer, in strengthVector);
+	}
+
+	public void SetGlobalWindVelocity(UIntPtr scenePointer, in Vec2 windVelocity)
+	{
+		call_SetGlobalWindVelocityDelegate(scenePointer, in windVelocity);
 	}
 
 	public void SetGrainAmount(UIntPtr scenePointer, float grainAmount)
@@ -3030,14 +3849,33 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetNameDelegate(scenePointer, array);
 	}
 
+	public void SetNavMeshRegionMap(UIntPtr scenePointer, bool[] regionMap, int regionMapSize)
+	{
+		PinnedArrayData<bool> pinnedArrayData = new PinnedArrayData<bool>(regionMap);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_SetNavMeshRegionMapDelegate(scenePointer, pointer, regionMapSize);
+		pinnedArrayData.Dispose();
+	}
+
 	public void SetOcclusionMode(UIntPtr scenePointer, bool mode)
 	{
 		call_SetOcclusionModeDelegate(scenePointer, mode);
 	}
 
+	public void SetOnCollisionFilterCallbackActive(Scene scene, bool isActive)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_SetOnCollisionFilterCallbackActiveDelegate(scene2, isActive);
+	}
+
 	public void SetOwnerThread(UIntPtr scenePointer)
 	{
 		call_SetOwnerThreadDelegate(scenePointer);
+	}
+
+	public void SetPhotoAtmosphereViaTod(UIntPtr scenePointer, float tod, bool withStorm)
+	{
+		call_SetPhotoAtmosphereViaTodDelegate(scenePointer, tod, withStorm);
 	}
 
 	public void SetPhotoModeFocus(Scene scene, float focusStart, float focusEnd, float focus, float exposure)
@@ -3250,6 +4088,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetUseConstantTimeDelegate(ptr, value);
 	}
 
+	public void SetUsesDeleteLaterSystem(UIntPtr scenePointer, bool value)
+	{
+		call_SetUsesDeleteLaterSystemDelegate(scenePointer, value);
+	}
+
 	public void SetVignetteInnerRadius(UIntPtr scenePointer, float vignetteInnerRadius)
 	{
 		call_SetVignetteInnerRadiusDelegate(scenePointer, vignetteInnerRadius);
@@ -3265,6 +4108,22 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_SetVignetteOuterRadiusDelegate(scenePointer, vignetteOuterRadius);
 	}
 
+	public void SetWaterStrength(Scene scene, float newWaterStrength)
+	{
+		UIntPtr scene2 = ((scene != null) ? scene.Pointer : UIntPtr.Zero);
+		call_SetWaterStrengthDelegate(scene2, newWaterStrength);
+	}
+
+	public void SetWaterWakeCameraOffset(UIntPtr scenePointer, float cameraOffset)
+	{
+		call_SetWaterWakeCameraOffsetDelegate(scenePointer, cameraOffset);
+	}
+
+	public void SetWaterWakeWorldSize(UIntPtr scenePointer, float worldSize, float eraseFactor)
+	{
+		call_SetWaterWakeWorldSizeDelegate(scenePointer, worldSize, eraseFactor);
+	}
+
 	public void SetWinterTimeFactor(UIntPtr scenePointer, float winterTimeFactor)
 	{
 		call_SetWinterTimeFactorDelegate(scenePointer, winterTimeFactor);
@@ -3275,9 +4134,9 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_StallLoadingRenderingsUntilFurtherNoticeDelegate(scenePointer);
 	}
 
-	public void SwapFaceConnectionsWithId(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId)
+	public bool SwapFaceConnectionsWithId(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail)
 	{
-		call_SwapFaceConnectionsWithIdDelegate(scenePointer, hubFaceGroupID, toBeSeparatedFaceGroupId, toBeMergedFaceGroupId);
+		return call_SwapFaceConnectionsWithIdDelegate(scenePointer, hubFaceGroupID, toBeSeparatedFaceGroupId, toBeMergedFaceGroupId, canFail);
 	}
 
 	public string TakePhotoModePicture(Scene scene, bool saveAmbientOcclusionPass, bool saveObjectIdPass, bool saveShadowPass)
@@ -3295,6 +4154,16 @@ internal class ScriptingInterfaceOfIScene : IScene
 		call_TickDelegate(scenePointer, deltaTime);
 	}
 
+	public void TickWake(UIntPtr scenePointer, float dt)
+	{
+		call_TickWakeDelegate(scenePointer, dt);
+	}
+
+	public void WaitWaterRendererCPUSimulation(UIntPtr scenePointer)
+	{
+		call_WaitWaterRendererCPUSimulationDelegate(scenePointer);
+	}
+
 	public void WorldPositionComputeNearestNavMesh(ref WorldPosition position)
 	{
 		call_WorldPositionComputeNearestNavMeshDelegate(ref position);
@@ -3303,5 +4172,80 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void WorldPositionValidateZ(ref WorldPosition position, int minimumValidityState)
 	{
 		call_WorldPositionValidateZDelegate(ref position, minimumValidityState);
+	}
+
+	bool IScene.HasNavmeshFaceUnsharedEdges(UIntPtr scenePointer, in PathFaceRecord faceRecord)
+	{
+		return HasNavmeshFaceUnsharedEdges(scenePointer, in faceRecord);
+	}
+
+	Vec3 IScene.GetWaterSpeedAtPosition(UIntPtr scenePointer, in Vec2 position, bool doChoppinessCorrection)
+	{
+		return GetWaterSpeedAtPosition(scenePointer, in position, doChoppinessCorrection);
+	}
+
+	void IScene.GetBulkWaterLevelAtVolumes(UIntPtr scene, UIntPtr volumeQueryDataArray, int volumeCount, in MatrixFrame entityFrame)
+	{
+		GetBulkWaterLevelAtVolumes(scene, volumeQueryDataArray, volumeCount, in entityFrame);
+	}
+
+	UIntPtr IScene.RegisterShipVisualToWaterRenderer(UIntPtr scenePointer, UIntPtr entityPointer, in Vec3 bb)
+	{
+		return RegisterShipVisualToWaterRenderer(scenePointer, entityPointer, in bb);
+	}
+
+	void IScene.SetGlobalWindStrengthVector(UIntPtr scenePointer, in Vec2 strengthVector)
+	{
+		SetGlobalWindStrengthVector(scenePointer, in strengthVector);
+	}
+
+	void IScene.SetGlobalWindVelocity(UIntPtr scenePointer, in Vec2 windVelocity)
+	{
+		SetGlobalWindVelocity(scenePointer, in windVelocity);
+	}
+
+	bool IScene.RayCastExcludingTwoEntities(BodyFlags flags, UIntPtr scenePointer, in Ray ray, UIntPtr entity1, UIntPtr entity2)
+	{
+		return RayCastExcludingTwoEntities(flags, scenePointer, in ray, entity1, entity2);
+	}
+
+	bool IScene.RayCastForClosestEntityOrTerrain(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, bool isFixedWorld)
+	{
+		return RayCastForClosestEntityOrTerrain(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, isFixedWorld);
+	}
+
+	bool IScene.FocusRayCastForFixedPhysics(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, bool isFixedWorld)
+	{
+		return FocusRayCastForFixedPhysics(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, isFixedWorld);
+	}
+
+	bool IScene.RayCastForRamming(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 intersectionPoint, ref UIntPtr intersectedEntityIndex, BodyFlags bodyExcludeFlags, BodyFlags bodyIncludeFlags, UIntPtr ignoredEntityPointer)
+	{
+		return RayCastForRamming(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref intersectionPoint, ref intersectedEntityIndex, bodyExcludeFlags, bodyIncludeFlags, ignoredEntityPointer);
+	}
+
+	bool IScene.RayCastForClosestEntityOrTerrainIgnoreEntity(UIntPtr scenePointer, in Vec3 sourcePoint, in Vec3 targetPoint, float rayThickness, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityIndex, BodyFlags bodyExcludeFlags, UIntPtr ignoredEntityPointer)
+	{
+		return RayCastForClosestEntityOrTerrainIgnoreEntity(scenePointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, bodyExcludeFlags, ignoredEntityPointer);
+	}
+
+	bool IScene.BoxCastOnlyForCamera(UIntPtr scenePointer, Vec3[] boxPoints, in Vec3 centerPoint, in Vec3 dir, float distance, UIntPtr ignoredEntityPointer, ref float collisionDistance, ref Vec3 closestPoint, ref UIntPtr entityPointer, BodyFlags bodyExcludeFlags)
+	{
+		return BoxCastOnlyForCamera(scenePointer, boxPoints, in centerPoint, in dir, distance, ignoredEntityPointer, ref collisionDistance, ref closestPoint, ref entityPointer, bodyExcludeFlags);
+	}
+
+	UIntPtr IScene.GetNavigationMeshForPosition(UIntPtr scenePointer, in Vec3 position, ref int faceGroupId, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
+	{
+		return GetNavigationMeshForPosition(scenePointer, in position, ref faceGroupId, heightDifferenceLimit, excludeDynamicNavigationMeshes);
+	}
+
+	UIntPtr IScene.GetNearestNavigationMeshForPosition(UIntPtr scenePointer, in Vec3 position, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
+	{
+		return GetNearestNavigationMeshForPosition(scenePointer, in position, heightDifferenceLimit, excludeDynamicNavigationMeshes);
+	}
+
+	Vec2 IScene.GetLastPositionOnNavMeshFaceForPointAndDirection(UIntPtr scenePointer, in PathFaceRecord record, Vec2 position, Vec2 direction)
+	{
+		return GetLastPositionOnNavMeshFaceForPointAndDirection(scenePointer, in record, position, direction);
 	}
 }

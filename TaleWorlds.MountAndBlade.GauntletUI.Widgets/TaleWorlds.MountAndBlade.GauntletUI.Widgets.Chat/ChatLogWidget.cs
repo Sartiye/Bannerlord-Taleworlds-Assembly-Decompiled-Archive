@@ -121,7 +121,7 @@ public class ChatLogWidget : Widget
 				{
 					_focusOnNextUpdate = true;
 				}
-				base.EventManager.SetWidgetFocused(null);
+				base.EventManager.FocusedWidget = null;
 				OnPropertyChanged(value, "FullyShowChatWithTyping");
 			}
 		}
@@ -292,7 +292,7 @@ public class ChatLogWidget : Widget
 		base.OnUpdate(dt);
 		if (!IsChatDisabled && TextInputWidget != null && FullyShowChatWithTyping && _focusOnNextUpdate)
 		{
-			base.EventManager.SetWidgetFocused(TextInputWidget);
+			base.EventManager.FocusedWidget = TextInputWidget;
 			_focusOnNextUpdate = false;
 		}
 		if (!FullyShowChat)

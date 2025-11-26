@@ -98,6 +98,8 @@ public class GOGPlatformServices : IPlatformServices
 
 	public event Action<string> OnTextEnteredFromPlatform;
 
+	public event Action OnTextCanceledFromPlatform;
+
 	public GOGPlatformServices(PlatformInitParams initParams)
 	{
 		LoadAchievementDataFromXml((string)initParams["AchievementDataXmlPath"]);
@@ -234,6 +236,10 @@ public class GOGPlatformServices : IPlatformServices
 		if (this.OnTextEnteredFromPlatform != null)
 		{
 			this.OnTextEnteredFromPlatform(null);
+		}
+		if (this.OnTextCanceledFromPlatform != null)
+		{
+			this.OnTextCanceledFromPlatform();
 		}
 	}
 
@@ -519,6 +525,11 @@ public class GOGPlatformServices : IPlatformServices
 		}
 	}
 
+	bool IPlatformServices.UsePlatformInvitationService(PlayerId targetPlayerId)
+	{
+		return false;
+	}
+
 	private void InitListeners()
 	{
 		_achievementRetrieveListener = new UserStatsAndAchievementsRetrieveListener();
@@ -547,7 +558,8 @@ public class GOGPlatformServices : IPlatformServices
 		}
 	}
 
-	public void ShowGamepadTextInput(string descriptionText, string existingText, uint maxChars, bool isObfuscated)
+	bool IPlatformServices.ShowGamepadTextInput(string descriptionText, string existingText, uint maxLine, bool isObfuscated)
 	{
+		return false;
 	}
 }

@@ -42,9 +42,18 @@ public struct Mat3
 		}
 	}
 
-	public static Mat3 Identity => new Mat3(new Vec3(1f), new Vec3(0f, 1f), new Vec3(0f, 0f, 1f));
+	public static Mat3 Identity
+	{
+		get
+		{
+			Vec3 vec = new Vec3(1f);
+			Vec3 vec2 = new Vec3(0f, 1f);
+			Vec3 vec3 = new Vec3(0f, 0f, 1f);
+			return new Mat3(in vec, in vec2, in vec3);
+		}
+	}
 
-	public Mat3(Vec3 s, Vec3 f, Vec3 u)
+	public Mat3(in Vec3 s, in Vec3 f, in Vec3 u)
 	{
 		this.s = s;
 		this.f = f;
@@ -85,7 +94,7 @@ public struct Mat3
 		f = vec2;
 	}
 
-	public void RotateAboutAnArbitraryVector(Vec3 v, float a)
+	public void RotateAboutAnArbitraryVector(in Vec3 v, float a)
 	{
 		s = s.RotateAboutAnArbitraryVector(v, a);
 		f = f.RotateAboutAnArbitraryVector(v, a);
@@ -103,7 +112,7 @@ public struct Mat3
 		else
 		{
 			Vec3 v = Vec3.CrossProduct(s, f);
-			if (!u.NearlyEquals(v, 0.01f))
+			if (!u.NearlyEquals(in v, 0.01f))
 			{
 				result = false;
 			}
@@ -116,41 +125,49 @@ public struct Mat3
 		return Vec3.DotProduct(Vec3.CrossProduct(s, f), u) < 0f;
 	}
 
-	public bool NearlyEquals(Mat3 rhs, float epsilon = 1E-05f)
+	public bool NearlyEquals(in Mat3 rhs, float epsilon = 1E-05f)
 	{
-		if (s.NearlyEquals(rhs.s, epsilon) && f.NearlyEquals(rhs.f, epsilon))
+		if (s.NearlyEquals(in rhs.s, epsilon) && f.NearlyEquals(in rhs.f, epsilon))
 		{
-			return u.NearlyEquals(rhs.u, epsilon);
+			return u.NearlyEquals(in rhs.u, epsilon);
 		}
 		return false;
 	}
 
-	public Vec3 TransformToParent(Vec3 v)
+	public Vec3 TransformToParent(in Vec3 v)
 	{
 		return new Vec3(s.x * v.x + f.x * v.y + u.x * v.z, s.y * v.x + f.y * v.y + u.y * v.z, s.z * v.x + f.z * v.y + u.z * v.z);
 	}
 
-	public Vec3 TransformToParent(ref Vec3 v)
+	public Vec2 TransformToParent(in Vec2 v)
 	{
-		return new Vec3(s.x * v.x + f.x * v.y + u.x * v.z, s.y * v.x + f.y * v.y + u.y * v.z, s.z * v.x + f.z * v.y + u.z * v.z);
+		return new Vec2(s.x * v.x + f.x * v.y, s.y * v.x + f.y * v.y);
 	}
 
-	public Vec3 TransformToLocal(Vec3 v)
+	public Vec3 TransformToLocal(in Vec3 v)
 	{
 		return new Vec3(s.x * v.x + s.y * v.y + s.z * v.z, f.x * v.x + f.y * v.y + f.z * v.z, u.x * v.x + u.y * v.y + u.z * v.z);
 	}
 
-	public Mat3 TransformToParent(Mat3 m)
+	public Vec2 TransformToLocal(in Vec2 v)
 	{
-		return new Mat3(TransformToParent(m.s), TransformToParent(m.f), TransformToParent(m.u));
+		return new Vec2(s.x * v.x + s.y * v.y, f.x * v.x + f.y * v.y);
 	}
 
-	public Mat3 TransformToLocal(Mat3 m)
+	public Mat3 TransformToParent(in Mat3 m)
+	{
+		Vec3 vec = TransformToParent(in m.s);
+		Vec3 vec2 = TransformToParent(in m.f);
+		Vec3 vec3 = TransformToParent(in m.u);
+		return new Mat3(in vec, in vec2, in vec3);
+	}
+
+	public Mat3 TransformToLocal(in Mat3 m)
 	{
 		Mat3 result = default(Mat3);
-		result.s = TransformToLocal(m.s);
-		result.f = TransformToLocal(m.f);
-		result.u = TransformToLocal(m.u);
+		result.s = TransformToLocal(in m.s);
+		result.f = TransformToLocal(in m.f);
+		result.u = TransformToLocal(in m.u);
 		return result;
 	}
 
@@ -173,7 +190,10 @@ public struct Mat3
 	public Mat3 GetUnitRotation(float removedScale)
 	{
 		float num = 1f / removedScale;
-		return new Mat3(s * num, f * num, u * num);
+		Vec3 vec = s * num;
+		Vec3 vec2 = f * num;
+		Vec3 vec3 = u * num;
+		return new Mat3(in vec, in vec2, in vec3);
 	}
 
 	public Vec3 MakeUnit()
@@ -201,7 +221,7 @@ public struct Mat3
 		u *= scaleAmount;
 	}
 
-	public void ApplyScaleLocal(Vec3 scaleAmountXYZ)
+	public void ApplyScaleLocal(in Vec3 scaleAmountXYZ)
 	{
 		s *= scaleAmountXYZ.x;
 		f *= scaleAmountXYZ.y;
@@ -237,12 +257,21 @@ public struct Mat3
 		return Quaternion.QuaternionFromMat3(this);
 	}
 
-	public static Mat3 Lerp(Mat3 m1, Mat3 m2, float alpha)
+	public static Mat3 Lerp(in Mat3 m1, in Mat3 m2, float alpha)
 	{
 		Mat3 identity = Identity;
 		identity.f = Vec3.Lerp(m1.f, m2.f, alpha);
 		identity.u = Vec3.Lerp(m1.u, m2.u, alpha);
 		identity.Orthonormalize();
+		return identity;
+	}
+
+	public static Mat3 LerpNonOrthogonal(in Mat3 m1, in Mat3 m2, float alpha)
+	{
+		Mat3 identity = Identity;
+		identity.f = Vec3.Lerp(m1.f, m2.f, alpha);
+		identity.u = Vec3.Lerp(m1.u, m2.u, alpha);
+		identity.s = Vec3.Lerp(m1.s, m2.s, alpha);
 		return identity;
 	}
 
@@ -266,6 +295,14 @@ public struct Mat3
 		return identity;
 	}
 
+	public static Mat3 CreateDiagonalMat3(in Vec3 diagonalData)
+	{
+		Vec3 vec = new Vec3(diagonalData.x);
+		Vec3 vec2 = new Vec3(0f, diagonalData.y);
+		Vec3 vec3 = new Vec3(0f, 0f, diagonalData.z);
+		return new Mat3(in vec, in vec2, in vec3);
+	}
+
 	public Vec3 GetEulerAngles()
 	{
 		Mat3 mat = this;
@@ -278,12 +315,15 @@ public struct Mat3
 		return new Mat3(s.x, f.x, u.x, s.y, f.y, u.y, s.z, f.z, u.z);
 	}
 
-	public static Mat3 operator *(Mat3 v, float a)
+	public static Mat3 operator *(in Mat3 v, float a)
 	{
-		return new Mat3(v.s * a, v.f * a, v.u * a);
+		Vec3 vec = v.s * a;
+		Vec3 vec2 = v.f * a;
+		Vec3 vec3 = v.u * a;
+		return new Mat3(in vec, in vec2, in vec3);
 	}
 
-	public static bool operator ==(Mat3 m1, Mat3 m2)
+	public static bool operator ==(in Mat3 m1, in Mat3 m2)
 	{
 		if (m1.f == m2.f)
 		{
@@ -292,7 +332,7 @@ public struct Mat3
 		return false;
 	}
 
-	public static bool operator !=(Mat3 m1, Mat3 m2)
+	public static bool operator !=(in Mat3 m1, in Mat3 m2)
 	{
 		if (!(m1.f != m2.f))
 		{
@@ -312,7 +352,8 @@ public struct Mat3
 
 	public override bool Equals(object obj)
 	{
-		return this == (Mat3)obj;
+		Mat3 m = (Mat3)obj;
+		return this == m;
 	}
 
 	public override int GetHashCode()
@@ -348,7 +389,7 @@ public struct Mat3
 		return false;
 	}
 
-	public void ApplyEulerAngles(Vec3 eulerAngles)
+	public void ApplyEulerAngles(in Vec3 eulerAngles)
 	{
 		RotateAboutUp(eulerAngles.z);
 		RotateAboutSide(eulerAngles.x);

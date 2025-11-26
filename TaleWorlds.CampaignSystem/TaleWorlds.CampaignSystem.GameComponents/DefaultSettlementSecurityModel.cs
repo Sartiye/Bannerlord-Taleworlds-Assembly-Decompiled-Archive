@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -44,6 +45,8 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 	private static readonly TextObject Security = GameTexts.FindText("str_security");
 
 	private static readonly TextObject SecurityDriftText = GameTexts.FindText("str_security_drift");
+
+	private static readonly TextObject PatrolPartiesText = GameTexts.FindText("str_patrol_parties");
 
 	public override int MaximumSecurityInSettlement => 100;
 
@@ -91,7 +94,30 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 		CalculateIssueEffectsOnSecurity(town, ref explainedNumber);
 		CalculatePerkEffectsOnSecurity(town, ref explainedNumber);
 		CalculateSecurityDrift(town, ref explainedNumber);
+		CalculateSettlementProjectSecurityBonuses(town, ref explainedNumber);
+		CalculateSettlementPatrolPartiesBonuses(town, ref explainedNumber);
 		return explainedNumber;
+	}
+
+	private void CalculateSettlementPatrolPartiesBonuses(Town town, ref ExplainedNumber result)
+	{
+		if (town.Settlement.PatrolParty == null)
+		{
+			return;
+		}
+		foreach (Building building in town.Buildings)
+		{
+			if (building.BuildingType == DefaultBuildingTypes.SettlementGuardHouse && building.CurrentLevel > 0)
+			{
+				result.Add((float)building.CurrentLevel * 0.5f + 0.5f, PatrolPartiesText);
+				break;
+			}
+		}
+	}
+
+	private void CalculateSettlementProjectSecurityBonuses(Town town, ref ExplainedNumber result)
+	{
+		town.AddEffectOfBuildings(BuildingEffectEnum.SecurityPerDay, ref result);
 	}
 
 	private void CalculateProsperityEffectOnSecurity(Town town, ref ExplainedNumber explainedNumber)
@@ -123,19 +149,14 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 
 	private void CalculateInfestedHideoutEffectsOnSecurity(Town town, ref ExplainedNumber explainedNumber)
 	{
-		float num = 40f * 40f;
-		int num2 = 0;
+		float num = Campaign.Current.EstimatedAverageBanditPartySpeed * (float)CampaignTime.HoursInDay * 0.5f;
 		foreach (Hideout item in Hideout.All)
 		{
-			if (item.IsInfested && town.Settlement.Position2D.DistanceSquared(item.Settlement.Position2D) < num)
+			if (item.IsInfested && Campaign.Current.Models.MapDistanceModel.GetDistance(town.Settlement, item.Settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < num)
 			{
-				num2++;
+				explainedNumber.Add(-2f, NearbyHideoutText);
 				break;
 			}
-		}
-		if (num2 > 0)
-		{
-			explainedNumber.Add(-2f, NearbyHideoutText);
 		}
 	}
 
@@ -147,24 +168,28 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 	private void CalculatePolicyEffectsOnSecurity(Town town, ref ExplainedNumber explainedNumber)
 	{
 		Kingdom kingdom = town.Settlement.OwnerClan.Kingdom;
-		if (kingdom != null)
+		if (kingdom == null)
+		{
+			return;
+		}
+		if (town.IsTown)
 		{
 			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Bailiffs))
 			{
 				explainedNumber.Add(1f, DefaultPolicies.Bailiffs.Name);
 			}
+			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Serfdom))
+			{
+				explainedNumber.Add(1f, DefaultPolicies.Serfdom.Name);
+			}
 			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Magistrates))
 			{
 				explainedNumber.Add(1f, DefaultPolicies.Magistrates.Name);
 			}
-			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Serfdom) && town.IsTown)
-			{
-				explainedNumber.Add(1f, DefaultPolicies.Serfdom.Name);
-			}
-			if (kingdom.ActivePolicies.Contains(DefaultPolicies.TrialByJury))
-			{
-				explainedNumber.Add(-0.2f, DefaultPolicies.TrialByJury.Name);
-			}
+		}
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.TrialByJury))
+		{
+			explainedNumber.Add(-0.2f, DefaultPolicies.TrialByJury.Name);
 		}
 	}
 
@@ -212,12 +237,12 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 		archerStrength = 0f;
 		cavalryStrength = 0f;
 		float leaderModifier = 0f;
-		MapEvent.PowerCalculationContext context = MapEvent.PowerCalculationContext.Default;
-		BattleSideEnum battleSideEnum = BattleSideEnum.Defender;
+		MapEvent.PowerCalculationContext context = MapEvent.PowerCalculationContext.Siege;
+		BattleSideEnum side = BattleSideEnum.Defender;
 		if (party.MapEvent != null)
 		{
-			battleSideEnum = party.Side;
-			leaderModifier = Campaign.Current.Models.MilitaryPowerModel.GetLeaderModifierInMapEvent(party.MapEvent, battleSideEnum);
+			side = party.Side;
+			leaderModifier = party.LeaderHero?.PowerModifier ?? 0f;
 			context = party.MapEvent.SimulationContext;
 		}
 		for (int i = 0; i < party.MemberRoster.Count; i++)
@@ -225,7 +250,7 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 			TroopRosterElement elementCopyAtIndex = party.MemberRoster.GetElementCopyAtIndex(i);
 			if (elementCopyAtIndex.Character != null)
 			{
-				float troopPower = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(elementCopyAtIndex.Character, battleSideEnum, context, leaderModifier);
+				float troopPower = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(elementCopyAtIndex.Character, side, context, leaderModifier);
 				float num = (float)(elementCopyAtIndex.Number - elementCopyAtIndex.WoundedNumber) * troopPower;
 				if (elementCopyAtIndex.Character.IsMounted)
 				{

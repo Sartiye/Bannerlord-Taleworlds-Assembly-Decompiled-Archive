@@ -19,7 +19,7 @@ public class TroopCountEffect : MPOnSpawnPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !int.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\TroopCountEffect.cs", "Deserialize", 20);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\TroopCountEffect.cs", "Deserialize", 20);
 		}
 	}
 

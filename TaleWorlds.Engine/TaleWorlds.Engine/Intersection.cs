@@ -4,7 +4,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglIntersection", false)]
+[EngineStruct("rglIntersection", false, null)]
 public struct Intersection
 {
 	[CustomEngineStructMemberData("part")]

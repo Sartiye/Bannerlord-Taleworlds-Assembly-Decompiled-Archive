@@ -31,9 +31,9 @@ public class DefaultAlleyModel : AlleyModel
 		AlleyUnderAttack
 	}
 
-	private const int BaseResponseTimeInDays = 5;
+	private const int BaseResponseTimeInDays = 8;
 
-	private const int MaxResponseTimeInDays = 10;
+	private const int MaxResponseTimeInDays = 12;
 
 	public const int MinimumRoguerySkillNeededForLeadingAnAlley = 30;
 
@@ -153,11 +153,11 @@ public class DefaultAlleyModel : AlleyModel
 	public override List<(Hero, AlleyMemberAvailabilityDetail)> GetClanMembersAndAvailabilityDetailsForLeadingAnAlley(Alley alley)
 	{
 		List<(Hero, AlleyMemberAvailabilityDetail)> list = new List<(Hero, AlleyMemberAvailabilityDetail)>();
-		foreach (Hero lord in Clan.PlayerClan.Lords)
+		foreach (Hero aliveLord in Clan.PlayerClan.AliveLords)
 		{
-			if (lord != Hero.MainHero && !lord.IsDead)
+			if (aliveLord != Hero.MainHero)
 			{
-				list.Add((lord, GetAvailability(alley, lord)));
+				list.Add((aliveLord, GetAvailability(alley, aliveLord)));
 			}
 		}
 		foreach (Hero companion in Clan.PlayerClan.Companions)
@@ -209,7 +209,7 @@ public class DefaultAlleyModel : AlleyModel
 		switch (detail)
 		{
 		case AlleyMemberAvailabilityDetail.Available:
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		case AlleyMemberAvailabilityDetail.AvailableWithDelay:
 		{
 			TextObject textObject3 = new TextObject("{=dgUF5awO}It will take {HOURS} {?HOURS > 1}hours{?}hour{\\?} for this clan member to arrive.");
@@ -249,7 +249,7 @@ public class DefaultAlleyModel : AlleyModel
 		case AlleyMemberAvailabilityDetail.AlleyUnderAttack:
 			return new TextObject("{=pdqi2qz1}You can not do this action while your alley is under attack.");
 		default:
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 	}
 
@@ -260,13 +260,13 @@ public class DefaultAlleyModel : AlleyModel
 		{
 			num += (((float)item.Character.Tier > 4f) ? 4f : ((float)item.Character.Tier)) * (float)item.Number;
 		}
-		return Math.Min(10, 5 + (int)(num / 8f));
+		return Math.Min(12, 8 + (int)(num / 8f));
 	}
 
 	private Clan GetRelatedBanditClanDependingOnAlleySettlementFaction(Alley alley)
 	{
 		string stringId = alley.Settlement.Culture.StringId;
-		Clan result = null;
+		Clan result = Clan.BanditFactions.FirstOrDefault((Clan x) => x.StringId == "mountain_bandits");
 		if (stringId == "khuzait")
 		{
 			result = Clan.BanditFactions.FirstOrDefault((Clan x) => x.StringId == "steppe_bandits");
@@ -286,6 +286,7 @@ public class DefaultAlleyModel : AlleyModel
 				result = Clan.BanditFactions.FirstOrDefault((Clan x) => x.StringId == "forest_bandits");
 				break;
 			case "sturgia":
+			case "nord":
 				result = Clan.BanditFactions.FirstOrDefault((Clan x) => x.StringId == "sea_raiders");
 				break;
 			}
@@ -296,7 +297,7 @@ public class DefaultAlleyModel : AlleyModel
 	private AlleyMemberAvailabilityDetail GetAvailability(Alley alley, Hero hero)
 	{
 		IAlleyCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IAlleyCampaignBehavior>();
-		if (campaignBehavior != null && campaignBehavior.GetIsAlleyUnderAttack(alley))
+		if (alley.Owner == Hero.MainHero && campaignBehavior != null && campaignBehavior.GetIsPlayerAlleyUnderAttack(alley))
 		{
 			return AlleyMemberAvailabilityDetail.AlleyUnderAttack;
 		}

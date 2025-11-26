@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade.Multiplayer.Missions;
 using TaleWorlds.MountAndBlade.Source.Missions;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer;
@@ -7,65 +8,15 @@ namespace TaleWorlds.MountAndBlade.Multiplayer;
 public static class MultiplayerMissions
 {
 	[MissionMethod]
-	public static void OpenFreeForAllMission(string scene)
-	{
-		MissionState.OpenNew("MultiplayerFreeForAll", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[20]
-		{
-			MissionLobbyComponent.CreateBehavior(),
-			new MissionMultiplayerFFAClient(),
-			new MultiplayerAchievementComponent(),
-			new MultiplayerTimerComponent(),
-			new MultiplayerMissionAgentVisualSpawnComponent(),
-			new ConsoleMatchStartEndHandler(),
-			new MissionLobbyEquipmentNetworkComponent(),
-			new MultiplayerTeamSelectComponent(),
-			new MissionHardBorderPlacer(),
-			new MissionBoundaryPlacer(),
-			new MissionBoundaryCrossingHandler(),
-			new MultiplayerPollComponent(),
-			new MultiplayerAdminComponent(),
-			new MultiplayerGameNotificationsComponent(),
-			new MissionOptionsComponent(),
-			new MissionScoreboardComponent(new FFAScoreboardData()),
-			MissionMatchHistoryComponent.CreateIfConditionsAreMet(),
-			new EquipmentControllerLeaveLogic(),
-			new MissionRecentPlayersComponent(),
-			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[21]
-		{
-			MissionLobbyComponent.CreateBehavior(),
-			new MissionMultiplayerFFA(),
-			new MissionMultiplayerFFAClient(),
-			new MultiplayerTimerComponent(),
-			new MultiplayerMissionAgentVisualSpawnComponent(),
-			new ConsoleMatchStartEndHandler(),
-			new SpawnComponent(new FFASpawnFrameBehavior(), new WarmupSpawningBehavior()),
-			new MissionLobbyEquipmentNetworkComponent(),
-			new MultiplayerTeamSelectComponent(),
-			new MissionHardBorderPlacer(),
-			new MissionBoundaryPlacer(),
-			new MissionBoundaryCrossingHandler(),
-			new MultiplayerPollComponent(),
-			new MultiplayerAdminComponent(),
-			new MultiplayerGameNotificationsComponent(),
-			new MissionOptionsComponent(),
-			new MissionScoreboardComponent(new FFAScoreboardData()),
-			new MissionAgentPanicHandler(),
-			new AgentHumanAILogic(),
-			new EquipmentControllerLeaveLogic(),
-			new MultiplayerPreloadHelper()
-		});
-	}
-
-	[MissionMethod]
 	public static void OpenTeamDeathmatchMission(string scene)
 	{
-		MissionState.OpenNew("MultiplayerTeamDeathmatch", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[20]
+		MissionState.OpenNew("MultiplayerTeamDeathmatch", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[21]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerTeamDeathmatchClient(),
 			new MultiplayerAchievementComponent(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -82,12 +33,13 @@ public static class MultiplayerMissions
 			new EquipmentControllerLeaveLogic(),
 			new MissionRecentPlayersComponent(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[21]
+		} : new MissionBehavior[22]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerTeamDeathmatch(),
 			new MissionMultiplayerTeamDeathmatchClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new TeamDeathmatchSpawnFrameBehavior(), new TeamDeathmatchSpawningBehavior()),
@@ -111,12 +63,13 @@ public static class MultiplayerMissions
 	[MissionMethod]
 	public static void OpenDuelMission(string scene)
 	{
-		MissionState.OpenNew("MultiplayerDuel", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[19]
+		MissionState.OpenNew("MultiplayerDuel", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[20]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerGameModeDuelClient(),
 			new MultiplayerAchievementComponent(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -132,12 +85,13 @@ public static class MultiplayerMissions
 			new EquipmentControllerLeaveLogic(),
 			new MissionRecentPlayersComponent(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[20]
+		} : new MissionBehavior[21]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerDuel(),
 			new MissionMultiplayerGameModeDuelClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new DuelSpawnFrameBehavior(), new DuelSpawningBehavior()),
@@ -164,13 +118,14 @@ public static class MultiplayerMissions
 		{
 			SceneUpgradeLevel = 3,
 			SceneLevels = ""
-		}, (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[21]
+		}, (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[22]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerSiegeClient(),
 			new MultiplayerAchievementComponent(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -187,13 +142,14 @@ public static class MultiplayerMissions
 			new EquipmentControllerLeaveLogic(),
 			new MissionRecentPlayersComponent(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[22]
+		} : new MissionBehavior[23]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerSiege(),
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerSiegeClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new SiegeSpawnFrameBehavior(), new SiegeSpawningBehavior()),
@@ -217,13 +173,14 @@ public static class MultiplayerMissions
 	[MissionMethod]
 	public static void OpenBattleMission(string scene)
 	{
-		MissionState.OpenNew("MultiplayerBattle", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[20]
+		MissionState.OpenNew("MultiplayerBattle", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[21]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MultiplayerRoundComponent(),
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -239,7 +196,7 @@ public static class MultiplayerMissions
 			MissionMatchHistoryComponent.CreateIfConditionsAreMet(),
 			new EquipmentControllerLeaveLogic(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[23]
+		} : new MissionBehavior[24]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MultiplayerRoundController(),
@@ -247,6 +204,7 @@ public static class MultiplayerMissions
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new FlagDominationSpawnFrameBehavior(), new FlagDominationSpawningBehavior()),
@@ -270,7 +228,7 @@ public static class MultiplayerMissions
 	[MissionMethod]
 	public static void OpenCaptainMission(string scene)
 	{
-		MissionState.OpenNew("MultiplayerCaptain", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[22]
+		MissionState.OpenNew("MultiplayerCaptain", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[23]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MultiplayerAchievementComponent(),
@@ -278,6 +236,7 @@ public static class MultiplayerMissions
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerRoundComponent(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -294,7 +253,7 @@ public static class MultiplayerMissions
 			new EquipmentControllerLeaveLogic(),
 			new MissionRecentPlayersComponent(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[24]
+		} : new MissionBehavior[25]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerFlagDomination(MultiplayerGameType.Captain),
@@ -302,6 +261,7 @@ public static class MultiplayerMissions
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new FlagDominationSpawnFrameBehavior(), new FlagDominationSpawningBehavior()),
@@ -326,7 +286,7 @@ public static class MultiplayerMissions
 	[MissionMethod]
 	public static void OpenSkirmishMission(string scene)
 	{
-		MissionState.OpenNew("MultiplayerSkirmish", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[23]
+		MissionState.OpenNew("MultiplayerSkirmish", new MissionInitializerRecord(scene), (Mission missionController) => (!GameNetwork.IsServer) ? new MissionBehavior[24]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MultiplayerAchievementComponent(),
@@ -334,6 +294,7 @@ public static class MultiplayerMissions
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerRoundComponent(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new MissionLobbyEquipmentNetworkComponent(),
@@ -351,7 +312,7 @@ public static class MultiplayerMissions
 			new MissionRecentPlayersComponent(),
 			new VoiceChatHandler(),
 			new MultiplayerPreloadHelper()
-		} : new MissionBehavior[25]
+		} : new MissionBehavior[26]
 		{
 			MissionLobbyComponent.CreateBehavior(),
 			new MissionMultiplayerFlagDomination(MultiplayerGameType.Skirmish),
@@ -359,6 +320,7 @@ public static class MultiplayerMissions
 			new MultiplayerWarmupComponent(),
 			new MissionMultiplayerGameModeFlagDominationClient(),
 			new MultiplayerTimerComponent(),
+			new MultiplayerBattleMissionAgentInteractionLogic(),
 			new MultiplayerMissionAgentVisualSpawnComponent(),
 			new ConsoleMatchStartEndHandler(),
 			new SpawnComponent(new FlagDominationSpawnFrameBehavior(), new FlagDominationSpawningBehavior()),

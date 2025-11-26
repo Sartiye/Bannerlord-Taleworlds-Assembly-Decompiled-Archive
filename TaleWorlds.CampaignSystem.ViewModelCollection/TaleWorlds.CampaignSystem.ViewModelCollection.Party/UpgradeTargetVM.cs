@@ -1,10 +1,9 @@
 using System;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Party;
 
@@ -20,15 +19,13 @@ public class UpgradeTargetVM : ViewModel
 
 	private int _upgradeIndex;
 
-	private InputKeyItemVM _primaryActionInputKey;
-
-	private InputKeyItemVM _secondaryActionInputKey;
+	private string _hintString;
 
 	private UpgradeRequirementsVM _requirements;
 
-	private ImageIdentifierVM _troopImage;
+	private CharacterImageIdentifierVM _troopImage;
 
-	private HintViewModel _hint;
+	private BasicTooltipViewModel _hint;
 
 	private int _availableUpgrades;
 
@@ -38,39 +35,7 @@ public class UpgradeTargetVM : ViewModel
 
 	private bool _isHighlighted;
 
-	[DataSourceProperty]
-	public InputKeyItemVM PrimaryActionInputKey
-	{
-		get
-		{
-			return _primaryActionInputKey;
-		}
-		set
-		{
-			if (value != _primaryActionInputKey)
-			{
-				_primaryActionInputKey = value;
-				OnPropertyChangedWithValue(value, "PrimaryActionInputKey");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public InputKeyItemVM SecondaryActionInputKey
-	{
-		get
-		{
-			return _secondaryActionInputKey;
-		}
-		set
-		{
-			if (value != _secondaryActionInputKey)
-			{
-				_secondaryActionInputKey = value;
-				OnPropertyChangedWithValue(value, "SecondaryActionInputKey");
-			}
-		}
-	}
+	private bool _isMarinerTroop;
 
 	[DataSourceProperty]
 	public UpgradeRequirementsVM Requirements
@@ -90,7 +55,7 @@ public class UpgradeTargetVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM TroopImage
+	public CharacterImageIdentifierVM TroopImage
 	{
 		get
 		{
@@ -107,7 +72,7 @@ public class UpgradeTargetVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel Hint
+	public BasicTooltipViewModel Hint
 	{
 		get
 		{
@@ -191,6 +156,23 @@ public class UpgradeTargetVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsMarinerTroop
+	{
+		get
+		{
+			return _isMarinerTroop;
+		}
+		set
+		{
+			if (value != _isMarinerTroop)
+			{
+				_isMarinerTroop = value;
+				OnPropertyChangedWithValue(value, "IsMarinerTroop");
+			}
+		}
+	}
+
 	public UpgradeTargetVM(int upgradeIndex, CharacterObject character, CharacterCode upgradeCharacterCode, Action<int, int> onUpgraded, Action<UpgradeTargetVM> onFocused)
 	{
 		_upgradeIndex = upgradeIndex;
@@ -202,7 +184,7 @@ public class UpgradeTargetVM : ViewModel
 		Requirements = new UpgradeRequirementsVM();
 		Requirements.SetItemRequirement(_upgradeTarget.UpgradeRequiresItemFromCategory);
 		Requirements.SetPerkRequirement(requiredPerk);
-		TroopImage = new ImageIdentifierVM(upgradeCharacterCode);
+		TroopImage = new CharacterImageIdentifierVM(upgradeCharacterCode);
 	}
 
 	public override void RefreshValues()
@@ -211,13 +193,26 @@ public class UpgradeTargetVM : ViewModel
 		Requirements?.RefreshValues();
 	}
 
-	public void Refresh(int upgradableAmount, string hint, bool isAvailable, bool isInsufficient, bool itemRequirementsMet, bool perkRequirementsMet)
+	public void Refresh(int upgradableAmount, bool isAvailable, bool isInsufficient, bool itemRequirementsMet, bool perkRequirementsMet, string hintString, bool isMarinerTroop)
 	{
 		AvailableUpgrades = upgradableAmount;
-		Hint = new HintViewModel(new TextObject("{=!}" + hint));
 		IsAvailable = isAvailable;
 		IsInsufficient = isInsufficient;
+		IsMarinerTroop = isMarinerTroop;
 		Requirements?.SetRequirementsMet(itemRequirementsMet, perkRequirementsMet);
+		_hintString = hintString;
+		Hint = new BasicTooltipViewModel(() => GetHint());
+	}
+
+	private string GetHint()
+	{
+		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_recruit_units"), GameTexts.FindText("str_five_stack_shortcut_recruit_units"), AvailableUpgrades >= 5);
+		if (string.IsNullOrEmpty(stackModifierString) || AvailableUpgrades < 1)
+		{
+			return _hintString;
+		}
+		return GameTexts.FindText("str_string_newline_string").SetTextVariable("STR1", _hintString).SetTextVariable("STR2", stackModifierString)
+			.ToString();
 	}
 
 	public void ExecuteUpgradeEncyclopediaLink()

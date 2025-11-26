@@ -38,7 +38,7 @@ public class PathTracker
 		{
 			MatrixFrame frameForDistance = _path.GetFrameForDistance(TotalDistanceTraveled);
 			frameForDistance.rotation.RotateAboutUp(System.MathF.PI);
-			frameForDistance.rotation.ApplyScaleLocal(_initialScale);
+			frameForDistance.rotation.ApplyScaleLocal(in _initialScale);
 			return frameForDistance;
 		}
 	}
@@ -79,7 +79,7 @@ public class PathTracker
 	{
 		_path.GetFrameAndColorForDistance(TotalDistanceTraveled, out frame, out color);
 		frame.rotation.RotateAboutUp(System.MathF.PI);
-		frame.rotation.ApplyScaleLocal(_initialScale);
+		frame.rotation.ApplyScaleLocal(in _initialScale);
 	}
 
 	public void Reset()

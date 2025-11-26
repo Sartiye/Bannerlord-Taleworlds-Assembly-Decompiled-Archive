@@ -4,7 +4,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglWorld_position::Plain_world_position", false)]
+[EngineStruct("rglWorld_position::Plain_world_position", false, null)]
 public struct WorldPosition
 {
 	public enum WorldPositionEnforcedCache
@@ -127,6 +127,12 @@ public struct WorldPosition
 		return _navMesh;
 	}
 
+	public UIntPtr GetNavMeshMT()
+	{
+		ValidateZMT(ZValidityState.ValidAccordingToNavMesh);
+		return _navMesh;
+	}
+
 	public UIntPtr GetNearestNavMesh()
 	{
 		EngineApplicationInterface.IScene.WorldPositionComputeNearestNavMesh(ref this);
@@ -191,6 +197,11 @@ public struct WorldPosition
 	public Vec3 GetGroundVec3MT()
 	{
 		return new Vec3(_position.AsVec2, GetGroundZMT());
+	}
+
+	public Vec3 GetVec3WithoutValidity()
+	{
+		return _position;
 	}
 
 	public void SetVec2(Vec2 value)

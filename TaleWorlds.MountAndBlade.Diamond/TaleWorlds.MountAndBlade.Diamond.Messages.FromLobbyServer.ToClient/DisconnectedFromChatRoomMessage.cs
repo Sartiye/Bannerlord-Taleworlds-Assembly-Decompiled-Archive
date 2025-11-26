@@ -5,7 +5,7 @@ using TaleWorlds.Diamond;
 namespace TaleWorlds.MountAndBlade.Diamond.Messages.FromLobbyServer.ToClient;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class DisconnectedFromChatRoomMessage : Message
 {
 	[JsonProperty]

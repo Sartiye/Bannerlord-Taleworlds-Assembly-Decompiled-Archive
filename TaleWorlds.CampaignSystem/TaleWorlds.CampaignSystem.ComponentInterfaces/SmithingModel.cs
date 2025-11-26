@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SmithingModel : GameModel
+public abstract class SmithingModel : MBGameModel<SmithingModel>
 {
 	public abstract int GetCraftingPartDifficulty(CraftingPiece craftingPiece);
 

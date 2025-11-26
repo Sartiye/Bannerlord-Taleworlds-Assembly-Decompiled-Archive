@@ -129,6 +129,7 @@ public class InventoryListPanel : NavigatableListPanel
 		_sortByNameClickHandler = OnSortByName;
 		_sortByQuantityClickHandler = OnSortByQuantity;
 		_sortByCostClickHandler = OnSortByCost;
+		base.ClearSelectedOnRemoval = true;
 	}
 
 	private void OnSortByType(Widget widget)

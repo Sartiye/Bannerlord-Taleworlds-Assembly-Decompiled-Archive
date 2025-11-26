@@ -5,7 +5,6 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
 using TaleWorlds.MountAndBlade.View.Screens;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews.Order;
@@ -36,45 +35,19 @@ public class OrderFlag
 
 	private float _customWidth;
 
-	private GameEntity _current;
+	private GameEntity _activeVisualEntity;
 
-	private readonly IEnumerable<IOrderableWithInteractionArea> _orderablesWithInteractionArea;
+	protected readonly IEnumerable<IOrderableWithInteractionArea> _orderablesWithInteractionArea;
 
-	private readonly Mission _mission;
+	protected readonly Mission _mission;
 
-	private readonly MissionScreen _missionScreen;
+	protected readonly MissionScreen _missionScreen;
 
 	private readonly float _arrowLength;
 
 	private bool _isArrowVisible;
 
 	private Vec2 _arrowDirection;
-
-	private GameEntity Current
-	{
-		get
-		{
-			return _current;
-		}
-		set
-		{
-			if (_current != value)
-			{
-				_current = value;
-				_flag.SetVisibilityExcludeParents(visible: false);
-				_gear.SetVisibilityExcludeParents(visible: false);
-				_arrow.SetVisibilityExcludeParents(visible: false);
-				_width.SetVisibilityExcludeParents(visible: false);
-				_attack.SetVisibilityExcludeParents(visible: false);
-				_flagUnavailable.SetVisibilityExcludeParents(visible: false);
-				_current.SetVisibilityExcludeParents(visible: true);
-				if (_current == _arrow || _current == _flagUnavailable)
-				{
-					_flag.SetVisibilityExcludeParents(visible: true);
-				}
-			}
-		}
-	}
 
 	public IOrderable FocusedOrderableObject { get; private set; }
 
@@ -112,7 +85,7 @@ public class OrderFlag
 		}
 	}
 
-	public OrderFlag(Mission mission, MissionScreen missionScreen)
+	public OrderFlag(Mission mission, MissionScreen missionScreen, float flagScale = 10f)
 	{
 		_mission = mission;
 		_missionScreen = missionScreen;
@@ -136,11 +109,13 @@ public class OrderFlag
 		_widthRight.EntityFlags |= EntityFlags.NotAffectedBySeason;
 		_flag.AddComponent(MetaMesh.GetCopy("order_flag_a"));
 		MatrixFrame frame = _flag.GetFrame();
-		frame.Scale(new Vec3(10f, 10f, 10f));
+		Vec3 scalingVector = Vec3.One * flagScale;
+		frame.Scale(in scalingVector);
 		_flag.SetFrame(ref frame);
 		_gear.AddComponent(MetaMesh.GetCopy("order_gear"));
 		MatrixFrame frame2 = _gear.GetFrame();
-		frame2.Scale(new Vec3(10f, 10f, 10f));
+		scalingVector = Vec3.One * flagScale;
+		frame2.Scale(in scalingVector);
 		_gear.SetFrame(ref frame2);
 		_arrow.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
 		_widthLeft.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
@@ -156,7 +131,8 @@ public class OrderFlag
 		MetaMesh copy = MetaMesh.GetCopy("destroy_icon");
 		copy.RecomputeBoundingBox(recomputeMeshes: true);
 		MatrixFrame frame4 = copy.Frame;
-		frame4.Scale(new Vec3(0.15f, 0.15f, 0.15f));
+		scalingVector = new Vec3(0.15f, 0.15f, 0.15f);
+		frame4.Scale(in scalingVector);
 		frame4.Elevate(10f);
 		copy.Frame = frame4;
 		_attack.AddMultiMesh(copy);
@@ -173,42 +149,50 @@ public class OrderFlag
 		_width.SetVisibilityExcludeParents(visible: false);
 		_attack.SetVisibilityExcludeParents(visible: false);
 		_flagUnavailable.SetVisibilityExcludeParents(visible: false);
-		Current = _flag;
+		SetActiveVisualEntity(_flag);
 		BoundingBox boundingBox = _arrow.GetMetaMesh(0).GetBoundingBox();
 		_arrowLength = boundingBox.max.y - boundingBox.min.y;
-		UpdateFrame(out var _, checkForTargetEntity: false);
+		UpdateFrame(out var _, checkForTargetEntity: false, Vec3.Invalid);
 		_orderablesWithInteractionArea = _mission.MissionObjects.OfType<IOrderableWithInteractionArea>();
 	}
 
 	public void Tick(float dt)
 	{
 		FocusedOrderableObject = null;
-		GameEntity collidedEntity = GetCollidedEntity();
-		if (collidedEntity != null)
+		WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
+		bool isOnValidGround = false;
+		bool flag = true;
+		flag = !_mission.IsNavalBattle;
+		Vec3 closestPoint = Vec3.Invalid;
+		if (flag)
 		{
-			BattleSideEnum side = Mission.Current.PlayerTeam.Side;
-			IOrderable orderable = (IOrderable)collidedEntity.GetScriptComponents().First((ScriptComponentBehavior sc) => sc is IOrderable orderable2 && orderable2.GetOrder(side) != OrderType.None);
-			if (orderable.GetOrder(side) != 0)
+			weakGameEntity = GetCollidedEntity(out closestPoint);
+			if (weakGameEntity.IsValid)
 			{
-				FocusedOrderableObject = orderable;
+				BattleSideEnum side = Mission.Current.PlayerTeam.Side;
+				IOrderable orderable = (IOrderable)weakGameEntity.GetScriptComponents().First((ScriptComponentBehavior sc) => sc is IOrderable orderable2 && orderable2.GetOrder(side) != OrderType.None);
+				if (orderable.GetOrder(side) != 0)
+				{
+					FocusedOrderableObject = orderable;
+				}
 			}
 		}
-		UpdateFrame(out var isOnValidGround, collidedEntity != null);
+		UpdateFrame(out isOnValidGround, weakGameEntity.IsValid, closestPoint);
 		LatestUpdateFrameNo = Utilities.EngineFrameNo;
 		if (!IsVisible)
 		{
 			return;
 		}
-		if (FocusedOrderableObject == null)
+		if (flag && FocusedOrderableObject == null)
 		{
 			FocusedOrderableObject = _orderablesWithInteractionArea.FirstOrDefault((IOrderableWithInteractionArea o) => ((ScriptComponentBehavior)o).GameEntity.IsVisibleIncludeParents() && o.IsPointInsideInteractionArea(Position));
-			if (FocusedOrderableObject is ScriptComponentBehavior scriptComponentBehavior && scriptComponentBehavior.GameEntity.Scene == null)
+			if (FocusedOrderableObject is ScriptComponentBehavior { GameEntity: var gameEntity } && gameEntity.Scene == null)
 			{
 				FocusedOrderableObject = null;
 			}
 		}
 		UpdateCurrentMesh(isOnValidGround);
-		if (Current == _flag || Current == _flagUnavailable)
+		if (_activeVisualEntity == _flag || _activeVisualEntity == _flagUnavailable)
 		{
 			MatrixFrame frame = _flag.GetFrame();
 			float num = TaleWorlds.Library.MathF.Sin(MBCommon.GetApplicationTime() * 2f) + 1f;
@@ -219,6 +203,22 @@ public class OrderFlag
 		}
 	}
 
+	private void SetActiveVisualEntity(GameEntity entity)
+	{
+		_activeVisualEntity = entity;
+		_flag.SetVisibilityExcludeParents(visible: false);
+		_gear.SetVisibilityExcludeParents(visible: false);
+		_arrow.SetVisibilityExcludeParents(visible: false);
+		_width.SetVisibilityExcludeParents(visible: false);
+		_attack.SetVisibilityExcludeParents(visible: false);
+		_flagUnavailable.SetVisibilityExcludeParents(visible: false);
+		_activeVisualEntity.SetVisibilityExcludeParents(visible: true);
+		if (_activeVisualEntity == _arrow || _activeVisualEntity == _flagUnavailable)
+		{
+			_flag.SetVisibilityExcludeParents(visible: true);
+		}
+	}
+
 	private void UpdateCurrentMesh(bool isOnValidGround)
 	{
 		if (FocusedOrderableObject != null)
@@ -226,27 +226,27 @@ public class OrderFlag
 			BattleSideEnum side = Mission.Current.PlayerTeam.Side;
 			if (FocusedOrderableObject.GetOrder(side) == OrderType.AttackEntity)
 			{
-				Current = _attack;
+				SetActiveVisualEntity(_attack);
 				return;
 			}
 			OrderType order = FocusedOrderableObject.GetOrder(side);
 			if (order == OrderType.Use || order == OrderType.FollowEntity)
 			{
-				Current = _gear;
+				SetActiveVisualEntity(_gear);
 				return;
 			}
 		}
 		if (_isArrowVisible)
 		{
-			Current = _arrow;
+			SetActiveVisualEntity(_arrow);
 		}
 		else if (_isWidthVisible)
 		{
-			Current = _width;
+			SetActiveVisualEntity(_width);
 		}
 		else
 		{
-			Current = (isOnValidGround ? _flag : _flagUnavailable);
+			SetActiveVisualEntity(isOnValidGround ? _flag : _flagUnavailable);
 		}
 	}
 
@@ -256,45 +256,76 @@ public class OrderFlag
 		_arrowDirection = arrowDirection;
 	}
 
-	private void UpdateFrame(out bool isOnValidGround, bool checkForTargetEntity)
+	protected virtual Vec3 GetFlagPosition(out bool isOnValidGround, bool checkForTargetEntity, Vec3 targetCollisionPoint)
 	{
-		if (_missionScreen.GetProjectedMousePositionOnGround(out var groundPosition, out var groundNormal, BodyFlags.BodyOwnerFlora, checkOccludedSurface: true))
+		if (_missionScreen.GetProjectedMousePositionOnGround(out var groundPosition, out var _, BodyFlags.BodyOwnerFlora, checkOccludedSurface: true))
 		{
-			WorldPosition orderPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, groundPosition, hasValidZ: false);
-			isOnValidGround = ((!IsVisible || checkForTargetEntity) ? Mission.Current.IsOrderPositionAvailable(in orderPosition, Mission.Current.PlayerTeam) : IsPositionOnValidGround(orderPosition));
+			if (!IsVisible)
+			{
+				isOnValidGround = false;
+			}
+			else if (checkForTargetEntity)
+			{
+				if (targetCollisionPoint.IsValid)
+				{
+					groundPosition = targetCollisionPoint;
+				}
+				else
+				{
+					Debug.FailedAssert("Collision point for target entity is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\Order\\OrderFlag.cs", "GetFlagPosition", 349);
+				}
+				WorldPosition orderPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, groundPosition, hasValidZ: false);
+				isOnValidGround = Mission.Current.IsOrderPositionAvailable(in orderPosition, Mission.Current.PlayerTeam);
+			}
+			else
+			{
+				WorldPosition worldPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, groundPosition, hasValidZ: false);
+				isOnValidGround = IsPositionOnValidGround(worldPosition);
+			}
+			return groundPosition;
 		}
-		else
+		isOnValidGround = false;
+		return new Vec3(0f, 0f, -100000f);
+	}
+
+	protected virtual void UpdateFrame(out bool isOnValidGround, bool checkForTargetEntity, Vec3 targetCollisionPoint)
+	{
+		if (_missionScreen?.SceneView == null)
 		{
 			isOnValidGround = false;
-			groundPosition = new Vec3(0f, 0f, -100000f);
+			return;
 		}
-		Position = groundPosition;
-		_missionScreen.ScreenPointToWorldRay(Vec2.One * 0.5f, out var rayBegin, out groundNormal);
-		float a = ((_missionScreen.LastFollowedAgent == null) ? _missionScreen.CombatCamera.Frame.rotation.f.RotationZ : (rayBegin - Position).AsVec2.RotationInRadians);
-		MatrixFrame frame = _entity.GetFrame();
-		frame.rotation = Mat3.Identity;
-		frame.rotation.RotateAboutUp(a);
-		_entity.SetFrame(ref frame);
-		if (_isArrowVisible)
+		Vec3 flagPosition = GetFlagPosition(out isOnValidGround, checkForTargetEntity, targetCollisionPoint);
+		if (flagPosition.IsValid)
 		{
-			a = _arrowDirection.RotationInRadians;
-			Mat3 identity = Mat3.Identity;
-			identity.RotateAboutUp(a);
-			MatrixFrame frame2 = MatrixFrame.Identity;
-			frame2.rotation = frame.rotation.TransformToLocal(identity);
-			frame2.Advance(0f - _arrowLength);
-			_arrow.SetFrame(ref frame2);
-		}
-		if (_isWidthVisible)
-		{
-			_widthLeft.SetLocalPosition(Vec3.Side * (_customWidth * 0.5f - 0f));
-			_widthRight.SetLocalPosition(Vec3.Side * (_customWidth * -0.5f + 0f));
-			_widthLeft.SetLocalPosition(Vec3.Side * (_customWidth * 0.5f - _arrowLength));
-			_widthRight.SetLocalPosition(Vec3.Side * (_customWidth * -0.5f + _arrowLength));
+			Position = flagPosition;
+			_missionScreen.ScreenPointToWorldRay(Vec2.One * 0.5f, out var rayBegin, out var _);
+			float a = ((_missionScreen.LastFollowedAgent == null) ? _missionScreen.CombatCamera.Frame.rotation.f.RotationZ : (rayBegin - Position).AsVec2.RotationInRadians);
+			MatrixFrame frame = _entity.GetFrame();
+			frame.rotation = Mat3.Identity;
+			frame.rotation.RotateAboutUp(a);
+			_entity.SetFrame(ref frame);
+			if (_isArrowVisible)
+			{
+				a = _arrowDirection.RotationInRadians;
+				Mat3 m = Mat3.Identity;
+				m.RotateAboutUp(a);
+				MatrixFrame frame2 = MatrixFrame.Identity;
+				frame2.rotation = frame.rotation.TransformToLocal(in m);
+				frame2.Advance(0f - _arrowLength);
+				_arrow.SetFrame(ref frame2);
+			}
+			if (_isWidthVisible)
+			{
+				_widthLeft.SetLocalPosition(Vec3.Side * (_customWidth * 0.5f - 0f));
+				_widthRight.SetLocalPosition(Vec3.Side * (_customWidth * -0.5f + 0f));
+				_widthLeft.SetLocalPosition(Vec3.Side * (_customWidth * 0.5f - _arrowLength));
+				_widthRight.SetLocalPosition(Vec3.Side * (_customWidth * -0.5f + _arrowLength));
+			}
 		}
 	}
 
-	public static bool IsPositionOnValidGround(WorldPosition worldPosition)
+	public virtual bool IsPositionOnValidGround(WorldPosition worldPosition)
 	{
 		return Mission.Current.IsFormationUnitPositionAvailable(ref worldPosition, Mission.Current.PlayerTeam);
 	}
@@ -304,12 +335,15 @@ public class OrderFlag
 		return Mission.Current.IsOrderPositionAvailable(in orderPosition, Mission.Current.PlayerTeam);
 	}
 
-	private GameEntity GetCollidedEntity()
+	private WeakGameEntity GetCollidedEntity(out Vec3 closestPoint)
 	{
-		Vec2 screenPoint = ((Mission.Current.GetMissionBehavior<BattleDeploymentHandler>() != null) ? Input.MousePositionRanged : new Vec2(0.5f, 0.5f));
+		Vec2 screenPoint = ((_mission.Mode == MissionMode.Deployment) ? Input.MousePositionRanged : new Vec2(0.5f, 0.5f));
 		_missionScreen.ScreenPointToWorldRay(screenPoint, out var rayBegin, out var rayEnd);
-		_mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out float _, out GameEntity collidedEntity, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora);
-		while (collidedEntity != null && !collidedEntity.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IOrderable orderable && orderable.GetOrder(Mission.Current.PlayerTeam.Side) != OrderType.None))
+		Vec3 vec = (rayEnd - rayBegin).NormalizedCopy();
+		rayEnd = rayBegin + vec * 10000f;
+		rayBegin = Agent.Main.GetEyeGlobalPosition();
+		_mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out var _, out closestPoint, out var collidedEntity, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora);
+		while (collidedEntity.IsValid && !collidedEntity.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IOrderable orderable && orderable.GetOrder(Mission.Current.PlayerTeam.Side) != OrderType.None))
 		{
 			collidedEntity = collidedEntity.Parent;
 		}

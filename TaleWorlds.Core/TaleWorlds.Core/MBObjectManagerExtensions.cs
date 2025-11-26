@@ -12,7 +12,7 @@ public static class MBObjectManagerExtensions
 		if (current != null)
 		{
 			isDevelopment = current.GameType.IsDevelopment;
-			gameType = current.GameType.GetType().Name;
+			gameType = current.GameType.GameTypeStringId;
 		}
 		objectManager.LoadXML(id, isDevelopment, gameType, skipXmlFilterForEditor);
 	}

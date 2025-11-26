@@ -72,7 +72,7 @@ public class PopupSceneSkeletonAnimationScript : ScriptComponentBehavior
 			1 => PositiveAnimationClip, 
 			_ => NegativeAnimationClip, 
 		};
-		if (base.GameEntity?.Skeleton != null && !string.IsNullOrEmpty(text))
+		if (base.GameEntity.IsValid && base.GameEntity.Skeleton != null && !string.IsNullOrEmpty(text))
 		{
 			base.GameEntity.Skeleton.SetAnimationAtChannel(text, 0);
 		}

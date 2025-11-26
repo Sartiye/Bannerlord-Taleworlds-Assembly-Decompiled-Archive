@@ -180,7 +180,7 @@ public abstract class GenericOptionDataVM : ViewModel
 		}
 		else
 		{
-			Hint.HintText = TextObject.Empty;
+			Hint.HintText = TextObject.GetEmpty();
 		}
 		IsEnabled = !isDisabledAndReasonID.Item2;
 	}

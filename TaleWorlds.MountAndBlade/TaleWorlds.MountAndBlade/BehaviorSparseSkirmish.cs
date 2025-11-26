@@ -45,9 +45,9 @@ public class BehaviorSparseSkirmish : BehaviorComponent
 		else
 		{
 			_tacticalArcherPosition = null;
-			WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.CurrentPosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CurrentPosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 	}
@@ -62,20 +62,20 @@ public class BehaviorSparseSkirmish : BehaviorComponent
 	public override void TickOccasionally()
 	{
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_tacticalArcherPosition != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_tacticalArcherPosition.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_tacticalArcherPosition.Width));
 		}
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderScatter;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWider;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWider);
 	}
 
 	protected override float GetAiWeight()

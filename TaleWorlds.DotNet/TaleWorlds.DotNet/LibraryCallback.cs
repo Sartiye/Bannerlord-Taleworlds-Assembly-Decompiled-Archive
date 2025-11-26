@@ -1,7 +1,9 @@
-using System;
-
 namespace TaleWorlds.DotNet;
 
-public class LibraryCallback : Attribute
+public class LibraryCallback : ManagedFromNativeCallback
 {
+	public LibraryCallback(string[] conditionals = null, bool isMultiThreadCallable = false)
+		: base(conditionals, isMultiThreadCallable)
+	{
+	}
 }

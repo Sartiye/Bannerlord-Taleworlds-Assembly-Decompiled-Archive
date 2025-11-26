@@ -116,14 +116,19 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 			return null;
 		}
 		string fileFullPath = GetFileFullPath(path);
-		string result = string.Empty;
+		string text = string.Empty;
 		using (FileStream sourceStream = File.Open(fileFullPath, FileMode.Open))
 		{
 			byte[] buffer = new byte[sourceStream.Length];
 			await sourceStream.ReadAsync(buffer, 0, (int)sourceStream.Length);
-			result = Encoding.UTF8.GetString(buffer);
+			text = Encoding.UTF8.GetString(buffer);
 		}
-		return result;
+		string @string = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+		if (text.StartsWith(@string, StringComparison.Ordinal))
+		{
+			text = text.Remove(0, @string.Length);
+		}
+		return text;
 	}
 
 	public string GetFileContentString(PlatformFilePath path)
@@ -145,6 +150,36 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 			Debug.Print(Error);
 		}
 		return result;
+	}
+
+	public byte[] GetMetaDataContent(PlatformFilePath path)
+	{
+		if (!FileExists(path))
+		{
+			return null;
+		}
+		string fileFullPath = GetFileFullPath(path);
+		try
+		{
+			using FileStream fileStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+			using System.IO.BinaryReader binaryReader = new System.IO.BinaryReader(fileStream);
+			int num = binaryReader.ReadInt32();
+			if (num > fileStream.Length - fileStream.Position)
+			{
+				return null;
+			}
+			byte[] array = new byte[num + 4];
+			BitConverter.GetBytes(num).CopyTo(array, 0);
+			if (binaryReader.Read(array, 4, num) < num)
+			{
+				return null;
+			}
+			return array;
+		}
+		catch (Exception)
+		{
+		}
+		return null;
 	}
 
 	public byte[] GetFileContent(PlatformFilePath path)
@@ -193,7 +228,7 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 		Directory.CreateDirectory(GetDirectoryFullPath(path));
 	}
 
-	public PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern)
+	public PlatformFilePath[] GetFiles(PlatformDirectoryPath path, string searchPattern, SearchOption searchOption)
 	{
 		string directoryFullPath = GetDirectoryFullPath(path);
 		DirectoryInfo directoryInfo = new DirectoryInfo(directoryFullPath);
@@ -203,7 +238,7 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 		{
 			try
 			{
-				FileInfo[] files = directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories);
+				FileInfo[] files = directoryInfo.GetFiles(searchPattern, searchOption);
 				array = new PlatformFilePath[files.Length];
 				for (int i = 0; i < files.Length; i++)
 				{

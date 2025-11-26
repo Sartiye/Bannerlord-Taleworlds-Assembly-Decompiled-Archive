@@ -38,7 +38,7 @@ public class SubModuleInfo
 
 	public List<string> Assemblies { get; private set; }
 
-	public string SubModuleClassType { get; private set; }
+	public string SubModuleClassTypeName { get; private set; }
 
 	public SubModuleInfo()
 	{
@@ -62,7 +62,7 @@ public class SubModuleInfo
 			}
 			IsTWCertifiedDLL = DLLExists && GetIsTWCertified(dLLName, isOfficial);
 		}
-		SubModuleClassType = subModuleNode.SelectSingleNode("SubModuleClassType").Attributes["value"].InnerText;
+		SubModuleClassTypeName = subModuleNode.SelectSingleNode("SubModuleClassType").Attributes["value"].InnerText;
 		Assemblies = new List<string>();
 		if (subModuleNode.SelectSingleNode("Assemblies") != null)
 		{
@@ -72,7 +72,12 @@ public class SubModuleInfo
 				Assemblies.Add(xmlNodeList[i].Attributes["value"].InnerText);
 			}
 		}
-		XmlNodeList xmlNodeList2 = subModuleNode.SelectSingleNode("Tags").SelectNodes("Tag");
+		XmlNode xmlNode = subModuleNode.SelectSingleNode("Tags");
+		if (xmlNode == null)
+		{
+			return;
+		}
+		XmlNodeList xmlNodeList2 = xmlNode.SelectNodes("Tag");
 		for (int j = 0; j < xmlNodeList2.Count; j++)
 		{
 			if (Enum.TryParse<SubModuleTags>(xmlNodeList2[j].Attributes["key"].InnerText, out var result))

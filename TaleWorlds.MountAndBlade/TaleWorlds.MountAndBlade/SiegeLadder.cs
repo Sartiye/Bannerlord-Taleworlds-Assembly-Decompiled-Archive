@@ -75,27 +75,11 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		NumberOfStates
 	}
 
-	private static readonly ActionIndexCache act_usage_ladder_lift_from_left_1_start = ActionIndexCache.Create("act_usage_ladder_lift_from_left_1_start");
-
-	private static readonly ActionIndexCache act_usage_ladder_lift_from_left_2_start = ActionIndexCache.Create("act_usage_ladder_lift_from_left_2_start");
-
 	public const float ClimbingLimitRadian = -0.20135832f;
-
-	private static readonly ActionIndexCache act_usage_ladder_lift_from_right_1_start = ActionIndexCache.Create("act_usage_ladder_lift_from_right_1_start");
 
 	public const float ClimbingLimitDegree = -11.536982f;
 
-	private static readonly ActionIndexCache act_usage_ladder_lift_from_right_2_start = ActionIndexCache.Create("act_usage_ladder_lift_from_right_2_start");
-
 	public const float AutomaticUseActivationRange = 20f;
-
-	private static readonly ActionIndexCache act_usage_ladder_pick_up_fork_begin = ActionIndexCache.Create("act_usage_ladder_pick_up_fork_begin");
-
-	private static readonly ActionIndexCache act_usage_ladder_pick_up_fork_end = ActionIndexCache.Create("act_usage_ladder_pick_up_fork_end");
-
-	private static readonly ActionIndexCache act_usage_ladder_push_back = ActionIndexCache.Create("act_usage_ladder_push_back");
-
-	private static readonly ActionIndexCache act_usage_ladder_push_back_stopped = ActionIndexCache.Create("act_usage_ladder_push_back_stopped");
 
 	public string AttackerTag = "attacker";
 
@@ -233,6 +217,12 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 
 	public int OnWallNavMeshId { get; private set; }
 
+	public MissionObject TargetCastlePosition => _targetWallSegment;
+
+	public FormationAI.BehaviorSide WeaponSide { get; private set; }
+
+	public float SiegeWeaponPriority => 8f;
+
 	public int OverTheWallNavMeshID => 13;
 
 	public LadderState State
@@ -258,12 +248,6 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		}
 	}
 
-	public MissionObject TargetCastlePosition => _targetWallSegment;
-
-	public FormationAI.BehaviorSide WeaponSide { get; private set; }
-
-	public float SiegeWeaponPriority => 8f;
-
 	public bool HoldLadders => false;
 
 	public bool SendLadders => State != LadderState.OnLand;
@@ -280,27 +264,27 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		_aiBarriers = base.Scene.FindEntitiesWithTag(BarrierTagToRemove).ToList();
 		if (IndestructibleMerlonsTag != string.Empty)
 		{
-			foreach (GameEntity item in base.Scene.FindEntitiesWithTag(IndestructibleMerlonsTag))
+			foreach (WeakGameEntity item in base.Scene.FindWeakEntitiesWithTag(IndestructibleMerlonsTag))
 			{
 				DestructableComponent firstScriptOfType = item.GetFirstScriptOfType<DestructableComponent>();
 				firstScriptOfType.SetDisabled();
 				firstScriptOfType.CanBeDestroyedInitially = false;
 			}
 		}
-		_attackerStandingPoints = base.GameEntity.CollectObjectsWithTag<StandingPoint>(AttackerTag);
-		_pushingWithForkStandingPoint = base.GameEntity.CollectObjectsWithTag<StandingPointWithWeaponRequirement>(DefenderTag).FirstOrDefault();
+		_attackerStandingPoints = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<StandingPoint>(AttackerTag);
+		_pushingWithForkStandingPoint = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<StandingPointWithWeaponRequirement>(DefenderTag).FirstOrDefault();
 		_pushingWithForkStandingPoint.AddComponent(new DropExtraWeaponOnStopUsageComponent());
-		_forkPickUpStandingPoint = base.GameEntity.CollectObjectsWithTag<StandingPointWithWeaponRequirement>(AmmoPickUpTag).FirstOrDefault();
+		_forkPickUpStandingPoint = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<StandingPointWithWeaponRequirement>(AmmoPickUpTag).FirstOrDefault();
 		_forkPickUpStandingPoint?.SetUsingBattleSide(BattleSideEnum.Defender);
-		_ladderParticleObject = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("particles").FirstOrDefault();
-		_forkEntity = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("push_fork").FirstOrDefault();
+		_ladderParticleObject = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("particles").FirstOrDefault();
+		_forkEntity = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("push_fork").FirstOrDefault();
 		if (base.StandingPoints != null)
 		{
 			foreach (StandingPoint standingPoint in base.StandingPoints)
 			{
 				if (!standingPoint.GameEntity.HasTag(AmmoPickUpTag))
 				{
-					standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(standingPoint.GameEntity.HasTag(DefenderTag) ? act_usage_ladder_push_back_stopped : ActionIndexCache.act_none));
+					standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
 					standingPoint.IsDeactivated = true;
 				}
 			}
@@ -308,23 +292,23 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		_forkItem = Game.Current.ObjectManager.GetObject<ItemObject>(PushForkItemID);
 		_pushingWithForkStandingPoint.InitRequiredWeapon(_forkItem);
 		_forkPickUpStandingPoint.InitGivenWeapon(_forkItem);
-		GameEntity gameEntity = base.GameEntity.CollectChildrenEntitiesWithTag(upStateEntityTag)[0];
-		List<SynchedMissionObject> list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>(downStateEntityTag);
+		WeakGameEntity weakGameEntity = base.GameEntity.CollectChildrenEntitiesWithTag(upStateEntityTag)[0];
+		List<SynchedMissionObject> list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(downStateEntityTag);
 		_ladderObject = list[0];
 		_ladderSkeleton = _ladderObject.GameEntity.Skeleton;
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>(BodyTag);
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(BodyTag);
 		_ladderBodyObject = list[0];
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>(CollisionBodyTag);
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(CollisionBodyTag);
 		_ladderCollisionBodyObject = list[0];
 		_ladderDownFrame = _ladderObject.GameEntity.GetFrame();
 		_turningAngle = _downStateRotationRadian - _ladderDownFrame.rotation.GetEulerAngles().x;
 		_ladderDownFrame.rotation.RotateAboutSide(_turningAngle);
 		_ladderObject.GameEntity.SetFrame(ref _ladderDownFrame);
-		MatrixFrame frame = gameEntity.GetFrame();
+		MatrixFrame frame = weakGameEntity.GetFrame();
 		frame.rotation = Mat3.Identity;
 		frame.rotation.RotateAboutSide(_upStateRotationRadian);
 		_ladderUpFrame = frame;
-		_ladderUpFrame = _ladderObject.GameEntity.Parent.GetFrame().TransformToLocal(_ladderUpFrame);
+		_ladderUpFrame = _ladderObject.GameEntity.Parent.GetFrame().TransformToLocal(in _ladderUpFrame);
 		_ladderInitialGlobalFrame = _ladderObject.GameEntity.GetGlobalFrame();
 		_attackerStandingPointLocalIKFrames = new MatrixFrame[_attackerStandingPoints.Count];
 		MatrixFrame frame2 = _ladderObject.GameEntity.Parent.GetFrame();
@@ -333,16 +317,16 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		State = initialState;
 		for (int i = 0; i < _attackerStandingPoints.Count; i++)
 		{
-			MatrixFrame frame3 = _attackerStandingPoints[i].GameEntity.GetFrame();
-			frame3 = matrixFrame.TransformToParent(frame3);
-			frame3 = frame2.TransformToLocal(frame3);
-			_attackerStandingPoints[i].GameEntity.SetFrame(ref frame3);
-			_attackerStandingPointLocalIKFrames[i] = _attackerStandingPoints[i].GameEntity.GetGlobalFrame().TransformToLocal(_ladderInitialGlobalFrame);
+			MatrixFrame m = _attackerStandingPoints[i].GameEntity.GetFrame();
+			m = matrixFrame.TransformToParent(in m);
+			m = frame2.TransformToLocal(in m);
+			_attackerStandingPoints[i].GameEntity.SetFrame(ref m);
+			_attackerStandingPointLocalIKFrames[i] = _attackerStandingPoints[i].GameEntity.GetGlobalFrame().TransformToLocal(in _ladderInitialGlobalFrame);
 			_attackerStandingPoints[i].AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 		}
 		CalculateNavigationAndPhysics();
-		InitialWaitPosition = base.GameEntity.CollectChildrenEntitiesWithTag(InitialWaitPositionTag).FirstOrDefault();
-		foreach (GameEntity item2 in base.Scene.FindEntitiesWithTag(_targetWallSegmentTag))
+		InitialWaitPosition = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag(InitialWaitPositionTag));
+		foreach (WeakGameEntity item2 in base.Scene.FindWeakEntitiesWithTag(_targetWallSegmentTag))
 		{
 			WallSegment firstScriptOfType2 = item2.GetFirstScriptOfType<WallSegment>();
 			if (firstScriptOfType2 != null)
@@ -369,7 +353,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		}
 		SetForcedUse(value: false);
 		LadderQueueManager[] array = base.GameEntity.GetScriptComponents<LadderQueueManager>().ToArray();
-		MatrixFrame managedFrame = base.GameEntity.GetGlobalFrame().TransformToLocal(_ladderObject.GameEntity.GetGlobalFrame());
+		MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
+		MatrixFrame m2 = _ladderObject.GameEntity.GetGlobalFrame();
+		MatrixFrame managedFrame = globalFrame.TransformToLocal(in m2);
 		int num = 0;
 		int num2 = 1;
 		for (int num3 = base.GameEntity.Name.Length - 1; num3 >= 0; num3--)
@@ -392,11 +378,11 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		if (array.Length > 1 && _pushingWithForkStandingPoint != null)
 		{
 			_queueManagerForDefenders = array[1];
-			MatrixFrame globalFrame = _pushingWithForkStandingPoint.GameEntity.GetGlobalFrame();
-			globalFrame.rotation.RotateAboutSide(System.MathF.PI / 2f);
-			globalFrame.origin -= globalFrame.rotation.u;
-			globalFrame = base.GameEntity.GetGlobalFrame().TransformToLocal(globalFrame);
-			_queueManagerForDefenders.Initialize(OnWallNavMeshId, globalFrame, managedFrame.rotation.f, BattleSideEnum.Defender, 1, System.MathF.PI * 9f / 10f, 0.5f, 0.8f, 6f, 5f, blockUsage: true, 0.8f, float.MaxValue, 5f, doesManageMultipleIDs: false, -2, -2, 0, 0);
+			MatrixFrame m3 = _pushingWithForkStandingPoint.GameEntity.GetGlobalFrame();
+			m3.rotation.RotateAboutSide(System.MathF.PI / 2f);
+			m3.origin -= m3.rotation.u;
+			m3 = base.GameEntity.GetGlobalFrame().TransformToLocal(in m3);
+			_queueManagerForDefenders.Initialize(OnWallNavMeshId, m3, managedFrame.rotation.f, BattleSideEnum.Defender, 1, System.MathF.PI * 9f / 10f, 0.5f, 0.8f, 6f, 5f, blockUsage: true, 0.8f, float.MaxValue, 5f, doesManageMultipleIDs: false, -2, -2, 0, 0);
 		}
 		base.GameEntity.Scene.MarkFacesWithIdAsLadder(OnWallNavMeshId, isLadder: true);
 		EnemyRangeToStopUsing = 0f;
@@ -411,7 +397,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		SetUpStateVisibility(isVisible: false);
 		SetScriptComponentToTick(GetTickRequirement());
 		bool flag = false;
-		foreach (GameEntity entityAndChild in _ladderObject.GameEntity.GetEntityAndChildren())
+		foreach (WeakGameEntity entityAndChild in _ladderObject.GameEntity.GetEntityAndChildren())
 		{
 			PhysicsShape bodyShape = entityAndChild.GetBodyShape();
 			if (bodyShape != null)
@@ -444,7 +430,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 
 	private void OnLadderStateChange()
 	{
-		GameEntity gameEntity = _ladderObject.GameEntity;
+		WeakGameEntity gameEntity = _ladderObject.GameEntity;
 		if (State != LadderState.OnWall)
 		{
 			SetVisibilityOfAIBarriers(visibility: true);
@@ -517,7 +503,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		case LadderState.BeingRaisedStopped:
 		{
 			_animationState = LadderAnimationState.PhysicallyDynamic;
-			MatrixFrame frame2 = gameEntity.GetGlobalFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+			MatrixFrame m = gameEntity.GetGlobalFrame();
+			MatrixFrame globalFrame = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+			MatrixFrame frame2 = m.TransformToParent(in globalFrame);
 			frame2.rotation.RotateAboutForward(System.MathF.PI / 2f);
 			_fallAngularSpeed = GetCurrentLadderAngularSpeed(_raiseAnimationIndex);
 			float animationParameterAtChannel2 = _ladderSkeleton.GetAnimationParameterAtChannel(0);
@@ -536,7 +524,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		case LadderState.BeingPushedBackStopped:
 		{
 			_animationState = LadderAnimationState.PhysicallyDynamic;
-			MatrixFrame frame = gameEntity.GetGlobalFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+			MatrixFrame globalFrame = gameEntity.GetGlobalFrame();
+			MatrixFrame m = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+			MatrixFrame frame = globalFrame.TransformToParent(in m);
 			frame.rotation.RotateAboutForward(System.MathF.PI / 2f);
 			_fallAngularSpeed = GetCurrentLadderAngularSpeed(_pushBackAnimationIndex);
 			float animationParameterAtChannel = _ladderSkeleton.GetAnimationParameterAtChannel(0);
@@ -580,7 +570,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 	{
 		if (!GameNetwork.IsClientOrReplay)
 		{
-			bool flag = State != LadderState.OnWall;
+			bool flag = ((!_isNavigationMeshDisabled) ? (State == LadderState.OnLand || State == LadderState.FallToLand) : (State != LadderState.FallToWall && State != LadderState.OnWall));
 			if (_isNavigationMeshDisabled != flag)
 			{
 				_isNavigationMeshDisabled = flag;
@@ -592,25 +582,29 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		if (_isLadderPhysicsDisabled != flag2)
 		{
 			_isLadderPhysicsDisabled = flag2;
-			_ladderBodyObject.GameEntity.SetPhysicsState(!_isLadderPhysicsDisabled, setChildren: true);
+			_ladderBodyObject.GameEntity.SetVisibilityExcludeParents(!_isLadderPhysicsDisabled);
 		}
 		if (!flag2)
 		{
-			MatrixFrame frame = _ladderObject.GameEntity.GetGlobalFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+			MatrixFrame globalFrame = _ladderObject.GameEntity.GetGlobalFrame();
+			MatrixFrame m = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+			MatrixFrame frame = globalFrame.TransformToParent(in m);
 			frame.rotation.RotateAboutForward(System.MathF.PI / 2f);
 			_ladderBodyObject.GameEntity.SetGlobalFrame(in frame);
 			flag3 = State != LadderState.BeingPushedBack || frame.rotation.f.z < 0f;
 			if (!flag3)
 			{
 				float y = TaleWorlds.Library.MathF.Min(2.01f - frame.rotation.u.z * 2f, 1f);
-				frame.rotation.ApplyScaleLocal(new Vec3(1f, y, 1f));
+				ref Mat3 rotation = ref frame.rotation;
+				Vec3 scaleAmountXYZ = new Vec3(1f, y, 1f);
+				rotation.ApplyScaleLocal(in scaleAmountXYZ);
 				_ladderCollisionBodyObject.GameEntity.SetGlobalFrame(in frame);
 			}
 		}
 		if (_isLadderCollisionPhysicsDisabled != flag3)
 		{
 			_isLadderCollisionPhysicsDisabled = flag3;
-			_ladderCollisionBodyObject.GameEntity.SetPhysicsState(!_isLadderCollisionPhysicsDisabled, setChildren: true);
+			_ladderCollisionBodyObject.GameEntity.SetVisibilityExcludeParents(!_isLadderCollisionPhysicsDisabled);
 		}
 	}
 
@@ -621,20 +615,20 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 
 	private ActionIndexCache GetActionCodeToUseForStandingPoint(StandingPoint standingPoint)
 	{
-		GameEntity gameEntity = standingPoint.GameEntity;
+		WeakGameEntity gameEntity = standingPoint.GameEntity;
 		if (!gameEntity.HasTag(RightStandingPointTag))
 		{
 			if (!gameEntity.HasTag(FrontStandingPointTag))
 			{
-				return act_usage_ladder_lift_from_left_2_start;
+				return ActionIndexCache.act_usage_ladder_lift_from_left_2_start;
 			}
-			return act_usage_ladder_lift_from_left_1_start;
+			return ActionIndexCache.act_usage_ladder_lift_from_left_1_start;
 		}
 		if (!gameEntity.HasTag(FrontStandingPointTag))
 		{
-			return act_usage_ladder_lift_from_right_2_start;
+			return ActionIndexCache.act_usage_ladder_lift_from_right_2_start;
 		}
-		return act_usage_ladder_lift_from_right_1_start;
+		return ActionIndexCache.act_usage_ladder_lift_from_right_1_start;
 	}
 
 	public override bool IsDisabledForBattleSide(BattleSideEnum sideEnum)
@@ -724,7 +718,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		}
 		int num = 0;
 		int num2 = 0;
-		GameEntity gameEntity = _ladderObject.GameEntity;
+		WeakGameEntity gameEntity = _ladderObject.GameEntity;
 		if (!GameNetwork.IsClientOrReplay)
 		{
 			if (_queueManagerForAttackers != null)
@@ -772,7 +766,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 			}
 			foreach (StandingPoint standingPoint in base.StandingPoints)
 			{
-				GameEntity gameEntity2 = standingPoint.GameEntity;
+				WeakGameEntity gameEntity2 = standingPoint.GameEntity;
 				if (!gameEntity2.HasTag(AmmoPickUpTag))
 				{
 					bool flag2 = false;
@@ -780,19 +774,25 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 					{
 						float animationParameterAtChannel = _ladderSkeleton.GetAnimationParameterAtChannel(0);
 						float animationDuration = MBAnimation.GetAnimationDuration(_ladderSkeleton.GetAnimationIndexAtChannel(0));
-						int animationIndex = MBActionSet.GetAnimationIndexOfAction(actionIndexCache: GetActionCodeToUseForStandingPoint(standingPoint), actionSet: MBGlobals.GetActionSetWithSuffix(Game.Current.DefaultMonster, isFemale: false, "_warrior"));
-						flag2 = animationParameterAtChannel * animationDuration / TaleWorlds.Library.MathF.Max(MBAnimation.GetAnimationDuration(animationIndex), 0.01f) > 0.98f;
+						ActionIndexCache actionIndexCache = GetActionCodeToUseForStandingPoint(standingPoint);
+						int animationIndexOfAction = MBActionSet.GetAnimationIndexOfAction(MBGlobals.GetActionSetWithSuffix(Game.Current.DefaultMonster, isFemale: false, "_warrior"), in actionIndexCache);
+						flag2 = animationParameterAtChannel * animationDuration / TaleWorlds.Library.MathF.Max(MBAnimation.GetAnimationDuration(animationIndexOfAction), 0.01f) > 0.98f;
+					}
+					if (gameEntity2.HasTag(DefenderTag) && !CanLadderBePushed())
+					{
+						standingPoint.UserAgent?.SetActionChannel(0, in ActionIndexCache.act_usage_ladder_push_back_stopped, ignorePriority: false, (AnimFlags)0uL);
 					}
 					standingPoint.SetIsDeactivatedSynched(flag2 || State == LadderState.BeingPushedBackStopped || (gameEntity2.HasTag(AttackerTag) && (State == LadderState.OnWall || State == LadderState.FallToWall || (State == LadderState.BeingPushedBack && _animationState != LadderAnimationState.PhysicallyDynamic) || State == LadderState.BeingPushedBackStartFromWall)) || (gameEntity2.HasTag(DefenderTag) && (State == LadderState.OnLand || _animationState == LadderAnimationState.PhysicallyDynamic || State == LadderState.BeingRaisedStopped || flag || State == LadderState.FallToLand || State == LadderState.BeingRaised || State == LadderState.BeingRaisedStartFromGround || !CanLadderBePushed())));
+					num = ((_pushingWithForkStandingPoint.HasUser && !_pushingWithForkStandingPoint.UserAgent.IsInBeingStruckAction) ? 1 : 0);
 				}
 			}
 			if (_forkPickUpStandingPoint.HasUser)
 			{
 				Agent userAgent = _forkPickUpStandingPoint.UserAgent;
-				ActionIndexValueCache currentActionValue = userAgent.GetCurrentActionValue(1);
-				if (!(currentActionValue == act_usage_ladder_pick_up_fork_begin))
+				ActionIndexCache currentAction = userAgent.GetCurrentAction(1);
+				if (!(currentAction == ActionIndexCache.act_usage_ladder_pick_up_fork_begin))
 				{
-					if (currentActionValue == act_usage_ladder_pick_up_fork_end)
+					if (currentAction == ActionIndexCache.act_usage_ladder_pick_up_fork_end)
 					{
 						MissionWeapon weapon = new MissionWeapon(_forkItem, null, null);
 						userAgent.EquipWeaponToExtraSlotAndWield(ref weapon);
@@ -805,17 +805,17 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 							StandingPoint suitableStandingPointFor = GetSuitableStandingPointFor(userAgent.Team.Side, userAgent);
 							if (suitableStandingPointFor != null)
 							{
-								((IDetachment)this).AddAgent(userAgent, -1);
+								((IDetachment)this).AddAgent(userAgent, -1, Agent.AIScriptedFrameFlags.None);
 								if (userAgent.Formation != null)
 								{
 									userAgent.Formation.DetachUnit(userAgent, ((IDetachment)this).IsLoose);
 									userAgent.Detachment = this;
-									userAgent.DetachmentWeight = GetWeightOfStandingPoint(suitableStandingPointFor);
+									userAgent.SetDetachmentWeight(GetWeightOfStandingPoint(suitableStandingPointFor));
 								}
 							}
 						}
 					}
-					else if (!_forkPickUpStandingPoint.UserAgent.SetActionChannel(1, act_usage_ladder_pick_up_fork_begin, ignorePriority: false, 0uL))
+					else if (!_forkPickUpStandingPoint.UserAgent.SetActionChannel(1, in ActionIndexCache.act_usage_ladder_pick_up_fork_begin, ignorePriority: false, (AnimFlags)0uL))
 					{
 						_forkPickUpStandingPoint.UserAgent.StopUsingGameObject();
 					}
@@ -858,17 +858,17 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 					if (attackerStandingPoint2.HasUser)
 					{
 						MBActionSet actionSet = attackerStandingPoint2.UserAgent.ActionSet;
-						ActionIndexCache actionCodeToUseForStandingPoint2 = GetActionCodeToUseForStandingPoint(attackerStandingPoint2);
-						ActionIndexValueCache currentActionValue2 = attackerStandingPoint2.UserAgent.GetCurrentActionValue(1);
-						if (currentActionValue2 == actionCodeToUseForStandingPoint2)
+						ActionIndexCache actionIndexCache2 = GetActionCodeToUseForStandingPoint(attackerStandingPoint2);
+						ActionIndexCache actionIndexCache3 = attackerStandingPoint2.UserAgent.GetCurrentAction(1);
+						if (actionIndexCache3 == actionIndexCache2)
 						{
-							int animationIndexOfAction = MBActionSet.GetAnimationIndexOfAction(actionSet, actionCodeToUseForStandingPoint2);
-							float progress = MBMath.ClampFloat(animationParameterAtChannel4 * animationDuration2 / TaleWorlds.Library.MathF.Max(MBAnimation.GetAnimationDuration(animationIndexOfAction), 0.01f), 0f, 1f);
+							int animationIndexOfAction2 = MBActionSet.GetAnimationIndexOfAction(actionSet, in actionIndexCache2);
+							float progress = MBMath.ClampFloat(animationParameterAtChannel4 * animationDuration2 / TaleWorlds.Library.MathF.Max(MBAnimation.GetAnimationDuration(animationIndexOfAction2), 0.01f), 0f, 1f);
 							attackerStandingPoint2.UserAgent.SetCurrentActionProgress(1, progress);
 						}
-						else if (MBAnimation.GetActionType(currentActionValue2) == Agent.ActionCodeType.LadderRaiseEnd)
+						else if (MBAnimation.GetActionType(actionIndexCache3) == Agent.ActionCodeType.LadderRaiseEnd)
 						{
-							float animationDuration3 = MBAnimation.GetAnimationDuration(MBActionSet.GetAnimationIndexOfAction(actionSet, currentActionValue2));
+							float animationDuration3 = MBAnimation.GetAnimationDuration(MBActionSet.GetAnimationIndexOfAction(actionSet, in actionIndexCache3));
 							float num4 = animationDuration2 - animationDuration3;
 							float progress2 = MBMath.ClampFloat((animationParameterAtChannel4 * animationDuration2 - num4) / TaleWorlds.Library.MathF.Max(animationDuration3, 0.01f), 0f, 1f);
 							attackerStandingPoint2.UserAgent.SetCurrentActionProgress(1, progress2);
@@ -897,17 +897,17 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 							{
 								continue;
 							}
-							ActionIndexCache actionCodeToUseForStandingPoint3 = GetActionCodeToUseForStandingPoint(attackerStandingPoint3);
+							ActionIndexCache actionIndexCache4 = GetActionCodeToUseForStandingPoint(attackerStandingPoint3);
 							Agent userAgent3 = attackerStandingPoint3.UserAgent;
-							ActionIndexValueCache currentActionValue3 = userAgent3.GetCurrentActionValue(1);
-							if (currentActionValue3 != actionCodeToUseForStandingPoint3 && MBAnimation.GetActionType(currentActionValue3) != Agent.ActionCodeType.LadderRaiseEnd)
+							ActionIndexCache currentAction2 = userAgent3.GetCurrentAction(1);
+							if (currentAction2 != actionIndexCache4 && MBAnimation.GetActionType(currentAction2) != Agent.ActionCodeType.LadderRaiseEnd)
 							{
-								if (!userAgent3.SetActionChannel(1, actionCodeToUseForStandingPoint3, ignorePriority: false, 0uL) && !userAgent3.IsAIControlled)
+								if (!userAgent3.SetActionChannel(1, in actionIndexCache4, ignorePriority: false, (AnimFlags)0uL) && !userAgent3.IsAIControlled)
 								{
 									userAgent3.StopUsingGameObject(isSuccessful: false);
 								}
 							}
-							else if (MBAnimation.GetActionType(currentActionValue3) == Agent.ActionCodeType.LadderRaiseEnd)
+							else if (MBAnimation.GetActionType(currentAction2) == Agent.ActionCodeType.LadderRaiseEnd)
 							{
 								attackerStandingPoint3.UserAgent.ClearTargetFrame();
 							}
@@ -921,7 +921,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				}
 				if (!flag4)
 				{
-					MatrixFrame frame3 = gameEntity.GetGlobalFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+					MatrixFrame globalFrame = gameEntity.GetGlobalFrame();
+					MatrixFrame m = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+					MatrixFrame frame3 = globalFrame.TransformToParent(in m);
 					frame3.rotation.RotateAboutForward(System.MathF.PI / 2f);
 					if ((animationParameterAtChannel4 > 0.9f && animationParameterAtChannel4 != 1f) || frame3.rotation.f.z <= 0.2f)
 					{
@@ -945,7 +947,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				MatrixFrame frame4 = gameEntity.GetFrame();
 				frame4.rotation.RotateAboutSide(_fallAngularSpeed * dt);
 				gameEntity.SetFrame(ref frame4);
-				MatrixFrame matrixFrame2 = gameEntity.GetFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+				MatrixFrame m = gameEntity.GetFrame();
+				MatrixFrame globalFrame = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+				MatrixFrame matrixFrame2 = m.TransformToParent(in globalFrame);
 				float num5 = Vec3.DotProduct(matrixFrame2.rotation.f, _ladderUpFrame.rotation.f);
 				if (_fallAngularSpeed < 0f && num5 > 0.95f && num5 < _lastDotProductOfAnimationAndTargetRotation)
 				{
@@ -969,13 +973,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 			if (_animationState == LadderAnimationState.Animated)
 			{
 				float animationParameterAtChannel2 = _ladderSkeleton.GetAnimationParameterAtChannel(0);
-				if (_pushingWithForkStandingPoint.HasUser)
+				if (_pushingWithForkStandingPoint.HasUser && _pushingWithForkStandingPoint.UserAgent.GetCurrentAction(1) == ActionIndexCache.act_usage_ladder_push_back)
 				{
-					ActionIndexCache actionIndexCache = act_usage_ladder_push_back;
-					if (_pushingWithForkStandingPoint.UserAgent.GetCurrentActionValue(1) == actionIndexCache)
-					{
-						_pushingWithForkStandingPoint.UserAgent.SetCurrentActionProgress(1, animationParameterAtChannel2);
-					}
+					_pushingWithForkStandingPoint.UserAgent.SetCurrentActionProgress(1, animationParameterAtChannel2);
 				}
 				bool flag3 = false;
 				if (!GameNetwork.IsClientOrReplay)
@@ -995,9 +995,8 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 						}
 						if (_pushingWithForkStandingPoint.HasUser)
 						{
-							ActionIndexCache actionIndexCache2 = act_usage_ladder_push_back;
 							Agent userAgent2 = _pushingWithForkStandingPoint.UserAgent;
-							if (userAgent2.GetCurrentActionValue(1) != actionIndexCache2 && animationParameterAtChannel2 < 1f && !userAgent2.SetActionChannel(1, actionIndexCache2, ignorePriority: false, 0uL) && !userAgent2.IsAIControlled)
+							if (userAgent2.GetCurrentAction(1) != ActionIndexCache.act_usage_ladder_push_back && animationParameterAtChannel2 < 1f && !userAgent2.SetActionChannel(1, in ActionIndexCache.act_usage_ladder_push_back, ignorePriority: false, (AnimFlags)0uL) && !userAgent2.IsAIControlled)
 							{
 								userAgent2.StopUsingGameObject(isSuccessful: false);
 							}
@@ -1011,7 +1010,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				}
 				if (!flag3)
 				{
-					MatrixFrame frame = gameEntity.GetGlobalFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+					MatrixFrame globalFrame = gameEntity.GetGlobalFrame();
+					MatrixFrame m = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+					MatrixFrame frame = globalFrame.TransformToParent(in m);
 					frame.rotation.RotateAboutForward(System.MathF.PI / 2f);
 					if (animationParameterAtChannel2 > 0.9999f || frame.rotation.f.z >= 0f)
 					{
@@ -1035,7 +1036,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				MatrixFrame frame2 = gameEntity.GetFrame();
 				frame2.rotation.RotateAboutSide(_fallAngularSpeed * dt);
 				gameEntity.SetFrame(ref frame2);
-				MatrixFrame matrixFrame = gameEntity.GetFrame().TransformToParent(_ladderSkeleton.GetBoneEntitialFrameWithIndex(0));
+				MatrixFrame m = gameEntity.GetFrame();
+				MatrixFrame globalFrame = _ladderSkeleton.GetBoneEntitialFrameWithIndex(0);
+				MatrixFrame matrixFrame = m.TransformToParent(in globalFrame);
 				matrixFrame.rotation.RotateAboutForward(System.MathF.PI / 2f);
 				float num3 = Vec3.DotProduct(matrixFrame.rotation.f, _ladderDownFrame.rotation.f);
 				if (_fallAngularSpeed > 0f && num3 > 0.95f && num3 < _lastDotProductOfAnimationAndTargetRotation)
@@ -1056,7 +1059,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 			}
 			break;
 		default:
-			Debug.FailedAssert("Invalid ladder action state.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeLadder.cs", "OnTick", 1259);
+			Debug.FailedAssert("Invalid ladder action state.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeLadder.cs", "OnTick", 1258);
 			break;
 		}
 		CalculateNavigationAndPhysics();
@@ -1076,7 +1079,11 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				if (_attackerStandingPoints[i].UserAgent.GetCurrentAction(1) != GetActionCodeToUseForStandingPoint(_attackerStandingPoints[i]))
 				{
 					MatrixFrame localIKFrame = _attackerStandingPointLocalIKFrames[i];
-					localIKFrame.rotation = Mat3.Lerp(localIKFrame.rotation, _ladderInitialGlobalFrame.TransformToLocal(_attackerStandingPoints[i].UserAgent.Frame).rotation, TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(0f, 1f - _turningAngle * 1.2f, TaleWorlds.Library.MathF.Pow(_attackerStandingPoints[i].UserAgent.GetCurrentActionProgress(1), 6f)), 0f, 1f));
+					ref Mat3 rotation = ref localIKFrame.rotation;
+					ref MatrixFrame ladderInitialGlobalFrame = ref _ladderInitialGlobalFrame;
+					MatrixFrame m = _attackerStandingPoints[i].UserAgent.Frame;
+					MatrixFrame matrixFrame = ladderInitialGlobalFrame.TransformToLocal(in m);
+					localIKFrame.rotation = Mat3.Lerp(in rotation, in matrixFrame.rotation, TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(0f, 1f - _turningAngle * 1.2f, TaleWorlds.Library.MathF.Pow(_attackerStandingPoints[i].UserAgent.GetCurrentActionProgress(1), 6f)), 0f, 1f));
 					_attackerStandingPoints[i].UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in localIKFrame, in _ladderInitialGlobalFrame);
 				}
 				else
@@ -1099,10 +1106,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		}
 		float num = 20f + (base.ForcedUse ? 3f : 0f);
 		num *= num;
-		GameEntity gameEntity = base.GameEntity;
 		Mission.TeamCollection teams = Mission.Current.Teams;
 		int count = teams.Count;
-		Vec3 globalPosition = gameEntity.GlobalPosition;
+		Vec3 globalPosition = base.GameEntity.GlobalPosition;
 		for (int i = 0; i < count; i++)
 		{
 			Team team = teams[i];
@@ -1113,7 +1119,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 			SetForcedUse(value: false);
 			foreach (Formation item in team.FormationsIncludingSpecialAndEmpty)
 			{
-				if (item.CountOfUnits > 0 && item.QuerySystem.MedianPosition.AsVec2.DistanceSquared(globalPosition.AsVec2) < num && item.QuerySystem.MedianPosition.GetNavMeshZ() - globalPosition.z < 4f)
+				if (item.CountOfUnits > 0 && item.CachedMedianPosition.AsVec2.DistanceSquared(globalPosition.AsVec2) < num && item.CachedMedianPosition.GetNavMeshZ() - globalPosition.z < 4f)
 				{
 					SetForcedUse(value: true);
 					break;
@@ -1153,7 +1159,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 	private bool CanLadderBePushed()
 	{
 		float num = 0f;
-		GameEntity gameEntity = _ladderObject.GameEntity;
+		WeakGameEntity gameEntity = _ladderObject.GameEntity;
 		gameEntity.GetPhysicsMinMax(includeChildren: true, out var bbmin, out var bbmax, returnLocal: false);
 		float searchRadius = (bbmax - bbmin).AsVec2.Length * 0.5f;
 		AgentProximityMap.ProximityMapSearchStruct searchStruct = AgentProximityMap.BeginSearch(Mission.Current, gameEntity.GlobalPosition.AsVec2, searchRadius);
@@ -1228,13 +1234,13 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		}
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
 		if (!gameEntity.HasTag(AmmoPickUpTag))
 		{
-			return new TextObject("{=G0AWk1rX}Ladder").ToString();
+			return new TextObject("{=G0AWk1rX}Ladder");
 		}
-		return new TextObject("{=F9AQxCax}Fork").ToString();
+		return new TextObject("{=F9AQxCax}Fork");
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
@@ -1263,12 +1269,12 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 
 	bool IOrderableWithInteractionArea.IsPointInsideInteractionArea(Vec3 point)
 	{
-		GameEntity gameEntity = base.GameEntity.CollectChildrenEntitiesWithTag("ui_interaction").FirstOrDefault();
-		if (gameEntity == null)
+		WeakGameEntity weakGameEntity = base.GameEntity.CollectChildrenEntitiesWithTag("ui_interaction").FirstOrDefault();
+		if (!weakGameEntity.IsValid)
 		{
 			return false;
 		}
-		return gameEntity.GlobalPosition.AsVec2.DistanceSquared(point.AsVec2) < 25f;
+		return weakGameEntity.GlobalPosition.AsVec2.DistanceSquared(point.AsVec2) < 25f;
 	}
 
 	public override TargetFlags GetTargetFlags()
@@ -1316,6 +1322,27 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		_spawnedFromSpawner = true;
 	}
 
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	{
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		SiegeLadderRecord siegeLadderRecord = (SiegeLadderRecord)(object)synchedMissionObjectReadableRecord.Item2;
+		initialState = ((!siegeLadderRecord.IsStateLand) ? LadderState.OnWall : LadderState.OnLand);
+		_state = (LadderState)siegeLadderRecord.State;
+		_animationState = (LadderAnimationState)siegeLadderRecord.AnimationState;
+		_fallAngularSpeed = siegeLadderRecord.FallAngularSpeed;
+		_lastDotProductOfAnimationAndTargetRotation = -1000f;
+		siegeLadderRecord.LadderFrame.rotation.Orthonormalize();
+		WeakGameEntity gameEntity = _ladderObject.GameEntity;
+		MatrixFrame frame = siegeLadderRecord.LadderFrame;
+		gameEntity.SetGlobalFrame(in frame);
+		if (siegeLadderRecord.LadderAnimationIndex >= 0)
+		{
+			_ladderSkeleton.SetAnimationAtChannel(siegeLadderRecord.LadderAnimationIndex, 0);
+			_ladderSkeleton.SetAnimationParameterAtChannel(0, MBMath.ClampFloat(siegeLadderRecord.LadderAnimationProgress, 0f, 1f));
+			_ladderSkeleton.ForceUpdateBoneFrames();
+		}
+	}
+
 	public void AssignParametersFromSpawner(string sideTag, string targetWallSegment, int onWallNavMeshId, float downStateRotationRadian, float upperStateRotationRadian, string barrierTagToRemove, string indestructibleMerlonsTag)
 	{
 		_sideTag = sideTag;
@@ -1327,30 +1354,14 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		IndestructibleMerlonsTag = indestructibleMerlonsTag;
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
-	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
-		SiegeLadderRecord siegeLadderRecord = (SiegeLadderRecord)(object)synchedMissionObjectReadableRecord.Item2;
-		initialState = ((!siegeLadderRecord.IsStateLand) ? LadderState.OnWall : LadderState.OnLand);
-		_state = (LadderState)siegeLadderRecord.State;
-		_animationState = (LadderAnimationState)siegeLadderRecord.AnimationState;
-		_fallAngularSpeed = siegeLadderRecord.FallAngularSpeed;
-		_lastDotProductOfAnimationAndTargetRotation = -1000f;
-		siegeLadderRecord.LadderFrame.rotation.Orthonormalize();
-		GameEntity gameEntity = _ladderObject.GameEntity;
-		MatrixFrame frame = siegeLadderRecord.LadderFrame;
-		gameEntity.SetGlobalFrame(in frame);
-		if (siegeLadderRecord.LadderAnimationIndex >= 0)
-		{
-			_ladderSkeleton.SetAnimationAtChannel(siegeLadderRecord.LadderAnimationIndex, 0);
-			_ladderSkeleton.SetAnimationParameterAtChannel(0, MBMath.ClampFloat(siegeLadderRecord.LadderAnimationProgress, 0f, 1f));
-			_ladderSkeleton.ForceUpdateBoneFrames();
-		}
-	}
-
 	public bool GetNavmeshFaceIds(out List<int> navmeshFaceIds)
 	{
 		navmeshFaceIds = new List<int> { OnWallNavMeshId };
 		return true;
+	}
+
+	public void OnFormationFrameChanged(Agent agent, bool hasFrame, WorldPosition position)
+	{
+		_queueManagerForAttackers.OnFormationFrameChanged(agent, hasFrame, position);
 	}
 }

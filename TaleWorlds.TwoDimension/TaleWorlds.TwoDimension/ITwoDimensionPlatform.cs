@@ -12,11 +12,19 @@ public interface ITwoDimensionPlatform
 
 	float ApplicationTime { get; }
 
-	void Draw(float x, float y, Material material, DrawObject2D drawObject2D, int layer);
+	void OnFrameBegin();
+
+	void OnFrameEnd();
+
+	void Clear();
+
+	void DrawImage(SimpleMaterial material, in ImageDrawObject drawObject2D, int layer);
+
+	void DrawText(TextMaterial material, in TextDrawObject drawObject2D, int layer);
 
 	void SetScissor(ScissorTestInfo scissorTestInfo);
 
-	void ResetScissor();
+	void ResetScissors();
 
 	void PlaySound(string soundName);
 

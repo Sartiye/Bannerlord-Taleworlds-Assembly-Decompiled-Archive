@@ -26,7 +26,6 @@ public class NativeOptions
 		VoiceOverVolume,
 		SoundDevice,
 		MaxSimultaneousSoundEventCount,
-		SoundOutput,
 		SoundPreset,
 		KeepSoundInBackground,
 		SoundOcclusion,
@@ -92,6 +91,8 @@ public class NativeOptions
 		ExposureCompensation,
 		DynamicResolution,
 		DynamicResolutionTarget,
+		FSR,
+		PhysicsTickRate,
 		NumOfOptionTypes,
 		TotalOptions
 	}
@@ -113,7 +114,7 @@ public class NativeOptions
 				_videoOptions = new List<NativeOptionData>();
 				for (NativeOptionsType nativeOptionsType = NativeOptionsType.None; nativeOptionsType < NativeOptionsType.TotalOptions; nativeOptionsType++)
 				{
-					if ((uint)(nativeOptionsType - 20) <= 7u || nativeOptionsType == NativeOptionsType.SharpenAmount)
+					if ((uint)(nativeOptionsType - 19) <= 7u || nativeOptionsType == NativeOptionsType.SharpenAmount)
 					{
 						_videoOptions.Add(new NativeNumericOptionData(nativeOptionsType));
 					}
@@ -156,6 +157,7 @@ public class NativeOptions
 					case NativeOptionsType.Antialiasing:
 					case NativeOptionsType.LightingQuality:
 					case NativeOptionsType.DecalQuality:
+					case NativeOptionsType.PhysicsTickRate:
 						_graphicsOptions.Add(new NativeSelectionOptionData(nativeOptionsType));
 						break;
 					case NativeOptionsType.DLSS:
@@ -178,31 +180,31 @@ public class NativeOptions
 						_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						break;
 					case NativeOptionsType.PostFXChromaticAberration:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(64))
-						{
-							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
-						}
-						break;
-					case NativeOptionsType.PostFXHexagonVignette:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(66))
-						{
-							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
-						}
-						break;
-					case NativeOptionsType.PostFXLensFlare:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(62))
-						{
-							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
-						}
-						break;
-					case NativeOptionsType.PostFXStreaks:
 						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(63))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
 						break;
-					case NativeOptionsType.PostFXVignette:
+					case NativeOptionsType.PostFXHexagonVignette:
 						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(65))
+						{
+							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
+						}
+						break;
+					case NativeOptionsType.PostFXLensFlare:
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(61))
+						{
+							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
+						}
+						break;
+					case NativeOptionsType.PostFXStreaks:
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(62))
+						{
+							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
+						}
+						break;
+					case NativeOptionsType.PostFXVignette:
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(64))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
@@ -284,7 +286,7 @@ public class NativeOptions
 
 	public static int GetGameKeys(int keyType, int i)
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "GetGameKeys", 326);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "GetGameKeys", 328);
 		return 0;
 	}
 
@@ -396,7 +398,7 @@ public class NativeOptions
 
 	public static void SetGameKeys(int keyType, int index, int key)
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetGameKeys", 439);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetGameKeys", 441);
 	}
 
 	public static void Apply(int texture_budget, int sharpen_amount, int hdr, int dof_mode, int motion_blur, int ssr, int size, int texture_filtering, int trail_amount, int dynamic_resolution_target)
@@ -417,7 +419,7 @@ public class NativeOptions
 
 	public static void SetDefaultGameKeys()
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetDefaultGameKeys", 464);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetDefaultGameKeys", 466);
 	}
 
 	public static void SetDefaultGameConfig()

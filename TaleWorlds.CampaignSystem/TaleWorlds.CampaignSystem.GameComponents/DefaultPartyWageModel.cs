@@ -18,7 +18,7 @@ public class DefaultPartyWageModel : PartyWageModel
 
 	private const float MercenaryWageFactor = 1.5f;
 
-	public override int MaxWage => 10000;
+	public override int MaxWagePaymentLimit => 10000;
 
 	public override int GetCharacterWage(CharacterObject character)
 	{
@@ -40,7 +40,7 @@ public class DefaultPartyWageModel : PartyWageModel
 		return num;
 	}
 
-	public override ExplainedNumber GetTotalWage(MobileParty mobileParty, bool includeDescriptions = false)
+	public override ExplainedNumber GetTotalWage(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
 	{
 		int num = 0;
 		int num2 = 0;
@@ -48,170 +48,145 @@ public class DefaultPartyWageModel : PartyWageModel
 		int num4 = 0;
 		int num5 = 0;
 		int num6 = 0;
+		bool flag = !mobileParty.HasPerk(DefaultPerks.Steward.AidCorps);
 		int num7 = 0;
 		int num8 = 0;
-		int num9 = 0;
-		int num10 = 0;
-		int num11 = 0;
-		int num12 = 0;
-		bool flag = !mobileParty.HasPerk(DefaultPerks.Steward.AidCorps);
-		int num13 = 0;
-		int num14 = 0;
-		for (int i = 0; i < mobileParty.MemberRoster.Count; i++)
+		for (int i = 0; i < troopRoster.Count; i++)
 		{
-			TroopRosterElement elementCopyAtIndex = mobileParty.MemberRoster.GetElementCopyAtIndex(i);
+			TroopRosterElement elementCopyAtIndex = troopRoster.GetElementCopyAtIndex(i);
 			CharacterObject character = elementCopyAtIndex.Character;
-			int num15 = (flag ? elementCopyAtIndex.Number : (elementCopyAtIndex.Number - elementCopyAtIndex.WoundedNumber));
+			if (!flag)
+			{
+				_ = elementCopyAtIndex.Number;
+				_ = elementCopyAtIndex.WoundedNumber;
+			}
+			else
+			{
+				_ = elementCopyAtIndex.Number;
+			}
 			if (character.IsHero)
 			{
-				if (elementCopyAtIndex.Character.HeroObject != character.HeroObject.Clan?.Leader)
+				bool flag2 = mobileParty.IsMainParty && character.HeroObject.Clan == Clan.PlayerClan && character.HeroObject.Occupation == Occupation.Lord;
+				if (elementCopyAtIndex.Character.HeroObject != character.HeroObject.Clan?.Leader && !flag2)
 				{
-					num4 = ((mobileParty.LeaderHero == null || !mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Steward.PaidInPromise)) ? (num4 + elementCopyAtIndex.Character.TroopWage) : (num4 + MathF.Round((float)elementCopyAtIndex.Character.TroopWage * (1f + DefaultPerks.Steward.PaidInPromise.PrimaryBonus))));
+					num = ((mobileParty.LeaderHero == null || !mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Steward.PaidInPromise)) ? (num + character.TroopWage) : (num + MathF.Round((float)character.TroopWage * (1f + DefaultPerks.Steward.PaidInPromise.PrimaryBonus))));
 				}
 				continue;
 			}
-			if (character.Tier < 4)
+			int num9 = character.TroopWage * elementCopyAtIndex.Number;
+			num += num9;
+			if (character.Culture.IsBandit)
 			{
-				if (character.Culture.IsBandit)
-				{
-					num10 += elementCopyAtIndex.Character.TroopWage * elementCopyAtIndex.Number;
-				}
-				num2 += elementCopyAtIndex.Character.TroopWage * num15;
-			}
-			else if (character.Tier == 4)
-			{
-				if (character.Culture.IsBandit)
-				{
-					num11 += elementCopyAtIndex.Character.TroopWage * elementCopyAtIndex.Number;
-				}
-				num3 += elementCopyAtIndex.Character.TroopWage * num15;
-			}
-			else if (character.Tier > 4)
-			{
-				if (character.Culture.IsBandit)
-				{
-					num12 += elementCopyAtIndex.Character.TroopWage * elementCopyAtIndex.Number;
-				}
-				num4 += elementCopyAtIndex.Character.TroopWage * num15;
+				num6 += num9;
 			}
 			if (character.IsInfantry)
 			{
-				num5 += num15;
+				num2 += num9;
 			}
 			if (character.IsMounted)
 			{
-				num6 += num15;
+				num3 += num9;
 			}
 			if (character.Occupation == Occupation.CaravanGuard)
 			{
-				num13 += elementCopyAtIndex.Number;
+				num7 += num9;
 			}
 			if (character.Occupation == Occupation.Mercenary)
 			{
-				num14 += elementCopyAtIndex.Number;
+				num8 += num9;
 			}
 			if (character.IsRanged)
 			{
-				num7 += num15;
+				num4 += num9;
 				if (character.Tier >= 4)
 				{
-					num8 += num15;
-					num9 += elementCopyAtIndex.Character.TroopWage * elementCopyAtIndex.Number;
+					num5 += num9;
 				}
 			}
 		}
-		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
 		if (mobileParty.LeaderHero != null && mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Roguery.DeepPockets))
 		{
-			num2 -= num10;
-			num3 -= num11;
-			num4 -= num12;
-			int num16 = num10 + num11 + num12;
-			bonuses.Add(num16);
+			num -= num6;
+			ExplainedNumber bonuses = new ExplainedNumber(num6);
 			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.DeepPockets, mobileParty.LeaderHero.CharacterObject, isPrimaryBonus: false, ref bonuses);
+			num += (int)bonuses.ResultNumber;
 		}
-		num = num2 + num3 + num4;
-		if (mobileParty.HasPerk(DefaultPerks.Crossbow.PickedShots) && num8 > 0)
+		if (num5 > 0)
 		{
-			float num17 = (float)num9 * DefaultPerks.Crossbow.PickedShots.PrimaryBonus;
-			num += (int)num17;
+			num -= num5;
+			ExplainedNumber stat = new ExplainedNumber(num5);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Crossbow.PickedShots, mobileParty, isPrimaryBonus: true, ref stat, mobileParty.IsCurrentlyAtSea);
+			num += (int)stat.ResultNumber;
 		}
 		ExplainedNumber bonuses2 = new ExplainedNumber(num, includeDescriptions);
-		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
+		bonuses2.LimitMin(0f);
+		ExplainedNumber result = new ExplainedNumber(1f);
 		if (mobileParty.IsGarrison && mobileParty.CurrentSettlement?.Town != null)
 		{
-			if (mobileParty.CurrentSettlement.IsTown)
+			if (mobileParty.CurrentSettlement.IsFortification)
 			{
 				PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.MilitaryTradition, mobileParty.CurrentSettlement.Town, ref bonuses2);
 				PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.Berserker, mobileParty.CurrentSettlement.Town, ref bonuses2);
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.HunterClan, mobileParty.CurrentSettlement.Town, ref bonuses2);
-				float troopRatio = (float)num5 / (float)mobileParty.MemberRoster.TotalRegulars;
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.DrillSergant, mobileParty.CurrentSettlement.Town, ref bonuses2);
+				float troopRatio = (float)num2 / bonuses2.BaseNumber;
 				CalculatePartialGarrisonWageReduction(troopRatio, mobileParty, DefaultPerks.Polearm.StandardBearer, ref bonuses2, isSecondaryEffect: true);
-				float troopRatio2 = (float)num6 / (float)mobileParty.MemberRoster.TotalRegulars;
-				CalculatePartialGarrisonWageReduction(troopRatio2, mobileParty, DefaultPerks.Riding.CavalryTactics, ref bonuses2, isSecondaryEffect: true);
-				float troopRatio3 = (float)num7 / (float)mobileParty.MemberRoster.TotalRegulars;
-				CalculatePartialGarrisonWageReduction(troopRatio3, mobileParty, DefaultPerks.Crossbow.PeasantLeader, ref bonuses2, isSecondaryEffect: true);
+				float troopRatio2 = (float)num4 / bonuses2.BaseNumber;
+				CalculatePartialGarrisonWageReduction(troopRatio2, mobileParty, DefaultPerks.Crossbow.PeasantLeader, ref bonuses2, isSecondaryEffect: true);
+				float troopRatio3 = (float)num3 / bonuses2.BaseNumber;
+				CalculatePartialGarrisonWageReduction(troopRatio3, mobileParty, DefaultPerks.Riding.CavalryTactics, ref bonuses2, isSecondaryEffect: true);
 			}
-			else if (mobileParty.CurrentSettlement.IsCastle)
+			if (mobileParty.CurrentSettlement.IsCastle)
 			{
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.HunterClan, mobileParty.CurrentSettlement.Town, ref bonuses2);
 				PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.StiffUpperLip, mobileParty.CurrentSettlement.Town, ref bonuses2);
 			}
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.DrillSergant, mobileParty.CurrentSettlement.Town, ref bonuses2);
-			if (mobileParty.CurrentSettlement.Culture.HasFeat(DefaultCulturalFeats.EmpireGarrisonWageFeat))
+			if (mobileParty.CurrentSettlement.Owner.Culture.HasFeat(DefaultCulturalFeats.EmpireGarrisonWageFeat))
 			{
 				bonuses2.AddFactor(DefaultCulturalFeats.EmpireGarrisonWageFeat.EffectBonus, GameTexts.FindText("str_culture"));
 			}
-			foreach (Building building in mobileParty.CurrentSettlement.Town.Buildings)
-			{
-				float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.GarrisonWageReduce);
-				if (buildingEffectAmount > 0f)
-				{
-					explainedNumber.AddFactor(0f - buildingEffectAmount / 100f, building.Name);
-				}
-			}
+			mobileParty.CurrentSettlement.Town.AddEffectOfBuildings(BuildingEffectEnum.GarrisonWageReduction, ref result);
 		}
-		bonuses2.Add(bonuses.ResultNumber);
 		float value = ((mobileParty.LeaderHero != null && mobileParty.LeaderHero.Clan.Kingdom != null && !mobileParty.LeaderHero.Clan.IsUnderMercenaryService && mobileParty.LeaderHero.Clan.Kingdom.ActivePolicies.Contains(DefaultPolicies.MilitaryCoronae)) ? 0.1f : 0f);
 		if (mobileParty.HasPerk(DefaultPerks.Trade.SwordForBarter, checkSecondaryRole: true))
 		{
-			float num18 = (float)num13 / (float)mobileParty.MemberRoster.TotalRegulars;
-			if (num18 > 0f)
+			float num10 = (float)num7 / bonuses2.BaseNumber;
+			if (num10 > 0f)
 			{
-				float value2 = DefaultPerks.Trade.SwordForBarter.SecondaryBonus * num18;
+				float value2 = DefaultPerks.Trade.SwordForBarter.SecondaryBonus * num10;
 				bonuses2.AddFactor(value2, DefaultPerks.Trade.SwordForBarter.Name);
 			}
 		}
 		if (mobileParty.HasPerk(DefaultPerks.Steward.Contractors))
 		{
-			float num19 = (float)num14 / (float)mobileParty.MemberRoster.TotalRegulars;
-			if (num19 > 0f)
+			float num11 = (float)num8 / bonuses2.BaseNumber;
+			if (num11 > 0f)
 			{
-				float value3 = DefaultPerks.Steward.Contractors.PrimaryBonus * num19;
+				float value3 = DefaultPerks.Steward.Contractors.PrimaryBonus * num11;
 				bonuses2.AddFactor(value3, DefaultPerks.Steward.Contractors.Name);
 			}
 		}
 		if (mobileParty.HasPerk(DefaultPerks.Trade.MercenaryConnections, checkSecondaryRole: true))
 		{
-			float num20 = (float)num14 / (float)mobileParty.MemberRoster.TotalRegulars;
-			if (num20 > 0f)
+			float num12 = (float)num8 / bonuses2.BaseNumber;
+			if (num12 > 0f)
 			{
-				float value4 = DefaultPerks.Trade.MercenaryConnections.SecondaryBonus * num20;
+				float value4 = DefaultPerks.Trade.MercenaryConnections.SecondaryBonus * num12;
 				bonuses2.AddFactor(value4, DefaultPerks.Trade.MercenaryConnections.Name);
 			}
 		}
 		bonuses2.AddFactor(value, DefaultPolicies.MilitaryCoronae.Name);
-		bonuses2.AddFactor(explainedNumber.ResultNumber - 1f, _buildingEffects);
+		bonuses2.AddFactor(result.ResultNumber - 1f, _buildingEffects);
 		if (PartyBaseHelper.HasFeat(mobileParty.Party, DefaultCulturalFeats.AseraiIncreasedWageFeat))
 		{
 			bonuses2.AddFactor(DefaultCulturalFeats.AseraiIncreasedWageFeat.EffectBonus, _cultureText);
 		}
-		if (mobileParty.HasPerk(DefaultPerks.Steward.Frugal))
+		if (!mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Steward.Frugal))
 		{
 			bonuses2.AddFactor(DefaultPerks.Steward.Frugal.PrimaryBonus, DefaultPerks.Steward.Frugal.Name);
 		}
-		if (mobileParty.Army != null && mobileParty.HasPerk(DefaultPerks.Steward.EfficientCampaigner, checkSecondaryRole: true))
+		if (mobileParty.Army != null)
 		{
-			bonuses2.AddFactor(DefaultPerks.Steward.EfficientCampaigner.SecondaryBonus, DefaultPerks.Steward.EfficientCampaigner.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.EfficientCampaigner, mobileParty, isPrimaryBonus: false, ref bonuses2, mobileParty.IsCurrentlyAtSea);
 		}
 		if (mobileParty.SiegeEvent != null && mobileParty.SiegeEvent.BesiegerCamp.HasInvolvedPartyForEventType(mobileParty.Party) && mobileParty.HasPerk(DefaultPerks.Steward.MasterOfWarcraft))
 		{
@@ -236,77 +211,78 @@ public class DefaultPartyWageModel : PartyWageModel
 		}
 	}
 
-	public override int GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
+	public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
 	{
-		int num = 10 * MathF.Round((float)troop.Level * MathF.Pow(troop.Level, 0.65f) * 0.2f);
-		num = ((troop.Level <= 1) ? 10 : ((troop.Level <= 6) ? 20 : ((troop.Level <= 11) ? 50 : ((troop.Level <= 16) ? 100 : ((troop.Level <= 21) ? 200 : ((troop.Level <= 26) ? 400 : ((troop.Level <= 31) ? 600 : ((troop.Level > 36) ? 1500 : 1000))))))));
+		ExplainedNumber result = ((troop.Level <= 1) ? new ExplainedNumber(10f) : ((troop.Level <= 6) ? new ExplainedNumber(20f) : ((troop.Level <= 11) ? new ExplainedNumber(50f) : ((troop.Level <= 16) ? new ExplainedNumber(100f) : ((troop.Level <= 21) ? new ExplainedNumber(200f) : ((troop.Level <= 26) ? new ExplainedNumber(400f) : ((troop.Level <= 31) ? new ExplainedNumber(600f) : ((troop.Level > 36) ? new ExplainedNumber(1500f) : new ExplainedNumber(1000f)))))))));
 		if (troop.Equipment.Horse.Item != null && !withoutItemCost)
 		{
-			num = ((troop.Level >= 26) ? (num + 500) : (num + 150));
+			if (troop.Level < 26)
+			{
+				result.Add(150f);
+			}
+			else
+			{
+				result.Add(500f);
+			}
 		}
 		bool flag = troop.Occupation == Occupation.Mercenary || troop.Occupation == Occupation.Gangster || troop.Occupation == Occupation.CaravanGuard;
 		if (flag)
 		{
-			num = MathF.Round((float)num * 2f);
+			result.Add(result.BaseNumber * 2f);
 		}
 		if (buyerHero != null)
 		{
-			ExplainedNumber explainedNumber = new ExplainedNumber(1f);
 			if (troop.Tier >= 2 && buyerHero.GetPerkValue(DefaultPerks.Throwing.HeadHunter))
 			{
-				explainedNumber.AddFactor(DefaultPerks.Throwing.HeadHunter.SecondaryBonus);
+				result.AddFactor(DefaultPerks.Throwing.HeadHunter.SecondaryBonus);
 			}
 			if (troop.IsInfantry)
 			{
 				if (buyerHero.GetPerkValue(DefaultPerks.OneHanded.ChinkInTheArmor))
 				{
-					explainedNumber.AddFactor(DefaultPerks.OneHanded.ChinkInTheArmor.SecondaryBonus);
+					result.AddFactor(DefaultPerks.OneHanded.ChinkInTheArmor.SecondaryBonus);
 				}
 				if (buyerHero.GetPerkValue(DefaultPerks.TwoHanded.ShowOfStrength))
 				{
-					explainedNumber.AddFactor(DefaultPerks.TwoHanded.ShowOfStrength.SecondaryBonus);
+					result.AddFactor(DefaultPerks.TwoHanded.ShowOfStrength.SecondaryBonus);
 				}
 				if (buyerHero.GetPerkValue(DefaultPerks.Polearm.HardyFrontline))
 				{
-					explainedNumber.AddFactor(DefaultPerks.Polearm.HardyFrontline.SecondaryBonus);
-				}
-				if (buyerHero.Culture.HasFeat(DefaultCulturalFeats.SturgianRecruitUpgradeFeat))
-				{
-					explainedNumber.AddFactor(DefaultCulturalFeats.SturgianRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
+					result.AddFactor(DefaultPerks.Polearm.HardyFrontline.SecondaryBonus);
 				}
 			}
 			else if (troop.IsRanged)
 			{
 				if (buyerHero.GetPerkValue(DefaultPerks.Bow.RenownedArcher))
 				{
-					explainedNumber.AddFactor(DefaultPerks.Bow.RenownedArcher.SecondaryBonus);
+					result.AddFactor(DefaultPerks.Bow.RenownedArcher.SecondaryBonus);
 				}
 				if (buyerHero.GetPerkValue(DefaultPerks.Crossbow.Piercer))
 				{
-					explainedNumber.AddFactor(DefaultPerks.Crossbow.Piercer.SecondaryBonus);
+					result.AddFactor(DefaultPerks.Crossbow.Piercer.SecondaryBonus);
 				}
 			}
 			if (troop.IsMounted && buyerHero.Culture.HasFeat(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat))
 			{
-				explainedNumber.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				result.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
 			}
 			if (buyerHero.IsPartyLeader && buyerHero.GetPerkValue(DefaultPerks.Steward.Frugal))
 			{
-				explainedNumber.AddFactor(DefaultPerks.Steward.Frugal.SecondaryBonus);
+				result.AddFactor(DefaultPerks.Steward.Frugal.SecondaryBonus);
 			}
 			if (flag)
 			{
 				if (buyerHero.GetPerkValue(DefaultPerks.Trade.SwordForBarter))
 				{
-					explainedNumber.AddFactor(DefaultPerks.Trade.SwordForBarter.PrimaryBonus);
+					result.AddFactor(DefaultPerks.Trade.SwordForBarter.PrimaryBonus);
 				}
 				if (buyerHero.GetPerkValue(DefaultPerks.Charm.SlickNegotiator))
 				{
-					explainedNumber.AddFactor(DefaultPerks.Charm.SlickNegotiator.PrimaryBonus);
+					result.AddFactor(DefaultPerks.Charm.SlickNegotiator.PrimaryBonus);
 				}
 			}
-			num = MathF.Max(1, MathF.Round((float)num * explainedNumber.ResultNumber));
+			result.LimitMin(1f);
 		}
-		return num;
+		return result;
 	}
 }

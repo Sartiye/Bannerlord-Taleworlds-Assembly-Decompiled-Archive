@@ -1,11 +1,9 @@
-using System.ComponentModel;
 using NetworkMessages.FromClient;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.ViewModelCollection;
@@ -64,20 +62,18 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 		set
 		{
 			_holdHandled = value;
-			base.MissionScreen?.SetRadialMenuActiveState(value);
 		}
 	}
 
 	public MissionGauntletMainAgentCheerControllerView()
 	{
 		_missionScreenAsInterface = base.MissionScreen;
-		HoldHandled = false;
 	}
 
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		_gauntletLayer = new GauntletLayer(2);
+		_gauntletLayer = new GauntletLayer("MissionCheerController", ViewOrderPriority);
 		_missionMainAgentController = base.Mission.GetMissionBehavior<MissionMainAgentController>();
 		_dataSource = new MissionMainAgentCheerBarkControllerVM(OnCheerSelect, OnBarkSelect);
 		_gauntletLayer.LoadMovie("MainAgentCheerBarkController", _dataSource);
@@ -108,18 +104,17 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 		{
 			TickControls(dt);
 		}
+		else if (_dataSource.IsActive)
+		{
+			HandleClosingHold(applySelection: false);
+		}
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
 		if (base.Mission.MainAgent == null)
 		{
-			if (HoldHandled)
-			{
-				HoldHandled = false;
-			}
-			_holdTime = 0f;
-			_dataSource.OnCancelHoldController();
+			HandleClosingHold(applySelection: false);
 		}
 	}
 
@@ -152,7 +147,7 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 			}
 			if (!_isSelectingFromInput)
 			{
-				HandleClosingHoldCheer();
+				HandleClosingHold(applySelection: true);
 				_dataSource.Nodes.ApplyActionOnAllItems(delegate(CheerBarkNodeItemVM n)
 				{
 					n.ClearSelectionRecursive();
@@ -238,11 +233,11 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 		{
 			if (_holdTime < 0f)
 			{
-				HandleQuickReleaseCheer();
+				HandleQuickRelease();
 			}
 			else
 			{
-				HandleClosingHoldCheer();
+				HandleClosingHold(applySelection: true);
 			}
 			HoldHandled = false;
 			_holdTime = 0f;
@@ -252,17 +247,23 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 
 	private void HandleOpenHold()
 	{
-		_dataSource?.OnSelectControllerToggle(isActive: true);
-		base.MissionScreen.SetRadialMenuActiveState(isActive: true);
+		if (!_dataSource.IsActive)
+		{
+			_dataSource.ExecuteActivate();
+			base.MissionScreen.RegisterRadialMenuObject(this);
+		}
 	}
 
-	private void HandleClosingHoldCheer()
+	private void HandleClosingHold(bool applySelection)
 	{
-		_dataSource?.OnSelectControllerToggle(isActive: false);
-		base.MissionScreen.SetRadialMenuActiveState(isActive: false);
+		if (_dataSource.IsActive)
+		{
+			_dataSource.ExecuteDeactivate(applySelection);
+			base.MissionScreen.UnregisterRadialMenuObject(this);
+		}
 	}
 
-	private void HandleQuickReleaseCheer()
+	private void HandleQuickRelease()
 	{
 		OnCheerSelect(-1);
 	}
@@ -309,18 +310,29 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 
 	private bool IsMainAgentAvailable()
 	{
-		return Agent.Main?.IsActive() ?? false;
+		Agent main = Agent.Main;
+		if (main != null && main.IsActive() && !Agent.Main.IsUsingGameObject)
+		{
+			return !Agent.Main.IsInWater();
+		}
+		return false;
 	}
 
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 }

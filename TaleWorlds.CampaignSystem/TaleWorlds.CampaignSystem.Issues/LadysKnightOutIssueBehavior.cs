@@ -47,7 +47,7 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=Pnc8ToV1}Just participate in a future tournament in this realm, and say you dedicate your victories to me. {TOURNAMENT_ROUND_GOAL}[ib:hip]");
+				TextObject textObject = new TextObject("{=Pnc8ToV1}Just participate in a future tournament in this realm, and say you dedicate your victories to me. {TOURNAMENT_ROUND_GOAL}");
 				if (TournamentRoundGoal == 5)
 				{
 					textObject.SetTextVariable("TOURNAMENT_ROUND_GOAL", new TextObject("{=2Rzw16OX}If you can advance to win the tournament, I'm sure that will do us both honor.[ib:hip2][if:convo_relaxed_happy]"));
@@ -272,7 +272,7 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=kqgadhCF}{QUEST_GIVER.LINK} from {QUEST_GIVER.FACTION}, has asked you to be her champion in an upcoming tournament. {TOURNAMENT_ROUND_GOAL} \nYou told her that you will honor her name in a tournament.");
+				TextObject textObject = new TextObject("{=kqgadhCF}{QUEST_GIVER.LINK} from {QUEST_GIVER.FACTION}, has asked you to be her champion in an upcoming tournament. {TOURNAMENT_ROUND_GOAL}{newline}You told her that you will honor her name in a tournament.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject, includeDetails: true);
 				textObject.SetTextVariable("QUEST_GIVER_TOWN", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				if (TournamentRoundGoal == 5)
@@ -293,7 +293,7 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=QAg8DQy6}You received a message from {QUEST_GIVER.LINK}.\n \"Thank you for fighting so valiantly in my name. Please take these {REWARD} denars with our gratitude.\"");
+				TextObject textObject = new TextObject("{=QAg8DQy6}You received a message from {QUEST_GIVER.LINK}.{newline}\"Thank you for fighting so valiantly in my name. Please take these {REWARD} denars with our gratitude.\"");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", RewardGold);
 				return textObject;
@@ -308,7 +308,7 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				if (TournamentRoundGoal == 5)
 				{
-					textObject.SetTextVariable("TOURNAMENT_ROUND_GOAL", new TextObject("{=tDNiLiRM}You have failed to win the tournament. "));
+					textObject.SetTextVariable("TOURNAMENT_ROUND_GOAL", new TextObject("{=tDNiLiRM}You have failed to win the tournament."));
 				}
 				else
 				{
@@ -493,7 +493,7 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 		private bool NpcTournamentLocationCondition()
 		{
 			List<Town> source = Town.AllTowns.Where((Town x) => Campaign.Current.TournamentManager.GetTournamentGame(x) != null && x != Settlement.CurrentSettlement.Town).ToList();
-			source = source.OrderBy((Town x) => x.Settlement.Position2D.DistanceSquared(Settlement.CurrentSettlement.Position2D)).ToList();
+			source = source.OrderBy((Town x) => DistanceHelper.FindClosestDistanceFromSettlementToSettlement(x.Settlement, Settlement.CurrentSettlement, MobileParty.NavigationType.Default)).ToList();
 			if (source.Count > 0)
 			{
 				MBTextManager.SetTextVariable("NEARBY_TOURNAMENTS_LIST", source[0].Name);

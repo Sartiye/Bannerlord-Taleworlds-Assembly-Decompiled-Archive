@@ -12,8 +12,6 @@ public class OrderOfBattleFormationItemListPanel : ListPanel
 
 	private bool _isControlledByPlayer;
 
-	private bool _isFilterDropdownEnabled;
-
 	private bool _isClassDropdownEnabled;
 
 	private bool _isSelected;
@@ -86,23 +84,6 @@ public class OrderOfBattleFormationItemListPanel : ListPanel
 				{
 					FormationClassDropdown.Button.IsEnabled = value;
 				}
-			}
-		}
-	}
-
-	[Editor(false)]
-	public bool IsFilterDropdownEnabled
-	{
-		get
-		{
-			return _isFilterDropdownEnabled;
-		}
-		set
-		{
-			if (value != _isFilterDropdownEnabled)
-			{
-				_isFilterDropdownEnabled = value;
-				OnPropertyChanged(value, "IsFilterDropdownEnabled");
 			}
 		}
 	}
@@ -200,16 +181,6 @@ public class OrderOfBattleFormationItemListPanel : ListPanel
 	public OrderOfBattleFormationItemListPanel(UIContext context)
 		: base(context)
 	{
-	}
-
-	protected override void OnLateUpdate(float dt)
-	{
-		base.OnLateUpdate(dt);
-		Widget latestMouseUpWidget = base.EventManager.LatestMouseUpWidget;
-		if (IsFilterDropdownEnabled && !CheckIsMyChildRecursive(latestMouseUpWidget))
-		{
-			IsFilterDropdownEnabled = false;
-		}
 	}
 
 	private void OnStateChanged()

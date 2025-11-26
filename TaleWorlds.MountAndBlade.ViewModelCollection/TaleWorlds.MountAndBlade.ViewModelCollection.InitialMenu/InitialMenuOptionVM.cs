@@ -52,6 +52,9 @@ public class InitialMenuOptionVM : ViewModel
 	[DataSourceProperty]
 	public bool IsDisabled => InitialStateOption.IsDisabledAndReason().Item1;
 
+	[DataSourceProperty]
+	public bool IsHidden => InitialStateOption.IsHidden?.Invoke() ?? false;
+
 	public InitialMenuOptionVM(InitialStateOption initialStateOption)
 	{
 		InitialStateOption = initialStateOption;

@@ -25,14 +25,14 @@ public class RangedSiegeWeaponViewController : MissionView
 
 	private UsableMachine GetUsableMachineFromPoint(StandingPoint standingPoint)
 	{
-		GameEntity gameEntity = standingPoint.GameEntity;
-		while (gameEntity != null && !gameEntity.HasScriptOfType<UsableMachine>())
+		WeakGameEntity weakGameEntity = standingPoint.GameEntity;
+		while (weakGameEntity.IsValid && !weakGameEntity.HasScriptOfType<UsableMachine>())
 		{
-			gameEntity = gameEntity.Parent;
+			weakGameEntity = weakGameEntity.Parent;
 		}
-		if (gameEntity != null)
+		if (weakGameEntity.IsValid)
 		{
-			UsableMachine firstScriptOfType = gameEntity.GetFirstScriptOfType<UsableMachine>();
+			UsableMachine firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 			if (firstScriptOfType != null)
 			{
 				return firstScriptOfType;

@@ -16,17 +16,17 @@ public sealed class PerkObject : PropertyObject
 
 	public PerkObject AlternativePerk { get; private set; }
 
-	public SkillEffect.PerkRole PrimaryRole { get; private set; }
+	public PartyRole PrimaryRole { get; private set; }
 
-	public SkillEffect.PerkRole SecondaryRole { get; private set; }
+	public PartyRole SecondaryRole { get; private set; }
 
 	public float PrimaryBonus { get; private set; }
 
 	public float SecondaryBonus { get; private set; }
 
-	public SkillEffect.EffectIncrementType PrimaryIncrementType { get; private set; }
+	public EffectIncrementType PrimaryIncrementType { get; private set; }
 
-	public SkillEffect.EffectIncrementType SecondaryIncrementType { get; private set; }
+	public EffectIncrementType SecondaryIncrementType { get; private set; }
 
 	public TroopUsageFlags PrimaryTroopUsageMask { get; private set; }
 
@@ -40,7 +40,7 @@ public sealed class PerkObject : PropertyObject
 	{
 		get
 		{
-			if (base.Name != null && base.Description != null)
+			if (!(base.Name == null) && !(base.Description == null))
 			{
 				return Skill == null;
 			}
@@ -63,15 +63,15 @@ public sealed class PerkObject : PropertyObject
 	{
 	}
 
-	public void Initialize(string name, SkillObject skill, int requiredSkillValue, PerkObject alternativePerk, string primaryDescription, SkillEffect.PerkRole primaryRole, float primaryBonus, SkillEffect.EffectIncrementType incrementType, string secondaryDescription = "", SkillEffect.PerkRole secondaryRole = SkillEffect.PerkRole.None, float secondaryBonus = 0f, SkillEffect.EffectIncrementType secondaryIncrementType = SkillEffect.EffectIncrementType.Invalid, TroopUsageFlags primaryTroopUsageMask = TroopUsageFlags.Undefined, TroopUsageFlags secondaryTroopUsageMask = TroopUsageFlags.Undefined)
+	public void Initialize(string name, SkillObject skill, int requiredSkillValue, PerkObject alternativePerk, string primaryDescription, PartyRole primaryRole, float primaryBonus, EffectIncrementType incrementType, string secondaryDescription = "", PartyRole secondaryRole = PartyRole.None, float secondaryBonus = 0f, EffectIncrementType secondaryIncrementType = EffectIncrementType.Invalid, TroopUsageFlags primaryTroopUsageMask = TroopUsageFlags.Undefined, TroopUsageFlags secondaryTroopUsageMask = TroopUsageFlags.Undefined)
 	{
 		PrimaryDescription = new TextObject(primaryDescription);
 		SecondaryDescription = new TextObject(secondaryDescription);
-		PerkHelper.SetDescriptionTextVariable(PrimaryDescription, primaryBonus, incrementType);
+		StringHelpers.SetEffectIncrementTypeTextVariable("VALUE", PrimaryDescription, primaryBonus, incrementType);
 		TextObject textObject;
 		if (secondaryDescription != "")
 		{
-			PerkHelper.SetDescriptionTextVariable(SecondaryDescription, secondaryBonus, secondaryIncrementType);
+			StringHelpers.SetEffectIncrementTypeTextVariable("VALUE", SecondaryDescription, secondaryBonus, secondaryIncrementType);
 			textObject = GameTexts.FindText("str_string_newline_newline_string");
 			textObject.SetTextVariable("STR1", PrimaryDescription);
 			textObject.SetTextVariable("STR2", SecondaryDescription);
@@ -94,7 +94,7 @@ public sealed class PerkObject : PropertyObject
 		PrimaryBonus = primaryBonus;
 		SecondaryBonus = secondaryBonus;
 		PrimaryIncrementType = incrementType;
-		SecondaryIncrementType = ((secondaryIncrementType == SkillEffect.EffectIncrementType.Invalid) ? PrimaryIncrementType : secondaryIncrementType);
+		SecondaryIncrementType = ((secondaryIncrementType == EffectIncrementType.Invalid) ? PrimaryIncrementType : secondaryIncrementType);
 		PrimaryTroopUsageMask = primaryTroopUsageMask;
 		SecondaryTroopUsageMask = secondaryTroopUsageMask;
 		AfterInitialized();
@@ -102,6 +102,6 @@ public sealed class PerkObject : PropertyObject
 
 	public override string ToString()
 	{
-		return base.Name.ToString();
+		return base.Name?.ToString() ?? base.StringId;
 	}
 }

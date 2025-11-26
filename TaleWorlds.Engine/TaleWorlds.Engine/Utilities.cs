@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Xml;
 using TaleWorlds.Library;
@@ -244,16 +245,6 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetModulesCode().Split(new char[1] { '*' });
 	}
 
-	public static string GetFullModulePath(string moduleName)
-	{
-		return EngineApplicationInterface.IUtil.GetFullModulePath(moduleName);
-	}
-
-	public static string[] GetFullModulePaths()
-	{
-		return EngineApplicationInterface.IUtil.GetFullModulePaths().Split(new char[1] { '*' });
-	}
-
 	public static string GetFullFilePathOfScene(string sceneName)
 	{
 		string fullFilePathOfScene = EngineApplicationInterface.IUtil.GetFullFilePathOfScene(sceneName);
@@ -291,7 +282,7 @@ public static class Utilities
 	public static bool TryGetUniqueIdentifiersForSceneFile(string xsceneFilePath, out UniqueSceneId identifiers)
 	{
 		identifiers = null;
-		using (XmlReader xmlReader = XmlReader.Create(xsceneFilePath))
+		using (XmlReader xmlReader = XmlReader.Create(new StreamReader(xsceneFilePath)))
 		{
 			string attribute;
 			string attribute2;
@@ -351,6 +342,11 @@ public static class Utilities
 	public static void SetCrashOnWarnings(bool val)
 	{
 		EngineApplicationInterface.IUtil.SetCrashOnWarnings(val);
+	}
+
+	public static void SetCreateDumpOnWarnings(bool val)
+	{
+		EngineApplicationInterface.IUtil.SetCreateDumpOnWarnings(val);
 	}
 
 	public static void ToggleRender()
@@ -733,6 +729,11 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetApplicationName();
 	}
 
+	public static void OpenNavalDlcPurchasePage()
+	{
+		EngineApplicationInterface.IUtil.OpenNavalDlcPurchasePage();
+	}
+
 	public static void SetWindowTitle(string title)
 	{
 		EngineApplicationInterface.IUtil.SetWindowTitle(title);
@@ -850,6 +851,21 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetFrameLimiterWithSleep();
 	}
 
+	public static string GetPossibleCommandLineStartingWith(string command, int index)
+	{
+		return EngineApplicationInterface.IUtil.GetPossibleCommandLineStartingWith(command, index);
+	}
+
+	public static bool IsDevkit()
+	{
+		return EngineApplicationInterface.IUtil.IsDevkit();
+	}
+
+	public static bool IsLockhartPlatform()
+	{
+		return EngineApplicationInterface.IUtil.IsLockhartPlatform();
+	}
+
 	public static int GetVertexBufferChunkSystemMemoryUsage()
 	{
 		return EngineApplicationInterface.IUtil.GetVertexBufferChunkSystemMemoryUsage();
@@ -868,6 +884,11 @@ public static class Utilities
 	public static void ParallelFor(int startIndex, int endIndex, long curKey, int grainSize)
 	{
 		EngineApplicationInterface.IUtil.ManagedParallelFor(startIndex, endIndex, curKey, grainSize);
+	}
+
+	public static void ParallelForWithoutRenderThread(int startIndex, int endIndex, long curKey, int grainSize)
+	{
+		EngineApplicationInterface.IUtil.ManagedParallelForWithoutRenderThread(startIndex, endIndex, curKey, grainSize);
 	}
 
 	public static void ClearShaderMemory()
@@ -900,8 +921,23 @@ public static class Utilities
 		EngineApplicationInterface.IUtil.SetWatchdogValue(fileName, groupName, key, value);
 	}
 
+	public static void SetWatchdogAutoreport(bool enabled)
+	{
+		EngineApplicationInterface.IUtil.SetWatchdogAutoreport(enabled);
+	}
+
 	public static void DetachWatchdog()
 	{
 		EngineApplicationInterface.IUtil.DetachWatchdog();
+	}
+
+	public static string GetPlatformModulePaths()
+	{
+		return EngineApplicationInterface.IUtil.GetPlatformModulePaths();
+	}
+
+	public static bool IsAsyncPhysicsThread()
+	{
+		return EngineApplicationInterface.IUtil.IsAsyncPhysicsThread();
 	}
 }

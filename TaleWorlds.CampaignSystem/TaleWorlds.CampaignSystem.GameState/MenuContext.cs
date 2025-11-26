@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
@@ -71,10 +70,6 @@ public class MenuContext : MBObjectBase
 		}
 		while (_currentState == MenuContextState.RequiresCreation)
 		{
-			if (GameMenu != null)
-			{
-				GameMenu.PreInit(this);
-			}
 			if (Campaign.Current.GameMenuManager.NextGameMenuId != null)
 			{
 				GameMenu = Campaign.Current.GameMenuManager.NextMenu;
@@ -85,6 +80,7 @@ public class MenuContext : MBObjectBase
 					mapState.GameMenuId = GameMenu.StringId;
 				}
 			}
+			GameMenu.PreInit(this);
 			if (GameMenu.AutoSelectFirst)
 			{
 				Campaign.Current.GameMenuManager.RunConsequenceOfVirtualMenuOption(this, 0);
@@ -103,6 +99,7 @@ public class MenuContext : MBObjectBase
 				Handler.OnMenuCreate();
 			}
 			Campaign.Current.GameMenuCallbackManager.InitializeState(GameMenu.StringId, this);
+			GameMenu.AfterInit(this);
 			if (Handler != null)
 			{
 				Handler.OnMenuActivate();
@@ -158,16 +155,6 @@ public class MenuContext : MBObjectBase
 		if (Campaign.Current.CurrentMenuContext == this)
 		{
 			Campaign.Current.GameMenuManager.RunConsequenceOfVirtualMenuOption(this, index);
-		}
-	}
-
-	public void CloseEvent()
-	{
-		if (Settlement.CurrentSettlement != null)
-		{
-			Campaign.Current.MapEventManager.FinalizePlayerMapEvent();
-			Campaign.Current.autoEnterTown = Settlement.CurrentSettlement.Party;
-			Game.Current.GameStateManager.PopState();
 		}
 	}
 

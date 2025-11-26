@@ -81,6 +81,18 @@ public class AgentDrivenProperties
 		}
 	}
 
+	public float AiShooterErrorWoRangeUpdate
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiShooterErrorWoRangeUpdate);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiShooterErrorWoRangeUpdate, value);
+		}
+	}
+
 	public float WeaponMaxMovementAccuracyPenalty
 	{
 		get
@@ -162,6 +174,66 @@ public class AgentDrivenProperties
 		set
 		{
 			SetStat(DrivenProperty.ArmorEncumbrance, value);
+		}
+	}
+
+	public float DamageMultiplierBonus
+	{
+		get
+		{
+			return GetStat(DrivenProperty.DamageMultiplierBonus);
+		}
+		set
+		{
+			SetStat(DrivenProperty.DamageMultiplierBonus, value);
+		}
+	}
+
+	public float ThrowingWeaponDamageMultiplierBonus
+	{
+		get
+		{
+			return GetStat(DrivenProperty.ThrowingWeaponDamageMultiplierBonus);
+		}
+		set
+		{
+			SetStat(DrivenProperty.ThrowingWeaponDamageMultiplierBonus, value);
+		}
+	}
+
+	public float MeleeWeaponDamageMultiplierBonus
+	{
+		get
+		{
+			return GetStat(DrivenProperty.MeleeWeaponDamageMultiplierBonus);
+		}
+		set
+		{
+			SetStat(DrivenProperty.MeleeWeaponDamageMultiplierBonus, value);
+		}
+	}
+
+	public float ArmorPenetrationMultiplierCrossbow
+	{
+		get
+		{
+			return GetStat(DrivenProperty.ArmorPenetrationMultiplierCrossbow);
+		}
+		set
+		{
+			SetStat(DrivenProperty.ArmorPenetrationMultiplierCrossbow, value);
+		}
+	}
+
+	public float ArmorPenetrationMultiplierBow
+	{
+		get
+		{
+			return GetStat(DrivenProperty.ArmorPenetrationMultiplierBow);
+		}
+		set
+		{
+			SetStat(DrivenProperty.ArmorPenetrationMultiplierBow, value);
 		}
 	}
 
@@ -330,6 +402,18 @@ public class AgentDrivenProperties
 		set
 		{
 			SetStat(DrivenProperty.CombatMaxSpeedMultiplier, value);
+		}
+	}
+
+	public float CrouchedSpeedMultiplier
+	{
+		get
+		{
+			return GetStat(DrivenProperty.CrouchedSpeedMultiplier);
+		}
+		set
+		{
+			SetStat(DrivenProperty.CrouchedSpeedMultiplier, value);
 		}
 	}
 
@@ -705,15 +789,51 @@ public class AgentDrivenProperties
 		}
 	}
 
-	public float AiCheckMovementIntervalFactor
+	public float AiCheckApplyMovementInterval
 	{
 		get
 		{
-			return GetStat(DrivenProperty.AiCheckMovementIntervalFactor);
+			return GetStat(DrivenProperty.AiCheckApplyMovementInterval);
 		}
 		set
 		{
-			SetStat(DrivenProperty.AiCheckMovementIntervalFactor, value);
+			SetStat(DrivenProperty.AiCheckApplyMovementInterval, value);
+		}
+	}
+
+	public float AiCheckCalculateMovementInterval
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiCheckCalculateMovementInterval);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiCheckCalculateMovementInterval, value);
+		}
+	}
+
+	public float AiCheckDecideSimpleBehaviorInterval
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiCheckDecideSimpleBehaviorInterval);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiCheckDecideSimpleBehaviorInterval, value);
+		}
+	}
+
+	public float AiCheckDoSimpleBehaviorInterval
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiCheckDoSimpleBehaviorInterval);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiCheckDoSimpleBehaviorInterval, value);
 		}
 	}
 
@@ -774,18 +894,6 @@ public class AgentDrivenProperties
 		set
 		{
 			SetStat(DrivenProperty.AiMinimumDistanceToContinueFactor, value);
-		}
-	}
-
-	public float AiHearingDistanceFactor
-	{
-		get
-		{
-			return GetStat(DrivenProperty.AiHearingDistanceFactor);
-		}
-		set
-		{
-			SetStat(DrivenProperty.AiHearingDistanceFactor, value);
 		}
 	}
 
@@ -921,6 +1029,42 @@ public class AgentDrivenProperties
 		}
 	}
 
+	public float AiWeaponFavorMultiplierMelee
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiWeaponFavorMultiplierMelee);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiWeaponFavorMultiplierMelee, value);
+		}
+	}
+
+	public float AiWeaponFavorMultiplierRanged
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiWeaponFavorMultiplierRanged);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiWeaponFavorMultiplierRanged, value);
+		}
+	}
+
+	public float AiWeaponFavorMultiplierPolearm
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiWeaponFavorMultiplierPolearm);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiWeaponFavorMultiplierPolearm, value);
+		}
+	}
+
 	public float AISetNoAttackTimerAfterBeingHitAbility
 	{
 		get
@@ -1005,9 +1149,21 @@ public class AgentDrivenProperties
 		}
 	}
 
+	public float OffhandWeaponDefendSpeedMultiplier
+	{
+		get
+		{
+			return GetStat(DrivenProperty.OffhandWeaponDefendSpeedMultiplier);
+		}
+		set
+		{
+			SetStat(DrivenProperty.OffhandWeaponDefendSpeedMultiplier, value);
+		}
+	}
+
 	public AgentDrivenProperties()
 	{
-		_statValues = new float[84];
+		_statValues = new float[97];
 	}
 
 	public float GetStat(DrivenProperty propertyEnum)
@@ -1023,6 +1179,7 @@ public class AgentDrivenProperties
 	internal float[] InitializeDrivenProperties(Agent agent, Equipment spawnEquipment, AgentBuildData agentBuildData)
 	{
 		MissionGameModels.Current.AgentStatCalculateModel.InitializeAgentStats(agent, spawnEquipment, this, agentBuildData);
+		MissionGameModels.Current.AgentStatCalculateModel.UpdateAgentStats(agent, this);
 		return _statValues;
 	}
 

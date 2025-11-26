@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.ExtraWidgets;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission;
@@ -25,11 +26,11 @@ public class AgentHealthWidget : Widget
 
 	private float AnimationDuration = 0.8f;
 
-	private List<HealthDropData> _healtDrops;
+	private float _previousHealthRatio;
+
+	private List<HealthDropData> _healthDrops;
 
 	private int _health;
-
-	private int _prevHealth = -1;
 
 	private int _maxHealth;
 
@@ -52,9 +53,7 @@ public class AgentHealthWidget : Widget
 		{
 			if (_health != value)
 			{
-				_prevHealth = _health;
 				_health = value;
-				HealthChanged();
 				OnPropertyChanged(value, "Health");
 			}
 		}
@@ -72,7 +71,6 @@ public class AgentHealthWidget : Widget
 			if (_maxHealth != value)
 			{
 				_maxHealth = value;
-				HealthChanged(createDropVisual: false);
 				OnPropertyChanged(value, "MaxHealth");
 			}
 		}
@@ -149,15 +147,15 @@ public class AgentHealthWidget : Widget
 	public AgentHealthWidget(UIContext context)
 		: base(context)
 	{
-		_healtDrops = new List<HealthDropData>();
+		_healthDrops = new List<HealthDropData>();
 		CheckVisibility();
 	}
 
-	private void CreateHealthDrop(Widget container, int preHealth, int currentHealth)
+	private void CreateHealthDrop(Widget container, float previousHealthRatio, float currentHealthRatio)
 	{
 		float num = container.Size.X / base._scaleToUse;
-		float suggestedWidth = Mathf.Ceil(num * ((float)(preHealth - currentHealth) / (float)_maxHealth));
-		float positionXOffset = Mathf.Floor(num * ((float)currentHealth / (float)_maxHealth));
+		float suggestedWidth = Mathf.Ceil(num * (previousHealthRatio - currentHealthRatio));
+		float positionXOffset = Mathf.Floor(num * currentHealthRatio);
 		BrushWidget brushWidget = new BrushWidget(base.Context);
 		brushWidget.WidthSizePolicy = SizePolicy.Fixed;
 		brushWidget.HeightSizePolicy = SizePolicy.Fixed;
@@ -168,41 +166,60 @@ public class AgentHealthWidget : Widget
 		brushWidget.VerticalAlignment = VerticalAlignment.Center;
 		brushWidget.PositionXOffset = positionXOffset;
 		brushWidget.ParentWidget = container;
-		_healtDrops.Add(new HealthDropData(brushWidget, AnimationDelay + AnimationDuration));
+		_healthDrops.Add(new HealthDropData(brushWidget, AnimationDelay + AnimationDuration));
 	}
 
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
-		if (HealthBar != null && HealthBar.IsVisible)
+		if (HealthBar != null)
 		{
-			for (int num = _healtDrops.Count - 1; num >= 0; num--)
-			{
-				HealthDropData healthDropData = _healtDrops[num];
-				healthDropData.LifeTime -= dt;
-				if (healthDropData.LifeTime <= 0f)
-				{
-					HealthDropContainer.RemoveChild(healthDropData.Widget);
-					_healtDrops.RemoveAt(num);
-				}
-				else
-				{
-					float alphaFactor = Mathf.Min(1f, healthDropData.LifeTime / AnimationDuration);
-					healthDropData.Widget.Brush.AlphaFactor = alphaFactor;
-				}
-			}
+			HealthBar.MaxAmount = MaxHealth;
+			HealthBar.InitialAmount = Health;
+		}
+		if (HealthDropContainer != null)
+		{
+			HandleHealthDrops(dt);
 		}
 		CheckVisibility();
 	}
 
-	private void HealthChanged(bool createDropVisual = true)
+	private void HandleHealthDrops(float dt)
 	{
-		HealthBar.MaxAmount = _maxHealth;
-		HealthBar.InitialAmount = Health;
-		if (_prevHealth > Health)
+		for (int num = _healthDrops.Count - 1; num >= 0; num--)
 		{
-			CreateHealthDrop(HealthDropContainer, _prevHealth, Health);
+			HealthDropData healthDropData = _healthDrops[num];
+			healthDropData.LifeTime -= dt;
+			if (healthDropData.LifeTime <= 0f)
+			{
+				HealthDropContainer.RemoveChild(healthDropData.Widget);
+				_healthDrops.RemoveAt(num);
+			}
+			else
+			{
+				float alphaFactor = Mathf.Min(1f, healthDropData.LifeTime / AnimationDuration);
+				healthDropData.Widget.Brush.AlphaFactor = alphaFactor;
+			}
 		}
+		float value = ((MaxHealth != 0) ? ((float)Health / (float)MaxHealth) : 0f);
+		value = MathF.Clamp(value, 0f, 1f);
+		if (value == _previousHealthRatio)
+		{
+			return;
+		}
+		if (value > _previousHealthRatio)
+		{
+			for (int num2 = _healthDrops.Count - 1; num2 >= 0; num2--)
+			{
+				HealthDropContainer.RemoveChild(_healthDrops[num2].Widget);
+				_healthDrops.RemoveAt(num2);
+			}
+		}
+		else if (base.IsVisible)
+		{
+			CreateHealthDrop(HealthDropContainer, _previousHealthRatio, value);
+		}
+		_previousHealthRatio = value;
 	}
 
 	private void CheckVisibility()
@@ -210,7 +227,7 @@ public class AgentHealthWidget : Widget
 		bool flag = ShowHealthBar;
 		if (flag)
 		{
-			flag = (float)_health > 0f || _healtDrops.Count > 0;
+			flag = (float)_health > 0f || _healthDrops.Count > 0;
 		}
 		base.IsVisible = flag;
 	}

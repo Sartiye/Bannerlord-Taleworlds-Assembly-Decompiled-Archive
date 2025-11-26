@@ -6,7 +6,29 @@ namespace TaleWorlds.Core;
 
 public static class MBInformationManager
 {
-	public static event Action<string, int, BasicCharacterObject, string> FiringQuickInformation;
+	public enum NotificationPriority
+	{
+		Lowest,
+		Low,
+		Medium,
+		High,
+		Highest
+	}
+
+	public enum NotificationStatus
+	{
+		Inactive,
+		CurrentlyActive,
+		InQueue
+	}
+
+	public class DialogNotificationHandle
+	{
+	}
+
+	public static event Action<string, int, BasicCharacterObject, Equipment, string> FiringQuickInformation;
+
+	public static event Action ClearingQuickInformations;
 
 	public static event Action<MultiSelectionInquiryData, bool, bool> OnShowMultiSelectionInquiry;
 
@@ -20,10 +42,15 @@ public static class MBInformationManager
 
 	public static event Func<bool> IsAnySceneNotificationActive;
 
-	public static void AddQuickInformation(TextObject message, int extraTimeInMs = 0, BasicCharacterObject announcerCharacter = null, string soundEventPath = "")
+	public static void AddQuickInformation(TextObject message, int extraTimeInMs = 0, BasicCharacterObject announcerCharacter = null, Equipment equipment = null, string soundEventPath = "")
 	{
-		MBInformationManager.FiringQuickInformation?.Invoke(message.ToString(), extraTimeInMs, announcerCharacter, soundEventPath);
+		MBInformationManager.FiringQuickInformation?.Invoke(message.ToString(), extraTimeInMs, announcerCharacter, equipment, soundEventPath);
 		Debug.Print(message.ToString(), 0, Debug.DebugColor.White, 1125899906842624uL);
+	}
+
+	public static void ClearQuickInformations()
+	{
+		MBInformationManager.ClearingQuickInformations?.Invoke();
 	}
 
 	public static void ShowMultiSelectionInquiry(MultiSelectionInquiryData data, bool pauseGameActiveState = false, bool prioritize = false)

@@ -1,12 +1,15 @@
 using System;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Inventory;
 
@@ -31,11 +34,7 @@ public class SPItemVM : ItemVM
 
 	public static Action<SPItemVM, bool> ProcessLockItem;
 
-	private readonly string _fiveStackShortcutKeyText;
-
-	private readonly string _entireStackShortcutKeyText;
-
-	private readonly InventoryMode _usageType;
+	private readonly InventoryScreenHelper.InventoryMode _usageType;
 
 	private Concept _tradeGoodConceptObj;
 
@@ -45,11 +44,15 @@ public class SPItemVM : ItemVM
 
 	private bool _isFocused;
 
+	private bool _isSelected;
+
 	private int _level;
 
 	private bool _isTransferable;
 
 	private bool _isCivilianItem;
+
+	private bool _isStealthItem;
 
 	private bool _isGenderDifferent;
 
@@ -96,6 +99,23 @@ public class SPItemVM : ItemVM
 			{
 				_isFocused = value;
 				OnPropertyChangedWithValue(value, "IsFocused");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsSelected
+	{
+		get
+		{
+			return _isSelected;
+		}
+		set
+		{
+			if (value != _isSelected)
+			{
+				_isSelected = value;
+				OnPropertyChangedWithValue(value, "IsSelected");
 			}
 		}
 	}
@@ -181,6 +201,23 @@ public class SPItemVM : ItemVM
 			{
 				_isCivilianItem = value;
 				OnPropertyChangedWithValue(value, "IsCivilianItem");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsStealthItem
+	{
+		get
+		{
+			return _isStealthItem;
+		}
+		set
+		{
+			if (value != _isStealthItem)
+			{
+				_isStealthItem = value;
+				OnPropertyChangedWithValue(value, "IsStealthItem");
 			}
 		}
 	}
@@ -413,16 +450,14 @@ public class SPItemVM : ItemVM
 	public SPItemVM()
 	{
 		base.StringId = "";
-		base.ImageIdentifier = new ImageIdentifierVM();
+		base.ImageIdentifier = new ItemImageIdentifierVM(null);
 		_itemType = EquipmentIndex.None;
 	}
 
-	public SPItemVM(InventoryLogic inventoryLogic, bool isHeroFemale, bool canCharacterUseItem, InventoryMode usageType, ItemRosterElement newItem, InventoryLogic.InventorySide inventorySide, string fiveStackShortcutKeyText, string entireStackShortcutKeyText, int itemCost = 0, EquipmentIndex? itemType = EquipmentIndex.None)
+	public SPItemVM(InventoryLogic inventoryLogic, bool isHeroFemale, bool canCharacterUseItem, InventoryScreenHelper.InventoryMode usageType, ItemRosterElement newItem, InventoryLogic.InventorySide inventorySide, int itemCost = 0, EquipmentIndex? itemType = EquipmentIndex.None)
 	{
 		if (newItem.EquipmentElement.Item != null)
 		{
-			_fiveStackShortcutKeyText = fiveStackShortcutKeyText;
-			_entireStackShortcutKeyText = entireStackShortcutKeyText;
 			_usageType = usageType;
 			_tradeGoodConceptObj = Concept.All.SingleOrDefault((Concept c) => c.StringId == "str_game_objects_trade_goods");
 			_itemConceptObj = Concept.All.SingleOrDefault((Concept c) => c.StringId == "str_game_objects_item");
@@ -437,21 +472,23 @@ public class SPItemVM : ItemVM
 			{
 				_itemType = itemType.Value;
 			}
-			SetItemTypeId();
+			OnItemTypeUpdated();
 			base.ItemDescription = newItem.EquipmentElement.GetModifiedItemName().ToString();
 			base.StringId = CampaignUIHelper.GetItemLockStringID(newItem.EquipmentElement);
-			base.ImageIdentifier = new ImageIdentifierVM(newItem.EquipmentElement.Item, Clan.PlayerClan?.Banner.Serialize());
+			base.ImageIdentifier = new ItemImageIdentifierVM(newItem.EquipmentElement.Item, Clan.PlayerClan?.Banner.Serialize());
 			IsCivilianItem = newItem.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.Civilian);
+			IsStealthItem = newItem.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.Stealth);
 			IsGenderDifferent = (isHeroFemale && ItemRosterElement.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale)) || (!isHeroFemale && ItemRosterElement.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByMale));
 			CanCharacterUseItem = canCharacterUseItem;
-			IsArtifact = newItem.EquipmentElement.Item.IsUniqueItem;
+			IsArtifact = false;
 			UpdateCanBeSlaughtered();
 			UpdateHintTexts();
 			CanBeDonated = _inventoryLogic?.CanDonateItem(ItemRosterElement, InventorySide) ?? false;
 			TradeData = new InventoryTradeVM(_inventoryLogic, ItemRosterElement, inventorySide, OnTradeApplyTransaction);
-			IsTransferable = !ItemRosterElement.EquipmentElement.IsQuestItem;
+			InventoryScreenHelper.InventoryMode inventoryMode = InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default;
+			IsTransferable = !ItemRosterElement.EquipmentElement.IsQuestItem && ItemRosterElement.EquipmentElement.Item.IsTransferable && (inventoryMode != InventoryScreenHelper.InventoryMode.Warehouse || ItemRosterElement.EquipmentElement.Item.IsTradeGood);
 			TradeData.IsTradeable = IsTransferable;
-			IsEquipableItem = (InventoryManager.GetInventoryItemTypeOfItem(newItem.EquipmentElement.Item) & InventoryItemType.Equipable) != 0;
+			IsEquipableItem = (InventoryScreenHelper.GetInventoryItemTypeOfItem(newItem.EquipmentElement.Item) & InventoryScreenHelper.InventoryItemType.Equipable) != 0;
 			UpdateProfitType();
 		}
 	}
@@ -479,7 +516,7 @@ public class SPItemVM : ItemVM
 		}
 		base.ItemDescription = itemVM.ItemDescription;
 		base.ItemCost = itemVM.ItemCost;
-		base.TypeId = itemVM.TypeId;
+		base.TypeName = itemVM.TypeName;
 		_itemType = itemVM.ItemType;
 		ItemCount = itemVM.ItemCount;
 		TransactionCount = itemVM.TransactionCount;
@@ -488,41 +525,49 @@ public class SPItemVM : ItemVM
 		base.ImageIdentifier = itemVM.ImageIdentifier.Clone();
 		ItemRosterElement = itemVM.ItemRosterElement;
 		IsCivilianItem = itemVM.IsCivilianItem;
+		IsStealthItem = itemVM.IsStealthItem;
 		IsGenderDifferent = itemVM.IsGenderDifferent;
 		IsEquipableItem = itemVM.IsEquipableItem;
 		CanCharacterUseItem = CanCharacterUseItem;
 		IsArtifact = itemVM.IsArtifact;
+		IsSelected = itemVM.IsSelected;
+		_inventoryLogic = itemVM._inventoryLogic;
+		IsTransferable = itemVM.IsTransferable;
 		UpdateCanBeSlaughtered();
 		UpdateHintTexts();
 		CanBeDonated = _inventoryLogic?.CanDonateItem(ItemRosterElement, InventorySide) ?? false;
 		TradeData = new InventoryTradeVM(_inventoryLogic, itemVM.ItemRosterElement, inventorySide, OnTradeApplyTransaction);
 		UpdateProfitType();
+		base.Version++;
 	}
 
 	private void Reset()
 	{
 		base.ItemDescription = "";
 		base.ItemCost = 0;
-		base.TypeId = 0;
+		base.TypeName = "";
 		_itemType = EquipmentIndex.None;
 		ItemCount = 0;
 		TransactionCount = 0;
 		ItemLevel = 0;
 		base.StringId = "";
-		base.ImageIdentifier = new ImageIdentifierVM();
+		base.ImageIdentifier = new ItemImageIdentifierVM(null);
 		ItemRosterElement = default(ItemRosterElement);
 		ProfitType = 0;
 		IsCivilianItem = true;
+		IsStealthItem = false;
 		IsGenderDifferent = false;
 		IsEquipableItem = true;
 		IsArtifact = false;
+		IsSelected = false;
 		TradeData = new InventoryTradeVM(_inventoryLogic, ItemRosterElement, InventoryLogic.InventorySide.None, OnTradeApplyTransaction);
+		base.Version++;
 	}
 
 	private void UpdateProfitType()
 	{
 		ProfitType = 0;
-		if (Campaign.Current == null)
+		if (Campaign.Current == null || (InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) != InventoryScreenHelper.InventoryMode.Trade)
 		{
 			return;
 		}
@@ -570,13 +615,23 @@ public class SPItemVM : ItemVM
 
 	public void ExecuteBuySingle()
 	{
-		TransactionCount = 1;
+		ExecuteBuy(1);
+	}
+
+	public void ExecuteBuy(int amount)
+	{
+		TransactionCount = amount;
 		ItemVM.ProcessBuyItem(this, arg2: false);
 	}
 
 	public void ExecuteSellSingle()
 	{
-		TransactionCount = 1;
+		ExecuteSell(1);
+	}
+
+	public void ExecuteSell(int amount)
+	{
+		TransactionCount = amount;
 		ProcessSellItem(this, arg2: false);
 	}
 
@@ -622,7 +677,7 @@ public class SPItemVM : ItemVM
 
 	private void UpdateTotalCost()
 	{
-		if (TransactionCount > 0 && _inventoryLogic != null && InventorySide != InventoryLogic.InventorySide.Equipment)
+		if (TransactionCount > 0 && _inventoryLogic != null && !InventoryLogic.IsEquipmentSide(InventorySide))
 		{
 			TotalCost = _inventoryLogic.GetItemTotalPrice(ItemRosterElement, TransactionCount, out var _, InventorySide == InventoryLogic.InventorySide.OtherInventory);
 		}
@@ -670,95 +725,64 @@ public class SPItemVM : ItemVM
 
 	private string GetStackModifierString()
 	{
-		GameTexts.SetVariable("newline", "\n");
-		GameTexts.SetVariable("STR1", "");
-		GameTexts.SetVariable("STR2", "");
-		if (!string.IsNullOrEmpty(_entireStackShortcutKeyText))
+		if (InventoryLogic.IsEquipmentSide(InventorySide))
 		{
-			GameTexts.SetVariable("KEY_NAME", _entireStackShortcutKeyText);
-			string content = ((InventorySide == InventoryLogic.InventorySide.PlayerInventory) ? GameTexts.FindText("str_entire_stack_shortcut_discard_items").ToString() : GameTexts.FindText("str_entire_stack_shortcut_take_items").ToString());
-			GameTexts.SetVariable("STR1", content);
-			GameTexts.SetVariable("STR2", "");
-			if (ItemCount >= 5 && !string.IsNullOrEmpty(_fiveStackShortcutKeyText))
-			{
-				GameTexts.SetVariable("KEY_NAME", _fiveStackShortcutKeyText);
-				string content2 = ((InventorySide == InventoryLogic.InventorySide.PlayerInventory) ? GameTexts.FindText("str_five_stack_shortcut_discard_items").ToString() : GameTexts.FindText("str_five_stack_shortcut_take_items").ToString());
-				GameTexts.SetVariable("STR2", content2);
-			}
+			return string.Empty;
 		}
-		return GameTexts.FindText("str_string_newline_string").ToString();
+		TextObject allStackText = ((InventorySide == InventoryLogic.InventorySide.PlayerInventory) ? GameTexts.FindText("str_entire_stack_shortcut_discard_items") : GameTexts.FindText("str_entire_stack_shortcut_take_items"));
+		TextObject fiveStackText = ((InventorySide == InventoryLogic.InventorySide.PlayerInventory) ? GameTexts.FindText("str_five_stack_shortcut_discard_items") : GameTexts.FindText("str_five_stack_shortcut_take_items"));
+		return CampaignUIHelper.GetStackModifierString(allStackText, fiveStackText, ItemCount >= 5);
+	}
+
+	private string GetTextWithStackModifierText(string mainText)
+	{
+		string stackModifierString = GetStackModifierString();
+		if (string.IsNullOrEmpty(stackModifierString))
+		{
+			return mainText;
+		}
+		return GameTexts.FindText("str_string_newline_string").SetTextVariable("STR1", mainText).SetTextVariable("STR2", stackModifierString)
+			.ToString();
 	}
 
 	public void UpdateHintTexts()
 	{
-		base.SlaughterHint = new BasicTooltipViewModel(delegate
-		{
-			string stackModifierString6 = GetStackModifierString();
-			GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_slaughter"));
-			GameTexts.SetVariable("STR2", stackModifierString6);
-			return GameTexts.FindText("str_string_newline_string").ToString();
-		});
-		base.DonateHint = new BasicTooltipViewModel(delegate
-		{
-			string stackModifierString5 = GetStackModifierString();
-			GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_donate"));
-			GameTexts.SetVariable("STR2", stackModifierString5);
-			return GameTexts.FindText("str_string_newline_string").ToString();
-		});
+		base.SlaughterHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_slaughter").ToString()));
+		base.DonateHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_donate").ToString()));
 		base.PreviewHint = new HintViewModel(GameTexts.FindText("str_inventory_preview"));
 		base.EquipHint = new HintViewModel(GameTexts.FindText("str_inventory_equip"));
+		base.UnequipHint = new HintViewModel(GameTexts.FindText("str_inventory_unequip"));
 		base.LockHint = new HintViewModel(GameTexts.FindText("str_inventory_lock"));
-		if (_usageType == InventoryMode.Loot || _usageType == InventoryMode.Stash)
+		if (_usageType == InventoryScreenHelper.InventoryMode.Loot || _usageType == InventoryScreenHelper.InventoryMode.Stash)
 		{
 			base.BuyAndEquipHint = new BasicTooltipViewModel(() => GameTexts.FindText("str_inventory_take_and_equip").ToString());
-			base.SellHint = new BasicTooltipViewModel(delegate
-			{
-				string stackModifierString4 = GetStackModifierString();
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_give"));
-				GameTexts.SetVariable("STR2", stackModifierString4);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
-			base.BuyHint = new BasicTooltipViewModel(delegate
-			{
-				string stackModifierString3 = GetStackModifierString();
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_take"));
-				GameTexts.SetVariable("STR2", stackModifierString3);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
+			base.BuyHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_take").ToString()));
 		}
-		else if (_usageType == InventoryMode.Default)
+		else if (_usageType == InventoryScreenHelper.InventoryMode.Default)
 		{
 			base.BuyAndEquipHint = new BasicTooltipViewModel(() => GameTexts.FindText("str_inventory_take_and_equip").ToString());
-			base.SellHint = new BasicTooltipViewModel(delegate
-			{
-				string stackModifierString2 = GetStackModifierString();
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_discard"));
-				GameTexts.SetVariable("STR2", stackModifierString2);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
-			base.BuyHint = new BasicTooltipViewModel(delegate
-			{
-				string stackModifierString = GetStackModifierString();
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_take"));
-				GameTexts.SetVariable("STR2", stackModifierString);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
+			base.BuyHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_take").ToString()));
 		}
 		else
 		{
 			base.BuyAndEquipHint = new BasicTooltipViewModel(() => GameTexts.FindText("str_inventory_buy_and_equip").ToString());
-			base.SellHint = new BasicTooltipViewModel(delegate
-			{
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_sell"));
-				GameTexts.SetVariable("STR2", string.Empty);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
-			base.BuyHint = new BasicTooltipViewModel(delegate
-			{
-				GameTexts.SetVariable("STR1", GameTexts.FindText("str_inventory_buy"));
-				GameTexts.SetVariable("STR2", string.Empty);
-				return GameTexts.FindText("str_string_newline_string").ToString();
-			});
+			base.BuyHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_buy").ToString()));
+		}
+		if (!IsTransferable)
+		{
+			base.SellHint = new BasicTooltipViewModel(() => new TextObject("{=8xKky9ja}This item cannot be traded or discarded").ToString());
+		}
+		else if (_usageType == InventoryScreenHelper.InventoryMode.Loot || _usageType == InventoryScreenHelper.InventoryMode.Stash)
+		{
+			base.SellHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_give").ToString()));
+		}
+		else if (_usageType == InventoryScreenHelper.InventoryMode.Default)
+		{
+			base.SellHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_discard").ToString()));
+		}
+		else
+		{
+			base.SellHint = new BasicTooltipViewModel(() => GetTextWithStackModifierText(GameTexts.FindText("str_inventory_sell").ToString()));
 		}
 	}
 

@@ -1,15 +1,10 @@
 using System.Collections.Generic;
-using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.Core;
 
 public class CharacterAttribute : PropertyObject
 {
-	private MBList<SkillObject> _skills;
-
-	public MBReadOnlyList<SkillObject> Skills => _skills;
-
 	public TextObject Abbreviation { get; private set; }
 
 	public CharacterAttribute(string stringId)
@@ -17,17 +12,10 @@ public class CharacterAttribute : PropertyObject
 	{
 	}
 
-	internal void AddSkill(SkillObject skillObject)
-	{
-		_skills.Capacity = _skills.Count + 1;
-		_skills.Add(skillObject);
-	}
-
 	public void Initialize(TextObject name, TextObject description, TextObject abbreviation)
 	{
 		Initialize(name, description);
 		Abbreviation = abbreviation;
-		_skills = new MBList<SkillObject>(0);
 		AfterInitialized();
 	}
 

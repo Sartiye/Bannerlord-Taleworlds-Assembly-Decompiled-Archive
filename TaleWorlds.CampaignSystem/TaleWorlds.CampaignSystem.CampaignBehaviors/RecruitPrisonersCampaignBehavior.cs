@@ -68,17 +68,19 @@ public class RecruitPrisonersCampaignBehavior : CampaignBehaviorBase
 			int num2 = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.CalculateRecruitableNumber(mobileParty.Party, characterObject);
 			if (!flag && num2 < elementNumber)
 			{
-				flag = GenerateConformityForTroop(mobileParty, characterObject, 24);
+				flag = GenerateConformityForTroop(mobileParty, characterObject, CampaignTime.HoursInDay);
 			}
 			if (Campaign.Current.Models.PrisonerRecruitmentCalculationModel.ShouldPartyRecruitPrisoners(mobileParty.Party))
 			{
 				if (IsPrisonerRecruitable(mobileParty, characterObject, out var conformityNeeded))
 				{
-					int num3 = mobileParty.LimitedPartySize - mobileParty.MemberRoster.TotalManCount;
-					int num4 = MathF.Min((num3 > 0) ? ((num3 > num2) ? num2 : num3) : 0, prisonRoster.GetElementNumber(characterObject));
-					if (num4 > 0)
+					int num3 = mobileParty.Party.PartySizeLimit - mobileParty.MemberRoster.TotalManCount;
+					int a = MathF.Min((num3 > 0) ? ((num3 > num2) ? num2 : num3) : 0, prisonRoster.GetElementNumber(characterObject));
+					int characterWage = Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject);
+					a = MathF.Min(a, mobileParty.GetAvailableWageBudget() / characterWage);
+					if (a > 0)
 					{
-						RecruitPrisonersAi(mobileParty, characterObject, num4, conformityNeeded);
+						RecruitPrisonersAi(mobileParty, characterObject, a, conformityNeeded);
 					}
 				}
 			}
@@ -91,8 +93,8 @@ public class RecruitPrisonersCampaignBehavior : CampaignBehaviorBase
 
 	private bool GenerateConformityForTroop(MobileParty mobileParty, CharacterObject troop, int hours = 1)
 	{
-		int xpAmount = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetConformityChangePerHour(mobileParty.Party, troop) * hours;
-		mobileParty.PrisonRoster.AddXpToTroop(xpAmount, troop);
+		int xpAmount = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetConformityChangePerHour(mobileParty.Party, troop).RoundedResultNumber * hours;
+		mobileParty.PrisonRoster.AddXpToTroop(troop, xpAmount);
 		return true;
 	}
 

@@ -175,7 +175,7 @@ public class OverlayPopupWidget : Widget
 		if (item.CurrentCharacterImageWidget != null)
 		{
 			CurrentCharacterImageWidget.ImageId = item.CurrentCharacterImageWidget.ImageId;
-			CurrentCharacterImageWidget.ImageTypeCode = item.CurrentCharacterImageWidget.ImageTypeCode;
+			CurrentCharacterImageWidget.TextureProviderName = item.CurrentCharacterImageWidget.TextureProviderName;
 			CurrentCharacterImageWidget.AdditionalArgs = item.CurrentCharacterImageWidget.AdditionalArgs;
 		}
 		if (!base.ParentWidget.IsVisible)

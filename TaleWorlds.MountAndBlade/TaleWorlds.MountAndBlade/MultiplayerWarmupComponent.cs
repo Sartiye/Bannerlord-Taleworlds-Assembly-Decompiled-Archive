@@ -31,7 +31,7 @@ public class MultiplayerWarmupComponent : MissionNetwork
 
 	private WarmupStates _warmupState;
 
-	public static float TotalWarmupDuration => MultiplayerOptions.OptionType.WarmupTimeLimit.GetIntValue() * 60;
+	public static float TotalWarmupDuration => MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds.GetIntValue();
 
 	public bool IsInWarmup => WarmupState != WarmupStates.Ended;
 

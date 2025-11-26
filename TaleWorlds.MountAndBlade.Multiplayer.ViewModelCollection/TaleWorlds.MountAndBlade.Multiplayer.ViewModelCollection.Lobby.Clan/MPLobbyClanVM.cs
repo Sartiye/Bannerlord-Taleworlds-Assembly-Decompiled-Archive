@@ -150,7 +150,7 @@ public class MPLobbyClanVM : ViewModel
 		ClanHomeInfo clanHomeInfo = NetworkMain.GameClient.ClanHomeInfo;
 		if (clanHomeInfo == null)
 		{
-			Debug.FailedAssert("Retrieved clan home info is null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Clan\\MPLobbyClanVM.cs", "OnClanInfoChanged", 65);
+			Debug.FailedAssert("Retrieved clan home info is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Clan\\MPLobbyClanVM.cs", "OnClanInfoChanged", 65);
 			return;
 		}
 		await ClanOverview.RefreshClanInformation(clanHomeInfo);

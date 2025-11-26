@@ -20,6 +20,7 @@ public class TraitChangedNotificationItemVM : MapNotificationItemBaseVM
 		_onInspect = delegate
 		{
 			base.NavigationHandler?.OpenCharacterDeveloper();
+			ExecuteRemove();
 		};
 	}
 }

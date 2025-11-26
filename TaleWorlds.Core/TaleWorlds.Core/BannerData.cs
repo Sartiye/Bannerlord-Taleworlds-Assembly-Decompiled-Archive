@@ -7,7 +7,7 @@ namespace TaleWorlds.Core;
 
 public class BannerData
 {
-	public const float RotationPrecision = 0.00278f;
+	public const float RotationPrecision = 0.0027777778f;
 
 	[CachedData]
 	private int _localVersion;

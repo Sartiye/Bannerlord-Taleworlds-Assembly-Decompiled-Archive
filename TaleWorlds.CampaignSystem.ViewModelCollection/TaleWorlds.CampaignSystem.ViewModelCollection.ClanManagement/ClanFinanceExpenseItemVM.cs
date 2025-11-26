@@ -290,7 +290,7 @@ public class ClanFinanceExpenseItemVM : ViewModel
 		CurrentWage = _mobileParty.TotalWage;
 		CurrentWageValueText = CurrentWage.ToString();
 		IsUnlimitedWage = !_mobileParty.HasLimitedWage();
-		CurrentWageLimit = ((_mobileParty.PaymentLimit == Campaign.Current.Models.PartyWageModel.MaxWage) ? 2000 : _mobileParty.PaymentLimit);
+		CurrentWageLimit = ((_mobileParty.PaymentLimit == Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit) ? 2000 : _mobileParty.PaymentLimit);
 		IsEnabled = true;
 		RefreshValues();
 	}
@@ -320,7 +320,7 @@ public class ClanFinanceExpenseItemVM : ViewModel
 		CurrentWageLimit = 2000;
 		if (newValue)
 		{
-			_mobileParty.SetWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWage);
+			_mobileParty.SetWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
 		}
 		else
 		{

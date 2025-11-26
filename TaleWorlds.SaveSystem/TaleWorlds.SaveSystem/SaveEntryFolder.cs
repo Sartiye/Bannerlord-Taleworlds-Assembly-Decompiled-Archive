@@ -14,27 +14,19 @@ public class SaveEntryFolder
 
 	public FolderId FolderId { get; private set; }
 
-	public IEnumerable<SaveEntry> AllEntries
-	{
-		get
-		{
-			foreach (SaveEntry value in _entries.Values)
-			{
-				yield return value;
-			}
-			foreach (SaveEntryFolder value2 in _saveEntryFolders.Values)
-			{
-				foreach (SaveEntry allEntry in value2.AllEntries)
-				{
-					yield return allEntry;
-				}
-			}
-		}
-	}
-
 	public Dictionary<EntryId, SaveEntry>.ValueCollection ChildEntries => _entries.Values;
 
 	public Dictionary<FolderId, SaveEntryFolder>.ValueCollection ChildFolders => _saveEntryFolders.Values;
+
+	public List<SaveEntry> GetAllEntries()
+	{
+		List<SaveEntry> list = new List<SaveEntry>(_entries.Values);
+		foreach (SaveEntryFolder value in _saveEntryFolders.Values)
+		{
+			list.AddRange(value.GetAllEntries());
+		}
+		return list;
+	}
 
 	public static SaveEntryFolder CreateRootFolder()
 	{
@@ -52,7 +44,7 @@ public class SaveEntryFolder
 		GlobalId = globalId;
 		FolderId = folderId;
 		_entries = new Dictionary<EntryId, SaveEntry>(entryCount);
-		_saveEntryFolders = new Dictionary<FolderId, SaveEntryFolder>(3);
+		_saveEntryFolders = new Dictionary<FolderId, SaveEntryFolder>();
 	}
 
 	public void AddEntry(SaveEntry saveEntry)

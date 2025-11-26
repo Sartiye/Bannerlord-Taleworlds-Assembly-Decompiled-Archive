@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TaleWorlds.Core.SaveCompability;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
 
@@ -19,7 +20,6 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(BannerData), 4);
 		AddClassDefinition(typeof(BasicCharacterObject), 5);
 		AddClassDefinition(typeof(CharacterAttribute), 6);
-		AddClassDefinition(typeof(CharacterSkills), 8);
 		AddClassDefinition(typeof(WeaponDesign), 9);
 		AddClassDefinition(typeof(CraftingPiece), 10);
 		AddClassDefinition(typeof(CraftingTemplate), 11);
@@ -45,6 +45,8 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		AddClassDefinition(typeof(InformationData), 50);
 		AddClassDefinition(typeof(MBFastRandom), 52);
 		AddClassDefinition(typeof(BannerComponent), 53);
+		AddClassDefinition(typeof(ShipHull), 54);
+		AddClassDefinition(typeof(ShipUpgradePiece), 55);
 	}
 
 	protected override void DefineStructTypes()
@@ -53,6 +55,7 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		AddStructDefinition(typeof(UniqueTroopDescriptor), 1006);
 		AddStructDefinition(typeof(StaticBodyProperties), 1009);
 		AddStructDefinition(typeof(EquipmentElement), 1011);
+		AddStructDefinition(typeof(AgentSaveData), 1012);
 	}
 
 	protected override void DefineEnumTypes()
@@ -68,6 +71,11 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 	{
 	}
 
+	protected override void DefineConflictResolvers()
+	{
+		AddConflictResolver(8, new CharacterSkillsResolver());
+	}
+
 	protected override void DefineRootClassTypes()
 	{
 		AddRootClassDefinition(typeof(Game), 4001);
@@ -76,6 +84,8 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 	protected override void DefineGenericClassDefinitions()
 	{
 		ConstructGenericClassDefinition(typeof(Tuple<int, int>));
+		ConstructGenericClassDefinition(typeof(PropertyOwner<SkillObject>));
+		ConstructGenericClassDefinition(typeof(PropertyOwner<CharacterAttribute>));
 	}
 
 	protected override void DefineGenericStructDefinitions()
@@ -106,6 +116,9 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(List<WeaponDesign>));
 		ConstructContainerDefinition(typeof(List<ItemRosterElement>));
 		ConstructContainerDefinition(typeof(List<InformationData>));
+		ConstructContainerDefinition(typeof(List<AgentSaveData>));
+		ConstructContainerDefinition(typeof(List<BattleSideEnum>));
+		ConstructContainerDefinition(typeof(List<ShipUpgradePiece>));
 		ConstructContainerDefinition(typeof(Dictionary<string, ItemCategory>));
 		ConstructContainerDefinition(typeof(Dictionary<string, CraftingPiece>));
 		ConstructContainerDefinition(typeof(Dictionary<string, CraftingTemplate>));
@@ -142,5 +155,6 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(Dictionary<long, Dictionary<long, int>>));
 		ConstructContainerDefinition(typeof(Dictionary<int, Tuple<int, int>>));
 		ConstructContainerDefinition(typeof(Dictionary<EquipmentElement, int>));
+		ConstructContainerDefinition(typeof(Dictionary<string, ShipUpgradePiece>));
 	}
 }

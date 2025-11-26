@@ -464,7 +464,7 @@ public class KingdomClanVM : KingdomCategoryVM
 			disabledReason = GameTexts.FindText("str_mercenaries_cannot_support_clans");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -498,7 +498,7 @@ public class KingdomClanVM : KingdomCategoryVM
 				return false;
 			}
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 

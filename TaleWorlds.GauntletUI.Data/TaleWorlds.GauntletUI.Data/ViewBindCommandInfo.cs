@@ -2,7 +2,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.GauntletUI.Data;
 
-internal class ViewBindCommandInfo
+internal struct ViewBindCommandInfo
 {
 	internal GauntletView Owner { get; private set; }
 

@@ -21,7 +21,11 @@ public class DecisionItemBaseVM : ViewModel
 		Policy,
 		DeclareWar,
 		MakePeace,
-		KingSelection
+		KingSelection,
+		StartAlliance,
+		AcceptCallToWarAgreement,
+		ProposeCallToWarAgreement,
+		Trade
 	}
 
 	protected readonly KingdomDecision _decision;
@@ -78,7 +82,7 @@ public class DecisionItemBaseVM : ViewModel
 			{
 				if (!IsPlayerSupporter)
 				{
-					return Campaign.Current.Models.ClanPoliticsModel.GetInfluenceRequiredToOverrideKingdomDecision(KingdomDecisionMaker.PossibleOutcomes.MaxBy((DecisionOutcome o) => o.WinChance), _currentSelectedOption.Option, _decision);
+					return Campaign.Current.Models.ClanPoliticsModel.GetInfluenceRequiredToOverrideKingdomDecision(TaleWorlds.Core.Extensions.MaxBy(KingdomDecisionMaker.PossibleOutcomes, (DecisionOutcome o) => o.WinChance), _currentSelectedOption.Option, _decision);
 				}
 				if (_currentSelectedOption.CurrentSupportWeight != 0)
 				{
@@ -470,7 +474,7 @@ public class DecisionItemBaseVM : ViewModel
 			DecisionOptionVM decisionOptionVM = DecisionOptionsList.FirstOrDefault((DecisionOptionVM c) => c.Option == option);
 			if (decisionOptionVM == null)
 			{
-				Debug.FailedAssert("Couldn't find option to update win chance for!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\ItemTypes\\DecisionItemBaseVM.cs", "RefreshWinPercentages", 210);
+				Debug.FailedAssert("Couldn't find option to update win chance for!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\ItemTypes\\DecisionItemBaseVM.cs", "RefreshWinPercentages", 213);
 			}
 			else
 			{
@@ -555,7 +559,7 @@ public class DecisionItemBaseVM : ViewModel
 		CanEndDecision = !_finalSelectionDone && (flag3 || (flag && flag2));
 		if (CanEndDecision)
 		{
-			EndDecisionHint.HintText = TextObject.Empty;
+			EndDecisionHint.HintText = TextObject.GetEmpty();
 		}
 		else if (!flag)
 		{

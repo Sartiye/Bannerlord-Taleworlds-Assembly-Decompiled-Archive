@@ -15,8 +15,8 @@ internal static class ZipExtensions
 	public static void FillFrom(this ZipArchiveEntry entry, TaleWorlds.Library.BinaryWriter writer)
 	{
 		using Stream stream = entry.Open();
-		byte[] data = writer.Data;
-		stream.Write(data, 0, data.Length);
+		byte[] finalData = writer.GetFinalData();
+		stream.Write(finalData, 0, finalData.Length);
 	}
 
 	public static TaleWorlds.Library.BinaryReader GetBinaryReader(this ZipArchiveEntry entry)

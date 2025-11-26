@@ -25,7 +25,7 @@ public abstract class MPOnSpawnPerkEffectBase : MPPerkEffectBase, IOnSpawnPerkEf
 		if (text != null && !Enum.TryParse<Target>(text, ignoreCase: true, out EffectTarget))
 		{
 			EffectTarget = Target.Any;
-			Debug.FailedAssert("provided 'target' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPOnSpawnPerkEffectBase.cs", "Deserialize", 38);
+			Debug.FailedAssert("provided 'target' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPOnSpawnPerkEffectBase.cs", "Deserialize", 38);
 		}
 	}
 

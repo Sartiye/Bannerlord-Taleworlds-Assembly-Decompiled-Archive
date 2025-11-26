@@ -251,7 +251,7 @@ public class AgentVisualsData
 		return this;
 	}
 
-	public AgentVisualsData ActionCode(ActionIndexCache actionCode)
+	public AgentVisualsData ActionCode(in ActionIndexCache actionCode)
 	{
 		ActionCodeData = actionCode;
 		return this;

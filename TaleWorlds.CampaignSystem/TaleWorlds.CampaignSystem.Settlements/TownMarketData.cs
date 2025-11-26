@@ -79,8 +79,8 @@ public class TownMarketData : IMarketData
 
 	public void AddDemand(ItemCategory itemCategory, float demandAmount)
 	{
-		SettlementEconomyModel settlementConsumptionModel = Campaign.Current.Models.SettlementConsumptionModel;
-		SetItemData(itemCategory, GetCategoryData(itemCategory).AddDemand(settlementConsumptionModel.GetDemandChangeFromValue(demandAmount)));
+		SettlementEconomyModel settlementEconomyModel = Campaign.Current.Models.SettlementEconomyModel;
+		SetItemData(itemCategory, GetCategoryData(itemCategory).AddDemand(settlementEconomyModel.GetDemandChangeFromValue(demandAmount)));
 	}
 
 	public void AddSupply(ItemCategory itemCategory, float supplyAmount)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categories;
 
@@ -34,11 +35,17 @@ public class ClanPartiesSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanPartyItemVM x, ClanPartyItemVM y)
 		{
+			int num = GetDistanceToMainParty(y).CompareTo(GetDistanceToMainParty(x));
 			if (_isAcending)
 			{
-				return y.Party.MobileParty.GetTrackDistanceToMainAgent().CompareTo(x.Party.MobileParty.GetTrackDistanceToMainAgent()) * -1;
+				return num * -1;
 			}
-			return y.Party.MobileParty.GetTrackDistanceToMainAgent().CompareTo(x.Party.MobileParty.GetTrackDistanceToMainAgent());
+			return num;
+		}
+
+		private float GetDistanceToMainParty(ClanPartyItemVM item)
+		{
+			return item.Party.MobileParty.Position.Distance(Hero.MainHero.GetCampaignPosition());
 		}
 	}
 
@@ -54,6 +61,18 @@ public class ClanPartiesSortControllerVM : ViewModel
 		}
 	}
 
+	public class ItemShipCountComparer : ItemComparerBase
+	{
+		public override int Compare(ClanPartyItemVM x, ClanPartyItemVM y)
+		{
+			if (_isAcending)
+			{
+				return y.Party.Ships.Count.CompareTo(x.Party.Ships.Count) * -1;
+			}
+			return y.Party.Ships.Count.CompareTo(x.Party.Ships.Count);
+		}
+	}
+
 	private readonly MBBindingList<MBBindingList<ClanPartyItemVM>> _listsToControl;
 
 	private readonly ItemNameComparer _nameComparer;
@@ -62,11 +81,15 @@ public class ClanPartiesSortControllerVM : ViewModel
 
 	private readonly ItemSizeComparer _sizeComparer;
 
+	private readonly ItemShipCountComparer _shipCountComparer;
+
 	private int _nameState;
 
 	private int _locationState;
 
 	private int _sizeState;
+
+	private int _shipCountState;
 
 	private bool _isNameSelected;
 
@@ -74,11 +97,15 @@ public class ClanPartiesSortControllerVM : ViewModel
 
 	private bool _isSizeSelected;
 
+	private bool _isShipCountSelected;
+
 	private string _nameText;
 
 	private string _locationText;
 
 	private string _sizeText;
+
+	private string _shipCountText;
 
 	[DataSourceProperty]
 	public int NameState
@@ -127,6 +154,23 @@ public class ClanPartiesSortControllerVM : ViewModel
 			{
 				_sizeState = value;
 				OnPropertyChangedWithValue(value, "SizeState");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int ShipCountState
+	{
+		get
+		{
+			return _shipCountState;
+		}
+		set
+		{
+			if (value != _shipCountState)
+			{
+				_shipCountState = value;
+				OnPropertyChangedWithValue(value, "ShipCountState");
 			}
 		}
 	}
@@ -183,6 +227,23 @@ public class ClanPartiesSortControllerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsShipCountSelected
+	{
+		get
+		{
+			return _isShipCountSelected;
+		}
+		set
+		{
+			if (value != _isShipCountSelected)
+			{
+				_isShipCountSelected = value;
+				OnPropertyChangedWithValue(value, "IsShipCountSelected");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string NameText
 	{
 		get
@@ -233,12 +294,30 @@ public class ClanPartiesSortControllerVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public string ShipCountText
+	{
+		get
+		{
+			return _shipCountText;
+		}
+		set
+		{
+			if (value != _shipCountText)
+			{
+				_shipCountText = value;
+				OnPropertyChangedWithValue(value, "ShipCountText");
+			}
+		}
+	}
+
 	public ClanPartiesSortControllerVM(MBBindingList<MBBindingList<ClanPartyItemVM>> listsToControl)
 	{
 		_listsToControl = listsToControl;
 		_nameComparer = new ItemNameComparer();
 		_locationComparer = new ItemLocationComparer();
 		_sizeComparer = new ItemSizeComparer();
+		_shipCountComparer = new ItemShipCountComparer();
 	}
 
 	public override void RefreshValues()
@@ -247,6 +326,7 @@ public class ClanPartiesSortControllerVM : ViewModel
 		NameText = GameTexts.FindText("str_sort_by_name_label").ToString();
 		LocationText = GameTexts.FindText("str_tooltip_label_location").ToString();
 		SizeText = GameTexts.FindText("str_clan_party_size").ToString();
+		ShipCountText = new TextObject("{=URbKirPS}Ship Count").ToString();
 	}
 
 	public void ExecuteSortByName()
@@ -300,14 +380,33 @@ public class ClanPartiesSortControllerVM : ViewModel
 		IsSizeSelected = true;
 	}
 
+	public void ExecuteSortByShipCount()
+	{
+		int shipCountState = ShipCountState;
+		SetAllStates(CampaignUIHelper.SortState.Default);
+		ShipCountState = (shipCountState + 1) % 3;
+		if (ShipCountState == 0)
+		{
+			ShipCountState++;
+		}
+		_shipCountComparer.SetSortMode(ShipCountState == 1);
+		foreach (MBBindingList<ClanPartyItemVM> item in _listsToControl)
+		{
+			item.Sort(_shipCountComparer);
+		}
+		IsShipCountSelected = true;
+	}
+
 	private void SetAllStates(CampaignUIHelper.SortState state)
 	{
 		NameState = (int)state;
 		LocationState = (int)state;
 		SizeState = (int)state;
+		ShipCountState = (int)state;
 		IsNameSelected = false;
 		IsLocationSelected = false;
 		IsSizeSelected = false;
+		IsShipCountSelected = false;
 	}
 
 	public void ResetAllStates()

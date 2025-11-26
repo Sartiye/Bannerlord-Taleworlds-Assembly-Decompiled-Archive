@@ -1,5 +1,6 @@
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -15,7 +16,7 @@ public class DecisionSupporterVM : ViewModel
 
 	private Hero _hero;
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
 	private string _name;
 
@@ -24,7 +25,7 @@ public class DecisionSupporterVM : ViewModel
 	private string _supportWeightImagePath;
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -101,11 +102,11 @@ public class DecisionSupporterVM : ViewModel
 		_hero = Hero.FindFirst((Hero H) => H.Name == name);
 		if (_hero != null)
 		{
-			Visual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(_hero.CharacterObject));
+			Visual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(_hero.CharacterObject));
 		}
 		else
 		{
-			Visual = new ImageIdentifierVM();
+			Visual = new CharacterImageIdentifierVM(null);
 		}
 	}
 

@@ -197,7 +197,7 @@ public static class GameNetwork
 		DontSendToPeers = 0x100
 	}
 
-	[EngineStruct("Debug_network_position_compression_statistics_struct", false)]
+	[EngineStruct("Debug_network_position_compression_statistics_struct", false, null)]
 	public struct DebugNetworkPositionCompressionStatisticsStruct
 	{
 		public int totalPositionUpload;
@@ -211,7 +211,7 @@ public static class GameNetwork
 		public int totalPositionCoarseBitCountZ;
 	}
 
-	[EngineStruct("Debug_network_packet_statistics_struct", false)]
+	[EngineStruct("Debug_network_packet_statistics_struct", false, null)]
 	public struct DebugNetworkPacketStatisticsStruct
 	{
 		public int TotalPackets;
@@ -288,7 +288,7 @@ public static class GameNetwork
 
 	public static int ClientPeerIndex;
 
-	private const MultiplayerMessageFilter MultiplayerLogging = MultiplayerMessageFilter.All;
+	private static MultiplayerMessageFilter MultiplayerLogging = MultiplayerMessageFilter.All;
 
 	private static Dictionary<Type, int> _gameNetworkMessageTypesAll;
 
@@ -546,7 +546,7 @@ public static class GameNetwork
 		Debug.Print("NetworkManager::HandleMultiplayerEnd");
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void HandleRemovePlayer(MBNetworkPeer peer, bool isTimedOut)
 	{
 		DisconnectInfo disconnectInfo = peer.NetworkPeer.PlayerConnectionInfo.GetParameter<DisconnectInfo>("DisconnectInfo") ?? new DisconnectInfo
@@ -602,7 +602,7 @@ public static class GameNetwork
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void HandleDisconnect()
 	{
 		_handler.OnDisconnectedFromServer();
@@ -637,7 +637,7 @@ public static class GameNetwork
 		StartMultiplayer();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static bool HandleNetworkPacketAsServer(MBNetworkPeer networkPeer)
 	{
 		return HandleNetworkPacketAsServer(networkPeer.NetworkPeer);
@@ -694,7 +694,7 @@ public static class GameNetwork
 						}
 						if (flag2)
 						{
-							Debug.FailedAssert("Unknown network messageId " + gameNetworkMessage, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsServer", 765);
+							Debug.FailedAssert("Unknown network messageId " + gameNetworkMessage, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsServer", 760);
 							bufferReadValid = false;
 						}
 						else if (!flag)
@@ -717,7 +717,7 @@ public static class GameNetwork
 		return bufferReadValid;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static void HandleConsoleCommand(string command)
 	{
 		if (_handler != null)
@@ -995,7 +995,7 @@ public static class GameNetwork
 		AddRemoveMessageHandlers(NetworkMessageHandlerRegisterer.RegisterMode.Add);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static bool HandleNetworkPacketAsClient()
 	{
 		bool bufferReadValid = true;
@@ -1016,7 +1016,7 @@ public static class GameNetwork
 				{
 					bool flag = false;
 					bool flag2 = true;
-					if ((gameNetworkMessage.GetLogFilter() & MultiplayerMessageFilter.All) != MultiplayerMessageFilter.None)
+					if ((gameNetworkMessage.GetLogFilter() & MultiplayerLogging) != MultiplayerMessageFilter.None)
 					{
 						if (GameNetworkMessage.IsClientMissionOver)
 						{
@@ -1225,6 +1225,10 @@ public static class GameNetwork
 
 	public static void WriteMessage(GameNetworkMessage message)
 	{
+		if ((message.GetLogFilter() & MultiplayerLogging) != MultiplayerMessageFilter.None)
+		{
+			Debug.Print("Writing message: " + message.GetLogFormat(), 0, Debug.DebugColor.White, 17179869184uL);
+		}
 		Type type = message.GetType();
 		message.MessageId = _gameNetworkMessageTypesAll[type];
 		message.Write();
@@ -1270,12 +1274,6 @@ public static class GameNetwork
 	{
 		int key = _gameNetworkMessageTypesFromClient[typeof(T)];
 		_fromClientMessageHandlers[key].Remove(handler);
-	}
-
-	private static void RemoveClientBaseMessageHandler(GameNetworkMessage.ClientMessageHandlerDelegate<GameNetworkMessage> handler, Type messageType)
-	{
-		int key = _gameNetworkMessageTypesFromClient[messageType];
-		_fromClientBaseMessageHandlers[key].Remove(handler);
 	}
 
 	internal static void FindGameNetworkMessages()
@@ -1341,6 +1339,12 @@ public static class GameNetwork
 			}
 		}
 		_synchedMissionObjectClassTypes.Sort((Type s1, Type s2) => s1.FullName.CompareTo(s2.FullName));
+	}
+
+	private static void RemoveClientBaseMessageHandler(GameNetworkMessage.ClientMessageHandlerDelegate<GameNetworkMessage> handler, Type messageType)
+	{
+		int key = _gameNetworkMessageTypesFromClient[messageType];
+		_fromClientBaseMessageHandlers[key].Remove(handler);
 	}
 
 	private static bool CheckAssemblyForNetworkMessage(Assembly assembly)
@@ -1431,7 +1435,7 @@ public static class GameNetwork
 		CompressionMission.MonsterUsageSetCompressionInfo = new CompressionInfo.Integer(0, MBActionSet.GetNumberOfMonsterUsageSets() - 1, maximumValueGiven: true);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void SyncRelevantGameOptionsToServer()
 	{
 		SyncRelevantGameOptionsToServer syncRelevantGameOptionsToServer = new SyncRelevantGameOptionsToServer();

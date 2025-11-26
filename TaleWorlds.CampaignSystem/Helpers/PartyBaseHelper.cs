@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
@@ -13,6 +13,26 @@ namespace Helpers;
 
 public static class PartyBaseHelper
 {
+	public static void SortRoster(MobileParty mobileParty)
+	{
+		CharacterObject characterObject = null;
+		foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
+		{
+			if (characterObject == null || characterObject.Tier < item.Character.Tier)
+			{
+				characterObject = item.Character;
+				if (characterObject.Tier == Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier)
+				{
+					break;
+				}
+			}
+		}
+		if (characterObject != null)
+		{
+			mobileParty.MemberRoster.SwapTroopsAtIndices(mobileParty.MemberRoster.FindIndexOfTroop(characterObject), 0);
+		}
+	}
+
 	public static TextObject GetPartySizeText(PartyBase party)
 	{
 		if (party.NumberOfHealthyMembers == party.NumberOfAllMembers)
@@ -42,9 +62,21 @@ public static class PartyBaseHelper
 		return new TextObject("{=!}" + text);
 	}
 
+	public static string GetShipSizeText(int shipCount, bool isInspected)
+	{
+		if (isInspected)
+		{
+			return shipCount.ToString();
+		}
+		return "?";
+	}
+
 	public static float FindPartySizeNormalLimit(MobileParty mobileParty)
 	{
-		return MathF.Max(0.1f, (float)mobileParty.LimitedPartySize / (float)mobileParty.Party.PartySizeLimit);
+		int num = Math.Min((mobileParty.LeaderHero != null && mobileParty.Party.Owner?.Clan != null && mobileParty.LeaderHero != mobileParty.Party.Owner.Clan.Leader) ? mobileParty.LeaderHero.CharacterObject.TroopWage : 0, mobileParty.TotalWage);
+		int a = (int)((float)(mobileParty.PaymentLimit - num) / Campaign.Current.AverageWage) + 1;
+		int num2 = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Min(a, mobileParty.Party.PartySizeLimit));
+		return TaleWorlds.Library.MathF.Max(0.1f, (float)num2 / (float)mobileParty.Party.PartySizeLimit);
 	}
 
 	public static Hero GetCaptainOfTroop(PartyBase affectorParty, CharacterObject affectorCharacter)
@@ -238,7 +270,7 @@ public static class PartyBaseHelper
 		}
 		if (list.Count <= 0)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: false);
 	}
@@ -314,7 +346,7 @@ public static class PartyBaseHelper
 		if (party.LeaderHero == null)
 		{
 			TroopRoster memberRoster = party.MemberRoster;
-			if ((object)memberRoster == null || memberRoster.TotalManCount <= 0)
+			if (memberRoster == null || memberRoster.TotalManCount <= 0)
 			{
 				return null;
 			}
@@ -336,36 +368,6 @@ public static class PartyBaseHelper
 			}
 		}
 		return num;
-	}
-
-	public static bool DoesSurrenderIsLogicalForParty(MobileParty ourParty, MobileParty enemyParty, float acceptablePowerRatio = 0.1f)
-	{
-		float num = enemyParty.Party.TotalStrength;
-		float num2 = ourParty.Party.TotalStrength;
-		LocatableSearchData<MobileParty> data = Campaign.Current.MobilePartyLocator.StartFindingLocatablesAroundPosition(enemyParty.Position2D, 6f);
-		for (MobileParty mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data); mobileParty != null; mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data))
-		{
-			if (mobileParty != enemyParty && mobileParty != ourParty && mobileParty.Aggressiveness > 0.01f && mobileParty.CurrentSettlement == null)
-			{
-				if (mobileParty.MapFaction == enemyParty.MapFaction || (mobileParty.MapFaction.IsBanditFaction && enemyParty.MapFaction.IsBanditFaction))
-				{
-					num += mobileParty.Party.TotalStrength;
-				}
-				else if (mobileParty.MapFaction == ourParty.MapFaction || (mobileParty.MapFaction.IsBanditFaction && ourParty.MapFaction.IsBanditFaction))
-				{
-					num2 += mobileParty.Party.TotalStrength;
-				}
-			}
-		}
-		int num3 = 0;
-		foreach (ItemRosterElement item in ourParty.ItemRoster)
-		{
-			num3 += item.EquipmentElement.GetBaseValue() * item.Amount;
-		}
-		int num4 = num3 + ((ourParty.LeaderHero != null) ? ourParty.LeaderHero.Gold : ourParty.PartyTradeGold);
-		float num5 = 0.75f + 0.25f * MathF.Sqrt((float)num4 / 1000f);
-		float num6 = num * acceptablePowerRatio * MathF.Min(2f, 1f / num5) * ourParty.Party.RandomFloat(0.5f, 1f);
-		return num2 < num6;
 	}
 
 	public static bool HasFeat(PartyBase party, FeatObject feat)

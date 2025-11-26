@@ -5,6 +5,8 @@ using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 
@@ -55,8 +57,6 @@ public class MultiplayerClassLoadoutVM : ViewModel
 	private bool _isGoldEnabled;
 
 	private bool _isInWarmup;
-
-	private bool _useSecondary;
 
 	private bool _showAttackerOrDefenderIcons;
 
@@ -212,23 +212,6 @@ public class MultiplayerClassLoadoutVM : ViewModel
 			{
 				_isSpawnLabelVisible = value;
 				OnPropertyChangedWithValue(value, "IsSpawnLabelVisible");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool UseSecondary
-	{
-		get
-		{
-			return _useSecondary;
-		}
-		set
-		{
-			if (value != _useSecondary)
-			{
-				_useSecondary = value;
-				OnPropertyChangedWithValue(value, "UseSecondary");
 			}
 		}
 	}
@@ -505,11 +488,14 @@ public class MultiplayerClassLoadoutVM : ViewModel
 		{
 			Gold = _missionMultiplayerGameMode.GetGoldAmount();
 		}
+		MissionPeer component = GameNetwork.MyPeer.GetComponent<MissionPeer>();
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = MultiplayerBattleColors.CreateWith(@object, object2).GetPeerColors(component);
 		HeroClassVM heroClassVM = null;
-		UseSecondary = team.Side == BattleSideEnum.Defender;
 		foreach (MultiplayerClassDivisions.MPHeroClassGroup multiplayerHeroClassGroup in MultiplayerClassDivisions.MultiplayerHeroClassGroups)
 		{
-			HeroClassGroupVM heroClassGroupVM = new HeroClassGroupVM(RefreshCharacter, OnSelectPerk, multiplayerHeroClassGroup, UseSecondary);
+			HeroClassGroupVM heroClassGroupVM = new HeroClassGroupVM(RefreshCharacter, OnSelectPerk, multiplayerHeroClassGroup, peerColors);
 			if (heroClassGroupVM.IsValid)
 			{
 				Classes.Add(heroClassGroupVM);
@@ -550,10 +536,10 @@ public class MultiplayerClassLoadoutVM : ViewModel
 		MissionPeer.OnEquipmentIndexRefreshed += RefreshPeerDivision;
 		MissionPeer.OnPerkSelectionUpdated += RefreshPeerPerkSelection;
 		NetworkCommunicator.OnPeerComponentAdded += OnPeerComponentAdded;
-		BasicCultureObject culture = GameNetwork.MyPeer.GetComponent<MissionPeer>().Culture;
+		BasicCultureObject culture = component.Culture;
 		CultureId = culture.StringId;
-		CultureColor1 = Color.FromUint(UseSecondary ? culture.Color2 : culture.Color);
-		CultureColor2 = Color.FromUint(UseSecondary ? culture.Color : culture.Color2);
+		CultureColor1 = peerColors.Color1;
+		CultureColor2 = peerColors.Color2;
 		if (Mission.Current.HasMissionBehavior<MissionMultiplayerSiegeClient>())
 		{
 			ShowAttackerOrDefenderIcons = true;
@@ -573,7 +559,7 @@ public class MultiplayerClassLoadoutVM : ViewModel
 		base.RefreshValues();
 		UpdateSpawnAndTimerLabels();
 		string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
-		TextObject textObject = new TextObject("{=XJTX8w8M}Warmup Phase - {GAME_MODE}\nWaiting for players to join");
+		TextObject textObject = new TextObject("{=XJTX8w8M}Warmup Phase - {GAME_MODE}{newline}Waiting for players to join");
 		textObject.SetTextVariable("GAME_MODE", GameTexts.FindText("str_multiplayer_official_game_type_name", strValue));
 		WarmupInfoText = textObject.ToString();
 		BasicCultureObject culture = GameNetwork.MyPeer.GetComponent<MissionPeer>().Culture;

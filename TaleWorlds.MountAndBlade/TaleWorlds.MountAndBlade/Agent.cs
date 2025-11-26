@@ -171,7 +171,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		GoWithoutMount = 0x20,
 		RangerCanMoveForClearTarget = 0x80,
 		InConversation = 0x100,
-		Crouch = 0x200
+		Crouch = 0x200,
+		Drag = 0x400
 	}
 
 	[Flags]
@@ -184,18 +185,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	}
 
 	[Flags]
-	[EngineStruct("Ai_state_flag", false)]
+	[EngineStruct("Ai_state_flag", true, "aisf", false)]
 	public enum AIStateFlag : uint
 	{
 		None = 0u,
 		Cautious = 1u,
-		Alarmed = 2u,
-		Paused = 4u,
-		UseObjectMoving = 8u,
-		UseObjectUsing = 0x10u,
-		UseObjectWaiting = 0x20u,
-		Guard = 0x40u,
-		ColumnwiseFollow = 0x80u
+		PatrollingCautious = 2u,
+		Alarmed = 3u,
+		Paused = 8u,
+		UseObjectMoving = 0x10u,
+		UseObjectUsing = 0x20u,
+		UseObjectWaiting = 0x40u,
+		ColumnwiseFollow = 0x100u,
+		AlarmStateMask = 3u
 	}
 
 	public enum WatchState
@@ -212,15 +214,6 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		Immortal
 	}
 
-	[EngineStruct("Agent_controller_type", false)]
-	public enum ControllerType
-	{
-		None,
-		AI,
-		Player,
-		Count
-	}
-
 	public enum CreationType
 	{
 		Invalid,
@@ -230,8 +223,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	}
 
 	[Flags]
+	[EngineStruct("Agent_event_control_flags", true, "agce", false)]
 	public enum EventControlFlag : uint
 	{
+		None = 0u,
 		Dismount = 1u,
 		Mount = 2u,
 		Rear = 4u,
@@ -263,7 +258,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		num_facial_anim_channels
 	}
 
-	[EngineStruct("Action_code_type", false)]
+	[EngineStruct("Action_code_type", true, "actt", false)]
 	public enum ActionCodeType
 	{
 		Other = 0,
@@ -300,41 +295,51 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		WeaponBash = 31,
 		PassiveUsage = 32,
 		EquipUnequip = 33,
-		Idle = 34,
-		Guard = 35,
-		Mount = 36,
-		Dismount = 37,
-		Dash = 38,
-		MountQuickStop = 39,
-		HitObject = 40,
-		Sit = 41,
-		SitOnTheFloor = 42,
-		SitOnAThrone = 43,
-		LadderRaise = 44,
-		LadderRaiseEnd = 45,
-		Rear = 46,
-		StrikeLight = 47,
-		StrikeMedium = 48,
-		StrikeHeavy = 49,
-		StrikeKnockBack = 50,
-		MountStrike = 51,
-		Count = 52,
-		StrikeBegin = 47,
-		StrikeEnd = 51,
+		SwitchAlternative = 34,
+		Idle = 35,
+		Guard = 36,
+		Mount = 37,
+		Dismount = 38,
+		Dash = 39,
+		MountQuickStop = 40,
+		HitObject = 41,
+		Sit = 42,
+		SitOnTheFloor = 43,
+		SitOnAThrone = 44,
+		LadderRaise = 45,
+		LadderRaiseEnd = 46,
+		Rear = 47,
+		StrikeLight = 48,
+		StrikeMedium = 49,
+		StrikeHeavy = 50,
+		StrikeKnockBack = 51,
+		MountStrike = 52,
+		Count = 53,
+		StrikeBegin = 48,
+		StrikeEnd = 52,
 		DefendAllBegin = 1,
 		DefendAllEnd = 15,
 		AttackMeleeAllBegin = 19,
 		AttackMeleeAllEnd = 23,
+		AttackMeleeAndRangedAllBegin = 15,
+		AttackMeleeAndRangedAllEnd = 23,
 		CombatAllBegin = 1,
 		CombatAllEnd = 23,
 		JumpAllBegin = 24,
-		JumpAllEnd = 28
+		JumpAllEnd = 28,
+		FallAllBegin = 25,
+		FallAllEnd = 28,
+		KickAllBegin = 28,
+		KickAllEnd = 31,
+		AlternativeAttackAllBegin = 28,
+		AlternativeAttackAllEnd = 32
 	}
 
-	[EngineStruct("Agent_guard_mode", false)]
+	[EngineStruct("Agent_guard_mode", true, "guard_mode", false)]
 	public enum GuardMode
 	{
-		None = -1,
+		MarkForDeletion = -2,
+		None,
 		Up,
 		Down,
 		Left,
@@ -347,7 +352,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		OffHand
 	}
 
-	[EngineStruct("rglInt8", false)]
+	[EngineStruct("rglInt8", false, null)]
 	public enum KillInfo : sbyte
 	{
 		Invalid = -1,
@@ -387,8 +392,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	}
 
 	[Flags]
+	[EngineStruct("Agent_movement_control_flags", true, "agcm", false)]
 	public enum MovementControlFlag : uint
 	{
+		None = 0u,
 		Forward = 1u,
 		Backward = 2u,
 		StrafeRight = 4u,
@@ -409,7 +416,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		AttackMask = 0x3C0u,
 		DefendMask = 0x7C00u,
 		DefendDirMask = 0x3C00u,
-		MoveMask = 0x3Fu
+		MoveMask = 0x3Fu,
+		MaxValue = 0x1FFFFu
 	}
 
 	public enum UnderAttackType
@@ -419,7 +427,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		UnderRangedAttack
 	}
 
-	[EngineStruct("Usage_direction", false)]
+	[EngineStruct("Usage_direction", true, "ud", false)]
 	public enum UsageDirection
 	{
 		None = -1,
@@ -439,7 +447,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		AttackAny = 9
 	}
 
-	[EngineStruct("Weapon_wield_action_type", false)]
+	[EngineStruct("Weapon_wield_action_type", false, null)]
 	public enum WeaponWieldActionType
 	{
 		WithAnimation,
@@ -481,10 +489,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public static readonly ActionIndexCache[] DefaultTauntActions = new ActionIndexCache[4]
 	{
-		ActionIndexCache.Create("act_taunt_cheer_1"),
-		ActionIndexCache.Create("act_taunt_cheer_2"),
-		ActionIndexCache.Create("act_taunt_cheer_3"),
-		ActionIndexCache.Create("act_taunt_cheer_4")
+		ActionIndexCache.act_taunt_cheer_1,
+		ActionIndexCache.act_taunt_cheer_2,
+		ActionIndexCache.act_taunt_cheer_3,
+		ActionIndexCache.act_taunt_cheer_4
 	};
 
 	private static readonly object _stopUsingGameObjectLock = new object();
@@ -497,12 +505,6 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public Action OnAgentWieldedItemChange;
 
-	public float LastDetachmentTickAgentTime;
-
-	public MissionPeer OwningAgentMissionPeer;
-
-	public MissionRepresentativeBase MissionRepresentative;
-
 	private readonly MBList<AgentComponent> _components;
 
 	private readonly CreationType _creationType;
@@ -510,8 +512,6 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	private readonly List<AgentController> _agentControllers;
 
 	private readonly Timer _cachedAndFormationValuesUpdateTimer;
-
-	private ControllerType _agentControllerType = ControllerType.AI;
 
 	private Agent _cachedMountAgent;
 
@@ -539,7 +539,23 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private UIntPtr _statePointer;
 
-	private float _lastQuickReadyDetectedTime;
+	private UIntPtr _movementModePointer;
+
+	private UIntPtr _controllerTypePointer;
+
+	private UIntPtr _movementDirectionPointer;
+
+	private UIntPtr _primaryWieldedItemIndexPointer;
+
+	private float _lastMultiplayerQuickReadyDetectedTime;
+
+	private UIntPtr _offHandWieldedItemIndexPointer;
+
+	private UIntPtr _channel0CurrentActionPointer;
+
+	private UIntPtr _channel1CurrentActionPointer;
+
+	private UIntPtr _maximumForwardUnlimitedSpeed;
 
 	private Agent _lookAgentCache;
 
@@ -585,7 +601,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private WeakReference<MBAgentVisuals> _visualsWeakRef = new WeakReference<MBAgentVisuals>(null);
 
-	private int _creationIndex;
+	private readonly int _creationIndex;
 
 	private bool _canLeadFormationsRemotely;
 
@@ -593,7 +609,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private ItemObject _formationBanner;
 
-	public float DetachmentWeight;
+	private bool _isLadderQueueUsing;
+
+	private WorldPosition _changedFormationPosition;
+
+	private Vec2 _localPositionError;
 
 	public static Agent Main => Mission.Current?.MainAgent;
 
@@ -609,7 +629,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public bool IsMine => Controller == ControllerType.Player;
+	public bool IsMine => Controller == AgentControllerType.Player;
 
 	public bool IsMainAgent => this == Main;
 
@@ -621,7 +641,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			if (Controller == ControllerType.AI)
+			if (Controller == AgentControllerType.AI)
 			{
 				return !GameNetwork.IsClientOrReplay;
 			}
@@ -655,15 +675,15 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public Vec3 Position => AgentHelper.GetAgentPosition(PositionPointer);
 
+	public AgentMovementMode MovementMode => AgentHelper.GetAgentMovementMode(_movementModePointer);
+
 	public Vec3 VisualPosition => MBAPI.IMBAgent.GetVisualPosition(GetPtr());
 
 	public Vec2 MovementVelocity => MBAPI.IMBAgent.GetMovementVelocity(GetPtr());
 
 	public Vec3 AverageVelocity => MBAPI.IMBAgent.GetAverageVelocity(GetPtr());
 
-	public float MaximumForwardUnlimitedSpeed => MBAPI.IMBAgent.GetMaximumForwardUnlimitedSpeed(GetPtr());
-
-	public float MovementDirectionAsAngle => MBAPI.IMBAgent.GetMovementDirectionAsAngle(GetPtr());
+	public float MovementDirectionAsAngle => AgentHelper.GetAgentMovementDirectionAsAngle(_movementDirectionPointer);
 
 	public bool IsLookRotationInSlowMotion => MBAPI.IMBAgent.IsLookRotationInSlowMotion(GetPtr());
 
@@ -727,6 +747,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
+	bool IFocusable.IsFocusable => true;
+
 	public string Name
 	{
 		get
@@ -736,6 +758,18 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				return _name.ToString();
 			}
 			return MissionPeer.Name;
+		}
+	}
+
+	public TextObject NameTextObject
+	{
+		get
+		{
+			if (MissionPeer == null)
+			{
+				return _name;
+			}
+			return new TextObject("{=!}" + MissionPeer.Name);
 		}
 	}
 
@@ -775,12 +809,12 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.MainHand);
-			if (wieldedItemIndex < EquipmentIndex.WeaponItemBeginSlot)
+			EquipmentIndex primaryWieldedItemIndex = GetPrimaryWieldedItemIndex();
+			if (primaryWieldedItemIndex < EquipmentIndex.WeaponItemBeginSlot)
 			{
 				return MissionWeapon.Invalid;
 			}
-			return Equipment[wieldedItemIndex];
+			return Equipment[primaryWieldedItemIndex];
 		}
 	}
 
@@ -836,8 +870,6 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public float WalkSpeedCached { get; private set; }
 
-	public float RunSpeedCached { get; private set; }
-
 	public IAgentOriginBase Origin { get; set; }
 
 	public Team Team { get; private set; }
@@ -853,6 +885,18 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public float HealthLimit { get; set; }
 
 	public bool IsRangedCached => Equipment.ContainsNonConsumableRangedWeaponWithAmmo();
+
+	public bool HasAnyRangedWeaponCached
+	{
+		get
+		{
+			if (!IsRangedCached)
+			{
+				return Equipment.ContainsThrownWeapon();
+			}
+			return true;
+		}
+	}
 
 	public bool HasMeleeWeaponCached => Equipment.ContainsMeleeWeapon();
 
@@ -888,7 +932,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			return (MovementControlFlag)MBAPI.IMBAgent.GetMovementFlags(GetPtr());
+			return MBAPI.IMBAgent.GetMovementFlags(GetPtr());
 		}
 		set
 		{
@@ -922,8 +966,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			CapsuleData collisionCapsule = CollisionCapsule;
-			return (collisionCapsule.GetBoxMax() + collisionCapsule.GetBoxMin()) * 0.5f;
+			var (vec, vec2) = CollisionCapsule.GetBoxMinMax();
+			return (vec + vec2) * 0.5f;
 		}
 	}
 
@@ -1006,38 +1050,30 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			AIStateFlag aIStateFlags = AIStateFlags;
-			if ((aIStateFlags & AIStateFlag.Alarmed) == AIStateFlag.Alarmed)
+			return (AIStateFlags & AIStateFlag.Alarmed) switch
 			{
-				return WatchState.Alarmed;
-			}
-			if ((aIStateFlags & AIStateFlag.Cautious) == AIStateFlag.Cautious)
-			{
-				return WatchState.Cautious;
-			}
-			return WatchState.Patrolling;
+				AIStateFlag.Alarmed => WatchState.Alarmed, 
+				AIStateFlag.Cautious => WatchState.Cautious, 
+				_ => WatchState.Patrolling, 
+			};
 		}
 		private set
 		{
-			AIStateFlag aIStateFlag = AIStateFlags;
 			switch (value)
 			{
 			case WatchState.Patrolling:
-				aIStateFlag &= ~(AIStateFlag.Cautious | AIStateFlag.Alarmed);
+				SetAlarmState(AIStateFlag.None);
 				break;
 			case WatchState.Cautious:
-				aIStateFlag |= AIStateFlag.Cautious;
-				aIStateFlag &= ~AIStateFlag.Alarmed;
+				SetAlarmState(AIStateFlag.Cautious);
 				break;
 			case WatchState.Alarmed:
-				aIStateFlag |= AIStateFlag.Alarmed;
-				aIStateFlag &= ~AIStateFlag.Cautious;
+				SetAlarmState(AIStateFlag.Alarmed);
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 900);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 929);
 				break;
 			}
-			AIStateFlags = aIStateFlag;
 		}
 	}
 
@@ -1110,7 +1146,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 					DetachmentWeight = detachmentWeight;
 				}
 			}
-			UpdateCachedAndFormationValues(_formation != null && _formation.PostponeCostlyOperations, arrangementChangeAllowed: false);
+			foreach (AgentComponent component in _components)
+			{
+				component.OnFormationSet();
+			}
+			ForceUpdateCachedAndFormationValues(_formation != null && _formation.PostponeCostlyOperations, arrangementChangeAllowed: false);
 		}
 	}
 
@@ -1154,31 +1194,33 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public ControllerType Controller
+	public AgentControllerType Controller
 	{
 		get
 		{
-			return GetController();
+			return AgentHelper.GetAgentControllerType(_controllerTypePointer);
 		}
 		set
 		{
-			ControllerType controller = Controller;
+			AgentControllerType controller = Controller;
 			if (value == controller)
 			{
 				return;
 			}
-			SetController(value);
-			bool flag = value == ControllerType.Player;
+			if (value == AgentControllerType.Player && IsDetachedFromFormation)
+			{
+				_detachment.RemoveAgent(this);
+				_formation?.AttachUnit(this);
+			}
+			MBAPI.IMBAgent.SetController(GetPtr(), value);
+			bool flag = value == AgentControllerType.Player;
 			if (flag)
 			{
 				Mission.MainAgent = this;
 				SetAgentFlags(GetAgentFlags() | AgentFlag.CanRide);
 			}
-			if (Formation != null)
-			{
-				Formation.OnAgentControllerChanged(this, controller);
-			}
-			if (value != ControllerType.AI && GetAgentFlags().HasAnyFlag(AgentFlag.IsHumanoid))
+			Formation?.OnAgentControllerChanged(this, controller);
+			if (value != AgentControllerType.AI && GetAgentFlags().HasAnyFlag(AgentFlag.IsHumanoid))
 			{
 				MountAgent?.SetMaximumSpeedLimit(-1f, isMultiplier: false);
 				SetMaximumSpeedLimit(-1f, isMultiplier: false);
@@ -1204,7 +1246,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				if (networkCommunicator != null && !networkCommunicator.IsServerPeer)
 				{
 					GameNetwork.BeginModuleEventAsServer(networkCommunicator);
-					GameNetwork.WriteMessage(new SetAgentIsPlayer(Index, Controller != ControllerType.AI));
+					GameNetwork.WriteMessage(new SetAgentIsPlayer(Index, Controller != AgentControllerType.AI));
 					GameNetwork.EndModuleEventAsServer();
 				}
 			}
@@ -1223,22 +1265,12 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				return Team.Color;
 			}
-			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1116);
+			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1146);
 			return uint.MaxValue;
 		}
 	}
 
-	public uint ClothingColor2
-	{
-		get
-		{
-			if (_clothingColor2.HasValue)
-			{
-				return _clothingColor2.Value;
-			}
-			return ClothingColor1;
-		}
-	}
+	public uint ClothingColor2 => _clothingColor2 ?? ClothingColor1;
 
 	public MatrixFrame LookFrame
 	{
@@ -1293,10 +1325,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			ActionIndexValueCache currentActionValue = GetCurrentActionValue(1);
+			ActionIndexCache currentAction = GetCurrentAction(1);
 			for (int i = 0; i < DefaultTauntActions.Length; i++)
 			{
-				if (DefaultTauntActions[i] != null && DefaultTauntActions[i] == currentActionValue)
+				_ = ref DefaultTauntActions[i];
+				if (DefaultTauntActions[i] == currentAction)
 				{
 					return true;
 				}
@@ -1309,9 +1342,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			if (!MBMath.IsBetween((int)GetCurrentActionType(1), 47, 51))
+			if (!MBMath.IsBetween((int)GetCurrentActionType(1), 48, 52))
 			{
-				return MBMath.IsBetween((int)GetCurrentActionType(0), 47, 51);
+				return MBMath.IsBetween((int)GetCurrentActionType(0), 48, 52);
 			}
 			return true;
 		}
@@ -1346,7 +1379,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			if (value != null)
 			{
-				Controller = (value.IsMine ? ControllerType.Player : ControllerType.None);
+				Controller = (value.IsMine ? AgentControllerType.Player : AgentControllerType.None);
 			}
 			if (GameNetwork.IsServer && IsHuman && !_isDeleted)
 			{
@@ -1380,6 +1413,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
+	public float LastDetachmentTickAgentTime { get; private set; }
+
+	public MissionPeer OwningAgentMissionPeer { get; private set; }
+
+	public MissionRepresentativeBase MissionRepresentative { get; private set; }
+
+	public bool IsInLadderQueue { get; private set; }
+
 	IMissionTeam IAgent.Team => Team;
 
 	IFormationArrangement IFormationUnit.Formation => _formation.Arrangement;
@@ -1387,6 +1428,25 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	int IFormationUnit.FormationFileIndex { get; set; }
 
 	int IFormationUnit.FormationRankIndex { get; set; }
+
+	public Vec2 LocalPositionError
+	{
+		get
+		{
+			return _localPositionError * Formation.Interval * Formation.UnitDiameter * 0.75f;
+		}
+		private set
+		{
+			_localPositionError = value;
+		}
+	}
+
+	public float DetachmentWeight { get; private set; }
+
+	public int DetachmentIndex { get; private set; } = -1;
+
+
+	public bool IsFormationFrameEnabled { get; private set; }
 
 	private UIntPtr Pointer => _pointer;
 
@@ -1405,6 +1465,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			MBAPI.IMBAgent.SetLookDirection(GetPtr(), value);
 		}
 	}
+
+	public bool IsLookDirectionLow => LookDirection.z < 0f;
 
 	public float Health
 	{
@@ -1452,7 +1514,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			Vec2 movementVelocity = MBAPI.IMBAgent.GetMovementVelocity(GetPtr());
 			Vec3 v = new Vec3(movementVelocity);
-			return Frame.rotation.TransformToParent(v);
+			return Frame.rotation.TransformToParent(in v);
 		}
 	}
 
@@ -1460,7 +1522,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			return (EventControlFlag)MBAPI.IMBAgent.GetEventControlFlags(GetPtr());
+			return MBAPI.IMBAgent.GetEventControlFlags(GetPtr());
 		}
 		set
 		{
@@ -1487,12 +1549,12 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		get
 		{
-			EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.OffHand);
-			if (wieldedItemIndex < EquipmentIndex.WeaponItemBeginSlot)
+			EquipmentIndex offhandWieldedItemIndex = GetOffhandWieldedItemIndex();
+			if (offhandWieldedItemIndex < EquipmentIndex.WeaponItemBeginSlot)
 			{
 				return MissionWeapon.Invalid;
 			}
-			return Equipment[wieldedItemIndex];
+			return Equipment[offhandWieldedItemIndex];
 		}
 	}
 
@@ -1500,9 +1562,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public event OnMountHealthChangedDelegate OnMountHealthChanged;
 
-	internal Agent(Mission mission, Mission.AgentCreationResult creationResult, CreationType creationType, Monster monster)
+	internal Agent(Mission mission, Mission.AgentCreationResult creationResult, CreationType creationType, Monster monster, int creationIndex)
 	{
-		AgentRole = TextObject.Empty;
+		AgentRole = TextObject.GetEmpty();
 		Mission = mission;
 		Index = creationResult.Index;
 		_pointer = creationResult.AgentPtr;
@@ -1510,6 +1572,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		_flagsPointer = creationResult.FlagsPtr;
 		_indexPointer = creationResult.IndexPtr;
 		_statePointer = creationResult.StatePtr;
+		_movementModePointer = creationResult.MovementModePointer;
+		_controllerTypePointer = creationResult.ControllerPointer;
+		_movementDirectionPointer = creationResult.MovementDirectionPointer;
+		_primaryWieldedItemIndexPointer = creationResult.PrimaryWieldedItemIndexPointer;
+		_offHandWieldedItemIndexPointer = creationResult.OffHandWieldedItemIndexPointer;
+		_channel0CurrentActionPointer = creationResult.Channel0CurrentActionPointer;
+		_channel1CurrentActionPointer = creationResult.Channel1CurrentActionPointer;
+		_maximumForwardUnlimitedSpeed = creationResult.MaximumForwardUnlimitedSpeed;
 		_lastHitInfo = default(AgentLastHitInfo);
 		_lastHitInfo.Initialize();
 		MBAPI.IMBAgent.SetMonoObject(GetPtr(), this);
@@ -1524,6 +1594,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		((IFormationUnit)this).FormationRankIndex = -1;
 		_synchedBodyComponents = null;
 		_cachedAndFormationValuesUpdateTimer = new Timer(Mission.CurrentTime, 0.45f + MBRandom.RandomFloat * 0.1f);
+		_creationIndex = creationIndex;
 	}
 
 	bool IAgent.IsEnemyOf(IAgent agent)
@@ -1536,21 +1607,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return IsFriendOf((Agent)agent);
 	}
 
-	Vec3 ITrackableBase.GetPosition()
-	{
-		return Position;
-	}
-
-	TextObject ITrackableBase.GetName()
-	{
-		if (Character != null)
-		{
-			return new TextObject(Character.Name.ToString());
-		}
-		return TextObject.Empty;
-	}
-
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void SetAgentAIPerformingRetreatBehavior(bool isAgentAIPerformingRetreatBehavior)
 	{
 		if (!GameNetwork.IsClientOrReplay && Mission != null)
@@ -1559,25 +1616,44 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	public bool GetHasOnAiInputSetCallback()
+	{
+		return MBAPI.IMBAgent.GetHasOnAiInputSetCallback(GetPtr());
+	}
+
+	public void SetHasOnAiInputSetCallback(bool value)
+	{
+		MBAPI.IMBAgent.SetHasOnAiInputSetCallback(GetPtr(), value);
+	}
+
+	[MBCallback(null, false)]
+	internal void OnAIInputSet(ref EventControlFlag eventFlag, ref MovementControlFlag movementFlag, ref Vec2 inputVector)
+	{
+		foreach (AgentComponent component in _components)
+		{
+			component.OnAIInputSet(ref eventFlag, ref movementFlag, ref inputVector);
+		}
+	}
+
+	[MBCallback(null, false)]
 	public float GetMissileRangeWithHeightDifferenceAux(float targetZ)
 	{
 		return MBAPI.IMBAgent.GetMissileRangeWithHeightDifference(GetPtr(), targetZ);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal int GetFormationUnitSpacing()
 	{
 		return Formation.UnitSpacing;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public string GetSoundAndCollisionInfoClassName()
 	{
 		return Monster.SoundAndCollisionInfoClassName;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal bool IsInSameFormationWith(Agent otherAgent)
 	{
 		Formation formation = otherAgent.Formation;
@@ -1588,7 +1664,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return false;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponSwitchingToAlternativeStart(EquipmentIndex slotIndex, int usageIndex)
 	{
 		if (GameNetwork.IsServerOrRecorder)
@@ -1599,7 +1675,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponReloadPhaseChange(EquipmentIndex slotIndex, short reloadPhase)
 	{
 		Equipment.SetReloadPhaseOfSlot(slotIndex, reloadPhase);
@@ -1611,7 +1687,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponAmmoReload(EquipmentIndex slotIndex, EquipmentIndex ammoSlotIndex, short totalAmmo)
 	{
 		if (Equipment[slotIndex].CurrentUsageItem.IsRangedWeapon)
@@ -1627,7 +1703,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		UpdateAgentProperties();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponAmmoConsume(EquipmentIndex slotIndex, short totalAmmo)
 	{
 		if (Equipment[slotIndex].CurrentUsageItem.IsRangedWeapon)
@@ -1643,7 +1719,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		UpdateAgentProperties();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnShieldDamaged(EquipmentIndex slotIndex, int inflictedDamage)
 	{
 		int num = TaleWorlds.Library.MathF.Max(0, Equipment[slotIndex].HitPoints - inflictedDamage);
@@ -1654,7 +1730,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponAmmoRemoved(EquipmentIndex slotIndex)
 	{
 		if (!Equipment[slotIndex].AmmoWeapon.IsEmpty)
@@ -1663,7 +1739,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnMount(Agent mount)
 	{
 		if (!GameNetwork.IsClientOrReplay)
@@ -1690,7 +1766,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnDismount(Agent mount)
 	{
 		if (!GameNetwork.IsClientOrReplay)
@@ -1710,7 +1786,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnAgentAlarmedStateChanged(AIStateFlag flag)
 	{
 		foreach (MissionBehavior missionBehavior in Mission.Current.MissionBehaviors)
@@ -1719,14 +1795,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnRetreating()
 	{
 		if (GameNetwork.IsClientOrReplay || Mission == null || Mission.MissionEnded)
 		{
 			return;
 		}
-		if (IsUsingGameObject)
+		if (IsUsingGameObject && !(CurrentlyUsedGameObject is SpawnedItemEntity))
 		{
 			StopUsingGameObjectMT();
 		}
@@ -1736,13 +1812,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal void UpdateMountAgentCache(Agent newMountAgent)
 	{
 		_cachedMountAgent = newMountAgent;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void UpdateRiderAgentCache(Agent newRiderAgent)
 	{
 		_cachedRiderAgent = newRiderAgent;
@@ -1756,7 +1832,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public void UpdateAgentStats()
 	{
 		if (IsActive())
@@ -1765,7 +1841,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	public float GetWeaponInaccuracy(EquipmentIndex weaponSlotIndex, int weaponUsageIndex)
 	{
 		WeaponComponentData weaponComponentDataForUsage = Equipment[weaponSlotIndex].GetWeaponComponentDataForUsage(weaponUsageIndex);
@@ -1773,7 +1849,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MissionGameModels.Current.AgentStatCalculateModel.GetWeaponInaccuracy(this, weaponComponentDataForUsage, effectiveSkill);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public float DebugGetHealth()
 	{
 		return Health;
@@ -1784,17 +1860,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetTargetPosition(GetPtr(), ref value);
 	}
 
-	public void SetGuardState(Agent guardedAgent, bool isGuarding)
+	public void SetTargetZ(float targetZ)
 	{
-		if (isGuarding)
-		{
-			AIStateFlags |= AIStateFlag.Guard;
-		}
-		else
-		{
-			AIStateFlags &= ~AIStateFlag.Guard;
-		}
-		SetGuardedAgent(guardedAgent);
+		MBAPI.IMBAgent.SetTargetZ(GetPtr(), targetZ);
+	}
+
+	public void SetTargetUp(in Vec3 targetUp)
+	{
+		MBAPI.IMBAgent.SetTargetUp(GetPtr(), in targetUp);
 	}
 
 	public void SetCanLeadFormationsRemotely(bool value)
@@ -1807,9 +1880,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetAveragePingInMilliseconds(GetPtr(), averagePingInMilliseconds);
 	}
 
-	public void SetTargetPositionAndDirection(Vec2 targetPosition, Vec3 targetDirection)
+	public void SetTargetPositionAndDirection(in Vec2 targetPosition, in Vec3 targetDirection)
 	{
-		MBAPI.IMBAgent.SetTargetPositionAndDirection(GetPtr(), ref targetPosition, ref targetDirection);
+		MBAPI.IMBAgent.SetTargetPositionAndDirection(GetPtr(), in targetPosition, in targetDirection);
+	}
+
+	public void AddAcceleration(in Vec3 acceleration)
+	{
+		MBAPI.IMBAgent.AddAcceleration(GetPtr(), in acceleration);
+	}
+
+	public void SetWeaponGuard(UsageDirection direction)
+	{
+		MBAPI.IMBAgent.SetWeaponGuard(GetPtr(), direction);
 	}
 
 	public void SetWatchState(WatchState watchState)
@@ -1817,7 +1900,42 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		CurrentWatchState = watchState;
 	}
 
-	[MBCallback]
+	public bool IsAlarmStateNormal()
+	{
+		return (AIStateFlags & AIStateFlag.Alarmed) == 0;
+	}
+
+	public bool IsCautious()
+	{
+		return (AIStateFlags & AIStateFlag.Alarmed) == AIStateFlag.Cautious;
+	}
+
+	public bool IsPatrollingCautious()
+	{
+		return (AIStateFlags & AIStateFlag.Alarmed) == AIStateFlag.PatrollingCautious;
+	}
+
+	public bool IsAlarmed()
+	{
+		return (AIStateFlags & AIStateFlag.Alarmed) == AIStateFlag.Alarmed;
+	}
+
+	public bool SetAlarmState(AIStateFlag alarmStateFlag)
+	{
+		if ((AIStateFlags & AIStateFlag.Alarmed) != alarmStateFlag)
+		{
+			MBAPI.IMBAgent.SetAIAlarmState(GetPtr(), alarmStateFlag);
+			return true;
+		}
+		return false;
+	}
+
+	public void SetTargetFormationIndex(int targetFormationIndex)
+	{
+		MBAPI.IMBAgent.SetTargetFormationIndex(GetPtr(), targetFormationIndex);
+	}
+
+	[MBCallback(null, false)]
 	internal void OnWieldedItemIndexChange(bool isOffHand, bool isWieldedInstantly, bool isWieldedOnSpawn)
 	{
 		if (IsMainAgent)
@@ -1828,16 +1946,115 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		if (GameNetwork.IsServerOrRecorder)
 		{
 			int mainHandCurUsageIndex = 0;
-			EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.MainHand);
-			if (wieldedItemIndex != EquipmentIndex.None)
+			EquipmentIndex primaryWieldedItemIndex = GetPrimaryWieldedItemIndex();
+			if (primaryWieldedItemIndex != EquipmentIndex.None)
 			{
-				mainHandCurUsageIndex = Equipment[wieldedItemIndex].CurrentUsageIndex;
+				mainHandCurUsageIndex = Equipment[primaryWieldedItemIndex].CurrentUsageIndex;
 			}
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new SetWieldedItemIndex(Index, isOffHand, isWieldedInstantly, isWieldedOnSpawn, GetWieldedItemIndex(isOffHand ? HandIndex.OffHand : HandIndex.MainHand), mainHandCurUsageIndex));
+			GameNetwork.WriteMessage(new SetWieldedItemIndex(Index, isOffHand, isWieldedInstantly, isWieldedOnSpawn, isOffHand ? GetOffhandWieldedItemIndex() : GetPrimaryWieldedItemIndex(), mainHandCurUsageIndex));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
 		CheckEquipmentForCapeClothSimulationStateChange();
+	}
+
+	public void StartRagdollAsCorpse()
+	{
+		MBAPI.IMBAgent.StartRagdollAsCorpse(GetPtr());
+	}
+
+	public void EndRagdollAsCorpse()
+	{
+		MBAPI.IMBAgent.EndRagdollAsCorpse(GetPtr());
+	}
+
+	public bool IsAddedAsCorpse()
+	{
+		return MBAPI.IMBAgent.IsAddedAsCorpse(GetPtr());
+	}
+
+	public void AddAsCorpse()
+	{
+		MBAPI.IMBAgent.AddAsCorpse(GetPtr());
+	}
+
+	public void SetOverridenStrikeAndDeathAction(in ActionIndexCache strikeAction, in ActionIndexCache deathAction)
+	{
+		MBAPI.IMBAgent.SetOverridenStrikeAndDeathAction(GetPtr(), strikeAction.Index, deathAction.Index);
+	}
+
+	public void ApplyForceOnRagdoll(sbyte boneIndex, in Vec3 force)
+	{
+		MBAPI.IMBAgent.ApplyForceOnRagdoll(GetPtr(), boneIndex, in force);
+	}
+
+	public void SetVelocityLimitsOnRagdoll(float linearVelocityLimit, float angularVelocityLimit)
+	{
+		MBAPI.IMBAgent.SetVelocityLimitsOnRagdoll(GetPtr(), linearVelocityLimit, angularVelocityLimit);
+	}
+
+	public WorldPosition GetAILastSuspiciousPosition()
+	{
+		return MBAPI.IMBAgent.GetAILastSuspiciousPosition(GetPtr());
+	}
+
+	public void SetAILastSuspiciousPosition(WorldPosition lastSuspiciousPosition, bool checkNavMeshForCorrection)
+	{
+		Vec3 vec3WithoutValidity = lastSuspiciousPosition.GetVec3WithoutValidity();
+		if (checkNavMeshForCorrection)
+		{
+			int num = 0;
+			Vec2 vec = (Position.AsVec2 - lastSuspiciousPosition.AsVec2).Normalized();
+			while (lastSuspiciousPosition.GetNavMesh() == UIntPtr.Zero && num < 15)
+			{
+				Vec2 vec2 = vec;
+				if (num > 0)
+				{
+					vec2.RotateCCW(MBRandom.RandomFloat * (float)num * 0.3f - (float)num * 0.15f);
+				}
+				lastSuspiciousPosition.SetVec3(UIntPtr.Zero, vec3WithoutValidity, hasValidZ: false);
+				lastSuspiciousPosition.SetVec2(lastSuspiciousPosition.AsVec2 + vec2 * 0.4f * (num + 2));
+				num++;
+			}
+			if (lastSuspiciousPosition.GetNavMesh() != UIntPtr.Zero)
+			{
+				MBAPI.IMBAgent.SetAILastSuspiciousPosition(GetPtr(), in lastSuspiciousPosition);
+				return;
+			}
+			WorldPosition lastSuspiciousPosition2 = GetWorldPosition();
+			lastSuspiciousPosition2.SetVec2(lastSuspiciousPosition2.AsVec2 + (lastSuspiciousPosition.AsVec2 - Position.AsVec2).Normalized() * 0.1f);
+			MBAPI.IMBAgent.SetAILastSuspiciousPosition(GetPtr(), in lastSuspiciousPosition2);
+		}
+		else
+		{
+			MBAPI.IMBAgent.SetAILastSuspiciousPosition(GetPtr(), in lastSuspiciousPosition);
+		}
+	}
+
+	public WorldPosition GetAIMoveDestination()
+	{
+		return MBAPI.IMBAgent.GetAIMoveDestination(GetPtr());
+	}
+
+	public Vec2 FindLongestDirectMoveToPosition(Vec2 targetPosition, bool checkBoundaries, bool checkFriendlyAgents, out bool isCollidedWithAgent)
+	{
+		return MBAPI.IMBAgent.FindLongestDirectMoveToPosition(GetPtr(), targetPosition, checkBoundaries, checkFriendlyAgents, out isCollidedWithAgent);
+	}
+
+	public float GetAIMoveStartTolerance()
+	{
+		return MBAPI.IMBAgent.GetAIMoveStopTolerance(GetPtr()) * 1.2f;
+	}
+
+	public float GetAIMoveStopTolerance()
+	{
+		return MBAPI.IMBAgent.GetAIMoveStopTolerance(GetPtr());
+	}
+
+	public bool IsAIAtMoveDestination()
+	{
+		float aIMoveStartTolerance = GetAIMoveStartTolerance();
+		return GetAIMoveDestination().AsVec2.DistanceSquared(Position.AsVec2) <= aIMoveStartTolerance * aIMoveStartTolerance;
 	}
 
 	public void SetFormationBanner(ItemObject banner)
@@ -1888,7 +2105,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			_checkIfTargetFrameIsChanged = true;
 			return;
 		}
-		SetTargetPositionAndDirection(targetPosition, targetDirection);
+		SetTargetPositionAndDirection(in targetPosition, in targetDirection);
 		if (GameNetwork.IsServerOrRecorder)
 		{
 			GameNetwork.BeginBroadcastModuleEvent();
@@ -1905,7 +2122,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public void SetUsedGameObjectForClient(UsableMissionObject usedObject)
 	{
 		CurrentlyUsedGameObject = usedObject;
-		usedObject.OnUse(this);
+		usedObject.OnUse(this, -1);
 		Mission.OnObjectUsed(this, usedObject);
 	}
 
@@ -1989,6 +2206,18 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetWeaponAmountInSlot(GetPtr(), (int)equipmentSlot, amount, enforcePrimaryItem);
 	}
 
+	public void SetDraggingMode(bool set)
+	{
+		if (set)
+		{
+			SetScriptedFlags(GetScriptedFlags() | AIScriptedFrameFlags.Drag);
+		}
+		else
+		{
+			SetScriptedFlags(GetScriptedFlags() & ~AIScriptedFrameFlags.Drag);
+		}
+	}
+
 	public void SetWeaponAmmoAsClient(EquipmentIndex equipmentIndex, EquipmentIndex ammoEquipmentIndex, short ammo)
 	{
 		MBAPI.IMBAgent.SetWeaponAmmoAsClient(GetPtr(), (int)equipmentIndex, (int)ammoEquipmentIndex, ammo);
@@ -2014,7 +2243,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		RandomizeColors = shouldRandomize;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnRemoveWeapon(EquipmentIndex slotIndex)
 	{
 		RemoveEquippedWeapon(slotIndex);
@@ -2023,14 +2252,24 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public void SetFormationFrameDisabled()
 	{
 		MBAPI.IMBAgent.SetFormationFrameDisabled(GetPtr());
+		if (IsFormationFrameEnabled)
+		{
+			IsFormationFrameEnabled = false;
+			_changedFormationPosition = new WorldPosition(Mission.Scene, UIntPtr.Zero, Vec3.Zero, hasValidZ: false);
+		}
 	}
 
 	public void SetFormationFrameEnabled(WorldPosition position, Vec2 direction, Vec2 positionVelocity, float formationDirectionEnforcingFactor)
 	{
-		MBAPI.IMBAgent.SetFormationFrameEnabled(GetPtr(), position, direction, positionVelocity, formationDirectionEnforcingFactor);
-		if (Mission.IsTeleportingAgents)
+		bool flag = MBAPI.IMBAgent.SetFormationFrameEnabled(GetPtr(), position, direction, positionVelocity, formationDirectionEnforcingFactor, Mission.IsTeleportingAgents);
+		if (!IsFormationFrameEnabled)
 		{
-			TeleportToPosition(position.GetGroundVec3());
+			flag = true;
+			IsFormationFrameEnabled = true;
+		}
+		if (flag)
+		{
+			_changedFormationPosition = position;
 		}
 	}
 
@@ -2039,18 +2278,17 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetShouldCatchUpWithFormation(GetPtr(), value);
 	}
 
-	public void SetFormationIntegrityData(Vec2 position, Vec2 currentFormationDirection, Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions)
+	public void SetFormationIntegrityData(Vec2 position, Vec2 currentFormationDirection, Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, bool shouldKeepWithFormationInsteadOfMovingToAgent)
 	{
-		MBAPI.IMBAgent.SetFormationIntegrityData(GetPtr(), position, currentFormationDirection, averageVelocityOfCloseAgents, averageMaxUnlimitedSpeedOfCloseAgents, deviationOfPositions);
+		MBAPI.IMBAgent.SetFormationIntegrityData(GetPtr(), in position, in currentFormationDirection, in averageVelocityOfCloseAgents, averageMaxUnlimitedSpeedOfCloseAgents, deviationOfPositions, shouldKeepWithFormationInsteadOfMovingToAgent);
 	}
 
-	public void SetGuardedAgent(Agent guardedAgent)
+	public bool IsCrouchingAllowed()
 	{
-		int guardedAgentIndex = guardedAgent?.Index ?? (-1);
-		MBAPI.IMBAgent.SetGuardedAgentIndex(GetPtr(), guardedAgentIndex);
+		return MBAPI.IMBAgent.IsCrouchingAllowed(GetPtr());
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponUsageIndexChange(EquipmentIndex slotIndex, int usageIndex)
 	{
 		Equipment.SetUsageIndexOfSlot(slotIndex, usageIndex);
@@ -2073,19 +2311,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetCurrentActionSpeed(GetPtr(), channelNo, speed);
 	}
 
-	public bool SetActionChannel(int channelNo, ActionIndexCache actionIndexCache, bool ignorePriority = false, ulong additionalFlags = 0uL, float blendWithNextActionFactor = 0f, float actionSpeed = 1f, float blendInPeriod = -0.2f, float blendOutPeriodToNoAnim = 0.4f, float startProgress = 0f, bool useLinearSmoothing = false, float blendOutPeriod = -0.2f, int actionShift = 0, bool forceFaceMorphRestart = true)
+	public bool SetActionChannel(int channelNo, in ActionIndexCache actionIndexCache, bool ignorePriority = false, AnimFlags additionalFlags = (AnimFlags)0uL, float blendWithNextActionFactor = 0f, float actionSpeed = 1f, float blendInPeriod = -0.2f, float blendOutPeriodToNoAnim = 0.4f, float startProgress = 0f, bool useLinearSmoothing = false, float blendOutPeriod = -0.2f, int actionShift = 0, bool forceFaceMorphRestart = true)
 	{
 		int index = actionIndexCache.Index;
-		return MBAPI.IMBAgent.SetActionChannel(GetPtr(), channelNo, index + actionShift, additionalFlags, ignorePriority, blendWithNextActionFactor, actionSpeed, blendInPeriod, blendOutPeriodToNoAnim, startProgress, useLinearSmoothing, blendOutPeriod, forceFaceMorphRestart);
+		return MBAPI.IMBAgent.SetActionChannel(GetPtr(), channelNo, index + actionShift, (ulong)additionalFlags, ignorePriority, blendWithNextActionFactor, actionSpeed, blendInPeriod, blendOutPeriodToNoAnim, startProgress, useLinearSmoothing, blendOutPeriod, forceFaceMorphRestart);
 	}
 
-	public bool SetActionChannel(int channelNo, ActionIndexValueCache actionIndexCache, bool ignorePriority = false, ulong additionalFlags = 0uL, float blendWithNextActionFactor = 0f, float actionSpeed = 1f, float blendInPeriod = -0.2f, float blendOutPeriodToNoAnim = 0.4f, float startProgress = 0f, bool useLinearSmoothing = false, float blendOutPeriod = -0.2f, int actionShift = 0, bool forceFaceMorphRestart = true)
-	{
-		int index = actionIndexCache.Index;
-		return MBAPI.IMBAgent.SetActionChannel(GetPtr(), channelNo, index + actionShift, additionalFlags, ignorePriority, blendWithNextActionFactor, actionSpeed, blendInPeriod, blendOutPeriodToNoAnim, startProgress, useLinearSmoothing, blendOutPeriod, forceFaceMorphRestart);
-	}
-
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnWeaponAmountChange(EquipmentIndex slotIndex, short amount)
 	{
 		Equipment.SetAmountOfSlot(slotIndex, amount);
@@ -2146,7 +2378,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public void SetScriptedTargetEntityAndPosition(GameEntity target, WorldPosition position, AISpecialCombatModeFlags additionalFlags = AISpecialCombatModeFlags.None, bool ignoreIfAlreadyAttacking = false)
+	public void SetScriptedTargetEntityAndPosition(WeakGameEntity target, WorldPosition position, AISpecialCombatModeFlags additionalFlags = AISpecialCombatModeFlags.None, bool ignoreIfAlreadyAttacking = false)
 	{
 		MBAPI.IMBAgent.SetScriptedTargetEntity(GetPtr(), target.Pointer, ref position, (int)additionalFlags, ignoreIfAlreadyAttacking);
 	}
@@ -2182,19 +2414,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetSelectedMountIndex(GetPtr(), mountIndex);
 	}
 
-	public int GetSelectedMountIndex()
-	{
-		return MBAPI.IMBAgent.GetSelectedMountIndex(GetPtr());
-	}
-
 	public int GetFiringOrder()
 	{
 		return MBAPI.IMBAgent.GetFiringOrder(GetPtr());
-	}
-
-	public void SetFiringOrder(FiringOrder.RangedWeaponUsageOrderEnum order)
-	{
-		MBAPI.IMBAgent.SetFiringOrder(GetPtr(), (int)order);
 	}
 
 	public int GetRidingOrder()
@@ -2202,9 +2424,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetRidingOrder(GetPtr());
 	}
 
-	public void SetRidingOrder(RidingOrder.RidingOrderEnum order)
+	public int GetSelectedMountIndex()
 	{
-		MBAPI.IMBAgent.SetRidingOrder(GetPtr(), (int)order);
+		return MBAPI.IMBAgent.GetSelectedMountIndex(GetPtr());
 	}
 
 	public int GetTargetFormationIndex()
@@ -2212,9 +2434,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetTargetFormationIndex(GetPtr());
 	}
 
-	public void SetTargetFormationIndex(int targetFormationIndex)
+	public void SetFiringOrder(FiringOrder.RangedWeaponUsageOrderEnum order)
 	{
-		MBAPI.IMBAgent.SetTargetFormationIndex(GetPtr(), targetFormationIndex);
+		MBAPI.IMBAgent.SetFiringOrder(GetPtr(), (int)order);
+	}
+
+	public void SetRidingOrder(RidingOrder.RidingOrderEnum order)
+	{
+		MBAPI.IMBAgent.SetRidingOrder(GetPtr(), (int)order);
 	}
 
 	public void SetAgentFacialAnimation(FacialAnimChannel channel, string animationName, bool loop)
@@ -2222,9 +2449,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetAgentFacialAnimation(GetPtr(), (int)channel, animationName, loop);
 	}
 
-	public bool SetHandInverseKinematicsFrame(ref MatrixFrame leftGlobalFrame, ref MatrixFrame rightGlobalFrame)
+	public bool SetHandInverseKinematicsFrame(in MatrixFrame leftGlobalFrame, in MatrixFrame rightGlobalFrame)
 	{
-		return MBAPI.IMBAgent.SetHandInverseKinematicsFrame(GetPtr(), ref leftGlobalFrame, ref rightGlobalFrame);
+		return MBAPI.IMBAgent.SetHandInverseKinematicsFrame(GetPtr(), in leftGlobalFrame, in rightGlobalFrame);
 	}
 
 	public void SetNativeFormationNo(int formationNo)
@@ -2249,6 +2476,33 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			num *= 1.2f;
 		}
 		return num;
+	}
+
+	public TroopTraitsMask GetTraitsMask()
+	{
+		TroopTraitsMask troopTraitsMask = TroopTraitsMask.None;
+		if (HasMount)
+		{
+			troopTraitsMask |= TroopTraitsMask.Mount;
+		}
+		troopTraitsMask = ((!IsRangedCached) ? (troopTraitsMask | TroopTraitsMask.Melee) : (troopTraitsMask | TroopTraitsMask.Ranged));
+		if (HasShieldCached)
+		{
+			troopTraitsMask |= TroopTraitsMask.Shield;
+		}
+		if (HasSpearCached)
+		{
+			troopTraitsMask |= TroopTraitsMask.Spear;
+		}
+		if (HasThrownCached)
+		{
+			troopTraitsMask |= TroopTraitsMask.Thrown;
+		}
+		if (MissionGameModels.Current.AgentStatCalculateModel.HasHeavyArmor(this))
+		{
+			troopTraitsMask |= TroopTraitsMask.Armor;
+		}
+		return troopTraitsMask;
 	}
 
 	public void SetSynchedPrefabComponentVisibility(int componentIndex, bool visibility)
@@ -2286,7 +2540,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void SetHandInverseKinematicsFrameForMissionObjectUsage(in MatrixFrame localIKFrame, in MatrixFrame boundEntityGlobalFrame, float animationHeightDifference = 0f)
 	{
-		if (GetCurrentActionValue(1) != ActionIndexValueCache.act_none && GetActionChannelWeight(1) > 0f)
+		if (GetCurrentAction(1) != ActionIndexCache.act_none && GetActionChannelWeight(1) > 0f)
 		{
 			MBAPI.IMBAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(GetPtr(), in localIKFrame, in boundEntityGlobalFrame, animationHeightDifference);
 		}
@@ -2325,7 +2579,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public float GetInteractionDistanceToUsable(IUsable usable)
 	{
-		if (usable is Agent agent)
+		if (usable is Agent agent && agent.IsActive())
 		{
 			if (!agent.IsMount)
 			{
@@ -2337,12 +2591,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			return 3f;
 		}
-		float interactionDistance = MissionGameModels.Current.AgentStatCalculateModel.GetInteractionDistance(this);
-		if (!(usable is StandingPoint))
+		if (!(usable is StandingPoint standingPoint))
 		{
-			return interactionDistance;
+			return MissionGameModels.Current.AgentStatCalculateModel.GetInteractionDistance(this);
 		}
-		if (!IsAIControlled || !WalkMode)
+		if (!IsAIControlled)
+		{
+			if (!(standingPoint.CustomPlayerInteractionDistance > 0f))
+			{
+				return 2f;
+			}
+			return standingPoint.CustomPlayerInteractionDistance;
+		}
+		if (!WalkMode)
 		{
 			return 1f;
 		}
@@ -2355,7 +2616,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			return GameTexts.FindText("str_ui_riding_skill_not_adequate_to_mount");
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public T GetController<T>() where T : AgentController
@@ -2370,29 +2631,29 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return null;
 	}
 
-	public EquipmentIndex GetWieldedItemIndex(HandIndex index)
+	public EquipmentIndex GetPrimaryWieldedItemIndex()
 	{
-		return MBAPI.IMBAgent.GetWieldedItemIndex(GetPtr(), (int)index);
+		return AgentHelper.GetPrimaryWieldedItemIndex(_primaryWieldedItemIndexPointer);
 	}
 
-	public float GetTrackDistanceToMainAgent()
+	public EquipmentIndex GetOffhandWieldedItemIndex()
 	{
-		float result = -1f;
-		if (Main != null)
-		{
-			result = Main.Position.Distance(Position);
-		}
-		return result;
+		return AgentHelper.GetOffhandWieldedItemIndex(_offHandWieldedItemIndexPointer);
 	}
 
-	public string GetDescriptionText(GameEntity gameEntity = null)
+	public float GetMaximumForwardUnlimitedSpeed()
 	{
-		return Name;
+		return AgentHelper.GetMaximumForwardUnlimitedSpeed(_maximumForwardUnlimitedSpeed);
 	}
 
-	public GameEntity GetWeaponEntityFromEquipmentSlot(EquipmentIndex slotIndex)
+	public TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return new GameEntity(MBAPI.IMBAgent.GetWeaponEntityFromEquipmentSlot(GetPtr(), (int)slotIndex));
+		return NameTextObject;
+	}
+
+	public WeakGameEntity GetWeaponEntityFromEquipmentSlot(EquipmentIndex slotIndex)
+	{
+		return new WeakGameEntity(MBAPI.IMBAgent.GetWeaponEntityFromEquipmentSlot(GetPtr(), (int)slotIndex));
 	}
 
 	public WorldPosition GetRetreatPos()
@@ -2410,14 +2671,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return (AISpecialCombatModeFlags)MBAPI.IMBAgent.GetScriptedCombatFlags(GetPtr());
 	}
 
-	public GameEntity GetSteppedEntity()
+	public WeakGameEntity GetSteppedEntity()
 	{
-		UIntPtr steppedEntityId = MBAPI.IMBAgent.GetSteppedEntityId(GetPtr());
-		if (!(steppedEntityId != UIntPtr.Zero))
-		{
-			return null;
-		}
-		return new GameEntity(steppedEntityId);
+		return new WeakGameEntity(MBAPI.IMBAgent.GetSteppedEntityId(GetPtr()));
+	}
+
+	public WeakGameEntity GetSteppedRootEntity()
+	{
+		return new WeakGameEntity(MBAPI.IMBAgent.GetSteppedRootEntity(GetPtr()));
+	}
+
+	public BodyFlags GetSteppedBodyFlags()
+	{
+		return MBAPI.IMBAgent.GetSteppedBodyFlags(GetPtr());
 	}
 
 	public AnimFlags GetCurrentAnimationFlag(int channelNo)
@@ -2427,12 +2693,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public ActionIndexCache GetCurrentAction(int channelNo)
 	{
-		return new ActionIndexCache(MBAPI.IMBAgent.GetCurrentAction(GetPtr(), channelNo));
-	}
-
-	public ActionIndexValueCache GetCurrentActionValue(int channelNo)
-	{
-		return new ActionIndexValueCache(MBAPI.IMBAgent.GetCurrentAction(GetPtr(), channelNo));
+		return new ActionIndexCache((channelNo == 0) ? AgentHelper.GetChannel0CurrentActionIndex(_channel0CurrentActionPointer) : AgentHelper.GetChannel1CurrentActionIndex(_channel1CurrentActionPointer));
 	}
 
 	public ActionCodeType GetCurrentActionType(int channelNo)
@@ -2505,9 +2766,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetCurrentSpeedLimit(GetPtr());
 	}
 
+	public Vec3 GetRealGlobalVelocity()
+	{
+		return MBAPI.IMBAgent.GetRealGlobalVelocity(GetPtr());
+	}
+
+	public Vec3 GetAverageRealGlobalVelocity()
+	{
+		return MBAPI.IMBAgent.GetAverageRealGlobalVelocity(GetPtr());
+	}
+
 	public Vec2 GetMovementDirection()
 	{
-		return MBAPI.IMBAgent.GetMovementDirection(GetPtr());
+		return Vec2.FromRotation(MovementDirectionAsAngle);
 	}
 
 	public Vec3 GetCurWeaponOffset()
@@ -2533,6 +2804,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public WorldPosition GetWorldPosition()
 	{
 		return MBAPI.IMBAgent.GetWorldPosition(GetPtr());
+	}
+
+	public int GetGroundMaterialForCollisionEffect()
+	{
+		return MBAPI.IMBAgent.GetGroundMaterialForCollisionEffect(GetPtr());
 	}
 
 	public Agent GetLookAgent()
@@ -2611,6 +2887,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return AgentDrivenProperties.ArmorEncumbrance + AgentDrivenProperties.WeaponsEncumbrance;
 	}
 
+	public float GetTotalMass()
+	{
+		return MBAPI.IMBAgent.GetTotalMass(GetPtr());
+	}
+
 	public T GetComponent<T>() where T : AgentComponent
 	{
 		for (int i = 0; i < _components.Count; i++)
@@ -2630,14 +2911,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public UsableMachine GetSteppedMachine()
 	{
-		GameEntity gameEntity = GetSteppedEntity();
-		while (gameEntity != null && !gameEntity.HasScriptOfType<UsableMachine>())
+		WeakGameEntity weakGameEntity = GetSteppedEntity();
+		while (weakGameEntity.IsValid && !weakGameEntity.HasScriptOfType<UsableMachine>())
 		{
-			gameEntity = gameEntity.Parent;
+			weakGameEntity = weakGameEntity.Parent;
 		}
-		if (gameEntity != null)
+		if (weakGameEntity.IsValid)
 		{
-			return gameEntity.GetFirstScriptOfType<UsableMachine>();
+			return weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 		}
 		return null;
 	}
@@ -2665,7 +2946,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public void DeleteAttachedWeapon(int index)
 	{
 		_attachedWeapons.RemoveAt(index);
-		MBAPI.IMBAgent.DeleteAttachedWeaponFromBone(Pointer, index);
+		MBAPI.IMBAgent.DeleteAttachedWeaponFromBone(GetPtr(), index);
 	}
 
 	public bool HasRangedWeapon(bool checkHasAmmo = false)
@@ -2678,6 +2959,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 		}
 		return false;
+	}
+
+	public MatrixFrame GetBoneEntitialFrameAtAnimationProgress(sbyte boneIndex, int animationIndex, float progress)
+	{
+		return MBAPI.IMBAgent.GetBoneEntitialFrameAtAnimationProgress(GetPtr(), boneIndex, animationIndex, progress);
 	}
 
 	public void GetFormationFileAndRankInfo(out int fileIndex, out int rankIndex)
@@ -2765,7 +3051,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		case BoneBodyPartType.ShoulderRight:
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 2827);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3160);
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		}
 	}
@@ -2778,6 +3064,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public float GetMissileRange()
 	{
 		return MBAPI.IMBAgent.GetMissileRange(GetPtr());
+	}
+
+	public void SetAgentIdleAnimationStatus(bool idleEnabled)
+	{
+		MBAPI.IMBAgent.SetAgentIdleAnimationStatus(GetPtr(), idleEnabled);
 	}
 
 	public ItemObject GetWeaponToReplaceOnQuickAction(SpawnedItemEntity spawnedItem, out EquipmentIndex possibleSlotIndex)
@@ -2827,13 +3118,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		bool flag2 = CanReachAgent(otherAgent);
 		if (otherAgent.IsMount)
 		{
-			if ((MountAgent == null && GetCurrentActionValue(0) != ActionIndexValueCache.act_none) || (MountAgent != null && !IsOnLand()))
+			if ((MountAgent == null && GetCurrentAction(0) != ActionIndexCache.act_none) || (MountAgent != null && !IsAbleToUseMachine()))
 			{
 				return false;
 			}
 			if (otherAgent.RiderAgent == null)
 			{
-				if (MountAgent == null && flag2 && CheckSkillForMounting(otherAgent))
+				if (MountAgent == null && flag2)
 				{
 					return otherAgent.GetCurrentActionType(0) != ActionCodeType.Rear;
 				}
@@ -2843,20 +3134,21 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				return false;
 			}
-			if (flag2 && userAgentCameraElevation < GetLookDownLimit() + 0.4f && GetCurrentVelocity().LengthSquared < 0.25f)
+			float num = GetLookDownLimit() + 0.4f;
+			if (flag2 && userAgentCameraElevation < num && GetCurrentVelocity().LengthSquared < 0.25f)
 			{
 				return otherAgent.GetCurrentActionType(0) != ActionCodeType.Rear;
 			}
 			return false;
 		}
-		return IsOnLand() && flag2;
+		return IsAbleToUseMachine() && flag2;
 	}
 
 	public bool CanBeAssignedForScriptedMovement()
 	{
-		if (IsActive() && IsAIControlled && !IsDetachedFromFormation && !IsRunningAway && (GetScriptedFlags() & AIScriptedFrameFlags.GoToPosition) == 0)
+		if (IsActive() && IsAIControlled && !IsDetachedFromFormation && !IsRunningAway && (GetScriptedFlags() & AIScriptedFrameFlags.GoToPosition) == 0 && !InteractingWithAnyGameObject())
 		{
-			return !InteractingWithAnyGameObject();
+			return !_isLadderQueueUsing;
 		}
 		return false;
 	}
@@ -2872,6 +3164,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool CanReachObject(UsableMissionObject gameObject, float distanceSq)
 	{
+		return CanReachObjectFromPosition(gameObject, distanceSq, Position);
+	}
+
+	public bool CanReachObjectFromPosition(UsableMissionObject gameObject, float distanceSq, Vec3 position)
+	{
 		if (IsItemUseDisabled || IsUsingGameObject)
 		{
 			return false;
@@ -2879,7 +3176,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		float interactionDistanceToUsable = GetInteractionDistanceToUsable(gameObject);
 		if (distanceSq <= interactionDistanceToUsable * interactionDistanceToUsable)
 		{
-			return TaleWorlds.Library.MathF.Abs(gameObject.InteractionEntity.GlobalPosition.z - Position.z) <= interactionDistanceToUsable * 2f;
+			return TaleWorlds.Library.MathF.Abs(gameObject.InteractionEntity.GlobalPosition.z - position.z) <= interactionDistanceToUsable * 2f;
 		}
 		return false;
 	}
@@ -2955,7 +3252,37 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool IsOnLand()
 	{
-		return MBAPI.IMBAgent.IsOnLand(GetPtr());
+		return (MovementMode & AgentMovementMode.WaterDiving) == AgentMovementMode.Land;
+	}
+
+	public bool IsInWater()
+	{
+		AgentMovementMode agentMovementMode = MovementMode & AgentMovementMode.WaterDiving;
+		if (agentMovementMode != AgentMovementMode.WaterSurface)
+		{
+			return agentMovementMode == AgentMovementMode.WaterDiving;
+		}
+		return true;
+	}
+
+	public bool IsAbleToUseMachine()
+	{
+		return (int)(MovementMode & AgentMovementMode.WaterDiving) > 0;
+	}
+
+	public bool IsAgentParentEntitySameAs(GameEntity toBeChecked)
+	{
+		return toBeChecked == MBAPI.IMBAgent.GetAgentParentEntity(GetPtr());
+	}
+
+	public void SetExcludedFromGravity(bool exclude, bool applyAverageGlobalVelocity)
+	{
+		MBAPI.IMBAgent.SetExcludedFromGravity(GetPtr(), exclude, applyAverageGlobalVelocity);
+	}
+
+	public void SetForceAttachedEntity(WeakGameEntity willBeAttached)
+	{
+		MBAPI.IMBAgent.SetForceAttachedEntity(GetPtr(), willBeAttached.Pointer);
 	}
 
 	public bool IsSliding()
@@ -2973,10 +3300,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return true;
 	}
 
-	public bool IsReleasingChainAttack()
+	public bool IsReleasingChainAttackInMultiplayer()
 	{
 		bool result = false;
-		if (Mission.Current.CurrentTime - _lastQuickReadyDetectedTime < 0.75f && GetCurrentActionStage(1) == ActionStage.AttackRelease)
+		if (Mission.Current.CurrentTime - _lastMultiplayerQuickReadyDetectedTime < 0.75f && GetCurrentActionStage(1) == ActionStage.AttackRelease)
 		{
 			result = true;
 		}
@@ -2989,7 +3316,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			if (!GameNetwork.IsSessionActive)
 			{
-				return _agentControllerType != ControllerType.None;
+				return Controller != AgentControllerType.None;
 			}
 			return true;
 		}
@@ -3024,9 +3351,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		StopUsingGameObjectMT(isSuccessful: false);
 	}
 
-	public void OnUse(Agent userAgent)
+	public void OnUse(Agent userAgent, sbyte agentBoneIndex)
 	{
-		Mission.OnAgentInteraction(userAgent, this);
+		Mission.OnAgentInteraction(userAgent, this, agentBoneIndex);
 	}
 
 	public void OnUseStopped(Agent userAgent, bool isSuccessful, int preferenceIndex)
@@ -3037,7 +3364,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		MissionWeapon droppedWeapon = Equipment[equipmentSlot];
 		Equipment[equipmentSlot] = MissionWeapon.Invalid;
-		WeaponEquipped(equipmentSlot, in WeaponData.InvalidWeaponData, null, in WeaponData.InvalidWeaponData, null, null, removeOldWeaponFromScene: false, isWieldedOnSpawn: false);
+		WeaponEquipped(equipmentSlot, in WeaponData.InvalidWeaponData, null, in WeaponData.InvalidWeaponData, null, WeakGameEntity.Invalid, removeOldWeaponFromScene: false, isWieldedOnSpawn: false);
 		foreach (AgentComponent component in _components)
 		{
 			component.OnWeaponDrop(droppedWeapon);
@@ -3093,7 +3420,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				if (!GameNetwork.IsClientOrReplay)
 				{
 					SetWeaponAmountInSlot(weaponPickUpSlotIndex, (short)(Equipment[weaponPickUpSlotIndex].Amount + num2), enforcePrimaryItem: true);
-					if (GetWieldedItemIndex(HandIndex.MainHand) == EquipmentIndex.None && (weaponCopy.Item.PrimaryWeapon.IsRangedWeapon || weaponCopy.Item.PrimaryWeapon.IsMeleeWeapon))
+					if (GetPrimaryWieldedItemIndex() == EquipmentIndex.None && (weaponCopy.Item.PrimaryWeapon.IsRangedWeapon || weaponCopy.Item.PrimaryWeapon.IsMeleeWeapon))
 					{
 						flag2 = true;
 					}
@@ -3138,7 +3465,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				{
 					_components[i].OnItemPickup(spawnedItemEntity);
 				}
-				if (Controller == ControllerType.AI)
+				if (Controller == AgentControllerType.AI)
 				{
 					HumanAIComponent.ItemPickupDone(spawnedItemEntity);
 				}
@@ -3150,14 +3477,38 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public bool CheckTracked(BasicCharacterObject basicCharacter)
+	public float GetDistanceTo(Agent other)
 	{
-		return Character == basicCharacter;
+		if (other == null)
+		{
+			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3671);
+			return 0f;
+		}
+		return Position.Distance(other.Position);
 	}
 
-	public bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(int navigationFaceId, Vec3 direction, float overridenCostForFaceId)
+	public bool CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(int navigationFaceId, in Vec3 direction, float overridenCostForFaceId)
 	{
-		return MBAPI.IMBAgent.CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(GetPtr(), navigationFaceId, ref direction, overridenCostForFaceId);
+		return MBAPI.IMBAgent.CheckPathToAITargetAgentPassesThroughNavigationFaceIdFromDirection(GetPtr(), navigationFaceId, in direction, overridenCostForFaceId);
+	}
+
+	public bool IsTargetNavigationFaceIdBetween(int navigationFaceIdStart, int navigationFaceIdEnd)
+	{
+		return MBAPI.IMBAgent.IsTargetNavigationFaceIdBetween(GetPtr(), navigationFaceIdStart, navigationFaceIdEnd);
+	}
+
+	Vec3 ITrackableBase.GetPosition()
+	{
+		return Position;
+	}
+
+	TextObject ITrackableBase.GetName()
+	{
+		if (Character != null)
+		{
+			return new TextObject(Character.Name.ToString());
+		}
+		return TextObject.GetEmpty();
 	}
 
 	public void CheckEquipmentForCapeClothSimulationStateChange()
@@ -3167,11 +3518,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			return;
 		}
 		bool flag = false;
-		EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.OffHand);
+		EquipmentIndex offhandWieldedItemIndex = GetOffhandWieldedItemIndex();
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.ExtraWeaponSlot; equipmentIndex++)
 		{
 			MissionWeapon missionWeapon = Equipment[equipmentIndex];
-			if (!missionWeapon.IsEmpty && missionWeapon.IsShield() && equipmentIndex != wieldedItemIndex)
+			if (!missionWeapon.IsEmpty && missionWeapon.IsShield() && equipmentIndex != offhandWieldedItemIndex)
 			{
 				flag = true;
 				break;
@@ -3188,10 +3539,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 		for (int i = 0; i < 2; i++)
 		{
-			EquipmentIndex wieldedItemIndex = GetWieldedItemIndex((HandIndex)i);
-			if (wieldedItemIndex != EquipmentIndex.None && Equipment[wieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction))
+			EquipmentIndex equipmentIndex = ((i == 0) ? GetPrimaryWieldedItemIndex() : GetOffhandWieldedItemIndex());
+			if (equipmentIndex != EquipmentIndex.None && Equipment[equipmentIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction))
 			{
-				DropItem(wieldedItemIndex);
+				DropItem(equipmentIndex);
 			}
 		}
 	}
@@ -3282,7 +3633,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		AgentVisuals.ClearAllWeaponMeshes();
 		Equipment.FillFrom(SpawnEquipment, Origin?.Banner);
 		CheckEquipmentForCapeClothSimulationStateChange();
-		EquipItemsFromSpawnEquipment(neededBatchedItems: true);
+		EquipItemsFromSpawnEquipment(neededBatchedItems: true, prepareImmediately: true);
 		UpdateAgentProperties();
 		if (!Mission.Current.DoesMissionRequireCivilianEquipment && !GameNetwork.IsClientOrReplay)
 		{
@@ -3291,18 +3642,15 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		PreloadForRendering();
 	}
 
-	public void UpdateCachedAndFormationValues(bool updateOnlyMovement, bool arrangementChangeAllowed)
+	public void ForceUpdateCachedAndFormationValues(bool updateOnlyMovement, bool arrangementChangeAllowed)
 	{
-		if (!IsActive())
-		{
-			return;
-		}
-		if (!updateOnlyMovement)
-		{
-			WalkSpeedCached = MountAgent?.WalkingSpeedLimitOfMountable ?? Monster.WalkingSpeedLimit;
-			RunSpeedCached = MaximumForwardUnlimitedSpeed;
-		}
-		if (GameNetwork.IsClientOrReplay)
+		ParallelUpdateCachedAndFormationValues(updateOnlyMovement);
+		UpdateCachedAndFormationValues(updateOnlyMovement, arrangementChangeAllowed);
+	}
+
+	private void UpdateCachedAndFormationValues(bool updateOnlyMovement, bool arrangementChangeAllowed)
+	{
+		if (!IsActive() || GameNetwork.IsClientOrReplay)
 		{
 			return;
 		}
@@ -3312,7 +3660,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 		if (IsAIControlled)
 		{
-			HumanAIComponent.UpdateFormationMovement();
+			Formation?.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 		}
 		if (!updateOnlyMovement)
 		{
@@ -3325,7 +3673,22 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				GetFormationFileAndRankInfo(out var fileIndex, out var rankIndex, out var fileCount, out var rankCount);
 				Vec2 wallDirectionOfRelativeFormationLocation = GetWallDirectionOfRelativeFormationLocation();
-				MBAPI.IMBAgent.SetFormationInfo(GetPtr(), fileIndex, rankIndex, fileCount, rankCount, wallDirectionOfRelativeFormationLocation, Formation.UnitSpacing);
+				MBAPI.IMBAgent.SetFormationInfo(GetPtr(), fileIndex, rankIndex, fileCount, rankCount, Formation.CountOfUnits, wallDirectionOfRelativeFormationLocation, Formation.UnitSpacing);
+			}
+		}
+	}
+
+	private void ParallelUpdateCachedAndFormationValues(bool updateOnlyMovement)
+	{
+		if (IsActive())
+		{
+			if (!updateOnlyMovement)
+			{
+				WalkSpeedCached = MountAgent?.WalkingSpeedLimitOfMountable ?? Monster.WalkingSpeedLimit;
+			}
+			if (!GameNetwork.IsClientOrReplay && IsAIControlled)
+			{
+				HumanAIComponent.ParallelUpdateFormationMovement();
 			}
 		}
 	}
@@ -3406,10 +3769,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			if (IsDetachedFromFormation)
 			{
-				_detachment.RemoveAgent(this);
-				_formation?.AttachUnit(this);
+				TryAttachToFormation();
 			}
-			_formation?.Team?.DetachmentManager.RemoveScoresOfAgentFromDetachments(this);
+			TryRemoveAllDetachmentScores();
 		}
 		_isDetachableFromFormation = value;
 		if (!IsPlayerControlled)
@@ -3423,6 +3785,27 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				_formation?.OnUndetachableNonPlayerUnitRemoved(this);
 			}
 		}
+	}
+
+	public bool TryAttachToFormation()
+	{
+		if (IsDetachedFromFormation)
+		{
+			_detachment.RemoveAgent(this);
+			_formation?.AttachUnit(this);
+			return true;
+		}
+		return false;
+	}
+
+	public bool TryRemoveAllDetachmentScores()
+	{
+		if (IsAIControlled)
+		{
+			_formation?.Team?.DetachmentManager.RemoveScoresOfAgentFromDetachments(this);
+			return true;
+		}
+		return false;
 	}
 
 	public void EnforceShieldUsage(UsageDirection shieldDirection)
@@ -3454,7 +3837,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private void StopUsingGameObjectAux(bool isSuccessful, StopUsingGameObjectFlags flags)
 	{
-		UsableMachine usableMachine = ((Controller != ControllerType.AI || Formation == null) ? null : (Formation.GetDetachmentOrDefault(this) as UsableMachine));
+		UsableMachine usableMachine = ((Controller != AgentControllerType.AI || !IsDetachableFromFormation || Formation == null) ? null : (Formation.GetDetachmentOrDefault(this) as UsableMachine));
 		if (usableMachine == null)
 		{
 			flags &= ~StopUsingGameObjectFlags.AutoAttachAfterStoppingUsingGameObject;
@@ -3512,7 +3895,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			AfterStoppedUsingMissionObject(usableMachine, currentlyUsedGameObject, movingToOrDefendingObject, isSuccessful, flags);
 		}
-		Mission.OnObjectStoppedBeingUsed(this, CurrentlyUsedGameObject);
+		Mission.OnObjectStoppedBeingUsed(this, currentlyUsedGameObject);
 		_components.ForEach(delegate(AgentComponent ac)
 		{
 			ac.OnStopUsingGameObject();
@@ -3529,10 +3912,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void StopUsingGameObject(bool isSuccessful = true, StopUsingGameObjectFlags flags = StopUsingGameObjectFlags.AutoAttachAfterStoppingUsingGameObject)
 	{
-		using (new TWParallel.RecursiveSingleThreadTestBlock(TWParallel.RecursiveSingleThreadTestData.GlobalData))
-		{
-			StopUsingGameObjectAux(isSuccessful, flags);
-		}
+		StopUsingGameObjectAux(isSuccessful, flags);
 	}
 
 	public void HandleStopUsingAction()
@@ -3620,6 +4000,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return false;
 	}
 
+	public void GetOldWieldedItemInfo(out int rightHandSlotIndex, out int rightHandUsageIndex, out int leftHandSlotIndex, out int leftHandUsageIndex)
+	{
+		MBAPI.IMBAgent.GetOldWieldedItemInfo(GetPtr(), out rightHandSlotIndex, out rightHandUsageIndex, out leftHandSlotIndex, out leftHandUsageIndex);
+	}
+
 	public void StartSwitchingWeaponUsageIndexAsClient(EquipmentIndex equipmentIndex, int usageIndex, UsageDirection currentMovementFlagUsageDirection)
 	{
 		MBAPI.IMBAgent.StartSwitchingWeaponUsageIndexAsClient(GetPtr(), (int)equipmentIndex, usageIndex, currentMovementFlagUsageDirection);
@@ -3679,7 +4064,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		if (usedObject.LockUserFrames)
 		{
 			WorldFrame userFrameForAgent = usedObject.GetUserFrameForAgent(this);
-			SetTargetPositionAndDirection(userFrameForAgent.Origin.AsVec2, userFrameForAgent.Rotation.f);
+			Vec2 targetPosition = userFrameForAgent.Origin.AsVec2;
+			SetTargetPositionAndDirection(in targetPosition, in userFrameForAgent.Rotation.f);
 			SetScriptedFlags(GetScriptedFlags() | AIScriptedFrameFlags.NoAttack);
 		}
 		else if (usedObject.LockUserPositions)
@@ -3698,9 +4084,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			this.AIUseGameObjectEnable();
 		}
-		_equipmentOnMainHandBeforeUsingObject = GetWieldedItemIndex(HandIndex.MainHand);
-		_equipmentOnOffHandBeforeUsingObject = GetWieldedItemIndex(HandIndex.OffHand);
-		usedObject.OnUse(this);
+		if (!IsInWater() || GetPrimaryWieldedItemIndex() != EquipmentIndex.None || GetOffhandWieldedItemIndex() != EquipmentIndex.None)
+		{
+			SaveEquipmentsOnHand();
+		}
+		usedObject.OnUse(this, -1);
 		Mission.OnObjectUsed(this, usedObject);
 		if (usedObject.IsInstantUse && !GameNetwork.IsClientOrReplay && IsActive() && InteractingWithAnyGameObject())
 		{
@@ -3708,9 +4096,20 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
+	public void SaveEquipmentsOnHand()
+	{
+		_equipmentOnMainHandBeforeUsingObject = GetPrimaryWieldedItemIndex();
+		_equipmentOnOffHandBeforeUsingObject = GetOffhandWieldedItemIndex();
+	}
+
 	public void StartFadingOut()
 	{
 		MBAPI.IMBAgent.StartFadingOut(GetPtr());
+	}
+
+	public bool IsWandering()
+	{
+		return MBAPI.IMBAgent.IsWandering(GetPtr());
 	}
 
 	public void SetRenderCheckEnabled(bool value)
@@ -3733,6 +4132,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.TickActionChannels(GetPtr(), dt);
 	}
 
+	public void SetIsPhysicsForceClosed(bool isPhysicsForceClosed)
+	{
+		MBAPI.IMBAgent.SetIsPhysicsForceClosed(GetPtr(), isPhysicsForceClosed);
+	}
+
 	public void LockAgentReplicationTableDataWithCurrentReliableSequenceNo(NetworkCommunicator peer)
 	{
 		MBDebug.Print("peer: " + peer.UserName + " index: " + Index + " name: " + Name);
@@ -3749,6 +4153,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		if (RiderAgent != null)
 		{
 			MBAPI.IMBAgent.SetPosition(RiderAgent.GetPtr(), ref position);
+		}
+		foreach (AgentComponent component in _components)
+		{
+			component.OnAgentTeleported();
 		}
 	}
 
@@ -3807,6 +4215,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public void MakeVoice(SkinVoiceManager.SkinVoiceType voiceType, SkinVoiceManager.CombatVoiceNetworkPredictionType predictionType)
 	{
 		MBAPI.IMBAgent.MakeVoice(GetPtr(), voiceType.Index, (int)predictionType);
+	}
+
+	public void YellAfterDelay(float delayTimeInSecond)
+	{
+		MBAPI.IMBAgent.YellAfterDelay(GetPtr(), delayTimeInSecond);
 	}
 
 	public void WieldNextWeapon(HandIndex weaponIndex, WeaponWieldActionType wieldActionType = WeaponWieldActionType.WithAnimation)
@@ -3893,15 +4306,15 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		if (isDefaultTaunt)
 		{
 			ActionIndexCache actionIndexCache = DefaultTauntActions[tauntIndex];
-			SetActionChannel(1, actionIndexCache, ignorePriority: false, 0uL);
+			SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
 			MakeVoice(SkinVoiceManager.VoiceType.Victory, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
 		}
 		else if (!GameNetwork.IsClientOrReplay)
 		{
-			ActionIndexCache suitableTauntAction = CosmeticsManagerHelper.GetSuitableTauntAction(this, tauntIndex);
-			if (suitableTauntAction.Index >= 0)
+			ActionIndexCache actionIndexCache2 = CosmeticsManagerHelper.GetSuitableTauntAction(this, tauntIndex);
+			if (actionIndexCache2.Index >= 0)
 			{
-				SetActionChannel(1, suitableTauntAction, ignorePriority: false, 0uL);
+				SetActionChannel(1, in actionIndexCache2, ignorePriority: false, (AnimFlags)0uL);
 			}
 		}
 	}
@@ -3930,19 +4343,19 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		EquipmentIndex equipmentIndex = forcedSlotIndexToDropWeaponFrom;
 		if (equipmentIndex == EquipmentIndex.None)
 		{
-			EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.MainHand);
-			EquipmentIndex wieldedItemIndex2 = GetWieldedItemIndex(HandIndex.OffHand);
-			if (wieldedItemIndex2 >= EquipmentIndex.WeaponItemBeginSlot && isDefendPressed)
+			EquipmentIndex primaryWieldedItemIndex = GetPrimaryWieldedItemIndex();
+			EquipmentIndex offhandWieldedItemIndex = GetOffhandWieldedItemIndex();
+			if (offhandWieldedItemIndex >= EquipmentIndex.WeaponItemBeginSlot && isDefendPressed)
 			{
-				equipmentIndex = wieldedItemIndex2;
+				equipmentIndex = offhandWieldedItemIndex;
 			}
-			else if (wieldedItemIndex >= EquipmentIndex.WeaponItemBeginSlot)
+			else if (primaryWieldedItemIndex >= EquipmentIndex.WeaponItemBeginSlot)
 			{
-				equipmentIndex = wieldedItemIndex;
+				equipmentIndex = primaryWieldedItemIndex;
 			}
-			else if (wieldedItemIndex2 >= EquipmentIndex.WeaponItemBeginSlot)
+			else if (offhandWieldedItemIndex >= EquipmentIndex.WeaponItemBeginSlot)
 			{
-				equipmentIndex = wieldedItemIndex2;
+				equipmentIndex = offhandWieldedItemIndex;
 			}
 			else
 			{
@@ -3989,9 +4402,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		if (Equipment[itemIndex].CurrentUsageItem.WeaponFlags.HasAllFlags(WeaponFlags.AffectsArea | WeaponFlags.Burning))
 		{
-			MatrixFrame boneEntitialFrameWithIndex = AgentVisuals.GetSkeleton().GetBoneEntitialFrameWithIndex(Monster.MainHandItemBoneIndex);
+			MatrixFrame m = AgentVisuals.GetSkeleton().GetBoneEntitialFrameWithIndex(Monster.MainHandItemBoneIndex);
 			MatrixFrame globalFrame = AgentVisuals.GetGlobalFrame();
-			MatrixFrame matrixFrame = globalFrame.TransformToParent(boneEntitialFrameWithIndex);
+			MatrixFrame matrixFrame = globalFrame.TransformToParent(in m);
 			Vec3 vec = globalFrame.origin + globalFrame.rotation.f - matrixFrame.origin;
 			vec.Normalize();
 			Mat3 identity = Mat3.Identity;
@@ -4006,7 +4419,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public void EquipItemsFromSpawnEquipment(bool neededBatchedItems)
+	public void EquipItemsFromSpawnEquipment(bool neededBatchedItems, bool prepareImmediately)
 	{
 		Mission.OnEquipItemsFromSpawnEquipmentBegin(this, _creationType);
 		switch (_creationType)
@@ -4027,7 +4440,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 					ammoWeaponData = Equipment[equipmentIndex].GetAmmoWeaponData(neededBatchedItems);
 					ammoWeaponStatsData = Equipment[equipmentIndex].GetAmmoWeaponStatsData();
 				}
-				WeaponEquipped(equipmentIndex, in weaponData, weaponStatsData, in ammoWeaponData, ammoWeaponStatsData, null, removeOldWeaponFromScene: true, isWieldedOnSpawn: true);
+				WeaponEquipped(equipmentIndex, in weaponData, weaponStatsData, in ammoWeaponData, ammoWeaponStatsData, WeakGameEntity.Invalid, removeOldWeaponFromScene: true, isWieldedOnSpawn: true);
 				weaponData.DeinitializeManagedPointers();
 				ammoWeaponData.DeinitializeManagedPointers();
 				for (int i = 0; i < Equipment[equipmentIndex].GetAttachedWeaponsCount(); i++)
@@ -4037,7 +4450,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 					AttachWeaponToWeaponAux(equipmentIndex, ref weapon, null, ref attachLocalFrame);
 				}
 			}
-			AddSkinMeshes(!neededBatchedItems);
+			AddSkinMeshes(!neededBatchedItems || prepareImmediately);
 			break;
 		}
 		}
@@ -4048,8 +4461,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void WieldInitialWeapons(WeaponWieldActionType wieldActionType = WeaponWieldActionType.InstantAfterPickUp, Equipment.InitialWeaponEquipPreference initialWeaponEquipPreference = TaleWorlds.Core.Equipment.InitialWeaponEquipPreference.Any)
 	{
-		EquipmentIndex mainHandWeaponIndex = GetWieldedItemIndex(HandIndex.MainHand);
-		EquipmentIndex offHandWeaponIndex = GetWieldedItemIndex(HandIndex.OffHand);
+		EquipmentIndex mainHandWeaponIndex = GetPrimaryWieldedItemIndex();
+		EquipmentIndex offHandWeaponIndex = GetOffhandWieldedItemIndex();
 		SpawnEquipment.GetInitialWeaponIndicesToEquip(out mainHandWeaponIndex, out offHandWeaponIndex, out var _, initialWeaponEquipPreference);
 		if (offHandWeaponIndex != EquipmentIndex.None)
 		{
@@ -4058,7 +4471,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		if (mainHandWeaponIndex != EquipmentIndex.None)
 		{
 			TryToWieldWeaponInSlot(mainHandWeaponIndex, wieldActionType, isWieldedOnSpawn: true);
-			if (GetWieldedItemIndex(HandIndex.MainHand) == EquipmentIndex.None)
+			if (GetPrimaryWieldedItemIndex() == EquipmentIndex.None)
 			{
 				WieldNextWeapon(HandIndex.MainHand, wieldActionType);
 			}
@@ -4140,9 +4553,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.Die(GetPtr(), ref b, (sbyte)overrideKillInfo);
 	}
 
-	public void MakeDead(bool isKilled, ActionIndexValueCache actionIndex)
+	public void MakeDead(bool isKilled, ActionIndexCache actionIndex, int corpsesToFadeIndex = -1)
 	{
-		MBAPI.IMBAgent.MakeDead(GetPtr(), isKilled, actionIndex.Index);
+		MBAPI.IMBAgent.MakeDead(GetPtr(), isKilled, actionIndex.Index, corpsesToFadeIndex);
 	}
 
 	public void RegisterBlow(Blow blow, in AttackCollisionData collisionData)
@@ -4161,13 +4574,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		outCollisionData.UpdateCollisionPositionAndBoneForReflect(collisionData.InflictedDamage, Position, 0);
 	}
 
-	public void Tick(float dt)
+	public void TickParallel(float dt)
 	{
 		if (IsActive())
 		{
-			if (GetCurrentActionStage(1) == ActionStage.AttackQuickReady)
+			if (GameNetwork.IsMultiplayer && GetCurrentActionStage(1) == ActionStage.AttackQuickReady)
 			{
-				_lastQuickReadyDetectedTime = Mission.Current.CurrentTime;
+				_lastMultiplayerQuickReadyDetectedTime = Mission.Current.CurrentTime;
 			}
 			if (_checkIfTargetFrameIsChanged)
 			{
@@ -4186,7 +4599,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				{
 					if (MovementLockedState == AgentMovementLockedState.FrameLocked)
 					{
-						SetTargetPositionAndDirection(MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f), MBMath.Lerp(vec2, _lastSynchedTargetDirection, 5f * dt, 0.005f));
+						Vec2 targetPosition = MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f);
+						Vec3 targetDirection = MBMath.Lerp(vec2, _lastSynchedTargetDirection, 5f * dt, 0.005f);
+						SetTargetPositionAndDirection(in targetPosition, in targetDirection);
 					}
 					else
 					{
@@ -4194,9 +4609,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 					}
 				}
 			}
-			if (Mission.AllowAiTicking && IsAIControlled)
+			foreach (AgentComponent component in _components)
 			{
-				TickAsAI(dt);
+				component.OnTickParallel(dt);
+			}
+			if (Mission.AllowAiTicking && IsAIControlled && _cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime) && Formation != null)
+			{
+				_cachedAndFormationValuesUpdateTimer.AdjustStartTime(-5f);
+				ParallelUpdateCachedAndFormationValues(updateOnlyMovement: false);
 			}
 			if (_wantsToYell)
 			{
@@ -4212,12 +4632,44 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			if (IsPlayerControlled && IsCheering && MovementInputVector != Vec2.Zero)
 			{
-				SetActionChannel(1, ActionIndexCache.act_none, ignorePriority: false, 0uL);
+				SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: false, (AnimFlags)0uL);
 			}
 		}
 		else if (MissionPeer?.ControlledAgent == this && !IsCameraAttachable())
 		{
 			MissionPeer.ControlledAgent = null;
+		}
+	}
+
+	public void Tick(float dt)
+	{
+		if (_changedFormationPosition.IsValid)
+		{
+			if (IsFormationFrameEnabled)
+			{
+				Formation?.Team?.TeamAI?.OnFormationFrameChanged(this, isFrameEnabled: true, _changedFormationPosition);
+				if (Mission.IsTeleportingAgents)
+				{
+					TeleportToPosition(_changedFormationPosition.GetGroundVec3());
+				}
+			}
+			else
+			{
+				Formation?.Team?.TeamAI?.OnFormationFrameChanged(this, isFrameEnabled: false, WorldPosition.Invalid);
+			}
+			_changedFormationPosition = WorldPosition.Invalid;
+		}
+		if (!IsActive())
+		{
+			return;
+		}
+		foreach (AgentComponent component in _components)
+		{
+			component.OnTick(dt);
+		}
+		if (Mission.AllowAiTicking && IsAIControlled)
+		{
+			TickAsAI();
 		}
 	}
 
@@ -4232,7 +4684,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		bool flag = mountAgent.GetCurrentActionType(0) == ActionCodeType.Rear;
 		if (MountAgent == null && mountAgent.RiderAgent == null)
 		{
-			if (CheckSkillForMounting(mountAgent) && !flag && GetCurrentActionValue(0) == ActionIndexValueCache.act_none)
+			if (CheckSkillForMounting(mountAgent) && !flag && GetCurrentAction(0) == ActionIndexCache.act_none)
 			{
 				EventControlFlags |= EventControlFlag.Mount;
 				SetInteractionAgent(mountAgent);
@@ -4263,7 +4715,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
 		Equipment[slotIndex] = MissionWeapon.Invalid;
-		WeaponEquipped(slotIndex, in WeaponData.InvalidWeaponData, null, in WeaponData.InvalidWeaponData, null, null, removeOldWeaponFromScene: true, isWieldedOnSpawn: false);
+		WeaponEquipped(slotIndex, in WeaponData.InvalidWeaponData, null, in WeaponData.InvalidWeaponData, null, WeakGameEntity.Invalid, removeOldWeaponFromScene: true, isWieldedOnSpawn: false);
 		UpdateAgentProperties();
 	}
 
@@ -4287,7 +4739,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			ammoWeaponData = weapon.GetAmmoWeaponData(needBatchedVersion: true);
 			ammoWeaponStatsData = weapon.GetAmmoWeaponStatsData();
 		}
-		WeaponEquipped(slotIndex, in weaponData, weaponStatsData, in ammoWeaponData, ammoWeaponStatsData, null, removeOldWeaponFromScene: true, isWieldedOnSpawn: true);
+		WeaponEquipped(slotIndex, in weaponData, weaponStatsData, in ammoWeaponData, ammoWeaponStatsData, WeakGameEntity.Invalid, removeOldWeaponFromScene: true, isWieldedOnSpawn: true);
 		weaponData.DeinitializeManagedPointers();
 		ammoWeaponData.DeinitializeManagedPointers();
 		for (int i = 0; i < weapon.GetAttachedWeaponsCount(); i++)
@@ -4313,7 +4765,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			GameNetwork.WriteMessage(new EquipWeaponFromSpawnedItemEntity(Index, slotIndex, spawnedItemEntity.Id, removeWeapon));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
-		if (spawnedItemEntity.GameEntity.Parent != null && spawnedItemEntity.GameEntity.Parent.HasScriptOfType<SpawnedItemEntity>())
+		if (spawnedItemEntity.GameEntity.Parent.IsValid && spawnedItemEntity.GameEntity.Parent.HasScriptOfType<SpawnedItemEntity>())
 		{
 			SpawnedItemEntity firstScriptOfType = spawnedItemEntity.GameEntity.Parent.GetFirstScriptOfType<SpawnedItemEntity>();
 			int attachmentIndex = -1;
@@ -4339,10 +4791,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				return;
 			}
 		}
-		GameEntity gameEntity = spawnedItemEntity.GameEntity;
+		WeakGameEntity gameEntity = spawnedItemEntity.GameEntity;
 		using (new TWSharedMutexWriteLock(Scene.PhysicsAndRayCastLock))
 		{
-			gameEntity.RemovePhysicsMT();
+			gameEntity.RemovePhysics();
 		}
 		gameEntity.RemoveScriptComponent(spawnedItemEntity.ScriptComponent.Pointer, 10);
 		gameEntity.SetVisibilityExcludeParents(visible: true);
@@ -4393,13 +4845,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool WillDropWieldedShield(SpawnedItemEntity spawnedItem)
 	{
-		EquipmentIndex wieldedItemIndex = GetWieldedItemIndex(HandIndex.OffHand);
-		if (wieldedItemIndex != EquipmentIndex.None && spawnedItem.WeaponCopy.CurrentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand) && spawnedItem.WeaponCopy.HasAllUsagesWithAnyWeaponFlag(WeaponFlags.NotUsableWithOneHand))
+		EquipmentIndex offhandWieldedItemIndex = GetOffhandWieldedItemIndex();
+		if (offhandWieldedItemIndex != EquipmentIndex.None && spawnedItem.WeaponCopy.CurrentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand) && spawnedItem.WeaponCopy.HasAllUsagesWithAnyWeaponFlag(WeaponFlags.NotUsableWithOneHand))
 		{
 			bool flag = false;
 			for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.ExtraWeaponSlot; equipmentIndex++)
 			{
-				if (equipmentIndex != wieldedItemIndex && !Equipment[equipmentIndex].IsEmpty && Equipment[equipmentIndex].IsShield())
+				if (equipmentIndex != offhandWieldedItemIndex && !Equipment[equipmentIndex].IsEmpty && Equipment[equipmentIndex].IsShield())
 				{
 					flag = true;
 					break;
@@ -4432,16 +4884,6 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return false;
 	}
 
-	public bool CanAIWieldAsRangedWeapon(MissionWeapon weapon)
-	{
-		ItemObject item = weapon.Item;
-		if (IsAIControlled && item != null)
-		{
-			return !item.ItemFlags.HasAnyFlag(ItemFlags.NotStackable);
-		}
-		return true;
-	}
-
 	public override int GetHashCode()
 	{
 		return _creationIndex;
@@ -4454,14 +4896,91 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool HasLostShield()
 	{
+		bool flag = false;
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.ExtraWeaponSlot; equipmentIndex++)
 		{
-			if (Equipment[equipmentIndex].IsEmpty && SpawnEquipment[equipmentIndex].Item != null && SpawnEquipment[equipmentIndex].Item.PrimaryWeapon.IsShield)
+			if (SpawnEquipment[equipmentIndex].Item != null && SpawnEquipment[equipmentIndex].Item.PrimaryWeapon.IsShield)
 			{
-				return true;
+				flag = true;
+				break;
 			}
 		}
+		bool flag2 = false;
+		if (flag)
+		{
+			for (EquipmentIndex equipmentIndex2 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex2 < EquipmentIndex.ExtraWeaponSlot; equipmentIndex2++)
+			{
+				if (!Equipment[equipmentIndex2].IsEmpty && Equipment[equipmentIndex2].Item != null && Equipment[equipmentIndex2].Item.PrimaryWeapon.IsShield)
+				{
+					flag2 = true;
+					break;
+				}
+			}
+		}
+		if (flag)
+		{
+			return !flag2;
+		}
 		return false;
+	}
+
+	public void SetLastDetachmentTickAgentTime(float lastDetachmentTickAgentTime)
+	{
+		LastDetachmentTickAgentTime = lastDetachmentTickAgentTime;
+	}
+
+	public void SetDetachmentWeight(float newDetachmentWeight)
+	{
+		DetachmentWeight = newDetachmentWeight;
+	}
+
+	public void SetDetachmentIndex(int newDetachmentIndex)
+	{
+		DetachmentIndex = newDetachmentIndex;
+	}
+
+	public void SetOwningAgentMissionPeer(MissionPeer owningAgentMissionPeer)
+	{
+		OwningAgentMissionPeer = owningAgentMissionPeer;
+		if (GameNetwork.IsServer)
+		{
+			GameNetwork.BeginBroadcastModuleEvent();
+			GameNetwork.WriteMessage(new SetAgentOwningMissionPeer(Index, owningAgentMissionPeer?.Peer));
+			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+		}
+	}
+
+	public void SetMissionRepresentative(MissionRepresentativeBase missionRepresentative)
+	{
+		MissionRepresentative = missionRepresentative;
+	}
+
+	public void SetIsLadderQueueUsing(bool isLadderQueueUsing)
+	{
+		_isLadderQueueUsing = isLadderQueueUsing;
+	}
+
+	public void SetIsInLadderQueue(bool isInLadderQueue)
+	{
+		IsInLadderQueue = isInLadderQueue;
+	}
+
+	public void UpdateLocalPositionError()
+	{
+		float num = 0.5f - Character.SkillFactor * 0.5f;
+		float num2 = 0.1f + (1f - Character.SkillFactor);
+		Vec2 forward = Vec2.Forward;
+		forward.RotateCCW(System.MathF.PI * MBRandom.RandomFloat);
+		forward *= MBRandom.RandomFloatRanged(num2 - num) + num;
+		LocalPositionError = forward;
+	}
+
+	public void YellingBehaviour()
+	{
+		if (IsAIControlled && MBRandom.RandomFloat < this.GetMorale() * 0.0033f)
+		{
+			YellAfterDelay(1.5f + MBRandom.RandomFloat);
+		}
 	}
 
 	internal void SetMountAgentBeforeBuild(Agent mount)
@@ -4513,9 +5032,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			Formation.Team.DetachmentManager.OnAgentRemoved(this);
 			Formation = null;
 		}
-		if (IsUsingGameObject && !GameNetwork.IsClientOrReplay && Mission != null && !Mission.MissionEnded)
+		if (((HumanAIComponent != null && InteractingWithAnyGameObject()) || IsUsingGameObject) && !GameNetwork.IsClientOrReplay && Mission != null && !Mission.MissionEnded)
 		{
-			StopUsingGameObject(isSuccessful: false);
+			StopUsingGameObjectMT(isSuccessful: false, StopUsingGameObjectFlags.None);
 		}
 		foreach (AgentComponent component in _components)
 		{
@@ -4531,15 +5050,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	internal void Build(AgentBuildData agentBuildData, int creationIndex)
+	internal void Build(AgentBuildData agentBuildData)
 	{
 		BuildAux();
 		HasBeenBuilt = true;
-		Controller = ((!GetAgentFlags().HasAnyFlag(AgentFlag.IsHumanoid)) ? ControllerType.AI : agentBuildData.AgentController);
+		Controller = ((!GetAgentFlags().HasAnyFlag(AgentFlag.IsHumanoid)) ? AgentControllerType.AI : agentBuildData.AgentController);
 		Formation = (IsMount ? null : agentBuildData?.AgentFormation);
 		MissionGameModels.Current?.AgentStatCalculateModel.InitializeMissionEquipment(this);
 		InitializeAgentProperties(SpawnEquipment, agentBuildData);
-		_creationIndex = creationIndex;
 		if (!GameNetwork.IsServerOrRecorder)
 		{
 			return;
@@ -4566,6 +5084,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		_flagsPointer = UIntPtr.Zero;
 		_indexPointer = UIntPtr.Zero;
 		_statePointer = UIntPtr.Zero;
+		_movementModePointer = UIntPtr.Zero;
+		_controllerTypePointer = UIntPtr.Zero;
+		_movementDirectionPointer = UIntPtr.Zero;
+		_primaryWieldedItemIndexPointer = UIntPtr.Zero;
+		_offHandWieldedItemIndexPointer = UIntPtr.Zero;
+		_channel0CurrentActionPointer = UIntPtr.Zero;
+		_channel1CurrentActionPointer = UIntPtr.Zero;
+		_maximumForwardUnlimitedSpeed = UIntPtr.Zero;
 	}
 
 	public bool HasPathThroughNavigationFacesIDFromDirection(int navigationFaceID_1, int navigationFaceID_2, int navigationFaceID_3, Vec2 direction)
@@ -4601,13 +5127,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			bool flag2 = _equipmentOnMainHandBeforeUsingObject != EquipmentIndex.None;
 			if (_equipmentOnOffHandBeforeUsingObject != EquipmentIndex.None)
 			{
-				WeaponWieldActionType type = ((!flag || flag2) ? WeaponWieldActionType.Instant : WeaponWieldActionType.WithAnimation);
-				TryToWieldWeaponInSlot(_equipmentOnOffHandBeforeUsingObject, type, isWieldedOnSpawn: false);
+				WeaponWieldActionType param = ((!flag || flag2) ? WeaponWieldActionType.Instant : WeaponWieldActionType.WithAnimation);
+				Mission.AddTickActionMT(Mission.MissionTickAction.TryToWieldWeaponInSlot, this, (int)_equipmentOnOffHandBeforeUsingObject, (int)param);
 			}
 			if (flag2)
 			{
-				WeaponWieldActionType type2 = ((!flag) ? WeaponWieldActionType.Instant : WeaponWieldActionType.WithAnimation);
-				TryToWieldWeaponInSlot(_equipmentOnMainHandBeforeUsingObject, type2, isWieldedOnSpawn: false);
+				WeaponWieldActionType param2 = ((!flag) ? WeaponWieldActionType.Instant : WeaponWieldActionType.WithAnimation);
+				Mission.AddTickActionMT(Mission.MissionTickAction.TryToWieldWeaponInSlot, this, (int)_equipmentOnMainHandBeforeUsingObject, (int)param2);
 			}
 		}
 	}
@@ -4630,7 +5156,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	private void AttachWeaponToBoneAux(ref MissionWeapon weapon, GameEntity weaponEntity, sbyte boneIndex, ref MatrixFrame attachLocalFrame)
 	{
 		WeaponData weaponData = weapon.GetWeaponData(needBatchedVersionForMeshes: true);
-		MBAPI.IMBAgent.AttachWeaponToBone(Pointer, in weaponData, weapon.GetWeaponStatsData(), weapon.WeaponsCount, weaponEntity?.Pointer ?? UIntPtr.Zero, boneIndex, ref attachLocalFrame);
+		MBAPI.IMBAgent.AttachWeaponToBone(GetPtr(), in weaponData, weapon.GetWeaponStatsData(), weapon.WeaponsCount, weaponEntity?.Pointer ?? UIntPtr.Zero, boneIndex, ref attachLocalFrame);
 		weaponData.DeinitializeManagedPointers();
 	}
 
@@ -4642,7 +5168,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	private void AttachWeaponToWeaponAux(EquipmentIndex slotIndex, ref MissionWeapon weapon, GameEntity weaponEntity, ref MatrixFrame attachLocalFrame)
 	{
 		WeaponData weaponData = weapon.GetWeaponData(needBatchedVersionForMeshes: true);
-		MBAPI.IMBAgent.AttachWeaponToWeaponInSlot(Pointer, in weaponData, weapon.GetWeaponStatsData(), weapon.WeaponsCount, weaponEntity?.Pointer ?? UIntPtr.Zero, (int)slotIndex, ref attachLocalFrame);
+		MBAPI.IMBAgent.AttachWeaponToWeaponInSlot(GetPtr(), in weaponData, weapon.GetWeaponStatsData(), weapon.WeaponsCount, weaponEntity?.Pointer ?? UIntPtr.Zero, (int)slotIndex, ref attachLocalFrame);
 		weaponData.DeinitializeManagedPointers();
 	}
 
@@ -4681,28 +5207,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.SetTeam(GetPtr(), team.Index);
 	}
 
-	private ControllerType GetController()
+	private void WeaponEquipped(EquipmentIndex equipmentSlot, in WeaponData weaponData, WeaponStatsData[] weaponStatsData, in WeaponData ammoWeaponData, WeaponStatsData[] ammoWeaponStatsData, WeakGameEntity weaponEntity, bool removeOldWeaponFromScene, bool isWieldedOnSpawn)
 	{
-		return _agentControllerType;
-	}
-
-	private void SetController(ControllerType controllerType)
-	{
-		if (controllerType != _agentControllerType)
-		{
-			if (controllerType == ControllerType.Player && IsDetachedFromFormation)
-			{
-				_detachment.RemoveAgent(this);
-				_formation?.AttachUnit(this);
-			}
-			_agentControllerType = controllerType;
-			MBAPI.IMBAgent.SetController(GetPtr(), controllerType);
-		}
-	}
-
-	private void WeaponEquipped(EquipmentIndex equipmentSlot, in WeaponData weaponData, WeaponStatsData[] weaponStatsData, in WeaponData ammoWeaponData, WeaponStatsData[] ammoWeaponStatsData, GameEntity weaponEntity, bool removeOldWeaponFromScene, bool isWieldedOnSpawn)
-	{
-		MBAPI.IMBAgent.WeaponEquipped(GetPtr(), (int)equipmentSlot, in weaponData, weaponStatsData, (weaponStatsData != null) ? weaponStatsData.Length : 0, in ammoWeaponData, ammoWeaponStatsData, (ammoWeaponStatsData != null) ? ammoWeaponStatsData.Length : 0, weaponEntity?.Pointer ?? UIntPtr.Zero, removeOldWeaponFromScene, isWieldedOnSpawn);
+		MBAPI.IMBAgent.WeaponEquipped(GetPtr(), (int)equipmentSlot, in weaponData, weaponStatsData, (weaponStatsData != null) ? weaponStatsData.Length : 0, in ammoWeaponData, ammoWeaponStatsData, (ammoWeaponStatsData != null) ? ammoWeaponStatsData.Length : 0, weaponEntity.Pointer, removeOldWeaponFromScene, isWieldedOnSpawn);
 		CheckEquipmentForCapeClothSimulationStateChange();
 	}
 
@@ -4766,23 +5273,26 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MBAPI.IMBAgent.Build(GetPtr(), Monster.EyeOffsetWrtHead);
 	}
 
+	public void ClearTargetZ()
+	{
+		MBAPI.IMBAgent.ClearTargetZ(GetPtr());
+	}
+
 	private float GetMissileRangeWithHeightDifference()
 	{
-		if (IsMount || (!IsRangedCached && !HasThrownCached) || Formation == null || Formation.QuerySystem.ClosestEnemyFormation == null)
+		if (IsMount || (!IsRangedCached && !HasThrownCached) || Formation?.CachedClosestEnemyFormation == null)
 		{
 			return 0f;
 		}
-		return GetMissileRangeWithHeightDifferenceAux(Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.GetNavMeshZ());
+		return GetMissileRangeWithHeightDifferenceAux(Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshZ());
 	}
 
-	private void AddSkinMeshes(bool useGPUMorph)
+	private void AddSkinMeshes(bool prepareImmediately)
 	{
-		bool prepareImmediately = this == Main;
 		SkinMask skinMeshesMask = SpawnEquipment.GetSkinMeshesMask();
 		bool isFemale = IsFemale && BodyPropertiesValue.Age >= 14f;
 		SkinGenerationParams skinParams = new SkinGenerationParams((int)skinMeshesMask, SpawnEquipment.GetUnderwearType(isFemale), (int)SpawnEquipment.BodyMeshType, (int)SpawnEquipment.HairCoverType, (int)SpawnEquipment.BeardCoverType, (int)SpawnEquipment.BodyDeformType, prepareImmediately, Character.FaceDirtAmount, IsFemale ? 1 : 0, Character.Race, useTranslucency: false, useTesselation: false);
-		bool useFaceCache = Character != null && Character.FaceMeshCache;
-		AgentVisuals.AddSkinMeshes(skinParams, BodyPropertiesValue, useGPUMorph, useFaceCache);
+		AgentVisuals.AddSkinMeshes(skinParams, BodyPropertiesValue, prepareImmediately, prepareImmediately);
 	}
 
 	private void HandleBlow(ref Blow b, in AttackCollisionData collisionData)
@@ -4805,7 +5315,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				int soundCodeMissionCombatPlayerhit = CombatSoundContainer.SoundCodeMissionCombatPlayerhit;
 				Mission.MakeSoundOnlyOnRelatedPeer(soundCodeMissionCombatPlayerhit, b.GlobalPosition, agent.Index);
 			}
-			Mission.AddSoundAlarmFactorToAgents(b.OwnerId, b.GlobalPosition, 15f);
+			if (!collisionData.IsSneakAttack)
+			{
+				Mission.AddSoundAlarmFactorToAgents(agent, in b.GlobalPosition, 15f);
+			}
 		}
 		if (b.InflictedDamage <= 0)
 		{
@@ -4814,15 +5327,16 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		UpdateLastAttackAndHitTimes(agent, b.IsMissile);
 		float health = Health;
 		float num = (((float)b.InflictedDamage > health) ? health : ((float)b.InflictedDamage));
+		if (CurrentMortalityState == MortalityState.Immortal || Mission.DisableDying)
+		{
+			num = 0f;
+		}
 		float num2 = health - num;
 		if (num2 < 0f)
 		{
 			num2 = 0f;
 		}
-		if (CurrentMortalityState != MortalityState.Immortal && !Mission.DisableDying)
-		{
-			Health = num2;
-		}
+		Health = num2;
 		if (agent != null && agent != this && IsHuman)
 		{
 			if (agent.IsMount && agent.RiderAgent != null)
@@ -4834,7 +5348,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				_lastHitInfo.RegisterLastBlow(b.OwnerId, b.AttackType);
 			}
 		}
-		Mission.OnAgentHit(this, agent, in b, in collisionData, isBlocked: false, num);
+		if (!Mission.DisableDying)
+		{
+			Mission.OnAgentHit(this, agent, in b, in collisionData, isBlocked: false, num);
+		}
 		if (Health < 1f)
 		{
 			KillInfo overrideKillInfo = (b.IsFallDamage ? KillInfo.Gravity : KillInfo.Invalid);
@@ -4881,13 +5398,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return ArmorComponent.ArmorMaterialTypes.None;
 	}
 
-	private void TickAsAI(float dt)
+	private void TickAsAI()
 	{
-		for (int i = 0; i < _components.Count; i++)
-		{
-			_components[i].OnTickAsAI(dt);
-		}
-		if (Formation != null && _cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime))
+		if (_cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime) && Formation != null)
 		{
 			UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: true);
 		}
@@ -4958,7 +5471,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetMonsterUsageIndex(monsterUsage);
 	}
 
-	private static float GetSoundParameterForArmorType(ArmorComponent.ArmorMaterialTypes armorMaterialType)
+	public static float GetSoundParameterForArmorType(ArmorComponent.ArmorMaterialTypes armorMaterialType)
 	{
 		return (float)armorMaterialType * 0.1f;
 	}

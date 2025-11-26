@@ -5,7 +5,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Overlay;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.TournamentGames;
 using TaleWorlds.Core;
@@ -229,7 +229,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=6rweIvZS}{QUEST_GIVER.LINK}, a gang leader from {SETTLEMENT} offers you to fix 5 tournaments together and share the profit.\n {?QUEST_GIVER.GENDER}She{?}He{\\?} asked you to enter 5 tournaments and follow the instructions given by {?QUEST_GIVER.GENDER}her{?}his{\\?} associate.");
+				TextObject textObject = new TextObject("{=6rweIvZS}{QUEST_GIVER.LINK}, a gang leader from {SETTLEMENT} offers you to fix 5 tournaments together and share the profit.{newline}{?QUEST_GIVER.GENDER}She{?}He{\\?} asked you to enter 5 tournaments and follow the instructions given by {?QUEST_GIVER.GENDER}her{?}his{\\?} associate.");
 				textObject.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
 				textObject.SetTextVariable("SETTLEMENT", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				return textObject;
@@ -526,7 +526,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 		private bool NpcTournamentLocationCondition()
 		{
 			List<Town> source = Town.AllTowns.Where((Town x) => Campaign.Current.TournamentManager.GetTournamentGame(x) != null && x != Settlement.CurrentSettlement.Town).ToList();
-			source = source.OrderBy((Town x) => x.Settlement.Position2D.DistanceSquared(Settlement.CurrentSettlement.Position2D)).ToList();
+			source = source.OrderBy((Town x) => DistanceHelper.FindClosestDistanceFromSettlementToSettlement(x.Settlement, Settlement.CurrentSettlement, MobileParty.NavigationType.Default)).ToList();
 			if (source.Count > 0)
 			{
 				MBTextManager.SetTextVariable("NEARBY_TOURNAMENTS_LIST", source[0].Name);
@@ -638,7 +638,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 			{
 				return new TextObject("{=hl4pTsaO}Win this tournament");
 			}
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 
 		private DialogFlow GetDialogWithThugEnd()
@@ -653,7 +653,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 			bool flag = CharacterObject.OneToOneConversationCharacter == _thug && _startTournamentEndConversation;
 			if (flag)
 			{
-				TextObject textObject = TextObject.Empty;
+				TextObject textObject = TextObject.GetEmpty();
 				switch (_afterTournamentConversationState)
 				{
 				case AfterTournamentConversationState.SmallReward:
@@ -675,7 +675,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 					textObject.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
 					break;
 				default:
-					Debug.FailedAssert("After tournament conversation state is not set!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\BettingFraudIssueBehavior.cs", "DialogWithThugEndCondition", 722);
+					Debug.FailedAssert("After tournament conversation state is not set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\BettingFraudIssueBehavior.cs", "DialogWithThugEndCondition", 722);
 					break;
 				}
 				MBTextManager.SetTextVariable("GREETING_LINE", textObject);
@@ -861,7 +861,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 
 	private void OnSessionLaunched(CampaignGameStarter gameStarter)
 	{
-		gameStarter.AddGameMenu("menu_town_tournament_join_betting_fraud", "{=5Adr6toM}{MENU_TEXT}", game_menu_tournament_join_on_init, GameOverlays.MenuOverlayType.SettlementWithBoth);
+		gameStarter.AddGameMenu("menu_town_tournament_join_betting_fraud", "{=5Adr6toM}{MENU_TEXT}", game_menu_tournament_join_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		gameStarter.AddGameMenuOption("menu_town_tournament_join_betting_fraud", "mno_tournament_event_1", "{=es0Y3Bxc}Join", delegate(MenuCallbackArgs args)
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Mission;

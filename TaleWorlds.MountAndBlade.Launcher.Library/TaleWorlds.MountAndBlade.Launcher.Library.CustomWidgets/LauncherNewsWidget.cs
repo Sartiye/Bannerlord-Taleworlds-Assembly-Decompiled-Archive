@@ -96,9 +96,9 @@ public class LauncherNewsWidget : Widget
 		_isRadioButtonVisibilityDirty = true;
 	}
 
-	protected override void OnAfterChildRemoved(Widget child)
+	protected override void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
-		base.OnAfterChildRemoved(child);
+		base.OnAfterChildRemoved(child, previousIndexOfChild);
 		if (RadioButtonContainer.ChildCount != base.ChildCount)
 		{
 			RadioButtonContainer.RemoveChild(RadioButtonContainer.GetChild(RadioButtonContainer.ChildCount - 1));

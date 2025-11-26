@@ -9,9 +9,9 @@ namespace TaleWorlds.Core;
 
 public class MBEquipmentRoster : MBObjectBase
 {
-	public static readonly Equipment EmptyEquipment = new Equipment(isCivilian: true);
+	public static readonly Equipment EmptyEquipment = new Equipment(Equipment.EquipmentType.Civilian);
 
-	private MBList<Equipment> _equipments;
+	private MBList<Equipment> _equipments = new MBList<Equipment>();
 
 	public BasicCultureObject EquipmentCulture;
 
@@ -33,11 +33,11 @@ public class MBEquipmentRoster : MBObjectBase
 	{
 		get
 		{
-			if (_equipments.IsEmpty())
+			if (!_equipments.IsEmpty())
 			{
-				return EmptyEquipment;
+				return _equipments.FirstOrDefault();
 			}
-			return _equipments.FirstOrDefault();
+			return EmptyEquipment;
 		}
 	}
 
@@ -51,12 +51,6 @@ public class MBEquipmentRoster : MBObjectBase
 		return EquipmentFlags != EquipmentFlags.None;
 	}
 
-	public MBEquipmentRoster()
-	{
-		_equipments = new MBList<Equipment>();
-		EquipmentFlags = EquipmentFlags.None;
-	}
-
 	public void Init(MBObjectManager objectManager, XmlNode node)
 	{
 		if (node.Name == "EquipmentRoster")
@@ -65,7 +59,7 @@ public class MBEquipmentRoster : MBObjectBase
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "Init", 96);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "Init", 81);
 		}
 	}
 
@@ -100,17 +94,29 @@ public class MBEquipmentRoster : MBObjectBase
 	private void InitEquipment(MBObjectManager objectManager, XmlNode node)
 	{
 		base.Initialize();
-		Equipment equipment = new Equipment(node.Attributes["civilian"] != null && bool.Parse(node.Attributes["civilian"].Value));
+		Equipment.EquipmentType result = Equipment.EquipmentType.Battle;
+		if (node.Attributes["equipmentType"] != null)
+		{
+			if (!Enum.TryParse<Equipment.EquipmentType>(node.Attributes["equipmentType"].Value, out result))
+			{
+				Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "InitEquipment", 127);
+			}
+		}
+		else if (node.Attributes["civilian"] != null && bool.Parse(node.Attributes["civilian"].Value))
+		{
+			result = Equipment.EquipmentType.Civilian;
+		}
+		Equipment equipment = new Equipment(result);
 		equipment.Deserialize(objectManager, node);
 		_equipments.Add(equipment);
 		AfterInitialized();
 	}
 
-	public void AddEquipmentRoster(MBEquipmentRoster equipmentRoster, bool isCivilian)
+	public void AddEquipmentRoster(MBEquipmentRoster equipmentRoster, Equipment.EquipmentType equipmentType)
 	{
 		foreach (Equipment item in equipmentRoster._equipments.ToList())
 		{
-			if (item.IsCivilian == isCivilian)
+			if ((equipmentType == Equipment.EquipmentType.Stealth && item.IsStealth) || (equipmentType == Equipment.EquipmentType.Civilian && item.IsCivilian) || (equipmentType == Equipment.EquipmentType.Battle && item.IsBattle))
 			{
 				_equipments.Add(item);
 			}
@@ -137,14 +143,14 @@ public class MBEquipmentRoster : MBObjectBase
 
 	public void OrderEquipments()
 	{
-		_equipments = new MBList<Equipment>(_equipments.OrderByDescending((Equipment eq) => !eq.IsCivilian));
+		_equipments = new MBList<Equipment>(_equipments.OrderByDescending((Equipment eq) => !eq.IsCivilian && !eq.IsStealth));
 	}
 
 	public void InitializeDefaultEquipment(string equipmentName)
 	{
 		if (_equipments[0] == null)
 		{
-			_equipments[0] = new Equipment(isCivilian: false);
+			_equipments[0] = new Equipment(Equipment.EquipmentType.Battle);
 		}
 		_equipments[0].FillFrom(Game.Current.GetDefaultEquipmentWithName(equipmentName));
 	}

@@ -6,28 +6,30 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.Lobby.Armory;
 
 public class MultiplayerLobbyClassFilterClassItemWidget : ToggleStateButtonWidget
 {
-	private Widget _factionColorWidget;
+	private string _troopType;
 
 	private Color _cultureColor;
 
-	private string _troopType;
+	private Brush _iconBrush;
 
 	private Widget _iconWidget;
 
+	private Widget _factionColorWidget;
+
 	[Editor(false)]
-	public Widget FactionColorWidget
+	public string TroopType
 	{
 		get
 		{
-			return _factionColorWidget;
+			return _troopType;
 		}
 		set
 		{
-			if (_factionColorWidget != value)
+			if (value != _troopType)
 			{
-				_factionColorWidget = value;
-				OnPropertyChanged(value, "FactionColorWidget");
-				SetFactionColor();
+				_troopType = value;
+				OnPropertyChanged(value, "TroopType");
+				UpdateIcon();
 			}
 		}
 	}
@@ -50,20 +52,19 @@ public class MultiplayerLobbyClassFilterClassItemWidget : ToggleStateButtonWidge
 		}
 	}
 
-	[DataSourceProperty]
-	public string TroopType
+	[Editor(false)]
+	public Brush IconBrush
 	{
 		get
 		{
-			return _troopType;
+			return _iconBrush;
 		}
 		set
 		{
-			if (value != _troopType)
+			if (_iconBrush != value)
 			{
-				_troopType = value;
-				OnPropertyChanged(value, "TroopType");
-				UpdateIcon();
+				_iconBrush = value;
+				OnPropertyChanged(value, "IconBrush");
 			}
 		}
 	}
@@ -86,6 +87,24 @@ public class MultiplayerLobbyClassFilterClassItemWidget : ToggleStateButtonWidge
 		}
 	}
 
+	[Editor(false)]
+	public Widget FactionColorWidget
+	{
+		get
+		{
+			return _factionColorWidget;
+		}
+		set
+		{
+			if (_factionColorWidget != value)
+			{
+				_factionColorWidget = value;
+				OnPropertyChanged(value, "FactionColorWidget");
+				SetFactionColor();
+			}
+		}
+	}
+
 	public MultiplayerLobbyClassFilterClassItemWidget(UIContext context)
 		: base(context)
 	{
@@ -103,7 +122,7 @@ public class MultiplayerLobbyClassFilterClassItemWidget : ToggleStateButtonWidge
 	{
 		if (!string.IsNullOrEmpty(TroopType) && _iconWidget != null)
 		{
-			IconWidget.Sprite = base.Context.SpriteData.GetSprite("General\\compass\\" + TroopType);
+			IconWidget.Sprite = IconBrush?.GetLayer(TroopType)?.Sprite;
 		}
 	}
 }

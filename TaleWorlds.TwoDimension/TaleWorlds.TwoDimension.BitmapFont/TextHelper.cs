@@ -63,15 +63,27 @@ internal static class TextHelper
 		return -1;
 	}
 
-	internal static float GetTotalWordWidthBetweenIndices(int startIndex, int endIndex, List<TextToken> tokens, Func<TextToken, Font> getFontForToken, float extraPadding, float scale)
+	internal static float GetTotalWordWidthBetweenIndices(int startIndex, int endIndex, List<TextToken> tokens, Func<TextToken, Font> getFontForToken, float extraPadding, float requiredFontSize)
 	{
 		float num = 0f;
 		for (int i = startIndex; i < endIndex; i++)
 		{
-			float num2 = num;
 			Font font = getFontForToken(tokens[i]);
-			num = num2 + ((font != null) ? (font.GetCharacterWidth(tokens[i].Token, extraPadding) * scale) : 0f);
+			if (font != null)
+			{
+				float num2 = requiredFontSize / (float)font.Size;
+				num += font.GetCharacterWidth(tokens[i].Token, extraPadding) * num2;
+			}
 		}
 		return num;
+	}
+
+	internal static bool IsTokenEqualToSeparatorChar(TextToken token, ILanguage currentLanguage)
+	{
+		if (token != null && token.Type == TextToken.TokenType.Character)
+		{
+			return token.Token == currentLanguage.GetLineSeperatorChar();
+		}
+		return false;
 	}
 }

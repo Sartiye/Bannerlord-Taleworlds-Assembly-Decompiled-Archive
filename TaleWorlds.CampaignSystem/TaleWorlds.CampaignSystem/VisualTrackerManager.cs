@@ -1,17 +1,15 @@
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
+using TaleWorlds.SaveSystem.Load;
 
 namespace TaleWorlds.CampaignSystem;
 
 public class VisualTrackerManager
 {
-	[SaveableField(0)]
-	private readonly MBList<TrackedObject> _trackedObjects;
-
-	public MBReadOnlyList<TrackedObject> TrackedObjects => _trackedObjects;
+	[SaveableField(1)]
+	private Dictionary<ITrackableBase, TrackedObject> _trackedObjects;
 
 	[CachedData]
 	public int TrackedObjectsVersion { get; private set; }
@@ -33,94 +31,75 @@ public class VisualTrackerManager
 
 	public VisualTrackerManager()
 	{
-		_trackedObjects = new MBList<TrackedObject>();
-		Initialize();
-	}
-
-	[LoadInitializationCallback]
-	private void OnLoad(MetaData metaData)
-	{
-		Initialize();
-	}
-
-	private void Initialize()
-	{
+		_trackedObjects = new Dictionary<ITrackableBase, TrackedObject>();
 		TrackedObjectsVersion = 0;
-		CheckObjectValidities();
 	}
 
-	private void CheckObjectValidities()
+	[LateLoadInitializationCallback]
+	private void OnLateLoad(MetaData metaData, ObjectLoadData objectLoadData)
 	{
-		foreach (TrackedObject item in TrackedObjects.ToList())
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.0")))
 		{
-			if (item.Object == null)
+			_trackedObjects = new Dictionary<ITrackableBase, TrackedObject>();
+			RetrieveTrackedObjectsFromOldVersion(objectLoadData);
+		}
+		if (_trackedObjects == null)
+		{
+			_trackedObjects = new Dictionary<ITrackableBase, TrackedObject>();
+		}
+	}
+
+	private void RetrieveTrackedObjectsFromOldVersion(ObjectLoadData objectLoadData)
+	{
+		if (objectLoadData.GetMemberValueBySaveId(0) is IReadOnlyCollection<TrackedObject> readOnlyCollection)
+		{
+			foreach (TrackedObject item in readOnlyCollection)
 			{
-				_trackedObjects.Remove(item);
+				_trackedObjects.Add(item.Object, item);
 			}
+		}
+		else
+		{
+			Debug.FailedAssert("Failed to recover tracked objects from old save file.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\VisualTrackerManager.cs", "RetrieveTrackedObjectsFromOldVersion", 60);
 		}
 		TrackedObjectsVersion++;
 	}
 
-	public void RegisterObject(ITrackableCampaignObject obj)
+	public void RegisterObject(ITrackableCampaignObject trackableObject)
 	{
-		if (obj == null)
+		if (trackableObject == null)
 		{
+			Debug.FailedAssert("Registered tracked object is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\VisualTrackerManager.cs", "RegisterObject", 70);
 			return;
 		}
-		bool flag = false;
-		foreach (TrackedObject trackedObject in TrackedObjects)
+		if (_trackedObjects.TryGetValue(trackableObject, out var value))
 		{
-			if (trackedObject.Object == obj)
-			{
-				flag = true;
-				trackedObject.TrackerCount++;
-			}
+			value.TrackerCount++;
+			return;
 		}
-		if (!flag)
-		{
-			TrackedObject item = new TrackedObject(obj);
-			_trackedObjects.Add(item);
-			TrackedObjectsVersion++;
-		}
+		_trackedObjects.Add(trackableObject, new TrackedObject(trackableObject));
+		TrackedObjectsVersion++;
 	}
 
-	public bool CheckTracked(ITrackableBase obj)
+	public bool CheckTracked(ITrackableBase trackableObject)
 	{
-		foreach (TrackedObject trackedObject in TrackedObjects)
-		{
-			if (trackedObject.Object == obj)
-			{
-				return true;
-			}
-		}
-		return false;
+		return _trackedObjects.ContainsKey(trackableObject);
 	}
 
-	public bool CheckTracked(BasicCharacterObject agentCharacter)
+	public void RemoveTrackedObject(ITrackableBase trackableObject, bool forceRemove = false)
 	{
-		foreach (TrackedObject trackedObject in _trackedObjects)
+		TrackedObject value;
+		if (trackableObject == null)
 		{
-			if (trackedObject.Object.CheckTracked(agentCharacter))
-			{
-				return true;
-			}
+			Debug.FailedAssert("Trying to remove null trackable object", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\VisualTrackerManager.cs", "RemoveTrackedObject", 94);
 		}
-		return false;
-	}
-
-	public void RemoveTrackedObject(ITrackableBase obj, bool forceRemove = false)
-	{
-		for (int num = _trackedObjects.Count - 1; num >= 0; num--)
+		else if (_trackedObjects.TryGetValue(trackableObject, out value))
 		{
-			TrackedObject trackedObject = _trackedObjects[num];
-			if (trackedObject.Object == obj)
+			value.TrackerCount--;
+			if (value.TrackerCount == 0 || forceRemove)
 			{
-				trackedObject.TrackerCount--;
-				if (trackedObject.TrackerCount <= 0 || forceRemove)
-				{
-					_trackedObjects.RemoveAt(num);
-					TrackedObjectsVersion++;
-				}
+				_trackedObjects.Remove(trackableObject);
+				TrackedObjectsVersion++;
 			}
 		}
 	}
@@ -128,6 +107,11 @@ public class VisualTrackerManager
 	private void ResetTracker()
 	{
 		_trackedObjects.Clear();
+		TrackedObjectsVersion++;
+	}
+
+	public void SetDirty()
+	{
 		TrackedObjectsVersion++;
 	}
 }

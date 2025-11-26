@@ -66,8 +66,6 @@ public class TooltipPropertyWidget : Widget
 
 	private Sprite _currentSprite;
 
-	private float _maxValueLabelSizeX;
-
 	private bool _firstFrame = true;
 
 	private bool _modifyDefinitionColor = true;
@@ -521,13 +519,12 @@ public class TooltipPropertyWidget : Widget
 				ValueLabelContainer.ScaledSuggestedWidth = ValueLabel.Size.X;
 			}
 		}
-		_maxValueLabelSizeX = maxValueLabelSizeX;
 		if (IsTwoColumn && !_isMultiLine && (!_isTitle || (_isTitle && IsTwoColumn)))
 		{
 			ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
-			ValueLabel.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, _maxValueLabelSizeX);
+			ValueLabel.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxValueLabelSizeX);
 			ValueLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
-			ValueLabelContainer.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, _maxValueLabelSizeX);
+			ValueLabelContainer.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxValueLabelSizeX);
 		}
 		if (IsTwoColumn && !_isMultiLine && _isTitle)
 		{
@@ -536,6 +533,7 @@ public class TooltipPropertyWidget : Widget
 			DefinitionLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
 			DefinitionLabelContainer.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxDefinitionLabelSizeX);
 		}
+		this.SetGlobalAlphaRecursively(base.ParentWidget?.AlphaFactor ?? 0f);
 	}
 
 	protected override void OnUpdate(float dt)
@@ -598,162 +596,162 @@ public class TooltipPropertyWidget : Widget
 		DefinitionLabel.IsVisible = true;
 		ValueLabel.IsVisible = true;
 		_currentSprite = null;
-		if (!_allBrushesInitialized)
+		if (_allBrushesInitialized)
 		{
-			return;
-		}
-		if (_isRelation)
-		{
-			DefinitionLabel.Text = "";
-			ValueLabel.Text = "";
-		}
-		else if (_isBattleMode)
-		{
-			DefinitionLabel.Text = "";
-			ValueLabel.Text = "";
-		}
-		else if (_isBattleModeOver)
-		{
-			DefinitionLabel.Text = "";
-			ValueLabel.Text = "";
-		}
-		else if (_isMultiLine)
-		{
-			DefinitionLabelContainer.IsVisible = false;
-			ValueLabel.Text = _valueText;
-			ValueLabel.Brush = DescriptionTextBrush;
-			ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
-			ValueLabel.SuggestedWidth = 0f;
-			ValueLabelContainer.SuggestedWidth = 0f;
-		}
-		else if (_isCost)
-		{
-			DefinitionLabel.Text = "";
-			ValueLabel.Text = _valueText;
-			base.HorizontalAlignment = HorizontalAlignment.Center;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-		}
-		else if (_isRundownSeperator)
-		{
-			ValueLabel.IsVisible = false;
-			DefinitionLabelContainer.IsVisible = false;
-			ValueBackgroundSpriteWidget.IsVisible = true;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			_currentSprite = RundownSeperatorSprite;
-			ValueBackgroundSpriteWidget.HorizontalAlignment = HorizontalAlignment.Right;
-			ValueBackgroundSpriteWidget.PositionXOffset = base.Right * base._inverseScaleToUse;
-			ValueBackgroundSpriteWidget.Sprite = _currentSprite;
-			ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.Fixed;
-			ValueBackgroundSpriteWidget.WidthSizePolicy = SizePolicy.Fixed;
-		}
-		else if (_isDefaultSeperator)
-		{
-			ValueLabel.IsVisible = false;
-			DefinitionLabelContainer.IsVisible = false;
-			ValueBackgroundSpriteWidget.IsVisible = true;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			_currentSprite = DefaultSeperatorSprite;
-			ValueBackgroundSpriteWidget.HorizontalAlignment = HorizontalAlignment.Right;
-			ValueBackgroundSpriteWidget.PositionXOffset = base.Right * base._inverseScaleToUse;
-			ValueBackgroundSpriteWidget.Sprite = _currentSprite;
-			ValueBackgroundSpriteWidget.AlphaFactor = 0.5f;
-			ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.Fixed;
-			ValueBackgroundSpriteWidget.WidthSizePolicy = SizePolicy.Fixed;
-		}
-		else if (_isTitle)
-		{
-			DefinitionLabel.Brush = TitleTextBrush;
-			ValueLabel.Brush = TitleTextBrush;
-			DefinitionLabel.HeightSizePolicy = SizePolicy.CoverChildren;
-			ValueLabel.HeightSizePolicy = SizePolicy.CoverChildren;
-			DefinitionLabelContainer.HeightSizePolicy = SizePolicy.CoverChildren;
-			ValueLabelContainer.HeightSizePolicy = SizePolicy.CoverChildren;
-			if (IsTwoColumn)
+			if (_isRelation)
+			{
+				DefinitionLabel.Text = "";
+				ValueLabel.Text = "";
+			}
+			else if (_isBattleMode)
+			{
+				DefinitionLabel.Text = "";
+				ValueLabel.Text = "";
+			}
+			else if (_isBattleModeOver)
+			{
+				DefinitionLabel.Text = "";
+				ValueLabel.Text = "";
+			}
+			else if (_isMultiLine)
+			{
+				DefinitionLabelContainer.IsVisible = false;
+				ValueLabel.Text = _valueText;
+				ValueLabel.Brush = DescriptionTextBrush;
+				ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
+				ValueLabel.SuggestedWidth = 0f;
+				ValueLabelContainer.SuggestedWidth = 0f;
+			}
+			else if (_isCost)
+			{
+				DefinitionLabel.Text = "";
+				ValueLabel.Text = _valueText;
+				base.HorizontalAlignment = HorizontalAlignment.Center;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+			}
+			else if (_isRundownSeperator)
+			{
+				ValueLabel.IsVisible = false;
+				DefinitionLabelContainer.IsVisible = false;
+				ValueBackgroundSpriteWidget.IsVisible = true;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				_currentSprite = RundownSeperatorSprite;
+				ValueBackgroundSpriteWidget.HorizontalAlignment = HorizontalAlignment.Right;
+				ValueBackgroundSpriteWidget.PositionXOffset = base.Right * base._inverseScaleToUse;
+				ValueBackgroundSpriteWidget.Sprite = _currentSprite;
+				ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.Fixed;
+				ValueBackgroundSpriteWidget.WidthSizePolicy = SizePolicy.Fixed;
+			}
+			else if (_isDefaultSeperator)
+			{
+				ValueLabel.IsVisible = false;
+				DefinitionLabelContainer.IsVisible = false;
+				ValueBackgroundSpriteWidget.IsVisible = true;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				_currentSprite = DefaultSeperatorSprite;
+				ValueBackgroundSpriteWidget.HorizontalAlignment = HorizontalAlignment.Right;
+				ValueBackgroundSpriteWidget.PositionXOffset = base.Right * base._inverseScaleToUse;
+				ValueBackgroundSpriteWidget.Sprite = _currentSprite;
+				ValueBackgroundSpriteWidget.AlphaFactor = 0.5f;
+				ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.Fixed;
+				ValueBackgroundSpriteWidget.WidthSizePolicy = SizePolicy.Fixed;
+			}
+			else if (_isTitle)
+			{
+				DefinitionLabel.Brush = TitleTextBrush;
+				ValueLabel.Brush = TitleTextBrush;
+				DefinitionLabel.HeightSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.HeightSizePolicy = SizePolicy.CoverChildren;
+				DefinitionLabelContainer.HeightSizePolicy = SizePolicy.CoverChildren;
+				ValueLabelContainer.HeightSizePolicy = SizePolicy.CoverChildren;
+				if (IsTwoColumn)
+				{
+					DefinitionLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+					DefinitionLabelContainer.HorizontalAlignment = HorizontalAlignment.Left;
+					DefinitionLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+					DefinitionLabel.HorizontalAlignment = HorizontalAlignment.Left;
+					DefinitionLabel.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
+					ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+					ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+					ValueLabelContainer.MarginLeft = base.MarginLeft;
+				}
+				else
+				{
+					ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+					ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				}
+				_currentSprite = TitleBackgroundSprite;
+				ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.CoverChildren;
+				ValueBackgroundSpriteWidget.Sprite = _currentSprite;
+				ValueBackgroundSpriteWidget.IsVisible = true;
+			}
+			else if (IsTwoColumn)
 			{
 				DefinitionLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-				DefinitionLabelContainer.HorizontalAlignment = HorizontalAlignment.Left;
 				DefinitionLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-				DefinitionLabel.HorizontalAlignment = HorizontalAlignment.Left;
-				DefinitionLabel.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
+				DefinitionLabelContainer.HorizontalAlignment = HorizontalAlignment.Right;
+				DefinitionLabel.HorizontalAlignment = HorizontalAlignment.Right;
 				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
 				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-				ValueLabel.Text = " " + ValueLabel.Text;
+				base.HorizontalAlignment = HorizontalAlignment.Right;
+				ValueLabelContainer.MarginLeft = base.MarginLeft;
+				DefinitionLabel.Brush = ValueNameTextBrush;
+				ValueLabel.Brush = ValueTextBrush;
+			}
+			else if (_isSubtext)
+			{
+				DefinitionLabelContainer.IsVisible = false;
+				ValueLabel.Brush = SubtextBrush;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+			}
+			else if (_isEmptySpace)
+			{
+				DefinitionLabel.IsVisible = false;
+				ValueLabel.Text = " ";
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				if (TextHeight > 0)
+				{
+					ValueLabel.Brush.FontSize = 30;
+				}
+				else if (TextHeight < 0)
+				{
+					ValueLabel.Brush.FontSize = 10;
+				}
+				else
+				{
+					ValueLabel.Brush.FontSize = 15;
+				}
+			}
+			else if (DefinitionLabel.Text == string.Empty && ValueLabel.Text != string.Empty)
+			{
+				DefinitionLabelContainer.IsVisible = false;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.Brush = DescriptionTextBrush;
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
 			}
 			else
 			{
-				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
 				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				DefinitionLabel.WidthSizePolicy = SizePolicy.CoverChildren;
 			}
-			_currentSprite = TitleBackgroundSprite;
-			ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.CoverChildren;
-			ValueBackgroundSpriteWidget.Sprite = _currentSprite;
-			ValueBackgroundSpriteWidget.IsVisible = true;
-		}
-		else if (IsTwoColumn)
-		{
-			DefinitionLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			DefinitionLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			DefinitionLabelContainer.HorizontalAlignment = HorizontalAlignment.Right;
-			DefinitionLabel.HorizontalAlignment = HorizontalAlignment.Right;
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			base.HorizontalAlignment = HorizontalAlignment.Right;
-			ValueLabel.Text = " " + ValueLabel.Text;
-			DefinitionLabel.Brush = ValueNameTextBrush;
-			ValueLabel.Brush = ValueTextBrush;
-		}
-		else if (_isSubtext)
-		{
-			DefinitionLabelContainer.IsVisible = false;
-			ValueLabel.Brush = SubtextBrush;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-		}
-		else if (_isEmptySpace)
-		{
-			DefinitionLabel.IsVisible = false;
-			ValueLabel.Text = " ";
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			if (TextHeight > 0)
+			if (_useCustomColor)
 			{
-				ValueLabel.Brush.FontSize = 30;
+				ValueLabel.Brush.FontColor = TextColor;
+				ValueLabel.Brush.TextAlphaFactor = TextColor.Alpha;
 			}
-			else if (TextHeight < 0)
+			if (_isRundownResult)
 			{
-				ValueLabel.Brush.FontSize = 10;
-			}
-			else
-			{
-				ValueLabel.Brush.FontSize = 15;
+				ValueLabel.Brush.FontSize = (int)((float)ValueLabel.ReadOnlyBrush.FontSize * 1.3f);
+				DefinitionLabel.Brush.FontSize = (int)((float)DefinitionLabel.ReadOnlyBrush.FontSize * 1.3f);
 			}
 		}
-		else if (DefinitionLabel.Text == string.Empty && ValueLabel.Text != string.Empty)
-		{
-			DefinitionLabelContainer.IsVisible = false;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabel.Brush = DescriptionTextBrush;
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-		}
-		else
-		{
-			ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-			DefinitionLabel.WidthSizePolicy = SizePolicy.CoverChildren;
-		}
-		if (_useCustomColor)
-		{
-			ValueLabel.Brush.FontColor = TextColor;
-			ValueLabel.Brush.TextAlphaFactor = TextColor.Alpha;
-		}
-		if (_isRundownResult)
-		{
-			ValueLabel.Brush.FontSize = (int)((float)ValueLabel.ReadOnlyBrush.FontSize * 1.3f);
-			DefinitionLabel.Brush.FontSize = (int)((float)DefinitionLabel.ReadOnlyBrush.FontSize * 1.3f);
-		}
+		this.SetGlobalAlphaRecursively(base.ParentWidget?.AlphaFactor ?? 0f);
 	}
 
 	private void DetermineTypeOfTooltipProperty()

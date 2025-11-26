@@ -39,11 +39,6 @@ public static class GiveGoldAction
 		CampaignEventDispatcher.Instance.OnHeroOrPartyTradedGold((giverHero, giverParty), (recipientHero, recipientParty), (goldAmount, transactionStringId), showQuickInformation);
 	}
 
-	public static void ApplyForQuestBetweenCharacters(Hero giverHero, Hero recipientHero, int amount, bool disableNotification = false)
-	{
-		ApplyInternal(giverHero, null, recipientHero, null, amount, !disableNotification && (giverHero == Hero.MainHero || recipientHero == Hero.MainHero));
-	}
-
 	public static void ApplyBetweenCharacters(Hero giverHero, Hero recipientHero, int amount, bool disableNotification = false)
 	{
 		ApplyInternal(giverHero, null, recipientHero, null, amount, !disableNotification && (giverHero == Hero.MainHero || recipientHero == Hero.MainHero));

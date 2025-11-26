@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -24,7 +25,7 @@ public class MPLobbyClanItemVM : ViewModel
 
 	private bool _isOwnClan;
 
-	private ImageIdentifierVM _sigilImage;
+	private BannerImageIdentifierVM _sigilImage;
 
 	[DataSourceProperty]
 	public string NameWithTag
@@ -129,7 +130,7 @@ public class MPLobbyClanItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM SigilImage
+	public BannerImageIdentifierVM SigilImage
 	{
 		get
 		{
@@ -160,7 +161,7 @@ public class MPLobbyClanItemVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		SigilImage = new ImageIdentifierVM(new Banner(_sigilCode));
+		SigilImage = new BannerImageIdentifierVM(new Banner(_sigilCode));
 		GameTexts.SetVariable("STR", _tag);
 		string content = new TextObject("{=uTXYEAOg}[{STR}]").ToString();
 		GameTexts.SetVariable("STR1", _name);

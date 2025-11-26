@@ -120,7 +120,7 @@ public abstract class MPPerkCondition<T> : MPPerkCondition where T : MissionMult
 			}
 			return true;
 		}
-		Debug.FailedAssert("Not implemented game mode check", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPPerkCondition.cs", "IsGameModesValid", 134);
+		Debug.FailedAssert("Not implemented game mode check", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\Perks\\MPPerkCondition.cs", "IsGameModesValid", 134);
 		return false;
 	}
 }

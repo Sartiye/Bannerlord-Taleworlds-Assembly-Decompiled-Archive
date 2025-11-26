@@ -108,7 +108,7 @@ public static class MultiplayerMain
 
 	public static string[] GetAvailableMatchmakerRegions()
 	{
-		return new string[4] { "USE", "USW", "EU", "CN" };
+		return new string[4] { "USE", "USW", "EU", "EA" };
 	}
 
 	public static string GetUserDefaultRegion()

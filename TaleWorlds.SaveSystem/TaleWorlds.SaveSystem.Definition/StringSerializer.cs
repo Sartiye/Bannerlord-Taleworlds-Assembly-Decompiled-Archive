@@ -12,4 +12,9 @@ internal class StringSerializer : IBasicTypeSerializer
 	{
 		return null;
 	}
+
+	public int GetSizeInBytes()
+	{
+		return 0;
+	}
 }

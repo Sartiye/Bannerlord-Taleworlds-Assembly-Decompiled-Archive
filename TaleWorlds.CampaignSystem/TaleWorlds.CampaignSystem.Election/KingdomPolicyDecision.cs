@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -132,7 +132,7 @@ public class KingdomPolicyDecision : KingdomDecision
 	public override TextObject GetChooseTitle()
 	{
 		TextObject textObject = null;
-		textObject = ((!_isInvertedDecision) ? new TextObject("{=!}{POLICY_NAME}") : new TextObject("{=9DaDtQbo}Disavow {POLICY_NAME}"));
+		textObject = ((!_isInvertedDecision) ? new TextObject("{=UNz9Q7Bz}Decide on {POLICY_NAME}") : new TextObject("{=9DaDtQbo}Disavow {POLICY_NAME}"));
 		textObject.SetTextVariable("POLICY_NAME", Policy.Name);
 		return textObject;
 	}
@@ -260,7 +260,7 @@ public class KingdomPolicyDecision : KingdomDecision
 		textObject.SetTextVariable("POLICY_DESCRIPTION", Policy.LogEntryDescription);
 		if (isShortVersion || IsSingleClanDecision())
 		{
-			textObject.SetTextVariable("POLICY_SUPPORT", TextObject.Empty);
+			textObject.SetTextVariable("POLICY_SUPPORT", TextObject.GetEmpty());
 		}
 		else
 		{

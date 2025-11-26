@@ -178,28 +178,27 @@ public class DetachmentManager
 					{
 						Agent movingAgentAtSlotIndex = detachment.GetMovingAgentAtSlotIndex(item.Item1);
 						float num6 = float.MaxValue;
-						float num7 = float.MaxValue;
 						if (movingAgentAtSlotIndex != null)
 						{
-							int num8 = -1;
+							int num7 = -1;
 							for (int j = 0; j < detachmentData.agentScores.Count; j++)
 							{
 								if (detachmentData.agentScores[j].Item1 == movingAgentAtSlotIndex)
 								{
-									num8 = j;
+									num7 = j;
 									break;
 								}
 							}
 							float exactCostOfAgentAtSlot = detachment.GetExactCostOfAgentAtSlot(movingAgentAtSlotIndex, item.Item1);
-							if (num8 == -1)
+							if (num7 == -1)
 							{
 								_templateCostCache = detachment.GetTemplateCostsOfAgent(movingAgentAtSlotIndex, _templateCostCache);
-								num7 = _templateCostCache[item.Item1];
+								_ = _templateCostCache[item.Item1];
 							}
 							else
 							{
-								(Agent, List<float>) tuple4 = detachmentData.agentScores[num8];
-								num7 = tuple4.Item2[item.Item1];
+								(Agent, List<float>) tuple4 = detachmentData.agentScores[num7];
+								_ = tuple4.Item2[item.Item1];
 								tuple4.Item2[item.Item1] = exactCostOfAgentAtSlot;
 							}
 							num6 = exactCostOfAgentAtSlot;
@@ -209,8 +208,8 @@ public class DetachmentManager
 							detachment.MarkSlotAtIndex(item.Item1);
 						}
 						(Agent, List<float>) tuple5 = detachmentData.agentScores[num4];
-						float num9 = tuple5.Item2[item.Item1];
-						if (movingAgentAtSlotIndex != null && num6 <= num9)
+						float num8 = tuple5.Item2[item.Item1];
+						if (movingAgentAtSlotIndex != null && num6 <= num8)
 						{
 							flag = true;
 						}
@@ -218,11 +217,7 @@ public class DetachmentManager
 						{
 							float exactCostOfAgentAtSlot2 = detachment.GetExactCostOfAgentAtSlot(tuple5.Item1, item.Item1);
 							tuple5.Item2[item.Item1] = exactCostOfAgentAtSlot2;
-							if (num6 < exactCostOfAgentAtSlot2)
-							{
-								flag = true;
-							}
-							else if (num6 == exactCostOfAgentAtSlot2 && num7 < num9)
+							if (num6 <= exactCostOfAgentAtSlot2)
 							{
 								flag = true;
 							}
@@ -291,13 +286,13 @@ public class DetachmentManager
 							}
 							List<float> templateCostsOfAgent = detachment.GetTemplateCostsOfAgent(agent, null);
 							detachmentData.agentScores.Add((agent, templateCostsOfAgent));
-							agent.LastDetachmentTickAgentTime = totalMissionTime;
+							agent.SetLastDetachmentTickAgentTime(totalMissionTime);
 						}
 						else if (flag)
 						{
 							(Agent, List<float>) tuple = detachmentData.agentScores[num];
 							detachmentData.agentScores[num] = (tuple.Item1, detachment.GetTemplateCostsOfAgent(agent, tuple.Item2));
-							agent.LastDetachmentTickAgentTime = totalMissionTime;
+							agent.SetLastDetachmentTickAgentTime(totalMissionTime);
 						}
 					}
 					else
@@ -331,13 +326,13 @@ public class DetachmentManager
 			}
 			List<float> templateCostsOfAgent2 = agent.Detachment.GetTemplateCostsOfAgent(agent, null);
 			detachmentData2.agentScores.Add((agent, templateCostsOfAgent2));
-			agent.LastDetachmentTickAgentTime = totalMissionTime2;
+			agent.SetLastDetachmentTickAgentTime(totalMissionTime2);
 		}
 		else if (totalMissionTime2 - agent.LastDetachmentTickAgentTime > 1.5f)
 		{
 			(Agent, List<float>) tuple2 = detachmentData2.agentScores[num2];
 			detachmentData2.agentScores[num2] = (tuple2.Item1, agent.Detachment.GetTemplateCostsOfAgent(agent, tuple2.Item2));
-			agent.LastDetachmentTickAgentTime = totalMissionTime2;
+			agent.SetLastDetachmentTickAgentTime(totalMissionTime2);
 		}
 	}
 

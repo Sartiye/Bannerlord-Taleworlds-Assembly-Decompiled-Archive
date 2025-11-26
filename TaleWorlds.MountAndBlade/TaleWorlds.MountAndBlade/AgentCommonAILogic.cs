@@ -1,3 +1,5 @@
+using TaleWorlds.Core;
+
 namespace TaleWorlds.MountAndBlade;
 
 public class AgentCommonAILogic : MissionLogic
@@ -11,16 +13,19 @@ public class AgentCommonAILogic : MissionLogic
 		}
 	}
 
-	protected internal override void OnAgentControllerChanged(Agent agent, Agent.ControllerType oldController)
+	protected internal override void OnAgentControllerChanged(Agent agent, AgentControllerType oldController)
 	{
 		base.OnAgentControllerChanged(agent, oldController);
-		if (agent.Controller == Agent.ControllerType.AI)
+		if (agent.IsActive())
 		{
-			agent.AddComponent(new CommonAIComponent(agent));
-		}
-		else if (oldController == Agent.ControllerType.AI && agent.CommonAIComponent != null)
-		{
-			agent.RemoveComponent(agent.CommonAIComponent);
+			if (agent.Controller == AgentControllerType.AI)
+			{
+				agent.AddComponent(new CommonAIComponent(agent));
+			}
+			else if (oldController == AgentControllerType.AI && agent.CommonAIComponent != null)
+			{
+				agent.RemoveComponent(agent.CommonAIComponent);
+			}
 		}
 	}
 }

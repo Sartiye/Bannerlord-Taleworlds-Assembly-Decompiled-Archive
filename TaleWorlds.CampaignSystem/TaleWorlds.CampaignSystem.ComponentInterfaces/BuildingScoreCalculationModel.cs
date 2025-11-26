@@ -4,7 +4,9 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BuildingScoreCalculationModel : GameModel
+public abstract class BuildingScoreCalculationModel : MBGameModel<BuildingScoreCalculationModel>
 {
 	public abstract Building GetNextBuilding(Town town);
+
+	public abstract Building GetNextDailyBuilding(Town town);
 }

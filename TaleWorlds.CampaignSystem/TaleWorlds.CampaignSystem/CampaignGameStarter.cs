@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -11,8 +9,6 @@ namespace TaleWorlds.CampaignSystem;
 public class CampaignGameStarter : IGameStarter
 {
 	private readonly GameMenuManager _gameMenuManager;
-
-	private readonly GameTextManager _gameTextManager;
 
 	private readonly ConversationManager _conversationManager;
 
@@ -24,10 +20,9 @@ public class CampaignGameStarter : IGameStarter
 
 	public IEnumerable<GameModel> Models => _models;
 
-	public CampaignGameStarter(GameMenuManager gameMenuManager, ConversationManager conversationManager, GameTextManager gameTextManager)
+	public CampaignGameStarter(GameMenuManager gameMenuManager, ConversationManager conversationManager)
 	{
 		_conversationManager = conversationManager;
-		_gameTextManager = gameTextManager;
 		_gameMenuManager = gameMenuManager;
 	}
 
@@ -61,24 +56,36 @@ public class CampaignGameStarter : IGameStarter
 		return _campaignBehaviors.Remove(behavior);
 	}
 
-	public void AddModel(GameModel model)
+	public T GetModel<T>() where T : GameModel
 	{
-		if (model != null)
+		for (int num = _models.Count - 1; num >= 0; num--)
 		{
-			if (_models.FindIndex((GameModel x) => x.GetType() == model.GetType()) >= 0)
+			if (_models[num] is T result)
 			{
-				throw new ArgumentException();
+				return result;
 			}
-			_models.Add(model);
 		}
+		return null;
 	}
 
-	public void AddGameMenu(string menuId, string menuText, OnInitDelegate initDelegate, GameOverlays.MenuOverlayType overlay = GameOverlays.MenuOverlayType.None, GameMenu.MenuFlags menuFlags = GameMenu.MenuFlags.None, object relatedObject = null)
+	public void AddModel(GameModel gameModel)
+	{
+		_models.Add(gameModel);
+	}
+
+	public void AddModel<T>(MBGameModel<T> gameModel) where T : GameModel
+	{
+		T model = GetModel<T>();
+		gameModel.Initialize(model);
+		_models.Add(gameModel);
+	}
+
+	public void AddGameMenu(string menuId, string menuText, OnInitDelegate initDelegate, GameMenu.MenuOverlayType overlay = GameMenu.MenuOverlayType.None, GameMenu.MenuFlags menuFlags = GameMenu.MenuFlags.None, object relatedObject = null)
 	{
 		GetPresumedGameMenu(menuId).Initialize(new TextObject(menuText), initDelegate, overlay, menuFlags, relatedObject);
 	}
 
-	public void AddWaitGameMenu(string idString, string text, OnInitDelegate initDelegate, OnConditionDelegate condition, OnConsequenceDelegate consequence, OnTickDelegate tick, GameMenu.MenuAndOptionType type, GameOverlays.MenuOverlayType overlay = GameOverlays.MenuOverlayType.None, float targetWaitHours = 0f, GameMenu.MenuFlags flags = GameMenu.MenuFlags.None, object relatedObject = null)
+	public void AddWaitGameMenu(string idString, string text, OnInitDelegate initDelegate, OnConditionDelegate condition, OnConsequenceDelegate consequence, OnTickDelegate tick, GameMenu.MenuAndOptionType type, GameMenu.MenuOverlayType overlay = GameMenu.MenuOverlayType.None, float targetWaitHours = 0f, GameMenu.MenuFlags flags = GameMenu.MenuFlags.None, object relatedObject = null)
 	{
 		GetPresumedGameMenu(idString).Initialize(new TextObject(text), initDelegate, condition, consequence, tick, type, overlay, targetWaitHours, flags, relatedObject);
 	}
@@ -105,6 +112,11 @@ public class CampaignGameStarter : IGameStarter
 		return dialogLine;
 	}
 
+	public void AddDialogFlow(DialogFlow dialogFlow, object relatedObject = null)
+	{
+		_conversationManager.AddDialogFlow(dialogFlow, relatedObject);
+	}
+
 	public ConversationSentence AddPlayerLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null)
 	{
 		return AddDialogLine(new ConversationSentence(id, new TextObject(text), inputToken, outputToken, conditionDelegate, clickableConditionDelegate, consequenceDelegate, 1u, priority, 0, 0, null, withVariation: false, null, null, persuasionOptionDelegate));
@@ -119,7 +131,7 @@ public class CampaignGameStarter : IGameStarter
 
 	public ConversationSentence AddDialogLineWithVariation(string id, string inputToken, string outputToken, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, string idleActionId = "", string idleFaceAnimId = "", string reactionId = "", string reactionFaceAnimId = "", ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)
 	{
-		return AddDialogLine(new ConversationSentence(id, new TextObject("{=7AyjDt96}{VARIATION_TEXT_TAGGED_LINE}"), inputToken, outputToken, conditionDelegate, clickableConditionDelegate, consequenceDelegate, 0u, priority, 0, 0, null, withVariation: true));
+		return AddDialogLine(new ConversationSentence(id, new TextObject("{=!}{VARIATION_TEXT_TAGGED_LINE}"), inputToken, outputToken, conditionDelegate, clickableConditionDelegate, consequenceDelegate, 0u, priority, 0, 0, null, withVariation: true));
 	}
 
 	public ConversationSentence AddDialogLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)

@@ -76,15 +76,7 @@ internal class ClientRestSessionTask
 		RestRequestMessage = restRequestMessage;
 		_taskCompletionSource = new TaskCompletionSource<bool>();
 		_sw = new Stopwatch();
-		if (RestRequestMessage is RestDataRequestMessage)
-		{
-			RestDataRequestMessage restDataRequestMessage = (RestDataRequestMessage)RestRequestMessage;
-			_messageName = restDataRequestMessage.MessageName;
-		}
-		else
-		{
-			_messageName = RestRequestMessage.TypeName;
-		}
+		_messageName = RestRequestMessage.TypeName;
 	}
 
 	public void SetRequestData(byte[] userCertificate, string address, IHttpDriver networkClient)

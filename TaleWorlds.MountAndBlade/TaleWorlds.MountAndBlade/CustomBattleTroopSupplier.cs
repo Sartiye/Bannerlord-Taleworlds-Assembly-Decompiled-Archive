@@ -10,7 +10,7 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 {
 	private readonly CustomBattleCombatant _customBattleCombatant;
 
-	private PriorityQueue<float, BasicCharacterObject> _characters;
+	private TaleWorlds.Library.PriorityQueue<float, BasicCharacterObject> _characters;
 
 	private int _numAllocated;
 
@@ -48,7 +48,7 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 
 	private void ArrangePriorities()
 	{
-		_characters = new PriorityQueue<float, BasicCharacterObject>(new TaleWorlds.Library.GenericComparer<float>());
+		_characters = new TaleWorlds.Library.PriorityQueue<float, BasicCharacterObject>(new TaleWorlds.Library.GenericComparer<float>());
 		int[] troopCountByFormationType = new int[8];
 		int[] enqueuedTroopCountByFormationType = new int[8];
 		int i;
@@ -120,6 +120,17 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 		return array;
 	}
 
+	public IAgentOriginBase SupplyOneTroop()
+	{
+		BasicCharacterObject basicCharacterObject = AllocateTroop();
+		if (basicCharacterObject != null)
+		{
+			return new CustomBattleAgentOrigin(uniqueNo: new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed), customBattleCombatant: _customBattleCombatant, characterObject: basicCharacterObject, troopSupplier: this, isPlayerSide: _isPlayerSide, rank: 0);
+		}
+		_anyTroopRemainsToBeSupplied = false;
+		return null;
+	}
+
 	public IEnumerable<IAgentOriginBase> GetAllTroops()
 	{
 		CustomBattleAgentOrigin[] array = new CustomBattleAgentOrigin[_customBattleCombatant.Characters.Count()];
@@ -156,6 +167,21 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 		return list;
 	}
 
+	private BasicCharacterObject AllocateTroop()
+	{
+		BasicCharacterObject result = null;
+		while (_characters.Count > 0)
+		{
+			BasicCharacterObject basicCharacterObject = _characters.DequeueValue();
+			if (_customAllocationConditions == null || _customAllocationConditions(basicCharacterObject))
+			{
+				result = basicCharacterObject;
+				break;
+			}
+		}
+		return result;
+	}
+
 	public void OnTroopWounded()
 	{
 		_numWounded++;
@@ -173,6 +199,6 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 
 	public int GetNumberOfPlayerControllableTroops()
 	{
-		return _numAllocated;
+		return _customBattleCombatant.CountOfCharacters;
 	}
 }

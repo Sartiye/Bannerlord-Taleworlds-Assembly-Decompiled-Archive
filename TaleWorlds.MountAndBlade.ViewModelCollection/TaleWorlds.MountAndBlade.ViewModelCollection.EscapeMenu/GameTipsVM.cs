@@ -86,12 +86,13 @@ public class GameTipsVM : ViewModel
 		base.RefreshValues();
 		_allTips = new MBList<string>();
 		GameTipTitle = GameTexts.FindText("str_game_tip_title").ToString();
-		string keyHyperlinkText = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 4));
+		float overrideExtendScale = 0.8f;
+		string keyHyperlinkText = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 4), overrideExtendScale);
 		GameTexts.SetVariable("LEAVE_AREA_KEY", keyHyperlinkText);
-		string keyHyperlinkText2 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 5));
+		string keyHyperlinkText2 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 5), overrideExtendScale);
 		GameTexts.SetVariable("MISSION_INDICATORS_KEY", keyHyperlinkText2);
-		GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MapHotKeyCategory", "MapFollowModifier")));
-		GameTexts.SetVariable("ENCYCLOPEDIA_SHORTCUT", HyperlinkTexts.GetKeyHyperlinkText("RightMouseButton"));
+		GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MapHotKeyCategory", "MapFollowModifier"), overrideExtendScale));
+		GameTexts.SetVariable("ENCYCLOPEDIA_SHORTCUT", HyperlinkTexts.GetKeyHyperlinkText("RightMouseButton", overrideExtendScale));
 		if (TaleWorlds.InputSystem.Input.IsMouseActive)
 		{
 			foreach (TextObject item in GameTexts.FindAllTextVariations("str_game_tip_pc"))

@@ -76,6 +76,16 @@ public class StandaloneInputManager : IInputManager
 		throw new NotImplementedException();
 	}
 
+	float IInputManager.GetNormalizedMouseMoveX()
+	{
+		throw new NotImplementedException();
+	}
+
+	float IInputManager.GetNormalizedMouseMoveY()
+	{
+		throw new NotImplementedException();
+	}
+
 	float IInputManager.GetGyroX()
 	{
 		throw new NotImplementedException();

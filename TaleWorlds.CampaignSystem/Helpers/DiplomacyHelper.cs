@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.LogEntries;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -24,7 +22,7 @@ public static class DiplomacyHelper
 			}
 			return false;
 		case DeclareWarAction.DeclareWarDetail.CausedByCrimeRatingChange:
-			if (faction2 == Hero.MainHero.MapFaction && faction2.MainHeroCrimeRating > (float)Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold)
+			if (faction2 == Hero.MainHero.MapFaction && faction1.MainHeroCrimeRating > Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold)
 			{
 				return true;
 			}
@@ -38,6 +36,15 @@ public static class DiplomacyHelper
 		default:
 			return false;
 		}
+	}
+
+	public static bool IsSameFactionAndNotEliminated(IFaction faction1, IFaction faction2)
+	{
+		if (faction1 != null && faction2 != null && faction1 == faction2 && !faction1.IsEliminated)
+		{
+			return !faction2.IsEliminated;
+		}
+		return false;
 	}
 
 	private static bool IsLogInTimeRange(LogEntry entry, CampaignTime time)
@@ -60,44 +67,14 @@ public static class DiplomacyHelper
 		return list;
 	}
 
-	public static List<Settlement> GetSuccessfullSiegesInWarForFaction(IFaction capturerFaction, StanceLink stance, Func<Settlement, bool> condition = null)
-	{
-		CampaignTime warStartDate = stance.WarStartDate;
-		List<Settlement> list = new List<Settlement>();
-		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
-		{
-			LogEntry logEntry = Campaign.Current.LogEntryHistory.GameActionLogs[num];
-			if (IsLogInTimeRange(logEntry, warStartDate) && logEntry is ChangeSettlementOwnerLogEntry changeSettlementOwnerLogEntry && (condition == null || condition(changeSettlementOwnerLogEntry.Settlement)) && !list.Contains(changeSettlementOwnerLogEntry.Settlement) && changeSettlementOwnerLogEntry.IsRelatedToWar(stance, out var effector, out var _) && effector == capturerFaction)
-			{
-				list.Add(changeSettlementOwnerLogEntry.Settlement);
-			}
-		}
-		return list;
-	}
-
-	public static List<Settlement> GetRaidsInWar(IFaction faction, StanceLink stance, Func<Settlement, bool> condition = null)
-	{
-		CampaignTime warStartDate = stance.WarStartDate;
-		List<Settlement> list = new List<Settlement>();
-		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
-		{
-			LogEntry logEntry = Campaign.Current.LogEntryHistory.GameActionLogs[num];
-			if (IsLogInTimeRange(logEntry, warStartDate) && logEntry is VillageStateChangedLogEntry villageStateChangedLogEntry && (condition == null || condition(villageStateChangedLogEntry.Village.Settlement)) && villageStateChangedLogEntry.IsRelatedToWar(stance, out var effector, out var _) && effector == faction && !list.Contains(villageStateChangedLogEntry.Village.Settlement))
-			{
-				list.Add(villageStateChangedLogEntry.Village.Settlement);
-			}
-		}
-		return list;
-	}
-
 	public static List<Hero> GetPrisonersOfWarTakenByFaction(IFaction capturerFaction, IFaction prisonerFaction)
 	{
 		List<Hero> list = new List<Hero>();
-		foreach (Hero lord in prisonerFaction.Lords)
+		foreach (Hero aliveLord in prisonerFaction.AliveLords)
 		{
-			if (lord.IsPrisoner && lord.PartyBelongedToAsPrisoner?.MapFaction == capturerFaction)
+			if (aliveLord.IsPrisoner && aliveLord.PartyBelongedToAsPrisoner?.MapFaction == capturerFaction)
 			{
-				list.Add(lord);
+				list.Add(aliveLord);
 			}
 		}
 		return list;
@@ -105,12 +82,12 @@ public static class DiplomacyHelper
 
 	public static bool DidMainHeroSwornNotToAttackFaction(IFaction faction, out TextObject explanation)
 	{
-		explanation = TextObject.Empty;
 		if (faction.NotAttackableByPlayerUntilTime.IsFuture)
 		{
 			explanation = GameTexts.FindText("str_enemy_not_attackable_tooltip");
 			return true;
 		}
+		explanation = null;
 		return false;
 	}
 }

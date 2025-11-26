@@ -26,7 +26,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 
 	private VisualDefinition CreateVisualDefinitionPollExtension()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("PollExtension", 0.9f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("PollExtension", 0.9f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Active")
 		{
 			PositionXOffset = 0f

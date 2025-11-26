@@ -3,7 +3,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class NotablePowerModel : GameModel
+public abstract class NotablePowerModel : MBGameModel<NotablePowerModel>
 {
 	public abstract int RegularNotableMaxPowerLevel { get; }
 
@@ -15,5 +15,7 @@ public abstract class NotablePowerModel : GameModel
 
 	public abstract float GetInfluenceBonusToClan(Hero hero);
 
-	public abstract int GetInitialPower();
+	public abstract int GetInitialPower(Hero hero);
+
+	public abstract int GetInitialNotableSupporterCost(Hero hero);
 }

@@ -20,7 +20,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private ImageWidget _widget_0_0_0;
 
-	private RichTextWidget _widget_0_0_1;
+	private TextWidget _widget_0_0_1;
 
 	private ImageWidget _widget_0_0_2;
 
@@ -41,7 +41,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private VisualDefinition CreateVisualDefinitionMainMenu()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("MainMenu", 0.4f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("MainMenu", 0.4f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			PositionYOffset = 0f
@@ -55,7 +55,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private VisualDefinition CreateVisualDefinitionOptionFadeIn()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("OptionFadeIn", 0.3f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("OptionFadeIn", 0.3f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			PositionXOffset = -20f
@@ -63,6 +63,27 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		visualDefinition.AddVisualState(new VisualState("Activated")
 		{
 			PositionXOffset = 0f
+		});
+		return visualDefinition;
+	}
+
+	private VisualDefinition CreateVisualDefinitionWarSailsUpsellButton()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("WarSailsUpsellButton", 0.22f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			SuggestedWidth = 400f,
+			SuggestedHeight = 233f
+		});
+		visualDefinition.AddVisualState(new VisualState("Hovered")
+		{
+			SuggestedWidth = 402f,
+			SuggestedHeight = 235f
+		});
+		visualDefinition.AddVisualState(new VisualState("Pressed")
+		{
+			SuggestedWidth = 398f,
+			SuggestedHeight = 231f
 		});
 		return visualDefinition;
 	}
@@ -76,7 +97,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_0.AddChild(_widget_0_0);
 		_widget_0_0_0 = new ImageWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
-		_widget_0_0_1 = new RichTextWidget(base.Context);
+		_widget_0_0_1 = new TextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);
 		_widget_0_0_2 = new ImageWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_2);
@@ -155,6 +176,15 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
+			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
+			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
+			_widget.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget;
+			_widget.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget;
+			_widget.doublePropertyChanged -= doublePropertyChangedListenerOf_widget;
+			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
+			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
+			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 			_widget_0.EventFire -= EventListenerOf_widget_0;
 			_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
@@ -241,6 +271,56 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		{
 			_datasource_Root_DisabledHint.ExecuteEndHint();
 		}
+	}
+
+	private void PropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget(string propertyName)
+	{
+		_ = propertyName == "IsHidden";
 	}
 
 	private void PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -398,6 +478,9 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		case "DisabledHint":
 			RefreshDataSource_datasource_Root_DisabledHint(_datasource_Root.DisabledHint);
 			break;
+		case "IsHidden":
+			_widget.IsHidden = _datasource_Root.IsHidden;
+			break;
 		case "IsDisabled":
 			_widget_0.IsDisabled = _datasource_Root.IsDisabled;
 			break;
@@ -518,6 +601,15 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
+			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
+			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
+			_widget.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget;
+			_widget.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget;
+			_widget.doublePropertyChanged -= doublePropertyChangedListenerOf_widget;
+			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
+			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
+			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 			_widget_0.EventFire -= EventListenerOf_widget_0;
 			_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
@@ -579,6 +671,16 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.IsHidden = _datasource_Root.IsHidden;
+			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
+			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
+			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
+			_widget.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget;
+			_widget.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget;
+			_widget.doublePropertyChanged += doublePropertyChangedListenerOf_widget;
+			_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
+			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
+			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
 			_widget_0.IsDisabled = _datasource_Root.IsDisabled;
 			_widget_0.EventFire += EventListenerOf_widget_0;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;

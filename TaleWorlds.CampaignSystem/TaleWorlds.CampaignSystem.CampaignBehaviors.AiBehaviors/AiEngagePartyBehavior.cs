@@ -1,3 +1,5 @@
+using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -26,45 +28,52 @@ public class AiEngagePartyBehavior : CampaignBehaviorBase
 
 	private void AiHourlyTick(MobileParty mobileParty, PartyThinkParams p)
 	{
-		if (mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.SiegeEvent != null)
+		if ((mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.SiegeEvent != null) || (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && mobileParty.Army.ArmyType != Army.ArmyTypes.Defender))
 		{
 			return;
 		}
-		float num = 25f;
+		float num = Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty * 45f;
 		if ((!mobileParty.MapFaction.IsKingdomFaction && mobileParty.MapFaction != Hero.MainHero.MapFaction) || mobileParty.IsCaravan || (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty) || mobileParty.LeaderHero == null)
 		{
 			return;
 		}
-		float num2 = Campaign.MapDiagonalSquared;
-		LocatableSearchData<Settlement> data = Settlement.StartFindingLocatablesAroundPosition(mobileParty.Position2D, 50f);
-		for (Settlement settlement = Settlement.FindNextLocatable(ref data); settlement != null; settlement = Settlement.FindNextLocatable(ref data))
+		bool flag = !mobileParty.MapFaction.Settlements.Any();
+		float num2 = 0f;
+		if (!flag)
 		{
-			if (settlement.MapFaction == mobileParty.MapFaction)
+			float num3 = Campaign.MapDiagonalSquared;
+			float averageDistanceBetweenClosestTwoTownsWithNavigationType = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(mobileParty.NavigationCapability);
+			LocatableSearchData<Settlement> data = Settlement.StartFindingLocatablesAroundPosition(mobileParty.Position.ToVec2(), averageDistanceBetweenClosestTwoTownsWithNavigationType * 0.76f);
+			for (Settlement settlement = Settlement.FindNextLocatable(ref data); settlement != null; settlement = Settlement.FindNextLocatable(ref data))
 			{
-				float num3 = settlement.Position2D.DistanceSquared(mobileParty.Position2D);
-				if (num3 < num2)
+				if (settlement.MapFaction == mobileParty.MapFaction)
 				{
-					num2 = num3;
+					float num4 = settlement.Position.DistanceSquared(mobileParty.Position);
+					if (num4 < num3)
+					{
+						num3 = num4;
+					}
 				}
 			}
+			float num5 = MathF.Sqrt(num3);
+			float num6 = Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
+			num2 = ((num5 < num6 * 0.5f) ? (1f - MathF.Max(0f, num5 - num6 * 0.15f) / num6 * 0.3f) : 0f);
 		}
-		float num4 = MathF.Sqrt(num2);
-		float num5 = ((num4 < 50f) ? (1f - MathF.Max(0f, num4 - 15f) / 35f) : 0f);
-		if (!(num5 > 0f))
+		if (!flag && !(num2 > 0f))
 		{
 			return;
 		}
-		float num6 = mobileParty.PartySizeRatio;
+		float num7 = mobileParty.PartySizeRatio;
 		foreach (MobileParty attachedParty in mobileParty.AttachedParties)
 		{
-			num6 += attachedParty.PartySizeRatio;
+			num7 += attachedParty.PartySizeRatio;
 		}
-		float num7 = MathF.Min(1f, num6 / ((float)mobileParty.AttachedParties.Count + 1f));
-		float num8 = num7 * ((num7 <= 0.5f) ? num7 : (0.5f + 0.707f * MathF.Sqrt(num7 - 0.5f)));
-		LocatableSearchData<MobileParty> data2 = MobileParty.StartFindingLocatablesAroundPosition(mobileParty.Position2D, num);
+		float num8 = MathF.Min(1f, num7 / ((float)mobileParty.AttachedParties.Count + 1f));
+		float num9 = num8 * ((num8 <= 0.5f) ? num8 : (0.5f + 0.707f * MathF.Sqrt(num8 - 0.5f)));
+		LocatableSearchData<MobileParty> data2 = MobileParty.StartFindingLocatablesAroundPosition(mobileParty.Position.ToVec2(), num);
 		for (MobileParty mobileParty2 = MobileParty.FindNextLocatable(ref data2); mobileParty2 != null; mobileParty2 = MobileParty.FindNextLocatable(ref data2))
 		{
-			if (!mobileParty2.IsActive)
+			if (!mobileParty2.IsActive || (!mobileParty2.IsLordParty && mobileParty2.IsCurrentlyAtSea != mobileParty.IsCurrentlyAtSea))
 			{
 				continue;
 			}
@@ -74,96 +83,123 @@ public class AiEngagePartyBehavior : CampaignBehaviorBase
 				continue;
 			}
 			IFaction mapFaction2 = mobileParty2.MapFaction;
-			if (((mapFaction2 == null || !mapFaction2.IsKingdomFaction) && mobileParty2.MapFaction != Hero.MainHero.MapFaction) || (mobileParty2.CurrentSettlement != null && mobileParty2.CurrentSettlement.IsFortification) || !(mobileParty2.Aggressiveness > 0.1f))
+			if (((mapFaction2 == null || !mapFaction2.IsKingdomFaction) && mobileParty2.MapFaction != Hero.MainHero.MapFaction) || (mobileParty2.CurrentSettlement != null && mobileParty2.CurrentSettlement.IsFortification) || !(mobileParty2.Aggressiveness > 0.1f) || mobileParty2.ShouldBeIgnored)
 			{
 				continue;
 			}
-			float num9 = mobileParty2.Army?.TotalStrength ?? mobileParty2.Party.TotalStrength;
-			float num10 = 1f - 0.5f * mobileParty2.Position2D.DistanceSquared(mobileParty.Position2D) / (num * num);
-			float num11 = 1f;
+			MobileParty.NavigationType bestNavigationType = MobileParty.NavigationType.None;
+			float bestNavigationDistance = Campaign.MapDiagonal;
+			bool flag2 = mobileParty.HasNavalNavigationCapability && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.HasPort && mobileParty2.IsCurrentlyAtSea;
+			if (mobileParty.CurrentSettlement == null && mobileParty2.CurrentSettlement == null)
+			{
+				AiHelper.GetBestNavigationTypeAndDistanceOfMobilePartyForMobileParty(mobileParty, mobileParty2, out bestNavigationType, out bestNavigationDistance);
+			}
+			else if (mobileParty2.CurrentSettlement == null)
+			{
+				AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty2, mobileParty.CurrentSettlement, isTargetingPort: false, out bestNavigationType, out bestNavigationDistance, out var _);
+			}
+			else
+			{
+				bestNavigationType = ((!flag2) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
+				bestNavigationDistance = Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty2.CurrentSettlement, mobileParty.CurrentSettlement, flag2, flag2, bestNavigationType);
+			}
+			if (!(bestNavigationDistance < num))
+			{
+				continue;
+			}
+			float num10 = 0f;
+			num10 = ((mobileParty2.Army == null) ? mobileParty2.Party.EstimatedStrength : mobileParty2.Army.EstimatedStrength);
+			float num11 = 1f - bestNavigationDistance / num;
+			float num12 = 1f;
 			if (mobileParty2.LeaderHero != null)
 			{
 				int relation = mobileParty2.LeaderHero.GetRelation(mobileParty.LeaderHero);
-				num11 = ((relation >= 0) ? (1f - MathF.Sqrt(relation) / 10f) : (1f + MathF.Sqrt(-relation) / 20f));
+				num12 = ((relation >= 0) ? (1f - MathF.Sqrt(relation) / 10f) : (1f + MathF.Sqrt(-relation) / 20f));
 			}
-			float num12 = 0f;
-			LocatableSearchData<MobileParty> data3 = MobileParty.StartFindingLocatablesAroundPosition(mobileParty.Position2D, num);
+			float num13 = 0f;
+			LocatableSearchData<MobileParty> data3 = MobileParty.StartFindingLocatablesAroundPosition(mobileParty.Position.ToVec2(), num);
 			for (MobileParty mobileParty3 = MobileParty.FindNextLocatable(ref data3); mobileParty3 != null; mobileParty3 = MobileParty.FindNextLocatable(ref data3))
 			{
 				if (mobileParty3 != mobileParty && mobileParty3.MapFaction == mobileParty.MapFaction && (mobileParty3.Army == null || mobileParty3.Army.LeaderParty == mobileParty3) && ((mobileParty3.DefaultBehavior == AiBehavior.GoAroundParty && mobileParty3.TargetParty == mobileParty2) || (mobileParty3.ShortTermBehavior == AiBehavior.EngageParty && mobileParty3.ShortTermTargetParty == mobileParty2)))
 				{
-					num12 += mobileParty3.Army?.TotalStrength ?? mobileParty3.Party.TotalStrength;
+					num13 += mobileParty3.Army?.EstimatedStrength ?? mobileParty3.Party.EstimatedStrength;
 				}
 			}
-			float num13 = mobileParty.Army?.TotalStrength ?? mobileParty.Party.TotalStrength;
-			float num14 = (num12 + num13) / num9;
-			float num15 = ((mobileParty2.CurrentSettlement != null && mobileParty2.CurrentSettlement.IsFortification && mobileParty2.CurrentSettlement.MapFaction != mobileParty.MapFaction) ? 0.25f : 1f);
-			float num16 = 1f;
-			if (num12 + (num13 + 30f) > num9 * 1.5f)
+			float num14 = 0f;
+			num14 = mobileParty.Army?.EstimatedStrength ?? mobileParty.Party.EstimatedStrength;
+			float num15 = (num13 + num14) / num10;
+			float num16 = 0f;
+			if (mobileParty.Army == null || mobileParty.Army.LeaderParty != mobileParty || !(num14 > num10 * 2f))
 			{
-				float num17 = num9 * 1.5f + 10f + ((mobileParty2.MapEvent != null || mobileParty2.SiegeEvent != null) ? 30f : 0f);
-				float num18 = num12 + (num13 + 30f);
-				num16 = MathF.Pow(num17 / num18, 0.8f);
-			}
-			float speed = mobileParty.Speed;
-			float speed2 = mobileParty2.Speed;
-			float num19 = speed / speed2;
-			float num20 = num19 * num19 * num19 * num19;
-			float num21 = ((speed > speed2 && mobileParty.Army == null) ? 1f : ((num12 + num13 > num9) ? (0.5f + 0.5f * num20 * num16) : (0.5f * num20)));
-			float num22 = ((mobileParty.DefaultBehavior == AiBehavior.GoAroundParty && mobileParty2 == mobileParty.TargetParty) ? 1.1f : 1f);
-			float num23 = ((mobileParty.Army != null) ? 0.9f : 1f);
-			float num24 = ((mobileParty2 == MobileParty.MainParty) ? 1.2f : 1f);
-			float num25 = 1f;
-			if (mobileParty.Objective == MobileParty.PartyObjective.Defensive)
-			{
-				num25 = 1.2f;
-			}
-			float num26 = 1f;
-			if (mobileParty.MapFaction != null && mobileParty.MapFaction.IsKingdomFaction && mobileParty.MapFaction.Leader == Hero.MainHero)
-			{
-				StanceLink stanceWith = Hero.MainHero.MapFaction.GetStanceWith(mobileParty2.MapFaction);
-				if (stanceWith != null && stanceWith.BehaviorPriority == 1)
+				float num17 = ((mobileParty2.CurrentSettlement != null && mobileParty2.CurrentSettlement.IsFortification && mobileParty2.CurrentSettlement.MapFaction != mobileParty.MapFaction) ? 0.25f : 1f);
+				float num18 = 1f;
+				if (num13 + (num14 + 30f) > num10 * 1.5f)
 				{
-					num26 = 1.2f;
+					float num19 = num10 * 1.5f + 10f + ((mobileParty2.MapEvent != null || mobileParty2.SiegeEvent != null) ? 30f : 0f);
+					float num20 = num13 + (num14 + 30f);
+					num18 = MathF.Pow(num19 / num20, 0.8f);
 				}
+				float lastCalculatedSpeed = mobileParty._lastCalculatedSpeed;
+				float lastCalculatedSpeed2 = mobileParty2._lastCalculatedSpeed;
+				float num21 = lastCalculatedSpeed / lastCalculatedSpeed2;
+				float num22 = num21 * num21 * num21 * num21;
+				float num23 = ((lastCalculatedSpeed > lastCalculatedSpeed2 && mobileParty.Army == null) ? 1f : ((num13 + num14 > num10) ? (0.5f + 0.5f * num22 * num18) : (0.5f * num22)));
+				float num24 = ((mobileParty.DefaultBehavior == AiBehavior.GoAroundParty && mobileParty2 == mobileParty.TargetParty) ? 1.1f : 1f);
+				float num25 = ((mobileParty.Army != null) ? 0.9f : 1f);
+				float num26 = ((mobileParty2 == MobileParty.MainParty) ? 1.2f : 1f);
+				float num27 = 1f;
+				if (mobileParty.Objective == MobileParty.PartyObjective.Defensive)
+				{
+					num27 = 1.2f;
+				}
+				float num28 = 1f;
+				if (mobileParty.MapFaction != null && mobileParty.MapFaction.IsKingdomFaction && mobileParty.MapFaction.Leader == Hero.MainHero)
+				{
+					StanceLink stanceWith = Hero.MainHero.MapFaction.GetStanceWith(mobileParty2.MapFaction);
+					if (stanceWith != null && stanceWith.BehaviorPriority == 1)
+					{
+						num28 = 1.2f;
+					}
+				}
+				num16 = num11 * num2 * num12 * num15 * num26 * num9 * num23 * num18 * num17 * num24 * num25 * num27 * num28 * 2f;
 			}
-			float num27 = num10 * num5 * num11 * num14 * num24 * num8 * num21 * num16 * num15 * num22 * num23 * num25 * num26 * 2f;
-			if (num27 > 0.05f && mobileParty2.CurrentSettlement == null)
+			if (num16 > 0.05f && mobileParty2.CurrentSettlement == null)
 			{
-				float num28 = Campaign.MapDiagonalSquared;
-				LocatableSearchData<Settlement> data4 = Settlement.StartFindingLocatablesAroundPosition(mobileParty2.Position2D, 25f);
+				float averageDistanceBetweenClosestTwoTownsWithNavigationType2 = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(mobileParty.NavigationCapability);
+				float num29 = Campaign.MapDiagonalSquared;
+				LocatableSearchData<Settlement> data4 = Settlement.StartFindingLocatablesAroundPosition(mobileParty2.Position.ToVec2(), averageDistanceBetweenClosestTwoTownsWithNavigationType2 * 0.38f);
 				for (Settlement settlement2 = Settlement.FindNextLocatable(ref data4); settlement2 != null; settlement2 = Settlement.FindNextLocatable(ref data4))
 				{
 					if (settlement2.MapFaction == mobileParty2.MapFaction)
 					{
-						float num29 = settlement2.Position2D.DistanceSquared(mobileParty.Position2D);
-						if (num29 < num28)
+						float num30 = settlement2.Position.DistanceSquared(mobileParty.Position);
+						if (num30 < num29)
 						{
-							num28 = num29;
+							num29 = num30;
 						}
 					}
 				}
-				if (num28 < 625f)
+				if (num29 < averageDistanceBetweenClosestTwoTownsWithNavigationType2 * 9.6f)
 				{
-					float num30 = MathF.Sqrt(num28);
-					num27 *= 0.25f + 0.75f * (MathF.Max(0f, num30 - 5f) / 20f);
+					float num31 = MathF.Sqrt(num29);
+					num16 *= 0.25f + 0.75f * (MathF.Max(0f, num31 - 5f) / 20f);
 					if (!mobileParty.IsDisbanding)
 					{
 						IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
 						if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobileParty))
 						{
-							goto IL_068d;
+							goto IL_0857;
 						}
 					}
-					num27 *= 0.25f;
+					num16 *= 0.25f;
 				}
 			}
-			goto IL_068d;
-			IL_068d:
-			p.CurrentObjectiveValue = num27;
+			goto IL_0857;
+			IL_0857:
+			p.CurrentObjectiveValue = num16;
 			AiBehavior aiBehavior = AiBehavior.GoAroundParty;
-			AIBehaviorTuple item = new AIBehaviorTuple(mobileParty2, aiBehavior);
-			(AIBehaviorTuple, float) value = (item, num27);
+			AIBehaviorData item = new AIBehaviorData(mobileParty2, aiBehavior, bestNavigationType, willGatherArmy: false, flag2, isTargetingPort: false);
+			(AIBehaviorData, float) value = (item, num16);
 			p.AddBehaviorScore(in value);
 		}
 	}

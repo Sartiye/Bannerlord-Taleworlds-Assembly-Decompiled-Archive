@@ -53,6 +53,6 @@ public sealed class EquipWeaponWithNewEntity : GameNetworkMessage
 		{
 			return "Not equipping weapon because there is no agent to equip it to,";
 		}
-		return string.Concat("Equip weapon with name: ", (!Weapon.IsEmpty) ? Weapon.Item.Name : TextObject.Empty, " from SlotIndex: ", SlotIndex, " on agent with agent-index: ", AgentIndex);
+		return string.Concat("Equip weapon with name: ", (!Weapon.IsEmpty) ? Weapon.Item.Name : TextObject.GetEmpty(), " from SlotIndex: ", SlotIndex, " on agent with agent-index: ", AgentIndex);
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using TaleWorlds.Engine;
@@ -101,13 +102,13 @@ public class OnlineImageTextureProvider : TextureProvider
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\OnlineImageTextureProvider.cs", "RefreshOnlineImage", 109);
+			Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\OnlineImageTextureProvider.cs", "RefreshOnlineImage", 109);
 			Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
 			_requiresRetry = true;
 		}
 	}
 
-	public override TaleWorlds.TwoDimension.Texture GetTexture(TwoDimensionContext twoDimensionContext, string name)
+	protected override TaleWorlds.TwoDimension.Texture OnGetTextureForRender(TwoDimensionContext twoDimensionContext, string name)
 	{
 		if (_texture != null)
 		{
@@ -118,7 +119,7 @@ public class OnlineImageTextureProvider : TextureProvider
 
 	private void PopulateOnlineImageCache()
 	{
-		PlatformFilePath[] files = FileHelper.GetFiles(_onlineImageCacheFolderPath, "*.png");
+		PlatformFilePath[] files = FileHelper.GetFiles(_onlineImageCacheFolderPath, "*.png", SearchOption.AllDirectories);
 		for (int i = 0; i < files.Length; i++)
 		{
 			PlatformFilePath value = files[i];

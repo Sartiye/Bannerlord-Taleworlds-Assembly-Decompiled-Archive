@@ -8,7 +8,7 @@ using TaleWorlds.PlayerServices;
 namespace Messages.FromLobbyServer.ToLobbyServer;
 
 [Serializable]
-[MessageDescription("CustomBattleServerManager", "CustomBattleServerManager")]
+[MessageDescription("CustomBattleServerManager", "CustomBattleServerManager", true)]
 public class ProcessBadgesAndStatsAfterCustomBattleServerFinishMessage : Message
 {
 	[JsonProperty]

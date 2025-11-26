@@ -3,12 +3,11 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Screens;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.Screens;
-using TaleWorlds.MountAndBlade.View.Tableaus;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 using TaleWorlds.MountAndBlade.ViewModelCollection.BannerBuilder;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.ScreenSystem;
@@ -23,7 +22,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private GauntletLayer _gauntletLayer;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private SpriteCategory _bannerIconsCategory;
 
@@ -37,8 +36,6 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private AgentVisuals[] _agentVisuals;
 
-	private readonly ActionIndexCache _idleAction = ActionIndexCache.Create("act_walk_idle_1h_with_shield_left_stance");
-
 	private Scene _scene;
 
 	private MBAgentRendererSceneController _agentRendererSceneController;
@@ -47,7 +44,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private Equipment _weaponEquipment;
 
-	private BannerCode _currentBannerCode;
+	private Banner _currentBanner;
 
 	private float _cameraCurrentRotation;
 
@@ -71,8 +68,6 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private bool _firstCharacterRender = true;
 
-	private BannerCode _previousBannerCode;
-
 	private BasicCharacterObject _character;
 
 	private const string DefaultBannerKey = "11.163.166.1528.1528.764.764.1.0.0.133.171.171.483.483.764.764.0.0.0";
@@ -88,17 +83,12 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_bannerIconsCategory = spriteData.SpriteCategories["ui_bannericons"];
-		_bannerIconsCategory.Load(resourceContext, uIResourceDepot);
-		_bannerBuilderCategory = spriteData.SpriteCategories["ui_bannerbuilder"];
-		_bannerBuilderCategory.Load(resourceContext, uIResourceDepot);
+		_bannerIconsCategory = UIResourceManager.LoadSpriteCategory("ui_bannericons");
+		_bannerBuilderCategory = UIResourceManager.LoadSpriteCategory("ui_bannerbuilder");
 		_agentVisuals = new AgentVisuals[2];
 		string initialKey = (string.IsNullOrWhiteSpace(_state.DefaultBannerKey) ? "11.163.166.1528.1528.764.764.1.0.0.133.171.171.483.483.764.764.0.0.0" : _state.DefaultBannerKey);
 		_dataSource = new BannerBuilderVM(_character, initialKey, Exit, Refresh, CopyBannerCode);
-		_gauntletLayer = new GauntletLayer(100);
+		_gauntletLayer = new GauntletLayer("BannerBuilder", 100);
 		_gauntletLayer.IsFocusLayer = true;
 		AddLayer(_gauntletLayer);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
@@ -113,6 +103,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		_checkWhetherAgentVisualIsReady = true;
 		_firstCharacterRender = true;
 		RefreshShieldAndCharacter();
+		InformationManager.HideAllMessages();
 	}
 
 	private void Refresh()
@@ -127,7 +118,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		{
 			return;
 		}
-		HandleUserInput();
+		HandleUserInput(dt);
 		if (_isFinalized)
 		{
 			return;
@@ -181,7 +172,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		_scene.SetShadow(shadowEnabled: true);
 		_scene.DisableStaticShadows(value: true);
 		_scene.SetDynamicShadowmapCascadesRadiusMultiplier(0.1f);
-		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene, 32);
+		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene);
 		float aspectRatio = Screen.AspectRatio;
 		GameEntity gameEntity = _scene.FindEntityWithTag("spawnpoint_player");
 		_characterFrame = gameEntity.GetFrame();
@@ -201,10 +192,10 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		int num = -1;
 		num &= -5;
 		SceneLayer.SetPostfxConfigParams(num);
-		AddCharacterEntities(_idleAction);
+		AddCharacterEntities(in ActionIndexCache.act_walk_idle_1h_with_shield_left_stance);
 	}
 
-	private void AddCharacterEntities(ActionIndexCache action)
+	private void AddCharacterEntities(in ActionIndexCache action)
 	{
 		_weaponEquipment = new Equipment();
 		for (int i = 0; i < 12; i++)
@@ -219,7 +210,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(_character.Race);
 		_agentVisuals[0] = AgentVisuals.Create(new AgentVisualsData().Equipment(_weaponEquipment).BodyProperties(_character.GetBodyProperties(_weaponEquipment)).Frame(_characterFrame)
 			.ActionSet(MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, _character.IsFemale, "_facegen"))
-			.ActionCode(action)
+			.ActionCode(in action)
 			.Scene(_scene)
 			.Monster(baseMonsterFromRace)
 			.SkeletonType(_character.IsFemale ? SkeletonType.Female : SkeletonType.Male)
@@ -238,12 +229,14 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		{
 			shieldWeapon.GetWeaponData(needBatchedVersionForMeshes: false).TableauMaterial.SetTexture(TaleWorlds.Engine.Material.MBTextureType.DiffuseMap2, tex);
 		};
-		_dataSource.CurrentBanner.GetTableauTextureLarge(setAction);
+		Banner currentBanner = _dataSource.CurrentBanner;
+		BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+		currentBanner.GetTableauTextureLarge(in debugInfo, setAction);
 		_agentVisuals[0].SetVisible(value: false);
 		_agentVisuals[0].GetEntity().CheckResources(addToQueue: true, checkFaceResources: true);
 		_agentVisuals[1] = AgentVisuals.Create(new AgentVisualsData().Equipment(_weaponEquipment).BodyProperties(_character.GetBodyProperties(_weaponEquipment)).Frame(_characterFrame)
 			.ActionSet(MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, _character.IsFemale, "_facegen"))
-			.ActionCode(action)
+			.ActionCode(in action)
 			.Scene(_scene)
 			.Race(_character.Race)
 			.Monster(baseMonsterFromRace)
@@ -264,22 +257,18 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private void UpdateBanners()
 	{
-		BannerCode currentBannerCode = BannerCode.CreateFrom(_dataSource.CurrentBanner);
-		_dataSource.CurrentBanner.GetTableauTextureLarge(delegate(TaleWorlds.Engine.Texture resultTexture)
+		Banner currentBanner = _dataSource.CurrentBanner;
+		Banner currentBanner2 = _dataSource.CurrentBanner;
+		BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+		currentBanner2.GetTableauTextureLarge(in debugInfo, delegate(TaleWorlds.Engine.Texture resultTexture)
 		{
-			OnNewBannerReadyForBanners(currentBannerCode, resultTexture);
-		});
-		if (_previousBannerCode != null)
-		{
-			TableauCacheManager.Current?.ForceReleaseBanner(_previousBannerCode, isTableau: true, isLarge: true);
-			TableauCacheManager.Current?.ForceReleaseBanner(_previousBannerCode, isTableau: true);
-		}
-		_previousBannerCode = BannerCode.CreateFrom(_dataSource.CurrentBanner);
+			OnNewBannerReadyForBanners(currentBanner, resultTexture);
+		}, out var _);
 	}
 
-	private void OnNewBannerReadyForBanners(BannerCode bannerCodeOfTexture, TaleWorlds.Engine.Texture newTexture)
+	private void OnNewBannerReadyForBanners(Banner bannerOfTexture, TaleWorlds.Engine.Texture newTexture)
 	{
-		if (_isFinalized || !(_scene != null) || !(_currentBannerCode == bannerCodeOfTexture))
+		if (_isFinalized || !(_scene != null) || !(_currentBanner?.BannerCode == bannerOfTexture.BannerCode))
 		{
 			return;
 		}
@@ -315,8 +304,8 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 
 	private void RefreshShieldAndCharacter()
 	{
-		_currentBannerCode = BannerCode.CreateFrom(_dataSource.CurrentBanner);
-		_dataSource.BannerCodeAsString = _currentBannerCode.Code;
+		_currentBanner = _dataSource.CurrentBanner;
+		_dataSource.BannerCodeAsString = _currentBanner.BannerCode;
 		_refreshBannersNextFrame = true;
 	}
 
@@ -339,49 +328,88 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		_checkWhetherAgentVisualIsReady = true;
 	}
 
-	private void HandleUserInput()
+	private void HandleUserInput(float dt)
 	{
 		if (_gauntletLayer.IsFocusedOnInput())
 		{
 			return;
 		}
-		if (_gauntletLayer.Input.IsHotKeyReleased("Confirm"))
+		if (_gauntletLayer.Input.IsHotKeyReleased("Confirm") || SceneLayer.Input.IsHotKeyReleased("Confirm"))
 		{
 			_dataSource.ExecuteDone();
 			return;
 		}
-		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+		if (_gauntletLayer.Input.IsHotKeyReleased("Exit") || SceneLayer.Input.IsHotKeyReleased("Exit"))
 		{
 			_dataSource.ExecuteCancel();
 			return;
 		}
-		if (SceneLayer.Input.IsHotKeyReleased("Ascend") || SceneLayer.Input.IsHotKeyReleased("Rotate") || SceneLayer.Input.IsHotKeyReleased("Zoom"))
+		if (SceneLayer.IsHitThisFrame && ScreenManager.FocusedLayer == _gauntletLayer)
+		{
+			_gauntletLayer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(_gauntletLayer);
+			SceneLayer.IsFocusLayer = true;
+			ScreenManager.TrySetFocus(SceneLayer);
+		}
+		else if (!SceneLayer.IsHitThisFrame && ScreenManager.FocusedLayer == SceneLayer)
+		{
+			SceneLayer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(SceneLayer);
+			_gauntletLayer.IsFocusLayer = true;
+			ScreenManager.TrySetFocus(_gauntletLayer);
+		}
+		Vec2 vec = new Vec2(SceneLayer.Input.GetNormalizedMouseMoveX() * 1920f, SceneLayer.Input.GetNormalizedMouseMoveY() * 1080f);
+		bool flag = SceneLayer.Input.IsHotKeyDown("Zoom");
+		bool flag2 = SceneLayer.Input.IsHotKeyDown("Rotate");
+		bool flag3 = SceneLayer.Input.IsHotKeyDown("Ascend");
+		if (flag || flag2 || flag3)
+		{
+			MBWindowManager.DontChangeCursorPos();
+			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+		}
+		else
 		{
 			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: true);
 		}
-		Vec2 vec = new Vec2(0f - SceneLayer.Input.GetMouseMoveX(), 0f - SceneLayer.Input.GetMouseMoveY());
-		if (SceneLayer.Input.IsHotKeyDown("Zoom"))
+		float gameKeyState = SceneLayer.Input.GetGameKeyState(56);
+		float inputValue = SceneLayer.Input.GetGameKeyState(57) - gameKeyState;
+		float num;
+		if (Input.IsGamepadActive)
 		{
-			_cameraTargetDistanceAdder = MBMath.ClampFloat(_cameraTargetDistanceAdder + vec.y * 0.002f, 1.5f, 5f);
-			MBWindowManager.DontChangeCursorPos();
-			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			NormalizeControllerInputForDeadZone(ref inputValue, 0.1f);
+			num = inputValue * 5f * dt;
 		}
-		if (SceneLayer.Input.IsHotKeyDown("Rotate"))
+		else
 		{
-			_cameraTargetRotation = MBMath.WrapAngle(_cameraTargetRotation - vec.x * 0.004f);
-			MBWindowManager.DontChangeCursorPos();
-			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			float num2 = SceneLayer.Input.GetDeltaMouseScroll() * -1f;
+			float num3 = (flag ? (vec.y * -1f) : 0f);
+			num = num2 * 0.002f + num3 * 0.004f;
 		}
-		if (SceneLayer.Input.IsHotKeyDown("Ascend"))
+		_cameraTargetDistanceAdder = MBMath.ClampFloat(_cameraTargetDistanceAdder + num, 1.5f, 5f);
+		float num4;
+		if (Input.IsGamepadActive)
 		{
-			_cameraTargetElevationAdder = MBMath.ClampFloat(_cameraTargetElevationAdder - vec.y * 0.002f, 0.5f, 1.9f * _agentVisuals[0].GetScale());
-			MBWindowManager.DontChangeCursorPos();
-			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			float inputValue2 = SceneLayer.Input.GetGameKeyAxis("CameraAxisX") * -1f;
+			NormalizeControllerInputForDeadZone(ref inputValue2, 0.1f);
+			num4 = inputValue2 * 600f * SceneLayer.Input.GetMouseSensitivity() * dt;
 		}
-		if (SceneLayer.Input.GetDeltaMouseScroll() != 0f)
+		else
 		{
-			_cameraTargetDistanceAdder = MBMath.ClampFloat(_cameraTargetDistanceAdder - SceneLayer.Input.GetDeltaMouseScroll() * 0.001f, 1.5f, 5f);
+			num4 = (flag2 ? (vec.x * -1f) : 0f) * 0.3f * SceneLayer.Input.GetMouseSensitivity();
 		}
+		_cameraTargetRotation = MBMath.WrapAngle(_cameraTargetRotation + num4 * (System.MathF.PI / 180f));
+		float num5;
+		if (Input.IsGamepadActive)
+		{
+			float inputValue3 = SceneLayer.Input.GetGameKeyAxis("CameraAxisY");
+			NormalizeControllerInputForDeadZone(ref inputValue3, 0.1f);
+			num5 = inputValue3 * 2f * dt;
+		}
+		else
+		{
+			num5 = (flag3 ? vec.y : 0f) * 0.002f;
+		}
+		_cameraTargetElevationAdder = MBMath.ClampFloat(_cameraTargetElevationAdder + num5, 0.5f, 1.9f * _agentVisuals[_agentVisualToShowIndex].GetScale());
 		if (Input.DebugInput.IsHotKeyPressed("Copy"))
 		{
 			CopyBannerCode();
@@ -422,11 +450,24 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		}
 	}
 
+	private void NormalizeControllerInputForDeadZone(ref float inputValue, float controllerDeadZone)
+	{
+		if (TaleWorlds.Library.MathF.Abs(inputValue) < controllerDeadZone)
+		{
+			inputValue = 0f;
+		}
+		else
+		{
+			inputValue = (inputValue - (float)TaleWorlds.Library.MathF.Sign(inputValue) * controllerDeadZone) / (1f - controllerDeadZone);
+		}
+	}
+
 	private void UpdateCamera(float dt)
 	{
-		_cameraCurrentRotation += MBMath.WrapAngle(_cameraTargetRotation - _cameraCurrentRotation) * TaleWorlds.Library.MathF.Min(1f, 10f * dt);
-		_cameraCurrentElevationAdder += MBMath.WrapAngle(_cameraTargetElevationAdder - _cameraCurrentElevationAdder) * TaleWorlds.Library.MathF.Min(1f, 10f * dt);
-		_cameraCurrentDistanceAdder += MBMath.WrapAngle(_cameraTargetDistanceAdder - _cameraCurrentDistanceAdder) * TaleWorlds.Library.MathF.Min(1f, 10f * dt);
+		float amount = TaleWorlds.Library.MathF.Min(1f, 10f * dt);
+		_cameraCurrentRotation = TaleWorlds.Library.MathF.AngleLerp(_cameraCurrentRotation, _cameraTargetRotation, amount);
+		_cameraCurrentElevationAdder = TaleWorlds.Library.MathF.Lerp(_cameraCurrentElevationAdder, _cameraTargetElevationAdder, amount);
+		_cameraCurrentDistanceAdder = TaleWorlds.Library.MathF.Lerp(_cameraCurrentDistanceAdder, _cameraTargetDistanceAdder, amount);
 		MatrixFrame characterFrame = _characterFrame;
 		characterFrame.rotation.RotateAboutUp(_cameraCurrentRotation);
 		characterFrame.origin += _cameraCurrentElevationAdder * characterFrame.rotation.u + _cameraCurrentDistanceAdder * characterFrame.rotation.f;
@@ -460,6 +501,7 @@ public class GauntletBannerBuilderScreen : ScreenBase, IGameStateListener
 		_agentVisuals[1].Reset();
 		MBAgentRendererSceneController.DestructAgentRendererSceneController(_scene, _agentRendererSceneController, deleteThisFrame: false);
 		_agentRendererSceneController = null;
+		_scene?.ManualInvalidate();
 		_scene = null;
 	}
 

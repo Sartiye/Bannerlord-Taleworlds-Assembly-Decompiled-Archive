@@ -19,6 +19,12 @@ internal class MatrixFrameBasicTypeSerializer : IBasicTypeSerializer
 		Vec3 f = reader.ReadVec3();
 		Vec3 s = reader.ReadVec3();
 		Vec3 u = reader.ReadVec3();
-		return new MatrixFrame(new Mat3(s, f, u), o);
+		Mat3 rot = new Mat3(in s, in f, in u);
+		return new MatrixFrame(in rot, in o);
+	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 48;
 	}
 }

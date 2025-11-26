@@ -6,7 +6,6 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews.Order;
 
@@ -17,14 +16,20 @@ public class OrderTroopPlacer : MissionView
 		Invisible,
 		Normal,
 		Ground,
-		Enemy,
-		Friend,
 		Rotation,
 		Count,
 		OrderableEntity
 	}
 
 	private bool _suspendTroopPlacer;
+
+	public bool IsDrawingForced;
+
+	public bool IsDrawingFacing;
+
+	public bool IsDrawingForming;
+
+	public Action OnUnitDeployed;
 
 	private bool _isMouseDown;
 
@@ -35,8 +40,6 @@ public class OrderTroopPlacer : MissionView
 	private bool _formationDrawingMode;
 
 	private Formation _mouseOverFormation;
-
-	private Formation _clickedFormation;
 
 	private Vec2 _lastMousePosition;
 
@@ -52,19 +55,9 @@ public class OrderTroopPlacer : MissionView
 
 	private bool _restrictOrdersToDeploymentBoundaries;
 
-	private OrderController PlayerOrderController;
-
-	private Team PlayerTeam;
-
 	private bool _initialized;
 
 	private Timer formationDrawTimer;
-
-	public bool IsDrawingForced;
-
-	public bool IsDrawingFacing;
-
-	public bool IsDrawingForming;
 
 	private bool _wasDrawingForced;
 
@@ -72,17 +65,15 @@ public class OrderTroopPlacer : MissionView
 
 	private bool _wasDrawingForming;
 
-	private GameEntity widthEntityLeft;
+	private GameEntity _widthEntityLeft;
 
-	private GameEntity widthEntityRight;
+	private GameEntity _widthEntityRight;
 
-	private bool isDrawnThisFrame;
+	private bool _isDrawnThisFrame;
 
-	private bool wasDrawnPreviousFrame;
+	private bool _wasDrawnPreviousFrame;
 
-	public Action OnUnitDeployed;
-
-	private static Material _meshMaterial;
+	private OrderController _orderController;
 
 	public bool SuspendTroopPlacer
 	{
@@ -105,39 +96,175 @@ public class OrderTroopPlacer : MissionView
 		}
 	}
 
+	public OrderFlag OrderFlag { get; private set; }
+
+	private Team _playerTeam => base.Mission.PlayerTeam;
+
+	protected CursorState ActiveCursorState { get; private set; }
+
+	protected OrderController OrderController
+	{
+		get
+		{
+			if (_orderController != null)
+			{
+				return _orderController;
+			}
+			return Mission.Current.PlayerTeam.PlayerOrderController;
+		}
+	}
+
 	private bool IsDeployment
 	{
 		get
 		{
-			if (base.Mission.GetMissionBehavior<SiegeDeploymentHandler>() == null)
+			Mission mission = base.Mission;
+			if (mission == null)
 			{
-				return base.Mission.GetMissionBehavior<BattleDeploymentHandler>() != null;
+				return false;
 			}
+			return mission.Mode == MissionMode.Deployment;
+		}
+	}
+
+	public OrderTroopPlacer(OrderController orderController)
+	{
+		_orderController = orderController;
+	}
+
+	protected virtual OrderFlag CreateOrderFlag()
+	{
+		return new OrderFlag(base.Mission, base.MissionScreen);
+	}
+
+	protected virtual bool CanUpdate()
+	{
+		return OrderController.SelectedFormations.Count > 0;
+	}
+
+	protected virtual bool HasSelectedFormations()
+	{
+		return OrderController.SelectedFormations.Count > 0;
+	}
+
+	protected virtual CursorState GetCursorState()
+	{
+		CursorState cursorState = CursorState.Invisible;
+		if (HasSelectedFormations())
+		{
+			if (!TryGetScreenMiddleToWorldPosition(out var _, out var collisionDistance, out var collidedEntity))
+			{
+				collisionDistance = 1000f;
+			}
+			if (cursorState == CursorState.Invisible && collisionDistance < 1000f)
+			{
+				if (!_formationDrawingMode && !collidedEntity.IsValid)
+				{
+					for (int i = 0; i < _orderRotationEntities.Count; i++)
+					{
+						GameEntity gameEntity = _orderRotationEntities[i];
+						if (gameEntity.IsVisibleIncludeParents() && collidedEntity == gameEntity)
+						{
+							_mouseOverFormation = OrderController.SelectedFormations.ElementAt(i / 2);
+							_mouseOverDirection = 1 - (i & 1);
+							cursorState = CursorState.Rotation;
+							break;
+						}
+					}
+				}
+				if (cursorState == CursorState.Invisible && base.MissionScreen.OrderFlag.FocusedOrderableObject != null)
+				{
+					cursorState = CursorState.OrderableEntity;
+				}
+				if (cursorState == CursorState.Invisible)
+				{
+					cursorState = GetGroundOrNormalCursor();
+				}
+			}
+		}
+		if (cursorState != CursorState.Ground && cursorState != CursorState.Rotation)
+		{
+			_mouseOverDirection = 0;
+		}
+		return cursorState;
+	}
+
+	protected virtual Vec3 GetGroundedVec3(WorldPosition worldPosition)
+	{
+		return worldPosition.GetGroundVec3();
+	}
+
+	protected virtual bool TryGetScreenMiddleToWorldPosition(out WorldPosition worldPosition, out float collisionDistance, out WeakGameEntity collidedEntity)
+	{
+		base.MissionScreen.ScreenPointToWorldRay(GetScreenPoint(), out var rayBegin, out var rayEnd);
+		if (base.Mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out float collisionDistance2, out WeakGameEntity collidedEntity2, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora))
+		{
+			Vec3 vec = rayEnd - rayBegin;
+			vec.Normalize();
+			collisionDistance = collisionDistance2;
+			collidedEntity = collidedEntity2;
+			worldPosition = new WorldPosition(base.Mission.Scene, UIntPtr.Zero, rayBegin + vec * collisionDistance, hasValidZ: false);
 			return true;
 		}
+		worldPosition = WorldPosition.Invalid;
+		collisionDistance = 0f;
+		collidedEntity = WeakGameEntity.Invalid;
+		return false;
+	}
+
+	protected bool TryGetScreenMiddleToWorldPosition(out WorldPosition worldPosition, out float collisionDistance)
+	{
+		WeakGameEntity collidedEntity;
+		return TryGetScreenMiddleToWorldPosition(out worldPosition, out collisionDistance, out collidedEntity);
+	}
+
+	protected bool TryGetScreenMiddleToWorldPosition(out WorldPosition worldPosition, out WeakGameEntity collidedEntity)
+	{
+		float collisionDistance;
+		return TryGetScreenMiddleToWorldPosition(out worldPosition, out collisionDistance, out collidedEntity);
+	}
+
+	protected bool TryGetScreenMiddleToWorldPosition(out WorldPosition worldPosition)
+	{
+		float collisionDistance;
+		WeakGameEntity collidedEntity;
+		return TryGetScreenMiddleToWorldPosition(out worldPosition, out collisionDistance, out collidedEntity);
+	}
+
+	protected Vec2 GetScreenPoint()
+	{
+		if (!base.MissionScreen.MouseVisible)
+		{
+			return new Vec2(0.5f, 0.5f) + _deltaMousePosition;
+		}
+		return base.Input.GetMousePositionRanged() + _deltaMousePosition;
+	}
+
+	public CursorState GetGroundOrNormalCursor()
+	{
+		if (!_formationDrawingMode)
+		{
+			return CursorState.Normal;
+		}
+		return CursorState.Ground;
 	}
 
 	public override void AfterStart()
 	{
 		base.AfterStart();
+		OrderFlag = CreateOrderFlag();
 		_formationDrawingStartingPosition = null;
 		_formationDrawingStartingPointOfMouse = null;
 		_formationDrawingStartingTime = null;
 		_orderRotationEntities = new List<GameEntity>();
 		_orderPositionEntities = new List<GameEntity>();
 		formationDrawTimer = new Timer(MBCommon.GetApplicationTime(), 1f / 30f);
-		widthEntityLeft = GameEntity.CreateEmpty(base.Mission.Scene);
-		widthEntityLeft.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
-		widthEntityLeft.SetVisibilityExcludeParents(visible: false);
-		widthEntityRight = GameEntity.CreateEmpty(base.Mission.Scene);
-		widthEntityRight.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
-		widthEntityRight.SetVisibilityExcludeParents(visible: false);
-	}
-
-	private void InitializeInADisgustingManner()
-	{
-		PlayerTeam = base.Mission.PlayerTeam;
-		PlayerOrderController = PlayerTeam.PlayerOrderController;
+		_widthEntityLeft = GameEntity.CreateEmpty(base.Mission.Scene);
+		_widthEntityLeft.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
+		_widthEntityLeft.SetVisibilityExcludeParents(visible: false);
+		_widthEntityRight = GameEntity.CreateEmpty(base.Mission.Scene);
+		_widthEntityRight.AddComponent(MetaMesh.GetCopy("order_arrow_a"));
+		_widthEntityRight.SetVisibilityExcludeParents(visible: false);
 	}
 
 	public override void OnMissionTick(float dt)
@@ -148,7 +275,6 @@ public class OrderTroopPlacer : MissionView
 			MissionPeer missionPeer = (GameNetwork.IsMyPeerReady ? GameNetwork.MyPeer.GetComponent<MissionPeer>() : null);
 			if (base.Mission.PlayerTeam != null || (missionPeer != null && (missionPeer.Team == base.Mission.AttackerTeam || missionPeer.Team == base.Mission.DefenderTeam)))
 			{
-				InitializeInADisgustingManner();
 				_initialized = true;
 			}
 		}
@@ -161,16 +287,16 @@ public class OrderTroopPlacer : MissionView
 
 	private void UpdateFormationDrawingForFacingOrder(bool giveOrder)
 	{
-		isDrawnThisFrame = true;
+		_isDrawnThisFrame = true;
 		Vec2 asVec = base.MissionScreen.GetOrderFlagPosition().AsVec2;
-		Vec2 orderLookAtDirection = OrderController.GetOrderLookAtDirection(PlayerOrderController.SelectedFormations, asVec);
-		PlayerOrderController.SimulateNewFacingOrder(orderLookAtDirection, out var simulationAgentFrames);
+		Vec2 orderLookAtDirection = OrderController.GetOrderLookAtDirection(OrderController.SelectedFormations, asVec);
+		OrderController.SimulateNewFacingOrder(orderLookAtDirection, out var simulationAgentFrames);
 		int num = 0;
 		HideOrderPositionEntities();
 		foreach (WorldPosition item in simulationAgentFrames)
 		{
 			int entityIndex = num;
-			Vec3 groundPosition = item.GetGroundVec3();
+			Vec3 groundPosition = GetGroundedVec3(item);
 			AddOrderPositionEntity(entityIndex, in groundPosition, giveOrder);
 			num++;
 		}
@@ -178,14 +304,14 @@ public class OrderTroopPlacer : MissionView
 
 	private void UpdateFormationDrawingForDestination(bool giveOrder)
 	{
-		isDrawnThisFrame = true;
-		PlayerOrderController.SimulateDestinationFrames(out var simulationAgentFrames);
+		_isDrawnThisFrame = true;
+		OrderController.SimulateDestinationFrames(out var simulationAgentFrames);
 		int num = 0;
 		HideOrderPositionEntities();
 		foreach (WorldPosition item in simulationAgentFrames)
 		{
 			int entityIndex = num;
-			Vec3 groundPosition = item.GetGroundVec3();
+			Vec3 groundPosition = GetGroundedVec3(item);
 			AddOrderPositionEntity(entityIndex, in groundPosition, giveOrder, 0.7f);
 			num++;
 		}
@@ -193,19 +319,20 @@ public class OrderTroopPlacer : MissionView
 
 	private void UpdateFormationDrawingForFormingOrder(bool giveOrder)
 	{
-		isDrawnThisFrame = true;
+		_isDrawnThisFrame = true;
 		MatrixFrame orderFlagFrame = base.MissionScreen.GetOrderFlagFrame();
 		Vec3 origin = orderFlagFrame.origin;
 		Vec2 asVec = orderFlagFrame.rotation.f.AsVec2;
-		float orderFormCustomWidth = OrderController.GetOrderFormCustomWidth(PlayerOrderController.SelectedFormations, origin);
-		PlayerOrderController.SimulateNewCustomWidthOrder(orderFormCustomWidth, out var simulationAgentFrames);
-		Formation formation = PlayerOrderController.SelectedFormations.MaxBy((Formation f) => f.CountOfUnits);
+		float orderFormCustomWidth = OrderController.GetOrderFormCustomWidth(OrderController.SelectedFormations, origin);
+		OrderController.SimulateNewCustomWidthOrder(orderFormCustomWidth, out var simulationAgentFrames);
+		Formation formation = TaleWorlds.Core.Extensions.MaxBy(OrderController.SelectedFormations, (Formation f) => f.CountOfUnits);
 		int num = 0;
 		HideOrderPositionEntities();
 		foreach (WorldPosition item in simulationAgentFrames)
 		{
+			item.GetNavMesh();
 			int entityIndex = num;
-			Vec3 groundPosition = item.GetGroundVec3();
+			Vec3 groundPosition = GetGroundedVec3(item);
 			AddOrderPositionEntity(entityIndex, in groundPosition, giveOrder);
 			num++;
 		}
@@ -220,14 +347,14 @@ public class OrderTroopPlacer : MissionView
 			WorldPosition worldPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, origin, hasValidZ: false);
 			worldPosition.SetVec2(worldPosition.AsVec2 + vec);
 			int entityIndex2 = num++;
-			Vec3 groundPosition = worldPosition.GetGroundVec3();
+			Vec3 groundPosition = GetGroundedVec3(worldPosition);
 			AddOrderPositionEntity(entityIndex2, in groundPosition, fadeOut: false);
 		}
 	}
 
-	private void UpdateFormationDrawing(bool giveOrder)
+	public void UpdateFormationDrawing(bool giveOrder)
 	{
-		isDrawnThisFrame = true;
+		_isDrawnThisFrame = true;
 		HideOrderPositionEntities();
 		if (!_formationDrawingStartingPosition.HasValue)
 		{
@@ -251,65 +378,62 @@ public class OrderTroopPlacer : MissionView
 		}
 		if (!flag)
 		{
-			base.MissionScreen.ScreenPointToWorldRay(GetScreenPoint(), out var rayBegin, out var rayEnd);
-			if (!base.Mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out var collisionDistance, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora))
+			if (!TryGetScreenMiddleToWorldPosition(out var worldPosition2))
 			{
 				return;
 			}
-			Vec3 vec2 = rayEnd - rayBegin;
-			vec2.Normalize();
-			worldPosition = new WorldPosition(base.Mission.Scene, UIntPtr.Zero, rayBegin + vec2 * collisionDistance, hasValidZ: false);
+			worldPosition = worldPosition2;
 		}
-		WorldPosition worldPosition2;
+		WorldPosition worldPosition3;
 		if (_mouseOverDirection == 1)
 		{
-			worldPosition2 = worldPosition;
+			worldPosition3 = worldPosition;
 			worldPosition = _formationDrawingStartingPosition.Value;
 		}
 		else
 		{
-			worldPosition2 = _formationDrawingStartingPosition.Value;
+			worldPosition3 = _formationDrawingStartingPosition.Value;
 		}
-		if (!OrderFlag.IsPositionOnValidGround(worldPosition2))
+		if (!OrderFlag.IsPositionOnValidGround(worldPosition3))
 		{
 			return;
 		}
-		if (_restrictOrdersToDeploymentBoundaries)
+		if (_restrictOrdersToDeploymentBoundaries && base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam))
 		{
 			IMissionDeploymentPlan deploymentPlan = base.Mission.DeploymentPlan;
-			BattleSideEnum side = base.Mission.PlayerTeam.Side;
-			Vec2 position = worldPosition2.AsVec2;
-			if (!deploymentPlan.IsPositionInsideDeploymentBoundaries(side, in position))
+			Team playerTeam = base.Mission.PlayerTeam;
+			Vec2 position = worldPosition3.AsVec2;
+			if (!deploymentPlan.IsPositionInsideDeploymentBoundaries(playerTeam, in position))
 			{
 				return;
 			}
 		}
 		bool isFormationLayoutVertical = !base.DebugInput.IsControlDown();
-		UpdateFormationDrawingForMovementOrder(giveOrder, worldPosition2, worldPosition, isFormationLayoutVertical);
+		UpdateFormationDrawingForMovementOrder(giveOrder, worldPosition3, worldPosition, isFormationLayoutVertical);
 		_deltaMousePosition *= TaleWorlds.Library.MathF.Max(1f - (base.Input.GetMousePositionRanged() - _lastMousePosition).Length * 10f, 0f);
 		_lastMousePosition = base.Input.GetMousePositionRanged();
 	}
 
 	private void UpdateFormationDrawingForMovementOrder(bool giveOrder, WorldPosition formationRealStartingPosition, WorldPosition formationRealEndingPosition, bool isFormationLayoutVertical)
 	{
-		isDrawnThisFrame = true;
-		PlayerOrderController.SimulateNewOrderWithPositionAndDirection(formationRealStartingPosition, formationRealEndingPosition, out var simulationAgentFrames, isFormationLayoutVertical);
+		_isDrawnThisFrame = true;
+		OrderController.SimulateNewOrderWithPositionAndDirection(formationRealStartingPosition, formationRealEndingPosition, out var simulationAgentFrames, isFormationLayoutVertical);
 		if (giveOrder)
 		{
 			if (!isFormationLayoutVertical)
 			{
-				PlayerOrderController.SetOrderWithTwoPositions(OrderType.MoveToLineSegmentWithHorizontalLayout, formationRealStartingPosition, formationRealEndingPosition);
+				OrderController.SetOrderWithTwoPositions(OrderType.MoveToLineSegmentWithHorizontalLayout, formationRealStartingPosition, formationRealEndingPosition);
 			}
 			else
 			{
-				PlayerOrderController.SetOrderWithTwoPositions(OrderType.MoveToLineSegment, formationRealStartingPosition, formationRealEndingPosition);
+				OrderController.SetOrderWithTwoPositions(OrderType.MoveToLineSegment, formationRealStartingPosition, formationRealEndingPosition);
 			}
 		}
 		int num = 0;
 		foreach (WorldPosition item in simulationAgentFrames)
 		{
 			int entityIndex = num;
-			Vec3 groundPosition = item.GetGroundVec3();
+			Vec3 groundPosition = GetGroundedVec3(item);
 			AddOrderPositionEntity(entityIndex, in groundPosition, giveOrder);
 			num++;
 		}
@@ -317,25 +441,18 @@ public class OrderTroopPlacer : MissionView
 
 	private void HandleMouseDown()
 	{
-		if (PlayerOrderController.SelectedFormations.IsEmpty() || _clickedFormation != null)
+		if (!HasSelectedFormations())
 		{
 			return;
 		}
-		switch (GetCursorState())
+		switch (ActiveCursorState)
 		{
-		case CursorState.Enemy:
-		case CursorState.Friend:
-			_clickedFormation = _mouseOverFormation;
-			break;
 		case CursorState.Normal:
 		{
 			_formationDrawingMode = true;
-			base.MissionScreen.ScreenPointToWorldRay(GetScreenPoint(), out var rayBegin, out var rayEnd);
-			if (base.Mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out var collisionDistance, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora))
+			if (TryGetScreenMiddleToWorldPosition(out var worldPosition3))
 			{
-				Vec3 vec2 = rayEnd - rayBegin;
-				vec2.Normalize();
-				_formationDrawingStartingPosition = new WorldPosition(base.Mission.Scene, UIntPtr.Zero, rayBegin + vec2 * collisionDistance, hasValidZ: false);
+				_formationDrawingStartingPosition = worldPosition3;
 				_formationDrawingStartingPointOfMouse = base.Input.GetMousePositionPixel();
 				_formationDrawingStartingTime = base.Mission.CurrentTime;
 			}
@@ -351,8 +468,8 @@ public class OrderTroopPlacer : MissionView
 			if (_mouseOverFormation.CountOfUnits > 0)
 			{
 				HideNonSelectedOrderRotationEntities(_mouseOverFormation);
-				PlayerOrderController.ClearSelectedFormations();
-				PlayerOrderController.SelectFormation(_mouseOverFormation);
+				OrderController.ClearSelectedFormations();
+				OrderController.SelectFormation(_mouseOverFormation);
 				_formationDrawingMode = true;
 				WorldPosition worldPosition = _mouseOverFormation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.GroundVec3);
 				Vec2 direction = _mouseOverFormation.Direction;
@@ -361,7 +478,7 @@ public class OrderTroopPlacer : MissionView
 				_formationDrawingStartingPosition.Value.SetVec2(_formationDrawingStartingPosition.Value.AsVec2 + direction * ((_mouseOverDirection == 1) ? 0.5f : (-0.5f)) * _mouseOverFormation.Width);
 				WorldPosition worldPosition2 = worldPosition;
 				worldPosition2.SetVec2(worldPosition2.AsVec2 + direction * ((_mouseOverDirection == 1) ? (-0.5f) : 0.5f) * _mouseOverFormation.Width);
-				Vec2 vec = base.MissionScreen.SceneView.WorldPointToScreenPoint(worldPosition2.GetGroundVec3());
+				Vec2 vec = base.MissionScreen.SceneView.WorldPointToScreenPoint(GetGroundedVec3(worldPosition2));
 				Vec2 screenPoint = GetScreenPoint();
 				_deltaMousePosition = vec - screenPoint;
 				_lastMousePosition = base.Input.GetMousePositionRanged();
@@ -375,21 +492,7 @@ public class OrderTroopPlacer : MissionView
 
 	private void HandleMouseUp()
 	{
-		if (_clickedFormation != null)
-		{
-			if (_clickedFormation.CountOfUnits > 0 && _clickedFormation.Team == PlayerTeam)
-			{
-				Formation clickedFormation = _clickedFormation;
-				_clickedFormation = null;
-				GetCursorState();
-				_clickedFormation = clickedFormation;
-				HideNonSelectedOrderRotationEntities(_clickedFormation);
-				PlayerOrderController.ClearSelectedFormations();
-				PlayerOrderController.SelectFormation(_clickedFormation);
-			}
-			_clickedFormation = null;
-		}
-		else if (GetCursorState() == CursorState.Ground)
+		if (ActiveCursorState == CursorState.Ground)
 		{
 			if (IsDrawingFacing || _wasDrawingFacing)
 			{
@@ -413,67 +516,6 @@ public class OrderTroopPlacer : MissionView
 		_deltaMousePosition = Vec2.Zero;
 	}
 
-	private Vec2 GetScreenPoint()
-	{
-		if (!base.MissionScreen.MouseVisible)
-		{
-			return new Vec2(0.5f, 0.5f) + _deltaMousePosition;
-		}
-		return base.Input.GetMousePositionRanged() + _deltaMousePosition;
-	}
-
-	private CursorState GetCursorState()
-	{
-		CursorState cursorState = CursorState.Invisible;
-		if (!PlayerOrderController.SelectedFormations.IsEmpty() && _clickedFormation == null)
-		{
-			base.MissionScreen.ScreenPointToWorldRay(GetScreenPoint(), out var rayBegin, out var rayEnd);
-			if (!base.Mission.Scene.RayCastForClosestEntityOrTerrain(rayBegin, rayEnd, out float collisionDistance, out GameEntity collidedEntity, 0.3f, BodyFlags.CommonFocusRayCastExcludeFlags | BodyFlags.BodyOwnerFlora))
-			{
-				collisionDistance = 1000f;
-			}
-			if (cursorState == CursorState.Invisible && collisionDistance < 1000f)
-			{
-				if (!_formationDrawingMode && collidedEntity == null)
-				{
-					for (int i = 0; i < _orderRotationEntities.Count; i++)
-					{
-						GameEntity gameEntity = _orderRotationEntities[i];
-						if (gameEntity.IsVisibleIncludeParents() && collidedEntity == gameEntity)
-						{
-							_mouseOverFormation = PlayerOrderController.SelectedFormations.ElementAt(i / 2);
-							_mouseOverDirection = 1 - (i & 1);
-							cursorState = CursorState.Rotation;
-							break;
-						}
-					}
-				}
-				if (cursorState == CursorState.Invisible && base.MissionScreen.OrderFlag.FocusedOrderableObject != null)
-				{
-					cursorState = CursorState.OrderableEntity;
-				}
-				if (cursorState == CursorState.Invisible)
-				{
-					cursorState = IsCursorStateGroundOrNormal();
-				}
-			}
-		}
-		if (cursorState != CursorState.Ground && cursorState != CursorState.Rotation)
-		{
-			_mouseOverDirection = 0;
-		}
-		return cursorState;
-	}
-
-	private CursorState IsCursorStateGroundOrNormal()
-	{
-		if (!_formationDrawingMode)
-		{
-			return CursorState.Normal;
-		}
-		return CursorState.Ground;
-	}
-
 	private void AddOrderPositionEntity(int entityIndex, in Vec3 groundPosition, bool fadeOut, float alpha = -1f)
 	{
 		while (_orderPositionEntities.Count <= entityIndex)
@@ -481,18 +523,13 @@ public class OrderTroopPlacer : MissionView
 			GameEntity gameEntity = GameEntity.CreateEmpty(base.Mission.Scene);
 			gameEntity.EntityFlags |= EntityFlags.NotAffectedBySeason;
 			MetaMesh copy = MetaMesh.GetCopy("order_flag_small");
-			if (_meshMaterial == null)
-			{
-				_meshMaterial = copy.GetMeshAtIndex(0).GetMaterial().CreateCopy();
-				_meshMaterial.SetAlphaBlendMode(Material.MBAlphaBlendMode.Factor);
-			}
-			copy.SetMaterial(_meshMaterial);
 			gameEntity.AddComponent(copy);
 			gameEntity.SetVisibilityExcludeParents(visible: false);
 			_orderPositionEntities.Add(gameEntity);
 		}
 		GameEntity gameEntity2 = _orderPositionEntities[entityIndex];
-		MatrixFrame frame = new MatrixFrame(Mat3.Identity, groundPosition);
+		Mat3 rot = Mat3.Identity;
+		MatrixFrame frame = new MatrixFrame(in rot, in groundPosition);
 		gameEntity2.SetFrame(ref frame);
 		if (alpha != -1f)
 		{
@@ -514,7 +551,7 @@ public class OrderTroopPlacer : MissionView
 		for (int i = 0; i < _orderRotationEntities.Count; i++)
 		{
 			GameEntity gameEntity = _orderRotationEntities[i];
-			if (gameEntity == null && gameEntity.IsVisibleIncludeParents() && PlayerOrderController.SelectedFormations.ElementAt(i / 2) != formation)
+			if (gameEntity == null && gameEntity.IsVisibleIncludeParents() && OrderController.SelectedFormations.ElementAt(i / 2) != formation)
 			{
 				gameEntity.SetVisibilityExcludeParents(visible: false);
 				gameEntity.BodyFlag |= BodyFlags.Disabled;
@@ -550,7 +587,7 @@ public class OrderTroopPlacer : MissionView
 		_formationDrawingStartingPointOfMouse = null;
 		_formationDrawingStartingTime = null;
 		_mouseOverFormation = null;
-		_clickedFormation = null;
+		ActiveCursorState = GetCursorState();
 	}
 
 	public override void OnMissionScreenTick(float dt)
@@ -559,12 +596,13 @@ public class OrderTroopPlacer : MissionView
 		{
 			return;
 		}
+		ActiveCursorState = GetCursorState();
 		base.OnMissionScreenTick(dt);
-		if (PlayerOrderController.SelectedFormations.Count == 0)
+		if (!CanUpdate())
 		{
 			return;
 		}
-		isDrawnThisFrame = false;
+		_isDrawnThisFrame = false;
 		if (SuspendTroopPlacer)
 		{
 			return;
@@ -581,16 +619,19 @@ public class OrderTroopPlacer : MissionView
 		}
 		else if ((base.Input.IsKeyDown(InputKey.LeftMouseButton) || base.Input.IsKeyDown(InputKey.ControllerRTrigger)) && _isMouseDown)
 		{
-			if (formationDrawTimer.Check(MBCommon.GetApplicationTime()) && !IsDrawingFacing && !IsDrawingForming && IsCursorStateGroundOrNormal() == CursorState.Ground && GetCursorState() == CursorState.Ground)
+			if (formationDrawTimer.Check(MBCommon.GetApplicationTime()) && !IsDrawingFacing && !IsDrawingForming && ActiveCursorState == CursorState.Ground && GetGroundOrNormalCursor() == CursorState.Ground)
 			{
 				UpdateFormationDrawing(giveOrder: false);
 			}
 		}
 		else if (IsDrawingForced)
 		{
-			Reset();
-			HandleMouseDown();
-			UpdateFormationDrawing(giveOrder: false);
+			if (formationDrawTimer.Check(MBCommon.GetApplicationTime()))
+			{
+				Reset();
+				HandleMouseDown();
+				UpdateFormationDrawing(giveOrder: false);
+			}
 		}
 		else if (IsDrawingFacing || _wasDrawingFacing)
 		{
@@ -616,6 +657,10 @@ public class OrderTroopPlacer : MissionView
 		{
 			UpdateFormationDrawingForDestination(giveOrder: false);
 		}
+		if (!base.Input.IsKeyDown(InputKey.LeftMouseButton) && !base.Input.IsKeyDown(InputKey.ControllerRTrigger) && _isMouseDown)
+		{
+			Reset();
+		}
 		foreach (GameEntity orderPositionEntity in _orderPositionEntities)
 		{
 			orderPositionEntity.SetPreviousFrameInvalid();
@@ -627,6 +672,6 @@ public class OrderTroopPlacer : MissionView
 		_wasDrawingForced = IsDrawingForced;
 		_wasDrawingFacing = IsDrawingFacing;
 		_wasDrawingForming = IsDrawingForming;
-		wasDrawnPreviousFrame = isDrawnThisFrame;
+		_wasDrawnPreviousFrame = _isDrawnThisFrame;
 	}
 }

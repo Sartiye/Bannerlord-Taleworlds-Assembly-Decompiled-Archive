@@ -38,7 +38,11 @@ public class GameStartupInfo
 
 	public int Permission { get; internal set; }
 
-	public string EpicExchangeCode { get; internal set; }
+	public string PlatformInterface { get; internal set; }
+
+	public string EpicUserId { get; internal set; }
+
+	public string EpicUserName { get; internal set; }
 
 	public bool IsContinueGame { get; internal set; }
 

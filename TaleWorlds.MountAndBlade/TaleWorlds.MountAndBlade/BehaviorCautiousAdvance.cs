@@ -55,17 +55,17 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
+		WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
 		bool flag = false;
 		Vec2 vec;
 		if (_targetFormation == null || _archerFormation == null)
 		{
 			vec = base.Formation.Direction;
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
-			vec = _targetFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition;
+			vec = _targetFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition;
 			float num = vec.Normalize();
 			float num2 = _archerFormation.QuerySystem.RangedUnitRatio * 0.5f / (float)_archerFormation.Arrangement.RankCount;
 			switch (_behaviorState)
@@ -117,7 +117,7 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 				}
 				if (_behaviorState == BehaviorState.Shooting)
 				{
-					_shootPosition = base.Formation.QuerySystem.AveragePosition + vec * 5f;
+					_shootPosition = base.Formation.CachedAveragePosition + vec * 5f;
 				}
 				break;
 			case BehaviorState.PullingBack:
@@ -125,7 +125,7 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 				{
 					_behaviorState = BehaviorState.Shooting;
 					_cantShoot = false;
-					_shootPosition = base.Formation.QuerySystem.AveragePosition + vec * 5f;
+					_shootPosition = base.Formation.CachedAveragePosition + vec * 5f;
 					flag = true;
 				}
 				break;
@@ -135,45 +135,45 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 			case BehaviorState.Shooting:
 				if (_shootPosition.IsValid)
 				{
-					medianPosition.SetVec2(_shootPosition);
+					cachedMedianPosition.SetVec2(_shootPosition);
 				}
 				else
 				{
-					medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+					cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 				}
 				break;
 			case BehaviorState.Approaching:
 			{
-				medianPosition = _targetFormation.MedianPosition;
-				FormationQuerySystem.FormationIntegrityDataGroup formationIntegrityData = base.Formation.QuerySystem.FormationIntegrityData;
-				if (_switchedToShieldWallRecently && !_switchedToShieldWallTimer.Check(Mission.Current.CurrentTime) && formationIntegrityData.DeviationOfPositionsExcludeFarAgents > formationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents * 0.5f)
+				cachedMedianPosition = _targetFormation.Formation.CachedMedianPosition;
+				Formation.FormationIntegrityDataGroup cachedFormationIntegrityData = base.Formation.CachedFormationIntegrityData;
+				if (_switchedToShieldWallRecently && !_switchedToShieldWallTimer.Check(Mission.Current.CurrentTime) && cachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents > cachedFormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents * 0.5f)
 				{
 					if (_reformPosition.IsValid)
 					{
-						medianPosition.SetVec2(_reformPosition);
+						cachedMedianPosition.SetVec2(_reformPosition);
 						break;
 					}
-					vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized();
-					_reformPosition = base.Formation.QuerySystem.AveragePosition + vec * 5f;
-					medianPosition.SetVec2(_reformPosition);
+					vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized();
+					_reformPosition = base.Formation.CachedAveragePosition + vec * 5f;
+					cachedMedianPosition.SetVec2(_reformPosition);
 				}
 				else
 				{
 					_switchedToShieldWallRecently = false;
 					_reformPosition = Vec2.Invalid;
-					medianPosition.SetVec2(_targetFormation.AveragePosition);
+					cachedMedianPosition.SetVec2(_targetFormation.Formation.CachedAveragePosition);
 				}
 				break;
 			}
 			case BehaviorState.PullingBack:
-				medianPosition = base.Formation.QuerySystem.MedianPosition;
-				medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+				cachedMedianPosition = base.Formation.CachedMedianPosition;
+				cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 				break;
 			}
 		}
-		if (!base.CurrentOrder.CreateNewOrderWorldPosition(base.Formation, WorldPosition.WorldPositionEnforcedCache.None).IsValid || _behaviorState != BehaviorState.Shooting || flag || base.CurrentOrder.CreateNewOrderWorldPosition(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3().DistanceSquared(medianPosition.GetNavMeshVec3()) >= base.Formation.Depth * base.Formation.Depth)
+		if (!base.CurrentOrder.CreateNewOrderWorldPositionMT(base.Formation, WorldPosition.WorldPositionEnforcedCache.None).IsValid || _behaviorState != BehaviorState.Shooting || flag || base.CurrentOrder.CreateNewOrderWorldPositionMT(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3().DistanceSquared(cachedMedianPosition.GetNavMeshVec3()) >= base.Formation.Depth * base.Formation.Depth)
 		{
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		}
 		if (!CurrentFacingOrder.GetDirection(base.Formation).IsValid || _behaviorState != BehaviorState.Shooting || flag || CurrentFacingOrder.GetDirection(base.Formation).DotProduct(vec) <= MBMath.Lerp(0.5f, 1f, 1f - MBMath.ClampFloat(base.Formation.Width, 1f, 20f) * 0.05f))
 		{
@@ -192,14 +192,14 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 		_cantShootDistance = float.MaxValue;
 		_behaviorState = BehaviorState.Shooting;
 		_cantShootTimer.Reset(Mission.Current.CurrentTime, (_archerFormation == null) ? 10f : MBMath.Lerp(10f, 15f, (MBMath.ClampFloat(_archerFormation.CountOfUnits, 10f, 60f) - 10f) * 0.02f));
-		_targetFormation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation ?? base.Formation.QuerySystem.ClosestEnemyFormation;
+		_targetFormation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation ?? base.Formation.CachedClosestEnemyFormation;
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		_isInShieldWallDistance = true;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	public override void OnBehaviorCanceled()
@@ -208,10 +208,10 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 
 	public override void TickOccasionally()
 	{
-		_targetFormation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation ?? base.Formation.QuerySystem.ClosestEnemyFormation;
+		_targetFormation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation ?? base.Formation.CachedClosestEnemyFormation;
 		if (base.Formation.PhysicalClass.IsMeleeInfantry())
 		{
-			bool flag = _targetFormation != null && (base.Formation.QuerySystem.IsUnderRangedAttack || base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < 25f + (_isInShieldWallDistance ? 75f : 0f)) && base.Formation.QuerySystem.AveragePosition.DistanceSquared(_targetFormation.MedianPosition.AsVec2) > 100f - (_isInShieldWallDistance ? 75f : 0f);
+			bool flag = _targetFormation != null && (base.Formation.QuerySystem.IsUnderRangedAttack || base.Formation.CachedAveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < 25f + (_isInShieldWallDistance ? 75f : 0f)) && base.Formation.CachedAveragePosition.DistanceSquared(_targetFormation.Formation.CachedMedianPosition.AsVec2) > 100f - (_isInShieldWallDistance ? 75f : 0f);
 			if (flag != _isInShieldWallDistance)
 			{
 				_isInShieldWallDistance = flag;
@@ -220,20 +220,20 @@ public sealed class BehaviorCautiousAdvance : BehaviorComponent
 					ArrangementOrder arrangementOrder = (base.Formation.QuerySystem.HasShield ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLoose);
 					if (base.Formation.ArrangementOrder != arrangementOrder)
 					{
-						base.Formation.ArrangementOrder = arrangementOrder;
+						base.Formation.SetArrangementOrder(arrangementOrder);
 						_switchedToShieldWallRecently = true;
 						_switchedToShieldWallTimer.Reset(Mission.Current.CurrentTime, 5f);
 					}
 				}
 				else if (!(base.Formation.ArrangementOrder == ArrangementOrder.ArrangementOrderLine))
 				{
-					base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+					base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 				}
 			}
 		}
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	protected override float GetAiWeight()

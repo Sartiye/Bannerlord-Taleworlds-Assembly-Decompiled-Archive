@@ -177,37 +177,44 @@ public class IntegerInputTextWidget : EditableTextWidget
 		{
 			_keyboardAction = KeyboardAction.None;
 		}
-		if (Input.IsKeyReleased(InputKey.Enter))
+		if (Input.IsKeyReleased(InputKey.Enter) || Input.IsKeyReleased(InputKey.NumpadEnter))
 		{
 			EventFired("TextEntered");
 		}
 		else if (_keyboardAction == KeyboardAction.BackSpace || _keyboardAction == KeyboardAction.Delete)
 		{
-			if (flag3 || tickCount >= _nextRepeatTime)
+			if (!flag3 && tickCount < _nextRepeatTime)
 			{
-				if (_editableText.IsAnySelected())
+				return;
+			}
+			if (_editableText.IsAnySelected())
+			{
+				DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
+			}
+			else if (Input.IsKeyDown(InputKey.LeftControl))
+			{
+				if (_keyboardAction == KeyboardAction.BackSpace)
 				{
-					DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
-				}
-				else if (Input.IsKeyDown(InputKey.LeftControl))
-				{
-					int num2 = FindNextWordPosition(-1) - _editableText.CursorPosition;
-					DeleteText(_editableText.CursorPosition + num2, _editableText.CursorPosition);
+					DeleteText(FindNextWordPosition(-1), _editableText.CursorPosition);
 				}
 				else
 				{
-					DeleteChar(_keyboardAction == KeyboardAction.Delete);
+					DeleteText(_editableText.CursorPosition, FindNextWordPosition(1));
 				}
-				TrySetStringAsInteger(base.RealText);
-				if (tickCount >= _nextRepeatTime)
-				{
-					_nextRepeatTime = tickCount + 30;
-				}
+			}
+			else
+			{
+				DeleteChar(_keyboardAction == KeyboardAction.Delete);
+			}
+			TrySetStringAsInteger(base.RealText);
+			if (tickCount >= _nextRepeatTime)
+			{
+				_nextRepeatTime = tickCount + 30;
 			}
 		}
 		else
 		{
-			if (!Input.IsKeyDown(InputKey.LeftControl))
+			if (!Input.IsKeyDown(InputKey.LeftControl) || Input.IsKeyDown(InputKey.RightAlt))
 			{
 				return;
 			}
@@ -240,52 +247,49 @@ public class IntegerInputTextWidget : EditableTextWidget
 	{
 		string text = null;
 		bool flag = false;
-		if (base.MaxLength > -1 && base.Text.Length >= base.MaxLength)
+		string realText = base.RealText;
+		if (_editableText.SelectedTextBegin != _editableText.SelectedTextEnd)
 		{
-			text = base.RealText;
-		}
-		if (text == null)
-		{
-			string realText = base.RealText;
-			if (_editableText.SelectedTextBegin != _editableText.SelectedTextEnd)
+			if (_editableText.SelectedTextEnd > base.RealText.Length)
 			{
-				if (_editableText.SelectedTextEnd > base.RealText.Length)
+				text = Convert.ToChar(lastPressedKey).ToString();
+				flag = true;
+			}
+			else
+			{
+				realText = base.RealText.Substring(0, _editableText.SelectedTextBegin) + base.RealText.Substring(_editableText.SelectedTextEnd, base.RealText.Length - _editableText.SelectedTextEnd);
+				if (_editableText.SelectedTextEnd - _editableText.SelectedTextBegin >= base.RealText.Length)
 				{
-					text = Convert.ToChar(lastPressedKey).ToString();
+					_editableText.SetCursorPosition(0, visible: true);
+					_editableText.ResetSelected();
 					flag = true;
 				}
 				else
 				{
-					realText = base.RealText.Substring(0, _editableText.SelectedTextBegin) + base.RealText.Substring(_editableText.SelectedTextEnd, base.RealText.Length - _editableText.SelectedTextEnd);
-					if (_editableText.SelectedTextEnd - _editableText.SelectedTextBegin >= base.RealText.Length)
-					{
-						_editableText.SetCursorPosition(0, visible: true);
-						_editableText.ResetSelected();
-						flag = true;
-					}
-					else
-					{
-						_editableText.SetCursorPosition(_editableText.SelectedTextBegin, visible: true);
-					}
-					int cursorPosition = _editableText.CursorPosition;
-					char c = Convert.ToChar(lastPressedKey);
-					text = realText.Substring(0, cursorPosition) + c + realText.Substring(cursorPosition, realText.Length - cursorPosition);
+					_editableText.SetCursorPosition(_editableText.SelectedTextBegin, visible: true);
 				}
-				_editableText.ResetSelected();
+				int cursorPosition = _editableText.CursorPosition;
+				char c = Convert.ToChar(lastPressedKey);
+				text = realText.Substring(0, cursorPosition) + c + realText.Substring(cursorPosition, realText.Length - cursorPosition);
 			}
-			else
+			_editableText.ResetSelected();
+		}
+		else if (base.MaxLength > -1 && base.Text.Length >= base.MaxLength)
+		{
+			text = base.RealText;
+		}
+		else
+		{
+			if (_editableText.CursorPosition == base.RealText.Length)
 			{
-				if (_editableText.CursorPosition == base.RealText.Length)
-				{
-					flag = true;
-				}
-				int cursorPosition2 = _editableText.CursorPosition;
-				char c2 = Convert.ToChar(lastPressedKey);
-				text = realText.Substring(0, cursorPosition2) + c2 + realText.Substring(cursorPosition2, realText.Length - cursorPosition2);
-				if (!flag)
-				{
-					_editableText.SetCursor(cursorPosition2 + 1);
-				}
+				flag = true;
+			}
+			int cursorPosition2 = _editableText.CursorPosition;
+			char c2 = Convert.ToChar(lastPressedKey);
+			text = realText.Substring(0, cursorPosition2) + c2 + realText.Substring(cursorPosition2, realText.Length - cursorPosition2);
+			if (!flag)
+			{
+				_editableText.SetCursor(cursorPosition2 + 1);
 			}
 		}
 		TrySetStringAsInteger(text);
@@ -312,25 +316,29 @@ public class IntegerInputTextWidget : EditableTextWidget
 
 	private bool TrySetStringAsInteger(string str)
 	{
-		if (int.TryParse(str, out var result))
+		if (!int.TryParse(str, out var result))
 		{
-			SetInteger(result);
-			if (_editableText.SelectedTextEnd - _editableText.SelectedTextBegin >= base.RealText.Length)
+			if (!string.IsNullOrWhiteSpace(str))
 			{
-				_editableText.SetCursorPosition(0, visible: true);
-				_editableText.ResetSelected();
+				return false;
 			}
-			else if (_editableText.SelectedTextBegin != 0 || _editableText.SelectedTextEnd != 0)
-			{
-				_editableText.SetCursorPosition(_editableText.SelectedTextBegin, visible: true);
-			}
-			if (_editableText.CursorPosition > base.RealText.Length)
-			{
-				_editableText.SetCursorPosition(base.RealText.Length, visible: true);
-			}
-			return true;
+			result = 0;
 		}
-		return false;
+		SetInteger(result);
+		if (_editableText.SelectedTextEnd - _editableText.SelectedTextBegin >= base.RealText.Length)
+		{
+			_editableText.SetCursorPosition(0, visible: true);
+			_editableText.ResetSelected();
+		}
+		else if (_editableText.SelectedTextBegin != 0 || _editableText.SelectedTextEnd != 0)
+		{
+			_editableText.SetCursorPosition(_editableText.SelectedTextBegin, visible: true);
+		}
+		if (_editableText.CursorPosition > base.RealText.Length)
+		{
+			_editableText.SetCursorPosition(base.RealText.Length, visible: true);
+		}
+		return true;
 	}
 
 	public override void SetAllText(string text)

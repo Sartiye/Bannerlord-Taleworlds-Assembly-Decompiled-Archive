@@ -184,6 +184,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_6.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_6.PositionXOffset = -50f;
 		_widget_0_6.IconWidget = _widget_0_6_1;
+		_widget_0_6.IconBrush = base.Context.GetBrush("Compass.Type.Icons");
 		_widget_0_6_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_6_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_6_0.SuggestedWidth = 45f;
@@ -201,6 +202,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_7.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_7.PositionXOffset = 55f;
 		_widget_0_7.IconWidget = _widget_0_7_1;
+		_widget_0_7.IconBrush = base.Context.GetBrush("Compass.Type.Icons");
 		_widget_0_7_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_7_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_7_0.SuggestedWidth = 45f;

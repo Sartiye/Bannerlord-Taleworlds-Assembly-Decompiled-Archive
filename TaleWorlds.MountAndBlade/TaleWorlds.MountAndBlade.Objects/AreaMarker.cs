@@ -69,17 +69,13 @@ public class AreaMarker : MissionObject, ITrackableBase
 		return base.GameEntity.GlobalPosition;
 	}
 
-	public float GetTrackDistanceToMainAgent()
+	TextObject ITrackableBase.GetName()
 	{
-		if (Agent.Main == null)
-		{
-			return -1f;
-		}
-		return GetPosition().Distance(Agent.Main.Position);
+		return GetName();
 	}
 
-	public bool CheckTracked(BasicCharacterObject basicCharacter)
+	Vec3 ITrackableBase.GetPosition()
 	{
-		return false;
+		return GetPosition();
 	}
 }

@@ -1,9 +1,14 @@
+using System;
+using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -13,15 +18,17 @@ public class DefaultBattleRewardModel : BattleRewardModel
 {
 	private static readonly int[] _indices = new int[12];
 
-	public override float DestroyHideoutBannerLootChance => 0.1f;
+	private const float DestroyHideoutBannerLootChance = 0.1f;
 
-	public override float CaptureSettlementBannerLootChance => 0.5f;
+	private const float CaptureSettlementBannerLootChance = 0.5f;
 
-	public override float DefeatRegularHeroBannerLootChance => 0.5f;
+	private const float DefeatRegularHeroBannerLootChance = 0.5f;
 
-	public override float DefeatClanLeaderBannerLootChance => 0.25f;
+	private const float DefeatClanLeaderBannerLootChance = 0.25f;
 
-	public override float DefeatKingdomRulerBannerLootChance => 0.1f;
+	private const float DefeatKingdomRulerBannerLootChance = 0.1f;
+
+	private const float MainPartyMemberScatterChance = 0.1f;
 
 	public override int GetPlayerGainedRelationAmount(MapEvent mapEvent, Hero hero)
 	{
@@ -29,8 +36,8 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		float playerPartyContributionRate = mapEventSide.GetPlayerPartyContributionRate();
 		float num = (mapEvent.StrengthOfSide[(int)PartyBase.MainParty.Side] - PlayerEncounter.Current.PlayerPartyInitialStrength) / (mapEvent.StrengthOfSide[(int)PartyBase.MainParty.OpponentSide] + 1f);
 		float num2 = ((num < 1f) ? (1f + (1f - num)) : ((num < 3f) ? (0.5f * (3f - num)) : 0f));
-		float renownValueAtMapEventEnd = mapEvent.GetRenownValueAtMapEventEnd((mapEventSide == mapEvent.AttackerSide) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		ExplainedNumber explainedNumber = new ExplainedNumber(0.75f + MathF.Pow(playerPartyContributionRate * 1.3f * (num2 + renownValueAtMapEventEnd), 0.67f));
+		float renownValue = mapEvent.GetRenownValue((mapEventSide == mapEvent.AttackerSide) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		ExplainedNumber explainedNumber = new ExplainedNumber(0.75f + TaleWorlds.Library.MathF.Pow(playerPartyContributionRate * 1.3f * (num2 + renownValue), 0.67f));
 		if (Hero.MainHero.GetPerkValue(DefaultPerks.Charm.Camaraderie))
 		{
 			explainedNumber.AddFactor(DefaultPerks.Charm.Camaraderie.PrimaryBonus, DefaultPerks.Charm.Camaraderie.Name);
@@ -53,7 +60,7 @@ public class DefaultBattleRewardModel : BattleRewardModel
 			}
 			if (party.LeaderHero != null)
 			{
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Leadership.FamousCommander, party.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Leadership.FamousCommander, party.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat, party.MobileParty.IsCurrentlyAtSea);
 			}
 			if (PartyBaseHelper.HasFeat(party, DefaultCulturalFeats.VlandianRenownMercenaryFeat))
 			{
@@ -65,16 +72,15 @@ public class DefaultBattleRewardModel : BattleRewardModel
 
 	public override ExplainedNumber CalculateInfluenceGain(PartyBase party, float influenceValueOfBattle, float contributionShare)
 	{
-		ExplainedNumber result = new ExplainedNumber(party.MapFaction.IsKingdomFaction ? (influenceValueOfBattle * contributionShare) : 0f, includeDescriptions: true);
-		Hero leaderHero = party.LeaderHero;
-		if (leaderHero != null && leaderHero.GetPerkValue(DefaultPerks.Charm.Warlord))
+		ExplainedNumber bonuses = new ExplainedNumber(party.MapFaction.IsKingdomFaction ? (influenceValueOfBattle * contributionShare) : 0f, includeDescriptions: true);
+		if (party.LeaderHero != null)
 		{
-			result.AddFactor(DefaultPerks.Charm.Warlord.PrimaryBonus, DefaultPerks.Charm.Warlord.Name);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Warlord, party.LeaderHero.CharacterObject, isPrimaryBonus: true, ref bonuses, party.MobileParty.IsCurrentlyAtSea);
 		}
-		return result;
+		return bonuses;
 	}
 
-	public override ExplainedNumber CalculateMoraleGainVictory(PartyBase party, float renownValueOfBattle, float contributionShare)
+	public override ExplainedNumber CalculateMoraleGainVictory(PartyBase party, float renownValueOfBattle, float contributionShare, MapEvent battle)
 	{
 		ExplainedNumber stat = new ExplainedNumber(0.5f + renownValueOfBattle * contributionShare * 0.5f, includeDescriptions: true);
 		if (party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Throwing.LongReach, checkSecondaryRole: true))
@@ -83,26 +89,20 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		}
 		if (party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Leadership.CitizenMilitia, checkSecondaryRole: true))
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.CitizenMilitia, party.MobileParty, isPrimaryBonus: false, ref stat);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.CitizenMilitia, party.MobileParty, isPrimaryBonus: false, ref stat, party.MobileParty.IsCurrentlyAtSea);
 		}
 		return stat;
 	}
 
 	public override int CalculateGoldLossAfterDefeat(Hero partyLeaderHero)
 	{
-		float num = (float)partyLeaderHero.Gold * 0.05f;
-		if (num > 10000f)
-		{
-			num = 10000f;
-		}
-		return (int)num;
+		return (int)Math.Min((float)partyLeaderHero.Gold * 0.05f, 10000f);
 	}
 
 	public override EquipmentElement GetLootedItemFromTroop(CharacterObject character, float targetValue)
 	{
 		bool num = MobileParty.MainParty.HasPerk(DefaultPerks.Engineering.Metallurgy);
-		Equipment randomElement = character.AllEquipments.GetRandomElement();
-		EquipmentElement result = GetRandomItem(randomElement, targetValue);
+		EquipmentElement result = GetRandomItem(character.BattleEquipments.GetRandomElementInefficiently(), targetValue);
 		if (num && result.ItemModifier != null && result.ItemModifier.PriceMultiplier < 1f && MBRandom.RandomFloat < DefaultPerks.Engineering.Metallurgy.PrimaryBonus)
 		{
 			result = new EquipmentElement(result.Item);
@@ -110,7 +110,7 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		return result;
 	}
 
-	private EquipmentElement GetRandomItem(Equipment equipment, float targetValue = 0f)
+	private static EquipmentElement GetRandomItem(Equipment equipment, float targetValue = 0f)
 	{
 		int num = 0;
 		for (int i = 0; i < 12; i++)
@@ -148,7 +148,7 @@ public class DefaultBattleRewardModel : BattleRewardModel
 					continue;
 				}
 				float b = (float)result.Item.Value + 0.1f;
-				float num4 = 0.6f * (targetValue / (MathF.Max(targetValue, b) * (float)(num - l)));
+				float num4 = 0.325f * (targetValue / (TaleWorlds.Library.MathF.Max(targetValue, b) * (float)(num - l)));
 				if (MBRandom.RandomFloat < num4)
 				{
 					ItemModifier itemModifier = result.Item.ItemComponent?.ItemModifierGroup?.GetRandomItemModifierLootScoreBased();
@@ -163,23 +163,242 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		return default(EquipmentElement);
 	}
 
-	public override float GetPartySavePrisonerAsMemberShareProbability(PartyBase winnerParty, float lootAmount)
+	public override float GetExpectedLootedItemValueFromCasualty(Hero winnerPartyLeaderHero, CharacterObject casualtyCharacter)
 	{
-		float result = lootAmount;
-		if (winnerParty.IsMobile && (winnerParty.MobileParty.IsVillager || winnerParty.MobileParty.IsCaravan || winnerParty.MobileParty.IsMilitia || (winnerParty.MobileParty.IsBandit && winnerParty.MobileParty.CurrentSettlement != null && winnerParty.MobileParty.CurrentSettlement.IsHideout)))
+		float num = 7.25f * (float)(casualtyCharacter.Level * casualtyCharacter.Level);
+		if (winnerPartyLeaderHero == Hero.MainHero)
 		{
-			result = 0f;
+			return num * MBRandom.RandomFloatRanged(0.85f, 1.15f);
 		}
-		return result;
-	}
-
-	public override float GetExpectedLootedItemValue(CharacterObject character)
-	{
-		return 6f * (float)(character.Level * character.Level);
+		return num;
 	}
 
 	public override float GetAITradePenalty()
 	{
 		return 1f / 55f;
+	}
+
+	public override float GetMainPartyMemberScatterChance()
+	{
+		return 0.1f;
+	}
+
+	public override int CalculatePlunderedGoldAmountFromDefeatedParty(PartyBase defeatedParty)
+	{
+		int result = 0;
+		if (defeatedParty.LeaderHero != null)
+		{
+			result = Campaign.Current.Models.BattleRewardModel.CalculateGoldLossAfterDefeat(defeatedParty.LeaderHero);
+		}
+		else if (defeatedParty.IsMobile && defeatedParty.MobileParty.IsPartyTradeActive)
+		{
+			MobileParty mobileParty = defeatedParty.MobileParty;
+			result = (int)((float)mobileParty.PartyTradeGold * (mobileParty.IsBandit ? 0.5f : 0.1f));
+		}
+		return result;
+	}
+
+	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootGoldChances(MBReadOnlyList<MapEventParty> winnerParties)
+	{
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		float num = 0f;
+		foreach (MapEventParty winnerParty in winnerParties)
+		{
+			if (winnerParty.ContributionToBattle > 0 && (!winnerParty.Party.IsMobile || !winnerParty.Party.MobileParty.IsPatrolParty))
+			{
+				mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+				num += (float)winnerParty.ContributionToBattle;
+			}
+		}
+		for (int i = 0; i < mBList.Count; i++)
+		{
+			mBList[i] = new KeyValuePair<MapEventParty, float>(mBList[i].Key, mBList[i].Value / num);
+		}
+		return mBList;
+	}
+
+	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootMemberChancesForWinnerParties(MBReadOnlyList<MapEventParty> winnerParties)
+	{
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		float num = 0f;
+		foreach (MapEventParty winnerParty in winnerParties)
+		{
+			MobileParty mobileParty = winnerParty.Party.MobileParty;
+			if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && (mobileParty == null || (!mobileParty.IsVillager && !mobileParty.IsCaravan && !mobileParty.IsPatrolParty && ((!mobileParty.IsGarrison && !mobileParty.IsMilitia) || !mobileParty.CurrentSettlement.IsVillage))))
+			{
+				mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+				num += (float)winnerParty.ContributionToBattle;
+			}
+		}
+		for (int i = 0; i < mBList.Count; i++)
+		{
+			mBList[i] = new KeyValuePair<MapEventParty, float>(mBList[i].Key, mBList[i].Value / num * 0.75f);
+		}
+		return mBList;
+	}
+
+	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootPrisonerChances(MBReadOnlyList<MapEventParty> winnerParties, TroopRosterElement prisonerElement)
+	{
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		CharacterObject character = prisonerElement.Character;
+		if (character.HeroObject == null || !character.HeroObject.IsReleased)
+		{
+			float num = 0f;
+			Occupation occupation = character.Occupation;
+			foreach (MapEventParty winnerParty in winnerParties)
+			{
+				MobileParty mobileParty = winnerParty.Party.MobileParty;
+				if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && ((mobileParty == null && occupation != Occupation.Bandit) || (mobileParty != null && !mobileParty.IsVillager && !mobileParty.IsCaravan && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty && (!mobileParty.IsBandit || occupation == Occupation.Bandit) && (!mobileParty.IsGarrison || occupation != Occupation.Bandit))))
+				{
+					mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+					num += (float)winnerParty.ContributionToBattle;
+				}
+			}
+			for (int i = 0; i < mBList.Count; i++)
+			{
+				mBList[i] = new KeyValuePair<MapEventParty, float>(mBList[i].Key, mBList[i].Value / num * 0.55f);
+			}
+		}
+		return mBList;
+	}
+
+	public override MBList<KeyValuePair<MapEventParty, float>> GetLootItemChancesForWinnerParties(MBReadOnlyList<MapEventParty> winnerParties, PartyBase defeatedParty)
+	{
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		if (!defeatedParty.IsSettlement)
+		{
+			MBList<KeyValuePair<MapEventParty, float>> mBList2 = new MBList<KeyValuePair<MapEventParty, float>>();
+			float num = 0f;
+			foreach (MapEventParty winnerParty in winnerParties)
+			{
+				MobileParty mobileParty = winnerParty.Party.MobileParty;
+				PartyBase party = winnerParty.Party;
+				if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && (mobileParty == null || (!mobileParty.IsGarrison && !mobileParty.IsMilitia)))
+				{
+					mBList2.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+					num += (float)winnerParty.ContributionToBattle;
+					ExplainedNumber explainedNumber = new ExplainedNumber(1f);
+					SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.RogueryLootBonus, party.MobileParty, ref explainedNumber);
+					if (party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Roguery.RogueExtraordinaire))
+					{
+						PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Roguery.RogueExtraordinaire, party.LeaderHero.CharacterObject, DefaultSkills.Roguery, applyPrimaryBonus: true, ref explainedNumber, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
+					}
+					float num2 = explainedNumber.ResultNumber;
+					if (party.MobileParty.HasPerk(DefaultPerks.Roguery.KnowHow) && (defeatedParty.MobileParty.IsCaravan || defeatedParty.MobileParty.IsVillager))
+					{
+						num2 *= 1f + DefaultPerks.Roguery.KnowHow.PrimaryBonus;
+					}
+					mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, num2));
+				}
+			}
+			for (int i = 0; i < mBList2.Count; i++)
+			{
+				mBList[i] = new KeyValuePair<MapEventParty, float>(mBList2[i].Key, mBList2[i].Value / num * mBList[i].Value * 0.5f);
+			}
+		}
+		return mBList;
+	}
+
+	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootCasualtyChances(MBReadOnlyList<MapEventParty> winnerParties, PartyBase defeatedParty)
+	{
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		if (!defeatedParty.IsSettlement || !defeatedParty.Settlement.IsTown)
+		{
+			float num = 0f;
+			foreach (MapEventParty winnerParty in winnerParties)
+			{
+				MobileParty mobileParty = winnerParty.Party.MobileParty;
+				if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && (mobileParty == null || (!mobileParty.IsGarrison && !mobileParty.IsMilitia)))
+				{
+					mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+					num += (float)winnerParty.ContributionToBattle;
+				}
+			}
+			for (int i = 0; i < mBList.Count; i++)
+			{
+				mBList[i] = new KeyValuePair<MapEventParty, float>(mBList[i].Key, mBList[i].Value / num * 1f);
+			}
+		}
+		return mBList;
+	}
+
+	public override float CalculateShipDamageAfterDefeat(Ship ship)
+	{
+		return 0f;
+	}
+
+	public override MBReadOnlyList<KeyValuePair<Ship, MapEventParty>> DistributeDefeatedPartyShipsAmongWinners(MapEvent mapEvent, MBReadOnlyList<Ship> shipsToLoot, MBReadOnlyList<MapEventParty> winnerParties)
+	{
+		return new MBReadOnlyList<KeyValuePair<Ship, MapEventParty>>();
+	}
+
+	public override float GetBannerLootChanceFromDefeatedHero(Hero defeatedHero)
+	{
+		if (defeatedHero.Clan?.Kingdom?.RulingClan.Leader == defeatedHero)
+		{
+			return 0.1f;
+		}
+		if (defeatedHero.Clan?.Leader == defeatedHero)
+		{
+			return 0.25f;
+		}
+		return 0.5f;
+	}
+
+	public override ItemObject GetBannerRewardForWinningMapEvent(MapEvent mapEvent)
+	{
+		if (mapEvent.IsHideoutBattle || (mapEvent.AttackerSide.MissionSide == mapEvent.PlayerSide && mapEvent.IsSiegeAssault))
+		{
+			bool isHideoutBattle = mapEvent.IsHideoutBattle;
+			Settlement mapEventSettlement = mapEvent.MapEventSettlement;
+			float num = (isHideoutBattle ? 0.1f : 0.5f);
+			if (MBRandom.RandomFloat <= num)
+			{
+				MBList<ItemObject> mBList = Campaign.Current.Models.BannerItemModel.GetPossibleRewardBannerItems().ToMBList();
+				if (mBList.Count > 0)
+				{
+					mBList.Shuffle();
+					int num2 = (isHideoutBattle ? 1 : mapEventSettlement.Town.GetWallLevel());
+					foreach (ItemObject item in mBList)
+					{
+						if (((BannerComponent)item.ItemComponent).BannerLevel == num2 && (item.Culture == null || item.Culture.StringId == "neutral_culture" || (!isHideoutBattle && item.Culture == mapEventSettlement.Culture)))
+						{
+							return item;
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public override float GetSunkenShipMoraleEffect(PartyBase shipOwner, Ship ship)
+	{
+		return 0f;
+	}
+
+	public override ExplainedNumber CalculateMoraleChangeOnRoundVictory(PartyBase party, MapEventSide partySide, BattleSideEnum roundWinner)
+	{
+		int num = 0;
+		if (partySide.MissionSide != roundWinner && roundWinner != BattleSideEnum.None)
+		{
+			num = ((partySide.MapEvent.RetreatingSide == BattleSideEnum.None) ? (-3) : (-1));
+		}
+		return new ExplainedNumber(num);
+	}
+
+	public override float GetShipSiegeEngineHitMoraleEffect(Ship ship, SiegeEngineType siegeEngineType)
+	{
+		return 0f;
+	}
+
+	public override Figurehead GetFigureheadLoot(MBReadOnlyList<MapEventParty> defeatedParties, PartyBase defeatedSideLeaderParty)
+	{
+		return null;
+	}
+
+	public override MBReadOnlyList<MapEventParty> GetWinnerPartiesThatCanPlunderGoldFromShips(MBReadOnlyList<MapEventParty> winnerParties)
+	{
+		return new MBReadOnlyList<MapEventParty>();
 	}
 }

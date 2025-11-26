@@ -125,12 +125,9 @@ public class MissionGauntletTeamSelection : MissionView
 		{
 			_isActive = true;
 			string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
-			_ = UIResourceManager.SpriteData;
-			_ = UIResourceManager.ResourceContext;
-			_ = UIResourceManager.UIResourceDepot;
 			_dataSource = new MultiplayerTeamSelectVM(base.Mission, OnChangeTeamTo, OnAutoassign, OnClose, base.Mission.Teams, strValue);
 			_dataSource.RefreshDisabledTeams(_disabledTeams);
-			_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+			_gauntletLayer = new GauntletLayer("MultiplayerTeamSelection", ViewOrderPriority);
 			_gauntletLayer.LoadMovie("MultiplayerTeamSelection", _dataSource);
 			_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
 			base.MissionScreen.AddLayer(_gauntletLayer);

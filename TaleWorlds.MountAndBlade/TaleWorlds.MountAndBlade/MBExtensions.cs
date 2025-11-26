@@ -99,24 +99,41 @@ public static class MBExtensions
 		return list;
 	}
 
-	private static void CollectObjectsAux<T>(GameEntity entity, MBList<T> list) where T : ScriptComponentBehavior
+	private static void CollectScriptComponentsIncludingChildrenAux<T>(GameEntity entity, MBList<T> list) where T : ScriptComponentBehavior
 	{
 		IEnumerable<T> scriptComponents = entity.GetScriptComponents<T>();
 		list.AddRange(scriptComponents);
 		foreach (GameEntity child in entity.GetChildren())
 		{
-			CollectObjectsAux(child, list);
+			CollectScriptComponentsIncludingChildrenAux(child, list);
 		}
 	}
 
-	public static MBList<T> CollectObjects<T>(this GameEntity entity) where T : ScriptComponentBehavior
+	private static void CollectScriptComponentsIncludingChildrenAux<T>(WeakGameEntity entity, MBList<T> list) where T : ScriptComponentBehavior
+	{
+		IEnumerable<T> scriptComponents = entity.GetScriptComponents<T>();
+		list.AddRange(scriptComponents);
+		foreach (WeakGameEntity child in entity.GetChildren())
+		{
+			CollectScriptComponentsIncludingChildrenAux(child, list);
+		}
+	}
+
+	public static MBList<T> CollectScriptComponentsIncludingChildrenRecursive<T>(this GameEntity entity) where T : ScriptComponentBehavior
 	{
 		MBList<T> mBList = new MBList<T>();
-		CollectObjectsAux(entity, mBList);
+		CollectScriptComponentsIncludingChildrenAux(entity, mBList);
 		return mBList;
 	}
 
-	public static List<T> CollectObjectsWithTag<T>(this GameEntity entity, string tag) where T : ScriptComponentBehavior
+	public static MBList<T> CollectScriptComponentsIncludingChildrenRecursive<T>(this WeakGameEntity entity) where T : ScriptComponentBehavior
+	{
+		MBList<T> mBList = new MBList<T>();
+		CollectScriptComponentsIncludingChildrenAux(entity, mBList);
+		return mBList;
+	}
+
+	public static List<T> CollectScriptComponentsWithTagIncludingChildrenRecursive<T>(this GameEntity entity, string tag) where T : ScriptComponentBehavior
 	{
 		List<T> list = new List<T>();
 		foreach (GameEntity child in entity.GetChildren())
@@ -128,7 +145,25 @@ public static class MBExtensions
 			}
 			if (child.ChildCount > 0)
 			{
-				list.AddRange(child.CollectObjectsWithTag<T>(tag));
+				list.AddRange(child.CollectScriptComponentsWithTagIncludingChildrenRecursive<T>(tag));
+			}
+		}
+		return list;
+	}
+
+	public static List<T> CollectScriptComponentsWithTagIncludingChildrenRecursive<T>(this WeakGameEntity entity, string tag) where T : ScriptComponentBehavior
+	{
+		List<T> list = new List<T>();
+		foreach (WeakGameEntity child in entity.GetChildren())
+		{
+			if (child.HasTag(tag))
+			{
+				IEnumerable<T> scriptComponents = child.GetScriptComponents<T>();
+				list.AddRange(scriptComponents);
+			}
+			if (child.ChildCount > 0)
+			{
+				list.AddRange(child.CollectScriptComponentsWithTagIncludingChildrenRecursive<T>(tag));
 			}
 		}
 		return list;
@@ -151,16 +186,33 @@ public static class MBExtensions
 		return list;
 	}
 
-	public static GameEntity GetFirstChildEntityWithTag(this GameEntity entity, string tag)
+	public static List<WeakGameEntity> CollectChildrenEntitiesWithTag(this WeakGameEntity entity, string tag)
 	{
-		foreach (GameEntity child in entity.GetChildren())
+		List<WeakGameEntity> list = new List<WeakGameEntity>();
+		foreach (WeakGameEntity child in entity.GetChildren())
 		{
 			if (child.HasTag(tag))
+			{
+				list.Add(child);
+			}
+			if (child.ChildCount > 0)
+			{
+				list.AddRange(CollectChildrenEntitiesWithTag(child, tag));
+			}
+		}
+		return list;
+	}
+
+	public static WeakGameEntity GetFirstChildEntityWithName(this WeakGameEntity entity, string name)
+	{
+		foreach (WeakGameEntity child in entity.GetChildren())
+		{
+			if (child.Name == name)
 			{
 				return child;
 			}
 		}
-		return null;
+		return WeakGameEntity.Invalid;
 	}
 
 	public static T GetFirstScriptInFamilyDescending<T>(this GameEntity entity) where T : ScriptComponentBehavior
@@ -171,6 +223,24 @@ public static class MBExtensions
 			return firstScriptOfType;
 		}
 		foreach (GameEntity child in entity.GetChildren())
+		{
+			firstScriptOfType = child.GetFirstScriptInFamilyDescending<T>();
+			if (firstScriptOfType != null)
+			{
+				return firstScriptOfType;
+			}
+		}
+		return null;
+	}
+
+	public static T GetFirstScriptInFamilyDescending<T>(this WeakGameEntity entity) where T : ScriptComponentBehavior
+	{
+		T firstScriptOfType = entity.GetFirstScriptOfType<T>();
+		if (firstScriptOfType != null)
+		{
+			return firstScriptOfType;
+		}
+		foreach (WeakGameEntity child in entity.GetChildren())
 		{
 			firstScriptOfType = child.GetFirstScriptInFamilyDescending<T>();
 			if (firstScriptOfType != null)
@@ -192,6 +262,20 @@ public static class MBExtensions
 			}
 		}
 		while (e != null);
+		return false;
+	}
+
+	public static bool HasParentOfType(this WeakGameEntity e, Type t)
+	{
+		do
+		{
+			e = e.Parent;
+			if (e.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc.GetType() == t))
+			{
+				return true;
+			}
+		}
+		while (e.IsValid);
 		return false;
 	}
 

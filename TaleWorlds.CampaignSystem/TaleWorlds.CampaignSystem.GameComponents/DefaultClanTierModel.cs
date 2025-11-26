@@ -70,7 +70,7 @@ public class DefaultClanTierModel : ClanTierModel
 	{
 		bool flag = clan.Tier < MaxClanTier;
 		ExplainedNumber item = new ExplainedNumber(0f, includeDescriptions);
-		extraExplanation = TextObject.Empty;
+		extraExplanation = null;
 		if (flag)
 		{
 			int num = GetPartyLimitForTier(clan, clan.Tier + 1) - GetPartyLimitForTier(clan, clan.Tier);
@@ -83,15 +83,15 @@ public class DefaultClanTierModel : ClanTierModel
 			{
 				item.Add(num2, _companionLimitBonusText);
 			}
-			int num3 = Campaign.Current.Models.PartySizeLimitModel.GetTierPartySizeEffect(clan.Tier + 1) - Campaign.Current.Models.PartySizeLimitModel.GetTierPartySizeEffect(clan.Tier);
+			int nextClanTierPartySizeEffectChangeForHero = Campaign.Current.Models.PartySizeLimitModel.GetNextClanTierPartySizeEffectChangeForHero(clan.Leader);
+			if (nextClanTierPartySizeEffectChangeForHero > 0)
+			{
+				item.Add(nextClanTierPartySizeEffectChangeForHero, _additionalCurrentPartySizeBonus);
+			}
+			int num3 = Campaign.Current.Models.WorkshopModel.GetMaxWorkshopCountForClanTier(clan.Tier + 1) - Campaign.Current.Models.WorkshopModel.GetMaxWorkshopCountForClanTier(clan.Tier);
 			if (num3 > 0)
 			{
-				item.Add(num3, _additionalCurrentPartySizeBonus);
-			}
-			int num4 = Campaign.Current.Models.WorkshopModel.GetMaxWorkshopCountForClanTier(clan.Tier + 1) - Campaign.Current.Models.WorkshopModel.GetMaxWorkshopCountForClanTier(clan.Tier);
-			if (num4 > 0)
-			{
-				item.Add(num4, _additionalWorkshopCountBonus);
+				item.Add(num3, _additionalWorkshopCountBonus);
 			}
 			if (clan.Tier + 1 == MercenaryEligibleTier)
 			{

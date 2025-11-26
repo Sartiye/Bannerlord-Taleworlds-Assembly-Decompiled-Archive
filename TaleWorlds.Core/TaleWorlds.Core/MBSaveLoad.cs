@@ -20,11 +20,13 @@ public static class MBSaveLoad
 
 	private static string AutoSaveNamePrefix = DefaultSaveGamePrefix + "auto";
 
-	private static string ActiveSaveSlotName = null;
-
 	private static GameTextManager _textProvider;
 
 	private static bool DoNotShowSaveErrorAgain = false;
+
+	public static char ModuleVersionSeperator => ':';
+
+	public static char ModuleCodeSeperator => ';';
 
 	public static ApplicationVersion LastLoadedGameVersion { get; private set; }
 
@@ -34,6 +36,9 @@ public static class MBSaveLoad
 	public static bool IsUpdatingGameVersion => LastLoadedGameVersion.IsOlderThan(CurrentVersion);
 
 	public static int NumberOfCurrentSaves { get; private set; }
+
+	public static string ActiveSaveSlotName { get; private set; } = null;
+
 
 	private static string GetAutoSaveName()
 	{
@@ -265,7 +270,7 @@ public static class MBSaveLoad
 		switch (result)
 		{
 		case SaveResult.PlatformFileHelperFailure:
-			Debug.FailedAssert("Save Failed:\n" + Common.PlatformFileHelper.GetError(), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "ShowErrorFromResult", 312);
+			Debug.FailedAssert("Save Failed:\n" + Common.PlatformFileHelper.GetError(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "ShowErrorFromResult", 314);
 			break;
 		case SaveResult.Success:
 			return;
@@ -290,7 +295,7 @@ public static class MBSaveLoad
 		{
 			Debug.Print("Unable to create save game data");
 			Debug.Print(ex.Message);
-			Debug.SilentAssert(ModuleHelper.GetModules().Any((ModuleInfo m) => !m.IsOfficial), ex.Message, getDump: false, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "SaveGame", 345);
+			Debug.SilentAssert(ModuleHelper.GetModules().Any((ModuleInfo m) => !m.IsOfficial), ex.Message, getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "SaveGame", 347);
 		}
 	}
 
@@ -298,10 +303,10 @@ public static class MBSaveLoad
 	{
 		MetaData metaData = new MetaData();
 		List<ModuleInfo> moduleInfos = ModuleHelper.GetModuleInfos(data.ModuleNames);
-		metaData["Modules"] = string.Join(";", moduleInfos.Select((ModuleInfo q) => q.Name));
+		metaData["Modules"] = string.Join(ModuleCodeSeperator.ToString(), moduleInfos.Select((ModuleInfo q) => q.Id));
 		foreach (ModuleInfo item in moduleInfos)
 		{
-			metaData["Module_" + item.Name] = item.Version.ToString();
+			metaData["Module_" + item.Id] = item.Version.ToString();
 		}
 		metaData.Add("ApplicationVersion", CurrentVersion.ToString());
 		metaData.Add("CreationTime", DateTime.Now.Ticks.ToString());

@@ -11,7 +11,7 @@ public class TacticCharge : TacticComponent
 	{
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		foreach (Formation item in base.FormationsIncludingEmpty)
 		{

@@ -7,13 +7,13 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SiegeEventModel : GameModel
+public abstract class SiegeEventModel : MBGameModel<SiegeEventModel>
 {
 	public abstract int GetSiegeEngineDestructionCasualties(SiegeEvent siegeEvent, BattleSideEnum side, SiegeEngineType destroyedSiegeEngine);
 
 	public abstract float GetCasualtyChance(MobileParty siegeParty, SiegeEvent siegeEvent, BattleSideEnum side);
 
-	public abstract int GetColleteralDamageCasualties(SiegeEngineType attackerSiegeEngine, MobileParty party);
+	public abstract int GetColleteralDamageCasualties(SiegeEngineType attackerSiegeEngine, MobileParty attackerParty);
 
 	public abstract float GetSiegeEngineHitChance(SiegeEngineType siegeEngineType, BattleSideEnum battleSide, SiegeBombardTargets target, Town town);
 

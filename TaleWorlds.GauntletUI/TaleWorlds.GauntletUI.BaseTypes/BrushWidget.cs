@@ -11,8 +11,6 @@ public class BrushWidget : Widget
 
 	private bool _animRestarted;
 
-	protected bool _isInsideCache;
-
 	[Editor(false)]
 	public Brush Brush
 	{
@@ -74,11 +72,6 @@ public class BrushWidget : Widget
 
 	public BrushRenderer BrushRenderer { get; private set; }
 
-	public void ForceUseBrush(Brush brush)
-	{
-		_clonedBrush = brush;
-	}
-
 	public BrushWidget(UIContext context)
 		: base(context)
 	{
@@ -100,34 +93,35 @@ public class BrushWidget : Widget
 
 	public override void UpdateBrushes(float dt)
 	{
-		if (base.IsVisible)
-		{
-			Rectangle rectangle = new Rectangle(_cachedGlobalPosition.X, _cachedGlobalPosition.Y, base.MeasuredSize.X, base.MeasuredSize.Y);
-			Rectangle other = new Rectangle(base.EventManager.LeftUsableAreaStart, base.EventManager.TopUsableAreaStart, base.EventManager.PageSize.X, base.EventManager.PageSize.Y);
-			_isInsideCache = rectangle.IsCollide(other);
-			if (_isInsideCache)
-			{
-				UpdateBrushRendererInternal(dt);
-			}
-		}
-		if (!base.IsVisible || !_isInsideCache || !BrushRenderer.IsUpdateNeeded())
+		UpdateBrushRendererInternal(dt);
+		if (!IsBrushUpdateNeeded())
 		{
 			UnRegisterUpdateBrushes();
 		}
+	}
+
+	protected bool IsBrushUpdateNeeded()
+	{
+		_ = Brush;
+		if (base.IsVisible && BrushRenderer.IsUpdateNeeded())
+		{
+			return AreaRect.IsCollide(in base.EventManager.AreaRectangle);
+		}
+		return false;
 	}
 
 	protected void UpdateBrushRendererInternal(float dt)
 	{
 		if (base.Context?.TwoDimensionContext?.Platform == null)
 		{
-			Debug.FailedAssert("Trying to update brush renderer after context or platform is finalized", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\BaseTypes\\BrushWidget.cs", "UpdateBrushRendererInternal", 141);
+			Debug.FailedAssert("Trying to update brush renderer after context or platform is finalized", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\BaseTypes\\BrushWidget.cs", "UpdateBrushRendererInternal", 129);
 			return;
 		}
 		BrushRenderer.ForcePixelPerfectPlacement = base.ForcePixelPerfectRenderPlacement;
 		BrushRenderer.UseLocalTimer = !base.UseGlobalTimeForAnimation;
 		BrushRenderer.Brush = ReadOnlyBrush;
 		BrushRenderer.CurrentState = base.CurrentState;
-		BrushRenderer.Update(base.Context.TwoDimensionContext.Platform.ApplicationTime, dt);
+		BrushRenderer.Update(base.EventManager.LocalFrameNumber, base.Context.TwoDimensionContext.Platform.ApplicationTime, dt);
 		if (!base.RestartAnimationFirstFrame || _animRestarted)
 		{
 			return;
@@ -157,7 +151,7 @@ public class BrushWidget : Widget
 					}
 					else
 					{
-						Debug.FailedAssert("Widget with id \"" + base.Id + "\" has a sound having no audioName for event \"" + stateName + "\"!", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\BaseTypes\\BrushWidget.cs", "SetState", 181);
+						Debug.FailedAssert("Widget with id \"" + base.Id + "\" has a sound having no audioName for event \"" + stateName + "\"!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\BaseTypes\\BrushWidget.cs", "SetState", 169);
 					}
 				}
 			}
@@ -174,21 +168,12 @@ public class BrushWidget : Widget
 
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
 	{
-		if (!_isInsideCache || BrushRenderer.IsUpdateNeeded())
-		{
-			HandleUpdateNeededOnRender();
-		}
-		BrushRenderer.Render(drawContext, _cachedGlobalPosition, base.Size, base._scaleToUse, base.Context.ContextAlpha);
-	}
-
-	protected void HandleUpdateNeededOnRender()
-	{
-		UpdateBrushRendererInternal(base.EventManager.CachedDt);
-		if (BrushRenderer.IsUpdateNeeded())
+		if (IsBrushUpdateNeeded() && base.EventManager.LocalFrameNumber != BrushRenderer.LastUpdatedFrameNumber)
 		{
 			RegisterUpdateBrushes();
+			UpdateBrushRendererInternal(base.EventManager.CachedDt);
 		}
-		_isInsideCache = true;
+		BrushRenderer.Render(drawContext, in AreaRect, base._scaleToUse, base.Context.ContextAlpha);
 	}
 
 	protected override void OnConnectedToRoot()

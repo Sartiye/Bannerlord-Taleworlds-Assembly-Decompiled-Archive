@@ -34,5 +34,6 @@ public enum Occupation
 	BannerBearer,
 	CaravanGuard,
 	Special,
+	ShipWright,
 	NumberOfOccupations
 }

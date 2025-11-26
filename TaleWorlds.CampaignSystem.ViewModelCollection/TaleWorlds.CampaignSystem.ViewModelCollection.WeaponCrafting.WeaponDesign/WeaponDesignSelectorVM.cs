@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -10,9 +11,9 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.WeaponCrafting.WeaponDes
 
 public class WeaponDesignSelectorVM : ViewModel
 {
-	private Action<WeaponDesignSelectorVM> _onSelection;
+	private readonly Action<WeaponDesignSelectorVM> _onSelection;
 
-	private ItemObject _generatedVisualItem;
+	private readonly ItemObject _generatedVisualItem;
 
 	private bool _isSelected;
 
@@ -20,7 +21,7 @@ public class WeaponDesignSelectorVM : ViewModel
 
 	private string _weaponTypeCode;
 
-	private ImageIdentifierVM _visual;
+	private ItemImageIdentifierVM _visual;
 
 	private BasicTooltipViewModel _hint;
 
@@ -78,7 +79,7 @@ public class WeaponDesignSelectorVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public ItemImageIdentifierVM Visual
 	{
 		get
 		{
@@ -119,10 +120,9 @@ public class WeaponDesignSelectorVM : ViewModel
 		textObject.SetTextVariable("CURR_TEMPLATE_NAME", design.Template.TemplateName);
 		TextObject textObject2 = design.WeaponName ?? textObject;
 		Name = textObject2.ToString();
-		_generatedVisualItem = new ItemObject();
-		Crafting.GenerateItem(design, textObject2, Hero.MainHero.Culture, design.Template.ItemModifierGroup, ref _generatedVisualItem);
+		Crafting.GenerateItem(design, textObject2, Hero.MainHero.Culture, design.Template.ItemModifierGroup, ref _generatedVisualItem, design.HashedCode);
 		MBObjectManager.Instance.RegisterObject(_generatedVisualItem);
-		Visual = new ImageIdentifierVM(_generatedVisualItem);
+		Visual = new ItemImageIdentifierVM(_generatedVisualItem);
 		WeaponTypeCode = design.Template.StringId;
 		Hint = new BasicTooltipViewModel(() => GetHint());
 	}

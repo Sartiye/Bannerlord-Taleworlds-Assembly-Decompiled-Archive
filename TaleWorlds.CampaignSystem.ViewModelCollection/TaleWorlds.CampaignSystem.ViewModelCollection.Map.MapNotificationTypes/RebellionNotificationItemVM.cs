@@ -16,13 +16,8 @@ public class RebellionNotificationItemVM : MapNotificationItemBaseVM
 		_settlement = data.RebelliousSettlement;
 		_onInspect = (_onInspectAction = delegate
 		{
-			base.NavigationHandler?.OpenKingdom(_settlement);
+			GoToMapPosition(_settlement.Position);
 		});
 		base.NotificationIdentifier = "rebellion";
-	}
-
-	public override void ManualRefreshRelevantStatus()
-	{
-		base.ManualRefreshRelevantStatus();
 	}
 }

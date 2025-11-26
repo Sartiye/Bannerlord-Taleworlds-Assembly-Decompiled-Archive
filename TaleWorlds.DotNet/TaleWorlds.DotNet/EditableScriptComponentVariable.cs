@@ -6,8 +6,11 @@ public class EditableScriptComponentVariable : Attribute
 {
 	public bool Visible { get; set; }
 
-	public EditableScriptComponentVariable(bool visible)
+	public string OverrideFieldName { get; set; }
+
+	public EditableScriptComponentVariable(bool visible, string overrideFieldName = "")
 	{
 		Visible = visible;
+		OverrideFieldName = overrideFieldName;
 	}
 }

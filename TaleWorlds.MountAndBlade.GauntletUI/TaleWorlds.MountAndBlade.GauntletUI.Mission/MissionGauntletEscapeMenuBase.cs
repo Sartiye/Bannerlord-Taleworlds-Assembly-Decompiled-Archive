@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.ViewModelCollection.EscapeMenu;
@@ -15,17 +14,20 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 
 	private GauntletLayer _gauntletLayer;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private string _viewFile;
 
 	private bool _isRenderingStarted;
+
+	private TutorialContexts _escapeMenuPrevTutorialContext;
 
 	protected MissionGauntletEscapeMenuBase(string viewFile)
 	{
 		base.OnMissionScreenInitialize();
 		_viewFile = viewFile;
 		ViewOrderPriority = 50;
+		Game.Current.EventManager.RegisterEvent<TutorialContextChangedEvent>(OnTutorialContextChanged);
 	}
 
 	protected virtual List<EscapeMenuItemVM> GetEscapeMenuItems()
@@ -35,6 +37,7 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 
 	public override void OnMissionScreenFinalize()
 	{
+		Game.Current.EventManager.UnregisterEvent<TutorialContextChangedEvent>(OnTutorialContextChanged);
 		DataSource.OnFinalize();
 		DataSource = null;
 		_gauntletLayer = null;
@@ -64,13 +67,14 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 		base.IsActive = isOpened;
 		if (isOpened)
 		{
+			Game.Current.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.EscapeMenu));
 			DataSource.RefreshValues();
 			if (!GameNetwork.IsMultiplayer)
 			{
 				MBCommon.PauseGameEngine();
 				Game.Current.GameStateManager.RegisterActiveStateDisableRequest(this);
 			}
-			_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+			_gauntletLayer = new GauntletLayer("MissionEscapeMenu", ViewOrderPriority);
 			_gauntletLayer.IsFocusLayer = true;
 			_gauntletLayer.InputRestrictions.SetInputRestrictions();
 			_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
@@ -80,6 +84,7 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 		}
 		else
 		{
+			Game.Current.EventManager.TriggerEvent(new TutorialContextChangedEvent(_escapeMenuPrevTutorialContext));
 			if (!GameNetwork.IsMultiplayer)
 			{
 				MBCommon.UnPauseGameEngine();
@@ -106,5 +111,13 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 	{
 		base.OnSceneRenderingStarted();
 		_isRenderingStarted = true;
+	}
+
+	private void OnTutorialContextChanged(TutorialContextChangedEvent obj)
+	{
+		if (obj.NewContext != TutorialContexts.EscapeMenu)
+		{
+			_escapeMenuPrevTutorialContext = obj.NewContext;
+		}
 	}
 }

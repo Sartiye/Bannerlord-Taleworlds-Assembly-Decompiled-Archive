@@ -126,14 +126,33 @@ public class GameTextManager
 
 	public void LoadDefaultTexts()
 	{
-		string text = ModuleHelper.GetModuleFullPath("Native") + "ModuleData/global_strings.xml";
-		Debug.Print("opening " + text);
-		XmlDocument xmlDocument = new XmlDocument();
-		StreamReader streamReader = new StreamReader(text);
-		string xml = streamReader.ReadToEnd();
-		xmlDocument.LoadXml(xml);
-		streamReader.Close();
-		LoadFromXML(xmlDocument);
+		try
+		{
+			List<string> list = new List<string>();
+			foreach (ModuleInfo module in ModuleHelper.GetModules())
+			{
+				string text = module.FolderPath + "/ModuleData/global_strings.xml";
+				if (File.Exists(text))
+				{
+					list.Add(text);
+				}
+			}
+			list.Add(ModuleHelper.GetModuleFullPath("Native") + "ModuleData/consoles.xml");
+			foreach (string item in list)
+			{
+				Debug.Print("opening " + item);
+				XmlDocument xmlDocument = new XmlDocument();
+				StreamReader streamReader = new StreamReader(item);
+				string xml = streamReader.ReadToEnd();
+				xmlDocument.LoadXml(xml);
+				streamReader.Close();
+				LoadFromXML(xmlDocument);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw ex;
+		}
 	}
 
 	private void LoadFromXML(XmlDocument doc)
@@ -150,8 +169,12 @@ public class GameTextManager
 		}
 		while (xmlNode != null)
 		{
-			if (xmlNode.Name == "string" && xmlNode.NodeType != XmlNodeType.Comment)
+			try
 			{
+				if (!(xmlNode.Name == "string") || xmlNode.NodeType == XmlNodeType.Comment)
+				{
+					continue;
+				}
 				if (xmlNode.Attributes == null)
 				{
 					throw new TWXmlLoadException("Node attributes are null.");
@@ -191,7 +214,13 @@ public class GameTextManager
 				textObject.CacheTokens();
 				gameText.AddVariationWithId(variationId, textObject, list);
 			}
-			xmlNode = xmlNode.NextSibling;
+			catch (Exception)
+			{
+			}
+			finally
+			{
+				xmlNode = xmlNode.NextSibling;
+			}
 		}
 	}
 }

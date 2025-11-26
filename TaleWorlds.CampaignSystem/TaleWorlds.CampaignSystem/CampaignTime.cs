@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -17,42 +18,46 @@ public struct CampaignTime : IComparable<CampaignTime>
 		Winter
 	}
 
-	public const int SunRise = 2;
+	public static int SunRise;
 
-	public const int SunSet = 22;
+	public static int SunSet;
 
-	public const int MinutesInHour = 60;
+	public static int MillisecondInSecond;
 
-	public const int HoursInDay = 24;
+	public static int SecondsInMinute;
 
-	public const int DaysInWeek = 7;
+	public static int MinutesInHour;
 
-	public const int WeeksInSeason = 3;
+	public static int HoursInDay;
 
-	public const int SeasonsInYear = 4;
+	public static int DaysInWeek;
 
-	public const int DaysInSeason = 21;
+	public static int WeeksInSeason;
 
-	public const int DaysInYear = 84;
+	public static int SeasonsInYear;
 
-	internal const long TimeTicksPerMillisecond = 10L;
+	internal static long TimeTicksPerMillisecond;
 
-	internal const long TimeTicksPerSecond = 10000L;
+	internal static long TimeTicksPerSecond;
 
-	internal const long TimeTicksPerMinute = 600000L;
+	internal static long TimeTicksPerMinute;
 
-	internal const long TimeTicksPerHour = 36000000L;
+	internal static long TimeTicksPerHour;
 
-	internal const long TimeTicksPerDay = 864000000L;
+	internal static long TimeTicksPerDay;
 
-	internal const long TimeTicksPerWeek = 6048000000L;
+	internal static long TimeTicksPerWeek;
 
-	internal const long TimeTicksPerSeason = 18144000000L;
+	internal static long TimeTicksPerSeason;
 
-	internal const long TimeTicksPerYear = 72576000000L;
+	internal static long TimeTicksPerYear;
 
 	[SaveableField(2)]
 	private readonly long _numTicks;
+
+	public static int DaysInSeason => WeeksInSeason * DaysInWeek;
+
+	public static int DaysInYear => DaysInSeason * SeasonsInYear;
 
 	internal long NumTicks => _numTicks;
 
@@ -77,75 +82,82 @@ public struct CampaignTime : IComparable<CampaignTime>
 		get
 		{
 			int num = TaleWorlds.Library.MathF.Floor(CurrentHourInDay);
-			if (num >= 2)
+			if (num >= SunRise)
 			{
-				return num < 22;
+				return num < SunSet;
 			}
 			return false;
 		}
 	}
 
-	public float CurrentHourInDay => (float)(_numTicks % 864000000 / 10000) / 3600f;
+	public float CurrentHourInDay
+	{
+		get
+		{
+			float num = SecondsInMinute * MinutesInHour;
+			return (float)(_numTicks % TimeTicksPerDay / TimeTicksPerSecond) / num;
+		}
+	}
 
 	public bool IsNightTime => !IsDayTime;
 
-	public float ElapsedMillisecondsUntilNow => (float)(CurrentTicks - _numTicks) / 10f;
+	public float ElapsedMillisecondsUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerMillisecond;
 
-	public float ElapsedSecondsUntilNow => (float)(CurrentTicks - _numTicks) / 10000f;
+	public float ElapsedSecondsUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerSecond;
 
-	public float ElapsedHoursUntilNow => (float)(CurrentTicks - _numTicks) / 36000000f;
+	public float ElapsedHoursUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerHour;
 
-	public float ElapsedDaysUntilNow => (float)(CurrentTicks - _numTicks) / 864000000f;
+	public float ElapsedDaysUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerDay;
 
-	public float ElapsedWeeksUntilNow => (float)(CurrentTicks - _numTicks) / 6.048E+09f;
+	public float ElapsedWeeksUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerWeek;
 
-	public float ElapsedSeasonsUntilNow => (float)(CurrentTicks - _numTicks) / 1.8144E+10f;
+	public float ElapsedSeasonsUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerSeason;
 
-	public float ElapsedYearsUntilNow => (float)(CurrentTicks - _numTicks) / 7.2576E+10f;
+	public float ElapsedYearsUntilNow => (float)(CurrentTicks - _numTicks) / (float)TimeTicksPerYear;
 
-	public float RemainingMillisecondsFromNow => (float)(_numTicks - CurrentTicks) / 10f;
+	public float RemainingMillisecondsFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerMillisecond;
 
-	public float RemainingSecondsFromNow => (float)(_numTicks - CurrentTicks) / 10000f;
+	public float RemainingSecondsFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerSecond;
 
-	public float RemainingHoursFromNow => (float)(_numTicks - CurrentTicks) / 36000000f;
+	public float RemainingHoursFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerHour;
 
-	public float RemainingDaysFromNow => (float)(_numTicks - CurrentTicks) / 864000000f;
+	public float RemainingDaysFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerDay;
 
-	public float RemainingWeeksFromNow => (float)(_numTicks - CurrentTicks) / 6.048E+09f;
+	public float RemainingWeeksFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerWeek;
 
-	public float RemainingSeasonsFromNow => (float)(_numTicks - CurrentTicks) / 1.8144E+10f;
+	public float RemainingSeasonsFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerSeason;
 
-	public float RemainingYearsFromNow => (float)(_numTicks - CurrentTicks) / 7.2576E+10f;
+	public float RemainingYearsFromNow => (float)(_numTicks - CurrentTicks) / (float)TimeTicksPerYear;
 
-	public double ToMilliseconds => (double)_numTicks / 10.0;
+	public double ToMilliseconds => (double)_numTicks / (double)TimeTicksPerMillisecond;
 
-	public double ToSeconds => (double)_numTicks / 10000.0;
+	public double ToSeconds => (double)_numTicks / (double)TimeTicksPerSecond;
 
-	public double ToMinutes => (double)_numTicks / 600000.0;
+	public double ToMinutes => (double)_numTicks / (double)TimeTicksPerMinute;
 
-	public double ToHours => (double)_numTicks / 36000000.0;
+	public double ToHours => (double)_numTicks / (double)TimeTicksPerHour;
 
-	public double ToDays => (double)_numTicks / 864000000.0;
+	public double ToDays => (double)_numTicks / (double)TimeTicksPerDay;
 
-	public double ToWeeks => (double)_numTicks / 6048000000.0;
+	public double ToWeeks => (double)_numTicks / (double)TimeTicksPerWeek;
 
-	public double ToSeasons => (double)_numTicks / 18144000000.0;
+	public double ToSeasons => (double)_numTicks / (double)TimeTicksPerSeason;
 
-	public double ToYears => (double)_numTicks / 72576000000.0;
+	public double ToYears => (double)_numTicks / (double)TimeTicksPerYear;
 
-	public int GetHourOfDay => (int)(_numTicks / 36000000 % 24);
+	public int GetHourOfDay => (int)(_numTicks / TimeTicksPerHour % HoursInDay);
 
-	public int GetDayOfWeek => (int)(_numTicks / 864000000 % 7);
+	public int GetDayOfWeek => (int)(_numTicks / TimeTicksPerDay % DaysInWeek);
 
-	public int GetDayOfSeason => (int)(_numTicks / 864000000 % 21);
+	public int GetDayOfSeason => (int)(_numTicks / TimeTicksPerDay % DaysInSeason);
 
-	public int GetDayOfYear => (int)(_numTicks / 864000000 % 84);
+	public int GetDayOfYear => (int)(_numTicks / TimeTicksPerDay % DaysInYear);
 
-	public int GetWeekOfSeason => (int)(_numTicks / 6048000000L % 3);
+	public int GetWeekOfSeason => (int)(_numTicks / TimeTicksPerWeek % WeeksInSeason);
 
-	public Seasons GetSeasonOfYear => (Seasons)(_numTicks / 18144000000L % 4);
+	public Seasons GetSeasonOfYear => (Seasons)(_numTicks / TimeTicksPerSeason % SeasonsInYear);
 
-	public int GetYear => (int)(_numTicks / 72576000000L);
+	public int GetYear => (int)(_numTicks / TimeTicksPerYear);
 
 	public static CampaignTime Zero => new CampaignTime(0L);
 
@@ -161,6 +173,28 @@ public struct CampaignTime : IComparable<CampaignTime>
 	internal static object AutoGeneratedGetMemberValue_numTicks(object o)
 	{
 		return ((CampaignTime)o)._numTicks;
+	}
+
+	public static void Initialize()
+	{
+		CampaignTimeModel campaignTimeModel = Campaign.Current.Models.CampaignTimeModel;
+		SunRise = campaignTimeModel.SunRise;
+		SunSet = campaignTimeModel.SunSet;
+		MillisecondInSecond = campaignTimeModel.MillisecondInSecond;
+		SecondsInMinute = campaignTimeModel.SecondsInMinute;
+		MinutesInHour = campaignTimeModel.MinutesInHour;
+		HoursInDay = campaignTimeModel.HoursInDay;
+		DaysInWeek = campaignTimeModel.DaysInWeek;
+		WeeksInSeason = campaignTimeModel.WeeksInSeason;
+		SeasonsInYear = campaignTimeModel.SeasonsInYear;
+		TimeTicksPerMillisecond = campaignTimeModel.TimeTicksPerMillisecond;
+		TimeTicksPerSecond = MillisecondInSecond * TimeTicksPerMillisecond;
+		TimeTicksPerMinute = SecondsInMinute * TimeTicksPerSecond;
+		TimeTicksPerHour = MinutesInHour * TimeTicksPerMinute;
+		TimeTicksPerDay = HoursInDay * TimeTicksPerHour;
+		TimeTicksPerWeek = DaysInWeek * TimeTicksPerDay;
+		TimeTicksPerSeason = WeeksInSeason * TimeTicksPerWeek;
+		TimeTicksPerYear = SeasonsInYear * TimeTicksPerSeason;
 	}
 
 	internal CampaignTime(long numTicks)
@@ -237,72 +271,72 @@ public struct CampaignTime : IComparable<CampaignTime>
 
 	public static CampaignTime Milliseconds(long valueInMilliseconds)
 	{
-		return new CampaignTime(valueInMilliseconds * 10);
+		return new CampaignTime(valueInMilliseconds * TimeTicksPerMillisecond);
 	}
 
 	public static CampaignTime MillisecondsFromNow(long valueInMilliseconds)
 	{
-		return new CampaignTime(CurrentTicks + valueInMilliseconds * 10);
+		return new CampaignTime(CurrentTicks + valueInMilliseconds * TimeTicksPerMillisecond);
 	}
 
 	public static CampaignTime Seconds(long valueInSeconds)
 	{
-		return new CampaignTime(valueInSeconds * 10000);
+		return new CampaignTime(valueInSeconds * TimeTicksPerSecond);
 	}
 
 	public static CampaignTime SecondsFromNow(long valueInSeconds)
 	{
-		return new CampaignTime(CurrentTicks + valueInSeconds * 10000);
+		return new CampaignTime(CurrentTicks + valueInSeconds * TimeTicksPerSecond);
 	}
 
 	public static CampaignTime Minutes(long valueInMinutes)
 	{
-		return new CampaignTime(valueInMinutes * 600000);
+		return new CampaignTime(valueInMinutes * TimeTicksPerMinute);
 	}
 
 	public static CampaignTime MinutesFromNow(long valueInMinutes)
 	{
-		return new CampaignTime(CurrentTicks + valueInMinutes * 600000);
+		return new CampaignTime(CurrentTicks + valueInMinutes * TimeTicksPerMinute);
 	}
 
 	public static CampaignTime Hours(float valueInHours)
 	{
-		return new CampaignTime((long)(valueInHours * 36000000f));
+		return new CampaignTime((long)(valueInHours * (float)TimeTicksPerHour));
 	}
 
 	public static CampaignTime HoursFromNow(float valueInHours)
 	{
-		return new CampaignTime(CurrentTicks + (long)(valueInHours * 36000000f));
+		return new CampaignTime(CurrentTicks + (long)(valueInHours * (float)TimeTicksPerHour));
 	}
 
 	public static CampaignTime Days(float valueInDays)
 	{
-		return new CampaignTime((long)(valueInDays * 864000000f));
+		return new CampaignTime((long)(valueInDays * (float)TimeTicksPerDay));
 	}
 
 	public static CampaignTime DaysFromNow(float valueInDays)
 	{
-		return new CampaignTime(CurrentTicks + (long)(valueInDays * 864000000f));
+		return new CampaignTime(CurrentTicks + (long)(valueInDays * (float)TimeTicksPerDay));
 	}
 
-	public static CampaignTime Weeks(float valueInWeeeks)
+	public static CampaignTime Weeks(float valueInWeeks)
 	{
-		return new CampaignTime((long)(valueInWeeeks * 6.048E+09f));
+		return new CampaignTime((long)(valueInWeeks * (float)TimeTicksPerWeek));
 	}
 
 	public static CampaignTime WeeksFromNow(float valueInWeeks)
 	{
-		return new CampaignTime(CurrentTicks + (long)(valueInWeeks * 6.048E+09f));
+		return new CampaignTime(CurrentTicks + (long)(valueInWeeks * (float)TimeTicksPerWeek));
 	}
 
 	public static CampaignTime Years(float valueInYears)
 	{
-		return new CampaignTime((long)(valueInYears * 7.2576E+10f));
+		return new CampaignTime((long)(valueInYears * (float)TimeTicksPerYear));
 	}
 
 	public static CampaignTime YearsFromNow(float valueInYears)
 	{
-		return new CampaignTime(CurrentTicks + (long)(valueInYears * 7.2576E+10f));
+		return new CampaignTime(CurrentTicks + (long)(valueInYears * (float)TimeTicksPerYear));
 	}
 
 	public static CampaignTime operator +(CampaignTime g1, CampaignTime g2)
@@ -317,7 +351,7 @@ public struct CampaignTime : IComparable<CampaignTime>
 
 	public bool StringSameAs(CampaignTime otherTime)
 	{
-		return _numTicks / 864000000 == otherTime.NumTicks / 864000000;
+		return _numTicks / TimeTicksPerDay == otherTime.NumTicks / TimeTicksPerDay;
 	}
 
 	public override string ToString()

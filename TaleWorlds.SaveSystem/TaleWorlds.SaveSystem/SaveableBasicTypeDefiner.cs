@@ -45,7 +45,7 @@ public class SaveableBasicTypeDefiner : SaveableTypeDefiner
 			new Tuple<string, short>("m_Item1", 1),
 			new Tuple<string, short>("m_Item2", 2)
 		});
-		AddClassDefinitionWithCustomFields(typeof(PriorityQueue<, >), 103, new Tuple<string, short>[1]
+		AddClassDefinitionWithCustomFields(typeof(TaleWorlds.Library.PriorityQueue<, >), 103, new Tuple<string, short>[1]
 		{
 			new Tuple<string, short>("_baseHeap", 1)
 		});

@@ -32,6 +32,6 @@ public class SpawnerBase : ScriptComponentBehavior
 
 	public virtual void AssignParameters(SpawnerEntityMissionHelper _spawnerMissionHelper)
 	{
-		Debug.FailedAssert("Please override 'AssignParameters' function in the derived class.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerBase.cs", "AssignParameters", 40);
+		Debug.FailedAssert("Please override 'AssignParameters' function in the derived class.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerBase.cs", "AssignParameters", 40);
 	}
 }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Numerics;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
@@ -7,10 +6,6 @@ namespace TaleWorlds.GauntletUI.BaseTypes;
 
 public class TextureWidget : ImageWidget
 {
-	protected static TypeCollector<TextureProvider> _typeCollector;
-
-	protected bool _setForClearNextFrame;
-
 	private string _textureProviderName;
 
 	private Texture _texture;
@@ -25,13 +20,11 @@ public class TextureWidget : ImageWidget
 
 	protected bool _isRenderRequestedPreviousFrame;
 
-	protected DrawObject2D _cachedQuad;
-
-	protected Vector2 _cachedQuadSize;
-
 	public Widget LoadingIconWidget { get; set; }
 
 	public TextureProvider TextureProvider { get; private set; }
+
+	public bool SetForClearNextFrame { get; protected set; }
 
 	[Editor(false)]
 	public string TextureProviderName
@@ -66,32 +59,28 @@ public class TextureWidget : ImageWidget
 		}
 	}
 
-	internal static void RecollectProviderTypes()
-	{
-		_typeCollector.Collect();
-	}
-
-	static TextureWidget()
-	{
-		_typeCollector = new TypeCollector<TextureProvider>();
-		_typeCollector.Collect();
-	}
-
 	public TextureWidget(UIContext context)
 		: base(context)
 	{
 		TextureProviderName = "ResourceTextureProvider";
 		TextureProvider = null;
 		_textureProviderProperties = new Dictionary<string, object>();
-		_cachedQuad = null;
-		_cachedQuadSize = Vector2.Zero;
+		SetTextureProviderProperty("SourceInfo", base.Context.Name ?? ToString());
+	}
+
+	public virtual void OnClearTextureProvider()
+	{
+		TextureProvider?.Clear(clearNextFrame: true);
+		TextureProvider = null;
+		SetForClearNextFrame = true;
+		_lastWidth = 0f;
+		_lastHeight = 0f;
 	}
 
 	protected override void OnDisconnectedFromRoot()
 	{
 		base.OnDisconnectedFromRoot();
-		TextureProvider?.Clear(clearNextFrame: true);
-		_setForClearNextFrame = true;
+		OnClearTextureProvider();
 	}
 
 	private void SetTextureProviderProperties()
@@ -123,7 +112,7 @@ public class TextureWidget : ImageWidget
 
 	protected void UpdateTextureWidget()
 	{
-		if (!_isRenderRequestedPreviousFrame)
+		if (!_isRenderRequestedPreviousFrame || !IsRecursivelyVisible())
 		{
 			return;
 		}
@@ -139,22 +128,24 @@ public class TextureWidget : ImageWidget
 				_isTargetSizeDirty = false;
 			}
 		}
-		else
+		else if (!string.IsNullOrEmpty(TextureProviderName))
 		{
-			TextureProvider = _typeCollector.Instantiate(TextureProviderName);
+			TextureProvider = TextureProviderFactory.CreateInstance(TextureProviderName);
 			SetTextureProviderProperties();
+			SetForClearNextFrame = false;
+			_isTargetSizeDirty = true;
 		}
 	}
 
 	protected virtual void OnTextureUpdated()
 	{
-		bool toShow = Texture == null;
+		bool isTextureValid = Texture?.IsValid ?? false;
 		if (LoadingIconWidget != null)
 		{
-			LoadingIconWidget.IsVisible = toShow;
-			LoadingIconWidget.ApplyActionOnAllChildren(delegate(Widget w)
+			LoadingIconWidget.IsVisible = !isTextureValid;
+			LoadingIconWidget.ApplyActionToAllChildrenRecursive(delegate(Widget w)
 			{
-				w.IsVisible = toShow;
+				w.IsVisible = !isTextureValid;
 			});
 		}
 	}
@@ -172,15 +163,21 @@ public class TextureWidget : ImageWidget
 
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
 	{
-		_isRenderRequestedPreviousFrame = true;
-		if (TextureProvider != null)
+		_isRenderRequestedPreviousFrame = IsRecursivelyVisible();
+		if (TextureProvider == null)
 		{
-			Texture = TextureProvider.GetTexture(twoDimensionContext, string.Empty);
+			return;
+		}
+		Texture = TextureProvider.GetTextureForRender(twoDimensionContext);
+		Texture texture = Texture;
+		if (texture != null && texture.IsValid)
+		{
 			SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
 			StyleLayer[] layers = base.ReadOnlyBrush.GetStyleOrDefault(base.CurrentState).GetLayers();
 			simpleMaterial.OverlayEnabled = false;
 			simpleMaterial.CircularMaskingEnabled = false;
 			simpleMaterial.Texture = Texture;
+			simpleMaterial.NinePatchParameters = SpriteNinePatchParameters.Empty;
 			if (layers != null && layers.Length != 0)
 			{
 				StyleLayer styleLayer = layers[0];
@@ -200,19 +197,8 @@ public class TextureWidget : ImageWidget
 				simpleMaterial.ValueFactor = 0f;
 				simpleMaterial.Color = Color.White * base.ReadOnlyBrush.GlobalColor;
 			}
-			Vector2 globalPosition = base.GlobalPosition;
-			float x = globalPosition.X;
-			float y = globalPosition.Y;
-			DrawObject2D drawObject2D = null;
-			if (_cachedQuad != null && _cachedQuadSize == base.Size)
-			{
-				drawObject2D = _cachedQuad;
-			}
-			if (drawObject2D == null)
-			{
-				drawObject2D = (_cachedQuad = DrawObject2D.CreateQuad(base.Size));
-				_cachedQuadSize = base.Size;
-			}
+			ImageDrawObject drawObject = ImageDrawObject.Create(in AreaRect, in Vec2.Zero, in Vec2.One);
+			drawObject.Scale = base._scaleToUse;
 			if (drawContext.CircularMaskEnabled)
 			{
 				simpleMaterial.CircularMaskingEnabled = true;
@@ -220,7 +206,7 @@ public class TextureWidget : ImageWidget
 				simpleMaterial.CircularMaskingRadius = drawContext.CircularMaskRadius;
 				simpleMaterial.CircularMaskingSmoothingRadius = drawContext.CircularMaskSmoothingRadius;
 			}
-			drawContext.Draw(x, y, simpleMaterial, drawObject2D, base.Size.X, base.Size.Y);
+			drawContext.Draw(simpleMaterial, in drawObject);
 		}
 	}
 }

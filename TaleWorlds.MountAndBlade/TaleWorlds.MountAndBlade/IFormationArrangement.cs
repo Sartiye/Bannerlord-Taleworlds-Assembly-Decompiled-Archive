@@ -23,6 +23,10 @@ public interface IFormationArrangement
 
 	bool? IsLoose { get; }
 
+	float IntervalMultiplier { get; }
+
+	float DistanceMultiplier { get; }
+
 	int UnitCount { get; }
 
 	int RankCount { get; }
@@ -38,6 +42,8 @@ public interface IFormationArrangement
 	IFormationUnit GetPlayerUnit();
 
 	MBReadOnlyList<IFormationUnit> GetAllUnits();
+
+	void GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn);
 
 	MBList<IFormationUnit> GetUnpositionedUnits();
 
@@ -91,7 +97,7 @@ public interface IFormationArrangement
 
 	void BeforeFormationFrameChange();
 
-	void OnFormationFrameChanged();
+	void OnFormationFrameChanged(bool updateCachedOrderedLocalPositions = false);
 
 	bool IsTurnBackwardsNecessary(Vec2 previousPosition, WorldPosition? newPosition, Vec2 previousDirection, bool hasNewDirection, Vec2? newDirection);
 
@@ -122,4 +128,6 @@ public interface IFormationArrangement
 	void OnUnitLostMount(IFormationUnit unit);
 
 	float GetDirectionChangeTendencyOfUnit(IFormationUnit unit);
+
+	void UpdateLocalPositionErrors(bool recalculateErrors = true);
 }

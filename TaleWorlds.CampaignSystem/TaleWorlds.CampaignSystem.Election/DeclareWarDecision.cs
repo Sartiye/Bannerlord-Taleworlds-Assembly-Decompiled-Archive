@@ -4,7 +4,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -69,12 +69,12 @@ public class DeclareWarDecision : KingdomDecision
 		{
 			if (base.SponsorClan != null && Kingdom != null && FactionToDeclareWarOn != null && base.SponsorClan != Clan.PlayerClan)
 			{
-				TextObject reason = TextObject.Empty;
+				TextObject reason = TextObject.GetEmpty();
 				if (ShouldWarBeDeclared)
 				{
-					Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(Kingdom, FactionToDeclareWarOn, base.SponsorClan, out reason);
+					Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringWar(Kingdom, FactionToDeclareWarOn, base.SponsorClan, out reason, includeReason: true);
 				}
-				if (reason != TextObject.Empty)
+				if (!reason.IsEmpty())
 				{
 					return reason;
 				}

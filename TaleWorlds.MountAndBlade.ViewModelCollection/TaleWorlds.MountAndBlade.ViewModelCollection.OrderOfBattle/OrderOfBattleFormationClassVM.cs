@@ -22,8 +22,6 @@ public class OrderOfBattleFormationClassVM : ViewModel
 
 	public static Func<FormationClass, int> GetTotalCountOfTroopType;
 
-	private readonly TextObject _weightWithTroopCountText = new TextObject("{=s6qslcQY}{PERCENTAGE} ({TROOP_COUNT}/{TOTAL_TROOP_COUNT})");
-
 	private bool _isFormationClassPreset;
 
 	private bool _isAdjustable;
@@ -36,7 +34,7 @@ public class OrderOfBattleFormationClassVM : ViewModel
 
 	private int _shownFormationClass;
 
-	private string _weightText;
+	private string _troopCountText;
 
 	private HintViewModel _lockWeightHint;
 
@@ -59,7 +57,7 @@ public class OrderOfBattleFormationClassVM : ViewModel
 				_class = value;
 				IsUnset = _class == FormationClass.NumberOfAllFormations;
 				ShownFormationClass = (int)((!IsUnset) ? (_class + 1) : FormationClass.Infantry);
-				UpdateWeightText();
+				UpdateTroopCountText();
 				_isFormationClassPreset = false;
 			}
 		}
@@ -155,18 +153,18 @@ public class OrderOfBattleFormationClassVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string WeightText
+	public string TroopCountText
 	{
 		get
 		{
-			return _weightText;
+			return _troopCountText;
 		}
 		set
 		{
-			if (value != _weightText)
+			if (value != _troopCountText)
 			{
-				_weightText = value;
-				OnPropertyChangedWithValue(value, "WeightText");
+				_troopCountText = value;
+				OnPropertyChangedWithValue(value, "TroopCountText");
 			}
 		}
 	}
@@ -226,22 +224,19 @@ public class OrderOfBattleFormationClassVM : ViewModel
 		{
 			OnWeightAdjustedCallback?.Invoke(this);
 		}
-		UpdateWeightText();
+		UpdateTroopCountText();
 	}
 
-	public void UpdateWeightText()
+	public void UpdateTroopCountText()
 	{
 		if (Class != FormationClass.NumberOfAllFormations && GetTotalCountOfTroopType != null)
 		{
-			GameTexts.SetVariable("NUMBER", Weight);
-			GameTexts.SetVariable("PERCENTAGE", GameTexts.FindText("str_NUMBER_percent"));
-			GameTexts.SetVariable("TROOP_COUNT", OrderOfBattleUIHelper.GetVisibleCountOfUnitsInClass(this));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalCountOfTroopType(Class));
-			WeightText = _weightWithTroopCountText.ToString();
+			TroopCountText = GameTexts.FindText("str_LEFT_over_RIGHT").SetTextVariable("LEFT", OrderOfBattleUIHelper.GetCountOfRealUnitsInClass(this)).SetTextVariable("RIGHT", GetTotalCountOfTroopType(Class))
+				.ToString();
 		}
 		else
 		{
-			WeightText = string.Empty;
+			TroopCountText = string.Empty;
 		}
 	}
 

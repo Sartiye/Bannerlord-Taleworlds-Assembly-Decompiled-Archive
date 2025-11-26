@@ -71,18 +71,18 @@ public class MultiplayerOptions
 		NumberOfBotsTeam2,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Amount of bots per formation", 0, 100, new string[] { "Captain" }, false, null)]
 		NumberOfBotsPerFormation,
-		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much melee damage inflicted upon a friend is dealt back to the inflictor.", 0, 100, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much melee damage inflicted upon a friend is dealt back to the inflictor.", 0, 2000, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
 		FriendlyFireDamageMeleeSelfPercent,
-		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much melee damage inflicted upon a friend is actually dealt.", 0, 100, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much melee damage inflicted upon a friend is actually dealt.", 0, 2000, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
 		FriendlyFireDamageMeleeFriendPercent,
-		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much ranged damage inflicted upon a friend is dealt back to the inflictor.", 0, 100, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much ranged damage inflicted upon a friend is dealt back to the inflictor.", 0, 2000, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
 		FriendlyFireDamageRangedSelfPercent,
-		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much ranged damage inflicted upon a friend is actually dealt.", 0, 100, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much ranged damage inflicted upon a friend is actually dealt.", 0, 2000, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
 		FriendlyFireDamageRangedFriendPercent,
 		[MultiplayerOptionsProperty(OptionValueType.Enum, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Who can spectators look at, and how.", 0, 7, null, true, typeof(SpectatorCameraTypes))]
 		SpectatorCamera,
-		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Maximum duration for the warmup. In minutes.", 1, 60, null, false, null)]
-		WarmupTimeLimit,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Maximum duration for the warmup. In seconds.", 60, 3600, null, false, null)]
+		WarmupTimeLimitInSeconds,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Maximum duration for the map. In minutes.", 1, 60, null, false, null)]
 		MapTimeLimit,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Maximum duration for each round. In seconds.", 60, 3600, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege" }, false, null)]
@@ -297,6 +297,10 @@ public class MultiplayerOptions
 
 	private const int MapTimeLimitMax = 60;
 
+	private const int WarmupTimeLimitMin = 60;
+
+	private const int WarmupTimeLimitMax = 3600;
+
 	private const int RoundLimitMin = 1;
 
 	private const int RoundLimitMax = 99;
@@ -331,7 +335,7 @@ public class MultiplayerOptions
 
 	private const int FriendlyFireDamagePercentMin = 0;
 
-	private const int FriendlyFireDamagePercentMax = 100;
+	private const int FriendlyFireDamagePercentMax = 2000;
 
 	private const int GameDefinitionIdMin = int.MinValue;
 
@@ -373,7 +377,7 @@ public class MultiplayerOptions
 		_current.UpdateOptionValue(OptionType.CultureTeam2, MBObjectManager.Instance.GetObjectTypeList<BasicCultureObject>()[2].StringId);
 		_current.UpdateOptionValue(OptionType.MaxNumberOfPlayers, 120);
 		_current.UpdateOptionValue(OptionType.MinNumberOfPlayersForMatchStart, 1);
-		_current.UpdateOptionValue(OptionType.WarmupTimeLimit, 5);
+		_current.UpdateOptionValue(OptionType.WarmupTimeLimitInSeconds, 300);
 		_current.UpdateOptionValue(OptionType.MapTimeLimit, 30);
 		_current.UpdateOptionValue(OptionType.RoundTimeLimit, 120);
 		_current.UpdateOptionValue(OptionType.RoundPreparationTimeLimit, 10);
@@ -410,9 +414,6 @@ public class MultiplayerOptions
 		OptionType.DisableInactivityKick.SetValue(value: false);
 		switch (text)
 		{
-		case "FreeForAll":
-			InitializeForFreeForAll(mode);
-			break;
 		case "TeamDeathmatch":
 			InitializeForTeamDeathmatch(mode);
 			break;
@@ -443,25 +444,6 @@ public class MultiplayerOptions
 	{
 		_current.CopyAllValuesTo(_next);
 		_current.CopyAllValuesTo(_default);
-	}
-
-	private void InitializeForFreeForAll(MultiplayerOptionsAccessMode mode)
-	{
-		string gameModeID = "FreeForAll";
-		OptionType.MaxNumberOfPlayers.SetValue(GetNumberOfPlayersForGameMode(gameModeID), mode);
-		OptionType.NumberOfBotsPerFormation.SetValue(0, mode);
-		OptionType.FriendlyFireDamageMeleeSelfPercent.SetValue(0, mode);
-		OptionType.FriendlyFireDamageMeleeFriendPercent.SetValue(0, mode);
-		OptionType.FriendlyFireDamageRangedSelfPercent.SetValue(0, mode);
-		OptionType.FriendlyFireDamageRangedFriendPercent.SetValue(0, mode);
-		OptionType.SpectatorCamera.SetValue(0, mode);
-		OptionType.MapTimeLimit.SetValue(GetRoundTimeLimitInMinutesForGameMode(gameModeID), mode);
-		OptionType.RespawnPeriodTeam1.SetValue(3, mode);
-		OptionType.RespawnPeriodTeam2.SetValue(3, mode);
-		OptionType.GoldGainChangePercentageTeam1.SetValue(0, mode);
-		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
-		OptionType.MinScoreToWinMatch.SetValue(120000, mode);
-		OptionType.AutoTeamBalanceThreshold.SetValue(0, mode);
 	}
 
 	private void InitializeForTeamDeathmatch(MultiplayerOptionsAccessMode mode)
@@ -512,7 +494,7 @@ public class MultiplayerOptions
 		OptionType.FriendlyFireDamageRangedSelfPercent.SetValue(50, mode);
 		OptionType.FriendlyFireDamageRangedFriendPercent.SetValue(0, mode);
 		OptionType.SpectatorCamera.SetValue(0, mode);
-		OptionType.WarmupTimeLimit.SetValue(3, mode);
+		OptionType.WarmupTimeLimitInSeconds.SetValue(180, mode);
 		OptionType.MapTimeLimit.SetValue(GetRoundTimeLimitInMinutesForGameMode(gameModeID), mode);
 		OptionType.RespawnPeriodTeam1.SetValue(3, mode);
 		OptionType.RespawnPeriodTeam2.SetValue(12, mode);
@@ -531,7 +513,7 @@ public class MultiplayerOptions
 		OptionType.FriendlyFireDamageRangedSelfPercent.SetValue(0, mode);
 		OptionType.FriendlyFireDamageRangedFriendPercent.SetValue(50, mode);
 		OptionType.SpectatorCamera.SetValue(6, mode);
-		OptionType.WarmupTimeLimit.SetValue(5, mode);
+		OptionType.WarmupTimeLimitInSeconds.SetValue(300, mode);
 		OptionType.MapTimeLimit.SetValue(5, mode);
 		OptionType.RoundTimeLimit.SetValue(GetRoundTimeLimitInMinutesForGameMode(gameModeID) * 60, mode);
 		OptionType.RoundPreparationTimeLimit.SetValue(20, mode);
@@ -555,7 +537,7 @@ public class MultiplayerOptions
 		OptionType.FriendlyFireDamageRangedSelfPercent.SetValue(0, mode);
 		OptionType.FriendlyFireDamageRangedFriendPercent.SetValue(50, mode);
 		OptionType.SpectatorCamera.SetValue(6, mode);
-		OptionType.WarmupTimeLimit.SetValue(5, mode);
+		OptionType.WarmupTimeLimitInSeconds.SetValue(300, mode);
 		OptionType.MapTimeLimit.SetValue(5, mode);
 		OptionType.RoundTimeLimit.SetValue(GetRoundTimeLimitInMinutesForGameMode(gameModeID) * 60, mode);
 		OptionType.RoundPreparationTimeLimit.SetValue(20, mode);
@@ -578,7 +560,7 @@ public class MultiplayerOptions
 		OptionType.FriendlyFireDamageRangedSelfPercent.SetValue(25, mode);
 		OptionType.FriendlyFireDamageRangedFriendPercent.SetValue(50, mode);
 		OptionType.SpectatorCamera.SetValue(6, mode);
-		OptionType.WarmupTimeLimit.SetValue(5, mode);
+		OptionType.WarmupTimeLimitInSeconds.SetValue(300, mode);
 		OptionType.MapTimeLimit.SetValue(90, mode);
 		OptionType.RoundTimeLimit.SetValue(GetRoundTimeLimitInMinutesForGameMode(gameModeID) * 60, mode);
 		OptionType.RoundPreparationTimeLimit.SetValue(20, mode);
@@ -595,7 +577,6 @@ public class MultiplayerOptions
 	{
 		switch (gameModeID)
 		{
-		case "FreeForAll":
 		case "TeamDeathmatch":
 		case "Siege":
 		case "Battle":
@@ -614,7 +595,6 @@ public class MultiplayerOptions
 	{
 		switch (gameModeID)
 		{
-		case "FreeForAll":
 		case "TeamDeathmatch":
 		case "Siege":
 		case "Duel":
@@ -633,7 +613,6 @@ public class MultiplayerOptions
 	{
 		switch (gameModeID)
 		{
-		case "FreeForAll":
 		case "TeamDeathmatch":
 		case "Siege":
 		case "Duel":
@@ -740,12 +719,10 @@ public class MultiplayerOptions
 		case OptionType.GameType:
 			list = (from q in Module.CurrentModule.GetMultiplayerGameTypes()
 				select q.GameType).ToList();
-			list.Remove("FreeForAll");
 			break;
 		case OptionType.PremadeMatchGameMode:
 			list = (from q in Module.CurrentModule.GetMultiplayerGameTypes()
 				select q.GameType).ToList();
-			list.Remove("FreeForAll");
 			list.Remove("TeamDeathmatch");
 			list.Remove("Duel");
 			list.Remove("Siege");
@@ -901,7 +878,7 @@ public class MultiplayerOptions
 		case "aserai":
 			return new TextObject("{=aseraifaction}Aserai").ToString();
 		default:
-			Debug.FailedAssert("Unidentified culture id: " + cultureID, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetLocalizedCultureNameFromStringID", 999);
+			Debug.FailedAssert("Unidentified culture id: " + cultureID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetLocalizedCultureNameFromStringID", 974);
 			return "";
 		}
 	}

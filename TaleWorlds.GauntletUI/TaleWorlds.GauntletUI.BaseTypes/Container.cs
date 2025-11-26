@@ -24,6 +24,8 @@ public abstract class Container : Widget
 
 	private List<ContainerItemDescription> _itemDescriptions;
 
+	private bool _clearSelectedOnRemoval;
+
 	public ContainerItemDescription DefaultItemDescription { get; private set; }
 
 	public abstract Predicate<Widget> AcceptDropPredicate { get; set; }
@@ -32,10 +34,6 @@ public abstract class Container : Widget
 	{
 		get
 		{
-			if (_intValue >= base.ChildCount)
-			{
-				_intValue = -1;
-			}
 			return _intValue;
 		}
 		set
@@ -74,6 +72,23 @@ public abstract class Container : Widget
 			{
 				_dragHoverInsertionIndex = value;
 				SetMeasureAndLayoutDirty();
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool ClearSelectedOnRemoval
+	{
+		get
+		{
+			return _clearSelectedOnRemoval;
+		}
+		set
+		{
+			if (_clearSelectedOnRemoval != value)
+			{
+				_clearSelectedOnRemoval = value;
+				OnPropertyChanged(value, "ClearSelectedOnRemoval");
 			}
 		}
 	}
@@ -157,31 +172,44 @@ public abstract class Container : Widget
 		base.OnChildAdded(child);
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		int childIndex = GetChildIndex(child);
-		if (base.ChildCount == 1)
-		{
-			IntValue = -1;
-		}
-		else if (childIndex < IntValue && IntValue > 0)
-		{
-			IntValue--;
-		}
 		foreach (Action<Widget, Widget> itemRemoveEventHandler in ItemRemoveEventHandlers)
 		{
 			itemRemoveEventHandler(this, child);
 		}
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 	}
 
-	protected override void OnAfterChildRemoved(Widget child)
+	protected override void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
+		if (IntValue >= base.ChildCount)
+		{
+			if (ClearSelectedOnRemoval)
+			{
+				IntValue = -1;
+			}
+			else
+			{
+				IntValue = base.ChildCount - 1;
+			}
+		}
+		else if (previousIndexOfChild >= 0 && IntValue >= 0)
+		{
+			if (IntValue == previousIndexOfChild && ClearSelectedOnRemoval)
+			{
+				IntValue = -1;
+			}
+			else if (previousIndexOfChild < IntValue)
+			{
+				IntValue--;
+			}
+		}
 		foreach (Action<Widget> itemAfterRemoveEventHandler in ItemAfterRemoveEventHandlers)
 		{
 			itemAfterRemoveEventHandler(this);
 		}
-		base.OnAfterChildRemoved(child);
+		base.OnAfterChildRemoved(child, previousIndexOfChild);
 	}
 
 	public void AddItemDescription(ContainerItemDescription itemDescription)

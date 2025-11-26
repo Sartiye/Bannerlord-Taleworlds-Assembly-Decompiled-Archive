@@ -27,7 +27,7 @@ public class DictionaryByType
 		}
 		else
 		{
-			Debug.FailedAssert("Event: " + typeof(T).Name + " were not registered in the first place", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "Remove", 106);
+			Debug.FailedAssert("Event: " + typeof(T).Name + " were not registered in the first place", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\EventSystem\\EventManager.cs", "Remove", 106);
 		}
 	}
 

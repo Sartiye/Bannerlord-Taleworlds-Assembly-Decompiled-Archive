@@ -113,7 +113,7 @@ public class GameKeyOptionCategoryVM : ViewModel
 		}
 	}
 
-	public GameKeyOptionCategoryVM(Action<KeyOptionVM> onKeybindRequest, IEnumerable<string> gameKeyCategories)
+	public GameKeyOptionCategoryVM(Action<KeyOptionVM> onKeybindRequest, IEnumerable<string> gameKeyCategories, IEnumerable<int> hiddenGameKeys)
 	{
 		_gameKeyCategories = new Dictionary<string, List<GameKey>>();
 		foreach (string gameKeyCategory in gameKeyCategories)
@@ -145,7 +145,7 @@ public class GameKeyOptionCategoryVM : ViewModel
 				}
 				foreach (GameKey registeredGameKey in allCategory.RegisteredGameKeys)
 				{
-					if (registeredGameKey != null && _gameKeyCategories.TryGetValue(registeredGameKey.MainCategoryId, out var value2) && !value2.Contains(registeredGameKey))
+					if (registeredGameKey != null && !hiddenGameKeys.Contains(registeredGameKey.Id) && _gameKeyCategories.TryGetValue(registeredGameKey.MainCategoryId, out var value2) && !value2.Contains(registeredGameKey))
 					{
 						value2.Add(registeredGameKey);
 					}
@@ -202,11 +202,27 @@ public class GameKeyOptionCategoryVM : ViewModel
 
 	public bool IsChanged()
 	{
-		if (!GameKeyGroups.Any((GameKeyGroupVM x) => x.IsChanged()))
+		if (GameKeyGroups != null)
 		{
-			return AuxiliaryKeyGroups.Any((AuxiliaryKeyGroupVM x) => x.IsChanged());
+			for (int i = 0; i < GameKeyGroups.Count; i++)
+			{
+				if (GameKeyGroups[i].IsChanged())
+				{
+					return true;
+				}
+			}
 		}
-		return true;
+		if (AuxiliaryKeyGroups != null)
+		{
+			for (int j = 0; j < AuxiliaryKeyGroups.Count; j++)
+			{
+				if (AuxiliaryKeyGroups[j].IsChanged())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public void ExecuteResetToDefault()

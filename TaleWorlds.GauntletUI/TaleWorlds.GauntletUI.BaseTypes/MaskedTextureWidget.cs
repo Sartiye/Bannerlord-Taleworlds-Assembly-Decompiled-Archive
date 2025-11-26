@@ -7,17 +7,18 @@ public class MaskedTextureWidget : TextureWidget
 {
 	private Texture _textureCache;
 
+	private SpriteFromTexture _overlaySpriteCache;
+
+	private int _overlaySpriteSizeCache;
+
 	private string _imageId;
 
 	private string _additionalArgs;
 
-	private int _imageTypeCode;
-
 	private bool _isBig;
 
-	private SpriteFromTexture _overlaySpriteCache;
-
-	private int _overlaySpriteSizeCache;
+	[Editor(false)]
+	public float OverlayTextureScale { get; set; }
 
 	[Editor(false)]
 	public string ImageId
@@ -30,9 +31,17 @@ public class MaskedTextureWidget : TextureWidget
 		{
 			if (_imageId != value)
 			{
+				if (!string.IsNullOrEmpty(_imageId))
+				{
+					SetTextureProviderProperty("IsReleased", true);
+				}
 				_imageId = value;
 				OnPropertyChanged(value, "ImageId");
 				SetTextureProviderProperty("ImageId", value);
+				if (!string.IsNullOrEmpty(_imageId))
+				{
+					SetTextureProviderProperty("IsReleased", false);
+				}
 			}
 		}
 	}
@@ -48,27 +57,17 @@ public class MaskedTextureWidget : TextureWidget
 		{
 			if (_additionalArgs != value)
 			{
+				if (!string.IsNullOrEmpty(_additionalArgs))
+				{
+					SetTextureProviderProperty("IsReleased", true);
+				}
 				_additionalArgs = value;
 				OnPropertyChanged(value, "AdditionalArgs");
 				SetTextureProviderProperty("AdditionalArgs", value);
-			}
-		}
-	}
-
-	[Editor(false)]
-	public int ImageTypeCode
-	{
-		get
-		{
-			return _imageTypeCode;
-		}
-		set
-		{
-			if (_imageTypeCode != value)
-			{
-				_imageTypeCode = value;
-				OnPropertyChanged(value, "ImageTypeCode");
-				SetTextureProviderProperty("ImageTypeCode", value);
+				if (!string.IsNullOrEmpty(_additionalArgs))
+				{
+					SetTextureProviderProperty("IsReleased", false);
+				}
 			}
 		}
 	}
@@ -84,6 +83,8 @@ public class MaskedTextureWidget : TextureWidget
 		{
 			if (_isBig != value)
 			{
+				SetTextureProviderProperty("IsReleased", true);
+				SetTextureProviderProperty("IsReleased", false);
 				_isBig = value;
 				OnPropertyChanged(value, "IsBig");
 				SetTextureProviderProperty("IsBig", value);
@@ -91,14 +92,32 @@ public class MaskedTextureWidget : TextureWidget
 		}
 	}
 
-	[Editor(false)]
-	public float OverlayTextureScale { get; set; }
-
 	public MaskedTextureWidget(UIContext context)
 		: base(context)
 	{
-		base.TextureProviderName = "ImageIdentifierTextureProvider";
+		base.TextureProviderName = "";
 		OverlayTextureScale = 1f;
+	}
+
+	public override void OnClearTextureProvider()
+	{
+		_textureCache = null;
+		SetTextureProviderProperty("IsReleased", true);
+		base.OnClearTextureProvider();
+	}
+
+	protected internal override void OnContextActivated()
+	{
+		base.OnContextActivated();
+		string imageId = ImageId;
+		ImageId = string.Empty;
+		ImageId = imageId;
+	}
+
+	protected internal override void OnContextDeactivated()
+	{
+		base.OnContextDeactivated();
+		SetTextureProviderProperty("IsReleased", true);
 	}
 
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
@@ -108,57 +127,37 @@ public class MaskedTextureWidget : TextureWidget
 		{
 			return;
 		}
-		Texture texture = base.TextureProvider.GetTexture(twoDimensionContext, "ui_backgrounds_1");
-		bool flag = false;
-		if (texture != _textureCache)
-		{
-			base.Brush.DefaultLayer.OverlayMethod = BrushOverlayMethod.CoverWithTexture;
-			_textureCache = texture;
-			flag = true;
-			HandleUpdateNeededOnRender();
-		}
-		if (_textureCache == null)
+		Texture textureForRender = base.TextureProvider.GetTextureForRender(twoDimensionContext);
+		if (textureForRender == null || !textureForRender.IsValid)
 		{
 			return;
 		}
-		int num;
-		int num2;
-		if (ImageTypeCode != 3)
+		bool flag = false;
+		if (textureForRender != _textureCache)
 		{
-			num = ((ImageTypeCode == 6) ? 1 : 0);
-			if (num == 0)
+			base.Brush.DefaultLayer.OverlayMethod = BrushOverlayMethod.CoverWithTexture;
+			_textureCache = textureForRender;
+			flag = true;
+			UpdateBrushRendererInternal(base.EventManager.CachedDt);
+		}
+		if (_textureCache != null)
+		{
+			bool num = base.TextureProviderName == "BannerImageTextureProvider";
+			int num2 = (num ? ((int)(((base.Size.X > base.Size.Y) ? base.Size.Y : base.Size.X) * 2.5f * OverlayTextureScale)) : ((int)(((base.Size.X > base.Size.Y) ? base.Size.X : base.Size.Y) * OverlayTextureScale)));
+			Vector2 overlayOffset = default(Vector2);
+			if (num)
 			{
-				num2 = (int)(((base.Size.X > base.Size.Y) ? base.Size.X : base.Size.Y) * OverlayTextureScale);
-				goto IL_00ea;
+				float x = ((float)num2 - base.Size.X) * 0.5f - base.Brush.DefaultLayer.OverlayXOffset;
+				float y = ((float)num2 - base.Size.Y) * 0.5f - base.Brush.DefaultLayer.OverlayYOffset;
+				overlayOffset = new Vector2(x, y) * base._inverseScaleToUse;
 			}
+			if (_overlaySpriteCache == null || flag || _overlaySpriteSizeCache != num2)
+			{
+				_overlaySpriteSizeCache = num2;
+				_overlaySpriteCache = new SpriteFromTexture(_textureCache, _overlaySpriteSizeCache, _overlaySpriteSizeCache);
+			}
+			base.Brush.DefaultLayer.OverlaySprite = _overlaySpriteCache;
+			base.BrushRenderer.Render(drawContext, in AreaRect, base._scaleToUse, base.Context.ContextAlpha, overlayOffset);
 		}
-		else
-		{
-			num = 1;
-		}
-		num2 = (int)(((base.Size.X > base.Size.Y) ? base.Size.Y : base.Size.X) * 2.5f * OverlayTextureScale);
-		goto IL_00ea;
-		IL_00ea:
-		int num3 = num2;
-		Vector2 overlayOffset = default(Vector2);
-		if (num != 0)
-		{
-			float x = ((float)num3 - base.Size.X) * 0.5f - base.Brush.DefaultLayer.OverlayXOffset;
-			float y = ((float)num3 - base.Size.Y) * 0.5f - base.Brush.DefaultLayer.OverlayYOffset;
-			overlayOffset = new Vector2(x, y) * base._inverseScaleToUse;
-		}
-		if (_overlaySpriteCache == null || flag || _overlaySpriteSizeCache != num3)
-		{
-			_overlaySpriteSizeCache = num3;
-			_overlaySpriteCache = new SpriteFromTexture(_textureCache, _overlaySpriteSizeCache, _overlaySpriteSizeCache);
-		}
-		base.Brush.DefaultLayer.OverlaySprite = _overlaySpriteCache;
-		base.BrushRenderer.Render(drawContext, base.GlobalPosition, base.Size, base._scaleToUse, base.Context.ContextAlpha, overlayOffset);
-	}
-
-	protected override void OnDisconnectedFromRoot()
-	{
-		base.OnDisconnectedFromRoot();
-		_textureCache = null;
 	}
 }

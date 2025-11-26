@@ -54,9 +54,9 @@ public class BehaviorShootFromCastleWalls : BehaviorComponent
 		else
 		{
 			_tacticalArcherPosition = null;
-			WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.CurrentPosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CurrentPosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 	}
@@ -64,10 +64,10 @@ public class BehaviorShootFromCastleWalls : BehaviorComponent
 	public override void TickOccasionally()
 	{
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_tacticalArcherPosition != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_tacticalArcherPosition.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_tacticalArcherPosition.Width));
 		}
 		foreach (Team team in base.Formation.Team.Mission.Teams)
 		{
@@ -79,13 +79,13 @@ public class BehaviorShootFromCastleWalls : BehaviorComponent
 			{
 				if (team.QuerySystem.InsideWallsRatio > 0.6f)
 				{
-					base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+					base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 					_areStrategicArcherAreasAbandoned = true;
 				}
 			}
 			else if (team.QuerySystem.InsideWallsRatio <= 0.4f)
 			{
-				base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderScatter;
+				base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
 				_areStrategicArcherAreasAbandoned = false;
 			}
 			break;
@@ -95,10 +95,10 @@ public class BehaviorShootFromCastleWalls : BehaviorComponent
 	protected override void OnBehaviorActivatedAux()
 	{
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderScatter;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

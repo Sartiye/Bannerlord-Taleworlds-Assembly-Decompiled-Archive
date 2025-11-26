@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -28,7 +29,7 @@ public class ProfitItemPropertyVM : ViewModel
 
 	private string _colonText;
 
-	private ImageIdentifierVM _governorVisual;
+	private CharacterImageIdentifierVM _governorVisual;
 
 	private bool _showGovernorPortrait;
 
@@ -137,7 +138,7 @@ public class ProfitItemPropertyVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM GovernorVisual
+	public CharacterImageIdentifierVM GovernorVisual
 	{
 		get
 		{
@@ -170,7 +171,7 @@ public class ProfitItemPropertyVM : ViewModel
 		}
 	}
 
-	public ProfitItemPropertyVM(string name, int value, PropertyType type = PropertyType.None, ImageIdentifierVM governorVisual = null, BasicTooltipViewModel hint = null)
+	public ProfitItemPropertyVM(string name, int value, PropertyType type = PropertyType.None, CharacterImageIdentifierVM governorVisual = null, BasicTooltipViewModel hint = null)
 	{
 		Name = name;
 		Value = value;

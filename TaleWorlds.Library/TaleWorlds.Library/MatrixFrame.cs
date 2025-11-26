@@ -9,9 +9,25 @@ public struct MatrixFrame
 
 	public Vec3 origin;
 
-	public static MatrixFrame Identity => new MatrixFrame(Mat3.Identity, new Vec3(0f, 0f, 0f, 1f));
+	public static MatrixFrame Identity
+	{
+		get
+		{
+			Mat3 rot = Mat3.Identity;
+			Vec3 o = new Vec3(0f, 0f, 0f, 1f);
+			return new MatrixFrame(in rot, in o);
+		}
+	}
 
-	public static MatrixFrame Zero => new MatrixFrame(new Mat3(Vec3.Zero, Vec3.Zero, Vec3.Zero), new Vec3(0f, 0f, 0f, 1f));
+	public static MatrixFrame Zero
+	{
+		get
+		{
+			Mat3 rot = new Mat3(in Vec3.Zero, in Vec3.Zero, in Vec3.Zero);
+			Vec3 o = new Vec3(0f, 0f, 0f, 1f);
+			return new MatrixFrame(in rot, in o);
+		}
+	}
 
 	public bool IsIdentity
 	{
@@ -34,6 +50,41 @@ public struct MatrixFrame
 				return rotation.IsZero();
 			}
 			return false;
+		}
+	}
+
+	public Vec3 this[int i]
+	{
+		get
+		{
+			return i switch
+			{
+				0 => rotation.s, 
+				1 => rotation.f, 
+				2 => rotation.u, 
+				3 => origin, 
+				_ => throw new IndexOutOfRangeException("MatrixFrame out of bounds."), 
+			};
+		}
+		set
+		{
+			switch (i)
+			{
+			case 0:
+				rotation.s = value;
+				break;
+			case 1:
+				rotation.f = value;
+				break;
+			case 2:
+				rotation.u = value;
+				break;
+			case 3:
+				origin = value;
+				break;
+			default:
+				throw new IndexOutOfRangeException("MatrixFrame out of bounds.");
+			}
 		}
 	}
 
@@ -72,7 +123,7 @@ public struct MatrixFrame
 		}
 	}
 
-	public MatrixFrame(Mat3 rot, Vec3 o)
+	public MatrixFrame(in Mat3 rot, in Vec3 o)
 	{
 		rotation = rot;
 		origin = o;
@@ -86,25 +137,37 @@ public struct MatrixFrame
 
 	public MatrixFrame(float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24, float _31, float _32, float _33, float _34, float _41, float _42, float _43, float _44)
 	{
-		rotation = default(Mat3);
-		rotation.s = new Vec3(_11, _12, _13, _14);
-		rotation.f = new Vec3(_21, _22, _23, _24);
-		rotation.u = new Vec3(_31, _32, _33, _34);
+		rotation = new Mat3
+		{
+			s = new Vec3(_11, _12, _13, _14),
+			f = new Vec3(_21, _22, _23, _24),
+			u = new Vec3(_31, _32, _33, _34)
+		};
 		origin = new Vec3(_41, _42, _43, _44);
 	}
 
-	public Vec3 TransformToParent(Vec3 v)
+	public Vec3 TransformToParent(in Vec3 v)
 	{
 		return new Vec3(rotation.s.x * v.x + rotation.f.x * v.y + rotation.u.x * v.z + origin.x, rotation.s.y * v.x + rotation.f.y * v.y + rotation.u.y * v.z + origin.y, rotation.s.z * v.x + rotation.f.z * v.y + rotation.u.z * v.z + origin.z);
 	}
 
-	public Vec3 TransformToLocal(Vec3 v)
+	public Vec3 TransformToParentDouble(in Vec3 v)
+	{
+		return new Vec3((float)((double)rotation.s.x * (double)v.x + (double)rotation.f.x * (double)v.y + (double)rotation.u.x * (double)v.z + (double)origin.x), (float)((double)rotation.s.y * (double)v.x + (double)rotation.f.y * (double)v.y + (double)rotation.u.y * (double)v.z + (double)origin.y), (float)((double)rotation.s.z * (double)v.x + (double)rotation.f.z * (double)v.y + (double)rotation.u.z * (double)v.z + (double)origin.z));
+	}
+
+	public Vec2 TransformToParent(in Vec2 v)
+	{
+		return new Vec2(rotation.s.x * v.x + rotation.f.x * v.y + origin.x, rotation.s.y * v.x + rotation.f.y * v.y + origin.y);
+	}
+
+	public Vec3 TransformToLocal(in Vec3 v)
 	{
 		Vec3 vec = v - origin;
 		return new Vec3(rotation.s.x * vec.x + rotation.s.y * vec.y + rotation.s.z * vec.z, rotation.f.x * vec.x + rotation.f.y * vec.y + rotation.f.z * vec.z, rotation.u.x * vec.x + rotation.u.y * vec.y + rotation.u.z * vec.z);
 	}
 
-	public Vec3 TransformToLocalNonUnit(Vec3 v)
+	public Vec3 TransformToLocalNonUnit(in Vec3 v)
 	{
 		Vec3 vec = v - origin;
 		return new Vec3(rotation.s.x * vec.x + rotation.s.y * vec.y + rotation.s.z * vec.z, rotation.f.x * vec.x + rotation.f.y * vec.y + rotation.f.z * vec.z, rotation.u.x * vec.x + rotation.u.y * vec.y + rotation.u.z * vec.z);
@@ -112,47 +175,60 @@ public struct MatrixFrame
 
 	public bool NearlyEquals(MatrixFrame rhs, float epsilon = 1E-05f)
 	{
-		if (rotation.NearlyEquals(rhs.rotation, epsilon))
+		if (rotation.NearlyEquals(in rhs.rotation, epsilon))
 		{
-			return origin.NearlyEquals(rhs.origin, epsilon);
+			return origin.NearlyEquals(in rhs.origin, epsilon);
 		}
 		return false;
 	}
 
-	public Vec3 TransformToLocalNonOrthogonal(Vec3 v)
+	public Vec3 TransformToLocalNonOrthogonal(in Vec3 v)
 	{
-		return new MatrixFrame(rotation.s.x, rotation.s.y, rotation.s.z, 0f, rotation.f.x, rotation.f.y, rotation.f.z, 0f, rotation.u.x, rotation.u.y, rotation.u.z, 0f, origin.x, origin.y, origin.z, 1f).Inverse().TransformToParent(v);
+		return new MatrixFrame(rotation.s.x, rotation.s.y, rotation.s.z, 0f, rotation.f.x, rotation.f.y, rotation.f.z, 0f, rotation.u.x, rotation.u.y, rotation.u.z, 0f, origin.x, origin.y, origin.z, 1f).Inverse().TransformToParent(in v);
 	}
 
-	public MatrixFrame TransformToLocalNonOrthogonal(ref MatrixFrame frame)
+	public MatrixFrame TransformToLocalNonOrthogonal(in MatrixFrame frame)
 	{
-		return new MatrixFrame(rotation.s.x, rotation.s.y, rotation.s.z, 0f, rotation.f.x, rotation.f.y, rotation.f.z, 0f, rotation.u.x, rotation.u.y, rotation.u.z, 0f, origin.x, origin.y, origin.z, 1f).Inverse().TransformToParent(frame);
+		return new MatrixFrame(rotation.s.x, rotation.s.y, rotation.s.z, 0f, rotation.f.x, rotation.f.y, rotation.f.z, 0f, rotation.u.x, rotation.u.y, rotation.u.z, 0f, origin.x, origin.y, origin.z, 1f).Inverse().TransformToParent(in frame);
 	}
 
-	public static MatrixFrame Lerp(MatrixFrame m1, MatrixFrame m2, float alpha)
+	public static MatrixFrame Lerp(in MatrixFrame m1, in MatrixFrame m2, float alpha)
 	{
 		MatrixFrame result = default(MatrixFrame);
-		result.rotation = Mat3.Lerp(m1.rotation, m2.rotation, alpha);
+		result.rotation = Mat3.Lerp(in m1.rotation, in m2.rotation, alpha);
 		result.origin = Vec3.Lerp(m1.origin, m2.origin, alpha);
 		return result;
 	}
 
-	public static MatrixFrame Slerp(MatrixFrame m1, MatrixFrame m2, float alpha)
+	public static MatrixFrame LerpNonOrthogonal(in MatrixFrame m1, in MatrixFrame m2, float alpha)
 	{
 		MatrixFrame result = default(MatrixFrame);
+		result.rotation = Mat3.LerpNonOrthogonal(in m1.rotation, in m2.rotation, alpha);
 		result.origin = Vec3.Lerp(m1.origin, m2.origin, alpha);
-		result.rotation = Quaternion.Slerp(Quaternion.QuaternionFromMat3(m1.rotation), Quaternion.QuaternionFromMat3(m2.rotation), alpha).ToMat3;
+		result.Fill();
 		return result;
 	}
 
-	public MatrixFrame TransformToParent(MatrixFrame m)
+	public static MatrixFrame Slerp(in MatrixFrame m1, in MatrixFrame m2, float alpha)
 	{
-		return new MatrixFrame(rotation.TransformToParent(m.rotation), TransformToParent(m.origin));
+		MatrixFrame result = default(MatrixFrame);
+		result.origin = Vec3.Lerp(m1.origin, m2.origin, alpha);
+		result.rotation = Quaternion.Slerp(Quaternion.QuaternionFromMat3(m1.rotation), Quaternion.QuaternionFromMat3(m2.rotation), alpha).ToMat3();
+		return result;
 	}
 
-	public MatrixFrame TransformToLocal(MatrixFrame m)
+	public MatrixFrame TransformToParent(in MatrixFrame m)
 	{
-		return new MatrixFrame(rotation.TransformToLocal(m.rotation), TransformToLocal(m.origin));
+		Mat3 rot = rotation.TransformToParent(in m.rotation);
+		Vec3 o = TransformToParent(in m.origin);
+		return new MatrixFrame(in rot, in o);
+	}
+
+	public MatrixFrame TransformToLocal(in MatrixFrame m)
+	{
+		Mat3 rot = rotation.TransformToLocal(in m.rotation);
+		Vec3 o = TransformToLocal(in m.origin);
+		return new MatrixFrame(in rot, in o);
 	}
 
 	public Vec3 TransformToParentWithW(Vec3 _s)
@@ -162,49 +238,50 @@ public struct MatrixFrame
 
 	public MatrixFrame GetUnitRotFrame(float removedScale)
 	{
-		return new MatrixFrame(rotation.GetUnitRotation(removedScale), origin);
+		Mat3 rot = rotation.GetUnitRotation(removedScale);
+		return new MatrixFrame(in rot, in origin);
 	}
 
-	public MatrixFrame Inverse()
+	public MatrixFrame InverseFast()
 	{
 		AssertFilled();
 		MatrixFrame matrix = default(MatrixFrame);
-		float num = this[2, 2] * this[3, 3] - this[2, 3] * this[3, 2];
-		float num2 = this[1, 2] * this[3, 3] - this[1, 3] * this[3, 2];
-		float num3 = this[1, 2] * this[2, 3] - this[1, 3] * this[2, 2];
-		float num4 = this[0, 2] * this[3, 3] - this[0, 3] * this[3, 2];
-		float num5 = this[0, 2] * this[2, 3] - this[0, 3] * this[2, 2];
-		float num6 = this[0, 2] * this[1, 3] - this[0, 3] * this[1, 2];
-		float num7 = this[2, 1] * this[3, 3] - this[2, 3] * this[3, 1];
-		float num8 = this[1, 1] * this[3, 3] - this[1, 3] * this[3, 1];
-		float num9 = this[1, 1] * this[2, 3] - this[1, 3] * this[2, 1];
-		float num10 = this[0, 1] * this[3, 3] - this[0, 3] * this[3, 1];
-		float num11 = this[0, 1] * this[2, 3] - this[0, 3] * this[2, 1];
-		float num12 = this[1, 1] * this[3, 3] - this[1, 3] * this[3, 1];
-		float num13 = this[0, 1] * this[1, 3] - this[0, 3] * this[1, 1];
-		float num14 = this[2, 1] * this[3, 2] - this[2, 2] * this[3, 1];
-		float num15 = this[1, 1] * this[3, 2] - this[1, 2] * this[3, 1];
-		float num16 = this[1, 1] * this[2, 2] - this[1, 2] * this[2, 1];
-		float num17 = this[0, 1] * this[3, 2] - this[0, 2] * this[3, 1];
-		float num18 = this[0, 1] * this[2, 2] - this[0, 2] * this[2, 1];
-		float num19 = this[0, 1] * this[1, 2] - this[0, 2] * this[1, 1];
-		matrix[0, 0] = this[1, 1] * num - this[2, 1] * num2 + this[3, 1] * num3;
-		matrix[0, 1] = (0f - this[0, 1]) * num + this[2, 1] * num4 - this[3, 1] * num5;
-		matrix[0, 2] = this[0, 1] * num2 - this[1, 1] * num4 + this[3, 1] * num6;
-		matrix[0, 3] = (0f - this[0, 1]) * num3 + this[1, 1] * num5 - this[2, 1] * num6;
-		matrix[1, 0] = (0f - this[1, 0]) * num + this[2, 0] * num2 - this[3, 0] * num3;
-		matrix[1, 1] = this[0, 0] * num - this[2, 0] * num4 + this[3, 0] * num5;
-		matrix[1, 2] = (0f - this[0, 0]) * num2 + this[1, 0] * num4 - this[3, 0] * num6;
-		matrix[1, 3] = this[0, 0] * num3 - this[1, 0] * num5 + this[2, 0] * num6;
-		matrix[2, 0] = this[1, 0] * num7 - this[2, 0] * num8 + this[3, 0] * num9;
-		matrix[2, 1] = (0f - this[0, 0]) * num7 + this[2, 0] * num10 - this[3, 0] * num11;
-		matrix[2, 2] = this[0, 0] * num12 - this[1, 0] * num10 + this[3, 0] * num13;
-		matrix[2, 3] = (0f - this[0, 0]) * num9 + this[1, 0] * num11 - this[2, 0] * num13;
-		matrix[3, 0] = (0f - this[1, 0]) * num14 + this[2, 0] * num15 - this[3, 0] * num16;
-		matrix[3, 1] = this[0, 0] * num14 - this[2, 0] * num17 + this[3, 0] * num18;
-		matrix[3, 2] = (0f - this[0, 0]) * num15 + this[1, 0] * num17 - this[3, 0] * num19;
-		matrix[3, 3] = this[0, 0] * num16 - this[1, 0] * num18 + this[2, 0] * num19;
-		float num20 = this[0, 0] * matrix[0, 0] + this[1, 0] * matrix[0, 1] + this[2, 0] * matrix[0, 2] + this[3, 0] * matrix[0, 3];
+		float num = rotation.u.z * origin.w - rotation.u.w * origin.z;
+		float num2 = rotation.f.z * origin.w - rotation.f.w * origin.z;
+		float num3 = rotation.f.z * rotation.u.w - rotation.f.w * rotation.u.z;
+		float num4 = rotation.s.z * origin.w - rotation.s.w * origin.z;
+		float num5 = rotation.s.z * rotation.u.w - rotation.s.w * rotation.u.z;
+		float num6 = rotation.s.z * rotation.f.w - rotation.s.w * rotation.f.z;
+		float num7 = rotation.u.y * origin.w - rotation.u.w * origin.y;
+		float num8 = rotation.f.y * origin.w - rotation.f.w * origin.y;
+		float num9 = rotation.f.y * rotation.u.w - rotation.f.w * rotation.u.y;
+		float num10 = rotation.s.y * origin.w - rotation.s.w * origin.y;
+		float num11 = rotation.s.y * rotation.u.w - rotation.s.w * rotation.u.y;
+		float num12 = rotation.f.y * origin.w - rotation.f.w * origin.y;
+		float num13 = rotation.s.y * rotation.f.w - rotation.s.w * rotation.f.y;
+		float num14 = rotation.u.y * origin.z - rotation.u.z * origin.y;
+		float num15 = rotation.f.y * origin.z - rotation.f.z * origin.y;
+		float num16 = rotation.f.y * rotation.u.z - rotation.f.z * rotation.u.y;
+		float num17 = rotation.s.y * origin.z - rotation.s.z * origin.y;
+		float num18 = rotation.s.y * rotation.u.z - rotation.s.z * rotation.u.y;
+		float num19 = rotation.s.y * rotation.f.z - rotation.s.z * rotation.f.y;
+		matrix.rotation.s.x = rotation.f.y * num - rotation.u.y * num2 + origin.y * num3;
+		matrix.rotation.s.y = (0f - rotation.s.y) * num + rotation.u.y * num4 - origin.y * num5;
+		matrix.rotation.s.z = rotation.s.y * num2 - rotation.f.y * num4 + origin.y * num6;
+		matrix.rotation.s.w = (0f - rotation.s.y) * num3 + rotation.f.y * num5 - rotation.u.y * num6;
+		matrix.rotation.f.x = (0f - rotation.f.x) * num + rotation.u.x * num2 - origin.x * num3;
+		matrix.rotation.f.y = rotation.s.x * num - rotation.u.x * num4 + origin.x * num5;
+		matrix.rotation.f.z = (0f - rotation.s.x) * num2 + rotation.f.x * num4 - origin.x * num6;
+		matrix.rotation.f.w = rotation.s.x * num3 - rotation.f.x * num5 + rotation.u.x * num6;
+		matrix.rotation.u.x = rotation.f.x * num7 - rotation.u.x * num8 + origin.x * num9;
+		matrix.rotation.u.y = (0f - rotation.s.x) * num7 + rotation.u.x * num10 - origin.x * num11;
+		matrix.rotation.u.z = rotation.s.x * num12 - rotation.f.x * num10 + origin.x * num13;
+		matrix.rotation.u.w = (0f - rotation.s.x) * num9 + rotation.f.x * num11 - rotation.u.x * num13;
+		matrix.origin.x = (0f - rotation.f.x) * num14 + rotation.u.x * num15 - origin.x * num16;
+		matrix.origin.y = rotation.s.x * num14 - rotation.u.x * num17 + origin.x * num18;
+		matrix.origin.z = (0f - rotation.s.x) * num15 + rotation.f.x * num17 - origin.x * num19;
+		matrix.origin.w = rotation.s.x * num16 - rotation.f.x * num18 + rotation.u.x * num19;
+		float num20 = rotation.s.x * matrix.rotation.s.x + rotation.f.x * matrix.rotation.s.y + rotation.u.x * matrix.rotation.s.z + origin.x * matrix.rotation.s.w;
 		if (num20 != 1f)
 		{
 			DivideWith(ref matrix, num20);
@@ -212,48 +289,91 @@ public struct MatrixFrame
 		return matrix;
 	}
 
+	public MatrixFrame Inverse()
+	{
+		return InverseFast();
+	}
+
+	public float Determinant4X4()
+	{
+		float x = rotation.s.x;
+		Vec3 a = new Vec3(rotation.f.y, rotation.f.z, rotation.f.w);
+		Vec3 b = new Vec3(rotation.u.y, rotation.u.z, rotation.u.w);
+		Vec3 c = new Vec3(origin.y, origin.z, origin.w);
+		float num = x * Determinant3X3(in a, in b, in c);
+		float y = rotation.s.y;
+		Vec3 a2 = new Vec3(rotation.f.x, rotation.f.z, rotation.f.w);
+		Vec3 b2 = new Vec3(rotation.u.x, rotation.u.z, rotation.u.w);
+		Vec3 c2 = new Vec3(origin.x, origin.z, origin.w);
+		float num2 = num - y * Determinant3X3(in a2, in b2, in c2);
+		float z = rotation.s.z;
+		Vec3 a3 = new Vec3(rotation.f.x, rotation.f.y, rotation.f.w);
+		Vec3 b3 = new Vec3(rotation.u.x, rotation.u.y, rotation.u.w);
+		Vec3 c3 = new Vec3(origin.x, origin.y, origin.w);
+		float num3 = num2 + z * Determinant3X3(in a3, in b3, in c3);
+		float w = rotation.s.w;
+		Vec3 a4 = new Vec3(rotation.f.x, rotation.f.y, rotation.f.z);
+		Vec3 b4 = new Vec3(rotation.u.x, rotation.u.y, rotation.u.z);
+		Vec3 c4 = new Vec3(origin.x, origin.y, origin.z);
+		return num3 - w * Determinant3X3(in a4, in b4, in c4);
+	}
+
+	private static float Determinant3X3(in Vec3 a, in Vec3 b, in Vec3 c)
+	{
+		return a.x * (b.y * c.z - b.z * c.y) - a.y * (b.x * c.z - b.z * c.x) + a.z * (b.x * c.y - b.y * c.x);
+	}
+
 	private static void DivideWith(ref MatrixFrame matrix, float w)
 	{
 		float num = 1f / w;
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				matrix[i, j] *= num;
-			}
-		}
+		matrix.rotation.s.x *= num;
+		matrix.rotation.s.y *= num;
+		matrix.rotation.s.z *= num;
+		matrix.rotation.s.w *= num;
+		matrix.rotation.f.x *= num;
+		matrix.rotation.f.y *= num;
+		matrix.rotation.f.z *= num;
+		matrix.rotation.f.w *= num;
+		matrix.rotation.u.x *= num;
+		matrix.rotation.u.y *= num;
+		matrix.rotation.u.z *= num;
+		matrix.rotation.u.w *= num;
+		matrix.origin.x *= num;
+		matrix.origin.y *= num;
+		matrix.origin.z *= num;
+		matrix.origin.w *= num;
 	}
 
-	public void Rotate(float radian, Vec3 axis)
+	public void Rotate(float radian, in Vec3 axis)
 	{
 		MathF.SinCos(radian, out var sa, out var ca);
 		MatrixFrame matrixFrame = default(MatrixFrame);
-		matrixFrame[0, 0] = axis.x * axis.x * (1f - ca) + ca;
-		matrixFrame[1, 0] = axis.x * axis.y * (1f - ca) - axis.z * sa;
-		matrixFrame[2, 0] = axis.x * axis.z * (1f - ca) + axis.y * sa;
-		matrixFrame[3, 0] = 0f;
-		matrixFrame[0, 1] = axis.y * axis.x * (1f - ca) + axis.z * sa;
-		matrixFrame[1, 1] = axis.y * axis.y * (1f - ca) + ca;
-		matrixFrame[2, 1] = axis.y * axis.z * (1f - ca) - axis.x * sa;
-		matrixFrame[3, 1] = 0f;
-		matrixFrame[0, 2] = axis.x * axis.z * (1f - ca) - axis.y * sa;
-		matrixFrame[1, 2] = axis.y * axis.z * (1f - ca) + axis.x * sa;
-		matrixFrame[2, 2] = axis.z * axis.z * (1f - ca) + ca;
-		matrixFrame[3, 2] = 0f;
-		matrixFrame[0, 3] = 0f;
-		matrixFrame[1, 3] = 0f;
-		matrixFrame[2, 3] = 0f;
-		matrixFrame[3, 3] = 1f;
-		origin = TransformToParent(matrixFrame.origin);
-		rotation = rotation.TransformToParent(matrixFrame.rotation);
+		matrixFrame.rotation.s.x = axis.x * axis.x * (1f - ca) + ca;
+		matrixFrame.rotation.f.x = axis.x * axis.y * (1f - ca) - axis.z * sa;
+		matrixFrame.rotation.u.x = axis.x * axis.z * (1f - ca) + axis.y * sa;
+		matrixFrame.origin.x = 0f;
+		matrixFrame.rotation.s.y = axis.y * axis.x * (1f - ca) + axis.z * sa;
+		matrixFrame.rotation.f.y = axis.y * axis.y * (1f - ca) + ca;
+		matrixFrame.rotation.u.y = axis.y * axis.z * (1f - ca) - axis.x * sa;
+		matrixFrame.origin.y = 0f;
+		matrixFrame.rotation.s.z = axis.x * axis.z * (1f - ca) - axis.y * sa;
+		matrixFrame.rotation.f.z = axis.y * axis.z * (1f - ca) + axis.x * sa;
+		matrixFrame.rotation.u.z = axis.z * axis.z * (1f - ca) + ca;
+		matrixFrame.origin.z = 0f;
+		matrixFrame.rotation.s.w = 0f;
+		matrixFrame.rotation.f.w = 0f;
+		matrixFrame.rotation.u.w = 0f;
+		matrixFrame.origin.w = 1f;
+		origin = TransformToParent(in matrixFrame.origin);
+		rotation = rotation.TransformToParent(in matrixFrame.rotation);
 	}
 
-	public static MatrixFrame operator *(MatrixFrame m1, MatrixFrame m2)
+	public static MatrixFrame operator *(in MatrixFrame m1, in MatrixFrame m2)
 	{
-		return m1.TransformToParent(m2);
+		return m1.TransformToParent(in m2);
 	}
 
-	public static bool operator ==(MatrixFrame m1, MatrixFrame m2)
+	public static bool operator ==(in MatrixFrame m1, in MatrixFrame m2)
 	{
 		if (m1.origin == m2.origin)
 		{
@@ -262,7 +382,7 @@ public struct MatrixFrame
 		return false;
 	}
 
-	public static bool operator !=(MatrixFrame m1, MatrixFrame m2)
+	public static bool operator !=(in MatrixFrame m1, in MatrixFrame m2)
 	{
 		if (!(m1.origin != m2.origin))
 		{
@@ -281,7 +401,8 @@ public struct MatrixFrame
 
 	public override bool Equals(object obj)
 	{
-		return this == (MatrixFrame)obj;
+		MatrixFrame m = (MatrixFrame)obj;
+		return this == m;
 	}
 
 	public override int GetHashCode()
@@ -307,14 +428,14 @@ public struct MatrixFrame
 		return this;
 	}
 
-	public void Scale(Vec3 scalingVector)
+	public void Scale(in Vec3 scalingVector)
 	{
 		MatrixFrame identity = Identity;
 		identity.rotation.s.x = scalingVector.x;
 		identity.rotation.f.y = scalingVector.y;
 		identity.rotation.u.z = scalingVector.z;
-		origin = TransformToParent(identity.origin);
-		rotation = rotation.TransformToParent(identity.rotation);
+		origin = TransformToParent(in identity.origin);
+		rotation = rotation.TransformToParent(in identity.rotation);
 	}
 
 	public Vec3 GetScale()
@@ -322,7 +443,7 @@ public struct MatrixFrame
 		return new Vec3(rotation.s.Length, rotation.f.Length, rotation.u.Length);
 	}
 
-	public static MatrixFrame CreateLookAt(Vec3 position, Vec3 target, Vec3 upVector)
+	public static MatrixFrame CreateLookAt(in Vec3 position, in Vec3 target, in Vec3 upVector)
 	{
 		Vec3 vec = target - position;
 		vec.Normalize();
@@ -348,7 +469,7 @@ public struct MatrixFrame
 		return new MatrixFrame(x, x2, x3, _, y, y2, y3, _2, z, z2, z3, _3, _4, _5, _6, _7);
 	}
 
-	public static MatrixFrame CenterFrameOfTwoPoints(Vec3 p1, Vec3 p2, Vec3 upVector)
+	public static MatrixFrame CenterFrameOfTwoPoints(in Vec3 p1, in Vec3 p2, Vec3 upVector)
 	{
 		MatrixFrame result = default(MatrixFrame);
 		result.origin = (p1 + p2) * 0.5f;

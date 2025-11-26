@@ -21,6 +21,8 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 	{
 		private const int IssueDuration = 30;
 
+		private const int AlternativeSolutionSuccessRenownBonus = 1;
+
 		private const int AlternativeSolutionSuccessGenerosityBonus = 30;
 
 		private const int AlternativeSolutionFailPowerPenalty = -5;
@@ -29,7 +31,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 		private const int AlternativeSolutionSuccessPowerBonus = 10;
 
-		private const int AlternativeSolutionSuccessRelationBonusWithQuestGiver = 2;
+		private const int AlternativeSolutionSuccessRelationBonusWithQuestGiver = 5;
 
 		private const int AlternativeSolutionSuccessRelationBonusWithOtherNotables = 1;
 
@@ -63,16 +65,15 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			{
 				if (_nearbySuitableSettlementCache == null)
 				{
-					Settlement nearbySuitableSettlementCache = SettlementHelper.FindNearestSettlement(delegate(Settlement x)
+					Settlement nearbySuitableSettlementCache = SettlementHelper.FindNearestSettlementToSettlement(base.IssueOwner.CurrentSettlement, MobileParty.NavigationType.Default, delegate(Settlement x)
 					{
 						if (x.Town != null && !x.Town.IsCastle && !x.MapFaction.IsAtWarWith(base.IssueOwner.MapFaction))
 						{
 							int price = x.Town.MarketData.GetPrice(DefaultItems.Grain, MobileParty.MainParty);
-							if (price > 0)
-							{
-								return price < AverageGrainPriceInCalradia * 2;
-							}
-							return false;
+							int inStore = x.Town.MarketData.GetCategoryData(DefaultItemCategories.Grain).InStore;
+							bool num = price > 0 && price < AverageGrainPriceInCalradia * 2;
+							bool flag = inStore < 250;
+							return num && flag;
 						}
 						return false;
 					});
@@ -86,7 +87,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=sQBBOKDD}{ISSUE_SETTLEMENT} Needs Grain Seeds");
+				TextObject textObject = new TextObject("{=LPMXVHHT}{ISSUE_SETTLEMENT} Needs Grain Seeds");
 				textObject.SetTextVariable("ISSUE_SETTLEMENT", base.IssueSettlement.Name);
 				return textObject;
 			}
@@ -124,7 +125,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=5NYPqKBj}I know you're busy, but maybe you can ask some of your men to find us that grain? {MEN_COUNT} men should do the job along with {GOLD}{GOLD_ICON}, and I'd reckon the whole affair should take two weeks. \nI'm desperate here, {?PLAYER.GENDER}madam{?}sir{\\?}... Don't let our children starve![if:convo_dismayed][ib:demure]");
+				TextObject textObject = new TextObject("{=5NYPqKBj}I know you're busy, but maybe you can ask some of your men to find us that grain? {MEN_COUNT} men should do the job along with {GOLD}{GOLD_ICON}, and I'd reckon the whole affair should take two weeks.{newline}I'm desperate here, {?PLAYER.GENDER}madam{?}sir{\\?}... Don't let our children starve![if:convo_dismayed][ib:demure]");
 				textObject.SetTextVariable("MEN_COUNT", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("GOLD", AlternativeSolutionNeededGold);
 				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
@@ -215,16 +216,14 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(AlternativeSolutionNeededGold, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(AlternativeSolutionNeededGold, out explanation);
 			}
 			return false;
 		}
@@ -248,7 +247,8 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			});
 			base.IssueOwner.AddPower(10f);
 			base.IssueSettlement.Village.Bound.Town.Prosperity += 50f;
-			RelationshipChangeWithIssueOwner = 2;
+			GainRenownAction.Apply(Hero.MainHero, 1f);
+			RelationshipChangeWithIssueOwner = 5;
 			foreach (Hero notable in base.IssueOwner.CurrentSettlement.Notables)
 			{
 				if (notable != base.IssueOwner)
@@ -270,14 +270,14 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 		public override IssueFrequency GetFrequency()
 		{
-			return IssueFrequency.Rare;
+			return IssueFrequency.Common;
 		}
 
 		public override bool IssueStayAliveConditions()
 		{
 			if (NearbySuitableSettlement != null)
 			{
-				return NearbySuitableSettlement.Town.MarketData.GetItemCountOfCategory(DefaultItems.Grain.ItemCategory) < 100;
+				return NearbySuitableSettlement.Town.MarketData.GetItemCountOfCategory(DefaultItems.Grain.ItemCategory) < 350;
 			}
 			return false;
 		}
@@ -319,11 +319,13 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 	public class HeadmanNeedsGrainIssueQuest : QuestBase
 	{
+		private const int SuccessRenownBonus = 1;
+
 		private const int SuccessMercyBonus = 70;
 
 		private const int SuccessGenerosityBonus = 50;
 
-		private const int SuccessRelationBonusWithQuestGiver = 2;
+		private const int SuccessRelationBonusWithQuestGiver = 5;
 
 		private const int SuccessRelationBonusWithOtherNotables = 1;
 
@@ -361,7 +363,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=apr2dH0n}{ISSUE_SETTLEMENT} Needs Grain Seeds");
+				TextObject textObject = new TextObject("{=LPMXVHHT}{ISSUE_SETTLEMENT} Needs Grain Seeds");
 				textObject.SetTextVariable("ISSUE_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
 				return textObject;
 			}
@@ -369,11 +371,11 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerAcceptedQuestLogText
+		private TextObject PlayerAcceptedQuestLogText
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=5CokRxmL}{QUEST_GIVER.LINK}, the headman of the {QUEST_SETTLEMENT} asked you to deliver {GRAIN_AMOUNT} units of grain to {?QUEST_GIVER.GENDER}her{?}him{\\?} to use as seeds. Otherwise peasants cannot sow their fields and starve in the coming season. \n \n You have agreed to bring them {GRAIN_AMOUNT} units of grain as soon as possible.");
+				TextObject textObject = new TextObject("{=5CokRxmL}{QUEST_GIVER.LINK}, the headman of the {QUEST_SETTLEMENT} asked you to deliver {GRAIN_AMOUNT} units of grain to {?QUEST_GIVER.GENDER}her{?}him{\\?} to use as seeds. Otherwise peasants cannot sow their fields and starve in the coming season.{newline}{newline}You have agreed to bring them {GRAIN_AMOUNT} units of grain as soon as possible.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("QUEST_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
 				textObject.SetTextVariable("GRAIN_AMOUNT", _neededGrainAmount);
@@ -381,7 +383,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerHasNeededGrainsLogText
+		private TextObject PlayerHasNeededGrainsLogText
 		{
 			get
 			{
@@ -391,7 +393,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _questTimeoutLogText
+		private TextObject QuestTimeoutLogText
 		{
 			get
 			{
@@ -401,7 +403,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _successLog
+		private TextObject SuccessLog
 		{
 			get
 			{
@@ -411,7 +413,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _cancelLogOnWarDeclared
+		private TextObject CancelLogOnWarDeclared
 		{
 			get
 			{
@@ -421,7 +423,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _failLogOnWarDeclaredByCriminalRating
+		private TextObject FailLogOnWarDeclaredByCriminalRating
 		{
 			get
 			{
@@ -431,7 +433,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -441,7 +443,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _cancelLogOnVillageRaided
+		private TextObject CancelLogOnVillageRaided
 		{
 			get
 			{
@@ -510,7 +512,6 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
-			CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
 			CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnHeroPrisonerTaken);
 			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 			CampaignEvents.VillageBeingRaided.AddNonSerializedListener(this, OnVillageBeingRaided);
@@ -522,13 +523,13 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			{
 				QuestHelper.ApplyGenericMinorMajorCoercionConsequences(this, mapEvent);
 			}
-			else if (mapEvent.IsRaid || mapEvent.IsForcingSupplies || mapEvent.IsForcingVolunteers)
+			else if ((mapEvent.IsRaid || mapEvent.IsForcingSupplies || mapEvent.IsForcingVolunteers) && mapEvent.MapEventSettlement == base.QuestGiver.CurrentSettlement)
 			{
-				CompleteQuestWithCancel(_cancelLogOnVillageRaided);
+				CompleteQuestWithCancel(CancelLogOnVillageRaided);
 			}
 		}
 
-		private void HourlyTickParty(MobileParty mobileParty)
+		protected override void HourlyTickParty(MobileParty mobileParty)
 		{
 			if (mobileParty == MobileParty.MainParty)
 			{
@@ -559,13 +560,13 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			if (village == base.QuestGiver.CurrentSettlement.Village)
 			{
-				CompleteQuestWithCancel(_cancelLogOnVillageRaided);
+				CompleteQuestWithCancel(CancelLogOnVillageRaided);
 			}
 		}
 
 		protected override void OnTimedOut()
 		{
-			AddLog(_questTimeoutLogText);
+			AddLog(QuestTimeoutLogText);
 			TimeoutFail();
 		}
 
@@ -605,7 +606,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			if (_playerAcceptedQuestLog.CurrentProgress >= _neededGrainAmount)
 			{
-				explanation = TextObject.Empty;
+				explanation = null;
 				return true;
 			}
 			explanation = new TextObject("{=mzabdwoh}You don't have enough grain.");
@@ -616,18 +617,12 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			StartQuest();
 			int requiredGrainCountOnPlayer = GetRequiredGrainCountOnPlayer();
-			_playerAcceptedQuestLog = AddDiscreteLog(_playerAcceptedQuestLogText, new TextObject("{=eEwI880g}Collect Grain"), requiredGrainCountOnPlayer, _neededGrainAmount);
+			_playerAcceptedQuestLog = AddDiscreteLog(PlayerAcceptedQuestLogText, new TextObject("{=eEwI880g}Collect Grain"), requiredGrainCountOnPlayer, _neededGrainAmount);
 		}
 
 		private int GetRequiredGrainCountOnPlayer()
 		{
 			int itemNumber = PartyBase.MainParty.ItemRoster.GetItemNumber(DefaultItems.Grain);
-			if (itemNumber >= _neededGrainAmount)
-			{
-				TextObject textObject = new TextObject("{=Gtbfm10o}You have enough grain to complete the quest. Return to {QUEST_SETTLEMENT} to hand it over.");
-				textObject.SetTextVariable("QUEST_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
-				MBInformationManager.AddQuickInformation(textObject);
-			}
 			if (itemNumber <= _neededGrainAmount)
 			{
 				return itemNumber;
@@ -639,7 +634,10 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			if (_playerHasNeededGrainsLog == null && _playerAcceptedQuestLog.CurrentProgress >= _neededGrainAmount)
 			{
-				_playerHasNeededGrainsLog = AddLog(_playerHasNeededGrainsLogText);
+				_playerHasNeededGrainsLog = AddLog(PlayerHasNeededGrainsLogText);
+				TextObject textObject = new TextObject("{=Gtbfm10o}You have enough grain to complete the quest. Return to {QUEST_SETTLEMENT} to hand it over.");
+				textObject.SetTextVariable("QUEST_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
+				MBInformationManager.AddQuickInformation(textObject);
 			}
 			else if (_playerHasNeededGrainsLog != null && _playerAcceptedQuestLog.CurrentProgress < _neededGrainAmount)
 			{
@@ -699,7 +697,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_cancelLogOnWarDeclared);
+				CompleteQuestWithCancel(CancelLogOnWarDeclared);
 			}
 		}
 
@@ -714,13 +712,13 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _cancelLogOnWarDeclared, forceCancel: true);
+				QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, CancelLogOnWarDeclared, forceCancel: true);
 			}
 		}
 
 		private void Success()
 		{
-			AddLog(_successLog);
+			AddLog(SuccessLog);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[2]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Mercy, 70),
@@ -729,9 +727,10 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _rewardGold);
 			ItemRosterElement itemRosterElement = new ItemRosterElement(DefaultItems.Grain, _neededGrainAmount);
 			GiveItemAction.ApplyForParties(PartyBase.MainParty, Settlement.CurrentSettlement.Party, in itemRosterElement);
+			GainRenownAction.Apply(Hero.MainHero, 1f);
 			base.QuestGiver.AddPower(10f);
 			base.QuestGiver.CurrentSettlement.Village.Bound.Town.Prosperity += 50f;
-			RelationshipChangeWithQuestGiver = 2;
+			RelationshipChangeWithQuestGiver = 5;
 			foreach (Hero notable in base.QuestGiver.CurrentSettlement.Notables)
 			{
 				if (notable != base.QuestGiver)
@@ -764,7 +763,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -50)
 			});
-			CompleteQuestWithFail(_failLogOnWarDeclaredByCriminalRating);
+			CompleteQuestWithFail(FailLogOnWarDeclaredByCriminalRating);
 		}
 	}
 
@@ -782,9 +781,9 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private const IssueBase.IssueFrequency HeadmanNeedsGrainIssueFrequency = IssueBase.IssueFrequency.Rare;
+	private const IssueBase.IssueFrequency HeadmanNeedsGrainIssueFrequency = IssueBase.IssueFrequency.Common;
 
-	private const int NearbyTownMarketGrainLimit = 100;
+	private const int NearbyTownMarketGrainLimit = 350;
 
 	private int _averageGrainPriceInCalradia;
 
@@ -808,9 +807,9 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		if (issueGiver.IsHeadman && issueGiver.CurrentSettlement.Village.VillageType == DefaultVillageTypes.WheatFarm)
+		if (issueGiver.IsHeadman && issueGiver.CurrentSettlement.Village.VillageType != DefaultVillageTypes.WheatFarm && issueGiver.CurrentSettlement.Village.Bound.Town.MarketData.GetCategoryData(DefaultItemCategories.Grain).InStore < 30)
 		{
-			return (float)issueGiver.CurrentSettlement.Village.GetItemPrice(DefaultItems.Grain) > (float)_averageGrainPriceInCalradia * 1.3f;
+			return (float)issueGiver.CurrentSettlement.Village.GetItemPrice(DefaultItems.Grain) > (float)_averageGrainPriceInCalradia * 0.9f;
 		}
 		return false;
 	}
@@ -819,11 +818,11 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 	{
 		if (ConditionsHold(hero))
 		{
-			Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(OnSelected, typeof(HeadmanNeedsGrainIssue), IssueBase.IssueFrequency.Rare));
+			Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(OnSelected, typeof(HeadmanNeedsGrainIssue), IssueBase.IssueFrequency.Common));
 		}
 		else
 		{
-			Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(typeof(HeadmanNeedsGrainIssue), IssueBase.IssueFrequency.Rare));
+			Campaign.Current.IssueManager.AddPotentialIssueData(hero, new PotentialIssueData(typeof(HeadmanNeedsGrainIssue), IssueBase.IssueFrequency.Common));
 		}
 	}
 

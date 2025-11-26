@@ -9,6 +9,17 @@ namespace TaleWorlds.CampaignSystem.Party.PartyComponents;
 
 public class GarrisonPartyComponent : PartyComponent
 {
+	protected class InitializationArgs
+	{
+		public void InitializeGarrisonPartyProperties(MobileParty mobileParty, Settlement settlement)
+		{
+			mobileParty.CurrentSettlement = settlement;
+			mobileParty.InitializeMobilePartyAtPosition(settlement.GatePosition);
+		}
+	}
+
+	private InitializationArgs _initializationArgs;
+
 	[CachedData]
 	private TextObject _cachedName;
 
@@ -31,6 +42,8 @@ public class GarrisonPartyComponent : PartyComponent
 
 	public override int WagePaymentLimit => Settlement.GarrisonWagePaymentLimit;
 
+	public override bool CanHaveNavalNavigationCapability => false;
+
 	[SaveableProperty(1)]
 	public Settlement Settlement { get; private set; }
 
@@ -50,12 +63,20 @@ public class GarrisonPartyComponent : PartyComponent
 		return ((GarrisonPartyComponent)o).Settlement;
 	}
 
-	public static MobileParty CreateGarrisonParty(string stringId, Settlement settlement, bool isInitialGarrison)
+	public static MobileParty CreateGarrisonParty(string stringId, Settlement settlement)
 	{
-		return MobileParty.CreateParty(stringId, new GarrisonPartyComponent(settlement), delegate(MobileParty mobileParty)
-		{
-			(mobileParty.PartyComponent as GarrisonPartyComponent).InitializeGarrisonPartyProperties(mobileParty, isInitialGarrison);
-		});
+		InitializationArgs args = new InitializationArgs();
+		return MobileParty.CreateParty(stringId, new GarrisonPartyComponent(settlement, args));
+	}
+
+	public static void ConvertPartyToGarrisonParty(MobileParty mobileParty, Settlement settlement)
+	{
+		mobileParty.SetPartyComponent(new GarrisonPartyComponent(settlement, null));
+	}
+
+	public override Banner GetDefaultComponentBanner()
+	{
+		return Settlement.Banner;
 	}
 
 	public override void SetWagePaymentLimit(int newLimit)
@@ -63,9 +84,24 @@ public class GarrisonPartyComponent : PartyComponent
 		Settlement.SetGarrisonWagePaymentLimit(newLimit);
 	}
 
-	protected internal GarrisonPartyComponent(Settlement settlement)
+	protected GarrisonPartyComponent(Settlement settlement, InitializationArgs args)
 	{
 		Settlement = settlement;
+		_initializationArgs = args;
+	}
+
+	protected override void OnMobilePartySetOnCreation()
+	{
+		base.MobileParty.Party.SetVisualAsDirty();
+		base.MobileParty.InitializePartyTrade(Campaign.Current.Models.ClanFinanceModel.PartyGoldLowerThreshold);
+		base.MobileParty.Ai.DisableAi();
+		base.MobileParty.Aggressiveness = 0f;
+		base.MobileParty.DesiredAiNavigationType = MobileParty.NavigationType.None;
+		if (_initializationArgs != null)
+		{
+			_initializationArgs.InitializeGarrisonPartyProperties(base.MobileParty, Settlement);
+			_initializationArgs = null;
+		}
 	}
 
 	protected override void OnInitialize()
@@ -81,17 +117,5 @@ public class GarrisonPartyComponent : PartyComponent
 	public override void ClearCachedName()
 	{
 		_cachedName = null;
-	}
-
-	private void InitializeGarrisonPartyProperties(MobileParty mobileParty, bool isInitialGarrison)
-	{
-		PartyTemplateObject defaultPartyTemplate = Settlement.Culture.DefaultPartyTemplate;
-		mobileParty.CurrentSettlement = Settlement;
-		int troopNumberLimit = (isInitialGarrison ? ((int)(Settlement.Town.Prosperity * 0.04f + (float)(Settlement.IsTown ? 40 : 0) + 80f)) : 0);
-		mobileParty.InitializeMobilePartyAtPosition(defaultPartyTemplate, Settlement.GatePosition, troopNumberLimit);
-		mobileParty.Party.SetVisualAsDirty();
-		mobileParty.InitializePartyTrade(Campaign.Current.Models.ClanFinanceModel.PartyGoldLowerThreshold);
-		mobileParty.Ai.DisableAi();
-		mobileParty.Aggressiveness = 0f;
 	}
 }

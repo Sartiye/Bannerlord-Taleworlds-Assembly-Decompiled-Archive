@@ -222,11 +222,11 @@ public class VertexAnimator : SynchedMissionObject
 
 	protected internal override void OnEditorTick(float dt)
 	{
-		int componentCount = base.GameEntity.GetComponentCount(GameEntity.ComponentType.MetaMesh);
+		int componentCount = base.GameEntity.GetComponentCount(TaleWorlds.Engine.GameEntity.ComponentType.MetaMesh);
 		bool flag = false;
 		for (int i = 0; i < componentCount; i++)
 		{
-			MetaMesh metaMesh = base.GameEntity.GetComponentAtIndex(i, GameEntity.ComponentType.MetaMesh) as MetaMesh;
+			MetaMesh metaMesh = base.GameEntity.GetComponentAtIndex(i, TaleWorlds.Engine.GameEntity.ComponentType.MetaMesh) as MetaMesh;
 			for (int j = 0; j < metaMesh.MeshCount; j++)
 			{
 				int count = _animatedMeshes.Count;
@@ -259,10 +259,10 @@ public class VertexAnimator : SynchedMissionObject
 			animatedMesh.ReleaseEditDataUser();
 		}
 		_animatedMeshes.Clear();
-		int componentCount = base.GameEntity.GetComponentCount(GameEntity.ComponentType.MetaMesh);
+		int componentCount = base.GameEntity.GetComponentCount(TaleWorlds.Engine.GameEntity.ComponentType.MetaMesh);
 		for (int i = 0; i < componentCount; i++)
 		{
-			MetaMesh metaMesh = base.GameEntity.GetComponentAtIndex(i, GameEntity.ComponentType.MetaMesh) as MetaMesh;
+			MetaMesh metaMesh = base.GameEntity.GetComponentAtIndex(i, TaleWorlds.Engine.GameEntity.ComponentType.MetaMesh) as MetaMesh;
 			for (int j = 0; j < metaMesh.MeshCount; j++)
 			{
 				Mesh meshAtIndex = metaMesh.GetMeshAtIndex(j);

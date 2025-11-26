@@ -47,8 +47,10 @@ public class VolumeBox : MissionObject
 	{
 		MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
 		Vec3 scaleVector = globalFrame.rotation.GetScaleVector();
-		globalFrame.rotation.ApplyScaleLocal(new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z));
-		point = globalFrame.TransformToLocal(point);
+		ref Mat3 rotation = ref globalFrame.rotation;
+		Vec3 scaleAmountXYZ = new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z);
+		rotation.ApplyScaleLocal(in scaleAmountXYZ);
+		point = globalFrame.TransformToLocal(in point);
 		if (MathF.Abs(point.x) <= scaleVector.x / 2f && MathF.Abs(point.y) <= scaleVector.y / 2f)
 		{
 			return MathF.Abs(point.z) <= scaleVector.z / 2f;

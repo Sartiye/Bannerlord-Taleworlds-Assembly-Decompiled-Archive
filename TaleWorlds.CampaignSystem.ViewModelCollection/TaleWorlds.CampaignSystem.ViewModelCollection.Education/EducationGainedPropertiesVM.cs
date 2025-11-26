@@ -24,6 +24,8 @@ public class EducationGainedPropertiesVM : ViewModel
 
 	private MBBindingList<EducationGainGroupItemVM> _gainGroups;
 
+	private MBBindingList<EducationGainedSkillItemVM> _otherSkills;
+
 	[DataSourceProperty]
 	public MBBindingList<EducationGainGroupItemVM> GainGroups
 	{
@@ -41,6 +43,23 @@ public class EducationGainedPropertiesVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public MBBindingList<EducationGainedSkillItemVM> OtherSkills
+	{
+		get
+		{
+			return _otherSkills;
+		}
+		set
+		{
+			if (value != _otherSkills)
+			{
+				_otherSkills = value;
+				OnPropertyChangedWithValue(value, "OtherSkills");
+			}
+		}
+	}
+
 	public EducationGainedPropertiesVM(Hero child, int pageCount)
 	{
 		_child = child;
@@ -50,9 +69,21 @@ public class EducationGainedPropertiesVM : ViewModel
 		_affectedSkillValueMap = new Dictionary<SkillObject, Tuple<int, int>>();
 		_affectedAttributesMap = new Dictionary<CharacterAttribute, Tuple<int, int>>();
 		GainGroups = new MBBindingList<EducationGainGroupItemVM>();
-		foreach (CharacterAttribute item in Attributes.All)
+		OtherSkills = new MBBindingList<EducationGainedSkillItemVM>();
+		List<CharacterAttribute> list = Attributes.All.ToList();
+		list.Sort(CampaignUIHelper.CharacterAttributeComparerInstance);
+		foreach (CharacterAttribute item in list)
 		{
 			GainGroups.Add(new EducationGainGroupItemVM(item));
+		}
+		List<SkillObject> list2 = Skills.All.ToList();
+		list2.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list2)
+		{
+			if (!GainGroups.Any((EducationGainGroupItemVM attribute) => attribute.Skills.Any((EducationGainedSkillItemVM attributeSkill) => attributeSkill.SkillId == skill.StringId)))
+			{
+				OtherSkills.Add(new EducationGainedSkillItemVM(skill));
+			}
 		}
 		UpdateWithSelections(new List<string>(), -1);
 	}
@@ -65,6 +96,10 @@ public class EducationGainedPropertiesVM : ViewModel
 		GainGroups.ApplyActionOnAllItems(delegate(EducationGainGroupItemVM g)
 		{
 			g.ResetValues();
+		});
+		OtherSkills.ApplyActionOnAllItems(delegate(EducationGainedSkillItemVM s)
+		{
+			s.ResetValues();
 		});
 		PopulateInitialValues();
 		PopulateGainedAttributeValues(selectedOptions, currentPageIndex);
@@ -161,9 +196,11 @@ public class EducationGainedPropertiesVM : ViewModel
 				{
 					(SkillObject, int) tuple5 = array2[j];
 					Tuple<int, int> tuple6 = _affectedSkillFocusMap[tuple5.Item1];
-					int item5 = (flag2 ? tuple5.Item2 : (flag ? (tuple6.Item2 + tuple5.Item2) : 0));
-					int item6 = (flag2 ? tuple6.Item1 : (flag ? tuple6.Item1 : (tuple6.Item1 + tuple5.Item2)));
-					_affectedSkillFocusMap[tuple5.Item1] = new Tuple<int, int>(item6, item5);
+					int val = (flag2 ? tuple5.Item2 : (flag ? (tuple6.Item2 + tuple5.Item2) : 0));
+					int val2 = (flag2 ? tuple6.Item1 : (flag ? tuple6.Item1 : (tuple6.Item1 + tuple5.Item2)));
+					val2 = Math.Min(val2, 5);
+					val = Math.Min(val, 5 - val2);
+					_affectedSkillFocusMap[tuple5.Item1] = new Tuple<int, int>(val2, val);
 				}
 			}
 		}
@@ -176,6 +213,23 @@ public class EducationGainedPropertiesVM : ViewModel
 
 	private EducationGainedSkillItemVM GetItemFromSkill(SkillObject skill)
 	{
-		return GainGroups.SingleOrDefault((EducationGainGroupItemVM g) => g.Skills.SingleOrDefault((EducationGainedSkillItemVM s) => s.SkillObj == skill) != null)?.Skills.SingleOrDefault((EducationGainedSkillItemVM s) => s.SkillObj == skill);
+		foreach (EducationGainGroupItemVM gainGroup in GainGroups)
+		{
+			foreach (EducationGainedSkillItemVM skill2 in gainGroup.Skills)
+			{
+				if (skill2.SkillObj == skill)
+				{
+					return skill2;
+				}
+			}
+		}
+		foreach (EducationGainedSkillItemVM otherSkill in OtherSkills)
+		{
+			if (otherSkill.SkillObj == skill)
+			{
+				return otherSkill;
+			}
+		}
+		return null;
 	}
 }

@@ -42,6 +42,8 @@ public class AgentBuildData
 
 	public int AgentAge => AgentData.AgentAge;
 
+	public bool PrepareImmediately => AgentData.PrepareImmediately;
+
 	public bool GenderOverriden => AgentData.GenderOverriden;
 
 	public bool AgentIsFemale => AgentData.AgentIsFemale;
@@ -50,7 +52,7 @@ public class AgentBuildData
 
 	public IAgentOriginBase AgentOrigin => AgentData.AgentOrigin;
 
-	public Agent.ControllerType AgentController { get; private set; }
+	public AgentControllerType AgentController { get; private set; }
 
 	public Team AgentTeam { get; private set; }
 
@@ -108,7 +110,7 @@ public class AgentBuildData
 
 	private AgentBuildData()
 	{
-		AgentController = Agent.ControllerType.AI;
+		AgentController = AgentControllerType.AI;
 		AgentTeam = TaleWorlds.MountAndBlade.Team.Invalid;
 		AgentFormation = null;
 		AgentMissionPeer = null;
@@ -139,7 +141,7 @@ public class AgentBuildData
 		return this;
 	}
 
-	public AgentBuildData Controller(Agent.ControllerType controller)
+	public AgentBuildData Controller(AgentControllerType controller)
 	{
 		AgentController = controller;
 		return this;
@@ -188,6 +190,14 @@ public class AgentBuildData
 	}
 
 	public AgentBuildData InitialFrameFromSpawnPointEntity(GameEntity entity)
+	{
+		MatrixFrame globalFrame = entity.GetGlobalFrame();
+		AgentInitialPosition = globalFrame.origin;
+		AgentInitialDirection = globalFrame.rotation.f.AsVec2.Normalized();
+		return this;
+	}
+
+	public AgentBuildData InitialFrameFromSpawnPointEntity(WeakGameEntity entity)
 	{
 		MatrixFrame globalFrame = entity.GetGlobalFrame();
 		AgentInitialPosition = globalFrame.origin;
@@ -258,6 +268,12 @@ public class AgentBuildData
 	public AgentBuildData CivilianEquipment(bool civilianEquipment)
 	{
 		AgentData.CivilianEquipment(civilianEquipment);
+		return this;
+	}
+
+	public AgentBuildData SetPrepareImmediately()
+	{
+		AgentData.SetPrepareImmediately();
 		return this;
 	}
 

@@ -50,9 +50,15 @@ public class CharacterCode
 
 	public static CharacterCode CreateFrom(BasicCharacterObject character)
 	{
+		return CreateFrom(character, character.Equipment);
+	}
+
+	public static CharacterCode CreateFrom(BasicCharacterObject character, Equipment equipment)
+	{
 		CharacterCode characterCode = new CharacterCode();
-		string value = (characterCode.EquipmentCode = character.Equipment?.CalculateEquipmentCode());
-		characterCode.BodyProperties = character.GetBodyProperties(character.Equipment);
+		Equipment equipment2 = equipment ?? character.Equipment;
+		string value = (characterCode.EquipmentCode = equipment2?.CalculateEquipmentCode());
+		characterCode.BodyProperties = character.GetBodyProperties(equipment2);
 		characterCode.IsFemale = character.IsFemale;
 		characterCode.IsHero = character.IsHero;
 		characterCode.FormationClass = character.DefaultFormationClass;
@@ -205,7 +211,7 @@ public class CharacterCode
 		}
 		else
 		{
-			Debug.FailedAssert("Cannot read the character code body property", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\CharacterCode.cs", "CreateFrom", 235);
+			Debug.FailedAssert("Cannot read the character code body property", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\CharacterCode.cs", "CreateFrom", 241);
 		}
 		characterCode.IsFemale = Convert.ToInt32(value) == 1;
 		characterCode.IsHero = Convert.ToInt32(value2) == 1;

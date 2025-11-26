@@ -31,7 +31,7 @@ public class TextProcessingContext
 		}
 		if (!_variables.ContainsKey(variableName))
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _variables[variableName];
 	}
@@ -40,7 +40,7 @@ public class TextProcessingContext
 	{
 		TextObject value = null;
 		MBTextModel mBTextModel = null;
-		if (parent == null || !parent.GetVariableValue(variableName, out value))
+		if (!(parent != null) || !parent.GetVariableValue(variableName, out value))
 		{
 			_variables.TryGetValue(variableName, out value);
 		}
@@ -62,19 +62,19 @@ public class TextProcessingContext
 	internal (TextObject, bool) GetVariableValueAsTextObject(string variableName, TextObject parent)
 	{
 		TextObject variable = null;
-		if (parent != null)
+		if (!TextObject.IsNullOrEmpty(parent))
 		{
 			if (parent.GetVariableValue(variableName, out variable))
 			{
 				return (variable, true);
 			}
 			variable = FindNestedFieldValue(MBTextManager.GetLocalizedText(parent.Value), variableName, parent);
-			if (variable != null && variable.Length > 0)
+			if ((object)variable != null && variable.Length > 0)
 			{
 				return (variable, true);
 			}
 		}
-		if (variable != null && variable.Length != 0)
+		if (!(variable == null) && variable.Length != 0)
 		{
 			return (variable, true);
 		}
@@ -198,7 +198,7 @@ public class TextProcessingContext
 		if (parent?.Attributes != null && parent.TryGetAttributesValue(text, out var value))
 		{
 			var (textObject, item) = GetQualifiedVariableValue(text2, value);
-			if (!textObject.Equals(TextObject.Empty))
+			if (!textObject.IsEmpty())
 			{
 				return (value: textObject, doesValueExist: item);
 			}
@@ -224,7 +224,7 @@ public class TextProcessingContext
 				}
 			}
 		}
-		return (value: TextObject.Empty, doesValueExist: false);
+		return (value: TextObject.GetEmpty(), doesValueExist: false);
 	}
 
 	private static string GetFieldValue(string text, string[] fieldNames, TextObject parent)
@@ -332,6 +332,7 @@ public class TextProcessingContext
 		}
 		string value = mBStringBuilder.ToStringAndRelease();
 		_curParams.Pop();
+		_curParamsWithoutEvaluate.Pop();
 		return new TextObject(value);
 	}
 
@@ -361,7 +362,7 @@ public class TextProcessingContext
 			}
 			return new TextObject("Can't find parameter:" + rawValue);
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public TextObject GetFunctionParamWithoutEvaluate(string rawValue)
@@ -374,7 +375,7 @@ public class TextProcessingContext
 			}
 			return new TextObject("Can't find parameter:" + rawValue);
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	internal void ClearAll()

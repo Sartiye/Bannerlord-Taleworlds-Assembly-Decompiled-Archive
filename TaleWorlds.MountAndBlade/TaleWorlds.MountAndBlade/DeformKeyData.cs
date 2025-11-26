@@ -3,7 +3,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Deform_Key_Data", false)]
+[EngineStruct("Deform_Key_Data", false, null)]
 public struct DeformKeyData
 {
 	public int GroupId;

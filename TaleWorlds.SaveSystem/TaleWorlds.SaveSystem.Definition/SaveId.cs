@@ -44,4 +44,6 @@ public abstract class SaveId
 		}
 		return result;
 	}
+
+	public abstract int GetSizeInBytes();
 }

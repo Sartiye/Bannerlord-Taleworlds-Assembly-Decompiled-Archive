@@ -50,7 +50,7 @@ public class MakePeaceLogEntry : LogEntry, IEncyclopediaLog, IChatNotification
 		Faction2 = faction2;
 	}
 
-	public override int GetAsRumor(Settlement talkSettlement, ref TextObject comment)
+	public override int GetAsRumor(Settlement talkSettlement, out TextObject comment)
 	{
 		if (Faction1 == talkSettlement.MapFaction)
 		{
@@ -64,6 +64,7 @@ public class MakePeaceLogEntry : LogEntry, IEncyclopediaLog, IChatNotification
 			comment.SetTextVariable("ENEMY_NAME", FactionHelper.GetTermUsedByOtherFaction(Faction1, talkSettlement.MapFaction, pejorative: false));
 			return 10;
 		}
+		comment = TextObject.GetEmpty();
 		return 0;
 	}
 

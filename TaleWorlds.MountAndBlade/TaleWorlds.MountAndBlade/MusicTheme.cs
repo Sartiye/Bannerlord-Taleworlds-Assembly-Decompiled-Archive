@@ -10,6 +10,7 @@ public enum MusicTheme
 	MainTheme = 5,
 	BattlePaganB = 6,
 	CampaignDark = 7,
+	StealthA = 8,
 	BattleTurnsNegative = 9,
 	BattleMedium = 10,
 	BattleTurnsPositive = 11,
@@ -40,5 +41,10 @@ public enum MusicTheme
 	CombatA = 36,
 	PaganSiege = 38,
 	PaganTurnsNegative = 39,
-	PaganTurnsPositive = 40
+	PaganTurnsPositive = 40,
+	NavalMainTheme = 10244,
+	BattleNord = 10246,
+	NordCampaign = 10247,
+	SeaCampaignNorthern = 10248,
+	SeaCampaignSouthern = 10249
 }

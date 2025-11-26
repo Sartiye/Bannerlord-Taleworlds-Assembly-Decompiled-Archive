@@ -166,24 +166,24 @@ public class BehaviorUseSiegeMachines : BehaviorComponent
 			}
 			if (flag2)
 			{
-				base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+				base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 			}
 			else if (base.Formation.QuerySystem.IsRangedFormation)
 			{
-				base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderScatter;
+				base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
 			}
 			else
 			{
-				base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderShieldWall;
+				base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderShieldWall);
 			}
 		}
 		if (_followedEntity != null && (_behaviorState == BehaviorState.Follow || _behaviorState == BehaviorState.ClimbSiegeTower))
 		{
-			base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtDirection(_followedEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized());
+			base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtDirection(_followedEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized()));
 		}
 		else
 		{
-			base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
+			base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
 		}
 		if (base.Formation.AI.ActiveBehavior == this)
 		{
@@ -212,10 +212,10 @@ public class BehaviorUseSiegeMachines : BehaviorComponent
 
 	protected override void OnBehaviorActivatedAux()
 	{
-		base.Formation.ArrangementOrder = (base.Formation.QuerySystem.IsRangedFormation ? ArrangementOrder.ArrangementOrderScatter : ArrangementOrder.ArrangementOrderShieldWall);
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(base.Formation.QuerySystem.IsRangedFormation ? ArrangementOrder.ArrangementOrderScatter : ArrangementOrder.ArrangementOrderShieldWall);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

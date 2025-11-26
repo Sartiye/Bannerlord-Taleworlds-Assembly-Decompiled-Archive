@@ -105,9 +105,9 @@ public class TacticFullScaleAttack : TacticComponent
 
 	private bool HasBattleBeenJoined()
 	{
-		if (_mainInfantry?.QuerySystem.ClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
+		if (_mainInfantry?.CachedClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
 		{
-			return _mainInfantry.QuerySystem.MedianPosition.AsVec2.Distance(_mainInfantry.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / _mainInfantry.QuerySystem.ClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
+			return _mainInfantry.CachedMedianPosition.AsVec2.Distance(_mainInfantry.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / _mainInfantry.CachedClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
 		}
 		return true;
 	}
@@ -140,7 +140,7 @@ public class TacticFullScaleAttack : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

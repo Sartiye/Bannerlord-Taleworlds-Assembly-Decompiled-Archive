@@ -8,8 +8,8 @@ public class EquipmentTestMissionController : MissionLogic
 	public override void AfterStart()
 	{
 		base.AfterStart();
-		GameEntity entity = base.Mission.Scene.FindEntityWithTag("spawnpoint_player");
+		WeakGameEntity entity = base.Mission.Scene.FindWeakEntityWithTag("spawnpoint_player");
 		base.Mission.SpawnAgent(new AgentBuildData(Game.Current.PlayerTroop).Team(base.Mission.AttackerTeam).InitialFrameFromSpawnPointEntity(entity).CivilianEquipment(civilianEquipment: false)
-			.Controller(Agent.ControllerType.Player));
+			.Controller(AgentControllerType.Player));
 	}
 }

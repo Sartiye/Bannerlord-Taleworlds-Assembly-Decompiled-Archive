@@ -9,8 +9,6 @@ public class OnlineImageTextureWidget : TextureWidget
 		ScaleToBiggerDimension
 	}
 
-	private static bool _textureProviderTypeCollectionRequested;
-
 	private string _onlineImageSourceUrl;
 
 	public ImageSizePolicies ImageSizePolicy { get; set; }
@@ -38,11 +36,6 @@ public class OnlineImageTextureWidget : TextureWidget
 		: base(context)
 	{
 		base.TextureProviderName = "OnlineImageTextureProvider";
-		if (!_textureProviderTypeCollectionRequested)
-		{
-			TextureWidget._typeCollector.Collect();
-			_textureProviderTypeCollectionRequested = true;
-		}
 	}
 
 	protected override void OnUpdate(float dt)
@@ -53,9 +46,10 @@ public class OnlineImageTextureWidget : TextureWidget
 
 	private void UpdateSizePolicy()
 	{
+		bool flag = base.Texture?.IsValid ?? false;
 		if (ImageSizePolicy == ImageSizePolicies.OriginalSize)
 		{
-			if (base.Texture != null)
+			if (flag)
 			{
 				base.WidthSizePolicy = SizePolicy.Fixed;
 				base.HeightSizePolicy = SizePolicy.Fixed;
@@ -70,7 +64,7 @@ public class OnlineImageTextureWidget : TextureWidget
 		}
 		else
 		{
-			if (ImageSizePolicy != ImageSizePolicies.ScaleToBiggerDimension || base.Texture == null)
+			if (ImageSizePolicy != ImageSizePolicies.ScaleToBiggerDimension || !flag)
 			{
 				return;
 			}

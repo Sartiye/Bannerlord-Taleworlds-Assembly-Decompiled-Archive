@@ -34,11 +34,17 @@ public class ClanMembersSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanLordItemVM x, ClanLordItemVM y)
 		{
+			int num = GetDistanceToMainHero(y).CompareTo(GetDistanceToMainHero(x));
 			if (_isAcending)
 			{
-				return y.GetHero().GetTrackDistanceToMainAgent().CompareTo(x.GetHero().GetTrackDistanceToMainAgent()) * -1;
+				return num * -1;
 			}
-			return y.GetHero().GetTrackDistanceToMainAgent().CompareTo(x.GetHero().GetTrackDistanceToMainAgent());
+			return num;
+		}
+
+		private float GetDistanceToMainHero(ClanLordItemVM item)
+		{
+			return item.GetHero().GetCampaignPosition().Distance(Hero.MainHero.GetCampaignPosition());
 		}
 	}
 

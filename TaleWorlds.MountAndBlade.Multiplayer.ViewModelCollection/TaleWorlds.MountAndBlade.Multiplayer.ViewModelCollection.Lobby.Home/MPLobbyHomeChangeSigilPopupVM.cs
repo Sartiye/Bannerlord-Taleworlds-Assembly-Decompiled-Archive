@@ -261,7 +261,7 @@ public class MPLobbyHomeChangeSigilPopupVM : ViewModel
 			if (cosmeticElementsList[i].Type == CosmeticsManager.CosmeticType.Sigil)
 			{
 				SigilCosmeticElement sigilCosmeticElement = cosmeticElementsList[i] as SigilCosmeticElement;
-				MPLobbyCosmeticSigilItemVM mPLobbyCosmeticSigilItemVM = new MPLobbyCosmeticSigilItemVM(new Banner(sigilCosmeticElement.BannerCode).BannerDataList[1].MeshId, (int)sigilCosmeticElement.Rarity, sigilCosmeticElement.Cost, sigilCosmeticElement.Id);
+				MPLobbyCosmeticSigilItemVM mPLobbyCosmeticSigilItemVM = new MPLobbyCosmeticSigilItemVM(new Banner(sigilCosmeticElement.BannerCode).GetIconMeshId(), (int)sigilCosmeticElement.Rarity, sigilCosmeticElement.Cost, sigilCosmeticElement.Id);
 				mPLobbyCosmeticSigilItemVM.IsUnlocked = ownedCosmetics.Contains(sigilCosmeticElement.Id) || sigilCosmeticElement.IsFree;
 				SigilList.Add(mPLobbyCosmeticSigilItemVM);
 			}
@@ -274,7 +274,7 @@ public class MPLobbyHomeChangeSigilPopupVM : ViewModel
 
 	private void SelectPlayerSigil(PlayerData playerData)
 	{
-		int playerBannerID = new Banner(playerData.Sigil).BannerDataList[1].MeshId;
+		int playerBannerID = new Banner(playerData.Sigil).GetIconMeshId();
 		OnSigilSelected(SigilList.First((MPLobbyCosmeticSigilItemVM s) => s.IconID == playerBannerID));
 	}
 

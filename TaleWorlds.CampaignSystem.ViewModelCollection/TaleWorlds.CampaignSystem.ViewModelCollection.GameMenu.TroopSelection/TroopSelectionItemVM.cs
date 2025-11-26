@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.TroopSelection;
@@ -18,7 +19,7 @@ public class TroopSelectionItemVM : ViewModel
 
 	private int _heroHealthPercent;
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
 	private bool _isSelected;
 
@@ -195,7 +196,7 @@ public class TroopSelectionItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -251,7 +252,7 @@ public class TroopSelectionItemVM : ViewModel
 		_onRemove = onRemove;
 		Troop = troop;
 		MaxAmount = Troop.Number - Troop.WoundedNumber;
-		Visual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(troop.Character));
+		Visual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(troop.Character));
 		Name = troop.Character.Name.ToString();
 		TierIconData = CampaignUIHelper.GetCharacterTierData(Troop.Character);
 		TypeIconData = CampaignUIHelper.GetCharacterTypeData(Troop.Character);

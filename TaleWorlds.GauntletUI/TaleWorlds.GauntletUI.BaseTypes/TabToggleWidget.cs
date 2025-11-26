@@ -28,9 +28,9 @@ public class TabToggleWidget : ButtonWidget
 	{
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (TabControlWidget != null && !string.IsNullOrEmpty(TabName))
 		{
 			TabControlWidget.SetActiveTab(TabName);

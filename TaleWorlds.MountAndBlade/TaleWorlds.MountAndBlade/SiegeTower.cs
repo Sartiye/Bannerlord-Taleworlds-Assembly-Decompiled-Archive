@@ -158,19 +158,15 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 
 	public MissionObject TargetCastlePosition => _targetWallSegment;
 
-	private GameEntity CleanState
+	private WeakGameEntity CleanState
 	{
 		get
 		{
 			if (!(_cleanState == null))
 			{
-				return _cleanState;
+				return _cleanState.WeakEntity;
 			}
 			return base.GameEntity;
-		}
-		set
-		{
-			_cleanState = value;
 		}
 	}
 
@@ -330,13 +326,13 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		return result;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		if (gameEntity == null || !gameEntity.HasScriptOfType<UsableMissionObject>() || gameEntity.HasTag("move"))
+		if (!gameEntity.IsValid || !gameEntity.HasScriptOfType<UsableMissionObject>() || gameEntity.HasTag("move"))
 		{
-			return new TextObject("{=aXjlMBiE}Siege Tower").ToString();
+			return new TextObject("{=aXjlMBiE}Siege Tower");
 		}
-		return new TextObject("{=6wZUG0ev}Gate").ToString();
+		return new TextObject("{=6wZUG0ev}Gate");
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
@@ -442,12 +438,12 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 					if (_soilNavMeshID1 > 0 && _groundToSoilNavMeshID1 > 0 && _ditchNavMeshID1 > 0)
 					{
 						Mission.Current.Scene.SetAbilityOfFacesWithId(_soilNavMeshID1, isEnabled: true);
-						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID1, _ditchNavMeshID1, _soilNavMeshID1);
+						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID1, _ditchNavMeshID1, _soilNavMeshID1, canFail: false);
 					}
 					if (_soilNavMeshID2 > 0 && _groundToSoilNavMeshID2 > 0 && _ditchNavMeshID2 > 0)
 					{
 						Mission.Current.Scene.SetAbilityOfFacesWithId(_soilNavMeshID2, isEnabled: true);
-						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID2, _ditchNavMeshID2, _soilNavMeshID2);
+						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID2, _ditchNavMeshID2, _soilNavMeshID2, canFail: false);
 					}
 					if (_groundGenericNavMeshID > 0)
 					{
@@ -462,12 +458,12 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 					}
 					if (_soilNavMeshID1 > 0 && _groundToSoilNavMeshID1 > 0 && _ditchNavMeshID1 > 0)
 					{
-						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID1, _soilNavMeshID1, _ditchNavMeshID1);
+						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID1, _soilNavMeshID1, _ditchNavMeshID1, canFail: false);
 						Mission.Current.Scene.SetAbilityOfFacesWithId(_soilNavMeshID1, isEnabled: false);
 					}
 					if (_soilNavMeshID2 > 0 && _groundToSoilNavMeshID2 > 0 && _ditchNavMeshID2 > 0)
 					{
-						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID2, _soilNavMeshID2, _ditchNavMeshID2);
+						Mission.Current.Scene.SwapFaceConnectionsWithID(_groundToSoilNavMeshID2, _soilNavMeshID2, _ditchNavMeshID2, canFail: false);
 						Mission.Current.Scene.SetAbilityOfFacesWithId(_soilNavMeshID2, isEnabled: false);
 					}
 					if (_soilGenericNavMeshID > 0)
@@ -497,14 +493,14 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			CleanState.Scene.ImportNavigationMeshPrefab(NavMeshPrefabName, DynamicNavmeshIdStart);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 1, isConnected: false);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 2, isConnected: true);
-			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 4, isConnected: false, isBlocker: true);
+			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 4, isConnected: false, isBlocker: true, autoLocalize: false, finalizeBlockerConvexHullComputation: true);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 5, isConnected: false);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 6, isConnected: false);
 			GetEntityToAttachNavMeshFaces().AttachNavigationMeshFaces(DynamicNavmeshIdStart + 7, isConnected: false);
 		}
 	}
 
-	protected override GameEntity GetEntityToAttachNavMeshFaces()
+	protected override WeakGameEntity GetEntityToAttachNavMeshFaces()
 	{
 		return CleanState;
 	}
@@ -596,7 +592,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 
 	protected internal override void OnInit()
 	{
-		CleanState = base.GameEntity.GetFirstChildEntityWithTag("body");
+		_cleanState = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("body"));
 		base.OnInit();
 		base.DestructionComponent.OnDestroyed += OnDestroyed;
 		base.DestructionComponent.BattleSide = BattleSideEnum.Attacker;
@@ -605,7 +601,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		{
 			CleanState.Scene.SetAbilityOfFacesWithId(_soilGenericNavMeshID, isEnabled: false);
 		}
-		List<SynchedMissionObject> list = CleanState.CollectObjectsWithTag<SynchedMissionObject>(GateTag);
+		List<SynchedMissionObject> list = CleanState.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(GateTag);
 		if (list.Count > 0)
 		{
 			_gateObject = list[0];
@@ -615,7 +611,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		if (!list2.IsEmpty())
 		{
 			float num = 10000000f;
-			GameEntity entity = null;
+			GameEntity entity2 = null;
 			MatrixFrame targetFrame = MovementComponent.GetTargetFrame();
 			foreach (GameEntity item in list2)
 			{
@@ -623,42 +619,42 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 				if (lengthSquared < num)
 				{
 					num = lengthSquared;
-					entity = item;
+					entity2 = item;
 				}
 			}
-			list2 = entity.CollectChildrenEntitiesWithTag("destroyed");
+			list2 = entity2.CollectChildrenEntitiesWithTag("destroyed");
 			if (list2.Count > 0)
 			{
 				_destroyedWallEntity = list2[0];
 			}
-			list2 = entity.CollectChildrenEntitiesWithTag("non_destroyed");
+			list2 = entity2.CollectChildrenEntitiesWithTag("non_destroyed");
 			if (list2.Count > 0)
 			{
 				_nonDestroyedWallEntity = list2[0];
 			}
-			list2 = entity.CollectChildrenEntitiesWithTag("particle_spawnpoint");
+			list2 = entity2.CollectChildrenEntitiesWithTag("particle_spawnpoint");
 			if (list2.Count > 0)
 			{
 				_battlementDestroyedParticle = list2[0];
 			}
 		}
-		list = CleanState.CollectObjectsWithTag<SynchedMissionObject>(HandleTag);
+		list = CleanState.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(HandleTag);
 		_handleObject = ((list.Count < 1) ? null : list[0]);
 		_gateHandleIdleAnimationIndex = MBAnimation.GetAnimationIndexWithName(GateHandleIdleAnimation);
 		_gateTrembleAnimationIndex = MBAnimation.GetAnimationIndexWithName(GateTrembleAnimation);
 		_queueManagers = new List<LadderQueueManager>();
 		if (!GameNetwork.IsClientOrReplay)
 		{
-			List<GameEntity> list3 = CleanState.CollectChildrenEntitiesWithTag("ladder");
+			List<WeakGameEntity> list3 = CleanState.CollectChildrenEntitiesWithTag("ladder");
 			if (list3.Count > 0)
 			{
 				_hasLadders = true;
-				GameEntity gameEntity = list3.ElementAt(list3.Count / 2);
-				foreach (GameEntity item2 in list3)
+				WeakGameEntity weakGameEntity = list3.ElementAt(list3.Count / 2);
+				foreach (WeakGameEntity item2 in list3)
 				{
 					if (item2.Name.Contains("middle"))
 					{
-						gameEntity = item2;
+						weakGameEntity = item2;
 						continue;
 					}
 					LadderQueueManager? ladderQueueManager = item2.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
@@ -679,13 +675,13 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 						break;
 					}
 				}
-				LadderQueueManager ladderQueueManager2 = gameEntity.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
+				LadderQueueManager ladderQueueManager2 = weakGameEntity.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
 				if (ladderQueueManager2 != null)
 				{
 					MatrixFrame identity = MatrixFrame.Identity;
 					identity.rotation.RotateAboutSide(System.MathF.PI / 2f);
 					identity.rotation.RotateAboutForward(System.MathF.PI / 8f);
-					ladderQueueManager2.Initialize(DynamicNavmeshIdStart + 5, identity, new Vec3(0f, 0f, 1f), BattleSideEnum.Attacker, list3.Count * 2, System.MathF.PI / 4f, 2f, 1f, 4f, 3f, blockUsage: false, 0.8f, (float)num2 * 2f / 3f, 5f, list3.Count > 1, DynamicNavmeshIdStart + 6, DynamicNavmeshIdStart + 7, num2 * TaleWorlds.Library.MathF.Round((float)list3.Count * 0.666f), list3.Count + 1);
+					ladderQueueManager2.Initialize(DynamicNavmeshIdStart + 5, identity, new Vec3(0f, 0f, 1f), BattleSideEnum.Attacker, list3.Count * 2, System.MathF.PI / 4f, 2f, 1f, 4f, 3f, blockUsage: false, 0.8f, (float)num2 * 2f / 5f, 5f, list3.Count > 1, DynamicNavmeshIdStart + 6, DynamicNavmeshIdStart + 7, num2 * TaleWorlds.Library.MathF.Round((float)list3.Count * 0.666f), list3.Count + 1);
 					_queueManagers.Add(ladderQueueManager2);
 				}
 				base.GameEntity.Scene.MarkFacesWithIdAsLadder(5, isLadder: true);
@@ -695,15 +691,15 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			else
 			{
 				_hasLadders = false;
-				LadderQueueManager ladderQueueManager3 = CleanState.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
-				if (ladderQueueManager3 != null)
+				LadderQueueManager firstScriptOfType = CleanState.GetFirstScriptOfType<LadderQueueManager>();
+				if (firstScriptOfType != null)
 				{
 					MatrixFrame identity2 = MatrixFrame.Identity;
 					identity2.origin.y += 4f;
 					identity2.rotation.RotateAboutSide(-System.MathF.PI / 2f);
 					identity2.rotation.RotateAboutUp(System.MathF.PI);
-					ladderQueueManager3.Initialize(DynamicNavmeshIdStart + 2, identity2, new Vec3(0f, -1f), BattleSideEnum.Attacker, 15, System.MathF.PI / 4f, 2f, 1f, 3f, 1f, blockUsage: false, 0.8f, 4f, 5f, doesManageMultipleIDs: false, -2, -2, int.MaxValue, 15);
-					_queueManagers.Add(ladderQueueManager3);
+					firstScriptOfType.Initialize(DynamicNavmeshIdStart + 2, identity2, new Vec3(0f, -1f), BattleSideEnum.Attacker, 15, System.MathF.PI / 4f, 2f, 1f, 3f, 1f, blockUsage: false, 0.8f, 4f, 5f, doesManageMultipleIDs: false, -2, -2, int.MaxValue, 15);
+					_queueManagers.Add(firstScriptOfType);
 				}
 			}
 		}
@@ -712,25 +708,30 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		_closedStateRotation = _gateObject.GameEntity.GetFrame().rotation;
 		foreach (StandingPoint standingPoint in base.StandingPoints)
 		{
-			standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none));
+			standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
 			if (!standingPoint.GameEntity.HasTag("move"))
 			{
 				_gateStandingPoint = standingPoint;
 				standingPoint.IsDeactivated = true;
-				_gateStandingPointLocalIKFrame = standingPoint.GameEntity.GetGlobalFrame().TransformToLocal(CleanState.GetGlobalFrame());
+				MatrixFrame globalFrame = standingPoint.GameEntity.GetGlobalFrame();
+				MatrixFrame m = CleanState.GetGlobalFrame();
+				_gateStandingPointLocalIKFrame = globalFrame.TransformToLocal(in m);
 				standingPoint.AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 			}
 		}
 		if (base.WaitStandingPoints[0].GlobalPosition.z > base.WaitStandingPoints[1].GlobalPosition.z)
 		{
-			GameEntity value = base.WaitStandingPoints[0];
-			base.WaitStandingPoints[0] = base.WaitStandingPoints[1];
-			base.WaitStandingPoints[1] = value;
+			List<GameEntity> waitStandingPoints = base.WaitStandingPoints;
+			List<GameEntity> waitStandingPoints2 = base.WaitStandingPoints;
+			GameEntity gameEntity = base.WaitStandingPoints[1];
+			GameEntity gameEntity2 = base.WaitStandingPoints[0];
+			GameEntity gameEntity4 = (waitStandingPoints[0] = gameEntity);
+			gameEntity4 = (waitStandingPoints2[1] = gameEntity2);
 			ActiveWaitStandingPoint = base.WaitStandingPoints[0];
 		}
-		IEnumerable<GameEntity> source = from ewtwst in base.Scene.FindEntitiesWithTag(_targetWallSegmentTag).ToList()
-			where ewtwst.HasScriptOfType<WallSegment>()
-			select ewtwst;
+		IEnumerable<WeakGameEntity> source = from entity in base.Scene.FindWeakEntitiesWithTag(_targetWallSegmentTag).ToList()
+			where entity.HasScriptOfType<WallSegment>()
+			select entity;
 		if (!source.IsEmpty())
 		{
 			_targetWallSegment = source.First().GetFirstScriptOfType<WallSegment>();
@@ -763,10 +764,10 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 				queueManager.DeactivateImmediate();
 			}
 		}
-		GameEntity gameEntity2 = base.Scene.FindEntitiesWithTag("ditch_filler").FirstOrDefault((GameEntity df) => df.HasTag(_sideTag));
-		if (gameEntity2 != null)
+		WeakGameEntity weakGameEntity2 = base.Scene.FindWeakEntitiesWithTag("ditch_filler").FirstOrDefault((WeakGameEntity df) => df.HasTag(_sideTag));
+		if (weakGameEntity2 != null)
 		{
-			_ditchFillDebris = gameEntity2.GetFirstScriptOfType<SynchedMissionObject>();
+			_ditchFillDebris = weakGameEntity2.GetFirstScriptOfType<SynchedMissionObject>();
 		}
 		if (!GameNetwork.IsClientOrReplay)
 		{
@@ -856,7 +857,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			}
 			break;
 		default:
-			Debug.FailedAssert("Invalid gate state.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeTower.cs", "OnTick", 974);
+			Debug.FailedAssert("Invalid gate state.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeTower.cs", "OnTick", 961);
 			break;
 		case GateState.Open:
 			break;
@@ -1050,40 +1051,19 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 
 	private void UpdateGhostEntity()
 	{
-		List<GameEntity> list = CleanState.CollectChildrenEntitiesWithTag("ghost_object");
-		if (list.Count > 0)
+		WeakGameEntity firstChildEntityWithTag = CleanState.GetFirstChildEntityWithTag("ghost_object");
+		if (firstChildEntityWithTag.IsValid && firstChildEntityWithTag.ChildCount > 0)
 		{
-			GameEntity gameEntity = list[0];
-			if (gameEntity.ChildCount > 0)
-			{
-				MovementComponent.GhostEntitySpeedMultiplier = GhostEntitySpeedMultiplier;
-				GameEntity child = gameEntity.GetChild(0);
-				MatrixFrame frame = child.GetFrame();
-				child.SetFrame(ref frame);
-			}
+			MovementComponent.GhostEntitySpeedMultiplier = GhostEntitySpeedMultiplier;
+			WeakGameEntity child = firstChildEntityWithTag.GetChild(0);
+			MatrixFrame frame = child.GetFrame();
+			child.SetFrame(ref frame);
 		}
 	}
 
 	public void SetSpawnedFromSpawner()
 	{
 		_spawnedFromSpawner = true;
-	}
-
-	public void AssignParametersFromSpawner(string pathEntityName, string targetWallSegment, string sideTag, int soilNavMeshID1, int soilNavMeshID2, int ditchNavMeshID1, int ditchNavMeshID2, int groundToSoilNavMeshID1, int groundToSoilNavMeshID2, int soilGenericNavMeshID, int groundGenericNavMeshID, Mat3 openStateRotation, string barrierTagToRemove)
-	{
-		PathEntity = pathEntityName;
-		_targetWallSegmentTag = targetWallSegment;
-		_sideTag = sideTag;
-		_soilNavMeshID1 = soilNavMeshID1;
-		_soilNavMeshID2 = soilNavMeshID2;
-		_ditchNavMeshID1 = ditchNavMeshID1;
-		_ditchNavMeshID2 = ditchNavMeshID2;
-		_groundToSoilNavMeshID1 = groundToSoilNavMeshID1;
-		_groundToSoilNavMeshID2 = groundToSoilNavMeshID2;
-		_soilGenericNavMeshID = soilGenericNavMeshID;
-		_groundGenericNavMeshID = groundGenericNavMeshID;
-		_openStateRotation = openStateRotation;
-		BarrierTagToRemove = barrierTagToRemove;
 	}
 
 	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
@@ -1110,6 +1090,23 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		MovementComponent.SetTargetFrameForPathTracker();
 	}
 
+	public void AssignParametersFromSpawner(string pathEntityName, string targetWallSegment, string sideTag, int soilNavMeshID1, int soilNavMeshID2, int ditchNavMeshID1, int ditchNavMeshID2, int groundToSoilNavMeshID1, int groundToSoilNavMeshID2, int soilGenericNavMeshID, int groundGenericNavMeshID, Mat3 openStateRotation, string barrierTagToRemove)
+	{
+		PathEntity = pathEntityName;
+		_targetWallSegmentTag = targetWallSegment;
+		_sideTag = sideTag;
+		_soilNavMeshID1 = soilNavMeshID1;
+		_soilNavMeshID2 = soilNavMeshID2;
+		_ditchNavMeshID1 = ditchNavMeshID1;
+		_ditchNavMeshID2 = ditchNavMeshID2;
+		_groundToSoilNavMeshID1 = groundToSoilNavMeshID1;
+		_groundToSoilNavMeshID2 = groundToSoilNavMeshID2;
+		_soilGenericNavMeshID = soilGenericNavMeshID;
+		_groundGenericNavMeshID = groundGenericNavMeshID;
+		_openStateRotation = openStateRotation;
+		BarrierTagToRemove = barrierTagToRemove;
+	}
+
 	public bool GetNavmeshFaceIds(out List<int> navmeshFaceIds)
 	{
 		navmeshFaceIds = new List<int>
@@ -1121,5 +1118,13 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			DynamicNavmeshIdStart + 7
 		};
 		return true;
+	}
+
+	public void OnFormationFrameChanged(Agent agent, bool hasFrame, WorldPosition frame)
+	{
+		foreach (LadderQueueManager queueManager in _queueManagers)
+		{
+			queueManager.OnFormationFrameChanged(agent, hasFrame, frame);
+		}
 	}
 }

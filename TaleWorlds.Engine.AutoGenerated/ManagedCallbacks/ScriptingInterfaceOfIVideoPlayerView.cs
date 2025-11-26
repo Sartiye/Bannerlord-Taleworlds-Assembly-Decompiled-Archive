@@ -28,7 +28,7 @@ internal class ScriptingInterfaceOfIVideoPlayerView : IVideoPlayerView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void PlayVideoDelegate(UIntPtr pointer, byte[] videoFileName, byte[] soundFileName, float framerate);
+	public delegate void PlayVideoDelegate(UIntPtr pointer, byte[] videoFileName, byte[] soundFileName, float framerate, [MarshalAs(UnmanagedType.U1)] bool looping);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -69,7 +69,7 @@ internal class ScriptingInterfaceOfIVideoPlayerView : IVideoPlayerView
 		return call_IsVideoFinishedDelegate(pointer);
 	}
 
-	public void PlayVideo(UIntPtr pointer, string videoFileName, string soundFileName, float framerate)
+	public void PlayVideo(UIntPtr pointer, string videoFileName, string soundFileName, float framerate, bool looping)
 	{
 		byte[] array = null;
 		if (videoFileName != null)
@@ -87,7 +87,7 @@ internal class ScriptingInterfaceOfIVideoPlayerView : IVideoPlayerView
 			_utf8.GetBytes(soundFileName, 0, soundFileName.Length, array2, 0);
 			array2[byteCount2] = 0;
 		}
-		call_PlayVideoDelegate(pointer, array, array2, framerate);
+		call_PlayVideoDelegate(pointer, array, array2, framerate, looping);
 	}
 
 	public void StopVideo(UIntPtr pointer)

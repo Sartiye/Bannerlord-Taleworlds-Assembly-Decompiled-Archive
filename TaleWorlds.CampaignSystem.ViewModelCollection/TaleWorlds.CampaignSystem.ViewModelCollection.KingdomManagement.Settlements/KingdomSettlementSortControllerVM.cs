@@ -342,7 +342,7 @@ public class KingdomSettlementSortControllerVM : ViewModel
 		}
 	}
 
-	public KingdomSettlementSortControllerVM(ref MBBindingList<KingdomSettlementItemVM> listToControl)
+	public KingdomSettlementSortControllerVM(MBBindingList<KingdomSettlementItemVM> listToControl)
 	{
 		_listToControl = listToControl;
 		_typeComparer = new ItemTypeComparer();

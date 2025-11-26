@@ -2,7 +2,6 @@ using System;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.ScreenSystem;
@@ -13,7 +12,7 @@ public class GauntletInformationView : GlobalLayer
 {
 	private TooltipBaseVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private GauntletLayer _layerAsGauntletLayer;
 
@@ -25,9 +24,10 @@ public class GauntletInformationView : GlobalLayer
 
 	private GauntletInformationView()
 	{
-		_layerAsGauntletLayer = new GauntletLayer(100000);
+		_layerAsGauntletLayer = new GauntletLayer("Tooltip", 115000);
 		InformationManager.OnShowTooltip += OnShowTooltip;
 		InformationManager.OnHideTooltip += OnHideTooltip;
+		InformationManager.IsAnyTooltipActiveInternal = (InformationManager.IsAnyTooltipActiveDelegate)Delegate.Combine(InformationManager.IsAnyTooltipActiveInternal, new InformationManager.IsAnyTooltipActiveDelegate(OnGetIsAnyTooltipActive));
 		base.Layer = _layerAsGauntletLayer;
 	}
 
@@ -40,6 +40,16 @@ public class GauntletInformationView : GlobalLayer
 			PropertyBasedTooltipVM.AddKeyType("MapClick", () => _current.GetKey("MapHotKeyCategory", "MapClick"));
 			PropertyBasedTooltipVM.AddKeyType("FollowModifier", () => _current.GetKey("MapHotKeyCategory", "MapFollowModifier"));
 			PropertyBasedTooltipVM.AddKeyType("ExtendModifier", () => _current.GetExtendTooltipKeyText());
+		}
+	}
+
+	public static void OnFinalize()
+	{
+		if (_current != null)
+		{
+			InformationManager.OnShowTooltip -= _current.OnShowTooltip;
+			InformationManager.OnHideTooltip -= _current.OnHideTooltip;
+			InformationManager.IsAnyTooltipActiveInternal = (InformationManager.IsAnyTooltipActiveDelegate)Delegate.Remove(InformationManager.IsAnyTooltipActiveInternal, new InformationManager.IsAnyTooltipActiveDelegate(_current.OnGetIsAnyTooltipActive));
 		}
 	}
 
@@ -83,21 +93,21 @@ public class GauntletInformationView : GlobalLayer
 	private void OnShowTooltip(Type type, object[] args)
 	{
 		OnHideTooltip();
-		if (InformationManager.RegisteredTypes.TryGetValue(type, out (Type, object, string) value))
+		if (InformationManager.RegisteredTypes.TryGetValue(type, out var value))
 		{
 			try
 			{
-				_dataSource = Activator.CreateInstance(value.Item1, type, args) as TooltipBaseVM;
-				_movie = _layerAsGauntletLayer.LoadMovie(value.Item3, _dataSource);
+				_dataSource = Activator.CreateInstance(value.TooltipType, type, args) as TooltipBaseVM;
+				_movie = _layerAsGauntletLayer.LoadMovie(value.MovieName, _dataSource);
 				return;
 			}
 			catch (Exception arg)
 			{
-				Debug.FailedAssert($"Failed to display tooltip of type: {type.FullName}. Exception: {arg}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 102);
+				Debug.FailedAssert($"Failed to display tooltip of type: {type.FullName}. Exception: {arg}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 113);
 				return;
 			}
 		}
-		Debug.FailedAssert("Unable to show tooltip. Either the given type or the corresponding tooltip type is not added to TooltipMappingProvider. Given type: " + type.FullName, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 107);
+		Debug.FailedAssert("Unable to show tooltip. Either the given type or the corresponding tooltip type is not added to TooltipMappingProvider. Given type: " + type.FullName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 118);
 	}
 
 	private void OnHideTooltip()
@@ -109,5 +119,11 @@ public class GauntletInformationView : GlobalLayer
 		}
 		_dataSource = null;
 		_movie = null;
+	}
+
+	private void OnGetIsAnyTooltipActive(out bool isAnyTooltipActive, out bool isAnyTooltipExtended)
+	{
+		isAnyTooltipActive = _dataSource?.IsActive ?? false;
+		isAnyTooltipExtended = _dataSource?.IsExtended ?? false;
 	}
 }

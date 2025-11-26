@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PartySpeedModel : GameModel
+public abstract class PartySpeedModel : MBGameModel<PartySpeedModel>
 {
 	public abstract float BaseSpeed { get; }
 

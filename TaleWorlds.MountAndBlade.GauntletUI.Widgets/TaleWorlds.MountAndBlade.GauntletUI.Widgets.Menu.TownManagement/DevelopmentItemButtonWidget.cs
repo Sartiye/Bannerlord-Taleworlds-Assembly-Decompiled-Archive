@@ -25,10 +25,6 @@ public class DevelopmentItemButtonWidget : ButtonWidget
 
 	private Widget _selectedBlackOverlayWidget;
 
-	private NavigationScopeTargeter _actionButtonsNavigationScopeTargeter;
-
-	private NavigationForcedScopeCollectionTargeter _actionButtonsForcedScopeTargeter;
-
 	private ButtonWidget _addToQueueButtonWidget;
 
 	private ButtonWidget _setAsActiveButtonWidget;
@@ -54,45 +50,6 @@ public class DevelopmentItemButtonWidget : ButtonWidget
 			{
 				_isSelectedItem = value;
 				OnPropertyChanged(value, "IsSelectedItem");
-				if (ActionButtonsForcedScopeTargeter != null && ActionButtonsNavigationScopeTargeter != null)
-				{
-					ActionButtonsForcedScopeTargeter.IsCollectionEnabled = value;
-					ActionButtonsNavigationScopeTargeter.IsScopeEnabled = value;
-				}
-			}
-		}
-	}
-
-	[Editor(false)]
-	public NavigationScopeTargeter ActionButtonsNavigationScopeTargeter
-	{
-		get
-		{
-			return _actionButtonsNavigationScopeTargeter;
-		}
-		set
-		{
-			if (_actionButtonsNavigationScopeTargeter != value)
-			{
-				_actionButtonsNavigationScopeTargeter = value;
-				OnPropertyChanged(value, "ActionButtonsNavigationScopeTargeter");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public NavigationForcedScopeCollectionTargeter ActionButtonsForcedScopeTargeter
-	{
-		get
-		{
-			return _actionButtonsForcedScopeTargeter;
-		}
-		set
-		{
-			if (_actionButtonsForcedScopeTargeter != value)
-			{
-				_actionButtonsForcedScopeTargeter = value;
-				OnPropertyChanged(value, "ActionButtonsForcedScopeTargeter");
 			}
 		}
 	}
@@ -381,7 +338,7 @@ public class DevelopmentItemButtonWidget : ButtonWidget
 			{
 				ProgressClipWidget.HeightSizePolicy = SizePolicy.StretchToParent;
 			}
-			HandleChildrenAlphaValues();
+			HandleChildrenVisibilities();
 		}
 		DevelopmentBackVisualWidget.CircularClipEnabled = true;
 		DevelopmentBackVisualWidget.CircularClipRadius = DevelopmentBackVisualWidget.Size.X / 2f * base._inverseScaleToUse - 10f * base._scaleToUse;
@@ -390,17 +347,24 @@ public class DevelopmentItemButtonWidget : ButtonWidget
 
 	private void HandleFocus()
 	{
-		if (base.EventManager.LatestMouseUpWidget != base.ParentWidget && !base.ParentWidget.CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget))
+		if (IsSelectedItem)
 		{
-			IsSelectedItem = false;
+			if (base.EventManager.LatestMouseUpWidget != null && base.EventManager.LatestMouseUpWidget != base.ParentWidget && (!(base.EventManager.LatestMouseUpWidget is DevelopmentItemVisualButtonWidget developmentItemVisualButtonWidget) || !(developmentItemVisualButtonWidget.SpriteCode == (DevelopmentBackVisualWidget as DevelopmentItemVisualButtonWidget)?.SpriteCode)))
+			{
+				IsSelectedItem = false;
+			}
+			if (base.EventManager.DraggedWidget != null)
+			{
+				IsSelectedItem = false;
+			}
 		}
 	}
 
-	private void HandleChildrenAlphaValues()
+	private void HandleChildrenVisibilities()
 	{
-		SetAsActiveButtonWidget.Brush.AlphaFactor = (IsSelectedItem ? 1 : 0);
-		AddToQueueButtonWidget.Brush.AlphaFactor = (IsSelectedItem ? 1 : 0);
-		SelectedBlackOverlayWidget.AlphaFactor = (IsSelectedItem ? 0.7f : 0f);
+		SetAsActiveButtonWidget.IsVisible = IsSelectedItem;
+		AddToQueueButtonWidget.IsVisible = IsSelectedItem;
+		SelectedBlackOverlayWidget.IsVisible = IsSelectedItem;
 	}
 
 	private void HandleEnabledStates()

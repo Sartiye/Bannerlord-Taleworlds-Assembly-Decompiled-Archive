@@ -5,11 +5,11 @@ namespace TaleWorlds.Core;
 
 public class MBCharacterSkills : MBObjectBase
 {
-	public CharacterSkills Skills { get; private set; }
+	public PropertyOwner<SkillObject> Skills { get; private set; }
 
 	public MBCharacterSkills()
 	{
-		Skills = new CharacterSkills();
+		Skills = new PropertyOwner<SkillObject>();
 	}
 
 	public void Init(MBObjectManager objectManager, XmlNode node)

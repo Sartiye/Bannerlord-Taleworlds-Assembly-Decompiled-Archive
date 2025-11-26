@@ -58,13 +58,13 @@ public class FaceGen : IFaceGen
 			}
 			return monster;
 		}
-		Debug.FailedAssert("Monster race index is out of bounds: " + race, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\FaceGen.cs", "GetBaseMonsterFromRace", 64);
+		Debug.FailedAssert("Monster race index is out of bounds: " + race, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\FaceGen.cs", "GetBaseMonsterFromRace", 65);
 		return null;
 	}
 
-	public BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tattooTags)
+	public BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tattooTags, float variationAmount)
 	{
-		return MBBodyProperties.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tattooTags);
+		return MBBodyProperties.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tattooTags, variationAmount);
 	}
 
 	void IFaceGen.GenerateParentBody(BodyProperties childBodyProperties, int race, ref BodyProperties motherBodyProperties, ref BodyProperties fatherBodyProperties)
@@ -120,5 +120,27 @@ public class FaceGen : IFaceGen
 	public string[] GetRaceNames()
 	{
 		return (string[])_raceNamesArray.Clone();
+	}
+
+	public int[] GetHairIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		return MBBodyProperties.GetHairIndicesByTag(race, curGender, age, tag);
+	}
+
+	public int[] GetFacialIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		return MBBodyProperties.GetFacialIndicesByTag(race, curGender, age, tag);
+	}
+
+	public int[] GetTattooIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		return MBBodyProperties.GetTattooIndicesByTag(race, curGender, age, tag);
+	}
+
+	public float GetTattooZeroProbability(int race, int curGender, float age)
+	{
+		float tattooZeroProbability = 0f;
+		MBBodyProperties.GetZeroProbabilities(race, curGender, age, ref tattooZeroProbability);
+		return tattooZeroProbability;
 	}
 }

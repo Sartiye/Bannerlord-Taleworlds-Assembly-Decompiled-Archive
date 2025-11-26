@@ -52,31 +52,30 @@ public class PsaiProject : ICloneable
 		_themes.Clear();
 	}
 
-	public static PsaiProject LoadProjectFromStream(Stream stream)
+	public static PsaiProject LoadProjectFromStream(StreamReader reader, string path)
 	{
 		PsaiProject psaiProject = null;
 		try
 		{
-			TextReader textReader = new StreamReader(stream);
-			psaiProject = (PsaiProject)_serializer.Deserialize(textReader);
-			textReader.Close();
+			psaiProject = (PsaiProject)_serializer.Deserialize(reader);
+			reader.Close();
+			psaiProject.ReconstructIds(path);
+			return psaiProject;
 		}
 		catch (Exception ex)
 		{
 			throw ex;
 		}
-		psaiProject.ReconstructReferencesAfterXmlDeserialization();
-		return psaiProject;
 	}
 
 	public static PsaiProject LoadProjectFromXmlFile(string filename)
 	{
 		try
 		{
-			FileStream fileStream = new FileStream(filename, FileMode.Open);
-			if (fileStream != null)
+			StreamReader streamReader = new StreamReader(filename);
+			if (streamReader != null)
 			{
-				return LoadProjectFromStream(fileStream);
+				return LoadProjectFromStream(streamReader, filename);
 			}
 			return null;
 		}
@@ -206,6 +205,111 @@ public class PsaiProject : ICloneable
 						segment2.ManuallyLinkedSnippets.Add(snippetById3);
 					}
 				}
+			}
+		}
+	}
+
+	public void MergeProjects(PsaiProject project)
+	{
+		_themes.AddRange(project._themes);
+	}
+
+	public void ReconstructIds(string path)
+	{
+		foreach (Theme theme in _themes)
+		{
+			theme.Id = int.Parse(_projectProperties.ModuleIdPrefix + theme.Id);
+			foreach (Group group in theme.Groups)
+			{
+				group.Serialization_Id = int.Parse(_projectProperties.ModuleIdPrefix + group.Serialization_Id);
+				if (group.Serialization_ManuallyBlockedGroupIds == null)
+				{
+					group.Serialization_ManuallyBlockedGroupIds = new List<int>();
+				}
+				for (int i = 0; i < group.Serialization_ManuallyBlockedGroupIds.Count; i++)
+				{
+					group.Serialization_ManuallyBlockedGroupIds[i] = int.Parse(_projectProperties.ModuleIdPrefix + group.Serialization_ManuallyBlockedGroupIds[i]);
+				}
+				if (group.Serialization_ManuallyLinkedGroupIds == null)
+				{
+					group.Serialization_ManuallyLinkedGroupIds = new List<int>();
+				}
+				for (int j = 0; j < group.Serialization_ManuallyLinkedGroupIds.Count; j++)
+				{
+					group.Serialization_ManuallyLinkedGroupIds[j] = int.Parse(_projectProperties.ModuleIdPrefix + group.Serialization_ManuallyLinkedGroupIds[j]);
+				}
+				if (group.Serialization_ManualBridgeSegmentIds == null)
+				{
+					group.Serialization_ManualBridgeSegmentIds = new List<int>();
+				}
+				for (int k = 0; k < group.Serialization_ManualBridgeSegmentIds.Count; k++)
+				{
+					group.Serialization_ManualBridgeSegmentIds[k] = int.Parse(_projectProperties.ModuleIdPrefix + group.Serialization_ManualBridgeSegmentIds[k]);
+				}
+				foreach (Segment segment in group.Segments)
+				{
+					segment.Id = int.Parse(_projectProperties.ModuleIdPrefix + segment.Id);
+					if (segment.Serialization_ManuallyBlockedSegmentIds == null)
+					{
+						segment.Serialization_ManuallyBlockedSegmentIds = new List<int>();
+					}
+					for (int l = 0; l < segment.Serialization_ManuallyBlockedSegmentIds.Count; l++)
+					{
+						segment.Serialization_ManuallyBlockedSegmentIds[l] = int.Parse(_projectProperties.ModuleIdPrefix + segment.Serialization_ManuallyBlockedSegmentIds[l]);
+					}
+					if (segment.Serialization_ManuallyLinkedSegmentIds == null)
+					{
+						segment.Serialization_ManuallyLinkedSegmentIds = new List<int>();
+					}
+					for (int m = 0; m < segment.Serialization_ManuallyLinkedSegmentIds.Count; m++)
+					{
+						segment.Serialization_ManuallyLinkedSegmentIds[m] = int.Parse(_projectProperties.ModuleIdPrefix + segment.Serialization_ManuallyLinkedSegmentIds[m]);
+					}
+					segment.AudioData.FilePathRelativeToProjectDir = segment.AudioData.FilePathRelativeToProjectDir;
+					segment.AudioData.ModuleID = path;
+				}
+			}
+			for (int n = 0; n < theme.Serialization_ManuallyBlockedThemeIds.Count; n++)
+			{
+				theme.Serialization_ManuallyBlockedThemeIds[n] = int.Parse(_projectProperties.ModuleIdPrefix + theme.Serialization_ManuallyBlockedThemeIds[n]);
+			}
+		}
+	}
+
+	public void DebugCheckProjectIntegrity()
+	{
+		foreach (Theme theme in _themes)
+		{
+			foreach (Group group in theme.Groups)
+			{
+				foreach (Segment segment in group.Segments)
+				{
+					foreach (int serialization_ManuallyBlockedSegmentId in segment.Serialization_ManuallyBlockedSegmentIds)
+					{
+						GetSnippetById(serialization_ManuallyBlockedSegmentId);
+					}
+					foreach (int serialization_ManuallyLinkedSegmentId in segment.Serialization_ManuallyLinkedSegmentIds)
+					{
+						GetSnippetById(serialization_ManuallyLinkedSegmentId);
+					}
+					GetThemeById(segment.ThemeId);
+				}
+				foreach (int serialization_ManuallyBlockedGroupId in group.Serialization_ManuallyBlockedGroupIds)
+				{
+					GetGroupBySerializationId(serialization_ManuallyBlockedGroupId);
+				}
+				foreach (int serialization_ManuallyLinkedGroupId in group.Serialization_ManuallyLinkedGroupIds)
+				{
+					GetGroupBySerializationId(serialization_ManuallyLinkedGroupId);
+				}
+				foreach (int serialization_ManualBridgeSegmentId in group.Serialization_ManualBridgeSegmentIds)
+				{
+					GetSnippetById(serialization_ManualBridgeSegmentId);
+				}
+			}
+			foreach (int serialization_ManuallyBlockedThemeId in theme.Serialization_ManuallyBlockedThemeIds)
+			{
+				GetThemeById(serialization_ManuallyBlockedThemeId);
 			}
 		}
 	}

@@ -34,7 +34,20 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 	{
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnPrisonerTaken);
+		CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
 		CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, OnGameMenuOpened);
+	}
+
+	private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification = true)
+	{
+		if (prisoner == Hero.MainHero)
+		{
+			PlayerEncounter.ProtectPlayerSide(4f);
+			if (party != null && party.IsMobile)
+			{
+				party.MobileParty.Ai.SetDoNotAttackMainParty(12);
+			}
+		}
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -86,7 +99,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			EndCaptivityAction.ApplyByEscape(Hero.MainHero);
 		});
 		gameSystemInitializer.AddGameMenu("menu_captivity_end_by_ally_party_saved", "{=J2Iok9lT}An ally has paid your ransom.", game_menu_captivity_escape_on_init);
 		gameSystemInitializer.AddGameMenuOption("menu_captivity_end_by_ally_party_saved", "mno_continue", "{=veWOovVv}Continue...", delegate(MenuCallbackArgs args)
@@ -95,7 +108,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			EndCaptivityAction.ApplyByReleasedByCompensation(Hero.MainHero);
 		});
 		gameSystemInitializer.AddGameMenu("menu_captivity_end_by_party_removed", "{=8gF5qYw5}Your captors have been dispersed, and you are able to escape.", game_menu_captivity_escape_on_init);
 		gameSystemInitializer.AddGameMenuOption("menu_captivity_end_by_party_removed", "mno_continue", "{=veWOovVv}Continue...", delegate(MenuCallbackArgs args)
@@ -104,7 +117,14 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			if (PlayerCaptivity.CaptorParty.LeaderHero == null && PlayerCaptivity.CaptorParty.MemberRoster.TotalManCount == 0)
+			{
+				EndCaptivityAction.ApplyByReleasedAfterBattle(Hero.MainHero);
+			}
+			else
+			{
+				EndCaptivityAction.ApplyByEscape(Hero.MainHero);
+			}
 		});
 		gameSystemInitializer.AddGameMenu("menu_captivity_end_wilderness_escape", "{=EVODEPGw}After painful days of being dragged about as a prisoner, you find a chance and escape from your captors!", game_menu_captivity_escape_on_init);
 		gameSystemInitializer.AddGameMenuOption("menu_captivity_end_wilderness_escape", "mno_continue", "{=veWOovVv}Continue...", delegate(MenuCallbackArgs args)
@@ -113,7 +133,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			EndCaptivityAction.ApplyByEscape(Hero.MainHero);
 		});
 		gameSystemInitializer.AddGameMenu("menu_escape_captivity_during_battle", "{=HYGKcgh6}Your captors engage in a battle. You take advantage of the confusion and escape.", game_menu_captivity_escape_on_init);
 		gameSystemInitializer.AddGameMenuOption("menu_escape_captivity_during_battle", "mno_continue", "{=veWOovVv}Continue...", delegate(MenuCallbackArgs args)
@@ -122,7 +142,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			EndCaptivityAction.ApplyByEscape(Hero.MainHero);
 		});
 		gameSystemInitializer.AddGameMenu("menu_released_after_battle", "{=GeoTk5b9}Your captors engage in a battle and they lost, you are released after battle.", game_menu_captivity_escape_on_init);
 		gameSystemInitializer.AddGameMenuOption("menu_released_after_battle", "mno_continue", "{=veWOovVv}Continue...", delegate(MenuCallbackArgs args)
@@ -140,7 +160,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Escape;
 			return true;
-		}, game_menu_captivity_end_by_ransom_on_init);
+		}, game_menu_captivity_end_by_ransom_on_consequence);
 		gameSystemInitializer.AddGameMenuOption("menu_captivity_end_propose_ransom_wilderness", "captivity_end_ransom_deny", "{=L4Se89I6}Refuse him, wait for a better offer.", delegate(MenuCallbackArgs args)
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Wait;
@@ -181,7 +201,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Escape;
 			return true;
-		}, game_menu_captivity_end_by_ransom_on_init);
+		}, game_menu_captivity_end_by_ransom_on_consequence);
 		gameSystemInitializer.AddGameMenuOption("menu_captivity_end_propose_ransom_in_prison", "captivity_end_ransom_deny", "{=L4Se89I6}Refuse him, wait for a better offer.", delegate(MenuCallbackArgs args)
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Wait;
@@ -206,7 +226,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return true;
 		}, delegate
 		{
-			PlayerCaptivity.EndCaptivity();
+			EndCaptivityAction.ApplyByEscape(Hero.MainHero);
 		});
 	}
 
@@ -219,10 +239,11 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 		StringHelpers.SetCharacterProperties("PRISONER_LORD", FindEnemyPrisonerToSwapWithPlayer().CharacterObject);
 	}
 
-	private void game_menu_captivity_end_by_ransom_on_init(MenuCallbackArgs args)
+	private void game_menu_captivity_end_by_ransom_on_consequence(MenuCallbackArgs args)
 	{
 		GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, Campaign.Current.PlayerCaptivity.CurrentRansomAmount);
-		PlayerCaptivity.EndCaptivity();
+		Hero leaderHero = PlayerCaptivity.CaptorParty.LeaderHero;
+		EndCaptivityAction.ApplyByRansom(Hero.MainHero, leaderHero);
 	}
 
 	private void menu_captivity_end_propose_ransom_on_init(MenuCallbackArgs args)
@@ -264,7 +285,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			return;
 		}
 		float playerProgress = Campaign.Current.PlayerProgress;
-		float num = (0.4f + playerProgress * 0.4f) * 24f;
+		float num = (0.4f + playerProgress * 0.4f) * (float)CampaignTime.HoursInDay;
 		num *= (Hero.MainHero.PartyBelongedToAsPrisoner.IsSettlement ? 2f : ((Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile && Hero.MainHero.PartyBelongedToAsPrisoner.LeaderHero != null) ? 1.5f : 1f));
 		if (!CheckTimeElapsedMoreThanHours(PlayerCaptivity.LastCheckTime, num))
 		{
@@ -317,7 +338,7 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 			{
 				num5 = ((!Hero.MainHero.PartyBelongedToAsPrisoner.Settlement.IsHideout) ? (num5 * num5) : (num5 * MathF.Sqrt(num5)));
 			}
-			if (Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.FleetFooted))
+			if (Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile && !Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.FleetFooted))
 			{
 				num5 *= 1f + DefaultPerks.Roguery.FleetFooted.SecondaryBonus;
 			}

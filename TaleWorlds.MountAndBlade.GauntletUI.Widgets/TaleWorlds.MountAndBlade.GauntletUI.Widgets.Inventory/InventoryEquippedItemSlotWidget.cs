@@ -94,22 +94,6 @@ public class InventoryEquippedItemSlotWidget : InventoryItemButtonWidget
 		}
 	}
 
-	private void ProcessSelectItem()
-	{
-		if (base.ScreenWidget != null)
-		{
-			base.IsSelected = true;
-			SetState("Selected");
-			base.ScreenWidget.SetCurrentTuple(this, isLeftSide: true);
-		}
-	}
-
-	protected override void OnMouseReleased()
-	{
-		base.OnMouseReleased();
-		ProcessSelectItem();
-	}
-
 	private void ImageIdentifierOnPropertyChanged(PropertyOwnerObject owner, string propertyName, object value)
 	{
 		if (propertyName == "ImageId")

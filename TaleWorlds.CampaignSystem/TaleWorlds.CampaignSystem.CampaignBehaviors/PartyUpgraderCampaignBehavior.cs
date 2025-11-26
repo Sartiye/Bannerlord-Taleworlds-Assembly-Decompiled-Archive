@@ -98,6 +98,7 @@ public class PartyUpgraderCampaignBehavior : CampaignBehaviorBase
 			PartyTroopUpgradeModel partyTroopUpgradeModel = Campaign.Current.Models.PartyTroopUpgradeModel;
 			for (int i = 0; i < character.UpgradeTargets.Length; i++)
 			{
+				num = element.Number - element.WoundedNumber;
 				CharacterObject characterObject = character.UpgradeTargets[i];
 				int upgradeXpCost = character.GetUpgradeXpCost(party, i);
 				if (upgradeXpCost > 0)
@@ -117,9 +118,9 @@ public class PartyUpgraderCampaignBehavior : CampaignBehaviorBase
 					}
 				}
 				int upgradeGoldCost = character.GetUpgradeGoldCost(party, i);
-				if (party.LeaderHero != null && upgradeGoldCost != 0 && num * upgradeGoldCost > party.LeaderHero.Gold)
+				if (party.LeaderHero != null && upgradeGoldCost != 0 && num * upgradeGoldCost > party.MobileParty.PartyTradeGold)
 				{
-					num = party.LeaderHero.Gold / upgradeGoldCost;
+					num = party.MobileParty.PartyTradeGold / upgradeGoldCost;
 					if (num == 0)
 					{
 						continue;

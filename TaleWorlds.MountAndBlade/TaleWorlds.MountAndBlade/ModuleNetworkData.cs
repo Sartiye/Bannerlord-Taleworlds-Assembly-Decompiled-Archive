@@ -81,7 +81,7 @@ public static class ModuleNetworkData
 			GameNetworkMessage.WriteBoolToPacket(num);
 			if (num)
 			{
-				GameNetworkMessage.WriteBannerCodeToPacket(weapon.Banner.Serialize());
+				GameNetworkMessage.WriteBannerCodeToPacket(weapon.Banner.BannerCode);
 			}
 			MissionWeapon ammoWeapon = weapon.AmmoWeapon;
 			bool num2 = !ammoWeapon.IsEmpty;

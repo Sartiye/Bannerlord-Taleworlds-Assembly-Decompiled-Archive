@@ -4,6 +4,8 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class SettlementVariablesBehavior : CampaignBehaviorBase
 {
+	private float _resetLastAttackerPartyAsDays = 1f;
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.HourlyTickSettlementEvent.AddNonSerializedListener(this, HourlyTickSettlement);
@@ -15,7 +17,7 @@ public class SettlementVariablesBehavior : CampaignBehaviorBase
 
 	private void HourlyTickSettlement(Settlement settlement)
 	{
-		if ((settlement.IsVillage || settlement.IsFortification || settlement.IsHideout) && settlement.LastAttackerParty != null && settlement.LastThreatTime.ElapsedHoursUntilNow > 24f)
+		if (settlement.LastAttackerParty != null && settlement.Party.MapEvent == null && settlement.Party.SiegeEvent == null && settlement.LastThreatTime.ElapsedDaysUntilNow > _resetLastAttackerPartyAsDays)
 		{
 			settlement.LastAttackerParty = null;
 		}

@@ -3,6 +3,7 @@ using System.Linq;
 using NetworkMessages.FromServer;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -102,6 +103,7 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 	{
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
 		int intValue = MultiplayerOptions.OptionType.NumberOfBotsPerFormation.GetIntValue();
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
@@ -147,14 +149,15 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 					formation.BannerCode = component.Peer.BannerCode;
 				}
 			}
+			MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = multiplayerBattleColors.GetPeerColors(component);
 			BasicCharacterObject heroCharacter = mPHeroClassForPeer.HeroCharacter;
 			AgentBuildData agentBuildData = new AgentBuildData(heroCharacter).MissionPeer(component).Team(component.Team).VisualsIndex(0)
 				.Formation(formation)
 				.MakeUnitStandOutOfFormationDistance(7f)
 				.IsFemale(component.Peer.IsFemale)
-				.BodyProperties(GetBodyProperties(component, (component.Team == base.Mission.AttackerTeam) ? @object : object2))
-				.ClothingColor1((team == base.Mission.AttackerTeam) ? basicCultureObject.Color : basicCultureObject.ClothAlternativeColor)
-				.ClothingColor2((team == base.Mission.AttackerTeam) ? basicCultureObject.Color2 : basicCultureObject.ClothAlternativeColor2);
+				.BodyProperties(GetBodyProperties(component, (component.Culture == @object) ? @object : object2))
+				.ClothingColor1(peerColors.ClothingColor1Uint)
+				.ClothingColor2(peerColors.ClothingColor2Uint);
 			MPPerkObject.MPOnSpawnPerkHandler onSpawnPerkHandler = MPPerkObject.GetOnSpawnPerkHandler(component);
 			Equipment equipment = heroCharacter.Equipment.Clone();
 			IEnumerable<(EquipmentIndex, EquipmentElement)> enumerable = onSpawnPerkHandler?.GetAlternativeEquipments(isPlayer: true);
@@ -343,28 +346,36 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 
 	protected void SpawnBotInBotFormation(int visualsIndex, Team agentTeam, BasicCultureObject cultureLimit, BasicCharacterObject character, Formation formation)
 	{
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
+		MultiplayerBattleColors.MultiplayerCultureColorInfo multiplayerCultureColorInfo = ((cultureLimit == @object) ? multiplayerBattleColors.AttackerColors : multiplayerBattleColors.DefenderColors);
 		AgentBuildData agentBuildData = new AgentBuildData(character).Team(agentTeam).TroopOrigin(new BasicBattleAgentOrigin(character)).VisualsIndex(visualsIndex)
 			.EquipmentSeed(MissionLobbyComponent.GetRandomFaceSeedForCharacter(character, visualsIndex))
 			.Formation(formation)
 			.IsFemale(character.IsFemale)
-			.ClothingColor1((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color : cultureLimit.ClothAlternativeColor)
-			.ClothingColor2((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color2 : cultureLimit.ClothAlternativeColor2);
-		agentBuildData.Equipment(Equipment.GetRandomEquipmentElements(character, !GameNetwork.IsMultiplayer, isCivilianEquipment: false, agentBuildData.AgentEquipmentSeed));
-		agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, character.HairTags, character.BeardTags, character.TattooTags));
-		base.Mission.SpawnAgent(agentBuildData).AIStateFlags |= Agent.AIStateFlag.Alarmed;
+			.ClothingColor1(multiplayerCultureColorInfo.ClothingColor1Uint)
+			.ClothingColor2(multiplayerCultureColorInfo.ClothingColor2Uint);
+		agentBuildData.Equipment(Equipment.GetRandomEquipmentElements(character, !GameNetwork.IsMultiplayer, Equipment.EquipmentType.Battle, agentBuildData.AgentEquipmentSeed));
+		agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, character.BodyPropertyRange.HairTags, character.BodyPropertyRange.BeardTags, character.BodyPropertyRange.TattooTags));
+		base.Mission.SpawnAgent(agentBuildData).SetAlarmState(Agent.AIStateFlag.Alarmed);
 	}
 
 	protected void SpawnBotVisualsInPlayerFormation(MissionPeer missionPeer, int visualsIndex, Team agentTeam, BasicCultureObject cultureLimit, string troopName, Formation formation, bool updateExistingAgentVisuals, int totalCount, IEnumerable<(EquipmentIndex, EquipmentElement)> alternativeEquipments)
 	{
 		BasicCharacterObject @object = MBObjectManager.Instance.GetObject<BasicCharacterObject>(troopName);
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object3 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(object2, object3);
+		MultiplayerBattleColors.MultiplayerCultureColorInfo multiplayerCultureColorInfo = ((cultureLimit == object2) ? multiplayerBattleColors.AttackerColors : multiplayerBattleColors.DefenderColors);
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(agentTeam).OwningMissionPeer(missionPeer).VisualsIndex(visualsIndex)
 			.TroopOrigin(new BasicBattleAgentOrigin(@object))
 			.EquipmentSeed(MissionLobbyComponent.GetRandomFaceSeedForCharacter(@object, visualsIndex))
 			.Formation(formation)
 			.IsFemale(@object.IsFemale)
-			.ClothingColor1((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color : cultureLimit.ClothAlternativeColor)
-			.ClothingColor2((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color2 : cultureLimit.ClothAlternativeColor2);
-		Equipment randomEquipmentElements = Equipment.GetRandomEquipmentElements(@object, !GameNetwork.IsMultiplayer, isCivilianEquipment: false, MBRandom.RandomInt());
+			.ClothingColor1(multiplayerCultureColorInfo.ClothingColor1Uint)
+			.ClothingColor2(multiplayerCultureColorInfo.ClothingColor2Uint);
+		Equipment randomEquipmentElements = Equipment.GetRandomEquipmentElements(@object, !GameNetwork.IsMultiplayer, Equipment.EquipmentType.Battle, MBRandom.RandomInt());
 		if (alternativeEquipments != null)
 		{
 			foreach (var alternativeEquipment in alternativeEquipments)
@@ -373,7 +384,7 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 			}
 		}
 		agentBuildData.Equipment(randomEquipmentElements);
-		agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, @object.GetBodyPropertiesMin(), @object.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, @object.HairTags, @object.BeardTags, @object.TattooTags));
+		agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, @object.GetBodyPropertiesMin(), @object.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, @object.BodyPropertyRange.HairTags, @object.BodyPropertyRange.BeardTags, @object.BodyPropertyRange.TattooTags));
 		NetworkCommunicator networkPeer = missionPeer.GetNetworkPeer();
 		if (GameMode.ShouldSpawnVisualsForServer(networkPeer))
 		{

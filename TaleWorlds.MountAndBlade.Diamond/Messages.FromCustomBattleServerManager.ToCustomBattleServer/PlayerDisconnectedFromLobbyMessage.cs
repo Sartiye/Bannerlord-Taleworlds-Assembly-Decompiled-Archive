@@ -6,7 +6,7 @@ using TaleWorlds.PlayerServices;
 namespace Messages.FromCustomBattleServerManager.ToCustomBattleServer;
 
 [Serializable]
-[MessageDescription("CustomBattleServerManager", "CustomBattleServer")]
+[MessageDescription("CustomBattleServerManager", "CustomBattleServer", true)]
 public class PlayerDisconnectedFromLobbyMessage : Message
 {
 	[JsonProperty]

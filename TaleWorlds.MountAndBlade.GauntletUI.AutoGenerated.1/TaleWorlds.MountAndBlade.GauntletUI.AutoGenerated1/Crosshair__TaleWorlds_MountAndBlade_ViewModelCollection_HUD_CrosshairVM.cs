@@ -234,7 +234,6 @@ public class Crosshair__TaleWorlds_MountAndBlade_ViewModelCollection_HUD_Crossha
 		_widget_6.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_6.VerticalAlignment = VerticalAlignment.Center;
 		_widget_6.Brush = base.Context.GetBrush("Crosshair.HitMarker");
-		_widget_6.UseGlobalTimeForAnimation = false;
 		_widget_7.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_7.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_7.SuggestedWidth = 6f;

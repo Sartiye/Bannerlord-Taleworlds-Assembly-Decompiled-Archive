@@ -6,7 +6,7 @@ using TaleWorlds.Library;
 namespace Messages.FromBattleServer.ToBattleServerManager;
 
 [Serializable]
-[MessageDescription("BattleServer", "BattleServerManager")]
+[MessageDescription("BattleServer", "BattleServerManager", true)]
 public class BattleServerReadyMessage : LoginMessage
 {
 	[JsonProperty]

@@ -5,7 +5,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MapTrackModel : GameModel
+public abstract class MapTrackModel : MBGameModel<MapTrackModel>
 {
 	public abstract float MaxTrackLife { get; }
 

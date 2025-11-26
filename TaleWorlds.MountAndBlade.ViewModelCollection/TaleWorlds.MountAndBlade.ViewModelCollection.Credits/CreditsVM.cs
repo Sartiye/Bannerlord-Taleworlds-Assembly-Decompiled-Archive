@@ -84,7 +84,7 @@ public class CreditsVM : ViewModel
 				XmlDocument xmlDocument = new XmlDocument();
 				XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
 				xmlReaderSettings.IgnoreComments = true;
-				using (XmlReader reader = XmlReader.Create(path, xmlReaderSettings))
+				using (XmlReader reader = XmlReader.Create(new StreamReader(path), xmlReaderSettings))
 				{
 					xmlDocument.Load(reader);
 				}
@@ -123,7 +123,7 @@ public class CreditsVM : ViewModel
 			XmlDocument xmlDocument = new XmlDocument();
 			XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
 			xmlReaderSettings.IgnoreComments = true;
-			using (XmlReader reader = XmlReader.Create(path, xmlReaderSettings))
+			using (XmlReader reader = XmlReader.Create(new StreamReader(path), xmlReaderSettings))
 			{
 				xmlDocument.Load(reader);
 			}

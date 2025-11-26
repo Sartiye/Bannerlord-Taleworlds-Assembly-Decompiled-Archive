@@ -57,9 +57,9 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		{
 			_consequence?.Invoke(this);
 			CharacterAttribute[] attributes = Attributes;
-			foreach (CharacterAttribute attribute in attributes)
+			foreach (CharacterAttribute attrib in attributes)
 			{
-				child.HeroDeveloper.AddAttribute(attribute, 1, checkUnspentPoints: false);
+				child.HeroDeveloper.AddAttribute(attrib, 1, checkUnspentPoints: false);
 			}
 			SkillObject[] skills = Skills;
 			foreach (SkillObject skill in skills)
@@ -77,7 +77,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			_consequence = consequence;
 			Attributes = attributes ?? new CharacterAttribute[0];
 			Skills = skills ?? new SkillObject[0];
-			Effect = GetEffectText(effect ?? TextObject.Empty);
+			Effect = GetEffectText(effect ?? TextObject.GetEmpty());
 			ChildProperties = childProperties;
 			SpecialCharacterProperties = specialCharacterProperties;
 			RandomValue = MBRandom.RandomInt(0, int.MaxValue);
@@ -86,8 +86,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		private TextObject GetEffectText(TextObject effect)
 		{
 			TextObject textObject = new TextObject("{=JfBTbsX2}{EFFECT_DESCRIPTION}{NEW_LINE_1}{SKILL_DESCRIPTION}{NEW_LINE_2}{ATTRIBUTE_DESCRIPTION}");
-			TextObject textObject2 = TextObject.Empty;
-			TextObject textObject3 = TextObject.Empty;
+			TextObject textObject2;
 			if (Skills.Length == 1)
 			{
 				textObject2 = new TextObject("{=I88vSwpb}{SKILL1} gains {NUMBER_FP} Focus Point and {NUMBER_SP} Skill Points.");
@@ -99,6 +98,11 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 				textObject2.SetTextVariable("SKILL1", Skills[0].Name);
 				textObject2.SetTextVariable("SKILL2", Skills[1].Name);
 			}
+			else
+			{
+				textObject2 = TextObject.GetEmpty();
+			}
+			TextObject textObject3;
 			if (Attributes.Length == 1)
 			{
 				textObject3 = new TextObject("{=bm2DzxEl}{ATTRIBUTE1} is increased by {NUMBER_AP}.");
@@ -109,6 +113,10 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 				textObject3 = new TextObject("{=2sQQh02s}{ATTRIBUTE1} and {ATTRIBUTE2} are increased by {NUMBER_AP}.");
 				textObject3.SetTextVariable("ATTRIBUTE1", Attributes[0].Name);
 				textObject3.SetTextVariable("ATTRIBUTE2", Attributes[1].Name);
+			}
+			else
+			{
+				textObject3 = TextObject.GetEmpty();
 			}
 			if (!TextObject.IsNullOrEmpty(textObject3))
 			{
@@ -122,21 +130,21 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			textObject.SetTextVariable("SKILL_DESCRIPTION", textObject2);
 			textObject.SetTextVariable("ATTRIBUTE_DESCRIPTION", textObject3);
 			textObject.SetTextVariable("EFFECT_DESCRIPTION", effect);
-			if (effect != TextObject.Empty && (textObject2 != TextObject.Empty || textObject3 != TextObject.Empty))
+			if (!effect.IsEmpty() && (!textObject2.IsEmpty() || !textObject3.IsEmpty()))
 			{
 				textObject.SetTextVariable("NEW_LINE_1", "\n");
 			}
 			else
 			{
-				textObject.SetTextVariable("NEW_LINE_1", TextObject.Empty);
+				textObject.SetTextVariable("NEW_LINE_1", TextObject.GetEmpty());
 			}
-			if (textObject2 != TextObject.Empty && textObject3 != TextObject.Empty)
+			if (!textObject2.IsEmpty() && !textObject3.IsEmpty())
 			{
 				textObject.SetTextVariable("NEW_LINE_2", "\n");
 			}
 			else
 			{
-				textObject.SetTextVariable("NEW_LINE_2", TextObject.Empty);
+				textObject.SetTextVariable("NEW_LINE_2", TextObject.GetEmpty());
 			}
 			return textObject;
 		}
@@ -172,7 +180,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			string[] array = optionKey.Split(new char[1] { ';' });
 			if (!int.TryParse(array[0], out var result))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildEquipmentForOption", 213);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildEquipmentForOption", 221);
 			}
 			Equipment equipment = null;
 			if (Target == ChildAgeState.Year8)
@@ -215,7 +223,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			EducationOption option = GetOption(optionKey);
 			if (!int.TryParse(array[0], out var _))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildPropertiesForOption", 262);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildPropertiesForOption", 270);
 			}
 			Equipment childEquipmentForOption = GetChildEquipmentForOption(child, optionKey, previousOptions);
 			return new EducationCharacterProperties(child.CharacterObject, childEquipmentForOption, option.ChildProperties.ActionId, option.ChildProperties.PrefabId, option.ChildProperties.UseOffHand);
@@ -238,7 +246,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			string[] array = optionKey.Split(new char[1] { ';' });
 			if (!int.TryParse(array[0], out var result))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetSpecialCharacterForOption", 305);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetSpecialCharacterForOption", 313);
 			}
 			CharacterObject result2 = null;
 			if (Target == ChildAgeState.Year8)
@@ -308,7 +316,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 					return educationPage;
 				}
 			}
-			Debug.FailedAssert("Education page not found", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetPage", 396);
+			Debug.FailedAssert("Education page not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetPage", 404);
 			return null;
 		}
 
@@ -657,13 +665,17 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 				continue;
 			}
 			ChildAgeState lastDoneStage = GetLastDoneStage(hero);
-			if (lastDoneStage != ChildAgeState.Year16)
+			if (lastDoneStage == ChildAgeState.Year16)
 			{
-				ChildAgeState childAgeState = (ChildAgeState)MathF.Max((int)(lastDoneStage + 1), (int)GetClosestStage(hero));
-				int num = ChildStateToAge(childAgeState);
-				if ((hero.BirthDay + CampaignTime.Years(num)).IsPast && !HasNotificationForAge(hero, num))
+				continue;
+			}
+			ChildAgeState childAgeState = (ChildAgeState)MathF.Max((int)(lastDoneStage + 1), (int)GetClosestStage(hero));
+			int num = ChildStateToAge(childAgeState);
+			if ((hero.BirthDay + CampaignTime.Years(num)).IsPast && !HasNotificationForAge(hero, num))
+			{
+				DoEducationUntil(hero, childAgeState);
+				if (!hero.IsDisabled)
 				{
-					DoEducationUntil(hero, childAgeState);
 					ShowEducationNotification(hero, ChildStateToAge(childAgeState));
 				}
 			}
@@ -1267,7 +1279,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		TextObject textObject10 = new TextObject("{=pb8fmbVl}You asked your {?IS_BATTANIA_OR_KHUZAIT}lorekeeper{?}scholar{\\?} to focus particularly on the art of...");
 		textObject10.SetTextVariable("IS_BATTANIA_OR_KHUZAIT", ChildCultureHasLorekeeper(child) ? 1 : 0);
 		EducationPage educationPage5 = educationStage.AddPage(1, title, textObject10, _guideTutorText, default(EducationCharacterProperties), default(EducationCharacterProperties), (EducationPage page, List<EducationOption> previousOptions) => previousOptions.Contains(stage_2_page_0_option_intelligence));
-		EducationCharacterProperties childProperties26 = new EducationCharacterProperties("act_childhood_gracious", "carry_book", useOffHand: false);
+		EducationCharacterProperties childProperties26 = new EducationCharacterProperties("act_childhood_manners_3", "carry_book", useOffHand: false);
 		EducationCharacterProperties childProperties27 = new EducationCharacterProperties("act_childhood_clever_2", "carry_scroll", useOffHand: false);
 		EducationCharacterProperties childProperties28 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties29 = new EducationCharacterProperties("act_childhood_manners");
@@ -1292,10 +1304,10 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		}
 		TextObject description6 = new TextObject("{=ed5JVSQm}You asked the huntsman to spend as much time as possible outdoors, accustomizing the child to the dangers and hardships of the wild. You asked him to teach the child...");
 		EducationPage educationPage6 = educationStage.AddPage(1, title, description6, _guideTutorText, default(EducationCharacterProperties), default(EducationCharacterProperties), (EducationPage page, List<EducationOption> previousOptions) => previousOptions.Contains(stage_2_page_0_option_huntsman));
-		EducationCharacterProperties childProperties32 = new EducationCharacterProperties("act_childhood_explorer", "torch_a_wm", useOffHand: false);
+		EducationCharacterProperties childProperties32 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties33 = new EducationCharacterProperties("act_childhood_ready_bow", "bow_roman_a", useOffHand: true);
 		EducationCharacterProperties childProperties34 = new EducationCharacterProperties("act_childhood_guard_up_staff", "carry_bostaff", useOffHand: false);
-		EducationCharacterProperties childProperties35 = new EducationCharacterProperties("act_childhood_gracious", "carry_book", useOffHand: false);
+		EducationCharacterProperties childProperties35 = new EducationCharacterProperties("act_childhood_manners_3", "carry_book", useOffHand: false);
 		EducationCharacterProperties childProperties36 = new EducationCharacterProperties("act_childhood_roguery", "carry_bostaff_rogue1", useOffHand: false);
 		EducationCharacterProperties childProperties37 = new EducationCharacterProperties("act_childhood_tactician");
 		EducationCharacterProperties specialCharacterProperties31 = new EducationCharacterProperties("act_childhood_hip_tutor");
@@ -1319,7 +1331,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		EducationPage educationPage7 = educationStage.AddPage(1, title, textObject11, _guideTutorText, default(EducationCharacterProperties), default(EducationCharacterProperties), (EducationPage page, List<EducationOption> previousOptions) => previousOptions.Contains(stage_2_page_0_option_cunning));
 		EducationCharacterProperties childProperties38 = new EducationCharacterProperties("act_childhood_manners");
 		EducationCharacterProperties childProperties39 = new EducationCharacterProperties("act_childhood_fierce");
-		EducationCharacterProperties childProperties40 = new EducationCharacterProperties("act_childhood_explorer", "torch_a_wm", useOffHand: false);
+		EducationCharacterProperties childProperties40 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties41 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties42 = new EducationCharacterProperties("act_childhood_ready_throw", "spear_new_f_1-9m", useOffHand: false);
 		EducationCharacterProperties childProperties43 = new EducationCharacterProperties("act_childhood_roguery", "carry_bostaff_rogue1", useOffHand: false);
@@ -1479,7 +1491,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		};
 		EducationCharacterProperties[] childProperties48 = new EducationCharacterProperties[6]
 		{
-			new EducationCharacterProperties("act_childhood_explorer", "torch_a_wm", useOffHand: false),
+			new EducationCharacterProperties("act_childhood_leader"),
 			new EducationCharacterProperties("act_childhood_ready_bow", "bow_roman_a", useOffHand: true),
 			new EducationCharacterProperties("act_childhood_guard_up_staff", "carry_bostaff", useOffHand: false),
 			new EducationCharacterProperties("act_childhood_ready", "carry_book_left", useOffHand: true),
@@ -1510,7 +1522,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		};
 		EducationCharacterProperties[] childProperties49 = new EducationCharacterProperties[6]
 		{
-			new EducationCharacterProperties("act_childhood_explorer", "torch_a_wm", useOffHand: false),
+			new EducationCharacterProperties("act_childhood_leader"),
 			new EducationCharacterProperties("act_childhood_manners"),
 			new EducationCharacterProperties("act_childhood_leader_2"),
 			new EducationCharacterProperties("act_childhood_ready_throw", "spear_new_f_1-9m", useOffHand: false),
@@ -1590,7 +1602,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			new EducationCharacterProperties("act_childhood_athlete"),
 			new EducationCharacterProperties("act_childhood_riding_2", "carry_saddle", useOffHand: true),
 			new EducationCharacterProperties("act_childhood_grit", "carry_hammer", useOffHand: false),
-			new EducationCharacterProperties("act_childhood_gracious", "carry_book", useOffHand: false),
+			new EducationCharacterProperties("act_childhood_manners_3", "carry_book", useOffHand: false),
 			new EducationCharacterProperties("act_childhood_roguery", "carry_bostaff_rogue1", useOffHand: false),
 			new EducationCharacterProperties("act_childhood_manners")
 		};
@@ -1645,9 +1657,9 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		EducationCharacterProperties childProperties8 = new EducationCharacterProperties("act_childhood_apprentice", "vlandia_twohanded_sword_c", useOffHand: false);
 		EducationCharacterProperties childProperties9 = new EducationCharacterProperties("act_childhood_riding_2", "carry_saddle", useOffHand: true);
 		EducationCharacterProperties childProperties10 = new EducationCharacterProperties("act_childhood_grit", "carry_hammer", useOffHand: false);
-		EducationCharacterProperties childProperties11 = new EducationCharacterProperties("act_childhood_gracious", "carry_book", useOffHand: false);
+		EducationCharacterProperties childProperties11 = new EducationCharacterProperties("act_childhood_manners_3", "carry_book", useOffHand: false);
 		EducationCharacterProperties childProperties12 = new EducationCharacterProperties("act_childhood_ready_bow", "bow_roman_a", useOffHand: true);
-		EducationCharacterProperties childProperties13 = new EducationCharacterProperties("act_childhood_manners_3");
+		EducationCharacterProperties childProperties13 = new EducationCharacterProperties("act_childhood_clever_2");
 		educationPage2.AddOption(new EducationOption(new TextObject("{=IMaTTgPJ}defeat {?CHILD.GENDER}her{?}his{\\?} fencing instructor."), new TextObject("{=cnbeJh6Y}After many tries {?CHILD.GENDER}she{?}he{\\?} successfully beat {?CHILD.GENDER}her{?}his{\\?} tutor, fair and square, during sparring."), null, null, null, null, new SkillObject[1] { DefaultSkills.OneHanded }, childProperties8));
 		educationPage2.AddOption(new EducationOption(new TextObject("{=EP0gEG0L}win a race."), new TextObject("{=7mbE4z2v}{?CHILD.GENDER}She{?}He{\\?} won a friendly horse racing competition, and was rewarded with a magnificent saddle."), null, null, null, null, new SkillObject[1] { DefaultSkills.Riding }, childProperties9));
 		educationPage2.AddOption(new EducationOption(new TextObject("{=ksXTQXOX}craft a weapon."), new TextObject("{=6WUaFzlv}{?PLAYER_CHILD}Your{?}The{\\?} child forged a sword - blade, hilt and pommel. The artisan said that he has never seen such dedication and patience in one so young."), null, null, null, null, new SkillObject[1] { DefaultSkills.Engineering }, childProperties10));
@@ -1739,7 +1751,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		EducationCharacterProperties childProperties3 = new EducationCharacterProperties("act_childhood_genius");
 		EducationCharacterProperties childProperties4 = new EducationCharacterProperties("act_childhood_grit", "carry_hammer", useOffHand: false);
 		EducationCharacterProperties childProperties5 = new EducationCharacterProperties("act_childhood_honor");
-		EducationCharacterProperties childProperties6 = new EducationCharacterProperties("act_childhood_explorer2", "torch_a_wm", useOffHand: false);
+		EducationCharacterProperties childProperties6 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties7 = new EducationCharacterProperties("act_childhood_manners");
 		EducationOption stage_5_page_0_warriorOption = new EducationOption(new TextObject("{=Tbv2txJV}as a squire."), new TextObject("{=4CuMDzvd}You asked your best warrior to take {?CHILD.GENDER}her{?}him{\\?} under his wings and make sure {?CHILD.GENDER}she{?}he{\\?} gets the taste of battle without being seriously harmed."), null, null, null, new CharacterAttribute[1] { DefaultCharacterAttributes.Vigor }, new SkillObject[1] { DefaultSkills.OneHanded }, childProperties2);
 		EducationOption stage_5_page_0_merchantOption = new EducationOption(new TextObject("{=N62qjb8s}as an aide."), new TextObject("{=rZkQfBxt}You asked one of the local merchants to take the young {?CHILD.GENDER}woman{?}man{\\?} along with one of his caravans and make {?CHILD.GENDER}her{?}him{\\?} learn the secrets of the trade."), null, null, null, new CharacterAttribute[1] { DefaultCharacterAttributes.Cunning }, new SkillObject[1] { DefaultSkills.Trade }, childProperties3);
@@ -1784,7 +1796,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		EducationCharacterProperties childProperties14 = new EducationCharacterProperties("act_childhood_manners");
 		EducationCharacterProperties childProperties15 = new EducationCharacterProperties("act_childhood_fierce", "blacksmith_sword", useOffHand: false);
 		EducationCharacterProperties childProperties16 = new EducationCharacterProperties("act_childhood_artisan", "carry_linen", useOffHand: false);
-		EducationCharacterProperties childProperties17 = new EducationCharacterProperties("act_childhood_explorer2", "torch_a_wm", useOffHand: false);
+		EducationCharacterProperties childProperties17 = new EducationCharacterProperties("act_childhood_leader");
 		EducationCharacterProperties childProperties18 = new EducationCharacterProperties("act_childhood_tactician");
 		EducationCharacterProperties childProperties19 = new EducationCharacterProperties("act_childhood_leader");
 		educationPage3.AddOption(new EducationOption(new TextObject("{=9NbAzOER}dealing with business partners."), textObject8, null, null, null, null, new SkillObject[1] { DefaultSkills.Charm }, childProperties14));
@@ -1971,7 +1983,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		EducationCharacterProperties[] childProperties46 = new EducationCharacterProperties[6]
 		{
 			new EducationCharacterProperties("act_childhood_grit", "carry_hammer", useOffHand: false),
-			new EducationCharacterProperties("act_childhood_gracious", "carry_book", useOffHand: false),
+			new EducationCharacterProperties("act_childhood_manners_3", "carry_book", useOffHand: false),
 			new EducationCharacterProperties("act_childhood_artisan", "carry_linen", useOffHand: false),
 			new EducationCharacterProperties("act_childhood_genius"),
 			new EducationCharacterProperties("act_childhood_tactician"),

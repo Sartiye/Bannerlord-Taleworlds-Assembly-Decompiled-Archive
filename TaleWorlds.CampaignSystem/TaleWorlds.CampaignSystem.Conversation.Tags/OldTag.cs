@@ -8,6 +8,6 @@ public class OldTag : ConversationTag
 
 	public override bool IsApplicableTo(CharacterObject character)
 	{
-		return character.Age > 49f;
+		return character.Age > (float)Campaign.Current.Models.AgeModel.BecomeOldAge;
 	}
 }

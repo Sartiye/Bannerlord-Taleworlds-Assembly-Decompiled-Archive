@@ -130,20 +130,26 @@ public class RefinementActionItemVM : ViewModel
 
 	public void RefreshDynamicProperties()
 	{
-		IsEnabled = CheckInputsAvailable();
+		IsEnabled = UpdateInputAvailabilities();
 	}
 
-	private bool CheckInputsAvailable()
+	private bool UpdateInputAvailabilities()
 	{
+		bool result = true;
 		ItemRoster itemRoster = MobileParty.MainParty.ItemRoster;
 		foreach (CraftingResourceItemVM inputMaterial in InputMaterials)
 		{
 			if (itemRoster.GetItemNumber(inputMaterial.ResourceItem) < inputMaterial.ResourceAmount)
 			{
-				return false;
+				result = false;
+				inputMaterial.IsResourceAvailable = false;
+			}
+			else
+			{
+				inputMaterial.IsResourceAvailable = true;
 			}
 		}
-		return true;
+		return result;
 	}
 
 	public void ExecuteSelectAction()

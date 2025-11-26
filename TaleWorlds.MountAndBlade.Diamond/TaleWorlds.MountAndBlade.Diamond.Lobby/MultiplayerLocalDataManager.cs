@@ -28,7 +28,7 @@ public class MultiplayerLocalDataManager
 	{
 		if (Instance != null)
 		{
-			Debug.FailedAssert("Multiplayer local data manager is already initialized", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InitializeManager", 34);
+			Debug.FailedAssert("Multiplayer local data manager is already initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InitializeManager", 34);
 		}
 		else
 		{
@@ -40,7 +40,7 @@ public class MultiplayerLocalDataManager
 	{
 		if (Instance == null)
 		{
-			Debug.FailedAssert("Multiplayer local data manager is not initialized", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "FinalizeManager", 45);
+			Debug.FailedAssert("Multiplayer local data manager is not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "FinalizeManager", 45);
 			return;
 		}
 		Instance.WaitForAsyncOperations();

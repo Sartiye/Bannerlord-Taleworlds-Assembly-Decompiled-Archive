@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Helpers;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
@@ -52,6 +52,7 @@ public static class CampaignSceneNotificationHelper
 			"khuzait" => "comingofage_kid_khu_cutscene_template", 
 			"sturgia" => "comingofage_kid_stu_cutscene_template", 
 			"vlandia" => "comingofage_kid_vla_cutscene_template", 
+			"nord" => "comingofage_kid_nord_cutscene_template", 
 			_ => "comingofage_kid_emp_cutscene_template", 
 		};
 	}
@@ -156,15 +157,11 @@ public static class CampaignSceneNotificationHelper
 
 	public static TextObject GetFormalNameForKingdom(Kingdom kingdom)
 	{
-		if (kingdom.Culture.StringId.Equals("empire", StringComparison.InvariantCultureIgnoreCase))
-		{
-			return kingdom.Name;
-		}
-		if (kingdom.Leader == Hero.MainHero)
+		if (!GameTexts.TryGetText("str_kingdom_formal_name", out var textObject, kingdom.StringId))
 		{
 			return kingdom.InformalName;
 		}
-		return FactionHelper.GetFormalNameForFactionCulture(kingdom.Culture);
+		return textObject;
 	}
 
 	public static SceneNotificationData.SceneNotificationCharacter CreateNotificationCharacterFromHero(Hero hero, Equipment overridenEquipment = null, bool useCivilian = false, BodyProperties overriddenBodyProperties = default(BodyProperties), uint overriddenColor1 = uint.MaxValue, uint overriddenColor2 = uint.MaxValue, bool useHorse = false)
@@ -182,6 +179,38 @@ public static class CampaignSceneNotificationHelper
 			overridenEquipment = (useCivilian ? hero.CivilianEquipment : hero.BattleEquipment);
 		}
 		return new SceneNotificationData.SceneNotificationCharacter(hero.CharacterObject, overridenEquipment, overriddenBodyProperties, useCivilian, overriddenColor1, overriddenColor2, useHorse);
+	}
+
+	public static SceneNotificationData.SceneNotificationShip CreateNotificationShipFromShip(Ship ship)
+	{
+		List<ShipVisualSlotInfo> shipVisualSlotInfos = ship.GetShipVisualSlotInfos();
+		uint sailColor = (uint)(((int?)ship.Owner?.MapFaction?.Color) ?? (-1));
+		uint sailColor2 = (uint)(((int?)ship.Owner?.MapFaction?.Color2) ?? (-1));
+		int randomValue = ship.RandomValue;
+		float shipHitPointRatio = (ship.MaxHitPoints.ApproximatelyEqualsTo(0f) ? 0f : (ship.HitPoints / ship.MaxHitPoints));
+		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(ship.ShipHull.MissionShipObjectId);
+		if (@object != null)
+		{
+			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 258);
+			return new SceneNotificationData.SceneNotificationShip("", shipVisualSlotInfos, shipHitPointRatio, sailColor, sailColor2, randomValue);
+		}
+		return new SceneNotificationData.SceneNotificationShip(@object.Prefab, shipVisualSlotInfos, shipHitPointRatio, sailColor, sailColor2, randomValue);
+	}
+
+	public static SceneNotificationData.SceneNotificationShip CreateNotificationShipFromShip(Ship ship, float hitPointRatio)
+	{
+		List<ShipVisualSlotInfo> shipVisualSlotInfos = ship.GetShipVisualSlotInfos();
+		uint sailColor = (uint)(((int?)ship.Owner?.MapFaction?.Color) ?? (-1));
+		uint sailColor2 = (uint)(((int?)ship.Owner?.MapFaction?.Color2) ?? (-1));
+		int randomValue = ship.RandomValue;
+		hitPointRatio = MathF.Clamp(hitPointRatio, 0f, 1f);
+		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(ship.ShipHull.MissionShipObjectId);
+		if (@object != null)
+		{
+			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 276);
+			return new SceneNotificationData.SceneNotificationShip("", shipVisualSlotInfos, hitPointRatio, sailColor, sailColor2, randomValue);
+		}
+		return new SceneNotificationData.SceneNotificationShip(@object.Prefab, shipVisualSlotInfos, hitPointRatio, sailColor, sailColor2, randomValue);
 	}
 
 	public static ItemObject GetDefaultHorseItem()

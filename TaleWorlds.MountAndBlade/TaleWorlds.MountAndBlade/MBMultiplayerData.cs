@@ -21,49 +21,49 @@ public class MBMultiplayerData
 
 	public static event GameServerInfoReceivedDelegate GameServerInfoReceived;
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static string GetServerId()
 	{
 		return ServerId.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static string GetServerName()
 	{
 		return ServerName;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static string GetGameModule()
 	{
 		return GameModule;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static string GetGameType()
 	{
 		return GameType;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static string GetMap()
 	{
 		return Map;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static int GetCurrentPlayerCount()
 	{
 		return GameNetwork.NetworkPeerCount;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static int GetPlayerCountLimit()
 	{
 		return PlayerCountLimit;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static void UpdateGameServerInfo(string id, string gameServer, string gameModule, string gameType, string map, int currentPlayerCount, int maxPlayerCount, string address, int port)
 	{
 		if (MBMultiplayerData.GameServerInfoReceived != null)

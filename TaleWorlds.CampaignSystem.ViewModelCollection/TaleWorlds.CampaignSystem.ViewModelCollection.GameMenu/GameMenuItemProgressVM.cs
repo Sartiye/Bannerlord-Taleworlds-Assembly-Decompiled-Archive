@@ -7,11 +7,11 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 
 public class GameMenuItemProgressVM : ViewModel
 {
-	private readonly MenuContext _context;
+	private MenuContext _context;
 
-	private readonly GameMenuManager _gameMenuManager;
+	private GameMenuManager _gameMenuManager;
 
-	private readonly int _virtualIndex;
+	private int _virtualIndex;
 
 	private string _text1 = "";
 
@@ -74,19 +74,19 @@ public class GameMenuItemProgressVM : ViewModel
 		}
 	}
 
-	public GameMenuItemProgressVM(MenuContext context, int virtualIndex)
+	public void InitializeWith(MenuContext context, int virtualIndex)
 	{
 		_context = context;
-		_gameMenuManager = Campaign.Current.GameMenuManager;
 		_virtualIndex = virtualIndex;
-		_text1 = Campaign.Current.GameMenuManager.GetVirtualMenuOptionText(_context, _virtualIndex).ToString();
-		_text2 = Campaign.Current.GameMenuManager.GetVirtualMenuOptionText2(_context, _virtualIndex).ToString();
+		_gameMenuManager = Campaign.Current.GameMenuManager;
 		RefreshValues();
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
+		_text1 = Campaign.Current.GameMenuManager.GetVirtualMenuOptionText(_context, _virtualIndex).ToString();
+		_text2 = Campaign.Current.GameMenuManager.GetVirtualMenuOptionText2(_context, _virtualIndex).ToString();
 		Refresh();
 	}
 
@@ -114,7 +114,7 @@ public class GameMenuItemProgressVM : ViewModel
 			break;
 		}
 		default:
-			Debug.FailedAssert("Shouldn't create game menu progress for normal options", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\GameMenuItemProgressVM.cs", "Refresh", 62);
+			Debug.FailedAssert("Shouldn't create game menu progress for normal options", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\GameMenuItemProgressVM.cs", "Refresh", 68);
 			return;
 		}
 		bool virtualMenuIsWaitActive = Campaign.Current.GameMenuManager.GetVirtualMenuIsWaitActive(_context);

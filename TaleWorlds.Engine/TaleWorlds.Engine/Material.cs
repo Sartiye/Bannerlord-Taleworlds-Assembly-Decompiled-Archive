@@ -1,4 +1,5 @@
 using System;
+using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
@@ -13,9 +14,10 @@ public sealed class Material : Resource
 		SpecularMap
 	}
 
+	[EngineStruct("rglAlpha_blend_mode", true, "rgl_abm", false)]
 	public enum MBAlphaBlendMode : byte
 	{
-		None,
+		NoAlphaBlend,
 		Modulate,
 		AddAlpha,
 		Multiply,
@@ -26,7 +28,9 @@ public sealed class Material : Resource
 		NoAlphaBlendNoWrite,
 		ModulateNoWrite,
 		GbufferAlphaBlend,
-		GbufferAlphaBlendwithVtResolve
+		GbufferAlphaBlendWithVtResolve,
+		NoAlphaBlendNoAlphaWrite,
+		Total
 	}
 
 	[Flags]
@@ -216,11 +220,11 @@ public sealed class Material : Resource
 	{
 		get
 		{
-			return (MaterialFlags)EngineApplicationInterface.IMaterial.GetFlags(base.Pointer);
+			return EngineApplicationInterface.IMaterial.GetFlags(base.Pointer);
 		}
 		set
 		{
-			EngineApplicationInterface.IMaterial.SetFlags(base.Pointer, (uint)value);
+			EngineApplicationInterface.IMaterial.SetFlags(base.Pointer, value);
 		}
 	}
 
@@ -400,5 +404,10 @@ public sealed class Material : Resource
 	public void AddMaterialShaderFlag(string flagName, bool showErrors)
 	{
 		EngineApplicationInterface.IMaterial.AddMaterialShaderFlag(base.Pointer, flagName, showErrors);
+	}
+
+	public void RemoveMaterialShaderFlag(string flagName)
+	{
+		EngineApplicationInterface.IMaterial.RemoveMaterialShaderFlag(base.Pointer, flagName);
 	}
 }

@@ -17,6 +17,11 @@ internal class Mat3BasicTypeSerializer : IBasicTypeSerializer
 		Vec3 s = reader.ReadVec3();
 		Vec3 f = reader.ReadVec3();
 		Vec3 u = reader.ReadVec3();
-		return new Mat3(s, f, u);
+		return new Mat3(in s, in f, in u);
+	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 48;
 	}
 }

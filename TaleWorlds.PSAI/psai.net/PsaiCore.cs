@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace psai.net;
 
 public class PsaiCore
@@ -42,14 +44,9 @@ public class PsaiCore
 		return m_logik.SetMaximumLatencyNeededByPlatformToPlayBackBufferedSounds(latencyInMilliseconds);
 	}
 
-	public PsaiResult LoadSoundtrack(string pathToPcbFile)
+	public PsaiResult LoadSoundtrackFromProjectFile(List<string> pathToProjectFiles)
 	{
-		return m_logik.LoadSoundtrack(pathToPcbFile);
-	}
-
-	public PsaiResult LoadSoundtrackFromProjectFile(string pathToProjectFile)
-	{
-		return m_logik.LoadSoundtrackFromProjectFile(pathToProjectFile);
+		return m_logik.LoadSoundtrackFromProjectFile(pathToProjectFiles);
 	}
 
 	public PsaiResult TriggerMusicTheme(int themeId, float intensity)

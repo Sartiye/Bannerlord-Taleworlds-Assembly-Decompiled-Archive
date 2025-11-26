@@ -25,7 +25,7 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 			{
 				return TargetPeer.ControlledAgent.Position + new Vec3(0f, 0f, TargetPeer.ControlledAgent.GetEyeGlobalHeight());
 			}
-			Debug.FailedAssert("No target found!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\FlagMarker\\Targets\\MissionPeerMarkerTargetVM.cs", "WorldPosition", 27);
+			Debug.FailedAssert("No target found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\FlagMarker\\Targets\\MissionPeerMarkerTargetVM.cs", "WorldPosition", 27);
 			return Vec3.One;
 		}
 	}

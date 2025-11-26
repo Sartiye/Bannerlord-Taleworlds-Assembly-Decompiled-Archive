@@ -6,75 +6,6 @@ namespace TaleWorlds.Library;
 [Serializable]
 public struct Vec2
 {
-	public struct StackArray6Vec2
-	{
-		private Vec2 _element0;
-
-		private Vec2 _element1;
-
-		private Vec2 _element2;
-
-		private Vec2 _element3;
-
-		private Vec2 _element4;
-
-		private Vec2 _element5;
-
-		public const int Length = 6;
-
-		public Vec2 this[int index]
-		{
-			get
-			{
-				switch (index)
-				{
-				case 0:
-					return _element0;
-				case 1:
-					return _element1;
-				case 2:
-					return _element2;
-				case 3:
-					return _element3;
-				case 4:
-					return _element4;
-				case 5:
-					return _element5;
-				default:
-					Debug.FailedAssert("Index out of range.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec2.cs", "Item", 36);
-					return Zero;
-				}
-			}
-			set
-			{
-				switch (index)
-				{
-				case 0:
-					_element0 = value;
-					break;
-				case 1:
-					_element1 = value;
-					break;
-				case 2:
-					_element2 = value;
-					break;
-				case 3:
-					_element3 = value;
-					break;
-				case 4:
-					_element4 = value;
-					break;
-				case 5:
-					_element5 = value;
-					break;
-				default:
-					Debug.FailedAssert("Index out of range.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Vec2.cs", "Item", 52);
-					break;
-				}
-			}
-		}
-	}
-
 	public float x;
 
 	public float y;
@@ -92,31 +23,6 @@ public struct Vec2
 	public float X => x;
 
 	public float Y => y;
-
-	public float this[int i]
-	{
-		get
-		{
-			return i switch
-			{
-				0 => x, 
-				1 => y, 
-				_ => throw new IndexOutOfRangeException("Vec2 out of bounds."), 
-			};
-		}
-		set
-		{
-			switch (i)
-			{
-			case 0:
-				x = value;
-				break;
-			case 1:
-				y = value;
-				break;
-			}
-		}
-	}
 
 	public float Length => MathF.Sqrt(x * x + y * y);
 
@@ -190,6 +96,12 @@ public struct Vec2
 		Vec2 result = this;
 		result.Normalize();
 		return result;
+	}
+
+	public void ClampMagnitude(float min, float max)
+	{
+		float value = Normalize();
+		this *= MathF.Clamp(value, min, max);
 	}
 
 	public static WindingOrder GetWindingOrder(Vec2 first, Vec2 second, Vec2 third)
@@ -275,7 +187,7 @@ public struct Vec2
 
 	public static Vec2 operator /(float f, Vec2 v)
 	{
-		return new Vec2(v.x / f, v.y / f);
+		return new Vec2(f / v.x, f / v.y);
 	}
 
 	public static Vec2 operator /(Vec2 v, float f)
@@ -328,6 +240,11 @@ public struct Vec2
 	public static float DotProduct(Vec2 va, Vec2 vb)
 	{
 		return va.x * vb.x + va.y * vb.y;
+	}
+
+	public static Vec2 ElementWiseProduct(Vec2 va, Vec2 vb)
+	{
+		return new Vec2(va.x * vb.x, va.y * vb.y);
 	}
 
 	public static Vec2 FromRotation(float rotation)
@@ -409,7 +326,7 @@ public struct Vec2
 
 	public static float DistanceToLineSegmentSquared(Vec2 line1, Vec2 line2, Vec2 point)
 	{
-		return point.DistanceSquared(MBMath.GetClosestPointInLineSegmentToPoint(point, line1, line2));
+		return point.DistanceSquared(MBMath.GetClosestPointOnLineSegmentToPoint(in line1, in line2, in point));
 	}
 
 	public float DistanceToLineSegment(Vec2 v, Vec2 w, out Vec2 closestPointOnLineSegment)
@@ -445,6 +362,11 @@ public struct Vec2
 		return vec.DistanceSquared(closestPointOnLineSegment);
 	}
 
+	public static Vec2 Abs(Vec2 vec)
+	{
+		return new Vec2(MathF.Abs(vec.x), MathF.Abs(vec.y));
+	}
+
 	public static Vec2 Lerp(Vec2 v1, Vec2 v2, float alpha)
 	{
 		return v1 * (1f - alpha) + v2 * alpha;
@@ -467,8 +389,8 @@ public struct Vec2
 		return MathF.Atan2(num, num2);
 	}
 
-	public static int SideOfLine(Vec2 point, Vec2 line1, Vec2 line2)
+	public static float Determinant(in Vec2 vec1, in Vec2 vec2)
 	{
-		return MathF.Sign((line2.x - line1.x) * (point.y - line1.y) - (point.x - line1.x) * (line2.y - line1.y));
+		return vec1.x * vec2.y - vec1.y * vec2.x;
 	}
 }

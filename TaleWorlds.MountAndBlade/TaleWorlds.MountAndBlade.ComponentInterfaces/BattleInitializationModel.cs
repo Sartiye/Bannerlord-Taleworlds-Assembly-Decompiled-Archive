@@ -3,17 +3,15 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class BattleInitializationModel : GameModel
+public abstract class BattleInitializationModel : MBGameModel<BattleInitializationModel>
 {
 	public const int MinimumTroopCountForPlayerDeployment = 20;
 
-	private bool _cachedCanPlayerSideDeployWithOOB;
+	private bool _canPlayerSideDeployWithOOB;
 
 	private bool _isCanPlayerSideDeployWithOOBCached;
 
 	private bool _isInitialized;
-
-	public bool BypassPlayerDeployment { get; private set; }
 
 	public abstract List<FormationClass> GetAllAvailableTroopTypes();
 
@@ -23,10 +21,10 @@ public abstract class BattleInitializationModel : GameModel
 	{
 		if (!_isCanPlayerSideDeployWithOOBCached)
 		{
-			_cachedCanPlayerSideDeployWithOOB = !BypassPlayerDeployment && CanPlayerSideDeployWithOrderOfBattleAux();
+			_canPlayerSideDeployWithOOB = CanPlayerSideDeployWithOrderOfBattleAux();
 			_isCanPlayerSideDeployWithOOBCached = true;
 		}
-		return _cachedCanPlayerSideDeployWithOOB;
+		return _canPlayerSideDeployWithOOB;
 	}
 
 	public void InitializeModel()
@@ -38,10 +36,5 @@ public abstract class BattleInitializationModel : GameModel
 	public void FinalizeModel()
 	{
 		_isInitialized = false;
-	}
-
-	public void SetBypassPlayerDeployment(bool value)
-	{
-		BypassPlayerDeployment = value;
 	}
 }

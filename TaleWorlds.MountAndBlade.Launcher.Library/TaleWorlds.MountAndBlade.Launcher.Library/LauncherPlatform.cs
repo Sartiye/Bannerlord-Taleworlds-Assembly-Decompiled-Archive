@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,13 +16,17 @@ public static class LauncherPlatform
 
 	public static LauncherPlatformType PlatformType => _platformType;
 
-	public static void Initialize()
+	public static void Initialize(List<string> args)
 	{
 		_platformType = ReadWindowsPlatformFromFile();
 		Assembly assembly = null;
 		if (PlatformType == LauncherPlatformType.Steam)
 		{
 			assembly = AssemblyLoader.LoadFrom(ManagedDllFolder.Name + "TaleWorlds.MountAndBlade.Launcher.Steam.dll");
+		}
+		else if (PlatformType == LauncherPlatformType.Epic)
+		{
+			assembly = AssemblyLoader.LoadFrom(ManagedDllFolder.Name + "TaleWorlds.MountAndBlade.Launcher.Epic.dll");
 		}
 		if (assembly != null)
 		{
@@ -40,7 +45,7 @@ public static class LauncherPlatform
 		}
 		if (_platformModuleExtension != null)
 		{
-			ModuleHelper.InitializePlatformModuleExtension(_platformModuleExtension);
+			ModuleHelper.InitializePlatformModuleExtension(_platformModuleExtension, args);
 		}
 	}
 

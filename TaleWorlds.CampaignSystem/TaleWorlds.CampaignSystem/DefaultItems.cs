@@ -19,6 +19,10 @@ public class DefaultItems
 
 	private ItemObject _itemGrain;
 
+	private ItemObject _itemPlanks;
+
+	private ItemObject _itemFelt;
+
 	private ItemObject _itemMeat;
 
 	private ItemObject _itemHides;
@@ -48,6 +52,10 @@ public class DefaultItems
 	private static DefaultItems Instance => Campaign.Current.DefaultItems;
 
 	public static ItemObject Grain => Instance._itemGrain;
+
+	public static ItemObject Planks => Instance._itemPlanks;
+
+	public static ItemObject Felt => Instance._itemFelt;
 
 	public static ItemObject Meat => Instance._itemMeat;
 
@@ -83,6 +91,8 @@ public class DefaultItems
 	private void RegisterAll()
 	{
 		_itemGrain = Create("grain");
+		_itemFelt = Create("felt");
+		_itemPlanks = Create("planks");
 		_itemMeat = Create("meat");
 		_itemHides = Create("hides");
 		_itemTools = Create("tools");
@@ -108,8 +118,10 @@ public class DefaultItems
 	{
 		ItemObject.InitializeTradeGood(_itemGrain, new TextObject("{=Itv3fgJm}Grain{@Plural}loads of grain{\\@}"), "merchandise_grain", DefaultItemCategories.Grain, 10, 10f, ItemObject.ItemTypeEnum.Goods, isFood: true);
 		ItemObject.InitializeTradeGood(_itemMeat, new TextObject("{=LmwhFv5p}Meat{@Plural}loads of meat{\\@}"), "merchandise_meat", DefaultItemCategories.Meat, 30, 10f, ItemObject.ItemTypeEnum.Goods, isFood: true);
+		ItemObject.InitializeTradeGood(_itemPlanks, new TextObject("{=5ac8Boz1}Planks{@Plural}loads of planks{\\@}"), "bd_planks_a", DefaultItemCategories.Planks, 180, 10f, ItemObject.ItemTypeEnum.Goods);
+		ItemObject.InitializeTradeGood(_itemFelt, new TextObject("{=hNwjpCVP}Felt{@Plural}rolls of felt{\\@}"), "merchandise_hides_b", DefaultItemCategories.Felt, 230, 10f, ItemObject.ItemTypeEnum.Goods);
 		ItemObject.InitializeTradeGood(_itemHides, new TextObject("{=4kvKQuXM}Hides{@Plural}loads of hide{\\@}"), "merchandise_hides_b", DefaultItemCategories.Hides, 50, 10f, ItemObject.ItemTypeEnum.Goods);
-		ItemObject.InitializeTradeGood(_itemTools, new TextObject("{=n3cjEB0X}Tools{@Plural}loads of tools{\\@}"), "bd_pickaxe_b", DefaultItemCategories.Tools, 200, 10f, ItemObject.ItemTypeEnum.Goods);
+		ItemObject.InitializeTradeGood(_itemTools, new TextObject("{=n3cjEB0X}Tools{@Plural}loads of tools{\\@}"), "bd_pickaxe_b", DefaultItemCategories.Tools, 250, 10f, ItemObject.ItemTypeEnum.Goods);
 		ItemObject.InitializeTradeGood(_itemIronOre, new TextObject("{=Kw6BkhIf}Iron Ore{@Plural}loads of iron ore{\\@}"), "iron_ore", DefaultItemCategories.Iron, 50, 10f, ItemObject.ItemTypeEnum.Goods);
 		ItemObject.InitializeTradeGood(_itemHardwood, new TextObject("{=ExjMoUiT}Hardwood{@Plural}hardwood logs{\\@}"), "hardwood", DefaultItemCategories.Wood, 25, 10f, ItemObject.ItemTypeEnum.Goods);
 		ItemObject.InitializeTradeGood(_itemCharcoal, new TextObject("{=iQadPYNe}Charcoal{@Plural}loads of charcoal{\\@}"), "charcoal", DefaultItemCategories.Wood, 50, 5f, ItemObject.ItemTypeEnum.Goods);

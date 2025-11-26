@@ -107,9 +107,9 @@ public class TestScript : ScriptComponentBehavior
 		{
 			return;
 		}
-		IEnumerable<GameEntity> children = base.GameEntity.GetChildren();
+		IEnumerable<WeakGameEntity> children = base.GameEntity.GetChildren();
 		float num2 = 6.28f / num;
-		foreach (GameEntity item in children)
+		foreach (WeakGameEntity item in children)
 		{
 			int integerFromStringEnd = GetIntegerFromStringEnd(item.Name);
 			float currentPhase = currentRotation % 6.28f;

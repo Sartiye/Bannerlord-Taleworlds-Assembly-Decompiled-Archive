@@ -245,7 +245,7 @@ public class MissionMainAgentEquipmentControllerVM : ViewModel
 		}
 		else if (selectedItem != null)
 		{
-			Debug.FailedAssert("Unidentified action on drop wheel", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentEquipmentControllerVM.cs", "HandleDropItemActionSelection", 106);
+			Debug.FailedAssert("Unidentified action on drop wheel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentEquipmentControllerVM.cs", "HandleDropItemActionSelection", 106);
 		}
 	}
 
@@ -350,7 +350,7 @@ public class MissionMainAgentEquipmentControllerVM : ViewModel
 		}
 		else if (selectedItem != null)
 		{
-			Debug.FailedAssert("Unidentified action on drop wheel", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentEquipmentControllerVM.cs", "HandleEquipItemActionSelection", 223);
+			Debug.FailedAssert("Unidentified action on drop wheel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentEquipmentControllerVM.cs", "HandleEquipItemActionSelection", 223);
 		}
 	}
 
@@ -432,12 +432,15 @@ public class MissionMainAgentEquipmentControllerVM : ViewModel
 				return "Shield";
 			case WeaponClass.Arrow:
 			case WeaponClass.Bolt:
+			case WeaponClass.SlingStone:
 			case WeaponClass.Cartridge:
 			case WeaponClass.Musket:
 				return "Ammo";
 			case WeaponClass.Banner:
 				return "Banner";
+			case WeaponClass.Sling:
 			case WeaponClass.Stone:
+			case WeaponClass.BallistaStone:
 				return "Stone";
 			default:
 				return "None";
@@ -452,10 +455,10 @@ public class MissionMainAgentEquipmentControllerVM : ViewModel
 
 	private bool DoesPlayerHaveAtLeastOneShield()
 	{
-		EquipmentIndex wieldedItemIndex = Agent.Main.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+		EquipmentIndex offhandWieldedItemIndex = Agent.Main.GetOffhandWieldedItemIndex();
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumAllWeaponSlots; equipmentIndex++)
 		{
-			if (equipmentIndex != wieldedItemIndex && !Agent.Main.Equipment[equipmentIndex].IsEmpty && Mission.Current.MainAgent.Equipment[equipmentIndex].Item.Type == ItemObject.ItemTypeEnum.Shield)
+			if (equipmentIndex != offhandWieldedItemIndex && !Agent.Main.Equipment[equipmentIndex].IsEmpty && Mission.Current.MainAgent.Equipment[equipmentIndex].Item.Type == ItemObject.ItemTypeEnum.Shield)
 			{
 				return true;
 			}
@@ -465,9 +468,9 @@ public class MissionMainAgentEquipmentControllerVM : ViewModel
 
 	private bool IsWieldedWeaponAtIndex(EquipmentIndex index)
 	{
-		if (index != Agent.Main.GetWieldedItemIndex(Agent.HandIndex.MainHand))
+		if (index != Agent.Main.GetPrimaryWieldedItemIndex())
 		{
-			return index == Agent.Main.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+			return index == Agent.Main.GetOffhandWieldedItemIndex();
 		}
 		return true;
 	}

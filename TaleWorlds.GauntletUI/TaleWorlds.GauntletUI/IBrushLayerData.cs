@@ -27,6 +27,8 @@ public interface IBrushLayerData
 
 	float YOffset { get; set; }
 
+	float Rotation { get; set; }
+
 	float ExtendLeft { get; set; }
 
 	float ExtendRight { get; set; }

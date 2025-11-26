@@ -4,7 +4,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglScene_initialization_data", false)]
+[EngineStruct("rglScene_initialization_data", false, null)]
 public struct SceneInitializationData
 {
 	public MatrixFrame CamPosFromScene;
@@ -36,6 +36,9 @@ public struct SceneInitializationData
 	[MarshalAs(UnmanagedType.U1)]
 	public bool ForTerrainShaderCompile;
 
+	[MarshalAs(UnmanagedType.U1)]
+	public bool InitSkyboxFromStart;
+
 	public SceneInitializationData(bool initializeWithDefaults)
 	{
 		if (initializeWithDefaults)
@@ -50,6 +53,7 @@ public struct SceneInitializationData
 			DoNotUseLoadingScreen = false;
 			CreateOros = false;
 			ForTerrainShaderCompile = false;
+			InitSkyboxFromStart = true;
 		}
 		else
 		{
@@ -63,6 +67,7 @@ public struct SceneInitializationData
 			DoNotUseLoadingScreen = false;
 			CreateOros = false;
 			ForTerrainShaderCompile = false;
+			InitSkyboxFromStart = true;
 		}
 	}
 }

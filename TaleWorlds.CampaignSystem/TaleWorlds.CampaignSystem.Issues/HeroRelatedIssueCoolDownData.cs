@@ -41,9 +41,9 @@ public class HeroRelatedIssueCoolDownData : IssueCoolDownData
 
 	public override bool IsValid()
 	{
-		if (base.IsValid())
+		if (base.IsValid() && RelatedHero != null)
 		{
-			return RelatedHero != null;
+			return RelatedHero.IsAlive;
 		}
 		return false;
 	}

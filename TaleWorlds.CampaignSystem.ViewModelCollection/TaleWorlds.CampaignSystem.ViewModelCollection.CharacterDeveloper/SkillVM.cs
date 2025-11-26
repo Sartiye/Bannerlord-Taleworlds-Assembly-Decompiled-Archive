@@ -23,9 +23,7 @@ public class SkillVM : ViewModel
 
 	public readonly SkillObject Skill;
 
-	private readonly CharacterVM _developerVM;
-
-	private readonly TextObject _boundAttributeName;
+	private readonly CharacterDeveloperHeroItemVM _heroItem;
 
 	private readonly Concept _focusConceptObj;
 
@@ -67,8 +65,6 @@ public class SkillVM : ViewModel
 
 	private string _howToLearnTitle;
 
-	private string _type;
-
 	private string _progressText;
 
 	private string _descriptionText;
@@ -98,27 +94,6 @@ public class SkillVM : ViewModel
 	private float _learningRate;
 
 	private double _progressPercentage;
-
-	private int _boundAttributeCurrentValue => _developerVM.GetCurrentAttributePoint(Skill.CharacterAttribute);
-
-	private int _heroLevel => _developerVM.Hero.CharacterObject.Level;
-
-	[DataSourceProperty]
-	public string Type
-	{
-		get
-		{
-			return _type;
-		}
-		set
-		{
-			if (value != _type)
-			{
-				_type = value;
-				OnPropertyChangedWithValue(value, "Type");
-			}
-		}
-	}
 
 	[DataSourceProperty]
 	public string DescriptionText
@@ -647,21 +622,20 @@ public class SkillVM : ViewModel
 		}
 	}
 
-	public SkillVM(SkillObject skill, CharacterVM developerVM, Action<PerkVM> onStartPerkSelection)
+	public SkillVM(SkillObject skill, CharacterDeveloperHeroItemVM heroItem, Action<PerkVM> onStartPerkSelection)
 	{
-		_developerVM = developerVM;
+		SkillVM skillVM = this;
+		_heroItem = heroItem;
 		Skill = skill;
 		MaxLevel = 300;
 		SkillId = skill.StringId;
 		_onStartPerkSelection = onStartPerkSelection;
 		IsInspected = false;
-		Type = (skill.IsPartySkill ? SkillType.Party : (skill.IsLeaderSkill ? SkillType.Leader : SkillType.Default)).ToString();
 		SkillEffects = new MBBindingList<BindingListStringItem>();
 		Perks = new MBBindingList<PerkVM>();
 		AddFocusHint = new HintViewModel();
-		_boundAttributeName = Skill.CharacterAttribute.Name;
-		LearningRateTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetLearningRateTooltip(_boundAttributeCurrentValue, CurrentFocusLevel, Level, _heroLevel, _boundAttributeName));
-		LearningLimitTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetLearningLimitTooltip(_boundAttributeCurrentValue, CurrentFocusLevel, _boundAttributeName));
+		LearningRateTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetLearningRateTooltip(skillVM._heroItem.CharacterAttributes, skillVM.CurrentFocusLevel, heroItem.Hero.GetSkillValue(skill), skillVM.Skill));
+		LearningLimitTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetLearningLimitTooltip(skillVM._heroItem.CharacterAttributes, skillVM.CurrentFocusLevel, skillVM.Skill));
 		InitializeValues();
 		_focusConceptObj = Concept.All.SingleOrDefault((Concept c) => c.StringId == "str_game_objects_skill_focus");
 		_skillConceptObj = Concept.All.SingleOrDefault((Concept c) => c.StringId == "str_game_objects_skills");
@@ -690,15 +664,15 @@ public class SkillVM : ViewModel
 
 	public void InitializeValues()
 	{
-		if (_developerVM.GetCharacterDeveloper() == null)
+		if (_heroItem.HeroDeveloper == null)
 		{
 			Level = 0;
 		}
 		else
 		{
-			Level = _developerVM.GetCharacterDeveloper().Hero.GetSkillValue(Skill);
+			Level = _heroItem.HeroDeveloper.Hero.GetSkillValue(Skill);
 			NextLevel = Level + 1;
-			CurrentSkillXP = _developerVM.GetCharacterDeveloper().GetSkillXpProgress(Skill);
+			CurrentSkillXP = _heroItem.HeroDeveloper.GetSkillXpProgress(Skill);
 			XpRequiredForNextLevel = Campaign.Current.Models.CharacterDevelopmentModel.GetXpRequiredForSkillLevel(Level + 1) - Campaign.Current.Models.CharacterDevelopmentModel.GetXpRequiredForSkillLevel(Level);
 			ProgressPercentage = 100.0 * (double)_currentSkillXP / (double)XpRequiredForNextLevel;
 			ProgressHint = new BasicTooltipViewModel(delegate
@@ -716,26 +690,26 @@ public class SkillVM : ViewModel
 				return GameTexts.FindText("str_skill_xp_hint").ToString();
 			});
 		}
-		_orgFocusAmount = _developerVM.GetCharacterDeveloper().GetFocus(Skill);
+		_orgFocusAmount = _heroItem.HeroDeveloper.GetFocus(Skill);
 		CurrentFocusLevel = _orgFocusAmount;
 		CreateLists();
 	}
 
 	public void RefreshWithCurrentValues()
 	{
-		float resultNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(_boundAttributeCurrentValue, CurrentFocusLevel, Level, _heroLevel, _boundAttributeName).ResultNumber;
+		float resultNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(_heroItem.CharacterAttributes, CurrentFocusLevel, _heroItem.Hero.GetSkillValue(Skill), Skill).ResultNumber;
 		GameTexts.SetVariable("COUNT", resultNumber.ToString("0.00"));
 		CurrentLearningRateText = GameTexts.FindText("str_learning_rate_COUNT").ToString();
-		CanLearnSkill = resultNumber > 0f;
+		CanLearnSkill = Math.Round(resultNumber, 2) > 0.0;
 		LearningRate = resultNumber;
-		FullLearningRateLevel = TaleWorlds.Library.MathF.Round(Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningLimit(_boundAttributeCurrentValue, CurrentFocusLevel, _boundAttributeName).ResultNumber);
-		int requiredFocusPointsToAddFocusWithCurrentFocus = _developerVM.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
+		FullLearningRateLevel = TaleWorlds.Library.MathF.Round(Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningLimit(_heroItem.CharacterAttributes, CurrentFocusLevel, Skill).ResultNumber);
+		int requiredFocusPointsToAddFocusWithCurrentFocus = _heroItem.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
 		GameTexts.SetVariable("COSTAMOUNT", requiredFocusPointsToAddFocusWithCurrentFocus);
 		FocusCostText = requiredFocusPointsToAddFocusWithCurrentFocus.ToString();
 		GameTexts.SetVariable("COUNT", requiredFocusPointsToAddFocusWithCurrentFocus);
 		GameTexts.SetVariable("RIGHT", "");
 		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_cost_COUNT"));
-		MBTextManager.SetTextVariable("FOCUS_ICON", GameTexts.FindText("str_html_focus_icon"));
+		MBTextManager.SetTextVariable("FOCUS_ICON", "{=!}<img src=\"CharacterDeveloper\\cp_icon\">");
 		NextLevelCostText = GameTexts.FindText("str_sf_text_with_focus_icon").ToString();
 		RefreshCanAddFocus();
 	}
@@ -744,8 +718,8 @@ public class SkillVM : ViewModel
 	{
 		SkillEffects.Clear();
 		Perks.Clear();
-		int skillValue = _developerVM.GetCharacterDeveloper().Hero.GetSkillValue(Skill);
-		foreach (SkillEffect item2 in SkillEffect.All.Where((SkillEffect x) => x.EffectedSkills.Contains(Skill)))
+		int skillValue = _heroItem.HeroDeveloper.Hero.GetSkillValue(Skill);
+		foreach (SkillEffect item2 in SkillEffect.All.Where((SkillEffect x) => x.EffectedSkill == Skill))
 		{
 			SkillEffects.Add(new BindingListStringItem(CampaignUIHelper.GetSkillEffectText(item2, skillValue)));
 		}
@@ -789,9 +763,9 @@ public class SkillVM : ViewModel
 
 	private bool IsPerkSelected(PerkObject perk)
 	{
-		if (!_developerVM.GetCharacterDeveloper().GetPerkValue(perk))
+		if (!_heroItem.HeroDeveloper.GetPerkValue(perk))
 		{
-			return _developerVM.PerkSelection.IsPerkSelected(perk);
+			return _heroItem.PerkSelection.IsPerkSelected(perk);
 		}
 		return true;
 	}
@@ -803,7 +777,7 @@ public class SkillVM : ViewModel
 		{
 			return true;
 		}
-		PerkObject perkObject = source.MaxBy((PerkObject p) => p.RequiredSkillValue - perk.RequiredSkillValue);
+		PerkObject perkObject = TaleWorlds.Core.Extensions.MaxBy(source, (PerkObject p) => p.RequiredSkillValue - perk.RequiredSkillValue);
 		if (!IsPerkSelected(perkObject))
 		{
 			if (perkObject.AlternativePerk != null)
@@ -822,23 +796,23 @@ public class SkillVM : ViewModel
 
 	public void RefreshCanAddFocus()
 	{
-		bool playerHasEnoughPoints = _developerVM.UnspentCharacterPoints >= _developerVM.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
+		bool playerHasEnoughPoints = _heroItem.UnspentCharacterPoints >= _heroItem.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
 		bool isMaxedSkill = _currentFocusLevel >= Campaign.Current.Models.CharacterDevelopmentModel.MaxFocusPerSkill;
-		string addFocusHintString = CampaignUIHelper.GetAddFocusHintString(playerHasEnoughPoints, isMaxedSkill, CurrentFocusLevel, _boundAttributeCurrentValue, Level, _developerVM.GetCharacterDeveloper(), Skill);
-		AddFocusHint.HintText = (string.IsNullOrEmpty(addFocusHintString) ? TextObject.Empty : new TextObject("{=!}" + addFocusHintString));
-		CanAddFocus = _developerVM.CanAddFocusToSkillWithFocusAmount(_currentFocusLevel);
+		string addFocusHintString = CampaignUIHelper.GetAddFocusHintString(playerHasEnoughPoints, isMaxedSkill, CurrentFocusLevel);
+		AddFocusHint.HintText = (string.IsNullOrEmpty(addFocusHintString) ? TextObject.GetEmpty() : new TextObject("{=!}" + addFocusHintString));
+		CanAddFocus = _heroItem.CanAddFocusToSkillWithFocusAmount(_currentFocusLevel);
 	}
 
 	public void ExecuteAddFocus()
 	{
 		if (CanAddFocus)
 		{
-			_developerVM.UnspentCharacterPoints -= _developerVM.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
+			_heroItem.UnspentCharacterPoints -= _heroItem.GetRequiredFocusPointsToAddFocusWithCurrentFocus(Skill);
 			CurrentFocusLevel++;
-			_developerVM.RefreshCharacterValues();
+			_heroItem.RefreshCharacterValues();
 			RefreshWithCurrentValues();
 			MBInformationManager.HideInformations();
-			Game.Current.EventManager.TriggerEvent(new FocusAddedByPlayerEvent(_developerVM.Hero, Skill));
+			Game.Current.EventManager.TriggerEvent(new FocusAddedByPlayerEvent(_heroItem.Hero, Skill));
 		}
 	}
 
@@ -850,7 +824,7 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 259);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 252);
 		}
 	}
 
@@ -862,13 +836,13 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 271);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 264);
 		}
 	}
 
 	public void ExecuteInspect()
 	{
-		_developerVM.SetCurrentSkill(this);
+		_heroItem.SetCurrentSkill(this);
 		RefreshCanAddFocus();
 	}
 
@@ -891,7 +865,7 @@ public class SkillVM : ViewModel
 	{
 		for (int i = 0; i < CurrentFocusLevel - _orgFocusAmount; i++)
 		{
-			_developerVM.GetCharacterDeveloper().AddFocus(Skill, 1);
+			_heroItem.HeroDeveloper.AddFocus(Skill, 1);
 		}
 		_orgFocusAmount = CurrentFocusLevel;
 	}

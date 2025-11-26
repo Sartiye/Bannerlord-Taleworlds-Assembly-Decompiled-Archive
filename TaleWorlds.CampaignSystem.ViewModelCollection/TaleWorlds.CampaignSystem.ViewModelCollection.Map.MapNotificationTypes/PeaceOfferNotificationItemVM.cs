@@ -1,55 +1,73 @@
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
-using TaleWorlds.Library;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MapNotificationTypes;
 
 public class PeaceOfferNotificationItemVM : MapNotificationItemBaseVM
 {
-	private IFaction _opponentFaction;
+	private bool _shouldDecisionBeCreatedOnClosed;
 
-	private int _tributeAmount;
+	private readonly IFaction _opponentFaction;
 
-	private bool _playerInspectedNotification;
+	private readonly int _tributeAmount;
+
+	private readonly int _tributeDurationInDays;
 
 	public PeaceOfferNotificationItemVM(PeaceOfferMapNotification data)
 		: base(data)
 	{
 		PeaceOfferNotificationItemVM peaceOfferNotificationItemVM = this;
+		_shouldDecisionBeCreatedOnClosed = true;
 		_opponentFaction = data.OpponentFaction;
 		_tributeAmount = data.TributeAmount;
+		_tributeDurationInDays = data.TributeDurationInDays;
 		_onInspect = delegate
 		{
-			if (CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason))
-			{
-				CampaignEventDispatcher.Instance.OnPeaceOfferedToPlayer(data.OpponentFaction, data.TributeAmount);
-				peaceOfferNotificationItemVM._playerInspectedNotification = true;
-				peaceOfferNotificationItemVM.ExecuteRemove();
-			}
-			else
-			{
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=ho5EndaV}Decision").ToString(), disabledReason.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=oHaWR73d}Ok").ToString(), null, null, null), pauseGameActiveState: true);
-			}
+			CampaignEventDispatcher.Instance.OnPeaceOfferedToPlayer(data.OpponentFaction, data.TributeAmount, data.TributeDurationInDays);
+			peaceOfferNotificationItemVM.RemovePeaceOfferNotification(shouldDecisionCreatedOnClosed: false);
 		};
-		CampaignEvents.OnPeaceOfferCancelledEvent.AddNonSerializedListener(this, OnPeaceOfferCancelled);
+		CampaignEvents.OnPeaceOfferResolvedEvent.AddNonSerializedListener(this, OnPeaceOfferClosed);
+		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
+		CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
 		base.NotificationIdentifier = "ransom";
 	}
 
-	private void OnPeaceOfferCancelled(IFaction opponentFaction)
+	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
+	{
+		if (clan == Clan.PlayerClan)
+		{
+			RemovePeaceOfferNotification(shouldDecisionCreatedOnClosed: false);
+		}
+	}
+
+	private void OnMakePeace(IFaction side1Faction, IFaction side2Faction, MakePeaceAction.MakePeaceDetail detail)
+	{
+		if ((side1Faction == Hero.MainHero.MapFaction && side2Faction == _opponentFaction) || (side2Faction == Hero.MainHero.MapFaction && side1Faction == _opponentFaction))
+		{
+			RemovePeaceOfferNotification(shouldDecisionCreatedOnClosed: false);
+		}
+	}
+
+	private void OnPeaceOfferClosed(IFaction opponentFaction)
 	{
 		if (Campaign.Current.CampaignInformationManager.InformationDataExists((PeaceOfferMapNotification x) => x == base.Data))
 		{
-			ExecuteRemove();
-			_opponentFaction = null;
+			RemovePeaceOfferNotification(shouldDecisionCreatedOnClosed: true);
 		}
+	}
+
+	private void RemovePeaceOfferNotification(bool shouldDecisionCreatedOnClosed)
+	{
+		_shouldDecisionBeCreatedOnClosed = shouldDecisionCreatedOnClosed;
+		ExecuteRemove();
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
 		CampaignEventDispatcher.Instance.RemoveListeners(this);
-		if (_playerInspectedNotification || Hero.MainHero.MapFaction.Leader == Hero.MainHero)
+		if (!_shouldDecisionBeCreatedOnClosed || Hero.MainHero.MapFaction.Leader == Hero.MainHero)
 		{
 			return;
 		}
@@ -63,7 +81,7 @@ public class PeaceOfferNotificationItemVM : MapNotificationItemBaseVM
 		}
 		if (!flag)
 		{
-			MakePeaceKingdomDecision kingdomDecision = new MakePeaceKingdomDecision(Hero.MainHero.MapFaction.Leader.Clan, _opponentFaction, -_tributeAmount);
+			MakePeaceKingdomDecision kingdomDecision = new MakePeaceKingdomDecision(Hero.MainHero.MapFaction.Leader.Clan, _opponentFaction, -_tributeAmount, _tributeDurationInDays, applyResults: true, isProposedByOpponent: true);
 			((Kingdom)Hero.MainHero.MapFaction).AddDecision(kingdomDecision);
 		}
 	}

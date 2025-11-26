@@ -6,8 +6,6 @@ namespace TaleWorlds.SaveSystem;
 
 internal static class BinaryWriterFactory
 {
-	private const int WritersPerThread = 5;
-
 	private static ThreadLocal<Stack<BinaryWriter>> _binaryWriters;
 
 	public static BinaryWriter GetBinaryWriter()
@@ -15,13 +13,9 @@ internal static class BinaryWriterFactory
 		if (_binaryWriters.Value == null)
 		{
 			_binaryWriters.Value = new Stack<BinaryWriter>();
-			for (int i = 0; i < 5; i++)
-			{
-				BinaryWriter item = new BinaryWriter(4096);
-				_binaryWriters.Value.Push(item);
-			}
 		}
 		Stack<BinaryWriter> value = _binaryWriters.Value;
+		BinaryWriter binaryWriter = null;
 		if (value.Count != 0)
 		{
 			return value.Pop();
@@ -33,8 +27,17 @@ internal static class BinaryWriterFactory
 	{
 		if (_binaryWriters != null)
 		{
+			if (_binaryWriters.Value == null)
+			{
+				Debug.Print("Release used before Get");
+				_binaryWriters.Value = new Stack<BinaryWriter>();
+			}
 			writer.Clear();
 			_binaryWriters.Value.Push(writer);
+		}
+		else
+		{
+			Debug.FailedAssert("_binaryWriters != null", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\BinaryWriterFactory.cs", "ReleaseBinaryWriter", 46);
 		}
 	}
 
@@ -45,6 +48,7 @@ internal static class BinaryWriterFactory
 
 	public static void Release()
 	{
+		_binaryWriters.Dispose();
 		_binaryWriters = null;
 	}
 }

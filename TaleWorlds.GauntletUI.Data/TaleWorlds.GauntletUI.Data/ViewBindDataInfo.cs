@@ -2,16 +2,19 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.GauntletUI.Data;
 
-internal class ViewBindDataInfo
+internal readonly struct ViewBindDataInfo
 {
-	internal GauntletView Owner { get; private set; }
+	internal readonly bool IsValid;
 
-	internal string Property { get; private set; }
+	internal readonly GauntletView Owner;
 
-	internal BindingPath Path { get; private set; }
+	internal readonly string Property;
+
+	internal readonly BindingPath Path;
 
 	internal ViewBindDataInfo(GauntletView view, string property, BindingPath path)
 	{
+		IsValid = true;
 		Owner = view;
 		Property = property;
 		Path = path;

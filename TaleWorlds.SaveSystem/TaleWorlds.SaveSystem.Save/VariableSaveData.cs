@@ -85,7 +85,7 @@ internal abstract class VariableSaveData
 		{
 			string message = $"Cant find definition for: {memberType.Name}. Save id: {MemberSaveId}";
 			Debug.Print(message, 0, Debug.DebugColor.Red);
-			Debug.FailedAssert(message, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "InitializeData", 97);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "InitializeData", 98);
 		}
 	}
 
@@ -115,11 +115,35 @@ internal abstract class VariableSaveData
 		else if (MemberType == SavedMemberType.BasicType)
 		{
 			TypeDefinition.SaveId.WriteTo(writer);
+			if (Context.DefinitionContext.TryGetTypeDefinition(TypeDefinition.SaveId) == null)
+			{
+				Debug.FailedAssert("Basic type definition cant be found: " + TypeDefinition.SaveId.GetStringId(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "SaveTo", 132);
+			}
 			((BasicTypeDefinition)TypeDefinition).Serializer.Serialize(writer, Value);
 		}
 		else if (MemberType == SavedMemberType.CustomStruct)
 		{
 			writer.WriteInt((int)Value);
 		}
+	}
+
+	public int GetDataSize()
+	{
+		int num = 4;
+		if (MemberType == SavedMemberType.Object || MemberType == SavedMemberType.Container || MemberType == SavedMemberType.String || MemberType == SavedMemberType.CustomStruct)
+		{
+			num += 4;
+		}
+		else if (MemberType == SavedMemberType.Enum)
+		{
+			num += TypeDefinition.SaveId.GetSizeInBytes() + SaveContext.GetStringSizeInBytes(Value.ToString());
+		}
+		else if (MemberType == SavedMemberType.BasicType)
+		{
+			num += TypeDefinition.SaveId.GetSizeInBytes();
+			BasicTypeDefinition basicTypeDefinition = (BasicTypeDefinition)TypeDefinition;
+			num += basicTypeDefinition.Serializer.GetSizeInBytes();
+		}
+		return num;
 	}
 }

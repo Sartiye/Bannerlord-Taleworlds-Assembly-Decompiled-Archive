@@ -42,12 +42,12 @@ public struct ExplainedNumber
 
 		public ExplanationLine? LimitMaxLine { get; private set; }
 
-		public List<(string name, float number)> GetLines(float baseNumber, float resultNumber)
+		public List<(string name, float number)> GetLines(float baseNumber, float unclampedResultNumber, TextObject overrideBaseLineText = null, TextObject overrideMaximumLineText = null, TextObject overrideMinimumLineText = null)
 		{
 			List<(string, float)> list = new List<(string, float)>();
 			if (BaseLine.HasValue)
 			{
-				list.Add((BaseLine.Value.Name, BaseLine.Value.Number));
+				list.Add(((overrideBaseLineText != null) ? overrideBaseLineText.ToString() : BaseLine.Value.Name, BaseLine.Value.Number));
 			}
 			foreach (ExplanationLine line in Lines)
 			{
@@ -58,13 +58,13 @@ public struct ExplainedNumber
 				}
 				list.Add((line.Name, num));
 			}
-			if (LimitMinLine.HasValue && LimitMinLine.Value.Number > resultNumber)
+			if (LimitMinLine.HasValue && LimitMinLine.Value.Number > unclampedResultNumber)
 			{
-				list.Add((LimitMinLine.Value.Name, LimitMinLine.Value.Number));
+				list.Add(((overrideMinimumLineText != null) ? overrideMinimumLineText.ToString() : LimitMinLine.Value.Name, LimitMinLine.Value.Number - unclampedResultNumber));
 			}
-			if (LimitMaxLine.HasValue && LimitMaxLine.Value.Number < resultNumber)
+			if (LimitMaxLine.HasValue && LimitMaxLine.Value.Number < unclampedResultNumber)
 			{
-				list.Add((LimitMaxLine.Value.Name, LimitMaxLine.Value.Number));
+				list.Add(((overrideMaximumLineText != null) ? overrideMaximumLineText.ToString() : LimitMaxLine.Value.Name, LimitMaxLine.Value.Number - unclampedResultNumber));
 			}
 			return list;
 		}
@@ -120,9 +120,9 @@ public struct ExplainedNumber
 
 	private StatExplainer _explainer;
 
-	private float _sumOfFactors;
+	public float ResultNumber => MathF.Clamp(_unclampedResultNumber, LimitMinValue, LimitMaxValue);
 
-	public float ResultNumber => MathF.Clamp(BaseNumber + BaseNumber * _sumOfFactors, LimitMinValue, LimitMaxValue);
+	public int RoundedResultNumber => MathF.Round(ResultNumber);
 
 	public float BaseNumber { get; private set; }
 
@@ -152,11 +152,15 @@ public struct ExplainedNumber
 		}
 	}
 
+	public float SumOfFactors { get; private set; }
+
+	private float _unclampedResultNumber => BaseNumber + BaseNumber * SumOfFactors;
+
 	public ExplainedNumber(float baseNumber = 0f, bool includeDescriptions = false, TextObject baseText = null)
 	{
 		BaseNumber = baseNumber;
 		_explainer = (includeDescriptions ? new StatExplainer() : null);
-		_sumOfFactors = 0f;
+		SumOfFactors = 0f;
 		_limitMinValue = float.MinValue;
 		_limitMaxValue = float.MaxValue;
 		if (_explainer != null && !BaseNumber.ApproximatelyEqualsTo(0f))
@@ -173,7 +177,7 @@ public struct ExplainedNumber
 		}
 		MBStringBuilder mBStringBuilder = default(MBStringBuilder);
 		mBStringBuilder.Initialize(16, "GetExplanations");
-		foreach (var line in _explainer.GetLines(BaseNumber, ResultNumber))
+		foreach (var line in _explainer.GetLines(BaseNumber, _unclampedResultNumber))
 		{
 			string value = string.Format("{0} : {1}{2:0.##}\n", line.name, (line.number > 0.001f) ? "+" : "", line.number);
 			mBStringBuilder.Append(value);
@@ -187,28 +191,39 @@ public struct ExplainedNumber
 		{
 			return new List<(string, float)>();
 		}
-		return _explainer.GetLines(BaseNumber, ResultNumber);
+		return _explainer.GetLines(BaseNumber, _unclampedResultNumber);
 	}
 
 	public void AddFromExplainedNumber(ExplainedNumber explainedNumber, TextObject baseText)
 	{
 		if (explainedNumber._explainer != null && _explainer != null)
 		{
-			if (explainedNumber._explainer.BaseLine.HasValue && explainedNumber._explainer.BaseLine.HasValue && !explainedNumber.BaseNumber.ApproximatelyEqualsTo(0f))
+			TextObject textObject = new TextObject("{=HKoLNyIm}{BASE} Maximum");
+			TextObject textObject2 = new TextObject("{=0Fliz2vk}{BASE} Minimum");
+			textObject.SetTextVariable("BASE", baseText);
+			textObject2.SetTextVariable("BASE", baseText);
+			foreach (var line in explainedNumber._explainer.GetLines(explainedNumber.BaseNumber, explainedNumber._unclampedResultNumber, baseText, textObject, textObject2))
 			{
-				float number = explainedNumber._explainer.BaseLine.Value.Number + explainedNumber._explainer.BaseLine.Value.Number * explainedNumber._sumOfFactors;
-				_explainer.AddLine(baseText?.ToString() ?? BaseText.ToString(), number, StatExplainer.OperationType.Add);
-			}
-			foreach (StatExplainer.ExplanationLine line in explainedNumber._explainer.Lines)
-			{
-				if (line.OperationType == StatExplainer.OperationType.Add)
-				{
-					float number2 = line.Number + line.Number * explainedNumber._sumOfFactors;
-					_explainer.AddLine(line.Name, number2, line.OperationType);
-				}
+				_explainer.AddLine(line.name, line.number, StatExplainer.OperationType.Add);
 			}
 		}
 		BaseNumber += explainedNumber.ResultNumber;
+	}
+
+	public void SubtractFromExplainedNumber(ExplainedNumber explainedNumber, TextObject baseText)
+	{
+		if (explainedNumber._explainer != null && _explainer != null)
+		{
+			TextObject textObject = new TextObject("{=HKoLNyIm}{BASE} Maximum");
+			TextObject textObject2 = new TextObject("{=0Fliz2vk}{BASE} Minimum");
+			textObject.SetTextVariable("BASE", baseText);
+			textObject2.SetTextVariable("BASE", baseText);
+			foreach (var line in explainedNumber._explainer.GetLines(explainedNumber.BaseNumber, explainedNumber._unclampedResultNumber, baseText, textObject, textObject2))
+			{
+				_explainer.AddLine(line.name, 0f - line.number, StatExplainer.OperationType.Add);
+			}
+		}
+		BaseNumber -= explainedNumber.ResultNumber;
 	}
 
 	public void Add(float value, TextObject description = null, TextObject variable = null)
@@ -218,7 +233,7 @@ public struct ExplainedNumber
 			return;
 		}
 		BaseNumber += value;
-		if (description != null && _explainer != null && !value.ApproximatelyEqualsTo(0f))
+		if (_explainer != null && description != null && !value.ApproximatelyEqualsTo(0f))
 		{
 			if (variable != null)
 			{
@@ -232,7 +247,7 @@ public struct ExplainedNumber
 	{
 		if (!value.ApproximatelyEqualsTo(0f))
 		{
-			_sumOfFactors += value;
+			SumOfFactors += value;
 			if (description != null && _explainer != null && !value.ApproximatelyEqualsTo(0f))
 			{
 				_explainer.AddLine(description.ToString(), MathF.Round(value, 3) * 100f, StatExplainer.OperationType.Multiply);
@@ -249,12 +264,12 @@ public struct ExplainedNumber
 		}
 	}
 
-	public void LimitMax(float maxValue)
+	public void LimitMax(float maxValue, TextObject description = null)
 	{
 		_limitMaxValue = maxValue;
 		if (_explainer != null)
 		{
-			_explainer.AddLine(LimitMaxText.ToString(), maxValue, StatExplainer.OperationType.LimitMax);
+			_explainer.AddLine((description ?? LimitMaxText).ToString(), maxValue, StatExplainer.OperationType.LimitMax);
 		}
 	}
 

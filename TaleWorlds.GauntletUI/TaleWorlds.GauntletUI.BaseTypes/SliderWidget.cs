@@ -36,9 +36,6 @@ public class SliderWidget : ImageWidget
 
 	public bool UpdateValueOnScroll { get; set; }
 
-	public bool DPadMovementEnabled { get; set; } = true;
-
-
 	private float _holdTimeToStartMovement => 0.3f;
 
 	private float _dynamicIncrement
@@ -290,7 +287,7 @@ public class SliderWidget : ImageWidget
 					_handleClickOffset = Vector2.Zero;
 					_handleClicked = false;
 					_valueChangedByMouse = false;
-					goto IL_01d5;
+					goto IL_01c0;
 				}
 			}
 		}
@@ -330,19 +327,18 @@ public class SliderWidget : ImageWidget
 		{
 			_handleClicked = true;
 			UpdateLocalClickPosition();
-			_handleClickOffset = base.EventManager.MousePosition - (Handle.GlobalPosition + Handle.Size * 0.5f);
+			_handleClickOffset = base.EventManager.MousePosition - Handle.AreaRect.GetCenter();
 		}
 		HandleMouseMove();
-		goto IL_01d5;
-		IL_01d5:
+		goto IL_01c0;
+		IL_01c0:
 		UpdateScrollBar();
 		UpdateHandleLength();
 		Handle?.SetState(base.CurrentState);
 		if (_snapCursorToHandle)
 		{
-			Vector2 mousePos = Handle.GlobalPosition + Handle.Size / 2f;
-			Input.SetMousePosition((int)mousePos.X, (int)mousePos.Y);
-			base.EventManager.UpdateMousePosition(mousePos);
+			Vector2 center = Handle.AreaRect.GetCenter();
+			Input.SetMousePosition((int)center.X, (int)center.Y);
 			_snapCursorToHandle = false;
 		}
 		if (flag && Input.MouseMoveX == 0f && Input.MouseMoveY == 0f)
@@ -383,6 +379,7 @@ public class SliderWidget : ImageWidget
 		if (Handle != null && Handle.IsVisible)
 		{
 			base.IsPressed = true;
+			EventFired("MousePressed");
 			UpdateLocalClickPosition();
 			OnPropertyChanged("MouseDown", "OnMousePressed");
 			HandleMouseMove();
@@ -394,6 +391,7 @@ public class SliderWidget : ImageWidget
 		if (Handle != null)
 		{
 			base.IsPressed = false;
+			EventFired("MouseReleased");
 			if (UpdateValueOnRelease)
 			{
 				OnPropertyChanged(_valueFloat, "ValueFloat");
@@ -430,8 +428,8 @@ public class SliderWidget : ImageWidget
 
 	private void UpdateLocalClickPosition()
 	{
-		Vector2 mousePosition = base.EventManager.MousePosition;
-		_localClickPos = mousePosition - Handle.GlobalPosition;
+		Vector2 screenPosition = base.EventManager.MousePosition;
+		_localClickPos = Handle.AreaRect.TransformScreenPositionToLocal(in screenPosition);
 		if (_localClickPos.X < 0f || _localClickPos.X > Handle.Size.X)
 		{
 			_localClickPos.X = Handle.Size.X / 2f;
@@ -544,7 +542,7 @@ public class SliderWidget : ImageWidget
 
 	private void UpdateHandleLength()
 	{
-		if (!DoNotUpdateHandleSize && IsDiscrete && Handle.WidthSizePolicy == SizePolicy.Fixed)
+		if (Handle != null && !DoNotUpdateHandleSize && IsDiscrete && Handle.WidthSizePolicy == SizePolicy.Fixed)
 		{
 			if (AlignmentAxis == AlignmentAxis.Horizontal)
 			{

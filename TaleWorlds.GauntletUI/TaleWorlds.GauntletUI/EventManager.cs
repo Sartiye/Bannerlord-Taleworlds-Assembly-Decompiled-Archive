@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using TaleWorlds.GauntletUI.BaseTypes;
@@ -21,6 +20,8 @@ public class EventManager
 	private const float DragStartThreshold = 100f;
 
 	private const float ScrollScale = 0.4f;
+
+	public Rectangle2D AreaRectangle;
 
 	private List<Action> _onAfterFinalizedCallbacks;
 
@@ -51,8 +52,6 @@ public class EventManager
 	private Vector2 _lastClickPosition;
 
 	private bool _mouseIsDown;
-
-	private Vector2 _lastAlternateClickPosition;
 
 	private bool _mouseAlternateIsDown;
 
@@ -104,6 +103,8 @@ public class EventManager
 
 	private float _lastSetFrictionValue = 1f;
 
+	private bool _isOnScreenKeyboardRequested;
+
 	public Func<bool> OnGetIsHitThisFrame;
 
 	public float Time { get; private set; }
@@ -115,19 +116,15 @@ public class EventManager
 
 	public float TopUsableAreaStart { get; private set; }
 
+	public Vector2 PageSize { get; private set; }
+
 	public static TaleWorlds.Library.EventSystem.EventManager UIEventManager { get; private set; }
 
 	public Vector2 MousePositionInReferenceResolution => MousePosition * Context.CustomInverseScale;
 
 	public bool IsControllerActive { get; private set; }
 
-	public Vector2 PageSize { get; private set; }
-
 	public UIContext Context { get; private set; }
-
-	public IInputService InputService { get; internal set; }
-
-	public IInputContext InputContext { get; internal set; }
 
 	public Widget Root { get; private set; }
 
@@ -137,16 +134,27 @@ public class EventManager
 		{
 			return _focusedWidget;
 		}
-		private set
+		set
 		{
-			if (value != null && value.ConnectedToRoot)
+			if (_isOnScreenKeyboardRequested || (_focusedWidget is EditableTextWidget && Input.IsOnScreenKeyboardActive) || _focusedWidget == value)
 			{
-				_focusedWidget = value;
+				return;
 			}
-			else
+			_focusedWidget?.OnLoseFocus();
+			if (value != null && (!value.ConnectedToRoot || !value.IsFocusable))
 			{
 				_focusedWidget = null;
 			}
+			else
+			{
+				_focusedWidget = value;
+				_focusedWidget?.OnGainFocus();
+				if (_focusedWidget is EditableTextWidget && IsControllerActive)
+				{
+					_isOnScreenKeyboardRequested = true;
+				}
+			}
+			this.OnFocusedWidgetChanged?.Invoke();
 		}
 	}
 
@@ -196,13 +204,16 @@ public class EventManager
 		}
 		private set
 		{
-			if (value != null && value.ConnectedToRoot)
+			if (_dragHoveredView != value)
 			{
+				_dragHoveredView?.OnDragHoverEnd();
+				if (value != null && (!value.ConnectedToRoot || !value.AcceptDrop))
+				{
+					_dragHoveredView = null;
+					return;
+				}
 				_dragHoveredView = value;
-			}
-			else
-			{
-				_dragHoveredView = null;
+				_dragHoveredView?.OnDragHoverBegin();
 			}
 		}
 	}
@@ -215,7 +226,7 @@ public class EventManager
 		{
 			if (DraggedWidget != null)
 			{
-				return _dragCarrier.GlobalPosition * Context.CustomScale - new Vector2(LeftUsableAreaStart, TopUsableAreaStart);
+				return _dragCarrier.AreaRect.TopLeft * Context.CustomScale - new Vector2(LeftUsableAreaStart, TopUsableAreaStart);
 			}
 			return MousePositionInReferenceResolution;
 		}
@@ -297,11 +308,13 @@ public class EventManager
 		}
 	}
 
-	public Vector2 MousePosition { get; private set; }
+	public Vector2 MousePosition => Context.InputContext.GetMousePosition();
+
+	public ulong LocalFrameNumber => Context.LocalFrameNumber;
 
 	private bool IsDragging => DraggedWidget != null;
 
-	public float DeltaMouseScroll => InputContext.GetDeltaMouseScroll() * 0.4f;
+	public float DeltaMouseScroll => Context.InputContext.GetMouseScrollDelta();
 
 	public float RightStickVerticalScrollAmount
 	{
@@ -327,9 +340,7 @@ public class EventManager
 
 	public event Action OnDragEnded;
 
-	public event Action LoseFocus;
-
-	public event Action GainFocus;
+	public event Action OnFocusedWidgetChanged;
 
 	internal EventManager(UIContext context)
 	{
@@ -342,6 +353,7 @@ public class EventManager
 		{
 			UIEventManager = new TaleWorlds.Library.EventSystem.EventManager();
 		}
+		AreaRectangle = Rectangle2D.Create();
 		_widgetsWithUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.Update);
 		_widgetsWithParallelUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.ParallelUpdate);
 		_widgetsWithLateUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.LateUpdate);
@@ -397,18 +409,38 @@ public class EventManager
 		_onAfterFinalizedCallbacks.Add(callback);
 	}
 
+	internal void OnContextActivated()
+	{
+		List<Widget> allChildrenAndThisRecursive = Root.GetAllChildrenAndThisRecursive();
+		for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
+		{
+			allChildrenAndThisRecursive[i].OnContextActivated();
+		}
+	}
+
+	internal void OnContextDeactivated()
+	{
+		List<Widget> allChildrenAndThisRecursive = Root.GetAllChildrenAndThisRecursive();
+		for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
+		{
+			allChildrenAndThisRecursive[i].OnContextDeactivated();
+		}
+	}
+
 	internal void OnWidgetConnectedToRoot(Widget widget)
 	{
 		widget.HandleOnConnectedToRoot();
-		foreach (Widget allChildrenAndThi in widget.AllChildrenAndThis)
+		List<Widget> allChildrenAndThisRecursive = widget.GetAllChildrenAndThisRecursive();
+		for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
 		{
-			allChildrenAndThi.HandleOnConnectedToRoot();
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.Update, allChildrenAndThi);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.LateUpdate, allChildrenAndThi);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, allChildrenAndThi);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, allChildrenAndThi);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, allChildrenAndThi);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, allChildrenAndThi);
+			Widget widget2 = allChildrenAndThisRecursive[i];
+			widget2.HandleOnConnectedToRoot();
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.Update, widget2);
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.LateUpdate, widget2);
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, widget2);
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, widget2);
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, widget2);
+			RegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget2);
 		}
 	}
 
@@ -421,19 +453,21 @@ public class EventManager
 			ClearDragObject();
 		}
 		GauntletGamepadNavigationManager.Instance.OnWidgetDisconnectedFromRoot(widget);
-		foreach (Widget allChildrenAndThi in widget.AllChildrenAndThis)
+		List<Widget> allChildrenAndThisRecursive = widget.GetAllChildrenAndThisRecursive();
+		for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
 		{
-			allChildrenAndThi.HandleOnDisconnectedFromRoot();
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.Update, allChildrenAndThi);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.LateUpdate, allChildrenAndThi);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, allChildrenAndThi);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, allChildrenAndThi);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, allChildrenAndThi);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, allChildrenAndThi);
-			GauntletGamepadNavigationManager.Instance.OnWidgetDisconnectedFromRoot(allChildrenAndThi);
-			allChildrenAndThi.GamepadNavigationIndex = -1;
-			allChildrenAndThi.UsedNavigationMovements = GamepadNavigationTypes.None;
-			allChildrenAndThi.IsUsingNavigation = false;
+			Widget widget2 = allChildrenAndThisRecursive[i];
+			widget2.HandleOnDisconnectedFromRoot();
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.Update, widget2);
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.LateUpdate, widget2);
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, widget2);
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, widget2);
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, widget2);
+			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget2);
+			GauntletGamepadNavigationManager.Instance?.OnWidgetDisconnectedFromRoot(widget2);
+			widget2.GamepadNavigationIndex = -1;
+			widget2.UsedNavigationMovements = GamepadNavigationTypes.None;
+			widget2.IsUsingNavigation = false;
 		}
 	}
 
@@ -605,7 +639,13 @@ public class EventManager
 
 	private void UpdatePositions()
 	{
-		Root.UpdatePosition(Vector2.Zero);
+		AreaRectangle.LocalPosition = new Vector2(LeftUsableAreaStart, TopUsableAreaStart);
+		AreaRectangle.LocalScale = new Vector2(PageSize.X, PageSize.Y);
+		AreaRectangle.LocalPivot = new Vector2(0.5f, 0.5f);
+		ref Rectangle2D areaRectangle = ref AreaRectangle;
+		Rectangle2D parentRectangle = Rectangle2D.Invalid;
+		areaRectangle.CalculateMatrixFrame(in parentRectangle);
+		Root.UpdatePosition();
 	}
 
 	private void WidgetDoTweenPositionAux(int startInclusive, int endExclusive, float deltaTime)
@@ -649,13 +689,15 @@ public class EventManager
 		{
 			PageSize = pageSize;
 			Vec2 vec = new Vec2(pageSize.X / UsableArea.X, pageSize.Y / UsableArea.Y);
-			LeftUsableAreaStart = (vec.X - vec.X * UsableArea.X) / 2f;
-			TopUsableAreaStart = (vec.Y - vec.Y * UsableArea.Y) / 2f;
+			LeftUsableAreaStart = (vec.X - vec.X * UsableArea.X) * 0.5f;
+			TopUsableAreaStart = (vec.Y - vec.Y * UsableArea.Y) * 0.5f;
+			AreaRectangle.LocalPosition = new Vector2(LeftUsableAreaStart, TopUsableAreaStart);
+			AreaRectangle.LocalScale = new Vector2(PageSize.X, PageSize.Y);
 			if (_measureDirty > 0)
 			{
 				MeasureAll();
 			}
-			LayoutAll(LeftUsableAreaStart, PageSize.Y, PageSize.X, TopUsableAreaStart);
+			LayoutAll(0f, PageSize.Y, PageSize.X, 0f);
 			TweenPositions(dt);
 			UpdatePositions();
 			if (_measureDirty > 0)
@@ -678,7 +720,7 @@ public class EventManager
 			{
 				MeasureAll();
 			}
-			LayoutAll(LeftUsableAreaStart, PageSize.Y, PageSize.X, TopUsableAreaStart);
+			LayoutAll(0f, PageSize.Y, PageSize.X, 0f);
 			if (_positionsDirty)
 			{
 				UpdatePositions();
@@ -690,28 +732,27 @@ public class EventManager
 	internal void MouseDown()
 	{
 		_mouseIsDown = true;
-		_lastClickPosition = new Vector2(InputContext.GetPointerX(), InputContext.GetPointerY());
-		Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.MousePressed, _lastClickPosition);
-		if (widgetAtPositionForEvent != null)
+		_lastClickPosition = MousePosition;
+		Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.MousePressed);
+		if (widgetAtMousePositionForEvent != null)
 		{
-			DispatchEvent(widgetAtPositionForEvent, GauntletEvent.MousePressed);
+			DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.MousePressed);
 		}
 	}
 
 	internal void MouseUp()
 	{
 		_mouseIsDown = false;
-		MousePosition = new Vector2(InputContext.GetPointerX(), InputContext.GetPointerY());
 		if (IsDragging)
 		{
 			if (DraggedWidget.PreviewEvent(GauntletEvent.DragEnd))
 			{
 				DispatchEvent(DraggedWidget, GauntletEvent.DragEnd);
 			}
-			Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.Drop, MousePosition);
-			if (widgetAtPositionForEvent != null)
+			Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.Drop);
+			if (widgetAtMousePositionForEvent != null)
 			{
-				DispatchEvent(widgetAtPositionForEvent, GauntletEvent.Drop);
+				DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.Drop);
 			}
 			else
 			{
@@ -724,40 +765,38 @@ public class EventManager
 		}
 		else
 		{
-			Widget widgetAtPositionForEvent2 = GetWidgetAtPositionForEvent(GauntletEvent.MouseReleased, new Vector2(InputContext.GetPointerX(), InputContext.GetPointerY()));
-			DispatchEvent(widgetAtPositionForEvent2, GauntletEvent.MouseReleased);
-			LatestMouseUpWidget = widgetAtPositionForEvent2;
+			Widget widgetAtMousePositionForEvent2 = GetWidgetAtMousePositionForEvent(GauntletEvent.MouseReleased);
+			DispatchEvent(widgetAtMousePositionForEvent2, GauntletEvent.MouseReleased);
+			LatestMouseUpWidget = widgetAtMousePositionForEvent2;
 		}
 	}
 
 	internal void MouseAlternateDown()
 	{
 		_mouseAlternateIsDown = true;
-		_lastAlternateClickPosition = new Vector2(InputContext.GetPointerX(), InputContext.GetPointerY());
-		Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.MouseAlternatePressed, _lastAlternateClickPosition);
-		if (widgetAtPositionForEvent != null)
+		Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.MouseAlternatePressed);
+		if (widgetAtMousePositionForEvent != null)
 		{
-			DispatchEvent(widgetAtPositionForEvent, GauntletEvent.MouseAlternatePressed);
+			DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.MouseAlternatePressed);
 		}
 	}
 
 	internal void MouseAlternateUp()
 	{
 		_mouseAlternateIsDown = false;
-		MousePosition = new Vector2(InputContext.GetPointerX(), InputContext.GetPointerY());
-		Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.MouseAlternateReleased, _lastAlternateClickPosition);
-		DispatchEvent(widgetAtPositionForEvent, GauntletEvent.MouseAlternateReleased);
-		LatestMouseAlternateUpWidget = widgetAtPositionForEvent;
+		Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.MouseAlternateReleased);
+		DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.MouseAlternateReleased);
+		LatestMouseAlternateUpWidget = widgetAtMousePositionForEvent;
 	}
 
 	internal void MouseScroll()
 	{
 		if (TaleWorlds.Library.MathF.Abs(DeltaMouseScroll) > 0.001f)
 		{
-			Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.MouseScroll, MousePosition);
-			if (widgetAtPositionForEvent != null)
+			Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.MouseScroll);
+			if (widgetAtMousePositionForEvent != null)
 			{
-				DispatchEvent(widgetAtPositionForEvent, GauntletEvent.MouseScroll);
+				DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.MouseScroll);
 			}
 		}
 	}
@@ -766,17 +805,17 @@ public class EventManager
 	{
 		if (Input.GetKeyState(InputKey.ControllerRStick).X != 0f || Input.GetKeyState(InputKey.ControllerRStick).Y != 0f)
 		{
-			Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.RightStickMovement, MousePosition);
-			if (widgetAtPositionForEvent != null)
+			Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.RightStickMovement);
+			if (widgetAtMousePositionForEvent != null)
 			{
-				DispatchEvent(widgetAtPositionForEvent, GauntletEvent.RightStickMovement);
+				DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.RightStickMovement);
 			}
 		}
 	}
 
 	public void ClearFocus()
 	{
-		SetWidgetFocused(null);
+		FocusedWidget = null;
 		SetHoveredView(null);
 	}
 
@@ -810,25 +849,20 @@ public class EventManager
 		_dragCarrier = null;
 	}
 
-	internal void UpdateMousePosition(Vector2 mousePos)
-	{
-		MousePosition = mousePos;
-	}
-
 	internal void MouseMove()
 	{
 		if (_mouseIsDown)
 		{
 			if (IsDragging)
 			{
-				Widget widgetAtPositionForEvent = GetWidgetAtPositionForEvent(GauntletEvent.DragHover, MousePosition);
-				if (widgetAtPositionForEvent != null)
+				Widget widgetAtMousePositionForEvent = GetWidgetAtMousePositionForEvent(GauntletEvent.DragHover);
+				if (widgetAtMousePositionForEvent != null)
 				{
-					DispatchEvent(widgetAtPositionForEvent, GauntletEvent.DragHover);
+					DispatchEvent(widgetAtMousePositionForEvent, GauntletEvent.DragHover);
 				}
 				else
 				{
-					SetDragHoveredView(null);
+					DragHoveredView = null;
 				}
 			}
 			else if (LatestMouseDownWidget != null)
@@ -849,28 +883,35 @@ public class EventManager
 		}
 		else if (!_mouseAlternateIsDown)
 		{
-			Widget widgetAtPositionForEvent2 = GetWidgetAtPositionForEvent(GauntletEvent.MouseMove, MousePosition);
-			if (widgetAtPositionForEvent2 != null)
+			Widget widgetAtMousePositionForEvent2 = GetWidgetAtMousePositionForEvent(GauntletEvent.MouseMove);
+			if (widgetAtMousePositionForEvent2 != null)
 			{
-				DispatchEvent(widgetAtPositionForEvent2, GauntletEvent.MouseMove);
+				DispatchEvent(widgetAtMousePositionForEvent2, GauntletEvent.MouseMove);
 			}
 		}
 		List<Widget> list = new List<Widget>();
-		foreach (Widget item in AllVisibleWidgetsAt(Root, MousePosition))
+		List<Widget> list2 = new List<Widget>();
+		CollectEnableWidgetsAt(Root, MousePosition, list2);
+		for (int i = 0; i < list2.Count; i++)
 		{
-			if (!MouseOveredViews.Contains(item))
+			Widget widget = list2[i];
+			if (!MouseOveredViews.Contains(widget))
 			{
-				item.OnMouseOverBegin();
-				GauntletGamepadNavigationManager.Instance?.OnWidgetHoverBegin(item);
+				widget.OnMouseOverBegin();
+				GauntletGamepadNavigationManager.Instance?.OnWidgetHoverBegin(widget);
 			}
-			list.Add(item);
+			list.Add(widget);
 		}
-		foreach (Widget item2 in MouseOveredViews.Except(list))
+		for (int j = 0; j < MouseOveredViews.Count; j++)
 		{
-			item2.OnMouseOverEnd();
-			if (item2.GamepadNavigationIndex != -1)
+			Widget widget2 = MouseOveredViews[j];
+			if (!list.Contains(widget2))
 			{
-				GauntletGamepadNavigationManager.Instance?.OnWidgetHoverEnd(item2);
+				widget2.OnMouseOverEnd();
+				if (widget2.GamepadNavigationIndex != -1)
+				{
+					GauntletGamepadNavigationManager.Instance?.OnWidgetHoverEnd(widget2);
+				}
 			}
 		}
 		MouseOveredViews = list;
@@ -878,17 +919,34 @@ public class EventManager
 
 	private static bool IsPointInsideMeasuredArea(Widget w, Vector2 p)
 	{
-		return w.IsPointInsideMeasuredArea(p);
+		return w.AreaRect.IsPointInside(in p);
+	}
+
+	public bool IsPointInsideUsableArea(Vector2 p)
+	{
+		return AreaRectangle.IsPointInside(in p);
+	}
+
+	private Widget GetWidgetAtMousePositionForEvent(GauntletEvent gauntletEvent)
+	{
+		if (!GetIsHitThisFrame())
+		{
+			return null;
+		}
+		return GetWidgetAtPositionForEvent(gauntletEvent, MousePosition);
 	}
 
 	private Widget GetWidgetAtPositionForEvent(GauntletEvent gauntletEvent, Vector2 pointerPosition)
 	{
 		Widget result = null;
-		foreach (Widget item in AllEnabledWidgetsAt(Root, pointerPosition))
+		List<Widget> list = new List<Widget>();
+		CollectEnableWidgetsAt(Root, pointerPosition, list);
+		for (int i = 0; i < list.Count; i++)
 		{
-			if (item.PreviewEvent(gauntletEvent))
+			Widget widget = list[i];
+			if (widget.PreviewEvent(gauntletEvent))
 			{
-				result = item;
+				result = widget;
 				break;
 			}
 		}
@@ -906,37 +964,7 @@ public class EventManager
 		case GauntletEvent.MousePressed:
 			LatestMouseDownWidget = selectedWidget;
 			selectedWidget.OnMousePressed();
-			if (FocusedWidget == selectedWidget)
-			{
-				break;
-			}
-			if (FocusedWidget != null)
-			{
-				FocusedWidget.OnLoseFocus();
-				this.LoseFocus?.Invoke();
-			}
-			if (selectedWidget.IsFocusable)
-			{
-				selectedWidget.OnGainFocus();
-				FocusedWidget = selectedWidget;
-				this.GainFocus?.Invoke();
-			}
-			else
-			{
-				FocusedWidget = null;
-			}
-			if (selectedWidget is EditableTextWidget editableTextWidget2 && IsControllerActive)
-			{
-				string initialText2 = editableTextWidget2.Text ?? string.Empty;
-				string descriptionText2 = editableTextWidget2.KeyboardInfoText ?? string.Empty;
-				int maxLength2 = editableTextWidget2.MaxLength;
-				int keyboardTypeEnum2 = (editableTextWidget2.IsObfuscationEnabled ? 2 : 0);
-				if (FocusedWidget is IntegerInputTextWidget || FocusedWidget is FloatInputTextWidget)
-				{
-					keyboardTypeEnum2 = 1;
-				}
-				Context.TwoDimensionContext.Platform.OpenOnScreenKeyboard(initialText2, descriptionText2, maxLength2, keyboardTypeEnum2);
-			}
+			FocusedWidget = selectedWidget;
 			break;
 		case GauntletEvent.MouseReleased:
 			if (LatestMouseDownWidget != null && LatestMouseDownWidget != selectedWidget)
@@ -948,42 +976,12 @@ public class EventManager
 		case GauntletEvent.MouseAlternatePressed:
 			LatestMouseAlternateDownWidget = selectedWidget;
 			selectedWidget.OnMouseAlternatePressed();
-			if (FocusedWidget == selectedWidget)
-			{
-				break;
-			}
-			if (FocusedWidget != null)
-			{
-				FocusedWidget.OnLoseFocus();
-				this.LoseFocus?.Invoke();
-			}
-			if (selectedWidget.IsFocusable)
-			{
-				selectedWidget.OnGainFocus();
-				FocusedWidget = selectedWidget;
-				this.GainFocus?.Invoke();
-			}
-			else
-			{
-				FocusedWidget = null;
-			}
-			if (selectedWidget is EditableTextWidget editableTextWidget && IsControllerActive)
-			{
-				string initialText = editableTextWidget.Text ?? string.Empty;
-				string descriptionText = editableTextWidget.KeyboardInfoText ?? string.Empty;
-				int maxLength = editableTextWidget.MaxLength;
-				int keyboardTypeEnum = (editableTextWidget.IsObfuscationEnabled ? 2 : 0);
-				if (FocusedWidget is IntegerInputTextWidget || FocusedWidget is FloatInputTextWidget)
-				{
-					keyboardTypeEnum = 1;
-				}
-				Context.TwoDimensionContext.Platform.OpenOnScreenKeyboard(initialText, descriptionText, maxLength, keyboardTypeEnum);
-			}
+			FocusedWidget = selectedWidget;
 			break;
 		case GauntletEvent.MouseAlternateReleased:
 			if (LatestMouseAlternateDownWidget != null && LatestMouseAlternateDownWidget != selectedWidget)
 			{
-				LatestMouseAlternateDownWidget.OnMouseAlternateReleased();
+				LatestMouseAlternateDownWidget?.OnMouseAlternateReleased();
 			}
 			selectedWidget?.OnMouseAlternateReleased();
 			break;
@@ -992,7 +990,7 @@ public class EventManager
 			SetHoveredView(selectedWidget);
 			break;
 		case GauntletEvent.DragHover:
-			SetDragHoveredView(selectedWidget);
+			DragHoveredView = selectedWidget;
 			break;
 		case GauntletEvent.DragBegin:
 			selectedWidget.OnDragBegin();
@@ -1016,7 +1014,7 @@ public class EventManager
 	{
 		if (widget == null)
 		{
-			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 1141);
+			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 1157);
 			return false;
 		}
 		return AnyWidgetsAt(widget, position);
@@ -1057,52 +1055,46 @@ public class EventManager
 		return false;
 	}
 
-	private static IEnumerable<Widget> AllEnabledWidgetsAt(Widget widget, Vector2 position)
+	private static void CollectEnableWidgetsAt(Widget widget, Vector2 position, List<Widget> widgets)
 	{
 		if (!widget.IsEnabled || !widget.IsVisible)
 		{
-			yield break;
+			return;
 		}
 		if (!widget.DoNotPassEventsToChildren)
 		{
-			for (int i = widget.ChildCount - 1; i >= 0; i--)
+			for (int num = widget.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = widget.GetChild(i);
+				Widget child = widget.GetChild(num);
 				if (!child.IsHidden && !child.IsDisabled && IsPointInsideMeasuredArea(child, position))
 				{
-					foreach (Widget item in AllEnabledWidgetsAt(child, position))
-					{
-						yield return item;
-					}
+					CollectEnableWidgetsAt(child, position, widgets);
 				}
 			}
 		}
 		if (!widget.DoNotAcceptEvents && IsPointInsideMeasuredArea(widget, position))
 		{
-			yield return widget;
+			widgets.Add(widget);
 		}
 	}
 
-	private static IEnumerable<Widget> AllVisibleWidgetsAt(Widget widget, Vector2 position)
+	private static void CollectVisibleWidgetsAt(Widget widget, Vector2 position, List<Widget> widgets)
 	{
 		if (!widget.IsVisible)
 		{
-			yield break;
+			return;
 		}
-		for (int i = widget.ChildCount - 1; i >= 0; i--)
+		for (int num = widget.ChildCount - 1; num >= 0; num--)
 		{
-			Widget child = widget.GetChild(i);
+			Widget child = widget.GetChild(num);
 			if (child.IsVisible && IsPointInsideMeasuredArea(child, position))
 			{
-				foreach (Widget item in AllVisibleWidgetsAt(child, position))
-				{
-					yield return item;
-				}
+				CollectVisibleWidgetsAt(child, position, widgets);
 			}
 		}
 		if (IsPointInsideMeasuredArea(widget, position))
 		{
-			yield return widget;
+			widgets.Add(widget);
 		}
 	}
 
@@ -1292,45 +1284,40 @@ public class EventManager
 		for (int j = 1; j <= 5; j++)
 		{
 			List<UpdateAction> list = _lateUpdateActionsRunning[j];
-			foreach (UpdateAction item in list)
+			for (int k = 0; k < list.Count; k++)
 			{
-				item.Action(dt);
+				if (list[k].Target.ConnectedToRoot)
+				{
+					list[k].Action(dt);
+				}
 			}
 			list.Clear();
 		}
-		if (!IsControllerActive)
+		if (IsControllerActive)
 		{
-			return;
-		}
-		if (HoveredView != null && HoveredView.IsRecursivelyVisible())
-		{
-			if (HoveredView.FrictionEnabled && DraggedWidget == null)
+			if (HoveredView != null && HoveredView.IsRecursivelyVisible())
 			{
-				_lastSetFrictionValue = 0.45f;
+				if (HoveredView.FrictionEnabled && DraggedWidget == null)
+				{
+					_lastSetFrictionValue = 0.45f;
+				}
+				else
+				{
+					_lastSetFrictionValue = 1f;
+				}
+				Input.SetCursorFriction(_lastSetFrictionValue);
 			}
-			else
+			if (!_lastSetFrictionValue.ApproximatelyEqualsTo(1f) && HoveredView == null)
 			{
 				_lastSetFrictionValue = 1f;
+				Input.SetCursorFriction(_lastSetFrictionValue);
 			}
-			Input.SetCursorFriction(_lastSetFrictionValue);
 		}
-		if (!_lastSetFrictionValue.ApproximatelyEqualsTo(1f) && HoveredView == null)
-		{
-			_lastSetFrictionValue = 1f;
-			Input.SetCursorFriction(_lastSetFrictionValue);
-		}
-	}
-
-	public void SetWidgetFocused(Widget widget, bool fromClick = false)
-	{
-		if (FocusedWidget == widget)
+		if (!_isOnScreenKeyboardRequested)
 		{
 			return;
 		}
-		FocusedWidget?.OnLoseFocus();
-		widget?.OnGainFocus();
-		FocusedWidget = widget;
-		if (FocusedWidget is EditableTextWidget editableTextWidget && IsControllerActive)
+		if (IsControllerActive && FocusedWidget is EditableTextWidget editableTextWidget)
 		{
 			string initialText = editableTextWidget.Text ?? string.Empty;
 			string descriptionText = editableTextWidget.KeyboardInfoText ?? string.Empty;
@@ -1342,6 +1329,7 @@ public class EventManager
 			}
 			Context.TwoDimensionContext.Platform.OpenOnScreenKeyboard(initialText, descriptionText, maxLength, keyboardTypeEnum);
 		}
+		_isOnScreenKeyboardRequested = false;
 	}
 
 	private void UpdateDragCarrier()
@@ -1368,32 +1356,16 @@ public class EventManager
 		}
 	}
 
-	internal bool SetDragHoveredView(Widget view)
-	{
-		if (DragHoveredView != view)
-		{
-			DragHoveredView?.OnDragHoverEnd();
-		}
-		DragHoveredView = view;
-		if (DragHoveredView != null && DragHoveredView.AcceptDrop)
-		{
-			DragHoveredView.OnDragHoverBegin();
-			return true;
-		}
-		DragHoveredView = null;
-		return false;
-	}
-
 	internal void BeginDragging(Widget draggedObject)
 	{
 		if (DraggedWidget != null)
 		{
-			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1628);
+			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1617);
 			ClearDragObject();
 		}
 		if (!draggedObject.ConnectedToRoot)
 		{
-			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1634);
+			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1623);
 			return;
 		}
 		draggedObject.IsPressed = false;
@@ -1465,12 +1437,15 @@ public class EventManager
 		{
 			DraggedWidget.IsVisible = true;
 		}
-		SetDragHoveredView(null);
+		DragHoveredView = null;
 		return draggedWidget;
 	}
 
 	internal void Render(TwoDimensionContext twoDimensionContext)
 	{
+		twoDimensionContext.ResetScissor();
+		SimpleRectangle boundingBox = AreaRectangle.GetBoundingBox();
+		twoDimensionContext.SetScissor(new ScissorTestInfo(boundingBox.X, boundingBox.Y, boundingBox.X2, boundingBox.Y2));
 		_drawContext.Reset();
 		Root.Render(twoDimensionContext, _drawContext);
 		_drawContext.DrawTo(twoDimensionContext);
@@ -1480,6 +1455,7 @@ public class EventManager
 	{
 		SetMeasureDirty();
 		SetLayoutDirty();
+		Root.LayoutUpdated();
 	}
 
 	internal void SetMeasureDirty()
@@ -1499,6 +1475,10 @@ public class EventManager
 
 	public bool GetIsHitThisFrame()
 	{
-		return OnGetIsHitThisFrame();
+		if (OnGetIsHitThisFrame != null)
+		{
+			return OnGetIsHitThisFrame();
+		}
+		return false;
 	}
 }

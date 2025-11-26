@@ -54,7 +54,7 @@ public static class AgentComponentExtensions
 
 	public static void SetAIBehaviorValues(this Agent agent, HumanAIComponent.AISimpleBehaviorKind behavior, float y1, float x2, float y2, float x3, float y3)
 	{
-		agent.HumanAIComponent?.SetBehaviorParams(behavior, y1, x2, y2, x3, y3);
+		agent.HumanAIComponent?.OverrideBehaviorParams(behavior, y1, x2, y2, x3, y3);
 	}
 
 	public static void AIMoveToGameObjectEnable(this Agent agent, UsableMissionObject usedObject, IDetachment detachment, Agent.AIScriptedFrameFlags scriptedFrameFlags = Agent.AIScriptedFrameFlags.NoAttack)

@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -41,6 +42,8 @@ public class GameMenuTroopSelectionVM : ViewModel
 	private bool _isEnabled;
 
 	private bool _isDoneEnabled;
+
+	private HintViewModel _doneHint;
 
 	private string _doneText;
 
@@ -137,6 +140,23 @@ public class GameMenuTroopSelectionVM : ViewModel
 			{
 				_isDoneEnabled = value;
 				OnPropertyChangedWithValue(value, "IsDoneEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel DoneHint
+	{
+		get
+		{
+			return _doneHint;
+		}
+		set
+		{
+			if (value != _doneHint)
+			{
+				_doneHint = value;
+				OnPropertyChangedWithValue(value, "DoneHint");
 			}
 		}
 	}
@@ -268,6 +288,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		_initialSelections = initialSelections;
 		_maxSelectableTroopCount = maxSelectableTroopCount;
 		_minSelectableTroopCount = minSelectableTroopCount;
+		DoneHint = new HintViewModel();
 		InitList();
 		RefreshValues();
 		OnCurrentSelectedAmountChange();
@@ -281,6 +302,23 @@ public class GameMenuTroopSelectionVM : ViewModel
 		DoneText = GameTexts.FindText("str_done").ToString();
 		CancelText = GameTexts.FindText("str_cancel").ToString();
 		ClearSelectionText = new TextObject("{=QMNWbmao}Clear Selection").ToString();
+		RefreshDoneHint();
+	}
+
+	private void RefreshDoneHint()
+	{
+		if (IsDoneEnabled)
+		{
+			DoneHint.HintText = TextObject.GetEmpty();
+		}
+		else if (_currentTotalSelectedTroopCount < _minSelectableTroopCount)
+		{
+			DoneHint.HintText = new TextObject("{=LlV29O9B}You must select at least {TROOP_COUNT} troops").SetTextVariable("TROOP_COUNT", _minSelectableTroopCount);
+		}
+		else
+		{
+			DoneHint.HintText = new TextObject("{=TdWQM7QZ}You must select less than {TROOP_COUNT} troops").SetTextVariable("TROOP_COUNT", _maxSelectableTroopCount);
+		}
 	}
 
 	private void InitList()
@@ -350,6 +388,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		GameTexts.SetVariable("RIGHT", _maxSelectableTroopCount);
 		CurrentSelectedAmountText = GameTexts.FindText("str_LEFT_over_RIGHT_in_paranthesis").ToString();
 		IsDoneEnabled = _currentTotalSelectedTroopCount <= _maxSelectableTroopCount && _currentTotalSelectedTroopCount >= _minSelectableTroopCount;
+		RefreshDoneHint();
 	}
 
 	private void OnDone()
@@ -368,7 +407,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 
 	public void ExecuteDone()
 	{
-		if (_currentTotalSelectedTroopCount < _maxSelectableTroopCount)
+		if (GetAvailableSelectableTroopCount() > 0)
 		{
 			string text = new TextObject("{=z2Slmx4N}There are still some room for more soldiers. Do you want to proceed?").ToString();
 			InformationManager.ShowInquiry(new InquiryData(TitleText, text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnDone, null));
@@ -377,6 +416,23 @@ public class GameMenuTroopSelectionVM : ViewModel
 		{
 			OnDone();
 		}
+	}
+
+	private int GetAvailableSelectableTroopCount()
+	{
+		int num = 0;
+		foreach (TroopSelectionItemVM troop in Troops)
+		{
+			if (!troop.IsLocked && troop.CurrentAmount < troop.MaxAmount)
+			{
+				num += troop.MaxAmount - troop.CurrentAmount;
+			}
+		}
+		if (_currentTotalSelectedTroopCount + num > _maxSelectableTroopCount)
+		{
+			num = _maxSelectableTroopCount - _currentTotalSelectedTroopCount;
+		}
+		return num;
 	}
 
 	public void ExecuteCancel()

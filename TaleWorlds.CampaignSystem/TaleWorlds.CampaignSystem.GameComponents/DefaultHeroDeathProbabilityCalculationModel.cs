@@ -22,7 +22,7 @@ public class DefaultHeroDeathProbabilityCalculationModel : HeroDeathProbabilityC
 				if (hero.Age < (float)num2)
 				{
 					float num3 = 0.3f * ((hero.Age - (float)becomeOldAge) / (float)(Campaign.Current.Models.AgeModel.MaxAge - becomeOldAge));
-					float num4 = 1f - MathF.Pow(1f - num3, 1f / 84f);
+					float num4 = 1f - MathF.Pow(1f - num3, 1f / (float)CampaignTime.DaysInYear);
 					num += num4;
 				}
 				else if (hero.Age >= (float)num2)

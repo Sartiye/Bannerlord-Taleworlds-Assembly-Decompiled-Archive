@@ -19,7 +19,7 @@ public class HitpointsEffect : MPOnSpawnPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !float.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HitpointsEffect.cs", "Deserialize", 20);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\HitpointsEffect.cs", "Deserialize", 20);
 		}
 	}
 

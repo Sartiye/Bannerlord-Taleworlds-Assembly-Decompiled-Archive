@@ -1,10 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
@@ -28,9 +34,17 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 
 	private const int BaseGarrisonPartySize = 200;
 
+	private const int BasePatrolPartySize = 10;
+
 	private const int TownGarrisonSizeBonus = 200;
 
 	private const int AdditionalPartySizeForCheat = 5000;
+
+	private const int OneVillagerPerHearth = 40;
+
+	private const int AdditionalPartySizeLimitPerTier = 15;
+
+	private const int AdditionalPartySizeLimitForLeaderPerTier = 25;
 
 	private readonly TextObject _leadershipSkillLevelBonusText = GameTexts.FindText("str_leadership_skill_level_bonus");
 
@@ -62,12 +76,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 
 	private static bool _addAdditionalPrisonerSizeAsCheat;
 
-	private TextObject _quarterMasterText;
-
-	public DefaultPartySizeLimitModel()
-	{
-		_quarterMasterText = GameTexts.FindText("str_clan_role", "quartermaster");
-	}
+	public override int MinimumNumberOfVillagersAtVillagerParty => 12;
 
 	public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool includeDescriptions = false)
 	{
@@ -76,11 +85,33 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		{
 			if (party.MobileParty.IsGarrison)
 			{
-				return CalculateGarrisonPartySizeLimit(party.MobileParty, includeDescriptions);
+				return CalculateGarrisonPartySizeLimit(party.MobileParty.GarrisonPartyComponent.Settlement, includeDescriptions);
+			}
+			if (party.MobileParty.IsPatrolParty)
+			{
+				return CalculatePatrolPartySizeLimit(party.MobileParty, includeDescriptions);
 			}
 			return CalculateMobilePartyMemberSizeLimit(party.MobileParty, includeDescriptions);
 		}
 		return result;
+	}
+
+	private ExplainedNumber CalculatePatrolPartySizeLimit(MobileParty mobileParty, bool includeDescriptions)
+	{
+		new ExplainedNumber(10f, includeDescriptions);
+		foreach (Building building in mobileParty.HomeSettlement.Town.Buildings)
+		{
+			if (building.BuildingType == DefaultBuildingTypes.SettlementGuardHouse)
+			{
+				return new ExplainedNumber(GetPatrolPartySizeLimitFromGuardHouseLevel(building.CurrentLevel), includeDescriptions);
+			}
+		}
+		return new ExplainedNumber(0f, includeDescriptions);
+	}
+
+	private int GetPatrolPartySizeLimitFromGuardHouseLevel(int level)
+	{
+		return 10 + 5 * level;
 	}
 
 	public override ExplainedNumber GetPartyPrisonerSizeLimit(PartyBase party, bool includeDescriptions = false)
@@ -98,7 +129,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		if (party.LeaderHero != null && party.LeaderHero.Clan != null && !party.IsCaravan)
 		{
 			CalculateBaseMemberSize(party.LeaderHero, party.MapFaction, party.ActualClan, ref result);
-			result.Add(party.EffectiveQuartermaster.GetSkillValue(DefaultSkills.Steward) / 4, _quarterMasterText);
+			SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.StewardPartySizeBonus, party, ref result);
 			if (_addAdditionalPartySizeAsCheat && party.IsMainParty && Game.Current.CheatMode)
 			{
 				result.Add(5000f, new TextObject("{=!}Additional size from extra party cheat"));
@@ -108,7 +139,12 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		{
 			if (party.Party.Owner == Hero.MainHero)
 			{
-				result.Add(10f, _randomSizeBonusTemporary);
+				int num = (party.CaravanPartyComponent.IsElite ? 30 : 10);
+				if (party.CaravanPartyComponent.CanHaveNavalNavigationCapability)
+				{
+					num = (party.CaravanPartyComponent.IsElite ? 46 : 33);
+				}
+				result.Add(num, _randomSizeBonusTemporary);
 			}
 			else
 			{
@@ -123,17 +159,27 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		{
 			result.Add(40f, _randomSizeBonusTemporary);
 		}
+		if (party.IsCurrentlyAtSea)
+		{
+			foreach (Ship ship in party.Ships)
+			{
+				result.AddFactor(ship.CrewCapacityBonusFactor, ship.Name);
+			}
+		}
 		return result;
 	}
 
-	private ExplainedNumber CalculateGarrisonPartySizeLimit(MobileParty party, bool includeDescriptions = false)
+	public override ExplainedNumber CalculateGarrisonPartySizeLimit(Settlement settlement, bool includeDescriptions = false)
 	{
-		ExplainedNumber partySizeBonus = new ExplainedNumber(200f, includeDescriptions, _baseSizeText);
-		GetLeadershipSkillLevelEffect(party, LimitType.GarrisonPartySizeLimit, ref partySizeBonus);
-		partySizeBonus.Add(GetTownBonus(party), _townBonusText);
-		AddGarrisonOwnerPerkEffects(party.CurrentSettlement, ref partySizeBonus);
-		AddSettlementProjectBonuses(party.Party, ref partySizeBonus);
-		return partySizeBonus;
+		ExplainedNumber explainedNumber = new ExplainedNumber(200f, includeDescriptions, _baseSizeText);
+		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.LeadershipGarrisonSizeBonus, settlement.OwnerClan.Leader.CharacterObject, ref explainedNumber);
+		if (settlement.IsTown)
+		{
+			explainedNumber.Add(200f, _townBonusText);
+		}
+		AddGarrisonOwnerPerkEffects(settlement, ref explainedNumber);
+		AddSettlementProjectBonuses(settlement, ref explainedNumber);
+		return explainedNumber;
 	}
 
 	private ExplainedNumber CalculateSettlementPartyPrisonerSizeLimitInternal(Settlement settlement, bool includeDescriptions = false)
@@ -144,6 +190,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		{
 			result.Add(num * 40, _wallLevelBonusText);
 		}
+		AddSettlementProjectPrisonerBonuses(settlement, ref result);
 		return result;
 	}
 
@@ -159,15 +206,6 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		return result;
 	}
 
-	private void GetLeadershipSkillLevelEffect(MobileParty party, LimitType type, ref ExplainedNumber partySizeBonus)
-	{
-		Hero hero = ((!party.IsGarrison) ? party.LeaderHero : party?.CurrentSettlement?.OwnerClan?.Leader);
-		if (hero != null && type == LimitType.GarrisonPartySizeLimit)
-		{
-			SkillHelper.AddSkillBonusForCharacter(DefaultSkills.Leadership, DefaultSkillEffects.LeadershipGarrisonSizeBonus, hero.CharacterObject, ref partySizeBonus);
-		}
-	}
-
 	private void AddMobilePartyLeaderPrisonerSizePerkEffects(PartyBase party, ref ExplainedNumber result)
 	{
 		if (party.LeaderHero != null)
@@ -176,7 +214,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 			{
 				result.Add(DefaultPerks.TwoHanded.Terror.SecondaryBonus, DefaultPerks.TwoHanded.Terror.Name);
 			}
-			if (party.LeaderHero.GetPerkValue(DefaultPerks.Athletics.Stamina))
+			if (!party.MobileParty.IsCurrentlyAtSea && party.LeaderHero.GetPerkValue(DefaultPerks.Athletics.Stamina))
 			{
 				result.Add(DefaultPerks.Athletics.Stamina.SecondaryBonus, DefaultPerks.Athletics.Stamina.Name);
 			}
@@ -193,17 +231,27 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 
 	private void AddGarrisonOwnerPerkEffects(Settlement currentSettlement, ref ExplainedNumber result)
 	{
-		if (currentSettlement != null && currentSettlement.IsTown)
+		if (currentSettlement != null && currentSettlement.IsFortification)
 		{
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, ref result);
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, ref result);
 		}
 	}
 
-	public override int GetTierPartySizeEffect(int tier)
+	public override int GetNextClanTierPartySizeEffectChangeForHero(Hero hero)
+	{
+		int tierEffectInternal = GetTierEffectInternal(hero.Clan.Tier, hero.Clan.Leader == hero);
+		return GetTierEffectInternal(hero.Clan.Tier + 1, hero.Clan.Leader == hero) - tierEffectInternal;
+	}
+
+	private int GetTierEffectInternal(int tier, bool isHeroClanLeader)
 	{
 		if (tier >= 1)
 		{
+			if (isHeroClanLeader)
+			{
+				return 25 * tier;
+			}
 			return 15 * tier;
 		}
 		return 0;
@@ -215,40 +263,30 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		if (leaderHero != null && leaderHero.Clan != null)
 		{
 			CalculateBaseMemberSize(leaderHero, partyMapFaction, actualClan, ref result);
-			result.Add(leaderHero.GetSkillValue(DefaultSkills.Steward) / 4, _quarterMasterText);
+			SkillHelper.AddSkillBonusForSkillLevel(DefaultSkillEffects.StewardPartySizeBonus, ref result, leaderHero.GetSkillValue(DefaultSkills.Steward));
 		}
-		return (int)result.BaseNumber;
+		return (int)result.ResultNumber;
 	}
 
-	private void AddSettlementProjectBonuses(PartyBase party, ref ExplainedNumber result)
+	public override int GetClanTierPartySizeEffectForHero(Hero hero)
 	{
-		if (party.Owner == null)
+		return GetTierEffectInternal(hero.Clan.Tier, hero.Clan.Leader == hero);
+	}
+
+	private void AddSettlementProjectBonuses(Settlement settlement, ref ExplainedNumber result)
+	{
+		if (settlement != null && settlement.IsFortification)
 		{
-			return;
-		}
-		Settlement currentSettlement = party.MobileParty.CurrentSettlement;
-		if (currentSettlement == null || (!currentSettlement.IsTown && !currentSettlement.IsCastle))
-		{
-			return;
-		}
-		foreach (Building building in currentSettlement.Town.Buildings)
-		{
-			float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.GarrisonCapacity);
-			if (buildingEffectAmount > 0f)
-			{
-				result.Add(buildingEffectAmount, building.Name);
-			}
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.GarrisonCapacity, ref result);
 		}
 	}
 
-	private int GetTownBonus(MobileParty party)
+	private void AddSettlementProjectPrisonerBonuses(Settlement settlement, ref ExplainedNumber result)
 	{
-		Settlement currentSettlement = party.CurrentSettlement;
-		if (currentSettlement != null && currentSettlement.IsFortification && currentSettlement.IsTown)
+		if (settlement != null && settlement.IsFortification)
 		{
-			return 200;
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.PrisonCapacity, ref result);
 		}
-		return 0;
 	}
 
 	private int GetCurrentPartySizeEffect(PartyBase party)
@@ -329,14 +367,120 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 			{
 				result.Add(60f, DefaultPolicies.RoyalGuard.Name);
 			}
-			if (partyLeader.Clan.Tier > 0)
+		}
+		result.Add(Campaign.Current.Models.PartySizeLimitModel.GetClanTierPartySizeEffectForHero(partyLeader), _clanTierText);
+	}
+
+	private float GetPartySizeRatioForSize(PartyTemplateObject partyTemplate, int desiredSize)
+	{
+		float num = 0f;
+		int num2 = partyTemplate.Stacks.Sum((PartyTemplateStack s) => s.MinValue);
+		int num3 = partyTemplate.Stacks.Sum((PartyTemplateStack s) => s.MaxValue);
+		if (desiredSize < num2)
+		{
+			return (float)desiredSize / (float)num2 - 1f;
+		}
+		if (num2 <= desiredSize && desiredSize <= num3)
+		{
+			return (float)(desiredSize - num2) / (float)(num3 - num2);
+		}
+		return (float)desiredSize / (float)num3;
+	}
+
+	private float GetInitialPartySizeRatioForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
+	{
+		float num = 0f;
+		if (party.IsBandit)
+		{
+			if (!partyTemplate.ShipHulls.IsEmpty())
 			{
-				result.Add(partyLeader.Clan.Tier * 25, _clanTierText);
+				return (MBRandom.RandomFloat < 0.4f) ? MBRandom.RandomFloatRanged(0f, 0.33f) : MBRandom.RandomFloatRanged(0.66f, 1f);
+			}
+			float playerProgress = Campaign.Current.PlayerProgress;
+			float num2 = 0.4f + 0.8f * playerProgress;
+			float num3 = MBRandom.RandomFloatRanged(0.2f, 0.8f);
+			return num2 * num3;
+		}
+		if (party.IsCaravan && party.Owner == Hero.MainHero)
+		{
+			return 1f;
+		}
+		if (party.IsPatrolParty)
+		{
+			return 1f;
+		}
+		return party.RandomFloat();
+	}
+
+	public override int GetIdealVillagerPartySize(Village village)
+	{
+		float num = 0f;
+		foreach (var production in village.VillageType.Productions)
+		{
+			float resultNumber = Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyProductionAmount(village, production.Item1).ResultNumber;
+			num += resultNumber;
+		}
+		float num2 = ((num > 10f) ? (40f * (1f - (TaleWorlds.Library.MathF.Min(40f, num) - 10f) / 60f)) : 40f);
+		return MinimumNumberOfVillagersAtVillagerParty + (int)(village.Hearth / num2);
+	}
+
+	public override TroopRoster FindAppropriateInitialRosterForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
+	{
+		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+		float initialPartySizeRatioForMobileParty = GetInitialPartySizeRatioForMobileParty(party, partyTemplate);
+		for (int i = 0; i < partyTemplate.Stacks.Count; i++)
+		{
+			int minValue = partyTemplate.Stacks[i].MinValue;
+			int maxValue = partyTemplate.Stacks[i].MaxValue;
+			int num = minValue;
+			if (initialPartySizeRatioForMobileParty <= 0f)
+			{
+				num = minValue;
+			}
+			else if (initialPartySizeRatioForMobileParty <= 1f)
+			{
+				num = MBRandom.RoundRandomized((float)minValue + (float)(maxValue - minValue) * initialPartySizeRatioForMobileParty);
+			}
+			else
+			{
+				Debug.FailedAssert("initialPartySizeRatio should not be above 1", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultPartySizeLimitModel.cs", "FindAppropriateInitialRosterForMobileParty", 538);
+				num = maxValue;
+			}
+			if (party.IsVillager)
+			{
+				Village village = party.VillagerPartyComponent.Village;
+				if (village.Bound?.Town?.Governor != null && village.Bound.Town.Governor.GetPerkValue(DefaultPerks.Scouting.VillageNetwork))
+				{
+					num = TaleWorlds.Library.MathF.Round((float)num * (1f + DefaultPerks.Scouting.VillageNetwork.SecondaryBonus));
+				}
+			}
+			if (num > 0)
+			{
+				CharacterObject character = partyTemplate.Stacks[i].Character;
+				troopRoster.AddToCounts(character, num);
 			}
 		}
-		else if (partyLeader.Clan.Tier > 0)
+		return troopRoster;
+	}
+
+	public override List<Ship> FindAppropriateInitialShipsForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
+	{
+		List<Ship> list = new List<Ship>();
+		float initialPartySizeRatioForMobileParty = GetInitialPartySizeRatioForMobileParty(party, partyTemplate);
+		if (partyTemplate.ShipHulls != null && partyTemplate.ShipHulls.Count > 0)
 		{
-			result.Add(partyLeader.Clan.Tier * 15, _clanTierText);
+			foreach (ShipTemplateStack shipHull in partyTemplate.ShipHulls)
+			{
+				int minValue = shipHull.MinValue;
+				int maxValue = shipHull.MaxValue;
+				int num = minValue;
+				num = ((initialPartySizeRatioForMobileParty <= 0f) ? MBRandom.RoundRandomized(Math.Max(0f, (float)minValue + (float)minValue * initialPartySizeRatioForMobileParty)) : ((!(initialPartySizeRatioForMobileParty <= 1f)) ? MBRandom.RoundRandomized((float)maxValue * initialPartySizeRatioForMobileParty) : MBRandom.RoundRandomized((float)minValue + (float)(maxValue - minValue) * initialPartySizeRatioForMobileParty)));
+				for (int i = 0; i < num; i++)
+				{
+					list.Add(new Ship(shipHull.ShipHull));
+				}
+			}
 		}
+		return list;
 	}
 }

@@ -1,4 +1,3 @@
-using System.Linq;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -91,11 +90,11 @@ public class EncyclopediaListWidget : Widget
 	{
 		if (!string.IsNullOrEmpty(LastSelectedItemId) && ItemList != null && ItemListScroll != null)
 		{
-			Widget widget = ItemList.AllChildren.FirstOrDefault((Widget x) => x is EncyclopediaListItemButtonWidget encyclopediaListItemButtonWidget && encyclopediaListItemButtonWidget.ListItemId == LastSelectedItemId);
-			if (widget != null && widget.IsVisible)
+			Widget firstInChildrenRecursive = ItemList.GetFirstInChildrenRecursive((Widget x) => x is EncyclopediaListItemButtonWidget encyclopediaListItemButtonWidget && encyclopediaListItemButtonWidget.ListItemId == LastSelectedItemId);
+			if (firstInChildrenRecursive != null && firstInChildrenRecursive.IsVisible)
 			{
-				float num = widget.ScaledSuggestedHeight + widget.ScaledMarginTop + widget.ScaledMarginBottom - 2f * base._scaleToUse;
-				int visibleSiblingIndex = widget.GetVisibleSiblingIndex();
+				float num = firstInChildrenRecursive.ScaledSuggestedHeight + firstInChildrenRecursive.ScaledMarginTop + firstInChildrenRecursive.ScaledMarginBottom - 2f * base._scaleToUse;
+				int visibleSiblingIndex = firstInChildrenRecursive.GetVisibleSiblingIndex();
 				float valueForced = num * (float)visibleSiblingIndex - ItemListScroll.Size.Y / 2f;
 				ItemListScroll.SetValueForced(valueForced);
 			}

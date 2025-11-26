@@ -14,9 +14,13 @@ public interface IAgentBehaviorManager
 
 	void AddFixedCharacterBehaviors(IAgent agent);
 
-	void AddAmbushPlayerBehaviors(IAgent agent);
+	void AddPatrollingThugBehaviors(IAgent agent);
 
 	void AddStandGuardBehaviors(IAgent agent);
+
+	void AddFixedGuardBehaviors(IAgent agent);
+
+	void AddStealthAgentBehaviors(IAgent agent);
 
 	void AddPatrollingGuardBehaviors(IAgent agent);
 

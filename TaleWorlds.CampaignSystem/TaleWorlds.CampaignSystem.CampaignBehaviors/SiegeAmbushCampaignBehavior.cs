@@ -14,7 +14,7 @@ public class SiegeAmbushCampaignBehavior : CampaignBehaviorBase
 {
 	private const int SiegeAmbushCooldownPeriodAsHours = 24;
 
-	private CampaignTime _lastAmbushTime = CampaignTime.Never;
+	private CampaignTime _lastAmbushTime;
 
 	public override void RegisterEvents()
 	{
@@ -23,6 +23,12 @@ public class SiegeAmbushCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnSiegeEventEndedEvent.AddNonSerializedListener(this, OnSiegeEventEnded);
 		CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
 		CampaignEvents.OnMissionEndedEvent.AddNonSerializedListener(this, OnMissionEnded);
+		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
+	}
+
+	private void OnNewGameCreatedPartialFollowUpEnd(CampaignGameStarter starter)
+	{
+		_lastAmbushTime = CampaignTime.Never;
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -97,7 +103,7 @@ public class SiegeAmbushCampaignBehavior : CampaignBehaviorBase
 			reason = new TextObject("{=Nzt8Xkro}You cannot ambush because the settlement walls are breached.");
 			return false;
 		}
-		reason = TextObject.Empty;
+		reason = TextObject.GetEmpty();
 		return true;
 	}
 

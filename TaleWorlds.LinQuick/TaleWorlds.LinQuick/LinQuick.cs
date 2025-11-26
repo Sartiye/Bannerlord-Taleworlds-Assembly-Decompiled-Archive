@@ -244,6 +244,23 @@ public static class LinQuick
 		return source.FindIndexQ(value) != -1;
 	}
 
+	public static bool ContainsQ<T>(this Queue<T> source, T value)
+	{
+		EqualityComparer<T> @default = EqualityComparer<T>.Default;
+		int count = source.Count;
+		bool result = false;
+		for (int i = 0; i < count; i++)
+		{
+			T val = source.Dequeue();
+			if (@default.Equals(val, value))
+			{
+				result = true;
+			}
+			source.Enqueue(val);
+		}
+		return result;
+	}
+
 	public static bool ContainsQ<T>(this T[] source, Func<T, bool> predicate)
 	{
 		return source.FindIndexQ(predicate) != -1;
@@ -262,6 +279,22 @@ public static class LinQuick
 	public static bool ContainsQ<T>(this IEnumerable<T> source, Func<T, bool> predicate)
 	{
 		return source.FindIndexQ(predicate) != -1;
+	}
+
+	public static bool ContainsQ<T>(this Queue<T> source, Func<T, bool> predicate)
+	{
+		int count = source.Count;
+		bool result = false;
+		for (int i = 0; i < count; i++)
+		{
+			T val = source.Dequeue();
+			if (predicate(val))
+			{
+				result = true;
+			}
+			source.Enqueue(val);
+		}
+		return result;
 	}
 
 	public static int CountQ<T>(this T[] source, T value)

@@ -5,41 +5,13 @@ namespace TaleWorlds.Core;
 
 public sealed class SkillObject : PropertyObject
 {
-	public enum SkillTypeEnum
-	{
-		Personal,
-		Leader,
-		Party
-	}
-
-	private SkillTypeEnum _skillType;
-
-	private CharacterAttribute _characterAttribute;
-
-	public CharacterAttribute CharacterAttribute
-	{
-		get
-		{
-			return _characterAttribute;
-		}
-		private set
-		{
-			_characterAttribute = value;
-			_characterAttribute.AddSkill(this);
-		}
-	}
-
-	public bool IsLeaderSkill => _skillType == SkillTypeEnum.Leader;
-
-	public bool IsPartySkill => _skillType == SkillTypeEnum.Party;
-
-	public bool IsPersonalSkill => _skillType == SkillTypeEnum.Personal;
+	public CharacterAttribute[] Attributes { get; private set; }
 
 	public TextObject HowToLearnSkillText
 	{
 		get
 		{
-			if (GameTexts.FindText("str_how_to_learn_skill", base.StringId) == null)
+			if (!(GameTexts.FindText("str_how_to_learn_skill", base.StringId) != null))
 			{
 				return new TextObject("{=Aj3zqQq4}Not available");
 			}
@@ -62,20 +34,15 @@ public sealed class SkillObject : PropertyObject
 	{
 	}
 
-	public void SetAttribute(CharacterAttribute attribute)
-	{
-		CharacterAttribute = attribute;
-	}
-
 	public override string ToString()
 	{
-		return base.Name.ToString();
+		return base.Name?.ToString() ?? base.StringId;
 	}
 
-	public SkillObject Initialize(TextObject name, TextObject description, SkillTypeEnum skillType)
+	public SkillObject Initialize(TextObject name, TextObject description, CharacterAttribute[] attributes)
 	{
 		Initialize(name, description);
-		_skillType = skillType;
+		Attributes = attributes;
 		AfterInitialized();
 		return this;
 	}

@@ -7,8 +7,6 @@ public class MapConversationTableauWidget : TextureWidget
 {
 	private object _data;
 
-	private bool _isTableauEnabled;
-
 	[Editor(false)]
 	public object Data
 	{
@@ -22,26 +20,9 @@ public class MapConversationTableauWidget : TextureWidget
 			{
 				_data = value;
 				OnPropertyChanged(value, "Data");
+				SetTextureProviderProperty("IsEnabled", _data != null);
 				SetTextureProviderProperty("Data", value);
-			}
-		}
-	}
-
-	[Editor(false)]
-	public bool IsTableauEnabled
-	{
-		get
-		{
-			return _isTableauEnabled;
-		}
-		set
-		{
-			if (value != _isTableauEnabled)
-			{
-				_isTableauEnabled = value;
-				OnPropertyChanged(value, "IsTableauEnabled");
-				SetTextureProviderProperty("IsEnabled", value);
-				if (_isTableauEnabled)
+				if (_data != null)
 				{
 					_isRenderRequestedPreviousFrame = true;
 				}
@@ -60,13 +41,14 @@ public class MapConversationTableauWidget : TextureWidget
 
 	private void OnEventManagerIsFinalized()
 	{
-		if (!_setForClearNextFrame)
+		if (!base.SetForClearNextFrame)
 		{
+			base.TextureProvider.SetProperty("IsReleased", true);
 			base.TextureProvider?.Clear(clearNextFrame: false);
 		}
 	}
 
-	protected override void OnDisconnectedFromRoot()
+	public override void OnClearTextureProvider()
 	{
 	}
 }

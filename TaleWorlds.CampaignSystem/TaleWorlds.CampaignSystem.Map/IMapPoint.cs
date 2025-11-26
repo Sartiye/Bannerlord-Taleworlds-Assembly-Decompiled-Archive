@@ -7,7 +7,7 @@ public interface IMapPoint
 {
 	TextObject Name { get; }
 
-	Vec2 Position2D { get; }
+	CampaignVec2 Position { get; }
 
 	PathFaceRecord CurrentNavigationFace { get; }
 
@@ -19,7 +19,5 @@ public interface IMapPoint
 
 	bool IsActive { get; set; }
 
-	void OnGameInitialized();
-
-	Vec3 GetLogicalPosition();
+	Vec3 GetPositionAsVec3();
 }

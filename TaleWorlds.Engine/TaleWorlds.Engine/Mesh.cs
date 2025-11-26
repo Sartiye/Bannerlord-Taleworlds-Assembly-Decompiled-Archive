@@ -59,7 +59,7 @@ public sealed class Mesh : Resource
 			}
 			else
 			{
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\Mesh.cs", "Color", 301);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Mesh.cs", "Color", 331);
 			}
 		}
 	}
@@ -78,7 +78,7 @@ public sealed class Mesh : Resource
 			}
 			else
 			{
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\Mesh.cs", "Color2", 324);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Mesh.cs", "Color2", 354);
 			}
 		}
 	}
@@ -174,6 +174,26 @@ public sealed class Mesh : Resource
 	public void SetVectorArgument2(float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3)
 	{
 		EngineApplicationInterface.IMesh.SetVectorArgument2(base.Pointer, vectorArgument0, vectorArgument1, vectorArgument2, vectorArgument3);
+	}
+
+	public Vec3 GetVectorArgument()
+	{
+		return EngineApplicationInterface.IMesh.GetVectorArgument(base.Pointer);
+	}
+
+	public Vec3 GetVectorArgument2()
+	{
+		return EngineApplicationInterface.IMesh.GetVectorArgument2(base.Pointer);
+	}
+
+	public void SetupAdditionalBoneBuffer(int numBones)
+	{
+		EngineApplicationInterface.IMesh.SetupAdditionalBoneBuffer(base.Pointer, numBones);
+	}
+
+	public void SetAdditionalBoneFrame(int boneIndex, in MatrixFrame frame)
+	{
+		EngineApplicationInterface.IMesh.SetAdditionalBoneFrame(base.Pointer, boneIndex, in frame);
 	}
 
 	public void SetMaterial(Material material)
@@ -419,5 +439,20 @@ public sealed class Mesh : Resource
 	public void UnlockEditDataWrite(UIntPtr handle)
 	{
 		EngineApplicationInterface.IMesh.UnlockEditDataWrite(base.Pointer, handle);
+	}
+
+	public void SetCustomClipPlane(Vec3 clipPlanePosition, Vec3 clipPlaneNormal, int planeIndex)
+	{
+		EngineApplicationInterface.IMesh.SetCustomClipPlane(base.Pointer, clipPlanePosition, clipPlaneNormal, planeIndex);
+	}
+
+	public float GetClothLinearVelocityMultiplier()
+	{
+		return EngineApplicationInterface.IMesh.GetClothLinearVelocityMultiplier(base.Pointer);
+	}
+
+	public bool HasCloth()
+	{
+		return EngineApplicationInterface.IMesh.HasCloth(base.Pointer);
 	}
 }

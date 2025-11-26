@@ -44,17 +44,15 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		Count
 	}
 
-	private TestContext _testContext;
+	private bool _enableCoreContentOnReturnToRoot;
 
 	private List<MissionInfo> _missionInfos;
 
-	private Dictionary<string, Type> _loadedSubmoduleTypes;
-
-	private readonly MBList<MBSubModuleBase> _submodules;
+	private TestContext _testContext;
 
 	private SingleThreadedSynchronizationContext _synchronizationContext;
 
-	private bool _enableCoreContentOnReturnToRoot;
+	private readonly Dictionary<SubModuleInfo, MBSubModuleBase> _subModuleBases;
 
 	private bool _splashScreenPlayed;
 
@@ -68,19 +66,9 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 
 	private bool _isShuttingDown;
 
-	public GameTextManager GlobalTextManager { get; private set; }
-
-	public JobManager JobManager { get; private set; }
-
-	public MBReadOnlyList<MBSubModuleBase> SubModules => _submodules;
+	public static Module CurrentModule { get; private set; }
 
 	public GameStateManager GlobalGameStateManager { get; private set; }
-
-	public bool ReturnToEditorState { get; private set; }
-
-	public bool LoadingFinished { get; private set; }
-
-	public bool IsOnlyCoreContentEnabled { get; private set; }
 
 	public bool MultiplayerRequested
 	{
@@ -94,9 +82,17 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	public GameStartupInfo StartupInfo { get; private set; }
+	public bool ReturnToEditorState { get; private set; }
 
-	public static Module CurrentModule { get; private set; }
+	public bool LoadingFinished { get; private set; }
+
+	public GameTextManager GlobalTextManager { get; private set; }
+
+	public bool IsOnlyCoreContentEnabled { get; private set; }
+
+	public JobManager JobManager { get; private set; }
+
+	public GameStartupInfo StartupInfo { get; private set; }
 
 	public event Action SkinsXMLHasChanged;
 
@@ -107,12 +103,32 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		MBDebug.Print("Creating module...");
 		StartupInfo = new GameStartupInfo();
 		_testContext = new TestContext();
-		_loadedSubmoduleTypes = new Dictionary<string, Type>();
-		_submodules = new MBList<MBSubModuleBase>();
+		_subModuleBases = new Dictionary<SubModuleInfo, MBSubModuleBase>();
 		GlobalGameStateManager = new GameStateManager(this, GameStateManager.GameStateManagerType.Global);
 		GameStateManager.Current = GlobalGameStateManager;
 		GlobalTextManager = new GameTextManager();
 		JobManager = new JobManager();
+	}
+
+	public MBReadOnlyList<MBSubModuleBase> CollectSubModules()
+	{
+		MBList<MBSubModuleBase> mBList = new MBList<MBSubModuleBase>();
+		foreach (ModuleInfo allModule in ModuleHelper.GetAllModules())
+		{
+			if (!allModule.IsActive)
+			{
+				continue;
+			}
+			foreach (SubModuleInfo subModule in allModule.SubModules)
+			{
+				MBSubModuleBase subModuleBase = GetSubModuleBase(subModule);
+				if (subModuleBase != null)
+				{
+					mBList.Add(subModuleBase);
+				}
+			}
+		}
+		return mBList;
 	}
 
 	internal static void CreateModule()
@@ -121,10 +137,10 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		Utilities.SetLoadingScreenPercentage(0.4f);
 	}
 
-	private void AddSubModule(Assembly subModuleAssembly, string name)
+	private void AddSubModule(SubModuleInfo subModuleInfo, Assembly subModuleAssembly)
 	{
-		Type type = subModuleAssembly.GetType(name);
-		_loadedSubmoduleTypes.Add(name, type);
+		MBSubModuleBase value = (MBSubModuleBase)subModuleAssembly.GetType(subModuleInfo.SubModuleClassTypeName).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null).Invoke(new object[0]);
+		_subModuleBases.Add(subModuleInfo, value);
 		Managed.AddTypes(CollectModuleAssemblyTypes(subModuleAssembly));
 	}
 
@@ -173,31 +189,51 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	private void InitializeSubModules()
+	private void InitializeSubModuleBases()
 	{
 		Managed.AddConstructorDelegateOfClass<SpawnedItemEntity>();
-		foreach (Type value in _loadedSubmoduleTypes.Values)
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
 		{
-			MBSubModuleBase mBSubModuleBase = (MBSubModuleBase)value.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null).Invoke(new object[0]);
-			_submodules.Add(mBSubModuleBase);
-			mBSubModuleBase.OnSubModuleLoad();
+			value.OnSubModuleLoad();
 		}
 	}
 
-	private void FinalizeSubModules()
+	private void OnNewModuleLoaded()
 	{
-		foreach (MBSubModuleBase submodule in _submodules)
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
 		{
-			submodule.OnSubModuleUnloaded();
+			value.OnNewModuleLoad();
 		}
 	}
 
-	public Type GetSubModule(string name)
+	private MBSubModuleBase GetSubModuleBase(SubModuleInfo subModuleInfo)
 	{
-		return _loadedSubmoduleTypes[name];
+		if (_subModuleBases.TryGetValue(subModuleInfo, out var value))
+		{
+			return value;
+		}
+		return null;
 	}
 
-	[MBCallback]
+	private void FinalizeSubModulesBases()
+	{
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
+		{
+			value.OnSubModuleUnloaded();
+		}
+	}
+
+	[MBCallback(null, false)]
+	internal void LoadSingleModule(string modulePath)
+	{
+		List<ModuleInfo> list = new List<ModuleInfo>();
+		list.Add(ModuleHelper.InitializeSingleModule(modulePath));
+		LocalizedTextManager.AddLocalizationXml(modulePath);
+		LoadSubModules(list, loadNewModules: true);
+		BannerManager.ResetAndLoad();
+	}
+
+	[MBCallback(null, false)]
 	internal void Initialize()
 	{
 		MBDebug.Print("Module Initialize begin...");
@@ -212,22 +248,14 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 			MBDebug.Print("Loading platform services...");
 			LoadPlatformServices();
 		}
-		string[] modulesNames = Utilities.GetModulesNames();
-		List<string> list = new List<string>();
-		string[] array = modulesNames;
-		for (int i = 0; i < array.Length; i++)
-		{
-			ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(array[i]);
-			if (moduleInfo != null)
-			{
-				list.Add(moduleInfo.FolderPath);
-			}
-		}
-		LocalizedTextManager.LoadLocalizationXmls(list.ToArray());
+		string[] platformModulePaths = null;
+		ModuleHelper.InitializeModules(Utilities.GetModulesNames(), platformModulePaths);
+		LoadLocalizationXmls();
 		GlobalTextManager.LoadDefaultTexts();
 		IsOnlyCoreContentEnabled = Utilities.IsOnlyCoreContentEnabled();
 		NativeConfig.OnConfigChanged();
-		LoadSubModules();
+		List<ModuleInfo> modules = ModuleHelper.GetModules();
+		LoadSubModules(modules, loadNewModules: false);
 		MBDebug.Print("Adding trace listener...");
 		MBDebug.Print("MBModuleBase Initialize begin...");
 		MBDebug.Print("MBModuleBase Initialize end...");
@@ -244,13 +272,24 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		ScreenManager.FocusGained += OnFocusGained;
 		ScreenManager.PlatformTextRequested += OnPlatformTextRequested;
 		PlatformServices.Instance.OnTextEnteredFromPlatform += OnTextEnteredFromPlatform;
+		PlatformServices.Instance.OnTextCanceledFromPlatform += OnTextCanceledFromPlatform;
 		SaveManager.InitializeGlobalDefinitionContext();
 		EnsureAsyncJobsAreFinished();
 	}
 
-	private void OnPlatformTextRequested(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
+	private bool OnPlatformTextRequested(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
 	{
-		PlatformServices.Instance?.ShowGamepadTextInput(descriptionText, initialText, (uint)maxLength, keyboardTypeEnum == 2);
+		return PlatformServices.Instance?.ShowGamepadTextInput(descriptionText, initialText, (uint)maxLength, keyboardTypeEnum == 2) ?? false;
+	}
+
+	private void LoadLocalizationXmls()
+	{
+		List<string> list = new List<string>();
+		foreach (ModuleInfo module in ModuleHelper.GetModules())
+		{
+			list.Add(module.FolderPath);
+		}
+		LocalizedTextManager.LoadLocalizationXmls(list.ToArray());
 	}
 
 	private void SetWindowTitle()
@@ -381,9 +420,17 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				StartupInfo.OverridenUserName = overridenUserName;
 				i++;
 			}
-			else if (text.StartsWith("-AUTH_PASSWORD".ToLowerInvariant()))
+			else if (text.StartsWith("-PlatformInterface".ToLowerInvariant()))
 			{
-				StartupInfo.EpicExchangeCode = text.Split(new char[1] { '=' })[1];
+				StartupInfo.PlatformInterface = text.Split(new char[1] { '=' })[1];
+			}
+			else if (text.StartsWith("-epicuserid".ToLowerInvariant()))
+			{
+				StartupInfo.EpicUserId = text.Split(new char[1] { '=' })[1];
+			}
+			else if (text.StartsWith("-epicusername".ToLowerInvariant()))
+			{
+				StartupInfo.EpicUserName = text.Split(new char[1] { '=' })[1];
 			}
 			else if (text == "/continuegame".ToLower())
 			{
@@ -462,9 +509,9 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		{
 			GameManagerBase.Current.OnTick(dt);
 		}
-		foreach (MBSubModuleBase subModule in SubModules)
+		foreach (MBSubModuleBase item in CollectSubModules())
 		{
-			subModule.OnApplicationTick(dt);
+			item.OnApplicationTick(dt);
 		}
 		JobManager.OnTick(dt);
 		AvatarServices.UpdateAvatarServices(dt);
@@ -477,26 +524,26 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 
 	private void OnNetworkTick(float dt)
 	{
-		foreach (MBSubModuleBase subModule in SubModules)
+		foreach (MBSubModuleBase item in CollectSubModules())
 		{
-			subModule.OnNetworkTick(dt);
+			item.OnNetworkTick(dt);
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void RunTest(string commandLine)
 	{
 		MBDebug.Print(" TEST MODE ENABLED. Command line string: " + commandLine);
 		_testContext.RunTestAux(commandLine);
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal void TickTest(float dt)
 	{
 		_testContext.TickTest(dt);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnDumpCreated()
 	{
 		if (TestCommonBase.BaseInstance != null)
@@ -506,7 +553,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnDumpCreationStarted()
 	{
 		if (TestCommonBase.BaseInstance != null)
@@ -595,7 +642,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal string GetMetaMeshPackageMapping()
 	{
 		Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -608,7 +655,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return text;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal string GetItemMeshNames()
 	{
 		HashSet<string> hashSet = new HashSet<string>();
@@ -642,7 +689,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return text;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal string GetHorseMaterialNames()
 	{
 		HashSet<string> hashSet = new HashSet<string>();
@@ -674,9 +721,9 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		{
 			GameStateManager.Current = GlobalGameStateManager;
 		}
-		foreach (MBSubModuleBase subModule in SubModules)
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
 		{
-			subModule.OnBeforeInitialModuleScreenSetAsRoot();
+			value.OnBeforeInitialModuleScreenSetAsRoot();
 		}
 		if (GameNetwork.IsDedicatedServer)
 		{
@@ -722,13 +769,17 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		{
 			PlatformServices.OnPlatformMultiplayerRequestHandled();
 		}
+		foreach (ModuleInfo module in ModuleHelper.GetModules((ModuleInfo x) => !x.IsActive))
+		{
+			ActivateModule(module.Id);
+		}
 		if (IsOnlyCoreContentEnabled || !MultiplayerRequested)
 		{
 			GlobalGameStateManager.CleanAndPushState(GlobalGameStateManager.CreateState<InitialState>());
 		}
-		foreach (MBSubModuleBase subModule in SubModules)
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
 		{
-			subModule.OnInitialState();
+			value.OnInitialState();
 		}
 	}
 
@@ -740,7 +791,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal bool SetEditorScreenAsRootScreen()
 	{
 		if (GameStateManager.Current != GlobalGameStateManager)
@@ -826,7 +877,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		MBDebug.Print("Found " + _missionInfos.Count + " missions");
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal string GetMissionControllerClassNames()
 	{
 		string text = "";
@@ -849,6 +900,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	{
 		IPlatformServices platformServices = null;
 		Assembly assembly = null;
+		string fullModulePath = EngineApplicationInterface.IUtil.GetFullModulePath("Native");
 		PlatformInitParams platformInitParams = new PlatformInitParams();
 		if (ApplicationPlatform.CurrentPlatform == Platform.WindowsSteam)
 		{
@@ -857,12 +909,14 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		else if (ApplicationPlatform.CurrentPlatform == Platform.WindowsEpic)
 		{
 			assembly = AssemblyLoader.LoadFrom(ManagedDllFolder.Name + "TaleWorlds.PlatformService.Epic.dll");
-			platformInitParams.Add("ExchangeCode", StartupInfo.EpicExchangeCode);
+			platformInitParams.Add("PlatformInterface", StartupInfo.PlatformInterface);
+			platformInitParams.Add("EpicUserId", StartupInfo.EpicUserId);
+			platformInitParams.Add("EpicUserName", StartupInfo.EpicUserName);
 		}
 		else if (ApplicationPlatform.CurrentPlatform == Platform.WindowsGOG)
 		{
 			assembly = AssemblyLoader.LoadFrom(ManagedDllFolder.Name + "TaleWorlds.PlatformService.GOG.dll");
-			platformInitParams.Add("AchievementDataXmlPath", ModuleHelper.GetModuleFullPath("Native") + "ModuleData/AchievementData/gog_achievement_data.xml");
+			platformInitParams.Add("AchievementDataXmlPath", System.IO.Path.Combine(fullModulePath, "ModuleData", "AchievementData", "gog_achievement_data.xml"));
 		}
 		else if (ApplicationPlatform.CurrentPlatform == Platform.GDKDesktop || ApplicationPlatform.CurrentPlatform == Platform.Durango)
 		{
@@ -871,7 +925,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		else if (ApplicationPlatform.CurrentPlatform == Platform.Orbis)
 		{
 			assembly = AssemblyLoader.LoadFrom(ManagedDllFolder.Name + "TaleWorlds.PlatformService.PS.dll");
-			platformInitParams.Add("AchievementDataXmlPath", ModuleHelper.GetModuleFullPath("Native") + "ModuleData/AchievementData/ps_achievement_data.xml");
+			platformInitParams.Add("AchievementDataXmlPath", System.IO.Path.Combine(fullModulePath, "ModuleData", "AchievementData", "ps_achievement_data.xml"));
 		}
 		else if (ApplicationPlatform.CurrentPlatform == Platform.WindowsNoPlatform)
 		{
@@ -937,31 +991,24 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	private void LoadSubModules()
+	private void LoadSubModules(List<ModuleInfo> modules, bool loadNewModules)
 	{
 		MBDebug.Print("Loading submodules...");
-		List<ModuleInfo> list = new List<ModuleInfo>();
-		string[] modulesNames = Utilities.GetModulesNames();
-		for (int i = 0; i < modulesNames.Length; i++)
+		foreach (ModuleInfo module in modules)
 		{
-			ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(modulesNames[i]);
-			if (moduleInfo != null)
-			{
-				list.Add(moduleInfo);
-				XmlResource.GetMbprojxmls(modulesNames[i]);
-				XmlResource.GetXmlListAndApply(modulesNames[i]);
-			}
+			XmlResource.GetMbprojxmls(module.Id);
+			XmlResource.GetXmlListAndApply(module.Id);
 		}
-		string configName = Common.ConfigName;
-		foreach (ModuleInfo item in list)
+		List<SubModuleInfo> list = new List<SubModuleInfo>();
+		foreach (ModuleInfo module2 in modules)
 		{
-			foreach (SubModuleInfo subModule in item.SubModules)
+			foreach (SubModuleInfo subModule in module2.SubModules)
 			{
-				if (!CheckIfSubmoduleCanBeLoadable(subModule) || _loadedSubmoduleTypes.ContainsKey(subModule.SubModuleClassType))
+				if (!CheckIfSubmoduleCanBeLoadable(subModule) || _subModuleBases.ContainsKey(subModule))
 				{
 					continue;
 				}
-				string path = System.IO.Path.Combine(item.FolderPath, "bin", configName);
+				string path = System.IO.Path.Combine(module2.FolderPath, "bin", Common.ConfigName);
 				string text = System.IO.Path.Combine(path, subModule.DLLName);
 				string text2 = ManagedDllFolder.Name + subModule.DLLName;
 				foreach (string assembly in subModule.Assemblies)
@@ -980,12 +1027,20 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				if (File.Exists(text))
 				{
 					Assembly subModuleAssembly = AssemblyLoader.LoadFrom(text);
-					AddSubModule(subModuleAssembly, subModule.SubModuleClassType);
+					AddSubModule(subModule, subModuleAssembly);
+					if (loadNewModules)
+					{
+						list.Add(subModule);
+					}
 				}
 				else if (File.Exists(text2))
 				{
 					Assembly subModuleAssembly2 = AssemblyLoader.LoadFrom(text2);
-					AddSubModule(subModuleAssembly2, subModule.SubModuleClassType);
+					AddSubModule(subModule, subModuleAssembly2);
+					if (loadNewModules)
+					{
+						list.Add(subModule);
+					}
 				}
 				else
 				{
@@ -995,7 +1050,34 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				}
 			}
 		}
-		InitializeSubModules();
+		if (loadNewModules)
+		{
+			foreach (SubModuleInfo item in list)
+			{
+				MBSubModuleBase value = null;
+				if (_subModuleBases.TryGetValue(item, out value))
+				{
+					value.OnSubModuleLoad();
+				}
+			}
+			OnNewModuleLoaded();
+		}
+		else
+		{
+			InitializeSubModuleBases();
+		}
+	}
+
+	public Type GetSubModuleType(string name)
+	{
+		foreach (KeyValuePair<SubModuleInfo, MBSubModuleBase> subModuleBasis in _subModuleBases)
+		{
+			if (subModuleBasis.Key.SubModuleClassTypeName == name)
+			{
+				return subModuleBasis.Value.GetType();
+			}
+		}
+		return null;
 	}
 
 	public bool CheckIfSubmoduleCanBeLoadable(SubModuleInfo subModuleInfo)
@@ -1089,24 +1171,24 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return true;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void MBThrowException()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1424);
+		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1531);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnEnterEditMode(bool isFirstTime)
 	{
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static Module GetInstance()
 	{
 		return CurrentModule;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static string GetGameStatus()
 	{
 		if (TestCommonBase.BaseInstance != null)
@@ -1131,7 +1213,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		InformationManager.Clear();
 		ScreenManager.OnFinalize();
 		BannerlordConfig.Save();
-		FinalizeSubModules();
+		FinalizeSubModulesBases();
 		PlatformServices.Instance?.Terminate();
 		Common.MemoryCleanupGC();
 		GC.WaitForPendingFinalizers();
@@ -1143,19 +1225,19 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		CurrentModule = null;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void SetLoadingFinished()
 	{
 		LoadingFinished = true;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnCloseSceneEditorPresentation()
 	{
 		GameStateManager.Current.PopState();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnSceneEditorModeOver()
 	{
 		GameStateManager.Current.PopState();
@@ -1163,9 +1245,9 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 
 	private void OnConfigChanged()
 	{
-		foreach (MBSubModuleBase subModule in SubModules)
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
 		{
-			subModule.OnConfigChanged();
+			value.OnConfigChanged();
 		}
 	}
 
@@ -1187,7 +1269,12 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		ScreenManager.OnOnscreenKeyboardDone(text);
 	}
 
-	[MBCallback]
+	private void OnTextCanceledFromPlatform()
+	{
+		ScreenManager.OnOnscreenKeyboardCanceled();
+	}
+
+	[MBCallback(null, false)]
 	internal void OnSkinsXMLHasChanged()
 	{
 		if (this.SkinsXMLHasChanged != null)
@@ -1196,7 +1283,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void OnImguiProfilerTick()
 	{
 		if (this.ImguiProfilerTick != null)
@@ -1205,32 +1292,19 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static string CreateProcessedSkinsXMLForNative(out string baseSkinsXmlPath)
 	{
 		List<string> usedPaths;
-		XDocument xDocument = MBObjectManager.ToXDocument(MBObjectManager.GetMergedXmlForNative("soln_skins", out usedPaths));
-		for (int i = 0; i < xDocument.Descendants("race").Count(); i++)
-		{
-			for (int j = i + 1; j < xDocument.Descendants("race").Count(); j++)
-			{
-				if (xDocument.Descendants("race").ElementAt(i).FirstAttribute.ToString() == xDocument.Descendants("race").ElementAt(j).FirstAttribute.ToString())
-				{
-					xDocument.Descendants("race").ElementAt(i).Add(xDocument.Descendants("race").ElementAt(j).Descendants());
-					xDocument.Descendants("race").ElementAt(j).Remove();
-					j--;
-				}
-			}
-		}
-		XmlDocument xmlDocument = MBObjectManager.ToXmlDocument(xDocument);
+		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_skins", out usedPaths);
 		System.IO.StringWriter stringWriter = new System.IO.StringWriter();
 		XmlTextWriter w = new XmlTextWriter(stringWriter);
-		xmlDocument.WriteTo(w);
+		mergedXmlForNative.WriteTo(w);
 		baseSkinsXmlPath = usedPaths[0];
 		return stringWriter.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal static string CreateProcessedActionSetsXMLForNative()
 	{
 		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_action_sets", out var _);
@@ -1259,7 +1333,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return stringWriter.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal static string CreateProcessedActionTypesXMLForNative()
 	{
 		List<string> usedPaths;
@@ -1270,7 +1344,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return stringWriter.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal static string CreateProcessedAnimationsXMLForNative(out string animationsXmlPaths)
 	{
 		List<string> usedPaths;
@@ -1290,7 +1364,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return stringWriter.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
 	internal static string CreateProcessedVoiceDefinitionsXMLForNative()
 	{
 		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_voice_definitions", out var _);
@@ -1322,7 +1396,29 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return stringWriter.ToString();
 	}
 
-	[MBCallback]
+	[MBCallback(null, true)]
+	internal static string CreateProcessedSoundEventDataXMLForNative()
+	{
+		List<string> usedPaths;
+		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_sound_event_data", out usedPaths);
+		System.IO.StringWriter stringWriter = new System.IO.StringWriter();
+		XmlTextWriter w = new XmlTextWriter(stringWriter);
+		mergedXmlForNative.WriteTo(w);
+		return stringWriter.ToString();
+	}
+
+	[MBCallback(null, true)]
+	internal static string CreateProcessedSoundParamsXMLForNative()
+	{
+		List<string> usedPaths;
+		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_sound_parameter_data", out usedPaths);
+		System.IO.StringWriter stringWriter = new System.IO.StringWriter();
+		XmlTextWriter w = new XmlTextWriter(stringWriter);
+		mergedXmlForNative.WriteTo(w);
+		return stringWriter.ToString();
+	}
+
+	[MBCallback(null, false)]
 	internal static string CreateProcessedModuleDataXMLForNative(string xmlType)
 	{
 		List<string> usedPaths;
@@ -1360,6 +1456,18 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		_initialStateOptions.Add(initialStateOption);
 	}
 
+	public void OverrideInitialStateOption(string id, InitialStateOption newInitialStateOption)
+	{
+		for (int i = 0; i < _initialStateOptions.Count; i++)
+		{
+			if (_initialStateOptions[i].Id == id)
+			{
+				_initialStateOptions[i] = newInitialStateOption;
+				break;
+			}
+		}
+	}
+
 	public IEnumerable<InitialStateOption> GetInitialStateOptions()
 	{
 		return _initialStateOptions.OrderBy((InitialStateOption s) => s.OrderIndex);
@@ -1382,6 +1490,11 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		GetInitialStateOptionWithId(id)?.DoAction();
 	}
 
+	public void SetCanLoadModules(bool canLoadModules)
+	{
+		EngineApplicationInterface.IUtil.SetCanLoadModules(canLoadModules);
+	}
+
 	void IGameStateManagerOwner.OnStateStackEmpty()
 	{
 	}
@@ -1395,7 +1508,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		_editorMissionTester = editorMissionTester;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void StartMissionForEditor(string missionName, string sceneName, string levels)
 	{
 		if (_editorMissionTester != null)
@@ -1404,7 +1517,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal void StartMissionForReplayEditor(string missionName, string sceneName, string levels, string fileName, bool record, float startTime, float endTime)
 	{
 		if (_editorMissionTester != null)
@@ -1487,6 +1600,89 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				MBGameManager.EndGame();
 			}
 			Utilities.QuitGame();
+		}
+	}
+
+	public void DeactiveModule(string moduleId)
+	{
+		ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(moduleId);
+		if (moduleInfo == null || !moduleInfo.IsActive || moduleInfo.IsNative)
+		{
+			return;
+		}
+		TaleWorlds.Library.Debug.Print("Deactivating Module: " + moduleId, 0, TaleWorlds.Library.Debug.DebugColor.Green);
+		ModuleHelper.OnModuleDeactivated(moduleId);
+		foreach (SubModuleInfo subModule in moduleInfo.SubModules)
+		{
+			if (_subModuleBases.TryGetValue(subModule, out var value))
+			{
+				value.OnSubModuleDeactivated();
+			}
+		}
+	}
+
+	public void ActivateModule(string moduleId)
+	{
+		ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(moduleId);
+		if (moduleInfo == null || moduleInfo.IsActive)
+		{
+			return;
+		}
+		TaleWorlds.Library.Debug.Print("Activating Module: " + moduleId, 0, TaleWorlds.Library.Debug.DebugColor.Green);
+		ModuleHelper.OnModuleActivated(moduleId);
+		foreach (SubModuleInfo subModule in moduleInfo.SubModules)
+		{
+			if (_subModuleBases.TryGetValue(subModule, out var value))
+			{
+				value.OnSubModuleActivated();
+			}
+		}
+	}
+
+	internal void OnBeforeGameStart(MBGameManager mbGameManager)
+	{
+		List<string> list = new List<string>();
+		foreach (MBSubModuleBase value in _subModuleBases.Values)
+		{
+			value.OnBeforeGameStart(mbGameManager, list);
+		}
+		foreach (string item in list)
+		{
+			ModuleInfo moduleInfo = ModuleHelper.GetModuleInfo(item);
+			if (moduleInfo != null && moduleInfo.IsActive)
+			{
+				DeactiveModule(item);
+			}
+		}
+		MBList<ModuleInfo> mBList = new MBList<ModuleInfo>();
+		foreach (ModuleInfo activeModule in ModuleHelper.GetActiveModules())
+		{
+			foreach (DependedModule dependedModule in activeModule.DependedModules)
+			{
+				foreach (string item2 in list)
+				{
+					ModuleInfo moduleInfo2 = ModuleHelper.GetModuleInfo(item2);
+					if (moduleInfo2 != null && activeModule != moduleInfo2 && dependedModule.ModuleId == item2)
+					{
+						mBList.Add(moduleInfo2);
+					}
+				}
+			}
+		}
+		if (mBList.Any((ModuleInfo x) => !x.IsOfficial))
+		{
+			string.Join("\n", from x in mBList
+				where !x.IsOfficial
+				select x.Name);
+		}
+		InformationManager.ClearAllMessages();
+	}
+
+	internal void OnGameEnd()
+	{
+		foreach (ModuleInfo module in ModuleHelper.GetModules((ModuleInfo x) => !x.IsActive))
+		{
+			ActivateModule(module.Id);
 		}
 	}
 }

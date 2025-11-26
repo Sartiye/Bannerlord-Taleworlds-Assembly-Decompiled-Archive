@@ -7,7 +7,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class AlleyModel : GameModel
+public abstract class AlleyModel : MBGameModel<AlleyModel>
 {
 	public abstract CampaignTime DestroyAlleyAfterDaysWhenLeaderIsDeath { get; }
 

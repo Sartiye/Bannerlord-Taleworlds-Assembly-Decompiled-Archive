@@ -6,7 +6,7 @@ using TaleWorlds.Engine;
 namespace TaleWorlds.MountAndBlade;
 
 [Serializable]
-[EngineStruct("Animation_system_data", false)]
+[EngineStruct("Animation_system_data", false, null)]
 public struct AnimationSystemData
 {
 	public const sbyte InvalidBoneIndex = -1;

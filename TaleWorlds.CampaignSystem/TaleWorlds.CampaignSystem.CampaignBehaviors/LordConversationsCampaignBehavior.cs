@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
@@ -18,10 +19,12 @@ using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.SceneInformationPopupTypes;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Workshops;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -65,8 +68,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private Hero _selectedPrisoner;
 
-	private Clan _askedFaction;
-
 	private int _bribeAmount;
 
 	private bool _willDoPeaceBarter;
@@ -108,7 +109,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool lord_comments()
 	{
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
 		{
 			return false;
 		}
@@ -201,7 +202,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	protected void AddDialogs(CampaignGameStarter starter)
 	{
-		GameTexts.AddGameTextWithVariation("STR_SALUTATION_FROM_PLAYER").Variation("{=xnR3sXJP}{PLAYER.NAME}", "DefaultTag", 1).Variation("{=CRqdPoj9}your highness", "NpcIsLiegeTag", 1)
+		GameTexts.AddGameTextWithVariation("STR_SALUTATION_FROM_PLAYER").Variation("{=!}{PLAYER.NAME}", "DefaultTag", 1).Variation("{=CRqdPoj9}your highness", "NpcIsLiegeTag", 1)
 			.Variation("{=AM1ROQcT}your lordship", "NpcIsNobleTag", 1)
 			.Variation("{=GDSwyH2p}your ladyship", "NpcIsNobleTag", 1, "NpcIsFemaleTag", 1)
 			.Variation("{=edRggEQ4}my friend", "MetBeforeTag", 2, "FriendlyRelationshipTag", 1)
@@ -256,6 +257,11 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		starter.AddPlayerLine("ally_thanks_meet", "ally_thanks_meet", "ally_thanks_meet_2", "{=O4KI2lgT}My name is {PLAYER.NAME}.", null, null);
 		starter.AddDialogLine("ally_thanks_meet_after_helping_in_battle_2", "ally_thanks_meet_2", "close_window", "{=jgbVweOs}{GRATITUDE_SENTENCE}[if:convo_calm_friendly]", null, conversation_ally_thanks_meet_after_helping_in_battle_2_on_consequence);
+		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill", "defeated_lord_answer", "defeat_lord_answer_0", "{=2LHa01Q9}Do not expect mercy. Off with your head!", null, null);
+		starter.AddDialogLine("talk_lord_defeat_to_lord_capture_and_kill_lord_answer", "defeat_lord_answer_0", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_1", "{=bFgUxv3T}That is an outrage! You can't treat your prisoners this way! All the other lords will hate your guts for it. And my family will never forget this!", null, null);
+		starter.AddDialogLine("talk_lord_defeat_to_lord_capture_and_kill_lord_answer_continue", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_1", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "{=LV6VL5Us}Besides, you can earn good money if you just ransom me.", null, null);
+		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill_player_answer_1", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "close_window", "{=RKTuRJXo}Fine then. You are my prisoner now. ", null, conversation_talk_lord_defeat_to_lord_capture_on_consequence);
+		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill_player_answer_2", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "close_window", "{=ufahRPOl}I care not. Prepare to die!", null, conversation_talk_lord_defeat_to_lord_capture_and_kill_on_consequence);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture", "defeated_lord_answer", "defeat_lord_answer_1", "{=g5G8AJ5n}You are my prisoner now.", null, null);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_release_noncom", "defeated_lord_answer", "defeat_lord_answer_2", "{=SFWNy76G}As you are not a warrior, you are free to go.", conversation_talk_lord_release_noncombatant_on_condition, conversation_talk_lord_defeat_to_lord_release_on_consequence);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_release", "defeated_lord_answer", "defeat_lord_answer_2", "{=vHKkVkAF}You have fought well. You are free to go.", conversation_talk_lord_release_combatant_on_condition, conversation_talk_lord_defeat_to_lord_release_on_consequence);
@@ -502,15 +508,13 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("player_ask_mercenary_to_join_response_2", "player_ask_mercenary_to_join", "player_ask_mercenary_to_join_player_response", "{=dfEi6GSE}We will fight for you if you can afford our fee. Please have a look at our terms and see if they are acceptable.", conversation_mercenary_response_on_condition, null);
 		starter.AddPlayerLine("player_ask_mercenary_to_join_player_response_accept", "player_ask_mercenary_to_join_player_response", "lord_pretalk", "{=Jt0HGGlR}This is fair. Join us", null, conversation_mercenary_response_accept_on_consqequence, 100, conversation_mercenary_response_accept_reject_on_clickable_condition);
 		starter.AddPlayerLine("player_ask_mercenary_to_join_player_response_reject", "player_ask_mercenary_to_join_player_response", "lord_pretalk", "{=a2GQ3VKM}I cannot afford this.", null, null, 100, conversation_mercenary_response_accept_reject_on_clickable_condition);
-		starter.AddPlayerLine("player_ask_to_claim_land", "lord_talk_speak_diplomacy_2", "player_ask_to_claim_land", "{=73MYdXby}I want to claim {SETTLEMENT}.", conversation_player_ask_to_claim_land_on_condition, null);
-		starter.AddPlayerLine("player_ask_to_join_players_party", "lord_talk_speak_diplomacy_2", "player_ask_to_join_players_party", "{=FiZVzLV3}I want you to join my party.", player_ask_to_join_players_party_on_condition, null);
 		starter.AddPlayerLine("player_wants_to_make_peace", "lord_talk_speak_diplomacy_2", "lord_talk_speak_diplomacy_3", "{=ldJDR7t1}Our realms should make peace.", conversation_player_wants_to_make_peace_on_condition, null);
 		starter.AddDialogLine("player_wants_to_make_peace_npc_response", "lord_talk_speak_diplomacy_3", "player_wants_to_make_peace_answer", "{=!}{LORD_PEACE_OFFER_ANSWER}", conversation_player_wants_to_make_peace_answer_on_condition, conversation_player_wants_to_make_peace_on_consequence);
+		starter.AddPlayerLine("player_wants_to_sponsor_call_to_war", "lord_talk_speak_diplomacy_2", "lord_talk_speak_call_to_war", "{=ZmezmQST}As your allies, we would request your assistance against one of our enemies.", conversation_player_wants_to_sponsor_call_to_war_on_condition, conversation_player_wants_to_sponsor_call_to_war_on_consequence);
+		starter.AddDialogLine("player_wants_to_sponsor_call_to_war_npc_response", "lord_talk_speak_call_to_war", "player_wants_to_sponsor_call_to_war_list_kingdoms", "{=Mwlr0aJO}We can consider it, assuming that you are willing to offset the costs. Who did you have in mind?", null, null);
+		starter.AddRepeatablePlayerLine("player_wants_to_sponsor_call_to_war_proposals", "player_wants_to_sponsor_call_to_war_list_kingdoms", "lord_talk_speak_diplomacy_2", "{=22LCyCoA}I can offer your realm {GOLD}{GOLD_ICON} to declare war on the {KINGDOM_TO_CALL_TO_WAR_AGAINST}.", "{=D9Rl5jyS}I was thinking of a different kingdom.", "lord_talk_speak_call_to_war", conversation_player_wants_to_sponsor_call_to_war_list_on_condition, conversation_player_wants_to_sponsor_call_to_war_list_on_consequence, 100, conversation_player_wants_to_sponsor_call_to_war_list_on_clickable_condition);
+		starter.AddPlayerLine("player_wants_to_sponsor_call_to_war_reject", "player_wants_to_sponsor_call_to_war_list_kingdoms", "lord_pretalk", "{=U7yZ6q1y}I cannot afford it right now.", conversation_player_wants_to_sponsor_call_to_war_reject_on_condition, null);
 		starter.AddPlayerLine("player_wants_to_make_peace_result", "player_wants_to_make_peace_answer", "lord_pretalk", "{=EaIO20WN}So be it.", null, null);
-		starter.AddDialogLine("player_ask_to_claim_land_answer", "player_ask_to_claim_land", "player_ask_to_claim_land_answer_player_decision", "{=EcYGHEVS}You may be entitled to that land in recompense for your service to us. [Will cost {VALUE} influence]", conversation_player_ask_to_claim_land_answer_on_condition, null);
-		starter.AddPlayerLine("player_ask_to_claim_land_answer_player_decision_ok", "player_ask_to_claim_land_answer_player_decision", "lord_pretalk", "{=gbXLb2WE}I shall claim it.", conversation_player_ask_to_claim_land_answer_ok_on_condition, conversation_player_ask_to_claim_land_answer_on_consequence);
-		starter.AddPlayerLine("player_ask_to_claim_land_answer_player_decision_no", "player_ask_to_claim_land_answer_player_decision", "lord_pretalk", "{=vyaIbCRj}Hmm... Perhaps I will need to do more.", null, null);
-		starter.AddDialogLine("player_ask_to_join_players_party_response", "player_ask_to_join_players_party", "close_window", "{=DlJt6YLY}I will be honored. See you outside.[DEBUG]", null, player_ask_to_join_players_party_on_consequence);
 		starter.AddPlayerLine("hero_barter", "lord_talk_speak_diplomacy_2", "lord_considers_barter", "{=CuFvVPNt}I have a proposal that may benefit us both.", conversation_lord_barter_on_condition, null);
 		starter.AddDialogLine("lord_considers_barter", "lord_considers_barter", "lord_barter_line", "{=anrenBiB}I am listening.", conversation_can_lord_barter, null);
 		starter.AddDialogLine("lord_refuses_barter", "lord_considers_barter", "lord_start", "{=3L8xN9uC}I believe it hasn't been long since we've last bartered.", null, null);
@@ -529,6 +533,55 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("lord_responds_to_changing_sides", "lord_barter_pre_decision_change_sides", "lord_barter_decision_change_sides", "{=WOXMzO3Z}I must think carefully about this.", null, null);
 		starter.AddDialogLine("barter_decision_refuses", "lord_barter_decision_change_sides", "lord_pretalk", "{=xhKJAmQM}{?BARTER_RESULT}{STR_BARTER_DECLINE_OFFER}{?}{STR_CHANGE_SIDES_DECLINE_OFFER}{\\?}", barter_offer_reject_on_condition, conversation_lord_leave_on_consequence);
 		starter.AddDialogLine("barter_decision_refuses_2", "lord_barter_decision_change_sides", "close_window", "{=Za6Du9Kf}Then you will pay with blood!", barter_peace_offer_reject_on_condition, null);
+	}
+
+	private void conversation_player_wants_to_sponsor_call_to_war_list_on_consequence()
+	{
+		Kingdom kingdomToCallToWarAgainst = ConversationSentence.CurrentProcessedRepeatObject as Kingdom;
+		int callToWarCost = Campaign.Current.Models.AllianceModel.GetCallToWarCost(Hero.MainHero.MapFaction as Kingdom, Hero.OneToOneConversationHero.MapFaction as Kingdom, kingdomToCallToWarAgainst);
+		Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.StartCallToWarAgreement(Hero.MainHero.MapFaction as Kingdom, Hero.OneToOneConversationHero.MapFaction as Kingdom, kingdomToCallToWarAgainst, callToWarCost, isPlayerPaying: true);
+	}
+
+	private bool conversation_player_wants_to_sponsor_call_to_war_list_on_condition()
+	{
+		Kingdom kingdom = ConversationSentence.CurrentProcessedRepeatObject as Kingdom;
+		ConversationSentence.SelectedRepeatLine.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", kingdom.Name);
+		MBTextManager.SetTextVariable("GOLD", Campaign.Current.Models.AllianceModel.GetCallToWarCost(Hero.MainHero.MapFaction as Kingdom, Hero.OneToOneConversationHero.MapFaction as Kingdom, kingdom));
+		return true;
+	}
+
+	private bool conversation_player_wants_to_sponsor_call_to_war_list_on_clickable_condition(out TextObject hint)
+	{
+		Kingdom kingdom = ConversationSentence.CurrentProcessedRepeatObject as Kingdom;
+		if (Campaign.Current.Models.AllianceModel.GetCallToWarCost(Hero.MainHero.MapFaction as Kingdom, Hero.OneToOneConversationHero.MapFaction as Kingdom, kingdom) <= Hero.MainHero.Gold)
+		{
+			hint = null;
+			return true;
+		}
+		hint = new TextObject("{=nkvT88r2}You don't have enough money to call the {CALLED_KINGDOM} to war against {KINGDOM_TO_CALL_TO_WAR_AGAINST}.");
+		hint.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", kingdom.Name);
+		hint.SetTextVariable("CALLED_KINGDOM", Hero.OneToOneConversationHero.MapFaction.Name);
+		return false;
+	}
+
+	private bool conversation_player_wants_to_sponsor_call_to_war_reject_on_condition()
+	{
+		return true;
+	}
+
+	private bool conversation_player_wants_to_sponsor_call_to_war_on_condition()
+	{
+		Kingdom conversationHeroKingdom;
+		if (Hero.MainHero.MapFaction is Kingdom kingdom && (conversationHeroKingdom = Hero.OneToOneConversationHero.MapFaction as Kingdom) != null && !Hero.OneToOneConversationHero.Clan.IsUnderMercenaryService && kingdom.IsAllyWith(conversationHeroKingdom) && !kingdom.UnresolvedDecisions.Any((KingdomDecision x) => x is ProposeCallToWarAgreementDecision proposeCallToWarAgreementDecision && proposeCallToWarAgreementDecision.CalledKingdom == conversationHeroKingdom))
+		{
+			return kingdom.FactionsAtWarWith.AnyQ((IFaction x) => x.IsKingdomFaction && !x.IsAtWarWith(conversationHeroKingdom));
+		}
+		return false;
+	}
+
+	private void conversation_player_wants_to_sponsor_call_to_war_on_consequence()
+	{
+		ConversationSentence.SetObjectsToRepeatOver(Hero.MainHero.MapFaction.FactionsAtWarWith.Where((IFaction x) => x.IsKingdomFaction && !x.IsAtWarWith(Hero.OneToOneConversationHero.MapFaction as Kingdom)).ToList());
 	}
 
 	private void AddIntroductions(CampaignGameStarter starter)
@@ -724,8 +777,8 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("lord_attack_verify_b2", "lord_attack_verify_b", "lord_attack_verify_commit", "{=HKMdHYb7}I stand my ground. Prepare to fight!", null, null);
 		starter.AddDialogLine("lord_attack_verify_commit", "lord_attack_verify_commit", "close_window", "{=!}You should not see this.", null, null);
 		starter.AddPlayerLine("main_option_hostile_1_2", "hero_main_options", "player_threatens_enemy_lord", "{=PitXi5n6}You know we are at war. Surrender or die.", conversation_player_can_attack_hero_on_condition, null, 100, conversation_player_can_attack_hero_on_clickable_condition);
-		starter.AddPlayerLine("545", "player_responds_to_surrender_demand", "party_encounter_lord_hostile_attacker_3", "{=jBN2LlgF}We'll fight to our last drop of blood!", null, null);
-		starter.AddPlayerLine("546", "player_responds_to_surrender_demand", "party_encounter_player_makes_frivolous_surrender_demand", "{=F9LlA26R}Actually, I think you're the one who ought to surrender.", null, null);
+		starter.AddPlayerLine("545", "player_responds_to_surrender_demand", "party_encounter_lord_hostile_attacker_3", "{=jBN2LlgF}We'll fight to our last drop of blood!", player_responds_to_surrender_demand_on_condition, null);
+		starter.AddPlayerLine("546", "player_responds_to_surrender_demand", "party_encounter_player_makes_frivolous_surrender_demand", "{=F9LlA26R}Actually, I think you're the one who ought to surrender.", player_responds_to_surrender_demand_on_condition, null);
 		starter.AddPlayerLine("pay_off_minor_faction_option", "player_responds_to_surrender_demand", "player_responds_to_gold_offer_demand", "{=FREVkpWP}I might be willing to pay for passage.", conversation_pay_minor_faction_for_passage, null);
 		starter.AddDialogLine("paying_gold_option", "player_responds_to_gold_offer_demand", "lord_barter_pre_decision_safe_passage", "{=!}{AGREE_TO_TAKE_PAYMENT}[ib:aggressive]", conversation_can_pay_minor_faction_for_payoff_set_text_on_condition, null);
 		starter.AddDialogLineWithVariation("frivolous_surrender_demand_response", "party_encounter_player_makes_frivolous_surrender_demand", "close_window", null, null).Variation("{=6ykZ0Agl}So we fight.[if:idle_angry][ib:warrior]", "DefaultTag", 1).Variation("{=ekFDe1I7}Right...Well, I gave you a chance.[if:idle_angry][ib:warrior]", "PersonaSoftspokenTag", 1)
@@ -751,7 +804,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("main_option_prisoner_interaction", "hero_main_options", "lord_talk_about_prisoner", "{=QLbyXqiV}Can I talk to one of your prisoners?", conversation_player_ask_prisoners_on_condition, conversation_player_ask_prisoners_on_consequence);
 		starter.AddDialogLine("main_option_prisoner_interaction_lord_answer_1", "lord_talk_about_prisoner", "hero_main_options", "{=ogdIceFH}You? No, that's forbidden.", conversation_player_ask_prisoners_forbidden_on_condition, null);
 		starter.AddDialogLine("main_option_prisoner_interaction_lord_answer_2", "lord_talk_about_prisoner", "lord_talk_about_prisoners_list_prisoners", "{=St6NxphR}Be my guest, who would you like to talk to?", null, null);
-		starter.AddRepeatablePlayerLine("main_option_prisoner_interaction_list_prisoners", "lord_talk_about_prisoners_list_prisoners", "lord_talk_about_prisoners_list_prisoner_selected", "{=!}{PRISONER_NAME}", "I was thinking of a different prisoner", "lord_talk_about_prisoner", conversation_player_ask_prisoners_list_on_condition, conversation_player_ask_prisoners_list_on_consequence);
+		starter.AddRepeatablePlayerLine("main_option_prisoner_interaction_list_prisoners", "lord_talk_about_prisoners_list_prisoners", "lord_talk_about_prisoners_list_prisoner_selected", "{=!}{PRISONER_NAME}", "{=dLQDe7mj}I was thinking of a different prisoner", "lord_talk_about_prisoner", conversation_player_ask_prisoners_list_on_condition, conversation_player_ask_prisoners_list_on_consequence);
 		starter.AddPlayerLine("main_option_prisoner_interaction_list_prisoners_cancel", "lord_talk_about_prisoners_list_prisoners", "lord_talk_about_prisoners_list_prisoners_cancel", "{=D33fIGQe}Never mind.", conversation_player_ask_prisoners_list_on_condition, conversation_player_ask_prisoners_list_on_consequence);
 		starter.AddDialogLine("main_option_prisoner_interaction_list_prisoners_cancel_answer", "lord_talk_about_prisoners_list_prisoners_cancel", "hero_main_options", "{=VT1hSCaw}All right.", null, null);
 		starter.AddDialogLine("main_option_prisoner_interaction_list_prisoners_selected", "lord_talk_about_prisoners_list_prisoner_selected", "lord_talk_about_prisoners_list_prisoner_selected_final", "{=Pqsbndn1}All right, Be my guest.", null, null);
@@ -760,35 +813,25 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("player_is_leaving_enemy_polite", "hero_main_options", "hero_leave", "{=XHTumMB9}I must beg my leave.", conversation_player_is_leaving_enemy_on_condition, null);
 		starter.AddPlayerLine("player_is_leaving_enemy_prisoner", "hero_main_options", "prisoner_hero_leave", "{=4NYPsxgY}I need to leave. Good-bye, for now.", conversation_player_is_leaving_enemy_prisoner_on_condition, null, 1);
 		starter.AddPlayerLine("player_is_leaving_surrender", "player_responds_to_surrender_demand", "close_window", "{=za78F8gO}Don't attack! We surrender.", conversation_player_dont_attack_we_surrender_on_condition, conversation_player_is_leaving_surrender_on_consequence);
-		starter.AddPlayerLine("lord_diagnostics", "hero_main_options", "lord_diagnostics", "{=Ht3S4nvm}Let's do some diagnostics about your faction.", () => Game.Current.IsDevelopmentMode, null);
+		starter.AddPlayerLine("lord_diagnostics", "hero_main_options", "lord_diagnostics", "{=Ht3S4nvm}Let's do some diagnostics about your faction.", conversation_cheat_lord_diagnostics_on_condition, null);
 		starter.AddPlayerLine("549", "player_responds_to_surrender_demand", "lord_diagnostics", "{=Ht3S4nvm}Let's do some diagnostics about your faction.", () => Game.Current.IsDevelopmentMode, null);
-		starter.AddPlayerLine("clan_member_manage_troops", "hero_main_options", "clan_member_manage_troops_party_screen", "{=TQKXkQAT}Let me inspect your troops.", conversation_clan_member_manage_troops_on_condition, null);
-		starter.AddDialogLine("clan_member_manage_troops_screen", "clan_member_manage_troops_party_screen", "lord_pretalk", "{=!}party screen goes here.", null, conversation_clan_member_manage_troops_on_consequence);
+		starter.AddPlayerLine("clan_member_manage_troops", "hero_main_options", "lord_pretalk", "{=TQKXkQAT}Let me inspect your troops.", conversation_clan_member_manage_troops_on_condition, conversation_clan_member_manage_troops_on_consequence);
+		starter.AddPlayerLine("clan_member_manage_inventory", "hero_main_options", "lord_pretalk", "{=wQobT2Ss}Let me inspect your equipment.", conversation_clan_member_manage_inventory_on_condition, conversation_clan_member_manage_inventory_on_consequence);
 		starter.AddDialogLine("companion_hire", "companion_hire", "player_companion_hire_response", "{=!}{HIRING_COST_EXPLANATION}", conversation_companion_hire_gold_on_condition, null);
 		starter.AddPlayerLine("companion_hire_capacity_full", "player_companion_hire_response", "lord_pretalk", "{=afdN8ZU7}Thinking again, I already have more companions than I can manage.", too_many_companions, null);
 		starter.AddPlayerLine("player_companion_hire_response_1", "player_companion_hire_response", "hero_leave", "{=EiFPu9Np}Right... {GOLD_AMOUNT} Here you are.", conversation_companion_hire_on_condition, conversation_companion_hire_on_consequence);
 		starter.AddPlayerLine("player_companion_hire_response_2", "player_companion_hire_response", "lord_pretalk", "{=65UMAav2}I can't afford that just now.", () => !too_many_companions(), null);
-		starter.AddDialogLine("player_has_plans_options", "player_has_plans", "player_has_plans_options", "{=pWYkIkKj}Very well, {PLAYER_SALUTATION}. Tell me what you have in mind.", conversation_set_player_salutation, null);
-		starter.AddPlayerLine("player_ask_lords_to_follow_him", "player_has_plans_options", "player_ask_lords_to_follow_him_answer", "{=YmWJEAQZ}I need you to follow me for a while.", conversation_player_ask_lords_to_follow_him_on_condition, null);
-		starter.AddPlayerLine("player_ask_lords_to_create_army", "player_has_plans_options", "player_ask_lords_to_create_army", "{=Wapbcyxx}I'm gathering an army. Summon the lords to rally to my banner. {AMOUNT}{GOLD_ICON}", conversation_player_ask_lords_to_create_army_on_condition, conversation_player_ask_lords_to_follow_him_already_at_army_on_consequence);
-		starter.AddPlayerLine("player_plans_never_mind", "player_has_plans_options", "lord_pretalk", "{=D33fIGQe}Never mind.", conversation_player_plans_never_mind_on_condition, null);
-		starter.AddDialogLine("player_ask_lords_to_create_army_answer", "player_ask_lords_to_create_army", "lord_pretalk", "{=8DQF5kka}I shall inform any lord I meet that you are gathering the army, then.", null, null);
-		starter.AddDialogLine("player_ask_lords_to_follow_him_already_at_army", "player_ask_lords_to_follow_him_answer", "lord_pretalk", "{=Sktmhpbn}I am already currently escorting {ESCORTING_PARTY}. I cannot follow you until this task is complete.", conversation_player_ask_lords_to_follow_him_already_at_army_on_condition, null);
-		starter.AddDialogLine("player_ask_lords_to_follow_him_2", "player_ask_lords_to_follow_him_answer", "how_many_days_to_escort", "{=2PPwmNmg}I can escort you for 10 days. After that, I must return to my own affairs.", conversation_player_ask_lords_to_follow_him_on_condition, conversation_player_ask_lords_to_follow_him_on_consequence);
-		starter.AddPlayerLine("how_many_days_to_escort_never_mind", "how_many_days_to_escort", "lord_answer_to_escorting", "{=3JGRrENx}So be it. Let's go. {AMOUNT}{GOLD_ICON}", null, conversation_how_many_days_to_escort_on_consqeuence);
-		starter.AddPlayerLine("how_many_days_to_escort_never_mind_2", "how_many_days_to_escort", "lord_pretalk", "{=D33fIGQe}Never mind.", null, null);
-		starter.AddDialogLine("lord_answer_to_escorting", "lord_answer_to_escorting", "close_window", "{=ixyzGRPw}Lead on, then.", null, null);
 		starter.AddPlayerLine("player_want_to_leave_faction", "hero_main_options", "lord_ask_leave_service", "{=201kVrNa}{SALUTATION_BY_PLAYER}, I wish to be released from my oath to you.", conversation_player_is_leaving_faction_on_condition, null);
 		starter.AddDialogLine("player_want_to_join_faction_as_vassal_lord_answer_di", "lord_ask_enter_service", "lord_pretalk", "{=CVClzSC7}I believe you have already pledged yourself to another liege.", conversation_player_is_asking_service_while_in_faction_on_condition, null);
 		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_or_vassal_answer", "lord_ask_enter_service", "lord_ask_enter_service_answer", "{=MlTofjrU}And how would you serve us?", null, null);
 		starter.AddPlayerLine("player_is_offering_mercenary", "lord_ask_enter_service_answer", "lord_ask_enter_service_mercenary", "{=Wuxn9sDq}My sword is yours. For the right sum.", conversation_player_is_offering_mercenary_on_condition, null, 100, conversation_player_is_offering_mercenary_on_clickable_condition);
-		starter.AddPlayerLine("player_want_to_join_faction_as_vassal_lord_answer", "lord_ask_enter_service_vassalage_player_response", "lord_pretalk", "{=SvGFarpZ}Then I will find and talk to {KING.LINK}.", null, null);
+		starter.AddPlayerLine("player_want_to_join_faction_as_vassal_lord_answer", "lord_ask_enter_service_vassalage_player_response", "lord_pretalk", "{=!}{VASSAL_CONVERSATION_PLAYER_RESPONSE}", lord_ask_enter_service_vassalage_player_response_on_condition, null);
 		starter.AddPlayerLine("player_is_offering_vassalage", "lord_ask_enter_service_answer", "lord_ask_enter_service_vassalage", "{=meVKYu9a}{SALUTATION_BY_PLAYER}, I would pledge allegiance to you and be counted among your loyal followers.", conversation_player_is_offering_vassalage_on_condition, null, 100, conversation_player_is_offering_vassalage_on_clickable_condition);
 		starter.AddPlayerLine("player_is_offering_vassalage_while_mercenary", "lord_talk_speak_diplomacy_2", "lord_ask_enter_service_vassalage", "{=1OU1ZkaZ}{SALUTATION_BY_PLAYER}, I wish to be more than a mercenary. Is there a way I could pledge myself as a vassal?", conversation_player_is_offering_vassalage_while_at_mercenary_service_on_condition, null);
 		starter.AddPlayerLine("player_is_offering_join_cancel", "lord_ask_enter_service_answer", "lord_pretalk", "{=B2z3mEue}Actually, I was going to talk about something else.", null, null);
-		starter.AddDialogLine("player_want_to_join_faction_as_vassal_lord_answer_2", "lord_ask_enter_service_vassalage", "lord_ask_enter_service_vassalage_player_response", "{=gKK0HlHK}You would need to talk to our leader {KING.LINK} on this matter. {?KING.GENDER}She{?}He{\\?} is {?IS_PRISONED}unfortunately held captive{?}currently{\\?} {?IS_IN_SETTLEMENT}at{?}near{\\?} {SETTLEMENT}.", conversation_player_is_offering_vassalage_to_lord_on_condition, null);
+		starter.AddDialogLine("player_want_to_join_faction_as_vassal_lord_answer_2", "lord_ask_enter_service_vassalage", "lord_ask_enter_service_vassalage_player_response", "{=!}{VASSALAGE_CONVERSATION_EXPLANATION}", conversation_player_is_offering_vassalage_to_lord_on_condition, null);
 		starter.AddDialogLine("player_want_to_join_faction_as_vassal_lord_answer_3", "lord_ask_enter_service_vassalage_talking_with_king", "lord_pretalk", "{=wCMNQsBu}I will put in a word about you to {KING.LINK}.", null, null);
-		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_king_answer", "lord_ask_enter_service_mercenary", "lord_pretalk", "{=JTt3Xu9t}Our kingdom is not at war, {PLAYER.NAME}. We have no use for mercenaries.", () => !FactionManager.GetEnemyFactions(Hero.OneToOneConversationHero.MapFaction).Any(), null);
+		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_king_answer", "lord_ask_enter_service_mercenary", "lord_pretalk", "{=JTt3Xu9t}Our kingdom is not at war, {PLAYER.NAME}. We have no use for mercenaries.", () => !FactionHelper.GetEnemyKingdoms(Hero.OneToOneConversationHero.MapFaction).Any(), null);
 		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_king_answer_2", "lord_ask_enter_service_mercenary", "lord_pretalk", "{=AzmriKR8}I have hardly heard of you, {PLAYER.NAME}. Go fight a few bandits, make a name for yourself. Then we can talk.", conversation_mercenary_service_offer_rejected_on_condition, null);
 		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_lord_answer", "lord_ask_enter_service_mercenary", "lord_pretalk", "{=dSSphiFs}We do not need hired swords currently because we are not at war. You should seek your fortune elsewhere.", () => FactionHelper.GetTotalEnemyKingdomPower((Kingdom)Hero.OneToOneConversationHero.MapFaction) < 1f, null);
 		starter.AddDialogLine("player_want_to_join_faction_as_mercenary_lord_answer_2", "lord_ask_enter_service_mercenary", "lord_pretalk", "{=9d3tffnL}We do not need hired swords to win this war. You should seek your fortune elsewhere.", () => FactionHelper.GetPowerRatioToEnemies((Kingdom)Hero.OneToOneConversationHero.MapFaction) > 3f, null);
@@ -809,7 +852,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("mercenary_player_rejects_lord_answer", "lord_ask_enter_service_mercenary_player_rejected", "lord_pretalk", "{=wxK1bTZm}Do think about it. But make sure you do not end up on the losing side.", null, null);
 		starter.AddDialogLine("hero_no_available_task", "quest_offer", "hero_main_options", "{=NOH4FilQ}I have no task to offer you right now.", null, null, 1);
 		starter.AddDialogLine("prisoner_hero_leave_answer", "prisoner_hero_leave", "close_window", "{=CWfEUmiF}Right. I won't be going anywhere.", null, conversation_lord_leave_on_consequence);
-		starter.AddDialogLineWithVariation("hero_leave", "hero_leave", "close_window", conversation_lord_leave_on_condition, conversation_lord_leave_on_consequence).Variation("{=BsXNJHCu}Until next time, then.", "DefaultTag", 1).Variation("{=a2qPdYbu}Of course, {PLAYER.NAME}. Farewell.", "FriendlyRelationshipTag", 2)
+		starter.AddDialogLineWithVariation("hero_leave", "hero_leave", "close_window", conversation_lord_leave_on_condition, conversation_lord_leave_on_consequence).Variation("{=Z54ZrDG9}Until next time, then.", "DefaultTag", 1).Variation("{=a2qPdYbu}Of course, {PLAYER.NAME}. Farewell.", "FriendlyRelationshipTag", 2)
 			.Variation("{=GcCfYKDl}Farewell, then.", "HighRegisterTag", 2)
 			.Variation("{=FPvgVbtN}Yes, yes. Goodbye.", "PersonaCurtTag", 1, "UngratefulTag", 1)
 			.Variation("{=HCF4xGfk}Right... Well, you be off, then. Keep safe.", "FriendlyRelationshipTag", 2, "HighRegisterTag", -1)
@@ -851,6 +894,15 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 			.Variation("{=EBI3j6O8}Sure. You know where to find me.", "FirstMeetingTag", 2, "UnderCommandTag", -1, "DrinkingInTavernTag", 1, "PersonaCurtTag", 1)
 			.Variation("{=3INC3Thi}If you need me, you know where to find me.", "FirstMeetingTag", 2, "UnderCommandTag", -1, "DrinkingInTavernTag", 2)
 			.Variation("{=5ANh9qVW}Farewell for now. Walk the path of the righteous, and the Heavens will protect you.", "FirstMeetingTag", 1, "EmpireTag", 1, "CruelTag", -1, "HonorTag", 1, "PersonaCurtTag", -1, "PersonaIronicTag", -1)
+			.Variation("{=pHXMp2bR}Fine. We'll hoist sail and be on our way, then.", "PlayerIsAtSeaTag", 4)
+			.Variation("{=uvlaEOg0}Very well. We'll be on our way then, as there is not a moment to be lost. Farewell.", "PlayerIsAtSeaTag", 3, "PersonaEarnestTag", 1, "EmpireTag", 1, "ValorTag", 1)
+			.Variation("{=rl7rSDEk}Good. The wind is with us, so I'd rather not waste any more time.", "FirstMeetingTag", 1, "ImpoliteTag", 1, "HighRegisterTag", 1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=ddMn72IL}Farewell. I wish you fair winds and following seas.", "FirstMeetingTag", 1, "PersonaEarnestTag", 1, "ImpoliteTag", -1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=ahbhSL6B}Farewell then, and perhaps if the seas are kind we shall meet again.", "FirstMeetingTag", 1, "PersonaIronicTag", 1, "ImpoliteTag", -1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=13xbniTx}May the winds serve you well.", "FirstMeetingTag", 1, "PersonaSoftspokenTag", 1, "ImpoliteTag", -1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=4mqtjf3y}Farewell. The righteous need fear no storm, for the Heavens shall protect them.", "FirstMeetingTag", 1, "EmpireTag", 1, "CruelTag", -1, "HonorTag", 1, "PersonaCurtTag", -1, "PersonaIronicTag", -1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=zo4DGGk8}A safe voyage to you, {PLAYER.NAME}.", "FriendlyRelationshipTag", 1, "PlayerIsAtSeaTag", 4)
+			.Variation("{=ksRC6ZmC}Right. Clear the way, then, and try not to cut our wind.", "ImpoliteTag", 1, "PlayerIsAtSeaTag", 4)
 			.Variation("{=o3rj0kbj}Yes, your highness.", "UnderCommandTag", 5, "PlayerIsLiegeTag", 5)
 			.Variation("{=MTxuTZDA}I'll be here, your {?PLAYER.GENDER}ladyship{?}lordship{\\?}.", "UnderCommandTag", 5, "AnyNotableTypeTag", 1, "WandererTag", -1)
 			.Variation("{=QffdjUxf}Very well. I'll get my gear and join you outside.", "UnderCommandTag", 5, "WandererTag", 2, "FirstMeetingTag", 1)
@@ -894,19 +946,19 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("hero_doesnt_have_quest", "player_requests_quest", "lord_pretalk", "{=wdQ54wn2}There's nothing I need right now.", null, null);
 	}
 
+	private bool player_responds_to_surrender_demand_on_condition()
+	{
+		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount > 0)
+		{
+			return !MobileParty.MainParty.IsInRaftState;
+		}
+		return false;
+	}
+
 	private bool conversation_set_first_on_condition()
 	{
 		Campaign.Current.ConversationManager.CurrentConversationIsFirst = false;
 		return false;
-	}
-
-	private bool conversation_lord_special_request_on_condition()
-	{
-		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.IsPlayerCompanion)
-		{
-			return false;
-		}
-		return true;
 	}
 
 	private bool conversation_mercenary_hiring_pitch_on_condition()
@@ -964,7 +1016,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private void lord_considers_army_on_consequence()
 	{
-		MobileParty.MainParty.Ai.SetMoveEscortParty(Hero.OneToOneConversationHero.PartyBelongedTo);
 		MobileParty.MainParty.Army = Hero.OneToOneConversationHero.PartyBelongedTo.Army;
 		MobileParty.MainParty.Army.AddPartyToMergedParties(MobileParty.MainParty);
 		if (PlayerEncounter.InsideSettlement)
@@ -976,7 +1027,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	private void lord_considers_joining_player_army_on_consequence()
 	{
 		Hero.OneToOneConversationHero.PartyBelongedTo.Army = MobileParty.MainParty.Army;
-		SetPartyAiAction.GetActionForEscortingParty(Hero.OneToOneConversationHero.PartyBelongedTo, MobileParty.MainParty);
+		MobileParty.MainParty.Army.AddPartyToMergedParties(Hero.OneToOneConversationHero.PartyBelongedTo);
 	}
 
 	private bool conversation_lord_recruit_reject_enough_politics_on_condition()
@@ -995,20 +1046,20 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_lord_refuses_siege_lift_on_condition()
 	{
-		float totalStrengthWithFollowers = Hero.OneToOneConversationHero.PartyBelongedTo.GetTotalStrengthWithFollowers();
+		float totalLandStrengthWithFollowers = Hero.OneToOneConversationHero.PartyBelongedTo.GetTotalLandStrengthWithFollowers();
 		float num = 0f;
 		if (PlayerIsBesieged())
 		{
 			foreach (MobileParty party in Settlement.CurrentSettlement.Parties)
 			{
-				num += party.GetTotalStrengthWithFollowers();
+				num += party.GetTotalLandStrengthWithFollowers();
 			}
 		}
 		else
 		{
-			num = Hero.MainHero.PartyBelongedTo.GetTotalStrengthWithFollowers();
+			num = Hero.MainHero.PartyBelongedTo.GetTotalLandStrengthWithFollowers();
 		}
-		if (totalStrengthWithFollowers > num * 2f)
+		if (totalLandStrengthWithFollowers > num * 2f)
 		{
 			MBTextManager.SetTextVariable("REFUSE_BARTER_LINE", "{=QuzaaBD8}Why should I negotiate for your gold, when I have enough men to simply take it?");
 			return true;
@@ -1079,47 +1130,47 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		PlayerEncounter.LeaveEncounter = true;
 		GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, _goldAmount, disableNotification: true);
 		List<MobileParty> partiesToJoinPlayerSide = new List<MobileParty> { MobileParty.MainParty };
-		List<MobileParty> partiesToJoinEnemySide = new List<MobileParty> { MobileParty.ConversationParty };
+		List<MobileParty> list = new List<MobileParty> { MobileParty.ConversationParty };
 		if (PlayerEncounter.Current != null)
 		{
-			PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(ref partiesToJoinPlayerSide, ref partiesToJoinEnemySide);
+			PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(partiesToJoinPlayerSide, list);
 		}
 		float num = 0f;
-		foreach (MobileParty item in partiesToJoinEnemySide)
+		foreach (MobileParty item in list)
 		{
-			num += item.Party.TotalStrength;
+			num += item.Party.CalculateCurrentStrength();
 		}
 		int num2 = 0;
 		int num3 = _goldAmount;
-		foreach (MobileParty item2 in partiesToJoinEnemySide)
+		foreach (MobileParty item2 in list)
 		{
 			num2++;
 			if (item2.LeaderHero != null)
 			{
-				if (num2 == partiesToJoinEnemySide.Count)
+				if (num2 == list.Count)
 				{
 					GiveGoldAction.ApplyBetweenCharacters(null, item2.LeaderHero, num3, disableNotification: true);
 					continue;
 				}
-				int num4 = (int)((float)_goldAmount * (item2.Party.TotalStrength / num));
+				int num4 = (int)((float)_goldAmount * (item2.Party.CalculateCurrentStrength() / num));
 				num3 -= num4;
 				GiveGoldAction.ApplyBetweenCharacters(null, item2.LeaderHero, num4, disableNotification: true);
 			}
-			else if (num2 == partiesToJoinEnemySide.Count)
+			else if (num2 == list.Count)
 			{
 				item2.PartyTradeGold += num3;
 			}
 			else
 			{
-				int num5 = (int)((float)_goldAmount * (item2.Party.TotalStrength / num));
+				int num5 = (int)((float)_goldAmount * (item2.Party.CalculateCurrentStrength() / num));
 				num3 -= num5;
 				item2.PartyTradeGold += num5;
 			}
 		}
-		foreach (MobileParty item3 in partiesToJoinEnemySide)
+		foreach (MobileParty item3 in list)
 		{
 			item3.Ai.SetDoNotAttackMainParty(24);
-			item3.Ai.SetMoveModeHold();
+			item3.SetMoveModeHold();
 		}
 	}
 
@@ -1147,13 +1198,13 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private bool conversationUseMeetingDialogs()
+	private bool ConversationUseMeetingDialogs()
 	{
 		if (Hero.OneToOneConversationHero != null)
 		{
 			StringHelpers.SetCharacterProperties("CONVERSATION_NPC", Hero.OneToOneConversationHero.CharacterObject);
 		}
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
 		{
 			return false;
 		}
@@ -1188,7 +1239,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.OneToOneConversationHero.Spouse == Hero.MainHero || Hero.OneToOneConversationHero.Siblings.Contains(Hero.MainHero) || Hero.OneToOneConversationHero.Children.Contains(Hero.MainHero) || Hero.MainHero.Children.Contains(Hero.OneToOneConversationHero))
 		{
-			Debug.FailedAssert("player has not met with a family member", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\LordConversationsCampaignBehavior.cs", "conversations_automeet_close_relatives", 2489);
+			Debug.FailedAssert("player has not met with a family member", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\LordConversationsCampaignBehavior.cs", "conversations_automeet_close_relatives", 2512);
 			Hero.OneToOneConversationHero.SetHasMet();
 		}
 	}
@@ -1198,7 +1249,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		StringHelpers.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
 		MBTextManager.SetTextVariable("STR_SALUTATION", Campaign.Current.ConversationManager.FindMatchingTextOrNull("str_salutation", Hero.OneToOneConversationHero.CharacterObject));
 		TextObject textObject = Campaign.Current.ConversationManager.FindMatchingTextOrNull("str_context_line", CharacterObject.OneToOneConversationCharacter);
-		MBTextManager.SetTextVariable("VOICED_LINE", textObject ?? TextObject.Empty);
+		MBTextManager.SetTextVariable("VOICED_LINE", textObject ?? TextObject.GetEmpty());
 	}
 
 	private bool conversation_attacking_lord_set_meeting_meet_on_condition()
@@ -1207,20 +1258,12 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		return conversationUseMeetingDialogs();
+		return ConversationUseMeetingDialogs();
 	}
 
 	private bool conversation_lord_attacking_on_condition()
 	{
-		if (Hero.OneToOneConversationHero == null)
-		{
-			return false;
-		}
 		if (!HeroHelper.WillLordAttack())
-		{
-			return false;
-		}
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord || Hero.OneToOneConversationHero.IsPrisoner)
 		{
 			return false;
 		}
@@ -1243,12 +1286,12 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		return conversationUseMeetingDialogs();
+		return ConversationUseMeetingDialogs();
 	}
 
 	private bool conversation_player_let_prisoner_go_on_condition()
 	{
-		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.IsPrisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreedHero)
+		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.IsPrisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero)
 		{
 			if (Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner == null || Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner.Owner.Clan != Clan.PlayerClan)
 			{
@@ -1266,6 +1309,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	private void conversation_player_let_prisoner_go_on_consequence()
 	{
 		EndCaptivityAction.ApplyByReleasedByChoice(Hero.OneToOneConversationHero, Hero.MainHero);
+		ChangeRelationAction.ApplyPlayerRelation(CharacterObject.OneToOneConversationCharacter.HeroObject, 4);
 		if (PlayerEncounter.Current != null)
 		{
 			PlayerEncounter.LeaveEncounter = true;
@@ -1276,7 +1320,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.PartyBelongedTo == MobileParty.MainParty && !Hero.OneToOneConversationHero.HasMet)
 		{
-			return conversationUseMeetingDialogs();
+			return ConversationUseMeetingDialogs();
 		}
 		return false;
 	}
@@ -1287,12 +1331,12 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		return conversationUseMeetingDialogs();
+		return ConversationUseMeetingDialogs();
 	}
 
 	private bool conversation_siege_parley_met_on_condition()
 	{
-		if ((PlayerIsBesieging() || PlayerIsBesieged()) && Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && !Campaign.Current.ConversationManager.CurrentConversationIsFirst && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreedHero)
+		if ((PlayerIsBesieging() || PlayerIsBesieged()) && Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && !Campaign.Current.ConversationManager.CurrentConversationIsFirst && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero)
 		{
 			MBTextManager.SetTextVariable("STR_PARLEY_COMMENT", Campaign.Current.ConversationManager.FindMatchingTextOrNull("str_parley_comment", CharacterObject.OneToOneConversationCharacter));
 			return true;
@@ -1312,7 +1356,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_siege_parley_unmet_on_condition()
 	{
-		if ((PlayerIsBesieging() || PlayerIsBesieged()) && Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && Campaign.Current.ConversationManager.CurrentConversationIsFirst && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreedHero)
+		if ((PlayerIsBesieging() || PlayerIsBesieged()) && Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && Campaign.Current.ConversationManager.CurrentConversationIsFirst && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero)
 		{
 			MBTextManager.SetTextVariable("STR_PARLEY_COMMENT", Campaign.Current.ConversationManager.FindMatchingTextOrNull("str_parley_comment", CharacterObject.OneToOneConversationCharacter));
 			return true;
@@ -1493,35 +1537,34 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Campaign.Current.ConversationManager.CurrentConversationIsFirst && Hero.OneToOneConversationHero.IsMerchant)
 		{
-			TextObject empty = TextObject.Empty;
-			empty = ((Settlement.CurrentSettlement != Hero.OneToOneConversationHero.HomeSettlement) ? new TextObject("{=1Resf6O4}I am {CONVERSATION_HERO.FIRSTNAME}, a merchant. I trade out of {SETTLEMENT_STRING}. {BUSINESS_STRING}") : new TextObject("{=HfWBwR4v}I am {CONVERSATION_HERO.FIRSTNAME}, a merchant here in {SETTLEMENT_STRING}. {BUSINESS_STRING}"));
-			Hero.OneToOneConversationHero.SetPropertiesToTextObject(empty, "CONVERSATION_HERO");
-			empty.SetTextVariable("SETTLEMENT_STRING", Hero.OneToOneConversationHero.HomeSettlement.Name);
-			TextObject textObject = TextObject.Empty;
+			TextObject textObject = ((Settlement.CurrentSettlement != Hero.OneToOneConversationHero.HomeSettlement) ? new TextObject("{=1Resf6O4}I am {CONVERSATION_HERO.FIRSTNAME}, a merchant. I trade out of {SETTLEMENT_STRING}. {BUSINESS_STRING}") : new TextObject("{=HfWBwR4v}I am {CONVERSATION_HERO.FIRSTNAME}, a merchant here in {SETTLEMENT_STRING}. {BUSINESS_STRING}"));
+			Hero.OneToOneConversationHero.SetPropertiesToTextObject(textObject, "CONVERSATION_HERO");
+			textObject.SetTextVariable("SETTLEMENT_STRING", Hero.OneToOneConversationHero.HomeSettlement.Name);
+			TextObject textObject2 = TextObject.GetEmpty();
 			if (Hero.OneToOneConversationHero.HomeSettlement.IsTown)
 			{
 				_ = Hero.OneToOneConversationHero.HomeSettlement.Town;
-				IEnumerable<Workshop> enumerable = Hero.OneToOneConversationHero.OwnedWorkshops.DistinctBy((Workshop x) => x.WorkshopType);
+				IEnumerable<Workshop> enumerable = TaleWorlds.Core.Extensions.DistinctBy(Hero.OneToOneConversationHero.OwnedWorkshops, (Workshop x) => x.WorkshopType);
 				if (enumerable.Any())
 				{
 					List<TextObject> list = new List<TextObject>();
 					foreach (Workshop item in enumerable)
 					{
-						TextObject textObject2 = GameTexts.FindText("str_a_STR");
-						textObject2.SetTextVariable("STR", item.Name);
-						list.Add(textObject2);
+						TextObject textObject3 = GameTexts.FindText("str_a_STR");
+						textObject3.SetTextVariable("STR", item.Name);
+						list.Add(textObject3);
 					}
-					textObject = ((Settlement.CurrentSettlement != Hero.OneToOneConversationHero.HomeSettlement) ? new TextObject("{=b1vTr2wT}I own {STRING_UNTIL_NOW} there.") : new TextObject("{=aHjUgEur}I own {.%}{BUSINESS_LIST}{.%} here."));
+					textObject2 = ((Settlement.CurrentSettlement != Hero.OneToOneConversationHero.HomeSettlement) ? new TextObject("{=b1vTr2wT}I own {STRING_UNTIL_NOW} there.") : new TextObject("{=aHjUgEur}I own {.%}{BUSINESS_LIST}{.%} here."));
 					if (list.Count > 4)
 					{
 						list = list.GetRange(0, 3);
 						list.Add(new TextObject("{=CxavIji0}many more"));
 					}
-					textObject.SetTextVariable("BUSINESS_LIST", GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: true));
+					textObject2.SetTextVariable("BUSINESS_LIST", GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: true));
 				}
 			}
-			empty.SetTextVariable("BUSINESS_STRING", textObject);
-			MBTextManager.SetTextVariable("MERCHANT_INTRODUCTION_STRING", empty);
+			textObject.SetTextVariable("BUSINESS_STRING", textObject2);
+			MBTextManager.SetTextVariable("MERCHANT_INTRODUCTION_STRING", textObject);
 			return true;
 		}
 		return false;
@@ -1677,7 +1720,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		string stringId = Hero.OneToOneConversationHero.Template.StringId;
 		TextObject textObject = GameTexts.FindText("prebackstory", stringId);
-		MBTextManager.SetTextVariable("WANDERER_PREBACKSTORY", textObject ?? TextObject.Empty);
+		MBTextManager.SetTextVariable("WANDERER_PREBACKSTORY", textObject ?? TextObject.GetEmpty());
 		_previouslyMetWandererTemplates.TryGetValue(Hero.OneToOneConversationHero.Template, out var value);
 		if (value != null && value != Hero.OneToOneConversationHero.CharacterObject)
 		{
@@ -1810,7 +1853,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_lord_greets_under_24_hours_on_condition()
 	{
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
 		{
 			return false;
 		}
@@ -1826,7 +1869,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_lord_greets_over_24_hours_on_condition()
 	{
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero || Campaign.Current.CurrentConversationContext == ConversationContext.CapturedLord)
 		{
 			return false;
 		}
@@ -1851,56 +1894,20 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private bool conversation_lord_news_on_condition()
-	{
-		if (CharacterObject.OneToOneConversationCharacter.HeroObject != null)
-		{
-			if (Hero.OneToOneConversationHero.MapFaction != Hero.MainHero.MapFaction)
-			{
-				return !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	public bool conversation_lord_answers_war_question_about_faction_on_condition()
-	{
-		MBTextManager.SetTextVariable("FACTION_NAME", _askedFaction.Name);
-		return true;
-	}
-
-	public void conversation_lord_answers_the_war_question_on_consequence()
-	{
-		ConversationSentence.SetObjectsToRepeatOver(Kingdom.All);
-	}
-
-	public bool conversation_lord_talk_ask_about_war_2_on_condition()
-	{
-		Clan clan = ConversationSentence.CurrentProcessedRepeatObject as Clan;
-		if (clan != Hero.OneToOneConversationHero.MapFaction && FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, clan))
-		{
-			MBTextManager.SetTextVariable("FACTION_NAME", clan.Name);
-			return true;
-		}
-		return false;
-	}
-
-	public void conversation_lord_talk_ask_about_war_2_on_consequence()
-	{
-		_askedFaction = ConversationSentence.CurrentProcessedRepeatObject as Clan;
-	}
-
 	private bool conversation_hero_main_options_have_issue_on_condition()
 	{
-		if (Hero.OneToOneConversationHero == null || Hero.OneToOneConversationHero.IsPrisoner)
+		if (Hero.OneToOneConversationHero != null && !Hero.OneToOneConversationHero.IsPrisoner && !MobileParty.MainParty.IsInRaftState)
 		{
-			return false;
-		}
-		IssueBase issue = Hero.OneToOneConversationHero.Issue;
-		if (Hero.OneToOneConversationHero != null && issue != null)
-		{
-			return issue.IsOngoingWithoutQuest;
+			MobileParty conversationParty = MobileParty.ConversationParty;
+			if (conversationParty == null || !conversationParty.IsInRaftState)
+			{
+				IssueBase issue = Hero.OneToOneConversationHero.Issue;
+				if (Hero.OneToOneConversationHero != null && issue != null)
+				{
+					return issue.IsOngoingWithoutQuest;
+				}
+				return false;
+			}
 		}
 		return false;
 	}
@@ -1910,7 +1917,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		Hero hero = Hero.OneToOneConversationHero;
 		Campaign.Current.IssueManager.Issues.TryGetValue(hero, out var value);
 		QuestBase questBase = Campaign.Current.QuestManager.Quests.FirstOrDefault((QuestBase x) => x.QuestGiver == hero || x.IsTracked(hero));
-		hint = TextObject.Empty;
 		if (value != null)
 		{
 			hint = value.Title;
@@ -1919,19 +1925,31 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			hint = questBase.Title;
 		}
+		else
+		{
+			hint = null;
+		}
 		return true;
 	}
 
 	private bool conversation_lord_task_given_on_condition()
 	{
-		if (!Hero.OneToOneConversationHero.IsPrisoner && Campaign.Current.QuestManager.IsQuestGiver(Hero.OneToOneConversationHero))
+		if (!MobileParty.MainParty.IsInRaftState)
 		{
-			foreach (QuestBase questGiverQuest in Campaign.Current.QuestManager.GetQuestGiverQuests(Hero.OneToOneConversationHero))
+			MobileParty conversationParty = MobileParty.ConversationParty;
+			if (conversationParty == null || !conversationParty.IsInRaftState)
 			{
-				if (!questGiverQuest.IsSpecialQuest)
+				if (!Hero.OneToOneConversationHero.IsPrisoner && Campaign.Current.QuestManager.IsQuestGiver(Hero.OneToOneConversationHero))
 				{
-					return questGiverQuest.IsThereDiscussDialogFlow;
+					foreach (QuestBase questGiverQuest in Campaign.Current.QuestManager.GetQuestGiverQuests(Hero.OneToOneConversationHero))
+					{
+						if (!questGiverQuest.IsSpecialQuest)
+						{
+							return questGiverQuest.IsThereDiscussDialogFlow;
+						}
+					}
 				}
+				return false;
 			}
 		}
 		return false;
@@ -1939,10 +1957,18 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_lord_task_given_alternative_on_condition()
 	{
-		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
-		if (oneToOneConversationHero != null && oneToOneConversationHero.Issue?.IsSolvingWithAlternative == true)
+		if (!MobileParty.MainParty.IsInRaftState)
 		{
-			return Hero.OneToOneConversationHero.Issue.IsThereDiscussDialogFlow;
+			MobileParty conversationParty = MobileParty.ConversationParty;
+			if (conversationParty == null || !conversationParty.IsInRaftState)
+			{
+				Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+				if (oneToOneConversationHero != null && oneToOneConversationHero.Issue?.IsSolvingWithAlternative == true)
+				{
+					return Hero.OneToOneConversationHero.Issue.IsThereDiscussDialogFlow;
+				}
+				return false;
+			}
 		}
 		return false;
 	}
@@ -2043,7 +2069,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 				return false;
 			}
 		}
-		hint = TextObject.Empty;
+		hint = null;
 		return true;
 	}
 
@@ -2114,9 +2140,9 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public bool conversation_lord_is_threated_neutral_on_condition()
 	{
-		if (CharacterObject.OneToOneConversationCharacter.IsHero && !CharacterObject.OneToOneConversationCharacter.HeroObject.IsPrisoner && Campaign.Current.CurrentConversationContext == ConversationContext.PartyEncounter && Settlement.CurrentSettlement == null && CharacterObject.OneToOneConversationCharacter.IsHero && !CharacterObject.OneToOneConversationCharacter.HeroObject.IsPlayerCompanion)
+		if (CharacterObject.OneToOneConversationCharacter.IsHero && !CharacterObject.OneToOneConversationCharacter.HeroObject.IsPrisoner && Campaign.Current.CurrentConversationContext == ConversationContext.PartyEncounter && Settlement.CurrentSettlement == null && CharacterObject.OneToOneConversationCharacter.IsHero && !CharacterObject.OneToOneConversationCharacter.HeroObject.IsPlayerCompanion && FactionManager.IsNeutralWithFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
 		{
-			return FactionManager.IsNeutralWithFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction);
+			return !MobileParty.MainParty.IsInRaftState;
 		}
 		return false;
 	}
@@ -2128,7 +2154,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			return false;
 		}
-		hint = TextObject.Empty;
+		hint = null;
 		return true;
 	}
 
@@ -2191,11 +2217,15 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public bool conversation_player_is_leaving_faction_on_condition()
 	{
-		if (CharacterObject.OneToOneConversationCharacter.IsHero && Hero.OneToOneConversationHero.MapFaction != null && MobileParty.MainParty.Army == null && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && Hero.OneToOneConversationHero.MapFaction.Leader == Hero.OneToOneConversationHero && Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction)
+		if (CharacterObject.OneToOneConversationCharacter.IsHero && Hero.OneToOneConversationHero.MapFaction != null && MobileParty.MainParty.Army == null && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && Hero.OneToOneConversationHero.MapFaction.Leader == Hero.OneToOneConversationHero && Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction && !MobileParty.MainParty.IsInRaftState)
 		{
-			Hero.OneToOneConversationHero.SetTextVariables();
-			MBTextManager.SetTextVariable("LORD_SALUTATION", GameTexts.FindText(CharacterObject.OneToOneConversationCharacter.IsFemale ? "str_player_salutation_my_lady" : "str_player_salutation_my_lord"));
-			return true;
+			MobileParty conversationParty = MobileParty.ConversationParty;
+			if (conversationParty != null && !conversationParty.IsInRaftState)
+			{
+				Hero.OneToOneConversationHero.SetTextVariables();
+				MBTextManager.SetTextVariable("LORD_SALUTATION", GameTexts.FindText(CharacterObject.OneToOneConversationCharacter.IsFemale ? "str_player_salutation_my_lady" : "str_player_salutation_my_lord"));
+				return true;
+			}
 		}
 		return false;
 	}
@@ -2214,7 +2244,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		List<IFaction> playerWars;
 		List<IFaction> warsOfFactionToJoin;
 		bool num = FactionHelper.CanPlayerOfferMercenaryService((Kingdom)Hero.OneToOneConversationHero.MapFaction, out playerWars, out warsOfFactionToJoin);
-		hintText = new TextObject();
 		if (!num)
 		{
 			if (Clan.PlayerClan.Tier < Campaign.Current.Models.ClanTierModel.MercenaryEligibleTier)
@@ -2242,7 +2271,9 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 			hintText.SetTextVariable("KINGDOM", Hero.OneToOneConversationHero.MapFaction.Name);
 			hintText.SetCharacterProperties("HERO", Hero.OneToOneConversationHero.CharacterObject);
 			hintText.SetTextVariable("newline", "\n");
+			return num;
 		}
+		hintText = null;
 		return num;
 	}
 
@@ -2261,7 +2292,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		List<IFaction> playerWars;
 		List<IFaction> warsOfFactionToJoin;
 		bool num = FactionHelper.CanPlayerOfferVassalage((Kingdom)Hero.OneToOneConversationHero.MapFaction, out playerWars, out warsOfFactionToJoin);
-		hintText = new TextObject();
 		if (!num)
 		{
 			if (Hero.OneToOneConversationHero.MapFaction.Leader != Hero.OneToOneConversationHero)
@@ -2289,7 +2319,9 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 			hintText.SetTextVariable("KINGDOM", Hero.OneToOneConversationHero.MapFaction.InformalName);
 			hintText.SetCharacterProperties("HERO", Hero.OneToOneConversationHero.CharacterObject);
 			hintText.SetTextVariable("newline", "\n");
+			return num;
 		}
+		hintText = null;
 		return num;
 	}
 
@@ -2314,6 +2346,10 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			MBTextManager.SetTextVariable("VASSALAGE_REJECTION", "{=NuaqWqze}You have yet to show yourself a competent leader of men, {PLAYER.NAME}. Prove yourself against my enemies, and I would be glad to have you as a vassal and entrust you with a fief of your own.");
 		}
+		else if (Hero.OneToOneConversationHero.Culture.StringId == "nord")
+		{
+			MBTextManager.SetTextVariable("VASSALAGE_REJECTION", "{=ma3WqJte}You have yet to show yourself a competent leader of men, {PLAYER.NAME}. Do deeds worthy of the name and you may become one of my jarls, and be given lands in my kingdom to protect and govern.");
+		}
 		else
 		{
 			MBTextManager.SetTextVariable("VASSALAGE_REJECTION", "{=sG9bKLdg}We welcome valiant warriors into our people, {PLAYER.NAME}, but you must prove yourself. Take your sword to my enemies and make a name for yourself, and we will formally adopt you as one of us. You may be given lands to protect and can speak at our councils.");
@@ -2335,18 +2371,51 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.MapFaction.Leader != Hero.OneToOneConversationHero)
 		{
 			Hero leader = Hero.OneToOneConversationHero.MapFaction.Leader;
-			Settlement closestSettlement = HeroHelper.GetClosestSettlement(leader);
-			if (closestSettlement != null)
+			TextObject textObject = new TextObject("{=I3CtOQ35}You would need to talk to our leader {KING.LINK} on this matter. {EXPLANATION_DETAIL}");
+			textObject.SetCharacterProperties("KING", leader.CharacterObject);
+			TextObject textObject2;
+			if (CanPlayerTalkWithKingdomLeaderNowForVassalage(leader, out var closestSettlementToKingdomLeader))
 			{
-				leader.UpdateLastKnownClosestSettlement(closestSettlement);
+				textObject2 = new TextObject("{=M5cbEb0v}{?KING.GENDER}She{?}He{\\?} is {?IS_PRISONED}unfortunately held captive{?}currently{\\?} {?IS_IN_SETTLEMENT}at{?}near{\\?} {SETTLEMENT}.");
+				textObject2.SetTextVariable("IS_PRISONED", leader.IsPrisoner ? 1 : 0);
+				textObject2.SetTextVariable("IS_IN_SETTLEMENT", (leader.CurrentSettlement == closestSettlementToKingdomLeader) ? 1 : 0);
+				textObject2.SetTextVariable("SETTLEMENT", closestSettlementToKingdomLeader.EncyclopediaLinkWithName);
 			}
-			MBTextManager.SetTextVariable("IS_PRISONED", leader.IsPrisoner ? 1 : 0);
-			MBTextManager.SetTextVariable("IS_IN_SETTLEMENT", (leader.CurrentSettlement == leader.LastKnownClosestSettlement) ? 1 : 0);
-			MBTextManager.SetTextVariable("SETTLEMENT", leader.LastKnownClosestSettlement.EncyclopediaLinkWithName);
-			StringHelpers.SetCharacterProperties("KING", leader.CharacterObject);
+			else
+			{
+				textObject2 = new TextObject("{=LxilbJi5}{?KING.GENDER}She{?}He{\\?} is recovering from {?KING.GENDER}her{?}his{\\?} injuries, and it may be a while before {?KING.GENDER}she{?}he{\\?} can attend to matters of state.");
+			}
+			textObject.SetTextVariable("EXPLANATION_DETAIL", textObject2);
+			MBTextManager.SetTextVariable("VASSALAGE_CONVERSATION_EXPLANATION", textObject);
 			return true;
 		}
 		return false;
+	}
+
+	private bool lord_ask_enter_service_vassalage_player_response_on_condition()
+	{
+		TextObject textObject;
+		if (CanPlayerTalkWithKingdomLeaderNowForVassalage(Hero.OneToOneConversationHero.MapFaction.Leader, out var _))
+		{
+			textObject = new TextObject("{=SvGFarpZ}Then I will find and talk to {KING.LINK}.");
+			textObject.SetCharacterProperties("KING", Hero.OneToOneConversationHero.MapFaction.Leader.CharacterObject);
+		}
+		else
+		{
+			textObject = new TextObject("{=c1bbO8YD}Very well. I shall ask again later.");
+		}
+		MBTextManager.SetTextVariable("VASSAL_CONVERSATION_PLAYER_RESPONSE", textObject);
+		return true;
+	}
+
+	private static bool CanPlayerTalkWithKingdomLeaderNowForVassalage(Hero kingdomLeader, out Settlement closestSettlementToKingdomLeader)
+	{
+		closestSettlementToKingdomLeader = HeroHelper.GetClosestSettlement(kingdomLeader);
+		if (closestSettlementToKingdomLeader != null && kingdomLeader.HasMet)
+		{
+			kingdomLeader.UpdateLastKnownClosestSettlement(closestSettlementToKingdomLeader);
+		}
+		return closestSettlementToKingdomLeader != null;
 	}
 
 	public bool lord_ask_enter_service_vassalage_talking_with_king_on_condition()
@@ -2491,10 +2560,10 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 				ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(Hero.OneToOneConversationHero.Clan);
 			}
 		}
-		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Hero.OneToOneConversationHero.Clan, (Kingdom)Hero.MainHero.MapFaction, num);
+		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Hero.OneToOneConversationHero.Clan, (Kingdom)Hero.MainHero.MapFaction, default(CampaignTime), num);
 		if (Hero.OneToOneConversationHero.PartyBelongedTo != null && Hero.OneToOneConversationHero.PartyBelongedTo.CurrentSettlement == null)
 		{
-			Hero.OneToOneConversationHero.PartyBelongedTo.Ai.SetMoveModeHold();
+			Hero.OneToOneConversationHero.PartyBelongedTo.SetMoveModeHold();
 		}
 	}
 
@@ -2541,22 +2610,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(Hero.MainHero.Clan);
 	}
 
-	public bool conversation_player_ask_to_claim_land_on_condition()
-	{
-		if (Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction && !Hero.OneToOneConversationHero.IsPrisoner)
-		{
-			foreach (Settlement item in Settlement.All)
-			{
-				if (item.CanBeClaimed == 1 && item.ClaimedBy != Hero.MainHero)
-				{
-					MBTextManager.SetTextVariable("SETTLEMENT", item.Name);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	public static bool player_ask_to_join_players_party_on_condition()
 	{
 		if (Hero.OneToOneConversationHero.PartyBelongedTo == null && !Hero.OneToOneConversationHero.IsPrisoner && Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner == null)
@@ -2588,7 +2641,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		float partySizeScore = Campaign.Current.Models.ArmyManagementCalculationModel.GetPartySizeScore(Hero.OneToOneConversationHero.PartyBelongedTo);
 		if (Hero.MainHero.Clan.Influence >= (float)num && partySizeScore > 0.4f)
 		{
-			explanation = TextObject.Empty;
+			explanation = null;
 			return true;
 		}
 		if (partySizeScore <= 0.4f)
@@ -2600,14 +2653,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	public static void player_ask_to_join_players_party_on_consequence()
-	{
-		Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
-		{
-			AddHeroToPartyAction.Apply(Hero.OneToOneConversationHero, MobileParty.MainParty);
-		};
-	}
-
 	private bool conversation_player_wants_to_make_peace_on_condition()
 	{
 		return FactionManager.IsAtWarAgainstFaction(Hero.MainHero.MapFaction, Hero.OneToOneConversationHero.MapFaction);
@@ -2615,8 +2660,8 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_player_wants_to_make_peace_answer_on_condition()
 	{
-		TextObject textObject = TextObject.Empty;
 		_willDoPeaceBarter = false;
+		TextObject textObject;
 		if (Hero.OneToOneConversationHero.Clan.IsRebelClan && Hero.OneToOneConversationHero.Clan.IsAtWarWith(Hero.MainHero.MapFaction))
 		{
 			textObject = new TextObject("{=lH3cgbVX}We will not sign a peace until we are recognized by all the kingdoms of Calradia.");
@@ -2626,7 +2671,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 			textObject = new TextObject("{=bdetTQa6}We are only mercenaries serving under {EMPLOYER_FACTION_INFORMAL_NAME}. We cannot negotiate peace on behalf of our employers.");
 			textObject.SetTextVariable("EMPLOYER_FACTION_INFORMAL_NAME", Hero.OneToOneConversationHero.Clan.Kingdom.InformalName);
 		}
-		else if (Hero.OneToOneConversationHero.Clan.IsMinorFaction && Hero.OneToOneConversationHero.MapFaction.GetStanceWith(Hero.MainHero.MapFaction).IsAtConstantWar)
+		else if (Hero.OneToOneConversationHero.Clan.IsMinorFaction && Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
 		{
 			textObject = new TextObject("{=VWoHoUin}There will be no peace between us and the {ENEMY_INFORMAL_NAME}, any more than the wolf makes peace with the sheep.");
 			textObject.SetTextVariable("ENEMY_INFORMAL_NAME", Hero.MainHero.MapFaction.InformalName);
@@ -2646,6 +2691,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
+			textObject = TextObject.GetEmpty();
 			_willDoPeaceBarter = true;
 		}
 		MBTextManager.SetTextVariable("LORD_PEACE_OFFER_ANSWER", textObject);
@@ -2664,195 +2710,11 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		_willDoPeaceBarter = false;
 	}
 
-	public static bool conversation_player_ask_to_claim_land_answer_on_condition()
-	{
-		if (Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction)
-		{
-			int num = 1;
-			foreach (Settlement item in Settlement.All)
-			{
-				if (item.OwnerClan.Leader == Hero.MainHero)
-				{
-					num += ((!item.IsTown) ? 1 : 3);
-				}
-			}
-			foreach (Settlement item2 in Settlement.All)
-			{
-				if (item2.CanBeClaimed == 1)
-				{
-					MBTextManager.SetTextVariable("VALUE", item2.ClaimValue * (float)num);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	public bool conversation_player_ask_to_claim_land_answer_ok_on_condition()
-	{
-		if (Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction)
-		{
-			int num = 1;
-			foreach (Settlement item in Settlement.All)
-			{
-				if (item.OwnerClan.Leader == Hero.MainHero)
-				{
-					num += ((!item.IsTown) ? 1 : 3);
-				}
-			}
-			int num2 = 0;
-			foreach (Settlement item2 in Settlement.All)
-			{
-				if (item2.CanBeClaimed == 1)
-				{
-					MBTextManager.SetTextVariable("VALUE", (int)(item2.ClaimValue * (float)num));
-					num2 = (int)(item2.ClaimValue * (float)num);
-				}
-			}
-			if (Hero.MainHero.Clan.Influence > (float)num2)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void conversation_player_ask_to_claim_land_answer_on_consequence()
-	{
-		if (Hero.MainHero.MapFaction != Hero.OneToOneConversationHero.MapFaction)
-		{
-			return;
-		}
-		int num = 1;
-		foreach (Settlement item in Settlement.All)
-		{
-			if (item.OwnerClan.Leader == Hero.MainHero)
-			{
-				num += ((!item.IsTown) ? 1 : 3);
-			}
-		}
-		foreach (Settlement item2 in Settlement.All)
-		{
-			if (item2.CanBeClaimed == 1)
-			{
-				item2.ClaimedBy = Hero.MainHero;
-				item2.ClaimValue = (int)(item2.ClaimValue / (float)num);
-				ChangeClanInfluenceAction.Apply(Clan.PlayerClan, 0f - item2.ClaimValue);
-			}
-		}
-	}
-
 	public void conversation_mercenary_player_accepts_lord_answer_on_consequence()
 	{
 		int mercenaryAwardFactor = GetMercenaryAwardFactor();
-		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Clan.PlayerClan, Hero.OneToOneConversationHero.Clan.Kingdom, mercenaryAwardFactor);
+		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Clan.PlayerClan, Hero.OneToOneConversationHero.Clan.Kingdom, default(CampaignTime), mercenaryAwardFactor);
 		GainKingdomInfluenceAction.ApplyForJoiningFaction(Hero.MainHero, 5f);
-	}
-
-	public bool conversation_player_makes_faction_order()
-	{
-		MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-		if (partyBelongedTo != null && partyBelongedTo.MapFaction == MobileParty.MainParty.MapFaction && (partyBelongedTo.Army == null || partyBelongedTo.Army.LeaderParty == partyBelongedTo))
-		{
-			return !Hero.OneToOneConversationHero.IsPlayerCompanion;
-		}
-		return false;
-	}
-
-	public bool conversation_player_wants_to_do_operation_on_condition()
-	{
-		HeroHelper.SetPlayerSalutation();
-		if (Hero.OneToOneConversationHero != null && !Hero.OneToOneConversationHero.IsPlayerCompanion)
-		{
-			return false;
-		}
-		if (Settlement.CurrentSettlement != null)
-		{
-			return Settlement.CurrentSettlement.IsTown;
-		}
-		return false;
-	}
-
-	public bool conversation_set_player_salutation()
-	{
-		HeroHelper.SetPlayerSalutation();
-		return true;
-	}
-
-	public bool conversation_player_plans_never_mind_on_condition()
-	{
-		return true;
-	}
-
-	public bool conversation_player_ask_lords_to_follow_him_on_condition()
-	{
-		MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-		if (partyBelongedTo != null && (partyBelongedTo.IsLordParty || partyBelongedTo.IsMilitia) && !partyBelongedTo.IsDisbanding && partyBelongedTo.MapFaction == MobileParty.MainParty.MapFaction && partyBelongedTo.CurrentSettlement == null && partyBelongedTo.Army == null && partyBelongedTo.DefaultBehavior != AiBehavior.EscortParty && partyBelongedTo.TargetParty != MobileParty.MainParty && (partyBelongedTo.Army == null || partyBelongedTo.Army.LeaderParty != partyBelongedTo))
-		{
-			Number number = new Number(5);
-			float num = (Hero.OneToOneConversationHero.IsFriend(Hero.MainHero) ? 1f : (Hero.OneToOneConversationHero.IsEnemy(Hero.MainHero) ? 3f : 2f));
-			num *= ((Hero.OneToOneConversationHero.PartyBelongedTo.Army != null) ? 3f : 1f);
-			MBTextManager.SetTextVariable("AMOUNT", number.Value * (int)num);
-			return !(Hero.MainHero.Clan.Influence < (float)number.Value * num);
-		}
-		return false;
-	}
-
-	public bool conversation_player_ask_lords_to_follow_him_already_at_army_on_condition()
-	{
-		MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-		if (partyBelongedTo != null && partyBelongedTo.MapFaction == MobileParty.MainParty.MapFaction && partyBelongedTo.Army != null && partyBelongedTo.Army.LeaderParty != partyBelongedTo)
-		{
-			MBTextManager.SetTextVariable("ESCORTING_PARTY", partyBelongedTo.Army.LeaderParty);
-			return true;
-		}
-		return false;
-	}
-
-	public bool conversation_player_ask_lords_to_create_army_on_condition()
-	{
-		return false;
-	}
-
-	public void conversation_player_ask_lords_to_follow_him_already_at_army_on_consequence()
-	{
-		new Army((Kingdom)MobileParty.MainParty.MapFaction, MobileParty.MainParty, Army.ArmyTypes.Patrolling)
-		{
-			AIBehavior = Army.AIBehaviorFlags.Gathering,
-			AiBehaviorObject = MobileParty.MainParty
-		};
-	}
-
-	public bool conversation_how_many_days_to_escort_condition()
-	{
-		if (ConversationSentence.CurrentProcessedRepeatObject is Number number)
-		{
-			float num = (Hero.OneToOneConversationHero.IsFriend(Hero.MainHero) ? 1f : (Hero.OneToOneConversationHero.IsEnemy(Hero.MainHero) ? 3f : 2f));
-			num *= ((Hero.OneToOneConversationHero.PartyBelongedTo.Army != null) ? 3f : 1f);
-			MBTextManager.SetTextVariable("NUMBER_OF_DAYS", number.Value);
-			MBTextManager.SetTextVariable("AMOUNT", number.Value * (int)num);
-			if (Hero.MainHero.Clan.Influence < (float)number.Value * num)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public void conversation_how_many_days_to_escort_on_consqeuence()
-	{
-		MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-		if (partyBelongedTo != null)
-		{
-			Number number = new Number(10);
-			partyBelongedTo.Ai.SetInitiative(0f, 0f, 24 * number.Value);
-			partyBelongedTo.Ai.SetMoveEscortParty(MobileParty.MainParty);
-			PlayerEncounter.LeaveEncounter = true;
-		}
-	}
-
-	public void conversation_player_ask_lords_to_follow_him_on_consequence()
-	{
 	}
 
 	private bool conversation_player_ask_prisoners_on_condition()
@@ -2899,7 +2761,16 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	private void lord_talk_to_selected_prisoner_on_consequence()
 	{
-		CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter), new ConversationCharacterData(_selectedPrisoner.CharacterObject, _selectedPrisoner.PartyBelongedToAsPrisoner, noHorse: false, noWeapon: true, spawnAfterFight: false, isCivilianEquipmentRequiredForLeader: true));
+		ConversationCharacterData playerCharacterData = new ConversationCharacterData(CharacterObject.PlayerCharacter, PartyBase.MainParty);
+		ConversationCharacterData conversationPartnerData = new ConversationCharacterData(_selectedPrisoner.CharacterObject, _selectedPrisoner.PartyBelongedToAsPrisoner, noHorse: false, noWeapon: true, spawnAfterFight: false, isCivilianEquipmentRequiredForLeader: true);
+		if (PartyBase.MainParty.MobileParty.IsCurrentlyAtSea)
+		{
+			CampaignMission.OpenConversationMission(playerCharacterData, conversationPartnerData);
+		}
+		else
+		{
+			CampaignMapConversation.OpenConversation(playerCharacterData, conversationPartnerData);
+		}
 	}
 
 	private void conversation_player_ask_prisoners_list_on_consequence()
@@ -2919,6 +2790,11 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	public bool conversation_hero_main_options_discussions()
 	{
 		if (Hero.OneToOneConversationHero == null || Hero.OneToOneConversationHero.IsNotable || Hero.OneToOneConversationHero.IsWanderer || Hero.OneToOneConversationHero.Occupation == Occupation.Special)
+		{
+			return false;
+		}
+		MobileParty conversationParty = MobileParty.ConversationParty;
+		if ((conversationParty != null && conversationParty.IsInRaftState) || MobileParty.MainParty.IsInRaftState)
 		{
 			return false;
 		}
@@ -2989,6 +2865,15 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.IsPrisoner)
 		{
 			return FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction);
+		}
+		return false;
+	}
+
+	public bool conversation_cheat_lord_diagnostics_on_condition()
+	{
+		if (debug_mode_enabled_condition())
+		{
+			return Hero.OneToOneConversationHero.MapFaction != null;
 		}
 		return false;
 	}
@@ -3100,7 +2985,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public bool conversation_liberate_known_hero_on_condition()
 	{
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero && !Campaign.Current.ConversationManager.CurrentConversationIsFirst && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero && !Campaign.Current.ConversationManager.CurrentConversationIsFirst && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && Hero.OneToOneConversationHero.HasMet)
 		{
 			return true;
 		}
@@ -3109,7 +2994,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public bool conversation_liberate_unmet_hero_on_condition()
 	{
-		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreedHero && Campaign.Current.ConversationManager.CurrentConversationIsFirst && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord)
+		if (Campaign.Current.CurrentConversationContext == ConversationContext.FreeOrCapturePrisonerHero && !Campaign.Current.ConversationManager.CurrentConversationIsFirst && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && !Hero.OneToOneConversationHero.HasMet)
 		{
 			return true;
 		}
@@ -3147,7 +3032,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.OneToOneConversationHero.IsPrisoner)
 		{
-			EndCaptivityAction.ApplyByReleasedByChoice(Hero.OneToOneConversationHero);
 			TakePrisonerAction.Apply(PartyBase.MainParty, Hero.OneToOneConversationHero);
 		}
 	}
@@ -3193,7 +3077,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public void conversation_talk_lord_defeat_to_lord_capture_and_kill_on_consequence()
 	{
-		KillCharacterAction.ApplyByExecution(Hero.OneToOneConversationHero, Hero.MainHero);
+		MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(Hero.MainHero, Hero.OneToOneConversationHero));
 	}
 
 	public bool conversation_talk_lord_release_noncombatant_on_condition()
@@ -3216,10 +3100,18 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 
 	public bool conversation_player_ask_ruling_philosophy_on_condition()
 	{
-		if (Hero.OneToOneConversationHero.IsLord && !Hero.OneToOneConversationHero.MapFaction.IsMinorFaction && GetConversationHeroPoliticalPhilosophy(out var philosophyString))
+		if (!MobileParty.MainParty.IsInRaftState)
 		{
-			MBTextManager.SetTextVariable("RULING_PHILOSOPHY", philosophyString);
-			return true;
+			MobileParty conversationParty = MobileParty.ConversationParty;
+			if (conversationParty == null || !conversationParty.IsInRaftState)
+			{
+				if (Hero.OneToOneConversationHero.IsLord && !Hero.OneToOneConversationHero.MapFaction.IsMinorFaction && GetConversationHeroPoliticalPhilosophy(out var philosophyString))
+				{
+					MBTextManager.SetTextVariable("RULING_PHILOSOPHY", philosophyString);
+					return true;
+				}
+				return false;
+			}
 		}
 		return false;
 	}
@@ -3317,7 +3209,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		int mercenaryWageAmount = Campaign.Current.KingdomManager.GetMercenaryWageAmount(Hero.MainHero);
 		GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, mercenaryWageAmount);
-		Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewDay = Campaign.CurrentTime + 720f;
+		Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewalDay = Campaign.CurrentTime + 30f * (float)CampaignTime.HoursInDay;
 		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Hero.MainHero.Clan, Hero.OneToOneConversationHero.Clan.Kingdom);
 	}
 
@@ -3543,7 +3435,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero.IsActive)
 		{
 			MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Besieger && partyBelongedTo.Army.AIBehavior == Army.AIBehaviorFlags.WaitingForArmyMembers)
+			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Besieger && partyBelongedTo.Army.IsWaitingForArmyMembers())
 			{
 				MBTextManager.SetTextVariable("BESIEGED_TOWN", partyBelongedTo.Army.AiBehaviorObject.Name);
 				return true;
@@ -3557,7 +3449,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero.IsActive)
 		{
 			MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Defender && partyBelongedTo.Army.AIBehavior == Army.AIBehaviorFlags.WaitingForArmyMembers)
+			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Defender && partyBelongedTo.Army.IsWaitingForArmyMembers())
 			{
 				MBTextManager.SetTextVariable("DEFENDED_TOWN", partyBelongedTo.Army.AiBehaviorObject.Name);
 				return true;
@@ -3592,7 +3484,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero.IsActive)
 		{
 			MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Raider && partyBelongedTo.Army.AIBehavior == Army.AIBehaviorFlags.WaitingForArmyMembers)
+			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.ArmyType == Army.ArmyTypes.Raider && partyBelongedTo.Army.IsWaitingForArmyMembers())
 			{
 				MBTextManager.SetTextVariable("RAIDED_VILLAGE", partyBelongedTo.Army.AiBehaviorObject.Name);
 				return true;
@@ -3606,7 +3498,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero.IsActive)
 		{
 			MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
-			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.AIBehavior == Army.AIBehaviorFlags.Gathering)
+			if (partyBelongedTo != null && partyBelongedTo.Army != null && partyBelongedTo.Army.IsWaitingForArmyMembers())
 			{
 				MBTextManager.SetTextVariable("GATHERING_SETTLEMENT", partyBelongedTo.Army.AiBehaviorObject.Name);
 				return true;
@@ -3677,63 +3569,6 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 			}
 		}
 		return result;
-	}
-
-	public bool conversation_lord_answers_the_location_on_condition()
-	{
-		List<Settlement> list = Campaign.Current.Settlements.Where((Settlement settlement) => settlement.IsTown || settlement.IsVillage).ToList();
-		bool flag = false;
-		Settlement settlement2 = list[0];
-		float maximumDistance = 1000f;
-		MobileParty partyBelongedTo = ConversationHelper.AskedLord.HeroObject.PartyBelongedTo;
-		StringHelpers.SetCharacterProperties("ASKED_LORD", ConversationHelper.AskedLord);
-		if (partyBelongedTo != null)
-		{
-			foreach (Settlement item in list)
-			{
-				foreach (MobileParty party in item.Parties)
-				{
-					if (party.LeaderHero?.CharacterObject == ConversationHelper.AskedLord)
-					{
-						flag = true;
-						MBTextManager.SetTextVariable("TOWN_NAME", item.Name);
-						break;
-					}
-				}
-				if (flag)
-				{
-					break;
-				}
-				if (Campaign.Current.Models.MapDistanceModel.GetDistance(ConversationHelper.AskedLord.HeroObject.PartyBelongedTo, item, maximumDistance, out var distance))
-				{
-					settlement2 = item;
-					maximumDistance = distance;
-				}
-			}
-			if (flag)
-			{
-				MBTextManager.SetTextVariable("LORD_ANSWER", GameTexts.FindText("str_he_is_currently_at_town_name"));
-			}
-			else
-			{
-				MBTextManager.SetTextVariable("SETTLEMENT_NAME", settlement2.Name);
-				MBTextManager.SetTextVariable("LORD_ANSWER", GameTexts.FindText("str_he_is_in_the_field"));
-			}
-		}
-		else if (ConversationHelper.AskedLord.HeroObject.IsPrisoner)
-		{
-			StringHelpers.SetCharacterProperties("PRISON_PARTY_LEADER", ConversationHelper.GetConversationCharacterPartyLeader(ConversationHelper.AskedLord.HeroObject.PartyBelongedToAsPrisoner));
-			MBTextManager.SetTextVariable("LORD_ANSWER", GameTexts.FindText("str_he_is_prisoner_at"));
-		}
-		else if (ConversationHelper.AskedLord.HeroObject.IsFugitive)
-		{
-			MBTextManager.SetTextVariable("LORD_ANSWER", GameTexts.FindText("str_he_is_fugitive"));
-		}
-		else
-		{
-			MBTextManager.SetTextVariable("LORD_ANSWER", GameTexts.FindText("str_i_do_not_know_where_he_is"));
-		}
-		return true;
 	}
 
 	public bool conversation_lord_give_oath_1_player_answer_1_on_condition()
@@ -3894,6 +3729,10 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			MBTextManager.SetTextVariable("PLAYER_ACCEPTED_AS_VASSAL", "{=dhi3ggBC}Let it be known that you are one of the Battanians. You may till our soil and sit in our councils. Who quarrels with you, quarrels with all of us.");
 		}
+		else if (Hero.OneToOneConversationHero.Culture.StringId == "nord")
+		{
+			MBTextManager.SetTextVariable("PLAYER_ACCEPTED_AS_VASSAL", "{=SiB5fZTv}I take this oath upon my blade: Let it be known that you are my sworn {?PLAYER.GENDER}follower{?}man{\\?}. You shall join my fellowship of warriors and have your place in my hall. Should I prove unworthy, I shall not forbid you from leaving my service.");
+		}
 		else
 		{
 			MBTextManager.SetTextVariable("PLAYER_ACCEPTED_AS_VASSAL", "{=xd0MAjMf}Let it be known that you are one of us. We shall defend your rights as you defend ours. You may be granted lands in our domains and the authority to judge disputes.");
@@ -3905,13 +3744,13 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.MainHero.Clan.Kingdom == Hero.OneToOneConversationHero.Clan.Kingdom)
 		{
-			Hero.MainHero.Clan.EndMercenaryService(isByLeavingKingdom: false);
+			EndMercenaryServiceAction.EndByBecomingVassal(Hero.MainHero.Clan);
 		}
 		else
 		{
 			if (Clan.PlayerClan.IsUnderMercenaryService)
 			{
-				Hero.MainHero.Clan.EndMercenaryService(isByLeavingKingdom: true);
+				EndMercenaryServiceAction.EndByLeavingKingdom(Hero.MainHero.Clan);
 			}
 			ChangeKingdomAction.ApplyByJoinToKingdom(Hero.MainHero.Clan, Hero.OneToOneConversationHero.Clan.Kingdom);
 		}
@@ -3957,17 +3796,17 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		{
 			PlayerEncounter.LeaveEncounter = true;
 		}
-		else if (Game.Current.GameStateManager.ActiveState.Predecessor is MapState { MenuContext: not null } mapState)
+		else
 		{
-			mapState.ExitMenuMode();
+			GameMenu.ExitToLast();
 		}
 	}
 
 	private void ReceiveVassalRewards()
 	{
 		VassalRewardsModel vassalRewardsModel = Campaign.Current.Models.VassalRewardsModel;
-		InventoryManager.OpenScreenAsReceiveItems(vassalRewardsModel.GetEquipmentRewardsForJoiningKingdom(Hero.OneToOneConversationHero.Clan.Kingdom), new TextObject("{=exbSCGzi}Reward Items"));
-		PartyScreenManager.OpenScreenAsReceiveTroops(vassalRewardsModel.GetTroopRewardsForJoiningKingdom(Hero.OneToOneConversationHero.Clan.Kingdom), new TextObject("{=tKW8m6bZ}Reward Troops"));
+		InventoryScreenHelper.OpenScreenAsReceiveItems(vassalRewardsModel.GetEquipmentRewardsForJoiningKingdom(Hero.OneToOneConversationHero.Clan.Kingdom), new TextObject("{=exbSCGzi}Reward Items"));
+		PartyScreenHelper.OpenScreenAsReceiveTroops(vassalRewardsModel.GetTroopRewardsForJoiningKingdom(Hero.OneToOneConversationHero.Clan.Kingdom), new TextObject("{=tKW8m6bZ}Reward Troops"));
 		ChangeRelationAction.ApplyPlayerRelation(Hero.OneToOneConversationHero.Clan.Kingdom.Leader, vassalRewardsModel.RelationRewardWithLeader);
 		_receivedVassalRewards = true;
 	}
@@ -3987,19 +3826,61 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	private bool conversation_clan_member_manage_troops_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
-		if (oneToOneConversationHero != null && oneToOneConversationHero.Clan == Clan.PlayerClan && oneToOneConversationHero.PartyBelongedTo != null && oneToOneConversationHero.PartyBelongedTo.LeaderHero == oneToOneConversationHero && !oneToOneConversationHero.PartyBelongedTo.IsCaravan && !oneToOneConversationHero.PartyBelongedTo.IsMilitia)
+		if (oneToOneConversationHero != null && oneToOneConversationHero.Clan == Clan.PlayerClan && oneToOneConversationHero.PartyBelongedTo != null && oneToOneConversationHero.PartyBelongedTo.LeaderHero == oneToOneConversationHero && !oneToOneConversationHero.PartyBelongedTo.IsCaravan && !oneToOneConversationHero.PartyBelongedTo.IsMilitia && !oneToOneConversationHero.PartyBelongedTo.IsPatrolParty)
 		{
 			return !oneToOneConversationHero.PartyBelongedTo.IsVillager;
 		}
 		return false;
 	}
 
-	private void conversation_clan_member_manage_troops_on_consequence()
+	private bool conversation_clan_member_manage_inventory_on_condition()
 	{
-		PartyScreenManager.OpenScreenAsManageTroopsAndPrisoners(Hero.OneToOneConversationHero.PartyBelongedTo, onPartyScreenClosed);
+		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+		if (oneToOneConversationHero != null && oneToOneConversationHero.Clan == Clan.PlayerClan && oneToOneConversationHero.PartyBelongedTo != null && oneToOneConversationHero.PartyBelongedTo.LeaderHero == oneToOneConversationHero)
+		{
+			if (!oneToOneConversationHero.PartyBelongedTo.IsCaravan)
+			{
+				return oneToOneConversationHero.PartyBelongedTo.IsLordParty;
+			}
+			return true;
+		}
+		return false;
 	}
 
-	private void onPartyScreenClosed(PartyBase leftOwnerParty, TroopRoster leftMemberRoster, TroopRoster leftPrisonRoster, PartyBase rightOwnerParty, TroopRoster rightMemberRoster, TroopRoster rightPrisonRoster, bool fromCancel)
+	private void conversation_clan_member_manage_troops_on_consequence()
+	{
+		PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(Hero.OneToOneConversationHero.PartyBelongedTo, OnPartyScreenClosedForManagingTroopsForCompaion);
+	}
+
+	private void conversation_clan_member_manage_inventory_on_consequence()
+	{
+		InventoryLogic.CapacityData capacityData = new InventoryLogic.CapacityData(GetPartyInventoryCapacity, CapacityExceededWarningDelegate, CapacityExceededHintDelegate, forceTransaction: true);
+		InventoryScreenHelper.OpenScreenAsInventoryOf(PartyBase.MainParty, Hero.OneToOneConversationHero.PartyBelongedTo.Party, Hero.OneToOneConversationHero.CharacterObject, Hero.OneToOneConversationHero.PartyBelongedTo.Name, capacityData, OnInventoryScreenClosed);
+		static TextObject CapacityExceededHintDelegate()
+		{
+			return GameTexts.FindText("str_capacity_exceeded_hint");
+		}
+		static TextObject CapacityExceededWarningDelegate()
+		{
+			return GameTexts.FindText("str_capacity_exceeded");
+		}
+	}
+
+	private int GetPartyInventoryCapacity()
+	{
+		if (Hero.OneToOneConversationHero?.PartyBelongedTo != null)
+		{
+			return Hero.OneToOneConversationHero.PartyBelongedTo.InventoryCapacity;
+		}
+		return 0;
+	}
+
+	private void OnPartyScreenClosedForManagingTroopsForCompaion(PartyBase leftOwnerParty, TroopRoster leftMemberRoster, TroopRoster leftPrisonRoster, PartyBase rightOwnerParty, TroopRoster rightMemberRoster, TroopRoster rightPrisonRoster, bool fromCancel)
+	{
+		Campaign.Current.ConversationManager.ContinueConversation();
+	}
+
+	private void OnInventoryScreenClosed()
 	{
 		Campaign.Current.ConversationManager.ContinueConversation();
 	}

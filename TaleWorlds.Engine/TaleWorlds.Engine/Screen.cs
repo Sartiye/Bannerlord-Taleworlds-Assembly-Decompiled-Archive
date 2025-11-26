@@ -14,12 +14,15 @@ public static class Screen
 
 	public static Vec2 DesktopResolution { get; private set; }
 
+	public static Vec2 ScreenScale { get; private set; }
+
 	internal static void Update()
 	{
 		RealScreenResolutionWidth = EngineApplicationInterface.IScreen.GetRealScreenResolutionWidth();
 		RealScreenResolutionHeight = EngineApplicationInterface.IScreen.GetRealScreenResolutionHeight();
 		AspectRatio = EngineApplicationInterface.IScreen.GetAspectRatio();
 		DesktopResolution = new Vec2(EngineApplicationInterface.IScreen.GetDesktopWidth(), EngineApplicationInterface.IScreen.GetDesktopHeight());
+		ScreenScale = new Vec2(RealScreenResolutionWidth / DesktopResolution.x, RealScreenResolutionHeight / DesktopResolution.y);
 	}
 
 	public static bool GetMouseVisible()

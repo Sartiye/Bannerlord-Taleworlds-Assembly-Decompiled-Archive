@@ -37,16 +37,16 @@ public class DiscardItemsCampaignBehavior : CampaignBehaviorBase
 
 	private void HandlePartyInventory(PartyBase party)
 	{
-		if (party.IsMobile && party.MobileParty.IsLordParty && !party.MobileParty.IsMainParty)
+		if (party.IsMobile && party.MobileParty.IsLordParty && !party.MobileParty.IsMainParty && !party.MobileParty.IsCurrentlyAtSea)
 		{
 			int num = party.ItemRoster.NumberOfLivestockAnimals + party.ItemRoster.NumberOfPackAnimals + MathF.Max(0, party.ItemRoster.NumberOfMounts - party.NumberOfMenWithHorse);
 			if (num > party.MemberRoster.TotalManCount)
 			{
 				DiscardAnimalsCausingHerdingPenalty(party.MobileParty, num - MathF.Max(0, party.ItemRoster.NumberOfMounts - party.NumberOfMenWithHorse));
 			}
-			if (party.MobileParty.TotalWeightCarried > (float)party.InventoryCapacity)
+			if (party.MobileParty.TotalWeightCarried > (float)party.MobileParty.InventoryCapacity)
 			{
-				DiscardOverburdeningItemsForParty(party.MobileParty, party.MobileParty.TotalWeightCarried - (float)party.InventoryCapacity);
+				DiscardOverburdeningItemsForParty(party.MobileParty, party.MobileParty.TotalWeightCarried - (float)party.MobileParty.InventoryCapacity);
 			}
 		}
 	}

@@ -17,7 +17,7 @@ public class VillageHealCampaignBehavior : CampaignBehaviorBase
 	{
 		if ((settlement.IsVillage || settlement.IsTown) && settlement.SettlementHitPoints < 1f && settlement.Party.MapEvent == null && settlement.Party.SiegeEvent == null)
 		{
-			float num = (7000f - MathF.Min(7000f, MathF.Max(1000f, settlement.MapFaction.TotalStrength))) / 100000f;
+			float num = (7000f - MathF.Min(7000f, MathF.Max(1000f, settlement.MapFaction.CurrentTotalStrength))) / 100000f;
 			ExplainedNumber explainedNumber = new ExplainedNumber(0.06f + num);
 			if (settlement.IsVillage && settlement.Village.TradeBound != null && PerkHelper.GetPerkValueForTown(DefaultPerks.Medicine.CleanInfrastructure, settlement.Village.TradeBound.Town))
 			{

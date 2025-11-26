@@ -175,7 +175,6 @@ public class GameMenuTroopSelectionItemButtonWidget : ButtonWidget
 			AddButtonWidget.IsHidden = true;
 			RemoveButtonWidget.IsHidden = true;
 			base.IsDisabled = true;
-			base.UpdateChildrenStates = true;
 			base.DominantSelectedState = IsLocked;
 			HeroHealthParent.IsHidden = !IsTroopHero;
 			if (IsLocked)
@@ -194,7 +193,6 @@ public class GameMenuTroopSelectionItemButtonWidget : ButtonWidget
 			AddButtonWidget.IsHidden = true;
 			RemoveButtonWidget.IsHidden = true;
 			base.IsDisabled = (IsRosterFull && CurrentAmount <= 0) || IsLocked;
-			base.UpdateChildrenStates = true;
 			base.DominantSelectedState = IsLocked;
 			HeroHealthParent.IsHidden = !IsTroopHero;
 			if (IsLocked)
@@ -215,7 +213,6 @@ public class GameMenuTroopSelectionItemButtonWidget : ButtonWidget
 			RemoveButtonWidget.IsHidden = false;
 			AddButtonWidget.IsDisabled = IsRosterFull || CurrentAmount >= MaxAmount;
 			RemoveButtonWidget.IsDisabled = CurrentAmount <= 0;
-			base.UpdateChildrenStates = false;
 			if (IsLocked)
 			{
 				base.IsDisabled = false;

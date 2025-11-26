@@ -16,6 +16,8 @@ public class Brush
 
 	public Brush ClonedFrom { get; private set; }
 
+	public Brush OverriddenBrush { get; private set; }
+
 	[Editor(false)]
 	public string Name { get; set; }
 
@@ -341,6 +343,12 @@ public class Brush
 			return value;
 		}
 		return null;
+	}
+
+	internal void FillForOverride(Brush originalBrush)
+	{
+		OverriddenBrush = originalBrush;
+		FillFrom(OverriddenBrush);
 	}
 
 	public void FillFrom(Brush brush)

@@ -1,18 +1,59 @@
 using Helpers;
+using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors.AiBehaviors;
 
 public class AiPatrollingBehavior : CampaignBehaviorBase
 {
+	private const float BasePatrolScore = 1.44f;
+
+	private const float MinimumDistanceScore = 0.2f;
+
+	private const float MaximumDistanceScore = 1f;
+
 	private IDisbandPartyCampaignBehavior _disbandPartyCampaignBehavior;
 
 	public override void RegisterEvents()
 	{
 		CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+		CampaignEvents.OnShipDestroyedEvent.AddNonSerializedListener(this, OnShipDestroyed);
+		CampaignEvents.OnBlockadeActivatedEvent.AddNonSerializedListener(this, OnBlockadeActivated);
+		CampaignEvents.OnShipOwnerChangedEvent.AddNonSerializedListener(this, OnShipOwnerChanged);
+	}
+
+	private void OnBlockadeActivated(SiegeEvent siegeEvent)
+	{
+		foreach (MobileParty item in MobileParty.All)
+		{
+			if (item.DefaultBehavior == AiBehavior.GoToSettlement && item.TargetSettlement == siegeEvent.BesiegedSettlement && item.CurrentSettlement != siegeEvent.BesiegedSettlement)
+			{
+				item.SetMoveModeHold();
+			}
+		}
+	}
+
+	private void OnShipOwnerChanged(Ship ship, PartyBase oldOwner, ChangeShipOwnerAction.ShipOwnerChangeDetail changeDetail)
+	{
+		CheckPartyIfNeeded(oldOwner);
+	}
+
+	private void OnShipDestroyed(PartyBase owner, Ship ship, DestroyShipAction.ShipDestroyDetail detail)
+	{
+		CheckPartyIfNeeded(owner);
+	}
+
+	private void CheckPartyIfNeeded(PartyBase party)
+	{
+		if (party != null && party.IsMobile && party.MobileParty.IsLordParty && party.MobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && !party.MobileParty.TargetPosition.IsOnLand && !party.MobileParty.HasNavalNavigationCapability)
+		{
+			party.MobileParty.SetMoveModeHold();
+		}
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -24,35 +65,9 @@ public class AiPatrollingBehavior : CampaignBehaviorBase
 	{
 	}
 
-	private void CalculatePatrollingScoreForSettlement(Settlement settlement, PartyThinkParams p, float patrollingScoreAdjustment)
-	{
-		MobileParty mobilePartyOf = p.MobilePartyOf;
-		AIBehaviorTuple aiBehaviorTuple = new AIBehaviorTuple(settlement, AiBehavior.PatrolAroundPoint);
-		float num = Campaign.Current.Models.TargetScoreCalculatingModel.CalculatePatrollingScoreForSettlement(settlement, mobilePartyOf);
-		num *= patrollingScoreAdjustment;
-		if (!mobilePartyOf.IsDisbanding)
-		{
-			IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
-			if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobilePartyOf))
-			{
-				goto IL_0052;
-			}
-		}
-		num *= 0.25f;
-		goto IL_0052;
-		IL_0052:
-		if (p.TryGetBehaviorScore(in aiBehaviorTuple, out var score))
-		{
-			p.SetBehaviorScore(in aiBehaviorTuple, score + num);
-			return;
-		}
-		(AIBehaviorTuple, float) value = (aiBehaviorTuple, num);
-		p.AddBehaviorScore(in value);
-	}
-
 	private void AiHourlyTick(MobileParty mobileParty, PartyThinkParams p)
 	{
-		if (mobileParty.IsMilitia || mobileParty.IsCaravan || mobileParty.IsVillager || mobileParty.IsBandit || mobileParty.IsDisbanding || (!mobileParty.MapFaction.IsMinorFaction && !mobileParty.MapFaction.IsKingdomFaction && !mobileParty.MapFaction.Leader.IsLord) || mobileParty.CurrentSettlement?.SiegeEvent != null)
+		if (mobileParty.IsMilitia || mobileParty.IsCaravan || mobileParty.IsVillager || mobileParty.IsBandit || mobileParty.IsPatrolParty || mobileParty.IsDisbanding || (!mobileParty.MapFaction.IsMinorFaction && !mobileParty.MapFaction.IsKingdomFaction && !mobileParty.MapFaction.Leader.IsLord) || (mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsUnderSiege) || mobileParty.Army != null || mobileParty.GetNumDaysForFoodToLast() <= 6 || mobileParty.CurrentSettlement?.SiegeEvent != null)
 		{
 			return;
 		}
@@ -74,28 +89,119 @@ public class AiPatrollingBehavior : CampaignBehaviorBase
 			num = mobileParty.PartySizeRatio / num5;
 		}
 		float num6 = MathF.Sqrt(MathF.Min(1f, num));
-		float num7 = ((mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsFortification && mobileParty.CurrentSettlement.IsUnderSiege) ? 0f : 1f);
-		num7 *= num6;
+		if (!mobileParty.IsDisbanding)
+		{
+			IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
+			if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobileParty))
+			{
+				goto IL_0157;
+			}
+		}
+		num6 *= 0.25f;
+		goto IL_0157;
+		IL_0157:
 		if (mobileParty.Party.MapFaction.Settlements.Count > 0)
 		{
-			foreach (Settlement settlement in mobileParty.Party.MapFaction.Settlements)
+			SettlementHelper.FindFurthestFortificationToSettlement(mobileParty.MapFaction.Fiefs, MobileParty.NavigationType.Default, mobileParty.MapFaction.FactionMidSettlement, out var furthestDistance);
 			{
-				if (settlement.IsTown || settlement.IsVillage || settlement.MapFaction.IsMinorFaction)
+				foreach (Settlement settlement2 in mobileParty.Party.MapFaction.Settlements)
 				{
-					CalculatePatrollingScoreForSettlement(settlement, p, num7);
+					if (!settlement2.IsTown && !settlement2.IsVillage)
+					{
+						continue;
+					}
+					float bestDistanceScore = float.MaxValue;
+					if (settlement2.HasPort && mobileParty.HasNavalNavigationCapability && (!mobileParty.MapFaction.IsKingdomFaction || mobileParty.MapFaction.Leader != mobileParty.LeaderHero))
+					{
+						GetDistanceScoreForNavalPatrolling(settlement2, mobileParty, out bestDistanceScore);
+						if (bestDistanceScore > 0.2f)
+						{
+							CalculatePatrollingScoreForSettlement(settlement2, p, bestDistanceScore, isNavalPatrolling: true);
+						}
+					}
+					GetDistanceScoreForLandPatrolling(settlement2, mobileParty, furthestDistance, out bestDistanceScore);
+					if (bestDistanceScore > 0.2f)
+					{
+						CalculatePatrollingScoreForSettlement(settlement2, p, bestDistanceScore, isNavalPatrolling: false);
+					}
 				}
+				return;
 			}
-			return;
 		}
-		int num8 = -1;
+		float maxDistance = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(mobileParty.NavigationCapability) * 4f / (Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay) * Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
+		int num7 = -1;
 		do
 		{
-			num8 = SettlementHelper.FindNextSettlementAroundMapPoint(mobileParty, Campaign.AverageDistanceBetweenTwoFortifications * 5f, num8);
-			if (num8 >= 0 && Settlement.All[num8].IsTown)
+			num7 = SettlementHelper.FindNextSettlementAroundMobileParty(mobileParty, mobileParty.NavigationCapability, maxDistance, num7, (Settlement x) => x.IsTown);
+			if (num7 >= 0)
 			{
-				CalculatePatrollingScoreForSettlement(Settlement.All[num8], p, num7);
+				Settlement settlement = Settlement.All[num7];
+				float averageDistanceBetweenClosestTwoTownsWithNavigationType = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default);
+				float num8 = Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty.HomeSettlement, settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+				if (num8 < averageDistanceBetweenClosestTwoTownsWithNavigationType)
+				{
+					num8 = averageDistanceBetweenClosestTwoTownsWithNavigationType;
+				}
+				float num9 = averageDistanceBetweenClosestTwoTownsWithNavigationType * 5f / num8;
+				CalculatePatrollingScoreForSettlement(settlement, p, num6 * num9, isNavalPatrolling: false);
 			}
 		}
-		while (num8 >= 0);
+		while (num7 >= 0);
+	}
+
+	private void GetDistanceScoreForNavalPatrolling(Settlement targetSettlement, MobileParty mobileParty, out float bestDistanceScore)
+	{
+		bestDistanceScore = 0f;
+		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort: true, out var bestNavigationType, out var bestNavigationDistance, out var _);
+		if (bestNavigationType != 0)
+		{
+			float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Naval) * 2f;
+			if (bestNavigationDistance > num)
+			{
+				bestDistanceScore = -1f;
+			}
+			else
+			{
+				bestDistanceScore = MBMath.Map(1f - bestNavigationDistance / num, 0f, 1f, 0.2f, 1f);
+			}
+		}
+	}
+
+	private void GetDistanceScoreForLandPatrolling(Settlement targetSettlement, MobileParty mobileParty, float distanceToFurthestAllySettlementToFactionMidSettlement, out float bestDistanceScore)
+	{
+		float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty.MapFaction.FactionMidSettlement, targetSettlement, isFromPort: false, isTargetingPort: false, mobileParty.NavigationCapability);
+		float num = 0f;
+		num = ((distanceToFurthestAllySettlementToFactionMidSettlement != 0f) ? (distance / distanceToFurthestAllySettlementToFactionMidSettlement) : 0.5f);
+		float num2 = MBMath.Map(num, 0f, 1f, 0.2f, 0.8f);
+		if (mobileParty.PartySizeRatio >= num2)
+		{
+			bestDistanceScore = MBMath.Map(0.8f - (mobileParty.PartySizeRatio - num2), 0f, 0.8f, 0.2f, 1f);
+		}
+		else
+		{
+			bestDistanceScore = 0f;
+		}
+	}
+
+	private void CalculatePatrollingScoreForSettlement(Settlement settlement, PartyThinkParams p, float scoreAdjustment, bool isNavalPatrolling)
+	{
+		MobileParty mobilePartyOf = p.MobilePartyOf;
+		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobilePartyOf, settlement, isNavalPatrolling, out var bestNavigationType, out var _, out var isFromPort);
+		if (bestNavigationType == MobileParty.NavigationType.None)
+		{
+			return;
+		}
+		AIBehaviorData item = new AIBehaviorData(settlement, AiBehavior.PatrolAroundPoint, bestNavigationType, willGatherArmy: false, isFromPort, isNavalPatrolling);
+		float num = Campaign.Current.Models.TargetScoreCalculatingModel.CalculatePatrollingScoreForSettlement(settlement, isNavalPatrolling, mobilePartyOf);
+		num *= scoreAdjustment;
+		if (num > 0f)
+		{
+			if (!mobilePartyOf.IsCurrentlyAtSea)
+			{
+				_ = 2;
+			}
+			(AIBehaviorData, float) value = (item, 1.44f + num);
+			p.AddBehaviorScore(in value);
+		}
 	}
 }

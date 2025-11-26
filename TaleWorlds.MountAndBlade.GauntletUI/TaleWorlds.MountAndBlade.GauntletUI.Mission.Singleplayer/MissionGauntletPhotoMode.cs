@@ -57,11 +57,7 @@ public class MissionGauntletPhotoMode : MissionView
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_photoModeCategory = spriteData.SpriteCategories["ui_photomode"];
-		_photoModeCategory.Load(resourceContext, uIResourceDepot);
+		_photoModeCategory = UIResourceManager.LoadSpriteCategory("ui_photomode");
 		_dataSource = new PhotoModeVM(_missionScene, () => _vignetteMode, () => _hideAgentsMode);
 		_cameraRoll = 0f;
 		_photoModeOrbitState = _missionScene.GetPhotoModeOrbit();
@@ -70,21 +66,24 @@ public class MissionGauntletPhotoMode : MissionView
 		_saveAmbientOcclusionPass = false;
 		_saveObjectIdPass = false;
 		_saveShadowPass = false;
-		_dataSource.AddHotkeyWithForcedName(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("ToggleEscapeMenu"), new TextObject("{=3CsACce8}Exit"));
-		_dataSource.AddHotkey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetHotKey("FasterCamera"));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(108));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(94));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(95));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(101));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(100));
+		if (_missionScene.ContainsTerrain)
+		{
+			_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(98));
+		}
+		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(99));
 		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(93));
 		if (Utilities.EditModeEnabled)
 		{
-			_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(94));
+			_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(97));
 		}
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(90));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(96));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(95));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(97));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(98));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(91));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(92));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(105));
+		_dataSource.AddTakePictureKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(96));
+		_dataSource.AddFasterCameraKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetHotKey("FasterCamera"));
+		_dataSource.AddHotkeyWithForcedName(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("ToggleEscapeMenu"), new TextObject("{=3CsACce8}Exit"));
 	}
 
 	public override void OnMissionScreenTick(float dt)
@@ -133,6 +132,8 @@ public class MissionGauntletPhotoMode : MissionView
 		}
 		if (base.MissionScreen.IsPhotoModeEnabled)
 		{
+			_dataSource.UpdateTakePictureKeyVisibility(GetCanTakePicture());
+			_dataSource.UpdateFasterCameraKeyVisibility(GetCanMoveCamera());
 			if (_takePhoto != -1)
 			{
 				return;
@@ -154,14 +155,14 @@ public class MissionGauntletPhotoMode : MissionView
 			if (_suspended)
 			{
 				_suspended = false;
-				_gauntletLayer = new GauntletLayer(2147483645);
+				_gauntletLayer = new GauntletLayer("MissionPhotoMode", 100000);
 				_dataSource.RefreshValues();
 				_gauntletLayer.LoadMovie("PhotoMode", _dataSource);
 				_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Mouse);
 				base.MissionScreen.AddLayer(_gauntletLayer);
 				GauntletChatLogView.Current.SetCanFocusWhileInMission(canFocusInMission: false);
 			}
-			if (_input.IsGameKeyPressed(93) && GetCanTakePicture())
+			if (_input.IsGameKeyPressed(96) && GetCanTakePicture())
 			{
 				_prevUIDisabled = MBDebug.DisableAllUI;
 				MBDebug.DisableAllUI = true;
@@ -170,7 +171,7 @@ public class MissionGauntletPhotoMode : MissionView
 				_saveShadowPass = false;
 				_takePhoto = 0;
 			}
-			else if (Utilities.EditModeEnabled && _input.IsGameKeyPressed(94))
+			else if (Utilities.EditModeEnabled && _input.IsGameKeyPressed(97))
 			{
 				_prevUIDisabled = MBDebug.DisableAllUI;
 				MBDebug.DisableAllUI = true;
@@ -179,30 +180,30 @@ public class MissionGauntletPhotoMode : MissionView
 				_saveShadowPass = true;
 				_takePhoto = 0;
 			}
-			else if (_input.IsGameKeyPressed(90))
+			else if (_input.IsGameKeyPressed(93))
 			{
 				MBDebug.DisableAllUI = !MBDebug.DisableAllUI;
 			}
-			else if (_input.IsGameKeyPressed(95))
+			else if (_input.IsGameKeyPressed(98))
 			{
 				_photoModeOrbitState = !_photoModeOrbitState;
 				_missionScene.SetPhotoModeOrbit(_photoModeOrbitState);
 			}
-			else if (_input.IsGameKeyPressed(96))
+			else if (_input.IsGameKeyPressed(99))
 			{
 				base.MissionScreen.SetPhotoModeRequiresMouse(!base.MissionScreen.PhotoModeRequiresMouse);
 			}
-			else if (_input.IsGameKeyPressed(97))
+			else if (_input.IsGameKeyPressed(100))
 			{
 				_vignetteMode = !_vignetteMode;
 				_missionScene.SetPhotoModeVignette(_vignetteMode);
 			}
-			else if (_input.IsGameKeyPressed(98))
+			else if (_input.IsGameKeyPressed(101))
 			{
 				_hideAgentsMode = !_hideAgentsMode;
 				Utilities.SetRenderAgents(!_hideAgentsMode);
 			}
-			else if (_input.IsGameKeyPressed(105))
+			else if (_input.IsGameKeyPressed(108))
 			{
 				ResetChanges();
 			}
@@ -215,12 +216,12 @@ public class MissionGauntletPhotoMode : MissionView
 			{
 				base.MissionScreen.SetPhotoModeRequiresMouse(_prevMouseEnabled);
 			}
-			if (_input.IsGameKeyDown(91))
+			if (_input.IsGameKeyDown(94))
 			{
 				_cameraRoll -= 0.1f;
 				_missionScene.SetPhotoModeRoll(_cameraRoll);
 			}
-			else if (_input.IsGameKeyDown(92))
+			else if (_input.IsGameKeyDown(95))
 			{
 				_cameraRoll += 0.1f;
 				_missionScene.SetPhotoModeRoll(_cameraRoll);
@@ -240,11 +241,24 @@ public class MissionGauntletPhotoMode : MissionView
 
 	private bool GetCanTakePicture()
 	{
-		if (_gauntletLayer.UIContext.EventManager.IsControllerActive)
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
 			return !base.MissionScreen.PhotoModeRequiresMouse;
 		}
 		return true;
+	}
+
+	private bool GetCanMoveCamera()
+	{
+		if (!_photoModeOrbitState)
+		{
+			if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+			{
+				return !base.MissionScreen.PhotoModeRequiresMouse;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	private void ResetChanges()

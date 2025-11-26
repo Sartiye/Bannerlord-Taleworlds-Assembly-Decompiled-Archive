@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class AgeModel : GameModel
+public abstract class AgeModel : MBGameModel<AgeModel>
 {
 	public abstract int BecomeInfantAge { get; }
 
@@ -14,9 +14,9 @@ public abstract class AgeModel : GameModel
 
 	public abstract int BecomeOldAge { get; }
 
+	public abstract int MiddleAdultHoodAge { get; }
+
 	public abstract int MaxAge { get; }
 
 	public abstract void GetAgeLimitForLocation(CharacterObject character, out int minimumAge, out int maximumAge, string additionalTags = "");
-
-	public abstract float GetSkillScalingModifierForAge(Hero hero, SkillObject skill, bool isByNaturalGrowth);
 }

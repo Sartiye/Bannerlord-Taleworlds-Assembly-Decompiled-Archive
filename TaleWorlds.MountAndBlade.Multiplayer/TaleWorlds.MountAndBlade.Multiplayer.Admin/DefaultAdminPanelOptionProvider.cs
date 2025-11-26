@@ -72,7 +72,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 		public AdminPanelVotableMultiSelectionOption(string uniqueId)
 			: base(uniqueId)
 		{
-			_undecidedOption = new AdminPanelMultiSelectionItem(null, new TextObject("{=*}Undecided"), isFallbackValue: true);
+			_undecidedOption = new AdminPanelMultiSelectionItem(null, new TextObject("{=b5HkM0tT}Undecided"), isFallbackValue: true);
 		}
 
 		protected override void OnValueChanged(IAdminPanelMultiSelectionItem previousValue, IAdminPanelMultiSelectionItem newValue)
@@ -215,7 +215,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			: base(uniqueId)
 		{
 			_optionsByGameType = new Dictionary<string, MBList<IAdminPanelMultiSelectionItem>>();
-			_disabledOption = new AdminPanelMultiSelectionItem(null, new TextObject("{=*}Disabled"), isFallbackValue: false, isDisabled: true);
+			_disabledOption = new AdminPanelMultiSelectionItem(null, new TextObject("{=1JlzQIXE}Disabled"), isFallbackValue: false, isDisabled: true);
 			_optionsByGameType["map_option_disabled"] = new MBList<IAdminPanelMultiSelectionItem> { _disabledOption };
 			_optionsByGameType["map_option_undecided"] = new MBList<IAdminPanelMultiSelectionItem> { _undecidedOption };
 		}
@@ -239,7 +239,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 		{
 			if (_availableOptions.Count == 1 && _availableOptions[0] == _disabledOption)
 			{
-				reason = new TextObject("{=*}No available maps added for game type").ToString();
+				reason = new TextObject("{=2WOGNYG4}No available maps added for game type").ToString();
 				return true;
 			}
 			reason = string.Empty;
@@ -334,7 +334,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 						IAdminPanelOption adminPanelOption = _optionGroups[i].Options[j];
 						if (adminPanelOption.IsRequired && adminPanelOption.GetIsAvailable() && adminPanelOption.GetIsDisabled(out var _))
 						{
-							reason = new TextObject("{=*}Please select valid values for options.").ToString();
+							reason = new TextObject("{=TrY4VS1R}Please select valid values for options.").ToString();
 							return true;
 						}
 					}
@@ -342,7 +342,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			}
 			if (!MultiplayerIntermissionVotingManager.Instance.IsAutomatedBattleSwitchingEnabled)
 			{
-				reason = new TextObject("{=*}Server does not support automated battle switching.").ToString();
+				reason = new TextObject("{=0WDSCBNa}Server does not support automated battle switching.").ToString();
 				return true;
 			}
 			return false;
@@ -373,7 +373,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			if (_gameTypeOption == null)
 			{
 				Debug.Print("Game type option is not set for game type dependent option: " + base.Name);
-				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 994);
+				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 994);
 				return true;
 			}
 			if (_gameTypeOption.IsUndecided)
@@ -444,6 +444,12 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 
 		public override bool GetIsAvailable()
 		{
+			if (_gameTypeOption == null)
+			{
+				Debug.Print("Game type option is not set for game type dependent option: " + base.Name);
+				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 1080);
+				return true;
+			}
 			if (_gameTypeOption.IsUndecided)
 			{
 				return true;
@@ -627,26 +633,26 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 		{
 			return adminPanelOption.GetValue();
 		}
-		Debug.FailedAssert($"Failed to find \"{typeof(T)}\" type option with id: {optionId}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetValueFromOption", 185);
+		Debug.FailedAssert($"Failed to find \"{typeof(T)}\" type option with id: {optionId}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetValueFromOption", 185);
 		return default(T);
 	}
 
 	private AdminPanelOptionGroup GetMissionOptions()
 	{
-		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("mission_options", new TextObject("{=*}Mission Options"), requiresRestart: true);
-		AdminPanelOption<IAdminPanelMultiSelectionItem> adminPanelOption = new AdminPanelVotableMultiSelectionOption("next_game_type").BuildAvailableOptions(MultiplayerOptions.OptionType.GameType).BuildOptionType(MultiplayerOptions.OptionType.GameType, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=*}Game Type"))
-			.BuildDescription(new TextObject("{=*}Next game type."))
+		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("mission_options", new TextObject("{=xa8i1dM1}Mission Options"), requiresRestart: true);
+		AdminPanelOption<IAdminPanelMultiSelectionItem> adminPanelOption = new AdminPanelVotableMultiSelectionOption("next_game_type").BuildAvailableOptions(MultiplayerOptions.OptionType.GameType).BuildOptionType(MultiplayerOptions.OptionType.GameType, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=JPimShCw}Game Type"))
+			.BuildDescription(new TextObject("{=ueFrMu6i}Next game type."))
 			.BuildIsRequired(isRequired: true);
 		_gameTypeOption = adminPanelOption as AdminPanelVotableMultiSelectionOption;
 		adminPanelOptionGroup.AddOption(adminPanelOption);
-		adminPanelOptionGroup.AddOption(new AdminPanelUsableMapsOption("next_map").BuildGameTypeOption(adminPanelOption as AdminPanelVotableMultiSelectionOption).BuildOptionType(MultiplayerOptions.OptionType.Map, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=*}Map"))
-			.BuildDescription(new TextObject("{=*}Next map to play."))
+		adminPanelOptionGroup.AddOption(new AdminPanelUsableMapsOption("next_map").BuildGameTypeOption(adminPanelOption as AdminPanelVotableMultiSelectionOption).BuildOptionType(MultiplayerOptions.OptionType.Map, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=w9m11T1y}Map"))
+			.BuildDescription(new TextObject("{=ok1CD7dH}Next map to play."))
 			.BuildIsRequired(isRequired: true));
-		AdminPanelCultureOption adminPanelCultureOption = new AdminPanelCultureOption("next_culture_team_1").BuildAvailableOptions(MultiplayerOptions.OptionType.CultureTeam1).BuildOptionType(MultiplayerOptions.OptionType.CultureTeam1, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=*}Attacker Culture"))
-			.BuildDescription(new TextObject("{=*}Culture of the attacker team in the next game."))
+		AdminPanelCultureOption adminPanelCultureOption = new AdminPanelCultureOption("next_culture_team_1").BuildAvailableOptions(MultiplayerOptions.OptionType.CultureTeam1).BuildOptionType(MultiplayerOptions.OptionType.CultureTeam1, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=sGDo0mxT}Attacker Culture"))
+			.BuildDescription(new TextObject("{=wsOUaxf4}Culture of the attacker team in the next game."))
 			.BuildIsRequired(isRequired: true) as AdminPanelCultureOption;
-		AdminPanelCultureOption adminPanelCultureOption2 = new AdminPanelCultureOption("next_culture_team_2").BuildAvailableOptions(MultiplayerOptions.OptionType.CultureTeam2).BuildOptionType(MultiplayerOptions.OptionType.CultureTeam2, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=*}Defender Culture"))
-			.BuildDescription(new TextObject("{=*}Culture of the defender team in the next game."))
+		AdminPanelCultureOption adminPanelCultureOption2 = new AdminPanelCultureOption("next_culture_team_2").BuildAvailableOptions(MultiplayerOptions.OptionType.CultureTeam2).BuildOptionType(MultiplayerOptions.OptionType.CultureTeam2, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions, buildDefaultValue: false, buildInitialValue: false).BuildName(new TextObject("{=CeERJpan}Defender Culture"))
+			.BuildDescription(new TextObject("{=0jMXI0qT}Culture of the defender team in the next game."))
 			.BuildIsRequired(isRequired: true) as AdminPanelCultureOption;
 		adminPanelCultureOption.BuildOtherCultureOption(adminPanelCultureOption2);
 		adminPanelCultureOption2.BuildOtherCultureOption(adminPanelCultureOption);
@@ -659,16 +665,16 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			MultiplayerGameType.Siege.ToString()
 		}).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.RoundTotal)
 			.BuildOptionType(MultiplayerOptions.OptionType.RoundTotal, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions)
-			.BuildName(new TextObject("{=*}Number of Rounds"))
-			.BuildDescription(new TextObject("{=*}Total number of rounds in the next game."))
+			.BuildName(new TextObject("{=VwveHldM}Number of Rounds"))
+			.BuildDescription(new TextObject("{=ndCjGgEj}Total number of rounds in the next game."))
 			.BuildIsRequired(isRequired: true));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("next_min_score_to_win_duel").BuildGameTypeOption(_gameTypeOption).BuildRequiredGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.MinScoreToWinDuel)
 			.BuildOptionType(MultiplayerOptions.OptionType.MinScoreToWinDuel, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions)
-			.BuildName(new TextObject("{=*}Minimum Score to Win Duel"))
-			.BuildDescription(new TextObject("{=*}Minimum score required to win duels."))
+			.BuildName(new TextObject("{=JISyGr4E}Minimum Score to Win Duel"))
+			.BuildDescription(new TextObject("{=5V30jDb7}Minimum score required to win duels."))
 			.BuildIsRequired(isRequired: true));
-		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("next_map_time_limit").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.MapTimeLimit).BuildOptionType(MultiplayerOptions.OptionType.MapTimeLimit, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions).BuildName(new TextObject("{=*}Map Time Limit"))
-			.BuildDescription(new TextObject("{=*}Time limit in the next game."))
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("next_map_time_limit").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.MapTimeLimit).BuildOptionType(MultiplayerOptions.OptionType.MapTimeLimit, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions).BuildName(new TextObject("{=lf1eQ0tB}Map Time Limit"))
+			.BuildDescription(new TextObject("{=xgps8dXU}Time limit in the next game."))
 			.BuildIsRequired(isRequired: true));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("next_round_time_limit").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[3]
 		{
@@ -677,22 +683,22 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			MultiplayerGameType.Siege.ToString()
 		}).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.RoundTimeLimit)
 			.BuildOptionType(MultiplayerOptions.OptionType.RoundTimeLimit, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions)
-			.BuildName(new TextObject("{=*}Round Time Limit"))
-			.BuildDescription(new TextObject("{=*}Round time limit in the next game."))
+			.BuildName(new TextObject("{=9k0H0xu0}Round Time Limit"))
+			.BuildDescription(new TextObject("{=ApQhQe6u}Round time limit in the next game."))
 			.BuildIsRequired(isRequired: true));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("next_warmup_time_limit").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[2]
 		{
 			MultiplayerGameType.TeamDeathmatch.ToString(),
 			MultiplayerGameType.Duel.ToString()
-		}).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.WarmupTimeLimit)
-			.BuildOptionType(MultiplayerOptions.OptionType.WarmupTimeLimit, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions)
-			.BuildName(new TextObject("{=*}Warmup Time Limit"))
-			.BuildDescription(new TextObject("{=*}Warmup time limit in the next game."))
+		}).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds)
+			.BuildOptionType(MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions)
+			.BuildName(new TextObject("{=XwZTiF8l}Warmup Time Limit"))
+			.BuildDescription(new TextObject("{=S5Ayobba}Warmup time limit in the next game."))
 			.BuildIsRequired(isRequired: true));
-		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("next_max_num_players").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.MaxNumberOfPlayers).BuildOptionType(MultiplayerOptions.OptionType.MaxNumberOfPlayers, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions).BuildName(new TextObject("{=*}Maximum Number of Players"))
-			.BuildDescription(new TextObject("{=*}Maximum number of players in the next game."))
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("next_max_num_players").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.MaxNumberOfPlayers).BuildOptionType(MultiplayerOptions.OptionType.MaxNumberOfPlayers, MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions).BuildName(new TextObject("{=tzcK3R0v}Maximum Number of Players"))
+			.BuildDescription(new TextObject("{=RENeJbg5}Maximum number of players in the next game."))
 			.BuildIsRequired(isRequired: true));
-		adminPanelOptionGroup.AddAction(new AdminPanelStartMissionAction("apply_and_start").BuildOptionGroups(_optionGroups).BuildName(new TextObject("{=*}Apply and Start Mission")).BuildDescription(new TextObject("{=*}Apply all changes and start a new mission."))
+		adminPanelOptionGroup.AddAction(new AdminPanelStartMissionAction("apply_and_start").BuildOptionGroups(_optionGroups).BuildName(new TextObject("{=kwo09aDm}Apply and Start Mission")).BuildDescription(new TextObject("{=8D8KuKxk}Apply all changes and start a new mission."))
 			.BuildOnActionExecutedCallback(delegate
 			{
 				ApplyOptions();
@@ -704,47 +710,47 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 
 	private AdminPanelOptionGroup GetImmediateEffectOptions()
 	{
-		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("immediate_effects", new TextObject("{=*}Immediate Effects"));
-		adminPanelOptionGroup.AddOption(new AdminPanelOption<string>("welcome_message").BuildOptionType(MultiplayerOptions.OptionType.WelcomeMessage).BuildName(new TextObject("{=*}Welcome Message")).BuildDescription(new TextObject("{=*}Change the server welcome message.")));
+		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("immediate_effects", new TextObject("{=TcBcNdSE}Immediate Effects"));
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<string>("welcome_message").BuildOptionType(MultiplayerOptions.OptionType.WelcomeMessage).BuildName(new TextObject("{=t2Oh6uty}Welcome Message")).BuildDescription(new TextObject("{=v1DiZaoK}Change the server welcome message.")));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("auto_balance_treshold").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.AutoTeamBalanceThreshold)
 			.BuildOptionType(MultiplayerOptions.OptionType.AutoTeamBalanceThreshold)
-			.BuildName(new TextObject("{=*}Team Balance Threshold"))
-			.BuildDescription(new TextObject("{=*}Change the team balance threshold value.")));
+			.BuildName(new TextObject("{=YdnTEREg}Team Balance Threshold"))
+			.BuildDescription(new TextObject("{=DenCZPAg}Change the team balance threshold value.")));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("friendly_fire_melee_percent").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FriendlyFireDamageMeleeFriendPercent)
 			.BuildOptionType(MultiplayerOptions.OptionType.FriendlyFireDamageMeleeFriendPercent)
-			.BuildName(new TextObject("{=*}Friendly Melee Damage"))
-			.BuildDescription(new TextObject("{=*}Change the value of friendly melee damage.")));
+			.BuildName(new TextObject("{=VpQZquwB}Friendly Melee Damage"))
+			.BuildDescription(new TextObject("{=3HgzxHqT}Change the value of friendly melee damage.")));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("friendly_fire_melee_self_percent").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FriendlyFireDamageMeleeSelfPercent)
 			.BuildOptionType(MultiplayerOptions.OptionType.FriendlyFireDamageMeleeSelfPercent)
-			.BuildName(new TextObject("{=*}Friendly Reflective Melee Damage"))
-			.BuildDescription(new TextObject("{=*}Change the value of reflective friendly melee damage.")));
+			.BuildName(new TextObject("{=wLTiwbBt}Friendly Reflective Melee Damage"))
+			.BuildDescription(new TextObject("{=daq8AjgZ}Change the value of reflective friendly melee damage.")));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("friendly_fire_ranged_percent").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FriendlyFireDamageRangedFriendPercent)
 			.BuildOptionType(MultiplayerOptions.OptionType.FriendlyFireDamageRangedFriendPercent)
-			.BuildName(new TextObject("{=*}Friendly Ranged Damage"))
-			.BuildDescription(new TextObject("{=*}Change the value of friendly ranged damage.")));
+			.BuildName(new TextObject("{=pzudHx88}Friendly Ranged Damage"))
+			.BuildDescription(new TextObject("{=0H1Pg2RF}Change the value of friendly ranged damage.")));
 		adminPanelOptionGroup.AddOption(new AdminPanelGameTypeDependentNumericOption("friendly_fire_ranged_self_percent").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[1] { MultiplayerGameType.Duel.ToString() }).SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FriendlyFireDamageRangedSelfPercent)
 			.BuildOptionType(MultiplayerOptions.OptionType.FriendlyFireDamageRangedSelfPercent)
-			.BuildName(new TextObject("{=*}Friendly Reflective Ranged Damage"))
-			.BuildDescription(new TextObject("{=*}Change the value of reflective friendly ranged damage.")));
-		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_infantry").BuildName(new TextObject("{=*}Allow Infantry")).BuildDescription(new TextObject("{=*}Allow usage of infantry troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Infantry))
+			.BuildName(new TextObject("{=ZYw87dlh}Friendly Reflective Ranged Damage"))
+			.BuildDescription(new TextObject("{=ih2t4B8E}Change the value of reflective friendly ranged damage.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_infantry").BuildName(new TextObject("{=H72xVNwz}Allow Infantry")).BuildDescription(new TextObject("{=FB9tHuWF}Allow usage of infantry troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Infantry))
 			.BuildInitialValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Infantry))
 			.BuildOnAppliedCallback(delegate(bool val)
 			{
 				_multiplayerAdminComponent.ChangeClassRestriction(FormationClass.Infantry, !val);
 			}));
-		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_ranged").BuildName(new TextObject("{=*}Allow Archers")).BuildDescription(new TextObject("{=*}Allow usage of archer troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Ranged))
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_ranged").BuildName(new TextObject("{=wFlbhObU}Allow Archers")).BuildDescription(new TextObject("{=3MiLBVAH}Allow usage of archer troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Ranged))
 			.BuildInitialValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Ranged))
 			.BuildOnAppliedCallback(delegate(bool val)
 			{
 				_multiplayerAdminComponent.ChangeClassRestriction(FormationClass.Ranged, !val);
 			}));
-		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_cavalry").BuildName(new TextObject("{=*}Allow Cavalry")).BuildDescription(new TextObject("{=*}Allow usage of cavalry troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Cavalry))
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_cavalry").BuildName(new TextObject("{=nboyCQpj}Allow Cavalry")).BuildDescription(new TextObject("{=iTZkSZXI}Allow usage of cavalry troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Cavalry))
 			.BuildInitialValue(_missionLobbyComponent.IsClassAvailable(FormationClass.Cavalry))
 			.BuildOnAppliedCallback(delegate(bool val)
 			{
 				_multiplayerAdminComponent.ChangeClassRestriction(FormationClass.Cavalry, !val);
 			}));
-		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_horse_archers").BuildName(new TextObject("{=*}Allow Horse Archers")).BuildDescription(new TextObject("{=*}Allow usage of horse archer troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.HorseArcher))
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("allow_horse_archers").BuildName(new TextObject("{=6yTHziN5}Allow Horse Archers")).BuildDescription(new TextObject("{=P8dk4qSf}Allow usage of horse archer troops in game.")).BuildDefaultValue(_missionLobbyComponent.IsClassAvailable(FormationClass.HorseArcher))
 			.BuildInitialValue(_missionLobbyComponent.IsClassAvailable(FormationClass.HorseArcher))
 			.BuildOnAppliedCallback(delegate(bool val)
 			{
@@ -755,28 +761,28 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 
 	private AdminPanelOptionGroup GetActions()
 	{
-		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("actions", new TextObject("{=*}Actions"));
+		AdminPanelOptionGroup adminPanelOptionGroup = new AdminPanelOptionGroup("actions", new TextObject("{=Za3U3MY4}Actions"));
 		adminPanelOptionGroup.AddAction(new AdminPanelGameTypeDependentAction("end_warmup").BuildGameTypeOption(_gameTypeOption).BuildInvalidGameTypes(new string[2]
 		{
 			MultiplayerGameType.TeamDeathmatch.ToString(),
 			MultiplayerGameType.Duel.ToString()
-		}).BuildName(new TextObject("{=*}End Warmup"))
-			.BuildDescription(new TextObject("{=*}Set warmup timer to maximum of 30 seconds."))
+		}).BuildName(new TextObject("{=AVDDCWhv}End Warmup"))
+			.BuildDescription(new TextObject("{=Q6HPNb6Q}Set warmup timer to maximum of 30 seconds."))
 			.BuildOnActionExecutedCallback(delegate
 			{
 				_multiplayerAdminComponent.EndWarmup();
 			}));
-		adminPanelOptionGroup.AddAction(new AdminPanelAction("mute_player").BuildName(new TextObject("{=*}Mute Players")).BuildDescription(new TextObject("{=*}Select players to mute.")).BuildOnActionExecutedCallback(delegate
+		adminPanelOptionGroup.AddAction(new AdminPanelAction("mute_player").BuildName(new TextObject("{=QvxOnnZg}Mute Players")).BuildDescription(new TextObject("{=qMJsMUtO}Select players to mute.")).BuildOnActionExecutedCallback(delegate
 		{
 			List<InquiryElement> list4 = new List<InquiryElement>();
 			foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 			{
-				if (!CustomGameMutedPlayerManager.IsUserMuted(networkPeer.VirtualPlayer.Id))
+				if (!MultiplayerGlobalMutedPlayersManager.IsUserMuted(networkPeer.VirtualPlayer.Id))
 				{
 					list4.Add(new InquiryElement(networkPeer, networkPeer.UserName, null));
 				}
 			}
-			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=*}Mute Players").ToString(), new TextObject("{=*}Select players to mute.").ToString(), list4, isExitShown: true, 0, 1, new TextObject("{=*}Mute").ToString(), new TextObject("{=*}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
+			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=QvxOnnZg}Mute Players").ToString(), new TextObject("{=qMJsMUtO}Select players to mute.").ToString(), list4, isExitShown: true, 0, 1, new TextObject("{=SfJgnzdq}Mute").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
 			{
 				if (selectedPlayers != null && selectedPlayers.Count == 1)
 				{
@@ -788,17 +794,17 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 				}
 			}, null, string.Empty, isSeachAvailable: true));
 		}));
-		adminPanelOptionGroup.AddAction(new AdminPanelAction("mute_player").BuildName(new TextObject("{=*}Unmute Players")).BuildDescription(new TextObject("{=*}Select players to unmute.")).BuildOnActionExecutedCallback(delegate
+		adminPanelOptionGroup.AddAction(new AdminPanelAction("mute_player").BuildName(new TextObject("{=NkDBzEzd}Unmute Players")).BuildDescription(new TextObject("{=9zJaIpIZ}Select players to unmute.")).BuildOnActionExecutedCallback(delegate
 		{
 			List<InquiryElement> list3 = new List<InquiryElement>();
 			foreach (NetworkCommunicator networkPeer2 in GameNetwork.NetworkPeers)
 			{
-				if (CustomGameMutedPlayerManager.IsUserMuted(networkPeer2.VirtualPlayer.Id))
+				if (MultiplayerGlobalMutedPlayersManager.IsUserMuted(networkPeer2.VirtualPlayer.Id))
 				{
 					list3.Add(new InquiryElement(networkPeer2, networkPeer2.UserName, null));
 				}
 			}
-			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=*}Unmute Players").ToString(), new TextObject("{=*}Select players to unmute.").ToString(), list3, isExitShown: true, 0, 1, new TextObject("{=*}Unmute").ToString(), new TextObject("{=*}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
+			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=NkDBzEzd}Unmute Players").ToString(), new TextObject("{=9zJaIpIZ}Select players to unmute.").ToString(), list3, isExitShown: true, 0, 1, new TextObject("{=HyG3eUFN}Unmute").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
 			{
 				if (selectedPlayers != null && selectedPlayers.Count == 1)
 				{
@@ -810,14 +816,14 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 				}
 			}, null, string.Empty, isSeachAvailable: true));
 		}));
-		adminPanelOptionGroup.AddAction(new AdminPanelAction("kick_player").BuildName(new TextObject("{=*}Kick Player")).BuildDescription(new TextObject("{=*}Select a player to kick.")).BuildOnActionExecutedCallback(delegate
+		adminPanelOptionGroup.AddAction(new AdminPanelAction("kick_player").BuildName(new TextObject("{=cPbHqGrI}Kick Player")).BuildDescription(new TextObject("{=lZxxVl17}Select a player to kick.")).BuildOnActionExecutedCallback(delegate
 		{
 			List<InquiryElement> list2 = new List<InquiryElement>();
 			foreach (NetworkCommunicator networkPeer3 in GameNetwork.NetworkPeers)
 			{
 				list2.Add(new InquiryElement(networkPeer3, networkPeer3.UserName, null));
 			}
-			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=*}Kick Player").ToString(), new TextObject("{=*}Select player to kick").ToString(), list2, isExitShown: true, 0, 1, new TextObject("{=*}Kick").ToString(), new TextObject("{=*}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
+			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=cPbHqGrI}Kick Player").ToString(), new TextObject("{=RKNTl0Tn}Select player to kick").ToString(), list2, isExitShown: true, 0, 1, new TextObject("{=DdOgvhsV}Kick").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
 			{
 				if (selectedPlayers != null && selectedPlayers.Count == 1)
 				{
@@ -829,14 +835,14 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 				}
 			}, null, string.Empty, isSeachAvailable: true));
 		}));
-		adminPanelOptionGroup.AddAction(new AdminPanelAction("ban_player").BuildName(new TextObject("{=*}Ban Player")).BuildDescription(new TextObject("{=*}Select a player to ban.")).BuildOnActionExecutedCallback(delegate
+		adminPanelOptionGroup.AddAction(new AdminPanelAction("ban_player").BuildName(new TextObject("{=pbp0GQdO}Ban Player")).BuildDescription(new TextObject("{=aJGlM29l}Select a player to ban.")).BuildOnActionExecutedCallback(delegate
 		{
 			List<InquiryElement> list = new List<InquiryElement>();
 			foreach (NetworkCommunicator networkPeer4 in GameNetwork.NetworkPeers)
 			{
 				list.Add(new InquiryElement(networkPeer4, networkPeer4.UserName, null));
 			}
-			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=*}Ban Player").ToString(), new TextObject("{=*}Select player to ban").ToString(), list, isExitShown: true, 0, 1, new TextObject("{=*}Ban").ToString(), new TextObject("{=*}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
+			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=pbp0GQdO}Ban Player").ToString(), new TextObject("{=jw2VQYeK}Select player to ban").ToString(), list, isExitShown: true, 0, 1, new TextObject("{=HjqcmY6X}Ban").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(List<InquiryElement> selectedPlayers)
 			{
 				if (selectedPlayers != null && selectedPlayers.Count == 1)
 				{

@@ -22,7 +22,7 @@ public abstract class TestCommonBase
 
 	private bool timeoutTimerEnabled = true;
 
-	private int commonWaitTimeoutLimits = 420;
+	private int commonWaitTimeoutLimits = 1140;
 
 	public static TestCommonBase BaseInstance => _baseInstance;
 

@@ -184,10 +184,10 @@ public class PlayerCaptivity
 			LeaveSettlementAction.ApplyForParty(MobileParty.MainParty);
 		}
 		MobileParty.MainParty.IsActive = false;
-		PartyBase.MainParty.UpdateVisibilityAndInspected();
+		PartyBase.MainParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 		_captorParty = captorParty;
 		_captorParty.SetAsCameraFollowParty();
-		_captorParty.UpdateVisibilityAndInspected();
+		_captorParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 		if (MobileParty.MainParty.Army != null)
 		{
 			if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
@@ -202,6 +202,7 @@ public class PlayerCaptivity
 	{
 		if (Hero.MainHero.IsAlive)
 		{
+			Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
 			PartyBase.MainParty.AddElementToMemberRoster(CharacterObject.PlayerCharacter, 1, insertAtFront: true);
 			MobileParty.MainParty.ChangePartyLeader(Hero.MainHero);
 		}
@@ -231,20 +232,22 @@ public class PlayerCaptivity
 		if (_captorParty.IsActive)
 		{
 			_captorParty.PrisonRoster.RemoveTroop(Hero.MainHero.CharacterObject);
-		}
-		if (Hero.MainHero.IsAlive)
-		{
-			Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
+			if (_captorParty.IsMobile && !_captorParty.MobileParty.IsCurrentlyAtSea)
+			{
+				MobileParty.MainParty.TeleportPartyToOutSideOfEncounterRadius();
+			}
 		}
 		if (Hero.MainHero.IsAlive)
 		{
 			MobileParty.MainParty.IsActive = true;
 			PartyBase.MainParty.SetAsCameraFollowParty();
-			MobileParty.MainParty.Ai.SetMoveModeHold();
+			MobileParty.MainParty.SetMoveModeHold();
 			SkillLevelingManager.OnMainHeroReleasedFromCaptivity(CaptivityStartTime.ElapsedHoursUntilNow);
-			PartyBase.MainParty.UpdateVisibilityAndInspected();
+			if (!MobileParty.MainParty.IsCurrentlyAtSea)
+			{
+				PartyBase.MainParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
+			}
 		}
-		CampaignEventDispatcher.Instance.OnHeroPrisonerReleased(Hero.MainHero, _captorParty, _captorParty.MapFaction, EndCaptivityDetail.ReleasedAfterEscape);
 		_captorParty = null;
 		CountOfOffers = 0;
 		CurrentRansomAmount = 0;
@@ -252,18 +255,6 @@ public class PlayerCaptivity
 
 	public static void EndCaptivity()
 	{
-		if (Hero.MainHero.IsAlive)
-		{
-			if (Hero.MainHero.IsWounded)
-			{
-				Hero.MainHero.HitPoints = 20;
-			}
-			if (Hero.MainHero.PartyBelongedToAsPrisoner != null && Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile)
-			{
-				Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.Ai.SetDoNotAttackMainParty(12);
-			}
-			PlayerEncounter.ProtectPlayerSide(4f);
-		}
 		Campaign.Current.PlayerCaptivity.EndCaptivityInternal();
 	}
 
@@ -274,11 +265,11 @@ public class PlayerCaptivity
 		{
 			if (_captorParty.IsMobile && _captorParty.MobileParty.IsActive)
 			{
-				PartyBase.MainParty.MobileParty.Position2D = _captorParty.MobileParty.Position2D;
+				PartyBase.MainParty.MobileParty.Position = _captorParty.MobileParty.Position;
 			}
 			else if (_captorParty.IsSettlement)
 			{
-				PartyBase.MainParty.MobileParty.Position2D = _captorParty.Settlement.GatePosition;
+				PartyBase.MainParty.MobileParty.Position = (MobileParty.MainParty.IsCurrentlyAtSea ? _captorParty.Settlement.PortPosition : _captorParty.Settlement.GatePosition);
 			}
 			if (mapState != null && !mapState.AtMenu)
 			{

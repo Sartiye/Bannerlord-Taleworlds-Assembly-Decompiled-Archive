@@ -10,7 +10,7 @@ public class BehaviorRetreatToCastle : BehaviorComponent
 	public BehaviorRetreatToCastle(Formation formation)
 		: base(formation)
 	{
-		WorldPosition position = Mission.Current.DeploymentPlan.GetFormationPlan(formation.Team.Side, FormationClass.Cavalry, DeploymentPlanType.Initial).CreateNewDeploymentWorldPosition(WorldPosition.WorldPositionEnforcedCache.GroundVec3);
+		WorldPosition position = Mission.Current.DeploymentPlan.GetFormationPlan(formation.Team, FormationClass.Cavalry).CreateNewDeploymentWorldPosition(WorldPosition.WorldPositionEnforcedCache.GroundVec3);
 		base.CurrentOrder = MovementOrder.MovementOrderMove(position);
 		base.BehaviorCoherence = 0f;
 	}

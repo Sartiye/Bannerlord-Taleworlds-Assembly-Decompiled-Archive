@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PregnancyModel : GameModel
+public abstract class PregnancyModel : MBGameModel<PregnancyModel>
 {
 	public abstract float PregnancyDurationInDays { get; }
 

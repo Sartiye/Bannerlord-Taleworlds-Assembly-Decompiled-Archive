@@ -1,7 +1,10 @@
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -22,23 +25,23 @@ public static class StringHelpers
 
 	public static void SetSettlementProperties(string tag, Settlement settlement, TextObject parent = null, bool isRepeatable = false)
 	{
-		TextObject textObject = new TextObject();
-		textObject.SetTextVariable("NAME", settlement.Name);
-		textObject.SetTextVariable("LINK", settlement.EncyclopediaLinkWithName);
+		TextObject empty = TextObject.GetEmpty();
+		empty.SetTextVariable("NAME", settlement.Name);
+		empty.SetTextVariable("LINK", settlement.EncyclopediaLinkWithName);
 		if (!isRepeatable)
 		{
 			if (parent != null)
 			{
-				parent.SetTextVariable(tag, textObject);
+				parent.SetTextVariable(tag, empty);
 			}
 			else
 			{
-				MBTextManager.SetTextVariable(tag, textObject);
+				MBTextManager.SetTextVariable(tag, empty);
 			}
 		}
 		else
 		{
-			ConversationSentence.SelectedRepeatLine.SetTextVariable(tag, textObject);
+			ConversationSentence.SelectedRepeatLine.SetTextVariable(tag, empty);
 		}
 	}
 
@@ -50,42 +53,42 @@ public static class StringHelpers
 
 	private static TextObject GetCharacterProperties(CharacterObject character, bool includeDetails)
 	{
-		TextObject textObject = new TextObject();
-		textObject.SetTextVariable("NAME", character.Name);
-		textObject.SetTextVariable("GENDER", character.IsFemale ? 1 : 0);
-		textObject.SetTextVariable("LINK", character.EncyclopediaLinkWithName);
+		TextObject empty = TextObject.GetEmpty();
+		empty.SetTextVariable("NAME", character.Name);
+		empty.SetTextVariable("GENDER", character.IsFemale ? 1 : 0);
+		empty.SetTextVariable("LINK", character.EncyclopediaLinkWithName);
 		if (character.IsHero)
 		{
 			if (character.HeroObject.FirstName != null)
 			{
-				textObject.SetTextVariable("FIRSTNAME", character.HeroObject.FirstName);
+				empty.SetTextVariable("FIRSTNAME", character.HeroObject.FirstName);
 			}
 			else
 			{
-				textObject.SetTextVariable("FIRSTNAME", character.Name);
+				empty.SetTextVariable("FIRSTNAME", character.Name);
 			}
 			if (includeDetails)
 			{
-				textObject.SetTextVariable("AGE", (int)MathF.Round(character.Age, 2));
+				empty.SetTextVariable("AGE", (int)MathF.Round(character.Age, 2));
 				if (character.HeroObject.MapFaction != null)
 				{
-					textObject.SetTextVariable("FACTION", character.HeroObject.MapFaction.Name);
+					empty.SetTextVariable("FACTION", character.HeroObject.MapFaction.Name);
 				}
 				else
 				{
-					textObject.SetTextVariable("FACTION", character.Culture.Name);
+					empty.SetTextVariable("FACTION", character.Culture.Name);
 				}
 				if (character.HeroObject.Clan != null)
 				{
-					textObject.SetTextVariable("CLAN", character.HeroObject.Clan.Name);
+					empty.SetTextVariable("CLAN", character.HeroObject.Clan.Name);
 				}
 				else
 				{
-					textObject.SetTextVariable("CLAN", character.Culture.Name);
+					empty.SetTextVariable("CLAN", character.Culture.Name);
 				}
 			}
 		}
-		return textObject;
+		return empty;
 	}
 
 	public static TextObject SetCharacterProperties(string tag, CharacterObject character, TextObject parent = null, bool includeDetails = false)
@@ -100,5 +103,33 @@ public static class StringHelpers
 			MBTextManager.SetTextVariable(tag, characterProperties);
 		}
 		return characterProperties;
+	}
+
+	public static void SetEffectIncrementTypeTextVariable(string tag, TextObject description, float bonus, EffectIncrementType effectIncrementType)
+	{
+		float num = ((effectIncrementType == EffectIncrementType.AddFactor) ? (bonus * 100f) : bonus);
+		string text = $"{num:0.#}";
+		if (bonus > 0f)
+		{
+			description.SetTextVariable(tag, "+" + text);
+		}
+		else
+		{
+			description.SetTextVariable(tag, text ?? "");
+		}
+	}
+
+	public static string RemoveDiacritics(string originalText)
+	{
+		originalText = originalText.Normalize(NormalizationForm.FormD);
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < originalText.Length; i++)
+		{
+			if (CharUnicodeInfo.GetUnicodeCategory(originalText[i]) != UnicodeCategory.NonSpacingMark)
+			{
+				stringBuilder.Append(originalText[i]);
+			}
+		}
+		return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
 	}
 }

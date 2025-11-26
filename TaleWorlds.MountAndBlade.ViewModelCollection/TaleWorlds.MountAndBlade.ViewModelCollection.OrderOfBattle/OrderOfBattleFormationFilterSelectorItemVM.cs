@@ -15,6 +15,8 @@ public class OrderOfBattleFormationFilterSelectorItemVM : ViewModel
 
 	private bool _isActive;
 
+	private bool _isEnabled;
+
 	private HintViewModel _hint;
 
 	[DataSourceProperty]
@@ -48,6 +50,23 @@ public class OrderOfBattleFormationFilterSelectorItemVM : ViewModel
 				_isActive = value;
 				OnPropertyChangedWithValue(value, "IsActive");
 				_onToggled?.Invoke(this);
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsEnabled
+	{
+		get
+		{
+			return _isEnabled;
+		}
+		set
+		{
+			if (value != _isEnabled)
+			{
+				_isEnabled = value;
+				OnPropertyChangedWithValue(value, "IsEnabled");
 			}
 		}
 	}

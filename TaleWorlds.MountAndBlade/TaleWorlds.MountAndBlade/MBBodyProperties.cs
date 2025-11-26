@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -48,10 +49,10 @@ public static class MBBodyProperties
 		MBAPI.IMBFaceGen.ProduceNumericKeyWithDefaultValues(ref initialBodyProperties, earsAreHidden, mouthIsHidden, race, gender, age);
 	}
 
-	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags)
+	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags, float variationAmount)
 	{
 		BodyProperties outBodyProperties = default(BodyProperties);
-		MBAPI.IMBFaceGen.GetRandomBodyProperties(race, isFemale ? 1 : 0, ref bodyPropertiesMin, ref bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tatooTags, ref outBodyProperties);
+		MBAPI.IMBFaceGen.GetRandomBodyProperties(race, isFemale ? 1 : 0, ref bodyPropertiesMin, ref bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tatooTags, variationAmount, ref outBodyProperties);
 		return outBodyProperties;
 	}
 
@@ -130,6 +131,30 @@ public static class MBBodyProperties
 	public static string[] GetRaceIds()
 	{
 		return MBAPI.IMBFaceGen.GetRaceIds().Split(new char[1] { ';' });
+	}
+
+	public static int[] GetHairIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		int result;
+		return (from x in MBAPI.IMBFaceGen.GetHairIndicesByTag(race, curGender, age, tag).Split(new char[1] { ',' })
+			where int.TryParse(x, out result)
+			select x).Select(int.Parse).ToArray();
+	}
+
+	public static int[] GetFacialIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		int result;
+		return (from x in MBAPI.IMBFaceGen.GetFacialIndicesByTag(race, curGender, age, tag).Split(new char[1] { ',' })
+			where int.TryParse(x, out result)
+			select x).Select(int.Parse).ToArray();
+	}
+
+	public static int[] GetTattooIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		int result;
+		return (from x in MBAPI.IMBFaceGen.GetTattooIndicesByTag(race, curGender, age, tag).Split(new char[1] { ',' })
+			where int.TryParse(x, out result)
+			select x).Select(int.Parse).ToArray();
 	}
 
 	public static List<uint> GetSkinColorGradientPoints(int race, int curGender, int age)

@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Extensions;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class NotablesCampaignBehavior : CampaignBehaviorBase
 {
-	private const int GoldLimitForNotablesToStartGainingPower = 10000;
-
-	private const int GoldLimitForNotablesToStartLosingPower = 5000;
-
-	private const int GoldNeededToGainOnePower = 500;
-
 	private const int CaravanGoldLowLimit = 5000;
 
 	private const int RemoveNotableCharacterAfterDays = 7;
@@ -38,6 +35,25 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, WeeklyTick);
 		CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, DailyTickHero);
 		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, DailyTickSettlement);
+		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
+	}
+
+	private void OnHeroCreated(Hero hero, bool isBornNaturally)
+	{
+		if (hero.Occupation == Occupation.GangLeader || hero.Occupation == Occupation.Artisan || hero.Occupation == Occupation.RuralNotable || hero.Occupation == Occupation.Merchant || hero.Occupation == Occupation.Headman)
+		{
+			hero.ChangeState(Hero.CharacterStates.Active);
+			EnterSettlementAction.ApplyForCharacterOnly(hero, hero.HomeSettlement);
+			GiveGoldAction.ApplyBetweenCharacters(null, hero, 10000, disableNotification: true);
+			if (hero.Template?.HeroObject?.Clan != null && hero.Template.HeroObject.Clan.IsMinorFaction)
+			{
+				hero.SupporterOf = hero.Template.HeroObject.Clan;
+			}
+			else
+			{
+				hero.SupporterOf = HeroHelper.GetRandomClanForNotable(hero);
+			}
+		}
 	}
 
 	private void WeeklyTick()
@@ -74,7 +90,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 			int num2 = (int)((num - randomValue) * (num - randomValue) / (num * num) * 100f);
 			if (num2 > 0)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(hero1, hero2, num2);
+				hero1.SetPersonalRelation(hero2, num2);
 			}
 		}
 		else if (randomValue > 1f - chanceOfConflict)
@@ -82,7 +98,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 			int num3 = -(int)((randomValue - (1f - chanceOfConflict)) * (randomValue - (1f - chanceOfConflict)) / (chanceOfConflict * chanceOfConflict) * 100f);
 			if (num3 < 0)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(hero1, hero2, num3);
+				hero1.SetPersonalRelation(hero2, num3);
 			}
 		}
 	}
@@ -94,33 +110,34 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 			for (int i = 0; i < item.Notables.Count; i++)
 			{
 				Hero hero = item.Notables[i];
-				foreach (Hero lord in item.MapFaction.Lords)
+				foreach (Hero item2 in item.MapFaction.AliveLords.Union(item.MapFaction.DeadLords))
 				{
-					if (lord != hero && lord == lord.Clan.Leader && lord.MapFaction == item.MapFaction)
+					if (item2 != hero && item2 == item2.Clan.Leader && item2.MapFaction == item.MapFaction)
 					{
-						float chanceOfConflict = (float)HeroHelper.NPCPersonalityClashWithNPC(hero, lord) * 0.01f * 2.5f;
+						float chanceOfConflict = (float)HeroHelper.NPCPersonalityClashWithNPC(hero, item2) * 0.01f * 2.5f;
 						float randomFloat = MBRandom.RandomFloat;
 						float num = Campaign.MapDiagonal;
-						foreach (Settlement settlement in lord.Clan.Settlements)
+						foreach (Settlement settlement in item2.Clan.Settlements)
 						{
-							float num2 = ((item == settlement) ? 0f : settlement.Position2D.Distance(item.Position2D));
+							float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(settlement, item, MobileParty.NavigationType.All);
 							if (num2 < num)
 							{
 								num = num2;
 							}
 						}
-						float num3 = ((num < 100f) ? (1f - num / 100f) : 0f);
-						float num4 = num3 * MBRandom.RandomFloat + (1f - num3);
+						float num3 = 0.75f * Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
+						float num4 = ((num < num3) ? (1f - num / num3) : 0f);
+						float num5 = num4 * MBRandom.RandomFloat + (1f - num4);
 						if (MBRandom.RandomFloat < 0.2f)
 						{
-							num4 = 1f / (0.5f + 0.5f * num4);
+							num5 = 1f / (0.5f + 0.5f * num5);
 						}
-						randomFloat *= num4;
+						randomFloat *= num5;
 						if (randomFloat > 1f)
 						{
 							randomFloat = 1f;
 						}
-						DetermineRelation(hero, lord, randomFloat, chanceOfConflict);
+						DetermineRelation(hero, item2, randomFloat, chanceOfConflict);
 					}
 					for (int j = i + 1; j < item.Notables.Count; j++)
 					{
@@ -163,7 +180,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 		if (_settlementPassedDaysForWeeklyTick.ContainsKey(settlement))
 		{
 			_settlementPassedDaysForWeeklyTick[settlement]++;
-			if (_settlementPassedDaysForWeeklyTick[settlement] == 7)
+			if (_settlementPassedDaysForWeeklyTick[settlement] == CampaignTime.DaysInWeek)
 			{
 				SettlementHelper.SpawnNotablesIfNeeded(settlement);
 				_settlementPassedDaysForWeeklyTick[settlement] = 0;
@@ -209,7 +226,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 		{
 			foreach (Clan nonBanditFaction in Clan.NonBanditFactions)
 			{
-				if (nonBanditFaction.Leader != null)
+				if (nonBanditFaction.Leader != null && nonBanditFaction != Clan.PlayerClan)
 				{
 					int relation = notable.GetRelation(nonBanditFaction.Leader);
 					if (relation > 50)
@@ -225,33 +242,16 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		int relation2 = notable.GetRelation(notable.SupporterOf.Leader);
-		if (relation2 < 0)
+		if (relation2 < 0 || MBRandom.RandomFloat < (50f - (float)relation2) / 500f)
 		{
+			bool num2 = notable.SupporterOf == Clan.PlayerClan;
 			notable.SupporterOf = null;
-		}
-		else if (relation2 < 50)
-		{
-			float num2 = (float)(50 - relation2) / 500f;
-			if (MBRandom.RandomFloat < num2)
+			if (num2)
 			{
-				notable.SupporterOf = null;
+				TextObject textObject = new TextObject("{=aaOIjHeP}{NOTABLE.NAME} no longer supports your clan as your relationship deteriorated too much.");
+				textObject.SetCharacterProperties("NOTABLE", notable.CharacterObject);
+				InformationManager.DisplayMessage(new InformationMessage(textObject.ToString(), new Color(0f, 1f, 0f)));
 			}
-		}
-	}
-
-	private void BalanceGoldAndPowerOfNotable(Hero notable)
-	{
-		if (notable.Gold > 10500)
-		{
-			int num = (notable.Gold - 10000) / 500;
-			GiveGoldAction.ApplyBetweenCharacters(notable, null, num * 500, disableNotification: true);
-			notable.AddPower(num);
-		}
-		else if (notable.Gold < 4500 && notable.Power > 0f)
-		{
-			int num2 = (5000 - notable.Gold) / 500;
-			GiveGoldAction.ApplyBetweenCharacters(null, notable, num2 * 500, disableNotification: true);
-			notable.AddPower(-num2);
 		}
 	}
 
@@ -264,7 +264,6 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 				UpdateNotableRelations(hero);
 			}
 			UpdateNotableSupport(hero);
-			BalanceGoldAndPowerOfNotable(hero);
 			ManageCaravanExpensesOfNotable(hero);
 			CheckAndMakeNotableDisappear(hero);
 		}
@@ -272,7 +271,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 
 	private void CheckAndMakeNotableDisappear(Hero notable)
 	{
-		if (notable.OwnedWorkshops.IsEmpty() && notable.OwnedCaravans.IsEmpty() && notable.OwnedAlleys.IsEmpty() && notable.CanDie(KillCharacterAction.KillCharacterActionDetail.Lost) && notable.CanHaveQuestsOrIssues() && notable.Power < (float)Campaign.Current.Models.NotablePowerModel.NotableDisappearPowerLimit)
+		if (notable.OwnedWorkshops.IsEmpty() && notable.OwnedCaravans.IsEmpty() && notable.OwnedAlleys.IsEmpty() && notable.CanDie(KillCharacterAction.KillCharacterActionDetail.Lost) && notable.CanHaveCampaignIssues() && notable.Power < (float)Campaign.Current.Models.NotablePowerModel.NotableDisappearPowerLimit)
 		{
 			float randomFloat = MBRandom.RandomFloat;
 			float notableDisappearProbability = GetNotableDisappearProbability(notable);
@@ -369,17 +368,17 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 				int targetNotableCountForSettlement = Campaign.Current.Models.NotableSpawnModel.GetTargetNotableCountForSettlement(item, Occupation.Artisan);
 				for (int i = 0; i < targetNotableCountForSettlement; i++)
 				{
-					HeroCreator.CreateHeroAtOccupation(Occupation.Artisan, item);
+					HeroCreator.CreateNotable(Occupation.Artisan, item);
 				}
 				int targetNotableCountForSettlement2 = Campaign.Current.Models.NotableSpawnModel.GetTargetNotableCountForSettlement(item, Occupation.Merchant);
 				for (int j = 0; j < targetNotableCountForSettlement2; j++)
 				{
-					HeroCreator.CreateHeroAtOccupation(Occupation.Merchant, item);
+					HeroCreator.CreateNotable(Occupation.Merchant, item);
 				}
 				int targetNotableCountForSettlement3 = Campaign.Current.Models.NotableSpawnModel.GetTargetNotableCountForSettlement(item, Occupation.GangLeader);
 				for (int k = 0; k < targetNotableCountForSettlement3; k++)
 				{
-					HeroCreator.CreateHeroAtOccupation(Occupation.GangLeader, item);
+					HeroCreator.CreateNotable(Occupation.GangLeader, item);
 				}
 			}
 			else if (item.IsVillage)
@@ -387,12 +386,12 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 				int targetNotableCountForSettlement4 = Campaign.Current.Models.NotableSpawnModel.GetTargetNotableCountForSettlement(item, Occupation.RuralNotable);
 				for (int l = 0; l < targetNotableCountForSettlement4; l++)
 				{
-					HeroCreator.CreateHeroAtOccupation(Occupation.RuralNotable, item);
+					HeroCreator.CreateNotable(Occupation.RuralNotable, item);
 				}
 				int targetNotableCountForSettlement5 = Campaign.Current.Models.NotableSpawnModel.GetTargetNotableCountForSettlement(item, Occupation.Headman);
 				for (int m = 0; m < targetNotableCountForSettlement5; m++)
 				{
-					HeroCreator.CreateHeroAtOccupation(Occupation.Headman, item);
+					HeroCreator.CreateNotable(Occupation.Headman, item);
 				}
 			}
 		}

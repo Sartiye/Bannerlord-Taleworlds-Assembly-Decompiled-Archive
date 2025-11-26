@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Armies;
 
@@ -26,9 +28,15 @@ public class KingdomArmyItemVM : KingdomItemVM
 
 	private string _strengthLabel;
 
+	private string _shipCountLabel;
+
+	private int _shipCount;
+
 	private int _lordCount;
 
 	private string _location;
+
+	private string _behavior;
 
 	private string _cohesionLabel;
 
@@ -173,6 +181,40 @@ public class KingdomArmyItemVM : KingdomItemVM
 	}
 
 	[DataSourceProperty]
+	public int ShipCount
+	{
+		get
+		{
+			return _shipCount;
+		}
+		set
+		{
+			if (value != _shipCount)
+			{
+				_shipCount = value;
+				OnPropertyChangedWithValue(value, "ShipCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ShipCountLabel
+	{
+		get
+		{
+			return _shipCountLabel;
+		}
+		set
+		{
+			if (value != _shipCountLabel)
+			{
+				_shipCountLabel = value;
+				OnPropertyChangedWithValue(value, "ShipCountLabel");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string Location
 	{
 		get
@@ -184,6 +226,23 @@ public class KingdomArmyItemVM : KingdomItemVM
 			if (value != _location)
 			{
 				_location = value;
+				OnPropertyChangedWithValue(value, "Location");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string Behavior
+	{
+		get
+		{
+			return _behavior;
+		}
+		set
+		{
+			if (value != _behavior)
+			{
+				_behavior = value;
 				OnPropertyChanged("Objective");
 			}
 		}
@@ -215,7 +274,8 @@ public class KingdomArmyItemVM : KingdomItemVM
 		Leader = new HeroVM(Army.LeaderParty.LeaderHero);
 		LordCount = army.Parties.Count;
 		Strength = army.Parties.Sum((MobileParty p) => p.Party.NumberOfAllMembers);
-		Location = army.GetBehaviorText(setWithLink: true).ToString();
+		Location = CampaignUIHelper.GetPartyLocationText(army.LeaderParty);
+		Behavior = army.GetLongTermBehaviorText(setWithLink: true).ToString();
 		UpdateIsNew();
 		Cohesion = (int)Army.Cohesion;
 		Parties = new MBBindingList<KingdomArmyPartyItemVM>();
@@ -223,7 +283,7 @@ public class KingdomArmyItemVM : KingdomItemVM
 		{
 			Parties.Add(new KingdomArmyPartyItemVM(party));
 		}
-		DistanceToMainParty = Campaign.Current.Models.MapDistanceModel.GetDistance(army.LeaderParty, MobileParty.MainParty);
+		DistanceToMainParty = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(army.LeaderParty, MobileParty.MainParty, army.LeaderParty.NavigationCapability);
 		IsMainArmy = army.LeaderParty == MobileParty.MainParty;
 		RefreshValues();
 	}
@@ -238,6 +298,9 @@ public class KingdomArmyItemVM : KingdomItemVM
 		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_men_count"));
 		GameTexts.SetVariable("RIGHT", Strength.ToString());
 		StrengthLabel = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString();
+		ShipCount = Army.Parties.Sum((MobileParty p) => p.Ships?.Count ?? 0);
+		ShipCountLabel = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").SetTextVariable("LEFT", new TextObject("{=URbKirPS}Ship Count")).SetTextVariable("RIGHT", ShipCount)
+			.ToString();
 		Parties.ApplyActionOnAllItems(delegate(KingdomArmyPartyItemVM x)
 		{
 			x.RefreshValues();

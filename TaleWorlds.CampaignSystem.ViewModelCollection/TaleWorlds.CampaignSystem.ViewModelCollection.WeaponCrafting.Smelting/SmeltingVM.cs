@@ -196,8 +196,12 @@ public class SmeltingVM : ViewModel
 			if (elementCopyAtIndex.EquipmentElement.Item.IsCraftedWeapon)
 			{
 				bool isLocked = IsItemLocked(elementCopyAtIndex.EquipmentElement);
-				SmeltingItemVM item = new SmeltingItemVM(elementCopyAtIndex.EquipmentElement, OnItemSelection, ProcessLockItem, isLocked, elementCopyAtIndex.Amount);
-				SmeltableItemList.Add(item);
+				SmeltingItemVM smeltingItemVM = new SmeltingItemVM(elementCopyAtIndex.EquipmentElement, OnItemSelection, ProcessLockItem, isLocked, elementCopyAtIndex.Amount);
+				if (smeltingItemVM.Visual.Id == CurrentSelectedItem?.Visual?.Id)
+				{
+					OnItemSelection(smeltingItemVM);
+				}
+				SmeltableItemList.Add(smeltingItemVM);
 			}
 		}
 		if (SmeltableItemList.Count == 0)

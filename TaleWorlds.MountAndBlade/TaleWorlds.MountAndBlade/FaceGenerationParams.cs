@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Face_generation_params", false)]
+[EngineStruct("Face_generation_params", false, null)]
 public struct FaceGenerationParams
 {
 	public int Seed;
@@ -55,7 +55,6 @@ public struct FaceGenerationParams
 
 	public float FaceDirtAmount;
 
-	[CustomEngineStructMemberData("current_face_tattoo_color_offset_1")]
 	public float CurrentFaceTattooColorOffset1;
 
 	public float HeightMultiplier;

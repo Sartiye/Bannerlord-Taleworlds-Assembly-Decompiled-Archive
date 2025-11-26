@@ -1,4 +1,3 @@
-using System.Linq;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.TwoDimension;
@@ -21,14 +20,14 @@ public class DropdownButtonWidget : ButtonWidget
 		{
 			if (value != _displayedList)
 			{
-				if (_displayedList != null && _displayedList.AllChildrenAndThis.FirstOrDefault((Widget x) => x is ListPanel) is ListPanel listPanel)
+				if (_displayedList != null && _displayedList.GetFirstInChildrenAndThisRecursive((Widget x) => x is ListPanel) is ListPanel listPanel)
 				{
 					listPanel.SelectEventHandlers.Remove(OnListItemSelected);
 				}
 				_displayedList = value;
 				_displayedList.IsVisible = false;
 				_isDisplayingList = false;
-				if (_displayedList.AllChildrenAndThis.FirstOrDefault((Widget x) => x is ListPanel) is ListPanel listPanel2)
+				if (_displayedList.GetFirstInChildrenAndThisRecursive((Widget x) => x is ListPanel) is ListPanel listPanel2)
 				{
 					listPanel2.SelectEventHandlers.Add(OnListItemSelected);
 				}
@@ -84,9 +83,9 @@ public class DropdownButtonWidget : ButtonWidget
 		base.DoNotUseCustomScaleAndChildren = true;
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (DisplayedList != null)
 		{
 			if (!_isDisplayingList)

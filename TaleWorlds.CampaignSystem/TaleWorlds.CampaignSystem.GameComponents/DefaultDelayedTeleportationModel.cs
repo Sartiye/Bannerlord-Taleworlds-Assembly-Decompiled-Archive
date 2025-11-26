@@ -1,37 +1,64 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultDelayedTeleportationModel : DelayedTeleportationModel
 {
-	private const float MaximumDistanceForDelay = 300f;
+	private float MaximumDistanceForDelayAsDays => 2f;
 
 	public override float DefaultTeleportationSpeed => 0.24f;
 
 	public override ExplainedNumber GetTeleportationDelayAsHours(Hero teleportingHero, PartyBase target)
 	{
-		float distance = 300f;
+		float num = MaximumDistanceForDelayAsDays * Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
+		float value = 0f;
 		IMapPoint mapPoint = teleportingHero.GetMapPoint();
 		if (mapPoint != null)
 		{
+			MobileParty.NavigationType navigationType = ((!teleportingHero.Clan.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.All);
 			if (target.IsSettlement)
 			{
-				if (teleportingHero.CurrentSettlement != null && teleportingHero.CurrentSettlement == target.Settlement)
-				{
-					distance = 0f;
-				}
-				else
-				{
-					Campaign.Current.Models.MapDistanceModel.GetDistance(mapPoint, target.Settlement, 300f, out distance);
-				}
+				value = ((teleportingHero.CurrentSettlement == null || teleportingHero.CurrentSettlement != target.Settlement) ? DistanceHelper.FindClosestDistanceFromMapPointToSettlement(mapPoint, target.Settlement, navigationType, out var _) : 0f);
 			}
 			else if (target.IsMobile)
 			{
-				Campaign.Current.Models.MapDistanceModel.GetDistance(mapPoint, target.MobileParty, 300f, out distance);
+				if (mapPoint is Settlement toSettlement)
+				{
+					value = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(target.MobileParty, toSettlement, navigationType);
+				}
+				else if (mapPoint is MobileParty to)
+				{
+					float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(target.MobileParty, to, navigationType);
+					if (num2 < num)
+					{
+						value = num2;
+					}
+				}
 			}
 		}
-		return new ExplainedNumber(distance * DefaultTeleportationSpeed);
+		value = MathF.Clamp(value, 0f, num);
+		return new ExplainedNumber(value * DefaultTeleportationSpeed);
+	}
+
+	public override bool CanPerformImmediateTeleport(Hero hero, MobileParty targetMobileParty, Settlement targetSettlement)
+	{
+		if (targetSettlement == null || targetSettlement.IsUnderSiege || targetSettlement.IsUnderRaid)
+		{
+			if (targetMobileParty != null && targetMobileParty.MapEvent == null && !targetMobileParty.IsCurrentlyEngagingParty)
+			{
+				if (targetMobileParty.IsCurrentlyAtSea)
+				{
+					return targetMobileParty.CurrentSettlement != null;
+				}
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 }

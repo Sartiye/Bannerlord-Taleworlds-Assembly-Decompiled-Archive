@@ -12,37 +12,57 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 {
 	private const float PartySpottingDifficultyInForests = 0.3f;
 
+	public override float MaximumSeeingRange()
+	{
+		return 60f;
+	}
+
+	public override float GetPartySpottingRangeBase(MobileParty party)
+	{
+		if (!Campaign.Current.IsNight)
+		{
+			return 12f;
+		}
+		return 6f;
+	}
+
 	public override ExplainedNumber GetPartySpottingRange(MobileParty party, bool includeDescriptions = false)
 	{
-		float baseNumber = (Campaign.Current.IsNight ? 6f : 12f);
-		ExplainedNumber stat = new ExplainedNumber(baseNumber, includeDescriptions);
+		float partySpottingRangeBase = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingRangeBase(party);
+		ExplainedNumber explainedNumber = new ExplainedNumber(partySpottingRangeBase, includeDescriptions);
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace);
-		SkillHelper.AddSkillBonusForParty(DefaultSkills.Scouting, DefaultSkillEffects.TrackingSpottingDistance, party, ref stat);
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.EagleEye, party, isPrimaryBonus: false, ref stat);
+		SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingSpottingDistance, party, ref explainedNumber);
+		if (!party.IsCurrentlyAtSea)
+		{
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.EagleEye, party, isPrimaryBonus: false, ref explainedNumber);
+		}
 		Hero effectiveScout = party.EffectiveScout;
 		if (effectiveScout != null)
 		{
-			if ((faceTerrainType == TerrainType.Plain || faceTerrainType == TerrainType.Steppe) && effectiveScout.GetPerkValue(DefaultPerks.Scouting.WaterDiviner))
+			if (faceTerrainType == TerrainType.Forest && PartyBaseHelper.HasFeat(party.Party, DefaultCulturalFeats.BattanianForestSpeedFeat))
 			{
-				stat.AddFactor(DefaultPerks.Scouting.WaterDiviner.PrimaryBonus, DefaultPerks.Scouting.WaterDiviner.Name);
+				explainedNumber.AddFactor(0.15f, GameTexts.FindText("str_culture"));
 			}
-			else if (faceTerrainType == TerrainType.Forest && PartyBaseHelper.HasFeat(party.Party, DefaultCulturalFeats.BattanianForestSpeedFeat))
+			if (!party.IsCurrentlyAtSea)
 			{
-				stat.AddFactor(0.15f, GameTexts.FindText("str_culture"));
+				if ((faceTerrainType == TerrainType.Plain || faceTerrainType == TerrainType.Steppe) && effectiveScout.GetPerkValue(DefaultPerks.Scouting.WaterDiviner))
+				{
+					explainedNumber.AddFactor(DefaultPerks.Scouting.WaterDiviner.PrimaryBonus, DefaultPerks.Scouting.WaterDiviner.Name);
+				}
+				if (Campaign.Current.IsNight)
+				{
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.NightRunner, party, isPrimaryBonus: false, ref explainedNumber);
+				}
+				else
+				{
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.DayTraveler, party, isPrimaryBonus: false, ref explainedNumber);
+				}
 			}
-			if (Campaign.Current.IsNight && effectiveScout.GetPerkValue(DefaultPerks.Scouting.NightRunner))
+			if (!party.IsMoving && !party.IsCurrentlyAtSea && party.StationaryStartTime.ElapsedHoursUntilNow >= 1f)
 			{
-				stat.AddFactor(DefaultPerks.Scouting.NightRunner.SecondaryBonus, DefaultPerks.Scouting.NightRunner.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VantagePoint, party, isPrimaryBonus: false, ref explainedNumber);
 			}
-			else if (effectiveScout.GetPerkValue(DefaultPerks.Scouting.DayTraveler))
-			{
-				stat.AddFactor(DefaultPerks.Scouting.DayTraveler.SecondaryBonus, DefaultPerks.Scouting.DayTraveler.Name);
-			}
-			if (!party.IsMoving && party.StationaryStartTime.ElapsedHoursUntilNow >= 1f && effectiveScout.GetPerkValue(DefaultPerks.Scouting.VantagePoint))
-			{
-				stat.AddFactor(DefaultPerks.Scouting.VantagePoint.PrimaryBonus, DefaultPerks.Scouting.VantagePoint.Name);
-			}
-			if (effectiveScout.GetPerkValue(DefaultPerks.Scouting.MountedScouts))
+			if (effectiveScout.GetPerkValue(DefaultPerks.Scouting.MountedScouts) && !party.IsCurrentlyAtSea)
 			{
 				float num = 0f;
 				for (int i = 0; i < party.MemberRoster.Count; i++)
@@ -54,11 +74,11 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 				}
 				if (num / (float)party.MemberRoster.TotalManCount >= 0.5f)
 				{
-					stat.AddFactor(DefaultPerks.Scouting.MountedScouts.PrimaryBonus, DefaultPerks.Scouting.MountedScouts.Name);
+					explainedNumber.AddFactor(DefaultPerks.Scouting.MountedScouts.PrimaryBonus, DefaultPerks.Scouting.MountedScouts.Name);
 				}
 			}
 		}
-		return stat;
+		return explainedNumber;
 	}
 
 	public override float GetPartyRelativeInspectionRange(IMapPoint party)

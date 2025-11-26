@@ -105,7 +105,7 @@ public class MultiplayerAdminPanelOptionGroupVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Failed to create view model for option type: " + optionGroup.Options[i].GetType().Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\AdminPanel\\MultiplayerAdminPanelOptionGroupVM.cs", ".ctor", 34);
+				Debug.FailedAssert("Failed to create view model for option type: " + optionGroup.Options[i].GetType().Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\AdminPanel\\MultiplayerAdminPanelOptionGroupVM.cs", ".ctor", 34);
 			}
 		}
 		for (int j = 0; j < _optionGroup.Actions.Count; j++)
@@ -117,7 +117,7 @@ public class MultiplayerAdminPanelOptionGroupVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Failed to create view model for option type: " + optionGroup.Options[j].GetType().Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\AdminPanel\\MultiplayerAdminPanelOptionGroupVM.cs", ".ctor", 48);
+				Debug.FailedAssert("Failed to create view model for option type: " + optionGroup.Options[j].GetType().Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\AdminPanel\\MultiplayerAdminPanelOptionGroupVM.cs", ".ctor", 48);
 			}
 		}
 		RequiresRestart = _optionGroup.RequiresRestart;
@@ -128,7 +128,7 @@ public class MultiplayerAdminPanelOptionGroupVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		RequiresRestartHint.HintText = (RequiresRestart ? new TextObject("{=*}All options under this category requires restart.") : TextObject.Empty);
+		RequiresRestartHint.HintText = (RequiresRestart ? new TextObject("{=sTVcpXkf}All options under this category requires restart.") : TextObject.GetEmpty());
 		GroupName = _optionGroup.Name.ToString();
 		Options.ApplyActionOnAllItems(delegate(MultiplayerAdminPanelOptionBaseVM o)
 		{

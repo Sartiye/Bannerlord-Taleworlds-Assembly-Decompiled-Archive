@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SiegeStrategyActionModel : GameModel
+public abstract class SiegeStrategyActionModel : MBGameModel<SiegeStrategyActionModel>
 {
 	public enum SiegeAction
 	{

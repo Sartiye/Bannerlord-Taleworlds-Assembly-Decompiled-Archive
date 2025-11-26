@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
@@ -59,7 +59,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 
 	private MPPlayerVM _datasource_Root_TargetPlayer;
 
-	private ImageIdentifierVM _datasource_Root_TargetPlayer_Avatar;
+	private PlayerAvatarImageIdentifierVM _datasource_Root_TargetPlayer_Avatar;
 
 	private MBBindingList<InputKeyItemVM> _datasource_Root_Keys;
 
@@ -70,7 +70,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 
 	private VisualDefinition CreateVisualDefinitionPollExtension()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("PollExtension", 0.9f, 0f, easeIn: true);
+		VisualDefinition visualDefinition = new VisualDefinition("PollExtension", 0.9f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("Active")
 		{
 			PositionXOffset = 0f
@@ -808,9 +808,17 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 
 	private void HandleWidgetPropertyChangeOf_widget_0_0_2_0_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_TargetPlayer_Avatar.AdditionalArgs = _widget_0_0_2_0_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_TargetPlayer_Avatar.Id = _widget_0_0_2_0_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_TargetPlayer_Avatar.TextureProviderName = _widget_0_0_2_0_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -1002,8 +1010,8 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		case "Id":
 			_widget_0_0_2_0_0.ImageId = _datasource_Root_TargetPlayer_Avatar.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_0_0_2_0_0.ImageTypeCode = _datasource_Root_TargetPlayer_Avatar.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_0_2_0_0.TextureProviderName = _datasource_Root_TargetPlayer_Avatar.TextureProviderName;
 			break;
 		}
 	}
@@ -1300,7 +1308,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 				_datasource_Root_TargetPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TargetPlayer_Avatar;
 				_widget_0_0_2_0_0.AdditionalArgs = _datasource_Root_TargetPlayer_Avatar.AdditionalArgs;
 				_widget_0_0_2_0_0.ImageId = _datasource_Root_TargetPlayer_Avatar.Id;
-				_widget_0_0_2_0_0.ImageTypeCode = _datasource_Root_TargetPlayer_Avatar.ImageTypeCode;
+				_widget_0_0_2_0_0.TextureProviderName = _datasource_Root_TargetPlayer_Avatar.TextureProviderName;
 				_widget_0_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_2_0_0;
 				_widget_0_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_2_0_0;
 				_widget_0_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_2_0_0;
@@ -1414,7 +1422,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 				_datasource_Root_TargetPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TargetPlayer_Avatar;
 				_widget_0_0_2_0_0.AdditionalArgs = _datasource_Root_TargetPlayer_Avatar.AdditionalArgs;
 				_widget_0_0_2_0_0.ImageId = _datasource_Root_TargetPlayer_Avatar.Id;
-				_widget_0_0_2_0_0.ImageTypeCode = _datasource_Root_TargetPlayer_Avatar.ImageTypeCode;
+				_widget_0_0_2_0_0.TextureProviderName = _datasource_Root_TargetPlayer_Avatar.TextureProviderName;
 				_widget_0_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_2_0_0;
 				_widget_0_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_2_0_0;
 				_widget_0_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_2_0_0;
@@ -1428,7 +1436,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_TargetPlayer_Avatar(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_TargetPlayer_Avatar(PlayerAvatarImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_TargetPlayer_Avatar != null)
 		{
@@ -1467,7 +1475,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 			_datasource_Root_TargetPlayer_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TargetPlayer_Avatar;
 			_widget_0_0_2_0_0.AdditionalArgs = _datasource_Root_TargetPlayer_Avatar.AdditionalArgs;
 			_widget_0_0_2_0_0.ImageId = _datasource_Root_TargetPlayer_Avatar.Id;
-			_widget_0_0_2_0_0.ImageTypeCode = _datasource_Root_TargetPlayer_Avatar.ImageTypeCode;
+			_widget_0_0_2_0_0.TextureProviderName = _datasource_Root_TargetPlayer_Avatar.TextureProviderName;
 			_widget_0_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_2_0_0;
 			_widget_0_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_2_0_0;
 			_widget_0_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_2_0_0;

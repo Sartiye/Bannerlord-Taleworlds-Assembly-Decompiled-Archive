@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class BattleMoraleModel : GameModel
+public abstract class BattleMoraleModel : MBGameModel<BattleMoraleModel>
 {
 	public const float BaseMoraleGainOnKill = 3f;
 
@@ -35,4 +35,10 @@ public abstract class BattleMoraleModel : GameModel
 	public abstract float CalculateCasualtiesFactor(BattleSideEnum battleSide);
 
 	public abstract float GetAverageMorale(Formation formation);
+
+	public abstract float CalculateMoraleChangeOnShipSunk(IShipOrigin shipOrigin);
+
+	public abstract float CalculateMoraleOnRamming(Agent agent, IShipOrigin rammingShip, IShipOrigin rammedShip);
+
+	public abstract float CalculateMoraleOnShipsConnected(Agent agent, IShipOrigin ownerShip, IShipOrigin targetShip);
 }

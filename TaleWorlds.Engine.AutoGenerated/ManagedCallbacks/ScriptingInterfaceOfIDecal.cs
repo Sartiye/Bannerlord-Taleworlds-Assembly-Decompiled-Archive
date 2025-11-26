@@ -13,6 +13,11 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void CheckAndRegisterToDecalSetDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer CreateCopyDelegate(UIntPtr pointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -38,6 +43,21 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void OverrideRoadBoundaryP0Delegate(UIntPtr decalPointer, in Vec2 data);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void OverrideRoadBoundaryP1Delegate(UIntPtr decalPointer, in Vec2 data);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetAlphaDelegate(UIntPtr decalPointer, float alpha);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetFactor1Delegate(UIntPtr decalPointer, uint factorColor1);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -49,6 +69,11 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetFrameDelegate(UIntPtr decalPointer, ref MatrixFrame decalFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetIsVisibleDelegate(UIntPtr pointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -67,6 +92,8 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
+	public static CheckAndRegisterToDecalSetDelegate call_CheckAndRegisterToDecalSetDelegate;
+
 	public static CreateCopyDelegate call_CreateCopyDelegate;
 
 	public static CreateDecalDelegate call_CreateDecalDelegate;
@@ -77,17 +104,30 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 
 	public static GetMaterialDelegate call_GetMaterialDelegate;
 
+	public static OverrideRoadBoundaryP0Delegate call_OverrideRoadBoundaryP0Delegate;
+
+	public static OverrideRoadBoundaryP1Delegate call_OverrideRoadBoundaryP1Delegate;
+
+	public static SetAlphaDelegate call_SetAlphaDelegate;
+
 	public static SetFactor1Delegate call_SetFactor1Delegate;
 
 	public static SetFactor1LinearDelegate call_SetFactor1LinearDelegate;
 
 	public static SetFrameDelegate call_SetFrameDelegate;
 
+	public static SetIsVisibleDelegate call_SetIsVisibleDelegate;
+
 	public static SetMaterialDelegate call_SetMaterialDelegate;
 
 	public static SetVectorArgumentDelegate call_SetVectorArgumentDelegate;
 
 	public static SetVectorArgument2Delegate call_SetVectorArgument2Delegate;
+
+	public void CheckAndRegisterToDecalSet(UIntPtr pointer)
+	{
+		call_CheckAndRegisterToDecalSetDelegate(pointer);
+	}
 
 	public Decal CreateCopy(UIntPtr pointer)
 	{
@@ -143,6 +183,21 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 		return result;
 	}
 
+	public void OverrideRoadBoundaryP0(UIntPtr decalPointer, in Vec2 data)
+	{
+		call_OverrideRoadBoundaryP0Delegate(decalPointer, in data);
+	}
+
+	public void OverrideRoadBoundaryP1(UIntPtr decalPointer, in Vec2 data)
+	{
+		call_OverrideRoadBoundaryP1Delegate(decalPointer, in data);
+	}
+
+	public void SetAlpha(UIntPtr decalPointer, float alpha)
+	{
+		call_SetAlphaDelegate(decalPointer, alpha);
+	}
+
 	public void SetFactor1(UIntPtr decalPointer, uint factorColor1)
 	{
 		call_SetFactor1Delegate(decalPointer, factorColor1);
@@ -158,6 +213,11 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 		call_SetFrameDelegate(decalPointer, ref decalFrame);
 	}
 
+	public void SetIsVisible(UIntPtr pointer, bool value)
+	{
+		call_SetIsVisibleDelegate(pointer, value);
+	}
+
 	public void SetMaterial(UIntPtr decalPointer, UIntPtr materialPointer)
 	{
 		call_SetMaterialDelegate(decalPointer, materialPointer);
@@ -171,5 +231,15 @@ internal class ScriptingInterfaceOfIDecal : IDecal
 	public void SetVectorArgument2(UIntPtr decalPointer, float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3)
 	{
 		call_SetVectorArgument2Delegate(decalPointer, vectorArgument0, vectorArgument1, vectorArgument2, vectorArgument3);
+	}
+
+	void IDecal.OverrideRoadBoundaryP0(UIntPtr decalPointer, in Vec2 data)
+	{
+		OverrideRoadBoundaryP0(decalPointer, in data);
+	}
+
+	void IDecal.OverrideRoadBoundaryP1(UIntPtr decalPointer, in Vec2 data)
+	{
+		OverrideRoadBoundaryP1(decalPointer, in data);
 	}
 }

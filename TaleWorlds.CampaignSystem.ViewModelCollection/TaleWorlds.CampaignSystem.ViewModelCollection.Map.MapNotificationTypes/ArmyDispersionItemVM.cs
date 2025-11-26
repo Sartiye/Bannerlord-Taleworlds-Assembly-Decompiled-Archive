@@ -12,6 +12,7 @@ public class ArmyDispersionItemVM : MapNotificationItemBaseVM
 		_onInspect = delegate
 		{
 			armyDispersionItemVM.NavigationHandler?.OpenKingdom(data.DispersedArmy);
+			armyDispersionItemVM.ExecuteRemove();
 		};
 	}
 }

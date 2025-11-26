@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Tutorial;
 using TaleWorlds.Engine;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
 
@@ -67,8 +69,6 @@ public class OrderOfBattleVM : ViewModel
 
 	private OrderOfBattleFormationItemVM _lastEnabledClassSelection;
 
-	private OrderOfBattleFormationItemVM _lastEnabledFilterSelection;
-
 	private bool _isEnabled;
 
 	private bool _isPlayerGeneral;
@@ -77,15 +77,19 @@ public class OrderOfBattleVM : ViewModel
 
 	private bool _canStartMission = true;
 
-	private bool _isPoolAcceptingCommander;
+	private bool _isPoolAcceptingCaptain;
 
 	private bool _isPoolAcceptingHeroTroops;
+
+	private bool _isPoolAcceptingAny;
 
 	private string _beginMissionText;
 
 	private bool _hasSelectedHeroes;
 
 	private int _selectedHeroCount;
+
+	private bool _areHotkeysEnabled = true;
 
 	private MBBindingList<OrderOfBattleFormationItemVM> _formationsSecondHalf;
 
@@ -95,6 +99,8 @@ public class OrderOfBattleVM : ViewModel
 
 	private HintViewModel _clearSelectionHint;
 
+	private bool _canToggleHeroSelection;
+
 	private string _autoDeployText;
 
 	private MBBindingList<OrderOfBattleHeroItemVM> _unassignedHeroes;
@@ -102,6 +108,10 @@ public class OrderOfBattleVM : ViewModel
 	private OrderOfBattleHeroItemVM _lastSelectedHeroItem;
 
 	private MBBindingList<OrderOfBattleFormationItemVM> _formationsFirstHalf;
+
+	private InputKeyItemVM _doneInputKey;
+
+	private InputKeyItemVM _resetInputKey;
 
 	private string _latestTutorialElementID;
 
@@ -115,9 +125,7 @@ public class OrderOfBattleVM : ViewModel
 
 	protected int TotalFormationCount => _mission.PlayerTeam.FormationsIncludingEmpty.Count;
 
-	public List<(int, List<int>)> CurrentConfiguration { get; private set; }
-
-	public bool IsOrderPreconfigured { get; protected set; }
+	public List<MissionOrderVM.FormationConfiguration> CurrentConfiguration { get; private set; }
 
 	[DataSourceProperty]
 	public bool IsPoolAcceptingHeroTroops
@@ -132,6 +140,7 @@ public class OrderOfBattleVM : ViewModel
 			{
 				_isPoolAcceptingHeroTroops = value;
 				OnPropertyChangedWithValue(value, "IsPoolAcceptingHeroTroops");
+				IsPoolAcceptingAny = IsPoolAcceptingCaptain || IsPoolAcceptingHeroTroops;
 			}
 		}
 	}
@@ -256,18 +265,36 @@ public class OrderOfBattleVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsPoolAcceptingCommander
+	public bool IsPoolAcceptingCaptain
 	{
 		get
 		{
-			return _isPoolAcceptingCommander;
+			return _isPoolAcceptingCaptain;
 		}
 		set
 		{
-			if (value != _isPoolAcceptingCommander)
+			if (value != _isPoolAcceptingCaptain)
 			{
-				_isPoolAcceptingCommander = value;
-				OnPropertyChangedWithValue(value, "IsPoolAcceptingCommander");
+				_isPoolAcceptingCaptain = value;
+				OnPropertyChangedWithValue(value, "IsPoolAcceptingCaptain");
+				IsPoolAcceptingAny = IsPoolAcceptingCaptain || IsPoolAcceptingHeroTroops;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsPoolAcceptingAny
+	{
+		get
+		{
+			return _isPoolAcceptingAny;
+		}
+		set
+		{
+			if (value != _isPoolAcceptingAny)
+			{
+				_isPoolAcceptingAny = value;
+				OnPropertyChangedWithValue(value, "IsPoolAcceptingAny");
 			}
 		}
 	}
@@ -285,6 +312,23 @@ public class OrderOfBattleVM : ViewModel
 			{
 				_selectedHeroCount = value;
 				OnPropertyChangedWithValue(value, "SelectedHeroCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool AreHotkeysEnabled
+	{
+		get
+		{
+			return _areHotkeysEnabled;
+		}
+		set
+		{
+			if (value != _areHotkeysEnabled)
+			{
+				_areHotkeysEnabled = value;
+				OnPropertyChangedWithValue(value, "AreHotkeysEnabled");
 			}
 		}
 	}
@@ -375,6 +419,55 @@ public class OrderOfBattleVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool CanToggleHeroSelection
+	{
+		get
+		{
+			return _canToggleHeroSelection;
+		}
+		set
+		{
+			if (value != _canToggleHeroSelection)
+			{
+				_canToggleHeroSelection = value;
+				OnPropertyChangedWithValue(value, "CanToggleHeroSelection");
+			}
+		}
+	}
+
+	public InputKeyItemVM DoneInputKey
+	{
+		get
+		{
+			return _doneInputKey;
+		}
+		set
+		{
+			if (value != _doneInputKey)
+			{
+				_doneInputKey = value;
+				OnPropertyChangedWithValue(value, "DoneInputKey");
+			}
+		}
+	}
+
+	public InputKeyItemVM ResetInputKey
+	{
+		get
+		{
+			return _resetInputKey;
+		}
+		set
+		{
+			if (value != _resetInputKey)
+			{
+				_resetInputKey = value;
+				OnPropertyChangedWithValue(value, "ResetInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MBBindingList<OrderOfBattleFormationItemVM> FormationsSecondHalf
 	{
 		get
@@ -447,12 +540,13 @@ public class OrderOfBattleVM : ViewModel
 		base.OnFinalize();
 		Game.Current.EventManager.UnregisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 		FinalizeFormationCallbacks();
+		DoneInputKey?.OnFinalize();
+		ResetInputKey?.OnFinalize();
 	}
 
 	private void InitializeFormationCallbacks()
 	{
 		OrderOfBattleFormationItemVM.OnClassSelectionToggled = OnClassSelectionToggled;
-		OrderOfBattleFormationItemVM.OnFilterSelectionToggled = OnFilterSelectionToggled;
 		OrderOfBattleFormationItemVM.OnHeroesChanged = OnHeroesChanged;
 		OrderOfBattleFormationItemVM.OnFilterUseToggled = OnFilterUseToggled;
 		OrderOfBattleFormationItemVM.OnSelection = SelectFormationItem;
@@ -460,8 +554,9 @@ public class OrderOfBattleVM : ViewModel
 		OrderOfBattleFormationItemVM.GetTotalTroopCountWithFilter = GetTroopCountWithFilter;
 		OrderOfBattleFormationItemVM.GetFormationWithCondition = GetFormationItemsWithCondition;
 		OrderOfBattleFormationItemVM.HasAnyTroopWithClass = HasAnyTroopWithClass;
-		OrderOfBattleFormationItemVM.OnAcceptCommander = OnFormationAcceptCommander;
+		OrderOfBattleFormationItemVM.OnAcceptCaptain = OnFormationAcceptCaptain;
 		OrderOfBattleFormationItemVM.OnAcceptHeroTroops = OnFormationAcceptHeroTroops;
+		OrderOfBattleFormationItemVM.OnFormationClassChanged = RefreshWeights;
 		OrderOfBattleFormationClassVM.OnWeightAdjustedCallback = OnWeightAdjusted;
 		OrderOfBattleFormationClassVM.OnClassChanged = OnFormationClassChanged;
 		OrderOfBattleFormationClassVM.CanAdjustWeight = CanAdjustWeight;
@@ -476,7 +571,6 @@ public class OrderOfBattleVM : ViewModel
 	private void FinalizeFormationCallbacks()
 	{
 		OrderOfBattleFormationItemVM.OnClassSelectionToggled = null;
-		OrderOfBattleFormationItemVM.OnFilterSelectionToggled = null;
 		OrderOfBattleFormationItemVM.OnHeroesChanged = null;
 		OrderOfBattleFormationItemVM.OnFilterUseToggled = null;
 		OrderOfBattleFormationItemVM.OnSelection = null;
@@ -484,8 +578,9 @@ public class OrderOfBattleVM : ViewModel
 		OrderOfBattleFormationItemVM.GetTotalTroopCountWithFilter = null;
 		OrderOfBattleFormationItemVM.GetFormationWithCondition = null;
 		OrderOfBattleFormationItemVM.HasAnyTroopWithClass = null;
-		OrderOfBattleFormationItemVM.OnAcceptCommander = null;
+		OrderOfBattleFormationItemVM.OnAcceptCaptain = null;
 		OrderOfBattleFormationItemVM.OnAcceptHeroTroops = null;
+		OrderOfBattleFormationItemVM.OnFormationClassChanged = null;
 		OrderOfBattleFormationClassVM.OnWeightAdjustedCallback = null;
 		OrderOfBattleFormationClassVM.OnClassChanged = null;
 		OrderOfBattleFormationClassVM.CanAdjustWeight = null;
@@ -530,11 +625,6 @@ public class OrderOfBattleVM : ViewModel
 				_isUnitDeployRefreshed = true;
 			}
 		}
-	}
-
-	[Conditional("DEBUG")]
-	private void EnsureAllFormationPercentagesAreValid()
-	{
 	}
 
 	private void EnsureAllFormationTypesAreSet(OrderOfBattleFormationItemVM f)
@@ -598,7 +688,7 @@ public class OrderOfBattleVM : ViewModel
 		_orderController = Mission.Current.PlayerTeam.PlayerOrderController;
 		_orderController.OnSelectedFormationsChanged += OnSelectedFormationsChanged;
 		_orderController.OnOrderIssued += OnOrderIssued;
-		CurrentConfiguration = new List<(int, List<int>)>();
+		CurrentConfiguration = new List<MissionOrderVM.FormationConfiguration>();
 		_availableTroopTypes = MissionGameModels.Current.BattleInitializationModel.GetAllAvailableTroopTypes();
 		IsPlayerGeneral = _mission.PlayerTeam.IsPlayerGeneral;
 		FormationsFirstHalf = new MBBindingList<OrderOfBattleFormationItemVM>();
@@ -654,10 +744,10 @@ public class OrderOfBattleVM : ViewModel
 		}
 		if (!IsPlayerGeneral)
 		{
-			foreach (KeyValuePair<int, Agent> preAssignedCommander in formationIndicesAndSergeants)
+			foreach (KeyValuePair<int, Agent> preAssignedCaptain in formationIndicesAndSergeants)
 			{
-				_allHeroes.First((OrderOfBattleHeroItemVM h) => h.Agent == preAssignedCommander.Value).SetIsPreAssigned(isPreAssigned: true);
-				AssignCommander(preAssignedCommander.Value, _allFormations[preAssignedCommander.Key]);
+				_allHeroes.First((OrderOfBattleHeroItemVM h) => h.Agent == preAssignedCaptain.Value).SetIsPreAssigned(isPreAssigned: true);
+				AssignCaptain(preAssignedCaptain.Value, _allFormations[preAssignedCaptain.Key]);
 			}
 		}
 		IsEnabled = true;
@@ -691,17 +781,12 @@ public class OrderOfBattleVM : ViewModel
 		}
 		for (int i = 0; i < _allFormations.Count; i++)
 		{
-			if (_allFormations[i].Formation == null)
+			Formation formation = _allFormations[i].Formation;
+			if (formation != null)
 			{
-				continue;
-			}
-			for (int j = 0; j < _allFormations[i].Classes.Count; j++)
-			{
-				OrderOfBattleFormationClassVM orderOfBattleFormationClassVM = _allFormations[i].Classes[j];
-				if (!orderOfBattleFormationClassVM.IsUnset)
+				for (FormationClass formationClass2 = FormationClass.Infantry; formationClass2 < FormationClass.NumberOfDefaultFormations; formationClass2++)
 				{
-					int visibleCountOfUnitsInClass = OrderOfBattleUIHelper.GetVisibleCountOfUnitsInClass(orderOfBattleFormationClassVM);
-					_visibleTroopTypeCountLookup[orderOfBattleFormationClassVM.Class] += visibleCountOfUnitsInClass;
+					_visibleTroopTypeCountLookup[formationClass2] += formation.GetCountOfUnitsBelongingToPhysicalClass(formationClass2, excludeBannerBearers: false);
 				}
 			}
 		}
@@ -775,7 +860,7 @@ public class OrderOfBattleVM : ViewModel
 		OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = null;
 		foreach (OrderOfBattleFormationItemVM allFormation in _allFormations)
 		{
-			if (allFormation.Commander.Agent == hero.Agent || allFormation.HeroTroops.Contains(hero))
+			if (allFormation.Captain.Agent == hero.Agent || allFormation.HeroTroops.Contains(hero))
 			{
 				hero.Agent.Formation = allFormation.Formation;
 				return allFormation;
@@ -839,16 +924,16 @@ public class OrderOfBattleVM : ViewModel
 		return null;
 	}
 
-	private List<(OrderOfBattleHeroItemVM Hero, bool WasCommander)> ClearAllHeroAssignments()
+	private List<(OrderOfBattleHeroItemVM Hero, bool WasCaptain)> ClearAllHeroAssignments()
 	{
 		List<(OrderOfBattleHeroItemVM, bool)> list = new List<(OrderOfBattleHeroItemVM, bool)>();
 		for (int i = 0; i < _allFormations.Count; i++)
 		{
-			if (_allFormations[i].HasCommander)
+			if (_allFormations[i].HasCaptain)
 			{
-				OrderOfBattleHeroItemVM commander = _allFormations[i].Commander;
-				list.Add((commander, true));
-				ClearHeroAssignment(commander);
+				OrderOfBattleHeroItemVM captain = _allFormations[i].Captain;
+				list.Add((captain, true));
+				ClearHeroAssignment(captain);
 			}
 			for (int num = _allFormations[i].HeroTroops.Count - 1; num >= 0; num--)
 			{
@@ -858,21 +943,6 @@ public class OrderOfBattleVM : ViewModel
 			}
 		}
 		return list;
-	}
-
-	private void AssignHeroesToInitialFormations(List<(OrderOfBattleHeroItemVM Hero, bool WasCommander)> heroes)
-	{
-		for (int i = 0; i < heroes.Count; i++)
-		{
-			if (heroes[i].WasCommander)
-			{
-				AssignCommander(heroes[i].Hero.Agent, heroes[i].Hero.InitialFormationItem);
-			}
-			else
-			{
-				heroes[i].Hero.InitialFormationItem.AddHeroTroop(heroes[i].Hero);
-			}
-		}
 	}
 
 	private void SetInitialHeroFormations()
@@ -892,7 +962,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 639);
+				Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 599);
 			}
 		}
 	}
@@ -920,27 +990,33 @@ public class OrderOfBattleVM : ViewModel
 		};
 		if (agent.FormationBanner != null && agent.FormationBanner.ItemComponent is BannerComponent bannerComponent)
 		{
-			list.Add(new TooltipProperty(_bannerText.ToString(), agent.FormationBanner.Name.ToString(), 0));
-			GameTexts.SetVariable("RANK", bannerComponent.BannerEffect.Name);
-			string content = string.Empty;
-			if (bannerComponent.BannerEffect.IncrementType == BannerEffect.EffectIncrementType.AddFactor)
+			if (!TextObject.IsNullOrEmpty(agent.FormationBanner.Name))
 			{
-				TextObject textObject = GameTexts.FindText("str_NUMBER_percent");
-				textObject.SetTextVariable("NUMBER", ((int)Math.Abs(bannerComponent.GetBannerEffectBonus() * 100f)).ToString());
-				content = textObject.ToString();
+				list.Add(new TooltipProperty(_bannerText.ToString(), agent.FormationBanner.Name.ToString(), 0));
+				GameTexts.SetVariable("RANK", bannerComponent.BannerEffect.Name);
+				string content = string.Empty;
+				if (bannerComponent.BannerEffect.IncrementType == EffectIncrementType.AddFactor)
+				{
+					TextObject textObject = GameTexts.FindText("str_NUMBER_percent");
+					textObject.SetTextVariable("NUMBER", ((int)Math.Abs(bannerComponent.GetBannerEffectBonus() * 100f)).ToString());
+					content = textObject.ToString();
+				}
+				else if (bannerComponent.BannerEffect.IncrementType == EffectIncrementType.Add)
+				{
+					content = bannerComponent.GetBannerEffectBonus().ToString();
+				}
+				GameTexts.SetVariable("NUMBER", content);
+				list.Add(new TooltipProperty(_bannerEffectText.ToString(), GameTexts.FindText("str_RANK_with_NUM_between_parenthesis").ToString(), 0));
 			}
-			else if (bannerComponent.BannerEffect.IncrementType == BannerEffect.EffectIncrementType.Add)
+			else
 			{
-				content = bannerComponent.GetBannerEffectBonus().ToString();
+				Debug.FailedAssert("Agent's formation banner name should not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "GetAgentTooltip", 661);
 			}
-			GameTexts.SetVariable("NUMBER", content);
-			list.Add(new TooltipProperty(_bannerEffectText.ToString(), GameTexts.FindText("str_RANK_with_NUM_between_parenthesis").ToString(), 0));
 		}
 		else
 		{
 			list.Add(new TooltipProperty(_noBannerEquippedText.ToString(), string.Empty, 0));
 		}
-		list.Add(new TooltipProperty(string.Empty, string.Empty, 0));
 		return list;
 	}
 
@@ -976,7 +1052,7 @@ public class OrderOfBattleVM : ViewModel
 			float num2 = 0f;
 			for (int l = 0; l < list.Count; l++)
 			{
-				OrderOfBattleFormationClassVM orderOfBattleFormationClassVM3 = list[k];
+				OrderOfBattleFormationClassVM orderOfBattleFormationClassVM3 = list[l];
 				if (orderOfBattleFormationClassVM3.Class == orderOfBattleFormationClassVM2.Class)
 				{
 					int countOfRealUnitsInClass = OrderOfBattleUIHelper.GetCountOfRealUnitsInClass(orderOfBattleFormationClassVM3);
@@ -985,8 +1061,8 @@ public class OrderOfBattleVM : ViewModel
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: true);
 						orderOfBattleFormationClassVM3.Weight = 0;
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: false);
-						TaleWorlds.Library.Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 757);
-						TaleWorlds.Library.Debug.Print("Formation unit count is out of bounds! Skipping...");
+						Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 722);
+						Debug.Print("Formation unit count is out of bounds! Skipping...");
 					}
 					else
 					{
@@ -1022,8 +1098,8 @@ public class OrderOfBattleVM : ViewModel
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: true);
 					orderOfBattleFormationClassVM5.Weight = 0;
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: false);
-					TaleWorlds.Library.Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 798);
-					TaleWorlds.Library.Debug.Print("Item weight is out of bounds! Skipping...");
+					Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 763);
+					Debug.Print("Item weight is out of bounds! Skipping...");
 				}
 				else
 				{
@@ -1033,7 +1109,7 @@ public class OrderOfBattleVM : ViewModel
 			for (int num4 = TaleWorlds.Library.MathF.Abs(num3 - 100); num4 > 0; num4--)
 			{
 				bool flag = num3 < 100;
-				OrderOfBattleFormationClassVM obj = (flag ? list2.MinBy((OrderOfBattleFormationClassVM c) => c.Weight) : list2.MaxBy((OrderOfBattleFormationClassVM c) => c.Weight));
+				OrderOfBattleFormationClassVM obj = (flag ? TaleWorlds.Core.Extensions.MinBy(list2, (OrderOfBattleFormationClassVM c) => c.Weight) : TaleWorlds.Core.Extensions.MaxBy(list2, (OrderOfBattleFormationClassVM c) => c.Weight));
 				obj.SetWeightAdjustmentLock(isLocked: true);
 				obj.Weight += (flag ? 1 : (-1));
 				obj.SetWeightAdjustmentLock(isLocked: false);
@@ -1045,15 +1121,15 @@ public class OrderOfBattleVM : ViewModel
 		});
 		list.ForEach(delegate(OrderOfBattleFormationClassVM fc)
 		{
-			fc.UpdateWeightText();
+			fc.UpdateTroopCountText();
 		});
 	}
 
-	public void OnAllFormationsAssignedSergeants(Dictionary<int, Agent> preAssignedCommanders)
+	public void OnAllFormationsAssignedSergeants(Dictionary<int, Agent> preAssignedCaptains)
 	{
-		foreach (KeyValuePair<int, Agent> preAssignedCommander in preAssignedCommanders)
+		foreach (KeyValuePair<int, Agent> preAssignedCaptain in preAssignedCaptains)
 		{
-			AssignCommander(preAssignedCommander.Value, _allFormations[preAssignedCommander.Key]);
+			AssignCaptain(preAssignedCaptain.Value, _allFormations[preAssignedCaptain.Key]);
 		}
 	}
 
@@ -1069,26 +1145,9 @@ public class OrderOfBattleVM : ViewModel
 		}
 	}
 
-	private void OnFilterSelectionToggled(OrderOfBattleFormationItemVM formationItem)
-	{
-		if (formationItem != null && formationItem.IsFilterSelectionActive)
-		{
-			_lastEnabledFilterSelection = formationItem;
-		}
-		else
-		{
-			_lastEnabledFilterSelection = null;
-		}
-	}
-
 	public bool IsAnyClassSelectionEnabled()
 	{
 		return _lastEnabledClassSelection != null;
-	}
-
-	public bool IsAnyFilterSelectionEnabled()
-	{
-		return _lastEnabledFilterSelection != null;
 	}
 
 	public void ExecuteDisableAllClassSelections()
@@ -1097,15 +1156,6 @@ public class OrderOfBattleVM : ViewModel
 		{
 			_lastEnabledClassSelection.IsClassSelectionActive = false;
 			_lastEnabledClassSelection = null;
-		}
-	}
-
-	public void ExecuteDisableAllFilterSelections()
-	{
-		if (_lastEnabledFilterSelection != null)
-		{
-			_lastEnabledFilterSelection.IsFilterSelectionActive = false;
-			_lastEnabledFilterSelection = null;
 		}
 	}
 
@@ -1146,8 +1196,8 @@ public class OrderOfBattleVM : ViewModel
 		{
 			allFormation.OnHeroSelectionUpdated(hasOwnHeroTroopInSelection: allFormation.HeroTroops.Any((OrderOfBattleHeroItemVM heroTroop) => _selectedHeroes.Contains(heroTroop)), selectedHeroCount: _selectedHeroes.Count);
 		}
-		IsPoolAcceptingCommander = flag && _selectedHeroes.All((OrderOfBattleHeroItemVM hero) => hero.IsLeadingAFormation);
-		IsPoolAcceptingHeroTroops = flag && !IsPoolAcceptingCommander && _selectedHeroes.All((OrderOfBattleHeroItemVM hero) => hero.IsAssignedToAFormation);
+		IsPoolAcceptingCaptain = flag && _selectedHeroes.All((OrderOfBattleHeroItemVM hero) => hero.IsLeadingAFormation);
+		IsPoolAcceptingHeroTroops = flag && !IsPoolAcceptingCaptain && _selectedHeroes.All((OrderOfBattleHeroItemVM hero) => hero.IsAssignedToAFormation);
 		SelectedHeroCount = _selectedHeroes.Count;
 		HasSelectedHeroes = flag;
 		LastSelectedHeroItem = ((_selectedHeroes.Count > 0) ? _selectedHeroes[_selectedHeroes.Count - 1] : null);
@@ -1181,7 +1231,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (heroItem.IsLeadingAFormation)
 		{
-			heroItem.CurrentAssignedFormationItem.UnassignCommander();
+			heroItem.CurrentAssignedFormationItem.UnassignCaptain();
 		}
 		else if (heroItem.IsAssignedToAFormation)
 		{
@@ -1189,17 +1239,17 @@ public class OrderOfBattleVM : ViewModel
 		}
 	}
 
-	protected void AssignCommander(Agent agent, OrderOfBattleFormationItemVM formationItem)
+	protected void AssignCaptain(Agent agent, OrderOfBattleFormationItemVM formationItem)
 	{
 		OrderOfBattleHeroItemVM orderOfBattleHeroItemVM = _allHeroes.FirstOrDefault((OrderOfBattleHeroItemVM h) => h.Agent == agent);
-		if (formationItem != null && orderOfBattleHeroItemVM != null && formationItem.Commander != orderOfBattleHeroItemVM)
+		if (formationItem != null && orderOfBattleHeroItemVM != null && formationItem.Captain != orderOfBattleHeroItemVM)
 		{
-			if (formationItem.HasCommander)
+			if (formationItem.HasCaptain)
 			{
-				formationItem.Commander.IsSelected = false;
-				formationItem.UnassignCommander();
+				formationItem.Captain.IsSelected = false;
+				formationItem.UnassignCaptain();
 			}
-			formationItem.Commander = orderOfBattleHeroItemVM;
+			formationItem.Captain = orderOfBattleHeroItemVM;
 		}
 	}
 
@@ -1237,7 +1287,7 @@ public class OrderOfBattleVM : ViewModel
 		ClearHeroItemSelection();
 	}
 
-	private void OnFormationAcceptCommander(OrderOfBattleFormationItemVM formationItem)
+	private void OnFormationAcceptCaptain(OrderOfBattleFormationItemVM formationItem)
 	{
 		if (_selectedHeroes.Count != 1)
 		{
@@ -1250,12 +1300,12 @@ public class OrderOfBattleVM : ViewModel
 		}
 		OrderOfBattleHeroItemVM orderOfBattleHeroItemVM = _selectedHeroes[0];
 		ClearHeroAssignment(orderOfBattleHeroItemVM);
-		AssignCommander(orderOfBattleHeroItemVM.Agent, formationItem);
+		AssignCaptain(orderOfBattleHeroItemVM.Agent, formationItem);
 		ClearHeroItemSelection();
 		orderOfBattleHeroItemVM.IsShown = true;
 		if (!IsPlayerGeneral)
 		{
-			_mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>().OnPlayerChoiceMade(formationItem.Formation.Index, isFinal: false);
+			_mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>().OnPlayerChoiceMade(formationItem.Formation.Index);
 		}
 		Game.Current?.EventManager.TriggerEvent(new OrderOfBattleHeroAssignedToFormationEvent(orderOfBattleHeroItemVM.Agent, formationItem.Formation));
 	}
@@ -1306,15 +1356,20 @@ public class OrderOfBattleVM : ViewModel
 		if (playerDeployed)
 		{
 			_isSaving = true;
-			OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations.FirstOrDefault((OrderOfBattleFormationItemVM f) => f.Commander.Agent == Agent.Main);
+			OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations.FirstOrDefault((OrderOfBattleFormationItemVM f) => f.Captain.Agent == Agent.Main);
 			if (orderOfBattleFormationItemVM != null)
 			{
-				_mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>().OnPlayerChoiceMade(orderOfBattleFormationItemVM.Formation.Index, isFinal: true);
+				AssignPlayerRoleInTeamMissionController missionBehavior = _mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>();
+				missionBehavior.OnPlayerChoiceMade(orderOfBattleFormationItemVM.Formation.Index);
+				missionBehavior.OnPlayerChoiceFinalized();
 			}
 			SaveConfiguration();
 			_isSaving = false;
-			_orderController.OnSelectedFormationsChanged -= OnSelectedFormationsChanged;
-			_orderController.OnOrderIssued -= OnOrderIssued;
+			if (_orderController != null)
+			{
+				_orderController.OnSelectedFormationsChanged -= OnSelectedFormationsChanged;
+				_orderController.OnOrderIssued -= OnOrderIssued;
+			}
 		}
 		IsEnabled = false;
 	}
@@ -1353,7 +1408,7 @@ public class OrderOfBattleVM : ViewModel
 
 	private void DistributeTroops(OrderOfBattleFormationClassVM formationClass)
 	{
-		List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> massTransferDataForFormation = GetMassTransferDataForFormation(formationClass);
+		List<(Formation, int, TroopTraitsMask, List<Agent>)> massTransferDataForFormation = GetMassTransferDataForFormation(formationClass);
 		if (massTransferDataForFormation.Count > 0)
 		{
 			_orderController.RearrangeFormationsAccordingToFilters(_mission.PlayerTeam, massTransferDataForFormation);
@@ -1426,7 +1481,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			if (num3 == num2)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1236);
+				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1181);
 				break;
 			}
 		}
@@ -1440,11 +1495,11 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (_mission.PlayerTeam == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1248);
-			TaleWorlds.Library.Debug.Print("Player team should be initialized before distributing troops");
+			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1193);
+			Debug.Print("Player team should be initialized before distributing troops");
 			return;
 		}
-		List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> list = new List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>>();
+		List<(Formation, int, TroopTraitsMask, List<Agent>)> list = new List<(Formation, int, TroopTraitsMask, List<Agent>)>();
 		List<FormationClass> list2 = new List<FormationClass>();
 		for (int i = 0; i < _allFormations.Count; i++)
 		{
@@ -1453,7 +1508,7 @@ public class OrderOfBattleVM : ViewModel
 				OrderOfBattleFormationClassVM orderOfBattleFormationClassVM = _allFormations[i].Classes[j];
 				if (!orderOfBattleFormationClassVM.IsUnset && !list2.Contains(orderOfBattleFormationClassVM.Class))
 				{
-					List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> massTransferDataForFormation = GetMassTransferDataForFormation(orderOfBattleFormationClassVM);
+					List<(Formation, int, TroopTraitsMask, List<Agent>)> massTransferDataForFormation = GetMassTransferDataForFormation(orderOfBattleFormationClassVM);
 					list.AddRange(massTransferDataForFormation);
 					list2.Add(orderOfBattleFormationClassVM.Class);
 				}
@@ -1474,9 +1529,9 @@ public class OrderOfBattleVM : ViewModel
 		});
 	}
 
-	private List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> GetMassTransferDataForFormationClass(Formation targetFormation, FormationClass formationClass)
+	private List<(Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents)> GetMassTransferDataForFormationClass(Formation targetFormation, FormationClass formationClass)
 	{
-		List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> list = new List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>>();
+		List<(Formation, int, TroopTraitsMask, List<Agent>)> list = new List<(Formation, int, TroopTraitsMask, List<Agent>)>();
 		List<OrderOfBattleFormationItemVM> list2 = new List<OrderOfBattleFormationItemVM>();
 		List<int> list3 = new List<int>();
 		int num = 0;
@@ -1511,13 +1566,13 @@ public class OrderOfBattleVM : ViewModel
 			for (int k = 0; k < list4.Count; k++)
 			{
 				OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = list2[k];
-				Team.TroopFilter troopFilterForClass = OrderOfBattleUIHelper.GetTroopFilterForClass(formationClass);
-				troopFilterForClass |= OrderOfBattleUIHelper.GetTroopFilterForFormationFilter((from f in orderOfBattleFormationItemVM.FilterItems
+				TroopTraitsMask filter = TroopFilteringUtilities.GetFilter(formationClass);
+				filter |= TroopFilteringUtilities.GetFilter((from f in orderOfBattleFormationItemVM.FilterItems
 					where f.IsActive
 					select f.FilterType).ToArray());
-				if (troopFilterForClass != 0)
+				if (filter != 0)
 				{
-					Tuple<Formation, int, Team.TroopFilter, List<Agent>> item2 = OrderOfBattleUIHelper.CreateMassTransferData(orderOfBattleFormationItemVM, formationClass, troopFilterForClass, list4[k]);
+					(Formation, int, TroopTraitsMask, List<Agent>) item2 = OrderOfBattleUIHelper.CreateMassTransferData(orderOfBattleFormationItemVM, formationClass, filter, list4[k]);
 					list.Add(item2);
 				}
 			}
@@ -1525,9 +1580,9 @@ public class OrderOfBattleVM : ViewModel
 		return list;
 	}
 
-	private List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> GetMassTransferDataForFormation(OrderOfBattleFormationClassVM formationClass)
+	private List<(Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents)> GetMassTransferDataForFormation(OrderOfBattleFormationClassVM formationClass)
 	{
-		List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> list = new List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>>();
+		List<(Formation, int, TroopTraitsMask, List<Agent>)> list = new List<(Formation, int, TroopTraitsMask, List<Agent>)>();
 		List<OrderOfBattleFormationClassVM> allFormationClassesWith = GetAllFormationClassesWith(formationClass.Class);
 		if (allFormationClassesWith.Count == 1)
 		{
@@ -1551,15 +1606,15 @@ public class OrderOfBattleVM : ViewModel
 			for (int j = 0; j < list2.Count; j++)
 			{
 				OrderOfBattleFormationItemVM belongedFormationItem = allFormationClassesWith[j].BelongedFormationItem;
-				Team.TroopFilter troopFilterForClass = OrderOfBattleUIHelper.GetTroopFilterForClass((from c in belongedFormationItem.Classes
+				TroopTraitsMask filter = TroopFilteringUtilities.GetFilter((from c in belongedFormationItem.Classes
 					where !c.IsUnset
 					select c.Class).ToArray());
-				troopFilterForClass |= OrderOfBattleUIHelper.GetTroopFilterForFormationFilter((from f in belongedFormationItem.FilterItems
+				filter |= TroopFilteringUtilities.GetFilter((from f in belongedFormationItem.FilterItems
 					where f.IsActive
 					select f.FilterType).ToArray());
-				if (troopFilterForClass != 0)
+				if (filter != 0)
 				{
-					Tuple<Formation, int, Team.TroopFilter, List<Agent>> item2 = OrderOfBattleUIHelper.CreateMassTransferData(allFormationClassesWith[j], allFormationClassesWith[j].Class, troopFilterForClass, list2[j]);
+					(Formation, int, TroopTraitsMask, List<Agent>) item2 = OrderOfBattleUIHelper.CreateMassTransferData(allFormationClassesWith[j], allFormationClassesWith[j].Class, filter, list2[j]);
 					list.Add(item2);
 				}
 			}
@@ -1607,9 +1662,9 @@ public class OrderOfBattleVM : ViewModel
 		List<Agent> list = new List<Agent>();
 		foreach (OrderOfBattleFormationItemVM allFormation in _allFormations)
 		{
-			if (allFormation.Commander.Agent != null)
+			if (allFormation.Captain.Agent != null)
 			{
-				list.Add(allFormation.Commander.Agent);
+				list.Add(allFormation.Captain.Agent);
 			}
 			foreach (OrderOfBattleHeroItemVM heroTroop in allFormation.HeroTroops)
 			{
@@ -1699,7 +1754,7 @@ public class OrderOfBattleVM : ViewModel
 
 	private void TransferAllAvailableTroopsToFormation(OrderOfBattleFormationItemVM formation, FormationClass formationClass)
 	{
-		List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> massTransferDataForFormationClass = GetMassTransferDataForFormationClass(formation.Formation, formationClass);
+		List<(Formation, int, TroopTraitsMask, List<Agent>)> massTransferDataForFormationClass = GetMassTransferDataForFormationClass(formation.Formation, formationClass);
 		if (massTransferDataForFormationClass.Count > 0)
 		{
 			_orderController.RearrangeFormationsAccordingToFilters(_mission.PlayerTeam, massTransferDataForFormationClass);
@@ -1766,17 +1821,13 @@ public class OrderOfBattleVM : ViewModel
 
 	private void OnSelectedFormationsChanged()
 	{
-		if (!_isInitialized)
+		if (_isInitialized)
 		{
-			return;
-		}
-		_allFormations.ForEach(delegate(OrderOfBattleFormationItemVM f)
-		{
-			f.IsSelected = false;
-		});
-		foreach (Formation selectedFormation in _orderController.SelectedFormations)
-		{
-			_allFormations.FirstOrDefault((OrderOfBattleFormationItemVM f) => f.Formation == selectedFormation).IsSelected = true;
+			for (int i = 0; i < _allFormations.Count; i++)
+			{
+				OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations[i];
+				orderOfBattleFormationItemVM.IsSelected = _orderController.IsFormationListening(orderOfBattleFormationItemVM.Formation);
+			}
 		}
 	}
 
@@ -1824,7 +1875,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		_allFormations.ForEach(delegate(OrderOfBattleFormationItemVM f)
 		{
-			f?.RefreshMarkerWorldPosition();
+			f?.MakeMarkerWorldPositionDirty();
 		});
 	}
 
@@ -1880,7 +1931,7 @@ public class OrderOfBattleVM : ViewModel
 	protected void ClearFormationItem(OrderOfBattleFormationItemVM formationItem)
 	{
 		formationItem.FormationClassSelector.SelectedIndex = 0;
-		formationItem.UnassignCommander();
+		formationItem.UnassignCaptain();
 		foreach (OrderOfBattleFormationClassVM @class in formationItem.Classes)
 		{
 			@class.IsLocked = false;
@@ -1898,7 +1949,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		_allFormations.ForEach(delegate(OrderOfBattleFormationItemVM x)
 		{
-			x.RefreshMarkerWorldPosition();
+			x.MakeMarkerWorldPositionDirty();
 		});
 	}
 
@@ -1943,7 +1994,16 @@ public class OrderOfBattleVM : ViewModel
 		CurrentConfiguration?.Clear();
 		foreach (OrderOfBattleFormationItemVM allFormation in _allFormations)
 		{
-			CurrentConfiguration?.Add((allFormation.Formation.Index, allFormation.ActiveFilterItems.Select((OrderOfBattleFormationFilterSelectorItemVM f) => (int)f.FilterType).ToList()));
+			if (allFormation.Formation.CountOfUnits > 0)
+			{
+				CurrentConfiguration?.Add(new MissionOrderVM.FormationConfiguration(allFormation.Formation.Index, (from f in allFormation.FilterItems
+					where f.IsActive
+					select f.FilterType).ToList()));
+			}
+			else
+			{
+				CurrentConfiguration?.Add(new MissionOrderVM.FormationConfiguration(allFormation.Formation.Index, new List<FormationFilterType>()));
+			}
 		}
 		if (_bannerBearerLogic != null)
 		{
@@ -1952,6 +2012,16 @@ public class OrderOfBattleVM : ViewModel
 		}
 		_onBeginMission?.Invoke();
 		MBInformationManager.HideInformations();
+	}
+
+	public void SetDoneInputKey(HotKey hotkey)
+	{
+		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: true);
+	}
+
+	public void SetResetInputKey(HotKey hotkey)
+	{
+		ResetInputKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: true);
 	}
 
 	private void OnTutorialNotificationElementIDChange(TutorialNotificationElementChangeEvent obj)
@@ -2011,7 +2081,7 @@ public class OrderOfBattleVM : ViewModel
 		for (int i = 0; i < _allFormations.Count; i++)
 		{
 			OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations[i];
-			if (!state || (!orderOfBattleFormationItemVM.HasCommander && orderOfBattleFormationItemVM.HasFormation))
+			if (!state || (!orderOfBattleFormationItemVM.HasCaptain && orderOfBattleFormationItemVM.HasFormation))
 			{
 				orderOfBattleFormationItemVM.IsCaptainSlotHighlightActive = state;
 			}

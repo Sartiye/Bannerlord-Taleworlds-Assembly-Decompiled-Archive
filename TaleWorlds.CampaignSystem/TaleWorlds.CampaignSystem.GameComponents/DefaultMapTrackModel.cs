@@ -21,21 +21,20 @@ public class DefaultMapTrackModel : MapTrackModel
 
 	public override float GetMaxTrackSpottingDistanceForMainParty()
 	{
-		ExplainedNumber stat = new ExplainedNumber(0f, includeDescriptions: false, null);
-		SkillHelper.AddSkillBonusForParty(DefaultSkills.Scouting, DefaultSkillEffects.TrackingRadius, MobileParty.MainParty, ref stat);
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Ranger, MobileParty.MainParty, isPrimaryBonus: true, ref stat);
-		return stat.ResultNumber;
+		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions: false, null);
+		SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingRadius, MobileParty.MainParty, ref explainedNumber);
+		if (!MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Ranger, MobileParty.MainParty, isPrimaryBonus: true, ref explainedNumber);
+		}
+		return explainedNumber.ResultNumber;
 	}
 
 	public override bool CanPartyLeaveTrack(MobileParty mobileParty)
 	{
-		if (mobileParty.SiegeEvent == null && mobileParty.MapEvent == null && !mobileParty.IsGarrison && !mobileParty.IsMilitia && !mobileParty.IsBanditBossParty && !mobileParty.IsMainParty)
+		if (mobileParty.SiegeEvent == null && mobileParty.MapEvent == null && !mobileParty.IsCurrentlyAtSea && !mobileParty.IsGarrison && !mobileParty.IsMilitia && !mobileParty.IsBanditBossParty && !mobileParty.IsMainParty)
 		{
-			if (mobileParty.Army != null)
-			{
-				return mobileParty.Army.LeaderParty == mobileParty;
-			}
-			return true;
+			return mobileParty.AttachedTo == null;
 		}
 		return false;
 	}
@@ -45,7 +44,7 @@ public class DefaultMapTrackModel : MapTrackModel
 		bool flag = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(mobileParty.CurrentNavigationFace) == TerrainType.Snow;
 		int num = mobileParty.MemberRoster.TotalManCount + mobileParty.PrisonRoster.TotalManCount;
 		float num2 = MathF.Min(1f, (0.5f * MBRandom.RandomFloat + 0.5f + (float)num * 0.007f) / 2f) * (flag ? 0.5f : 1f);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Tracker))
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Tracker) && !mobileParty.IsCurrentlyAtSea)
 		{
 			num2 = MathF.Min(1f, num2 * (1f + DefaultPerks.Scouting.Tracker.PrimaryBonus));
 		}
@@ -56,9 +55,9 @@ public class DefaultMapTrackModel : MapTrackModel
 	{
 		int size = track.Size;
 		float elapsedHoursUntilNow = track.CreationTime.ElapsedHoursUntilNow;
-		float num = (track.Position - MobileParty.MainParty.Position2D).Length / trackSpottingDistance;
+		float num = (track.Position.ToVec2() - MobileParty.MainParty.Position.ToVec2()).Length / trackSpottingDistance;
 		float num2 = -75f + elapsedHoursUntilNow / MaxTrackLife * 100f + num * 100f + MathF.Max(0f, 100f - (float)size) * (CampaignTime.Now.IsNightTime ? 10f : 1f);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Ranger, checkSecondaryRole: true))
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Ranger, checkSecondaryRole: true) && !MobileParty.MainParty.IsCurrentlyAtSea)
 		{
 			num2 -= num2 * DefaultPerks.Scouting.Ranger.SecondaryBonus;
 		}
@@ -132,49 +131,52 @@ public class DefaultMapTrackModel : MapTrackModel
 		List<(TextObject, string)> list = new List<(TextObject, string)>();
 		if (!track.IsPointer && track.IsAlive)
 		{
-			int num = MobileParty.MainParty.EffectiveScout?.GetSkillValue(DefaultSkills.Scouting) ?? 0;
-			if (num >= 25)
+			int skillLevel = MobileParty.MainParty.EffectiveScout?.GetSkillValue(DefaultSkills.Scouting) ?? 0;
+			ExplainedNumber explainedNumber = default(ExplainedNumber);
+			SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingTrackInformation, MobileParty.MainParty, ref explainedNumber);
+			int num = MathF.Floor(explainedNumber.ResultNumber);
+			if (num >= 1)
 			{
 				int num2 = track.NumberOfAllMembers + track.NumberOfPrisoners;
-				list.Add((new TextObject("{=rmydcPP3}Party Size:"), UncertainifyNumber(num2, 10, num)));
+				list.Add((new TextObject("{=rmydcPP3}Party Size:"), UncertainifyNumber(num2, 10, skillLevel)));
 			}
-			if (num >= 50)
+			if (num >= 2)
 			{
 				TextObject textObject = new TextObject("{=Lak0x7Sa}{HOURS} {?HOURS==1}hour{?}hours{\\?}");
 				int variable = MathF.Ceiling(track.CreationTime.ElapsedHoursUntilNow);
 				textObject.SetTextVariable("HOURS", variable);
 				list.Add((new TextObject("{=0aU9dtvV}Time:"), textObject.ToString()));
 			}
-			if (num >= 75)
+			if (num >= 3)
 			{
-				list.Add((new TextObject("{=PThYJE2U}Party Speed:"), UncertainifyNumber(MathF.Round(track.Speed, 2), 1f, num)));
+				list.Add((new TextObject("{=PThYJE2U}Party Speed:"), UncertainifyNumber(MathF.Round(track.Speed, 2), 1f, skillLevel)));
 			}
-			if (num >= 100)
+			if (num >= 4)
 			{
-				list.Add((new TextObject("{=ZULIWupm}Mounted Troops:"), UncertainifyNumber(track.NumberOfMenWithHorse, 10, num)));
+				list.Add((new TextObject("{=ZULIWupm}Mounted Troops:"), UncertainifyNumber(track.NumberOfMenWithHorse, 10, skillLevel)));
 			}
-			if (num >= 125 && num < 250)
+			if (num >= 5 && num < 10)
 			{
 				list.Add((new TextObject("{=1pdBdqKn}Party Type:"), GameTexts.FindText("str_party_type", track.PartyType.ToString()).ToString()));
 			}
-			if (num >= 150)
+			if (num >= 6)
 			{
-				list.Add((new TextObject("{=pHrxeTdc}Prisoners:"), UncertainifyNumber(track.NumberOfPrisoners, 10, num)));
+				list.Add((new TextObject("{=pHrxeTdc}Prisoners:"), UncertainifyNumber(track.NumberOfPrisoners, 10, skillLevel)));
 			}
-			if (num >= 175)
+			if (num >= 7)
 			{
-				list.Add((new TextObject("{=aa1yFm6q}Pack Animals:"), UncertainifyNumber(track.NumberOfPackAnimals, 10, num)));
+				list.Add((new TextObject("{=aa1yFm6q}Pack Animals:"), UncertainifyNumber(track.NumberOfPackAnimals, 10, skillLevel)));
 			}
-			if (num >= 200)
+			if (num >= 8)
 			{
 				TextObject textObject2 = (track.IsEnemy ? GameTexts.FindText("str_yes") : GameTexts.FindText("str_no"));
 				list.Add((new TextObject("{=6REUNz1g}Enemy Party:"), textObject2.ToString()));
 			}
-			if (num >= 225)
+			if (num >= 9)
 			{
 				list.Add((new TextObject("{=dicpCcb2}Party Culture:"), track.Culture.Name.ToString()));
 			}
-			if (num >= 250)
+			if (num >= 10)
 			{
 				list.Add((new TextObject("{=BVIm1HPw}Party Name:"), track.PartyName.ToString()));
 			}

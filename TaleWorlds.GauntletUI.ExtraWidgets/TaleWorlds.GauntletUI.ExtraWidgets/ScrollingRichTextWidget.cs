@@ -33,7 +33,8 @@ public class ScrollingRichTextWidget : RichTextWidget
 
 	private TextHorizontalAlignment _defaultTextHorizontalAlignment;
 
-	public string ActualText { get; private set; }
+	public string ActualText { get; private set; } = string.Empty;
+
 
 	[Editor(false)]
 	public Widget ScrollOnHoverWidget
@@ -170,16 +171,20 @@ public class ScrollingRichTextWidget : RichTextWidget
 			if (!IsAutoScrolling)
 			{
 				base.Text = ActualText;
-				_shouldScroll = _wordWidth > base.Size.X;
+				UpdateWordWidth();
+				_shouldScroll = _wordWidth > GetMaximumAllowedWidth();
 			}
 		}
 		else if (base.EventManager.HoveredView != ScrollOnHoverWidget && _isHovering)
 		{
+			if (!IsAutoScrolling)
+			{
+				ResetScroll();
+			}
 			_isHovering = false;
-			ResetScroll();
 			UpdateScrollable();
 		}
-		_renderXOffset = 0f - _currentScrollAmount;
+		_renderOffset.x = 0f - _currentScrollAmount;
 	}
 
 	public override void OnBrushChanged()
@@ -194,36 +199,36 @@ public class ScrollingRichTextWidget : RichTextWidget
 		base.SetText(value);
 		_richText.SkipLineOnContainerExceeded = false;
 		ActualText = _richText.Value;
-		UpdateScrollable();
+		_currentSize = Vec2.Zero;
+		ResetScroll();
 	}
 
 	private void UpdateScrollable()
 	{
 		UpdateWordWidth();
-		if (_wordWidth > base.Size.X)
+		if (_wordWidth > GetMaximumAllowedWidth())
 		{
 			_shouldScroll = IsAutoScrolling;
-			_totalScrollAmount = _wordWidth - base.Size.X;
+			_totalScrollAmount = _wordWidth - GetMaximumAllowedWidth();
 			base.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
-			Font mappedFontForLocalization = base.Context.FontFactory.GetMappedFontForLocalization(base.Brush?.Font?.Name);
 			if (IsAutoScrolling || _isHovering)
 			{
 				return;
 			}
 			bool flag = false;
-			for (int num = _richText.Value.Length; num > 3; num--)
+			for (int num = ActualText.Length; num > 3; num--)
 			{
-				if (_richText.Value[num - 1] == '>')
+				if (ActualText[num - 1] == '>')
 				{
 					flag = true;
 				}
-				else if (_richText.Value[num - 1] == '<')
+				else if (ActualText[num - 1] == '<')
 				{
 					flag = false;
 				}
-				if (!flag && mappedFontForLocalization.GetWordWidth(_richText.Value.Substring(0, num - 3) + "...", 0.25f) * ((float)base.Brush.FontSize / (float)mappedFontForLocalization.Size) * base._scaleToUse < base.Size.X)
+				if (!flag && GetWordWidth(ActualText.Substring(0, num - 3) + "...", 0.25f) * base._scaleToUse <= GetMaximumAllowedWidth())
 				{
-					_richText.Value = _richText.Value.Substring(0, num - 3) + "...";
+					_richText.Value = ActualText.Substring(0, num - 3) + "...";
 					break;
 				}
 			}
@@ -234,10 +239,51 @@ public class ScrollingRichTextWidget : RichTextWidget
 		}
 	}
 
+	private float GetMaximumAllowedWidth()
+	{
+		if (base.WidthSizePolicy == SizePolicy.CoverChildren)
+		{
+			if (base.ScaledMaxWidth == 0f)
+			{
+				return 2.1474836E+09f;
+			}
+			return base.ScaledMaxWidth;
+		}
+		return base.Size.X;
+	}
+
 	private void UpdateWordWidth()
 	{
+		float padding = 0.5f;
+		if (base.WidthSizePolicy == SizePolicy.CoverChildren)
+		{
+			padding = 0f;
+		}
+		_wordWidth = GetWordWidth(_richText.Value, padding) * base._scaleToUse;
+	}
+
+	private float GetWordWidth(string word, float padding)
+	{
+		float num = padding * 2f;
+		for (int i = 0; i < word.Length; i++)
+		{
+			num += GetCharacterWidth(word[i]);
+		}
+		return num;
+	}
+
+	private float GetCharacterWidth(char character)
+	{
 		Font mappedFontForLocalization = base.Context.FontFactory.GetMappedFontForLocalization(base.Brush?.Font?.Name);
-		_wordWidth = mappedFontForLocalization.GetWordWidth(_richText.Value, 0.5f) * ((float)base.Brush.FontSize / (float)mappedFontForLocalization.Size) * base._scaleToUse;
+		float num;
+		if (!mappedFontForLocalization.Characters.ContainsKey(character))
+		{
+			Font font = base.Context.FontFactory.GetUsableFontForCharacter(character) ?? mappedFontForLocalization;
+			num = (float)base.Brush.FontSize / (float)font.Size;
+			return font.GetCharacterWidth(character, 0.5f) * num;
+		}
+		num = (float)base.Brush.FontSize / (float)mappedFontForLocalization.Size;
+		return mappedFontForLocalization.GetCharacterWidth(character, 0.5f) * num;
 	}
 
 	private void ResetScroll()

@@ -1,4 +1,4 @@
-using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Issues;
@@ -27,7 +27,7 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 
 	private const int FoodProductionPerVillage = 10;
 
-	public override int FoodStocksUpperLimit => 100;
+	public override int FoodStocksUpperLimit => 300;
 
 	public override int NumberOfProsperityToEatOneFood => 40;
 
@@ -42,77 +42,42 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 
 	private ExplainedNumber CalculateTownFoodChangeInternal(Town town, bool includeMarketStocks, bool includeDescriptions)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions);
-		float num2;
+		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions);
+		ExplainedNumber bonuses2 = new ExplainedNumber(0f, includeDescriptions);
+		ExplainedNumber bonuses3 = new ExplainedNumber(town.Prosperity / (float)NumberOfProsperityToEatOneFood);
+		ExplainedNumber bonuses4 = new ExplainedNumber((((float?)town.GarrisonParty?.Party.NumberOfAllMembers) ?? 0f) / (float)NumberOfMenOnGarrisonToEatOneFood);
+		if (town.IsUnderSiege)
+		{
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Gourmet, town, ref bonuses4);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.TriageTent, town, ref bonuses2);
+		}
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfWarcraft, town, ref bonuses3);
+		bonuses2.Add(bonuses3.ResultNumber, ProsperityText);
+		bonuses2.Add(bonuses4.ResultNumber, GarrisonText);
+		town.AddEffectOfBuildings(BuildingEffectEnum.FoodConsumption, ref bonuses2);
+		Kingdom kingdom = town.Settlement.OwnerClan?.Kingdom;
+		if (kingdom != null && kingdom.HasPolicy(DefaultPolicies.HuntingRights))
+		{
+			bonuses.Add(2f, DefaultPolicies.HuntingRights.Name);
+		}
 		if (!town.IsUnderSiege)
 		{
 			int num = (town.IsTown ? 15 : 10);
-			explainedNumber.Add(num, LandsAroundSettlementText);
-			num2 = (0f - town.Prosperity) / (float)NumberOfProsperityToEatOneFood;
-		}
-		else
-		{
-			num2 = (0f - town.Prosperity) / (float)NumberOfProsperityToEatOneFood;
-		}
-		int num3 = town.GarrisonParty?.Party.NumberOfAllMembers ?? 0;
-		num3 = -num3 / NumberOfMenOnGarrisonToEatOneFood;
-		float num4 = 0f;
-		float num5 = 0f;
-		if (town.Governor != null)
-		{
-			if (town.IsUnderSiege)
-			{
-				if (town.Governor.GetPerkValue(DefaultPerks.Steward.Gourmet))
-				{
-					num5 += DefaultPerks.Steward.Gourmet.SecondaryBonus;
-				}
-				if (town.Governor.GetPerkValue(DefaultPerks.Medicine.TriageTent))
-				{
-					num4 += DefaultPerks.Medicine.TriageTent.SecondaryBonus;
-				}
-			}
-			if (town.Governor.GetPerkValue(DefaultPerks.Steward.MasterOfWarcraft))
-			{
-				num4 += DefaultPerks.Steward.MasterOfWarcraft.SecondaryBonus;
-			}
-		}
-		num2 += num2 * num4;
-		num3 += (int)((float)num3 * (num4 + num5));
-		explainedNumber.Add(num2, ProsperityText);
-		explainedNumber.Add(num3, GarrisonText);
-		if (town.Settlement.OwnerClan?.Kingdom != null && town.Settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.HuntingRights))
-		{
-			explainedNumber.Add(2f, DefaultPolicies.HuntingRights.Name);
-		}
-		if (!town.IsUnderSiege)
-		{
+			bonuses.Add(num, LandsAroundSettlementText);
 			foreach (Village boundVillage in town.Owner.Settlement.BoundVillages)
 			{
-				int num6 = 0;
+				float value = 0f;
 				if (boundVillage.VillageState == Village.VillageStates.Normal)
 				{
-					num6 = (boundVillage.GetHearthLevel() + 1) * 6;
-					explainedNumber.Add(num6, boundVillage.Name);
+					value = (boundVillage.GetHearthLevel() + 1) * 6;
 				}
-				else
-				{
-					num6 = 0;
-					explainedNumber.Add(num6, boundVillage.Name);
-				}
+				bonuses.Add(value, boundVillage.Name);
 			}
-			float effectOfBuildings = town.GetEffectOfBuildings(BuildingEffectEnum.FoodProduction);
-			if (effectOfBuildings > 0f)
-			{
-				explainedNumber.Add(effectOfBuildings, includeDescriptions ? GameTexts.FindText("str_building_bonus") : TextObject.Empty);
-			}
-		}
-		else if (town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Roguery.DirtyFighting))
-		{
-			explainedNumber.Add(DefaultPerks.Roguery.DirtyFighting.SecondaryBonus, DefaultPerks.Roguery.DirtyFighting.Name);
+			town.AddEffectOfBuildings(BuildingEffectEnum.FoodProduction, ref bonuses);
 		}
 		else
 		{
-			explainedNumber.Add(0f, VillagesUnderSiegeText);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.DirtyFighting, town, ref bonuses);
 		}
 		if (includeMarketStocks)
 		{
@@ -120,17 +85,15 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 			{
 				if (soldItem.Category.Properties == ItemCategory.Property.BonusToFoodStores)
 				{
-					explainedNumber.Add(soldItem.Number, includeDescriptions ? soldItem.Category.GetName() : TextObject.Empty);
+					bonuses.Add(soldItem.Number, includeDescriptions ? soldItem.Category.GetName() : null);
 				}
 			}
 		}
+		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions);
+		explainedNumber.AddFromExplainedNumber(bonuses, TextObject.GetEmpty());
+		explainedNumber.SubtractFromExplainedNumber(bonuses2, TextObject.GetEmpty());
 		GetSettlementFoodChangeDueToIssues(town, ref explainedNumber);
 		return explainedNumber;
-	}
-
-	private int CalculateFoodPurchasedFromMarket(Town town)
-	{
-		return town.SoldItems.Sum((Town.SellLog x) => (x.Category.Properties == ItemCategory.Property.BonusToFoodStores) ? x.Number : 0);
 	}
 
 	private static void GetSettlementFoodChangeDueToIssues(Town town, ref ExplainedNumber explainedNumber)

@@ -72,7 +72,7 @@ public class ItemConsumptionBehavior : CampaignBehaviorBase
 
 	private void UpdateTownGold(Town town)
 	{
-		int townGoldChange = Campaign.Current.Models.SettlementConsumptionModel.GetTownGoldChange(town);
+		int townGoldChange = Campaign.Current.Models.SettlementEconomyModel.GetTownGoldChange(town);
 		town.ChangeGold(townGoldChange);
 	}
 
@@ -88,7 +88,7 @@ public class ItemConsumptionBehavior : CampaignBehaviorBase
 			{
 				itemRoster.AddToCounts(elementCopyAtIndex.EquipmentElement, -amount);
 			}
-			else if (elementCopyAtIndex.EquipmentElement.ItemModifier != null && MBRandom.RandomFloat < 0.5f)
+			else if (elementCopyAtIndex.EquipmentElement.ItemModifier != null && MBRandom.RandomFloat < 0.05f)
 			{
 				itemRoster.AddToCounts(elementCopyAtIndex.EquipmentElement, -1);
 			}
@@ -151,7 +151,7 @@ public class ItemConsumptionBehavior : CampaignBehaviorBase
 			int amount = elementCopyAtIndex.Amount;
 			ItemCategory itemCategory = item.GetItemCategory();
 			float demand = categoryDemand[itemCategory];
-			float num2 = CalculateBudget(town, demand, itemCategory);
+			float num2 = Campaign.Current.Models.SettlementEconomyModel.CalculateDailySettlementBudgetForItemCategory(town, demand, itemCategory);
 			if (num2 > 0.01f)
 			{
 				int price = marketData.GetPrice(item);
@@ -175,17 +175,12 @@ public class ItemConsumptionBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static float CalculateBudget(Town town, float demand, ItemCategory category)
-	{
-		return demand * TaleWorlds.Library.MathF.Pow(town.GetItemCategoryPriceIndex(category), 0.3f);
-	}
-
 	private void UpdateDemandShift(Town town, Dictionary<ItemCategory, float> categoryBudget)
 	{
 		TownMarketData marketData = town.MarketData;
 		foreach (ItemCategory item in ItemCategories.All)
 		{
-			categoryBudget[item] = Campaign.Current.Models.SettlementConsumptionModel.GetDailyDemandForCategory(town, item);
+			categoryBudget[item] = Campaign.Current.Models.SettlementEconomyModel.GetDailyDemandForCategory(town, item);
 		}
 		foreach (ItemCategory item2 in ItemCategories.All)
 		{
@@ -212,12 +207,12 @@ public class ItemConsumptionBehavior : CampaignBehaviorBase
 	private static void UpdateSupplyAndDemand(Town town)
 	{
 		TownMarketData marketData = town.MarketData;
-		SettlementEconomyModel settlementConsumptionModel = Campaign.Current.Models.SettlementConsumptionModel;
+		SettlementEconomyModel settlementEconomyModel = Campaign.Current.Models.SettlementEconomyModel;
 		foreach (ItemCategory item in ItemCategories.All)
 		{
 			ItemData categoryData = marketData.GetCategoryData(item);
-			float estimatedDemandForCategory = settlementConsumptionModel.GetEstimatedDemandForCategory(town, categoryData, item);
-			var (supply, demand) = settlementConsumptionModel.GetSupplyDemandForCategory(town, item, categoryData.InStoreValue, estimatedDemandForCategory, categoryData.Supply, categoryData.Demand);
+			float estimatedDemandForCategory = settlementEconomyModel.GetEstimatedDemandForCategory(town, categoryData, item);
+			var (supply, demand) = settlementEconomyModel.GetSupplyDemandForCategory(town, item, categoryData.InStoreValue, estimatedDemandForCategory, categoryData.Supply, categoryData.Demand);
 			marketData.SetSupplyDemand(item, supply, demand);
 		}
 	}

@@ -19,27 +19,27 @@ public class BehaviorFireFromInfantryCover : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
+		WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
 		Vec2 vec = base.Formation.Direction;
 		if (_mainFormation == null)
 		{
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
 			Vec2 position = _mainFormation.GetReadonlyMovementOrderReference().GetPosition(_mainFormation);
 			if (position.IsValid)
 			{
-				vec = (position - _mainFormation.QuerySystem.AveragePosition).Normalized();
+				vec = (position - _mainFormation.CachedAveragePosition).Normalized();
 				Vec2 vec2 = position - vec * _mainFormation.Depth * 0.33f;
-				medianPosition.SetVec2(vec2);
+				cachedMedianPosition.SetVec2(vec2);
 			}
 			else
 			{
-				medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+				cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 			}
 		}
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(vec);
 	}
 
@@ -47,17 +47,17 @@ public class BehaviorFireFromInfantryCover : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		if (base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < 100f)
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		if (base.Formation.CachedAveragePosition.DistanceSquared(base.CurrentOrder.GetPosition(base.Formation)) < 100f)
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderSquare;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderSquare);
 		}
 		Vec2 position = base.CurrentOrder.GetPosition(base.Formation);
-		bool flag = base.Formation.QuerySystem.ClosestEnemyFormation == null || _mainFormation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.AveragePosition) <= base.Formation.Depth * base.Formation.Width || base.Formation.QuerySystem.AveragePosition.DistanceSquared(position) <= (_mainFormation.Depth + base.Formation.Depth) * (_mainFormation.Depth + base.Formation.Depth) * 0.25f;
+		bool flag = base.Formation.CachedClosestEnemyFormation == null || _mainFormation.CachedAveragePosition.DistanceSquared(base.Formation.CachedAveragePosition) <= base.Formation.Depth * base.Formation.Width || base.Formation.CachedAveragePosition.DistanceSquared(position) <= (_mainFormation.Depth + base.Formation.Depth) * (_mainFormation.Depth + base.Formation.Depth) * 0.25f;
 		if (flag != _isFireAtWill)
 		{
 			_isFireAtWill = flag;
-			base.Formation.FiringOrder = (_isFireAtWill ? FiringOrder.FiringOrderFireAtWill : FiringOrder.FiringOrderHoldYourFire);
+			base.Formation.SetFiringOrder(_isFireAtWill ? FiringOrder.FiringOrderFireAtWill : FiringOrder.FiringOrderHoldYourFire);
 		}
 	}
 
@@ -65,12 +65,12 @@ public class BehaviorFireFromInfantryCover : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		int num = (int)MathF.Sqrt(base.Formation.CountOfUnits);
 		float customWidth = (float)num * base.Formation.UnitDiameter + (float)(num - 1) * base.Formation.Interval;
-		base.Formation.FormOrder = FormOrder.FormOrderCustom(customWidth);
+		base.Formation.SetFormOrder(FormOrder.FormOrderCustom(customWidth));
 	}
 
 	protected override float GetAiWeight()
@@ -79,7 +79,7 @@ public class BehaviorFireFromInfantryCover : BehaviorComponent
 		{
 			_mainFormation = base.Formation.Team.FormationsIncludingEmpty.FirstOrDefaultQ((Formation f) => f.CountOfUnits > 0 && f.AI.IsMainFormation);
 		}
-		if (_mainFormation == null || base.Formation.AI.IsMainFormation || base.Formation.QuerySystem.ClosestEnemyFormation == null || !base.Formation.QuerySystem.IsRangedFormation)
+		if (_mainFormation == null || base.Formation.AI.IsMainFormation || base.Formation.CachedClosestEnemyFormation == null || !base.Formation.QuerySystem.IsRangedFormation)
 		{
 			return 0f;
 		}

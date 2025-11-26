@@ -70,8 +70,8 @@ public class OrderSiegeDeploymentScreenWidget : Widget
 		DeploymentListPanel.ParentWidget.IsVisible = deploymentItem != null;
 		if (deploymentItem != null)
 		{
-			DeploymentListPanel.MarginLeft = (deploymentItem.GlobalPosition.X + deploymentItem.Size.Y + 20f - base.EventManager.LeftUsableAreaStart) / base._scaleToUse;
-			DeploymentListPanel.MarginTop = (deploymentItem.GlobalPosition.Y + (deploymentItem.Size.Y / 2f - DeploymentListPanel.Size.Y / 2f) - base.EventManager.TopUsableAreaStart) / base._scaleToUse;
+			DeploymentListPanel.MarginLeft = (deploymentItem.GlobalPosition.X + deploymentItem.Size.Y + 20f) / base._scaleToUse;
+			DeploymentListPanel.MarginTop = (deploymentItem.GlobalPosition.Y + (deploymentItem.Size.Y / 2f - DeploymentListPanel.Size.Y / 2f)) / base._scaleToUse;
 		}
 	}
 

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.IO;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.GauntletUI.PrefabSystem;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.Engine.GauntletUI;
@@ -11,7 +13,7 @@ public static class UIResourceManager
 {
 	private static bool _latestUIDebugModeState;
 
-	public static ResourceDepot UIResourceDepot { get; private set; }
+	public static ResourceDepot ResourceDepot { get; private set; }
 
 	public static WidgetFactory WidgetFactory { get; private set; }
 
@@ -35,19 +37,39 @@ public static class UIResourceManager
 		}
 	}
 
-	public static void Initialize(ResourceDepot resourceDepot, List<string> assemblyOrder)
+	static UIResourceManager()
 	{
-		UIResourceDepot = resourceDepot;
-		WidgetFactory = new WidgetFactory(UIResourceDepot, "Prefabs");
-		WidgetFactory.PrefabExtensionContext.AddExtension(new PrefabDatabindingExtension());
-		WidgetFactory.Initialize(assemblyOrder);
-		SpriteData = new SpriteData("SpriteData");
-		SpriteData.Load(UIResourceDepot);
-		FontFactory = new FontFactory(UIResourceDepot);
-		FontFactory.LoadAllFonts(SpriteData);
-		BrushFactory = new BrushFactory(UIResourceDepot, "Brushes", SpriteData, FontFactory);
-		BrushFactory.Initialize();
 		ResourceContext = new TwoDimensionEngineResourceContext();
+	}
+
+	public static void Refresh()
+	{
+		RefreshResourceDepot(out var assemblyOrder);
+		RefreshWidgetFactory(assemblyOrder);
+		RefreshSpriteData();
+		RefreshFontFactory();
+		RefreshBrushFactory();
+	}
+
+	public static SpriteCategory GetSpriteCategory(string spriteCategoryName)
+	{
+		if (SpriteData == null)
+		{
+			Debug.FailedAssert("Trying to get sprite category but sprite data was not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\UIResourceManager.cs", "GetSpriteCategory", 54);
+			return null;
+		}
+		if (SpriteData.SpriteCategories.TryGetValue(spriteCategoryName, out var value))
+		{
+			return value;
+		}
+		return null;
+	}
+
+	public static SpriteCategory LoadSpriteCategory(string spriteCategoryName)
+	{
+		SpriteCategory spriteCategory = GetSpriteCategory(spriteCategoryName);
+		spriteCategory.Load(ResourceContext, ResourceDepot);
+		return spriteCategory;
 	}
 
 	public static void Update()
@@ -56,17 +78,17 @@ public static class UIResourceManager
 		{
 			if (_uiDebugMode)
 			{
-				UIResourceDepot.StartWatchingChangesInDepot();
+				ResourceDepot.StartWatchingChangesInDepot();
 			}
 			else
 			{
-				UIResourceDepot.StopWatchingChangesInDepot();
+				ResourceDepot.StopWatchingChangesInDepot();
 			}
 			_latestUIDebugModeState = _uiDebugMode;
 		}
 		if (_uiDebugMode)
 		{
-			UIResourceDepot.CheckForChanges();
+			ResourceDepot.CheckForChanges();
 		}
 	}
 
@@ -81,5 +103,69 @@ public static class UIResourceManager
 		SpriteData = null;
 		BrushFactory = null;
 		FontFactory = null;
+	}
+
+	private static void RefreshResourceDepot(out List<string> assemblyOrder)
+	{
+		if (_uiDebugMode && ResourceDepot != null)
+		{
+			ResourceDepot.StopWatchingChangesInDepot();
+		}
+		ResourceDepot = new ResourceDepot();
+		ResourceDepot.AddLocation(BasePath.Name, "GUI/GauntletUI/");
+		assemblyOrder = new List<string>();
+		foreach (ModuleInfo module in ModuleHelper.GetModules())
+		{
+			string folderPath = module.FolderPath;
+			if (Directory.Exists(folderPath + "/GUI/"))
+			{
+				ResourceDepot.AddLocation(folderPath, "/GUI/");
+			}
+			foreach (SubModuleInfo subModule in module.SubModules)
+			{
+				if (subModule != null && subModule.DLLExists && !string.IsNullOrEmpty(subModule.DLLName))
+				{
+					assemblyOrder.Add(subModule.DLLName);
+				}
+			}
+		}
+		ResourceDepot.CollectResources();
+		if (_uiDebugMode)
+		{
+			ResourceDepot.StartWatchingChangesInDepot();
+		}
+	}
+
+	private static void RefreshWidgetFactory(List<string> assemblyOrder)
+	{
+		WidgetFactory = new WidgetFactory(ResourceDepot, "Prefabs");
+		WidgetFactory.PrefabExtensionContext.AddExtension(new PrefabDatabindingExtension());
+		WidgetFactory.Initialize(assemblyOrder);
+		WidgetFactory.GeneratedPrefabContext.CollectPrefabs();
+	}
+
+	private static void RefreshSpriteData()
+	{
+		if (SpriteData == null)
+		{
+			SpriteData = new SpriteData("SpriteData");
+			SpriteData.Load(ResourceDepot);
+		}
+		else
+		{
+			SpriteData.Reload(ResourceDepot, ResourceContext);
+		}
+	}
+
+	private static void RefreshFontFactory()
+	{
+		FontFactory = new FontFactory(ResourceDepot);
+		FontFactory.LoadAllFonts(SpriteData);
+	}
+
+	private static void RefreshBrushFactory()
+	{
+		BrushFactory = new BrushFactory(ResourceDepot, "Brushes", SpriteData, FontFactory);
+		BrushFactory.Initialize();
 	}
 }

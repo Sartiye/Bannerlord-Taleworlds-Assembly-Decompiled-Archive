@@ -48,7 +48,7 @@ internal class MapTimeTracker
 
 	internal void Tick(float seconds)
 	{
-		_deltaTimeInTicks = (long)(seconds * 10000f);
+		_deltaTimeInTicks = (long)(seconds * (float)CampaignTime.TimeTicksPerSecond);
 		_numTicks += _deltaTimeInTicks;
 	}
 }

@@ -114,28 +114,25 @@ internal class WidgetContainer
 				switch (_containerType)
 				{
 				case ContainerType.Update:
-					widget.OnUpdateListIndex -= num2;
+					widget.OnUpdateListIndex = num2;
 					break;
 				case ContainerType.ParallelUpdate:
-					widget.OnParallelUpdateListIndex -= num2;
+					widget.OnParallelUpdateListIndex = num2;
 					break;
 				case ContainerType.LateUpdate:
-					widget.OnLateUpdateListIndex -= num2;
+					widget.OnLateUpdateListIndex = num2;
 					break;
 				case ContainerType.VisualDefinition:
-					widget.OnVisualDefinitionListIndex -= num2;
+					widget.OnVisualDefinitionListIndex = num2;
 					break;
 				case ContainerType.TweenPosition:
-					widget.OnTweenPositionListIndex -= num2;
+					widget.OnTweenPositionListIndex = num2;
 					break;
 				case ContainerType.UpdateBrushes:
-					widget.OnUpdateBrushesIndex -= num2;
+					widget.OnUpdateBrushesIndex = num2;
 					break;
 				}
 				list2.Add(widget);
-			}
-			else
-			{
 				num2++;
 			}
 		}

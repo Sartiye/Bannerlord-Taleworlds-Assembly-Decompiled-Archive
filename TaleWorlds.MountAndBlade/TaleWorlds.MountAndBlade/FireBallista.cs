@@ -16,7 +16,7 @@ public class FireBallista : Ballista
 		{
 			return -1000f;
 		}
-		if (flags.HasAnyFlag(TargetFlags.None))
+		if (flags.HasAllFlags(TargetFlags.IsSiegeEngine | TargetFlags.IsAttacker))
 		{
 			baseValue *= 1.5f;
 		}

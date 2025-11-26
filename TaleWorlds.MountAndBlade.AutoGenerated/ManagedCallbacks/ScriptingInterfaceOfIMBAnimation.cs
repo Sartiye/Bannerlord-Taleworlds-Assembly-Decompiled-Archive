@@ -53,7 +53,17 @@ internal class ScriptingInterfaceOfIMBAnimation : IMBAnimation
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetAnimationBlendsWithActionIndexDelegate(int animationIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetAnimationContinueToActionDelegate(int actionSetNo, int actionIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetAnimationDisplacementAtProgressDelegate(int animationIndex, float progress);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -139,7 +149,11 @@ internal class ScriptingInterfaceOfIMBAnimation : IMBAnimation
 
 	public static GetAnimationBlendInPeriodDelegate call_GetAnimationBlendInPeriodDelegate;
 
+	public static GetAnimationBlendsWithActionIndexDelegate call_GetAnimationBlendsWithActionIndexDelegate;
+
 	public static GetAnimationContinueToActionDelegate call_GetAnimationContinueToActionDelegate;
+
+	public static GetAnimationDisplacementAtProgressDelegate call_GetAnimationDisplacementAtProgressDelegate;
 
 	public static GetAnimationDurationDelegate call_GetAnimationDurationDelegate;
 
@@ -219,9 +233,19 @@ internal class ScriptingInterfaceOfIMBAnimation : IMBAnimation
 		return call_GetAnimationBlendInPeriodDelegate(animationIndex);
 	}
 
+	public int GetAnimationBlendsWithActionIndex(int animationIndex)
+	{
+		return call_GetAnimationBlendsWithActionIndexDelegate(animationIndex);
+	}
+
 	public int GetAnimationContinueToAction(int actionSetNo, int actionIndex)
 	{
 		return call_GetAnimationContinueToActionDelegate(actionSetNo, actionIndex);
+	}
+
+	public Vec3 GetAnimationDisplacementAtProgress(int animationIndex, float progress)
+	{
+		return call_GetAnimationDisplacementAtProgressDelegate(animationIndex, progress);
 	}
 
 	public float GetAnimationDuration(int animationIndex)

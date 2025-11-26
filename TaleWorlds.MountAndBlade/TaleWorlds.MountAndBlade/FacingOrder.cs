@@ -48,7 +48,7 @@ public struct FacingOrder
 
 	private Vec2 GetDirectionAux(Formation f, Agent targetAgent)
 	{
-		if (f.PhysicalClass.IsMounted() && targetAgent != null && targetAgent.Velocity.LengthSquared > targetAgent.RunSpeedCached * targetAgent.RunSpeedCached * 0.09f)
+		if (f.PhysicalClass.IsMounted() && targetAgent != null && targetAgent.Velocity.LengthSquared > targetAgent.GetMaximumForwardUnlimitedSpeed() * targetAgent.GetMaximumForwardUnlimitedSpeed() * 0.09f)
 		{
 			return targetAgent.Velocity.AsVec2.Normalized();
 		}

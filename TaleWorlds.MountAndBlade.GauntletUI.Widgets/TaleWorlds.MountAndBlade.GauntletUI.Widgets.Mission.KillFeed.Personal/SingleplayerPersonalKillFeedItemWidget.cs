@@ -11,17 +11,21 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 
 	private float _speedModifier;
 
-	private int _itemType;
+	private bool _isDamage;
 
 	private int _amount;
 
-	private string _typeID;
+	private int _itemType;
 
 	private string _message;
 
+	private string _typeID;
+
+	private Brush _troopTypeIconBrush;
+
 	private Widget _troopTypeWidget;
 
-	private bool _isDamage;
+	private bool _isPaused;
 
 	public Widget NotificationTypeIconWidget { get; set; }
 
@@ -39,8 +43,6 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 
 	public float FadeOutTime { get; set; } = 0.2f;
 
-
-	private float CurrentAlpha => base.AlphaFactor;
 
 	public float TimeSinceCreation { get; private set; }
 
@@ -124,6 +126,21 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 		}
 	}
 
+	public Brush TroopTypeIconBrush
+	{
+		get
+		{
+			return _troopTypeIconBrush;
+		}
+		set
+		{
+			if (value != _troopTypeIconBrush)
+			{
+				_troopTypeIconBrush = value;
+			}
+		}
+	}
+
 	public Widget TroopTypeWidget
 	{
 		get
@@ -137,8 +154,24 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 				_troopTypeWidget = value;
 				if (!string.IsNullOrEmpty(_typeID))
 				{
-					_troopTypeWidget.Sprite = _troopTypeWidget.Context.SpriteData.GetSprite("General\\compass\\" + _typeID);
+					_troopTypeWidget.Sprite = TroopTypeIconBrush?.GetLayer(_typeID)?.Sprite;
 				}
+			}
+		}
+	}
+
+	public bool IsPaused
+	{
+		get
+		{
+			return _isPaused;
+		}
+		set
+		{
+			if (value != _isPaused)
+			{
+				_isPaused = value;
+				OnPropertyChanged(value, "IsPaused");
 			}
 		}
 	}
@@ -148,9 +181,9 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (!_initialized)
 		{
 			this.SetGlobalAlphaRecursively(0f);
@@ -166,10 +199,13 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 
 	private void UpdateAlphaValues(float dt)
 	{
-		TimeSinceCreation += dt;
+		if (!IsPaused)
+		{
+			TimeSinceCreation += dt * _speedModifier;
+		}
 		if (TimeSinceCreation <= FadeInTime)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 1f, TimeSinceCreation / FadeInTime));
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 1f, TimeSinceCreation / FadeInTime));
 		}
 		else if (TimeSinceCreation - FadeInTime <= StayTime)
 		{
@@ -177,8 +213,8 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 		}
 		else if (TimeSinceCreation - (FadeInTime + StayTime) <= FadeOutTime)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 0f, (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime));
-			if (CurrentAlpha <= 0.1f)
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 0f, (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime));
+			if (base.AlphaFactor <= 0.1f)
 			{
 				EventFired("OnRemove");
 			}
@@ -199,7 +235,7 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 
 	private void UpdateNotificationTypeIconWidget()
 	{
-		if (ItemType == 0)
+		if (ItemType == 0 || ItemType == 9)
 		{
 			NotificationTypeIconWidget.IsVisible = false;
 			return;
@@ -231,7 +267,7 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 			NotificationTypeIconWidget.SetState("MakeUnconsciousHeadshot");
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 126);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 128);
 			NotificationTypeIconWidget.IsVisible = false;
 			break;
 		}
@@ -261,10 +297,11 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 			AmountTextWidget.IntText = Amount;
 			break;
 		case 5:
+		case 9:
 			AmountTextWidget.IsVisible = false;
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 163);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 166);
 			AmountTextWidget.IsVisible = false;
 			break;
 		}
@@ -291,10 +328,11 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 		case 6:
 		case 7:
 		case 8:
+		case 9:
 			MessageTextWidget.SetState("Normal");
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 196);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 200);
 			MessageTextWidget.IsVisible = false;
 			break;
 		}
@@ -313,31 +351,33 @@ public class SingleplayerPersonalKillFeedItemWidget : Widget
 			NotificationBackgroundWidget.SetState("FriendlyFire");
 			break;
 		case 4:
+		case 5:
 		case 6:
 		case 7:
 		case 8:
 			NotificationBackgroundWidget.SetState("Normal");
 			break;
-		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 224);
-			NotificationBackgroundWidget.SetState("Hidden");
+		case 9:
+			NotificationBackgroundWidget.SetState("Message");
 			break;
-		case 5:
+		default:
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\KillFeed\\Personal\\SingleplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 230);
+			NotificationBackgroundWidget.SetState("Hidden");
 			break;
 		}
 	}
 
 	private void UpdateTroopTypeVisualWidget()
 	{
-		if (_troopTypeWidget != null)
+		if (TroopTypeWidget != null)
 		{
 			if (string.IsNullOrEmpty(TypeID))
 			{
-				_troopTypeWidget.IsVisible = false;
+				TroopTypeWidget.IsVisible = false;
 			}
 			else
 			{
-				_troopTypeWidget.Sprite = _troopTypeWidget.Context.SpriteData.GetSprite("General\\compass\\" + _typeID);
+				TroopTypeWidget.Sprite = TroopTypeIconBrush?.GetLayer(_typeID)?.Sprite;
 			}
 		}
 	}

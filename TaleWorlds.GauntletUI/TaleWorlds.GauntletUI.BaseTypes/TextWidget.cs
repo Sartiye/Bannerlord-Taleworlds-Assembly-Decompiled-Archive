@@ -1,5 +1,5 @@
-using System.Numerics;
 using TaleWorlds.GauntletUI.Layout;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.GauntletUI.BaseTypes;
@@ -8,9 +8,30 @@ public class TextWidget : ImageWidget
 {
 	protected readonly Text _text;
 
-	protected bool IsTextValueDirty = true;
+	private bool _autoHideIfEmpty;
 
-	public bool AutoHideIfEmpty { get; set; }
+	protected Vec2 _renderOffset;
+
+	private bool _canBreakWords = true;
+
+	public bool AutoHideIfEmpty
+	{
+		get
+		{
+			return _autoHideIfEmpty;
+		}
+		set
+		{
+			if (value != _autoHideIfEmpty)
+			{
+				_autoHideIfEmpty = value;
+				if (_autoHideIfEmpty)
+				{
+					base.IsVisible = !string.IsNullOrEmpty(Text);
+				}
+			}
+		}
+	}
 
 	[Editor(false)]
 	public string Text
@@ -68,18 +89,36 @@ public class TextWidget : ImageWidget
 		}
 	}
 
+	public bool CanBreakWords
+	{
+		get
+		{
+			return _canBreakWords;
+		}
+		set
+		{
+			if (value != _canBreakWords)
+			{
+				_canBreakWords = value;
+				_text.CanBreakWords = value;
+				OnPropertyChanged(value, "CanBreakWords");
+			}
+		}
+	}
+
 	public TextWidget(UIContext context)
 		: base(context)
 	{
 		FontFactory fontFactory = context.FontFactory;
 		_text = new Text((int)base.Size.X, (int)base.Size.Y, fontFactory.DefaultFont, fontFactory.GetUsableFontForCharacter);
 		base.LayoutImp = new TextLayout(_text);
+		_renderOffset = Vec2.Zero;
 	}
 
 	protected virtual void SetText(string value)
 	{
 		SetMeasureAndLayoutDirty();
-		_text.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_text.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 		_text.Value = value;
 		OnPropertyChanged(FloatText, "FloatText");
 		OnPropertyChanged(IntText, "IntText");
@@ -89,7 +128,7 @@ public class TextWidget : ImageWidget
 		{
 			base.IsVisible = !string.IsNullOrEmpty(Text);
 		}
-		IsTextValueDirty = true;
+		_renderOffset = Vec2.Zero;
 	}
 
 	protected void RefreshTextParameters()
@@ -98,32 +137,9 @@ public class TextWidget : ImageWidget
 		_text.HorizontalAlignment = base.ReadOnlyBrush.TextHorizontalAlignment;
 		_text.VerticalAlignment = base.ReadOnlyBrush.TextVerticalAlignment;
 		_text.FontSize = fontSize;
-		_text.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
-		if (base.ReadOnlyBrush.Font != null)
-		{
-			_text.Font = base.Context.FontFactory.GetMappedFontForLocalization(base.ReadOnlyBrush.Font.Name);
-		}
-		else
-		{
-			_text.Font = base.Context.FontFactory.DefaultFont;
-		}
-		if (!IsTextValueDirty)
-		{
-			return;
-		}
-		for (int i = 0; i < _text.Value.Length; i++)
-		{
-			if (char.IsLetter(_text.Value[i]) && !_text.Font.Characters.ContainsKey(_text.Value[i]))
-			{
-				Font usableFontForCharacter = base.Context.FontFactory.GetUsableFontForCharacter(_text.Value[i]);
-				if (usableFontForCharacter != null)
-				{
-					_text.Font = usableFontForCharacter;
-				}
-				break;
-			}
-		}
-		IsTextValueDirty = false;
+		_text.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
+		Font font = ((base.ReadOnlyBrush.Font == null) ? base.Context.FontFactory.DefaultFont : base.ReadOnlyBrush.Font);
+		_text.Font = base.Context.FontFactory.GetMappedFontForLocalization(font.Name);
 	}
 
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
@@ -132,7 +148,8 @@ public class TextWidget : ImageWidget
 		RefreshTextParameters();
 		TextMaterial textMaterial = base.BrushRenderer.CreateTextMaterial(drawContext);
 		textMaterial.AlphaFactor *= base.Context.ContextAlpha;
-		Vector2 cachedGlobalPosition = _cachedGlobalPosition;
-		drawContext.Draw(_text, textMaterial, cachedGlobalPosition.X, cachedGlobalPosition.Y, base.Size.X, base.Size.Y);
+		Rectangle2D rectangle = AreaRect;
+		rectangle.AddVisualOffset(_renderOffset.X, _renderOffset.Y);
+		drawContext.Draw(_text, textMaterial, in base.ParentWidget.AreaRect, in rectangle);
 	}
 }

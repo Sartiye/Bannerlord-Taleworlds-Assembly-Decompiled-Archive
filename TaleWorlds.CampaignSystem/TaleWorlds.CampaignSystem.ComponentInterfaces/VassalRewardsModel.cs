@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class VassalRewardsModel : GameModel
+public abstract class VassalRewardsModel : MBGameModel<VassalRewardsModel>
 {
 	public abstract float InfluenceReward { get; }
 

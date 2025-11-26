@@ -27,7 +27,17 @@ public sealed class ParticleSystem : GameEntityComponent
 		return CreateParticleSystemAttachedToEntity(ParticleSystemManager.GetRuntimeIdByName(systemName), parentEntity, ref boneLocalFrame);
 	}
 
+	public static ParticleSystem CreateParticleSystemAttachedToEntity(string systemName, WeakGameEntity parentEntity, ref MatrixFrame boneLocalFrame)
+	{
+		return CreateParticleSystemAttachedToEntity(ParticleSystemManager.GetRuntimeIdByName(systemName), parentEntity, ref boneLocalFrame);
+	}
+
 	public static ParticleSystem CreateParticleSystemAttachedToEntity(int systemRuntimeId, GameEntity parentEntity, ref MatrixFrame boneLocalFrame)
+	{
+		return EngineApplicationInterface.IParticleSystem.CreateParticleSystemAttachedToEntity(systemRuntimeId, parentEntity.Pointer, ref boneLocalFrame);
+	}
+
+	public static ParticleSystem CreateParticleSystemAttachedToEntity(int systemRuntimeId, WeakGameEntity parentEntity, ref MatrixFrame boneLocalFrame)
 	{
 		return EngineApplicationInterface.IParticleSystem.CreateParticleSystemAttachedToEntity(systemRuntimeId, parentEntity.Pointer, ref boneLocalFrame);
 	}
@@ -52,9 +62,14 @@ public sealed class ParticleSystem : GameEntityComponent
 		EngineApplicationInterface.IParticleSystem.Restart(base.Pointer);
 	}
 
-	public void SetLocalFrame(ref MatrixFrame newLocalFrame)
+	public void SetLocalFrame(in MatrixFrame newLocalFrame)
 	{
-		EngineApplicationInterface.IParticleSystem.SetLocalFrame(base.Pointer, ref newLocalFrame);
+		EngineApplicationInterface.IParticleSystem.SetLocalFrame(base.Pointer, in newLocalFrame);
+	}
+
+	public void SetPreviousGlobalFrame(in MatrixFrame globalFrame)
+	{
+		EngineApplicationInterface.IParticleSystem.SetPreviousGlobalFrame(base.Pointer, in globalFrame);
 	}
 
 	public MatrixFrame GetLocalFrame()
@@ -62,6 +77,16 @@ public sealed class ParticleSystem : GameEntityComponent
 		MatrixFrame frame = MatrixFrame.Identity;
 		EngineApplicationInterface.IParticleSystem.GetLocalFrame(base.Pointer, ref frame);
 		return frame;
+	}
+
+	public bool HasAliveParticles()
+	{
+		return EngineApplicationInterface.IParticleSystem.HasAliveParticles(base.Pointer);
+	}
+
+	public void SetDontRemoveFromEntity(bool value)
+	{
+		EngineApplicationInterface.IParticleSystem.SetDontRemoveFromEntity(base.Pointer, value);
 	}
 
 	public void SetParticleEffectByName(string effectName)

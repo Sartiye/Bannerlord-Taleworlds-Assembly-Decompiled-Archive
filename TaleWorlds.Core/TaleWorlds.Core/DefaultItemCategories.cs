@@ -128,6 +128,10 @@ public class DefaultItemCategories
 
 	private ItemCategory _itemCategoryBanners;
 
+	private ItemCategory _itemCategoryFelt;
+
+	private ItemCategory _itemCategoryPlanks;
+
 	private static DefaultItemCategories Instance => Game.Current.DefaultItemCategories;
 
 	public static ItemCategory Grain => Instance._itemCategoryGrain;
@@ -256,6 +260,10 @@ public class DefaultItemCategories
 
 	public static ItemCategory Unassigned => Instance._itemCategoryUnassigned;
 
+	public static ItemCategory Felt => Instance._itemCategoryFelt;
+
+	public static ItemCategory Planks => Instance._itemCategoryPlanks;
+
 	private ItemCategory Create(string stringId)
 	{
 		return Game.Current.ObjectManager.RegisterPresumedObject(new ItemCategory(stringId));
@@ -331,22 +339,24 @@ public class DefaultItemCategories
 		_itemCategoryUltraArmor = Create("ultra_armor");
 		_itemCategoryBanners = Create("banner");
 		_itemCategoryUnassigned = Create("unassigned");
+		_itemCategoryFelt = Create("felt");
+		_itemCategoryPlanks = Create("planks");
 		InitializeAll();
 	}
 
 	private void InitializeAll()
 	{
-		_itemCategoryGrain.InitializeObject(isTradeGood: true, 140, 0, ItemCategory.Property.BonusToFoodStores);
-		_itemCategoryFish.InitializeObject(isTradeGood: true, 15, 15, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrain, 0.1f);
-		_itemCategoryMeat.InitializeObject(isTradeGood: true, 19, 50, ItemCategory.Property.BonusToFoodStores, _itemCategoryFish, 0.1f);
+		_itemCategoryGrain.InitializeObject(isTradeGood: true, 140, 0, ItemCategory.Property.BonusToFoodStores, _itemCategoryFish, 0.9f);
+		_itemCategoryFish.InitializeObject(isTradeGood: true, 15, 15, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrain, 0.9f);
+		_itemCategoryMeat.InitializeObject(isTradeGood: true, 30, 50, ItemCategory.Property.BonusToFoodStores, _itemCategoryFish, 0.1f);
 		_itemCategoryCheese.InitializeObject(isTradeGood: true, 10, 20, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrain, 0.01f);
 		_itemCategoryButter.InitializeObject(isTradeGood: true, 10, 25, ItemCategory.Property.BonusToFoodStores);
 		_itemCategoryGrape.InitializeObject(isTradeGood: true, 5, 20, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrain, 0.1f);
 		_itemCategoryOlives.InitializeObject(isTradeGood: true, 5, 20, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrain, 0.01f);
 		_itemCategoryDateFruit.InitializeObject(isTradeGood: true, 7, 32, ItemCategory.Property.BonusToFoodStores, _itemCategoryGrape, 0.01f);
-		_itemCategoryOil.InitializeObject(isTradeGood: true, 17, 30, ItemCategory.Property.None, _itemCategoryButter, 0.1f);
+		_itemCategoryOil.InitializeObject(isTradeGood: true, 26, 30, ItemCategory.Property.None, _itemCategoryButter, 0.1f);
 		_itemCategoryFlax.InitializeObject(isTradeGood: true, 10, 20);
-		_itemCategoryLinen.InitializeObject(isTradeGood: true, 20, 25);
+		_itemCategoryLinen.InitializeObject(isTradeGood: true, 28, 30);
 		_itemCategoryWool.InitializeObject(isTradeGood: true, 12);
 		_itemCategoryCloth.InitializeObject(isTradeGood: false, 12, 6);
 		_itemCategoryCotton.InitializeObject(isTradeGood: true, 10, 3);
@@ -355,13 +365,13 @@ public class DefaultItemCategories
 		_itemCategoryIron.InitializeObject(isTradeGood: true, 10, 20);
 		_itemCategorySalt.InitializeObject(isTradeGood: true, 25, 25, ItemCategory.Property.BonusToTax);
 		_itemCategorySilver.InitializeObject(isTradeGood: true, 10, 20, ItemCategory.Property.BonusToTax);
-		_itemCategoryHides.InitializeObject(isTradeGood: true, 30, 15);
+		_itemCategoryHides.InitializeObject(isTradeGood: true, 17, 10);
 		_itemCategoryClay.InitializeObject(isTradeGood: true, 8, 5);
-		_itemCategoryBeer.InitializeObject(isTradeGood: true, 23, 20, ItemCategory.Property.BonusToFoodStores);
+		_itemCategoryBeer.InitializeObject(isTradeGood: true, 46, 20, ItemCategory.Property.BonusToFoodStores);
 		_itemCategoryWine.InitializeObject(isTradeGood: true, 15, 30, ItemCategory.Property.BonusToLoyalty);
 		_itemCategoryTools.InitializeObject(isTradeGood: true, 30, 30, ItemCategory.Property.BonusToProduction);
 		_itemCategoryPottery.InitializeObject(isTradeGood: true, 22, 20);
-		_itemCategoryLeather.InitializeObject(isTradeGood: true, 25, 10);
+		_itemCategoryLeather.InitializeObject(isTradeGood: true, 15, 10);
 		_itemCategoryFur.InitializeObject(isTradeGood: true, 10, 38, ItemCategory.Property.BonusToProsperity);
 		_itemCategoryJewelry.InitializeObject(isTradeGood: true, 15, 32, ItemCategory.Property.BonusToLoyalty);
 		_itemCategorySheep.InitializeObject(isTradeGood: true, 8, 0, ItemCategory.Property.None, null, 0f, isAnimal: true);
@@ -399,5 +409,7 @@ public class DefaultItemCategories
 		_itemCategoryUltraArmor.InitializeObject(isTradeGood: false, 3, 10);
 		_itemCategoryBanners.InitializeObject();
 		_itemCategoryUnassigned.InitializeObject(isTradeGood: false, 0, 0, ItemCategory.Property.None, null, 0f, isAnimal: false, isValid: false);
+		_itemCategoryFelt.InitializeObject(isTradeGood: true, 34, 23, ItemCategory.Property.BonusToFoodStores);
+		_itemCategoryPlanks.InitializeObject(isTradeGood: true, 25, 15);
 	}
 }

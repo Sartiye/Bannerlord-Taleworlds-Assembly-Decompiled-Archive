@@ -74,6 +74,12 @@ public static class MathF
 		return Math.Pow(x, y);
 	}
 
+	[Obsolete("Types must match!", true)]
+	public static double Pow(double x, float y)
+	{
+		return Math.Pow(x, y);
+	}
+
 	public static float Pow(float x, float y)
 	{
 		return (float)Math.Pow(x, y);
@@ -100,7 +106,15 @@ public static class MathF
 
 	public static float Clamp(float value, float minValue, float maxValue)
 	{
-		return Max(Min(value, maxValue), minValue);
+		if (value < minValue)
+		{
+			return minValue;
+		}
+		if (value > maxValue)
+		{
+			return maxValue;
+		}
+		return value;
 	}
 
 	public static float AngleClamp(float angle)
@@ -228,6 +242,15 @@ public static class MathF
 			return b;
 		}
 		return a;
+	}
+
+	public static (float, float) MinMax(float a, float b)
+	{
+		if (a < b)
+		{
+			return (a, b);
+		}
+		return (b, a);
 	}
 
 	[Obsolete("Types must match!", true)]

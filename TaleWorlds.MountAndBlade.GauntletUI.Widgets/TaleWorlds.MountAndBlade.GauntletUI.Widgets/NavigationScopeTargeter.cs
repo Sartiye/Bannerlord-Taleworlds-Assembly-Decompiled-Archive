@@ -151,6 +151,21 @@ public class NavigationScopeTargeter : Widget
 		}
 	}
 
+	public bool ForceGainNavigationOnFirstChild
+	{
+		get
+		{
+			return NavigationScope.ForceGainNavigationOnFirstChild;
+		}
+		set
+		{
+			if (value != NavigationScope.ForceGainNavigationOnFirstChild)
+			{
+				NavigationScope.ForceGainNavigationOnFirstChild = value;
+			}
+		}
+	}
+
 	public bool NavigateFromScopeEdges
 	{
 		get

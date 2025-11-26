@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -20,11 +19,15 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 {
 	public class CapturedByBountyHuntersIssue : IssueBase
 	{
+		private const int QuestSolutionNeededMinimumHealthyMenCount = 25;
+
 		private const int CompanionRequiredSkillLevel = 120;
 
 		private const int IssueDuration = 15;
 
 		private const int QuestTimeLimit = 30;
+
+		private const int AlternativeSolutionMinimumTroopTier = 2;
 
 		[SaveableField(100)]
 		private Settlement _hideout;
@@ -39,7 +42,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		public override TextObject IssueBriefByIssueGiver => new TextObject("{=QtmPWQ5a}Some of my lads have gone missing. I've got a witness who says they'd gotten themselves dead drunk drinking with another band in these parts who turned out to be filthy bounty hunters. Now my boys are all trussed up, and these treacherous animals aim to turn them in for the bounty.[if:convo_annoyed][ib:closed]");
 
-		public override TextObject IssueAcceptByPlayer => new TextObject("{=tZqbrlV9}How can I help you?");
+		public override TextObject IssueAcceptByPlayer => new TextObject("{=A6iOIurY}How can I help you?");
 
 		public override TextObject IssueQuestSolutionExplanationByIssueGiver
 		{
@@ -77,7 +80,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=TQyB9rAs}{ISSUE_OWNER.NAME}'s associates captured by bounty hunters.");
+				TextObject textObject = new TextObject("{=TQyB9rAs}{ISSUE_OWNER.NAME}'s Associates Captured by Bounty Hunters");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.IssueOwner.CharacterObject, textObject);
 				return textObject;
 			}
@@ -130,7 +133,6 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			: base(issueOwner, CampaignTime.DaysFromNow(15f))
 		{
 			_hideout = hideout;
-			Campaign.Current.BusyHideouts.Add(_hideout);
 		}
 
 		protected override float GetIssueEffectAmountInternal(IssueEffect issueEffect)
@@ -153,14 +155,17 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
+		}
+
+		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
+		{
+			return character.Tier >= 2;
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -201,19 +206,27 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 				flag |= PreconditionFlags.Relation;
 				relationHero = issueGiver;
 			}
+			if (MobileParty.MainParty.MemberRoster.TotalHealthyCount - 1 < 25)
+			{
+				flag |= PreconditionFlags.NotEnoughTroops;
+			}
 			return flag == PreconditionFlags.None;
 		}
 
 		protected override void OnGameLoad()
 		{
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && !Campaign.Current.BusyHideouts.Contains(_hideout))
-			{
-				Campaign.Current.BusyHideouts.Add(_hideout);
-			}
 		}
 
 		protected override void HourlyTick()
 		{
+		}
+
+		public override void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == _hideout)
+			{
+				priority = Math.Max(priority, 100);
+			}
 		}
 
 		protected override QuestBase GenerateIssueQuest(string questId)
@@ -227,7 +240,6 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnIssueFinalized()
 		{
-			Campaign.Current.BusyHideouts.Remove(_hideout);
 		}
 	}
 
@@ -240,7 +252,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=TQyB9rAs}{ISSUE_OWNER.NAME}'s associates captured by bounty hunters.");
+				TextObject textObject = new TextObject("{=TQyB9rAs}{ISSUE_OWNER.NAME}'s Associates Captured by Bounty Hunters");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject, textObject);
 				return textObject;
 			}
@@ -248,7 +260,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -259,7 +271,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _successQuestLogText
+		private TextObject SuccessQuestLogText
 		{
 			get
 			{
@@ -269,7 +281,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerLostTheFightLogText
+		private TextObject PlayerLostTheFightLogText
 		{
 			get
 			{
@@ -279,7 +291,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _hideoutClearedBySomeoneElseLogText
+		private TextObject HideoutClearedBySomeoneElseLogText
 		{
 			get
 			{
@@ -289,7 +301,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _timeOutLogText
+		private TextObject TimeOutLogText
 		{
 			get
 			{
@@ -319,7 +331,6 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			: base(questId, giverHero, duration, rewardGold)
 		{
 			_questHideout = hideout;
-			Campaign.Current.BusyHideouts.Add(_questHideout);
 			SetDialogs();
 			InitializeQuestOnCreation();
 		}
@@ -348,7 +359,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			AddLog(_playerStartsQuestLogText);
+			AddLog(PlayerStartsQuestLogText);
 		}
 
 		protected override void InitializeQuestOnGameLoad()
@@ -362,7 +373,6 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnFinalize()
 		{
-			Campaign.Current.BusyHideouts.Remove(_questHideout);
 		}
 
 		protected override void RegisterEvents()
@@ -370,19 +380,22 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 			CampaignEvents.OnSettlementLeftEvent.AddNonSerializedListener(this, OnSettlementLeft);
+			CampaignEvents.IsSettlementBusyEvent.AddNonSerializedListener(this, IsSettlementBusy);
+		}
+
+		private void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == _questHideout)
+			{
+				priority = Math.Max(priority, 200);
+			}
 		}
 
 		private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 		{
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9"))
+			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && _questHideout.IsSettlementBusy(this))
 			{
-				if (!Campaign.Current.BusyHideouts.Contains(_questHideout))
-				{
-					Campaign.Current.BusyHideouts.Add(_questHideout);
-					return;
-				}
 				CompleteQuestWithCancel();
-				Campaign.Current.BusyHideouts.Add(_questHideout);
 			}
 		}
 
@@ -407,19 +420,19 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 				{
 					if (mapEvent.DefeatedSide == mapEvent.PlayerSide || mapEvent.DefeatedSide == BattleSideEnum.None)
 					{
-						AddLog(_playerLostTheFightLogText);
+						AddLog(PlayerLostTheFightLogText);
 						FailConsequences(isTimedOut: false);
 					}
 					else
 					{
-						AddLog(_successQuestLogText);
+						AddLog(SuccessQuestLogText);
 						SuccessConsequences();
 					}
 				}
 			}
 			else if (_questHideout.Parties.Count == 0)
 			{
-				AddLog(_hideoutClearedBySomeoneElseLogText);
+				AddLog(HideoutClearedBySomeoneElseLogText);
 				CompleteQuestWithFail();
 			}
 		}
@@ -460,7 +473,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnTimedOut()
 		{
-			AddLog(_timeOutLogText);
+			AddLog(TimeOutLogText);
 			FailConsequences(isTimedOut: true);
 		}
 	}
@@ -481,7 +494,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 	private const IssueBase.IssueFrequency CapturedByBountyHuntersIssueFrequency = IssueBase.IssueFrequency.Common;
 
-	private const float ValidHideoutDistance = 55f;
+	private float ValidHideoutDistance => Campaign.Current.EstimatedAverageBanditPartySpeed * (float)CampaignTime.HoursInDay;
 
 	public override void RegisterEvents()
 	{
@@ -514,17 +527,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 	private Settlement FindSuitableHideout(Hero issueGiver)
 	{
-		Settlement result = null;
-		float num = float.MaxValue;
-		foreach (Hideout item in Campaign.Current.AllHideouts.Where((Hideout t) => t.IsInfested))
-		{
-			if (!Campaign.Current.BusyHideouts.Contains(item.Settlement) && Campaign.Current.Models.MapDistanceModel.GetDistance(issueGiver.GetMapPoint(), item.Settlement, (55f < num) ? 55f : num, out var distance) && distance < num)
-			{
-				num = distance;
-				result = item.Settlement;
-			}
-		}
-		return result;
+		return SettlementHelper.FindNearestHideoutToSettlement(issueGiver.CurrentSettlement, MobileParty.NavigationType.Default, (Settlement s) => s.Hideout.IsInfested && !s.IsSettlementBusy(this) && Campaign.Current.Models.MapDistanceModel.GetDistance(issueGiver.CurrentSettlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < ValidHideoutDistance)?.Settlement;
 	}
 
 	public void OnCheckForIssue(Hero hero)

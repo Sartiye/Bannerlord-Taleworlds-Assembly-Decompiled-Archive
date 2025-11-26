@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -9,6 +9,15 @@ namespace TaleWorlds.CampaignSystem.GameMenus;
 
 public class GameMenu
 {
+	public enum MenuOverlayType
+	{
+		None,
+		SettlementWithParties,
+		SettlementWithCharacters,
+		SettlementWithBoth,
+		Encounter
+	}
+
 	public enum MenuFlags
 	{
 		None,
@@ -27,8 +36,6 @@ public class GameMenu
 
 	public OnInitDelegate OnInit;
 
-	public List<object> MenuRepeatObjects = new List<object>();
-
 	public object LastSelectedMenuObject;
 
 	private CampaignTime _previousTickTime;
@@ -43,11 +50,14 @@ public class GameMenu
 
 	public TextObject MenuTitle { get; private set; }
 
-	public GameOverlays.MenuOverlayType OverlayType { get; private set; }
+	public MenuOverlayType OverlayType { get; private set; }
 
 	public bool IsReady { get; private set; }
 
 	public int MenuItemAmount => _menuItems.Count;
+
+	public List<object> MenuRepeatObjects { get; private set; } = new List<object>();
+
 
 	public object CurrentRepeatableObject
 	{
@@ -99,7 +109,7 @@ public class GameMenu
 		_menuItems = new List<GameMenuOption>();
 	}
 
-	internal void Initialize(TextObject text, OnInitDelegate initDelegate, GameOverlays.MenuOverlayType overlay, MenuFlags flags = MenuFlags.None, object relatedObject = null)
+	internal void Initialize(TextObject text, OnInitDelegate initDelegate, MenuOverlayType overlay, MenuFlags flags = MenuFlags.None, object relatedObject = null)
 	{
 		CurrentRepeatableIndex = 0;
 		LastSelectedMenuObject = null;
@@ -111,7 +121,7 @@ public class GameMenu
 		IsReady = true;
 	}
 
-	internal void Initialize(TextObject text, OnInitDelegate initDelegate, OnConditionDelegate condition, OnConsequenceDelegate consequence, OnTickDelegate tick, MenuAndOptionType type, GameOverlays.MenuOverlayType overlay, float targetWaitHours = 0f, MenuFlags flags = MenuFlags.None, object relatedObject = null)
+	internal void Initialize(TextObject text, OnInitDelegate initDelegate, OnConditionDelegate condition, OnConsequenceDelegate consequence, OnTickDelegate tick, MenuAndOptionType type, MenuOverlayType overlay, float targetWaitHours = 0f, MenuFlags flags = MenuFlags.None, object relatedObject = null)
 	{
 		CurrentRepeatableIndex = 0;
 		LastSelectedMenuObject = null;
@@ -127,6 +137,11 @@ public class GameMenu
 		TargetWaitHours = targetWaitHours;
 		IsWaitMenu = type != MenuAndOptionType.RegularMenuOption;
 		IsReady = true;
+	}
+
+	public void SetMenuRepeatObjects(IEnumerable<object> list)
+	{
+		MenuRepeatObjects = list.ToList();
 	}
 
 	private void AddOption(GameMenuOption newOption, int index = -1)
@@ -251,15 +266,21 @@ public class GameMenu
 
 	public void RunMenuOptionConsequence(MenuContext menuContext, int menuItemNumber)
 	{
-		if (menuItemNumber >= _menuItems.Count)
+		if (menuItemNumber >= _menuItems.Count || menuItemNumber < 0)
 		{
+			Debug.FailedAssert("menuItemNumber out of bounds", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "RunMenuOptionConsequence", 263);
 			menuItemNumber = _menuItems.Count - 1;
 		}
-		if (_menuItems[menuItemNumber].IsLeave && IsWaitMenu)
+		GameMenuOption gameMenuOption = _menuItems[menuItemNumber];
+		if (gameMenuOption.IsLeave && IsWaitMenu)
 		{
 			EndWait();
 		}
-		_menuItems[menuItemNumber].RunConsequence(menuContext);
+		gameMenuOption.RunConsequence(menuContext);
+		if (Campaign.Current != null)
+		{
+			CampaignEventDispatcher.Instance.OnGameMenuOptionSelected(this, gameMenuOption);
+		}
 	}
 
 	public void StartWait()
@@ -275,8 +296,16 @@ public class GameMenu
 		Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;
 	}
 
+	private void ResetVariablesOnInit()
+	{
+		Progress = 0f;
+		CurrentRepeatableIndex = 0;
+		MenuRepeatObjects.Clear();
+	}
+
 	public void RunOnInit(Game game, MenuContext menuContext)
 	{
+		ResetVariablesOnInit();
 		MenuCallbackArgs menuCallbackArgs = new MenuCallbackArgs(menuContext, MenuTitle);
 		if (OnInit != null)
 		{
@@ -296,7 +325,7 @@ public class GameMenu
 	public void AfterInit(MenuContext menuContext)
 	{
 		MenuCallbackArgs args = new MenuCallbackArgs(menuContext, MenuTitle);
-		CampaignEventDispatcher.Instance.AfterGameMenuOpened(args);
+		CampaignEventDispatcher.Instance.AfterGameMenuInitialized(args);
 	}
 
 	public TextObject GetText()
@@ -312,9 +341,13 @@ public class GameMenu
 			Campaign.Current.GameMenuManager.SetNextMenu(menuId);
 			MapState mapState = Game.Current.GameStateManager.LastOrDefault<MapState>();
 			mapState?.EnterMenuMode();
-			if (mapState != null && mapState.MenuContext?.GameMenu?.IsWaitMenu == true)
+			if (mapState?.MenuContext?.GameMenu != null)
 			{
-				mapState.MenuContext.GameMenu.StartWait();
+				GameMenu gameMenu = mapState.MenuContext.GameMenu;
+				if (gameMenu != null && gameMenu.IsWaitMenu)
+				{
+					mapState.MenuContext.GameMenu.StartWait();
+				}
 			}
 		}
 		else
@@ -334,15 +367,10 @@ public class GameMenu
 			{
 				currentMenuContext.GameMenu.StartWait();
 			}
-			MenuContext currentMenuContext2 = Campaign.Current.CurrentMenuContext;
-			if (currentMenuContext2 != null && currentMenuContext2.GameMenu.StringId == menuId)
-			{
-				currentMenuContext2.GameMenu.AfterInit(currentMenuContext2);
-			}
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "SwitchToMenu", 363);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "SwitchToMenu", 384);
 		}
 	}
 

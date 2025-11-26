@@ -20,9 +20,9 @@ public class DynamicBodyCampaignBehavior : CampaignBehaviorBase
 
 	private const float DailyWeightIncrease = 0.025f;
 
-	private CampaignTime _lastSettlementVisitTime = CampaignTime.Now;
+	private CampaignTime _lastSettlementVisitTime;
 
-	private CampaignTime _lastEncounterTime = CampaignTime.Now;
+	private CampaignTime _lastEncounterTime;
 
 	private float _unmodifiedWeight = -1f;
 
@@ -102,6 +102,8 @@ public class DynamicBodyCampaignBehavior : CampaignBehaviorBase
 
 	private void OnNewGameCreatedPartialFollowUpEnd(CampaignGameStarter starter)
 	{
+		_lastSettlementVisitTime = CampaignTime.Now;
+		_lastEncounterTime = CampaignTime.Now;
 		OnPlayerBodyPropertiesChanged();
 	}
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.Localization;
 
@@ -31,6 +32,40 @@ public class SceneNotificationData
 			CustomColor2 = customColor2;
 			UseHorse = useHorse;
 		}
+	}
+
+	public readonly struct SceneNotificationShip
+	{
+		public readonly string ShipPrefabId;
+
+		public readonly List<ShipVisualSlotInfo> ShipUpgrades;
+
+		public readonly float ShipHitPointRatio;
+
+		public readonly uint SailColor1;
+
+		public readonly uint SailColor2;
+
+		public readonly int ShipSeed;
+
+		public SceneNotificationShip(string shipPrefabId, List<ShipVisualSlotInfo> shipUpgrades, float shipHitPointRatio, uint sailColor1, uint sailColor2, int shipSeed)
+		{
+			ShipPrefabId = shipPrefabId;
+			ShipUpgrades = shipUpgrades;
+			ShipHitPointRatio = shipHitPointRatio;
+			SailColor1 = sailColor1;
+			SailColor2 = sailColor2;
+			ShipSeed = shipSeed;
+		}
+	}
+
+	public struct NotificationSceneProperties
+	{
+		public bool InitializePhysics;
+
+		public bool DisableStaticShadows;
+
+		public float? OverriddenWaterStrength;
 	}
 
 	public enum RelevantContextType
@@ -73,6 +108,14 @@ public class SceneNotificationData
 
 	public virtual RelevantContextType RelevantContext { get; }
 
+	public virtual NotificationSceneProperties SceneProperties { get; } = new NotificationSceneProperties
+	{
+		InitializePhysics = false,
+		DisableStaticShadows = false,
+		OverriddenWaterStrength = null
+	};
+
+
 	public virtual void OnAffirmativeAction()
 	{
 	}
@@ -85,13 +128,18 @@ public class SceneNotificationData
 	{
 	}
 
-	public virtual IEnumerable<Banner> GetBanners()
+	public virtual Banner[] GetBanners()
 	{
-		return new List<Banner>();
+		return Array.Empty<Banner>();
 	}
 
-	public virtual IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public virtual SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
-		return new List<SceneNotificationCharacter>();
+		return Array.Empty<SceneNotificationCharacter>();
+	}
+
+	public virtual SceneNotificationShip[] GetShips()
+	{
+		return Array.Empty<SceneNotificationShip>();
 	}
 }

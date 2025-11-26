@@ -47,9 +47,14 @@ public class MultiplayerItemTestMissionController : MissionLogic
 		foreach (BasicCharacterObject troop in _troops)
 		{
 			GetNextSpawnFrame(out var position, out var direction);
-			foreach (Equipment allEquipment in troop.AllEquipments)
+			foreach (Equipment battleEquipment in troop.BattleEquipments)
 			{
-				base.Mission.SpawnAgent(new AgentBuildData(new BasicBattleAgentOrigin(troop)).Equipment(allEquipment).InitialPosition(in position).InitialDirection(in direction));
+				base.Mission.SpawnAgent(new AgentBuildData(new BasicBattleAgentOrigin(troop)).Equipment(battleEquipment).InitialPosition(in position).InitialDirection(in direction));
+				position += new Vec3(0f, 2f);
+			}
+			foreach (Equipment civilianEquipment in troop.CivilianEquipments)
+			{
+				base.Mission.SpawnAgent(new AgentBuildData(new BasicBattleAgentOrigin(troop)).Equipment(civilianEquipment).InitialPosition(in position).InitialDirection(in direction));
 				position += new Vec3(0f, 2f);
 			}
 		}
@@ -84,7 +89,7 @@ public class MultiplayerItemTestMissionController : MissionLogic
 			Mission mission = base.Mission;
 			AgentBuildData agentBuildData = new AgentBuildData(new BasicBattleAgentOrigin(@object)).Team(base.Mission.DefenderTeam);
 			Vec3 position = new Vec3(200f + (float)MBRandom.RandomInt(15), 200f + (float)MBRandom.RandomInt(15), 1f);
-			mainAgent = mission.SpawnAgent(agentBuildData.InitialPosition(in position).InitialDirection(in Vec2.Forward).Controller(Agent.ControllerType.Player));
+			mainAgent = mission.SpawnAgent(agentBuildData.InitialPosition(in position).InitialDirection(in Vec2.Forward).Controller(AgentControllerType.Player));
 		}
 	}
 

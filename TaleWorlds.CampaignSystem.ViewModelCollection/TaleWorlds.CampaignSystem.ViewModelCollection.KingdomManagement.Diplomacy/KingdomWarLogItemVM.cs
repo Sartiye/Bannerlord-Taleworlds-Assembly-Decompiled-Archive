@@ -1,5 +1,5 @@
 using TaleWorlds.CampaignSystem.LogEntries;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
@@ -12,7 +12,7 @@ public class KingdomWarLogItemVM : ViewModel
 
 	private string _warLogTimeText;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
 	[DataSourceProperty]
 	public string WarLogTimeText
@@ -49,7 +49,7 @@ public class KingdomWarLogItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -68,7 +68,7 @@ public class KingdomWarLogItemVM : ViewModel
 	public KingdomWarLogItemVM(IEncyclopediaLog log, IFaction effectorFaction)
 	{
 		_log = log;
-		Banner = new ImageIdentifierVM(BannerCode.CreateFrom(effectorFaction.Banner), nineGrid: true);
+		Banner = new BannerImageIdentifierVM(effectorFaction.Banner, nineGrid: true);
 		RefreshValues();
 	}
 

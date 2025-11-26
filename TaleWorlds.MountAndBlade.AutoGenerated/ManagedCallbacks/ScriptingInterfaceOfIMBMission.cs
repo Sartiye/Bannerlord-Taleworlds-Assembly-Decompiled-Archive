@@ -42,11 +42,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void AddSoundAlarmFactorToAgentsDelegate(UIntPtr pointer, int ownerId, Vec3 position, float alarmFactor);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	public delegate int AddTeamDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -57,7 +52,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void BatchFormationUnitPositionsDelegate(UIntPtr missionPointer, IntPtr orderedPositionIndices, IntPtr orderedLocalPositions, IntPtr availabilityTable, IntPtr globalPositionTable, WorldPosition orderPosition, Vec2 direction, int fileCount, int rankCount);
+	public delegate void BatchFormationUnitPositionsDelegate(UIntPtr missionPointer, IntPtr orderedPositionIndices, IntPtr orderedLocalPositions, IntPtr availabilityTable, IntPtr globalPositionTable, WorldPosition orderPosition, Vec2 direction, int fileCount, int rankCount, [MarshalAs(UnmanagedType.U1)] bool fastCheckWithSameFaceGroupIdDigit);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -113,11 +108,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void FastForwardMissionDelegate(UIntPtr missionPointer, float startTime, float endTime);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	public delegate void FinalizeMissionDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -129,6 +119,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void FindConvexHullDelegate(IntPtr boundaryPoints, int boundaryPointCount, ref int convexPointCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ForceDisableOcclusionDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -228,12 +223,18 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetCurrentVolumeGeneratorVersionDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetDebugAgentDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int GetEnemyAlarmStateIndicatorDelegate(UIntPtr missionPointer);
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetFallAvoidSystemActiveDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -286,13 +287,13 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetPauseAITickDelegate(UIntPtr missionPointer);
+	public delegate Vec3 GetOldPositionOfMissileDelegate(UIntPtr missionPointer, int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetPlayerAlarmIndicatorDelegate(UIntPtr missionPointer);
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetPauseAITickDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -327,7 +328,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetWaterLevelAtPositionDelegate(UIntPtr missionPointer, Vec2 position);
+	public delegate float GetWaterLevelAtPositionDelegate(UIntPtr missionPointer, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool useWaterRenderer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -377,6 +378,18 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsPositionInsideHardBoundariesDelegate(UIntPtr missionPointer, Vec2 position);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsPositionOnAnyBlockerNavMeshFaceDelegate(UIntPtr missionPointer, Vec3 position);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void MakeSoundDelegate(UIntPtr pointer, int nativeSoundCode, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool soundCanBePredicted, [MarshalAs(UnmanagedType.U1)] bool isReliable, int relatedAgent1, int relatedAgent2);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -388,6 +401,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void MakeSoundWithParameterDelegate(UIntPtr pointer, int nativeSoundCode, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool soundCanBePredicted, [MarshalAs(UnmanagedType.U1)] bool isReliable, int relatedAgent1, int relatedAgent2, SoundEventParameter parameter);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void OnFastForwardStateChangedDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool state);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -422,19 +440,18 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int RayCastForClosestAgentDelegate(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int ExcludeAgentIndex, ref float CollisionDistance, float RayThickness);
+	public delegate int RayCastForClosestAgentDelegate(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int excludeAgentIndex, float rayThickness, out float collisionDistance);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int RayCastForClosestAgentsLimbsDelegate(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int excludeAgentIndex, float rayThickness, out float collisionDistance, out sbyte boneIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool RayCastForClosestAgentsLimbsDelegate(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int ExcludeAgentIndex, ref float CollisionDistance, ref int AgentIndex, ref sbyte BoneIndex);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool RayCastForGivenAgentsLimbsDelegate(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int GivenAgentIndex, ref float CollisionDistance, ref sbyte BoneIndex);
+	public delegate bool RayCastForGivenAgentsLimbsDelegate(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int givenAgentIndex, float rayThickness, out float collisionDistance, out sbyte boneIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -495,6 +512,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetCloseProximityWaveSoundsEnabledDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetCombatTypeDelegate(UIntPtr missionPointer, int combatType);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -506,6 +528,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetDebugAgentDelegate(UIntPtr missionPointer, int index);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetFallAvoidSystemActiveDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool fallAvoidActive);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -530,12 +557,22 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetPauseAITickDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool I);
+	public delegate void SetOverrideCorpseCountDelegate(UIntPtr missionPointer, int overrideCorpseCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPauseAITickDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetRandomDecideTimeOfAgentsDelegate(UIntPtr missionPointer, int agentCount, IntPtr agentIndices, float minAIReactionTime, float maxAIReactionTime);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetRenderParallelLogicInProgressDelegate(UIntPtr missionPointer, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -546,6 +583,16 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetThrowingMissileSpeedModifierDelegate(UIntPtr missionPointer, float modifier);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetVelocityOfMissileDelegate(UIntPtr missionPointer, int index, in Vec3 velocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SkipForwardMissionReplayDelegate(UIntPtr missionPointer, float startTime, float endTime);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -562,12 +609,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[MonoNativeFunctionWrapper]
 	public delegate void tickAgentsAndTeamsAsyncDelegate(UIntPtr missionPointer, float dt);
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool ToggleDisableFallAvoidDelegate();
-
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
 	public static AddAiDebugTextDelegate call_AddAiDebugTextDelegate;
@@ -579,8 +620,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	public static AddMissileSingleUsageDelegate call_AddMissileSingleUsageDelegate;
 
 	public static AddParticleSystemBurstByNameDelegate call_AddParticleSystemBurstByNameDelegate;
-
-	public static AddSoundAlarmFactorToAgentsDelegate call_AddSoundAlarmFactorToAgentsDelegate;
 
 	public static AddTeamDelegate call_AddTeamDelegate;
 
@@ -608,13 +647,13 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static EndOfRecordDelegate call_EndOfRecordDelegate;
 
-	public static FastForwardMissionDelegate call_FastForwardMissionDelegate;
-
 	public static FinalizeMissionDelegate call_FinalizeMissionDelegate;
 
 	public static FindAgentWithIndexDelegate call_FindAgentWithIndexDelegate;
 
 	public static FindConvexHullDelegate call_FindConvexHullDelegate;
+
+	public static ForceDisableOcclusionDelegate call_ForceDisableOcclusionDelegate;
 
 	public static GetAgentCountAroundPositionDelegate call_GetAgentCountAroundPositionDelegate;
 
@@ -654,9 +693,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static GetCombatTypeDelegate call_GetCombatTypeDelegate;
 
+	public static GetCurrentVolumeGeneratorVersionDelegate call_GetCurrentVolumeGeneratorVersionDelegate;
+
 	public static GetDebugAgentDelegate call_GetDebugAgentDelegate;
 
-	public static GetEnemyAlarmStateIndicatorDelegate call_GetEnemyAlarmStateIndicatorDelegate;
+	public static GetFallAvoidSystemActiveDelegate call_GetFallAvoidSystemActiveDelegate;
 
 	public static GetGameTypeForReplayDelegate call_GetGameTypeForReplayDelegate;
 
@@ -676,9 +717,9 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static GetNumberOfTeamsDelegate call_GetNumberOfTeamsDelegate;
 
-	public static GetPauseAITickDelegate call_GetPauseAITickDelegate;
+	public static GetOldPositionOfMissileDelegate call_GetOldPositionOfMissileDelegate;
 
-	public static GetPlayerAlarmIndicatorDelegate call_GetPlayerAlarmIndicatorDelegate;
+	public static GetPauseAITickDelegate call_GetPauseAITickDelegate;
 
 	public static GetPositionOfMissileDelegate call_GetPositionOfMissileDelegate;
 
@@ -710,11 +751,17 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static IsPositionInsideBoundariesDelegate call_IsPositionInsideBoundariesDelegate;
 
+	public static IsPositionInsideHardBoundariesDelegate call_IsPositionInsideHardBoundariesDelegate;
+
+	public static IsPositionOnAnyBlockerNavMeshFaceDelegate call_IsPositionOnAnyBlockerNavMeshFaceDelegate;
+
 	public static MakeSoundDelegate call_MakeSoundDelegate;
 
 	public static MakeSoundOnlyOnRelatedPeerDelegate call_MakeSoundOnlyOnRelatedPeerDelegate;
 
 	public static MakeSoundWithParameterDelegate call_MakeSoundWithParameterDelegate;
+
+	public static OnFastForwardStateChangedDelegate call_OnFastForwardStateChangedDelegate;
 
 	public static PauseMissionSceneSoundsDelegate call_PauseMissionSceneSoundsDelegate;
 
@@ -756,11 +803,15 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static SetCameraIsFirstPersonDelegate call_SetCameraIsFirstPersonDelegate;
 
+	public static SetCloseProximityWaveSoundsEnabledDelegate call_SetCloseProximityWaveSoundsEnabledDelegate;
+
 	public static SetCombatTypeDelegate call_SetCombatTypeDelegate;
 
 	public static SetCrossbowMissileSpeedModifierDelegate call_SetCrossbowMissileSpeedModifierDelegate;
 
 	public static SetDebugAgentDelegate call_SetDebugAgentDelegate;
+
+	public static SetFallAvoidSystemActiveDelegate call_SetFallAvoidSystemActiveDelegate;
 
 	public static SetLastMovementKeyPressedDelegate call_SetLastMovementKeyPressedDelegate;
 
@@ -770,21 +821,27 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static SetNavigationFaceCostWithIdAroundPositionDelegate call_SetNavigationFaceCostWithIdAroundPositionDelegate;
 
+	public static SetOverrideCorpseCountDelegate call_SetOverrideCorpseCountDelegate;
+
 	public static SetPauseAITickDelegate call_SetPauseAITickDelegate;
 
 	public static SetRandomDecideTimeOfAgentsDelegate call_SetRandomDecideTimeOfAgentsDelegate;
 
+	public static SetRenderParallelLogicInProgressDelegate call_SetRenderParallelLogicInProgressDelegate;
+
 	public static SetReportStuckAgentsModeDelegate call_SetReportStuckAgentsModeDelegate;
 
 	public static SetThrowingMissileSpeedModifierDelegate call_SetThrowingMissileSpeedModifierDelegate;
+
+	public static SetVelocityOfMissileDelegate call_SetVelocityOfMissileDelegate;
+
+	public static SkipForwardMissionReplayDelegate call_SkipForwardMissionReplayDelegate;
 
 	public static StartRecordingDelegate call_StartRecordingDelegate;
 
 	public static TickDelegate call_TickDelegate;
 
 	public static tickAgentsAndTeamsAsyncDelegate call_tickAgentsAndTeamsAsyncDelegate;
-
-	public static ToggleDisableFallAvoidDelegate call_ToggleDisableFallAvoidDelegate;
 
 	public void AddAiDebugText(UIntPtr missionPointer, string text)
 	{
@@ -845,11 +902,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_AddParticleSystemBurstByNameDelegate(missionPointer, array, ref frame, synchThroughNetwork);
 	}
 
-	public void AddSoundAlarmFactorToAgents(UIntPtr pointer, int ownerId, Vec3 position, float alarmFactor)
-	{
-		call_AddSoundAlarmFactorToAgentsDelegate(pointer, ownerId, position, alarmFactor);
-	}
-
 	public int AddTeam(UIntPtr missionPointer)
 	{
 		return call_AddTeamDelegate(missionPointer);
@@ -884,7 +936,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_BackupRecordToFileDelegate(missionPointer, array, array2, array3);
 	}
 
-	public void BatchFormationUnitPositions(UIntPtr missionPointer, Vec2i[] orderedPositionIndices, Vec2[] orderedLocalPositions, int[] availabilityTable, WorldPosition[] globalPositionTable, WorldPosition orderPosition, Vec2 direction, int fileCount, int rankCount)
+	public void BatchFormationUnitPositions(UIntPtr missionPointer, Vec2i[] orderedPositionIndices, Vec2[] orderedLocalPositions, int[] availabilityTable, WorldPosition[] globalPositionTable, WorldPosition orderPosition, Vec2 direction, int fileCount, int rankCount, bool fastCheckWithSameFaceGroupIdDigit)
 	{
 		PinnedArrayData<Vec2i> pinnedArrayData = new PinnedArrayData<Vec2i>(orderedPositionIndices);
 		IntPtr pointer = pinnedArrayData.Pointer;
@@ -894,7 +946,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		IntPtr pointer3 = pinnedArrayData3.Pointer;
 		PinnedArrayData<WorldPosition> pinnedArrayData4 = new PinnedArrayData<WorldPosition>(globalPositionTable);
 		IntPtr pointer4 = pinnedArrayData4.Pointer;
-		call_BatchFormationUnitPositionsDelegate(missionPointer, pointer, pointer2, pointer3, pointer4, orderPosition, direction, fileCount, rankCount);
+		call_BatchFormationUnitPositionsDelegate(missionPointer, pointer, pointer2, pointer3, pointer4, orderPosition, direction, fileCount, rankCount, fastCheckWithSameFaceGroupIdDigit);
 		pinnedArrayData.Dispose();
 		pinnedArrayData2.Dispose();
 		pinnedArrayData3.Dispose();
@@ -951,11 +1003,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_EndOfRecordDelegate(missionPointer);
 	}
 
-	public void FastForwardMission(UIntPtr missionPointer, float startTime, float endTime)
-	{
-		call_FastForwardMissionDelegate(missionPointer, startTime, endTime);
-	}
-
 	public void FinalizeMission(UIntPtr missionPointer)
 	{
 		call_FinalizeMissionDelegate(missionPointer);
@@ -972,6 +1019,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		IntPtr pointer = pinnedArrayData.Pointer;
 		call_FindConvexHullDelegate(pointer, boundaryPointCount, ref convexPointCount);
 		pinnedArrayData.Dispose();
+	}
+
+	public void ForceDisableOcclusion(UIntPtr missionPointer, bool value)
+	{
+		call_ForceDisableOcclusionDelegate(missionPointer, value);
 	}
 
 	public void GetAgentCountAroundPosition(UIntPtr missionPointer, int teamIndex, Vec2 position, float radius, ref int allyCount, ref int enemyCount)
@@ -1100,14 +1152,19 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_GetCombatTypeDelegate(missionPointer);
 	}
 
+	public int GetCurrentVolumeGeneratorVersion()
+	{
+		return call_GetCurrentVolumeGeneratorVersionDelegate();
+	}
+
 	public int GetDebugAgent(UIntPtr missionPointer)
 	{
 		return call_GetDebugAgentDelegate(missionPointer);
 	}
 
-	public int GetEnemyAlarmStateIndicator(UIntPtr missionPointer)
+	public bool GetFallAvoidSystemActive(UIntPtr missionPointer)
 	{
-		return call_GetEnemyAlarmStateIndicatorDelegate(missionPointer);
+		return call_GetFallAvoidSystemActiveDelegate(missionPointer);
 	}
 
 	public string GetGameTypeForReplay(PlatformFilePath replayName)
@@ -1160,14 +1217,14 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_GetNumberOfTeamsDelegate(missionPointer);
 	}
 
+	public Vec3 GetOldPositionOfMissile(UIntPtr missionPointer, int index)
+	{
+		return call_GetOldPositionOfMissileDelegate(missionPointer, index);
+	}
+
 	public bool GetPauseAITick(UIntPtr missionPointer)
 	{
 		return call_GetPauseAITickDelegate(missionPointer);
-	}
-
-	public float GetPlayerAlarmIndicator(UIntPtr missionPointer)
-	{
-		return call_GetPlayerAlarmIndicatorDelegate(missionPointer);
 	}
 
 	public Vec3 GetPositionOfMissile(UIntPtr missionPointer, int index)
@@ -1208,9 +1265,9 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_GetVelocityOfMissileDelegate(missionPointer, index);
 	}
 
-	public float GetWaterLevelAtPosition(UIntPtr missionPointer, Vec2 position)
+	public float GetWaterLevelAtPosition(UIntPtr missionPointer, Vec2 position, bool useWaterRenderer)
 	{
-		return call_GetWaterLevelAtPositionDelegate(missionPointer, position);
+		return call_GetWaterLevelAtPositionDelegate(missionPointer, position, useWaterRenderer);
 	}
 
 	public Vec2 GetWeightedPointOfEnemies(UIntPtr missionPointer, int agentIndex, Vec2 basePoint)
@@ -1253,6 +1310,16 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_IsPositionInsideBoundariesDelegate(missionPointer, position);
 	}
 
+	public bool IsPositionInsideHardBoundaries(UIntPtr missionPointer, Vec2 position)
+	{
+		return call_IsPositionInsideHardBoundariesDelegate(missionPointer, position);
+	}
+
+	public bool IsPositionOnAnyBlockerNavMeshFace(UIntPtr missionPointer, Vec3 position)
+	{
+		return call_IsPositionOnAnyBlockerNavMeshFaceDelegate(missionPointer, position);
+	}
+
 	public void MakeSound(UIntPtr pointer, int nativeSoundCode, Vec3 position, bool soundCanBePredicted, bool isReliable, int relatedAgent1, int relatedAgent2)
 	{
 		call_MakeSoundDelegate(pointer, nativeSoundCode, position, soundCanBePredicted, isReliable, relatedAgent1, relatedAgent2);
@@ -1266,6 +1333,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	public void MakeSoundWithParameter(UIntPtr pointer, int nativeSoundCode, Vec3 position, bool soundCanBePredicted, bool isReliable, int relatedAgent1, int relatedAgent2, SoundEventParameter parameter)
 	{
 		call_MakeSoundWithParameterDelegate(pointer, nativeSoundCode, position, soundCanBePredicted, isReliable, relatedAgent1, relatedAgent2, parameter);
+	}
+
+	public void OnFastForwardStateChanged(UIntPtr missionPointer, bool state)
+	{
+		call_OnFastForwardStateChangedDelegate(missionPointer, state);
 	}
 
 	public void PauseMissionSceneSounds(UIntPtr missionPointer)
@@ -1298,19 +1370,19 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_ProximityMapMaxSearchRadiusDelegate(missionPointer);
 	}
 
-	public Agent RayCastForClosestAgent(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int ExcludeAgentIndex, ref float CollisionDistance, float RayThickness)
+	public Agent RayCastForClosestAgent(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int excludeAgentIndex, float rayThickness, out float collisionDistance)
 	{
-		return DotNetObject.GetManagedObjectWithId(call_RayCastForClosestAgentDelegate(missionPointer, SourcePoint, RayFinishPoint, ExcludeAgentIndex, ref CollisionDistance, RayThickness)) as Agent;
+		return DotNetObject.GetManagedObjectWithId(call_RayCastForClosestAgentDelegate(missionPointer, sourcePoint, rayFinishPoint, excludeAgentIndex, rayThickness, out collisionDistance)) as Agent;
 	}
 
-	public bool RayCastForClosestAgentsLimbs(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int ExcludeAgentIndex, ref float CollisionDistance, ref int AgentIndex, ref sbyte BoneIndex)
+	public Agent RayCastForClosestAgentsLimbs(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int excludeAgentIndex, float rayThickness, out float collisionDistance, out sbyte boneIndex)
 	{
-		return call_RayCastForClosestAgentsLimbsDelegate(missionPointer, SourcePoint, RayFinishPoint, ExcludeAgentIndex, ref CollisionDistance, ref AgentIndex, ref BoneIndex);
+		return DotNetObject.GetManagedObjectWithId(call_RayCastForClosestAgentsLimbsDelegate(missionPointer, sourcePoint, rayFinishPoint, excludeAgentIndex, rayThickness, out collisionDistance, out boneIndex)) as Agent;
 	}
 
-	public bool RayCastForGivenAgentsLimbs(UIntPtr missionPointer, Vec3 SourcePoint, Vec3 RayFinishPoint, int GivenAgentIndex, ref float CollisionDistance, ref sbyte BoneIndex)
+	public bool RayCastForGivenAgentsLimbs(UIntPtr missionPointer, Vec3 sourcePoint, Vec3 rayFinishPoint, int givenAgentIndex, float rayThickness, out float collisionDistance, out sbyte boneIndex)
 	{
-		return call_RayCastForGivenAgentsLimbsDelegate(missionPointer, SourcePoint, RayFinishPoint, GivenAgentIndex, ref CollisionDistance, ref BoneIndex);
+		return call_RayCastForGivenAgentsLimbsDelegate(missionPointer, sourcePoint, rayFinishPoint, givenAgentIndex, rayThickness, out collisionDistance, out boneIndex);
 	}
 
 	public void RecordCurrentState(UIntPtr missionPointer)
@@ -1384,6 +1456,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_SetCameraIsFirstPersonDelegate(value);
 	}
 
+	public void SetCloseProximityWaveSoundsEnabled(UIntPtr missionPointer, bool value)
+	{
+		call_SetCloseProximityWaveSoundsEnabledDelegate(missionPointer, value);
+	}
+
 	public void SetCombatType(UIntPtr missionPointer, int combatType)
 	{
 		call_SetCombatTypeDelegate(missionPointer, combatType);
@@ -1397,6 +1474,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	public void SetDebugAgent(UIntPtr missionPointer, int index)
 	{
 		call_SetDebugAgentDelegate(missionPointer, index);
+	}
+
+	public void SetFallAvoidSystemActive(UIntPtr missionPointer, bool fallAvoidActive)
+	{
+		call_SetFallAvoidSystemActiveDelegate(missionPointer, fallAvoidActive);
 	}
 
 	public void SetLastMovementKeyPressed(UIntPtr missionPointer, Agent.MovementControlFlag lastMovementKeyPressed)
@@ -1419,9 +1501,14 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_SetNavigationFaceCostWithIdAroundPositionDelegate(missionPointer, navigationFaceId, position, cost);
 	}
 
-	public void SetPauseAITick(UIntPtr missionPointer, bool I)
+	public void SetOverrideCorpseCount(UIntPtr missionPointer, int overrideCorpseCount)
 	{
-		call_SetPauseAITickDelegate(missionPointer, I);
+		call_SetOverrideCorpseCountDelegate(missionPointer, overrideCorpseCount);
+	}
+
+	public void SetPauseAITick(UIntPtr missionPointer, bool value)
+	{
+		call_SetPauseAITickDelegate(missionPointer, value);
 	}
 
 	public void SetRandomDecideTimeOfAgents(UIntPtr missionPointer, int agentCount, int[] agentIndices, float minAIReactionTime, float maxAIReactionTime)
@@ -1432,6 +1519,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		pinnedArrayData.Dispose();
 	}
 
+	public void SetRenderParallelLogicInProgress(UIntPtr missionPointer, bool value)
+	{
+		call_SetRenderParallelLogicInProgressDelegate(missionPointer, value);
+	}
+
 	public void SetReportStuckAgentsMode(UIntPtr missionPointer, bool value)
 	{
 		call_SetReportStuckAgentsModeDelegate(missionPointer, value);
@@ -1440,6 +1532,16 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	public void SetThrowingMissileSpeedModifier(UIntPtr missionPointer, float modifier)
 	{
 		call_SetThrowingMissileSpeedModifierDelegate(missionPointer, modifier);
+	}
+
+	public void SetVelocityOfMissile(UIntPtr missionPointer, int index, in Vec3 velocity)
+	{
+		call_SetVelocityOfMissileDelegate(missionPointer, index, in velocity);
+	}
+
+	public void SkipForwardMissionReplay(UIntPtr missionPointer, float startTime, float endTime)
+	{
+		call_SkipForwardMissionReplayDelegate(missionPointer, startTime, endTime);
 	}
 
 	public void StartRecording()
@@ -1457,11 +1559,6 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_tickAgentsAndTeamsAsyncDelegate(missionPointer, dt);
 	}
 
-	public bool ToggleDisableFallAvoid()
-	{
-		return call_ToggleDisableFallAvoidDelegate();
-	}
-
 	int IMBMission.AddMissile(UIntPtr missionPointer, bool isPrediction, int shooterAgentIndex, in WeaponData weaponData, WeaponStatsData[] weaponStatsData, int weaponStatsDataLength, float damageBonus, ref Vec3 position, ref Vec3 direction, ref Mat3 orientation, float baseSpeed, float speed, bool addRigidBody, UIntPtr entityPointer, int forcedMissileIndex, bool isPrimaryWeaponShot, out UIntPtr missileEntity)
 	{
 		return AddMissile(missionPointer, isPrediction, shooterAgentIndex, in weaponData, weaponStatsData, weaponStatsDataLength, damageBonus, ref position, ref direction, ref orientation, baseSpeed, speed, addRigidBody, entityPointer, forcedMissileIndex, isPrimaryWeaponShot, out missileEntity);
@@ -1475,5 +1572,10 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	Vec3 IMBMission.GetMissileCollisionPoint(UIntPtr missionPointer, Vec3 missileStartingPosition, Vec3 missileDirection, float missileStartingSpeed, in WeaponData weaponData)
 	{
 		return GetMissileCollisionPoint(missionPointer, missileStartingPosition, missileDirection, missileStartingSpeed, in weaponData);
+	}
+
+	void IMBMission.SetVelocityOfMissile(UIntPtr missionPointer, int index, in Vec3 velocity)
+	{
+		SetVelocityOfMissile(missionPointer, index, in velocity);
 	}
 }

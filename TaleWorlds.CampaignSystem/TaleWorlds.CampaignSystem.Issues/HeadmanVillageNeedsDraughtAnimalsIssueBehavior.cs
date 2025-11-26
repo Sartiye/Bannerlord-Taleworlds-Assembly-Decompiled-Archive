@@ -77,21 +77,21 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 		{
 			get
 			{
-				TextObject empty = TextObject.Empty;
+				TextObject textObject;
 				if (_isQuestWithMeatOffer)
 				{
-					empty = new TextObject("{=aExKdXmx}We need {REQUESTED_ANIMAL_AMOUNT} {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%}.[if:convo_normal][ib:demure] To be honest our village is poor and our coffers are empty. We can make payment only as meat - the meat of the old animals that we'll slaughter as soon as you bring us the new ones. We can offer {MEAT_AMOUNT} loads of meat, will you accept that, {?PLAYER.GENDER}madam{?}sir{\\?}?");
-					empty.SetTextVariable("MEAT_AMOUNT", OfferedMeatAmount);
+					textObject = new TextObject("{=aExKdXmx}We need {REQUESTED_ANIMAL_AMOUNT} {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%}.[if:convo_normal][ib:demure] To be honest our village is poor and our coffers are empty. We can make payment only as meat - the meat of the old animals that we'll slaughter as soon as you bring us the new ones. We can offer {MEAT_AMOUNT} loads of meat, will you accept that, {?PLAYER.GENDER}madam{?}sir{\\?}?");
+					textObject.SetTextVariable("MEAT_AMOUNT", OfferedMeatAmount);
 				}
 				else
 				{
-					empty = new TextObject("{=TEhwK74M}We are willing to pay {REWARD}{GOLD_ICON} denars for {REQUESTED_ANIMAL_AMOUNT} healthy and strong [if:convo_normal][ib:demure]{.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%}. Unlike us, I'm sure you can travel distant villages easily and find the finest and cheapest ones there.");
-					empty.SetTextVariable("REWARD", RewardGold);
+					textObject = new TextObject("{=TEhwK74M}We are willing to pay {REWARD}{GOLD_ICON} denars for {REQUESTED_ANIMAL_AMOUNT} healthy and strong [if:convo_normal][ib:demure]{.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%}. Unlike us, I'm sure you can travel distant villages easily and find the finest and cheapest ones there.");
+					textObject.SetTextVariable("REWARD", RewardGold);
 				}
-				empty.SetTextVariable("REQUESTED_ANIMAL_AMOUNT", _requestedAnimalAmount);
-				empty.SetTextVariable("SELECTED_ANIMAL", _selectedAnimal.Name);
-				empty.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
-				return empty;
+				textObject.SetTextVariable("REQUESTED_ANIMAL_AMOUNT", _requestedAnimalAmount);
+				textObject.SetTextVariable("SELECTED_ANIMAL", _selectedAnimal.Name);
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				return textObject;
 			}
 		}
 
@@ -193,8 +193,7 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -209,10 +208,9 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(GoldRequiredForAlternativeSolution, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(GoldRequiredForAlternativeSolution, out explanation);
 			}
 			return false;
 		}

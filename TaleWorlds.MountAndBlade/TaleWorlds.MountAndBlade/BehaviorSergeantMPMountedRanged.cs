@@ -26,12 +26,12 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 	{
 		if (_flagpositions.Any((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team))
 		{
-			FlagCapturePoint flagCapturePoint = _flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team).MinBy((FlagCapturePoint fp) => base.Formation.Team.QuerySystem.GetLocalEnemyPower(fp.Position.AsVec2));
+			FlagCapturePoint flagCapturePoint = TaleWorlds.Core.Extensions.MinBy(_flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team), (FlagCapturePoint fp) => base.Formation.Team.QuerySystem.GetLocalEnemyPower(fp.Position.AsVec2));
 			return MovementOrder.MovementOrderMove(new WorldPosition(base.Formation.Team.Mission.Scene, UIntPtr.Zero, flagCapturePoint.Position, hasValidZ: false));
 		}
 		if (_flagpositions.Any((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team))
 		{
-			Vec3 position = _flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team).MinBy((FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition)).Position;
+			Vec3 position = TaleWorlds.Core.Extensions.MinBy(_flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team), (FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition)).Position;
 			return MovementOrder.MovementOrderMove(new WorldPosition(base.Formation.Team.Mission.Scene, UIntPtr.Zero, position, hasValidZ: false));
 		}
 		return MovementOrder.MovementOrderStop;
@@ -39,7 +39,7 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation == null || base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition) > 2500f)
+		if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation == null || base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition) > 2500f)
 		{
 			base.CurrentOrder = UncapturedFlagMoveOrder();
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
@@ -48,7 +48,7 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 		FlagCapturePoint flagCapturePoint = null;
 		if (_flagpositions.Any((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team && !fp.IsContested))
 		{
-			flagCapturePoint = _flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team && !fp.IsContested).MinBy((FlagCapturePoint fp) => base.Formation.QuerySystem.AveragePosition.DistanceSquared(fp.Position.AsVec2));
+			flagCapturePoint = TaleWorlds.Core.Extensions.MinBy(_flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team && !fp.IsContested), (FlagCapturePoint fp) => base.Formation.CachedAveragePosition.DistanceSquared(fp.Position.AsVec2));
 		}
 		if (!base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.IsInfantryFormation && flagCapturePoint != null)
 		{
@@ -63,23 +63,23 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 			return;
 		}
-		Vec2 vec = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition;
+		Vec2 vec = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition;
 		float num = vec.Normalize();
-		WorldPosition medianPosition = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition;
+		WorldPosition cachedMedianPosition = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition;
 		if (num > base.Formation.QuerySystem.MissileRangeAdjusted)
 		{
-			medianPosition.SetVec2(medianPosition.AsVec2 - vec * (base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Depth * 0.5f));
+			cachedMedianPosition.SetVec2(cachedMedianPosition.AsVec2 - vec * (base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Depth * 0.5f));
 		}
 		else if (num < base.Formation.QuerySystem.MissileRangeAdjusted * 0.4f)
 		{
-			medianPosition.SetVec2(medianPosition.AsVec2 - vec * (base.Formation.QuerySystem.MissileRangeAdjusted * 0.7f));
+			cachedMedianPosition.SetVec2(cachedMedianPosition.AsVec2 - vec * (base.Formation.QuerySystem.MissileRangeAdjusted * 0.7f));
 		}
 		else
 		{
 			vec = vec.RightVec();
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition + vec * 20f);
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition + vec * 20f);
 		}
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(vec);
 	}
 
@@ -87,14 +87,14 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (base.CurrentOrder.OrderEnum == MovementOrder.MovementOrderEnum.ChargeToTarget && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.IsRangedFormation)
 		{
-			base.Formation.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
+			base.Formation.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
 		}
 		else
 		{
-			base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
+			base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		}
 	}
 
@@ -103,10 +103,10 @@ public class BehaviorSergeantMPMountedRanged : BehaviorComponent
 		_flagpositions.RemoveAll((FlagCapturePoint fp) => fp.IsDeactivated);
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

@@ -7,7 +7,7 @@ public abstract class InventoryItemButtonWidget : ButtonWidget
 {
 	private bool _isRightSide;
 
-	private int _itemType;
+	private string _itemType;
 
 	private int _equipmentIndex;
 
@@ -31,7 +31,7 @@ public abstract class InventoryItemButtonWidget : ButtonWidget
 	}
 
 	[Editor(false)]
-	public int ItemType
+	public string ItemType
 	{
 		get
 		{
@@ -94,31 +94,6 @@ public abstract class InventoryItemButtonWidget : ButtonWidget
 		return base.OnDrop();
 	}
 
-	public virtual void ResetIsSelected()
-	{
-		base.IsSelected = false;
-	}
-
-	public void PreviewItem()
-	{
-		EventFired("PreviewItem");
-	}
-
-	public void SellItem()
-	{
-		EventFired("SellItem");
-	}
-
-	public void EquipItem()
-	{
-		EventFired("EquipItem");
-	}
-
-	public void UnequipItem()
-	{
-		EventFired("UnequipItem");
-	}
-
 	private void AssignScreenWidget()
 	{
 		Widget widget = this;
@@ -146,53 +121,55 @@ public abstract class InventoryItemButtonWidget : ButtonWidget
 		audioProperty.AudioName = GetSound(ItemType);
 	}
 
-	private string GetSound(int typeID)
+	private string GetSound(string typeID)
 	{
 		switch (typeID)
 		{
-		case 1:
+		case "Horse":
 			return "inventory/horse";
-		case 2:
+		case "OneHandedWeapon":
 			return "inventory/onehanded";
-		case 3:
+		case "TwoHandedWeapon":
 			return "inventory/twohanded";
-		case 4:
+		case "Polearm":
 			return "inventory/polearm";
-		case 5:
-		case 6:
+		case "Arrows":
+		case "Bolts":
+		case "SlingStones":
 			return "inventory/quiver";
-		case 7:
+		case "Shield":
 			return "inventory/shield";
-		case 8:
+		case "Bow":
 			return "inventory/bow";
-		case 9:
+		case "Crossbow":
 			return "inventory/crossbow";
-		case 10:
+		case "Sling":
+			return "inventory/bow";
+		case "Thrown":
 			return "inventory/throwing";
-		case 11:
+		case "Goods":
 			return "inventory/sack";
-		case 12:
+		case "HeadArmor":
 			return "inventory/helmet";
-		case 13:
+		case "BodyArmor":
+		case "ChestArmor":
+		case "Cape":
 			return "inventory/leather";
-		case 14:
-		case 15:
+		case "LegArmor":
+		case "HandArmor":
 			return "inventory/leather_lite";
-		case 19:
-			return "inventory/animal";
-		case 20:
-			return "inventory/book";
-		case 21:
-		case 22:
-			return "inventory/leather";
-		case 23:
-			return "inventory/horsearmor";
-		case 24:
+		case "Banner":
 			return "inventory/perk";
-		case 25:
+		case "Animal":
+			return "inventory/animal";
+		case "Book":
+			return "inventory/book";
+		case "HorseHarness":
+			return "inventory/horsearmor";
+		case "Pistol":
+		case "Musket":
+		case "Bullets":
 			return "inventory/leather";
-		case 26:
-			return "inventory/siegeweapon";
 		default:
 			return "inventory/leather";
 		}

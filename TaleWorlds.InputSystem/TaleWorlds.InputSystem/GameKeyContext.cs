@@ -122,11 +122,11 @@ public abstract class GameKeyContext
 				return gameKey;
 			}
 		}
-		Debug.FailedAssert($"Couldn't find {gameKeyId} in {GameKeyCategoryId}", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetGameKey", 125);
+		Debug.FailedAssert($"Couldn't find {gameKeyId} in {GameKeyCategoryId}", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetGameKey", 125);
 		return null;
 	}
 
-	public GameKey GetGameKey(string gameKeyId)
+	internal GameKey GetGameKey(string gameKeyId)
 	{
 		for (int i = 0; i < _registeredGameKeys.Count; i++)
 		{
@@ -136,7 +136,7 @@ public abstract class GameKeyContext
 				return gameKey;
 			}
 		}
-		Debug.FailedAssert("Couldn't find " + gameKeyId + " in " + GameKeyCategoryId, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetGameKey", 140);
+		Debug.FailedAssert("Couldn't find " + gameKeyId + " in " + GameKeyCategoryId, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetGameKey", 140);
 		return null;
 	}
 
@@ -156,7 +156,7 @@ public abstract class GameKeyContext
 		{
 			return value2.ToString();
 		}
-		Debug.FailedAssert("HotKey with id: " + hotKeyId + " is not registered.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetHotKeyId", 163);
+		Debug.FailedAssert("HotKey with id: " + hotKeyId + " is not registered.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetHotKeyId", 163);
 		return "";
 	}
 
@@ -167,7 +167,7 @@ public abstract class GameKeyContext
 		{
 			return gameKey.ToString();
 		}
-		Debug.FailedAssert("GameKey with id: " + gameKeyId + " is not registered.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetHotKeyId", 175);
+		Debug.FailedAssert("GameKey with id: " + gameKeyId + " is not registered.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\GameKeyContext.cs", "GetHotKeyId", 175);
 		return "";
 	}
 }

@@ -51,7 +51,7 @@ public class ItemVisualizer : ScriptComponentBehavior
 			MetaMesh copy = MetaMesh.GetCopy(item.MultiMeshName, showErrors: true, mayReturnNull: true);
 			if (copy != null)
 			{
-				GameEntity gameEntity = GameEntity.CreateEmpty(scene);
+				GameEntity gameEntity = TaleWorlds.Engine.GameEntity.CreateEmpty(scene);
 				gameEntity.EntityFlags |= EntityFlags.DontSaveToScene;
 				gameEntity.AddMultiMesh(copy);
 				gameEntity.Name = item.Name.ToString();

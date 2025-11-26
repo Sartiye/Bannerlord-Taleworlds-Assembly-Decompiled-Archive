@@ -240,7 +240,7 @@ public class TacticDefendCastle : TacticComponent
 			while (num4 - item.CountOfUnitsWithoutDetachedOnes > num3 && list.Any((Formation rf) => rf.CountOfUnitsWithoutDetachedOnes > ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("many") ? largeFormationCount : ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("few") ? smallFormationCount : mediumFormationCount))) && num5 < list.Count)
 			{
 				int a = num4 - item.CountOfUnitsWithoutDetachedOnes;
-				Formation formation = list.MaxBy((Formation rf) => rf.CountOfUnitsWithoutDetachedOnes - ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("many") ? largeFormationCount : ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("few") ? smallFormationCount : mediumFormationCount)));
+				Formation formation = TaleWorlds.Core.Extensions.MaxBy(list, (Formation rf) => rf.CountOfUnitsWithoutDetachedOnes - ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("many") ? largeFormationCount : ((rf.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("few") ? smallFormationCount : mediumFormationCount)));
 				a = TaleWorlds.Library.MathF.Min(a, formation.CountOfUnitsWithoutDetachedOnes - ((formation.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("many") ? largeFormationCount : ((formation.AI.ActiveBehavior as BehaviorShootFromCastleWalls).ArcherPosition.HasTag("few") ? smallFormationCount : mediumFormationCount)));
 				formation.TransferUnits(item, a);
 				num5++;
@@ -299,7 +299,7 @@ public class TacticDefendCastle : TacticComponent
 				break;
 			}
 			List<Formation> source = base.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f.IsAIControlled).ToList();
-			Formation biggestFormation = source.MaxBy((Formation f) => f.CountOfUnitsWithoutDetachedOnes);
+			Formation biggestFormation = TaleWorlds.Core.Extensions.MaxBy(source, (Formation f) => f.CountOfUnitsWithoutDetachedOnes);
 			foreach (Formation item in source.Where((Formation f) => f != biggestFormation))
 			{
 				item.TransferUnits(biggestFormation, item.CountOfUnits);
@@ -380,7 +380,7 @@ public class TacticDefendCastle : TacticComponent
 		List<Tuple<Formation, ArcherPosition>> list = _rangedFormations.CombineWith(_teamAISiegeDefender.ArcherPositions);
 		while (list.Count > 0)
 		{
-			Tuple<Formation, ArcherPosition> tuple = list.MinBy((Tuple<Formation, ArcherPosition> c) => c.Item1.QuerySystem.MedianPosition.AsVec2.DistanceSquared(c.Item2.Entity.GlobalPosition.AsVec2));
+			Tuple<Formation, ArcherPosition> tuple = TaleWorlds.Core.Extensions.MinBy(list, (Tuple<Formation, ArcherPosition> c) => c.Item1.CachedMedianPosition.AsVec2.DistanceSquared(c.Item2.Entity.GlobalPosition.AsVec2));
 			Formation bestFormation = tuple.Item1;
 			ArcherPosition bestArcherPosition = tuple.Item2;
 			bestFormation.AI.ResetBehaviorWeights();
@@ -646,7 +646,7 @@ public class TacticDefendCastle : TacticComponent
 				int num7 = 0;
 				while (num2 + count + num7 < num && !hasTransferOccurred)
 				{
-					Formation largestFormation = list10.MaxBy((Formation rf) => rf.UnitsWithoutLooseDetachedOnes.Count);
+					Formation largestFormation = TaleWorlds.Core.Extensions.MaxBy(list10, (Formation rf) => rf.UnitsWithoutLooseDetachedOnes.Count);
 					List<Formation> list11 = largestFormation.Split().ToList();
 					hasTransferOccurred = true;
 					if (list11.Count < 2)
@@ -700,7 +700,7 @@ public class TacticDefendCastle : TacticComponent
 		bool flag3 = false;
 		while (list14.Count > 0)
 		{
-			SiegeLane firstToDefend = list14.MaxBy((SiegeLane tbdl) => tbdl.CalculateLaneCapacity());
+			SiegeLane firstToDefend = TaleWorlds.Core.Extensions.MaxBy(list14, (SiegeLane tbdl) => tbdl.CalculateLaneCapacity());
 			Formation formation5 = list9.FirstOrDefault((Formation affml) => affml.AI.Side == firstToDefend.LaneSide);
 			if (formation5 != null)
 			{
@@ -721,7 +721,7 @@ public class TacticDefendCastle : TacticComponent
 					list14.Clear();
 					break;
 				}
-				Formation formation6 = list9.MaxBy((Formation f) => f.QuerySystem.FormationPower);
+				Formation formation6 = TaleWorlds.Core.Extensions.MaxBy(list9, (Formation f) => f.QuerySystem.FormationPower);
 				formation6.AI.Side = firstToDefend.LaneSide;
 				formation6.AI.ResetBehaviorWeights();
 				TacticComponent.SetDefaultBehaviorWeights(formation6);
@@ -737,7 +737,7 @@ public class TacticDefendCastle : TacticComponent
 		List<SiegeLane> list16 = (flag3 ? new List<SiegeLane>() : lanesToBeRetaken.Except(list15).ToList());
 		while (list16.Count > 0 && list9.Count > 0)
 		{
-			SiegeLane firstToRetake = lanesToBeRetaken.MaxBy((SiegeLane ltbr) => ltbr.CalculateLaneCapacity());
+			SiegeLane firstToRetake = TaleWorlds.Core.Extensions.MaxBy(lanesToBeRetaken, (SiegeLane ltbr) => ltbr.CalculateLaneCapacity());
 			Formation formation7 = list9.FirstOrDefault((Formation affml) => affml.AI.Side == firstToRetake.LaneSide);
 			if (formation7 != null)
 			{
@@ -756,7 +756,7 @@ public class TacticDefendCastle : TacticComponent
 				{
 					break;
 				}
-				Formation formation8 = list9.MaxBy((Formation f) => f.QuerySystem.FormationPower);
+				Formation formation8 = TaleWorlds.Core.Extensions.MaxBy(list9, (Formation f) => f.QuerySystem.FormationPower);
 				formation8.AI.Side = firstToRetake.LaneSide;
 				formation8.AI.ResetBehaviorWeights();
 				TacticComponent.SetDefaultBehaviorWeights(formation8);
@@ -773,7 +773,7 @@ public class TacticDefendCastle : TacticComponent
 		if (isEnemyInside && list9.Count > 0)
 		{
 			Formation formation10 = null;
-			formation10 = ((_emergencyFormation == null || !list9.Contains(_emergencyFormation)) ? list9.MaxBy((Formation affml) => affml.QuerySystem.FormationPower) : _emergencyFormation);
+			formation10 = ((_emergencyFormation == null || !list9.Contains(_emergencyFormation)) ? TaleWorlds.Core.Extensions.MaxBy(list9, (Formation affml) => affml.QuerySystem.FormationPower) : _emergencyFormation);
 			formation10.AI.Side = FormationAI.BehaviorSide.BehaviorSideNotSet;
 			formation10.AI.ResetBehaviorWeights();
 			TacticComponent.SetDefaultBehaviorWeights(formation10);
@@ -805,7 +805,7 @@ public class TacticDefendCastle : TacticComponent
 				{
 					if (flag4)
 					{
-						siegeLane2 = list17.MaxBy((SiegeLane arl) => arl.LaneState);
+						siegeLane2 = TaleWorlds.Core.Extensions.MaxBy(list17, (SiegeLane arl) => arl.LaneState);
 					}
 				}
 				else if (flag4)
@@ -818,7 +818,7 @@ public class TacticDefendCastle : TacticComponent
 							list18.Add(item12);
 						}
 					}
-					siegeLane2 = ((list18.Count <= 0) ? list17.MaxBy((SiegeLane arl) => arl.LaneState) : list18.MaxBy((SiegeLane rl) => rl.LaneState));
+					siegeLane2 = ((list18.Count <= 0) ? TaleWorlds.Core.Extensions.MaxBy(list17, (SiegeLane arl) => arl.LaneState) : TaleWorlds.Core.Extensions.MaxBy(list18, (SiegeLane rl) => rl.LaneState));
 				}
 				Formation target = ((siegeLane2 != null) ? siegeLane2.GetLastAssignedFormation(base.Team.TeamIndex) : formation9);
 				rangedFormation.TransferUnits(target, rangedFormation.CountOfUnits);
@@ -839,7 +839,7 @@ public class TacticDefendCastle : TacticComponent
 		else if (list20.Count < list19.Count && list20.Count > 0 && !hasTransferOccurred)
 		{
 			int num8 = list19.Count - list20.Count;
-			Formation formation11 = list20.MaxBy((Formation rrf) => rrf.CountOfUnits);
+			Formation formation11 = TaleWorlds.Core.Extensions.MaxBy(list20, (Formation rrf) => rrf.CountOfUnits);
 			List<Formation> list22 = formation11.Split(num8 + 1).ToList();
 			list22.Remove(formation11);
 			hasTransferOccurred = true;
@@ -1017,7 +1017,7 @@ public class TacticDefendCastle : TacticComponent
 		}
 		if (num && activeLanes.Count > 0)
 		{
-			SiegeLane item = list.MinBy((SiegeLane cl) => activeLanes.Min((SiegeLane al) => SiegeQuerySystem.SideDistance(1 << (int)al.LaneSide, 1 << (int)cl.LaneSide)));
+			SiegeLane item = TaleWorlds.Core.Extensions.MinBy(list, (SiegeLane cl) => activeLanes.Min((SiegeLane al) => SiegeQuerySystem.SideDistance(1 << (int)al.LaneSide, 1 << (int)cl.LaneSide)));
 			list.Clear();
 			list.Add(item);
 		}
@@ -1053,7 +1053,7 @@ public class TacticDefendCastle : TacticComponent
 		}
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

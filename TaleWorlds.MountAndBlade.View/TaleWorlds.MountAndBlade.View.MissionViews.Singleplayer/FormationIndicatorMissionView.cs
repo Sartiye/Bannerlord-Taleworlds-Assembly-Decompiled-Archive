@@ -5,6 +5,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View.Screens;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 
@@ -166,7 +167,8 @@ public class FormationIndicatorMissionView : MissionView
 				{
 					formationMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
 				};
-				banner.GetTableauTextureLarge(setAction);
+				BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+				banner.GetTableauTextureLarge(in debugInfo, setAction);
 			}
 			else
 			{
@@ -217,7 +219,7 @@ public class FormationIndicatorMissionView : MissionView
 			{
 				int formationTeamIndex = GetFormationTeamIndex(item);
 				Indicator indicator = _indicators[formationTeamIndex, (int)item.FormationIndex];
-				indicator.DetermineIndicatorState(dt, item.QuerySystem.MedianPosition.GetGroundVec3());
+				indicator.DetermineIndicatorState(dt, item.CachedMedianPosition.GetGroundVec3());
 				if (indicator.indicatorEntity == null)
 				{
 					if (indicator.indicatorVisible)

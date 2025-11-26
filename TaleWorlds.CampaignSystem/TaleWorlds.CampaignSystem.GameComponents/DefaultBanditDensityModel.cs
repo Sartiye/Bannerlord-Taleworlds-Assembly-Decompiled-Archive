@@ -7,17 +7,17 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultBanditDensityModel : BanditDensityModel
 {
-	public override int NumberOfMaximumLooterParties => 150;
+	private Clan _deserterClan;
 
 	public override int NumberOfMinimumBanditPartiesInAHideoutToInfestIt => 2;
 
-	public override int NumberOfMaximumBanditPartiesInEachHideout => 4;
+	public override int NumberOfMaximumBanditPartiesInEachHideout => 3;
 
-	public override int NumberOfMaximumBanditPartiesAroundEachHideout => 8;
+	public override int NumberOfMaximumBanditPartiesAroundEachHideout => 3;
 
-	public override int NumberOfMaximumHideoutsAtEachBanditFaction => 10;
+	public override int NumberOfMaximumHideoutsAtEachBanditFaction => 9;
 
-	public override int NumberOfInitialHideoutsAtEachBanditFaction => 3;
+	public override int NumberOfInitialHideoutsAtEachBanditFaction => 7;
 
 	public override int NumberOfMinimumBanditTroopsInHideoutMission => 10;
 
@@ -27,13 +27,48 @@ public class DefaultBanditDensityModel : BanditDensityModel
 
 	public override float SpawnPercentageForFirstFightInHideoutMission => 0.75f;
 
-	public override int GetPlayerMaximumTroopCountForHideoutMission(MobileParty party)
+	private Clan DeserterClan
 	{
-		float num = 10f;
+		get
+		{
+			if (_deserterClan == null)
+			{
+				_deserterClan = Clan.FindFirst((Clan x) => x.StringId == "deserters");
+			}
+			return _deserterClan;
+		}
+	}
+
+	public override int GetMinimumTroopCountForHideoutMission(MobileParty party)
+	{
+		return 25;
+	}
+
+	public override int GetMaxSupportedNumberOfLootersForClan(Clan clan)
+	{
+		if (clan == DeserterClan)
+		{
+			return 50;
+		}
+		if (clan.StringId == "looters" && DeserterClan != null)
+		{
+			return 270 - DeserterClan.WarPartyComponents.Count;
+		}
+		return 270;
+	}
+
+	public override int GetMaximumTroopCountForHideoutMission(MobileParty party)
+	{
+		int num = 40;
 		if (party.HasPerk(DefaultPerks.Tactics.SmallUnitTactics))
 		{
-			num += DefaultPerks.Tactics.SmallUnitTactics.PrimaryBonus;
+			num += (int)DefaultPerks.Tactics.SmallUnitTactics.PrimaryBonus;
 		}
-		return MathF.Round(num);
+		return num;
+	}
+
+	public override bool IsPositionInsideNavalSafeZone(CampaignVec2 position)
+	{
+		return false;
 	}
 }

@@ -215,20 +215,20 @@ public sealed class CraftingPiece : MBObjectBase
 			{
 			case "StatContributions":
 			{
-				XmlAttribute xmlAttribute13 = childNode.Attributes["armor_bonus"];
-				ArmorBonus = ((xmlAttribute13 != null) ? int.Parse(xmlAttribute13.Value) : 0);
-				XmlAttribute xmlAttribute14 = childNode.Attributes["handling_bonus"];
-				HandlingBonus = ((xmlAttribute14 != null) ? int.Parse(xmlAttribute14.Value) : 0);
-				XmlAttribute xmlAttribute15 = childNode.Attributes["swing_damage_bonus"];
-				SwingDamageBonus = ((xmlAttribute15 != null) ? int.Parse(xmlAttribute15.Value) : 0);
-				XmlAttribute xmlAttribute16 = childNode.Attributes["swing_speed_bonus"];
-				SwingSpeedBonus = ((xmlAttribute16 != null) ? int.Parse(xmlAttribute16.Value) : 0);
-				XmlAttribute xmlAttribute17 = childNode.Attributes["thrust_damage_bonus"];
-				ThrustDamageBonus = ((xmlAttribute17 != null) ? int.Parse(xmlAttribute17.Value) : 0);
-				XmlAttribute xmlAttribute18 = childNode.Attributes["thrust_speed_bonus"];
-				ThrustSpeedBonus = ((xmlAttribute18 != null) ? int.Parse(xmlAttribute18.Value) : 0);
-				XmlAttribute xmlAttribute19 = childNode.Attributes["accuracy_bonus"];
-				AccuracyBonus = ((xmlAttribute19 != null) ? int.Parse(xmlAttribute19.Value) : 0);
+				XmlAttribute xmlAttribute14 = childNode.Attributes["armor_bonus"];
+				ArmorBonus = ((xmlAttribute14 != null) ? int.Parse(xmlAttribute14.Value) : 0);
+				XmlAttribute xmlAttribute15 = childNode.Attributes["handling_bonus"];
+				HandlingBonus = ((xmlAttribute15 != null) ? int.Parse(xmlAttribute15.Value) : 0);
+				XmlAttribute xmlAttribute16 = childNode.Attributes["swing_damage_bonus"];
+				SwingDamageBonus = ((xmlAttribute16 != null) ? int.Parse(xmlAttribute16.Value) : 0);
+				XmlAttribute xmlAttribute17 = childNode.Attributes["swing_speed_bonus"];
+				SwingSpeedBonus = ((xmlAttribute17 != null) ? int.Parse(xmlAttribute17.Value) : 0);
+				XmlAttribute xmlAttribute18 = childNode.Attributes["thrust_damage_bonus"];
+				ThrustDamageBonus = ((xmlAttribute18 != null) ? int.Parse(xmlAttribute18.Value) : 0);
+				XmlAttribute xmlAttribute19 = childNode.Attributes["thrust_speed_bonus"];
+				ThrustSpeedBonus = ((xmlAttribute19 != null) ? int.Parse(xmlAttribute19.Value) : 0);
+				XmlAttribute xmlAttribute20 = childNode.Attributes["accuracy_bonus"];
+				AccuracyBonus = ((xmlAttribute20 != null) ? int.Parse(xmlAttribute20.Value) : 0);
 				break;
 			}
 			case "BladeData":
@@ -237,12 +237,12 @@ public sealed class CraftingPiece : MBObjectBase
 				break;
 			case "BuildData":
 			{
-				XmlAttribute xmlAttribute20 = childNode.Attributes["piece_offset"];
-				XmlAttribute xmlAttribute21 = childNode.Attributes["previous_piece_offset"];
-				XmlAttribute xmlAttribute22 = childNode.Attributes["next_piece_offset"];
-				PieceOffset = ((xmlAttribute20 != null) ? (0.01f * float.Parse(xmlAttribute20.Value)) : 0f);
-				PreviousPieceOffset = ((xmlAttribute21 != null) ? (0.01f * float.Parse(xmlAttribute21.Value)) : 0f);
-				NextPieceOffset = ((xmlAttribute22 != null) ? (0.01f * float.Parse(xmlAttribute22.Value)) : 0f);
+				XmlAttribute xmlAttribute21 = childNode.Attributes["piece_offset"];
+				XmlAttribute xmlAttribute22 = childNode.Attributes["previous_piece_offset"];
+				XmlAttribute xmlAttribute23 = childNode.Attributes["next_piece_offset"];
+				PieceOffset = ((xmlAttribute21 != null) ? (0.01f * float.Parse(xmlAttribute21.Value)) : 0f);
+				PreviousPieceOffset = ((xmlAttribute22 != null) ? (0.01f * float.Parse(xmlAttribute22.Value)) : 0f);
+				NextPieceOffset = ((xmlAttribute23 != null) ? (0.01f * float.Parse(xmlAttribute23.Value)) : 0f);
 				break;
 			}
 			case "Materials":
@@ -265,17 +265,29 @@ public sealed class CraftingPiece : MBObjectBase
 				AdditionalWeaponFlags = (WeaponFlags)0uL;
 				foreach (XmlNode childNode3 in childNode.ChildNodes)
 				{
-					XmlAttribute xmlAttribute11 = childNode3.Attributes["name"];
-					XmlAttribute xmlAttribute12 = childNode3.Attributes["type"];
-					if (xmlAttribute12 == null || xmlAttribute12.Value == "WeaponFlags")
+					XmlAttribute xmlAttribute12 = childNode3.Attributes["name"];
+					XmlAttribute xmlAttribute13 = childNode3.Attributes["type"];
+					if (xmlAttribute13 == null || xmlAttribute13.Value == "WeaponFlags")
 					{
-						WeaponFlags weaponFlags = (WeaponFlags)Enum.Parse(typeof(WeaponFlags), xmlAttribute11.Value, ignoreCase: true);
+						WeaponFlags weaponFlags = (WeaponFlags)Enum.Parse(typeof(WeaponFlags), xmlAttribute12.Value, ignoreCase: true);
 						AdditionalWeaponFlags |= weaponFlags;
 					}
 					else
 					{
-						ItemFlags itemFlags = (ItemFlags)Enum.Parse(typeof(ItemFlags), xmlAttribute11.Value, ignoreCase: true);
+						ItemFlags itemFlags = (ItemFlags)Enum.Parse(typeof(ItemFlags), xmlAttribute12.Value, ignoreCase: true);
 						AdditionalItemFlags |= itemFlags;
+					}
+				}
+				break;
+			case "CraftingTemplates":
+				foreach (XmlNode childNode4 in childNode.ChildNodes)
+				{
+					XmlAttribute xmlAttribute11 = childNode4.Attributes["id"];
+					if (xmlAttribute11 != null)
+					{
+						CraftingTemplate obj = new CraftingTemplate(xmlAttribute11.Value);
+						obj = objectManager.RegisterPresumedObject(obj);
+						obj.Pieces.Add(this);
 					}
 				}
 				break;

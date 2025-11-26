@@ -4,7 +4,7 @@ namespace TaleWorlds.MountAndBlade.View;
 
 public interface ISiegeDeploymentView
 {
-	void OnEntitySelection(GameEntity selectedEntity);
+	void OnEntitySelection(WeakGameEntity selectedEntity);
 
-	void OnEntityHover(GameEntity hoveredEntity);
+	void OnEntityHover(WeakGameEntity hoveredEntity);
 }

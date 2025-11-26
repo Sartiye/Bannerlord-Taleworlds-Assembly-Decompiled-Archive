@@ -74,7 +74,7 @@ public class LadderQueueManager : MissionObject
 
 	private LadderQueueManager _neighborLadderQueueManager;
 
-	private (int, bool)[] _lastUserCountPerLadder;
+	private (float, bool)[] _lastUserCostPenaltyPerLadder;
 
 	public bool IsDeactivated { get; private set; }
 
@@ -127,10 +127,10 @@ public class LadderQueueManager : MissionObject
 		ManagedNavigationFaceId = managedNavigationFaceId;
 		_managedEntitialFrame = managedFrame;
 		_managedEntitialDirection = managedDirection.AsVec2.Normalized();
-		_managedGlobalFrame = base.GameEntity.GetGlobalFrame().TransformToParent(managedFrame);
+		_managedGlobalFrame = base.GameEntity.GetGlobalFrame().TransformToParent(in managedFrame);
 		_managedGlobalWorldPosition = new WorldPosition(base.GameEntity.GetScenePointer(), UIntPtr.Zero, _managedGlobalFrame.origin, hasValidZ: false);
 		_managedGlobalWorldPosition.GetGroundVec3();
-		_managedGlobalDirection = base.GameEntity.GetGlobalFrame().rotation.TransformToParent(managedDirection).AsVec2.Normalized();
+		_managedGlobalDirection = base.GameEntity.GetGlobalFrame().rotation.TransformToParent(in managedDirection).AsVec2.Normalized();
 		_lastCachedGameEntityGlobalPosition = base.GameEntity.GetGlobalFrame().origin;
 		_managedSide = managedSide;
 		_maxUserCount = maxUserCount;
@@ -148,7 +148,7 @@ public class LadderQueueManager : MissionObject
 		ManagedNavigationFaceAlternateID2 = managedNavigationFaceAlternateID2;
 		_maxClimberCount = maxClimberCount;
 		_maxRunnerCount = maxRunnerCount;
-		_lastUserCountPerLadder = new(int, bool)[3];
+		_lastUserCostPenaltyPerLadder = new(float, bool)[3];
 		_deactivateTimer = new Timer(0f, 0f);
 	}
 
@@ -167,10 +167,12 @@ public class LadderQueueManager : MissionObject
 		if (_lastCachedGameEntityGlobalPosition != globalFrame.origin)
 		{
 			_lastCachedGameEntityGlobalPosition = globalFrame.origin;
-			_managedGlobalFrame = globalFrame.TransformToParent(_managedEntitialFrame);
+			_managedGlobalFrame = globalFrame.TransformToParent(in _managedEntitialFrame);
 			_managedGlobalWorldPosition = new WorldPosition(base.GameEntity.GetScenePointer(), UIntPtr.Zero, _managedGlobalFrame.origin, hasValidZ: false);
 			_managedGlobalWorldPosition.GetGroundVec3MT();
-			_managedGlobalDirection = globalFrame.rotation.TransformToParent(new Vec3(_managedEntitialDirection)).AsVec2.Normalized();
+			ref Mat3 rotation = ref globalFrame.rotation;
+			Vec3 v = new Vec3(_managedEntitialDirection);
+			_managedGlobalDirection = rotation.TransformToParent(in v).AsVec2.Normalized();
 		}
 	}
 
@@ -207,31 +209,33 @@ public class LadderQueueManager : MissionObject
 		_usingAgentResetTime -= _timeSinceLastUpdate;
 		_timeSinceLastUpdate = 0f;
 		_updatePeriod = 0.2f + MBRandom.RandomFloat * 0.1f;
-		StackArray.StackArray3Int stackArray3Int = default(StackArray.StackArray3Int);
+		StackArray.StackArray3Float stackArray3Float = default(StackArray.StackArray3Float);
 		int num = 0;
 		for (int num2 = _userAgents.Count - 1; num2 >= 0; num2--)
 		{
 			Agent agent = _userAgents[num2];
 			bool flag = false;
 			int currentNavigationFaceId = agent.GetCurrentNavigationFaceId();
+			float num3 = ((_zDifferenceToStopUsing > 0.01f) ? ((agent.Position.z - groundVec.z) / _zDifferenceToStopUsing) : 1.01f);
 			if (!agent.IsActive())
 			{
 				flag = true;
 			}
-			else if (_usingAgentResetTime < 0f && (agent.Position.z - groundVec.z > _zDifferenceToStopUsing || (agent.Position.AsVec2 - groundVec.AsVec2).LengthSquared > _distanceToStopUsing2d * _distanceToStopUsing2d))
+			else if (_usingAgentResetTime < 0f && (num3 > 1f || (agent.Position.AsVec2 - groundVec.AsVec2).LengthSquared > _distanceToStopUsing2d * _distanceToStopUsing2d))
 			{
 				if (currentNavigationFaceId == ManagedNavigationFaceId || (_doesManageMultipleIDs && (currentNavigationFaceId == ManagedNavigationFaceAlternateID1 || currentNavigationFaceId == ManagedNavigationFaceAlternateID2)))
 				{
 					flag = true;
 				}
-				else if (_doesManageMultipleIDs ? (!agent.HasPathThroughNavigationFacesIDFromDirectionMT(ManagedNavigationFaceId, ManagedNavigationFaceAlternateID1, ManagedNavigationFaceAlternateID2, _managedGlobalDirection)) : (!agent.HasPathThroughNavigationFaceIdFromDirectionMT(ManagedNavigationFaceId, _managedGlobalDirection)))
+				else if (!ShouldAgentUseTheLadder(agent))
 				{
 					flag = true;
 				}
 			}
 			if (flag)
 			{
-				_userAgents[num2].HumanAIComponent.AdjustSpeedLimit(_userAgents[num2], -1f, limitIsMultiplier: false);
+				_userAgents[num2].HumanAIComponent?.AdjustSpeedLimit(_userAgents[num2], -1f, limitIsMultiplier: false);
+				_userAgents[num2].SetIsLadderQueueUsing(isLadderQueueUsing: false);
 				_userAgents.RemoveAt(num2);
 			}
 			else
@@ -239,7 +243,7 @@ public class LadderQueueManager : MissionObject
 				bool flag2 = false;
 				if (currentNavigationFaceId == ManagedNavigationFaceId)
 				{
-					stackArray3Int[0]++;
+					stackArray3Float[0] += ((num3 < 1f) ? (1f - num3 * num3 * num3) : 0f);
 					num++;
 					flag2 = true;
 				}
@@ -247,13 +251,13 @@ public class LadderQueueManager : MissionObject
 				{
 					if (currentNavigationFaceId == ManagedNavigationFaceAlternateID1)
 					{
-						stackArray3Int[1]++;
+						stackArray3Float[1] += ((num3 < 1f) ? (1f - num3 * num3 * num3) : 0f);
 						num++;
 						flag2 = true;
 					}
 					else if (currentNavigationFaceId == ManagedNavigationFaceAlternateID2)
 					{
-						stackArray3Int[2]++;
+						stackArray3Float[2] += ((num3 < 1f) ? (1f - num3 * num3 * num3) : 0f);
 						num++;
 						flag2 = true;
 					}
@@ -262,39 +266,39 @@ public class LadderQueueManager : MissionObject
 				{
 					if (_userAgents[num2].HasPathThroughNavigationFaceIdFromDirectionMT(ManagedNavigationFaceId, _managedGlobalDirection))
 					{
-						stackArray3Int[0]++;
+						stackArray3Float[0] += 0.3f;
 					}
 					else if (_userAgents[num2].HasPathThroughNavigationFaceIdFromDirectionMT(ManagedNavigationFaceAlternateID1, _managedGlobalDirection))
 					{
-						stackArray3Int[1]++;
+						stackArray3Float[1] += 0.3f;
 					}
 					else if (_userAgents[num2].HasPathThroughNavigationFaceIdFromDirectionMT(ManagedNavigationFaceAlternateID2, _managedGlobalDirection))
 					{
-						stackArray3Int[2]++;
+						stackArray3Float[2] += 0.3f;
 					}
 				}
 			}
 		}
 		if (_neighborLadderQueueManager != null)
 		{
-			for (int num3 = _neighborLadderQueueManager._userAgents.Count - 1; num3 >= 0; num3--)
+			for (int num4 = _neighborLadderQueueManager._userAgents.Count - 1; num4 >= 0; num4--)
 			{
-				int currentNavigationFaceId2 = _neighborLadderQueueManager._userAgents[num3].GetCurrentNavigationFaceId();
+				int currentNavigationFaceId2 = _neighborLadderQueueManager._userAgents[num4].GetCurrentNavigationFaceId();
 				if (currentNavigationFaceId2 == ManagedNavigationFaceId)
 				{
-					stackArray3Int[0]++;
+					stackArray3Float[0] += 0.3f;
 					num++;
 				}
 				else if (_doesManageMultipleIDs)
 				{
 					if (currentNavigationFaceId2 == ManagedNavigationFaceAlternateID1)
 					{
-						stackArray3Int[1]++;
+						stackArray3Float[1] += 0.3f;
 						num++;
 					}
 					else if (currentNavigationFaceId2 == ManagedNavigationFaceAlternateID2)
 					{
-						stackArray3Int[2]++;
+						stackArray3Float[2] += 0.3f;
 						num++;
 					}
 				}
@@ -302,37 +306,42 @@ public class LadderQueueManager : MissionObject
 		}
 		for (int j = 0; j < 3; j++)
 		{
-			if (_lastUserCountPerLadder[j].Item1 != stackArray3Int[j])
+			if (!_lastUserCostPenaltyPerLadder[j].Item1.ApproximatelyEqualsTo(stackArray3Float[j]))
 			{
-				_lastUserCountPerLadder[j].Item1 = stackArray3Int[j];
-				_lastUserCountPerLadder[j].Item2 = true;
+				_lastUserCostPenaltyPerLadder[j].Item1 = stackArray3Float[j];
+				_lastUserCostPenaltyPerLadder[j].Item2 = true;
 			}
 		}
-		for (int num4 = _queuedAgents.Count - 1; num4 >= 0; num4--)
+		for (int num5 = _queuedAgents.Count - 1; num5 >= 0; num5--)
 		{
-			if (_queuedAgents[num4] != null)
+			if (_queuedAgents[num5] != null)
 			{
-				if (!ConditionsAreMet(_queuedAgents[num4], Agent.AIScriptedFrameFlags.GoToPosition))
+				if (!ConditionsAreMet(_queuedAgents[num5], Agent.AIScriptedFrameFlags.GoToPosition))
 				{
-					RemoveAgentFromQueueAtIndex(num4);
+					RemoveAgentFromQueueAtIndex(num5);
 				}
 				else
 				{
-					float num5 = MBRandom.RandomFloat * (float)_maxUserCount;
-					if (num5 > 0.7f)
+					float num6 = MBRandom.RandomFloat * (float)_maxUserCount;
+					if (num6 > 0.7f)
 					{
-						GetParentIndicesForQueueIndex(num4, out var parentIndex, out var parentIndex2);
-						if (parentIndex >= 0 && _queuedAgents[parentIndex] == null && num5 > ((parentIndex2 >= 0) ? 0.85f : 0.7f))
+						GetParentIndicesForQueueIndex(num5, out var parentIndex, out var parentIndex2);
+						if (parentIndex >= 0 && _queuedAgents[parentIndex] == null && num6 > ((parentIndex2 >= 0) ? 0.85f : 0.7f))
 						{
-							MoveAgentFromQueueIndexToQueueIndex(num4, parentIndex);
+							MoveAgentFromQueueIndexToQueueIndex(num5, parentIndex);
 						}
 						else if (parentIndex2 >= 0 && _queuedAgents[parentIndex2] == null)
 						{
-							MoveAgentFromQueueIndexToQueueIndex(num4, parentIndex2);
+							MoveAgentFromQueueIndexToQueueIndex(num5, parentIndex2);
 						}
 					}
 				}
 			}
+		}
+		int num7 = _queuedAgents.Count - 1;
+		while (num7 >= 0 && _queuedAgents[num7] == null)
+		{
+			_queuedAgents.RemoveAt(num7--);
 		}
 		AgentProximityMap.ProximityMapSearchStruct searchStruct = AgentProximityMap.BeginSearch(Mission.Current, groundVec.AsVec2, 30f);
 		while (searchStruct.LastFoundAgent != null)
@@ -350,37 +359,39 @@ public class LadderQueueManager : MissionObject
 				}
 				else
 				{
+					lastFoundAgent.SetIsLadderQueueUsing(isLadderQueueUsing: true);
 					_userAgents.Add(lastFoundAgent);
 				}
 			}
 			AgentProximityMap.FindNext(Mission.Current, ref searchStruct);
 		}
-		int num6 = _userAgents.Count - num;
-		int num7 = Math.Min(_maxClimberCount - num, _maxRunnerCount - num6);
-		if (_blockUsage || num7 <= 0)
+		int num8 = _userAgents.Count - num;
+		int num9 = Math.Min(_maxClimberCount - num, _maxRunnerCount - num8);
+		if (_blockUsage || num9 <= 0)
 		{
 			return;
 		}
-		float num8 = float.MaxValue;
-		int num9 = -1;
+		float num10 = float.MaxValue;
+		int num11 = -1;
 		for (int k = 0; k < _queuedAgents.Count; k++)
 		{
 			if (_queuedAgents[k] != null)
 			{
 				float lengthSquared = (_queuedAgents[k].Position - groundVec).LengthSquared;
-				if (lengthSquared < num8)
+				if (lengthSquared < num10)
 				{
-					num8 = lengthSquared;
-					num9 = k;
+					num10 = lengthSquared;
+					num11 = k;
 				}
 			}
 		}
-		if (num9 >= 0)
+		if (num11 >= 0)
 		{
-			_userAgents.Add(_queuedAgents[num9]);
-			_queuedAgents[num9].HumanAIComponent.AdjustSpeedLimit(_queuedAgents[num9], 0.2f, limitIsMultiplier: true);
+			_queuedAgents[num11].SetIsLadderQueueUsing(isLadderQueueUsing: true);
+			_userAgents.Add(_queuedAgents[num11]);
+			_queuedAgents[num11].HumanAIComponent.AdjustSpeedLimit(_queuedAgents[num11], 0.2f, limitIsMultiplier: true);
 			_usingAgentResetTime = 2f;
-			RemoveAgentFromQueueAtIndex(num9);
+			RemoveAgentFromQueueAtIndex(num11);
 		}
 	}
 
@@ -401,21 +412,21 @@ public class LadderQueueManager : MissionObject
 	{
 		if (!GameNetwork.IsClientOrReplay && !IsDeactivated && !_blockUsage)
 		{
-			if (ManagedNavigationFaceId > 1 && _lastUserCountPerLadder[0].Item2)
+			if (ManagedNavigationFaceId > 1 && _lastUserCostPenaltyPerLadder[0].Item2)
 			{
-				_lastUserCountPerLadder[0].Item2 = false;
-				CostAddition = GetNavigationFaceCostPerClimber(_lastUserCountPerLadder[0].Item1);
+				_lastUserCostPenaltyPerLadder[0].Item2 = false;
+				CostAddition = GetNavigationFaceCostPerClimber(_lastUserCostPenaltyPerLadder[0].Item1);
 				Mission.Current.SetNavigationFaceCostWithIdAroundPosition(ManagedNavigationFaceId, _managedGlobalWorldPosition.GetGroundVec3(), CostAddition);
 			}
-			if (ManagedNavigationFaceAlternateID1 > 1 && _lastUserCountPerLadder[1].Item2)
+			if (ManagedNavigationFaceAlternateID1 > 1 && _lastUserCostPenaltyPerLadder[1].Item2)
 			{
-				_lastUserCountPerLadder[1].Item2 = false;
-				Mission.Current.SetNavigationFaceCostWithIdAroundPosition(ManagedNavigationFaceAlternateID1, _managedGlobalWorldPosition.GetGroundVec3(), GetNavigationFaceCostPerClimber(_lastUserCountPerLadder[1].Item1));
+				_lastUserCostPenaltyPerLadder[1].Item2 = false;
+				Mission.Current.SetNavigationFaceCostWithIdAroundPosition(ManagedNavigationFaceAlternateID1, _managedGlobalWorldPosition.GetGroundVec3(), GetNavigationFaceCostPerClimber(_lastUserCostPenaltyPerLadder[1].Item1));
 			}
-			if (ManagedNavigationFaceAlternateID2 > 1 && _lastUserCountPerLadder[2].Item2)
+			if (ManagedNavigationFaceAlternateID2 > 1 && _lastUserCostPenaltyPerLadder[2].Item2)
 			{
-				_lastUserCountPerLadder[2].Item2 = false;
-				Mission.Current.SetNavigationFaceCostWithIdAroundPosition(ManagedNavigationFaceAlternateID2, _managedGlobalWorldPosition.GetGroundVec3(), GetNavigationFaceCostPerClimber(_lastUserCountPerLadder[2].Item1));
+				_lastUserCostPenaltyPerLadder[2].Item2 = false;
+				Mission.Current.SetNavigationFaceCostWithIdAroundPosition(ManagedNavigationFaceAlternateID2, _managedGlobalWorldPosition.GetGroundVec3(), GetNavigationFaceCostPerClimber(_lastUserCostPenaltyPerLadder[2].Item1));
 			}
 		}
 	}
@@ -541,6 +552,7 @@ public class LadderQueueManager : MissionObject
 		_queuedAgents[num] = agent;
 		WorldPosition position2 = GetQueuePositionForIndex(num, agent.Index);
 		agent.SetScriptedPosition(ref position2, addHumanLikeDelay: false);
+		agent.SetIsInLadderQueue(isInLadderQueue: true);
 		_queuedAgentCount++;
 	}
 
@@ -550,6 +562,7 @@ public class LadderQueueManager : MissionObject
 		if (!_queuedAgents[queueIndex].IsUsingGameObject && (!_queuedAgents[queueIndex].IsAIControlled || !_queuedAgents[queueIndex].AIMoveToGameObjectIsEnabled()))
 		{
 			_queuedAgents[queueIndex].DisableScriptedMovement();
+			_queuedAgents[queueIndex].SetIsInLadderQueue(isInLadderQueue: false);
 		}
 		_queuedAgents[queueIndex] = null;
 	}
@@ -559,9 +572,9 @@ public class LadderQueueManager : MissionObject
 		return _baseCost + (float)TaleWorlds.Library.MathF.Max(rowIndex - 1, 0) * _costPerRow;
 	}
 
-	private float GetNavigationFaceCostPerClimber(int count)
+	private float GetNavigationFaceCostPerClimber(float costPenalty)
 	{
-		return _baseCost + (float)count * _costPerRow;
+		return _baseCost + costPenalty * _costPerRow;
 	}
 
 	private void MoveAgentFromQueueIndexToQueueIndex(int fromQueueIndex, int toQueueIndex)
@@ -647,5 +660,31 @@ public class LadderQueueManager : MissionObject
 	public void AssignNeighborQueueManager(LadderQueueManager neighborLadderQueueManager)
 	{
 		_neighborLadderQueueManager = neighborLadderQueueManager;
+	}
+
+	private bool IsFormationPositionOtherSideOfTheCastle(Agent agent)
+	{
+		UIntPtr navMesh = agent.Formation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMesh();
+		UIntPtr navMesh2 = agent.GetWorldPosition().GetNavMesh();
+		PathFaceRecord pathFaceRecordFromNavMeshFacePointer = base.Scene.GetPathFaceRecordFromNavMeshFacePointer(navMesh);
+		PathFaceRecord pathFaceRecordFromNavMeshFacePointer2 = base.Scene.GetPathFaceRecordFromNavMeshFacePointer(navMesh2);
+		return pathFaceRecordFromNavMeshFacePointer.FaceGroupIndex % 10 != pathFaceRecordFromNavMeshFacePointer2.FaceGroupIndex % 10;
+	}
+
+	private bool ShouldAgentUseTheLadder(Agent agent)
+	{
+		if (!agent.IsFormationFrameEnabled)
+		{
+			return agent.HasPathThroughNavigationFacesIDFromDirectionMT(ManagedNavigationFaceId, ManagedNavigationFaceAlternateID1, ManagedNavigationFaceAlternateID2, Vec2.Zero);
+		}
+		return IsFormationPositionOtherSideOfTheCastle(agent);
+	}
+
+	public void OnFormationFrameChanged(Agent agent, bool hasFrame, WorldPosition frame)
+	{
+		if (agent.IsInLadderQueue && _queuedAgents.Contains(agent) && (!ConditionsAreMet(agent, Agent.AIScriptedFrameFlags.GoToPosition) || !ShouldAgentUseTheLadder(agent)))
+		{
+			RemoveAgentFromQueueAtIndex(_queuedAgents.IndexOf(agent));
+		}
 	}
 }

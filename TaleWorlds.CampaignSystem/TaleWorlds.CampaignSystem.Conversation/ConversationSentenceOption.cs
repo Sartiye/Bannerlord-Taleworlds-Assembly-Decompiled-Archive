@@ -25,6 +25,8 @@ public struct ConversationSentenceOption
 
 	public bool IsSpecial;
 
+	public bool IsUsedOnce;
+
 	public TextObject HintText;
 
 	public PersuasionOptionArgs PersuationOptionArgs;

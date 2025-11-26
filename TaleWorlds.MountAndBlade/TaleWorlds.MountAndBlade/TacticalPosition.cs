@@ -23,27 +23,27 @@ public class TacticalPosition : MissionObject
 
 	private float _oldWidth;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _width;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _slope;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private bool _isInsurmountable;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private bool _isOuterEdge;
 
 	private List<TacticalPosition> _linkedTacticalPositions;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private TacticalPositionTypeEnum _tacticalPositionType;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private TacticalRegion.TacticalRegionTypeEnum _tacticalRegionMembership;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private FormationAI.BehaviorSide _tacticalPositionSide = FormationAI.BehaviorSide.BehaviorSideNotSet;
 
 	public WorldPosition Position
@@ -149,7 +149,9 @@ public class TacticalPosition : MissionObject
 		if (_width > 0f && _width != _oldWidth)
 		{
 			frame.rotation.MakeUnit();
-			frame.rotation.ApplyScaleLocal(new Vec3(_width, 1f, 1f));
+			ref Mat3 rotation = ref frame.rotation;
+			Vec3 scaleAmountXYZ = new Vec3(_width, 1f, 1f);
+			rotation.ApplyScaleLocal(in scaleAmountXYZ);
 			base.GameEntity.SetGlobalFrame(in frame);
 			base.GameEntity.UpdateTriadFrameForEditorForAllChildren();
 			_oldWidth = _width;

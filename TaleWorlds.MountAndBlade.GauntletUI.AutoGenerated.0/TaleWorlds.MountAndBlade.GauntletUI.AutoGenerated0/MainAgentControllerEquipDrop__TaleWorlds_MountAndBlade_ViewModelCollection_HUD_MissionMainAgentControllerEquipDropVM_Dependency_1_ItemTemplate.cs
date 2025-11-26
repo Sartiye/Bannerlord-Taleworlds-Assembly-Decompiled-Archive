@@ -39,7 +39,7 @@ public class MainAgentControllerEquipDrop__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleBackground()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleBackground", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 84f,
@@ -70,7 +70,7 @@ public class MainAgentControllerEquipDrop__TaleWorlds_MountAndBlade_ViewModelCol
 
 	private VisualDefinition CreateVisualDefinitionCircleGlow()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("CircleGlow", 0.15f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Selected")
 		{
 			SuggestedHeight = 125f,
@@ -180,7 +180,6 @@ public class MainAgentControllerEquipDrop__TaleWorlds_MountAndBlade_ViewModelCol
 		_widget_0_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_2.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_2.PositionYOffset = -30f;
-		_widget_0_2.HideIfNone = true;
 		_widget_0_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_3.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_3.SuggestedWidth = 36f;

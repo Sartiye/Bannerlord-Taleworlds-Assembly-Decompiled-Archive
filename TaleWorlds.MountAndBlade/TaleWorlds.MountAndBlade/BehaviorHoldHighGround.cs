@@ -22,11 +22,12 @@ public class BehaviorHoldHighGround : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
 		WorldPosition worldPosition;
 		Vec2 direction;
-		if (base.Formation.QuerySystem.ClosestEnemyFormation != null)
+		if (cachedClosestEnemyFormation != null)
 		{
-			worldPosition = base.Formation.QuerySystem.MedianPosition;
+			worldPosition = base.Formation.CachedMedianPosition;
 			if (base.Formation.AI.ActiveBehavior != this)
 			{
 				_isAllowedToChangePosition = true;
@@ -34,7 +35,7 @@ public class BehaviorHoldHighGround : BehaviorComponent
 			else
 			{
 				float num = Math.Max((RangedAllyFormation != null) ? (RangedAllyFormation.QuerySystem.MissileRangeAdjusted * 0.8f) : 0f, 30f);
-				_isAllowedToChangePosition = base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) > num * num;
+				_isAllowedToChangePosition = base.Formation.CachedAveragePosition.DistanceSquared(cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) > num * num;
 			}
 			if (_isAllowedToChangePosition)
 			{
@@ -45,13 +46,13 @@ public class BehaviorHoldHighGround : BehaviorComponent
 			{
 				worldPosition = _lastChosenPosition;
 			}
-			direction = ((base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.HighGroundCloseToForeseenBattleGround) > 25f) ? (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - worldPosition.AsVec2).Normalized() : ((base.Formation.Direction.DotProduct((base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized()) < 0.5f) ? (base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition) : base.Formation.Direction).Normalized());
+			direction = ((base.Formation.CachedAveragePosition.DistanceSquared(base.Formation.QuerySystem.HighGroundCloseToForeseenBattleGround) > 25f) ? (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - worldPosition.AsVec2).Normalized() : ((base.Formation.Direction.DotProduct((cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized()) < 0.5f) ? (cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition) : base.Formation.Direction).Normalized());
 		}
 		else
 		{
 			direction = base.Formation.Direction;
-			worldPosition = base.Formation.QuerySystem.MedianPosition;
-			worldPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			worldPosition = base.Formation.CachedMedianPosition;
+			worldPosition.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		base.CurrentOrder = MovementOrder.MovementOrderMove(worldPosition);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
@@ -61,22 +62,22 @@ public class BehaviorHoldHighGround : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()
 	{
-		if (base.Formation.QuerySystem.ClosestEnemyFormation == null)
+		if (base.Formation.CachedClosestEnemyFormation == null)
 		{
 			return 0f;
 		}

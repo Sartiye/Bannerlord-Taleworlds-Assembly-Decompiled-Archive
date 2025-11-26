@@ -10,7 +10,7 @@ public static class MBGlobals
 {
 	public const float Gravity = 9.806f;
 
-	public static readonly Vec3 GravityVec3 = new Vec3(0f, 0f, -9.806f);
+	public static readonly Vec3 GravitationalAcceleration = new Vec3(0f, 0f, -9.806f);
 
 	private static bool _initialized;
 
@@ -37,7 +37,7 @@ public static class MBGlobals
 			value = MBActionSet.GetActionSet(actionSetCode);
 			if (!value.IsValid)
 			{
-				Debug.FailedAssert("No action set found with action set code: " + actionSetCode, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBGlobals.cs", "GetActionSet", 40);
+				Debug.FailedAssert("No action set found with action set code: " + actionSetCode, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBGlobals.cs", "GetActionSet", 40);
 				throw new Exception("Invalid action set code");
 			}
 			_actionSets[actionSetCode] = value;

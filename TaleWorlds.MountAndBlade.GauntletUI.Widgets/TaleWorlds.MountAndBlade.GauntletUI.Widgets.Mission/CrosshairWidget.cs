@@ -114,15 +114,14 @@ public class CrosshairWidget : Widget
 		}
 		set
 		{
-			if (value == _isTargetInvalid)
+			if (value != _isTargetInvalid)
 			{
-				return;
-			}
-			_isTargetInvalid = value;
-			OnPropertyChanged(value, "IsTargetInvalid");
-			foreach (Widget allChild in base.AllChildren)
-			{
-				allChild.SetState(value ? "Invalid" : "Default");
+				_isTargetInvalid = value;
+				OnPropertyChanged(value, "IsTargetInvalid");
+				ApplyActionToAllChildrenRecursive(delegate(Widget child)
+				{
+					child.SetState(value ? "Invalid" : "Default");
+				});
 			}
 		}
 	}

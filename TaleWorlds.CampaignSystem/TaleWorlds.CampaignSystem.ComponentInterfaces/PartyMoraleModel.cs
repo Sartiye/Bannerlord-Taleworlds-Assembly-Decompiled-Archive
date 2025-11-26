@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PartyMoraleModel : GameModel
+public abstract class PartyMoraleModel : MBGameModel<PartyMoraleModel>
 {
 	public abstract float HighMoraleValue { get; }
 

@@ -32,7 +32,7 @@ public class BehaviorSergeantMPLastFlagLastStand : BehaviorComponent
 		_flagpositions.RemoveAll((FlagCapturePoint fp) => fp.IsDeactivated);
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
 	}
 
 	protected override void OnBehaviorActivatedAux()
@@ -40,10 +40,10 @@ public class BehaviorSergeantMPLastFlagLastStand : BehaviorComponent
 		_flagpositions.RemoveAll((FlagCapturePoint fp) => fp.IsDeactivated);
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()
@@ -63,7 +63,7 @@ public class BehaviorSergeantMPLastFlagLastStand : BehaviorComponent
 		{
 			return 10f;
 		}
-		float num = base.Formation.QuerySystem.AveragePosition.Distance(flagCapturePoint.Position.AsVec2);
+		float num = base.Formation.CachedAveragePosition.Distance(flagCapturePoint.Position.AsVec2);
 		float movementSpeedMaximum = base.Formation.QuerySystem.MovementSpeedMaximum;
 		if (num / movementSpeedMaximum * 8f > timeUntilBattleSideVictory)
 		{

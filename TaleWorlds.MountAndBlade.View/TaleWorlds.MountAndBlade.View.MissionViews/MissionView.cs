@@ -1,4 +1,3 @@
-using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.MountAndBlade.View.Screens;
 
@@ -12,7 +11,11 @@ public abstract class MissionView : MissionBehavior
 
 	public IInputContext Input => MissionScreen.SceneLayer.Input;
 
+	protected bool IsViewSuspended { get; private set; }
+
 	public override MissionBehaviorType BehaviorType => MissionBehaviorType.Other;
+
+	public bool IsFinalized { get; internal set; }
 
 	public virtual void OnMissionScreenTick(float dt)
 	{
@@ -24,6 +27,11 @@ public abstract class MissionView : MissionBehavior
 	}
 
 	public virtual bool IsOpeningEscapeMenuOnFocusChangeAllowed()
+	{
+		return true;
+	}
+
+	public virtual bool IsPhotoModeAllowed()
 	{
 		return true;
 	}
@@ -78,8 +86,28 @@ public abstract class MissionView : MissionBehavior
 	{
 	}
 
-	public virtual void OnInitialDeploymentPlanMadeForSide(BattleSideEnum side, bool isFirstPlan)
+	protected virtual void OnSuspendView()
 	{
+	}
+
+	protected virtual void OnResumeView()
+	{
+	}
+
+	public virtual void OnDeploymentPlanMade(Team team, bool isFirstPlan)
+	{
+	}
+
+	public void SuspendView()
+	{
+		OnSuspendView();
+		IsViewSuspended = true;
+	}
+
+	public void ResumeView()
+	{
+		OnResumeView();
+		IsViewSuspended = false;
 	}
 
 	public sealed override void OnEndMissionInternal()

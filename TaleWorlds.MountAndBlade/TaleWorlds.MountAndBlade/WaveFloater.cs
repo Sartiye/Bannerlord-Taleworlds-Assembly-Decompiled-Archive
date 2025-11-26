@@ -100,7 +100,7 @@ public class WaveFloater : ScriptComponentBehavior
 	private void CalculateAxis()
 	{
 		axis = new Vec3(Convert.ToSingle(oscillateAtX), Convert.ToSingle(oscillateAtY), Convert.ToSingle(oscillateAtZ));
-		base.GameEntity.GetGlobalFrame().TransformToParent(axis);
+		base.GameEntity.GetGlobalFrame().TransformToParent(in axis);
 		axis.Normalize();
 	}
 
@@ -118,14 +118,14 @@ public class WaveFloater : ScriptComponentBehavior
 		ResetMatrix();
 		oscillationStart = base.GameEntity.GetGlobalFrame();
 		oscillationEnd = base.GameEntity.GetGlobalFrame();
-		oscillationStart.rotation.RotateAboutAnArbitraryVector(axis, 0f - ConvertToRadians(maxOscillationAngle));
-		oscillationEnd.rotation.RotateAboutAnArbitraryVector(axis, ConvertToRadians(maxOscillationAngle));
+		oscillationStart.rotation.RotateAboutAnArbitraryVector(in axis, 0f - ConvertToRadians(maxOscillationAngle));
+		oscillationEnd.rotation.RotateAboutAnArbitraryVector(in axis, ConvertToRadians(maxOscillationAngle));
 	}
 
 	private void Oscillate()
 	{
 		MatrixFrame frame = base.GameEntity.GetGlobalFrame();
-		frame.rotation = Mat3.Lerp(oscillationStart.rotation, oscillationEnd.rotation, TaleWorlds.Library.MathF.Clamp(oscillationPercentage, 0f, 1f));
+		frame.rotation = Mat3.Lerp(in oscillationStart.rotation, in oscillationEnd.rotation, TaleWorlds.Library.MathF.Clamp(oscillationPercentage, 0f, 1f));
 		base.GameEntity.SetGlobalFrame(in frame);
 		oscillationPercentage = (1f + TaleWorlds.Library.MathF.Cos(oscillationSpeed * 1f * et)) / 2f;
 	}

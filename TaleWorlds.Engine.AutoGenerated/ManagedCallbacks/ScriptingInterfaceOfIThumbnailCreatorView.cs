@@ -38,17 +38,22 @@ internal class ScriptingInterfaceOfIThumbnailCreatorView : IThumbnailCreatorView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void RegisterEntityDelegate(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr texture_ptr, UIntPtr entity_ptr, byte[] render_id, int allocationGroupIndex);
+	public delegate void RegisterCachedEntityDelegate(UIntPtr pointer, UIntPtr scene, UIntPtr entity_ptr, byte[] cacheId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void RegisterEntityWithoutTextureDelegate(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr entity_ptr, int width, int height, byte[] render_id, byte[] debug_name, int allocationGroupIndex);
+	public delegate void RegisterRenderRequestDelegate(UIntPtr pointer, ref ThumbnailRenderRequest request);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void RegisterSceneDelegate(UIntPtr pointer, UIntPtr scene_ptr, [MarshalAs(UnmanagedType.U1)] bool use_postfx);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void UnregisterCachedEntityDelegate(UIntPtr pointer, byte[] cacheId);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -62,11 +67,13 @@ internal class ScriptingInterfaceOfIThumbnailCreatorView : IThumbnailCreatorView
 
 	public static IsMemoryClearedDelegate call_IsMemoryClearedDelegate;
 
-	public static RegisterEntityDelegate call_RegisterEntityDelegate;
+	public static RegisterCachedEntityDelegate call_RegisterCachedEntityDelegate;
 
-	public static RegisterEntityWithoutTextureDelegate call_RegisterEntityWithoutTextureDelegate;
+	public static RegisterRenderRequestDelegate call_RegisterRenderRequestDelegate;
 
 	public static RegisterSceneDelegate call_RegisterSceneDelegate;
+
+	public static UnregisterCachedEntityDelegate call_UnregisterCachedEntityDelegate;
 
 	public void CancelRequest(UIntPtr pointer, string render_id)
 	{
@@ -108,42 +115,39 @@ internal class ScriptingInterfaceOfIThumbnailCreatorView : IThumbnailCreatorView
 		return call_IsMemoryClearedDelegate(pointer);
 	}
 
-	public void RegisterEntity(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr texture_ptr, UIntPtr entity_ptr, string render_id, int allocationGroupIndex)
+	public void RegisterCachedEntity(UIntPtr pointer, UIntPtr scene, UIntPtr entity_ptr, string cacheId)
 	{
 		byte[] array = null;
-		if (render_id != null)
+		if (cacheId != null)
 		{
-			int byteCount = _utf8.GetByteCount(render_id);
+			int byteCount = _utf8.GetByteCount(cacheId);
 			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
-			_utf8.GetBytes(render_id, 0, render_id.Length, array, 0);
+			_utf8.GetBytes(cacheId, 0, cacheId.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		call_RegisterEntityDelegate(pointer, scene_ptr, cam_ptr, texture_ptr, entity_ptr, array, allocationGroupIndex);
+		call_RegisterCachedEntityDelegate(pointer, scene, entity_ptr, array);
 	}
 
-	public void RegisterEntityWithoutTexture(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr entity_ptr, int width, int height, string render_id, string debug_name, int allocationGroupIndex)
+	public void RegisterRenderRequest(UIntPtr pointer, ref ThumbnailRenderRequest request)
 	{
-		byte[] array = null;
-		if (render_id != null)
-		{
-			int byteCount = _utf8.GetByteCount(render_id);
-			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
-			_utf8.GetBytes(render_id, 0, render_id.Length, array, 0);
-			array[byteCount] = 0;
-		}
-		byte[] array2 = null;
-		if (debug_name != null)
-		{
-			int byteCount2 = _utf8.GetByteCount(debug_name);
-			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
-			_utf8.GetBytes(debug_name, 0, debug_name.Length, array2, 0);
-			array2[byteCount2] = 0;
-		}
-		call_RegisterEntityWithoutTextureDelegate(pointer, scene_ptr, cam_ptr, entity_ptr, width, height, array, array2, allocationGroupIndex);
+		call_RegisterRenderRequestDelegate(pointer, ref request);
 	}
 
 	public void RegisterScene(UIntPtr pointer, UIntPtr scene_ptr, bool use_postfx)
 	{
 		call_RegisterSceneDelegate(pointer, scene_ptr, use_postfx);
+	}
+
+	public void UnregisterCachedEntity(UIntPtr pointer, string cacheId)
+	{
+		byte[] array = null;
+		if (cacheId != null)
+		{
+			int byteCount = _utf8.GetByteCount(cacheId);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(cacheId, 0, cacheId.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_UnregisterCachedEntityDelegate(pointer, array);
 	}
 }

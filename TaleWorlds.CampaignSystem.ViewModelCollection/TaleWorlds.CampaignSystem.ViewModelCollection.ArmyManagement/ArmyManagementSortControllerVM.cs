@@ -57,6 +57,11 @@ public class ArmyManagementSortControllerVM : ViewModel
 			{
 				return num * ((!_isAscending) ? 1 : (-1));
 			}
+			int num2 = y.ShipCount.CompareTo(x.ShipCount);
+			if (num2 != 0)
+			{
+				return num2 * ((!_isAscending) ? 1 : (-1));
+			}
 			return ResolveEquality(x, y);
 		}
 	}
@@ -86,6 +91,19 @@ public class ArmyManagementSortControllerVM : ViewModel
 		}
 	}
 
+	public class ItemShipCountComparer : ItemComparerBase
+	{
+		public override int Compare(ArmyManagementItemVM x, ArmyManagementItemVM y)
+		{
+			int num = y.ShipCount.CompareTo(x.ShipCount);
+			if (num != 0)
+			{
+				return num * ((!_isAscending) ? 1 : (-1));
+			}
+			return ResolveEquality(x, y);
+		}
+	}
+
 	private readonly MBBindingList<ArmyManagementItemVM> _listToControl;
 
 	private readonly ItemDistanceComparer _distanceComparer;
@@ -98,6 +116,8 @@ public class ArmyManagementSortControllerVM : ViewModel
 
 	private readonly ItemClanComparer _clanComparer;
 
+	private readonly ItemShipCountComparer _shipCountComparer;
+
 	private int _distanceState;
 
 	private int _costState;
@@ -108,6 +128,8 @@ public class ArmyManagementSortControllerVM : ViewModel
 
 	private int _clanState;
 
+	private int _shipCountState;
+
 	private bool _isNameSelected;
 
 	private bool _isCostSelected;
@@ -117,6 +139,8 @@ public class ArmyManagementSortControllerVM : ViewModel
 	private bool _isDistanceSelected;
 
 	private bool _isClanSelected;
+
+	private bool _isShipCountSelected;
 
 	[DataSourceProperty]
 	public int DistanceState
@@ -199,6 +223,23 @@ public class ArmyManagementSortControllerVM : ViewModel
 			{
 				_clanState = value;
 				OnPropertyChangedWithValue(value, "ClanState");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int ShipCountState
+	{
+		get
+		{
+			return _shipCountState;
+		}
+		set
+		{
+			if (value != _shipCountState)
+			{
+				_shipCountState = value;
+				OnPropertyChangedWithValue(value, "ShipCountState");
 			}
 		}
 	}
@@ -288,6 +329,23 @@ public class ArmyManagementSortControllerVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsShipCountSelected
+	{
+		get
+		{
+			return _isShipCountSelected;
+		}
+		set
+		{
+			if (value != _isShipCountSelected)
+			{
+				_isShipCountSelected = value;
+				OnPropertyChangedWithValue(value, "IsShipCountSelected");
+			}
+		}
+	}
+
 	public ArmyManagementSortControllerVM(MBBindingList<ArmyManagementItemVM> listToControl)
 	{
 		_listToControl = listToControl;
@@ -296,6 +354,7 @@ public class ArmyManagementSortControllerVM : ViewModel
 		_strengthComparer = new ItemStrengthComparer();
 		_nameComparer = new ItemNameComparer();
 		_clanComparer = new ItemClanComparer();
+		_shipCountComparer = new ItemShipCountComparer();
 	}
 
 	public void ExecuteSortByDistance()
@@ -368,6 +427,20 @@ public class ArmyManagementSortControllerVM : ViewModel
 		IsClanSelected = true;
 	}
 
+	public void ExecuteSortByShipCount()
+	{
+		int shipCountState = ShipCountState;
+		SetAllStates(CampaignUIHelper.SortState.Default);
+		ShipCountState = (shipCountState + 1) % 3;
+		if (ShipCountState == 0)
+		{
+			ShipCountState++;
+		}
+		_shipCountComparer.SetSortMode(ShipCountState == 1);
+		_listToControl.Sort(_shipCountComparer);
+		IsShipCountSelected = true;
+	}
+
 	private void SetAllStates(CampaignUIHelper.SortState state)
 	{
 		DistanceState = (int)state;
@@ -375,10 +448,12 @@ public class ArmyManagementSortControllerVM : ViewModel
 		StrengthState = (int)state;
 		NameState = (int)state;
 		ClanState = (int)state;
+		ShipCountState = (int)state;
 		IsDistanceSelected = false;
 		IsCostSelected = false;
 		IsNameSelected = false;
 		IsClanSelected = false;
 		IsStrengthSelected = false;
+		IsShipCountSelected = false;
 	}
 }

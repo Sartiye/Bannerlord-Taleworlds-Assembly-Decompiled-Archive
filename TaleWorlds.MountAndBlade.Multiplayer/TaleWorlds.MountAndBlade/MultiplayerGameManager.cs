@@ -37,9 +37,9 @@ public class MultiplayerGameManager : MBGameManager
 		case GameManagerLoadingSteps.PostInitializeFourthState:
 		{
 			bool flag = true;
-			foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+			foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 			{
-				flag = flag && subModule.DoLoading(Game.Current);
+				flag = flag && item.DoLoading(Game.Current);
 			}
 			nextStep = (flag ? GameManagerLoadingSteps.FinishLoadingFifthStep : GameManagerLoadingSteps.PostInitializeFourthState);
 			break;
@@ -82,9 +82,9 @@ public class MultiplayerGameManager : MBGameManager
 
 	public override void OnNewCampaignStart(Game game, object starterObject)
 	{
-		foreach (MBSubModuleBase subModule in Module.CurrentModule.SubModules)
+		foreach (MBSubModuleBase item in Module.CurrentModule.CollectSubModules())
 		{
-			subModule.OnMultiplayerGameStart(game, starterObject);
+			item.OnMultiplayerGameStart(game, starterObject);
 		}
 	}
 

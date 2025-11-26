@@ -13,6 +13,8 @@ public class GauntletMovie : IGauntletMovie
 
 	private Widget _movieRootNode;
 
+	private bool _isHotReloadEnabled;
+
 	public WidgetFactory WidgetFactory { get; private set; }
 
 	public BrushFactory BrushFactory { get; private set; }
@@ -25,7 +27,19 @@ public class GauntletMovie : IGauntletMovie
 
 	public GauntletView RootView { get; private set; }
 
-	public Widget RootWidget => RootView.Target;
+	public Widget RootWidget
+	{
+		get
+		{
+			if (RootView == null)
+			{
+				return null;
+			}
+			return RootView.Target;
+		}
+	}
+
+	public bool IsLoaded { get; private set; }
 
 	public bool IsReleased { get; private set; }
 
@@ -34,11 +48,9 @@ public class GauntletMovie : IGauntletMovie
 		WidgetFactory = widgetFactory;
 		BrushFactory = context.BrushFactory;
 		Context = context;
-		if (hotReloadEnabled)
-		{
-			WidgetFactory.PrefabChange += OnResourceChanged;
-			BrushFactory.BrushChange += OnResourceChanged;
-		}
+		_isHotReloadEnabled = hotReloadEnabled;
+		WidgetFactory.PrefabChange += OnResourceChanged;
+		BrushFactory.BrushChange += OnResourceChanged;
 		_viewModel = viewModel;
 		MovieName = movieName;
 		_movieRootNode = new Widget(Context);
@@ -48,6 +60,7 @@ public class GauntletMovie : IGauntletMovie
 		_movieRootNode.ScaledSuggestedWidth = Context.TwoDimensionContext.Width;
 		_movieRootNode.ScaledSuggestedHeight = Context.TwoDimensionContext.Height;
 		_movieRootNode.DoNotAcceptEvents = true;
+		IsLoaded = false;
 		IsReleased = false;
 	}
 
@@ -57,31 +70,44 @@ public class GauntletMovie : IGauntletMovie
 		RootView.RefreshBindingWithChildren();
 	}
 
-	private void OnResourceChanged()
+	private void RefreshResources()
 	{
 		RootView.ClearEventHandlersWithChildren();
 		RootView = null;
 		_movieRootNode.RemoveAllChildren();
 		Context.OnMovieReleased(MovieName);
+		IsLoaded = false;
 		LoadMovie();
+	}
+
+	private void OnResourceChanged()
+	{
+		if (_isHotReloadEnabled)
+		{
+			RefreshResources();
+		}
 	}
 
 	private void LoadMovie()
 	{
 		_moviePrefab = WidgetFactory.GetCustomType(MovieName);
-		WidgetCreationData widgetCreationData = new WidgetCreationData(Context, WidgetFactory);
-		widgetCreationData.AddExtensionData(this);
-		WidgetInstantiationResult widgetInstantiationResult = _moviePrefab.Instantiate(widgetCreationData);
-		RootView = widgetInstantiationResult.GetGauntletView();
-		Widget target = RootView.Target;
-		_movieRootNode.AddChild(target);
-		RootView.RefreshBindingWithChildren();
-		Context.OnMovieLoaded(MovieName);
+		if (_moviePrefab != null)
+		{
+			IsLoaded = true;
+			IsReleased = false;
+			WidgetCreationData widgetCreationData = new WidgetCreationData(Context, WidgetFactory);
+			widgetCreationData.AddExtensionData(this);
+			WidgetInstantiationResult widgetInstantiationResult = _moviePrefab.Instantiate(widgetCreationData);
+			RootView = widgetInstantiationResult.GetGauntletView();
+			Widget target = RootView.Target;
+			_movieRootNode.AddChild(target);
+			RootView.RefreshBindingWithChildren();
+			Context.OnMovieLoaded(MovieName);
+		}
 	}
 
 	public void Release()
 	{
-		IsReleased = true;
 		_movieRootNode.OnBeforeRemovedChild(_movieRootNode);
 		RootView?.ReleaseBindingWithChildren();
 		_moviePrefab.OnRelease();
@@ -90,6 +116,8 @@ public class GauntletMovie : IGauntletMovie
 		BrushFactory.BrushChange -= OnResourceChanged;
 		Context.OnMovieReleased(MovieName);
 		_movieRootNode.ParentWidget = null;
+		IsLoaded = false;
+		IsReleased = true;
 	}
 
 	internal void OnItemRemoved(string type)

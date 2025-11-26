@@ -33,7 +33,7 @@ public class CustomBattleAgentLogic : MissionLogic
 			affectedAgent.Origin.SetKilled();
 			break;
 		default:
-			affectedAgent.Origin.SetRouted();
+			affectedAgent.Origin.SetRouted(isOrderRetreat: false);
 			break;
 		}
 	}
@@ -41,10 +41,14 @@ public class CustomBattleAgentLogic : MissionLogic
 	private void BecomeGhost()
 	{
 		Agent leader = base.Mission.PlayerEnemyTeam.Leader;
-		if (leader != null)
+		if (leader != null && leader.IsActive())
 		{
-			leader.Controller = Agent.ControllerType.AI;
+			leader.Controller = AgentControllerType.AI;
 		}
-		base.Mission.MainAgent.Controller = Agent.ControllerType.AI;
+		Agent mainAgent = base.Mission.MainAgent;
+		if (mainAgent != null && mainAgent.IsActive())
+		{
+			base.Mission.MainAgent.Controller = AgentControllerType.AI;
+		}
 	}
 }

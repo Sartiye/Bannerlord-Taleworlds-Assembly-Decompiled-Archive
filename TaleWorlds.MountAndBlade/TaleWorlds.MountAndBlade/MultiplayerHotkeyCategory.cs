@@ -56,7 +56,7 @@ public sealed class MultiplayerHotkeyCategory : GameKeyContext
 	public const string ToggleFriendsList = "ToggleFriendsList";
 
 	public MultiplayerHotkeyCategory()
-		: base("MultiplayerHotkeyCategory", 108)
+		: base("MultiplayerHotkeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

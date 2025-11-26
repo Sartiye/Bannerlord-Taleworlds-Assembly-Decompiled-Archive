@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Layout;
@@ -173,15 +172,14 @@ public class CounterTextBrushWidget : BrushWidget
 			ForceSetValue(_targetValue);
 		}
 		RefreshTextParameters();
-		TextMaterial material = base.BrushRenderer.CreateTextMaterial(drawContext);
-		Vector2 globalPosition = base.GlobalPosition;
-		drawContext.Draw(_text, material, globalPosition.X, globalPosition.Y, base.Size.X, base.Size.Y);
+		TextMaterial materialOriginal = base.BrushRenderer.CreateTextMaterial(drawContext);
+		drawContext.Draw(_text, materialOriginal, in base.ParentWidget.AreaRect, in AreaRect);
 	}
 
 	private void SetText(string value)
 	{
 		SetMeasureAndLayoutDirty();
-		_text.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_text.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 		if (ShowSign && _currentValue > 0f)
 		{
 			_text.Value = "+" + value;
@@ -219,7 +217,7 @@ public class CounterTextBrushWidget : BrushWidget
 		_text.HorizontalAlignment = base.ReadOnlyBrush.TextHorizontalAlignment;
 		_text.VerticalAlignment = base.ReadOnlyBrush.TextVerticalAlignment;
 		_text.FontSize = fontSize;
-		_text.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_text.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 		if (base.ReadOnlyBrush.Font != null)
 		{
 			_text.Font = base.ReadOnlyBrush.Font;
@@ -255,7 +253,7 @@ public class CounterTextBrushWidget : BrushWidget
 		}
 		else
 		{
-			Debug.FailedAssert("Value change in party label cannot be 0", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CounterTextBrushWidget.cs", "RefreshTextAnimation", 142);
+			Debug.FailedAssert("Value change in party label cannot be 0", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CounterTextBrushWidget.cs", "RefreshTextAnimation", 141);
 		}
 	}
 

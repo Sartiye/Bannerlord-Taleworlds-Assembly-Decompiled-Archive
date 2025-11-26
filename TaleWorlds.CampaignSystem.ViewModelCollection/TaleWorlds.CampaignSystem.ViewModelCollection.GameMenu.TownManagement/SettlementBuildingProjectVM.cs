@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -25,6 +26,10 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 	private bool _canBuild;
 
 	private bool _isInQueue;
+
+	private HintViewModel _addRemoveHint;
+
+	private HintViewModel _setAsActiveHint;
 
 	[DataSourceProperty]
 	public bool IsSelected
@@ -107,6 +112,7 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 			{
 				_developmentQueueIndex = value;
 				OnPropertyChangedWithValue(value, "DevelopmentQueueIndex");
+				UpdateProjectHints();
 			}
 		}
 	}
@@ -124,6 +130,7 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 			{
 				_isInQueue = value;
 				OnPropertyChangedWithValue(value, "IsInQueue");
+				UpdateProjectHints();
 			}
 		}
 	}
@@ -162,6 +169,40 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 		}
 	}
 
+	[DataSourceProperty]
+	public HintViewModel AddRemoveHint
+	{
+		get
+		{
+			return _addRemoveHint;
+		}
+		set
+		{
+			if (value != _addRemoveHint)
+			{
+				_addRemoveHint = value;
+				OnPropertyChangedWithValue(value, "AddRemoveHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel SetAsActiveHint
+	{
+		get
+		{
+			return _setAsActiveHint;
+		}
+		set
+		{
+			if (value != _setAsActiveHint)
+			{
+				_setAsActiveHint = value;
+				OnPropertyChangedWithValue(value, "SetAsActiveHint");
+			}
+		}
+	}
+
 	public SettlementBuildingProjectVM(Action<SettlementProjectVM, bool> onSelection, Action<SettlementProjectVM> onSetAsCurrent, Action onResetCurrent, Building building, Settlement settlement)
 		: base(onSelection, onSetAsCurrent, onResetCurrent, building, settlement)
 	{
@@ -177,6 +218,21 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 	{
 		base.RefreshValues();
 		AlreadyAtMaxText = new TextObject("{=ybLA7ZXp}Already at Max").ToString();
+		UpdateProjectHints();
+	}
+
+	private void UpdateProjectHints()
+	{
+		if (AddRemoveHint == null)
+		{
+			AddRemoveHint = new HintViewModel();
+		}
+		if (SetAsActiveHint == null)
+		{
+			SetAsActiveHint = new HintViewModel();
+		}
+		AddRemoveHint.HintText = (IsInQueue ? new TextObject("{=faDegful}Remove from queue") : new TextObject("{=SFebv4hH}Add to queue"));
+		SetAsActiveHint.HintText = ((DevelopmentQueueIndex == 0) ? new TextObject("{=cD1HTdYJ}Already active development") : new TextObject("{=PcLGc2bM}Set as active development"));
 	}
 
 	public override void RefreshProductionText()
@@ -236,5 +292,13 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 	public override void ExecuteResetCurrent()
 	{
 		_onResetCurrent?.Invoke();
+	}
+
+	public override void ExecuteToggleSelected()
+	{
+		if (CanBuild)
+		{
+			IsSelected = !IsSelected;
+		}
 	}
 }

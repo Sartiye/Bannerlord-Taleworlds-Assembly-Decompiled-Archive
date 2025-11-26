@@ -50,6 +50,8 @@ public class WeaponComponentData
 
 	public DamageTypes SwingDamageType { get; private set; }
 
+	public int FireDamage { get; private set; }
+
 	public int Accuracy { get; private set; }
 
 	public WeaponClass WeaponClass { get; private set; }
@@ -58,7 +60,7 @@ public class WeaponComponentData
 
 	public int MissileDamage => ThrustDamage;
 
-	public float Inertia { get; private set; }
+	public float TotalInertia { get; private set; }
 
 	public float CenterOfMass { get; private set; }
 
@@ -124,7 +126,7 @@ public class WeaponComponentData
 	{
 		get
 		{
-			if (WeaponFlags.HasFlag(WeaponFlags.MeleeWeapon))
+			if (WeaponFlags.HasAnyFlag(WeaponFlags.MeleeWeapon))
 			{
 				return !IsTwoHanded;
 			}
@@ -138,7 +140,7 @@ public class WeaponComponentData
 	{
 		get
 		{
-			if (WeaponFlags.HasFlag(WeaponFlags.HasString))
+			if (WeaponFlags.HasAnyFlag(WeaponFlags.HasString))
 			{
 				return !IsBow;
 			}
@@ -179,7 +181,7 @@ public class WeaponComponentData
 		BodyArmor = bodyArmor;
 		WeaponLength = weaponLength;
 		WeaponBalance = weaponBalance;
-		Inertia = inertia;
+		TotalInertia = inertia * (float)((!IsConsumable) ? 1 : maxDataValue);
 		CenterOfMass = centerOfMass;
 		Handling = handling;
 		SwingDamageFactor = swingDamageFactor;
@@ -225,11 +227,15 @@ public class WeaponComponentData
 		case WeaponClass.Crossbow:
 			result = DefaultSkills.Crossbow;
 			break;
+		case WeaponClass.SlingStone:
+		case WeaponClass.Sling:
 		case WeaponClass.Stone:
 		case WeaponClass.Boulder:
 		case WeaponClass.ThrowingAxe:
 		case WeaponClass.ThrowingKnife:
 		case WeaponClass.Javelin:
+		case WeaponClass.BallistaBoulder:
+		case WeaponClass.BallistaStone:
 			result = DefaultSkills.Throwing;
 			break;
 		case WeaponClass.Dagger:
@@ -281,17 +287,23 @@ public class WeaponComponentData
 			return ItemObject.ItemTypeEnum.Arrows;
 		case WeaponClass.Bolt:
 			return ItemObject.ItemTypeEnum.Bolts;
+		case WeaponClass.SlingStone:
+			return ItemObject.ItemTypeEnum.SlingStones;
 		case WeaponClass.Cartridge:
 			return ItemObject.ItemTypeEnum.Bullets;
 		case WeaponClass.Bow:
 			return ItemObject.ItemTypeEnum.Bow;
 		case WeaponClass.Crossbow:
 			return ItemObject.ItemTypeEnum.Crossbow;
+		case WeaponClass.Sling:
+			return ItemObject.ItemTypeEnum.Sling;
 		case WeaponClass.Stone:
 		case WeaponClass.Boulder:
 		case WeaponClass.ThrowingAxe:
 		case WeaponClass.ThrowingKnife:
 		case WeaponClass.Javelin:
+		case WeaponClass.BallistaBoulder:
+		case WeaponClass.BallistaStone:
 			return ItemObject.ItemTypeEnum.Thrown;
 		case WeaponClass.Pistol:
 			return ItemObject.ItemTypeEnum.Pistol;
@@ -345,6 +357,7 @@ public class WeaponComponentData
 		WeaponLength = ((node.Attributes["weapon_length"] != null) ? int.Parse(node.Attributes["weapon_length"].Value) : 0);
 		ThrustDamage = ((node.Attributes["thrust_damage"] != null) ? int.Parse(node.Attributes["thrust_damage"].Value) : 0);
 		SwingDamage = ((node.Attributes["swing_damage"] != null) ? int.Parse(node.Attributes["swing_damage"].Value) : 0);
+		FireDamage = ((node.Attributes["fire_damage"] != null) ? int.Parse(node.Attributes["fire_damage"].Value) : 0);
 		Accuracy = ((node.Attributes["accuracy"] != null) ? int.Parse(node.Attributes["accuracy"].Value) : 100);
 		ThrustDamageType = ((node.Attributes["thrust_damage_type"] != null) ? ((DamageTypes)Enum.Parse(typeof(DamageTypes), node.Attributes["thrust_damage_type"].Value)) : DamageTypes.Blunt);
 		SwingDamageType = ((node.Attributes["swing_damage_type"] != null) ? ((DamageTypes)Enum.Parse(typeof(DamageTypes), node.Attributes["swing_damage_type"].Value)) : DamageTypes.Blunt);
@@ -353,10 +366,10 @@ public class WeaponComponentData
 		ReloadPhaseCount = (short)((node.Attributes["reload_phase_count"] == null) ? 1 : short.Parse(node.Attributes["reload_phase_count"].Value));
 		CenterOfMass = (float)WeaponLength * 0.5f * 0.01f;
 		CenterOfMass3D = ((node.Attributes["center_of_mass"] != null) ? Vec3.Parse(node.Attributes["center_of_mass"].Value) : Vec3.Zero);
-		if (WeaponClass != WeaponClass.Bow && WeaponClass != WeaponClass.Crossbow && WeaponClass != WeaponClass.SmallShield && WeaponClass != WeaponClass.LargeShield && WeaponClass != WeaponClass.Arrow && WeaponClass != WeaponClass.Bolt && WeaponClass != WeaponClass.ThrowingKnife && WeaponClass != WeaponClass.ThrowingAxe && WeaponClass != WeaponClass.Javelin && WeaponClass != WeaponClass.Stone)
+		if (WeaponClass != WeaponClass.Bow && WeaponClass != WeaponClass.Crossbow && WeaponClass != WeaponClass.Sling && WeaponClass != WeaponClass.SmallShield && WeaponClass != WeaponClass.LargeShield && WeaponClass != WeaponClass.Arrow && WeaponClass != WeaponClass.Bolt && WeaponClass != WeaponClass.SlingStone && WeaponClass != WeaponClass.ThrowingKnife && WeaponClass != WeaponClass.ThrowingAxe && WeaponClass != WeaponClass.Javelin && WeaponClass != WeaponClass.Stone && WeaponClass != WeaponClass.Boulder && WeaponClass != WeaponClass.BallistaStone)
 		{
 			_ = WeaponClass;
-			_ = 18;
+			_ = 26;
 		}
 		XmlAttribute xmlAttribute = node.Attributes["ammo_limit"];
 		XmlAttribute xmlAttribute2 = node.Attributes["stack_amount"];
@@ -378,7 +391,7 @@ public class WeaponComponentData
 			MaxDataValue = 0;
 		}
 		Vec3 v = default(Vec3);
-		Mat3 identity = Mat3.Identity;
+		Mat3 rot = Mat3.Identity;
 		XmlNode xmlNode = node.Attributes["sticking_position"];
 		if (xmlNode != null)
 		{
@@ -399,15 +412,15 @@ public class WeaponComponentData
 				float.TryParse(array2[0], out var result);
 				float.TryParse(array2[1], out var result2);
 				float.TryParse(array2[2], out var result3);
-				identity.RotateAboutSide(result.ToRadians());
-				identity.RotateAboutUp(result2.ToRadians());
-				identity.RotateAboutForward(result3.ToRadians());
+				rot.RotateAboutSide(result.ToRadians());
+				rot.RotateAboutUp(result2.ToRadians());
+				rot.RotateAboutForward(result3.ToRadians());
 			}
 		}
-		v = identity.TransformToParent(v);
-		StickingFrame = new MatrixFrame(identity, v);
+		v = rot.TransformToParent(in v);
+		StickingFrame = new MatrixFrame(in rot, in v);
 		Vec3 o = default(Vec3);
-		Mat3 identity2 = Mat3.Identity;
+		Mat3 rot2 = Mat3.Identity;
 		XmlNode xmlNode3 = node.Attributes["position"];
 		if (xmlNode3 != null)
 		{
@@ -428,12 +441,12 @@ public class WeaponComponentData
 				float.TryParse(array4[0], out var result4);
 				float.TryParse(array4[1], out var result5);
 				float.TryParse(array4[2], out var result6);
-				identity2.RotateAboutUp(result6.ToRadians());
-				identity2.RotateAboutSide(result4.ToRadians());
-				identity2.RotateAboutForward(result5.ToRadians());
+				rot2.RotateAboutUp(result6.ToRadians());
+				rot2.RotateAboutSide(result4.ToRadians());
+				rot2.RotateAboutForward(result5.ToRadians());
 			}
 		}
-		Frame = new MatrixFrame(identity2, o);
+		Frame = new MatrixFrame(in rot2, in o);
 		RotationSpeed = ((node.Attributes["rotation_speed"] != null) ? Vec3.Parse(node.Attributes["rotation_speed"].Value) : Vec3.Zero);
 		TrailParticleName = node.Attributes["trail_particle_name"]?.Value;
 		foreach (XmlNode childNode in node.ChildNodes)
@@ -450,7 +463,7 @@ public class WeaponComponentData
 				}
 			}
 		}
-		Inertia = item.Weight * 0.05f;
+		TotalInertia = (float)((!IsConsumable) ? 1 : MaxDataValue) * item.Weight * 0.05f;
 		Handling = ThrustSpeed;
 		SweetSpotReach = 0.93f;
 		SetDamageFactors(item.Weight);
@@ -495,7 +508,7 @@ public class WeaponComponentData
 	public MatrixFrame GetMissileStartingFrame()
 	{
 		MatrixFrame identity = default(MatrixFrame);
-		if (WeaponClass == WeaponClass.Arrow || WeaponClass == WeaponClass.Bolt)
+		if (WeaponClass == WeaponClass.Arrow || WeaponClass == WeaponClass.Bolt || WeaponClass == WeaponClass.SlingStone)
 		{
 			Mat3 rotation = new Mat3(1f, 0f, 0f, 0f, 0f, -1f, 0f, 1f, 0f);
 			identity.rotation = rotation;

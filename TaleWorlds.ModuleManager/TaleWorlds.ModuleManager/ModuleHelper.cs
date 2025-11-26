@@ -2,39 +2,148 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.ModuleManager;
 
 public static class ModuleHelper
 {
-	private static Dictionary<string, ModuleInfo> _allFoundModules;
+	public const char ModuleVersionSeperator = ':';
+
+	public static bool IsTestMode = false;
+
+	public const char ModuleCodeSeperator = ';';
+
+	public static readonly MBList<string> ModulesDisablingLoadingAfterBeingRemoved = new MBList<string> { "StoryMode", "NavalDLC" };
+
+	public static readonly MBList<string> ModulesDisablingLoadingAfterBeingAdded = new MBList<string> { "NavalDLC" };
 
 	private static IPlatformModuleExtension _platformModuleExtension;
+
+	private static Dictionary<string, ModuleInfo> _loadedModules;
+
+	private static List<ModuleInfo> results = null;
 
 	private static string _pathPrefix => BasePath.Name + "Modules/";
 
 	public static string GetModuleFullPath(string moduleId)
 	{
-		EnsureModuleInfosAreLoaded();
-		return _allFoundModules[moduleId.ToLower()].FolderPath + "/";
+		return _loadedModules[moduleId.ToLower()].FolderPath + "/";
 	}
 
 	public static ModuleInfo GetModuleInfo(string moduleId)
 	{
-		EnsureModuleInfosAreLoaded();
 		string key = moduleId.ToLower();
-		if (_allFoundModules.ContainsKey(key))
+		if (_loadedModules.ContainsKey(key))
 		{
-			return _allFoundModules[key];
+			return _loadedModules[key];
 		}
 		return null;
 	}
 
-	public static void InitializePlatformModuleExtension(IPlatformModuleExtension moduleExtension)
+	public static void OnModuleDeactivated(string id)
+	{
+		ModuleInfo moduleInfo = GetModuleInfo(id);
+		if (moduleInfo != null && moduleInfo.IsActive)
+		{
+			moduleInfo.DeactivateModule();
+		}
+	}
+
+	public static void OnModuleActivated(string id)
+	{
+		ModuleInfo moduleInfo = GetModuleInfo(id);
+		if (moduleInfo != null && !moduleInfo.IsActive)
+		{
+			moduleInfo.ActivateModule();
+		}
+	}
+
+	public static void InitializeModules(string[] loadedModuleIds, string[] platformModulePaths = null)
+	{
+		_loadedModules = new Dictionary<string, ModuleInfo>();
+		List<ModuleInfo> list = new List<ModuleInfo>();
+		List<ModuleInfo> physicalModules = GetPhysicalModules();
+		List<ModuleInfo> platformModules = GetPlatformModules(platformModulePaths);
+		list.AddRange(physicalModules);
+		list.AddRange(platformModules);
+		foreach (ModuleInfo item in list)
+		{
+			if (item.Name == "NavalDLC")
+			{
+				VirtualFolders.PlatformDLCPaths.Add("NavalDLC", item.FolderPath);
+			}
+		}
+		List<ModuleInfo> list2 = new List<ModuleInfo>();
+		foreach (string moduleId in loadedModuleIds)
+		{
+			ModuleInfo moduleInfo = list.Find((ModuleInfo x) => x.Id.ToLower().Equals(moduleId.ToLower()));
+			if (moduleInfo != null)
+			{
+				if (moduleInfo.IsOfficial)
+				{
+					list2.Add(moduleInfo);
+					moduleInfo.UpdateVersionChangeSet();
+				}
+				if (!_loadedModules.ContainsKey(moduleInfo.Id.ToLower()))
+				{
+					_loadedModules.Add(moduleInfo.Id.ToLower(), moduleInfo);
+				}
+			}
+		}
+		foreach (ModuleInfo value in _loadedModules.Values)
+		{
+			foreach (DependedModule dependedModule in value.DependedModules)
+			{
+				if (list2.Any((ModuleInfo m) => m.Id == dependedModule.ModuleId))
+				{
+					dependedModule.UpdateVersionChangeSet();
+				}
+			}
+		}
+	}
+
+	public static ModuleInfo InitializeSingleModule(string modulePath)
+	{
+		Debug.Print("###Trying to load Module:  " + modulePath);
+		ModuleInfo moduleInfo = new ModuleInfo();
+		try
+		{
+			moduleInfo.LoadWithFullPath(modulePath);
+		}
+		catch (Exception ex)
+		{
+			string lpText = string.Concat("Module " + modulePath + " can't be loaded, there are some errors exception follows:." + Environment.NewLine + ex.Message, ex.StackTrace);
+			string lpCaption = "ERROR";
+			Debug.ShowMessageBox(lpText, lpCaption, 4u);
+		}
+		if (moduleInfo.Name == "NavalDLC")
+		{
+			VirtualFolders.PlatformDLCPaths.Add("NavalDLC", moduleInfo.FolderPath);
+		}
+		if (!_loadedModules.ContainsKey(moduleInfo.Id.ToLower()))
+		{
+			_loadedModules.Add(moduleInfo.Id.ToLower(), moduleInfo);
+		}
+		return moduleInfo;
+	}
+
+	public static bool IsModuleActive(string moduleId)
+	{
+		bool result = false;
+		ModuleInfo moduleInfo = GetModuleInfo(moduleId);
+		if (moduleInfo != null)
+		{
+			result = moduleInfo.IsActive;
+		}
+		return result;
+	}
+
+	public static void InitializePlatformModuleExtension(IPlatformModuleExtension moduleExtension, List<string> args)
 	{
 		_platformModuleExtension = moduleExtension;
-		_platformModuleExtension.Initialize();
+		_platformModuleExtension.Initialize(args);
 	}
 
 	public static void ClearPlatformModuleExtension()
@@ -44,143 +153,51 @@ public static class ModuleHelper
 			_platformModuleExtension.Destroy();
 			_platformModuleExtension = null;
 		}
-		_allFoundModules = null;
 	}
 
-	private static void EnsureModuleInfosAreLoaded()
-	{
-		if (_allFoundModules == null)
-		{
-			GetModules();
-		}
-	}
-
-	private static IEnumerable<string> GetModulePaths(string directoryPath, int searchDepth)
-	{
-		string[] array;
-		if (searchDepth > 0)
-		{
-			string[] directories = Directory.GetDirectories(directoryPath);
-			array = directories;
-			foreach (string directoryPath2 in array)
-			{
-				foreach (string item in GetModulePaths(directoryPath2, searchDepth - 1).ToList())
-				{
-					yield return item;
-				}
-			}
-		}
-		string[] files = Directory.GetFiles(directoryPath, "SubModule.xml");
-		array = files;
-		for (int i = 0; i < array.Length; i++)
-		{
-			yield return array[i];
-		}
-	}
-
-	private static List<ModuleInfo> GetPhysicalModules()
+	public static List<ModuleInfo> GetModuleInfos(string[] moduleIds)
 	{
 		List<ModuleInfo> list = new List<ModuleInfo>();
-		string[] array = GetModulePaths(_pathPrefix, 1).ToArray();
-		foreach (string text in array)
+		for (int i = 0; i < moduleIds.Length; i++)
 		{
-			ModuleInfo moduleInfo = new ModuleInfo();
-			try
+			ModuleInfo moduleInfo = GetModuleInfo(moduleIds[i]);
+			if (moduleInfo != null)
 			{
-				string directoryName = Path.GetDirectoryName(text);
-				moduleInfo.LoadWithFullPath(directoryName);
 				list.Add(moduleInfo);
 			}
-			catch (Exception ex)
-			{
-				string lpText = "Module " + text + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex.Message;
-				string lpCaption = "ERROR";
-				Debug.ShowMessageBox(lpText, lpCaption, 4u);
-			}
 		}
 		return list;
 	}
 
-	private static List<ModuleInfo> GetPlatformModules()
+	public static List<ModuleInfo> GetModules(Func<ModuleInfo, bool> cond = null)
 	{
 		List<ModuleInfo> list = new List<ModuleInfo>();
-		if (_platformModuleExtension != null)
+		foreach (ModuleInfo value in _loadedModules.Values)
 		{
-			string[] modulePaths = _platformModuleExtension.GetModulePaths();
-			foreach (string text in modulePaths)
+			if (cond == null || cond(value))
 			{
-				ModuleInfo moduleInfo = new ModuleInfo();
-				try
-				{
-					moduleInfo.LoadWithFullPath(text);
-					list.Add(moduleInfo);
-				}
-				catch (Exception ex)
-				{
-					string lpText = "Module " + text + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex.Message;
-					string lpCaption = "ERROR";
-					Debug.ShowMessageBox(lpText, lpCaption, 4u);
-				}
+				list.Add(value);
 			}
 		}
 		return list;
 	}
 
-	public static List<ModuleInfo> GetModuleInfos(string[] moduleNames)
+	public static Dictionary<string, ModuleInfo>.ValueCollection GetAllModules()
 	{
-		List<ModuleInfo> list = new List<ModuleInfo>();
-		for (int i = 0; i < moduleNames.Length; i++)
-		{
-			ModuleInfo moduleInfo = GetModuleInfo(moduleNames[i]);
-			list.Add(moduleInfo);
-		}
-		return list;
+		return _loadedModules.Values;
 	}
 
-	public static IEnumerable<ModuleInfo> GetModules()
+	public static List<ModuleInfo> GetActiveModules()
 	{
-		if (_allFoundModules == null)
-		{
-			List<ModuleInfo> list = new List<ModuleInfo>();
-			List<ModuleInfo> physicalModules = GetPhysicalModules();
-			List<ModuleInfo> platformModules = GetPlatformModules();
-			list.AddRange(physicalModules);
-			list.AddRange(platformModules);
-			List<ModuleInfo> list2 = new List<ModuleInfo>();
-			_allFoundModules = new Dictionary<string, ModuleInfo>();
-			foreach (ModuleInfo item in list)
-			{
-				if (item.IsOfficial)
-				{
-					list2.Add(item);
-					item.UpdateVersionChangeSet();
-				}
-				if (!_allFoundModules.ContainsKey(item.Id.ToLower()))
-				{
-					_allFoundModules.Add(item.Id.ToLower(), item);
-				}
-			}
-			foreach (ModuleInfo item2 in list)
-			{
-				foreach (DependedModule dependedModule in item2.DependedModules)
-				{
-					if (list2.Any((ModuleInfo m) => m.Id == dependedModule.ModuleId))
-					{
-						dependedModule.UpdateVersionChangeSet();
-					}
-				}
-			}
-		}
-		return _allFoundModules.Select((KeyValuePair<string, ModuleInfo> m) => m.Value);
+		return GetModules((ModuleInfo x) => x.IsActive);
 	}
 
 	public static string GetMbprojPath(string id)
 	{
-		EnsureModuleInfosAreLoaded();
 		string key = id.ToLower();
-		if (_allFoundModules.ContainsKey(key))
+		if (_loadedModules.ContainsKey(key))
 		{
-			return _allFoundModules[key].FolderPath + "/ModuleData/project.mbproj";
+			return _loadedModules[key].FolderPath + "/ModuleData/project.mbproj";
 		}
 		return "";
 	}
@@ -216,6 +233,11 @@ public static class ModuleHelper
 		return GetModuleFullPath(moduleId) + "ModuleData/" + xmlName + ".xsl";
 	}
 
+	public static string GetXsdPathForModules(string moduleId, string xsdName)
+	{
+		return GetModuleFullPath(moduleId) + "ModuleData/XmlSchemas/" + xsdName + ".xsd";
+	}
+
 	public static string GetXsdPath(string xmlInfoId)
 	{
 		return BasePath.Name + "XmlSchemas/" + xmlInfoId + ".xsd";
@@ -249,5 +271,204 @@ public static class ModuleHelper
 			return list.ToList();
 		}
 		return result;
+	}
+
+	public static List<ModuleInfo> GetModulesForLauncher()
+	{
+		if (results == null)
+		{
+			results = new List<ModuleInfo>();
+			List<ModuleInfo> physicalModules = GetPhysicalModules();
+			List<ModuleInfo> platformModules = GetPlatformModules();
+			results.AddRange(physicalModules);
+			results.AddRange(platformModules);
+			List<ModuleInfo> list = new List<ModuleInfo>();
+			foreach (ModuleInfo result in results)
+			{
+				if (result.IsOfficial)
+				{
+					list.Add(result);
+					result.UpdateVersionChangeSet();
+				}
+			}
+			foreach (ModuleInfo result2 in results)
+			{
+				foreach (DependedModule dependedModule in result2.DependedModules)
+				{
+					if (list.Any((ModuleInfo m) => m.Id == dependedModule.ModuleId))
+					{
+						dependedModule.UpdateVersionChangeSet();
+					}
+				}
+			}
+		}
+		return results;
+	}
+
+	public static MBList<string> GetOfficialModuleIds()
+	{
+		return new MBList<string> { "Native", "Multiplayer", "SandBoxCore", "Sandbox", "CustomBattle", "StoryMode", "NavalDLC", "BirthAndDeath", "FastMode" };
+	}
+
+	private static List<ModuleInfo> GetPhysicalModules()
+	{
+		List<ModuleInfo> list = new List<ModuleInfo>();
+		string[] directories = Directory.GetDirectories(_pathPrefix);
+		foreach (string text in directories)
+		{
+			try
+			{
+				string path = Path.Combine(text, "SubModule.xml");
+				if (File.Exists(path))
+				{
+					ModuleInfo moduleInfo = new ModuleInfo();
+					string directoryName = Path.GetDirectoryName(path);
+					moduleInfo.LoadWithFullPath(directoryName);
+					if (!(moduleInfo.Name == "NavalDLC") || _platformModuleExtension == null || _platformModuleExtension.CheckEntitlement("Mount & Blade II: Bannerlord - War Sails"))
+					{
+						list.Add(moduleInfo);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				string lpText = "Module " + text + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex.Message;
+				string lpCaption = "ERROR";
+				Debug.ShowMessageBox(lpText, lpCaption, 4u);
+			}
+		}
+		return list;
+	}
+
+	public static MBList<Assembly> GetActiveGameAssemblies()
+	{
+		HashSet<Assembly> hashSet = new HashSet<Assembly>();
+		Queue<Assembly> queue = new Queue<Assembly>();
+		Dictionary<string, Assembly> dictionary = new Dictionary<string, Assembly>();
+		Assembly[] array;
+		try
+		{
+			array = AppDomain.CurrentDomain.GetAssemblies();
+		}
+		catch (Exception ex)
+		{
+			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.ModuleManager\\ModuleHelper.cs", "GetActiveGameAssemblies", 426);
+			array = new Assembly[0];
+		}
+		if (IsTestMode)
+		{
+			return array.ToMBList();
+		}
+		Assembly[] array2 = array;
+		foreach (Assembly assembly in array2)
+		{
+			foreach (ModuleInfo activeModule in GetActiveModules())
+			{
+				if (IsAssemblyDirectlyReferencedInModule(assembly, activeModule))
+				{
+					queue.Enqueue(assembly);
+				}
+			}
+			dictionary[assembly.GetName().Name] = assembly;
+		}
+		MBList<Assembly> mBList = new MBList<Assembly>();
+		while (queue.Count > 0)
+		{
+			Assembly assembly2 = queue.Dequeue();
+			if (!hashSet.Add(assembly2))
+			{
+				continue;
+			}
+			mBList.Add(assembly2);
+			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
+			foreach (AssemblyName assemblyName in referencedAssemblies)
+			{
+				if (dictionary.ContainsKey(assemblyName.Name))
+				{
+					Assembly assembly3 = dictionary[assemblyName.Name];
+					if (IsGameAssembly(assembly3))
+					{
+						queue.Enqueue(assembly3);
+					}
+				}
+			}
+		}
+		return mBList;
+	}
+
+	private static bool IsAssemblyDirectlyReferencedInModule(Assembly assembly, ModuleInfo moduleInfo)
+	{
+		string text = assembly.GetName().Name + ".dll";
+		foreach (SubModuleInfo subModule in moduleInfo.SubModules)
+		{
+			if (subModule.DLLName == text)
+			{
+				return true;
+			}
+			foreach (string assembly2 in subModule.Assemblies)
+			{
+				if (assembly2 == text)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static bool IsGameAssembly(Assembly assembly)
+	{
+		AssemblyName name = assembly.GetName();
+		if (!name.Name.StartsWith("System") && !name.Name.StartsWith("Microsoft") && !name.Name.StartsWith("mscorlib"))
+		{
+			return !name.Name.StartsWith("netstandard");
+		}
+		return false;
+	}
+
+	private static List<ModuleInfo> GetPlatformModules(string[] platformModulePaths = null)
+	{
+		List<ModuleInfo> list = new List<ModuleInfo>();
+		if (platformModulePaths != null)
+		{
+			Debug.Print("GetPlatformModules platformModulePaths != null");
+			string[] array = platformModulePaths;
+			foreach (string text in array)
+			{
+				ModuleInfo moduleInfo = new ModuleInfo();
+				try
+				{
+					moduleInfo.LoadWithFullPath(text);
+					Debug.Print("dir " + text);
+					list.Add(moduleInfo);
+				}
+				catch (Exception ex)
+				{
+					string lpText = "Module " + moduleInfo.Name + " with dir: " + text + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex.ToString();
+					string lpCaption = "ERROR";
+					Debug.ShowMessageBox(lpText, lpCaption, 4u);
+				}
+			}
+		}
+		if (_platformModuleExtension != null)
+		{
+			string[] array = _platformModuleExtension.GetModulePaths();
+			foreach (string text2 in array)
+			{
+				ModuleInfo moduleInfo2 = new ModuleInfo();
+				try
+				{
+					moduleInfo2.LoadWithFullPath(text2);
+					list.Add(moduleInfo2);
+				}
+				catch (Exception ex2)
+				{
+					string lpText2 = "Module " + moduleInfo2.Name + " with dir: " + text2 + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex2.ToString();
+					string lpCaption2 = "ERROR";
+					Debug.ShowMessageBox(lpText2, lpCaption2, 4u);
+				}
+			}
+		}
+		return list;
 	}
 }

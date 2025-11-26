@@ -46,8 +46,6 @@ public class LineFormation : IFormationArrangement
 
 	private readonly MBWorkspace<MBArrayList<Vec2i>> _finalOccupationsWorkspace;
 
-	private readonly MBWorkspace<MBArrayList<Vec2i>> _filledInUnitPositionsWorkspace;
-
 	private readonly MBWorkspace<MBQueue<Vec2i>> _toBeFilledInGapsWorkspace;
 
 	private readonly MBWorkspace<MBArrayList<Vec2i>> _finalVacanciesWorkspace;
@@ -55,6 +53,8 @@ public class LineFormation : IFormationArrangement
 	private readonly MBWorkspace<MBArrayList<Vec2i>> _filledInGapsWorkspace;
 
 	private readonly MBWorkspace<MBArrayList<Vec2i>> _toBeEmptiedOutUnitPositionsWorkspace;
+
+	private MBArrayList<bool> _filledInUnitPositionsTable;
 
 	private MBArrayList<Vec2i> _cachedOrderedUnitPositionIndices;
 
@@ -84,7 +84,11 @@ public class LineFormation : IFormationArrangement
 
 	protected float Interval => owner.Interval;
 
+	public virtual float IntervalMultiplier => 1f;
+
 	protected float Distance => owner.Distance;
+
+	public virtual float DistanceMultiplier => 1f;
 
 	protected float UnitDiameter => owner.UnitDiameter;
 
@@ -177,6 +181,8 @@ public class LineFormation : IFormationArrangement
 
 	public virtual bool? IsLoose => null;
 
+	public bool PostponeReconstructUnitsFromUnits2D { get; set; }
+
 	public int UnitCount => GetAllUnits().Count;
 
 	public int PositionedUnitCount => UnitCount - _unpositionedUnits.Count;
@@ -211,11 +217,11 @@ public class LineFormation : IFormationArrangement
 		_unpositionedUnits = new MBList<IFormationUnit>();
 		_displacedUnitsWorkspace = new MBWorkspace<MBQueue<(IFormationUnit, int, int)>>();
 		_finalOccupationsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
-		_filledInUnitPositionsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
 		_toBeFilledInGapsWorkspace = new MBWorkspace<MBQueue<Vec2i>>();
 		_finalVacanciesWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
 		_filledInGapsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
 		_toBeEmptiedOutUnitPositionsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
+		_filledInUnitPositionsTable = new MBArrayList<bool>();
 		ReconstructUnitsFromUnits2D();
 		this.OnShapeChanged?.Invoke();
 	}
@@ -411,15 +417,17 @@ public class LineFormation : IFormationArrangement
 	private IFormationUnit GetLastUnit()
 	{
 		int num = -1;
+		int num2 = -1;
 		IFormationUnit result = null;
 		foreach (IFormationUnit allUnit in _allUnits)
 		{
 			int formationFileIndex = allUnit.FormationFileIndex;
 			int formationRankIndex = allUnit.FormationRankIndex;
-			int num2 = formationFileIndex + formationRankIndex;
-			if (num2 > num)
+			int num3 = formationFileIndex + formationRankIndex;
+			if (formationRankIndex > num2 || num3 > num)
 			{
-				num = num2;
+				num = num3;
+				num2 = formationRankIndex;
 				result = allUnit;
 			}
 		}
@@ -572,22 +580,21 @@ public class LineFormation : IFormationArrangement
 		}
 		if (flag)
 		{
-			if (FileCount < MinimumFileCount)
+			if (!(this is TransposedLineFormation) && FileCount < MinimumFileCount)
 			{
 				WidenFormation(this, MinimumFileCount - FileCount);
 			}
 			this.OnShapeChanged?.Invoke();
-			if (unit is Agent)
+			if (unit is Agent { HasMount: var hasMount })
 			{
-				bool hasMount = (unit as Agent).HasMount;
-				if ((owner is Formation && (owner as Formation).CalculateHasSignificantNumberOfMounted) != _isCavalry)
+				if ((owner is Formation formation && formation.CalculateHasSignificantNumberOfMounted) != _isCavalry)
 				{
 					BatchUnitPositionAvailabilities();
 				}
 				else if (_isCavalry != hasMount && owner is Formation)
 				{
-					(owner as Formation).QuerySystem.ForceExpireCavalryUnitRatio();
-					if ((owner as Formation).CalculateHasSignificantNumberOfMounted != _isCavalry)
+					((Formation)owner).QuerySystem.ForceExpireCavalryUnitRatio();
+					if (((Formation)owner).CalculateHasSignificantNumberOfMounted != _isCavalry)
 					{
 						BatchUnitPositionAvailabilities();
 					}
@@ -938,24 +945,32 @@ public class LineFormation : IFormationArrangement
 	protected virtual Vec2 GetLocalPositionOfUnit(int fileIndex, int rankIndex)
 	{
 		float num = (float)(FileCount - 1) * (Interval + UnitDiameter);
-		Vec2 result = new Vec2((float)fileIndex * (Interval + UnitDiameter) - num / 2f, (float)(-rankIndex) * (Distance + UnitDiameter));
+		Vec2 vec = new Vec2((float)fileIndex * (Interval + UnitDiameter) - num / 2f, (float)(-rankIndex) * (Distance + UnitDiameter));
 		if (IsStaggered && rankIndex % 2 == 1)
 		{
-			result.x += (Interval + UnitDiameter) * 0.5f;
+			vec.x += (Interval + UnitDiameter) * 0.5f;
 		}
-		return result;
+		if ((owner as Formation).Team != null && _units2D[fileIndex, rankIndex] != null)
+		{
+			return vec + (_units2D[fileIndex, rankIndex] as Agent).LocalPositionError;
+		}
+		return vec;
 	}
 
 	protected virtual Vec2 GetLocalPositionOfUnitWithAdjustment(int fileIndex, int rankIndex, float distanceBetweenAgentsAdjustment)
 	{
 		float num = Interval + distanceBetweenAgentsAdjustment;
 		float num2 = (float)(FileCount - 1) * (num + UnitDiameter);
-		Vec2 result = new Vec2((float)fileIndex * (num + UnitDiameter) - num2 / 2f, (float)(-rankIndex) * (Distance + UnitDiameter));
+		Vec2 vec = new Vec2((float)fileIndex * (num + UnitDiameter) - num2 / 2f, (float)(-rankIndex) * (Distance + UnitDiameter));
 		if (IsStaggered && rankIndex % 2 == 1)
 		{
-			result.x += (num + UnitDiameter) * 0.5f;
+			vec.x += (num + UnitDiameter) * 0.5f;
 		}
-		return result;
+		if ((owner as Formation).Team != null && _units2D[fileIndex, rankIndex] != null)
+		{
+			return vec + (_units2D[fileIndex, rankIndex] as Agent).LocalPositionError;
+		}
+		return vec;
 	}
 
 	protected virtual Vec2 GetLocalDirectionOfUnit(int fileIndex, int rankIndex)
@@ -997,6 +1012,10 @@ public class LineFormation : IFormationArrangement
 
 	private void ReconstructUnitsFromUnits2D()
 	{
+		if (PostponeReconstructUnitsFromUnits2D)
+		{
+			return;
+		}
 		if (_allUnits == null)
 		{
 			_allUnits = new MBList<IFormationUnit>();
@@ -1362,6 +1381,7 @@ public class LineFormation : IFormationArrangement
 
 	private static void ShiftUnitsBackwardsForNarrowingFormation(LineFormation formation, int fileCountFromLeftFlank, int fileCountFromRightFlank)
 	{
+		formation.PostponeReconstructUnitsFromUnits2D = true;
 		MBQueue<(IFormationUnit, int, int)> mBQueue = formation._displacedUnitsWorkspace.StartUsingWorkspace();
 		foreach (Vec2i item in (from p in formation.GetOrderedUnitPositionIndices()
 			where p.Item1 < fileCountFromLeftFlank || p.Item1 >= formation.FileCount - fileCountFromRightFlank
@@ -1383,11 +1403,13 @@ public class LineFormation : IFormationArrangement
 		ShiftUnitsBackwardsAux(formation, mBQueue, mBArrayList);
 		formation._displacedUnitsWorkspace.StopUsingWorkspace();
 		formation._finalOccupationsWorkspace.StopUsingWorkspace();
+		formation.PostponeReconstructUnitsFromUnits2D = false;
+		formation.ReconstructUnitsFromUnits2D();
 	}
 
 	private static void ShiftUnitsBackwardsAux(LineFormation formation, MBQueue<(IFormationUnit, int, int)> displacedUnits, MBArrayList<Vec2i> finalOccupations)
 	{
-		MBArrayList<Vec2i> mBArrayList = formation._filledInUnitPositionsWorkspace.StartUsingWorkspace();
+		MBArrayList<bool> mBArrayList = (formation._filledInUnitPositionsTable = new MBArrayList<bool>(new bool[formation.FileCount * formation.RankCount]));
 		if (formation._shiftUnitsBackwardsPredicateDelegate == null)
 		{
 			formation._shiftUnitsBackwardsPredicateDelegate = ShiftUnitsBackwardsPredicate;
@@ -1407,7 +1429,7 @@ public class LineFormation : IFormationArrangement
 					formation.RemoveUnit(formationUnit, fillInTheGap: false);
 					displacedUnits.Enqueue(ValueTuple.Create(formationUnit, unitPositionForFillInFromNearby.Item1, unitPositionForFillInFromNearby.Item2));
 				}
-				mBArrayList.Add(unitPositionForFillInFromNearby);
+				mBArrayList[unitPositionForFillInFromNearby.Item1 + unitPositionForFillInFromNearby.Item2 * formation.FileCount] = true;
 				formation.InsertUnit(item, unitPositionForFillInFromNearby.Item1, unitPositionForFillInFromNearby.Item2);
 				continue;
 			}
@@ -1415,7 +1437,7 @@ public class LineFormation : IFormationArrangement
 			Vec2i vec2i = InvalidPositionIndex;
 			for (int i = 0; i < finalOccupations.Count; i++)
 			{
-				if (mBArrayList.IndexOf(finalOccupations[i]) < 0)
+				if (!mBArrayList[finalOccupations[i].Item1 + finalOccupations[i].Item2 * formation.FileCount])
 				{
 					float num2 = TaleWorlds.Library.MathF.Abs(finalOccupations[i].Item1 - item2) + TaleWorlds.Library.MathF.Abs(finalOccupations[i].Item2 - item3);
 					if (num2 < num)
@@ -1427,7 +1449,7 @@ public class LineFormation : IFormationArrangement
 			}
 			if (vec2i != InvalidPositionIndex)
 			{
-				mBArrayList.Add(vec2i);
+				mBArrayList[vec2i.Item1 + vec2i.Item2 * formation.FileCount] = true;
 				formation.InsertUnit(item, vec2i.Item1, vec2i.Item2);
 			}
 			else
@@ -1436,13 +1458,12 @@ public class LineFormation : IFormationArrangement
 				formation.ReconstructUnitsFromUnits2D();
 			}
 		}
-		formation._filledInUnitPositionsWorkspace.StopUsingWorkspace();
 		static bool ShiftUnitsBackwardsPredicate(LineFormation localFormation, int fileIndex, int rankIndex)
 		{
-			Vec2i item4 = new Vec2i(fileIndex, rankIndex);
-			if (localFormation._units2D[fileIndex, rankIndex] != null || localFormation._finalOccupationsWorkspace.GetWorkspace().IndexOf(item4) >= 0)
+			Vec2i vec2i2 = new Vec2i(fileIndex, rankIndex);
+			if (!localFormation._filledInUnitPositionsTable[vec2i2.Item1 + vec2i2.Item2 * localFormation.FileCount])
 			{
-				return !localFormation._filledInUnitPositionsWorkspace.GetWorkspace().Contains(item4);
+				return localFormation._units2D[fileIndex, rankIndex] != null;
 			}
 			return false;
 		}
@@ -1972,7 +1993,7 @@ public class LineFormation : IFormationArrangement
 				return formation._units2D[fileIndexOfRightFlank, num];
 			}
 		}
-		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3161);
+		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3186);
 		return null;
 	}
 
@@ -1994,6 +2015,12 @@ public class LineFormation : IFormationArrangement
 	public MBReadOnlyList<IFormationUnit> GetAllUnits()
 	{
 		return _allUnits;
+	}
+
+	public void GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn)
+	{
+		allUnitsListToBeFilledIn.Clear();
+		allUnitsListToBeFilledIn.AddRange(_allUnits);
 	}
 
 	public MBList<IFormationUnit> GetUnpositionedUnits()
@@ -2121,7 +2148,6 @@ public class LineFormation : IFormationArrangement
 		firstUnit.FormationRankIndex = formationRankIndex2;
 		secondUnit.FormationFileIndex = formationFileIndex;
 		secondUnit.FormationRankIndex = formationRankIndex;
-		this.OnShapeChanged?.Invoke();
 	}
 
 	public void SwitchUnitLocationsWithBackMostUnit(IFormationUnit unit)
@@ -2170,6 +2196,10 @@ public class LineFormation : IFormationArrangement
 				}
 			}
 		}
+		else
+		{
+			(owner as Formation).SetHasPendingUnitPositions(hasPendingUnitPositions: true);
+		}
 		if (areLocalPositionsDirty)
 		{
 			_cachedOrderedAndAvailableUnitPositionIndices.Clear();
@@ -2185,10 +2215,10 @@ public class LineFormation : IFormationArrangement
 		_isCavalry = owner is Formation formation && formation.CalculateHasSignificantNumberOfMounted;
 	}
 
-	public void OnFormationFrameChanged()
+	public void OnFormationFrameChanged(bool updateCachedOrderedLocalPositions = false)
 	{
 		UnitPositionAvailabilities.Clear();
-		BatchUnitPositionAvailabilities(isUpdatingCachedOrderedLocalPositions: false);
+		BatchUnitPositionAvailabilities(updateCachedOrderedLocalPositions);
 		bool flag = ShiftUnitsBackwardsForNewUnavailableUnitPositions(this);
 		for (int i = 0; i < FileCount; i++)
 		{
@@ -2250,6 +2280,18 @@ public class LineFormation : IFormationArrangement
 			}
 		}
 		return result;
+	}
+
+	public void UpdateLocalPositionErrors(bool recalculateErrors)
+	{
+		if (recalculateErrors)
+		{
+			(owner as Formation).ApplyActionOnEachUnit(delegate(Agent agent)
+			{
+				agent.UpdateLocalPositionError();
+			});
+		}
+		OnFormationFrameChanged(updateCachedOrderedLocalPositions: true);
 	}
 
 	[Conditional("DEBUG")]
@@ -2439,7 +2481,7 @@ public class LineFormation : IFormationArrangement
 
 	public virtual void RearrangeTransferUnits(IFormationArrangement arrangement)
 	{
-		if (arrangement is LineFormation lineFormation)
+		if (arrangement is LineFormation lineFormation && !(arrangement is TransposedLineFormation))
 		{
 			lineFormation._units2D = _units2D;
 			lineFormation._allUnits = _allUnits;
@@ -2553,5 +2595,10 @@ public class LineFormation : IFormationArrangement
 	public WorldPosition GetGlobalPositionAtIndex(int indexX, int indexY)
 	{
 		return _globalPositions[indexX, indexY];
+	}
+
+	void IFormationArrangement.GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn)
+	{
+		GetAllUnits(in allUnitsListToBeFilledIn);
 	}
 }

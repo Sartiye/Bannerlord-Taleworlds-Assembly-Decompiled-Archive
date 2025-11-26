@@ -11,8 +11,6 @@ public class InputRestrictions
 
 	public bool MouseVisibility { get; private set; }
 
-	public bool CanOverrideFocusOnHit { get; private set; }
-
 	public InputUsageMask InputUsageMask { get; private set; }
 
 	public InputRestrictions(int order)
@@ -37,10 +35,5 @@ public class InputRestrictions
 	{
 		InputUsageMask = InputUsageMask.Invalid;
 		SetMouseVisibility(isVisible: false);
-	}
-
-	public void SetCanOverrideFocusOnHit(bool canOverrideFocusOnHit)
-	{
-		CanOverrideFocusOnHit = canOverrideFocusOnHit;
 	}
 }

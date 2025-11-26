@@ -28,7 +28,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=CrzFdo2H}Yes. It's about the war with the {ENEMYFACTION_INFORMALNAME}. [ib:hip][if:convo_excited]We need to tie up some of their forces. A relatively small force moving quickly through their lands and raiding their villages should be a good distraction. Their lords will need to chase the raiders and won't be able to threaten us elsewhere. You seem to be the right {?PLAYER.GENDER}warrior{?}man{\\?} for the job. What do you say? You'll have my gratitude and you'll be well rewarded if you succeed.");
+				TextObject textObject = new TextObject("{=CrzFdo2H}Yes. It's about the war with the {ENEMYFACTION_INFORMALNAME}. [ib:hip][if:convo_excited]We need to tie up some of their forces. A relatively small force moving quickly through their lands and raiding their villages succesfully should be a good distraction. Their lords will need to chase the raiders and won't be able to threaten us elsewhere. You seem to be the right {?PLAYER.GENDER}warrior{?}man{\\?} for the job. What do you say? You'll have my gratitude and you'll be well rewarded if you succeed.");
 				if (base.IssueOwner.GetTraitLevel(DefaultTraits.Mercy) + base.IssueOwner.GetTraitLevel(DefaultTraits.Honor) >= 0)
 				{
 					textObject = new TextObject("{=OlIWwLbP}Yes. It's about the war with the {ENEMYFACTION_INFORMALNAME}. [ib:closed][if:convo_pondering]We need to tie up some of their forces, and the easiest way to do that would be to raid their villages. It's a cruel business and will be hard on the common folk, but their lords will need to chase the raiders and it will prevent them from doing the same to us. If you take this on, I shall reward you if you succeed.");
@@ -198,11 +198,11 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _questAcceptedByPlayerLog
+		private TextObject QuestAcceptedByPlayerLog
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=sYfvsMwN}{QUEST_GIVER.LINK} asked you to raid {NUMBER_OF_TARGET_VILLAGE} {ENEMYFACTION_INFORMALNAME} villages to distract their lords and weaken their armies. {?QUEST_GIVER.GENDER}She{?}He{\\?} offers {REWARD_GOLD}{GOLD_ICON} to thank you for your deeds.");
+				TextObject textObject = new TextObject("{=sYfvsMwN}{QUEST_GIVER.LINK} asked you to successfully raid {NUMBER_OF_TARGET_VILLAGE} {ENEMYFACTION_INFORMALNAME} villages to distract their lords and weaken their armies. {?QUEST_GIVER.GENDER}She{?}He{\\?} offers {REWARD_GOLD}{GOLD_ICON} to thank you for your deeds.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("NUMBER_OF_TARGET_VILLAGE", 3);
 				textObject.SetTextVariable("ENEMYFACTION_INFORMALNAME", _enemyKingdom.InformalName);
@@ -213,19 +213,20 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _mainHeroRaidedAllVillagesLog => new TextObject("{=gMvDCnlx}You have successfully raided enemy villages and distracted enemy forces as promised.");
+		private TextObject MainHeroRaidedAllVillagesLog => new TextObject("{=gMvDCnlx}You have successfully raided enemy villages and distracted enemy forces as promised.");
 
-		private TextObject _mainHeroCouldNotRaidedAllVillagesLog
+		private TextObject MainHeroCouldNotRaidedAllVillagesLog
 		{
 			get
 			{
 				TextObject textObject = new TextObject("{=nRkLFBMl}You failed to raid at least {NUMBER_OF_TARGET_VILLAGE} villages and then report back. {QUEST_GIVER.LINK} is disappointed.");
+				textObject.SetTextVariable("NUMBER_OF_TARGET_VILLAGE", 3);
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				return textObject;
 			}
 		}
 
-		private TextObject _questGiverDiedLog
+		private TextObject QuestGiverDiedLog
 		{
 			get
 			{
@@ -235,7 +236,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _enemyIsOutOfVillagesLog
+		private TextObject EnemyIsOutOfVillagesLog
 		{
 			get
 			{
@@ -245,7 +246,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _declaredWarOnQuestGiverFactionLog
+		private TextObject DeclaredWarOnQuestGiverFactionLog
 		{
 			get
 			{
@@ -255,7 +256,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -265,7 +266,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _declaredPeaceBetweenQuestGiverAndEnemyFactionsLog
+		private TextObject DeclaredPeaceBetweenQuestGiverAndEnemyFactionsLog
 		{
 			get
 			{
@@ -276,7 +277,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _factionLeftLog
+		private TextObject FactionLeftLog
 		{
 			get
 			{
@@ -349,6 +350,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 		{
 			if (_raidedVillages.Count >= 3)
 			{
+				ApplyQuestSuccessConsequences();
 				completeWithSuccess = true;
 			}
 		}
@@ -356,7 +358,6 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 		protected override void RegisterEvents()
 		{
 			base.RegisterEvents();
-			CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
 			CampaignEvents.RaidCompletedEvent.AddNonSerializedListener(this, OnRaidCompleted);
 			CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
 			CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
@@ -373,7 +374,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private void DailyTick()
+		protected override void DailyTick()
 		{
 			if (base.QuestDueTime.IsPast && _raidedVillages.Count >= 3)
 			{
@@ -384,7 +385,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 		private void OnRaidCompleted(BattleSideEnum winnerSide, RaidEventComponent raidEvent)
 		{
 			MapEvent mapEvent = raidEvent.MapEvent;
-			if (mapEvent.IsRaid && mapEvent.IsPlayerMapEvent && mapEvent.MapEventSettlement.IsVillage && mapEvent.PlayerSide == winnerSide && !_raidedVillages.Contains(mapEvent.MapEventSettlement))
+			if (mapEvent.IsRaid && mapEvent.IsPlayerMapEvent && mapEvent.MapEventSettlement.IsVillage && mapEvent.PlayerSide == winnerSide && raidEvent.MapEventSettlement.SettlementHitPoints == 0f && !_raidedVillages.Contains(mapEvent.MapEventSettlement))
 			{
 				_raidedVillages.Add(mapEvent.MapEventSettlement);
 				_raidedVillagesTrackLog.UpdateCurrentProgress(_raidedVillages.Count);
@@ -433,7 +434,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			{
 				if (_raidedVillages.Count < 3)
 				{
-					QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _declaredWarOnQuestGiverFactionLog);
+					QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, DeclaredWarOnQuestGiverFactionLog);
 				}
 				else
 				{
@@ -488,7 +489,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedByPlayerConsequences()
 		{
 			StartQuest();
-			_raidedVillagesTrackLog = AddDiscreteLog(_questAcceptedByPlayerLog, new TextObject("{=RFH1lDMj}Raided Village Count"), 0, 3);
+			_raidedVillagesTrackLog = AddDiscreteLog(QuestAcceptedByPlayerLog, new TextObject("{=RFH1lDMj}Raided Village Count"), 0, 3);
 		}
 
 		private bool DiscussCondition()
@@ -504,7 +505,13 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 
 		private void MainHeroRaidedAllVillages()
 		{
-			AddLog(_mainHeroRaidedAllVillagesLog);
+			ApplyQuestSuccessConsequences();
+			CompleteQuestWithSuccess();
+		}
+
+		private void ApplyQuestSuccessConsequences()
+		{
+			AddLog(MainHeroRaidedAllVillagesLog);
 			Clan.PlayerClan.AddRenown(5f);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(Hero.MainHero, new Tuple<TraitObject, int>[1]
 			{
@@ -518,12 +525,11 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 				int amount = (_raidedVillages.Count - 3) * 3000;
 				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, amount);
 			}
-			CompleteQuestWithSuccess();
 		}
 
 		private void MainHeroCouldNotRaidedAllVillages()
 		{
-			AddLog(_mainHeroCouldNotRaidedAllVillagesLog);
+			AddLog(MainHeroCouldNotRaidedAllVillagesLog);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(Hero.MainHero, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -10)
@@ -533,25 +539,25 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 
 		private void QuestGiverDied()
 		{
-			AddLog(_questGiverDiedLog);
+			AddLog(QuestGiverDiedLog);
 			CompleteQuestWithCancel();
 		}
 
 		private void EnemyIsOutOfVillages()
 		{
-			AddLog(_enemyIsOutOfVillagesLog);
+			AddLog(EnemyIsOutOfVillagesLog);
 			CompleteQuestWithCancel();
 		}
 
 		private void DeclaredPeaceBetweenQuestGiverAndEnemyFactions()
 		{
-			AddLog(_declaredPeaceBetweenQuestGiverAndEnemyFactionsLog);
+			AddLog(DeclaredPeaceBetweenQuestGiverAndEnemyFactionsLog);
 			CompleteQuestWithCancel();
 		}
 
 		private void FactionLeft()
 		{
-			AddLog(_factionLeftLog);
+			AddLog(FactionLeftLog);
 			CompleteQuestWithCancel();
 		}
 	}

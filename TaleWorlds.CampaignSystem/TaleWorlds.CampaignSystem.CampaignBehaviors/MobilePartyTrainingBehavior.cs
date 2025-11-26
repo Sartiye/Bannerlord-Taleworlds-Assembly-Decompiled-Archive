@@ -46,10 +46,10 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 			ExplainedNumber effectiveDailyExperience = Campaign.Current.Models.PartyTrainingModel.GetEffectiveDailyExperience(mobileParty, item);
 			if (!item.Character.IsHero)
 			{
-				mobileParty.Party.MemberRoster.AddXpToTroop(MathF.Round(effectiveDailyExperience.ResultNumber * (float)item.Number), item.Character);
+				mobileParty.Party.MemberRoster.AddXpToTroop(item.Character, MathF.Round(effectiveDailyExperience.ResultNumber * (float)item.Number));
 			}
 		}
-		if (!mobileParty.HasPerk(DefaultPerks.Bow.Trainer) || mobileParty.IsDisbanding)
+		if (mobileParty.IsDisbanding || !mobileParty.HasPerk(DefaultPerks.Bow.Trainer))
 		{
 			return;
 		}
@@ -72,7 +72,7 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 
 	private void CheckScouting(MobileParty mobileParty)
 	{
-		if (mobileParty.EffectiveScout != null && mobileParty.IsMoving)
+		if (mobileParty.EffectiveScout != null)
 		{
 			TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(mobileParty.CurrentNavigationFace);
 			if (mobileParty != MobileParty.MainParty)
@@ -103,13 +103,17 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 			{
 				if (item.Character.IsHero)
 				{
-					if (item.Character.Equipment.Horse.IsEmpty)
+					if (mobileParty.IsCurrentlyAtSea)
 					{
-						SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject, mobileParty.Speed);
+						SkillLevelingManager.OnTravelOnWater(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+					}
+					else if (item.Character.Equipment.Horse.IsEmpty)
+					{
+						SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
 					}
 					else
 					{
-						SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject, mobileParty.Speed);
+						SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
 					}
 				}
 			}
@@ -117,13 +121,17 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 		}
 		if (mobileParty.LeaderHero != null)
 		{
-			if (mobileParty.LeaderHero.CharacterObject.Equipment.Horse.IsEmpty)
+			if (mobileParty.IsCurrentlyAtSea)
 			{
-				SkillLevelingManager.OnTravelOnFoot(mobileParty.LeaderHero, mobileParty.Speed);
+				SkillLevelingManager.OnTravelOnWater(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
+			}
+			else if (mobileParty.LeaderHero.CharacterObject.Equipment.Horse.IsEmpty)
+			{
+				SkillLevelingManager.OnTravelOnFoot(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
 			}
 			else
 			{
-				SkillLevelingManager.OnTravelOnHorse(mobileParty.LeaderHero, mobileParty.Speed);
+				SkillLevelingManager.OnTravelOnHorse(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
 			}
 		}
 	}

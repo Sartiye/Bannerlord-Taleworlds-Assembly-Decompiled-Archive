@@ -13,7 +13,19 @@ public static class CustomGameBannedPlayerManager
 		public int BanDueTime { get; set; }
 	}
 
-	private static Dictionary<PlayerId, BannedPlayer> _bannedPlayers = new Dictionary<PlayerId, BannedPlayer>();
+	private static Dictionary<PlayerId, BannedPlayer> _bannedPlayersInternal;
+
+	private static Dictionary<PlayerId, BannedPlayer> _bannedPlayers
+	{
+		get
+		{
+			if (_bannedPlayersInternal == null)
+			{
+				_bannedPlayersInternal = new Dictionary<PlayerId, BannedPlayer>();
+			}
+			return _bannedPlayersInternal;
+		}
+	}
 
 	public static void AddBannedPlayer(PlayerId playerId, int banDueTime)
 	{

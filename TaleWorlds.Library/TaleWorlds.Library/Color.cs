@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Numerics;
 
@@ -125,6 +126,55 @@ public struct Color
 		float green = (float)(int)b2 * 0.003921569f;
 		float blue = (float)(int)b3 * 0.003921569f;
 		return new Color(red, green, blue, alpha);
+	}
+
+	public static Color FromHSV(float h, float s, float v)
+	{
+		float red = v;
+		float green = v;
+		float blue = v;
+		if (s != 0f)
+		{
+			float num = h * 6f;
+			int num2 = (int)Math.Floor(num);
+			float num3 = v * (1f - s);
+			float num4 = v * (1f - s * (num - (float)num2));
+			float num5 = v * (1f - s * (1f - (num - (float)num2)));
+			switch (num2)
+			{
+			case 0:
+				red = v;
+				green = num5;
+				blue = num3;
+				break;
+			case 1:
+				red = num4;
+				green = v;
+				blue = num3;
+				break;
+			case 2:
+				red = num3;
+				green = v;
+				blue = num5;
+				break;
+			case 3:
+				red = num3;
+				green = num4;
+				blue = v;
+				break;
+			case 4:
+				red = num5;
+				green = num3;
+				blue = v;
+				break;
+			default:
+				red = v;
+				green = num3;
+				blue = num4;
+				break;
+			}
+		}
+		return new Color(red, green, blue);
 	}
 
 	public static Color ConvertStringToColor(string color)

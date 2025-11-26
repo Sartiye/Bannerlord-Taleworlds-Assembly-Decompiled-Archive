@@ -74,7 +74,7 @@ public class TooltipWidget : Widget
 
 	protected override void OnLateUpdate(float dt)
 	{
-		base.OnUpdate(dt);
+		base.OnLateUpdate(dt);
 		if (_animationState == AnimationState.NotStarted)
 		{
 			if (_animationDelayTimerInFrames >= _animationDelayInFrames)
@@ -84,7 +84,7 @@ public class TooltipWidget : Widget
 			else
 			{
 				_animationDelayTimerInFrames++;
-				SetAlpha(0f);
+				this.SetGlobalAlphaRecursively(0f);
 			}
 		}
 		if (_animationState == AnimationState.NotStarted)
@@ -94,22 +94,14 @@ public class TooltipWidget : Widget
 		if (_animationState == AnimationState.InProgress)
 		{
 			_animationProgress += ((AnimTime < 1E-05f) ? 1f : (dt / AnimTime));
-			SetAlpha(_animationProgress);
+			_animationProgress = MathF.Clamp(_animationProgress, 0f, 1f);
+			this.SetGlobalAlphaRecursively(_animationProgress);
 			if (_animationProgress >= 1f)
 			{
 				_animationState = AnimationState.Finished;
 			}
 		}
 		UpdatePosition();
-	}
-
-	private void SetAlpha(float alpha)
-	{
-		base.AlphaFactor = alpha;
-		foreach (Widget child in base.Children)
-		{
-			child.UpdateAnimationPropertiesSubTask(base.AlphaFactor);
-		}
 	}
 
 	private void UpdatePosition()
@@ -218,5 +210,6 @@ public class TooltipWidget : Widget
 		_animationState = AnimationState.NotStarted;
 		_animationProgress = 0f;
 		_animationDelayTimerInFrames = 0;
+		this.SetGlobalAlphaRecursively(0f);
 	}
 }

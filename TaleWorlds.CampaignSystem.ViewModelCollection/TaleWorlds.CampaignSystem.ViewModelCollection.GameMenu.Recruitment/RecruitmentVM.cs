@@ -833,7 +833,7 @@ public class RecruitmentVM : ViewModel
 			num2 = TaleWorlds.Library.MathF.Round(explainedNumber.ResultNumber, 1) - TaleWorlds.Library.MathF.Round(explainedNumber2.ResultNumber, 1);
 		}
 		PartySpeedText = MobileParty.MainParty.Speed.ToString("0.0");
-		PartySpeedHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartySpeedTooltip());
+		PartySpeedHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartySpeedTooltip(considerArmySpeed: false));
 		if (num2 != 0.0)
 		{
 			PartySpeedText = CampaignUIHelper.GetValueChangeText(MobileParty.MainParty.Speed, (float)num2, "0.0");
@@ -885,7 +885,7 @@ public class RecruitmentVM : ViewModel
 		int num = TroopsInCart.Sum((RecruitVolunteerTroopVM t) => t.Cost);
 		if (num > Hero.MainHero.Gold)
 		{
-			Debug.FailedAssert("Execution shouldn't come here. The checks should happen before", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Recruitment\\RecruitmentVM.cs", "OnDone", 229);
+			Debug.FailedAssert("Execution shouldn't come here. The checks should happen before", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Recruitment\\RecruitmentVM.cs", "OnDone", 229);
 			return;
 		}
 		foreach (RecruitVolunteerTroopVM item in TroopsInCart)

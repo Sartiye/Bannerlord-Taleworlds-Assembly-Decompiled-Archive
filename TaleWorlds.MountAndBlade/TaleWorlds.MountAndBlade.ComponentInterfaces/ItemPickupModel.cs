@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class ItemPickupModel : GameModel
+public abstract class ItemPickupModel : MBGameModel<ItemPickupModel>
 {
 	public abstract float GetItemScoreForAgent(SpawnedItemEntity item, Agent agent);
 

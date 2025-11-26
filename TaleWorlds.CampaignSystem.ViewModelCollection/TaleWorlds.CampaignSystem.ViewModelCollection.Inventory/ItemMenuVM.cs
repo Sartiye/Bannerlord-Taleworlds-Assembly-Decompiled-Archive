@@ -11,6 +11,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -44,7 +45,7 @@ public class ItemMenuVM : ViewModel
 
 	private readonly TextObject _thrustDamageText = GameTexts.FindText("str_thrust_damage");
 
-	private readonly TextObject _lengthText = new TextObject("{=c6e4c8588ca9e42f6e1b47b11f0f367b}Length: ");
+	private readonly TextObject _lengthText = GameTexts.FindText("str_crafting_stat", "WeaponReach");
 
 	private readonly TextObject _weightText = GameTexts.FindText("str_weight_text");
 
@@ -84,6 +85,8 @@ public class ItemMenuVM : ViewModel
 
 	private readonly TextObject _armArmorText = new TextObject("{=cf61cce254c7dca65be9bebac7fb9bf5}Arm Armor: ");
 
+	private readonly TextObject _stealthBonusText = new TextObject("{=YJkAqExw}Stealth Bonus: ");
+
 	private readonly TextObject _bannerEffectText = new TextObject("{=DbXZjPdf}Banner Effect: ");
 
 	private readonly TextObject _noneText = new TextObject("{=koX9okuG}None");
@@ -104,9 +107,13 @@ public class ItemMenuVM : ViewModel
 
 	private readonly Func<EquipmentIndex, SPItemVM> _getEquipmentAtIndex;
 
+	private int _lastComparedItemVersion;
+
 	private ItemVM _targetItem;
 
 	private bool _isComparing;
+
+	private bool _isStealthModeActive;
 
 	private ItemVM _comparedItem;
 
@@ -114,9 +121,9 @@ public class ItemMenuVM : ViewModel
 
 	private BasicCharacterObject _character;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private ItemImageIdentifierVM _imageIdentifier;
 
-	private ImageIdentifierVM _comparedImageIdentifier;
+	private ItemImageIdentifierVM _comparedImageIdentifier;
 
 	private string _itemName;
 
@@ -175,7 +182,7 @@ public class ItemMenuVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public ItemImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -192,7 +199,7 @@ public class ItemMenuVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ComparedImageIdentifier
+	public ItemImageIdentifierVM ComparedImageIdentifier
 	{
 		get
 		{
@@ -272,6 +279,23 @@ public class ItemMenuVM : ViewModel
 			{
 				_comparedItemName = value;
 				OnPropertyChangedWithValue(value, "ComparedItemName");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsStealthModeActive
+	{
+		get
+		{
+			return _isStealthModeActive;
+		}
+		set
+		{
+			if (value != _isStealthModeActive)
+			{
+				_isStealthModeActive = value;
+				OnPropertyChangedWithValue(value, "IsStealthModeActive");
 			}
 		}
 	}
@@ -393,23 +417,40 @@ public class ItemMenuVM : ViewModel
 		_tradeRumorsBehavior = Campaign.Current.GetCampaignBehavior<ITradeRumorCampaignBehavior>();
 	}
 
-	public void SetItem(SPItemVM item, ItemVM comparedItem = null, BasicCharacterObject character = null, int alternativeUsageIndex = 0)
+	public void SetItem(SPItemVM item, InventoryLogic.InventorySide currentEquipmentMode, ItemVM comparedItem = null, BasicCharacterObject character = null, int alternativeUsageIndex = 0)
 	{
 		IsInitializationOver = false;
-		_targetItem = item;
-		_comparedItem = comparedItem;
-		IsComparing = _comparedItem?.ItemRosterElement.EquipmentElement.Item != null;
-		IsPlayerItem = item.InventorySide == InventoryLogic.InventorySide.PlayerInventory;
 		_character = character;
-		ImageIdentifier = item.ImageIdentifier;
-		ComparedImageIdentifier = comparedItem?.ImageIdentifier;
-		ItemName = item.ItemDescription;
-		ComparedItemName = comparedItem?.ItemRosterElement.EquipmentElement.GetModifiedItemName().ToString();
+		bool num = item != _targetItem;
+		bool flag = comparedItem != _comparedItem || _lastComparedItemVersion != _comparedItem?.Version;
+		if (num)
+		{
+			_targetItem = item;
+			IsPlayerItem = item.InventorySide == InventoryLogic.InventorySide.PlayerInventory;
+			ImageIdentifier = item.ImageIdentifier;
+			ItemName = item.ItemDescription;
+			AlternativeUsages.Clear();
+		}
+		if (flag)
+		{
+			_comparedItem = comparedItem;
+			IsComparing = _comparedItem?.ItemRosterElement.EquipmentElement.Item != null;
+			IsStealthModeActive = currentEquipmentMode == InventoryLogic.InventorySide.StealthEquipment;
+			ComparedImageIdentifier = _comparedItem?.ImageIdentifier;
+			ComparedItemName = _comparedItem?.ItemRosterElement.EquipmentElement.GetModifiedItemName().ToString();
+			_lastComparedItemVersion = _comparedItem?.Version ?? 0;
+		}
+		RefreshItemTooltips(item, comparedItem, alternativeUsageIndex);
+		IsInitializationOver = true;
+		Game.Current?.EventManager.TriggerEvent(new InventoryItemInspectedEvent(item.ItemRosterElement, item.InventorySide));
+	}
+
+	private void RefreshItemTooltips(ItemVM item, ItemVM comparedItem, int alternativeUsageIndex = 0)
+	{
 		TargetItemProperties.Clear();
-		ComparedItemProperties.Clear();
 		TargetItemFlagList.Clear();
+		ComparedItemProperties.Clear();
 		ComparedItemFlagList.Clear();
-		AlternativeUsages.Clear();
 		SetGeneralComponentTooltip();
 		if (_inventoryLogic.CurrentSettlementComponent is Town town && Game.Current.IsDevelopmentMode)
 		{
@@ -425,7 +466,7 @@ public class ItemMenuVM : ViewModel
 		else if (item.ItemRosterElement.EquipmentElement.Item.WeaponComponent != null)
 		{
 			EquipmentElement targetWeapon = _targetItem.ItemRosterElement.EquipmentElement;
-			SetWeaponComponentTooltip(in targetWeapon, alternativeUsageIndex, EquipmentElement.Invalid, -1, isInit: true);
+			SetWeaponComponentTooltip(in targetWeapon, alternativeUsageIndex, EquipmentElement.Invalid, -1);
 		}
 		else if (item.ItemRosterElement.EquipmentElement.Item.HasHorseComponent)
 		{
@@ -435,28 +476,27 @@ public class ItemMenuVM : ViewModel
 		{
 			SetFoodTooltip();
 		}
-		if (InventoryManager.GetInventoryItemTypeOfItem(item.ItemRosterElement.EquipmentElement.Item) == InventoryItemType.Goods)
+		if (InventoryScreenHelper.GetInventoryItemTypeOfItem(item.ItemRosterElement.EquipmentElement.Item) == InventoryScreenHelper.InventoryItemType.Goods)
 		{
 			SetMerchandiseComponentTooltip();
 		}
-		if (IsComparing && !TaleWorlds.InputSystem.Input.IsGamepadActive)
+		if (!IsComparing || TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
-			for (EquipmentIndex equipmentIndex = _comparedItem.ItemType + 1; equipmentIndex != _comparedItem.ItemType; equipmentIndex = (EquipmentIndex)((int)(equipmentIndex + 1) % 12))
+			return;
+		}
+		for (EquipmentIndex equipmentIndex = _comparedItem.ItemType + 1; equipmentIndex != _comparedItem.ItemType; equipmentIndex = (EquipmentIndex)((int)(equipmentIndex + 1) % 12))
+		{
+			SPItemVM sPItemVM = _getEquipmentAtIndex(equipmentIndex);
+			if (sPItemVM != null && ItemHelper.CheckComparability(sPItemVM.ItemRosterElement.EquipmentElement.Item, comparedItem.ItemRosterElement.EquipmentElement.Item))
 			{
-				SPItemVM sPItemVM = _getEquipmentAtIndex(equipmentIndex);
-				if (sPItemVM != null && ItemHelper.CheckComparability(sPItemVM.ItemRosterElement.EquipmentElement.Item, comparedItem.ItemRosterElement.EquipmentElement.Item))
-				{
-					TextObject textObject = new TextObject("{=8fqFGxD9}Press {KEY} to compare with: {ITEM}");
-					textObject.SetTextVariable("KEY", GameTexts.FindText("str_game_key_text", "anyalt"));
-					textObject.SetTextVariable("ITEM", sPItemVM.ItemDescription);
-					CreateProperty(TargetItemProperties, "", textObject.ToString());
-					CreateProperty(ComparedItemProperties, "", "");
-					break;
-				}
+				TextObject textObject = new TextObject("{=8fqFGxD9}Press {KEY} to compare with: {ITEM}");
+				textObject.SetTextVariable("KEY", GameTexts.FindText("str_game_key_text", "anyalt"));
+				textObject.SetTextVariable("ITEM", sPItemVM.ItemDescription);
+				CreateProperty(TargetItemProperties, "", textObject.ToString());
+				CreateProperty(ComparedItemProperties, "", "");
+				break;
 			}
 		}
-		IsInitializationOver = true;
-		Game.Current?.EventManager.TriggerEvent(new InventoryItemInspectedEvent(item.ItemRosterElement, item.InventorySide));
 	}
 
 	private int CompareValues(float currentValue, float comparedValue)
@@ -488,18 +528,10 @@ public class ItemMenuVM : ViewModel
 		if (AlternativeUsageIndex >= 0 && IsInitializationOver && _targetItem.ItemRosterElement.EquipmentElement.Item.WeaponComponent != null)
 		{
 			WeaponComponentData weaponComponentData = _targetItem.ItemRosterElement.EquipmentElement.Item.Weapons[AlternativeUsageIndex];
-			GetComparedWeapon(weaponComponentData.WeaponDescriptionId, out var comparedWeapon, out var comparedUsageIndex);
+			GetComparedWeapon(weaponComponentData.WeaponDescriptionId, out var comparedWeapon, out var _);
 			if (!comparedWeapon.IsEmpty)
 			{
-				TargetItemProperties.Clear();
-				ComparedItemProperties.Clear();
-				SetGeneralComponentTooltip(isInit: false);
-				EquipmentElement targetWeapon = _targetItem.ItemRosterElement.EquipmentElement;
-				SetWeaponComponentTooltip(in targetWeapon, AlternativeUsageIndex, comparedWeapon, comparedUsageIndex, isInit: false);
-				TargetItemFlagList.Clear();
-				ComparedItemFlagList.Clear();
-				AddWeaponItemFlags(TargetItemFlagList, weaponComponentData);
-				AddWeaponItemFlags(ComparedItemFlagList, weaponComponentData);
+				RefreshItemTooltips(_targetItem, _comparedItem, AlternativeUsageIndex);
 			}
 			else
 			{
@@ -519,30 +551,28 @@ public class ItemMenuVM : ViewModel
 		}
 	}
 
-	private void SetGeneralComponentTooltip(bool isInit = true)
+	private void SetGeneralComponentTooltip()
 	{
 		if (_targetItem.ItemCost >= 0)
 		{
 			if (_targetItem.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Goods || _targetItem.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Animal || _targetItem.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Horse)
 			{
-				GameTexts.SetVariable("PERCENTAGE", (int)TaleWorlds.Library.MathF.Abs((float)(_targetItem.ItemCost - _targetItem.ItemRosterElement.EquipmentElement.Item.Value) / (float)_targetItem.ItemRosterElement.EquipmentElement.Item.Value * 100f));
-				ItemCategory itemCategory = _targetItem.ItemRosterElement.EquipmentElement.Item.ItemCategory;
-				float num = 0f;
-				float num2 = 0f;
-				if (Town.AllTowns != null)
+				Town town = _inventoryLogic.CurrentSettlementComponent as Town;
+				if (town == null && _inventoryLogic.CurrentSettlementComponent is Village { TradeBound: not null } village)
 				{
-					foreach (Town allTown in Town.AllTowns)
-					{
-						num += allTown.GetItemCategoryPriceIndex(itemCategory);
-						num2 += 1f;
-					}
+					town = village.TradeBound.Town;
 				}
-				num /= num2;
-				if ((float)_targetItem.ItemCost / (float)_targetItem.ItemRosterElement.EquipmentElement.Item.Value > num * 1.3f)
+				if (town == null)
+				{
+					town = SettlementHelper.FindNearestTownToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.All);
+				}
+				float num = ((town != null) ? TownHelpers.CalculatePriceDeviationRatio(town, _targetItem.ItemRosterElement.EquipmentElement) : 1f);
+				GameTexts.SetVariable("PERCENTAGE", TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Abs(num * 100f)));
+				if (num > 0.3f)
 				{
 					_costProperty = CreateColoredProperty(TargetItemProperties, "", _targetItem.ItemCost + GoldIcon, UIColors.NegativeIndicator, 1, new HintViewModel(GameTexts.FindText("str_inventory_cost_higher")), TooltipProperty.TooltipPropertyFlags.Cost);
 				}
-				else if ((float)_targetItem.ItemCost / (float)_targetItem.ItemRosterElement.EquipmentElement.Item.Value < num * 0.8f)
+				else if (num < -0.2f)
 				{
 					_costProperty = CreateColoredProperty(TargetItemProperties, "", _targetItem.ItemCost + GoldIcon, UIColors.PositiveIndicator, 1, new HintViewModel(GameTexts.FindText("str_inventory_cost_lower")), TooltipProperty.TooltipPropertyFlags.Cost);
 				}
@@ -573,10 +603,10 @@ public class ItemMenuVM : ViewModel
 			CreateColoredProperty(TargetItemProperties, "ID: ", _targetItem.ItemRosterElement.EquipmentElement.Item.StringId, UIColors.Gold);
 		}
 		float equipmentWeightMultiplier = 1f;
-		bool num3 = _character is CharacterObject characterObject && characterObject.GetPerkValue(DefaultPerks.Athletics.FormFittingArmor);
+		bool num2 = _character is CharacterObject characterObject && characterObject.GetPerkValue(DefaultPerks.Athletics.FormFittingArmor);
 		SPItemVM sPItemVM = _getEquipmentAtIndex(_targetItem.ItemType);
 		bool flag = sPItemVM != null && sPItemVM.ItemType != EquipmentIndex.None && sPItemVM.ItemType != EquipmentIndex.HorseHarness && _targetItem.ItemRosterElement.EquipmentElement.Item.HasArmorComponent;
-		if (num3 && flag)
+		if (num2 && flag)
 		{
 			equipmentWeightMultiplier += DefaultPerks.Athletics.FormFittingArmor.PrimaryBonus;
 		}
@@ -590,13 +620,10 @@ public class ItemMenuVM : ViewModel
 				AddSkillRequirement(_comparedItem, ComparedItemProperties, isComparison: true);
 			}
 		}
-		if (isInit)
+		AddGeneralItemFlags(TargetItemFlagList, item);
+		if (IsComparing)
 		{
-			AddGeneralItemFlags(TargetItemFlagList, item);
-			if (IsComparing)
-			{
-				AddGeneralItemFlags(ComparedItemFlagList, _comparedItem.ItemRosterElement.EquipmentElement.Item);
-			}
+			AddGeneralItemFlags(ComparedItemFlagList, _comparedItem.ItemRosterElement.EquipmentElement.Item);
 		}
 	}
 
@@ -620,10 +647,6 @@ public class ItemMenuVM : ViewModel
 
 	private void AddGeneralItemFlags(MBBindingList<ItemFlagVM> list, ItemObject item)
 	{
-		if (item.IsUniqueItem)
-		{
-			list.Add(new ItemFlagVM("GeneralFlagIcons\\unique", GameTexts.FindText("str_inventory_flag_unique")));
-		}
 		if (item.IsCivilian)
 		{
 			list.Add(new ItemFlagVM("GeneralFlagIcons\\civillian", GameTexts.FindText("str_inventory_flag_civillian")));
@@ -647,7 +670,7 @@ public class ItemMenuVM : ViewModel
 	{
 		if (weapon == null)
 		{
-			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 412);
+			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 419);
 			return;
 		}
 		ItemObject.ItemUsageSetFlags itemUsageFlags = _getItemUsageSetFlags(weapon);
@@ -777,7 +800,34 @@ public class ItemMenuVM : ViewModel
 		return TaleWorlds.Library.MathF.Clamp((float)(int)rumor.RumorEndTime.RemainingDaysFromNow / 5f, 0.5f, 1f);
 	}
 
-	private void SetWeaponComponentTooltip(in EquipmentElement targetWeapon, int targetWeaponUsageIndex, EquipmentElement comparedWeapon, int comparedWeaponUsageIndex, bool isInit)
+	private void UpdateAlternativeUsages(EquipmentElement targetWeapon)
+	{
+		List<StringItemWithHintVM> list = new List<StringItemWithHintVM>();
+		foreach (WeaponComponentData weapon in targetWeapon.Item.Weapons)
+		{
+			if (CampaignUIHelper.IsItemUsageApplicable(weapon))
+			{
+				list.Add(new StringItemWithHintVM(GameTexts.FindText("str_weapon_usage", weapon.WeaponDescriptionId).ToString(), GameTexts.FindText("str_inventory_alternative_usage_hint")));
+			}
+		}
+		for (int num = AlternativeUsages.Count - 1; num >= 0; num--)
+		{
+			StringItemWithHintVM oldUsage = AlternativeUsages[num];
+			if (!list.Any((StringItemWithHintVM x) => x.Text == oldUsage.Text))
+			{
+				AlternativeUsages.RemoveAt(num);
+			}
+		}
+		foreach (StringItemWithHintVM newUsage in list)
+		{
+			if (!AlternativeUsages.Any((StringItemWithHintVM x) => x.Text == newUsage.Text))
+			{
+				AlternativeUsages.Add(newUsage);
+			}
+		}
+	}
+
+	private void SetWeaponComponentTooltip(in EquipmentElement targetWeapon, int targetWeaponUsageIndex, EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
 	{
 		WeaponComponentData weaponWithUsageIndex = targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex);
 		if (IsComparing && _comparedItem != null && comparedWeapon.IsEmpty)
@@ -785,30 +835,17 @@ public class ItemMenuVM : ViewModel
 			GetComparedWeapon(weaponWithUsageIndex.WeaponDescriptionId, out comparedWeapon, out comparedWeaponUsageIndex);
 		}
 		WeaponComponentData weaponComponentData = (comparedWeapon.IsEmpty ? null : comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex));
-		if (isInit)
+		AddWeaponItemFlags(TargetItemFlagList, weaponWithUsageIndex);
+		if (IsComparing)
 		{
-			AddWeaponItemFlags(TargetItemFlagList, weaponWithUsageIndex);
-			if (IsComparing)
-			{
-				AddWeaponItemFlags(ComparedItemFlagList, weaponComponentData);
-			}
-			if (targetWeaponUsageIndex == 0)
-			{
-				AlternativeUsageIndex = -1;
-			}
-			foreach (WeaponComponentData weapon in targetWeapon.Item.Weapons)
-			{
-				if (CampaignUIHelper.IsItemUsageApplicable(weapon))
-				{
-					AlternativeUsages.Add(new StringItemWithHintVM(GameTexts.FindText("str_weapon_usage", weapon.WeaponDescriptionId).ToString(), GameTexts.FindText("str_inventory_alternative_usage_hint")));
-				}
-			}
-			AlternativeUsageIndex = targetWeaponUsageIndex;
+			AddWeaponItemFlags(ComparedItemFlagList, weaponComponentData);
 		}
-		CreateProperty(TargetItemProperties, _classText.ToString(), GameTexts.FindText("str_inventory_weapon", ((int)weaponWithUsageIndex.WeaponClass).ToString()).ToString());
+		UpdateAlternativeUsages(targetWeapon);
+		AlternativeUsageIndex = targetWeaponUsageIndex;
+		CreateProperty(TargetItemProperties, _classText.ToString(), GameTexts.FindText("str_inventory_weapon", weaponWithUsageIndex.WeaponClass.ToString()).ToString());
 		if (!comparedWeapon.IsEmpty)
 		{
-			CreateProperty(ComparedItemProperties, " ", GameTexts.FindText("str_inventory_weapon", ((int)weaponWithUsageIndex.WeaponClass).ToString()).ToString());
+			CreateProperty(ComparedItemProperties, " ", GameTexts.FindText("str_inventory_weapon", weaponComponentData.WeaponClass.ToString()).ToString());
 		}
 		else if (IsComparing)
 		{
@@ -853,7 +890,7 @@ public class ItemMenuVM : ViewModel
 			AddIntProperty(_speedText, targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex)));
 			AddIntProperty(_hitPointsText, targetWeapon.GetModifiedMaximumHitPointsForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedMaximumHitPointsForUsage(comparedWeaponUsageIndex)));
 		}
-		if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Bow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow || itemTypeEnum == ItemObject.ItemTypeEnum.Bow || itemTypeEnum == ItemObject.ItemTypeEnum.Crossbow)
+		if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Bow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Sling || itemTypeEnum == ItemObject.ItemTypeEnum.Bow || itemTypeEnum == ItemObject.ItemTypeEnum.Crossbow || itemTypeEnum == ItemObject.ItemTypeEnum.Sling)
 		{
 			AddIntProperty(_speedText, targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex)));
 			AddThrustDamageProperty(_damageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
@@ -866,7 +903,7 @@ public class ItemMenuVM : ViewModel
 		}
 		if (weaponWithUsageIndex.IsAmmo || (weaponComponentData != null && weaponComponentData.IsAmmo))
 		{
-			if ((itemTypeFromWeaponClass != ItemObject.ItemTypeEnum.Arrows && itemTypeFromWeaponClass != ItemObject.ItemTypeEnum.Bolts) || (weaponComponentData != null && itemTypeEnum != ItemObject.ItemTypeEnum.Arrows && itemTypeEnum != ItemObject.ItemTypeEnum.Bolts))
+			if ((itemTypeFromWeaponClass != ItemObject.ItemTypeEnum.Arrows && itemTypeFromWeaponClass != ItemObject.ItemTypeEnum.Bolts && itemTypeFromWeaponClass != ItemObject.ItemTypeEnum.SlingStones) || (weaponComponentData != null && itemTypeEnum != ItemObject.ItemTypeEnum.Arrows && itemTypeEnum != ItemObject.ItemTypeEnum.Bolts && itemTypeEnum != ItemObject.ItemTypeEnum.SlingStones))
 			{
 				AddIntProperty(_accuracyText, weaponWithUsageIndex.Accuracy, weaponComponentData?.Accuracy);
 			}
@@ -879,7 +916,7 @@ public class ItemMenuVM : ViewModel
 			ItemObject item2 = comparedWeapon.Item;
 			if (item2 == null || !item2.HasBannerComponent)
 			{
-				goto IL_0717;
+				goto IL_06b9;
 			}
 		}
 		Func<EquipmentElement, string> valueAsStringFunc = delegate(EquipmentElement x)
@@ -888,13 +925,13 @@ public class ItemMenuVM : ViewModel
 			{
 				GameTexts.SetVariable("RANK", x.Item.BannerComponent.BannerEffect.Name);
 				string content = string.Empty;
-				if (x.Item.BannerComponent.BannerEffect.IncrementType == BannerEffect.EffectIncrementType.AddFactor)
+				if (x.Item.BannerComponent.BannerEffect.IncrementType == EffectIncrementType.AddFactor)
 				{
 					TextObject textObject = GameTexts.FindText("str_NUMBER_percent");
 					textObject.SetTextVariable("NUMBER", ((int)Math.Abs(x.Item.BannerComponent.GetBannerEffectBonus() * 100f)).ToString());
 					content = textObject.ToString();
 				}
-				else if (x.Item.BannerComponent.BannerEffect.IncrementType == BannerEffect.EffectIncrementType.Add)
+				else if (x.Item.BannerComponent.BannerEffect.IncrementType == EffectIncrementType.Add)
 				{
 					content = x.Item.BannerComponent.GetBannerEffectBonus().ToString();
 				}
@@ -904,8 +941,8 @@ public class ItemMenuVM : ViewModel
 			return _noneText.ToString();
 		};
 		AddComparableStringProperty(_bannerEffectText, valueAsStringFunc, (EquipmentElement x) => 0);
-		goto IL_0717;
-		IL_0717:
+		goto IL_06b9;
+		IL_06b9:
 		AddDonationXpTooltip();
 	}
 
@@ -1091,6 +1128,15 @@ public class ItemMenuVM : ViewModel
 				CreateColoredProperty(ComparedItemProperties, " ", _comparedItem.ItemRosterElement.EquipmentElement.GetModifiedArmArmor().ToString(), GetColorFromComparison(num, isCompared: true));
 			}
 		}
+		if (IsStealthModeActive)
+		{
+			num = (IsComparing ? CompareValues(_targetItem.ItemRosterElement.EquipmentElement.GetModifiedStealthFactor(), _comparedItem.ItemRosterElement.EquipmentElement.GetModifiedStealthFactor()) : 0);
+			CreateColoredProperty(TargetItemProperties, _stealthBonusText.ToString(), _targetItem.ItemRosterElement.EquipmentElement.GetModifiedStealthFactor().ToString(), GetColorFromComparison(num, isCompared: false));
+			if (IsComparing)
+			{
+				CreateColoredProperty(ComparedItemProperties, " ", _comparedItem.ItemRosterElement.EquipmentElement.GetModifiedStealthFactor().ToString(), GetColorFromComparison(num, isCompared: true));
+			}
+		}
 		AddDonationXpTooltip();
 	}
 
@@ -1158,7 +1204,7 @@ public class ItemMenuVM : ViewModel
 				return 4;
 			}
 		}
-		Debug.FailedAssert("This horse item category is not defined", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1378);
+		Debug.FailedAssert("This horse item category is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1436);
 		return -1;
 	}
 

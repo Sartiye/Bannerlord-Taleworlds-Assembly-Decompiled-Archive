@@ -36,21 +36,6 @@ public class SettlementClaimantCampaignBehavior : CampaignBehaviorBase
 		{
 			settlement.Party.MapEvent.FinalizeEvent();
 		}
-		if (detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege)
-		{
-			int num = 0;
-			if (newOwner != null)
-			{
-				foreach (Settlement settlement2 in newOwner.MapFaction.Settlements)
-				{
-					if (settlement2.CanBeClaimed > num)
-					{
-						num = settlement2.CanBeClaimed;
-					}
-				}
-			}
-			settlement.CanBeClaimed = num + 2;
-		}
 		if (openToClaim && newOwner.MapFaction.IsKingdomFaction && (newOwner.MapFaction as Kingdom).Clans.Count > 1 && settlement.Town != null)
 		{
 			settlement.Town.IsOwnerUnassigned = true;

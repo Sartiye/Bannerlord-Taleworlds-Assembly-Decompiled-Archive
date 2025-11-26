@@ -1,4 +1,5 @@
 using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameState;
@@ -8,6 +9,8 @@ public interface IMapStateHandler
 	void OnRefreshState();
 
 	void OnMainPartyEncounter();
+
+	void OnIncidentStarted(Incident incident);
 
 	void BeforeTick(float dt);
 
@@ -31,7 +34,7 @@ public interface IMapStateHandler
 
 	bool IsCameraLockedToPlayerParty();
 
-	void StartCameraAnimation(Vec2 targetPosition, float animationStopDuration);
+	void StartCameraAnimation(CampaignVec2 targetPosition, float animationStopDuration);
 
 	void OnHourlyTick();
 
@@ -56,4 +59,8 @@ public interface IMapStateHandler
 	void OnPlayerSiegeDeactivated();
 
 	void OnSiegeEngineClick(MatrixFrame siegeEngineFrame);
+
+	void OnGameLoadFinished();
+
+	void OnFadeInAndOut(float fadeOutTime, float blackTime, float fadeInTime);
 }

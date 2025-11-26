@@ -71,17 +71,23 @@ public static class ItemObjectViewExtensions
 		{
 			Vec3 boundingBoxMin = metaMesh.GetMeshAtIndex(i).GetBoundingBoxMin();
 			Vec3 boundingBoxMax = metaMesh.GetMeshAtIndex(i).GetBoundingBoxMax();
-			Vec3[] array = new Vec3[8]
-			{
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMin.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMax.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMin.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMax.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMin.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMax.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMin.z)),
-				rotationMatrix.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMax.z))
-			};
+			Vec3[] array = new Vec3[8];
+			Vec3 v = new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMin.z);
+			array[0] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMax.z);
+			array[1] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMin.z);
+			array[2] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMax.z);
+			array[3] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMin.z);
+			array[4] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMax.z);
+			array[5] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMin.z);
+			array[6] = rotationMatrix.TransformToParent(in v);
+			v = new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMax.z);
+			array[7] = rotationMatrix.TransformToParent(in v);
 			for (int j = 0; j < 8; j++)
 			{
 				vec = Vec3.Vec3Min(vec, array[j]);

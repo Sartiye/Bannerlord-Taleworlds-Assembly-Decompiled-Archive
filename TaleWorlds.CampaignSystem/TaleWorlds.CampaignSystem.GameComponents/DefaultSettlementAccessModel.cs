@@ -36,7 +36,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid type of settlement", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroEnterSettlement", 41);
+			Debug.FailedAssert("Invalid type of settlement", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroEnterSettlement", 41);
 			accessDetails = new AccessDetails
 			{
 				AccessLevel = AccessLevel.FullAccess,
@@ -69,7 +69,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 				AccessMethod = AccessMethod.Direct
 			};
 		}
-		else if (FactionManager.IsAlliedWithFaction(mainHero.MapFaction, settlement.MapFaction))
+		else if (DiplomacyHelper.IsSameFactionAndNotEliminated(mainHero.MapFaction, settlement.MapFaction))
 		{
 			accessDetails = new AccessDetails
 			{
@@ -133,7 +133,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	public override bool CanMainHeroAccessLocation(Settlement settlement, string locationId, out bool disableOption, out TextObject disabledText)
 	{
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		disableOption = false;
 		bool result = true;
 		switch (locationId)
@@ -167,8 +167,13 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 			result = locationWithId.IsReserved && (locationWithId.SpecialItems.Count > 0 || locationWithId.GetCharacterList().Any());
 			break;
 		}
+		case "port":
+			disableOption = true;
+			disabledText = new TextObject("{=ILnr9eCQ}Door is locked!");
+			result = false;
+			break;
 		default:
-			Debug.FailedAssert("invalid location which is not supported by DefaultSettlementAccessModel", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroAccessLocation", 199);
+			Debug.FailedAssert("invalid location which is not supported by DefaultSettlementAccessModel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroAccessLocation", 206);
 			break;
 		}
 		return result;
@@ -178,13 +183,13 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	{
 		bool result = true;
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		CanMainHeroEnterSettlement(settlement, out var accessDetails);
 		if (settlement.OwnerClan == Clan.PlayerClan)
 		{
 			result = false;
 		}
-		else if (FactionManager.IsAlliedWithFaction(settlement.MapFaction, Clan.PlayerClan.MapFaction) && accessDetails.AccessLevel == AccessLevel.NoAccess)
+		else if (DiplomacyHelper.IsSameFactionAndNotEliminated(settlement.MapFaction, Clan.PlayerClan.MapFaction) && accessDetails.AccessLevel == AccessLevel.NoAccess)
 		{
 			result = TownHelpers.IsThereAnyoneToMeetInTown(settlement);
 		}
@@ -231,9 +236,9 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		case SettlementAction.WalkAroundTheArena:
 			return CanMainHeroEnterArena(settlement, out disableOption, out disabledText);
 		default:
-			Debug.FailedAssert("Invalid Settlement Action", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroDoSettlementAction", 268);
+			Debug.FailedAssert("Invalid Settlement Action", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroDoSettlementAction", 275);
 			disableOption = false;
-			disabledText = TextObject.Empty;
+			disabledText = null;
 			return true;
 		}
 	}
@@ -248,7 +253,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		}
 		if (Campaign.Current.IsDay)
 		{
-			disabledText = TextObject.Empty;
+			disabledText = null;
 			disableOption = false;
 			return true;
 		}
@@ -259,7 +264,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	private bool CanMainHeroGoToTavern(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		disableOption = false;
 		return true;
 	}
@@ -267,7 +272,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	private bool CanMainHeroEnterArena(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		return true;
 	}
 
@@ -296,7 +301,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	private bool CanMainHeroManageTown(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		disableOption = false;
 		if (settlement.IsTown)
 		{
@@ -317,7 +322,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 				AccessMethod = AccessMethod.Direct
 			};
 		}
-		else if (FactionManager.IsAlliedWithFaction(mainHero.MapFaction, settlement.MapFaction))
+		else if (DiplomacyHelper.IsSameFactionAndNotEliminated(mainHero.MapFaction, settlement.MapFaction))
 		{
 			accessDetails = new AccessDetails
 			{
@@ -371,7 +376,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 				AccessMethod = AccessMethod.Direct
 			};
 		}
-		else if (FactionManager.IsAlliedWithFaction(mainHero.MapFaction, settlement.MapFaction))
+		else if (DiplomacyHelper.IsSameFactionAndNotEliminated(mainHero.MapFaction, settlement.MapFaction))
 		{
 			accessDetails = new AccessDetails
 			{
@@ -412,7 +417,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	private bool CanMainHeroWalkAroundTownCenter(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		disableOption = false;
 		if (!settlement.IsTown)
 		{
@@ -423,7 +428,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	private bool CanMainHeroRecruitTroops(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		disableOption = false;
 		return true;
 	}
@@ -431,7 +436,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	private bool CanMainHeroCraft(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		return Campaign.Current.IsCraftingEnabled;
 	}
 
@@ -439,7 +444,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	{
 		bool num = settlement.Town.HasTournament && Campaign.Current.IsDay;
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		if (!num)
 		{
 			return false;
@@ -462,7 +467,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	private bool CanMainHeroWatchTournament(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		if (settlement.Town.HasTournament)
 		{
 			return Campaign.Current.IsDay;
@@ -479,14 +484,14 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 			return false;
 		}
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		return true;
 	}
 
 	private bool CanMainHeroWaitInSettlement(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
 		disableOption = false;
-		disabledText = TextObject.Empty;
+		disabledText = null;
 		if (Campaign.Current.IsMainHeroDisguised)
 		{
 			disableOption = true;

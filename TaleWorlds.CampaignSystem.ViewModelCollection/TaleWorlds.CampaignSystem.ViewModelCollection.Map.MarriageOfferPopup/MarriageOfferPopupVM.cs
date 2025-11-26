@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
@@ -11,6 +12,8 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MarriageOfferPopup;
 public class MarriageOfferPopupVM : ViewModel
 {
 	private readonly IMarriageOfferCampaignBehavior _marriageBehavior;
+
+	private Action _onClose;
 
 	private string _titleText;
 
@@ -278,9 +281,10 @@ public class MarriageOfferPopupVM : ViewModel
 		}
 	}
 
-	public MarriageOfferPopupVM(Hero suitor, Hero maiden)
+	public MarriageOfferPopupVM(Hero suitor, Hero maiden, Action onClose)
 	{
 		_marriageBehavior = Campaign.Current.GetCampaignBehavior<IMarriageOfferCampaignBehavior>();
+		_onClose = onClose;
 		if (suitor.Clan == Clan.PlayerClan)
 		{
 			OffereeClanMember = new MarriageOfferPopupHeroVM(suitor);
@@ -304,11 +308,13 @@ public class MarriageOfferPopupVM : ViewModel
 	public void ExecuteAcceptOffer()
 	{
 		_marriageBehavior?.OnMarriageOfferAcceptedOnPopUp();
+		_onClose?.Invoke();
 	}
 
 	public void ExecuteDeclineOffer()
 	{
 		_marriageBehavior?.OnMarriageOfferDeclinedOnPopUp();
+		_onClose?.Invoke();
 	}
 
 	public override void RefreshValues()

@@ -11,6 +11,8 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors.AiBehaviors;
 
 public class AiPartyThinkBehavior : CampaignBehaviorBase
 {
+	private const int DefaultThinkingPeriodInHours = 6;
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.TickPartialHourlyAiEvent.AddNonSerializedListener(this, PartyHourlyAiTick);
@@ -18,6 +20,24 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 		CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 		CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
 		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
+		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, OnMobilePartyCreated);
+	}
+
+	private void OnMobilePartyCreated(MobileParty mobileParty)
+	{
+		mobileParty.Ai.RethinkAtNextHourlyTick = true;
+	}
+
+	private void OnNewGameCreated(CampaignGameStarter gameStarter)
+	{
+		foreach (MobileParty item in MobileParty.All)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				PartyHourlyAiTick(item);
+			}
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -31,22 +51,28 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 			return;
 		}
 		bool flag = mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty;
-		int num = ((flag || mobileParty.Ai.RethinkAtNextHourlyTick || (mobileParty.MapEvent != null && (mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.IsSiegeAssault))) ? 1 : 6);
-		if (flag && MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == mobileParty && (mobileParty.CurrentSettlement != null || (mobileParty.LastVisitedSettlement != null && mobileParty.MapEvent == null && mobileParty.LastVisitedSettlement.Position2D.Distance(mobileParty.Position2D) < 1f)))
+		bool flag2 = mobileParty.Army != null && mobileParty.AttachedTo == null;
+		bool isTransitionInProgress = mobileParty.IsTransitionInProgress;
+		int num = 6;
+		if (flag || isTransitionInProgress || flag2 || mobileParty.Ai.RethinkAtNextHourlyTick || (mobileParty.MapEvent != null && (mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.IsSiegeAssault)))
+		{
+			num = ((!flag2 || isTransitionInProgress) ? 1 : 3);
+		}
+		if (flag && MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == mobileParty && (mobileParty.CurrentSettlement != null || (mobileParty.LastVisitedSettlement != null && mobileParty.MapEvent == null && mobileParty.LastVisitedSettlement.Position.Distance(mobileParty.Position) < 1f)))
 		{
 			num = 6;
 		}
 		if (mobileParty.Ai.HourCounter % num == 0 && mobileParty != MobileParty.MainParty && (mobileParty.MapEvent == null || (mobileParty.Party == mobileParty.MapEvent.AttackerSide.LeaderParty && (mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.IsSiegeAssault))))
 		{
 			mobileParty.Ai.HourCounter = 0;
-			Army.AIBehaviorFlags aIBehaviorFlags = (flag ? mobileParty.Army.AIBehavior : Army.AIBehaviorFlags.Unassigned);
+			AiBehavior aiBehavior = ((!flag) ? AiBehavior.None : mobileParty.Army.LeaderParty.DefaultBehavior);
 			IMapPoint mapPoint = (flag ? mobileParty.Army.AiBehaviorObject : null);
 			mobileParty.Ai.RethinkAtNextHourlyTick = false;
 			PartyThinkParams thinkParamsCache = mobileParty.ThinkParamsCache;
 			thinkParamsCache.Reset(mobileParty);
 			CampaignEventDispatcher.Instance.AiHourlyTick(mobileParty, thinkParamsCache);
-			AIBehaviorTuple aIBehaviorTuple = new AIBehaviorTuple(null, AiBehavior.Hold);
-			AIBehaviorTuple aIBehaviorTuple2 = new AIBehaviorTuple(null, AiBehavior.Hold);
+			AIBehaviorData aIBehaviorData = AIBehaviorData.Invalid;
+			AIBehaviorData aIBehaviorData2 = AIBehaviorData.Invalid;
 			float num2 = -1f;
 			float num3 = -1f;
 			foreach (var aIBehaviorScore in thinkParamsCache.AIBehaviorScores)
@@ -55,125 +81,133 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 				if (item > num2)
 				{
 					num2 = item;
-					(aIBehaviorTuple, _) = aIBehaviorScore;
+					(aIBehaviorData, _) = aIBehaviorScore;
 				}
 				if (item > num3 && !aIBehaviorScore.Item1.WillGatherArmy)
 				{
 					num3 = item;
-					(aIBehaviorTuple2, _) = aIBehaviorScore;
+					(aIBehaviorData2, _) = aIBehaviorScore;
 				}
 			}
-			if (mobileParty.DefaultBehavior == AiBehavior.Hold || mobileParty.Ai.RethinkAtNextHourlyTick || (thinkParamsCache.CurrentObjectiveValue < 0.05f && (mobileParty.DefaultBehavior == AiBehavior.BesiegeSettlement || mobileParty.DefaultBehavior == AiBehavior.RaidSettlement || mobileParty.DefaultBehavior == AiBehavior.DefendSettlement)))
+			if (aIBehaviorData != AIBehaviorData.Invalid)
 			{
-				num2 = 1f;
-			}
-			double num4 = ((aIBehaviorTuple.AiBehavior == AiBehavior.PatrolAroundPoint || aIBehaviorTuple.AiBehavior == AiBehavior.GoToSettlement) ? 0.03 : 0.1);
-			num4 *= (double)(aIBehaviorTuple.WillGatherArmy ? 2f : ((mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty) ? 0.33f : 1f));
-			bool flag2 = mobileParty.Army != null;
-			for (int i = 0; i < num; i++)
-			{
-				if (flag2)
+				if (mobileParty.DefaultBehavior == AiBehavior.Hold || mobileParty.Ai.RethinkAtNextHourlyTick || thinkParamsCache.CurrentObjectiveValue < 0.05f)
 				{
-					break;
+					num2 = 1f;
 				}
-				flag2 = MBRandom.RandomFloat < num2;
-			}
-			if (((double)num2 > num4 && flag2) || (num2 > 0.01f && mobileParty.MapEvent == null && mobileParty.Army == null && mobileParty.DefaultBehavior == AiBehavior.Hold))
-			{
-				if (mobileParty.MapEvent != null && mobileParty.Party == mobileParty.MapEvent.AttackerSide.LeaderParty && !thinkParamsCache.DoNotChangeBehavior && (aIBehaviorTuple.Party != mobileParty.MapEvent.MapEventSettlement || (aIBehaviorTuple.AiBehavior != AiBehavior.RaidSettlement && aIBehaviorTuple.AiBehavior != AiBehavior.BesiegeSettlement && aIBehaviorTuple.AiBehavior != AiBehavior.AssaultSettlement)))
+				double num4 = ((aIBehaviorData.AiBehavior == AiBehavior.PatrolAroundPoint || aIBehaviorData.AiBehavior == AiBehavior.GoToSettlement) ? 0.03 : 0.1);
+				num4 *= (double)(aIBehaviorData.WillGatherArmy ? 2f : ((mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty) ? 0.33f : 1f));
+				bool flag3 = mobileParty.Army != null;
+				for (int i = 0; i < num; i++)
 				{
-					if (PlayerEncounter.Current != null && PlayerEncounter.Battle == mobileParty.MapEvent)
+					if (flag3)
 					{
-						PlayerEncounter.Finish();
+						break;
 					}
-					if (mobileParty.MapEvent != null)
+					flag3 = MBRandom.RandomFloat < num2;
+				}
+				if (((double)num2 > num4 && flag3) || (num2 > 0.01f && mobileParty.MapEvent == null && mobileParty.Army == null && mobileParty.DefaultBehavior == AiBehavior.Hold))
+				{
+					if (mobileParty.MapEvent != null && mobileParty.Party == mobileParty.MapEvent.AttackerSide.LeaderParty && !thinkParamsCache.DoNotChangeBehavior && (aIBehaviorData.Party != mobileParty.MapEvent.MapEventSettlement || (aIBehaviorData.AiBehavior != AiBehavior.RaidSettlement && aIBehaviorData.AiBehavior != AiBehavior.BesiegeSettlement && aIBehaviorData.AiBehavior != AiBehavior.AssaultSettlement)))
 					{
-						mobileParty.MapEvent.FinalizeEvent();
-					}
-					if (mobileParty.SiegeEvent != null)
-					{
-						mobileParty.SiegeEvent.FinalizeSiegeEvent();
-					}
-					if (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty)
-					{
-						foreach (MobileParty party in mobileParty.Army.Parties)
+						if (PlayerEncounter.Current != null && PlayerEncounter.Battle == mobileParty.MapEvent)
 						{
-							party.Ai.SetMoveEscortParty(mobileParty);
+							PlayerEncounter.Finish();
+						}
+						if (mobileParty.MapEvent != null)
+						{
+							mobileParty.MapEvent.FinalizeEvent();
+						}
+						if (mobileParty.SiegeEvent != null)
+						{
+							mobileParty.SiegeEvent.FinalizeSiegeEvent();
+						}
+					}
+					if ((double)num2 <= num4)
+					{
+						aIBehaviorData = aIBehaviorData2;
+					}
+					bool flag4 = aIBehaviorData.AiBehavior == AiBehavior.RaidSettlement || aIBehaviorData.AiBehavior == AiBehavior.BesiegeSettlement || aIBehaviorData.AiBehavior == AiBehavior.DefendSettlement || aIBehaviorData.AiBehavior == AiBehavior.PatrolAroundPoint;
+					if (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && (mobileParty.CurrentSettlement == null || mobileParty.CurrentSettlement.SiegeEvent == null) && !(aIBehaviorData.AiBehavior == AiBehavior.GoAroundParty || aIBehaviorData.AiBehavior == AiBehavior.PatrolAroundPoint || aIBehaviorData.AiBehavior == AiBehavior.GoToSettlement || flag4))
+					{
+						DisbandArmyAction.ApplyByUnknownReason(mobileParty.Army);
+					}
+					if (flag4 && mobileParty.Army == null && aIBehaviorData.WillGatherArmy && !mobileParty.LeaderHero.Clan.IsUnderMercenaryService)
+					{
+						bool flag5 = MBRandom.RandomFloat < num2;
+						if (aIBehaviorData.AiBehavior == AiBehavior.DefendSettlement || flag5)
+						{
+							Army.ArmyTypes selectedArmyType = ((aIBehaviorData.AiBehavior != AiBehavior.BesiegeSettlement) ? ((aIBehaviorData.AiBehavior == AiBehavior.RaidSettlement) ? Army.ArmyTypes.Raider : Army.ArmyTypes.Defender) : Army.ArmyTypes.Besieger);
+							((Kingdom)mobileParty.MapFaction).CreateArmy(mobileParty.LeaderHero, aIBehaviorData.Party as Settlement, selectedArmyType, thinkParamsCache.PossibleArmyMembersUponArmyCreation);
+						}
+					}
+					else if (!thinkParamsCache.DoNotChangeBehavior)
+					{
+						if (aIBehaviorData.AiBehavior == AiBehavior.PatrolAroundPoint)
+						{
+							if (aIBehaviorData.Party != null)
+							{
+								SetPartyAiAction.GetActionForPatrollingAroundSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
+							}
+							else
+							{
+								SetPartyAiAction.GetActionForPatrollingAroundPoint(mobileParty, aIBehaviorData.Position, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort);
+							}
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.GoToSettlement)
+						{
+							if (MobilePartyHelper.GetCurrentSettlementOfMobilePartyForAICalculation(mobileParty) != aIBehaviorData.Party)
+							{
+								SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
+							}
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.EscortParty)
+						{
+							SetPartyAiAction.GetActionForEscortingParty(mobileParty, (MobileParty)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.RaidSettlement)
+						{
+							if (mobileParty.MapEvent == null || !mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.MapEventSettlement != aIBehaviorData.Party)
+							{
+								SetPartyAiAction.GetActionForRaidingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort);
+							}
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.BesiegeSettlement)
+						{
+							if (mobileParty.MapEvent == null || !mobileParty.MapEvent.IsSiegeAssault || mobileParty.MapEvent.MapEventSettlement != aIBehaviorData.Party)
+							{
+								SetPartyAiAction.GetActionForBesiegingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort);
+							}
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.DefendSettlement && mobileParty.CurrentSettlement != aIBehaviorData.Party)
+						{
+							SetPartyAiAction.GetActionForDefendingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.GoAroundParty)
+						{
+							SetPartyAiAction.GetActionForGoingAroundParty(mobileParty, (MobileParty)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort);
+						}
+						else if (aIBehaviorData.AiBehavior == AiBehavior.MoveToNearestLandOrPort)
+						{
+							SetPartyAiAction.GetActionForMovingToNearestLand(mobileParty, (Settlement)aIBehaviorData.Party);
 						}
 					}
 				}
-				if ((double)num2 <= num4)
+				else if (aIBehaviorData.AiBehavior != AiBehavior.None)
 				{
-					aIBehaviorTuple = aIBehaviorTuple2;
-				}
-				bool flag3 = aIBehaviorTuple.AiBehavior == AiBehavior.RaidSettlement || aIBehaviorTuple.AiBehavior == AiBehavior.BesiegeSettlement || aIBehaviorTuple.AiBehavior == AiBehavior.DefendSettlement || aIBehaviorTuple.AiBehavior == AiBehavior.PatrolAroundPoint;
-				if (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty && aIBehaviorTuple.AiBehavior != AiBehavior.EscortParty && (mobileParty.Army.LeaderParty.MapEvent == null || mobileParty.Army.LeaderParty.MapEvent.MapEventSettlement == null || aIBehaviorTuple.Party != mobileParty.Army.LeaderParty.MapEvent.MapEventSettlement))
-				{
-					mobileParty.Army = null;
-				}
-				if (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && (mobileParty.CurrentSettlement == null || mobileParty.CurrentSettlement.SiegeEvent == null) && !(aIBehaviorTuple.AiBehavior == AiBehavior.GoAroundParty || aIBehaviorTuple.AiBehavior == AiBehavior.PatrolAroundPoint || aIBehaviorTuple.AiBehavior == AiBehavior.GoToSettlement || flag3))
-				{
-					DisbandArmyAction.ApplyByUnknownReason(mobileParty.Army);
-				}
-				if (flag3 && mobileParty.Army == null && aIBehaviorTuple.WillGatherArmy && !mobileParty.LeaderHero.Clan.IsUnderMercenaryService)
-				{
-					bool flag4 = MBRandom.RandomFloat < num2;
-					if (aIBehaviorTuple.AiBehavior == AiBehavior.DefendSettlement || flag4)
+					if (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && !mobileParty.Army.IsWaitingForArmyMembers())
 					{
-						Army.ArmyTypes selectedArmyType = ((aIBehaviorTuple.AiBehavior != AiBehavior.BesiegeSettlement) ? ((aIBehaviorTuple.AiBehavior == AiBehavior.RaidSettlement) ? Army.ArmyTypes.Raider : Army.ArmyTypes.Defender) : Army.ArmyTypes.Besieger);
-						((Kingdom)mobileParty.MapFaction).CreateArmy(mobileParty.LeaderHero, aIBehaviorTuple.Party as Settlement, selectedArmyType);
+						DisbandArmyAction.ApplyByUnknownReason(mobileParty.Army);
+					}
+					else if (mobileParty.Army != null && mobileParty.CurrentSettlement == null && mobileParty != mobileParty.Army.LeaderParty && !thinkParamsCache.DoNotChangeBehavior)
+					{
+						SetPartyAiAction.GetActionForEscortingParty(mobileParty, mobileParty.Army.LeaderParty, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
 					}
 				}
-				else if (!thinkParamsCache.DoNotChangeBehavior)
+				if (MobileParty.MainParty.Army != null && mobileParty == MobileParty.MainParty.Army.LeaderParty && (aiBehavior != mobileParty.Army.LeaderParty.DefaultBehavior || mobileParty.Army.AiBehaviorObject != mapPoint))
 				{
-					if (aIBehaviorTuple.AiBehavior == AiBehavior.PatrolAroundPoint)
-					{
-						SetPartyAiAction.GetActionForPatrollingAroundSettlement(mobileParty, (Settlement)aIBehaviorTuple.Party);
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.GoToSettlement)
-					{
-						if (MobilePartyHelper.GetCurrentSettlementOfMobilePartyForAICalculation(mobileParty) != aIBehaviorTuple.Party)
-						{
-							SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, (Settlement)aIBehaviorTuple.Party);
-						}
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.EscortParty)
-					{
-						SetPartyAiAction.GetActionForEscortingParty(mobileParty, (MobileParty)aIBehaviorTuple.Party);
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.RaidSettlement)
-					{
-						if (mobileParty.MapEvent == null || !mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.MapEventSettlement != aIBehaviorTuple.Party)
-						{
-							SetPartyAiAction.GetActionForRaidingSettlement(mobileParty, (Settlement)aIBehaviorTuple.Party);
-						}
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.BesiegeSettlement)
-					{
-						SetPartyAiAction.GetActionForBesiegingSettlement(mobileParty, (Settlement)aIBehaviorTuple.Party);
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.DefendSettlement && mobileParty.CurrentSettlement != aIBehaviorTuple.Party)
-					{
-						SetPartyAiAction.GetActionForDefendingSettlement(mobileParty, (Settlement)aIBehaviorTuple.Party);
-					}
-					else if (aIBehaviorTuple.AiBehavior == AiBehavior.GoAroundParty)
-					{
-						SetPartyAiAction.GetActionForGoingAroundParty(mobileParty, (MobileParty)aIBehaviorTuple.Party);
-					}
+					CampaignEventDispatcher.Instance.OnPlayerArmyLeaderChangedBehavior();
 				}
-			}
-			else if (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && mobileParty.Army.AIBehavior != Army.AIBehaviorFlags.Gathering && mobileParty.Army.AIBehavior != Army.AIBehaviorFlags.WaitingForArmyMembers)
-			{
-				DisbandArmyAction.ApplyByUnknownReason(mobileParty.Army);
-			}
-			else if (mobileParty.Army != null && mobileParty.CurrentSettlement == null && mobileParty != mobileParty.Army.LeaderParty && !thinkParamsCache.DoNotChangeBehavior)
-			{
-				SetPartyAiAction.GetActionForEscortingParty(mobileParty, mobileParty.Army.LeaderParty);
-			}
-			if (MobileParty.MainParty.Army != null && mobileParty.Equals(MobileParty.MainParty.Army?.LeaderParty) && (aIBehaviorFlags != mobileParty.Army.AIBehavior || mobileParty.Army.AiBehaviorObject != mapPoint))
-			{
-				Army.ArmyLeaderThinkReason behaviorChangeExplanation = Army.GetBehaviorChangeExplanation(aIBehaviorFlags, mobileParty.Army.AIBehavior);
-				CampaignEventDispatcher.Instance.OnArmyLeaderThink(mobileParty.LeaderHero, behaviorChangeExplanation);
 			}
 		}
 		mobileParty.Ai.HourCounter++;
@@ -248,7 +282,7 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 
 	private void CheckMobilePartyActionAccordingToSettlement(MobileParty mobileParty, Settlement settlement)
 	{
-		if (mobileParty.BesiegedSettlement == settlement)
+		if (mobileParty.BesiegedSettlement == null || mobileParty.BesiegedSettlement == settlement)
 		{
 			return;
 		}
@@ -263,11 +297,11 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 			{
 				if (mobileParty.CurrentSettlement == null)
 				{
-					mobileParty.Ai.SetMoveModeHold();
+					mobileParty.SetMoveModeHold();
 					return;
 				}
-				mobileParty.Ai.SetMoveGoToSettlement(mobileParty.CurrentSettlement);
-				mobileParty.Ai.RecalculateShortTermAi();
+				mobileParty.SetMoveGoToSettlement(mobileParty.CurrentSettlement, mobileParty.DesiredAiNavigationType, mobileParty.IsTargetingPort);
+				mobileParty.RecalculateShortTermBehavior();
 			}
 			else
 			{
@@ -283,11 +317,10 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 			Army army = mobileParty.Army;
 			if (army.AiBehaviorObject == settlement || (army.AiBehaviorObject != null && ((Settlement)army.AiBehaviorObject).IsVillage && ((Settlement)army.AiBehaviorObject).Village.Bound == settlement))
 			{
-				army.AIBehavior = Army.AIBehaviorFlags.Unassigned;
 				army.AiBehaviorObject = null;
 				if (army.LeaderParty.MapEvent == null)
 				{
-					army.LeaderParty.Ai.SetMoveModeHold();
+					army.LeaderParty.SetMoveModeHold();
 				}
 				else
 				{

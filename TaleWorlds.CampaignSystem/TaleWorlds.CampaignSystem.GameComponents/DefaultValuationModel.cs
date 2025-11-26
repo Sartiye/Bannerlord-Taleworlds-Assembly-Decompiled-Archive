@@ -7,7 +7,7 @@ public class DefaultValuationModel : ValuationModel
 {
 	public override float GetMilitaryValueOfParty(MobileParty party)
 	{
-		return party.Party.TotalStrength * 15f;
+		return party.Party.CalculateCurrentStrength() * 15f;
 	}
 
 	public override float GetValueOfTroop(CharacterObject troop)

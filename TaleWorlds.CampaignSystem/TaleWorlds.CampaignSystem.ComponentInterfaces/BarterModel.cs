@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BarterModel : GameModel
+public abstract class BarterModel : MBGameModel<BarterModel>
 {
 	public abstract int BarterCooldownWithHeroInDays { get; }
 

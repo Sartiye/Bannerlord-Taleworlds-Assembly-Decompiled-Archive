@@ -95,7 +95,7 @@ public class TacticDefensiveLine : TacticComponent
 			_archers.AI.SetBehaviorWeight<BehaviorScreenedSkirmish>(1f);
 			if (_linkedRangedDefensivePosition != null)
 			{
-				_archers.AI.SetBehaviorWeight<BehaviorDefend>(1f).TacticalDefendPosition = _linkedRangedDefensivePosition;
+				_archers.AI.SetBehaviorWeight<BehaviorShootFromCliff>(1f).SetTacticalDefendPosition(_linkedRangedDefensivePosition);
 			}
 		}
 		if (_leftCavalry != null)
@@ -123,9 +123,9 @@ public class TacticDefensiveLine : TacticComponent
 
 	private bool HasBattleBeenJoined()
 	{
-		if (_mainInfantry?.QuerySystem.ClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
+		if (_mainInfantry?.CachedClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
 		{
-			return _mainInfantry.QuerySystem.MedianPosition.AsVec2.Distance(_mainInfantry.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / _mainInfantry.QuerySystem.ClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
+			return _mainInfantry.CachedMedianPosition.AsVec2.Distance(_mainInfantry.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / _mainInfantry.CachedClosestEnemyFormation.MovementSpeedMaximum <= 5f + (_hasBattleBeenJoined ? 5f : 0f);
 		}
 		return true;
 	}
@@ -158,7 +158,7 @@ public class TacticDefensiveLine : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{
@@ -224,8 +224,8 @@ public class TacticDefensiveLine : TacticComponent
 		{
 			return true;
 		}
-		float num = _mainInfantry?.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2) ?? base.Team.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
-		float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry?.QuerySystem.AveragePosition ?? base.Team.QuerySystem.AveragePosition);
+		float num = _mainInfantry?.CachedAveragePosition.Distance(tacticalPosition.Position.AsVec2) ?? base.Team.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
+		float num2 = base.Team.QuerySystem.AverageEnemyPosition.Distance(_mainInfantry?.CachedAveragePosition ?? base.Team.QuerySystem.AveragePosition);
 		if (num > 20f && num > num2 * 0.5f)
 		{
 			return false;
@@ -256,7 +256,7 @@ public class TacticDefensiveLine : TacticComponent
 			}
 			float rangedFactor = GetRangedFactor(tacticalPosition);
 			float cavalryFactor = GetCavalryFactor(tacticalPosition);
-			float value = _mainInfantry.QuerySystem.AveragePosition.Distance(tacticalPosition.Position.AsVec2);
+			float value = _mainInfantry.CachedAveragePosition.Distance(tacticalPosition.Position.AsVec2);
 			float num5 = MBMath.Lerp(0.7f, 1f, (150f - MBMath.ClampFloat(value, 50f, 150f)) / 100f);
 			return num * num2 * num4 * rangedFactor * cavalryFactor * num5 * num3;
 		}
@@ -344,7 +344,7 @@ public class TacticDefensiveLine : TacticComponent
 		List<(TacticalPosition, float)> list = first.Concat<(TacticalPosition, float)>(second).ToList();
 		if (list.Count > 0)
 		{
-			TacticalPosition item = list.MaxBy<(TacticalPosition, float), float>(((TacticalPosition tp, float) pst) => pst.Item2).Item1;
+			TacticalPosition item = TaleWorlds.Core.Extensions.MaxBy<(TacticalPosition, float), float>(list, ((TacticalPosition tp, float) pst) => pst.Item2).Item1;
 			if (item != _mainDefensiveLineObject)
 			{
 				_mainDefensiveLineObject = item;

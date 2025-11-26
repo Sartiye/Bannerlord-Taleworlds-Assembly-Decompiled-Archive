@@ -5,7 +5,7 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.CustomG
 
 public class MPCustomGameSortControllerVM : ViewModel
 {
-	private enum SortState
+	public enum SortState
 	{
 		Default,
 		Ascending,
@@ -468,7 +468,7 @@ public class MPCustomGameSortControllerVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("No valid comparer for custom server sort option: " + customServerSortOption, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameSortControllerVM.cs", ".ctor", 59);
+				Debug.FailedAssert("No valid comparer for custom server sort option: " + customServerSortOption, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameSortControllerVM.cs", ".ctor", 59);
 			}
 		}
 		RefreshValues();
@@ -508,154 +508,117 @@ public class MPCustomGameSortControllerVM : ViewModel
 		}
 	}
 
-	public void SetSortOption(CustomServerSortOption? sortOption)
+	public void InitializeWithSortState(CustomServerSortOption? sortOption, SortState sortState = SortState.Default)
 	{
-		CustomServerSortOption? customServerSortOption = sortOption;
-		if (customServerSortOption.HasValue)
+		SetSortOption(sortOption);
+		CurrentSortState = (int)sortState;
+		SortByCurrentState();
+	}
+
+	private void SetSortOption(CustomServerSortOption? sortOption)
+	{
+		if (CurrentSortOption != sortOption)
 		{
-			switch (customServerSortOption.GetValueOrDefault())
-			{
-			case CustomServerSortOption.Name:
-				ExecuteSortByServerName();
-				break;
-			case CustomServerSortOption.GameType:
-				ExecuteSortByGameType();
-				break;
-			case CustomServerSortOption.PlayerCount:
-				ExecuteSortByPlayerCount();
-				break;
-			case CustomServerSortOption.PasswordProtection:
-				ExecuteSortByPassword();
-				break;
-			case CustomServerSortOption.FirstFaction:
-				ExecuteSortByFirstFaction();
-				break;
-			case CustomServerSortOption.SecondFaction:
-				ExecuteSortBySecondFaction();
-				break;
-			case CustomServerSortOption.Region:
-				ExecuteSortByRegion();
-				break;
-			case CustomServerSortOption.PremadeMatchType:
-				ExecuteSortByPremadeMatchType();
-				break;
-			case CustomServerSortOption.Host:
-				ExecuteSortByHost();
-				break;
-			case CustomServerSortOption.Ping:
-				ExecuteSortByPing();
-				break;
-			}
+			CurrentSortOption = sortOption;
+			RefreshSelectedStates();
 		}
 	}
 
 	public void SortByCurrentState()
 	{
-		ItemComparer sortComparer = GetSortComparer(CurrentSortOption ?? CustomServerSortOption.Name);
-		if (sortComparer != null)
+		if (CurrentSortOption.HasValue)
 		{
+			ItemComparer sortComparer = GetSortComparer(CurrentSortOption.Value);
 			SortState currentSortState = (SortState)CurrentSortState;
-			sortComparer.SetSortMode(currentSortState != SortState.Descending);
-			_listToControl.Sort(sortComparer);
+			if (sortComparer != null)
+			{
+				sortComparer.SetSortMode(currentSortState != SortState.Descending);
+				_listToControl.Sort(sortComparer);
+			}
 		}
 	}
 
-	public void ExecuteSortBy(CustomServerSortOption option)
+	private void SortWithOptionAux(CustomServerSortOption option)
 	{
-		if (GetSortComparer(option) != null)
+		if (option != CurrentSortOption)
 		{
-			if (CurrentSortOption == option)
-			{
-				CurrentSortState = (CurrentSortState + 1) % 3;
-			}
-			else
-			{
-				CurrentSortState = 1;
-			}
-			CurrentSortOption = option;
-			ResetAllSelectedStates();
-			SortByCurrentState();
+			CurrentSortState = 1;
 		}
+		else
+		{
+			CurrentSortState = (CurrentSortState + 1) % 3;
+		}
+		SetSortOption(option);
+		SortByCurrentState();
 	}
 
 	public void ExecuteSortByFavorites()
 	{
-		ExecuteSortBy(CustomServerSortOption.Favorite);
-		IsFavoritesSelected = true;
+		SortWithOptionAux(CustomServerSortOption.Favorite);
 	}
 
 	public void ExecuteSortByServerName()
 	{
-		ExecuteSortBy(CustomServerSortOption.Name);
-		IsServerNameSelected = true;
+		SortWithOptionAux(CustomServerSortOption.Name);
 	}
 
 	public void ExecuteSortByGameType()
 	{
-		ExecuteSortBy(CustomServerSortOption.GameType);
-		IsGameTypeSelected = true;
+		SortWithOptionAux(CustomServerSortOption.GameType);
 	}
 
 	public void ExecuteSortByPlayerCount()
 	{
-		ExecuteSortBy(CustomServerSortOption.PlayerCount);
-		IsPlayerCountSelected = true;
+		SortWithOptionAux(CustomServerSortOption.PlayerCount);
 	}
 
 	public void ExecuteSortByPassword()
 	{
-		ExecuteSortBy(CustomServerSortOption.PasswordProtection);
-		IsPasswordSelected = true;
+		SortWithOptionAux(CustomServerSortOption.PasswordProtection);
 	}
 
 	public void ExecuteSortByFirstFaction()
 	{
-		ExecuteSortBy(CustomServerSortOption.FirstFaction);
-		IsFirstFactionSelected = true;
+		SortWithOptionAux(CustomServerSortOption.FirstFaction);
 	}
 
 	public void ExecuteSortBySecondFaction()
 	{
-		ExecuteSortBy(CustomServerSortOption.SecondFaction);
-		IsSecondFactionSelected = true;
+		SortWithOptionAux(CustomServerSortOption.SecondFaction);
 	}
 
 	public void ExecuteSortByRegion()
 	{
-		ExecuteSortBy(CustomServerSortOption.Region);
-		IsRegionSelected = true;
+		SortWithOptionAux(CustomServerSortOption.Region);
 	}
 
 	public void ExecuteSortByPremadeMatchType()
 	{
-		ExecuteSortBy(CustomServerSortOption.PremadeMatchType);
-		IsPremadeMatchTypeSelected = true;
+		SortWithOptionAux(CustomServerSortOption.PremadeMatchType);
 	}
 
 	public void ExecuteSortByHost()
 	{
-		ExecuteSortBy(CustomServerSortOption.Host);
-		IsHostSelected = true;
+		SortWithOptionAux(CustomServerSortOption.Host);
 	}
 
 	public void ExecuteSortByPing()
 	{
-		ExecuteSortBy(CustomServerSortOption.Ping);
-		IsPingSelected = true;
+		SortWithOptionAux(CustomServerSortOption.Ping);
 	}
 
-	private void ResetAllSelectedStates()
+	private void RefreshSelectedStates()
 	{
-		IsFavoritesSelected = false;
-		IsServerNameSelected = false;
-		IsGameTypeSelected = false;
-		IsPlayerCountSelected = false;
-		IsPasswordSelected = false;
-		IsFirstFactionSelected = false;
-		IsSecondFactionSelected = false;
-		IsRegionSelected = false;
-		IsPremadeMatchTypeSelected = false;
-		IsHostSelected = false;
-		IsPingSelected = false;
+		IsFavoritesSelected = CurrentSortOption == CustomServerSortOption.Favorite;
+		IsServerNameSelected = CurrentSortOption == CustomServerSortOption.Name;
+		IsGameTypeSelected = CurrentSortOption == CustomServerSortOption.GameType;
+		IsPlayerCountSelected = CurrentSortOption == CustomServerSortOption.PlayerCount;
+		IsPasswordSelected = CurrentSortOption == CustomServerSortOption.PasswordProtection;
+		IsFirstFactionSelected = CurrentSortOption == CustomServerSortOption.FirstFaction;
+		IsSecondFactionSelected = CurrentSortOption == CustomServerSortOption.SecondFaction;
+		IsRegionSelected = CurrentSortOption == CustomServerSortOption.Region;
+		IsPremadeMatchTypeSelected = CurrentSortOption == CustomServerSortOption.PremadeMatchType;
+		IsHostSelected = CurrentSortOption == CustomServerSortOption.Host;
+		IsPingSelected = CurrentSortOption == CustomServerSortOption.Ping;
 	}
 }

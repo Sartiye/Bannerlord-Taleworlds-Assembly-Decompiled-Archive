@@ -1,3 +1,5 @@
+using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -7,6 +9,7 @@ public class MilitiasCampaignBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnNewGameCreatedPartialFollowUpEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUp);
+		CampaignEvents.AfterSiegeCompletedEvent.AddNonSerializedListener(this, OnAfterSiegeCompleted);
 	}
 
 	private void OnNewGameCreatedPartialFollowUp(CampaignGameStarter starter, int i)
@@ -37,6 +40,14 @@ public class MilitiasCampaignBehavior : CampaignBehaviorBase
 		for (int m = 0; m < num3; m++)
 		{
 			Village.All[num6 + m].Settlement.Militia = Village.All[num6 + m].Settlement.Village.MilitiaChange * 45f;
+		}
+	}
+
+	private void OnAfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
+	{
+		if ((battleType == MapEvent.BattleTypes.SallyOut || battleType == MapEvent.BattleTypes.Siege) && isWin)
+		{
+			siegeSettlement.Militia += Campaign.Current.Models.SettlementMilitiaModel.MilitiaToSpawnAfterSiege(siegeSettlement.Town);
 		}
 	}
 

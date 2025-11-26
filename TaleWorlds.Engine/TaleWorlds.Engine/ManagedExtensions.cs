@@ -8,161 +8,319 @@ namespace TaleWorlds.Engine;
 
 public static class ManagedExtensions
 {
-	[EngineCallback]
-	internal static void SetObjectField(DotNetObject managedObject, string fieldName, ref ScriptComponentFieldHolder scriptComponentHolder, int type, int callFieldChangeEventAsInteger)
+	private static void OnEditorVariableChanged(DotNetObject managedObject, uint classNameHash, uint fieldNameHash)
+	{
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldString(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, string value, int callFieldChangeEventAsInteger)
 	{
 		bool flag = callFieldChangeEventAsInteger != 0;
-		FieldInfo fieldOfClass = Managed.GetFieldOfClass(managedObject.GetType().Name, fieldName);
-		switch (type)
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
 		{
-		case 0:
-			fieldOfClass.SetValue(managedObject, scriptComponentHolder.s);
-			break;
-		case 1:
-			fieldOfClass.SetValue(managedObject, Convert.ChangeType(scriptComponentHolder.d, fieldOfClass.FieldType));
-			break;
-		case 2:
-			fieldOfClass.SetValue(managedObject, Convert.ChangeType(scriptComponentHolder.f, fieldOfClass.FieldType));
-			break;
-		case 3:
-		{
-			bool flag2 = scriptComponentHolder.b > 0;
-			fieldOfClass.SetValue(managedObject, flag2);
-			break;
-		}
-		case 9:
-		{
-			object value = Enum.Parse(fieldOfClass.FieldType, scriptComponentHolder.enumValue);
 			fieldOfClass.SetValue(managedObject, value);
-			break;
-		}
-		case 13:
-		{
-			MatrixFrame matrixFrame = scriptComponentHolder.matrixFrame;
-			fieldOfClass.SetValue(managedObject, matrixFrame);
-			break;
-		}
-		case 4:
-			fieldOfClass.SetValue(managedObject, Convert.ChangeType(scriptComponentHolder.i, fieldOfClass.FieldType));
-			break;
-		case 5:
-		{
-			Vec3 vec = new Vec3(scriptComponentHolder.v3.x, scriptComponentHolder.v3.y, scriptComponentHolder.v3.z, scriptComponentHolder.v3.w);
-			fieldOfClass.SetValue(managedObject, vec);
-			break;
-		}
-		case 6:
-			fieldOfClass.SetValue(managedObject, (scriptComponentHolder.entityPointer != UIntPtr.Zero) ? new GameEntity(scriptComponentHolder.entityPointer) : null);
-			break;
-		case 7:
-			fieldOfClass.SetValue(managedObject, (scriptComponentHolder.texturePointer != UIntPtr.Zero) ? new Texture(scriptComponentHolder.texturePointer) : null);
-			break;
-		case 8:
-			fieldOfClass.SetValue(managedObject, (scriptComponentHolder.meshPointer != UIntPtr.Zero) ? new MetaMesh(scriptComponentHolder.meshPointer) : null);
-			break;
-		case 10:
-			fieldOfClass.SetValue(managedObject, (scriptComponentHolder.materialPointer != UIntPtr.Zero) ? new Material(scriptComponentHolder.materialPointer) : null);
-			break;
-		}
-		if (type != 11 && flag && managedObject is ScriptComponentBehavior)
-		{
-			((ScriptComponentBehavior)managedObject).OnEditorVariableChanged(fieldName);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
 		}
 	}
 
-	[EngineCallback]
-	internal static void GetObjectField(DotNetObject managedObject, ref ScriptComponentFieldHolder scriptComponentFieldHolder, string fieldName, int type)
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldDouble(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, double value, int callFieldChangeEventAsInteger)
 	{
-		FieldInfo fieldOfClass = Managed.GetFieldOfClass(managedObject.GetType().Name, fieldName);
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldFloat(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, float value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldBool(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, bool value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldInt(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, int value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldVec3(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, Vec3 value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldEntity(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, UIntPtr value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, (value != UIntPtr.Zero) ? new GameEntity(value) : null);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldTexture(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, UIntPtr value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, (value != UIntPtr.Zero) ? new Texture(value) : null);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldMesh(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, UIntPtr value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, (value != UIntPtr.Zero) ? new MetaMesh(value) : null);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldMaterial(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, UIntPtr value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, (value != UIntPtr.Zero) ? new Material(value) : null);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldColor(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, Vec3 value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			Color color = default(Color);
+			color.Red = value.x;
+			color.Green = value.y;
+			color.Blue = value.z;
+			color.Alpha = value.w;
+			fieldOfClass.SetValue(managedObject, color);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldMatrixFrame(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, MatrixFrame value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			fieldOfClass.SetValue(managedObject, value);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void SetObjectFieldEnum(DotNetObject managedObject, uint classNameHash, uint fieldNameHash, string value, int callFieldChangeEventAsInteger)
+	{
+		bool flag = callFieldChangeEventAsInteger != 0;
+		_ = managedObject.GetType().Name;
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
+		if (!(fieldOfClass == null))
+		{
+			object value2 = Enum.Parse(fieldOfClass.FieldType, value);
+			fieldOfClass.SetValue(managedObject, value2);
+			if (flag)
+			{
+				OnEditorVariableChanged(managedObject, classNameHash, fieldNameHash);
+			}
+		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static void GetObjectField(DotNetObject managedObject, uint classNameHash, ref ScriptComponentFieldHolder scriptComponentFieldHolder, uint fieldNameHash, RglScriptFieldType type)
+	{
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
 		switch (type)
 		{
-		case 0:
+		case RglScriptFieldType.RglSftString:
 			scriptComponentFieldHolder.s = (string)fieldOfClass.GetValue(managedObject);
 			break;
-		case 1:
+		case RglScriptFieldType.RglSftDouble:
 			scriptComponentFieldHolder.d = (double)Convert.ChangeType(fieldOfClass.GetValue(managedObject), typeof(double));
 			break;
-		case 2:
+		case RglScriptFieldType.RglSftFloat:
 			scriptComponentFieldHolder.f = (float)Convert.ChangeType(fieldOfClass.GetValue(managedObject), typeof(float));
 			break;
-		case 3:
+		case RglScriptFieldType.RglSftBool:
 		{
 			bool flag = (bool)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.b = (flag ? 1 : 0);
 			break;
 		}
-		case 4:
+		case RglScriptFieldType.RglSftInt:
 			scriptComponentFieldHolder.i = (int)Convert.ChangeType(fieldOfClass.GetValue(managedObject), typeof(int));
 			break;
-		case 5:
+		case RglScriptFieldType.RglSftVec3:
 		{
 			Vec3 c = (Vec3)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.v3 = new Vec3(c, c.w);
 			break;
 		}
-		case 13:
+		case RglScriptFieldType.RglSftMatrixFrame:
 		{
 			MatrixFrame matrixFrame = (MatrixFrame)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.matrixFrame = matrixFrame;
 			break;
 		}
-		case 6:
+		case RglScriptFieldType.RglSftEntity:
 		{
 			GameEntity gameEntity = (GameEntity)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.entityPointer = ((gameEntity != null) ? ((UIntPtr)Convert.ChangeType(gameEntity.Pointer, typeof(UIntPtr))) : ((UIntPtr)0uL));
 			break;
 		}
-		case 7:
+		case RglScriptFieldType.RglSftTexture:
 		{
 			Texture texture = (Texture)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.texturePointer = ((texture != null) ? ((UIntPtr)Convert.ChangeType(texture.Pointer, typeof(UIntPtr))) : ((UIntPtr)0uL));
 			break;
 		}
-		case 8:
+		case RglScriptFieldType.RglSftMesh:
 		{
 			MetaMesh metaMesh = (MetaMesh)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.meshPointer = ((metaMesh != null) ? ((UIntPtr)Convert.ChangeType(metaMesh.Pointer, typeof(UIntPtr))) : ((UIntPtr)0uL));
 			break;
 		}
-		case 9:
+		case RglScriptFieldType.RglSftEnum:
 			scriptComponentFieldHolder.enumValue = fieldOfClass.GetValue(managedObject).ToString();
 			break;
-		case 10:
+		case RglScriptFieldType.RglSftMaterial:
 		{
 			Material material = (Material)fieldOfClass.GetValue(managedObject);
 			scriptComponentFieldHolder.materialPointer = ((material != null) ? ((UIntPtr)Convert.ChangeType(material.Pointer, typeof(UIntPtr))) : ((UIntPtr)0uL));
 			break;
 		}
-		case 11:
-		case 12:
+		case RglScriptFieldType.RglSftColor:
+		{
+			Color color = (Color)fieldOfClass.GetValue(managedObject);
+			scriptComponentFieldHolder.color.x = color.Red;
+			scriptComponentFieldHolder.color.y = color.Green;
+			scriptComponentFieldHolder.color.z = color.Blue;
+			scriptComponentFieldHolder.color.w = color.Alpha;
+			break;
+		}
+		case RglScriptFieldType.RglSftButton:
 			break;
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void CopyObjectFieldsFrom(DotNetObject dst, DotNetObject src, string className, int callFieldChangeEventAsInteger)
 	{
-		bool flag = callFieldChangeEventAsInteger != 0;
-		foreach (KeyValuePair<string, FieldInfo> item in Managed.GetEditableFieldsOfClass(className))
+		foreach (KeyValuePair<uint, FieldInfo> item in Managed.GetEditableFieldsOfClass(Managed.GetStringHashCode(className)))
 		{
 			FieldInfo value = item.Value;
 			value.SetValue(dst, value.GetValue(src));
-			if (flag && dst is ScriptComponentBehavior)
-			{
-				((ScriptComponentBehavior)dst).OnEditorVariableChanged(item.Key);
-			}
 		}
 	}
 
-	[EngineCallback]
-	internal static DotNetObject CreateScriptComponentInstance(string className, GameEntity entity, ManagedScriptComponent managedScriptComponent)
+	[EngineCallback(null, false)]
+	internal static DotNetObject CreateScriptComponentInstance(string className, UIntPtr entityPtr, ManagedScriptComponent managedScriptComponent)
 	{
 		ScriptComponentBehavior scriptComponentBehavior = null;
 		Func<ScriptComponentBehavior> func = (Func<ScriptComponentBehavior>)Managed.GetConstructorDelegateOfClass(className);
 		if (func != null)
 		{
 			scriptComponentBehavior = func();
-			scriptComponentBehavior?.Construct(entity, managedScriptComponent);
+			scriptComponentBehavior?.Construct(entityPtr, managedScriptComponent);
 		}
 		else
 		{
@@ -170,7 +328,7 @@ public static class ManagedExtensions
 			if (constructorOfClass != null)
 			{
 				scriptComponentBehavior = constructorOfClass.Invoke(new object[0]) as ScriptComponentBehavior;
-				scriptComponentBehavior?.Construct(entity, managedScriptComponent);
+				scriptComponentBehavior?.Construct(entityPtr, managedScriptComponent);
 			}
 			else
 			{
@@ -180,7 +338,7 @@ public static class ManagedExtensions
 		return scriptComponentBehavior;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static string GetScriptComponentClassNames()
 	{
 		List<Type> list = new List<Type>();
@@ -195,9 +353,26 @@ public static class ManagedExtensions
 		for (int i = 0; i < list.Count; i++)
 		{
 			Type type = list[i];
-			text += type.Name;
+			string text2 = type.Name;
+			string text3 = "!";
+			object[] customAttributesSafe = type.GetCustomAttributesSafe(typeof(ScriptComponentParams), inherit: true);
+			if (customAttributesSafe.Length != 0)
+			{
+				ScriptComponentParams scriptComponentParams = (ScriptComponentParams)customAttributesSafe[0];
+				if (scriptComponentParams.NameOverride.Length > 0)
+				{
+					text2 = scriptComponentParams.NameOverride;
+				}
+				if (scriptComponentParams.Tag.Length > 0)
+				{
+					text3 = scriptComponentParams.Tag;
+				}
+			}
+			text += text2;
 			text += "-";
 			text += type.BaseType.Name;
+			text += "-";
+			text += text3;
 			if (i + 1 != list.Count)
 			{
 				text += " ";
@@ -206,10 +381,10 @@ public static class ManagedExtensions
 		return text;
 	}
 
-	[EngineCallback]
-	internal static bool GetEditorVisibilityOfField(string className, string fieldName)
+	[EngineCallback(null, false)]
+	internal static bool GetEditorVisibilityOfField(uint classNameHash, uint fieldNamehash)
 	{
-		object[] customAttributesSafe = Managed.GetFieldOfClass(className, fieldName).GetCustomAttributesSafe(typeof(EditorVisibleScriptComponentVariable), inherit: true);
+		object[] customAttributesSafe = Managed.GetFieldOfClass(classNameHash, fieldNamehash).GetCustomAttributesSafe(typeof(EditorVisibleScriptComponentVariable), inherit: true);
 		if (customAttributesSafe.Length != 0)
 		{
 			return (customAttributesSafe[0] as EditorVisibleScriptComponentVariable).Visible;
@@ -217,77 +392,81 @@ public static class ManagedExtensions
 		return true;
 	}
 
-	[EngineCallback]
-	internal static int GetTypeOfField(string className, string fieldName)
+	[EngineCallback(null, false)]
+	internal static RglScriptFieldType GetTypeOfField(uint classNameHash, uint fieldNameHash)
 	{
-		FieldInfo fieldOfClass = Managed.GetFieldOfClass(className, fieldName);
+		FieldInfo fieldOfClass = Managed.GetFieldOfClass(classNameHash, fieldNameHash);
 		if (fieldOfClass == null)
 		{
-			return -1;
+			return RglScriptFieldType.RglSftInvalid;
 		}
 		Type fieldType = fieldOfClass.FieldType;
 		if (fieldOfClass.FieldType == typeof(string))
 		{
-			return 0;
+			return RglScriptFieldType.RglSftString;
 		}
 		if (fieldOfClass.FieldType == typeof(double))
 		{
-			return 1;
+			return RglScriptFieldType.RglSftDouble;
 		}
 		if (fieldOfClass.FieldType.IsEnum)
 		{
-			return 9;
+			return RglScriptFieldType.RglSftEnum;
 		}
 		if (fieldOfClass.FieldType == typeof(float))
 		{
-			return 2;
+			return RglScriptFieldType.RglSftFloat;
 		}
 		if (fieldOfClass.FieldType == typeof(bool))
 		{
-			return 3;
+			return RglScriptFieldType.RglSftBool;
 		}
 		if (fieldType == typeof(byte) || fieldType == typeof(sbyte) || fieldType == typeof(short) || fieldType == typeof(ushort) || fieldType == typeof(int) || fieldType == typeof(uint) || fieldType == typeof(long) || fieldType == typeof(ulong))
 		{
-			return 4;
+			return RglScriptFieldType.RglSftInt;
 		}
 		if (fieldOfClass.FieldType == typeof(Vec3))
 		{
-			return 5;
+			return RglScriptFieldType.RglSftVec3;
 		}
 		if (fieldOfClass.FieldType == typeof(GameEntity))
 		{
-			return 6;
+			return RglScriptFieldType.RglSftEntity;
 		}
 		if (fieldOfClass.FieldType == typeof(Texture))
 		{
-			return 7;
+			return RglScriptFieldType.RglSftTexture;
 		}
 		if (fieldOfClass.FieldType == typeof(MetaMesh))
 		{
-			return 8;
+			return RglScriptFieldType.RglSftMesh;
 		}
 		if (fieldOfClass.FieldType == typeof(Material))
 		{
-			return 10;
+			return RglScriptFieldType.RglSftMaterial;
 		}
 		if (fieldOfClass.FieldType == typeof(SimpleButton))
 		{
-			return 11;
+			return RglScriptFieldType.RglSftButton;
 		}
 		if (fieldOfClass.FieldType == typeof(MatrixFrame))
 		{
-			return 13;
+			return RglScriptFieldType.RglSftMatrixFrame;
 		}
-		return -1;
+		if (fieldOfClass.FieldType == typeof(Color))
+		{
+			return RglScriptFieldType.RglSftColor;
+		}
+		return RglScriptFieldType.RglSftInvalid;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void ForceGarbageCollect()
 	{
 		Utilities.FlushManagedObjectsMemory();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void CollectCommandLineFunctions()
 	{
 		foreach (string item in CommandLineFunctionality.CollectCommandLineFunctions())

@@ -12,5 +12,6 @@ public enum PlayerEncounterState
 	FreeHeroes,
 	LootParty,
 	LootInventory,
+	LootShips,
 	End
 }

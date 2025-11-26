@@ -17,11 +17,11 @@ public class CharacterDeveloperVM : ViewModel
 {
 	private readonly Action _closeCharacterDeveloper;
 
-	private readonly List<CharacterVM> _heroList;
+	private readonly List<CharacterDeveloperHeroItemVM> _heroList;
 
 	private readonly IViewDataTracker _viewDataTracker;
 
-	public readonly ReadOnlyCollection<CharacterVM> HeroList;
+	public readonly ReadOnlyCollection<CharacterDeveloperHeroItemVM> HeroList;
 
 	private int _heroIndex;
 
@@ -67,7 +67,7 @@ public class CharacterDeveloperVM : ViewModel
 
 	private HintViewModel _focusVisualHint;
 
-	private CharacterVM _currentCharacter;
+	private CharacterDeveloperHeroItemVM _currentCharacter;
 
 	private string _currentCharacterNameText;
 
@@ -105,7 +105,7 @@ public class CharacterDeveloperVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public CharacterVM CurrentCharacter
+	public CharacterDeveloperHeroItemVM CurrentCharacter
 	{
 		get
 		{
@@ -113,12 +113,24 @@ public class CharacterDeveloperVM : ViewModel
 		}
 		set
 		{
-			if (value != _currentCharacter)
+			if (value == _currentCharacter)
 			{
-				_currentCharacter = value;
-				CurrentCharacterNameText = _currentCharacter.HeroNameText;
-				OnPropertyChangedWithValue(value, "CurrentCharacter");
+				return;
 			}
+			if (_currentCharacter != null)
+			{
+				if (_currentCharacter.IsInspectingAnAttribute)
+				{
+					_currentCharacter.ExecuteStopInspectingCurrentAttribute();
+				}
+				if (_currentCharacter.PerkSelection.IsActive)
+				{
+					_currentCharacter.PerkSelection.ExecuteDeactivate();
+				}
+			}
+			_currentCharacter = value;
+			CurrentCharacterNameText = _currentCharacter?.HeroNameText ?? string.Empty;
+			OnPropertyChangedWithValue(value, "CurrentCharacter");
 		}
 	}
 
@@ -552,17 +564,25 @@ public class CharacterDeveloperVM : ViewModel
 		_closeCharacterDeveloper = closeCharacterDeveloper;
 		TutorialNotification = new ElementNotificationVM();
 		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
-		_heroList = new List<CharacterVM>();
-		HeroList = new ReadOnlyCollection<CharacterVM>(_heroList);
+		_heroList = new List<CharacterDeveloperHeroItemVM>();
+		HeroList = new ReadOnlyCollection<CharacterDeveloperHeroItemVM>(_heroList);
 		foreach (Hero applicableHero in GetApplicableHeroes())
 		{
-			if (applicableHero == Hero.MainHero)
+			if (applicableHero == null)
 			{
-				_heroList.Insert(0, new CharacterVM(applicableHero, OnPerkSelection));
+				Debug.FailedAssert("Trying to use null hero for character developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 40);
+			}
+			else if (applicableHero.HeroDeveloper == null)
+			{
+				Debug.FailedAssert("Hero does not have hero developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 46);
+			}
+			else if (applicableHero == Hero.MainHero)
+			{
+				_heroList.Insert(0, new CharacterDeveloperHeroItemVM(applicableHero, OnPerkSelection));
 			}
 			else
 			{
-				_heroList.Add(new CharacterVM(applicableHero, OnPerkSelection));
+				_heroList.Add(new CharacterDeveloperHeroItemVM(applicableHero, OnPerkSelection));
 			}
 		}
 		_heroIndex = 0;
@@ -571,7 +591,7 @@ public class CharacterDeveloperVM : ViewModel
 		IsPlayerAccompanied = _heroList.Count > 1;
 		SetCurrentHero(_heroList[_heroIndex]);
 		_viewDataTracker.ClearCharacterNotification();
-		UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
+		UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterDeveloperHeroItemVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 		RefreshValues();
 	}
@@ -639,7 +659,7 @@ public class CharacterDeveloperVM : ViewModel
 		{
 			_heroIndex = newIndex.SelectedIndex;
 			SetCurrentHero(_heroList[_heroIndex]);
-			UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
+			UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterDeveloperHeroItemVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
 			HasUnopenedPerksForOtherCharacters = _heroList[_heroIndex].GetNumberOfUnselectedPerks() > 0;
 		}
 	}
@@ -667,7 +687,7 @@ public class CharacterDeveloperVM : ViewModel
 
 	public void ExecuteReset()
 	{
-		foreach (CharacterVM hero in _heroList)
+		foreach (CharacterDeveloperHeroItemVM hero in _heroList)
 		{
 			hero.ResetChanges(isCancel: false);
 		}
@@ -682,14 +702,14 @@ public class CharacterDeveloperVM : ViewModel
 
 	public void ExecuteCancel()
 	{
-		foreach (CharacterVM hero in _heroList)
+		foreach (CharacterDeveloperHeroItemVM hero in _heroList)
 		{
 			hero.ResetChanges(isCancel: true);
 		}
 		_closeCharacterDeveloper();
 	}
 
-	private void SetCurrentHero(CharacterVM currentHero)
+	private void SetCurrentHero(CharacterDeveloperHeroItemVM currentHero)
 	{
 		SkillObject prevSkill = CurrentCharacter?.Skills.FirstOrDefault((SkillVM s) => s.IsInspected)?.Skill;
 		CurrentCharacter = currentHero;
@@ -701,7 +721,7 @@ public class CharacterDeveloperVM : ViewModel
 
 	public void ApplyAllChanges()
 	{
-		foreach (CharacterVM hero in _heroList)
+		foreach (CharacterDeveloperHeroItemVM hero in _heroList)
 		{
 			hero.ApplyChanges();
 		}
@@ -709,7 +729,7 @@ public class CharacterDeveloperVM : ViewModel
 
 	public bool IsThereAnyChanges()
 	{
-		return _heroList.Any((CharacterVM c) => c.IsThereAnyChanges());
+		return _heroList.Any((CharacterDeveloperHeroItemVM c) => c.IsThereAnyChanges());
 	}
 
 	private List<Hero> GetApplicableHeroes()
@@ -790,7 +810,7 @@ public class CharacterDeveloperVM : ViewModel
 		DoneInputKey.OnFinalize();
 		PreviousCharacterInputKey.OnFinalize();
 		NextCharacterInputKey.OnFinalize();
-		_heroList.ForEach(delegate(CharacterVM h)
+		_heroList.ForEach(delegate(CharacterDeveloperHeroItemVM h)
 		{
 			h.OnFinalize();
 		});
@@ -800,7 +820,7 @@ public class CharacterDeveloperVM : ViewModel
 	{
 		if (PreviousCharacterInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(PreviousCharacterInputKey.KeyID);
 	}
@@ -809,7 +829,7 @@ public class CharacterDeveloperVM : ViewModel
 	{
 		if (NextCharacterInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(NextCharacterInputKey.KeyID);
 	}

@@ -24,6 +24,8 @@ public class ClanFinanceWorkshopItemVM : ClanFinanceIncomeItemBaseVM
 
 	private readonly TextObject _noProfitText = new TextObject("{=no0chrAH}This workshop has not been running for {DAY} {?PLURAL_DAYS}days{?}day{\\?} because the production has not been profitable");
 
+	private readonly TextObject _townRebellionText = new TextObject("{=pDAuV918}This workshop has not been producing for {DAY} {?PLURAL_DAYS}days{?}day{\\?} due to rebel activity in the town.");
+
 	private readonly IWorkshopWarehouseCampaignBehavior _workshopWarehouseBehavior;
 
 	private readonly WorkshopModel _workshopModel;
@@ -504,15 +506,19 @@ public class ClanFinanceWorkshopItemVM : ClanFinanceIncomeItemBaseVM
 
 	private (TextObject Status, bool IsWarning, BasicTooltipViewModel Hint) GetWorkshopStatus(Workshop workshop)
 	{
-		TextObject empty = TextObject.Empty;
 		bool item = false;
 		BasicTooltipViewModel item2 = null;
+		TextObject item3;
 		if (workshop.LastRunCampaignTime.ElapsedDaysUntilNow >= 1f)
 		{
-			empty = _haltedText;
+			item3 = _haltedText;
 			item = true;
-			TextObject tooltipText = TextObject.Empty;
-			if (!_workshopWarehouseBehavior.IsRawMaterialsSufficientInTownMarket(workshop))
+			TextObject tooltipText = TextObject.GetEmpty();
+			if (workshop.Settlement.Town.InRebelliousState)
+			{
+				tooltipText = _townRebellionText;
+			}
+			else if (!_workshopWarehouseBehavior.IsRawMaterialsSufficientInTownMarket(workshop))
 			{
 				tooltipText = _noRawMaterialsText;
 			}
@@ -527,9 +533,9 @@ public class ClanFinanceWorkshopItemVM : ClanFinanceIncomeItemBaseVM
 		}
 		else
 		{
-			empty = _runningText;
+			item3 = _runningText;
 		}
-		return (Status: empty, IsWarning: item, Hint: item2);
+		return (Status: item3, IsWarning: item, Hint: item2);
 	}
 
 	private static void GetWorkshopTypeProductionTexts(WorkshopType workshopType, out TextObject inputsText, out TextObject outputsText)

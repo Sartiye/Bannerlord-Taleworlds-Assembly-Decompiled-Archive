@@ -195,6 +195,11 @@ public class KingdomDecisionsVM : ViewModel
 
 	public void HandleDecision(KingdomDecision curDecision)
 	{
+		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var _))
+		{
+			_shouldCheckForDecision = false;
+			return;
+		}
 		KingdomDecision kingdomDecision = curDecision;
 		if (kingdomDecision != null && !kingdomDecision.ShouldBeCancelled())
 		{
@@ -303,7 +308,23 @@ public class KingdomDecisionsVM : ViewModel
 		{
 			return new KingSelectionDecisionItemVM(decision6, OnDecisionOver);
 		}
-		Debug.FailedAssert("No defined decision type for this decision! This shouldn't happen", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\KingdomDecisionsVM.cs", "GetDecisionItemBasedOnType", 193);
+		if (decision is StartAllianceDecision decision7)
+		{
+			return new StartAllianceDecisionItemVM(decision7, OnDecisionOver);
+		}
+		if (decision is ProposeCallToWarAgreementDecision decision8)
+		{
+			return new ProposeCallToWarAgreementDecisionItemVM(decision8, OnDecisionOver);
+		}
+		if (decision is AcceptCallToWarAgreementDecision decision9)
+		{
+			return new AcceptingCallToWarAgreementDecisionItemVM(decision9, OnDecisionOver);
+		}
+		if (decision is TradeAgreementDecision decision10)
+		{
+			return new TradeAgreementDecisionItemVM(decision10, OnDecisionOver);
+		}
+		Debug.FailedAssert("No defined decision type for this decision! This shouldn't happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\KingdomDecisionsVM.cs", "GetDecisionItemBasedOnType", 215);
 		return new DecisionItemBaseVM(decision, OnDecisionOver);
 	}
 

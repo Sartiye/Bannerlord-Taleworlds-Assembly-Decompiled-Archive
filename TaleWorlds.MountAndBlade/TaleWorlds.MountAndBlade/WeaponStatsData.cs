@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Weapon_stats_data", false)]
+[EngineStruct("Weapon_stats_data", false, null)]
 public struct WeaponStatsData
 {
 	public MatrixFrame WeaponFrame;

@@ -4,6 +4,7 @@ using TaleWorlds.Core;
 using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -11,10 +12,10 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 {
 	private const string TargetingEntityTag = "targeting_entity";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	internal string RemoveOnDeployTag = "";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	internal string AddOnDeployTag = "";
 
 	private List<GameEntity> _addOnDeployEntities;
@@ -55,6 +56,8 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 
 	public virtual BattleSideEnum Side => BattleSideEnum.Attacker;
 
+	public override TextObject HitObjectName => GameTexts.FindText("str_siege_engine", GetSiegeEngineType().StringId);
+
 	public override bool HasWaitFrame
 	{
 		get
@@ -75,7 +78,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 	{
 		get
 		{
-			if (!base.IsDisabled && !(base.GameEntity == null) && base.GameEntity.IsVisibleIncludeParents())
+			if (!base.IsDisabled && base.GameEntity.IsValid && base.GameEntity.IsVisibleIncludeParents())
 			{
 				return base.IsDeactivated;
 			}
@@ -142,8 +145,12 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 			}
 		}
 		SetScriptComponentToTick(GetTickRequirement());
-		_targetingPositionOffset = base.GameEntity.CollectChildrenEntitiesWithTag("targeting_entity").FirstOrDefault()?.GlobalPosition - (base.GameEntity.PhysicsGlobalBoxMax + base.GameEntity.PhysicsGlobalBoxMin) * 0.5f;
-		_targetingPositionOffset = base.GameEntity.CollectChildrenEntitiesWithTag("targeting_entity").FirstOrDefault()?.GlobalPosition - (base.GameEntity.PhysicsGlobalBoxMax + base.GameEntity.PhysicsGlobalBoxMin) * 0.5f;
+		WeakGameEntity firstChildEntityWithTag = base.GameEntity.GetFirstChildEntityWithTag("targeting_entity");
+		if (firstChildEntityWithTag.IsValid)
+		{
+			Vec3 vec = base.GameEntity.ComputeGlobalPhysicsBoundingBoxCenter();
+			_targetingPositionOffset = firstChildEntityWithTag.GlobalPosition - vec;
+		}
 		EnemyRangeToStopUsing = 5f;
 	}
 
@@ -222,9 +229,9 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 					{
 						if (item2.CountOfUnits > 0 && item2.GetReadonlyMovementOrderReference().OrderEnum != MovementOrder.MovementOrderEnum.Retreat && (item2.Arrangement.UnitCount > 1 || (item2.Arrangement.UnitCount > 0 && !item2.HasPlayerControlledTroop)))
 						{
-							WorldPosition medianPosition = item2.QuerySystem.MedianPosition;
+							WorldPosition cachedMedianPosition = item2.CachedMedianPosition;
 							Vec3 targetPoint = base.GameEntity.GlobalPosition;
-							float num2 = medianPosition.DistanceSquaredWithLimit(in targetPoint, 10000f);
+							float num2 = cachedMedianPosition.DistanceSquaredWithLimit(in targetPoint, 10000f);
 							if (num2 < num)
 							{
 								num = num2;
@@ -270,7 +277,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 				Formation formation2 = null;
 				foreach (Formation potentialUsingFormation in _potentialUsingFormations)
 				{
-					float num4 = potentialUsingFormation.QuerySystem.AveragePosition.DistanceSquared(base.GameEntity.GlobalPosition.AsVec2);
+					float num4 = potentialUsingFormation.CachedAveragePosition.DistanceSquared(base.GameEntity.GlobalPosition.AsVec2);
 					if (num4 < num3)
 					{
 						num3 = num4;
@@ -467,7 +474,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 		{
 			return 0.4f;
 		}
-		Debug.FailedAssert("Invalid weapon type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeWeapon.cs", "GetDistanceMultiplierOfWeapon", 549);
+		Debug.FailedAssert("Invalid weapon type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeWeapon.cs", "GetDistanceMultiplierOfWeapon", 549);
 		return 1f;
 	}
 
@@ -485,7 +492,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 		return 1f;
 	}
 
-	public GameEntity GetTargetEntity()
+	public WeakGameEntity GetTargetEntity()
 	{
 		return base.GameEntity;
 	}
@@ -504,9 +511,32 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 		return Side;
 	}
 
-	public GameEntity Entity()
+	public Vec3 GetTargetGlobalVelocity()
+	{
+		if (this is IMoveableSiegeWeapon moveableSiegeWeapon)
+		{
+			return moveableSiegeWeapon.MovementComponent.Velocity;
+		}
+		return Vec3.Zero;
+	}
+
+	public bool IsDestructable()
+	{
+		return base.GameEntity.HasScriptOfType<DestructableComponent>();
+	}
+
+	public WeakGameEntity Entity()
 	{
 		return base.GameEntity;
+	}
+
+	public (Vec3, Vec3) ComputeGlobalPhysicsBoundingBoxMinMax()
+	{
+		return base.GameEntity.ComputeGlobalPhysicsBoundingBoxMinMax();
+	}
+
+	public virtual void OnShipSwappedBetweenTeams(BattleSideEnum newDefaultSide)
+	{
 	}
 
 	public abstract TargetFlags GetTargetFlags();

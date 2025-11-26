@@ -11,11 +11,17 @@ public interface ITargetable
 
 	float GetTargetValue(List<Vec3> referencePositions);
 
-	GameEntity GetTargetEntity();
+	WeakGameEntity GetTargetEntity();
 
 	Vec3 GetTargetingOffset();
 
 	BattleSideEnum GetSide();
 
-	GameEntity Entity();
+	Vec3 GetTargetGlobalVelocity();
+
+	bool IsDestructable();
+
+	WeakGameEntity Entity();
+
+	(Vec3, Vec3) ComputeGlobalPhysicsBoundingBoxMinMax();
 }

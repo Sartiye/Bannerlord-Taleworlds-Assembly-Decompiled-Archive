@@ -4,7 +4,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Skin_generation_params", false)]
+[EngineStruct("Skin_generation_params", false, null)]
 public struct SkinGenerationParams
 {
 	public int _skinMeshesVisibilityMask;

@@ -23,20 +23,16 @@ public static class LeaveSettlementAction
 					ApplyForParty(attachedParty);
 				}
 			}
-			foreach (MobileParty party in mobileParty.Army.Parties)
-			{
-				if (party != mobileParty && party.MapEvent == null && party.CurrentSettlement == null)
-				{
-					party.Ai.SetMoveModeHold();
-					party.Ai.SetMoveEscortParty(mobileParty);
-				}
-			}
 		}
 		if (mobileParty == MobileParty.MainParty && (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty))
 		{
-			mobileParty.Ai.SetMoveModeHold();
+			mobileParty.SetMoveModeHold();
 		}
 		mobileParty.CurrentSettlement = null;
+		if (mobileParty.IsCurrentlyAtSea)
+		{
+			mobileParty.Anchor.ResetPosition();
+		}
 		currentSettlement.SettlementComponent.OnPartyLeft(mobileParty);
 		CampaignEventDispatcher.Instance.OnSettlementLeft(mobileParty, currentSettlement);
 	}
@@ -44,10 +40,7 @@ public static class LeaveSettlementAction
 	public static void ApplyForCharacterOnly(Hero hero)
 	{
 		Settlement currentSettlement = hero.CurrentSettlement;
-		if (hero != null)
-		{
-			hero.StayingInSettlement = null;
-		}
+		hero.StayingInSettlement = null;
 		Location location = currentSettlement.LocationComplex?.GetLocationOfCharacter(hero);
 		if (location != null && location.GetLocationCharacter(hero) != null)
 		{

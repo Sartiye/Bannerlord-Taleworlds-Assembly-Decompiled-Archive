@@ -6,7 +6,6 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
@@ -55,7 +54,8 @@ public abstract class IssueBase : MBObjectBase
 		PartySizeLimit = 0x400u,
 		ClanIsMercenary = 0x800u,
 		MainHeroIsKingdomLeader = 0x4000u,
-		PlayerIsOwnerOfSettlement = 0x8000u
+		PlayerIsOwnerOfSettlement = 0x8000u,
+		CompanionLimitReached = 0x10000u
 	}
 
 	public enum IssueUpdateDetails
@@ -135,33 +135,33 @@ public abstract class IssueBase : MBObjectBase
 
 	public abstract TextObject IssueQuestSolutionExplanationByIssueGiver { get; }
 
-	public virtual TextObject IssueAlternativeSolutionExplanationByIssueGiver => TextObject.Empty;
+	public virtual TextObject IssueAlternativeSolutionExplanationByIssueGiver => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionExplanationByIssueGiver => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionExplanationByIssueGiver => TextObject.GetEmpty();
 
 	public abstract TextObject IssueQuestSolutionAcceptByPlayer { get; }
 
-	public virtual TextObject IssueAlternativeSolutionAcceptByPlayer => TextObject.Empty;
+	public virtual TextObject IssueAlternativeSolutionAcceptByPlayer => TextObject.GetEmpty();
 
-	public virtual TextObject IssueAlternativeSolutionResponseByIssueGiver => TextObject.Empty;
+	public virtual TextObject IssueAlternativeSolutionResponseByIssueGiver => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionAcceptByPlayer => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionAcceptByPlayer => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionResponseByIssueGiver => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionResponseByIssueGiver => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferBriefByOtherNpc => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferBriefByOtherNpc => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferExplanationByOtherNpc => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferExplanationByOtherNpc => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferAcceptByPlayer => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferAcceptByPlayer => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferDeclineByPlayer => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferDeclineByPlayer => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferAcceptResponseByOtherNpc => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferAcceptResponseByOtherNpc => TextObject.GetEmpty();
 
-	public virtual TextObject IssueLordSolutionCounterOfferDeclineResponseByOtherNpc => TextObject.Empty;
+	public virtual TextObject IssueLordSolutionCounterOfferDeclineResponseByOtherNpc => TextObject.GetEmpty();
 
-	public virtual TextObject IssueAsRumorInSettlement => TextObject.Empty;
+	public virtual TextObject IssueAsRumorInSettlement => TextObject.GetEmpty();
 
 	public virtual int AlternativeSolutionBaseNeededMenCount { get; }
 
@@ -206,11 +206,11 @@ public abstract class IssueBase : MBObjectBase
 
 	public abstract bool IsThereLordSolution { get; }
 
-	protected virtual TextObject LordSolutionStartLog => TextObject.Empty;
+	protected virtual TextObject LordSolutionStartLog => TextObject.GetEmpty();
 
-	protected virtual TextObject LordSolutionCounterOfferAcceptLog => TextObject.Empty;
+	protected virtual TextObject LordSolutionCounterOfferAcceptLog => TextObject.GetEmpty();
 
-	protected virtual TextObject LordSolutionCounterOfferRefuseLog => TextObject.Empty;
+	protected virtual TextObject LordSolutionCounterOfferRefuseLog => TextObject.GetEmpty();
 
 	public virtual int NeededInfluenceForLordSolution { get; }
 
@@ -427,7 +427,7 @@ public abstract class IssueBase : MBObjectBase
 
 	public virtual bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 	{
-		explanation = TextObject.Empty;
+		explanation = null;
 		if (IsThereAlternativeSolution)
 		{
 			return AlternativeSolutionBaseNeededMenCount == 1;
@@ -464,6 +464,11 @@ public abstract class IssueBase : MBObjectBase
 
 	protected virtual void LordSolutionConsequenceWithAcceptCounterOffer()
 	{
+	}
+
+	public override TextObject GetName()
+	{
+		return Title;
 	}
 
 	public float GetActiveIssueEffectAmount(IssueEffect issueEffect)
@@ -540,7 +545,7 @@ public abstract class IssueBase : MBObjectBase
 	{
 	}
 
-	public virtual void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+	public virtual void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 	{
 	}
 
@@ -569,6 +574,10 @@ public abstract class IssueBase : MBObjectBase
 	}
 
 	public virtual void OnHeroCanMarryInfoIsRequested(Hero hero, ref bool result)
+	{
+	}
+
+	public virtual void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
 	{
 	}
 
@@ -622,13 +631,6 @@ public abstract class IssueBase : MBObjectBase
 		CampaignEventDispatcher.Instance.OnIssueUpdated(this, IssueUpdateDetails.PlayerSentTroopsToQuest, Hero.MainHero);
 	}
 
-	private void MakeAlternativeSolutionTroopsReturn()
-	{
-		AlternativeSolutionHero.ChangeState(Hero.CharacterStates.Active);
-		MobileParty.MainParty.MemberRoster.Add(AlternativeSolutionSentTroops);
-		AlternativeSolutionSentTroops.Clear();
-	}
-
 	public void OnAlternativeSolutionSolvedAndTroopsAreReturning()
 	{
 		_areIssueEffectsResolved = true;
@@ -641,6 +643,7 @@ public abstract class IssueBase : MBObjectBase
 		CampaignEventDispatcher.Instance.RemoveListeners(this);
 		Campaign.Current.IssueManager.DeactivateIssue(this);
 		_areIssueEffectsResolved = true;
+		AlternativeSolutionSentTroops.Clear();
 		RemoveAllTrackedObjects();
 		OnIssueFinalized();
 	}
@@ -695,7 +698,7 @@ public abstract class IssueBase : MBObjectBase
 		else if (IsSolvingWithAlternative)
 		{
 			AddLog(new JournalLog(CampaignTime.Now, new TextObject("{=V5Za6d4h}Your troops have returned from their mission.")));
-			MakeAlternativeSolutionTroopsReturn();
+			Campaign.Current.IssueManager.TryToMakeTroopsReturn(this);
 		}
 		else if (IsSolvingWithLordSolution && log != null)
 		{
@@ -723,7 +726,7 @@ public abstract class IssueBase : MBObjectBase
 			}
 		}
 		int totalManCount = AlternativeSolutionSentTroops.TotalManCount;
-		AlternativeSolutionSentTroops.KillNumberOfNonHeroTroopsRandomly(_alternativeSolutionCasualtyCount);
+		AlternativeSolutionSentTroops.RemoveNumberOfNonHeroTroopsRandomly(_alternativeSolutionCasualtyCount);
 		float num = 0.5f;
 		float num2 = 1.2f - (float)AlternativeSolutionBaseNeededMenCount / (float)AlternativeSolutionSentTroops.TotalManCount;
 		foreach (FlattenedTroopRosterElement item2 in AlternativeSolutionSentTroops.ToFlattenedRoster())
@@ -767,28 +770,28 @@ public abstract class IssueBase : MBObjectBase
 		{
 			AddLog(new JournalLog(CampaignTime.Now, IssueAlternativeSolutionSuccessLog));
 		}
-		TextObject empty = TextObject.Empty;
+		TextObject textObject;
 		if (_alternativeSolutionCasualtyCount > 0)
 		{
 			int variable = totalManCount - _alternativeSolutionCasualtyCount;
-			empty = new TextObject("{=fCHVyxJ1}{COMPANION.LINK} reported that {?COMPANION.GENDER}she{?}he{\\?} had resolved the matter. Out of {NUMBER1} {?(NUMBER1 > 1)}troops{?}troop{\\?} you sent {NUMBER2} {?(NUMBER2 > 1)}troops{?}troop{\\?} came back safe and sound.");
-			empty.SetTextVariable("NUMBER1", totalManCount);
-			empty.SetTextVariable("NUMBER2", variable);
+			textObject = new TextObject("{=fCHVyxJ1}{COMPANION.LINK} reported that {?COMPANION.GENDER}she{?}he{\\?} had resolved the matter. Out of {NUMBER1} {?(NUMBER1 > 1)}troops{?}troop{\\?} you sent {NUMBER2} {?(NUMBER2 > 1)}troops{?}troop{\\?} will join back to your party.");
+			textObject.SetTextVariable("NUMBER1", totalManCount);
+			textObject.SetTextVariable("NUMBER2", variable);
 		}
 		else
 		{
-			empty = new TextObject("{=WOwaHClt}{COMPANION.LINK} reported that {?COMPANION.GENDER}she{?}he{\\?} had resolved the matter. {NUMBER} {?(NUMBER > 1)}troops{?}troop{\\?} you sent joined back to your party.");
-			empty.SetTextVariable("NUMBER", totalManCount);
+			textObject = new TextObject("{=WOwaHClt}{COMPANION.LINK} reported that {?COMPANION.GENDER}she{?}he{\\?} had resolved the matter. {NUMBER} {?(NUMBER > 1)}troops{?}troop{\\?} you sent will join back to your party.");
+			textObject.SetTextVariable("NUMBER", totalManCount);
 		}
-		StringHelpers.SetCharacterProperties("COMPANION", AlternativeSolutionHero.CharacterObject, empty);
-		AddLog(new JournalLog(CampaignTime.Now, empty));
+		StringHelpers.SetCharacterProperties("COMPANION", AlternativeSolutionHero.CharacterObject, textObject);
+		AddLog(new JournalLog(CampaignTime.Now, textObject));
 		CampaignEventDispatcher.Instance.OnIssueUpdated(this, IssueUpdateDetails.SentTroopsFinishedQuest, Hero.MainHero);
 	}
 
 	public void StartIssueWithLordSolution()
 	{
 		_issueDifficultyMultiplier = Campaign.Current.Models.IssueModel.GetIssueDifficultyMultiplier();
-		if (LordSolutionStartLog != null && LordSolutionStartLog != TextObject.Empty)
+		if (!TextObject.IsNullOrEmpty(LordSolutionStartLog))
 		{
 			AddLog(new JournalLog(CampaignTime.Now, LordSolutionStartLog));
 		}
@@ -828,42 +831,42 @@ public abstract class IssueBase : MBObjectBase
 			AlternativeSolutionEndWithFailureConsequence();
 			AlternativeSolutionEndWithFail();
 		}
-		MakeAlternativeSolutionTroopsReturn();
+		Campaign.Current.IssueManager.TryToMakeTroopsReturn(this);
 		IssueFinalized();
 	}
 
 	private void AlternativeSolutionEndWithFail()
 	{
-		TextObject empty = TextObject.Empty;
 		int totalManCount = AlternativeSolutionSentTroops.TotalManCount;
 		if (AlternativeSolutionHasCasualties)
 		{
-			AlternativeSolutionSentTroops.KillNumberOfNonHeroTroopsRandomly(_alternativeSolutionCasualtyCount);
+			AlternativeSolutionSentTroops.RemoveNumberOfNonHeroTroopsRandomly(_alternativeSolutionCasualtyCount);
 			AlternativeSolutionHero.MakeWounded();
 		}
+		TextObject textObject;
 		if (AlternativeSolutionHasCasualties && _alternativeSolutionCasualtyCount > 0)
 		{
-			empty = new TextObject("{=yxwuGcDo}{COMPANION.LINK} has failed to resolve the matter. Out of {NUMBER1} troops you sent {NUMBER2} troops came back safe and sound.");
-			empty.SetTextVariable("NUMBER1", totalManCount);
-			empty.SetTextVariable("NUMBER2", totalManCount - _alternativeSolutionCasualtyCount);
+			textObject = new TextObject("{=yxwuGcDo}{COMPANION.LINK} has failed to resolve the matter. Out of {NUMBER1} troops you sent {NUMBER2} troops came back safe and sound.");
+			textObject.SetTextVariable("NUMBER1", totalManCount);
+			textObject.SetTextVariable("NUMBER2", totalManCount - _alternativeSolutionCasualtyCount);
 		}
 		else
 		{
-			empty = new TextObject("{=k6fpAw92}{COMPANION.LINK} has failed to resolve the matter. {NUMBER} troops came back safe and sound.");
-			empty.SetTextVariable("NUMBER", totalManCount);
+			textObject = new TextObject("{=k6fpAw92}{COMPANION.LINK} has failed to resolve the matter. {NUMBER} troops came back safe and sound.");
+			textObject.SetTextVariable("NUMBER", totalManCount);
 		}
 		if (!TextObject.IsNullOrEmpty(IssueAlternativeSolutionFailLog))
 		{
 			AddLog(new JournalLog(CampaignTime.Now, IssueAlternativeSolutionFailLog));
 		}
 		StringHelpers.SetCharacterProperties("COMPANION", AlternativeSolutionHero.CharacterObject);
-		AddLog(new JournalLog(CampaignTime.Now, empty));
+		AddLog(new JournalLog(CampaignTime.Now, textObject));
 		CampaignEventDispatcher.Instance.OnIssueUpdated(this, IssueUpdateDetails.SentTroopsFailedQuest, Hero.MainHero);
 	}
 
 	public void CompleteIssueWithLordSolutionWithRefuseCounterOffer()
 	{
-		if (LordSolutionCounterOfferRefuseLog != null && LordSolutionCounterOfferRefuseLog != TextObject.Empty)
+		if (!TextObject.IsNullOrEmpty(LordSolutionCounterOfferRefuseLog))
 		{
 			AddLog(new JournalLog(CampaignTime.Now, LordSolutionCounterOfferRefuseLog));
 		}
@@ -879,7 +882,7 @@ public abstract class IssueBase : MBObjectBase
 
 	public void CompleteIssueWithLordSolutionWithAcceptCounterOffer()
 	{
-		if (LordSolutionCounterOfferAcceptLog != null && LordSolutionCounterOfferAcceptLog != TextObject.Empty)
+		if (!TextObject.IsNullOrEmpty(LordSolutionCounterOfferAcceptLog))
 		{
 			AddLog(new JournalLog(CampaignTime.Now, LordSolutionCounterOfferAcceptLog));
 		}
@@ -980,9 +983,13 @@ public abstract class IssueBase : MBObjectBase
 		{
 			explanation.SetTextVariable("EXPLANATION", new TextObject("{=vz4M8SRn}I do have one particular task, but it is not really suited to a mercenary.Please carry on with your other duties."));
 		}
+		else if ((flag & PreconditionFlags.CompanionLimitReached) == PreconditionFlags.CompanionLimitReached)
+		{
+			explanation.SetTextVariable("EXPLANATION", new TextObject("{=144bieK5}I was planning to entrust one of my people to you, but it seems you have enough companions in your party."));
+		}
 		else
 		{
-			explanation.SetTextVariable("EXPLANATION", TextObject.Empty);
+			explanation.SetTextVariable("EXPLANATION", TextObject.GetEmpty());
 		}
 		return result;
 	}

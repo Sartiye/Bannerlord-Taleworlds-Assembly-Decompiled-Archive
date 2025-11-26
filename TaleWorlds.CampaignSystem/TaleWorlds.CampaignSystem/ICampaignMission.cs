@@ -43,4 +43,8 @@ public interface ICampaignMission
 	void OnConversationEnd(IAgent agent);
 
 	void EndMission();
+
+	void FadeOutCharacter(CharacterObject characterObject);
+
+	void OnGameStateChanged();
 }

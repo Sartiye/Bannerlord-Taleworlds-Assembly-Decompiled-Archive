@@ -47,6 +47,11 @@ public class SceneView : View
 		return EngineApplicationInterface.ISceneView.CheckSceneReadyToRender(base.Pointer);
 	}
 
+	public void SetDoQuickExposure(bool value)
+	{
+		EngineApplicationInterface.ISceneView.SetDoQuickExposure(base.Pointer, value);
+	}
+
 	public void SetCamera(Camera camera)
 	{
 		EngineApplicationInterface.ISceneView.SetCamera(base.Pointer, camera.Pointer);
@@ -75,6 +80,11 @@ public class SceneView : View
 	public bool ProjectedMousePositionOnGround(out Vec3 groundPosition, out Vec3 groundNormal, bool mouseVisible, BodyFlags excludeBodyOwnerFlags, bool checkOccludedSurface)
 	{
 		return EngineApplicationInterface.ISceneView.ProjectedMousePositionOnGround(base.Pointer, out groundPosition, out groundNormal, mouseVisible, excludeBodyOwnerFlags, checkOccludedSurface);
+	}
+
+	public bool ProjectedMousePositionOnWater(out Vec3 waterPosition, bool mouseVisible)
+	{
+		return EngineApplicationInterface.ISceneView.ProjectedMousePositionOnWater(base.Pointer, out waterPosition, mouseVisible);
 	}
 
 	public void TranslateMouse(ref Vec3 worldMouseNear, ref Vec3 worldMouseFar, float maxDistance = -1f)

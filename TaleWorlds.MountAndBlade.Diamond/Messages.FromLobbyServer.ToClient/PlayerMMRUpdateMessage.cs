@@ -6,7 +6,7 @@ using TaleWorlds.MountAndBlade.Diamond.Ranked;
 namespace Messages.FromLobbyServer.ToClient;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class PlayerMMRUpdateMessage : Message
 {
 	[JsonProperty]

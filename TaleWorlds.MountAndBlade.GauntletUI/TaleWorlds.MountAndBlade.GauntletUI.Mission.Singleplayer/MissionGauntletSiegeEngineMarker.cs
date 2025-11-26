@@ -2,13 +2,15 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.MountAndBlade.View;
+using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.FormationMarker;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission.Singleplayer;
 
 [OverrideView(typeof(MissionSiegeEngineMarkerView))]
-public class MissionGauntletSiegeEngineMarker : MissionGauntletBattleUIBase
+public class MissionGauntletSiegeEngineMarker : MissionBattleUIBaseView
 {
 	private List<SiegeWeapon> _siegeEngines;
 
@@ -21,7 +23,7 @@ public class MissionGauntletSiegeEngineMarker : MissionGauntletBattleUIBase
 	protected override void OnCreateView()
 	{
 		_dataSource = new MissionSiegeEngineMarkerVM(base.Mission, base.MissionScreen.CombatCamera);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MissionSiegeEngineMarker", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("SiegeEngineMarker", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		_orderHandler = base.Mission.GetMissionBehavior<MissionGauntletSingleplayerOrderUIHandler>();
@@ -48,16 +50,32 @@ public class MissionGauntletSiegeEngineMarker : MissionGauntletBattleUIBase
 		_dataSource = null;
 	}
 
+	protected override void OnSuspendView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+		}
+	}
+
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			if (!_dataSource.IsInitialized && _siegeEngines != null)
 			{
 				_dataSource.InitializeWith(_siegeEngines);
 			}
-			if (!_orderHandler.IsBattleDeployment)
+			if (!_orderHandler.IsDeployment)
 			{
 				_dataSource.IsEnabled = base.Input.IsGameKeyDown(5);
 			}
@@ -68,7 +86,7 @@ public class MissionGauntletSiegeEngineMarker : MissionGauntletBattleUIBase
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 0f;
 		}
@@ -77,7 +95,7 @@ public class MissionGauntletSiegeEngineMarker : MissionGauntletBattleUIBase
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 1f;
 		}

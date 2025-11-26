@@ -14,4 +14,9 @@ internal class Vec3iBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadVec3Int();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 12;
+	}
 }

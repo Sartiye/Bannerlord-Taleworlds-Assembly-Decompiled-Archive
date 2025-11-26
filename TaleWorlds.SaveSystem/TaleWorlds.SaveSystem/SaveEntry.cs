@@ -38,6 +38,6 @@ public class SaveEntry
 
 	public void FillFrom(BinaryWriter writer)
 	{
-		_data = writer.Data;
+		_data = writer.GetFinalData();
 	}
 }

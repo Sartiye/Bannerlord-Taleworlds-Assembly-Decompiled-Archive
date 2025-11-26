@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class BattleBannerBearersModel : GameModel
+public abstract class BattleBannerBearersModel : MBGameModel<BattleBannerBearersModel>
 {
 	public const float DefaultDetachmentCostMultiplier = 10f;
 

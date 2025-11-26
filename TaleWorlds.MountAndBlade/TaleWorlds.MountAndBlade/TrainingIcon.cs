@@ -11,15 +11,9 @@ namespace TaleWorlds.MountAndBlade;
 
 public class TrainingIcon : UsableMachine
 {
-	private static readonly ActionIndexCache act_pickup_middle_begin = ActionIndexCache.Create("act_pickup_middle_begin");
+	private const string HighlightBeamTag = "highlight_beam";
 
-	private static readonly ActionIndexCache act_pickup_middle_begin_left_stance = ActionIndexCache.Create("act_pickup_middle_begin_left_stance");
-
-	private static readonly ActionIndexCache act_pickup_middle_end = ActionIndexCache.Create("act_pickup_middle_end");
-
-	private static readonly ActionIndexCache act_pickup_middle_end_left_stance = ActionIndexCache.Create("act_pickup_middle_end_left_stance");
-
-	private static readonly string HighlightBeamTag = "highlight_beam";
+	private const float MarkerAlphaChangeAmount = 110f;
 
 	private bool _activated;
 
@@ -27,16 +21,14 @@ public class TrainingIcon : UsableMachine
 
 	private float _targetMarkerAlpha;
 
-	private float _markerAlphaChangeAmount = 110f;
-
 	private List<GameEntity> _weaponIcons = new List<GameEntity>();
 
 	private GameEntity _markerBeam;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private string _descriptionTextOfIcon = "";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private string _trainingSubTypeTag = "";
 
 	public bool Focused { get; private set; }
@@ -44,8 +36,8 @@ public class TrainingIcon : UsableMachine
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		_markerBeam = base.GameEntity.GetFirstChildEntityWithTag(HighlightBeamTag);
-		_weaponIcons = (from x in base.GameEntity.GetChildren()
+		_markerBeam = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("highlight_beam"));
+		_weaponIcons = (from x in TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity).GetChildren()
 			where !x.GetScriptComponents().Any() && x != _markerBeam
 			select x).ToList();
 		SetScriptComponentToTick(GetTickRequirement());
@@ -61,9 +53,9 @@ public class TrainingIcon : UsableMachine
 		base.OnTick(dt);
 		if (_markerBeam != null)
 		{
-			if (MathF.Abs(_markerAlpha - _targetMarkerAlpha) > dt * _markerAlphaChangeAmount)
+			if (MathF.Abs(_markerAlpha - _targetMarkerAlpha) > dt * 110f)
 			{
-				_markerAlpha += dt * _markerAlphaChangeAmount * (float)MathF.Sign(_targetMarkerAlpha - _markerAlpha);
+				_markerAlpha += dt * 110f * (float)MathF.Sign(_targetMarkerAlpha - _markerAlpha);
 				_markerBeam.GetChild(0).GetFirstMesh().SetVectorArgument(_markerAlpha, 1f, 0.49f, 11.65f);
 			}
 			else
@@ -82,20 +74,27 @@ public class TrainingIcon : UsableMachine
 				continue;
 			}
 			Agent userAgent = standingPoint.UserAgent;
-			ActionIndexValueCache currentActionValue = userAgent.GetCurrentActionValue(0);
-			ActionIndexValueCache currentActionValue2 = userAgent.GetCurrentActionValue(1);
-			if (!(currentActionValue2 == ActionIndexValueCache.act_none) || (!(currentActionValue == act_pickup_middle_begin) && !(currentActionValue == act_pickup_middle_begin_left_stance)))
+			ActionIndexCache currentAction = userAgent.GetCurrentAction(0);
+			ActionIndexCache currentAction2 = userAgent.GetCurrentAction(1);
+			if (currentAction2 == ActionIndexCache.act_none && (currentAction == ActionIndexCache.act_pickup_middle_begin || currentAction == ActionIndexCache.act_pickup_middle_begin_left_stance))
 			{
-				if (currentActionValue2 == ActionIndexValueCache.act_none && (currentActionValue == act_pickup_middle_end || currentActionValue == act_pickup_middle_end_left_stance))
+				continue;
+			}
+			if (currentAction2 == ActionIndexCache.act_none && (currentAction == ActionIndexCache.act_pickup_middle_end || currentAction == ActionIndexCache.act_pickup_middle_end_left_stance))
+			{
+				_activated = true;
+				userAgent.StopUsingGameObject();
+				continue;
+			}
+			if (!(currentAction2 != ActionIndexCache.act_none))
+			{
+				ActionIndexCache actionIndexCache = (userAgent.GetIsLeftStance() ? ActionIndexCache.act_pickup_middle_begin_left_stance : ActionIndexCache.act_pickup_middle_begin);
+				if (userAgent.SetActionChannel(0, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL))
 				{
-					_activated = true;
-					userAgent.StopUsingGameObject();
-				}
-				else if (currentActionValue2 != ActionIndexValueCache.act_none || !userAgent.SetActionChannel(0, userAgent.GetIsLeftStance() ? act_pickup_middle_begin_left_stance : act_pickup_middle_begin, ignorePriority: false, 0uL))
-				{
-					userAgent.StopUsingGameObject();
+					continue;
 				}
 			}
+			userAgent.StopUsingGameObject();
 		}
 	}
 
@@ -141,11 +140,11 @@ public class TrainingIcon : UsableMachine
 		}
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
 		TextObject textObject = new TextObject("{=!}{TRAINING_TYPE}");
 		textObject.SetTextVariable("TRAINING_TYPE", GameTexts.FindText("str_tutorial_" + _descriptionTextOfIcon));
-		return textObject.ToString();
+		return textObject;
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject = null)

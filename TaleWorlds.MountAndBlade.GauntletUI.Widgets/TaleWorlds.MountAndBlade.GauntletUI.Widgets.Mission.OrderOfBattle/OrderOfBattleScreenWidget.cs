@@ -24,9 +24,11 @@ public class OrderOfBattleScreenWidget : Widget
 
 	private ListPanel _rightSideFormations;
 
-	private ListPanel _commanderPool;
+	private ListPanel _captainPool;
 
 	private Widget _markers;
+
+	private bool _canToggleHeroSelection;
 
 	public float AlphaChangeDuration { get; set; } = 0.15f;
 
@@ -101,18 +103,18 @@ public class OrderOfBattleScreenWidget : Widget
 	}
 
 	[Editor(false)]
-	public ListPanel CommanderPool
+	public ListPanel CaptainPool
 	{
 		get
 		{
-			return _commanderPool;
+			return _captainPool;
 		}
 		set
 		{
-			if (value != _commanderPool)
+			if (value != _captainPool)
 			{
-				_commanderPool = value;
-				OnPropertyChanged(value, "CommanderPool");
+				_captainPool = value;
+				OnPropertyChanged(value, "CaptainPool");
 			}
 		}
 	}
@@ -134,6 +136,23 @@ public class OrderOfBattleScreenWidget : Widget
 		}
 	}
 
+	[Editor(false)]
+	public bool CanToggleHeroSelection
+	{
+		get
+		{
+			return _canToggleHeroSelection;
+		}
+		set
+		{
+			if (value != _canToggleHeroSelection)
+			{
+				_canToggleHeroSelection = value;
+				OnPropertyChanged(value, "CanToggleHeroSelection");
+			}
+		}
+	}
+
 	public OrderOfBattleScreenWidget(UIContext context)
 		: base(context)
 	{
@@ -141,6 +160,7 @@ public class OrderOfBattleScreenWidget : Widget
 
 	protected override void OnLateUpdate(float dt)
 	{
+		CanToggleHeroSelection = base.EventManager.DraggedWidget == null;
 		if (_isTransitioning)
 		{
 			if (_alphaChangeTimeElapsed < AlphaChangeDuration)
@@ -148,12 +168,17 @@ public class OrderOfBattleScreenWidget : Widget
 				_currentAlpha = MathF.Lerp(_initialAlpha, _targetAlpha, _alphaChangeTimeElapsed / AlphaChangeDuration);
 				LeftSideFormations?.SetGlobalAlphaRecursively(_currentAlpha);
 				RightSideFormations?.SetGlobalAlphaRecursively(_currentAlpha);
-				CommanderPool?.SetGlobalAlphaRecursively(_currentAlpha);
+				CaptainPool?.SetGlobalAlphaRecursively(_currentAlpha);
 				Markers?.SetGlobalAlphaRecursively(_currentAlpha);
 				_alphaChangeTimeElapsed += dt;
 			}
 			else
 			{
+				_currentAlpha = _targetAlpha;
+				LeftSideFormations?.SetGlobalAlphaRecursively(_currentAlpha);
+				RightSideFormations?.SetGlobalAlphaRecursively(_currentAlpha);
+				CaptainPool?.SetGlobalAlphaRecursively(_currentAlpha);
+				Markers?.SetGlobalAlphaRecursively(_currentAlpha);
 				_isTransitioning = false;
 			}
 		}

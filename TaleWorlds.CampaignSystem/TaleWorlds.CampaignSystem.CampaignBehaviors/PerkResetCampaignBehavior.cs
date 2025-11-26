@@ -51,6 +51,7 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 	{
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
+		CampaignEvents.PerkResetEvent.AddNonSerializedListener(this, OnPerkReset);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -83,11 +84,19 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddDialogLine("arena_master_pay_for_reset", "arena_master_pay_for_reset", "arena_master_accept_perk_reset", "{=q3J9Wb8N}If you can afford to pay {GOLD_AMOUNT} {GOLD_ICON} for it, I can teach you right now. Are you sure you want to go through with it?", conversation_arena_ask_price_on_condition, null);
 		campaignGameStarter.AddDialogLine("arena_master_selected_skill_invalid", "arena_master_pay_for_reset", "arena_master_reset_attribute", "{=!}{NOT_ENOUGH_SKILL_TEXT}", conversation_arena_skill_not_developed_enough_on_condition, conversation_arena_skill_not_developed_enough_on_consequence);
 		campaignGameStarter.AddPlayerLine("arena_master_accept_perk_reset1", "arena_master_accept_perk_reset", "arena_master_perk_reset_closure", "{=Q0UjYw7V}Yes I am sure.", null, conversation_arena_player_accept_perk_reset_on_consequence, 100, conversation_arena_player_accept_price);
-		campaignGameStarter.AddPlayerLine("arena_master_reject_perk_reset2", "arena_master_accept_perk_reset", "arena_master_pre_talk", "{=SLaJsVnq}Actually, I have changed my mind.", null, null);
+		campaignGameStarter.AddPlayerLine("arena_master_reject_perk_reset2", "arena_master_accept_perk_reset", "arena_master_pre_talk", "{=UEbesbKZ}Actually, I have changed my mind.", null, null);
 		campaignGameStarter.AddDialogLine("arena_master_perk_reset_closure", "arena_master_perk_reset_closure", "arena_master_perk_reset_final", "{=IsBVxopm}Excellent! Is there anything else I can help you with?", null, null);
 		campaignGameStarter.AddPlayerLine("arena_master_perk_reset_final1", "arena_master_perk_reset_final", "arena_master_reset_attribute", "{=aCGgBilx}I would like help fine-tuning another skill.", null, conversation_arena_train_another_skill_on_condition);
 		campaignGameStarter.AddPlayerLine("arena_master_perk_reset_final2", "arena_master_perk_reset_final", "arena_master_retrain_ask_clan_members", "{=c4tfVgqb}I would like you to help another member of my clan hone their skills.", conversation_player_has_multiple_clan_members_on_condition, conversation_arena_train_another_clan_member_on_condition);
 		campaignGameStarter.AddPlayerLine("arena_master_perk_reset_final3", "arena_master_perk_reset_final", "arena_master_pre_talk", "{=Dz7E79QP}You have already helped enough. Thank you.", null, conversation_arena_finish_perk_reset_dialogs_on_consequence);
+	}
+
+	private void OnPerkReset(Hero hero, PerkObject perk)
+	{
+		if (perk.PrimaryRole == PartyRole.Captain)
+		{
+			hero.UpdatePowerModifier();
+		}
 	}
 
 	private void conversation_player_has_single_clan_member_on_consequence()
@@ -281,12 +290,12 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 
 	private void SetSkillsForDialog()
 	{
-		ConversationSentence.SetObjectsToRepeatOver(_attributeForPerkReset.Skills.ToList());
+		ConversationSentence.SetObjectsToRepeatOver(Skills.All.Where((SkillObject s) => s.Attributes.Contains(_attributeForPerkReset)).ToList());
 	}
 
 	private void ResetPerkTreeForHero(Hero hero, SkillObject skill)
 	{
-		ClearkPerksForSkill(hero, skill);
+		ClearPerksForSkill(hero, skill);
 	}
 
 	private void ClearPermanentBonusesIfExists(Hero hero, PerkObject perk)
@@ -325,7 +334,7 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void ClearkPerksForSkill(Hero hero, SkillObject skill)
+	private void ClearPerksForSkill(Hero hero, SkillObject skill)
 	{
 		foreach (PerkObject item in PerkObject.All)
 		{
@@ -357,7 +366,7 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 
 	private void WarnPlayerAboutCompanionLimit()
 	{
-		MBInformationManager.AddQuickInformation(new TextObject("{=xDikJxbO}Your party is above your companion limits. Due to that some of the companions might leave soon."), 0, null, "event:/ui/notification/relation");
+		MBInformationManager.AddQuickInformation(new TextObject("{=xDikJxbO}Your party is above your companion limits. Due to that some of the companions might leave soon."), 0, null, null, "event:/ui/notification/relation");
 		_warningTime = CampaignTime.Now;
 	}
 

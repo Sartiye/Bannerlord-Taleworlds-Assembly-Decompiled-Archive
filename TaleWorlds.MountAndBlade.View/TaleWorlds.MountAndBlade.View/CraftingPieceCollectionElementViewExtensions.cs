@@ -24,17 +24,23 @@ public static class CraftingPieceCollectionElementViewExtensions
 			{
 				Vec3 boundingBoxMin = copy.GetMeshAtIndex(i).GetBoundingBoxMin();
 				Vec3 boundingBoxMax = copy.GetMeshAtIndex(i).GetBoundingBoxMax();
-				Vec3[] array = new Vec3[8]
-				{
-					identity2.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMin.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMax.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMin.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMax.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMin.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMax.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMin.z)),
-					identity2.TransformToParent(new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMax.z))
-				};
+				Vec3[] array = new Vec3[8];
+				Vec3 v = new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMin.z);
+				array[0] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMin.x, boundingBoxMin.y, boundingBoxMax.z);
+				array[1] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMin.z);
+				array[2] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMin.x, boundingBoxMax.y, boundingBoxMax.z);
+				array[3] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMin.z);
+				array[4] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMax.x, boundingBoxMin.y, boundingBoxMax.z);
+				array[5] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMin.z);
+				array[6] = identity2.TransformToParent(in v);
+				v = new Vec3(boundingBoxMax.x, boundingBoxMax.y, boundingBoxMax.z);
+				array[7] = identity2.TransformToParent(in v);
 				for (int j = 0; j < 8; j++)
 				{
 					vec2 = Vec3.Vec3Min(vec2, array[j]);

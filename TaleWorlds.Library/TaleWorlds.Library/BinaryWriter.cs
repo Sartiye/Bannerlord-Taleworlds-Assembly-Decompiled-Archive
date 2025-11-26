@@ -9,15 +9,7 @@ public class BinaryWriter : IWriter
 
 	private int _availableIndex;
 
-	public byte[] Data
-	{
-		get
-		{
-			byte[] array = new byte[_availableIndex];
-			Buffer.BlockCopy(_data, 0, array, 0, _availableIndex);
-			return array;
-		}
-	}
+	public byte[] Data => _data;
 
 	public int Length => _availableIndex;
 
@@ -234,5 +226,12 @@ public class BinaryWriter : IWriter
 		EnsureLength(writer._availableIndex);
 		Buffer.BlockCopy(writer._data, 0, _data, _availableIndex, writer._availableIndex);
 		_availableIndex += writer._availableIndex;
+	}
+
+	public byte[] GetFinalData()
+	{
+		byte[] array = new byte[_availableIndex];
+		Buffer.BlockCopy(_data, 0, array, 0, _availableIndex);
+		return array;
 	}
 }

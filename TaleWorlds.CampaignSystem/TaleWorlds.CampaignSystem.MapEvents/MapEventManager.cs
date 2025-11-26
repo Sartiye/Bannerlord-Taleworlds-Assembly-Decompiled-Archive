@@ -52,7 +52,7 @@ public class MapEventManager
 	{
 		for (int num = _mapEvents.Count - 1; num >= 0; num--)
 		{
-			if (_mapEvents[num].IsFinished)
+			if (_mapEvents[num].IsFinalized)
 			{
 				_mapEvents.RemoveAt(num);
 			}
@@ -113,6 +113,14 @@ public class MapEventManager
 	{
 		MapEvent mapEvent = new MapEvent();
 		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.SiegeOutside);
+		OnMapEventCreated(mapEvent);
+		return mapEvent;
+	}
+
+	public MapEvent StartBlockadeBattleMapEvent(PartyBase attackerParty, PartyBase defenderParty)
+	{
+		MapEvent mapEvent = new MapEvent();
+		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.BlockadeBattle);
 		OnMapEventCreated(mapEvent);
 		return mapEvent;
 	}

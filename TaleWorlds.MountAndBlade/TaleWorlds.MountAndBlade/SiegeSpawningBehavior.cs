@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NetworkMessages.FromServer;
 using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -26,7 +27,7 @@ public class SiegeSpawningBehavior : SpawningBehaviorBase
 
 	public override void OnTick(float dt)
 	{
-		if (IsSpawningEnabled && _spawnCheckTimer.Check(base.Mission.CurrentTime))
+		if (IsSpawningEnabled && SpawnCheckTimer.Check(base.Mission.CurrentTime))
 		{
 			SpawnAgents();
 		}
@@ -37,6 +38,7 @@ public class SiegeSpawningBehavior : SpawningBehaviorBase
 	{
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
 			if (!networkPeer.IsSynchronized)
@@ -48,7 +50,8 @@ public class SiegeSpawningBehavior : SpawningBehaviorBase
 			{
 				continue;
 			}
-			BasicCultureObject basicCultureObject = ((component.Team.Side == BattleSideEnum.Attacker) ? @object : object2);
+			_ = component.Team.Side;
+			_ = 1;
 			MultiplayerClassDivisions.MPHeroClass mPHeroClassForPeer = MultiplayerClassDivisions.GetMPHeroClassForPeer(component);
 			if (mPHeroClassForPeer == null || mPHeroClassForPeer.TroopCasualCost > GameMode.GetCurrentGoldForPeer(component))
 			{
@@ -71,13 +74,14 @@ public class SiegeSpawningBehavior : SpawningBehaviorBase
 					equipment[item.Item1] = item.Item2;
 				}
 			}
+			MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = multiplayerBattleColors.GetPeerColors(component);
 			AgentBuildData agentBuildData = new AgentBuildData(heroCharacter).MissionPeer(component).Equipment(equipment).Team(component.Team)
 				.TroopOrigin(new BasicBattleAgentOrigin(heroCharacter))
 				.IsFemale(component.Peer.IsFemale)
-				.BodyProperties(GetBodyProperties(component, (component.Team == base.Mission.AttackerTeam) ? @object : object2))
+				.BodyProperties(GetBodyProperties(component, (component.Culture == @object) ? @object : object2))
 				.VisualsIndex(0)
-				.ClothingColor1((component.Team == base.Mission.AttackerTeam) ? basicCultureObject.Color : basicCultureObject.ClothAlternativeColor)
-				.ClothingColor2((component.Team == base.Mission.AttackerTeam) ? basicCultureObject.Color2 : basicCultureObject.ClothAlternativeColor2);
+				.ClothingColor1(peerColors.ClothingColor1Uint)
+				.ClothingColor2(peerColors.ClothingColor2Uint);
 			if (GameMode.ShouldSpawnVisualsForServer(networkPeer))
 			{
 				base.AgentVisualSpawnComponent.SpawnAgentVisualsForPeer(component, agentBuildData, component.SelectedTroopIndex);

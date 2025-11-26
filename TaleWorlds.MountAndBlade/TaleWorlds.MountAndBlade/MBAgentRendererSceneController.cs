@@ -12,18 +12,14 @@ public class MBAgentRendererSceneController
 		_pointer = pointer;
 	}
 
-	~MBAgentRendererSceneController()
-	{
-	}
-
 	public void SetEnforcedVisibilityForAllAgents(Scene scene)
 	{
 		MBAPI.IMBAgentVisuals.SetEnforcedVisibilityForAllAgents(scene.Pointer, _pointer);
 	}
 
-	public static MBAgentRendererSceneController CreateNewAgentRendererSceneController(Scene scene, int maxRenderCount)
+	public static MBAgentRendererSceneController CreateNewAgentRendererSceneController(Scene scene)
 	{
-		return new MBAgentRendererSceneController(MBAPI.IMBAgentVisuals.CreateAgentRendererSceneController(scene.Pointer, maxRenderCount));
+		return new MBAgentRendererSceneController(MBAPI.IMBAgentVisuals.CreateAgentRendererSceneController(scene.Pointer));
 	}
 
 	public void SetDoTimerBasedForcedSkeletonUpdates(bool value)

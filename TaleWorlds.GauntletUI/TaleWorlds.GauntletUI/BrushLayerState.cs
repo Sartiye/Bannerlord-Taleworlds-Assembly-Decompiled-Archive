@@ -25,6 +25,16 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 
 	public float YOffset;
 
+	public float Rotation;
+
+	public float ExtendRight;
+
+	public float ExtendTop;
+
+	public float ExtendBottom;
+
+	public float ExtendLeft;
+
 	public Sprite Sprite;
 
 	public void FillFrom(IBrushLayerData styleLayer)
@@ -39,6 +49,11 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		OverlayYOffset = styleLayer.OverlayYOffset;
 		XOffset = styleLayer.XOffset;
 		YOffset = styleLayer.YOffset;
+		Rotation = styleLayer.Rotation;
+		ExtendRight = styleLayer.ExtendRight;
+		ExtendTop = styleLayer.ExtendTop;
+		ExtendBottom = styleLayer.ExtendBottom;
+		ExtendLeft = styleLayer.ExtendLeft;
 		Sprite = styleLayer.Sprite;
 	}
 
@@ -67,6 +82,11 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		OverlayYOffset = Mathf.Lerp(start.OverlayYOffset, end.OverlayYOffset, ratio);
 		XOffset = Mathf.Lerp(start.XOffset, end.XOffset, ratio);
 		YOffset = Mathf.Lerp(start.YOffset, end.YOffset, ratio);
+		Rotation = Mathf.Lerp(start.Rotation, end.Rotation, ratio);
+		ExtendRight = Mathf.Lerp(start.ExtendRight, end.ExtendRight, ratio);
+		ExtendTop = Mathf.Lerp(start.ExtendTop, end.ExtendTop, ratio);
+		ExtendBottom = Mathf.Lerp(start.ExtendBottom, end.ExtendBottom, ratio);
+		ExtendLeft = Mathf.Lerp(start.ExtendLeft, end.ExtendLeft, ratio);
 		Sprite = ((ratio > 0.9f) ? end.Sprite : start.Sprite);
 	}
 
@@ -101,8 +121,23 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
 			YOffset = value;
 			break;
+		case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
+			Rotation = value;
+			break;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendRight:
+			ExtendRight = value;
+			break;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendLeft:
+			ExtendLeft = value;
+			break;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendTop:
+			ExtendTop = value;
+			break;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendBottom:
+			ExtendBottom = value;
+			break;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsFloat", 109);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsFloat", 139);
 			break;
 		}
 	}
@@ -115,7 +150,7 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsColor", 122);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsColor", 152);
 		}
 	}
 
@@ -127,7 +162,7 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsSprite", 135);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "SetValueAsSprite", 165);
 		}
 	}
 
@@ -153,8 +188,18 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 			return XOffset;
 		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
 			return YOffset;
+		case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
+			return Rotation;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendTop:
+			return ExtendTop;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendRight:
+			return ExtendRight;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendBottom:
+			return ExtendBottom;
+		case BrushAnimationProperty.BrushAnimationPropertyType.ExtendLeft:
+			return ExtendLeft;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsFloat", 163);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsFloat", 203);
 			return 0f;
 		}
 	}
@@ -165,7 +210,7 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		{
 			return Color;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsColor", 175);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsColor", 215);
 		return Color.Black;
 	}
 
@@ -175,7 +220,7 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		{
 			return Sprite;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsSprite", 187);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayerState.cs", "GetValueAsSprite", 227);
 		return null;
 	}
 
@@ -202,6 +247,7 @@ public struct BrushLayerState : IBrushAnimationState, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
 		case BrushAnimationProperty.BrushAnimationPropertyType.XOffset:
 		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
+		case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
 			currentState.SetValueAsFloat(propertyType, MathF.Lerp(startValue.GetValueAsFloat(), endValue.GetValueAsFloat(), ratio));
 			break;
 		case BrushAnimationProperty.BrushAnimationPropertyType.Color:

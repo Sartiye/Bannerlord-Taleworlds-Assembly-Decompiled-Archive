@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -57,6 +58,8 @@ public class TownManagementVM : ViewModel
 	private string _currentProjectText;
 
 	private HeroVM _currentGovernor;
+
+	private BasicTooltipViewModel _currentGovernorTooltip;
 
 	private string _manageText;
 
@@ -517,6 +520,23 @@ public class TownManagementVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public BasicTooltipViewModel CurrentGovernorTooltip
+	{
+		get
+		{
+			return _currentGovernorTooltip;
+		}
+		set
+		{
+			if (value != _currentGovernorTooltip)
+			{
+				_currentGovernorTooltip = value;
+				OnPropertyChangedWithValue(value, "CurrentGovernorTooltip");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public HeroVM CurrentGovernor
 	{
 		get
@@ -555,7 +575,7 @@ public class TownManagementVM : ViewModel
 		_settlement = Settlement.CurrentSettlement;
 		if (_settlement?.Town == null)
 		{
-			Debug.FailedAssert("Town management initialized with null settlement and/or town!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\TownManagement\\TownManagementVM.cs", ".ctor", 27);
+			Debug.FailedAssert("Town management initialized with null settlement and/or town!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\TownManagement\\TownManagementVM.cs", ".ctor", 27);
 			Debug.Print("Town management initialized with null settlement and/or town!");
 		}
 		ProjectSelection = new SettlementProjectSelectionVM(_settlement, OnChangeInBuildingQueue);
@@ -569,6 +589,10 @@ public class TownManagementVM : ViewModel
 		IsTown = _settlement.IsTown;
 		IsThereCurrentProject = _settlement.Town.CurrentBuilding != null;
 		CurrentGovernor = new HeroVM(_settlement.Town.Governor ?? CampaignUIHelper.GetTeleportingGovernor(_settlement, Campaign.Current.GetCampaignBehavior<ITeleportationCampaignBehavior>()), useCivilian: true);
+		if (CurrentGovernor.Hero != null)
+		{
+			CurrentGovernorTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetHeroGovernorEffectsTooltip(CurrentGovernor.Hero, _settlement));
+		}
 		UpdateGovernorSelectionProperties();
 		RefreshCurrentDevelopment();
 		RefreshTownManagementStats();
@@ -631,20 +655,20 @@ public class TownManagementVM : ViewModel
 		BasicTooltipViewModel hint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult(GameTexts.FindText("str_town_management_population_tax").ToString(), taxValue, ref taxExplanation));
 		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_town_management_population_tax"));
 		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_LEFT_colon"), taxValue, 0, TownManagementDescriptionItemVM.DescriptionType.Gold, hint));
-		BasicTooltipViewModel hint2 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(_settlement.Town));
-		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_prosperity"), (int)_settlement.Town.Prosperity, (int)Campaign.Current.Models.SettlementProsperityModel.CalculateProsperityChange(_settlement.Town).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Prosperity, hint2));
-		BasicTooltipViewModel hint3 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownDailyProductionTooltip(_settlement.Town));
-		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_daily_production"), (int)Campaign.Current.Models.BuildingConstructionModel.CalculateDailyConstructionPower(_settlement.Town).ResultNumber, 0, TownManagementDescriptionItemVM.DescriptionType.Production, hint3));
-		BasicTooltipViewModel hint4 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(_settlement.Town));
-		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_security"), (int)_settlement.Town.Security, (int)Campaign.Current.Models.SettlementSecurityModel.CalculateSecurityChange(_settlement.Town).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Security, hint4));
+		BasicTooltipViewModel hint2 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownDailyProductionTooltip(_settlement.Town));
+		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_daily_production"), (int)Campaign.Current.Models.BuildingConstructionModel.CalculateDailyConstructionPower(_settlement.Town).ResultNumber, 0, TownManagementDescriptionItemVM.DescriptionType.Production, hint2));
+		BasicTooltipViewModel hint3 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(_settlement.Town));
+		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_prosperity"), (int)_settlement.Town.Prosperity, MathF.Round(Campaign.Current.Models.SettlementProsperityModel.CalculateProsperityChange(_settlement.Town).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Prosperity, hint3));
+		BasicTooltipViewModel hint4 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(_settlement.Town));
+		MiddleFirstTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_food"), (int)_settlement.Town.FoodStocks, MathF.Round(Campaign.Current.Models.SettlementFoodModel.CalculateTownFoodStocksChange(_settlement.Town).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Food, hint4));
 		BasicTooltipViewModel hint5 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownLoyaltyTooltip(_settlement.Town));
-		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_loyalty"), (int)_settlement.Town.Loyalty, (int)Campaign.Current.Models.SettlementLoyaltyModel.CalculateLoyaltyChange(_settlement.Town).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Loyalty, hint5));
-		BasicTooltipViewModel hint6 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(_settlement.Town));
-		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_food"), (int)_settlement.Town.FoodStocks, (int)Campaign.Current.Models.SettlementFoodModel.CalculateTownFoodStocksChange(_settlement.Town).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Food, hint6));
+		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_loyalty"), (int)_settlement.Town.Loyalty, MathF.Round(Campaign.Current.Models.SettlementLoyaltyModel.CalculateLoyaltyChange(_settlement.Town).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Loyalty, hint5));
+		BasicTooltipViewModel hint6 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(_settlement.Town));
+		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_security"), (int)_settlement.Town.Security, MathF.Round(Campaign.Current.Models.SettlementSecurityModel.CalculateSecurityChange(_settlement.Town).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Security, hint6));
 		BasicTooltipViewModel hint7 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownMilitiaTooltip(_settlement.Town));
-		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_militia"), (int)_settlement.Militia, (int)Campaign.Current.Models.SettlementMilitiaModel.CalculateMilitiaChange(_settlement).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Militia, hint7));
+		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_militia"), (int)_settlement.Militia, MathF.Round(Campaign.Current.Models.SettlementMilitiaModel.CalculateMilitiaChange(_settlement).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Militia, hint7));
 		BasicTooltipViewModel hint8 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownGarrisonTooltip(_settlement.Town));
-		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_garrison"), _settlement.Town.GarrisonParty?.Party.NumberOfAllMembers ?? 0, (int)Campaign.Current.Models.SettlementGarrisonModel.CalculateGarrisonChange(_settlement).ResultNumber, TownManagementDescriptionItemVM.DescriptionType.Garrison, hint8));
+		MiddleSecondTextList.Add(new TownManagementDescriptionItemVM(GameTexts.FindText("str_town_management_garrison"), _settlement.Town.GarrisonParty?.Party.NumberOfAllMembers ?? 0, MathF.Round(SettlementHelper.GetGarrisonChangeExplainedNumber(_settlement.Town).ResultNumber), TownManagementDescriptionItemVM.DescriptionType.Garrison, hint8));
 	}
 
 	private void OnChangeInBuildingQueue()
@@ -657,7 +681,7 @@ public class TownManagementVM : ViewModel
 	{
 		if (_settlement.Town.CurrentBuilding != null)
 		{
-			IsCurrentProjectDaily = _settlement.Town.CurrentBuilding.BuildingType.IsDefaultProject;
+			IsCurrentProjectDaily = _settlement.Town.CurrentBuilding.BuildingType.IsDailyProject;
 			if (!IsCurrentProjectDaily)
 			{
 				CurrentProjectProgress = (int)(BuildingHelper.GetProgressOfBuilding(ProjectSelection.CurrentSelectedProject.Building, _settlement.Town) * 100f);
@@ -674,7 +698,7 @@ public class TownManagementVM : ViewModel
 		{
 			BuildingHelper.ChangeCurrentBuildingQueue(localDevelopmentList, _settlement.Town);
 		}
-		if (building != _settlement.Town.CurrentDefaultBuilding)
+		if (building != _settlement.Town.Buildings.FirstOrDefault((Building k) => k.IsCurrentlyDefault) && building != null)
 		{
 			BuildingHelper.ChangeDefaultBuilding(building, _settlement.Town);
 		}
@@ -689,10 +713,12 @@ public class TownManagementVM : ViewModel
 			if (CurrentGovernor.Hero != null)
 			{
 				ChangeGovernorAction.Apply(_settlement.Town, CurrentGovernor.Hero);
+				CurrentGovernorTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetHeroGovernorEffectsTooltip(selectedGovernor, _settlement));
 			}
 			else
 			{
 				ChangeGovernorAction.RemoveGovernorOfIfExists(_settlement.Town);
+				CurrentGovernorTooltip = new BasicTooltipViewModel();
 			}
 		}
 		UpdateGovernorSelectionProperties();
@@ -719,7 +745,7 @@ public class TownManagementVM : ViewModel
 			disabledReason.SetTextVariable("SETTLEMENT_NAME", _settlement.Name?.ToString() ?? string.Empty);
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 

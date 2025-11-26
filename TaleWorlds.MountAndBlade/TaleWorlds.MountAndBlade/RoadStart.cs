@@ -16,7 +16,7 @@ public class RoadStart : ScriptComponentBehavior
 
 	protected internal override void OnInit()
 	{
-		pathEntity = GameEntity.CreateEmpty(base.Scene, isModifiableFromEditor: false);
+		pathEntity = TaleWorlds.Engine.GameEntity.CreateEmpty(base.Scene, isModifiableFromEditor: false);
 		pathEntity.Name = "Road_Entity";
 		UpdatePathMesh();
 	}

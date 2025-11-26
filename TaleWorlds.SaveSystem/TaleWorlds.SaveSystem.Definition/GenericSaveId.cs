@@ -74,4 +74,15 @@ internal class GenericSaveId : SaveId
 		}
 		return new GenericSaveId(baseId, list.ToArray());
 	}
+
+	public override int GetSizeInBytes()
+	{
+		int num = 2 + BaseId.GetSizeInBytes();
+		for (int i = 0; i < GenericTypeIDs.Length; i++)
+		{
+			SaveId saveId = GenericTypeIDs[i];
+			num += saveId.GetSizeInBytes();
+		}
+		return num;
+	}
 }

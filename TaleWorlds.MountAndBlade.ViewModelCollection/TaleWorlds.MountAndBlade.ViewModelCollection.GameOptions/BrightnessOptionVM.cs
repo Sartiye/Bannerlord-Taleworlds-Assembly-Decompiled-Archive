@@ -304,7 +304,7 @@ public class BrightnessOptionVM : ViewModel
 		InitialValue2 = num2;
 		NativeOptions.SetConfig(NativeOptions.NativeOptionsType.BrightnessMax, num);
 		NativeOptions.SetConfig(NativeOptions.NativeOptionsType.BrightnessMin, num2);
-		NativeOptions.SetConfig(NativeOptions.NativeOptionsType.BrightnessCalibrated, 2f);
+		NativeOptions.SetConfig(NativeOptions.NativeOptionsType.BrightnessCalibrated, 4f);
 		_onClose?.Invoke(obj: true);
 		Visible = false;
 	}

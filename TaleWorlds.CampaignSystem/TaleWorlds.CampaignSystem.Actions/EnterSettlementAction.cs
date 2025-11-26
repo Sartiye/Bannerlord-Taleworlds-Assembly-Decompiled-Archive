@@ -1,3 +1,4 @@
+using System.Linq;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
@@ -22,6 +23,7 @@ public static class EnterSettlementAction
 		}
 		else
 		{
+			CampaignEventDispatcher.Instance.OnBeforeSettlementEntered(mobileParty, settlement, hero);
 			CampaignEventDispatcher.Instance.OnSettlementEntered(mobileParty, settlement, hero);
 			CampaignEventDispatcher.Instance.OnAfterSettlementEntered(mobileParty, settlement, hero);
 			if (detail == EnterSettlementDetail.Prisoner)
@@ -39,7 +41,7 @@ public static class EnterSettlementAction
 			if (hero2 != null)
 			{
 				float currentTime = Campaign.CurrentTime;
-				if (hero2.Clan == settlement.OwnerClan && hero2.Clan.Leader == hero2)
+				if (hero2.Clan == settlement.OwnerClan && hero2.Clan?.Leader == hero2)
 				{
 					settlement.LastVisitTimeOfOwner = currentTime;
 				}
@@ -56,6 +58,10 @@ public static class EnterSettlementAction
 				CampaignEventDispatcher.Instance.OnHeroGetsBusy(hero, HeroGetsBusyReasons.BecomeEmissary);
 			}
 		}
+		if (mobileParty != null && mobileParty.IsFleeing())
+		{
+			mobileParty.Ai.DisableForHours(5);
+		}
 		if (hero == Hero.MainHero || mobileParty == MobileParty.MainParty)
 		{
 			Debug.Print($"Player has entered {settlement.StringId}: {settlement}");
@@ -68,7 +74,13 @@ public static class EnterSettlementAction
 		{
 			mobileParty.Army.AddPartyToMergedParties(mobileParty);
 		}
+		bool num = mobileParty.IsCurrentlyAtSea && settlement.HasPort;
+		mobileParty.IsCurrentlyAtSea = !mobileParty.HasLandNavigationCapability;
 		mobileParty.CurrentSettlement = settlement;
+		if (num && settlement.IsFortification && mobileParty.Ships.Any())
+		{
+			mobileParty.Anchor.SetSettlement(settlement);
+		}
 		settlement.SettlementComponent.OnPartyEntered(mobileParty);
 		ApplyInternal(mobileParty.LeaderHero, mobileParty, settlement, EnterSettlementDetail.WarParty);
 	}

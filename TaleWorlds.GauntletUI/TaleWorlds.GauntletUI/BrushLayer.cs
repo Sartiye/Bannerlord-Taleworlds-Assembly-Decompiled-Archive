@@ -29,6 +29,8 @@ public class BrushLayer : IBrushLayerData
 
 	private float _yOffset;
 
+	private float _rotation;
+
 	private float _extendLeft;
 
 	private float _extendRight;
@@ -262,6 +264,23 @@ public class BrushLayer : IBrushLayerData
 			if (value != _yOffset)
 			{
 				_yOffset = value;
+				Version++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public float Rotation
+	{
+		get
+		{
+			return _rotation;
+		}
+		set
+		{
+			if (value != _rotation)
+			{
+				_rotation = value;
 				Version++;
 			}
 		}
@@ -557,6 +576,7 @@ public class BrushLayer : IBrushLayerData
 		ValueFactor = 0f;
 		XOffset = 0f;
 		YOffset = 0f;
+		Rotation = 0f;
 		IsHidden = false;
 		WidthPolicy = BrushLayerSizePolicy.StretchToTarget;
 		HeightPolicy = BrushLayerSizePolicy.StretchToTarget;
@@ -585,6 +605,7 @@ public class BrushLayer : IBrushLayerData
 		ValueFactor = brushLayer.ValueFactor;
 		XOffset = brushLayer.XOffset;
 		YOffset = brushLayer.YOffset;
+		Rotation = brushLayer.Rotation;
 		Name = brushLayer.Name;
 		IsHidden = brushLayer.IsHidden;
 		WidthPolicy = brushLayer.WidthPolicy;
@@ -624,6 +645,8 @@ public class BrushLayer : IBrushLayerData
 			return XOffset;
 		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
 			return YOffset;
+		case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
+			return Rotation;
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth:
 			return OverridenWidth;
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight:
@@ -641,7 +664,7 @@ public class BrushLayer : IBrushLayerData
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlayYOffset:
 			return OverlayYOffset;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsFloat", 669);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsFloat", 693);
 			return 0f;
 		}
 	}
@@ -652,7 +675,7 @@ public class BrushLayer : IBrushLayerData
 		{
 			return Color;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsColor", 683);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsColor", 707);
 		return Color.Black;
 	}
 
@@ -665,7 +688,7 @@ public class BrushLayer : IBrushLayerData
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlaySprite:
 			return OverlaySprite;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsSprite", 700);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsSprite", 724);
 			return null;
 		}
 	}

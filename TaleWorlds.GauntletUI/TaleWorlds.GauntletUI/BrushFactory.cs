@@ -12,6 +12,27 @@ namespace TaleWorlds.GauntletUI;
 
 public class BrushFactory
 {
+	private readonly struct BrushOverrideInfo
+	{
+		public readonly string OriginalBrushName;
+
+		public readonly Brush OverrideBrush;
+
+		public readonly Dictionary<string, string> OverrideBrushAttributes;
+
+		public readonly XmlNode OverrideBrushNode;
+
+		public BrushOverrideInfo(string originalBrushName, Brush overrideBrush, Dictionary<string, string> overrideBrushAttributes, XmlNode overrideBrushNode)
+		{
+			OriginalBrushName = originalBrushName;
+			OverrideBrush = overrideBrush;
+			OverrideBrushAttributes = overrideBrushAttributes;
+			OverrideBrushNode = overrideBrushNode;
+		}
+	}
+
+	private Dictionary<string, BrushOverrideInfo> _overriddenBrushes;
+
 	private Dictionary<string, Brush> _brushes;
 
 	private Dictionary<string, string> _brushCategories;
@@ -46,6 +67,7 @@ public class BrushFactory
 	{
 		_spriteData = spriteData;
 		_fontFactory = fontFactory;
+		_overriddenBrushes = new Dictionary<string, BrushOverrideInfo>();
 		_brushes = new Dictionary<string, Brush>();
 		_brushCategories = new Dictionary<string, string>();
 		_resourceDepot = resourceDepot;
@@ -89,6 +111,30 @@ public class BrushFactory
 			case "Loop":
 				brushAnimation.Loop = value2 == "true";
 				break;
+			case "InterpolationType":
+			{
+				if (Enum.TryParse<AnimationInterpolation.Type>(value2, out var result2))
+				{
+					brushAnimation.InterpolationType = result2;
+				}
+				else
+				{
+					Debug.FailedAssert("Failed to resolve brush animation interpolation type: " + value2, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushAnimationFrom", 131);
+				}
+				break;
+			}
+			case "InterpolationFunction":
+			{
+				if (Enum.TryParse<AnimationInterpolation.Function>(value2, out var result))
+				{
+					brushAnimation.InterpolationFunction = result;
+				}
+				else
+				{
+					Debug.FailedAssert("Failed to resolve brush animation interpolation function: " + value2, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushAnimationFrom", 142);
+				}
+				break;
+			}
 			}
 		}
 		foreach (XmlNode childNode in animationNode.ChildNodes)
@@ -139,6 +185,7 @@ public class BrushFactory
 				case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
 				case BrushAnimationProperty.BrushAnimationPropertyType.XOffset:
 				case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
+				case BrushAnimationProperty.BrushAnimationPropertyType.Rotation:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenWidth:
 				case BrushAnimationProperty.BrushAnimationPropertyType.OverridenHeight:
 				case BrushAnimationProperty.BrushAnimationPropertyType.ExtendLeft:
@@ -200,6 +247,9 @@ public class BrushFactory
 				break;
 			case "YOffset":
 				brushLayer.YOffset = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
+				break;
+			case "Rotation":
+				brushLayer.Rotation = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
 				break;
 			case "OverridenWidth":
 				brushLayer.OverridenWidth = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
@@ -383,8 +433,10 @@ public class BrushFactory
 			string value = attribute.Value;
 			dictionary.Add(name, value);
 		}
+		bool flag = false;
 		if (dictionary.ContainsKey("BaseBrush"))
 		{
+			flag = true;
 			string key = dictionary["BaseBrush"];
 			if (_brushes.ContainsKey(key))
 			{
@@ -392,83 +444,113 @@ public class BrushFactory
 				brush.FillFrom(brush2);
 			}
 		}
-		foreach (KeyValuePair<string, string> item in dictionary)
+		if (dictionary.ContainsKey("OverrideBrush"))
 		{
-			string key2 = item.Key;
-			string value2 = item.Value;
-			switch (key2)
+			if (flag)
+			{
+				Debug.FailedAssert("A brush shouldn't have both a BaseBrush and a OverrideBrush", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 563);
+			}
+			string text = dictionary["OverrideBrush"];
+			if (!string.IsNullOrEmpty(text))
+			{
+				BrushOverrideInfo value2 = new BrushOverrideInfo(text, brush, dictionary, brushNode);
+				if (_overriddenBrushes.ContainsKey(text))
+				{
+					_overriddenBrushes[text] = value2;
+				}
+				else
+				{
+					_overriddenBrushes.Add(text, value2);
+				}
+			}
+			else
+			{
+				Debug.FailedAssert("Invalid overridden brush name: " + text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 582);
+			}
+		}
+		ApplyBrushAttributesFrom(brush, brushNode, dictionary);
+		return brush;
+	}
+
+	private void ApplyBrushAttributesFrom(Brush brush, XmlNode brushNode, Dictionary<string, string> brushAttributes)
+	{
+		foreach (KeyValuePair<string, string> brushAttribute in brushAttributes)
+		{
+			string key = brushAttribute.Key;
+			string value = brushAttribute.Value;
+			switch (key)
 			{
 			case "Name":
-				brush.Name = value2;
+				brush.Name = value;
 				break;
 			case "Font":
-				brush.Font = _fontFactory.GetFont(value2);
+				brush.Font = _fontFactory.GetFont(value);
 				break;
 			case "FontSize":
-				brush.FontSize = Convert.ToInt32(value2);
+				brush.FontSize = Convert.ToInt32(value);
 				break;
 			case "TransitionDuration":
-				brush.TransitionDuration = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
+				brush.TransitionDuration = Convert.ToSingle(value, CultureInfo.InvariantCulture);
 				break;
 			case "TextHorizontalAlignment":
-				brush.TextHorizontalAlignment = (TextHorizontalAlignment)Enum.Parse(typeof(TextHorizontalAlignment), value2);
+				brush.TextHorizontalAlignment = (TextHorizontalAlignment)Enum.Parse(typeof(TextHorizontalAlignment), value);
 				break;
 			case "TextVerticalAlignment":
-				brush.TextVerticalAlignment = (TextVerticalAlignment)Enum.Parse(typeof(TextVerticalAlignment), value2);
+				brush.TextVerticalAlignment = (TextVerticalAlignment)Enum.Parse(typeof(TextVerticalAlignment), value);
 				break;
 			case "GlobalColorFactor":
-				brush.GlobalColorFactor = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
+				brush.GlobalColorFactor = Convert.ToSingle(value, CultureInfo.InvariantCulture);
 				break;
 			case "GlobalAlphaFactor":
-				brush.GlobalAlphaFactor = Convert.ToSingle(value2, CultureInfo.InvariantCulture);
+				brush.GlobalAlphaFactor = Convert.ToSingle(value, CultureInfo.InvariantCulture);
 				break;
 			case "GlobalColor":
-				brush.GlobalColor = Color.ConvertStringToColor(value2);
+				brush.GlobalColor = Color.ConvertStringToColor(value);
 				break;
 			}
 		}
 		XmlNode xmlNode = brushNode.SelectSingleNode("Layers");
 		if (xmlNode != null)
 		{
-			foreach (XmlNode item2 in xmlNode)
+			foreach (XmlNode item in xmlNode)
 			{
-				string value3 = item2.Attributes["Name"].Value;
-				BrushLayer layer = brush.GetLayer(value3);
+				string value2 = item.Attributes["Name"].Value;
+				BrushLayer layer = brush.GetLayer(value2);
 				if (layer != null)
 				{
-					LoadBrushLayerInto(item2, layer);
+					LoadBrushLayerInto(item, layer);
 					continue;
 				}
 				layer = new BrushLayer();
-				LoadBrushLayerInto(item2, layer);
+				LoadBrushLayerInto(item, layer);
 				brush.AddLayer(layer);
 			}
 		}
 		XmlNode xmlNode3 = brushNode.SelectSingleNode("Styles");
 		if (xmlNode3 != null)
 		{
-			foreach (XmlNode item3 in xmlNode3)
+			foreach (XmlNode item2 in xmlNode3)
 			{
-				string value4 = item3.Attributes["Name"].Value;
-				Style style = brush.GetStyle(value4);
+				string value3 = item2.Attributes["Name"].Value;
+				Style style = brush.GetStyle(value3);
 				if (style != null)
 				{
 					style.DefaultStyle = brush.DefaultStyle;
-					LoadStyleInto(item3, style);
+					LoadStyleInto(item2, style);
 					continue;
 				}
 				style = new Style(brush.Layers);
 				style.DefaultStyle = brush.DefaultStyle;
-				LoadStyleInto(item3, style);
+				LoadStyleInto(item2, style);
 				brush.AddStyle(style);
 			}
 		}
 		XmlNode xmlNode5 = brushNode.SelectSingleNode("Animations");
 		if (xmlNode5 != null)
 		{
-			foreach (XmlNode item4 in xmlNode5)
+			foreach (XmlNode item3 in xmlNode5)
 			{
-				BrushAnimation animation = LoadBrushAnimationFrom(item4);
+				BrushAnimation animation = LoadBrushAnimationFrom(item3);
 				brush.AddAnimation(animation);
 			}
 		}
@@ -481,7 +563,6 @@ public class BrushFactory
 		{
 			brush.SoundProperties.FillFrom(DefaultBrush.SoundProperties);
 		}
-		return brush;
 	}
 
 	private void SaveBrushTo(XmlNode brushNode, Brush brush)
@@ -763,7 +844,7 @@ public class BrushFactory
 		}
 		catch (Exception)
 		{
-			Debug.FailedAssert("Failed to load brush from file: " + name, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFile", 1027);
+			Debug.FailedAssert("Failed to load brush from file: " + name, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFile", 1109);
 		}
 	}
 
@@ -782,7 +863,7 @@ public class BrushFactory
 		XmlDocument xmlDocument = new XmlDocument();
 		XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
 		xmlReaderSettings.IgnoreComments = true;
-		using (XmlReader reader = XmlReader.Create(filePath, xmlReaderSettings))
+		using (XmlReader reader = XmlReader.Create(new StreamReader(filePath), xmlReaderSettings))
 		{
 			xmlDocument.Load(reader);
 		}
@@ -806,6 +887,22 @@ public class BrushFactory
 				_brushCategories.Add(brush.Name, filePath);
 			}
 		}
+		foreach (KeyValuePair<string, BrushOverrideInfo> overriddenBrush in _overriddenBrushes)
+		{
+			string key = overriddenBrush.Key;
+			BrushOverrideInfo value = overriddenBrush.Value;
+			if (_brushes.TryGetValue(key, out var value2))
+			{
+				value.OverrideBrush.FillForOverride(value2);
+				ApplyBrushAttributesFrom(value.OverrideBrush, value.OverrideBrushNode, value.OverrideBrushAttributes);
+				_brushes[key] = value.OverrideBrush;
+			}
+			else
+			{
+				Debug.FailedAssert("Failed to find brush for override: " + key, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFromFileAux", 1178);
+			}
+		}
+		_overriddenBrushes.Clear();
 	}
 
 	public Brush GetBrush(string name)
@@ -821,7 +918,7 @@ public class BrushFactory
 	{
 		if (!_brushCategories.ContainsKey(name))
 		{
-			Debug.FailedAssert("Brush not found", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "SaveBrushAs", 1099);
+			Debug.FailedAssert("Brush not found", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "SaveBrushAs", 1201);
 		}
 		string filename = _brushCategories[name];
 		XmlDocument xmlDocument = new XmlDocument();

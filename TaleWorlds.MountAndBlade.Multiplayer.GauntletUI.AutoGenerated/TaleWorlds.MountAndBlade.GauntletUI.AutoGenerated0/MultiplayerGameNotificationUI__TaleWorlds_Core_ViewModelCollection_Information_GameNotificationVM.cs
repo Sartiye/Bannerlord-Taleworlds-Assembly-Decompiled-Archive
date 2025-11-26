@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
@@ -29,7 +29,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 
 	private GameNotificationItemVM _datasource_Root_CurrentNotification;
 
-	private ImageIdentifierVM _datasource_Root_CurrentNotification_Announcer;
+	private CharacterImageIdentifierVM _datasource_Root_CurrentNotification_Announcer;
 
 	public MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information_GameNotificationVM(UIContext context)
 		: base(context)
@@ -252,6 +252,9 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 		case "NotificationId":
 			_datasource_Root.NotificationId = _widget_0.NotificationId;
 			break;
+		case "TotalDt":
+			_datasource_Root.Timer = _widget_0.TotalDt;
+			break;
 		case "TotalTime":
 			_datasource_Root.TotalTime = _widget_0.TotalTime;
 			break;
@@ -305,9 +308,17 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 
 	private void HandleWidgetPropertyChangeOf_widget_0_0_0(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_CurrentNotification_Announcer.AdditionalArgs = _widget_0_0_0.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_CurrentNotification_Announcer.Id = _widget_0_0_0.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_CurrentNotification_Announcer.TextureProviderName = _widget_0_0_0.TextureProviderName;
+			break;
 		}
 	}
 
@@ -475,6 +486,9 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 		case "NotificationId":
 			_widget_0.NotificationId = _datasource_Root.NotificationId;
 			break;
+		case "Timer":
+			_widget_0.TotalDt = _datasource_Root.Timer;
+			break;
 		case "TotalTime":
 			_widget_0.TotalTime = _datasource_Root.TotalTime;
 			break;
@@ -536,8 +550,8 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 		case "Id":
 			_widget_0_0_0.ImageId = _datasource_Root_CurrentNotification_Announcer.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_0_0_0.ImageTypeCode = _datasource_Root_CurrentNotification_Announcer.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_0_0.TextureProviderName = _datasource_Root_CurrentNotification_Announcer.TextureProviderName;
 			break;
 		}
 	}
@@ -696,6 +710,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 		_widget_0.IsVisible = _datasource_Root.GotNotification;
 		_widget_0.NotificationId = _datasource_Root.NotificationId;
+		_widget_0.TotalDt = _datasource_Root.Timer;
 		_widget_0.TotalTime = _datasource_Root.TotalTime;
 		_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 		_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
@@ -752,7 +767,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 				_datasource_Root_CurrentNotification_Announcer.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CurrentNotification_Announcer;
 				_widget_0_0_0.AdditionalArgs = _datasource_Root_CurrentNotification_Announcer.AdditionalArgs;
 				_widget_0_0_0.ImageId = _datasource_Root_CurrentNotification_Announcer.Id;
-				_widget_0_0_0.ImageTypeCode = _datasource_Root_CurrentNotification_Announcer.ImageTypeCode;
+				_widget_0_0_0.TextureProviderName = _datasource_Root_CurrentNotification_Announcer.TextureProviderName;
 				_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 				_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 				_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;
@@ -766,7 +781,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_CurrentNotification_Announcer(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_CurrentNotification_Announcer(CharacterImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_CurrentNotification_Announcer != null)
 		{
@@ -805,7 +820,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 			_datasource_Root_CurrentNotification_Announcer.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CurrentNotification_Announcer;
 			_widget_0_0_0.AdditionalArgs = _datasource_Root_CurrentNotification_Announcer.AdditionalArgs;
 			_widget_0_0_0.ImageId = _datasource_Root_CurrentNotification_Announcer.Id;
-			_widget_0_0_0.ImageTypeCode = _datasource_Root_CurrentNotification_Announcer.ImageTypeCode;
+			_widget_0_0_0.TextureProviderName = _datasource_Root_CurrentNotification_Announcer.TextureProviderName;
 			_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;
@@ -920,7 +935,7 @@ public class MultiplayerGameNotificationUI__TaleWorlds_Core_ViewModelCollection_
 				_datasource_Root_CurrentNotification_Announcer.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CurrentNotification_Announcer;
 				_widget_0_0_0.AdditionalArgs = _datasource_Root_CurrentNotification_Announcer.AdditionalArgs;
 				_widget_0_0_0.ImageId = _datasource_Root_CurrentNotification_Announcer.Id;
-				_widget_0_0_0.ImageTypeCode = _datasource_Root_CurrentNotification_Announcer.ImageTypeCode;
+				_widget_0_0_0.TextureProviderName = _datasource_Root_CurrentNotification_Announcer.TextureProviderName;
 				_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 				_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 				_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;

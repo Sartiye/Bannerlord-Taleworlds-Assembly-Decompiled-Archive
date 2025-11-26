@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.GauntletUI.GauntletInput;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
@@ -186,17 +187,19 @@ public class UIContext
 
 	private readonly float InverseReferenceHeight;
 
-	private const float ReferenceAspectRatio = 1.7777778f;
+	private readonly float ReferenceAspectRatio;
 
 	private const float ReferenceAspectRatioCoeff = 0.98f;
 
-	private IInputContext _inputContext;
+	private readonly GauntletInputContext _uiInputContext;
 
-	private IInputService _inputService;
+	private readonly IInputContext _inputContext;
 
 	private bool _initializedWithExistingResources;
 
 	private bool _previousFrameMouseEnabled;
+
+	private bool _isMouseEnabled;
 
 	private bool IsDebugWidgetInformationFroze;
 
@@ -209,6 +212,10 @@ public class UIContext
 
 	public float ScaleModifier { get; set; } = 1f;
 
+
+	public string Name { get; set; }
+
+	public bool IsActive { get; private set; }
 
 	public float ContextAlpha { get; set; } = 1f;
 
@@ -243,36 +250,39 @@ public class UIContext
 
 	public FontFactory FontFactory { get; private set; }
 
+	public IReadonlyInputContext InputContext => _uiInputContext;
+
 	public IGamepadNavigationContext GamepadNavigation { get; private set; }
 
-	public UIContext(TwoDimensionContext twoDimensionContext, IInputContext inputContext, IInputService inputService, SpriteData spriteData, FontFactory fontFactory, BrushFactory brushFactory)
+	public ulong LocalFrameNumber { get; private set; }
+
+	public UIContext(TwoDimensionContext twoDimensionContext, IInputContext inputContext, SpriteData spriteData, FontFactory fontFactory, BrushFactory brushFactory)
 	{
-		TwoDimensionContext = twoDimensionContext;
+		_isMouseEnabled = true;
 		_inputContext = inputContext;
-		_inputService = inputService;
+		_initializedWithExistingResources = true;
+		_uiInputContext = new GauntletInputContext(inputContext);
+		TwoDimensionContext = twoDimensionContext;
 		GamepadNavigation = new EmptyGamepadNavigationContext();
 		SpriteData = spriteData;
 		FontFactory = fontFactory;
 		BrushFactory = brushFactory;
-		_initializedWithExistingResources = true;
 		ReferenceHeight = twoDimensionContext.Platform.ReferenceHeight;
 		InverseReferenceHeight = 1f / ReferenceHeight;
+		ReferenceAspectRatio = twoDimensionContext.Platform.ReferenceWidth / twoDimensionContext.Platform.ReferenceHeight;
 	}
 
-	public UIContext(TwoDimensionContext twoDimensionContext, IInputContext inputContext, IInputService inputService)
+	public UIContext(TwoDimensionContext twoDimensionContext, IInputContext inputContext)
 	{
-		TwoDimensionContext = twoDimensionContext;
-		_inputContext = inputContext;
-		_inputService = inputService;
-		GamepadNavigation = new EmptyGamepadNavigationContext();
+		_isMouseEnabled = true;
 		_initializedWithExistingResources = false;
+		_inputContext = inputContext;
+		_uiInputContext = new GauntletInputContext(inputContext);
+		TwoDimensionContext = twoDimensionContext;
+		GamepadNavigation = new EmptyGamepadNavigationContext();
 		ReferenceHeight = twoDimensionContext.Platform.ReferenceHeight;
 		InverseReferenceHeight = 1f / ReferenceHeight;
-	}
-
-	public Brush GetBrush(string name)
-	{
-		return BrushFactory.GetBrush(name);
+		ReferenceAspectRatio = twoDimensionContext.Platform.ReferenceWidth / twoDimensionContext.Platform.ReferenceHeight;
 	}
 
 	public void Initialize()
@@ -287,9 +297,6 @@ public class UIContext
 			BrushFactory.Initialize();
 		}
 		EventManager = new EventManager(this);
-		EventManager.InputService = _inputService;
-		EventManager.InputContext = _inputContext;
-		EventManager.UpdateMousePosition(_inputContext.GetPointerPosition());
 		Widget root = Root;
 		root.WidthSizePolicy = SizePolicy.Fixed;
 		root.HeightSizePolicy = SizePolicy.Fixed;
@@ -299,42 +306,35 @@ public class UIContext
 		UpdateScale();
 	}
 
-	public void InitializeGamepadNavigation(IGamepadNavigationContext context)
+	public Brush GetBrush(string name)
 	{
-		GamepadNavigation = context;
+		return BrushFactory.GetBrush(name);
 	}
 
-	private void UpdateScale()
+	public void RefreshResources(SpriteData spriteData, FontFactory fontFactory, BrushFactory brushFactory)
 	{
-		float num = 1f;
-		if (TwoDimensionContext != null)
-		{
-			num = TwoDimensionContext.Height * InverseReferenceHeight;
-			float num2 = TwoDimensionContext.Width / TwoDimensionContext.Height;
-			if (num2 < 1.7422223f)
-			{
-				float num3 = num2 / 1.7422223f;
-				num *= num3;
-			}
-		}
-		else
-		{
-			num = 1f;
-		}
-		if (Scale != num || CustomScale != Scale * ScaleModifier)
-		{
-			Scale = num;
-			CustomScale = Scale * ScaleModifier;
-			InverseScale = 1f / num;
-			CustomInverseScale = 1f / CustomScale;
-			EventManager.UpdateLayout();
-		}
+		SpriteData = spriteData;
+		FontFactory = fontFactory;
+		BrushFactory = brushFactory;
 	}
 
 	public void OnFinalize()
 	{
+		GamepadNavigation.OnFinalize();
 		EventManager.OnFinalize();
 		GamepadNavigation.OnFinalize();
+	}
+
+	public void Activate()
+	{
+		IsActive = true;
+		EventManager.OnContextActivated();
+	}
+
+	public void Deactivate()
+	{
+		IsActive = false;
+		EventManager.OnContextDeactivated();
 	}
 
 	public void Update(float dt)
@@ -352,6 +352,7 @@ public class UIContext
 		root.SuggestedWidth = TwoDimensionContext.Width;
 		root.SuggestedHeight = TwoDimensionContext.Height;
 		EventManager.Update(dt);
+		LocalFrameNumber++;
 	}
 
 	public void LateUpdate(float dt)
@@ -360,8 +361,44 @@ public class UIContext
 		EventManager.CalculateCanvas(pageSize, dt);
 		EventManager.LateUpdate(dt);
 		EventManager.RecalculateCanvas();
+	}
+
+	public void RenderTick(float dt)
+	{
 		EventManager.UpdateBrushes(dt);
 		EventManager.Render(TwoDimensionContext);
+	}
+
+	public void InitializeGamepadNavigation(IGamepadNavigationContext context)
+	{
+		GamepadNavigation = context;
+	}
+
+	private void UpdateScale()
+	{
+		float num = 1f;
+		if (TwoDimensionContext != null)
+		{
+			num = TwoDimensionContext.Height * InverseReferenceHeight;
+			float num2 = TwoDimensionContext.Width / TwoDimensionContext.Height;
+			if (num2 < ReferenceAspectRatio * 0.98f)
+			{
+				float num3 = num2 / (ReferenceAspectRatio * 0.98f);
+				num *= num3;
+			}
+		}
+		else
+		{
+			num = 1f;
+		}
+		if (Scale != num || CustomScale != Scale * ScaleModifier)
+		{
+			Scale = num;
+			CustomScale = Scale * ScaleModifier;
+			InverseScale = 1f / num;
+			CustomInverseScale = 1f / CustomScale;
+			EventManager.UpdateLayout();
+		}
 	}
 
 	public void OnOnScreenkeyboardTextInputDone(string inputText)
@@ -370,12 +407,12 @@ public class UIContext
 		{
 			editableTextWidget.SetAllText(inputText);
 		}
-		EventManager.ClearFocus();
+		ReleaseMouseWithoutClick();
 	}
 
 	public void OnOnScreenKeyboardCanceled()
 	{
-		EventManager.ClearFocus();
+		ReleaseMouseWithoutClick();
 	}
 
 	public bool HitTest(Widget root, Vector2 position)
@@ -385,7 +422,11 @@ public class UIContext
 
 	public bool HitTest(Widget root)
 	{
-		return EventManager.HitTest(root, _inputContext.GetPointerPosition());
+		if (root == null)
+		{
+			return false;
+		}
+		return EventManager.HitTest(root, _uiInputContext.GetMousePosition());
 	}
 
 	public bool FocusTest(Widget root)
@@ -393,11 +434,15 @@ public class UIContext
 		return EventManager.FocusTest(root);
 	}
 
+	public void SetIsMouseEnabled(bool isMouseEnabled)
+	{
+		_isMouseEnabled = isMouseEnabled;
+	}
+
 	public void UpdateInput(InputType handleInputs)
 	{
-		if (_inputService.MouseEnabled)
+		if (_isMouseEnabled || EventManager.DraggedWidget != null || EventManager.FocusedWidget != null)
 		{
-			EventManager.UpdateMousePosition(_inputContext.GetPointerPosition());
 			if (handleInputs.HasAnyFlag(InputType.MouseButton))
 			{
 				EventManager.MouseMove();
@@ -436,9 +481,7 @@ public class UIContext
 		}
 		else if (_previousFrameMouseEnabled)
 		{
-			EventManager.UpdateMousePosition(new Vector2(-5000f, -5000f));
-			EventManager.MouseMove();
-			EventManager.SetHoveredView(null);
+			ReleaseMouseWithoutClick();
 			_previousFrameMouseEnabled = false;
 		}
 	}
@@ -451,6 +494,16 @@ public class UIContext
 	public void OnMovieReleased(string movieName)
 	{
 		GamepadNavigation.OnMovieReleased(movieName);
+	}
+
+	private void ReleaseMouseWithoutClick()
+	{
+		_uiInputContext.SetMousePositionOverride(new Vector2(-5000f, -5000f));
+		EventManager.MouseMove();
+		EventManager.MouseUp();
+		EventManager.MouseAlternateUp();
+		EventManager.ClearFocus();
+		_uiInputContext.ResetMousePositionOverride();
 	}
 
 	public void DrawWidgetDebugInfo()

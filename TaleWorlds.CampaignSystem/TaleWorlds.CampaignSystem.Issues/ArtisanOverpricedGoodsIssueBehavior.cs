@@ -136,7 +136,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		public override TextObject IssueLordSolutionCounterOfferBriefByOtherNpc => new TextObject("{=ojNK5Zem}(One of the merchants in the town comes to talk as you are preparing to depart.)");
+		public override TextObject IssueLordSolutionCounterOfferBriefByOtherNpc => new TextObject("{=KSeIOHDh}(One of the merchants in the town comes to talk as you are preparing to depart.)");
 
 		public override TextObject IssueLordSolutionCounterOfferExplanationByOtherNpc => new TextObject("{=8Tqv9ezH}We heard you wish to issue a decree changing our longstanding rules on pricing. Of course this is your right, but I'd like to remind you that we merchants pay significantly more taxes than the artisans. I would ask you to think of the finances of the town, and reconsider this.");
 
@@ -154,7 +154,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		public override TextObject IssueLordSolutionCounterOfferDeclineByPlayer => new TextObject("{=IXuaflOe}I stand by my decision.");
 
-		public override TextObject IssueLordSolutionCounterOfferDeclineResponseByOtherNpc => new TextObject("{=ypAPaO1J}That's a pity.");
+		public override TextObject IssueLordSolutionCounterOfferDeclineResponseByOtherNpc => new TextObject("{=A8dyXgLz}That's a pity.");
 
 		protected override TextObject AlternativeSolutionStartLog
 		{
@@ -287,7 +287,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		public override bool IssueStayAliveConditions()
 		{
-			if (base.IssueOwner.CurrentSettlement.Town.GetItemCategoryPriceIndex(_requestedTradeGood.ItemCategory) > 1.1999999f && CounterOfferHero.IsActive)
+			if (base.IssueOwner.CurrentSettlement.Town.GetItemCategoryPriceIndex(_requestedTradeGood.ItemCategory) > 1.8f && CounterOfferHero.IsActive)
 			{
 				return CounterOfferHero.CurrentSettlement == base.IssueSettlement;
 			}
@@ -305,18 +305,21 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(RequiredGoldForAlternativeSolution, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(RequiredGoldForAlternativeSolution, out explanation);
 			}
 			return false;
 		}
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
+		}
+
+		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
+		{
+			return character.Tier >= 2;
 		}
 
 		public override void AlternativeSolutionStartConsequence()
@@ -333,7 +336,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 		{
 			if (Clan.PlayerClan == Settlement.CurrentSettlement.OwnerClan)
 			{
-				explanation = TextObject.Empty;
+				explanation = null;
 				return true;
 			}
 			explanation = new TextObject("{=bItEf0WN}You need to be the {?PLAYER.GENDER}lady{?}lord{\\?} of this settlement.");
@@ -370,8 +373,8 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		private void CalculateTradeGoodsAmountAndReward()
 		{
-			RequestedTradeGoodAmount = TaleWorlds.Library.MathF.Max((int)(2500f / (float)_requestedTradeGood.Value * base.IssueDifficultyMultiplier), 1);
-			_goldReward = 300 + (int)((float)(base.IssueOwner.CurrentSettlement.Town.GetItemPrice(_requestedTradeGood) + _requestedTradeGood.Value) / 2f) * RequestedTradeGoodAmount;
+			RequestedTradeGoodAmount = TaleWorlds.Library.MathF.Max((int)(10000f / (float)_requestedTradeGood.Value * base.IssueDifficultyMultiplier), 1);
+			_goldReward = (int)((float)QuestHelper.GetAveragePriceOfItemInTheWorld(_requestedTradeGood) * 1.5f * (float)RequestedTradeGoodAmount);
 		}
 
 		protected override void OnGameLoad()
@@ -423,7 +426,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -438,7 +441,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _successQuestLogText
+		private TextObject SuccessQuestLogText
 		{
 			get
 			{
@@ -450,7 +453,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _timeoutQuestLogText
+		private TextObject TimeoutQuestLogText
 		{
 			get
 			{
@@ -599,7 +602,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			_playerStartsQuestLog = AddDiscreteLog(_playerStartsQuestLogText, new TextObject("{=yw62BLhy}Delivered Goods"), _givenTradeGoods, _requestedTradeGoodAmount, null, hideInformation: true);
+			_playerStartsQuestLog = AddDiscreteLog(PlayerStartsQuestLogText, new TextObject("{=yw62BLhy}Delivered Goods"), _givenTradeGoods, _requestedTradeGoodAmount, null, hideInformation: true);
 			Campaign.Current.ConversationManager.AddDialogFlow(GetMerchantDialogFlow(), this);
 		}
 
@@ -663,8 +666,8 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 				AntagonistHero.AddPower(-10f);
 				ChangeRelationAction.ApplyPlayerRelation(AntagonistHero, -10);
 			}
-			GiveGoldAction.ApplyForQuestBetweenCharacters(base.QuestGiver, Hero.MainHero, _rewardGold);
-			AddLog(_successQuestLogText);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _rewardGold);
+			AddLog(SuccessQuestLogText);
 		}
 
 		public override void OnFailed()
@@ -676,7 +679,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnTimedOut()
 		{
-			AddLog(_timeoutQuestLogText);
+			AddLog(TimeoutQuestLogText);
 			base.QuestGiver.AddPower(-20f);
 			RelationshipChangeWithQuestGiver = -5;
 			base.QuestGiver.CurrentSettlement.Town.Prosperity -= 50f;
@@ -699,7 +702,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 	private const IssueBase.IssueFrequency ArtisanOverpricedGoodsIssueFrequency = IssueBase.IssueFrequency.Common;
 
-	private const float HighestPriceIndexAtTown = 1.4f;
+	private const float HighestPriceIndexAtTown = 2f;
 
 	private static IEnumerable<ItemObject> PossibleRequestedItems
 	{
@@ -738,7 +741,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 
 	private Hero GetAntagonistMerchant(Hero issueOwner)
 	{
-		return issueOwner.CurrentSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x != issueOwner && x.IsMerchant && x.GetTraitLevel(DefaultTraits.Mercy) <= 0 && x.CanHaveQuestsOrIssues());
+		return issueOwner.CurrentSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x != issueOwner && x.IsMerchant && x.GetTraitLevel(DefaultTraits.Mercy) <= 0 && x.CanHaveCampaignIssues());
 	}
 
 	private bool ConditionsHold(Hero IssueOwner, out Hero antagonistMerchant, out ItemObject requestedItem)
@@ -752,7 +755,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 			{
 				foreach (ItemObject possibleRequestedItem in PossibleRequestedItems)
 				{
-					if (IssueOwner.CurrentSettlement.Town.GetItemCategoryPriceIndex(possibleRequestedItem.ItemCategory) > 1.4f)
+					if (IssueOwner.CurrentSettlement.Town.GetItemCategoryPriceIndex(possibleRequestedItem.ItemCategory) > 2f)
 					{
 						requestedItem = possibleRequestedItem;
 						return true;

@@ -11,7 +11,7 @@ public class GauntletDebugStats : GlobalLayer
 	public void Initialize()
 	{
 		_dataSource = new DebugStatsVM();
-		GauntletLayer gauntletLayer = new GauntletLayer(15000);
+		GauntletLayer gauntletLayer = new GauntletLayer("DebugStats", 30000);
 		gauntletLayer.LoadMovie("DebugStats", _dataSource);
 		gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Invalid);
 		base.Layer = gauntletLayer;

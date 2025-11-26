@@ -2,31 +2,39 @@ namespace TaleWorlds.Engine;
 
 public static class LoadingWindow
 {
-	private static ILoadingWindowManager _loadingWindowManager;
-
 	public static bool IsLoadingWindowActive { get; private set; }
 
-	public static void Initialize(ILoadingWindowManager loadingWindowManager)
+	public static ILoadingWindowManager LoadingWindowManager { get; private set; }
+
+	static LoadingWindow()
 	{
-		_loadingWindowManager = loadingWindowManager;
+	}
+
+	public static void InitializeWith<T>() where T : class, ILoadingWindowManager, new()
+	{
+		Destroy();
+		LoadingWindowManager = new T();
+		LoadingWindowManager.Initialize();
+		if (IsLoadingWindowActive)
+		{
+			LoadingWindowManager.EnableLoadingWindow();
+		}
 	}
 
 	public static void Destroy()
 	{
-		if (IsLoadingWindowActive)
-		{
-			DisableGlobalLoadingWindow();
-		}
-		_loadingWindowManager = null;
+		LoadingWindowManager?.DisableLoadingWindow();
+		LoadingWindowManager?.Destroy();
+		LoadingWindowManager = null;
 	}
 
 	public static void DisableGlobalLoadingWindow()
 	{
-		if (_loadingWindowManager != null)
+		if (LoadingWindowManager != null)
 		{
 			if (IsLoadingWindowActive)
 			{
-				_loadingWindowManager.DisableLoadingWindow();
+				LoadingWindowManager.DisableLoadingWindow();
 				Utilities.DisableGlobalLoadingWindow();
 				Utilities.OnLoadingWindowDisabled();
 			}
@@ -35,22 +43,22 @@ public static class LoadingWindow
 		}
 	}
 
-	public static bool GetGlobalLoadingWindowState()
-	{
-		return IsLoadingWindowActive;
-	}
-
 	public static void EnableGlobalLoadingWindow()
 	{
-		if (_loadingWindowManager != null)
+		if (LoadingWindowManager != null)
 		{
 			IsLoadingWindowActive = true;
 			Utilities.DebugSetGlobalLoadingWindowState(newState: true);
 			if (IsLoadingWindowActive)
 			{
-				_loadingWindowManager.EnableLoadingWindow();
+				LoadingWindowManager.EnableLoadingWindow();
 				Utilities.OnLoadingWindowEnabled();
 			}
 		}
+	}
+
+	public static void SetCurrentModeIsMultiplayer(bool isMultiplayer)
+	{
+		LoadingWindowManager?.SetCurrentModeIsMultiplayer(isMultiplayer);
 	}
 }

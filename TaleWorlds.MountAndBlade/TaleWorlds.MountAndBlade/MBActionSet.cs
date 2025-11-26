@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("int", false)]
+[EngineStruct("int", false, null)]
 public struct MBActionSet
 {
 	[CustomEngineStructMemberData("ignoredMember", true)]
@@ -47,17 +47,12 @@ public struct MBActionSet
 		return MBAPI.IMBActionSet.GetSkeletonName(Index);
 	}
 
-	public string GetAnimationName(ActionIndexCache actionCode)
+	public string GetAnimationName(in ActionIndexCache actionCode)
 	{
 		return MBAPI.IMBActionSet.GetAnimationName(Index, actionCode.Index);
 	}
 
-	public bool AreActionsAlternatives(ActionIndexCache actionCode1, ActionIndexCache actionCode2)
-	{
-		return MBAPI.IMBActionSet.AreActionsAlternatives(Index, actionCode1.Index, actionCode2.Index);
-	}
-
-	public bool AreActionsAlternatives(ActionIndexValueCache actionCode1, ActionIndexCache actionCode2)
+	public bool AreActionsAlternatives(in ActionIndexCache actionCode1, in ActionIndexCache actionCode2)
 	{
 		return MBAPI.IMBActionSet.AreActionsAlternatives(Index, actionCode1.Index, actionCode2.Index);
 	}
@@ -92,68 +87,53 @@ public struct MBActionSet
 		return MBAPI.IMBActionSet.GetBoneHasParentBone(actionSetId, boneIndex);
 	}
 
-	public static Vec3 GetActionDisplacementVector(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static Vec3 GetActionDisplacementVector(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.GetDisplacementVector(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static AnimFlags GetActionAnimationFlags(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static AnimFlags GetActionAnimationFlags(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.GetAnimationFlags(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static bool CheckActionAnimationClipExists(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static bool CheckActionAnimationClipExists(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.CheckAnimationClipExists(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static int GetAnimationIndexOfAction(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static int GetAnimationIndexOfAction(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.AnimationIndexOfActionCode(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static int GetAnimationIndexOfAction(MBActionSet actionSet, ActionIndexValueCache actionIndexCache)
-	{
-		return MBAPI.IMBAnimation.AnimationIndexOfActionCode(actionSet.Index, actionIndexCache.Index);
-	}
-
-	public static string GetActionAnimationName(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static string GetActionAnimationName(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.GetAnimationName(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static float GetActionAnimationDuration(MBActionSet actionSet, ActionIndexCache actionIndexCache)
+	public static float GetActionAnimationDuration(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.GetActionAnimationDuration(actionSet.Index, actionIndexCache.Index);
 	}
 
-	public static float GetActionAnimationDuration(MBActionSet actionSet, ActionIndexValueCache actionIndexCache)
+	public static ActionIndexCache GetActionAnimationContinueToAction(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
-		return MBAPI.IMBAnimation.GetActionAnimationDuration(actionSet.Index, actionIndexCache.Index);
+		return new ActionIndexCache(MBAPI.IMBAnimation.GetAnimationContinueToAction(actionSet.Index, actionIndexCache.Index));
 	}
 
-	public static ActionIndexValueCache GetActionAnimationContinueToAction(MBActionSet actionSet, ActionIndexValueCache actionIndexCache)
-	{
-		return new ActionIndexValueCache(MBAPI.IMBAnimation.GetAnimationContinueToAction(actionSet.Index, actionIndexCache.Index));
-	}
-
-	public static float GetTotalAnimationDurationWithContinueToAction(MBActionSet actionSet, ActionIndexValueCache actionIndexCache)
+	public static float GetTotalAnimationDurationWithContinueToAction(MBActionSet actionSet, ActionIndexCache actionIndexCache)
 	{
 		float num = 0f;
-		while (actionIndexCache != ActionIndexValueCache.act_none)
+		while (actionIndexCache != ActionIndexCache.act_none)
 		{
-			num += GetActionAnimationDuration(actionSet, actionIndexCache);
-			actionIndexCache = GetActionAnimationContinueToAction(actionSet, actionIndexCache);
+			num += GetActionAnimationDuration(actionSet, in actionIndexCache);
+			actionIndexCache = GetActionAnimationContinueToAction(actionSet, in actionIndexCache);
 		}
 		return num;
 	}
 
-	public static float GetActionBlendOutStartProgress(MBActionSet actionSet, ActionIndexCache actionIndexCache)
-	{
-		return MBAPI.IMBAnimation.GetActionBlendOutStartProgress(actionSet.Index, actionIndexCache.Index);
-	}
-
-	public static float GetActionBlendOutStartProgress(MBActionSet actionSet, ActionIndexValueCache actionIndexCache)
+	public static float GetActionBlendOutStartProgress(MBActionSet actionSet, in ActionIndexCache actionIndexCache)
 	{
 		return MBAPI.IMBAnimation.GetActionBlendOutStartProgress(actionSet.Index, actionIndexCache.Index);
 	}

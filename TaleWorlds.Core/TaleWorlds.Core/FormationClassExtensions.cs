@@ -20,17 +20,10 @@ public static class FormationClassExtensions
 	{
 		return formationClass switch
 		{
-			FormationClass.Infantry => "Infantry", 
-			FormationClass.Ranged => "Ranged", 
-			FormationClass.Cavalry => "Cavalry", 
-			FormationClass.HorseArcher => "HorseArcher", 
 			FormationClass.NumberOfDefaultFormations => "Skirmisher", 
-			FormationClass.HeavyInfantry => "HeavyInfantry", 
-			FormationClass.LightCavalry => "LightCavalry", 
-			FormationClass.HeavyCavalry => "HeavyCavalry", 
 			FormationClass.NumberOfRegularFormations => "General", 
-			FormationClass.Bodyguard => "Bodyguard", 
-			_ => "Unset", 
+			FormationClass.NumberOfAllFormations => "Unset", 
+			_ => formationClass.ToString(), 
 		};
 	}
 
@@ -71,7 +64,7 @@ public static class FormationClassExtensions
 			result = TroopType.Cavalry;
 			break;
 		default:
-			Debug.FailedAssert($"Undefined formation class {formationClass} for TroopType!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\FormationClass.cs", "GetTroopTypeForRegularFormation", 311);
+			Debug.FailedAssert($"Undefined formation class {formationClass} for TroopType!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\FormationClass.cs", "GetTroopTypeForRegularFormation", 321);
 			break;
 		}
 		return result;

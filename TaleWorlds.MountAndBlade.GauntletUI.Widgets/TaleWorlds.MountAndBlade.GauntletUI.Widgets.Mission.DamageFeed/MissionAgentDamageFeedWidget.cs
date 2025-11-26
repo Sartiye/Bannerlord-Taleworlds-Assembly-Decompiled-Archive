@@ -26,13 +26,13 @@ public class MissionAgentDamageFeedWidget : Widget
 		UpdateSpeedModifiers();
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
 		_activeFeedItem = null;
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
 		if (_activeFeedItem == null && _feedItemQueue.Count > 0)
 		{

@@ -1,12 +1,26 @@
+using TaleWorlds.Core;
+
 namespace TaleWorlds.MountAndBlade.Source.Missions.Handlers.Logic;
 
 public class BattleMissionAgentInteractionLogic : MissionLogic
 {
 	public override bool IsThereAgentAction(Agent userAgent, Agent otherAgent)
 	{
-		if (!otherAgent.IsEnemyOf(userAgent))
+		if (otherAgent.IsMount)
 		{
-			return true;
+			if (otherAgent.IsActive())
+			{
+				if (otherAgent.RiderAgent != userAgent)
+				{
+					if (otherAgent.RiderAgent == null)
+					{
+						return userAgent.GetAgentFlags().HasFlag(AgentFlag.CanRide);
+					}
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
 		return false;
 	}

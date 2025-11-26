@@ -144,7 +144,7 @@ public class MultiSelectionQueryPopUpVM : PopUpBaseVM
 		InquiryElements.Clear();
 		foreach (InquiryElement inquiryElement in _data.InquiryElements)
 		{
-			TextObject hint = (string.IsNullOrEmpty(inquiryElement.Hint) ? TextObject.Empty : new TextObject("{=!}" + inquiryElement.Hint));
+			TextObject hint = (string.IsNullOrEmpty(inquiryElement.Hint) ? TextObject.GetEmpty() : new TextObject("{=!}" + inquiryElement.Hint));
 			InquiryElementVM item = new InquiryElementVM(inquiryElement, hint, OnInquiryElementSelected);
 			InquiryElements.Add(item);
 		}

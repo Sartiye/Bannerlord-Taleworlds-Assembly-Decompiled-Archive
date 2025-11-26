@@ -7,7 +7,7 @@ using TaleWorlds.ScreenSystem;
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission;
 
 [OverrideView(typeof(MissionBoundaryCrossingView))]
-public class MissionGauntletBoundaryCrossingView : MissionGauntletBattleUIBase
+public class MissionGauntletBoundaryCrossingView : MissionBattleUIBaseView
 {
 	private GauntletLayer _gauntletLayer;
 
@@ -16,7 +16,7 @@ public class MissionGauntletBoundaryCrossingView : MissionGauntletBattleUIBase
 	protected override void OnCreateView()
 	{
 		_dataSource = new BoundaryCrossingVM(base.Mission, OnEscapeMenuToggled);
-		_gauntletLayer = new GauntletLayer(47);
+		_gauntletLayer = new GauntletLayer("BoundaryCrossing", 47);
 		_gauntletLayer.LoadMovie("BoundaryCrossing", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}
@@ -28,9 +28,25 @@ public class MissionGauntletBoundaryCrossingView : MissionGauntletBattleUIBase
 		_dataSource = null;
 	}
 
+	protected override void OnSuspendView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+		}
+	}
+
 	private void OnEscapeMenuToggled(bool isOpened)
 	{
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			ScreenManager.SetSuspendLayer(_gauntletLayer, !isOpened);
 		}
@@ -39,7 +55,7 @@ public class MissionGauntletBoundaryCrossingView : MissionGauntletBattleUIBase
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 0f;
 		}
@@ -48,7 +64,7 @@ public class MissionGauntletBoundaryCrossingView : MissionGauntletBattleUIBase
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 1f;
 		}

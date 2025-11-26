@@ -10,7 +10,7 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 {
 	private readonly Action<MPGeneralKillNotificationItemVM> _onRemove;
 
-	private readonly BannerCode DefaultBannerCode = BannerCode.CreateFrom(Banner.CreateOneColoredEmptyBanner(92));
+	private readonly Banner DefaultBanner = Banner.CreateOneColoredEmptyBanner(92);
 
 	private string _murdererName;
 
@@ -348,20 +348,20 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		IsItemInitializationOver = false;
 		GetAgentColors(affectorAgent, out var color, out var color2);
 		TargetIconType multiplayerAgentType = GetMultiplayerAgentType(affectorAgent);
-		BannerCode agentBannerCode = GetAgentBannerCode(affectorAgent);
+		Banner agentBanner = GetAgentBanner(affectorAgent);
 		bool flag = affectorAgent?.Team?.IsPlayerAlly ?? false;
 		GetAgentColors(affectedAgent, out var color3, out var color4);
 		TargetIconType multiplayerAgentType2 = GetMultiplayerAgentType(affectedAgent);
-		BannerCode agentBannerCode2 = GetAgentBannerCode(affectedAgent);
+		Banner agentBanner2 = GetAgentBanner(affectedAgent);
 		bool flag2 = affectedAgent.Team?.IsPlayerAlly ?? false;
 		MurdererName = ((affectorAgent == null) ? "" : ((affectorAgent.MissionPeer != null) ? affectorAgent.MissionPeer.DisplayedName : affectorAgent.Name));
 		MurdererType = multiplayerAgentType.ToString();
 		IsMurdererBot = affectorAgent != null && !affectorAgent.IsPlayerControlled;
-		MurdererCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType, color, color2, agentBannerCode, flag);
+		MurdererCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType, color, color2, agentBanner, flag);
 		VictimName = ((affectedAgent.MissionPeer != null) ? affectedAgent.MissionPeer.DisplayedName : affectedAgent.Name);
 		VictimType = multiplayerAgentType2.ToString();
 		IsVictimBot = !affectedAgent.IsPlayerControlled;
-		VictimCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType2, color3, color4, agentBannerCode2, flag2);
+		VictimCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType2, color3, color4, agentBanner2, flag2);
 		IsPlayerDeath = affectedAgent.IsMainAgent;
 		if (flag && flag2)
 		{
@@ -395,17 +395,17 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		IsItemInitializationOver = false;
 		if (affectorAgent != null && affectorAgent.IsMainAgent)
 		{
-			MBTextManager.SetTextVariable("TROOP_NAME", "{=!}" + affectedAgent.Name.ToString());
+			MBTextManager.SetTextVariable("TROOP_NAME", affectedAgent.NameTextObject.ToString());
 			Message = GameTexts.FindText("str_kill_feed_message").ToString();
 		}
 		else if (affectedAgent.IsMainAgent)
 		{
-			MBTextManager.SetTextVariable("TROOP_NAME", ("{=!}" + affectorAgent != null) ? affectorAgent.Name.ToString() : "");
+			MBTextManager.SetTextVariable("TROOP_NAME", ((object)affectorAgent)?.ToString());
 			Message = GameTexts.FindText("str_death_feed_message").ToString();
 		}
 		else if (assistedAgent != null && assistedAgent.IsMainAgent)
 		{
-			MBTextManager.SetTextVariable("TROOP_NAME", "{=!}" + affectedAgent.Name.ToString());
+			MBTextManager.SetTextVariable("TROOP_NAME", affectedAgent.NameTextObject.ToString());
 			Message = GameTexts.FindText("str_assist_feed_message").ToString();
 		}
 		IsItemInitializationOver = true;
@@ -424,29 +424,29 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		MultiplayerClassDivisions.MPHeroClass mPHeroClassForCharacter = MultiplayerClassDivisions.GetMPHeroClassForCharacter(agent.Character);
 		if (mPHeroClassForCharacter == null)
 		{
-			Debug.FailedAssert("Hero class is not set for agent: " + agent.Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\General\\MPGeneralKillNotificationItemVM.cs", "GetMultiplayerAgentType", 116);
+			Debug.FailedAssert("Hero class is not set for agent: " + agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\General\\MPGeneralKillNotificationItemVM.cs", "GetMultiplayerAgentType", 116);
 			return TargetIconType.None;
 		}
 		return mPHeroClassForCharacter.IconType;
 	}
 
-	private BannerCode GetAgentBannerCode(Agent agent)
+	private Banner GetAgentBanner(Agent agent)
 	{
-		BannerCode result = DefaultBannerCode;
+		Banner result = DefaultBanner;
 		if (agent != null)
 		{
 			MissionPeer missionPeer = agent.MissionPeer?.GetComponent<MissionPeer>();
 			if (agent.Team != null && missionPeer != null)
 			{
-				result = BannerCode.CreateFrom(new Banner(missionPeer.Peer.BannerCode, agent.Team.Color, agent.Team.Color2));
+				result = new Banner(missionPeer.Peer.BannerCode, agent.Team.Color, agent.Team.Color2);
 			}
 			else if (agent.Team != null && agent.Formation != null && !string.IsNullOrEmpty(agent.Formation.BannerCode))
 			{
-				result = BannerCode.CreateFrom(new Banner(agent.Formation.BannerCode, agent.Team.Color, agent.Team.Color2));
+				result = new Banner(agent.Formation.BannerCode, agent.Team.Color, agent.Team.Color2);
 			}
 			else if (agent.Team != null)
 			{
-				result = BannerCode.CreateFrom(agent.Team.Banner);
+				result = agent.Team.Banner;
 			}
 		}
 		return result;

@@ -4,8 +4,6 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Inventory;
-using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
@@ -46,10 +44,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		Hostile
 	}
 
-	private const int MinimumNumberOfVillagersAtVillagerParty = 12;
-
-	private const int OneVillagerPerHearth = 40;
-
 	private float _collectFoodTotalWaitHours;
 
 	private float _collectVolunteersTotalWaitHours;
@@ -64,8 +58,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 
 	private Dictionary<Village, CampaignTime> _villageLastVillagerSendTime = new Dictionary<Village, CampaignTime>();
 
-	private Dictionary<MobileParty, List<Settlement>> _previouslyChangedVillagerTargetsDueToEnemyOnWay = new Dictionary<MobileParty, List<Settlement>>();
-
 	public override void RegisterEvents()
 	{
 		CampaignEvents.HourlyTickSettlementEvent.AddNonSerializedListener(this, HourlyTickSettlement);
@@ -74,8 +66,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 		CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
 		CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
-		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, OnMobilePartyCreated);
-		CampaignEvents.DistributeLootToPartyEvent.AddNonSerializedListener(this, OnVillagerPartyLooted);
+		CampaignEvents.OnLootDistributedToPartyEvent.AddNonSerializedListener(this, OnLootDistributedToParty);
 		CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, OnSiegeEventStarted);
 	}
 
@@ -85,19 +76,16 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			if (siegeEvent.BesiegedSettlement.Parties[i].IsVillager)
 			{
-				siegeEvent.BesiegedSettlement.Parties[i].Ai.SetMoveModeHold();
+				siegeEvent.BesiegedSettlement.Parties[i].SetMoveModeHold();
 			}
 		}
 	}
 
-	private void OnVillagerPartyLooted(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot)
+	private void OnLootDistributedToParty(PartyBase winnerParty, PartyBase defeatedParty, ItemRoster lootedItems)
 	{
-		foreach (PartyBase key in loot.Keys)
+		if (winnerParty.IsMobile && defeatedParty.IsMobile && defeatedParty.MobileParty.IsVillager)
 		{
-			if (key.IsMobile && key.MobileParty.IsVillager && party.IsMobile)
-			{
-				SkillLevelingManager.OnLoot(party.MobileParty, key.MobileParty, loot[key], attacked: true);
-			}
+			SkillLevelingManager.OnLoot(winnerParty.MobileParty, defeatedParty.MobileParty, lootedItems, attacked: true);
 		}
 	}
 
@@ -108,7 +96,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_lootedVillagers", ref _lootedVillagers);
 		dataStore.SyncData("_interactedVillagers", ref _interactedVillagers);
 		dataStore.SyncData("_villageLastVillagerSendTime", ref _villageLastVillagerSendTime);
-		dataStore.SyncData("_previouslyChangedVillagerTargetsDueToEnemyOnWay", ref _previouslyChangedVillagerTargetsDueToEnemyOnWay);
 	}
 
 	private void DeleteExpiredLootedVillagers()
@@ -148,7 +135,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		MobileParty mobileParty = village.VillagerPartyComponent?.MobileParty;
-		if ((mobileParty != null && (mobileParty.CurrentSettlement != village.Owner.Settlement || mobileParty.MapEvent != null)) || village.Owner.MapEvent != null)
+		if ((mobileParty != null && (mobileParty.CurrentSettlement != village.Owner.Settlement || mobileParty.MapEvent != null || mobileParty.IsInRaftState)) || village.Owner.MapEvent != null)
 		{
 			return;
 		}
@@ -157,24 +144,24 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			num += village.Owner.ItemRoster[i].Amount;
 		}
-		int werehouseCapacity = village.GetWerehouseCapacity();
-		if (num < werehouseCapacity || village.Owner.MapEvent != null)
+		int warehouseCapacity = village.GetWarehouseCapacity();
+		if (num < warehouseCapacity || village.Owner.MapEvent != null)
 		{
 			return;
 		}
 		if (mobileParty == null || (_villageLastVillagerSendTime.ContainsKey(village) && _villageLastVillagerSendTime[village].ElapsedDaysUntilNow > 7f && mobileParty.CurrentSettlement != village.Settlement))
 		{
-			if (village.Hearth > 12f)
+			if (village.Hearth > (float)Campaign.Current.Models.PartySizeLimitModel.MinimumNumberOfVillagersAtVillagerParty)
 			{
 				CreateVillagerParty(village);
 			}
 		}
 		else
 		{
-			int num2 = FindIdealPartySize(village);
-			if (mobileParty.MemberRoster.TotalManCount < num2)
+			int idealVillagerPartySize = Campaign.Current.Models.PartySizeLimitModel.GetIdealVillagerPartySize(village);
+			if (mobileParty.MemberRoster.TotalManCount < idealVillagerPartySize && mobileParty.HomeSettlement.Village.Hearth > 0f)
 			{
-				AddVillagersToParty(mobileParty, num2 - mobileParty.MemberRoster.TotalManCount);
+				AddVillagersToParty(mobileParty, idealVillagerPartySize - mobileParty.MemberRoster.TotalManCount);
 			}
 		}
 		if (mobileParty != null)
@@ -194,21 +181,11 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		villagerParty.MemberRoster.AddToCounts(character, numberOfVillagersToAdd);
 	}
 
-	private int FindIdealPartySize(Village village)
-	{
-		float num = 0f;
-		foreach (var production in village.VillageType.Productions)
-		{
-			float num2 = Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyProductionAmount(village, production.Item1);
-			num += num2;
-		}
-		float num3 = ((num > 10f) ? (40f * (1f - (MathF.Min(40f, num) - 10f) / 60f)) : 40f);
-		return 12 + (int)(village.Hearth / num3);
-	}
-
 	private void CreateVillagerParty(Village village)
 	{
-		EnterSettlementAction.ApplyForParty(VillagerPartyComponent.CreateVillagerParty(village.Settlement.Culture.VillagerPartyTemplate.StringId + "_1", village, FindIdealPartySize(village)), village.Settlement);
+		MobileParty mobileParty = VillagerPartyComponent.CreateVillagerParty(village.Settlement.Culture.VillagerPartyTemplate.StringId + "_1", village);
+		village.Hearth = MathF.Max(0f, village.Hearth - (float)((mobileParty.MemberRoster.TotalManCount + 1) / 2));
+		EnterSettlementAction.ApplyForParty(mobileParty, village.Settlement);
 	}
 
 	private void LoadAndSendVillagerParty(Village village, MobileParty villagerParty)
@@ -228,7 +205,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 	private static void MoveItemsToVillagerParty(Village village, MobileParty villagerParty)
 	{
 		ItemRoster itemRoster = village.Settlement.ItemRoster;
-		float num = (float)villagerParty.InventoryCapacity - villagerParty.ItemRoster.TotalWeight;
+		float num = (float)villagerParty.InventoryCapacity - villagerParty.TotalWeightCarried;
 		for (int i = 0; i < 4; i++)
 		{
 			for (int j = 0; j < itemRoster.Count; j++)
@@ -264,18 +241,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			_interactedVillagers.Remove(mobileParty);
 		}
-		if (_previouslyChangedVillagerTargetsDueToEnemyOnWay.ContainsKey(mobileParty))
-		{
-			_previouslyChangedVillagerTargetsDueToEnemyOnWay.Remove(mobileParty);
-		}
-	}
-
-	private void OnMobilePartyCreated(MobileParty mobileParty)
-	{
-		if (mobileParty.IsVillager)
-		{
-			_previouslyChangedVillagerTargetsDueToEnemyOnWay.Add(mobileParty, new List<Settlement>());
-		}
 	}
 
 	private void HourlyTickSettlement(Settlement settlement)
@@ -296,21 +261,18 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 
 	private void HourlyTickParty(MobileParty villagerParty)
 	{
-		if (!villagerParty.IsVillager || villagerParty.MapEvent != null)
+		if (!villagerParty.IsVillager || villagerParty.MapEvent != null || !villagerParty.HasLandNavigationCapability)
 		{
 			return;
 		}
 		bool flag = false;
-		if (villagerParty.CurrentSettlement != null)
+		if (villagerParty.HomeSettlement.Village.VillagerPartyComponent == null || villagerParty.HomeSettlement.Village.VillagerPartyComponent.MobileParty != villagerParty)
 		{
-			if (villagerParty.HomeSettlement.Village.VillagerPartyComponent == null || villagerParty.HomeSettlement.Village.VillagerPartyComponent.MobileParty != villagerParty)
-			{
-				DestroyPartyAction.Apply(null, villagerParty);
-			}
+			DestroyPartyAction.Apply(null, villagerParty);
 		}
 		else if (villagerParty.DefaultBehavior == AiBehavior.GoToSettlement)
 		{
-			if (villagerParty.TargetSettlement.IsTown && (villagerParty.TargetSettlement == null || villagerParty.TargetSettlement.IsUnderSiege || villagerParty.Ai.NeedTargetReset || FactionManager.IsAtWarAgainstFaction(villagerParty.MapFaction, villagerParty.TargetSettlement.MapFaction)))
+			if (villagerParty.TargetSettlement.IsTown && (villagerParty.TargetSettlement == null || villagerParty.TargetSettlement.IsUnderSiege || FactionManager.IsAtWarAgainstFaction(villagerParty.MapFaction, villagerParty.TargetSettlement.MapFaction)))
 			{
 				flag = true;
 			}
@@ -319,27 +281,22 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			flag = true;
 		}
-		if (!flag)
+		if (flag && (villagerParty.CurrentSettlement == null || !villagerParty.CurrentSettlement.IsUnderSiege))
 		{
-			return;
-		}
-		if (villagerParty.ItemRoster.Count > 1)
-		{
-			if (villagerParty.Ai.NeedTargetReset)
+			if (villagerParty.ItemRoster.Count > 1)
 			{
-				_previouslyChangedVillagerTargetsDueToEnemyOnWay[villagerParty].Add(villagerParty.TargetSettlement);
+				SendVillagerPartyToTradeBoundTown(villagerParty);
 			}
-			SendVillagerPartyToTradeBoundTown(villagerParty);
-		}
-		else
-		{
-			SendVillagerPartyToVillage(villagerParty);
+			else
+			{
+				SendVillagerPartyToVillage(villagerParty);
+			}
 		}
 	}
 
 	private void SendVillagerPartyToVillage(MobileParty villagerParty)
 	{
-		villagerParty.Ai.SetMoveGoToSettlement(villagerParty.HomeSettlement);
+		MoveVillagersToSettlementWithBestNavigationType(villagerParty, villagerParty.HomeSettlement);
 	}
 
 	private void SendVillagerPartyToTradeBoundTown(MobileParty villagerParty)
@@ -347,7 +304,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		Settlement tradeBound = villagerParty.HomeSettlement.Village.TradeBound;
 		if (tradeBound != null && !tradeBound.IsUnderSiege)
 		{
-			villagerParty.Ai.SetMoveGoToSettlement(tradeBound);
+			MoveVillagersToSettlementWithBestNavigationType(villagerParty, tradeBound);
 		}
 	}
 
@@ -355,12 +312,11 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 	{
 		if (mobileParty != null && mobileParty.IsActive && mobileParty.IsVillager)
 		{
-			_previouslyChangedVillagerTargetsDueToEnemyOnWay[mobileParty].Clear();
 			if (settlement.IsTown)
 			{
 				SellGoodsForTradeAction.ApplyByVillagerTrade(settlement, mobileParty);
 			}
-			if (settlement.IsVillage)
+			if (settlement.IsVillage && mobileParty.PartyTradeGold != 0)
 			{
 				int num = Campaign.Current.Models.SettlementTaxModel.CalculateVillageTaxFromIncome(mobileParty.HomeSettlement.Village, mobileParty.PartyTradeGold);
 				mobileParty.PartyTradeGold = 0;
@@ -407,7 +363,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			{
 				if (settlement.IsTown)
 				{
-					mobileParty.Ai.SetMoveGoToSettlement(mobileParty.HomeSettlement);
+					MoveVillagersToSettlementWithBestNavigationType(mobileParty, mobileParty.HomeSettlement);
 				}
 				else if (mobileParty.ItemRoster.Count > 1 && settlement != mobileParty.HomeSettlement)
 				{
@@ -415,6 +371,12 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 		}
+	}
+
+	private void MoveVillagersToSettlementWithBestNavigationType(MobileParty villagerParty, Settlement settlement)
+	{
+		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(villagerParty, settlement, isTargetingPort: false, out var bestNavigationType, out var _, out var isFromPort);
+		SetPartyAiAction.GetActionForVisitingSettlement(villagerParty, settlement, bestNavigationType, isFromPort, isTargetingPort: false);
 	}
 
 	public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -453,18 +415,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		return true;
 	}
 
-	public void taking_food_from_villagers_wait_on_tick(MenuCallbackArgs args, CampaignTime campaignTime)
-	{
-		_collectFoodWaitHoursProgress += (float)campaignTime.ToHours;
-		args.MenuContext.GameMenu.SetProgressOfWaitingInMenu(_collectFoodWaitHoursProgress / _collectFoodTotalWaitHours);
-	}
-
-	public void press_into_service_confirm_on_tick(MenuCallbackArgs args, CampaignTime campaignTime)
-	{
-		_collectVolunteerWaitHoursProgress += (float)campaignTime.ToHours;
-		args.MenuContext.GameMenu.SetProgressOfWaitingInMenu(_collectVolunteerWaitHoursProgress / _collectVolunteersTotalWaitHours);
-	}
-
 	public void taking_food_from_villagers_wait_on_consequence(MenuCallbackArgs args)
 	{
 		_ = Settlement.CurrentSettlement.Village;
@@ -498,8 +448,21 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("player_decided_to_not_fight_villagers_2", "village_farmer_give_some_goods", "close_window", "{=D33fIGQe}Never mind.", null, conversation_village_farmer_leave_on_consequence);
 		starter.AddDialogLine("village_farmer_fight_no_surrender", "player_wants_everything_villagers", "close_window", "{=wAhXFoNH}You'll have to fight us first![rf:idle_angry][ib:aggressive]", conversation_village_farmer_not_surrender_on_condition, conversation_village_farmer_fight_on_consequence);
 		starter.AddDialogLine("village_farmer_accepted_to_give_everything", "player_wants_everything_villagers", "player_decision_to_take_prisoner_villagers", "{=33mKghKQ}Please don't kill us. We surrender.[rf:idle_angry][ib:nervous]", conversation_village_farmer_give_goods_on_condition, null);
-		starter.AddPlayerLine("player_do_not_take_prisoner_villagers", "player_decision_to_take_prisoner_villagers", "village_farmer_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null);
-		starter.AddPlayerLine("player_decided_to_take_prisoner_2", "player_decision_to_take_prisoner_villagers", "villager_taken_prisoner_warning", "{=g5G8AJ5n}You are my prisoner now.", null, null);
+		starter.AddPlayerLine("player_do_not_take_prisoner_villagers", "player_decision_to_take_prisoner_villagers", "village_farmer_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			return true;
+		});
+		starter.AddPlayerLine("player_decided_to_take_prisoner_2", "player_decision_to_take_prisoner_villagers", "villager_taken_prisoner_warning", "{=g5G8AJ5n}You are my prisoner now.", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			return true;
+		});
+		starter.AddPlayerLine("player_decided_to_take_prisoner_2", "player_decision_to_take_prisoner_villagers", "villager_start_encounter", "{=ha53qb7v}Don't bother pleading for your lives. At them, lads!", null, null, 100, delegate(out TextObject explanation)
+		{
+			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			return true;
+		});
 		starter.AddDialogLine("villager_warn_player_to_take_prisoner", "villager_taken_prisoner_warning", "villager_taken_prisoner_warning_answer", "{=dPOOmYGQ}You think the lords and warriors of the {KINGDOM} won't just stand by idly when their people are kidnapped? You'd best let us go!", conversation_warn_player_on_condition, null);
 		starter.AddDialogLine("villager_warn_player_to_take_prisoner_2", "villager_taken_prisoner_warning", "close_window", "{=BvytaDUJ}Heaven protect us from the likes of you.", null, delegate
 		{
@@ -509,6 +472,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		starter.AddPlayerLine("player_decided_to_take_prisoner_leave_2", "villager_taken_prisoner_warning_answer", "village_farmer_loot_talk", "{=BNb88lyN}Never mind. Go on your way.", null, null);
 		starter.AddDialogLine("village_farmer_bribery_leave", "village_farmer_end_talk", "close_window", "{=Pa1ZtapI}Okay. Okay then. We're going.", conversation_village_farmer_looted_leave_on_condition, conversation_village_farmer_looted_leave_on_consequence);
 		starter.AddDialogLine("village_farmer_surrender_leave", "village_farmer_end_talk_surrender", "close_window", "{=Pa1ZtapI}Okay. Okay then. We're going.", conversation_village_farmer_looted_leave_on_condition, conversation_village_farmer_surrender_leave_on_consequence);
+		starter.AddDialogLine("village_farmer_surrender_leave", "villager_start_encounter", "close_window", "{=yoWl6w1I}Heaven will avenge us, you butcher!", null, conversation_village_farmer_fight_forced_on_consequence);
 	}
 
 	private bool village_farmer_loot_on_clickable_condition(out TextObject explanation)
@@ -518,7 +482,6 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			explanation = new TextObject("{=PVPBqy1e}You just looted these people.");
 			return false;
 		}
-		explanation = TextObject.Empty;
 		CalculateConversationPartyBribeAmount(out var gold, out var items);
 		bool num = gold > 0;
 		bool flag = !items.IsEmpty();
@@ -527,6 +490,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			explanation = new TextObject("{=pbRwAjUN}They seem to have no valuable goods.");
 			return false;
 		}
+		explanation = null;
 		return true;
 	}
 
@@ -541,7 +505,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			case PlayerInteraction.None:
 			{
 				MBTextManager.SetTextVariable("VILLAGE", encounteredParty.MobileParty.HomeSettlement.EncyclopediaLinkWithName);
-				Settlement settlement = ((encounteredParty.MobileParty.HomeSettlement.Village.TradeBound != null) ? encounteredParty.MobileParty.HomeSettlement.Village.TradeBound : ((encounteredParty.MobileParty.LastVisitedSettlement == null || !encounteredParty.MobileParty.LastVisitedSettlement.IsTown) ? SettlementHelper.FindNearestTown(null, encounteredParty.MobileParty.HomeSettlement) : encounteredParty.MobileParty.LastVisitedSettlement));
+				Settlement settlement = ((encounteredParty.MobileParty.HomeSettlement.Village.TradeBound != null) ? encounteredParty.MobileParty.HomeSettlement.Village.TradeBound : ((encounteredParty.MobileParty.LastVisitedSettlement == null || !encounteredParty.MobileParty.LastVisitedSettlement.IsTown) ? SettlementHelper.FindNearestTownToSettlement(encounteredParty.MobileParty.HomeSettlement, encounteredParty.MobileParty.NavigationCapability).Settlement : encounteredParty.MobileParty.LastVisitedSettlement));
 				MBTextManager.SetTextVariable("TOWN", settlement.EncyclopediaLinkWithName);
 				if (encounteredParty.MobileParty.DefaultBehavior == AiBehavior.GoToSettlement && encounteredParty.MobileParty.TargetSettlement.IsTown)
 				{
@@ -551,7 +515,13 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 				{
 					MBTextManager.SetTextVariable("VILLAGER_STATE", (encounteredParty.MobileParty.PartyTradeGold > 0) ? GameTexts.FindText("str_villager_returns_to_village") : GameTexts.FindText("str_looted_villager_returns_to_village"));
 				}
-				MBTextManager.SetTextVariable("VILLAGER_GREETING", "{=a7NrxcAD}Greetings, my {?PLAYER.GENDER}lady{?}lord{\\?}. We're farmers from the village of {VILLAGE}. {VILLAGER_STATE}".ToString());
+				MBTextManager.SetTextVariable("VILLAGER_GREETING", "{=a7NrxcAD}Greetings, my {?PLAYER.GENDER}lady{?}lord{\\?}. {VILLAGER_PARTY_EXPLANATION}. {VILLAGER_STATE}".ToString());
+				TextObject text = new TextObject("{=Epm86qnY}We're farmers from the village of {VILLAGE}");
+				if (encounteredParty.MobileParty.HasNavalNavigationCapability)
+				{
+					text = new TextObject("{=b4fpZGsv}We're fisherman from the village of {VILLAGE}");
+				}
+				MBTextManager.SetTextVariable("VILLAGER_PARTY_EXPLANATION", text);
 				break;
 			}
 			case PlayerInteraction.Hostile:
@@ -660,7 +630,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsVillager)
 		{
-			return !IsBribeFeasible(MobileParty.ConversationParty);
+			return !IsBribeFeasible();
 		}
 		return false;
 	}
@@ -669,7 +639,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsVillager)
 		{
-			return !IsSurrenderFeasible(MobileParty.ConversationParty);
+			return !IsSurrenderFeasible();
 		}
 		return false;
 	}
@@ -695,7 +665,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		ItemRoster itemRoster = new ItemRoster(PlayerEncounter.EncounteredParty.ItemRoster);
 		if (itemRoster.Count > 0)
 		{
-			InventoryManager.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
+			InventoryScreenHelper.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
 			{
 				PartyBase.MainParty,
 				itemRoster
@@ -708,12 +678,13 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			GiveGoldAction.ApplyForPartyToCharacter(PlayerEncounter.EncounteredParty, Hero.MainHero, partyTradeGold);
 		}
 		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, PlayerEncounter.EncounteredParty);
+		SetPlayerInteraction(PlayerEncounter.EncounteredParty.MobileParty, PlayerInteraction.Hostile);
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		foreach (TroopRosterElement item in PlayerEncounter.EncounteredParty.MemberRoster.GetTroopRoster())
 		{
 			troopRoster.AddToCounts(item.Character, item.Number);
 		}
-		PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerEncounter.EncounteredParty.Name, troopRoster.TotalManCount);
+		PartyScreenHelper.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerEncounter.EncounteredParty.Name, troopRoster.TotalManCount);
 		SkillLevelingManager.OnLoot(MobileParty.MainParty, PlayerEncounter.EncounteredParty.MobileParty, itemRoster, attacked: false);
 		DestroyPartyAction.Apply(MobileParty.MainParty.Party, PlayerEncounter.EncounteredParty.MobileParty);
 		PlayerEncounter.LeaveEncounter = true;
@@ -721,8 +692,13 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 
 	private void conversation_village_farmer_fight_on_consequence()
 	{
-		PlayerEncounter.Current.IsEnemy = true;
 		SetPlayerInteraction(MobileParty.ConversationParty, PlayerInteraction.Hostile);
+	}
+
+	private void conversation_village_farmer_fight_forced_on_consequence()
+	{
+		SetPlayerInteraction(MobileParty.ConversationParty, PlayerInteraction.Hostile);
+		BeHostileAction.ApplyEncounterHostileAction(MobileParty.MainParty.Party, MobileParty.ConversationParty.Party);
 	}
 
 	private bool conversation_village_farmer_give_goods_on_condition()
@@ -748,7 +724,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 					textObject.SetTextVariable("LEFT", textObject3);
 					if (items.Count == 1)
 					{
-						textObject.SetTextVariable("RIGHT", TextObject.Empty);
+						textObject.SetTextVariable("RIGHT", TextObject.GetEmpty());
 					}
 					else if (items.Count - 2 > i)
 					{
@@ -787,7 +763,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 				textObject7.SetTextVariable("LEFT", textObject9);
 				if (items.Count == 1)
 				{
-					textObject7.SetTextVariable("RIGHT", TextObject.Empty);
+					textObject7.SetTextVariable("RIGHT", TextObject.GetEmpty());
 				}
 				else if (items.Count - 2 > j)
 				{
@@ -833,7 +809,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		ItemRoster itemRoster = new ItemRoster(MobileParty.ConversationParty.ItemRoster);
 		if (itemRoster.Count > 0)
 		{
-			InventoryManager.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
+			InventoryScreenHelper.OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
 			{
 				PartyBase.MainParty,
 				itemRoster
@@ -845,38 +821,31 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			GiveGoldAction.ApplyForPartyToCharacter(MobileParty.ConversationParty.Party, Hero.MainHero, partyTradeGold);
 		}
+		SetPlayerInteraction(MobileParty.ConversationParty, PlayerInteraction.Hostile);
 		BeHostileAction.ApplyMajorCoercionHostileAction(PartyBase.MainParty, MobileParty.ConversationParty.Party);
 		_lootedVillagers.Add(MobileParty.ConversationParty, CampaignTime.Now);
 		SkillLevelingManager.OnLoot(MobileParty.MainParty, MobileParty.ConversationParty, itemRoster, attacked: false);
 		PlayerEncounter.LeaveEncounter = true;
 	}
 
-	private bool IsBribeFeasible(MobileParty conversationParty)
+	private bool IsBribeFeasible()
 	{
-		int num = (PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty, 0.05f) ? 33 : 67);
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
-		{
-			num = MathF.Round((float)num * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus));
-		}
-		if (conversationParty.Party.RandomIntWithSeed(3u, 100) > 100 - num)
+		float resultNumber = Campaign.Current.Models.EncounterModel.GetBribeChance(MobileParty.ConversationParty, MobileParty.MainParty).ResultNumber;
+		if (MobileParty.ConversationParty.Party.RandomFloatWithSeed(3u, 1f) > resultNumber)
 		{
 			return false;
 		}
-		return PartyBaseHelper.DoesSurrenderIsLogicalForParty(conversationParty, MobileParty.MainParty, 0.4f);
+		return true;
 	}
 
-	private bool IsSurrenderFeasible(MobileParty conversationParty)
+	private bool IsSurrenderFeasible()
 	{
-		int num = (PartyBaseHelper.DoesSurrenderIsLogicalForParty(MobileParty.ConversationParty, MobileParty.MainParty, 0.05f) ? 33 : 67);
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
-		{
-			num = MathF.Round((float)num * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus));
-		}
-		if (conversationParty.Party.RandomIntWithSeed(4u, 100) > 100 - num)
+		float surrenderChance = Campaign.Current.Models.EncounterModel.GetSurrenderChance(MobileParty.ConversationParty, MobileParty.MainParty);
+		if (MobileParty.ConversationParty.Party.RandomFloatWithSeed(4u, 1f) > surrenderChance)
 		{
 			return false;
 		}
-		return PartyBaseHelper.DoesSurrenderIsLogicalForParty(conversationParty, MobileParty.MainParty);
+		return true;
 	}
 
 	private void CalculateConversationPartyBribeAmount(out int gold, out ItemRoster items)

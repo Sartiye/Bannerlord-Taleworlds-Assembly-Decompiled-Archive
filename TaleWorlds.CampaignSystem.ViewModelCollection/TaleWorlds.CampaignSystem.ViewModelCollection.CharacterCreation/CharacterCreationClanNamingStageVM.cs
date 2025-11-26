@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.CharacterCreationContent;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -15,13 +16,17 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 
 	private InputKeyItemVM _doneInputKey;
 
+	private MBBindingList<InputKeyItemVM> _cameraControlKeys;
+
 	private string _clanName;
 
 	private string _clanNameNotApplicableReason;
 
 	private string _bottomHintText;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
+
+	private bool _characterGamepadControlsEnabled;
 
 	public BasicCharacterObject Character { get; private set; }
 
@@ -65,6 +70,23 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 	}
 
 	[DataSourceProperty]
+	public MBBindingList<InputKeyItemVM> CameraControlKeys
+	{
+		get
+		{
+			return _cameraControlKeys;
+		}
+		set
+		{
+			if (value != _cameraControlKeys)
+			{
+				_cameraControlKeys = value;
+				OnPropertyChangedWithValue(value, "CameraControlKeys");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string ClanName
 	{
 		get
@@ -77,7 +99,7 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 			{
 				_clanName = value;
 				OnPropertyChangedWithValue(value, "ClanName");
-				OnPropertyChanged("CanAdvance");
+				base.CanAdvance = CanAdvanceToNextStage();
 			}
 		}
 	}
@@ -117,7 +139,7 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -133,14 +155,32 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 		}
 	}
 
-	public CharacterCreationClanNamingStageVM(BasicCharacterObject character, Banner banner, TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText, int currentStageIndex, int totalStagesCount, int furthestIndex, Action<int> goToIndex)
-		: base(characterCreation, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText, currentStageIndex, totalStagesCount, furthestIndex, goToIndex)
+	[DataSourceProperty]
+	public bool CharacterGamepadControlsEnabled
+	{
+		get
+		{
+			return _characterGamepadControlsEnabled;
+		}
+		set
+		{
+			if (value != _characterGamepadControlsEnabled)
+			{
+				_characterGamepadControlsEnabled = value;
+				OnPropertyChangedWithValue(value, "CharacterGamepadControlsEnabled");
+			}
+		}
+	}
+
+	public CharacterCreationClanNamingStageVM(BasicCharacterObject character, CharacterCreationManager characterCreationManager, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText)
+		: base(characterCreationManager, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText)
 	{
 		Character = character;
 		ClanName = Hero.MainHero.Clan.Name.ToString();
 		ItemObject item = FindShield();
 		ShieldRosterElement = new ItemRosterElement(item, 1);
-		ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(Hero.MainHero.Clan.Banner), nineGrid: true);
+		ClanBanner = new BannerImageIdentifierVM(Hero.MainHero.Clan.Banner, nineGrid: true);
+		CameraControlKeys = new MBBindingList<InputKeyItemVM>();
 		RefreshValues();
 	}
 
@@ -194,6 +234,10 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 		base.OnFinalize();
 		CancelInputKey?.OnFinalize();
 		DoneInputKey?.OnFinalize();
+		foreach (InputKeyItemVM cameraControlKey in CameraControlKeys)
+		{
+			cameraControlKey.OnFinalize();
+		}
 	}
 
 	public void SetCancelInputKey(HotKey hotKey)
@@ -204,5 +248,23 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void AddCameraControlInputKey(HotKey hotKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameKey gameKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameAxisKey gameAxisKey, TextObject keyName)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromForcedID(gameAxisKey.AxisKey.ToString(), keyName, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
 	}
 }

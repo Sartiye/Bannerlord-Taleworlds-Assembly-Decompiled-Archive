@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
 using psai.Editor;
 
 namespace psai.net;
@@ -43,10 +45,6 @@ internal class Logik
 	private IPlatformLayer m_platformLayer;
 
 	private bool m_initializationFailure;
-
-	internal string m_psaiCoreSoundtackFilepath;
-
-	internal string m_psaiCoreSoundtrackDirectoryName;
 
 	private static Stopwatch m_stopWatch;
 
@@ -221,55 +219,42 @@ internal class Logik
 		m_paused = false;
 	}
 
-	private Logik(string pathToPcbFile)
-		: this()
-	{
-		LoadSoundtrack(pathToPcbFile);
-	}
-
-	internal PsaiResult LoadSoundtrackFromProjectFile(string pathToProjectFile)
+	internal PsaiResult LoadSoundtrackFromProjectFile(List<string> pathToProjectFiles)
 	{
 		PsaiProject psaiProject = null;
-		m_psaiCoreSoundtackFilepath = pathToProjectFile;
-		m_psaiCoreSoundtrackDirectoryName = Path.GetDirectoryName(pathToProjectFile);
 		m_initializationFailure = false;
-		using Stream stream = m_platformLayer.GetStreamOnPsaiSoundtrackFile(m_psaiCoreSoundtackFilepath);
-		if (stream == null)
+		foreach (string pathToProjectFile in pathToProjectFiles)
 		{
-			return PsaiResult.file_notFound;
+			string text = ModuleHelper.GetModuleFullPath(pathToProjectFile) + "Music/soundtrack.xml";
+			StreamReader streamReader = new StreamReader(text);
+			PsaiProject psaiProject2 = null;
+			if (streamReader == null)
+			{
+				TaleWorlds.Library.Debug.Print("Cannot find the music xml for the following path: " + text, 0, TaleWorlds.Library.Debug.DebugColor.Red, 281474976710656uL);
+				continue;
+			}
+			psaiProject2 = PsaiProject.LoadProjectFromStream(streamReader, pathToProjectFile);
+			if (psaiProject == null)
+			{
+				psaiProject = psaiProject2;
+			}
+			else
+			{
+				psaiProject.MergeProjects(psaiProject2);
+			}
 		}
-		psaiProject = PsaiProject.LoadProjectFromStream(stream);
+		psaiProject.ReconstructReferencesAfterXmlDeserialization();
+		psaiProject.DebugCheckProjectIntegrity();
 		if (psaiProject != null)
 		{
-			return LoadSoundtrackByPsaiProject(psaiProject, pathToProjectFile);
+			return LoadSoundtrackByPsaiProject(psaiProject);
 		}
 		return PsaiResult.error_file;
 	}
 
-	public PsaiResult LoadSoundtrackByPsaiProject(PsaiProject psaiProject, string fullProjectPath)
+	public PsaiResult LoadSoundtrackByPsaiProject(PsaiProject psaiProject)
 	{
 		m_soundtrack = psaiProject.BuildPsaiDotNetSoundtrackFromProject();
-		m_psaiCoreSoundtackFilepath = fullProjectPath;
-		m_psaiCoreSoundtrackDirectoryName = Path.GetDirectoryName(fullProjectPath);
-		InitMembersAfterSoundtrackHasLoaded();
-		return PsaiResult.OK;
-	}
-
-	internal PsaiResult LoadSoundtrack(string pathToPcbFile)
-	{
-		m_psaiCoreSoundtackFilepath = pathToPcbFile;
-		m_psaiCoreSoundtrackDirectoryName = Path.GetDirectoryName(m_psaiCoreSoundtackFilepath);
-		m_initializationFailure = false;
-		m_soundtrack = new Soundtrack();
-		PsaiResult psaiResult = PsaiResult.none;
-		using (Stream stream = m_platformLayer.GetStreamOnPsaiSoundtrackFile(m_psaiCoreSoundtackFilepath))
-		{
-			psaiResult = Readfile_ProtoBuf(stream);
-			if (psaiResult != PsaiResult.OK)
-			{
-				return psaiResult;
-			}
-		}
 		InitMembersAfterSoundtrackHasLoaded();
 		return PsaiResult.OK;
 	}

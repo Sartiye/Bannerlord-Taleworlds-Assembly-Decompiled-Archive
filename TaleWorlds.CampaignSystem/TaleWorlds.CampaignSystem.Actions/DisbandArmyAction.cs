@@ -53,6 +53,11 @@ public static class DisbandArmyAction
 		ApplyInternal(army, Army.ArmyDispersionReason.FoodProblem);
 	}
 
+	public static void ApplyByInactivity(Army army)
+	{
+		ApplyInternal(army, Army.ArmyDispersionReason.Inactivity);
+	}
+
 	public static void ApplyByCohesionDepleted(Army army)
 	{
 		ApplyInternal(army, Army.ArmyDispersionReason.CohesionDepleted);
@@ -71,5 +76,10 @@ public static class DisbandArmyAction
 	public static void ApplyByLeaderPartyRemoved(Army army)
 	{
 		ApplyInternal(army, Army.ArmyDispersionReason.LeaderPartyRemoved);
+	}
+
+	public static void ApplyByNoShip(Army army)
+	{
+		ApplyInternal(army, Army.ArmyDispersionReason.NoShipToUse);
 	}
 }

@@ -40,7 +40,7 @@ public abstract class UsableMachineAIBase
 		foreach (StandingPoint standingPoint in UsableMachine.StandingPoints)
 		{
 			Agent userAgent = standingPoint.UserAgent;
-			if ((agentToCompareTo == null || userAgent == agentToCompareTo) && (formationToCompareTo == null || (userAgent != null && userAgent.IsAIControlled && userAgent.Formation == formationToCompareTo)) && (HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || userAgent.IsRunningAway))
+			if ((agentToCompareTo == null || userAgent == agentToCompareTo) && userAgent != null && (formationToCompareTo == null || (userAgent != null && userAgent.IsAIControlled && userAgent.Formation == formationToCompareTo)) && (HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || userAgent.IsRunningAway))
 			{
 				HandleAgentStopUsingStandingPoint(userAgent, standingPoint);
 			}
@@ -49,7 +49,7 @@ public abstract class UsableMachineAIBase
 				Agent movingAgent = standingPoint.MovingAgent;
 				if ((agentToCompareTo == null || movingAgent == agentToCompareTo) && (formationToCompareTo == null || (movingAgent != null && movingAgent.IsAIControlled && movingAgent.Formation == formationToCompareTo)))
 				{
-					if (HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || movingAgent.IsRunningAway)
+					if (standingPoint.IsDeactivated || HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || movingAgent.IsRunningAway)
 					{
 						HandleAgentStopUsingStandingPoint(movingAgent, standingPoint);
 					}
@@ -69,7 +69,7 @@ public abstract class UsableMachineAIBase
 								continue;
 							}
 						}
-						if (standingPoint.HasUserPositionsChanged(movingAgent))
+						if ((standingPoint.LockUserFrames || standingPoint.LockUserPositions) && standingPoint.HasUserPositionsChanged(movingAgent))
 						{
 							WorldFrame userFrameForAgent = standingPoint.GetUserFrameForAgent(movingAgent);
 							movingAgent.SetScriptedPositionAndDirection(ref userFrameForAgent.Origin, userFrameForAgent.Rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: false, GetScriptedFrameFlags(movingAgent));
@@ -134,7 +134,7 @@ public abstract class UsableMachineAIBase
 		{
 			return null;
 		}
-		return source.MaxBy((Agent a) => standingPoint.GetUsageScoreForAgent(a));
+		return TaleWorlds.Core.Extensions.MaxBy(source, (Agent a) => standingPoint.GetUsageScoreForAgent(a));
 	}
 
 	public static Agent GetSuitableAgentForStandingPoint(UsableMachine usableMachine, StandingPoint standingPoint, List<(Agent, float)> agents, List<Agent> usedAgents, float weight)
@@ -200,7 +200,7 @@ public abstract class UsableMachineAIBase
 		HandleAgentStopUsingStandingPoint(agent, standingPoint);
 	}
 
-	protected virtual void HandleAgentStopUsingStandingPoint(Agent agent, StandingPoint standingPoint)
+	protected Agent.StopUsingGameObjectFlags GetStopUsingStandingPointFlags(Agent agent, StandingPoint standingPoint)
 	{
 		Agent.StopUsingGameObjectFlags stopUsingGameObjectFlags = Agent.StopUsingGameObjectFlags.None;
 		if (agent.Team == null || agent.IsRunningAway)
@@ -218,6 +218,11 @@ public abstract class UsableMachineAIBase
 				stopUsingGameObjectFlags |= Agent.StopUsingGameObjectFlags.DefendAfterStoppingUsingGameObject;
 			}
 		}
-		agent.StopUsingGameObjectMT(isSuccessful: true, stopUsingGameObjectFlags);
+		return stopUsingGameObjectFlags;
+	}
+
+	protected virtual void HandleAgentStopUsingStandingPoint(Agent agent, StandingPoint standingPoint)
+	{
+		agent.StopUsingGameObjectMT(isSuccessful: true, GetStopUsingStandingPointFlags(agent, standingPoint));
 	}
 }

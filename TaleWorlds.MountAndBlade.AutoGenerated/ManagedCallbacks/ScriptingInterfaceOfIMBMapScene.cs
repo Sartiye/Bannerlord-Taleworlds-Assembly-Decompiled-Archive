@@ -13,7 +13,7 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec3 GetAccessiblePointNearPositionDelegate(UIntPtr scenePointer, Vec2 position, float radius);
+	public delegate Vec3 GetAccessiblePointNearPositionDelegate(UIntPtr scenePointer, Vec2 position, [MarshalAs(UnmanagedType.U1)] bool isRegionMap0, float radius);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -33,13 +33,18 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void GetFaceIndexForMultiplePositionsDelegate(UIntPtr scenePointer, int movedPartyCount, IntPtr positionArray, IntPtr resultArray, [MarshalAs(UnmanagedType.U1)] bool check_if_disabled, [MarshalAs(UnmanagedType.U1)] bool check_height);
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetMouseVisibleDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	[return: MarshalAs(UnmanagedType.U1)]
-	public delegate bool GetMouseVisibleDelegate();
+	public delegate Vec2 GetNearestFaceCenterForPositionWithPathDelegate(UIntPtr scenePointer, int startFaceIndex, [MarshalAs(UnmanagedType.U1)] bool targetRegionMap0, float distMax, IntPtr excludedFaceIds, int excludedFaceIdCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetNearestFaceCenterPositionForPositionDelegate(UIntPtr scenePointer, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool isRegionMap0, IntPtr excludedFaceIds, int excludedFaceIdCount);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -99,7 +104,7 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void TickStepSoundDelegate(UIntPtr scenePointer, UIntPtr visualsPointer, int faceIndexterrainType, int soundType);
+	public delegate void TickStepSoundDelegate(UIntPtr scenePointer, UIntPtr visualsPointer, int faceIndexTerrainType, TerrainTypeSoundSlot soundType, int partySize);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -121,9 +126,11 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 
 	public static GetColorGradeGridDataDelegate call_GetColorGradeGridDataDelegate;
 
-	public static GetFaceIndexForMultiplePositionsDelegate call_GetFaceIndexForMultiplePositionsDelegate;
-
 	public static GetMouseVisibleDelegate call_GetMouseVisibleDelegate;
+
+	public static GetNearestFaceCenterForPositionWithPathDelegate call_GetNearestFaceCenterForPositionWithPathDelegate;
+
+	public static GetNearestFaceCenterPositionForPositionDelegate call_GetNearestFaceCenterPositionForPositionDelegate;
 
 	public static GetSeasonTimeFactorDelegate call_GetSeasonTimeFactorDelegate;
 
@@ -153,9 +160,9 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 
 	public static ValidateTerrainSoundIdsDelegate call_ValidateTerrainSoundIdsDelegate;
 
-	public Vec3 GetAccessiblePointNearPosition(UIntPtr scenePointer, Vec2 position, float radius)
+	public Vec3 GetAccessiblePointNearPosition(UIntPtr scenePointer, Vec2 position, bool isRegionMap0, float radius)
 	{
-		return call_GetAccessiblePointNearPositionDelegate(scenePointer, position, radius);
+		return call_GetAccessiblePointNearPositionDelegate(scenePointer, position, isRegionMap0, radius);
 	}
 
 	public void GetBattleSceneIndexMap(UIntPtr scenePointer, byte[] indexData)
@@ -189,20 +196,27 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 		pinnedArrayData.Dispose();
 	}
 
-	public void GetFaceIndexForMultiplePositions(UIntPtr scenePointer, int movedPartyCount, float[] positionArray, PathFaceRecord[] resultArray, bool check_if_disabled, bool check_height)
-	{
-		PinnedArrayData<float> pinnedArrayData = new PinnedArrayData<float>(positionArray);
-		IntPtr pointer = pinnedArrayData.Pointer;
-		PinnedArrayData<PathFaceRecord> pinnedArrayData2 = new PinnedArrayData<PathFaceRecord>(resultArray);
-		IntPtr pointer2 = pinnedArrayData2.Pointer;
-		call_GetFaceIndexForMultiplePositionsDelegate(scenePointer, movedPartyCount, pointer, pointer2, check_if_disabled, check_height);
-		pinnedArrayData.Dispose();
-		pinnedArrayData2.Dispose();
-	}
-
 	public bool GetMouseVisible()
 	{
 		return call_GetMouseVisibleDelegate();
+	}
+
+	public Vec2 GetNearestFaceCenterForPositionWithPath(UIntPtr scenePointer, int startFaceIndex, bool targetRegionMap0, float distMax, int[] excludedFaceIds, int excludedFaceIdCount)
+	{
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(excludedFaceIds);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		Vec2 result = call_GetNearestFaceCenterForPositionWithPathDelegate(scenePointer, startFaceIndex, targetRegionMap0, distMax, pointer, excludedFaceIdCount);
+		pinnedArrayData.Dispose();
+		return result;
+	}
+
+	public Vec2 GetNearestFaceCenterPositionForPosition(UIntPtr scenePointer, Vec3 position, bool isRegionMap0, int[] excludedFaceIds, int excludedFaceIdCount)
+	{
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(excludedFaceIds);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		Vec2 result = call_GetNearestFaceCenterPositionForPositionDelegate(scenePointer, position, isRegionMap0, pointer, excludedFaceIdCount);
+		pinnedArrayData.Dispose();
+		return result;
 	}
 
 	public float GetSeasonTimeFactor(UIntPtr scenePointer)
@@ -268,9 +282,9 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 		call_TickAmbientSoundsDelegate(scenePointer, terrainType);
 	}
 
-	public void TickStepSound(UIntPtr scenePointer, UIntPtr visualsPointer, int faceIndexterrainType, int soundType)
+	public void TickStepSound(UIntPtr scenePointer, UIntPtr visualsPointer, int faceIndexTerrainType, TerrainTypeSoundSlot soundType, int partySize)
 	{
-		call_TickStepSoundDelegate(scenePointer, visualsPointer, faceIndexterrainType, soundType);
+		call_TickStepSoundDelegate(scenePointer, visualsPointer, faceIndexTerrainType, soundType, partySize);
 	}
 
 	public void TickVisuals(UIntPtr scenePointer, float tod, UIntPtr[] ticked_map_meshes, int tickedMapMeshesCount)

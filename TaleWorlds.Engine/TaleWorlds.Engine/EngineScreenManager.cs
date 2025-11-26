@@ -11,50 +11,49 @@ internal class EngineScreenManager
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void PreTick(float dt)
 	{
 		ScreenManager.EarlyUpdate(EngineApplicationInterface.IScreen.GetUsableAreaPercentages());
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	public static void Tick(float dt)
 	{
-		bool mouseVisible = EngineApplicationInterface.IScreen.GetMouseVisible();
-		ScreenManager.Tick(dt, mouseVisible);
+		ScreenManager.Tick(dt);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void LateTick(float dt)
 	{
 		ScreenManager.LateTick(dt);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnOnscreenKeyboardDone(string inputText)
 	{
 		ScreenManager.OnOnscreenKeyboardDone(inputText);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnOnscreenKeyboardCanceled()
 	{
 		ScreenManager.OnOnscreenKeyboardCanceled();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnGameWindowFocusChange(bool focusGained)
 	{
 		ScreenManager.OnGameWindowFocusChange(focusGained);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void Update()
 	{
 		ScreenManager.Update(_lastPressedKeys);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void InitializeLastPressedKeys(NativeArray lastKeysPressed)
 	{
 		_lastPressedKeys = new NativeArrayEnumerator<int>(lastKeysPressed);

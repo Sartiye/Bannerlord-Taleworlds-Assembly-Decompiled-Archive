@@ -1,16 +1,19 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 
 public class GameMenuPlunderItemVM : ViewModel
 {
-	private ItemRosterElement _item;
+	public readonly EquipmentElement Item;
 
-	private ImageIdentifierVM _visual;
+	private ItemImageIdentifierVM _visual;
+
+	private int _amount;
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public ItemImageIdentifierVM Visual
 	{
 		get
 		{
@@ -26,17 +29,35 @@ public class GameMenuPlunderItemVM : ViewModel
 		}
 	}
 
-	public GameMenuPlunderItemVM(ItemRosterElement item)
+	[DataSourceProperty]
+	public int Amount
 	{
-		_item = item;
-		Visual = new ImageIdentifierVM(item.EquipmentElement.Item);
+		get
+		{
+			return _amount;
+		}
+		set
+		{
+			if (value != _amount)
+			{
+				_amount = value;
+				OnPropertyChangedWithValue(value, "Amount");
+			}
+		}
+	}
+
+	public GameMenuPlunderItemVM(EquipmentElement item, int amount = 1)
+	{
+		Item = item;
+		Amount = amount;
+		Visual = new ItemImageIdentifierVM(item.Item);
 	}
 
 	public void ExecuteBeginTooltip()
 	{
-		if (_item.EquipmentElement.Item != null)
+		if (Item.Item != null)
 		{
-			InformationManager.ShowTooltip(typeof(ItemObject), _item.EquipmentElement);
+			InformationManager.ShowTooltip(typeof(ItemObject), Item);
 		}
 	}
 

@@ -75,7 +75,6 @@ public class GameSceneDataManager
 
 	private void LoadSPBattleScenes(XmlDocument doc)
 	{
-		_singleplayerBattleScenes.Clear();
 		Debug.Print("loading sp_battles.xml");
 		if (doc.ChildNodes.Count <= 1)
 		{
@@ -100,6 +99,7 @@ public class GameSceneDataManager
 			List<int> list = new List<int>();
 			TerrainType result = TerrainType.Plain;
 			ForestDensity result2 = ForestDensity.None;
+			bool result3 = false;
 			for (int i = 0; i < childNode.Attributes.Count; i++)
 			{
 				if (childNode.Attributes[i].Name == "id")
@@ -130,6 +130,10 @@ public class GameSceneDataManager
 						result2 = ForestDensity.None;
 					}
 				}
+				else if (childNode.Attributes[i].Name == "is_naval")
+				{
+					bool.TryParse(childNode.Attributes[i].Value, out result3);
+				}
 			}
 			XmlNodeList childNodes = childNode.ChildNodes;
 			List<TerrainType> list2 = new List<TerrainType>();
@@ -141,13 +145,13 @@ public class GameSceneDataManager
 				}
 				foreach (XmlNode childNode2 in item.ChildNodes)
 				{
-					if (childNode2.Name == "TerrainType" && Enum.TryParse<TerrainType>(childNode2.Attributes["name"].InnerText, out var result3) && !list2.Contains(result3))
+					if (childNode2.Name == "TerrainType" && Enum.TryParse<TerrainType>(childNode2.Attributes["name"].InnerText, out var result4) && !list2.Contains(result4))
 					{
-						list2.Add(result3);
+						list2.Add(result4);
 					}
 				}
 			}
-			_singleplayerBattleScenes.Add(new SingleplayerBattleSceneData(sceneID, result, list2, result2, list));
+			_singleplayerBattleScenes.Add(new SingleplayerBattleSceneData(sceneID, result, list2, result2, list, result3));
 		}
 	}
 

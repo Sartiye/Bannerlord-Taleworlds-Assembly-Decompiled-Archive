@@ -16,5 +16,5 @@ public interface IMissionListener
 
 	void OnResetMission();
 
-	void OnInitialDeploymentPlanMade(BattleSideEnum battleSide, bool isFirstPlan);
+	void OnDeploymentPlanMade(Team team, bool isFirstPlan);
 }

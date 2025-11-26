@@ -84,4 +84,8 @@ public class SettlementDailyProjectVM : SettlementProjectVM
 	{
 		_onResetCurrent?.Invoke();
 	}
+
+	public override void ExecuteToggleSelected()
+	{
+	}
 }

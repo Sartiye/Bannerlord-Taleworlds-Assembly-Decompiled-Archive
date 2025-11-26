@@ -2,7 +2,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglPhysics_contact_pair", false)]
+[EngineStruct("rglPhysics_contact_pair", false, null)]
 public struct PhysicsContactPair
 {
 	[CustomEngineStructMemberData("ignoredMember", true)]

@@ -79,12 +79,12 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 		list.Add(new EscapeMenuItemVM(new TextObject("{=e139gKZc}Return to the Game"), delegate
 		{
 			OnEscapeMenuToggled(isOpened: false);
-		}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+		}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		list.Add(new EscapeMenuItemVM(new TextObject("{=NqarFr4P}Options"), delegate
 		{
 			OnEscapeMenuToggled(isOpened: false);
 			_missionOptionsComponent?.OnAddOptionsUIHandler();
-		}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+		}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		MultiplayerTeamSelectComponent missionTeamSelectComponent = _missionTeamSelectComponent;
 		if (missionTeamSelectComponent != null && missionTeamSelectComponent.TeamSelectionEnabled)
 		{
@@ -95,7 +95,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 				{
 					_missionTeamSelectComponent.SelectTeam();
 				}
-			}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+			}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		}
 		if (_gameModeClient.IsGameModeUsingAllowCultureChange)
 		{
@@ -103,7 +103,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 			{
 				OnEscapeMenuToggled(isOpened: false);
 				_missionLobbyComponent.RequestCultureSelection();
-			}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty));
+			}, null, () => new Tuple<bool, TextObject>(item1: false, null));
 			list.Add(_changeCultureItem);
 		}
 		if (_gameModeClient.IsGameModeUsingAllowTroopChange)
@@ -112,7 +112,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 			{
 				OnEscapeMenuToggled(isOpened: false);
 				_missionLobbyComponent.RequestTroopSelection();
-			}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty));
+			}, null, () => new Tuple<bool, TextObject>(item1: false, null));
 			list.Add(_changeTroopItem);
 		}
 		if (base.Mission.CurrentState == TaleWorlds.MountAndBlade.Mission.State.Continuing && base.Mission.GetMissionEndTimerValue() < 0f && (GameNetwork.MyPeer.IsAdmin || GameNetwork.IsServer))
@@ -124,7 +124,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 				{
 					_missionAdminComponent.ChangeAdminMenuActiveState(isActive: true);
 				}
-			}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty));
+			}, null, () => new Tuple<bool, TextObject>(item1: false, null));
 			list.Add(item);
 		}
 		list.Add(new EscapeMenuItemVM(new TextObject("{=InGwtrWt}Quit"), delegate
@@ -150,7 +150,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 					gameClient.QuitFromMatchmakerGame();
 				}
 			}, null));
-		}, null, () => new Tuple<bool, TextObject>(item1: false, TextObject.Empty)));
+		}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		return list;
 	}
 }

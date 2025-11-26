@@ -82,7 +82,7 @@ public class ItemPreviewVM : ViewModel
 
 	public void Open(EquipmentElement item)
 	{
-		ItemTableau.FillFrom(item, BannerCode.CreateFrom(Clan.PlayerClan.Banner).Code);
+		ItemTableau.FillFrom(item, Clan.PlayerClan.Banner);
 		ItemName = item.Item.Name.ToString();
 		IsSelected = true;
 	}

@@ -15,18 +15,11 @@ public class DefaultDailyTroopXpBonusModel : DailyTroopXpBonusModel
 
 	private int CalculateTroopXpBonusInternal(Town town)
 	{
-		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
-		foreach (Building building in town.Buildings)
-		{
-			float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.Experience);
-			if (buildingEffectAmount > 0f)
-			{
-				bonuses.Add(buildingEffectAmount, building.Name);
-			}
-		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.RaiseTheMeek, town, ref bonuses);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, town, ref bonuses);
-		return (int)bonuses.ResultNumber;
+		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: false, null);
+		town.AddEffectOfBuildings(BuildingEffectEnum.ExperiencePerDay, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.RaiseTheMeek, town, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, town, ref result);
+		return (int)result.ResultNumber;
 	}
 
 	public override float CalculateGarrisonXpBonusMultiplier(Town town)

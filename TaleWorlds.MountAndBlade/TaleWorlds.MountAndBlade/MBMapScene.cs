@@ -10,9 +10,19 @@ public static class MBMapScene
 
 	private static UIntPtr[] _tickedMapMeshesCachedArray = new UIntPtr[1024];
 
-	public static Vec2 GetAccessiblePointNearPosition(Scene mapScene, Vec2 position, float radius)
+	public static Vec2 GetNearestFaceCenterForPosition(Scene mapScene, Vec2 position, bool isRegionMap0, int[] excludedFaceIds)
 	{
-		return MBAPI.IMBMapScene.GetAccessiblePointNearPosition(mapScene.Pointer, position, radius).AsVec2;
+		return MBAPI.IMBMapScene.GetNearestFaceCenterPositionForPosition(mapScene.Pointer, position.ToVec3(), isRegionMap0, excludedFaceIds, excludedFaceIds.Length);
+	}
+
+	public static Vec2 GetNearestFaceCenterForPositionWithPath(Scene mapScene, PathFaceRecord pathFaceRecord, bool targetRegionMap0, float maxDist, int[] excludedFaceIds)
+	{
+		return MBAPI.IMBMapScene.GetNearestFaceCenterForPositionWithPath(mapScene.Pointer, pathFaceRecord.FaceIndex, targetRegionMap0, maxDist, excludedFaceIds, excludedFaceIds.Length);
+	}
+
+	public static Vec2 GetAccessiblePointNearPosition(Scene mapScene, Vec2 position, bool isRegionMap1, float radius)
+	{
+		return MBAPI.IMBMapScene.GetAccessiblePointNearPosition(mapScene.Pointer, position, isRegionMap1, radius).AsVec2;
 	}
 
 	public static void RemoveZeroCornerBodies(Scene mapScene)
@@ -25,14 +35,9 @@ public static class MBMapScene
 		MBAPI.IMBMapScene.LoadAtmosphereData(mapScene.Pointer);
 	}
 
-	public static void GetFaceIndexForMultiplePositions(Scene mapScene, int movedPartyCount, float[] positionArray, PathFaceRecord[] resultArray, bool check_if_disabled, bool check_height)
+	public static void TickStepSound(Scene mapScene, MBAgentVisuals visuals, int terrainType, TerrainTypeSoundSlot soundType, int partySize)
 	{
-		MBAPI.IMBMapScene.GetFaceIndexForMultiplePositions(mapScene.Pointer, movedPartyCount, positionArray, resultArray, check_if_disabled, check_height);
-	}
-
-	public static void TickStepSound(Scene mapScene, MBAgentVisuals visuals, int terrainType, int soundType)
-	{
-		MBAPI.IMBMapScene.TickStepSound(mapScene.Pointer, visuals.Pointer, terrainType, soundType);
+		MBAPI.IMBMapScene.TickStepSound(mapScene.Pointer, visuals.Pointer, terrainType, soundType, partySize);
 	}
 
 	public static void TickAmbientSounds(Scene mapScene, int terrainType)

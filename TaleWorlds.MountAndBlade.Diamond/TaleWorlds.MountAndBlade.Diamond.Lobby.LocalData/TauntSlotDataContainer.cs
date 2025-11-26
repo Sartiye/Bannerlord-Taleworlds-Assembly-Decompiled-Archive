@@ -40,14 +40,14 @@ public class TauntSlotDataContainer : MultiplayerLocalDataContainer<TauntSlotDat
 						{
 							if (string.IsNullOrEmpty(item2.Item1))
 							{
-								Debug.FailedAssert("Taunt id is null when trying to load in compatibility mode", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 120);
+								Debug.FailedAssert("Taunt id is null when trying to load in compatibility mode", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 120);
 								continue;
 							}
 							for (int i = 0; i < list2.Count; i++)
 							{
 								if (list2[i].TauntIndex == item2.Item2)
 								{
-									Debug.FailedAssert("Taunt index used for multiple taunts", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 128);
+									Debug.FailedAssert("Taunt index used for multiple taunts", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 128);
 								}
 							}
 							list2.Add(new TauntIndexData(item2.Item1, item2.Item2));
@@ -61,7 +61,7 @@ public class TauntSlotDataContainer : MultiplayerLocalDataContainer<TauntSlotDat
 		}
 		catch
 		{
-			Debug.FailedAssert("Failed to resolve taunt slot data in compatibility mode. Resetting local data.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 145);
+			Debug.FailedAssert("Failed to resolve taunt slot data in compatibility mode. Resetting local data.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\TauntSlotDataContainer.cs", "DeserializeInCompatibilityMode", 145);
 		}
 		return list;
 	}

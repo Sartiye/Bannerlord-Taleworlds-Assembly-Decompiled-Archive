@@ -11,15 +11,11 @@ public class OrderTroopItemBrushWidget : BrushWidget
 
 	private bool _isSelected;
 
-	private bool _isSelectionActive;
-
 	private bool _hasAmmo = true;
 
 	private Brush _rangedCardBrush;
 
 	private Brush _meleeCardBrush;
-
-	public Widget SelectionFrameWidget { get; set; }
 
 	[Editor(false)]
 	public int CurrentMemberCount
@@ -71,23 +67,6 @@ public class OrderTroopItemBrushWidget : BrushWidget
 				_isSelected = value;
 				OnPropertyChanged(value, "IsSelected");
 				SelectionStateChanged();
-			}
-		}
-	}
-
-	[Editor(false)]
-	public bool IsSelectionActive
-	{
-		get
-		{
-			return _isSelectionActive;
-		}
-		set
-		{
-			if (_isSelectionActive != value)
-			{
-				_isSelectionActive = value;
-				OnPropertyChanged(value, "IsSelectionActive");
 			}
 		}
 	}
@@ -151,15 +130,7 @@ public class OrderTroopItemBrushWidget : BrushWidget
 	{
 		AddState("Selected");
 		AddState("Disabled");
-	}
-
-	protected override void OnLateUpdate(float dt)
-	{
-		base.OnLateUpdate(dt);
-		if (SelectionFrameWidget != null)
-		{
-			SelectionFrameWidget.IsVisible = base.EventManager.IsControllerActive && IsSelectionActive;
-		}
+		UpdateBrush();
 	}
 
 	private void SelectionStateChanged()

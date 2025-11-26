@@ -9,7 +9,7 @@ public class LoadingWindowWidget : Widget
 {
 	private const string _defaultBackgroundSpriteData = "background_1";
 
-	private float _edgeOffsetPadding;
+	private const float _animWidgetMaxOffset = 200f;
 
 	private float _totalDt;
 
@@ -80,10 +80,9 @@ public class LoadingWindowWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		_edgeOffsetPadding = base.EventManager.PageSize.X / 2.72f;
 		if (AnimWidget != null && base.IsVisible && AnimWidget.IsVisible)
 		{
-			AnimWidget.ScaledPositionXOffset = MathF.PingPong(_edgeOffsetPadding, base.EventManager.PageSize.X - AnimWidget.Size.X - _edgeOffsetPadding, _totalDt);
+			AnimWidget.PositionXOffset = MathF.PingPong(-200f, 200f, _totalDt);
 			_totalDt += dt * 500f;
 		}
 	}

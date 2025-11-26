@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
@@ -30,7 +31,7 @@ public static class ChangeClanLeaderAction
 			MobileParty mobileParty = newLeader.PartyBelongedTo;
 			if (mobileParty == null)
 			{
-				mobileParty = clan.CreateNewMobileParty(newLeader);
+				mobileParty = MobilePartyHelper.CreateNewClanMobileParty(newLeader, clan);
 			}
 			if (mobileParty.LeaderHero != newLeader)
 			{

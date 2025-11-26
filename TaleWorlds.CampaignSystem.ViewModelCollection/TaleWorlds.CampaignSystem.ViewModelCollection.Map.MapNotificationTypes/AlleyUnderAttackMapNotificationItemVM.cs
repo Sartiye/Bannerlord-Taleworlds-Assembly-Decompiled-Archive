@@ -16,7 +16,7 @@ public class AlleyUnderAttackMapNotificationItemVM : MapNotificationItemBaseVM
 		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEnter);
 		_onInspect = delegate
 		{
-			GoToMapPosition(_alley.Settlement.Position2D);
+			GoToMapPosition(_alley.Settlement.Position);
 		};
 	}
 

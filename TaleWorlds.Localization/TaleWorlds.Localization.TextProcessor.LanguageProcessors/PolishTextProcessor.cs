@@ -544,6 +544,13 @@ public class PolishTextProcessor : LanguageSpecificTextProcessor
 			}
 		},
 		{
+			'M',
+			new List<IrregularWord>
+			{
+				new IrregularWord("Muł", "Muły", "Muła", "Mułów", "Mułowi", "Mułom", "Muła", "Muły", "Mułem", "Mułami", "Mule", "Mułach")
+			}
+		},
+		{
 			'P',
 			new List<IrregularWord>
 			{

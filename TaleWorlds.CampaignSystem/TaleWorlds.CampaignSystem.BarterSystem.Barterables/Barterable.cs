@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 

@@ -53,7 +53,13 @@ public class GameMenuOption
 		DonateTroops,
 		DonatePrisoners,
 		SiegeAmbush,
-		Warehouse
+		Warehouse,
+		VisitPort,
+		SetSail,
+		ManageFleet,
+		CallFleet,
+		OrderShipsToAttack,
+		RepairShips
 	}
 
 	[Flags]
@@ -97,8 +103,8 @@ public class GameMenuOption
 
 	internal GameMenuOption()
 	{
-		Text = TextObject.Empty;
-		Tooltip = TextObject.Empty;
+		Text = null;
+		Tooltip = null;
 		IsEnabled = true;
 	}
 
@@ -110,7 +116,7 @@ public class GameMenuOption
 		Text2 = text2;
 		OnCondition = condition;
 		OnConsequence = consequence;
-		Tooltip = TextObject.Empty;
+		Tooltip = null;
 		IsRepeatable = isRepeatable;
 		IsEnabled = true;
 		IsLeave = isLeave;
@@ -140,10 +146,6 @@ public class GameMenuOption
 			OnConsequence(args);
 		}
 		menuContext.OnConsequence(this);
-		if (Campaign.Current != null)
-		{
-			CampaignEventDispatcher.Instance.OnGameMenuOptionSelected(this);
-		}
 	}
 
 	public void SetEnable(bool isEnable)

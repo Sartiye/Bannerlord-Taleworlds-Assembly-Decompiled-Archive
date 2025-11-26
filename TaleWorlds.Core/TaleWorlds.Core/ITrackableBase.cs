@@ -8,8 +8,4 @@ public interface ITrackableBase
 	TextObject GetName();
 
 	Vec3 GetPosition();
-
-	float GetTrackDistanceToMainAgent();
-
-	bool CheckTracked(BasicCharacterObject basicCharacter);
 }

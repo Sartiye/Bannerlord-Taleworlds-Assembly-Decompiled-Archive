@@ -13,13 +13,31 @@ public class Widget : PropertyOwnerObject
 {
 	private Color _color = Color.White;
 
+	private List<WidgetComponent> _components;
+
+	private float _rotation;
+
+	private float _pivotX;
+
+	private float _pivotY;
+
+	private Vector2 _topLeft;
+
 	private string _id;
 
-	protected Vector2 _cachedGlobalPosition;
+	private bool _isGamepadCursorAreaDirty;
+
+	private Rectangle2D _gamepadCursorAreaRect;
+
+	public Rectangle2D AreaRect;
 
 	private Widget _parent;
 
 	private List<Widget> _children;
+
+	private List<Widget> _childRenderBuffer;
+
+	private bool _isRendering;
 
 	private bool _doNotUseCustomScaleAndChildren;
 
@@ -48,8 +66,6 @@ public class Widget : PropertyOwnerObject
 	private VerticalAlignment _verticalAlignment;
 
 	private HorizontalAlignment _horizontalAlignment;
-
-	private Vector2 _topLeft;
 
 	private bool _forcePixelPerfectRenderPlacement;
 
@@ -113,8 +129,6 @@ public class Widget : PropertyOwnerObject
 
 	private bool _gotMinHeight;
 
-	private List<WidgetComponent> _components;
-
 	private bool _isInParallelOperation;
 
 	private List<Action<Widget, string, object[]>> _eventTargets;
@@ -152,6 +166,111 @@ public class Widget : PropertyOwnerObject
 	public bool VerticalFlip { get; set; }
 
 	public bool HorizontalFlip { get; set; }
+
+	public int NinePatchTop { get; set; }
+
+	public int NinePatchBottom { get; set; }
+
+	public int NinePatchLeft { get; set; }
+
+	public int NinePatchRight { get; set; }
+
+	public float GlobalRotation
+	{
+		get
+		{
+			if (ParentWidget != null)
+			{
+				return Rotation + ParentWidget.GlobalRotation;
+			}
+			return Rotation;
+		}
+	}
+
+	public float Rotation
+	{
+		get
+		{
+			return _rotation;
+		}
+		set
+		{
+			if (value != _rotation)
+			{
+				_rotation = value;
+				SetMeasureAndLayoutDirty();
+				EventManager.SetPositionsDirty();
+			}
+		}
+	}
+
+	public float PivotX
+	{
+		get
+		{
+			return _pivotX;
+		}
+		set
+		{
+			if (value != _pivotX)
+			{
+				_pivotX = value;
+				SetMeasureAndLayoutDirty();
+				EventManager.SetPositionsDirty();
+			}
+		}
+	}
+
+	public float PivotY
+	{
+		get
+		{
+			return _pivotY;
+		}
+		set
+		{
+			if (value != _pivotY)
+			{
+				_pivotY = value;
+				SetMeasureAndLayoutDirty();
+				EventManager.SetPositionsDirty();
+			}
+		}
+	}
+
+	public float Left
+	{
+		get
+		{
+			return _topLeft.X;
+		}
+		private set
+		{
+			if (value != _topLeft.X)
+			{
+				_topLeft.X = value;
+				EventManager.SetPositionsDirty();
+			}
+		}
+	}
+
+	public float Top
+	{
+		get
+		{
+			return _topLeft.Y;
+		}
+		private set
+		{
+			if (value != _topLeft.Y)
+			{
+				_topLeft.Y = value;
+				EventManager.SetPositionsDirty();
+			}
+		}
+	}
+
+	public Vector2 Size { get; private set; }
 
 	public bool FrictionEnabled { get; set; }
 
@@ -201,6 +320,35 @@ public class Widget : PropertyOwnerObject
 		}
 	}
 
+	public Rectangle2D GamepadCursorAreaRect
+	{
+		get
+		{
+			if (_isGamepadCursorAreaDirty)
+			{
+				Vector2 localPosition = AreaRect.LocalPosition;
+				Vector2 localScale = AreaRect.LocalScale;
+				_gamepadCursorAreaRect = AreaRect;
+				float num = ExtendCursorAreaLeft * _scaleToUse;
+				float num2 = ExtendCursorAreaTop * _scaleToUse;
+				float num3 = ExtendCursorAreaRight * _scaleToUse;
+				float num4 = ExtendCursorAreaBottom * _scaleToUse;
+				_gamepadCursorAreaRect.LocalPosition = new Vector2(localPosition.X - num, localPosition.Y - num2);
+				_gamepadCursorAreaRect.LocalScale = new Vector2(localScale.X + num + num3, localScale.Y + num2 + num4);
+				if (ParentWidget != null)
+				{
+					_gamepadCursorAreaRect.CalculateMatrixFrame(in ParentWidget.AreaRect);
+				}
+				else
+				{
+					Rectangle2D parentRectangle = Rectangle2D.Invalid;
+					_gamepadCursorAreaRect.CalculateMatrixFrame(in parentRectangle);
+				}
+			}
+			return _gamepadCursorAreaRect;
+		}
+	}
+
 	[Editor(false)]
 	public bool DoNotUseCustomScaleAndChildren
 	{
@@ -215,9 +363,9 @@ public class Widget : PropertyOwnerObject
 				_doNotUseCustomScaleAndChildren = value;
 				OnPropertyChanged(value, "DoNotUseCustomScaleAndChildren");
 				DoNotUseCustomScale = value;
-				_children.ForEach(delegate(Widget _)
+				ApplyActionToAllChildren(delegate(Widget child)
 				{
-					_.DoNotUseCustomScaleAndChildren = value;
+					child.DoNotUseCustomScaleAndChildren = value;
 				});
 			}
 		}
@@ -248,8 +396,6 @@ public class Widget : PropertyOwnerObject
 			return Context.InverseScale;
 		}
 	}
-
-	public Vector2 Size { get; private set; }
 
 	[Editor(false)]
 	public float SuggestedWidth
@@ -374,7 +520,7 @@ public class Widget : PropertyOwnerObject
 		}
 		set
 		{
-			if (_positionOffset != value)
+			if (!_positionOffset.X.ApproximatelyEqualsTo(value.X) || !_positionOffset.Y.ApproximatelyEqualsTo(value.Y))
 			{
 				SetLayoutDirty();
 				_positionOffset = value;
@@ -394,7 +540,7 @@ public class Widget : PropertyOwnerObject
 		}
 		set
 		{
-			if (_positionOffset.X != value)
+			if (!_positionOffset.X.ApproximatelyEqualsTo(value))
 			{
 				SetLayoutDirty();
 				_positionOffset.X = value;
@@ -412,7 +558,7 @@ public class Widget : PropertyOwnerObject
 		}
 		set
 		{
-			if (_positionOffset.Y != value)
+			if (!_positionOffset.Y.ApproximatelyEqualsTo(value))
 			{
 				SetLayoutDirty();
 				_positionOffset.Y = value;
@@ -430,7 +576,7 @@ public class Widget : PropertyOwnerObject
 		set
 		{
 			float num = value * _inverseScaleToUse;
-			if (num != _positionOffset.X)
+			if (!num.ApproximatelyEqualsTo(_positionOffset.X))
 			{
 				SetLayoutDirty();
 				_positionOffset.X = num;
@@ -447,7 +593,7 @@ public class Widget : PropertyOwnerObject
 		set
 		{
 			float num = value * _inverseScaleToUse;
-			if (num != _positionOffset.Y)
+			if (!num.ApproximatelyEqualsTo(_positionOffset.Y))
 			{
 				SetLayoutDirty();
 				_positionOffset.Y = num;
@@ -469,13 +615,14 @@ public class Widget : PropertyOwnerObject
 			}
 			if (_parent != null)
 			{
-				_parent.OnChildRemoved(this);
+				_parent.OnBeforeChildRemoved(this);
 				if (ConnectedToRoot)
 				{
 					EventManager.OnWidgetDisconnectedFromRoot(this);
 				}
+				int childIndex = _parent.GetChildIndex(this);
 				_parent._children.Remove(this);
-				_parent.OnAfterChildRemoved(this);
+				_parent.OnAfterChildRemoved(this, childIndex);
 			}
 			_parent = value;
 			if (_parent != null)
@@ -615,38 +762,6 @@ public class Widget : PropertyOwnerObject
 		}
 	}
 
-	public float Left
-	{
-		get
-		{
-			return _topLeft.X;
-		}
-		private set
-		{
-			if (value != _topLeft.X)
-			{
-				EventManager.SetPositionsDirty();
-				_topLeft.X = value;
-			}
-		}
-	}
-
-	public float Top
-	{
-		get
-		{
-			return _topLeft.Y;
-		}
-		private set
-		{
-			if (value != _topLeft.Y)
-			{
-				EventManager.SetPositionsDirty();
-				_topLeft.Y = value;
-			}
-		}
-	}
-
 	public float Right => _topLeft.X + Size.X;
 
 	public float Bottom => _topLeft.Y + Size.Y;
@@ -671,6 +786,8 @@ public class Widget : PropertyOwnerObject
 	}
 
 	public bool UseGlobalTimeForAnimation { get; set; }
+
+	public bool UseSpriteDimensions { get; set; }
 
 	[Editor(false)]
 	public SizePolicy WidthSizePolicy
@@ -1074,50 +1191,9 @@ public class Widget : PropertyOwnerObject
 
 	internal WidgetInfo WidgetInfo { get; private set; }
 
-	public IEnumerable<Widget> AllChildrenAndThis
-	{
-		get
-		{
-			yield return this;
-			foreach (Widget child in _children)
-			{
-				foreach (Widget allChildrenAndThi in child.AllChildrenAndThis)
-				{
-					yield return allChildrenAndThi;
-				}
-			}
-		}
-	}
-
-	public IEnumerable<Widget> AllChildren
-	{
-		get
-		{
-			foreach (Widget widget in _children)
-			{
-				yield return widget;
-				foreach (Widget allChild in widget.AllChildren)
-				{
-					yield return allChild;
-				}
-			}
-		}
-	}
-
 	public List<Widget> Children => _children;
 
-	public IEnumerable<Widget> Parents
-	{
-		get
-		{
-			for (Widget parent = ParentWidget; parent != null; parent = parent.ParentWidget)
-			{
-				yield return parent;
-			}
-		}
-	}
-
-	internal bool ConnectedToRoot
+	public bool ConnectedToRoot
 	{
 		get
 		{
@@ -1366,13 +1442,77 @@ public class Widget : PropertyOwnerObject
 
 	public event Action<Widget> OnVisibilityChanged;
 
-	public void ApplyActionOnAllChildren(Action<Widget> action)
+	public List<Widget> GetAllChildrenAndThisRecursive()
 	{
-		foreach (Widget child in _children)
+		List<Widget> list = new List<Widget>();
+		list.Add(this);
+		GetAllChildrenAux(list);
+		return list;
+	}
+
+	public void ApplyActionToAllChildren(Action<Widget> action)
+	{
+		for (int i = 0; i < _children.Count; i++)
 		{
-			action(child);
-			child.ApplyActionOnAllChildren(action);
+			action(_children[i]);
 		}
+	}
+
+	public void ApplyActionToAllChildrenRecursive(Action<Widget> action)
+	{
+		for (int i = 0; i < _children.Count; i++)
+		{
+			action(_children[i]);
+			_children[i].ApplyActionToAllChildrenRecursive(action);
+		}
+	}
+
+	public List<TWidget> GetAllChildrenOfTypeRecursive<TWidget>(Func<TWidget, bool> predicate = null) where TWidget : Widget
+	{
+		List<TWidget> list = new List<TWidget>();
+		GetChildrenOfTypeAux(list, predicate);
+		return list;
+	}
+
+	private void GetChildrenOfTypeAux<TWidget>(List<TWidget> list, Func<TWidget, bool> predicate = null)
+	{
+		for (int i = 0; i < _children.Count; i++)
+		{
+			if (_children[i] is TWidget val && (predicate == null || predicate(val)))
+			{
+				list.Add(val);
+			}
+			_children[i].GetChildrenOfTypeAux(list, predicate);
+		}
+	}
+
+	public List<Widget> GetAllChildrenRecursive(Func<Widget, bool> predicate = null)
+	{
+		List<Widget> list = new List<Widget>();
+		GetAllChildrenAux(list, predicate);
+		return list;
+	}
+
+	private void GetAllChildrenAux(List<Widget> list, Func<Widget, bool> predicate = null)
+	{
+		for (int i = 0; i < _children.Count; i++)
+		{
+			if (predicate == null || predicate(_children[i]))
+			{
+				list.Add(_children[i]);
+			}
+			_children[i].GetAllChildrenAux(list);
+		}
+	}
+
+	public List<Widget> GetAllParents()
+	{
+		List<Widget> list = new List<Widget>();
+		for (Widget parentWidget = ParentWidget; parentWidget != null; parentWidget = parentWidget.ParentWidget)
+		{
+			list.Add(parentWidget);
+		}
+		return list;
 	}
 
 	public Widget(UIContext context)
@@ -1380,10 +1520,13 @@ public class Widget : PropertyOwnerObject
 		DropEventHandledManually = true;
 		LayoutImp = new DefaultLayout();
 		_children = new List<Widget>();
+		_childRenderBuffer = new List<Widget>();
 		Context = context;
 		_states = new List<string>();
 		WidgetInfo = WidgetInfo.GetWidgetInfo(GetType());
 		Sprite = null;
+		AreaRect = Rectangle2D.Create();
+		_isGamepadCursorAreaDirty = true;
 		_stateTimer = 0f;
 		_currentVisualStateAnimationState = VisualStateAnimationState.None;
 		_isFocusable = false;
@@ -1425,6 +1568,19 @@ public class Widget : PropertyOwnerObject
 	protected void SetLayoutDirty()
 	{
 		EventManager.SetLayoutDirty();
+	}
+
+	internal void LayoutUpdated()
+	{
+		OnLayoutUpdated();
+		for (int i = 0; i < ChildCount; i++)
+		{
+			GetChild(i)?.LayoutUpdated();
+		}
+	}
+
+	protected virtual void OnLayoutUpdated()
+	{
 	}
 
 	public void AddState(string stateName)
@@ -1479,15 +1635,16 @@ public class Widget : PropertyOwnerObject
 		{
 			return this;
 		}
-		foreach (Widget child in _children)
+		for (int i = 0; i < _children.Count; i++)
 		{
-			if (!string.IsNullOrEmpty(child.Id) && child.Id == firstNode)
+			Widget widget = _children[i];
+			if (!string.IsNullOrEmpty(widget.Id) && widget.Id == firstNode)
 			{
 				if (subPath == null)
 				{
-					return child;
+					return widget;
 				}
-				return child.FindChild(subPath);
+				return widget.FindChild(subPath);
 			}
 		}
 		return null;
@@ -1503,11 +1660,12 @@ public class Widget : PropertyOwnerObject
 		{
 			return this;
 		}
-		foreach (Widget child in _children)
+		for (int i = 0; i < _children.Count; i++)
 		{
-			if (!string.IsNullOrEmpty(child.Id) && child.Id == singlePathNode)
+			Widget widget = _children[i];
+			if (!string.IsNullOrEmpty(widget.Id) && widget.Id == singlePathNode)
 			{
-				return child;
+				return widget;
 			}
 		}
 		return null;
@@ -1528,24 +1686,78 @@ public class Widget : PropertyOwnerObject
 
 	public Widget FindChild(string id, bool includeAllChildren = false)
 	{
-		IEnumerable<Widget> enumerable;
-		if (!includeAllChildren)
+		List<Widget> list = (includeAllChildren ? GetAllChildrenRecursive() : _children);
+		for (int i = 0; i < list.Count; i++)
 		{
-			IEnumerable<Widget> children = _children;
-			enumerable = children;
-		}
-		else
-		{
-			enumerable = AllChildren;
-		}
-		foreach (Widget item in enumerable)
-		{
-			if (!string.IsNullOrEmpty(item.Id) && item.Id == id)
+			Widget widget = list[i];
+			if (!string.IsNullOrEmpty(widget.Id) && widget.Id == id)
 			{
-				return item;
+				return widget;
 			}
 		}
 		return null;
+	}
+
+	public Widget GetFirstInChildrenAndThisRecursive(Func<Widget, bool> predicate)
+	{
+		if (predicate(this))
+		{
+			return this;
+		}
+		for (int i = 0; i < _children.Count; i++)
+		{
+			Widget firstInChildrenAndThisRecursive = _children[i].GetFirstInChildrenAndThisRecursive(predicate);
+			if (firstInChildrenAndThisRecursive != null)
+			{
+				return firstInChildrenAndThisRecursive;
+			}
+		}
+		return null;
+	}
+
+	public Widget GetFirstInChildrenRecursive(Func<Widget, bool> predicate)
+	{
+		for (int i = 0; i < _children.Count; i++)
+		{
+			if (predicate(_children[i]))
+			{
+				return _children[i];
+			}
+			Widget firstInChildrenRecursive = _children[i].GetFirstInChildrenRecursive(predicate);
+			if (firstInChildrenRecursive != null)
+			{
+				return firstInChildrenRecursive;
+			}
+		}
+		return null;
+	}
+
+	public List<T> FindChildrenWithId<T>(string id, bool includeAllChildren = false) where T : Widget
+	{
+		List<Widget> list = (includeAllChildren ? GetAllChildrenRecursive() : _children);
+		List<T> list2 = new List<T>();
+		for (int i = 0; i < list.Count; i++)
+		{
+			if (!string.IsNullOrEmpty(list[i].Id) && list[i] is T item && list[i].Id == id)
+			{
+				list2.Add(item);
+			}
+		}
+		return list2;
+	}
+
+	public List<T> FindChildrenWithType<T>(bool includeAllChildren = false) where T : Widget
+	{
+		List<Widget> list = (includeAllChildren ? GetAllChildrenRecursive() : _children);
+		List<T> list2 = new List<T>();
+		for (int i = 0; i < list.Count; i++)
+		{
+			if (!string.IsNullOrEmpty(list[i].Id) && list[i] is T item)
+			{
+				list2.Add(item);
+			}
+		}
+		return list2;
 	}
 
 	public void RemoveAllChildren()
@@ -1581,19 +1793,16 @@ public class Widget : PropertyOwnerObject
 				{
 					if (_stateTimer >= delayOnBegin)
 					{
-						float num2 = (_stateTimer - delayOnBegin) / (num - delayOnBegin);
-						if (VisualDefinition.EaseIn)
-						{
-							num2 = GetEaseOutBack(num2);
-						}
-						PositionXOffset = (visualState.GotPositionXOffset ? Mathf.Lerp(_startVisualState.PositionXOffset, visualState.PositionXOffset, num2) : PositionXOffset);
-						PositionYOffset = (visualState.GotPositionYOffset ? Mathf.Lerp(_startVisualState.PositionYOffset, visualState.PositionYOffset, num2) : PositionYOffset);
-						SuggestedWidth = (visualState.GotSuggestedWidth ? Mathf.Lerp(_startVisualState.SuggestedWidth, visualState.SuggestedWidth, num2) : SuggestedWidth);
-						SuggestedHeight = (visualState.GotSuggestedHeight ? Mathf.Lerp(_startVisualState.SuggestedHeight, visualState.SuggestedHeight, num2) : SuggestedHeight);
-						MarginTop = (visualState.GotMarginTop ? Mathf.Lerp(_startVisualState.MarginTop, visualState.MarginTop, num2) : MarginTop);
-						MarginBottom = (visualState.GotMarginBottom ? Mathf.Lerp(_startVisualState.MarginBottom, visualState.MarginBottom, num2) : MarginBottom);
-						MarginLeft = (visualState.GotMarginLeft ? Mathf.Lerp(_startVisualState.MarginLeft, visualState.MarginLeft, num2) : MarginLeft);
-						MarginRight = (visualState.GotMarginRight ? Mathf.Lerp(_startVisualState.MarginRight, visualState.MarginRight, num2) : MarginRight);
+						float ratio = (_stateTimer - delayOnBegin) / (num - delayOnBegin);
+						ratio = AnimationInterpolation.Ease(VisualDefinition.EaseType, VisualDefinition.EaseFunction, ratio);
+						PositionXOffset = (visualState.GotPositionXOffset ? Mathf.Lerp(_startVisualState.PositionXOffset, visualState.PositionXOffset, ratio) : PositionXOffset);
+						PositionYOffset = (visualState.GotPositionYOffset ? Mathf.Lerp(_startVisualState.PositionYOffset, visualState.PositionYOffset, ratio) : PositionYOffset);
+						SuggestedWidth = (visualState.GotSuggestedWidth ? Mathf.Lerp(_startVisualState.SuggestedWidth, visualState.SuggestedWidth, ratio) : SuggestedWidth);
+						SuggestedHeight = (visualState.GotSuggestedHeight ? Mathf.Lerp(_startVisualState.SuggestedHeight, visualState.SuggestedHeight, ratio) : SuggestedHeight);
+						MarginTop = (visualState.GotMarginTop ? Mathf.Lerp(_startVisualState.MarginTop, visualState.MarginTop, ratio) : MarginTop);
+						MarginBottom = (visualState.GotMarginBottom ? Mathf.Lerp(_startVisualState.MarginBottom, visualState.MarginBottom, ratio) : MarginBottom);
+						MarginLeft = (visualState.GotMarginLeft ? Mathf.Lerp(_startVisualState.MarginLeft, visualState.MarginLeft, ratio) : MarginLeft);
+						MarginRight = (visualState.GotMarginRight ? Mathf.Lerp(_startVisualState.MarginRight, visualState.MarginRight, ratio) : MarginRight);
 					}
 				}
 				else
@@ -1657,9 +1866,9 @@ public class Widget : PropertyOwnerObject
 	public virtual void UpdateAnimationPropertiesSubTask(float alphaFactor)
 	{
 		AlphaFactor = alphaFactor;
-		foreach (Widget child in Children)
+		for (int i = 0; i < _children.Count; i++)
 		{
-			child.UpdateAnimationPropertiesSubTask(alphaFactor);
+			_children[i].UpdateAnimationPropertiesSubTask(alphaFactor);
 		}
 	}
 
@@ -1699,6 +1908,13 @@ public class Widget : PropertyOwnerObject
 
 	private void OnMeasure(Vector2 measureSpec)
 	{
+		if (UseSpriteDimensions)
+		{
+			WidthSizePolicy = SizePolicy.Fixed;
+			HeightSizePolicy = SizePolicy.Fixed;
+			SuggestedWidth = ((float?)Sprite?.Width) ?? 0f;
+			SuggestedHeight = ((float?)Sprite?.Height) ?? 0f;
+		}
 		if (WidthSizePolicy == SizePolicy.Fixed)
 		{
 			measureSpec.X = ScaledSuggestedWidth;
@@ -1817,10 +2033,10 @@ public class Widget : PropertyOwnerObject
 		{
 			EventFired("HoverEnd");
 		}
-		Children.ForEach(delegate(Widget c)
+		for (int i = 0; i < _children.Count; i++)
 		{
-			c.OnBeforeRemovedChild(widget);
-		});
+			_children[i].OnBeforeRemovedChild(widget);
+		}
 	}
 
 	public bool HasChild(Widget widget)
@@ -1828,12 +2044,12 @@ public class Widget : PropertyOwnerObject
 		return _children.Contains(widget);
 	}
 
-	protected virtual void OnChildRemoved(Widget child)
+	protected virtual void OnBeforeChildRemoved(Widget child)
 	{
 		EventFired("ItemRemove", child);
 	}
 
-	protected virtual void OnAfterChildRemoved(Widget child)
+	protected virtual void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
 		EventFired("AfterItemRemove", child);
 	}
@@ -1928,41 +2144,53 @@ public class Widget : PropertyOwnerObject
 		}
 	}
 
-	internal void ParallelUpdateChildPositions(Vector2 globalPosition)
+	private void ParallelUpdateChildPositions()
 	{
 		TWParallel.For(0, _children.Count, UpdateChildPositionMT);
 		void UpdateChildPositionMT(int startInclusive, int endExclusive)
 		{
 			for (int i = startInclusive; i < endExclusive; i++)
 			{
-				_children[i].UpdatePosition(globalPosition);
+				_children[i].UpdatePosition();
 			}
 		}
 	}
 
-	internal void UpdatePosition(Vector2 parentPosition)
+	internal void UpdatePosition()
 	{
-		if (!IsVisible)
+		if (IsVisible)
 		{
-			return;
+			if (!TweenPosition)
+			{
+				LocalPosition = new Vector2(Left, Top);
+			}
+			OnUpdatePosition();
+			_isGamepadCursorAreaDirty = true;
+			OnUpdateChildPositions();
 		}
-		if (!TweenPosition)
-		{
-			LocalPosition = new Vector2(Left, Top);
-		}
-		Vector2 vector = LocalPosition + parentPosition;
+	}
+
+	protected virtual void OnUpdatePosition()
+	{
+		Rectangle2D parentRectangle = ParentWidget?.AreaRect ?? EventManager.AreaRectangle;
+		AreaRect.LocalPosition = new Vector2(LocalPosition.X, LocalPosition.Y);
+		AreaRect.LocalPivot = new Vector2(PivotX, PivotY);
+		AreaRect.LocalScale = new Vector2(Size.X, Size.Y);
+		AreaRect.LocalRotation = Rotation;
+		AreaRect.CalculateMatrixFrame(in parentRectangle);
+	}
+
+	protected virtual void OnUpdateChildPositions()
+	{
 		if (_children.Count >= 64)
 		{
-			ParallelUpdateChildPositions(vector);
+			ParallelUpdateChildPositions();
+			return;
 		}
-		else
+		for (int i = 0; i < _children.Count; i++)
 		{
-			for (int i = 0; i < _children.Count; i++)
-			{
-				_children[i].UpdatePosition(vector);
-			}
+			_children[i].UpdatePosition();
 		}
-		_cachedGlobalPosition = vector;
 	}
 
 	public virtual void HandleInput(IReadOnlyList<int> lastKeysPressed)
@@ -1971,27 +2199,12 @@ public class Widget : PropertyOwnerObject
 
 	public bool IsPointInsideMeasuredArea(Vector2 p)
 	{
-		Vector2 globalPosition = GlobalPosition;
-		if (globalPosition.X <= p.X && globalPosition.Y <= p.Y && globalPosition.X + Size.X >= p.X)
-		{
-			return globalPosition.Y + Size.Y >= p.Y;
-		}
-		return false;
+		return AreaRect.IsPointInside(in p);
 	}
 
 	public bool IsPointInsideGamepadCursorArea(Vector2 p)
 	{
-		Vector2 globalPosition = GlobalPosition;
-		globalPosition.X -= ExtendCursorAreaLeft;
-		globalPosition.Y -= ExtendCursorAreaTop;
-		Vector2 size = Size;
-		size.X += ExtendCursorAreaLeft + ExtendCursorAreaRight;
-		size.Y += ExtendCursorAreaTop + ExtendCursorAreaBottom;
-		if (p.X >= globalPosition.X && p.Y > globalPosition.Y && p.X < globalPosition.X + size.X)
-		{
-			return p.Y < globalPosition.Y + size.Y;
-		}
-		return false;
+		return GamepadCursorAreaRect.IsPointInside(in p);
 	}
 
 	public void Hide()
@@ -2035,71 +2248,73 @@ public class Widget : PropertyOwnerObject
 	{
 		if (!IsHidden && !DisableRender)
 		{
-			Vector2 cachedGlobalPosition = _cachedGlobalPosition;
-			if (ClipHorizontalContent || ClipVerticalContent)
+			bool flag = ClipHorizontalContent || ClipVerticalContent;
+			if (flag)
 			{
-				int width = (ClipHorizontalContent ? ((int)Size.X) : (-1));
-				int height = (ClipVerticalContent ? ((int)Size.Y) : (-1));
-				drawContext.PushScissor((int)cachedGlobalPosition.X, (int)cachedGlobalPosition.Y, width, height);
+				drawContext.PushScissor(in AreaRect);
 			}
 			if (CircularClipEnabled)
 			{
 				if (IsCircularClipRadiusHalfOfHeight)
 				{
-					CircularClipRadius = Size.Y / 2f * _inverseScaleToUse;
+					CircularClipRadius = Size.Y * 0.5f * _inverseScaleToUse;
 				}
 				else if (IsCircularClipRadiusHalfOfWidth)
 				{
-					CircularClipRadius = Size.X / 2f * _inverseScaleToUse;
+					CircularClipRadius = Size.X * 0.5f * _inverseScaleToUse;
 				}
-				Vector2 position = new Vector2(cachedGlobalPosition.X + Size.X * 0.5f + CircularClipXOffset * _scaleToUse, cachedGlobalPosition.Y + Size.Y * 0.5f + CircularClipYOffset * _scaleToUse);
+				Vector2 center = AreaRect.GetCenter();
+				Vector2 position = new Vector2(center.X + CircularClipXOffset * _scaleToUse, center.Y + CircularClipYOffset * _scaleToUse);
 				drawContext.SetCircualMask(position, CircularClipRadius * _scaleToUse, CircularClipSmoothingRadius * _scaleToUse);
 			}
-			bool flag = false;
+			bool flag2 = false;
 			if (drawContext.ScissorTestEnabled)
 			{
-				ScissorTestInfo currentScissor = drawContext.CurrentScissor;
-				Rectangle rectangle = new Rectangle(cachedGlobalPosition.X, cachedGlobalPosition.Y, Size.X, Size.Y);
-				Rectangle other = new Rectangle(currentScissor.X, currentScissor.Y, currentScissor.Width, currentScissor.Height);
-				if (rectangle.IsCollide(other) || _calculateSizeFirstFrame)
+				if (_calculateSizeFirstFrame || !drawContext.IsDiscardedByAnyScissor(in AreaRect))
 				{
-					flag = !DoNotRenderIfNotFullyInsideScissor || rectangle.IsSubRectOf(other);
+					flag2 = !DoNotRenderIfNotFullyInsideScissor || AreaRect.IsSubRectOf(in EventManager.AreaRectangle);
 				}
 			}
-			else
+			else if (_calculateSizeFirstFrame || AreaRect.IsCollide(in EventManager.AreaRectangle))
 			{
-				Rectangle rectangle2 = new Rectangle(_cachedGlobalPosition.X, _cachedGlobalPosition.Y, MeasuredSize.X, MeasuredSize.Y);
-				Rectangle other2 = new Rectangle(EventManager.LeftUsableAreaStart, EventManager.TopUsableAreaStart, EventManager.PageSize.X, EventManager.PageSize.Y);
-				if (rectangle2.IsCollide(other2) || _calculateSizeFirstFrame)
-				{
-					flag = true;
-				}
+				flag2 = true;
 			}
-			if (flag)
+			if (flag2)
 			{
+				_isRendering = true;
 				OnRender(twoDimensionContext, drawContext);
 				for (int i = 0; i < _children.Count; i++)
 				{
 					Widget widget = _children[i];
-					if (!widget.RenderLate)
+					if (widget != null)
 					{
-						widget.Render(twoDimensionContext, drawContext);
+						_childRenderBuffer.Add(widget);
 					}
 				}
-				for (int j = 0; j < _children.Count; j++)
+				for (int j = 0; j < _childRenderBuffer.Count; j++)
 				{
-					Widget widget2 = _children[j];
-					if (widget2.RenderLate)
+					Widget widget2 = _childRenderBuffer[j];
+					if (!widget2.RenderLate)
 					{
 						widget2.Render(twoDimensionContext, drawContext);
 					}
 				}
+				for (int k = 0; k < _childRenderBuffer.Count; k++)
+				{
+					Widget widget3 = _childRenderBuffer[k];
+					if (widget3.RenderLate)
+					{
+						widget3.Render(twoDimensionContext, drawContext);
+					}
+				}
+				_childRenderBuffer.Clear();
+				_isRendering = false;
 			}
 			if (CircularClipEnabled)
 			{
 				drawContext.ClearCircualMask();
 			}
-			if (ClipHorizontalContent || ClipVerticalContent)
+			if (flag)
 			{
 				drawContext.PopScissor();
 			}
@@ -2109,11 +2324,11 @@ public class Widget : PropertyOwnerObject
 
 	protected virtual void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
 	{
-		Vector2 globalPosition = GlobalPosition;
+		Vector2 localPosition = LocalPosition;
 		if (ForcePixelPerfectRenderPlacement)
 		{
-			globalPosition.X = TaleWorlds.Library.MathF.Round(globalPosition.X);
-			globalPosition.Y = TaleWorlds.Library.MathF.Round(globalPosition.Y);
+			localPosition.X = TaleWorlds.Library.MathF.Round(localPosition.X);
+			localPosition.Y = TaleWorlds.Library.MathF.Round(localPosition.Y);
 		}
 		if (_sprite == null)
 		{
@@ -2122,12 +2337,17 @@ public class Widget : PropertyOwnerObject
 		Texture texture = _sprite.Texture;
 		if (texture != null)
 		{
-			float x = globalPosition.X;
-			float y = globalPosition.Y;
+			float x = localPosition.X;
+			float y = localPosition.Y;
 			SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
 			simpleMaterial.OverlayEnabled = false;
 			simpleMaterial.CircularMaskingEnabled = false;
 			simpleMaterial.Texture = texture;
+			simpleMaterial.NinePatchParameters = _sprite.NinePatchParameters;
+			if (NinePatchLeft != 0 || NinePatchRight != 0 || NinePatchTop != 0 || NinePatchBottom != 0)
+			{
+				simpleMaterial.NinePatchParameters = new SpriteNinePatchParameters(NinePatchLeft, NinePatchRight, NinePatchTop, NinePatchBottom);
+			}
 			simpleMaterial.Color = Color;
 			simpleMaterial.ColorFactor = ColorFactor;
 			simpleMaterial.AlphaFactor = AlphaFactor * Context.ContextAlpha;
@@ -2144,13 +2364,19 @@ public class Widget : PropertyOwnerObject
 			x -= num * _scaleToUse;
 			float y2 = Size.Y;
 			float num2 = ExtendTop;
-			if (HorizontalFlip)
+			if (VerticalFlip)
 			{
 				num2 = ExtendBottom;
 			}
 			y2 += (ExtendTop + ExtendBottom) * _scaleToUse;
 			y -= num2 * _scaleToUse;
-			drawContext.DrawSprite(_sprite, simpleMaterial, x, y, _scaleToUse, x2, y2, HorizontalFlip, VerticalFlip);
+			x2 = (HorizontalFlip ? (0f - x2) : x2);
+			y2 = (VerticalFlip ? (0f - y2) : y2);
+			float scaleX = ((x2 == 0f) ? 1f : (x2 / Size.X));
+			float scaleY = ((y2 == 0f) ? 1f : (y2 / Size.Y));
+			AreaRect.SetVisualOffset(x - localPosition.X, y - localPosition.Y);
+			AreaRect.SetVisualScale(scaleX, scaleY);
+			drawContext.DrawSprite(_sprite, simpleMaterial, in AreaRect, _scaleToUse);
 		}
 	}
 
@@ -2429,5 +2655,13 @@ public class Widget : PropertyOwnerObject
 	protected internal virtual void OnMouseOverEnd()
 	{
 		EventFired("MouseOverEnd");
+	}
+
+	protected internal virtual void OnContextActivated()
+	{
+	}
+
+	protected internal virtual void OnContextDeactivated()
+	{
 	}
 }

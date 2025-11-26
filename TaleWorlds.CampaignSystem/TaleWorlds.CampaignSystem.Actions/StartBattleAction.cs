@@ -14,6 +14,10 @@ public static class StartBattleAction
 		if (defenderParty.MapEvent == null)
 		{
 			Campaign.Current.Models.EncounterModel.CreateMapEventComponentForEncounter(attackerParty, defenderParty, battleType);
+			if (defenderParty.MapEvent == null)
+			{
+				return;
+			}
 		}
 		else
 		{
@@ -46,7 +50,7 @@ public static class StartBattleAction
 			if (attackerParty.MobileParty != null && attackerParty.MobileParty.IsGarrison)
 			{
 				settlement = attackerParty.MobileParty.CurrentSettlement;
-				battleTypes = MapEvent.BattleTypes.SallyOut;
+				battleTypes = (attackerParty.MobileParty.IsTargetingPort ? MapEvent.BattleTypes.BlockadeSallyOutBattle : MapEvent.BattleTypes.SallyOut);
 			}
 			else if (attackerParty.MobileParty.CurrentSettlement != null)
 			{
@@ -79,6 +83,10 @@ public static class StartBattleAction
 				if (settlement.IsTown)
 				{
 					battleTypes = MapEvent.BattleTypes.Siege;
+					if (attackerParty.IsMobile && defenderParty.SiegeEvent != null && attackerParty.SiegeEvent != null && attackerParty.MobileParty.IsCurrentlyAtSea && attackerParty.MobileParty.IsTargetingPort)
+					{
+						battleTypes = MapEvent.BattleTypes.BlockadeBattle;
+					}
 				}
 				else if (settlement.IsHideout)
 				{
@@ -86,11 +94,11 @@ public static class StartBattleAction
 				}
 				else if (settlement.IsVillage)
 				{
-					Debug.FailedAssert("Since villages can be raided or sieged, this block cannot decide if the battle is raid or siege.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 116);
+					battleTypes = MapEvent.BattleTypes.FieldBattle;
 				}
 				else
 				{
-					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 120);
+					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 134);
 				}
 			}
 		}
@@ -116,9 +124,17 @@ public static class StartBattleAction
 			{
 				battleTypes = MapEvent.BattleTypes.SiegeOutside;
 			}
+			else if (defenderParty.MapEvent.IsBlockade)
+			{
+				battleTypes = MapEvent.BattleTypes.BlockadeBattle;
+			}
+			else if (defenderParty.MapEvent.IsBlockadeSallyOut)
+			{
+				battleTypes = MapEvent.BattleTypes.BlockadeSallyOutBattle;
+			}
 			else
 			{
-				Debug.FailedAssert("Missing mapEventType?", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 148);
+				Debug.FailedAssert("Missing mapEventType?", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 170);
 			}
 			settlement = defenderParty.MapEvent.MapEventSettlement;
 		}

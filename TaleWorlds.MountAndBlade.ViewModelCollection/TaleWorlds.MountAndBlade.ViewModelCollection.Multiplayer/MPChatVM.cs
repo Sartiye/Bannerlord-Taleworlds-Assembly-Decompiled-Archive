@@ -43,6 +43,8 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private readonly Queue<MPChatLineVM> _requestedMessages;
 
+	private Action<bool> _onChatDisabledStateChanged;
+
 	private Func<TextObject> _getToggleChatKeyText;
 
 	private Func<TextObject> _getCycleChannelsKeyText;
@@ -57,7 +59,7 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private Mission _mission;
 
-	private ChatChannelType _activeChannelType = ChatChannelType.NaN;
+	private ChatChannelType _activeChannelType = ChatChannelType.None;
 
 	private float _chatBoxSizeX;
 
@@ -97,6 +99,8 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private bool _isOptionsAvailable;
 
+	private bool _shouldHaveOffset;
+
 	private HintViewModel _combatLogHint;
 
 	private Color _activeChannelColor;
@@ -109,17 +113,16 @@ public class MPChatVM : ViewModel, IChatHandler
 		}
 		set
 		{
-			if ((value == ChatChannelType.All || value == ChatChannelType.Team) && !GameNetwork.IsClient)
+			if ((value == ChatChannelType.All || value == ChatChannelType.Team) && !GameNetwork.IsClient && NetworkMain.GameClient == null && NetworkMain.CommunityClient == null)
 			{
-				_activeChannelType = ChatChannelType.NaN;
-				IsChatDisabled = true;
+				_activeChannelType = ChatChannelType.None;
 			}
 			else if (value != _activeChannelType)
 			{
 				_activeChannelType = value;
 				RefreshActiveChannelNameData();
-				IsChatDisabled = false;
 			}
+			IsChatDisabled = value == ChatChannelType.None;
 		}
 	}
 
@@ -239,6 +242,11 @@ public class MPChatVM : ViewModel, IChatHandler
 			if (value != _isChatDisabled)
 			{
 				_isChatDisabled = value;
+				if (value)
+				{
+					StopTyping(resetWrittenText: true);
+				}
+				_onChatDisabledStateChanged?.Invoke(value);
 				OnPropertyChangedWithValue(value, "IsChatDisabled");
 			}
 		}
@@ -274,6 +282,23 @@ public class MPChatVM : ViewModel, IChatHandler
 			{
 				_isOptionsAvailable = value;
 				OnPropertyChangedWithValue(value, "IsOptionsAvailable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShouldHaveOffset
+	{
+		get
+		{
+			return _shouldHaveOffset;
+		}
+		set
+		{
+			if (value != _shouldHaveOffset)
+			{
+				_shouldHaveOffset = value;
+				OnPropertyChangedWithValue(value, "ShouldHaveOffset");
 			}
 		}
 	}
@@ -513,6 +538,7 @@ public class MPChatVM : ViewModel, IChatHandler
 		IncludeBark = BannerlordConfig.ReportBark;
 		InformationManager.DisplayMessageInternal += OnDisplayMessageReceived;
 		InformationManager.ClearAllMessagesInternal += ClearAllMessages;
+		InformationManager.HideAllMessagesInternal += HideAllMessages;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnOptionChange));
 		MaxMessageLength = 100;
 		_recentlySentMessagesTimes = new List<float>();
@@ -532,7 +558,7 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private void RefreshActiveChannelNameData()
 	{
-		if (ActiveChannelType == ChatChannelType.NaN)
+		if (ActiveChannelType == ChatChannelType.None)
 		{
 			ActiveChannelNameText = string.Empty;
 			ActiveChannelColor = Color.White;
@@ -569,24 +595,28 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private void UpdateHideShowText(bool isInspecting)
 	{
-		TextObject textObject = TextObject.Empty;
+		TextObject textObject;
 		if (_game != null && isInspecting)
 		{
 			textObject = _hideText;
-			textObject.SetTextVariable("KEY", _getToggleChatKeyText() ?? TextObject.Empty);
+			textObject.SetTextVariable("KEY", _getToggleChatKeyText() ?? TextObject.GetEmpty());
+		}
+		else
+		{
+			textObject = TextObject.GetEmpty();
 		}
 		HideShowText = textObject.ToString();
 	}
 
 	private void UpdateShortcutTexts()
 	{
-		_cycleChannelsText.SetTextVariable("KEY", _getCycleChannelsKeyText?.Invoke() ?? TextObject.Empty);
+		_cycleChannelsText.SetTextVariable("KEY", _getCycleChannelsKeyText?.Invoke() ?? TextObject.GetEmpty());
 		CycleThroughChannelsText = _cycleChannelsText.ToString();
 		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
-			_sendMessageTextObject.SetTextVariable("KEY", _getSendMessageKeyText?.Invoke() ?? TextObject.Empty);
+			_sendMessageTextObject.SetTextVariable("KEY", _getSendMessageKeyText?.Invoke() ?? TextObject.GetEmpty());
 			SendMessageText = _sendMessageTextObject.ToString();
-			_cancelSendingTextObject.SetTextVariable("KEY", _getCancelSendingKeyText?.Invoke() ?? TextObject.Empty);
+			_cancelSendingTextObject.SetTextVariable("KEY", _getCancelSendingKeyText?.Invoke() ?? TextObject.GetEmpty());
 			CancelSendingText = _cancelSendingTextObject.ToString();
 		}
 		else
@@ -611,6 +641,18 @@ public class MPChatVM : ViewModel, IChatHandler
 			}
 		}
 		CheckChatFading(dt);
+	}
+
+	public void Hide()
+	{
+		_allMessages.ForEach(delegate(MPChatLineVM l)
+		{
+			l.ForceInvisible();
+		});
+		MessageHistory.ToList().ForEach(delegate(MPChatLineVM l)
+		{
+			l.ForceInvisible();
+		});
 	}
 
 	public void Clear()
@@ -638,6 +680,11 @@ public class MPChatVM : ViewModel, IChatHandler
 	private void ClearAllMessages()
 	{
 		Clear();
+	}
+
+	private void HideAllMessages()
+	{
+		Hide();
 	}
 
 	public void UpdateObjects(Game game, Mission mission)
@@ -688,6 +735,7 @@ public class MPChatVM : ViewModel, IChatHandler
 	private void ClearGame()
 	{
 		_game = null;
+		ActiveChannelType = ChatChannelType.None;
 	}
 
 	private void ClearChatBox()
@@ -701,6 +749,7 @@ public class MPChatVM : ViewModel, IChatHandler
 			_chatBox.ServerMessage -= OnServerMessage;
 			_chatBox.ServerAdminMessage -= OnServerAdminMessage;
 			_chatBox = null;
+			ActiveChannelType = ChatChannelType.None;
 		}
 	}
 
@@ -721,6 +770,7 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private void SetMission()
 	{
+		ActiveChannelType = ChatChannelType.All;
 		Game current = Game.Current;
 		IsChatDisabled = current != null && current.GetGameHandler<ChatBox>()?.IsContentRestricted == true;
 	}
@@ -728,7 +778,7 @@ public class MPChatVM : ViewModel, IChatHandler
 	private void ClearMission()
 	{
 		_mission = null;
-		ActiveChannelType = ChatChannelType.NaN;
+		ActiveChannelType = ChatChannelType.None;
 	}
 
 	public override void OnFinalize()
@@ -760,7 +810,7 @@ public class MPChatVM : ViewModel, IChatHandler
 		if (text.StartsWith("/"))
 		{
 			string[] array = text.Split(new char[1] { ' ' });
-			ChatChannelType activeChannelType = ChatChannelType.NaN;
+			ChatChannelType activeChannelType = ChatChannelType.None;
 			LobbyClient gameClient = NetworkMain.GameClient;
 			if (gameClient != null && gameClient.Connected)
 			{
@@ -800,7 +850,7 @@ public class MPChatVM : ViewModel, IChatHandler
 				CheckSpamAndSendMessage(ActiveChannelType, text);
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("Player in invalid channel", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 472);
+				TaleWorlds.Library.Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 496);
 				break;
 			case ChatChannelType.Private:
 				break;
@@ -853,11 +903,15 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	void IChatHandler.ReceiveChatMessage(ChatChannelType channel, string sender, string message)
 	{
-		TextObject textObject = TextObject.Empty;
+		TextObject textObject;
 		if (channel == ChatChannelType.Private)
 		{
 			textObject = new TextObject("{=6syoutpV}From {WHISPER_TARGET}");
 			textObject.SetTextVariable("WHISPER_TARGET", sender);
+		}
+		else
+		{
+			textObject = TextObject.GetEmpty();
 		}
 		AddMessage(message, sender, channel, textObject);
 	}
@@ -877,7 +931,8 @@ public class MPChatVM : ViewModel, IChatHandler
 			return;
 		}
 		_allMessages.Add(chatLine);
-		if (_allMessages.Count > _maxHistoryCount * 5)
+		int num = _maxHistoryCount * 5;
+		if (_allMessages.Count > num)
 		{
 			_allMessages.RemoveAt(0);
 		}
@@ -939,6 +994,11 @@ public class MPChatVM : ViewModel, IChatHandler
 			return IncludeBark;
 		}
 		return true;
+	}
+
+	public void SetChatDisabledStateChangedCallback(Action<bool> onChatDisabledStateChanged)
+	{
+		_onChatDisabledStateChanged = onChatDisabledStateChanged;
 	}
 
 	public void SetGetKeyTextFromKeyIDFunc(Func<TextObject> getToggleChatKeyText)

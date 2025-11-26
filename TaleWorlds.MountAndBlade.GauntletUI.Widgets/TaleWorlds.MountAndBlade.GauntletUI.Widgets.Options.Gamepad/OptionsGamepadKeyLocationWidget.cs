@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.ExtraWidgets;
@@ -56,15 +55,20 @@ public class OptionsGamepadKeyLocationWidget : Widget
 			NormalSizeYOfImage = base.ParentWidget.Sprite.Height;
 			CurrentSizeXOfImage = (int)(base.ParentWidget.SuggestedWidth * base._scaleToUse);
 			CurrentSizeYOfImage = (int)(base.ParentWidget.SuggestedHeight * base._scaleToUse);
+			_keyVisualWidget = null;
 			_keyNameTextWidgets.Clear();
-			foreach (Widget allChild in base.AllChildren)
+			List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+			for (int i = 0; i < allChildrenRecursive.Count; i++)
 			{
-				if (allChild is TextWidget item)
+				if (allChildrenRecursive[i] is TextWidget item)
 				{
 					_keyNameTextWidgets.Add(item);
 				}
+				if (_keyVisualWidget == null && allChildrenRecursive[i] is InputKeyVisualWidget keyVisualWidget)
+				{
+					_keyVisualWidget = keyVisualWidget;
+				}
 			}
-			_keyVisualWidget = base.AllChildren.FirstOrDefault((Widget c) => c is InputKeyVisualWidget) as InputKeyVisualWidget;
 			_valuesInitialized = true;
 			IsKeyToTheLeftOfTheGamepad = (float)NormalPositionXOffset < (float)NormalSizeXOfImage / 2f;
 		}

@@ -12,25 +12,31 @@ public class DeathNotificationItemVM : MapNotificationItemBaseVM
 	{
 		DeathNotificationItemVM deathNotificationItemVM = this;
 		base.NotificationIdentifier = "death";
+		bool victimDiedAtSea = (data.VictimHero.PartyBelongedTo != null && data.VictimHero.PartyBelongedTo.IsCurrentlyAtSea) || (data.VictimHero.PartyBelongedToAsPrisoner != null && data.VictimHero.PartyBelongedToAsPrisoner.IsMobile && data.VictimHero.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea);
 		if (data.VictimHero == Hero.MainHero)
 		{
 			_onInspect = delegate
 			{
 				deathNotificationItemVM.NavigationHandler?.OpenCharacterDeveloper(Hero.MainHero);
+				deathNotificationItemVM.ExecuteRemove();
 			};
 		}
 		else if (data.KillDetail == KillCharacterAction.KillCharacterActionDetail.DiedInBattle)
 		{
 			_onInspect = delegate
 			{
-				MBInformationManager.ShowSceneNotification(new ClanMemberWarDeathSceneNotificationItem(data.VictimHero, data.CreationTime));
+				SceneNotificationData data3 = ((!victimDiedAtSea) ? ((SceneNotificationData)new ClanMemberWarDeathSceneNotificationItem(data.VictimHero, data.CreationTime)) : ((SceneNotificationData)new NavalDeathSceneNotificationItem(data.VictimHero, data.CreationTime, data.KillDetail)));
+				MBInformationManager.ShowSceneNotification(data3);
+				deathNotificationItemVM.ExecuteRemove();
 			};
 		}
 		else
 		{
 			_onInspect = delegate
 			{
-				MBInformationManager.ShowSceneNotification(new ClanMemberPeaceDeathSceneNotificationItem(data.VictimHero, data.CreationTime));
+				SceneNotificationData data2 = ((!victimDiedAtSea) ? ((SceneNotificationData)new ClanMemberPeaceDeathSceneNotificationItem(data.VictimHero, data.CreationTime, data.KillDetail)) : ((SceneNotificationData)new NavalDeathSceneNotificationItem(data.VictimHero, data.CreationTime, data.KillDetail)));
+				MBInformationManager.ShowSceneNotification(data2);
+				deathNotificationItemVM.ExecuteRemove();
 			};
 		}
 	}

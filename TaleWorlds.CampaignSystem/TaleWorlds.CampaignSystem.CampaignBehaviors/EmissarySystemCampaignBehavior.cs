@@ -2,6 +2,7 @@ using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
@@ -25,7 +26,7 @@ public class EmissarySystemCampaignBehavior : CampaignBehaviorBase
 			{
 				continue;
 			}
-			float num = (0.1f + 0.75f * ((float)hero.GetSkillValue(DefaultSkills.Charm) / 300f)) / 10f;
+			float num = MBMath.ClampFloat(0.05f + 0.05f * ((float)hero.GetSkillValue(DefaultSkills.Charm) / 300f), 0f, 1f);
 			if (!(MBRandom.RandomFloat <= num))
 			{
 				continue;

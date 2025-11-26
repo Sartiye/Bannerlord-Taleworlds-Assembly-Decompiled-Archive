@@ -17,7 +17,7 @@ public class MissionGauntletMultiplayerMarkerUIHandler : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		_dataSource = new MultiplayerMissionMarkerVM(base.MissionScreen.CombatCamera);
-		_gauntletLayer = new GauntletLayer(1);
+		_gauntletLayer = new GauntletLayer("MPMissionMarkers", 1);
 		_gauntletLayer.LoadMovie("MPMissionMarkers", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}

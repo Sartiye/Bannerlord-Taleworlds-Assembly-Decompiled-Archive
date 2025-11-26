@@ -89,6 +89,9 @@ public class MPCustomGameFilterItemVM : ViewModel
 		case MPCustomGameFiltersVM.CustomGameFilterType.ModuleCompatible:
 			IsSelected = BannerlordConfig.HideModuleIncompatibleServers;
 			break;
+		case MPCustomGameFiltersVM.CustomGameFilterType.Favorite:
+			IsSelected = BannerlordConfig.ShowOnlyFavoriteServers;
+			break;
 		}
 	}
 

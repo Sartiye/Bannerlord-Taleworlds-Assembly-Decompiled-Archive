@@ -17,7 +17,7 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 
 	public WeatherNode[] AllWeatherNodes => _weatherNodes;
 
-	private int DimensionSquared => Campaign.Current.Models.MapWeatherModel.DefaultWeatherNodeDimension * Campaign.Current.Models.MapWeatherModel.DefaultWeatherNodeDimension;
+	private int DimensionSquared => Campaign.Current.DefaultWeatherNodeDimension * Campaign.Current.DefaultWeatherNodeDimension;
 
 	public override void RegisterEvents()
 	{
@@ -63,7 +63,7 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 		CreateAndShuffleDataIndicesDeterministic();
 		_weatherNodes = new WeatherNode[DimensionSquared];
 		Vec2 terrainSize = Campaign.Current.MapSceneWrapper.GetTerrainSize();
-		int defaultWeatherNodeDimension = Campaign.Current.Models.MapWeatherModel.DefaultWeatherNodeDimension;
+		int defaultWeatherNodeDimension = Campaign.Current.DefaultWeatherNodeDimension;
 		int num = defaultWeatherNodeDimension;
 		int num2 = defaultWeatherNodeDimension;
 		for (int i = 0; i < num2; i++)
@@ -72,7 +72,13 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 			{
 				float a = (float)i / (float)defaultWeatherNodeDimension * terrainSize.X;
 				float b = (float)j / (float)defaultWeatherNodeDimension * terrainSize.Y;
-				_weatherNodes[i * defaultWeatherNodeDimension + j] = new WeatherNode(new Vec2(a, b));
+				Vec2 pos = new Vec2(a, b);
+				CampaignVec2 position = new CampaignVec2(pos, isOnLand: true);
+				if (!position.IsValid())
+				{
+					position = new CampaignVec2(pos, isOnLand: false);
+				}
+				_weatherNodes[i * defaultWeatherNodeDimension + j] = new WeatherNode(position);
 			}
 		}
 		AddEventHandler();
@@ -100,7 +106,8 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 		WeatherNode weatherNode = _weatherNodes[index];
 		MapWeatherModel.WeatherEvent currentWeatherEvent = weatherNode.CurrentWeatherEvent;
 		MapWeatherModel.WeatherEvent weatherEvent = Campaign.Current.Models.MapWeatherModel.UpdateWeatherForPosition(weatherNode.Position, CampaignTime.Now);
-		if (currentWeatherEvent != weatherEvent)
+		MapWeatherModel.WeatherEventEffectOnTerrain weatherEffectOnTerrainForPosition = Campaign.Current.Models.MapWeatherModel.GetWeatherEffectOnTerrainForPosition(weatherNode.Position.ToVec2());
+		if (currentWeatherEvent != weatherEvent || weatherEffectOnTerrainForPosition == MapWeatherModel.WeatherEventEffectOnTerrain.Wet)
 		{
 			weatherNode.SetVisualDirty();
 		}

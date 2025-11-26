@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Encounters;
-using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
@@ -18,7 +17,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
 [MenuOverlay("ArmyMenuOverlay")]
 public class ArmyMenuOverlayVM : GameMenuOverlay
 {
-	private readonly Army _army;
+	private Army _army;
 
 	private List<MobileParty> _savedPartyList;
 
@@ -335,20 +334,12 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 			bool mapScreenActionIsEnabledWithReason = CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out disabledReason);
 			base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", MenuOverlayContextList.ArmyDismiss.ToString()).ToString(), mapScreenActionIsEnabledWithReason, MenuOverlayContextList.ArmyDismiss, disabledReason));
 		}
-		MobileParty mobileParty = troop.Party.MobileParty;
-		bool flag = mobileParty != null && mobileParty.Position2D.DistanceSquared(MobileParty.MainParty.Position2D) < 9f;
-		int num;
-		if (PlayerEncounter.Current != null)
-		{
-			PlayerEncounter current = PlayerEncounter.Current;
-			num = ((current != null && !current.IsEnemy) ? 1 : 0);
-		}
-		else
-		{
-			num = 1;
-		}
-		bool flag2 = (byte)num != 0;
-		if (_contextMenuItem.Party.LeaderHero != null && flag && flag2 && _contextMenuItem.Party != PartyBase.MainParty && PlayerEncounter.Current?.BattleSimulation == null)
+		float getEncounterJoiningRadius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius;
+		CampaignVec2 v = MobileParty.MainParty.MapEvent?.Position ?? MobileParty.MainParty.Position;
+		bool flag = troop.Party.MobileParty?.Position.DistanceSquared(v) < getEncounterJoiningRadius * getEncounterJoiningRadius;
+		bool flag2 = troop.Party.MobileParty.MapEvent == MobileParty.MainParty.MapEvent;
+		bool flag3 = PlayerEncounter.EncounteredParty != null && PlayerEncounter.EncounteredParty.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction);
+		if (_contextMenuItem.Party.LeaderHero != null && flag && flag2 && !flag3 && _contextMenuItem.Party != PartyBase.MainParty && PlayerEncounter.Current?.BattleSimulation == null)
 		{
 			base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", MenuOverlayContextList.DonateTroops.ToString()).ToString(), enabled: true, MenuOverlayContextList.DonateTroops));
 			if (MobileParty.MainParty.CurrentSettlement == null && LocationComplex.Current == null)
@@ -360,7 +351,7 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		CharacterObject characterObject = _contextMenuItem.Character ?? _contextMenuItem.Party.LeaderHero?.CharacterObject;
 		if (characterObject == null)
 		{
-			Debug.FailedAssert("ArmyMenuOverlayVM.ExecuteOnSetAsActiveContextMenuItem called on party with no leader hero: " + _contextMenuItem.Party.Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteOnSetAsActiveContextMenuItem", 134);
+			Debug.FailedAssert("ArmyMenuOverlayVM.ExecuteOnSetAsActiveContextMenuItem called on party with no leader hero: " + _contextMenuItem.Party.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteOnSetAsActiveContextMenuItem", 139);
 		}
 		else
 		{
@@ -371,8 +362,8 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 	public override void OnFrameTick(float dt)
 	{
 		base.OnFrameTick(dt);
-		CanManageArmy = GetCanManageArmyWithReason(out var reasonText);
-		ManageArmyHint.HintText = reasonText;
+		CanManageArmy = CampaignUIHelper.GetCanManageCurrentArmyWithReason(out var disabledReason);
+		ManageArmyHint.HintText = disabledReason;
 		for (int i = 0; i < PartyList.Count; i++)
 		{
 			PartyList[i].RefreshQuestStatus();
@@ -384,45 +375,11 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		}
 	}
 
-	private bool GetCanManageArmyWithReason(out TextObject reasonText)
-	{
-		if (Hero.MainHero.IsPrisoner)
-		{
-			reasonText = GameTexts.FindText("str_action_disabled_reason_prisoner");
-			return false;
-		}
-		if (PlayerEncounter.Current != null)
-		{
-			if (PlayerEncounter.EncounterSettlement == null)
-			{
-				reasonText = GameTexts.FindText("str_action_disabled_reason_encounter");
-				return false;
-			}
-			Village village = PlayerEncounter.EncounterSettlement.Village;
-			if (village != null && village.VillageState == Village.VillageStates.BeingRaided && MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid)
-			{
-				reasonText = GameTexts.FindText("str_action_disabled_reason_raid");
-				return false;
-			}
-		}
-		if (!IsPlayerArmyLeader)
-		{
-			reasonText = TextObject.Empty;
-			return false;
-		}
-		if (MapEvent.PlayerMapEvent != null)
-		{
-			reasonText = GameTexts.FindText("str_cannot_manage_army_while_in_event");
-			return false;
-		}
-		reasonText = TextObject.Empty;
-		return true;
-	}
-
 	public sealed override void Refresh()
 	{
 		if (PartyBase.MainParty.MobileParty.Army != null)
 		{
+			_army = PartyBase.MainParty.MobileParty.Army;
 			base.IsInitializationOver = false;
 			UpdateLists();
 			UpdateProperties();
@@ -510,7 +467,7 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Cohesion encyclopedia page", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteCohesionLink", 302);
+			Debug.FailedAssert("Couldn't find Cohesion encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteCohesionLink", 266);
 		}
 	}
 

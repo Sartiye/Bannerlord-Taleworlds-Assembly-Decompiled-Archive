@@ -8,16 +8,33 @@ public class HeroRelationComparer : IComparer<HeroVM>
 
 	private readonly bool _isAscending;
 
-	public HeroRelationComparer(Hero pageHero, bool isAscending)
+	private readonly bool _showLeadersFirst;
+
+	public HeroRelationComparer(Hero pageHero, bool isAscending, bool showLeadersFirst)
 	{
 		_pageHero = pageHero;
 		_isAscending = isAscending;
+		_showLeadersFirst = showLeadersFirst;
 	}
 
 	int IComparer<HeroVM>.Compare(HeroVM x, HeroVM y)
 	{
-		int heroRelation = CharacterRelationManager.GetHeroRelation(_pageHero, x.Hero);
-		int heroRelation2 = CharacterRelationManager.GetHeroRelation(_pageHero, y.Hero);
-		return heroRelation.CompareTo(heroRelation2) * (_isAscending ? 1 : (-1));
+		int num;
+		if (_showLeadersFirst)
+		{
+			num = y.IsKingdomLeader.CompareTo(x.IsKingdomLeader);
+			if (num != 0)
+			{
+				return num;
+			}
+		}
+		int relation = _pageHero.GetRelation(x.Hero);
+		int relation2 = _pageHero.GetRelation(y.Hero);
+		num = relation.CompareTo(relation2) * (_isAscending ? 1 : (-1));
+		if (num == 0)
+		{
+			num = x.NameText.CompareTo(y.NameText);
+		}
+		return num;
 	}
 }

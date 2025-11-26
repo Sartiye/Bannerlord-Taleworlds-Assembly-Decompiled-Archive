@@ -57,4 +57,12 @@ public class SiegeEventManager
 			}
 		}
 	}
+
+	public void OnAfterLoad()
+	{
+		for (int i = 0; i < _siegeEvents.Count; i++)
+		{
+			_siegeEvents[i].OnAfterLoad();
+		}
+	}
 }

@@ -13,4 +13,9 @@ internal class FloatBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadFloat();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 4;
+	}
 }

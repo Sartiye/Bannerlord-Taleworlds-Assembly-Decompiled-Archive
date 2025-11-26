@@ -34,6 +34,7 @@ public class VideoPlaybackScreen : ScreenBase, IGameStateListener
 			{
 				_videoPlaybackState.OnVideoFinished();
 				_videoPlayerView.SetEnable(value: false);
+				_videoPlayerView.FinalizePlayer();
 				_videoPlayerView = null;
 			}
 			if (ScreenManager.TopScreen == this)
@@ -49,14 +50,16 @@ public class VideoPlaybackScreen : ScreenBase, IGameStateListener
 
 	void IGameStateListener.OnInitialize()
 	{
-		_videoPlayerView.PlayVideo(_videoPlaybackState.VideoPath, _videoPlaybackState.AudioPath, _videoPlaybackState.FrameRate);
+		_videoPlayerView.PlayVideo(_videoPlaybackState.VideoPath, _videoPlaybackState.AudioPath, _videoPlaybackState.FrameRate, looping: false);
+		_videoPlaybackState.OnVideoStarted();
 		LoadingWindow.DisableGlobalLoadingWindow();
 		Utilities.DisableGlobalLoadingWindow();
 	}
 
 	void IGameStateListener.OnFinalize()
 	{
-		_videoPlayerView.FinalizePlayer();
+		_videoPlayerView?.SetEnable(value: false);
+		_videoPlayerView?.FinalizePlayer();
 	}
 
 	void IGameStateListener.OnActivate()

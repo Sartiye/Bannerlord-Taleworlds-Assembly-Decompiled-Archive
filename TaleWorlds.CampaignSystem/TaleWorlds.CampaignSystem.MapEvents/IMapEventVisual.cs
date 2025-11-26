@@ -1,10 +1,8 @@
-using TaleWorlds.Library;
-
 namespace TaleWorlds.CampaignSystem.MapEvents;
 
 public interface IMapEventVisual
 {
-	void Initialize(Vec2 position, int battleSizeValue, bool hasSound, bool isVisible);
+	void Initialize(CampaignVec2 position, int battleSizeValue, bool isVisible);
 
 	void OnMapEventEnd();
 

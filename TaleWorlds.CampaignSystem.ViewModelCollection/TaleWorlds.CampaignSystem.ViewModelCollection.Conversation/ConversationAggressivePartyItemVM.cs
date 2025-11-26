@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Quests;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Conversation;
@@ -12,12 +13,12 @@ public class ConversationAggressivePartyItemVM : ViewModel
 
 	private MBBindingList<QuestMarkerVM> _quests;
 
-	private ImageIdentifierVM _leaderVisual;
+	private CharacterImageIdentifierVM _leaderVisual;
 
 	private int _healthyAmount;
 
 	[DataSourceProperty]
-	public ImageIdentifierVM LeaderVisual
+	public CharacterImageIdentifierVM LeaderVisual
 	{
 		get
 		{
@@ -72,14 +73,14 @@ public class ConversationAggressivePartyItemVM : ViewModel
 		Party = party;
 		if (leader != null)
 		{
-			LeaderVisual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(leader));
+			LeaderVisual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(leader));
 		}
 		else if (party != null)
 		{
 			CharacterObject visualPartyLeader = CampaignUIHelper.GetVisualPartyLeader(party.Party);
 			if (visualPartyLeader != null)
 			{
-				LeaderVisual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(visualPartyLeader));
+				LeaderVisual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(visualPartyLeader));
 			}
 		}
 		HealthyAmount = party?.Party.NumberOfHealthyMembers ?? 0;
@@ -128,7 +129,7 @@ public class ConversationAggressivePartyItemVM : ViewModel
 	{
 		if (Party != null)
 		{
-			InformationManager.ShowTooltip(typeof(MobileParty), Party, false, true);
+			InformationManager.ShowTooltip(typeof(MobileParty), Party, true, true);
 		}
 	}
 

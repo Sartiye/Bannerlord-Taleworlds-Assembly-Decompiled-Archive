@@ -83,7 +83,7 @@ public class ShopVisualIconBrushWidget : BrushWidget
 				break;
 			default:
 				SetState("Default");
-				Debug.FailedAssert("No workshop visual with this type: " + ShopId, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Map\\Menu\\TownManagement\\ShopVisualIconBrushWidget.cs", "OnLateUpdate", 68);
+				Debug.FailedAssert("No workshop visual with this type: " + ShopId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Map\\Menu\\TownManagement\\ShopVisualIconBrushWidget.cs", "OnLateUpdate", 68);
 				break;
 			}
 			_initialized = true;

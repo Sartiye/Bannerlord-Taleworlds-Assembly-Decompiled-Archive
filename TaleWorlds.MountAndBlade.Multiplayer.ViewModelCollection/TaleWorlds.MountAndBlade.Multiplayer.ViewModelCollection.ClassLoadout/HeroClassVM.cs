@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 
@@ -32,8 +33,6 @@ public class HeroClassVM : ViewModel
 
 	private bool _isNumOfTroopsEnabled;
 
-	private bool _useSecondary;
-
 	private string _cultureId;
 
 	private string _troopTypeId;
@@ -57,23 +56,6 @@ public class HeroClassVM : ViewModel
 			{
 				_isEnabled = value;
 				OnPropertyChangedWithValue(value, "IsEnabled");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool UseSecondary
-	{
-		get
-		{
-			return _useSecondary;
-		}
-		set
-		{
-			if (value != _useSecondary)
-			{
-				_useSecondary = value;
-				OnPropertyChangedWithValue(value, "UseSecondary");
 			}
 		}
 	}
@@ -274,7 +256,7 @@ public class HeroClassVM : ViewModel
 	[DataSourceProperty]
 	public HeroPerkVM ThirdPerk => Perks.ElementAtOrDefault(2);
 
-	public HeroClassVM(Action<HeroClassVM> onSelect, Action<HeroPerkVM, MPPerkVM> onPerkSelect, MultiplayerClassDivisions.MPHeroClass heroClass, bool useSecondary)
+	public HeroClassVM(Action<HeroClassVM> onSelect, Action<HeroPerkVM, MPPerkVM> onPerkSelect, MultiplayerClassDivisions.MPHeroClass heroClass, MultiplayerBattleColors.MultiplayerCultureColorInfo colorInfo)
 	{
 		HeroClass = heroClass;
 		_onSelect = onSelect;
@@ -282,8 +264,7 @@ public class HeroClassVM : ViewModel
 		CultureId = heroClass.Culture.StringId;
 		IconType = heroClass.IconType.ToString();
 		TroopTypeId = heroClass.ClassGroup.StringId;
-		UseSecondary = useSecondary;
-		CultureColor = Color.FromUint(UseSecondary ? heroClass.Culture.Color2 : heroClass.Culture.Color);
+		CultureColor = colorInfo.Color1;
 		_gameMode = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 		Gold = (_gameMode.IsGameModeUsingCasualGold ? HeroClass.TroopCasualCost : ((_gameMode.GameType == MultiplayerGameType.Battle) ? HeroClass.TroopBattleCost : HeroClass.TroopCost));
 		InitPerksList();

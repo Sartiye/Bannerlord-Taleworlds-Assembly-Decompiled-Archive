@@ -89,9 +89,9 @@ public class MultiplayerPerkItemToggleWidget : ToggleButtonWidget
 	{
 	}
 
-	protected override void OnMouseReleased()
+	protected override void HandleClick()
 	{
-		base.OnMouseReleased();
+		base.HandleClick();
 		ContainerPanel?.PerkSelected(_isSelectable ? this : null);
 	}
 

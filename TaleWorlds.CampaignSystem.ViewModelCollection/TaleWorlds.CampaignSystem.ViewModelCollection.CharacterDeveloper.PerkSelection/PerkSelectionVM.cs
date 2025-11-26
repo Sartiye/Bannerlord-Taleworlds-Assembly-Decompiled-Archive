@@ -9,7 +9,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterDeveloper.PerkS
 
 public class PerkSelectionVM : ViewModel
 {
-	private readonly IHeroDeveloper _developer;
+	private readonly HeroDeveloper _developer;
 
 	private readonly List<PerkObject> _selectedPerks;
 
@@ -58,7 +58,7 @@ public class PerkSelectionVM : ViewModel
 		}
 	}
 
-	public PerkSelectionVM(IHeroDeveloper developer, Action<SkillObject> refreshPerksOf, Action onPerkSelection)
+	public PerkSelectionVM(HeroDeveloper developer, Action<SkillObject> refreshPerksOf, Action onPerkSelection)
 	{
 		_developer = developer;
 		_refreshPerksOf = refreshPerksOf;

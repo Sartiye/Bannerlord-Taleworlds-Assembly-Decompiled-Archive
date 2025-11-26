@@ -3,6 +3,7 @@ using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -17,7 +18,7 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 
 	private void DailyTickParty(MobileParty party)
 	{
-		if (!party.HasPerk(DefaultPerks.Medicine.Veterinarian) || !(MBRandom.RandomFloat < DefaultPerks.Medicine.Veterinarian.PrimaryBonus))
+		if (party.IsCurrentlyAtSea || !(MBRandom.RandomFloat < DefaultPerks.Medicine.Veterinarian.PrimaryBonus) || !party.HasPerk(DefaultPerks.Medicine.Veterinarian))
 		{
 			return;
 		}
@@ -67,14 +68,19 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 				int elementNumber = party2.WoundedInBattle.GetElementNumber(index);
 				if (mobileParty.HasPerk(DefaultPerks.Medicine.BattleHardened))
 				{
-					GiveTroopXp(item, elementNumber, party, (int)DefaultPerks.Medicine.BattleHardened.PrimaryBonus);
+					float num = DefaultPerks.Medicine.BattleHardened.PrimaryBonus;
+					if (mobileParty.IsCurrentlyAtSea)
+					{
+						num *= 0.5f;
+					}
+					GiveTroopXp(item, elementNumber, party, MathF.Round(num));
 				}
 			}
 			foreach (TroopRosterElement item2 in party2.DiedInBattle.GetTroopRoster())
 			{
 				int index2 = party2.DiedInBattle.FindIndexOfTroop(item2.Character);
 				int elementNumber2 = party2.DiedInBattle.GetElementNumber(index2);
-				if (mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian) && item2.Character.IsMounted)
+				if (!mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian) && item2.Character.IsMounted)
 				{
 					RecoverMountWithChance(item2, elementNumber2, party);
 				}
@@ -100,6 +106,6 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 
 	private void GiveTroopXp(TroopRosterElement troopRosterElement, int count, PartyBase partyBase, int xp)
 	{
-		partyBase.MemberRoster.AddXpToTroop(xp * count, troopRosterElement.Character);
+		partyBase.MemberRoster.AddXpToTroop(troopRosterElement.Character, xp * count);
 	}
 }

@@ -16,7 +16,7 @@ public class FireTrebuchet : Trebuchet
 		{
 			return -1000f;
 		}
-		if (flags.HasAnyFlag(TargetFlags.None))
+		if (flags.HasAllFlags(TargetFlags.IsFlammable | TargetFlags.IsSiegeEngine))
 		{
 			baseValue *= 1.5f;
 		}

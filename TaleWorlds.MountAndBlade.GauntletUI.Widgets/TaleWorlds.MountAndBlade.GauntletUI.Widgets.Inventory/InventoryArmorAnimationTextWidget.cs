@@ -5,6 +5,8 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Inventory;
 
 public class InventoryArmorAnimationTextWidget : TextWidget
 {
+	private bool _isSettingInitialValue;
+
 	private float _floatAmount;
 
 	[Editor(false)]
@@ -23,6 +25,7 @@ public class InventoryArmorAnimationTextWidget : TextWidget
 				base.FloatText = _floatAmount;
 				OnPropertyChanged(value, "FloatAmount");
 			}
+			_isSettingInitialValue = false;
 		}
 	}
 
@@ -30,21 +33,25 @@ public class InventoryArmorAnimationTextWidget : TextWidget
 		: base(context)
 	{
 		base.FloatText = 0f;
+		_isSettingInitialValue = true;
 	}
 
 	private void HandleAnimation(float oldValue, float newValue)
 	{
-		if (oldValue > newValue)
+		if (!_isSettingInitialValue)
 		{
-			SetState("Decrease");
-		}
-		else if (oldValue < newValue)
-		{
-			SetState("Increase");
-		}
-		else
-		{
-			SetState("Default");
+			if (oldValue > newValue)
+			{
+				SetState("Decrease");
+			}
+			else if (oldValue < newValue)
+			{
+				SetState("Increase");
+			}
+			else
+			{
+				SetState("Default");
+			}
 		}
 	}
 }

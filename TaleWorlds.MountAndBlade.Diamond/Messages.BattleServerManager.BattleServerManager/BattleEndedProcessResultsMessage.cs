@@ -7,7 +7,7 @@ using TaleWorlds.MountAndBlade.Diamond;
 namespace Messages.BattleServerManager.BattleServerManager;
 
 [Serializable]
-[MessageDescription("BattleServerManager", "BattleServerManager")]
+[MessageDescription("BattleServerManager", "BattleServerManager", true)]
 public class BattleEndedProcessResultsMessage : Message
 {
 	[JsonProperty]

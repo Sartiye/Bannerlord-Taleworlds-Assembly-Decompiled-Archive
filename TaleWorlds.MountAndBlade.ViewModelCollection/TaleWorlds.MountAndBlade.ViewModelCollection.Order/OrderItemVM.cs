@@ -1,251 +1,42 @@
 using System;
-using TaleWorlds.Core;
-using TaleWorlds.Library;
-using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order.Visual;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
-public class OrderItemVM : ViewModel
+public class OrderItemVM : OrderItemBaseVM
 {
-	public enum OrderSelectionState
+	public readonly VisualOrder Order;
+
+	public static event Action<OrderItemVM> OnExecuteOrder;
+
+	public OrderItemVM(OrderController orderController, VisualOrder order)
+		: base(orderController)
 	{
-		Disabled,
-		Default,
-		PartiallyActive,
-		Active
+		Order = order;
+		base.OrderIconId = order.IconId;
+		base.IsActive = true;
+		RefreshValues();
 	}
 
-	public Action<OrderItemVM, bool> OnExecuteAction;
-
-	public bool IsTitle;
-
-	private bool _isActivationOrder;
-
-	private bool _isToggleActivationOrder;
-
-	private bool _isActive;
-
-	private bool _isSelected;
-
-	private bool _canUseShortcuts;
-
-	private int _selectionState = -1;
-
-	private string _mainTitle;
-
-	private string _subSetTitle;
-
-	private InputKeyItemVM _shortcutKey;
-
-	private string _orderIconID = "";
-
-	internal OrderSubType OrderSubType { get; private set; }
-
-	internal OrderSetType OrderSetType { get; private set; }
-
-	[DataSourceProperty]
-	public string OrderIconID
+	public override void RefreshValues()
 	{
-		get
-		{
-			return _orderIconID;
-		}
-		set
-		{
-			if (value != _orderIconID)
-			{
-				_orderIconID = value;
-				OnPropertyChangedWithValue(value, "OrderIconID");
-			}
-		}
+		base.RefreshValues();
+		base.Name = Order.GetName(_orderController)?.ToString();
 	}
 
-	[DataSourceProperty]
-	public bool IsActive
+	protected override void OnRefreshState()
 	{
-		get
-		{
-			return _isActive;
-		}
-		set
-		{
-			value = value && _selectionState != 0;
-			_isActive = value;
-			OnPropertyChangedWithValue(value, "IsActive");
-		}
+		OrderState activeState = Order.GetActiveState(_orderController);
+		base.IsActive = activeState == OrderState.Active;
+		base.SelectionState = activeState.ToString();
+		base.Name = Order.GetName(_orderController).ToString();
+		base.OrderIconId = Order.IconId;
 	}
 
-	[DataSourceProperty]
-	public bool IsSelected
+	protected override void OnExecuteAction(VisualOrderExecutionParameters executionParameters)
 	{
-		get
-		{
-			return _isSelected;
-		}
-		set
-		{
-			if (value != _isSelected)
-			{
-				_isSelected = value;
-				OnPropertyChanged("IsSelected");
-				if (value)
-				{
-					OnExecuteAction(this, arg2: true);
-				}
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool CanUseShortcuts
-	{
-		get
-		{
-			return _canUseShortcuts;
-		}
-		set
-		{
-			if (value != _canUseShortcuts)
-			{
-				_canUseShortcuts = value;
-				OnPropertyChanged("CanUseShortcuts");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int SelectionState
-	{
-		get
-		{
-			return _selectionState;
-		}
-		set
-		{
-			if (value != _selectionState)
-			{
-				_selectionState = value;
-				OnPropertyChangedWithValue(value, "SelectionState");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public InputKeyItemVM ShortcutKey
-	{
-		get
-		{
-			return _shortcutKey;
-		}
-		set
-		{
-			if (value != _shortcutKey)
-			{
-				_shortcutKey = value;
-				OnPropertyChangedWithValue(value, "ShortcutKey");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string MainTitle
-	{
-		get
-		{
-			return _mainTitle;
-		}
-		set
-		{
-			if (value != _mainTitle)
-			{
-				_mainTitle = value;
-				OnPropertyChangedWithValue(value, "MainTitle");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string SubSetTitle
-	{
-		get
-		{
-			return _subSetTitle;
-		}
-		set
-		{
-			if (value != _subSetTitle)
-			{
-				_subSetTitle = value;
-				OnPropertyChangedWithValue(value, "SubSetTitle");
-			}
-		}
-	}
-
-	public OrderItemVM(OrderSubType orderSubType, OrderSetType orderSetType, TextObject tooltipText, Action<OrderItemVM, bool> onExecuteAction)
-	{
-		OrderSetType = orderSetType;
-		OrderSubType = orderSubType;
-		OrderIconID = GetIconIDFromSubType(OrderSubType);
-		if (orderSetType == OrderSetType.Toggle)
-		{
-			OrderIconID += "Active";
-		}
-		OnExecuteAction = onExecuteAction;
-		MainTitle = tooltipText.ToString();
-		IsActive = true;
-		_isActivationOrder = IsTitle && OrderSetType == OrderSetType.None;
-		_isToggleActivationOrder = OrderSubType > OrderSubType.ToggleStart && OrderSubType < OrderSubType.ToggleEnd;
-	}
-
-	public OrderItemVM(OrderSetType orderSetType, TextObject tooltipText, Action<OrderItemVM, bool> onExecuteAction)
-	{
-		OrderSubType = OrderSubType.None;
-		IsTitle = true;
-		OrderSetType = orderSetType;
-		OrderIconID = orderSetType.ToString();
-		OnExecuteAction = onExecuteAction;
-		MainTitle = tooltipText.ToString();
-		IsActive = true;
-	}
-
-	public void SetActiveState(bool isActive)
-	{
-		if ((OrderSetType == OrderSetType.Toggle && !IsTitle) || _isToggleActivationOrder)
-		{
-			MainTitle = GameTexts.FindText(isActive ? "str_order_name_on" : "str_order_name_off", OrderSubType.ToString()).ToString();
-		}
-		if (_isToggleActivationOrder)
-		{
-			OrderIconID = (isActive ? OrderSubType.ToString() : (OrderSubType.ToString() + "Active"));
-		}
-		IsActive = true;
-	}
-
-	public override void OnFinalize()
-	{
-		base.OnFinalize();
-		ShortcutKey.OnFinalize();
-	}
-
-	public void ExecuteAction()
-	{
-		OnExecuteAction(this, arg2: false);
-	}
-
-	public void FinalizeActiveStatus()
-	{
-		OnPropertyChanged("SelectionState");
-	}
-
-	private string GetIconIDFromSubType(OrderSubType orderSubType)
-	{
-		string empty = string.Empty;
-		return orderSubType switch
-		{
-			OrderSubType.ActivationFaceDirection => OrderSubType.ToggleFacing.ToString(), 
-			OrderSubType.FaceEnemy => OrderSubType.ToggleFacing.ToString() + "Active", 
-			_ => orderSubType.ToString(), 
-		};
+		Order.BeforeExecuteOrder(_orderController, executionParameters);
+		Order.ExecuteOrder(_orderController, executionParameters);
+		OrderItemVM.OnExecuteOrder?.Invoke(this);
 	}
 }

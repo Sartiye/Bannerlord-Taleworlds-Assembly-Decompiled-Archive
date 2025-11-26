@@ -14,7 +14,7 @@ public class CircularAutoScrollablePanelWidget : Widget
 
 	private float _currentScrollValue;
 
-	private bool _autoScroll;
+	private bool _isScrolling;
 
 	private bool _isIdle;
 
@@ -37,6 +37,8 @@ public class CircularAutoScrollablePanelWidget : Widget
 	public float IdleTime { get; set; }
 
 	public bool AutoScrollWhenSelected { get; set; }
+
+	public bool AutoScroll { get; set; }
 
 	public ScrollMovementType ScrollType { get; set; }
 
@@ -67,7 +69,7 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		_autoScroll = _autoScroll || (base.CurrentState == "Selected" && AutoScrollWhenSelected);
+		_isScrolling = _isScrolling || (base.CurrentState == "Selected" && AutoScrollWhenSelected) || AutoScroll;
 		_maxScroll = 0f;
 		Widget innerPanel = InnerPanel;
 		if (innerPanel != null && innerPanel.Size.Y > 0f)
@@ -78,7 +80,7 @@ public class CircularAutoScrollablePanelWidget : Widget
 				_maxScroll = InnerPanel.Size.Y - ClipRect.Size.Y;
 			}
 		}
-		if (_autoScroll && !_isIdle)
+		if (_isScrolling && !_isIdle)
 		{
 			ScrollToDirection(_direction, dt);
 			if (_currentScrollValue.ApproximatelyEqualsTo(0f) || _currentScrollValue.ApproximatelyEqualsTo(_maxScroll))
@@ -88,8 +90,9 @@ public class CircularAutoScrollablePanelWidget : Widget
 				_direction *= -1;
 			}
 		}
-		else if (_autoScroll && _isIdle)
+		else if (_isScrolling && _isIdle)
 		{
+			ScrollToDirection(0, dt);
 			_idleTimer += dt;
 			if (_idleTimer > IdleTime)
 			{
@@ -122,11 +125,14 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnMouseScroll()
 	{
 		base.OnMouseScroll();
-		_autoScroll = false;
-		float num = ((ScrollPixelsPerSecond != 0f) ? (ScrollPixelsPerSecond * 0.2f) : 10f);
-		float num2 = base.EventManager.DeltaMouseScroll * num;
-		_currentScrollValue += num2;
-		InnerPanel.ScaledPositionYOffset = 0f - _currentScrollValue;
+		if (!AutoScroll)
+		{
+			_isScrolling = false;
+			float num = ((ScrollPixelsPerSecond != 0f) ? (ScrollPixelsPerSecond * 0.2f) : 10f);
+			float num2 = base.EventManager.DeltaMouseScroll * num;
+			_currentScrollValue += num2;
+			InnerPanel.ScaledPositionYOffset = 0f - _currentScrollValue;
+		}
 	}
 
 	public void SetScrollMouse()
@@ -137,9 +143,9 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnHoverBegin()
 	{
 		base.OnHoverBegin();
-		if (!_autoScroll)
+		if (!AutoScroll && !_isScrolling)
 		{
-			_autoScroll = true;
+			_isScrolling = true;
 			_isIdle = false;
 			_direction = 1;
 			_idleTimer = 0f;
@@ -154,9 +160,9 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnHoverEnd()
 	{
 		base.OnHoverEnd();
-		if (_autoScroll)
+		if (!AutoScroll && _isScrolling)
 		{
-			_autoScroll = false;
+			_isScrolling = false;
 			_direction = -1;
 			if (_isIdle && _currentScrollValue < float.Epsilon)
 			{

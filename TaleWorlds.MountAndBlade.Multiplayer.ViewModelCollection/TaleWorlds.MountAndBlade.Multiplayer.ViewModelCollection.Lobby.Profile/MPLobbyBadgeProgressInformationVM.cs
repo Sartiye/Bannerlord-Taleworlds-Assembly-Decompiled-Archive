@@ -1,7 +1,9 @@
 using System;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Diamond.MultiplayerBadges;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Profile;
 
@@ -12,6 +14,10 @@ public class MPLobbyBadgeProgressInformationVM : ViewModel
 	private const int MaxShownBadgeCount = 5;
 
 	private readonly Func<string> _getExitText;
+
+	private InputKeyItemVM _previousTabInputKey;
+
+	private InputKeyItemVM _nextTabInputKey;
 
 	private int _shownBadgeCount;
 
@@ -28,6 +34,40 @@ public class MPLobbyBadgeProgressInformationVM : ViewModel
 	private MPLobbyAchievementBadgeGroupVM _badgeGroup;
 
 	private MBBindingList<StringPairItemVM> _availableBadgeIDs;
+
+	[DataSourceProperty]
+	public InputKeyItemVM PreviousTabInputKey
+	{
+		get
+		{
+			return _previousTabInputKey;
+		}
+		set
+		{
+			if (value != _previousTabInputKey)
+			{
+				_previousTabInputKey = value;
+				OnPropertyChanged("PreviousTabInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM NextTabInputKey
+	{
+		get
+		{
+			return _nextTabInputKey;
+		}
+		set
+		{
+			if (value != _nextTabInputKey)
+			{
+				_nextTabInputKey = value;
+				OnPropertyChanged("NextTabInputKey");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public int ShownBadgeCount
@@ -216,15 +256,38 @@ public class MPLobbyBadgeProgressInformationVM : ViewModel
 		IsEnabled = false;
 	}
 
-	private void ExecuteIncreaseActiveBadgeIndices()
+	public void ExecuteIncreaseActiveBadgeIndices()
 	{
-		_shownBadgeIndexOffset++;
-		RefreshShownBadges();
+		if (CanIncreaseBadgeIndices)
+		{
+			_shownBadgeIndexOffset++;
+			RefreshShownBadges();
+		}
 	}
 
-	private void ExecuteDecreaseActiveBadgeIndices()
+	public void ExecuteDecreaseActiveBadgeIndices()
 	{
-		_shownBadgeIndexOffset--;
-		RefreshShownBadges();
+		if (CanDecreaseBadgeIndices)
+		{
+			_shownBadgeIndexOffset--;
+			RefreshShownBadges();
+		}
+	}
+
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		PreviousTabInputKey?.OnFinalize();
+		NextTabInputKey?.OnFinalize();
+	}
+
+	public void SetPreviousTabInputKey(HotKey hotKey)
+	{
+		PreviousTabInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void SetNextTabInputKey(HotKey hotKey)
+	{
+		NextTabInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

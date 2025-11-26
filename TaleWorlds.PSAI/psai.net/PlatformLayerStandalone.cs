@@ -24,16 +24,25 @@ internal class PlatformLayerStandalone : IPlatformLayer
 	{
 		string text = filepath.Replace('\\', '/');
 		string text2 = "";
-		text2 = ((!text.Contains("/")) ? Path.GetFileNameWithoutExtension(text) : (Path.GetDirectoryName(text) + "/" + Path.GetFileNameWithoutExtension(text)));
+		string text3 = "";
+		if (text.Contains("/"))
+		{
+			text3 = Path.GetDirectoryName(text) + "/";
+			text2 = Path.GetFileNameWithoutExtension(text);
+		}
+		else
+		{
+			text2 = Path.GetFileNameWithoutExtension(text);
+		}
 		if (ApplicationPlatform.CurrentPlatform == Platform.Orbis)
 		{
-			return "PS4/" + text2 + ".fsb";
+			return text3 + "PS4/" + text2 + ".fsb";
 		}
 		if (ApplicationPlatform.CurrentPlatform == Platform.Durango)
 		{
-			return "XboxOne/" + text2 + ".fsb";
+			return text3 + "XboxOne/" + text2 + ".fsb";
 		}
-		return "PC/" + text2 + ".ogg";
+		return text3 + "PC/" + text2 + ".ogg";
 	}
 
 	public Stream GetStreamOnPsaiSoundtrackFile(string filepath)

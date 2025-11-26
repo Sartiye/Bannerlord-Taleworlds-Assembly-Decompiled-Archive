@@ -1,8 +1,10 @@
 using System;
-using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -16,9 +18,9 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 
 	private string _peaceDescriptionText;
 
-	private ImageIdentifierVM _sourceFactionBanner;
+	private BannerImageIdentifierVM _sourceFactionBanner;
 
-	private ImageIdentifierVM _targetFactionBanner;
+	private BannerImageIdentifierVM _targetFactionBanner;
 
 	private string _leaderText;
 
@@ -27,6 +29,10 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 	private HeroVM _targetFactionLeader;
 
 	private MBBindingList<KingdomWarComparableStatVM> _comparedStats;
+
+	private bool _isTargetFactionOtherWarsVisible;
+
+	private MBBindingList<KingdomDiplomacyFactionItemVM> _targetFactionOtherWars;
 
 	private Kingdom _sourceFaction => Hero.MainHero.Clan.Kingdom;
 
@@ -67,7 +73,7 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM SourceFactionBanner
+	public BannerImageIdentifierVM SourceFactionBanner
 	{
 		get
 		{
@@ -84,7 +90,7 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM TargetFactionBanner
+	public BannerImageIdentifierVM TargetFactionBanner
 	{
 		get
 		{
@@ -168,6 +174,40 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 		}
 	}
 
+	[DataSourceProperty]
+	public bool IsTargetFactionOtherWarsVisible
+	{
+		get
+		{
+			return _isTargetFactionOtherWarsVisible;
+		}
+		set
+		{
+			if (value != _isTargetFactionOtherWarsVisible)
+			{
+				_isTargetFactionOtherWarsVisible = value;
+				OnPropertyChangedWithValue(value, "IsTargetFactionOtherWarsVisible");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<KingdomDiplomacyFactionItemVM> TargetFactionOtherWars
+	{
+		get
+		{
+			return _targetFactionOtherWars;
+		}
+		set
+		{
+			if (value != _targetFactionOtherWars)
+			{
+				_targetFactionOtherWars = value;
+				OnPropertyChangedWithValue(value, "TargetFactionOtherWars");
+			}
+		}
+	}
+
 	public MakePeaceDecisionItemVM(MakePeaceKingdomDecision decision, Action onDecisionOver)
 		: base(decision, onDecisionOver)
 	{
@@ -183,8 +223,8 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 		TextObject textObject2 = GameTexts.FindText("str_kingdom_decision_make_peace_desc");
 		textObject2.SetTextVariable("FACTION", TargetFaction.Name);
 		PeaceDescriptionText = textObject2.ToString();
-		SourceFactionBanner = new ImageIdentifierVM(BannerCode.CreateFrom(_sourceFaction.Banner), nineGrid: true);
-		TargetFactionBanner = new ImageIdentifierVM(BannerCode.CreateFrom(TargetFaction.Banner), nineGrid: true);
+		SourceFactionBanner = new BannerImageIdentifierVM(_sourceFaction.Banner, nineGrid: true);
+		TargetFactionBanner = new BannerImageIdentifierVM(TargetFaction.Banner, nineGrid: true);
 		LeaderText = GameTexts.FindText("str_leader").ToString();
 		SourceFactionLeader = new HeroVM(_sourceFaction.Leader);
 		TargetFactionLeader = new HeroVM(TargetFaction.Leader);
@@ -192,18 +232,31 @@ public class MakePeaceDecisionItemVM : DecisionItemBaseVM
 		Kingdom targetFaction = TargetFaction as Kingdom;
 		string faction1Color = Color.FromUint(_sourceFaction.Color).ToString();
 		string faction2Color = Color.FromUint(targetFaction.Color).ToString();
-		StanceLink stanceLink = _sourceFaction.Stances.First((StanceLink s) => s.IsAtWar && (s.Faction2 == TargetFaction || s.Faction1 == TargetFaction));
-		KingdomWarComparableStatVM item = new KingdomWarComparableStatVM((int)_sourceFaction.TotalStrength, (int)targetFaction.TotalStrength, GameTexts.FindText("str_strength"), faction1Color, faction2Color, 10000);
+		StanceLink stanceWith = _sourceFaction.GetStanceWith(TargetFaction);
+		KingdomWarComparableStatVM item = new KingdomWarComparableStatVM((int)_sourceFaction.CurrentTotalStrength, (int)targetFaction.CurrentTotalStrength, GameTexts.FindText("str_strength"), faction1Color, faction2Color, 10000);
 		ComparedStats.Add(item);
-		int faction1Stat = targetFaction.Heroes.Count((Hero x) => x.IsPrisoner && x.PartyBelongedToAsPrisoner?.MapFaction == _sourceFaction);
-		int faction2Stat = _sourceFaction.Heroes.Count((Hero x) => x.IsPrisoner && x.PartyBelongedToAsPrisoner?.MapFaction == targetFaction);
-		KingdomWarComparableStatVM item2 = new KingdomWarComparableStatVM(faction1Stat, faction2Stat, GameTexts.FindText("str_party_category_prisoners_tooltip"), faction1Color, faction2Color, 10);
+		KingdomWarComparableStatVM item2 = new KingdomWarComparableStatVM(stanceWith.GetCasualties(targetFaction), stanceWith.GetCasualties(_sourceFaction), GameTexts.FindText("str_war_casualties_inflicted"), faction1Color, faction2Color, 10000);
 		ComparedStats.Add(item2);
-		KingdomWarComparableStatVM item3 = new KingdomWarComparableStatVM(stanceLink.GetCasualties(targetFaction), stanceLink.GetCasualties(_sourceFaction), GameTexts.FindText("str_war_casualties_inflicted"), faction1Color, faction2Color, 5000);
+		KingdomWarComparableStatVM item3 = new KingdomWarComparableStatVM(stanceWith.GetSuccessfulSieges(_sourceFaction), stanceWith.GetSuccessfulSieges(targetFaction), GameTexts.FindText("str_war_successful_sieges"), faction1Color, faction2Color, 5);
 		ComparedStats.Add(item3);
-		KingdomWarComparableStatVM item4 = new KingdomWarComparableStatVM(stanceLink.GetSuccessfulSieges(_sourceFaction), stanceLink.GetSuccessfulSieges(targetFaction), GameTexts.FindText("str_war_successful_sieges"), faction1Color, faction2Color, 5);
+		KingdomWarComparableStatVM item4 = new KingdomWarComparableStatVM(stanceWith.GetSuccessfulRaids(_sourceFaction), stanceWith.GetSuccessfulRaids(targetFaction), GameTexts.FindText("str_war_successful_raids"), faction1Color, faction2Color, 10);
 		ComparedStats.Add(item4);
-		KingdomWarComparableStatVM item5 = new KingdomWarComparableStatVM(stanceLink.GetSuccessfulRaids(_sourceFaction), stanceLink.GetSuccessfulRaids(targetFaction), GameTexts.FindText("str_war_successful_raids"), faction1Color, faction2Color, 10);
+		ExplainedNumber warProgressOfFaction1 = Campaign.Current.Models.DiplomacyModel.GetWarProgressScore(_sourceFaction, targetFaction, includeDescriptions: true);
+		ExplainedNumber warProgressOfFaction2 = Campaign.Current.Models.DiplomacyModel.GetWarProgressScore(targetFaction, _sourceFaction, includeDescriptions: true);
+		int num = (int)(warProgressOfFaction1.ResultNumber * 100f / warProgressOfFaction1.LimitMaxValue);
+		int num2 = (int)(warProgressOfFaction2.ResultNumber * 100f / warProgressOfFaction2.LimitMaxValue);
+		int faction1Stat = TaleWorlds.Library.MathF.Max(0, num - num2);
+		int faction2Stat = TaleWorlds.Library.MathF.Max(0, num2 - num);
+		KingdomWarComparableStatVM item5 = new KingdomWarComparableStatVM(faction1Stat, faction2Stat, new TextObject("{=8qbkS5D2}War Progress"), faction1Color, faction2Color, 100, new BasicTooltipViewModel(() => CampaignUIHelper.GetNormalizedWarProgressTooltip(warProgressOfFaction1, warProgressOfFaction2, warProgressOfFaction1.LimitMaxValue, _sourceFaction.Name, targetFaction.Name)), new BasicTooltipViewModel(() => CampaignUIHelper.GetNormalizedWarProgressTooltip(warProgressOfFaction2, warProgressOfFaction1, warProgressOfFaction2.LimitMaxValue, targetFaction.Name, _sourceFaction.Name)));
 		ComparedStats.Add(item5);
+		TargetFactionOtherWars = new MBBindingList<KingdomDiplomacyFactionItemVM>();
+		foreach (StanceLink stance in FactionHelper.GetStances(TargetFaction))
+		{
+			if (stance.IsAtWar && stance.Faction1 != _sourceFaction && stance.Faction2 != _sourceFaction && (stance.Faction1.IsKingdomFaction || stance.Faction1.Leader == Hero.MainHero) && (stance.Faction2.IsKingdomFaction || stance.Faction2.Leader == Hero.MainHero) && !stance.Faction1.IsRebelClan && !stance.Faction2.IsRebelClan && !stance.Faction1.IsBanditFaction && !stance.Faction2.IsBanditFaction)
+			{
+				TargetFactionOtherWars.Add(new KingdomDiplomacyFactionItemVM((stance.Faction1 == TargetFaction) ? stance.Faction2 : stance.Faction1));
+			}
+		}
+		IsTargetFactionOtherWarsVisible = TargetFactionOtherWars.Count > 0;
 	}
 }

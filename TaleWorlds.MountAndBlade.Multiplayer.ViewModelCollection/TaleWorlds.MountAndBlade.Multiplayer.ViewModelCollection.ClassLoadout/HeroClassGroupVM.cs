@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 
@@ -89,7 +90,7 @@ public class HeroClassGroupVM : ViewModel
 		}
 	}
 
-	public HeroClassGroupVM(Action<HeroClassVM> onSelect, Action<HeroPerkVM, MPPerkVM> onPerkSelect, MultiplayerClassDivisions.MPHeroClassGroup heroClassGroup, bool useSecondary)
+	public HeroClassGroupVM(Action<HeroClassVM> onSelect, Action<HeroPerkVM, MPPerkVM> onPerkSelect, MultiplayerClassDivisions.MPHeroClassGroup heroClassGroup, MultiplayerBattleColors.MultiplayerCultureColorInfo colorInfo)
 	{
 		HeroClassGroup = heroClassGroup;
 		_onPerkSelect = onPerkSelect;
@@ -100,7 +101,7 @@ public class HeroClassGroupVM : ViewModel
 			where h.ClassGroup.Equals(heroClassGroup)
 			select h)
 		{
-			SubClasses.Add(new HeroClassVM(onSelect, _onPerkSelect, item, useSecondary));
+			SubClasses.Add(new HeroClassVM(onSelect, _onPerkSelect, item, colorInfo));
 		}
 		RefreshValues();
 	}

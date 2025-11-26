@@ -122,6 +122,11 @@ public sealed class PhysicsShape : Resource
 		material = new PhysicsMaterial(materialIndex);
 	}
 
+	public void GetBoundingBox(out BoundingBox boundingBox)
+	{
+		EngineApplicationInterface.IPhysicsShape.GetBoundingBox(base.Pointer, out boundingBox);
+	}
+
 	public Vec3 GetBoundingBoxCenter()
 	{
 		return EngineApplicationInterface.IPhysicsShape.GetBoundingBoxCenter(base.Pointer);

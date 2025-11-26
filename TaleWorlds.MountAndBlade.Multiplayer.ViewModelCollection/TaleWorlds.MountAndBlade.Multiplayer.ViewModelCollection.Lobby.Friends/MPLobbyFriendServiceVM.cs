@@ -554,9 +554,9 @@ public class MPLobbyFriendServiceVM : ViewModel
 			{
 				GetFriendWithID(playerId)?.UpdatePlayerState(playerData);
 			}
-			InGameFriends?.FriendList?.Sort(_playerStateComparer);
-			OnlineFriends?.FriendList?.Sort(_playerStateComparer);
-			OfflineFriends?.FriendList?.Sort(_playerStateComparer);
+			InGameFriends.FriendList.Sort(_playerStateComparer);
+			OnlineFriends.FriendList.Sort(_playerStateComparer);
+			OfflineFriends.FriendList.Sort(_playerStateComparer);
 		}
 		_isStateRequestActive = false;
 		UpdateCanInviteOtherPlayersToParty();
@@ -589,8 +589,7 @@ public class MPLobbyFriendServiceVM : ViewModel
 
 	private void RemoveFriend(PlayerId providedId)
 	{
-		MPLobbyFriendItemVM mPLobbyFriendItemVM = null;
-		mPLobbyFriendItemVM = InGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM = InGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			InGameFriends.RemoveFriend(mPLobbyFriendItemVM);
@@ -736,9 +735,9 @@ public class MPLobbyFriendServiceVM : ViewModel
 	private Action<PlayerId> GetOnInvite(PlayerId playerId, MPLobbyPlayerBaseVM.OnlineStatus onlineStatus, AnotherPlayerState state)
 	{
 		Action<PlayerId> result = null;
-		if (PlatformServices.InvitationServices != null && playerId.ProvidedType == NetworkMain.GameClient.PlayerID.ProvidedType)
+		if (PlatformServices.Instance.UsePlatformInvitationService(playerId) && playerId.ProvidedType == NetworkMain.GameClient.PlayerID.ProvidedType)
 		{
-			result = ExecuteInviteToPlatformSession;
+			result = ((ApplicationPlatform.CurrentPlatform != Platform.GDKDesktop || state == AnotherPlayerState.AtLobby) ? new Action<PlayerId>(ExecuteInviteToPlatformSession) : null);
 		}
 		else if (onlineStatus == MPLobbyPlayerBaseVM.OnlineStatus.Offline || onlineStatus == MPLobbyPlayerBaseVM.OnlineStatus.None)
 		{
@@ -797,8 +796,9 @@ public class MPLobbyFriendServiceVM : ViewModel
 				{
 					if (permissionResult)
 					{
-						if (PlatformServices.InvitationServices != null && (!NetworkMain.GameClient.IsInParty || NetworkMain.GameClient.IsPartyLeader))
+						if (PlatformServices.Instance.UsePlatformInvitationService(providedId) && (!NetworkMain.GameClient.IsInParty || NetworkMain.GameClient.IsPartyLeader))
 						{
+							Debug.Print("UsePlatformInvitationService InviteToPlatformSession");
 							await NetworkMain.GameClient.InviteToPlatformSession(providedId);
 						}
 						else

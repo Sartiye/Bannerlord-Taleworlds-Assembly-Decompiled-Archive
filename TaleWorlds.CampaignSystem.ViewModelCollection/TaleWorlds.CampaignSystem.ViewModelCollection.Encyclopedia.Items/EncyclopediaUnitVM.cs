@@ -1,5 +1,6 @@
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
@@ -8,7 +9,7 @@ public class EncyclopediaUnitVM : ViewModel
 {
 	private CharacterObject _character;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private CharacterImageIdentifierVM _imageIdentifier;
 
 	private string _nameText;
 
@@ -36,7 +37,7 @@ public class EncyclopediaUnitVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public CharacterImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -108,7 +109,7 @@ public class EncyclopediaUnitVM : ViewModel
 		if (character != null)
 		{
 			CharacterCode characterCode = CharacterCode.CreateFrom(character);
-			ImageIdentifier = new ImageIdentifierVM(characterCode);
+			ImageIdentifier = new CharacterImageIdentifierVM(characterCode);
 			_character = character;
 			IsActiveUnit = isActive;
 			TierIconData = CampaignUIHelper.GetCharacterTierData(character, isBig: true);

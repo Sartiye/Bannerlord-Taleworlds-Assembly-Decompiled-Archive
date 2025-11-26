@@ -85,7 +85,7 @@ public class MPArmoryHeroPreviewVM : ViewModel
 				sigil = NetworkMain.GameClient.ClanInfo.Sigil;
 			}
 			Banner banner = new Banner(sigil, classCharacter.Culture.BackgroundColor1, classCharacter.Culture.ForegroundColor1);
-			HeroVisual.BannerCodeText = BannerCode.CreateFrom(banner).Code;
+			HeroVisual.BannerCodeText = banner.BannerCode;
 		}
 		ClassName = classCharacter.Name.ToString();
 	}

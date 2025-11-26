@@ -134,7 +134,7 @@ public class MultiplayerGameNotificationsComponent : MissionNetwork
 			ShowNotification(MultiplayerNotificationEnum.KickPollTargetNotSynced);
 			break;
 		default:
-			Debug.FailedAssert(string.Concat("Notification of a PollRejectReason is missing (", reason, ")"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameNotificationsComponent.cs", "PollRejected", 153);
+			Debug.FailedAssert(string.Concat("Notification of a PollRejectReason is missing (", reason, ")"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameNotificationsComponent.cs", "PollRejected", 153);
 			break;
 		}
 	}
@@ -173,7 +173,7 @@ public class MultiplayerGameNotificationsComponent : MissionNetwork
 			int[] parameters2 = parameters.Where((int x) => x != -1).ToArray();
 			TextObject message = ToNotificationString(notification, notificationProperty, parameters2);
 			string soundEventPath = ToSoundString(notification, notificationProperty, parameters2);
-			MBInformationManager.AddQuickInformation(message, 0, null, soundEventPath);
+			MBInformationManager.AddQuickInformation(message, 0, null, null, soundEventPath);
 		}
 	}
 

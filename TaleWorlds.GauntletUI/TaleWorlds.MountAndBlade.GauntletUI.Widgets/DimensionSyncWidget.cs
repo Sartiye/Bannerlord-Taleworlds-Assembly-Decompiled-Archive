@@ -13,6 +13,8 @@ public class DimensionSyncWidget : Widget
 		HorizontalAndVertical
 	}
 
+	private bool _isLayoutDirty;
+
 	private Widget _widgetToCopyHeightFrom;
 
 	private Dimensions _dimensionToSync;
@@ -68,21 +70,46 @@ public class DimensionSyncWidget : Widget
 	public DimensionSyncWidget(UIContext context)
 		: base(context)
 	{
+		base.EventManager.AddLateUpdateAction(this, UpdateDimensions, 5);
 	}
 
-	protected override void OnLateUpdate(float dt)
+	private void UpdateDimensions(float dt)
 	{
-		base.OnLateUpdate(dt);
 		if (DimensionToSync != 0 && WidgetToCopyHeightFrom != null)
 		{
-			if (DimensionToSync == Dimensions.Horizontal || DimensionToSync == Dimensions.HorizontalAndVertical)
+			if (_isLayoutDirty)
 			{
-				base.ScaledSuggestedWidth = WidgetToCopyHeightFrom.Size.X + (float)PaddingAmount * base._scaleToUse;
+				if (IsRecursivelyVisible())
+				{
+					_isLayoutDirty = false;
+				}
 			}
-			if (DimensionToSync == Dimensions.Vertical || DimensionToSync == Dimensions.HorizontalAndVertical)
+			else
 			{
-				base.ScaledSuggestedHeight = WidgetToCopyHeightFrom.Size.Y + (float)PaddingAmount * base._scaleToUse;
+				if (DimensionToSync == Dimensions.Horizontal || DimensionToSync == Dimensions.HorizontalAndVertical)
+				{
+					base.ScaledSuggestedWidth = WidgetToCopyHeightFrom.Size.X + (float)PaddingAmount * base._scaleToUse;
+				}
+				if (DimensionToSync == Dimensions.Vertical || DimensionToSync == Dimensions.HorizontalAndVertical)
+				{
+					base.ScaledSuggestedHeight = WidgetToCopyHeightFrom.Size.Y + (float)PaddingAmount * base._scaleToUse;
+				}
 			}
+		}
+		base.EventManager.AddLateUpdateAction(this, UpdateDimensions, 5);
+	}
+
+	protected override void OnLayoutUpdated()
+	{
+		base.OnLayoutUpdated();
+		_isLayoutDirty = true;
+		if (DimensionToSync == Dimensions.Horizontal || DimensionToSync == Dimensions.HorizontalAndVertical)
+		{
+			base.ScaledSuggestedWidth = 0f;
+		}
+		if (DimensionToSync == Dimensions.Vertical || DimensionToSync == Dimensions.HorizontalAndVertical)
+		{
+			base.ScaledSuggestedHeight = 0f;
 		}
 	}
 }

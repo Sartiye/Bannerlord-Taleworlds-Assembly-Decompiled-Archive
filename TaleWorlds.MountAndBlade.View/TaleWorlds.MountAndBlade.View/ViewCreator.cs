@@ -112,13 +112,23 @@ public static class ViewCreator
 		return ViewCreatorManager.CreateMissionView<MissionSingleplayerEscapeMenu>(isNetwork: false, null, new object[1] { isIronmanMode });
 	}
 
-	public static MissionView CreateOrderTroopPlacerView(Mission mission = null)
+	public static MissionView CreateOrderTroopPlacerView(OrderController orderController)
 	{
-		return ViewCreatorManager.CreateMissionView<OrderTroopPlacer>(mission != null, mission, Array.Empty<object>());
+		return ViewCreatorManager.CreateMissionViewWithArgs<OrderTroopPlacer>(new object[1] { orderController });
 	}
 
 	public static MissionView CreateMissionFormationMarkerUIHandler(Mission mission = null)
 	{
 		return ViewCreatorManager.CreateMissionView<MissionFormationMarkerUIHandler>(mission != null, mission, Array.Empty<object>());
+	}
+
+	public static MissionView CreateMissionHintView(Mission mission = null)
+	{
+		return ViewCreatorManager.CreateMissionView<MissionHintView>(mission != null, mission, Array.Empty<object>());
+	}
+
+	public static MissionView CreateMissionObjectiveView(Mission mission = null)
+	{
+		return ViewCreatorManager.CreateMissionView<MissionObjectiveView>(mission != null, mission, Array.Empty<object>());
 	}
 }

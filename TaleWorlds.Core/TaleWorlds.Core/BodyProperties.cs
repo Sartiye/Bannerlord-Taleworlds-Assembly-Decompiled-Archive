@@ -119,14 +119,15 @@ public struct BodyProperties
 			bodyProperties = default(BodyProperties);
 			return false;
 		}
-		Debug.FailedAssert("unknown body properties format:\n" + keyValue, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\BodyProperties.cs", "FromString", 148);
+		Debug.FailedAssert("unknown body properties format:\n" + keyValue, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BodyProperties.cs", "FromString", 148);
 		bodyProperties = default(BodyProperties);
 		return false;
 	}
 
-	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tattooTags)
+	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tattooTags, float variationAmount = 0f)
 	{
-		return FaceGen.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tattooTags);
+		variationAmount = TaleWorlds.Library.MathF.Max(variationAmount, 0f);
+		return FaceGen.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tattooTags, variationAmount);
 	}
 
 	public static bool operator ==(BodyProperties a, BodyProperties b)

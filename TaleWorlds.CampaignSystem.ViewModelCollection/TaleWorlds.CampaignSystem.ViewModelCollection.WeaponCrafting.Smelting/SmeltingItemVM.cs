@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -11,7 +12,7 @@ public class SmeltingItemVM : ViewModel
 
 	private readonly Action<SmeltingItemVM, bool> _onItemLockedStateChange;
 
-	private ImageIdentifierVM _visual;
+	private ItemImageIdentifierVM _visual;
 
 	private string _name;
 
@@ -32,7 +33,7 @@ public class SmeltingItemVM : ViewModel
 	public EquipmentElement EquipmentElement { get; private set; }
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public ItemImageIdentifierVM Visual
 	{
 		get
 		{
@@ -206,7 +207,7 @@ public class SmeltingItemVM : ViewModel
 			}
 		}
 		IsLocked = isLocked;
-		Visual = new ImageIdentifierVM(equipmentElement.Item);
+		Visual = new ItemImageIdentifierVM(equipmentElement.Item);
 		NumOfItems = numOfItems;
 		HasMoreThanOneItem = NumOfItems > 1;
 		RefreshValues();

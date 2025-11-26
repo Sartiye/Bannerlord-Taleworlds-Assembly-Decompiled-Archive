@@ -11,7 +11,7 @@ public static class MissionCombatMechanicsHelper
 
 	private const float SpeedBonusFactorForThrust = 0.5f;
 
-	public static bool DecideAgentShrugOffBlow(Agent victimAgent, AttackCollisionData collisionData, in Blow blow)
+	public static bool DecideAgentShrugOffBlow(Agent victimAgent, in AttackCollisionData collisionData, in Blow blow)
 	{
 		bool result = false;
 		if (victimAgent.Health - (float)collisionData.InflictedDamage >= 1f)
@@ -106,6 +106,57 @@ public static class MissionCombatMechanicsHelper
 		return false;
 	}
 
+	public static void DecideWeaponCollisionReaction(in Blow registeredBlow, in AttackCollisionData collisionData, Agent attacker, Agent defender, in MissionWeapon attackerWeapon, bool isFatalHit, bool isShruggedOff, float momentumRemaining, out MeleeCollisionReaction colReaction)
+	{
+		if (collisionData.IsColliderAgent && collisionData.StrikeType == 1 && collisionData.CollisionHitResultFlags.HasAnyFlag(CombatHitResultFlags.HitWithStartOfTheAnimation))
+		{
+			colReaction = MeleeCollisionReaction.Staggered;
+			return;
+		}
+		if (!collisionData.IsColliderAgent && collisionData.PhysicsMaterialIndex != -1 && PhysicsMaterial.GetFromIndex(collisionData.PhysicsMaterialIndex).GetFlags().HasAnyFlag(PhysicsMaterialFlags.AttacksCanPassThrough))
+		{
+			colReaction = MeleeCollisionReaction.SlicedThrough;
+			return;
+		}
+		if (!collisionData.IsColliderAgent || registeredBlow.InflictedDamage <= 0)
+		{
+			colReaction = MeleeCollisionReaction.Bounced;
+			return;
+		}
+		if (collisionData.StrikeType == 1 && attacker.IsDoingPassiveAttack)
+		{
+			colReaction = MissionGameModels.Current.AgentApplyDamageModel.DecidePassiveAttackCollisionReaction(attacker, defender, isFatalHit);
+			return;
+		}
+		if (collisionData.IsAlternativeAttack && momentumRemaining > 0f)
+		{
+			colReaction = MeleeCollisionReaction.ContinueChecking;
+			return;
+		}
+		if (HitWithAnotherBone(in collisionData, attacker, in attackerWeapon))
+		{
+			colReaction = MeleeCollisionReaction.Bounced;
+			return;
+		}
+		WeaponClass weaponClass = ((!attackerWeapon.IsEmpty) ? attackerWeapon.CurrentUsageItem.WeaponClass : WeaponClass.Undefined);
+		if ((!attackerWeapon.IsEmpty && !isFatalHit && isShruggedOff) || (attackerWeapon.IsEmpty && defender != null && defender.IsHuman && !collisionData.IsAlternativeAttack && (collisionData.VictimHitBodyPart == BoneBodyPartType.Chest || collisionData.VictimHitBodyPart == BoneBodyPartType.ShoulderLeft || collisionData.VictimHitBodyPart == BoneBodyPartType.ShoulderRight || collisionData.VictimHitBodyPart == BoneBodyPartType.Abdomen || collisionData.VictimHitBodyPart == BoneBodyPartType.Legs)))
+		{
+			colReaction = MeleeCollisionReaction.Bounced;
+		}
+		else if (((weaponClass == WeaponClass.OneHandedAxe || weaponClass == WeaponClass.TwoHandedAxe) && !isFatalHit && (float)collisionData.InflictedDamage < defender.HealthLimit * 0.5f) || (attackerWeapon.IsEmpty && !collisionData.IsAlternativeAttack && collisionData.AttackDirection == Agent.UsageDirection.AttackUp) || (collisionData.ThrustTipHit && collisionData.DamageType == 1 && !attackerWeapon.IsEmpty && defender.CanThrustAttackStickToBone(collisionData.VictimHitBodyPart)))
+		{
+			colReaction = MeleeCollisionReaction.Stuck;
+		}
+		else
+		{
+			colReaction = MeleeCollisionReaction.SlicedThrough;
+		}
+		if ((collisionData.AttackBlockedWithShield || collisionData.CollidedWithShieldOnBack) && colReaction == MeleeCollisionReaction.SlicedThrough)
+		{
+			colReaction = MeleeCollisionReaction.Bounced;
+		}
+	}
+
 	public static bool IsCollisionBoneDifferentThanWeaponAttachBone(in AttackCollisionData collisionData, int weaponAttachBoneIndex)
 	{
 		if (collisionData.AttackBoneIndex != -1 && weaponAttachBoneIndex != -1)
@@ -124,14 +175,14 @@ public static class MissionCombatMechanicsHelper
 		return false;
 	}
 
-	public static void GetAttackCollisionResults(in AttackInformation attackInformation, bool crushedThrough, float momentumRemaining, in MissionWeapon attackerWeapon, bool cancelDamage, ref AttackCollisionData attackCollisionData, out CombatLogData combatLog, out int speedBonus)
+	public static void GetAttackCollisionResults(in AttackInformation attackInformation, bool crushedThrough, float momentumRemaining, bool cancelDamage, ref AttackCollisionData attackCollisionData, out CombatLogData combatLog, out int speedBonus)
 	{
 		float distance = 0f;
 		if (attackCollisionData.IsMissile)
 		{
 			distance = (attackCollisionData.MissileStartingPosition - attackCollisionData.CollisionGlobalPosition).Length;
 		}
-		combatLog = new CombatLogData(attackInformation.IsVictimAgentSameWithAttackerAgent, attackInformation.IsAttackerAgentHuman, attackInformation.IsAttackerAgentMine, attackInformation.DoesAttackerHaveRiderAgent, attackInformation.IsAttackerAgentRiderAgentMine, attackInformation.IsAttackerAgentMount, attackInformation.IsVictimAgentHuman, attackInformation.IsVictimAgentMine, isVictimAgentDead: false, attackInformation.DoesVictimHaveRiderAgent, attackInformation.IsVictimAgentRiderAgentMine, attackInformation.IsVictimAgentMount, isVictimEntity: false, attackInformation.IsVictimRiderAgentSameAsAttackerAgent, crushedThrough: false, chamber: false, distance);
+		combatLog = new CombatLogData(attackInformation.IsVictimAgentSameWithAttackerAgent, attackInformation.IsAttackerAgentHuman, attackInformation.IsAttackerAgentMine, attackInformation.DoesAttackerHaveRiderAgent, attackInformation.IsAttackerAgentRiderAgentMine, attackInformation.IsAttackerAgentMount, attackInformation.IsVictimAgentHuman, attackInformation.IsVictimAgentMine, isVictimAgentDead: false, attackInformation.DoesVictimHaveRiderAgent, attackInformation.IsVictimAgentRiderAgentMine, attackInformation.IsVictimAgentMount, null, attackInformation.IsVictimRiderAgentSameAsAttackerAgent, crushedThrough: false, chamber: false, distance);
 		bool flag = IsCollisionBoneDifferentThanWeaponAttachBone(in attackCollisionData, attackInformation.WeaponAttachBoneIndex);
 		Vec2 agentVelocityContribution = GetAgentVelocityContribution(attackInformation.DoesAttackerHaveMountAgent, attackInformation.AttackerAgentMovementVelocity, attackInformation.AttackerAgentMountMovementDirection, attackInformation.AttackerMovementDirectionAsAngle);
 		Vec2 agentVelocityContribution2 = GetAgentVelocityContribution(attackInformation.DoesVictimHaveMountAgent, attackInformation.VictimAgentMovementVelocity, attackInformation.VictimAgentMountMovementDirection, attackInformation.VictimMovementDirectionAsAngle);
@@ -140,13 +191,12 @@ public static class MissionCombatMechanicsHelper
 			combatLog.IsRangedAttack = attackCollisionData.IsMissile;
 			combatLog.HitSpeed = (attackCollisionData.IsMissile ? (agentVelocityContribution2.ToVec3() - attackCollisionData.MissileVelocity).Length : (agentVelocityContribution - agentVelocityContribution2).Length);
 		}
-		ComputeBlowMagnitude(in attackCollisionData, in attackInformation, attackerWeapon, momentumRemaining, cancelDamage, flag, agentVelocityContribution, agentVelocityContribution2, out attackCollisionData.BaseMagnitude, out var specialMagnitude, out attackCollisionData.MovementSpeedDamageModifier, out speedBonus);
-		DamageTypes damageType = (combatLog.DamageType = ((attackerWeapon.IsEmpty || flag || attackCollisionData.IsAlternativeAttack || attackCollisionData.IsFallDamage || attackCollisionData.IsHorseCharge) ? DamageTypes.Blunt : ((DamageTypes)attackCollisionData.DamageType)));
+		ComputeBlowMagnitude(in attackCollisionData, in attackInformation, momentumRemaining, cancelDamage, flag, agentVelocityContribution, agentVelocityContribution2, out attackCollisionData.BaseMagnitude, out var specialMagnitude, out attackCollisionData.MovementSpeedDamageModifier, out speedBonus);
+		DamageTypes damageType = (combatLog.DamageType = ((attackInformation.AttackerWeapon.IsEmpty || flag || attackCollisionData.IsAlternativeAttack || attackCollisionData.IsFallDamage || attackCollisionData.IsHorseCharge) ? DamageTypes.Blunt : ((DamageTypes)attackCollisionData.DamageType)));
 		if (!attackCollisionData.IsColliderAgent && attackCollisionData.EntityExists)
 		{
-			string name = PhysicsMaterial.GetFromIndex(attackCollisionData.PhysicsMaterialIndex).Name;
-			bool isWoodenBody = name == "wood" || name == "wood_weapon" || name == "wood_shield";
-			attackCollisionData.BaseMagnitude *= GetEntityDamageMultiplier(attackInformation.IsAttackerAgentDoingPassiveAttack, attackerWeapon.CurrentUsageItem, damageType, isWoodenBody);
+			bool isFlammable = PhysicsMaterial.GetFromIndex(attackCollisionData.PhysicsMaterialIndex).GetFlags().HasAnyFlag(PhysicsMaterialFlags.Flammable);
+			attackCollisionData.BaseMagnitude *= GetEntityDamageMultiplier(attackInformation.IsAttackerAgentDoingPassiveAttack, attackInformation.AttackerWeapon.CurrentUsageItem, damageType, isFlammable);
 			attackCollisionData.InflictedDamage = MBMath.ClampInt((int)attackCollisionData.BaseMagnitude, 0, 2000);
 			combatLog.InflictedDamage = attackCollisionData.InflictedDamage;
 		}
@@ -158,7 +208,7 @@ public static class MissionCombatMechanicsHelper
 			}
 			if (attackCollisionData.AttackBlockedWithShield)
 			{
-				ComputeBlowDamageOnShield(in attackInformation, in attackCollisionData, attackerWeapon.CurrentUsageItem, attackCollisionData.BaseMagnitude, out attackCollisionData.InflictedDamage);
+				ComputeBlowDamageOnShield(in attackInformation, in attackCollisionData, attackInformation.AttackerWeapon.CurrentUsageItem, attackCollisionData.BaseMagnitude, out attackCollisionData.InflictedDamage);
 				attackCollisionData.AbsorbedByArmor = attackCollisionData.InflictedDamage;
 			}
 			else if (attackCollisionData.MissileBlockedWithWeapon)
@@ -168,7 +218,9 @@ public static class MissionCombatMechanicsHelper
 			}
 			else
 			{
-				ComputeBlowDamage(in attackInformation, in attackCollisionData, attackerWeapon.CurrentUsageItem, damageType, specialMagnitude, speedBonus, cancelDamage, out attackCollisionData.InflictedDamage, out attackCollisionData.AbsorbedByArmor);
+				ComputeBlowDamage(in attackInformation, in attackCollisionData, attackInformation.AttackerWeapon.CurrentUsageItem, damageType, specialMagnitude, speedBonus, cancelDamage, out attackCollisionData.InflictedDamage, out attackCollisionData.AbsorbedByArmor, out var isSneakAttack);
+				attackCollisionData.IsSneakAttack = isSneakAttack;
+				combatLog.IsSneakAttack = isSneakAttack;
 			}
 			combatLog.InflictedDamage = attackCollisionData.InflictedDamage;
 			combatLog.AbsorbedDamage = attackCollisionData.AbsorbedByArmor;
@@ -180,13 +232,13 @@ public static class MissionCombatMechanicsHelper
 	{
 		MissionWeapon missionWeapon = ((attackerWeaponSlotIndex >= 0) ? attackerAgent.Equipment[attackerWeaponSlotIndex] : MissionWeapon.Invalid);
 		WeaponComponentData weaponComponentData = (missionWeapon.IsEmpty ? null : missionWeapon.CurrentUsageItem);
-		EquipmentIndex wieldedItemIndex = defenderAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-		if (wieldedItemIndex == EquipmentIndex.None)
+		EquipmentIndex equipmentIndex = defenderAgent.GetOffhandWieldedItemIndex();
+		if (equipmentIndex == EquipmentIndex.None)
 		{
-			wieldedItemIndex = defenderAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+			equipmentIndex = defenderAgent.GetPrimaryWieldedItemIndex();
 		}
-		ItemObject itemObject = ((wieldedItemIndex != EquipmentIndex.None) ? defenderAgent.Equipment[wieldedItemIndex].Item : null);
-		WeaponComponentData weaponComponentData2 = ((wieldedItemIndex != EquipmentIndex.None) ? defenderAgent.Equipment[wieldedItemIndex].CurrentUsageItem : null);
+		ItemObject itemObject = ((equipmentIndex != EquipmentIndex.None) ? defenderAgent.Equipment[equipmentIndex].Item : null);
+		WeaponComponentData weaponComponentData2 = ((equipmentIndex != EquipmentIndex.None) ? defenderAgent.Equipment[equipmentIndex].CurrentUsageItem : null);
 		float num = 10f;
 		attackerStunPeriod = ((strikeType == StrikeType.Thrust) ? ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunPeriodAttackerThrust) : ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunPeriodAttackerSwing));
 		chamber = false;
@@ -198,7 +250,7 @@ public static class MissionCombatMechanicsHelper
 			float num3 = realWeaponLength + z;
 			num2 = MBMath.ClampFloat((0.2f + collisionDistanceOnWeapon) / num3, 0.1f, 0.98f);
 			float exraLinearSpeed = ComputeRelativeSpeedDiffOfAgents(attackerAgent, defenderAgent);
-			float num4 = ((strikeType != StrikeType.Thrust) ? CombatStatCalculator.CalculateBaseBlowMagnitudeForSwing((float)missionWeapon.GetModifiedSwingSpeedForCurrentUsage() / 4.5454545f * SpeedGraphFunction(attackProgress, strikeType, attackDirection), realWeaponLength, missionWeapon.Item.Weight, weaponComponentData.Inertia, weaponComponentData.CenterOfMass, num2, exraLinearSpeed) : CombatStatCalculator.CalculateBaseBlowMagnitudeForThrust((float)missionWeapon.GetModifiedThrustSpeedForCurrentUsage() / 11.764706f * SpeedGraphFunction(attackProgress, strikeType, attackDirection), missionWeapon.Item.Weight, exraLinearSpeed));
+			float num4 = ((strikeType != StrikeType.Thrust) ? CombatStatCalculator.CalculateBaseBlowMagnitudeForSwing((float)missionWeapon.GetModifiedSwingSpeedForCurrentUsage() / 4.5454545f * SpeedGraphFunction(attackProgress, strikeType, attackDirection), realWeaponLength, missionWeapon.Item.Weight, weaponComponentData.TotalInertia, weaponComponentData.CenterOfMass, num2, exraLinearSpeed) : CombatStatCalculator.CalculateBaseBlowMagnitudeForThrust((float)missionWeapon.GetModifiedThrustSpeedForCurrentUsage() / 11.764706f * SpeedGraphFunction(attackProgress, strikeType, attackDirection), missionWeapon.Item.Weight, exraLinearSpeed));
 			if (strikeType == StrikeType.Thrust)
 			{
 				num4 *= 0.8f;
@@ -230,7 +282,7 @@ public static class MissionCombatMechanicsHelper
 				switch (itemObject.ItemType)
 				{
 				case ItemObject.ItemTypeEnum.TwoHandedWeapon:
-					managedParameter2 = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunDefendWeaponWeightBonusTwoHanded);
+					num5 += ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunDefendWeaponWeightBonusTwoHanded);
 					break;
 				case ItemObject.ItemTypeEnum.Polearm:
 					num5 += ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunDefendWeaponWeightBonusPolearm);
@@ -255,13 +307,22 @@ public static class MissionCombatMechanicsHelper
 			num5 += ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunDefendWeaponWeightBonusRightStance);
 		}
 		defenderStunPeriod /= num5;
-		MissionGameModels.Current.AgentApplyDamageModel.CalculateDefendedBlowStunMultipliers(attackerAgent, defenderAgent, collisionResult, weaponComponentData, weaponComponentData2, out var attackerStunMultiplier, out var defenderStunMultiplier);
-		attackerStunPeriod *= attackerStunMultiplier;
-		defenderStunPeriod *= defenderStunMultiplier;
+		MissionGameModels.Current.AgentApplyDamageModel.CalculateDefendedBlowStunMultipliers(attackerAgent, defenderAgent, collisionResult, weaponComponentData, weaponComponentData2, ref attackerStunPeriod, ref defenderStunPeriod);
 		float managedParameter3 = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.StunPeriodMax);
 		attackerStunPeriod = TaleWorlds.Library.MathF.Min(attackerStunPeriod, managedParameter3);
 		defenderStunPeriod = TaleWorlds.Library.MathF.Min(defenderStunPeriod, managedParameter3);
 		crushedThrough = !chamber && MissionGameModels.Current.AgentApplyDamageModel.DecideCrushedThrough(attackerAgent, defenderAgent, num, attackDirection, strikeType, weaponComponentData2, isPassiveUsageHit);
+	}
+
+	public static void UpdateMomentumRemaining(ref float momentumRemaining, in Blow b, in AttackCollisionData collisionData, Agent attacker, Agent victim, in MissionWeapon attackerWeapon, bool isCrushThrough)
+	{
+		momentumRemaining = MissionGameModels.Current.AgentApplyDamageModel.CalculateRemainingMomentum(momentumRemaining, in b, in collisionData, attacker, victim, in attackerWeapon, isCrushThrough);
+	}
+
+	public static bool HitWithAnotherBone(in AttackCollisionData collisionData, Agent attacker, in MissionWeapon attackerWeapon)
+	{
+		int weaponAttachBoneIndex = ((!attackerWeapon.IsEmpty && attacker != null && attacker.IsHuman) ? attacker.Monster.GetBoneToAttachForItemFlags(attackerWeapon.Item.ItemFlags) : (-1));
+		return IsCollisionBoneDifferentThanWeaponAttachBone(in collisionData, weaponAttachBoneIndex);
 	}
 
 	private static bool DecideWeaponKnockDown(Agent attackerAgent, Agent victimAgent, WeaponComponentData attackerWeapon, in AttackCollisionData collisionData, in Blow blow)
@@ -351,7 +412,7 @@ public static class MissionCombatMechanicsHelper
 		return zero;
 	}
 
-	private static float GetEntityDamageMultiplier(bool isAttackerAgentDoingPassiveAttack, WeaponComponentData weapon, DamageTypes damageType, bool isWoodenBody)
+	private static float GetEntityDamageMultiplier(bool isAttackerAgentDoingPassiveAttack, WeaponComponentData weapon, DamageTypes damageType, bool isFlammable)
 	{
 		float num = 1f;
 		if (isAttackerAgentDoingPassiveAttack)
@@ -373,7 +434,7 @@ public static class MissionCombatMechanicsHelper
 				num *= 0.1f;
 				break;
 			}
-			if (isWoodenBody && weapon.WeaponFlags.HasAnyFlag(WeaponFlags.Burning))
+			if (isFlammable && weapon.WeaponFlags.HasAnyFlag(WeaponFlags.Burning))
 			{
 				num *= 1.5f;
 			}
@@ -411,15 +472,15 @@ public static class MissionCombatMechanicsHelper
 		return (zero - zero2).Length;
 	}
 
-	private static void ComputeBlowDamage(in AttackInformation attackInformation, in AttackCollisionData attackCollisionData, WeaponComponentData attackerWeapon, DamageTypes damageType, float magnitude, int speedBonus, bool cancelDamage, out int inflictedDamage, out int absorbedByArmor)
+	private static void ComputeBlowDamage(in AttackInformation attackInformation, in AttackCollisionData attackCollisionData, WeaponComponentData attackerWeapon, DamageTypes damageType, float magnitude, int speedBonus, bool cancelDamage, out int inflictedDamage, out int absorbedByArmor, out bool isSneakAttack)
 	{
+		isSneakAttack = false;
 		float armorAmountFloat = attackInformation.ArmorAmountFloat;
 		WeaponComponentData shieldOnBack = attackInformation.ShieldOnBack;
-		AgentFlag victimAgentFlag = attackInformation.VictimAgentFlag;
+		AgentFlag victimAgentFlags = attackInformation.VictimAgentFlags;
 		float victimAgentAbsorbedDamageRatio = attackInformation.VictimAgentAbsorbedDamageRatio;
 		float damageMultiplierOfBone = attackInformation.DamageMultiplierOfBone;
 		float combatDifficultyMultiplier = attackInformation.CombatDifficultyMultiplier;
-		_ = attackCollisionData.CollisionGlobalPosition;
 		bool attackBlockedWithShield = attackCollisionData.AttackBlockedWithShield;
 		bool collidedWithShieldOnBack = attackCollisionData.CollidedWithShieldOnBack;
 		bool isFallDamage = attackCollisionData.IsFallDamage;
@@ -430,7 +491,7 @@ public static class MissionCombatMechanicsHelper
 		float num = 0f;
 		if (!isFallDamage)
 		{
-			num = MissionGameModels.Current.StrikeMagnitudeModel.CalculateAdjustedArmorForBlow(armorAmountFloat, attackerAgentCharacter, attackerCaptainCharacter, victimAgentCharacter, victimCaptainCharacter, attackerWeapon);
+			num = MissionGameModels.Current.StrikeMagnitudeModel.CalculateAdjustedArmorForBlow(in attackInformation, in attackCollisionData, armorAmountFloat, attackerAgentCharacter, attackerCaptainCharacter, victimAgentCharacter, victimCaptainCharacter, attackerWeapon);
 		}
 		if (collidedWithShieldOnBack && shieldOnBack != null)
 		{
@@ -442,6 +503,12 @@ public static class MissionCombatMechanicsHelper
 		if (!attackBlockedWithShield && !isFallDamage)
 		{
 			num3 *= damageMultiplierOfBone;
+			if (MissionGameModels.Current.AgentApplyDamageModel.CanWeaponDealSneakAttack(in attackInformation, attackerWeapon))
+			{
+				float sneakAttackMultiplier = MissionGameModels.Current.AgentStatCalculateModel.GetSneakAttackMultiplier(attackInformation.AttackerAgent, attackerWeapon);
+				num3 *= sneakAttackMultiplier;
+				isSneakAttack = true;
+			}
 			num3 *= combatDifficultyMultiplier;
 		}
 		num2 *= num3;
@@ -498,18 +565,18 @@ public static class MissionCombatMechanicsHelper
 		}
 	}
 
-	public static float CalculateBaseMeleeBlowMagnitude(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, StrikeType strikeType, float progressEffect, float impactPointAsPercent, float exraLinearSpeed)
+	public static float CalculateBaseMeleeBlowMagnitude(in AttackInformation attackInformation, in AttackCollisionData collisionData, StrikeType strikeType, float progressEffect, float impactPointAsPercent, float exraLinearSpeed)
 	{
-		WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
+		WeaponComponentData currentUsageItem = attackInformation.AttackerWeapon.CurrentUsageItem;
 		float num = TaleWorlds.Library.MathF.Sqrt(progressEffect);
 		if (strikeType == StrikeType.Thrust)
 		{
 			exraLinearSpeed *= 0.5f;
-			float thrustSpeed = (float)weapon.GetModifiedThrustSpeedForCurrentUsage() / 11.764706f * num;
-			return MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForThrust(in attackInformation, in collisionData, in weapon, thrustSpeed, exraLinearSpeed);
+			float thrustSpeed = (float)attackInformation.AttackerWeapon.GetModifiedThrustSpeedForCurrentUsage() / 11.764706f * num;
+			return MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForThrust(in attackInformation, in collisionData, in attackInformation.AttackerWeapon, thrustSpeed, exraLinearSpeed);
 		}
 		exraLinearSpeed *= 0.7f;
-		float swingSpeed = (float)weapon.GetModifiedSwingSpeedForCurrentUsage() / 4.5454545f * num;
+		float swingSpeed = (float)attackInformation.AttackerWeapon.GetModifiedSwingSpeedForCurrentUsage() / 4.5454545f * num;
 		float num2 = MBMath.ClampFloat(0.4f / currentUsageItem.GetRealWeaponLength(), 0f, 1f);
 		float num3 = TaleWorlds.Library.MathF.Min(0.93f, impactPointAsPercent);
 		float num4 = TaleWorlds.Library.MathF.Min(0.93f, impactPointAsPercent + num2);
@@ -517,7 +584,7 @@ public static class MissionCombatMechanicsHelper
 		for (int i = 0; i < 5; i++)
 		{
 			float impactPointAsPercent2 = num3 + (float)i / 4f * (num4 - num3);
-			float num6 = MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForSwing(in attackInformation, in collisionData, in weapon, swingSpeed, impactPointAsPercent2, exraLinearSpeed);
+			float num6 = MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForSwing(in attackInformation, in collisionData, in attackInformation.AttackerWeapon, swingSpeed, impactPointAsPercent2, exraLinearSpeed);
 			if (num5 < num6)
 			{
 				num5 = num6;
@@ -526,7 +593,7 @@ public static class MissionCombatMechanicsHelper
 		return num5;
 	}
 
-	private static void ComputeBlowMagnitude(in AttackCollisionData acd, in AttackInformation attackInformation, MissionWeapon weapon, float momentumRemaining, bool cancelDamage, bool hitWithAnotherBone, Vec2 attackerVelocity, Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude, out float movementSpeedDamageModifier, out int speedBonusInt)
+	private static void ComputeBlowMagnitude(in AttackCollisionData acd, in AttackInformation attackInformation, float momentumRemaining, bool cancelDamage, bool hitWithAnotherBone, Vec2 attackerVelocity, Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude, out float movementSpeedDamageModifier, out int speedBonusInt)
 	{
 		StrikeType strikeType = (StrikeType)acd.StrikeType;
 		Agent.UsageDirection attackDirection = acd.AttackDirection;
@@ -535,7 +602,7 @@ public static class MissionCombatMechanicsHelper
 		speedBonusInt = 0;
 		if (acd.IsMissile)
 		{
-			ComputeBlowMagnitudeMissile(in attackInformation, in acd, in weapon, momentumRemaining, in victimVelocity, out baseMagnitude, out specialMagnitude);
+			ComputeBlowMagnitudeMissile(in attackInformation, in acd, momentumRemaining, in victimVelocity, out baseMagnitude, out specialMagnitude);
 		}
 		else if (acd.IsFallDamage)
 		{
@@ -547,23 +614,21 @@ public static class MissionCombatMechanicsHelper
 		}
 		else
 		{
-			ComputeBlowMagnitudeMelee(in attackInformation, in acd, momentumRemaining, cancelDamage, hitWithAnotherBone, strikeType, attackDirection, in weapon, attackerIsDoingPassiveAttack, attackerVelocity, victimVelocity, out baseMagnitude, out specialMagnitude, out movementSpeedDamageModifier, out speedBonusInt);
+			ComputeBlowMagnitudeMelee(in attackInformation, in acd, momentumRemaining, cancelDamage, hitWithAnotherBone, strikeType, attackDirection, attackerIsDoingPassiveAttack, attackerVelocity, victimVelocity, out baseMagnitude, out specialMagnitude, out movementSpeedDamageModifier, out speedBonusInt);
 		}
 		specialMagnitude = MBMath.ClampFloat(specialMagnitude, 0f, 500f);
 	}
 
-	private static void ComputeBlowMagnitudeMelee(in AttackInformation attackInformation, in AttackCollisionData collisionData, float momentumRemaining, bool cancelDamage, bool hitWithAnotherBone, StrikeType strikeType, Agent.UsageDirection attackDirection, in MissionWeapon weapon, bool attackerIsDoingPassiveAttack, Vec2 attackerVelocity, Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude, out float movementSpeedDamageModifier, out int speedBonusInt)
+	private static void ComputeBlowMagnitudeMelee(in AttackInformation attackInformation, in AttackCollisionData collisionData, float momentumRemaining, bool cancelDamage, bool hitWithAnotherBone, StrikeType strikeType, Agent.UsageDirection attackDirection, bool attackerIsDoingPassiveAttack, Vec2 attackerVelocity, Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude, out float movementSpeedDamageModifier, out int speedBonusInt)
 	{
 		Vec3 attackerAgentCurrentWeaponOffset = attackInformation.AttackerAgentCurrentWeaponOffset;
 		movementSpeedDamageModifier = 0f;
 		speedBonusInt = 0;
-		specialMagnitude = 0f;
-		baseMagnitude = 0f;
 		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
 		if (collisionData.IsAlternativeAttack)
 		{
-			WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
-			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculateAlternativeAttackDamage(attackerAgentCharacter, currentUsageItem);
+			WeaponComponentData currentUsageItem = attackInformation.AttackerWeapon.CurrentUsageItem;
+			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculateAlternativeAttackDamage(in attackInformation, in collisionData, currentUsageItem);
 			baseMagnitude *= momentumRemaining;
 			specialMagnitude = baseMagnitude;
 			return;
@@ -578,14 +643,15 @@ public static class MissionCombatMechanicsHelper
 			num2 = TaleWorlds.Library.MathF.Min(num2, 1f);
 		}
 		float num3 = num * num2;
-		if (weapon.IsEmpty)
+		if (attackInformation.AttackerWeapon.IsEmpty)
 		{
-			baseMagnitude = SpeedGraphFunction(collisionData.AttackProgress, strikeType, attackDirection) * momentumRemaining * ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.FistFightDamageMultiplier);
+			float progressEffect = SpeedGraphFunction(collisionData.AttackProgress, strikeType, attackDirection);
+			baseMagnitude = MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForUnarmedAttack(in attackInformation, in collisionData, progressEffect, momentumRemaining);
 			specialMagnitude = baseMagnitude;
 			return;
 		}
 		float z = attackerAgentCurrentWeaponOffset.z;
-		WeaponComponentData currentUsageItem2 = weapon.CurrentUsageItem;
+		WeaponComponentData currentUsageItem2 = attackInformation.AttackerWeapon.CurrentUsageItem;
 		float num4 = currentUsageItem2.GetRealWeaponLength() + z;
 		float impactPointAsPercent = MBMath.ClampFloat(collisionData.CollisionDistanceOnWeapon, -0.2f, num4) / num4;
 		if (attackerIsDoingPassiveAttack)
@@ -596,17 +662,17 @@ public static class MissionCombatMechanicsHelper
 			}
 			else
 			{
-				baseMagnitude = CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(weapon.Item.Weight, num3);
+				baseMagnitude = CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(attackInformation.AttackerWeapon.Item.Weight, num3);
 			}
 			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculatePassiveAttackDamage(attackerAgentCharacter, in collisionData, baseMagnitude);
 		}
 		else
 		{
 			float num5 = SpeedGraphFunction(collisionData.AttackProgress, strikeType, attackDirection);
-			baseMagnitude = CalculateBaseMeleeBlowMagnitude(in attackInformation, in collisionData, in weapon, strikeType, num5, impactPointAsPercent, num3);
+			baseMagnitude = CalculateBaseMeleeBlowMagnitude(in attackInformation, in collisionData, strikeType, num5, impactPointAsPercent, num3);
 			if (baseMagnitude >= 0f && num5 > 0.7f)
 			{
-				float baseMagnitudeWithoutSpeedBonus = CalculateBaseMeleeBlowMagnitude(in attackInformation, in collisionData, in weapon, strikeType, num5, impactPointAsPercent, 0f);
+				float baseMagnitudeWithoutSpeedBonus = CalculateBaseMeleeBlowMagnitude(in attackInformation, in collisionData, strikeType, num5, impactPointAsPercent, 0f);
 				movementSpeedDamageModifier = ComputeSpeedBonus(baseMagnitude, baseMagnitudeWithoutSpeedBonus);
 				speedBonusInt = TaleWorlds.Library.MathF.Round(100f * movementSpeedDamageModifier);
 				speedBonusInt = MBMath.ClampInt(speedBonusInt, -1000, 1000);
@@ -644,14 +710,14 @@ public static class MissionCombatMechanicsHelper
 		specialMagnitude = baseMagnitude;
 	}
 
-	private static void ComputeBlowMagnitudeMissile(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float momentumRemaining, in Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude)
+	private static void ComputeBlowMagnitudeMissile(in AttackInformation attackInformation, in AttackCollisionData collisionData, float momentumRemaining, in Vec2 victimVelocity, out float baseMagnitude, out float specialMagnitude)
 	{
 		float missileSpeed = (attackInformation.IsVictimAgentNull ? collisionData.MissileVelocity.Length : (victimVelocity.ToVec3() - collisionData.MissileVelocity).Length);
-		baseMagnitude = MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForMissile(in attackInformation, in collisionData, in weapon, missileSpeed);
+		baseMagnitude = MissionGameModels.Current.StrikeMagnitudeModel.CalculateStrikeMagnitudeForMissile(in attackInformation, in collisionData, in attackInformation.AttackerWeapon, missileSpeed);
 		baseMagnitude *= momentumRemaining;
 		if (attackInformation.AttackerAgent != null)
 		{
-			float weaponDamageMultiplier = MissionGameModels.Current.AgentStatCalculateModel.GetWeaponDamageMultiplier(attackInformation.AttackerAgent, weapon.CurrentUsageItem);
+			float weaponDamageMultiplier = MissionGameModels.Current.AgentStatCalculateModel.GetWeaponDamageMultiplier(attackInformation.AttackerAgent, attackInformation.AttackerWeapon.CurrentUsageItem);
 			baseMagnitude *= weaponDamageMultiplier;
 		}
 		specialMagnitude = baseMagnitude;
@@ -672,7 +738,14 @@ public static class MissionCombatMechanicsHelper
 		float managedParameter2 = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.FallDamageMultiplier);
 		float managedParameter3 = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.FallDamageAbsorption);
 		baseMagnitude = (num3 * num3 * managedParameter2 - managedParameter3) * num2 * num4;
-		baseMagnitude = MBMath.ClampFloat(baseMagnitude, 0f, 499.9f);
+		if (baseMagnitude < 3f)
+		{
+			baseMagnitude = 0f;
+		}
+		else if (baseMagnitude > 499.9f)
+		{
+			baseMagnitude = 499.9f;
+		}
 		specialMagnitude = baseMagnitude;
 	}
 }

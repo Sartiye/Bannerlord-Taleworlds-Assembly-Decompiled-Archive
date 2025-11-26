@@ -57,9 +57,9 @@ public class BaseNetworkComponent : UdpNetworkComponent
 			registerer.RegisterBaseHandler<MultiplayerIntermissionMapItemVoteCountChanged>(HandleServerEventIntermissionMapItemVoteCountChanged);
 			registerer.RegisterBaseHandler<MultiplayerIntermissionCultureItemVoteCountChanged>(HandleServerEventIntermissionCultureItemVoteCountChanged);
 			registerer.RegisterBaseHandler<MultiplayerIntermissionUsableMapAdded>(HandleServerEventUsableMapAdded);
-			registerer.RegisterBaseHandler<UpdateIntermissionVotingManagerValues>(HandleUpdateIntermissionVotingManagerValues);
-			registerer.RegisterBaseHandler<SyncMutedPlayers>(HandleSyncMutedPlayers);
-			registerer.RegisterBaseHandler<SyncPlayerMuteState>(HandleSyncPlayerMuteState);
+			registerer.RegisterBaseHandler<UpdateIntermissionVotingManagerValues>(HandleServerEventUpdateIntermissionVotingManagerValues);
+			registerer.RegisterBaseHandler<SyncMutedPlayers>(HandleServerEventSyncMutedPlayers);
+			registerer.RegisterBaseHandler<SyncPlayerMuteState>(HandleServerEventSyncPlayerMuteState);
 		}
 		else if (GameNetwork.IsServer)
 		{
@@ -122,7 +122,7 @@ public class BaseNetworkComponent : UdpNetworkComponent
 			foreach (CustomGameUsableMap usableMap in MultiplayerIntermissionVotingManager.Instance.UsableMaps)
 			{
 				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new MultiplayerIntermissionUsableMapAdded(usableMap.map, usableMap.isCompatibleWithAllGameTypes, (!usableMap.isCompatibleWithAllGameTypes) ? usableMap.compatibleGameTypes.Count : 0, usableMap.compatibleGameTypes));
+				GameNetwork.WriteMessage(new MultiplayerIntermissionUsableMapAdded(usableMap.Map, usableMap.IsCompatibleWithAllGameTypes, (!usableMap.IsCompatibleWithAllGameTypes) ? usableMap.CompatibleGameTypes.Count : 0, usableMap.CompatibleGameTypes));
 				GameNetwork.EndModuleEventAsServer();
 			}
 			GameNetwork.BeginModuleEventAsServer(networkPeer);
@@ -130,7 +130,7 @@ public class BaseNetworkComponent : UdpNetworkComponent
 			GameNetwork.EndModuleEventAsServer();
 		}
 		GameNetwork.BeginModuleEventAsServer(networkPeer);
-		GameNetwork.WriteMessage(new SyncMutedPlayers(CustomGameMutedPlayerManager.MutedPlayers));
+		GameNetwork.WriteMessage(new SyncMutedPlayers(MultiplayerGlobalMutedPlayersManager.MutedPlayers));
 		GameNetwork.EndModuleEventAsServer();
 		if (BannerlordNetwork.LobbyMissionType == LobbyMissionType.Custom || BannerlordNetwork.LobbyMissionType == LobbyMissionType.Community)
 		{
@@ -169,7 +169,7 @@ public class BaseNetworkComponent : UdpNetworkComponent
 	public override void OnUdpNetworkHandlerClose()
 	{
 		base.OnUdpNetworkHandlerClose();
-		CustomGameMutedPlayerManager.ClearMutedPlayers();
+		MultiplayerGlobalMutedPlayersManager.ClearMutedPlayers();
 	}
 
 	public void SetDisplayingWelcomeMessage(bool displaying)
@@ -275,34 +275,34 @@ public class BaseNetworkComponent : UdpNetworkComponent
 		MultiplayerIntermissionVotingManager.Instance.AddUsableMap(new CustomGameUsableMap(multiplayerIntermissionUsableMapAdded.MapId, multiplayerIntermissionUsableMapAdded.IsCompatibleWithAllGameTypes, multiplayerIntermissionUsableMapAdded.CompatibleGameTypes));
 	}
 
-	private void HandleSyncPlayerMuteState(GameNetworkMessage baseMessage)
+	private void HandleServerEventSyncPlayerMuteState(GameNetworkMessage baseMessage)
 	{
 		SyncPlayerMuteState syncPlayerMuteState = (SyncPlayerMuteState)baseMessage;
 		if (syncPlayerMuteState.IsMuted)
 		{
-			CustomGameMutedPlayerManager.MutePlayer(syncPlayerMuteState.PlayerId);
+			MultiplayerGlobalMutedPlayersManager.MutePlayer(syncPlayerMuteState.PlayerId);
 		}
 		else
 		{
-			CustomGameMutedPlayerManager.UnmutePlayer(syncPlayerMuteState.PlayerId);
+			MultiplayerGlobalMutedPlayersManager.UnmutePlayer(syncPlayerMuteState.PlayerId);
 		}
 	}
 
-	private void HandleSyncMutedPlayers(GameNetworkMessage baseMessage)
+	private void HandleServerEventSyncMutedPlayers(GameNetworkMessage baseMessage)
 	{
 		SyncMutedPlayers syncMutedPlayers = (SyncMutedPlayers)baseMessage;
-		CustomGameMutedPlayerManager.ClearMutedPlayers();
+		MultiplayerGlobalMutedPlayersManager.ClearMutedPlayers();
 		if (syncMutedPlayers.MutedPlayerCount <= 0)
 		{
 			return;
 		}
 		foreach (PlayerId mutedPlayerId in syncMutedPlayers.MutedPlayerIds)
 		{
-			CustomGameMutedPlayerManager.MutePlayer(mutedPlayerId);
+			MultiplayerGlobalMutedPlayersManager.MutePlayer(mutedPlayerId);
 		}
 	}
 
-	private void HandleUpdateIntermissionVotingManagerValues(GameNetworkMessage baseMessage)
+	private void HandleServerEventUpdateIntermissionVotingManagerValues(GameNetworkMessage baseMessage)
 	{
 		UpdateIntermissionVotingManagerValues updateIntermissionVotingManagerValues = (UpdateIntermissionVotingManagerValues)baseMessage;
 		MultiplayerIntermissionVotingManager.Instance.IsAutomatedBattleSwitchingEnabled = updateIntermissionVotingManagerValues.IsAutomatedBattleSwitchingEnabled;
@@ -410,7 +410,7 @@ public class BaseNetworkComponent : UdpNetworkComponent
 		_baseNetworkComponentData.UpdateCurrentBattleIndex(message.BattleIndex);
 		if (!Module.CurrentModule.StartMultiplayerGame(message.GameType, message.Map))
 		{
-			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\NetworkComponents\\BaseNetworkComponent.cs", "HandleServerEventLoadMission", 470);
+			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\NetworkComponents\\BaseNetworkComponent.cs", "HandleServerEventLoadMission", 470);
 		}
 	}
 
@@ -440,7 +440,7 @@ public class BaseNetworkComponent : UdpNetworkComponent
 			_baseNetworkComponentData.UpdateCurrentBattleIndex(message.BattleIndex);
 			if (!Module.CurrentModule.StartMultiplayerGame(message.GameType, message.Map))
 			{
-				Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\NetworkComponents\\BaseNetworkComponent.cs", "InitializeCustomGameAux", 507);
+				Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\NetworkComponents\\BaseNetworkComponent.cs", "InitializeCustomGameAux", 507);
 			}
 		}
 		else

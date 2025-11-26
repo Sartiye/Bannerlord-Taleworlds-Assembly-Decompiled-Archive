@@ -6,7 +6,6 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
@@ -26,7 +25,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 
 	private TraitObject _persona;
 
-	private CharacterTraits _characterTraits;
+	private PropertyOwner<TraitObject> _characterTraits;
 
 	private CharacterObject _civilianEquipmentTemplate;
 
@@ -74,7 +73,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		}
 	}
 
-	public bool HiddenInEncylopedia { get; set; }
+	public bool HiddenInEncyclopedia { get; set; }
 
 	public bool IsNotTransferableInPartyScreen => (_characterRestrictionFlags & CharacterRestrictionFlags.NotTransferableInPartyScreen) == CharacterRestrictionFlags.NotTransferableInPartyScreen;
 
@@ -96,18 +95,6 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		}
 	}
 
-	public override MBReadOnlyList<Equipment> AllEquipments
-	{
-		get
-		{
-			if (!IsHero)
-			{
-				return base.AllEquipments;
-			}
-			return new MBList<Equipment> { HeroObject.BattleEquipment, HeroObject.CivilianEquipment };
-		}
-	}
-
 	public override Equipment Equipment
 	{
 		get
@@ -120,19 +107,19 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		}
 	}
 
-	public IEnumerable<Equipment> BattleEquipments
+	public override IEnumerable<Equipment> BattleEquipments
 	{
 		get
 		{
-			if (!IsHero)
+			if (IsHero)
 			{
-				return AllEquipments.WhereQ((Equipment e) => !e.IsCivilian);
+				return new List<Equipment> { HeroObject.BattleEquipment }.AsEnumerable();
 			}
-			return new List<Equipment> { HeroObject.BattleEquipment }.AsEnumerable();
+			return base.BattleEquipments;
 		}
 	}
 
-	public IEnumerable<Equipment> CivilianEquipments
+	public override IEnumerable<Equipment> CivilianEquipments
 	{
 		get
 		{
@@ -140,11 +127,27 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return new List<Equipment> { HeroObject.CivilianEquipment }.AsEnumerable();
 			}
-			return AllEquipments.WhereQ((Equipment e) => e.IsCivilian);
+			return base.CivilianEquipments;
 		}
 	}
 
-	public Equipment FirstBattleEquipment
+	public IEnumerable<Equipment> StealthEquipments
+	{
+		get
+		{
+			if (IsHero)
+			{
+				return new List<Equipment> { HeroObject.StealthEquipment }.AsEnumerable();
+			}
+			if (Culture.DefaultBattleEquipmentRoster != null)
+			{
+				return Culture.DefaultStealthEquipmentRoster.AllEquipments.AsEnumerable();
+			}
+			return new MBReadOnlyList<Equipment>().AsEnumerable();
+		}
+	}
+
+	public override Equipment FirstBattleEquipment
 	{
 		get
 		{
@@ -152,11 +155,11 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return HeroObject.BattleEquipment;
 			}
-			return AllEquipments.FirstOrDefaultQ((Equipment e) => !e.IsCivilian);
+			return base.FirstBattleEquipment;
 		}
 	}
 
-	public Equipment FirstCivilianEquipment
+	public override Equipment FirstCivilianEquipment
 	{
 		get
 		{
@@ -164,11 +167,23 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return HeroObject.CivilianEquipment;
 			}
-			return AllEquipments.FirstOrDefaultQ((Equipment e) => e.IsCivilian);
+			return base.FirstCivilianEquipment;
 		}
 	}
 
-	public Equipment RandomBattleEquipment
+	public Equipment FirstStealthEquipment
+	{
+		get
+		{
+			if (IsHero)
+			{
+				return HeroObject.StealthEquipment;
+			}
+			return Culture.DefaultStealthEquipmentRoster.AllEquipments.First();
+		}
+	}
+
+	public override Equipment RandomBattleEquipment
 	{
 		get
 		{
@@ -176,11 +191,11 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return HeroObject.BattleEquipment;
 			}
-			return AllEquipments.GetRandomElementWithPredicate((Equipment e) => !e.IsCivilian);
+			return base.RandomBattleEquipment;
 		}
 	}
 
-	public Equipment RandomCivilianEquipment
+	public override Equipment RandomCivilianEquipment
 	{
 		get
 		{
@@ -188,7 +203,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return HeroObject.CivilianEquipment;
 			}
-			return AllEquipments.GetRandomElementWithPredicate((Equipment e) => e.IsCivilian);
+			return base.RandomCivilianEquipment;
 		}
 	}
 
@@ -204,39 +219,15 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		}
 	}
 
-	public override string HairTags
+	public Equipment RandomStealthEquipment
 	{
 		get
 		{
 			if (IsHero)
 			{
-				return HeroObject.HairTags;
+				return HeroObject.StealthEquipment;
 			}
-			return base.HairTags;
-		}
-	}
-
-	public override string BeardTags
-	{
-		get
-		{
-			if (IsHero)
-			{
-				return HeroObject.BeardTags;
-			}
-			return base.BeardTags;
-		}
-	}
-
-	public override string TattooTags
-	{
-		get
-		{
-			if (IsHero)
-			{
-				return HeroObject.TattooTags;
-			}
-			return base.TattooTags;
+			return Culture.DefaultStealthEquipmentRoster.AllEquipments.GetRandomElement();
 		}
 	}
 
@@ -270,16 +261,9 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			}
 			return (CultureObject)base.Culture;
 		}
-		set
+		private set
 		{
-			if (IsHero)
-			{
-				HeroObject.Culture = value;
-			}
-			else
-			{
-				base.Culture = value;
-			}
+			base.Culture = value;
 		}
 	}
 
@@ -349,7 +333,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 				for (int i = 0; i < 4; i++)
 				{
 					ItemObject item = Equipment[i].Item;
-					if (item != null && (item.ItemType == ItemObject.ItemTypeEnum.Bow || item.ItemType == ItemObject.ItemTypeEnum.Crossbow))
+					if (item != null && (item.ItemType == ItemObject.ItemTypeEnum.Bow || item.ItemType == ItemObject.ItemTypeEnum.Crossbow || item.ItemType == ItemObject.ItemTypeEnum.Sling))
 					{
 						return true;
 					}
@@ -421,24 +405,32 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 	private void Init()
 	{
 		_occupation = Occupation.NotAssigned;
-		_characterTraits = new CharacterTraits();
+		_characterTraits = new PropertyOwner<TraitObject>();
 		Level = 1;
 		_characterRestrictionFlags = CharacterRestrictionFlags.None;
 	}
 
-	public static CharacterObject CreateFrom(CharacterObject character)
+	public static CharacterObject CreateFrom(CharacterObject character, StaticBodyProperties? staticBodyProperties = null)
 	{
 		CharacterObject characterObject = MBObjectManager.Instance.CreateObject<CharacterObject>();
 		characterObject._originCharacter = character._originCharacter ?? character;
 		if (characterObject.IsHero)
 		{
-			characterObject.HeroObject.StaticBodyProperties = (character.IsHero ? character.HeroObject.StaticBodyProperties : character.GetBodyPropertiesMin().StaticProperties);
+			if (staticBodyProperties.HasValue)
+			{
+				characterObject.HeroObject.StaticBodyProperties = staticBodyProperties.Value;
+			}
+			else
+			{
+				characterObject.HeroObject.StaticBodyProperties = (character.IsHero ? character.HeroObject.StaticBodyProperties : character.GetBodyPropertiesMin().StaticProperties);
+			}
 		}
 		characterObject._occupation = character._occupation;
 		characterObject._persona = character._persona;
-		characterObject._characterTraits = new CharacterTraits(character._characterTraits);
+		characterObject._characterTraits = new PropertyOwner<TraitObject>(character._characterTraits);
 		characterObject._civilianEquipmentTemplate = character._civilianEquipmentTemplate;
 		characterObject._battleEquipmentTemplate = character._battleEquipmentTemplate;
+		characterObject.HiddenInEncyclopedia = character.HiddenInEncyclopedia;
 		characterObject.FillFrom(character);
 		return characterObject;
 	}
@@ -465,9 +457,9 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		return base.GetBodyPropertiesMin();
 	}
 
-	public override BodyProperties GetBodyPropertiesMax()
+	public override BodyProperties GetBodyPropertiesMax(bool returnBaseValue = false)
 	{
-		if (IsHero)
+		if (IsHero && !returnBaseValue)
 		{
 			return HeroObject.BodyProperties;
 		}
@@ -482,7 +474,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			HeroObject.Weight = properties.Weight;
 			HeroObject.Build = properties.Build;
 			base.Race = race;
-			HeroObject.UpdatePlayerGender(isFemale);
+			HeroObject.IsFemale = isFemale;
 			CampaignEventDispatcher.Instance.OnPlayerBodyPropertiesChanged();
 		}
 	}
@@ -517,14 +509,13 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 
 	public int GetUpgradeGoldCost(PartyBase party, int index)
 	{
-		return Campaign.Current.Models.PartyTroopUpgradeModel.GetGoldCostForUpgrade(party, this, UpgradeTargets[index]);
+		return Campaign.Current.Models.PartyTroopUpgradeModel.GetGoldCostForUpgrade(party, this, UpgradeTargets[index]).RoundedResultNumber;
 	}
 
 	public void InitializeHeroCharacterOnAfterLoad()
 	{
 		InitializeHeroBasicCharacterOnAfterLoad(_originCharacter);
 		_occupation = _originCharacter._occupation;
-		IsChildTemplate = _originCharacter.IsChildTemplate;
 		_basicName = _originCharacter._basicName;
 		UpgradeTargets = _originCharacter.UpgradeTargets;
 		IsBasicTroop = _originCharacter.IsBasicTroop;
@@ -547,10 +538,8 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		}
 		XmlNode xmlNode2 = node.Attributes["is_template"];
 		IsTemplate = xmlNode2 != null && Convert.ToBoolean(xmlNode2.InnerText);
-		XmlNode xmlNode3 = node.Attributes["is_child_template"];
-		IsChildTemplate = xmlNode3 != null && Convert.ToBoolean(xmlNode3.InnerText);
-		XmlNode xmlNode4 = node.Attributes["is_hidden_encyclopedia"];
-		HiddenInEncylopedia = xmlNode4 != null && Convert.ToBoolean(xmlNode4.InnerText);
+		XmlNode xmlNode3 = node.Attributes["is_hidden_encyclopedia"];
+		HiddenInEncyclopedia = xmlNode3 != null && Convert.ToBoolean(xmlNode3.InnerText);
 		List<CharacterObject> list = new List<CharacterObject>();
 		foreach (XmlNode childNode in node.ChildNodes)
 		{
@@ -575,23 +564,23 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			}
 		}
 		UpgradeTargets = list.ToArray();
-		XmlNode xmlNode7 = node.Attributes["voice"];
+		XmlNode xmlNode6 = node.Attributes["voice"];
+		if (xmlNode6 != null)
+		{
+			_persona = MBObjectManager.Instance.GetObject<TraitObject>(xmlNode6.Value);
+		}
+		XmlNode xmlNode7 = node.Attributes["is_basic_troop"];
 		if (xmlNode7 != null)
 		{
-			_persona = MBObjectManager.Instance.GetObject<TraitObject>(xmlNode7.Value);
-		}
-		XmlNode xmlNode8 = node.Attributes["is_basic_troop"];
-		if (xmlNode8 != null)
-		{
-			IsBasicTroop = Convert.ToBoolean(xmlNode8.InnerText);
+			IsBasicTroop = Convert.ToBoolean(xmlNode7.InnerText);
 		}
 		else
 		{
 			IsBasicTroop = false;
 		}
 		UpgradeRequiresItemFromCategory = objectManager.ReadObjectReferenceFromXml<ItemCategory>("upgrade_requires", node);
-		XmlNode xmlNode9 = node.Attributes["level"];
-		Level = ((xmlNode9 == null) ? 1 : Convert.ToInt32(xmlNode9.InnerText));
+		XmlNode xmlNode8 = node.Attributes["level"];
+		Level = ((xmlNode8 == null) ? 1 : Convert.ToInt32(xmlNode8.InnerText));
 		if (node.Attributes["civilianTemplate"] != null)
 		{
 			_civilianEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("civilianTemplate", typeof(CharacterObject), node) as CharacterObject;
@@ -678,54 +667,50 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		defencePoints += num3 * 5f;
 	}
 
-	public float GetHeadArmorSum(bool civilianEquipment = false)
+	public float GetHeadArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		if (!civilianEquipment)
-		{
-			return FirstBattleEquipment.GetHeadArmorSum();
-		}
-		return FirstCivilianEquipment.GetHeadArmorSum();
+		return GetEquipmentByType(equipmentType).GetHeadArmorSum();
 	}
 
-	public float GetBodyArmorSum(bool civilianEquipment = false)
+	public float GetBodyArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		if (!civilianEquipment)
-		{
-			return FirstBattleEquipment.GetHumanBodyArmorSum();
-		}
-		return FirstCivilianEquipment.GetHumanBodyArmorSum();
+		return GetEquipmentByType(equipmentType).GetHumanBodyArmorSum();
 	}
 
-	public float GetLegArmorSum(bool civilianEquipment = false)
+	public float GetLegArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		if (!civilianEquipment)
-		{
-			return FirstBattleEquipment.GetLegArmorSum();
-		}
-		return FirstCivilianEquipment.GetLegArmorSum();
+		return GetEquipmentByType(equipmentType).GetLegArmorSum();
 	}
 
-	public float GetArmArmorSum(bool civilianEquipment = false)
+	public float GetArmArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		if (!civilianEquipment)
-		{
-			return FirstBattleEquipment.GetArmArmorSum();
-		}
-		return FirstCivilianEquipment.GetArmArmorSum();
+		return GetEquipmentByType(equipmentType).GetArmArmorSum();
 	}
 
-	public float GetHorseArmorSum(bool civilianEquipment = false)
+	public float GetHorseArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		if (!civilianEquipment)
-		{
-			return FirstBattleEquipment.GetHorseArmorSum();
-		}
-		return FirstCivilianEquipment.GetHorseArmorSum();
+		return GetEquipmentByType(equipmentType).GetHorseArmorSum();
 	}
 
-	public float GetTotalArmorSum(bool civilianEquipment = false)
+	public float GetTotalArmorSum(Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle)
 	{
-		return GetHeadArmorSum(civilianEquipment) + GetBodyArmorSum(civilianEquipment) + GetLegArmorSum(civilianEquipment) + GetArmArmorSum(civilianEquipment);
+		return GetHeadArmorSum(equipmentType) + GetBodyArmorSum(equipmentType) + GetLegArmorSum(equipmentType) + GetArmArmorSum(equipmentType);
+	}
+
+	private Equipment GetEquipmentByType(Equipment.EquipmentType equipmentType)
+	{
+		switch (equipmentType)
+		{
+		case Equipment.EquipmentType.Battle:
+			return FirstBattleEquipment;
+		case Equipment.EquipmentType.Civilian:
+			return FirstCivilianEquipment;
+		case Equipment.EquipmentType.Stealth:
+			return FirstStealthEquipment;
+		default:
+			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 890);
+			return null;
+		}
 	}
 
 	public override BodyProperties GetBodyProperties(Equipment equipment, int seed = -1)
@@ -742,7 +727,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			seed = base.StringId.GetDeterministicHashCode();
 			break;
 		}
-		return FaceGen.GetRandomBodyProperties(base.Race, IsFemale, GetBodyPropertiesMin(), GetBodyPropertiesMax(), (int)(equipment?.HairCoverType ?? ArmorComponent.HairCoverTypes.None), seed, HairTags, BeardTags, TattooTags);
+		return FaceGen.GetRandomBodyProperties(base.Race, IsFemale, GetBodyPropertiesMin(), GetBodyPropertiesMax(), (int)(equipment?.HairCoverType ?? ArmorComponent.HairCoverTypes.None), seed, BodyPropertyRange.HairTags, BodyPropertyRange.BeardTags, BodyPropertyRange.TattooTags, 0f);
 	}
 
 	public void SetTransferableInPartyScreen(bool isTransferable)

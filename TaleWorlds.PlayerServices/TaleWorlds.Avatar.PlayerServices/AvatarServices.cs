@@ -34,7 +34,7 @@ public static class AvatarServices
 		}
 	}
 
-	public static AvatarData GetPlayerAvatar(PlayerId playerId, int forcedIndex)
+	public static AvatarDataResponse GetPlayerAvatar(PlayerId playerId, int forcedIndex)
 	{
 		_allAvatarServices.TryGetValue(playerId.ProvidedType, out var value);
 		if (forcedIndex >= 0 || (forcedIndex < 0 && value == null))
@@ -45,7 +45,7 @@ public static class AvatarServices
 		{
 			value?.Initialize();
 		}
-		return value.GetPlayerAvatar(playerId);
+		return new AvatarDataResponse(value == _forcedAvatarService, value.GetPlayerAvatar(playerId));
 	}
 
 	private static void InitializeFallbackAvatarService()

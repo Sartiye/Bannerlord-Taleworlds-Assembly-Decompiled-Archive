@@ -7,7 +7,9 @@ using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -53,7 +55,7 @@ public class MissionConversationVM : ViewModel
 
 	private MBBindingList<ConversationAggressivePartyItemVM> _attackerParties;
 
-	private ImageIdentifierVM _conversedHeroBanner;
+	private BannerImageIdentifierVM _conversedHeroBanner;
 
 	private bool _isAggressive;
 
@@ -513,7 +515,7 @@ public class MissionConversationVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ConversedHeroBanner
+	public BannerImageIdentifierVM ConversedHeroBanner
 	{
 		get
 		{
@@ -588,46 +590,47 @@ public class MissionConversationVM : ViewModel
 		_conversationManager = Campaign.Current.ConversationManager;
 		_getContinueInputText = getContinueInputText;
 		_isLinksDisabled = isLinksDisabled;
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Combine(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(RefreshValues));
 		CampaignEvents.PersuasionProgressCommittedEvent.AddNonSerializedListener(this, OnPersuasionProgress);
 		Persuasion = new PersuasionVM(_conversationManager);
 		IsAggressive = Campaign.Current.CurrentConversationContext == ConversationContext.PartyEncounter && _conversationManager.ConversationParty != null && FactionManager.IsAtWarAgainstFaction(_conversationManager.ConversationParty.MapFaction, Hero.MainHero.MapFaction);
 		if (IsAggressive)
 		{
-			List<MobileParty> partiesToJoinPlayerSide = new List<MobileParty>();
-			List<MobileParty> partiesToJoinEnemySide = new List<MobileParty>();
+			List<MobileParty> list = new List<MobileParty>();
+			List<MobileParty> list2 = new List<MobileParty>();
 			MobileParty conversationParty = _conversationManager.ConversationParty;
 			MobileParty mainParty = MobileParty.MainParty;
 			if (PlayerEncounter.PlayerIsAttacker)
 			{
-				partiesToJoinEnemySide.Add(mainParty);
-				partiesToJoinPlayerSide.Add(conversationParty);
-				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(ref partiesToJoinEnemySide, ref partiesToJoinPlayerSide);
+				list2.Add(mainParty);
+				list.Add(conversationParty);
+				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list2, list);
 			}
 			else
 			{
-				partiesToJoinEnemySide.Add(conversationParty);
-				partiesToJoinPlayerSide.Add(mainParty);
-				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(ref partiesToJoinPlayerSide, ref partiesToJoinEnemySide);
+				list2.Add(conversationParty);
+				list.Add(mainParty);
+				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list, list2);
 			}
 			AttackerLeader = new ConversationAggressivePartyItemVM(PlayerEncounter.PlayerIsAttacker ? mainParty : conversationParty);
 			DefenderLeader = new ConversationAggressivePartyItemVM(PlayerEncounter.PlayerIsAttacker ? conversationParty : mainParty);
 			double num = 0.0;
 			double num2 = 0.0;
-			num += (double)DefenderLeader.Party.Party.TotalStrength;
-			num2 += (double)AttackerLeader.Party.Party.TotalStrength;
-			foreach (MobileParty item in partiesToJoinPlayerSide)
+			num += (double)DefenderLeader.Party.Party.CalculateCurrentStrength();
+			num2 += (double)AttackerLeader.Party.Party.CalculateCurrentStrength();
+			foreach (MobileParty item in list)
 			{
 				if (item != conversationParty && item != mainParty)
 				{
-					num += (double)item.Party.TotalStrength;
+					num += (double)item.Party.CalculateCurrentStrength();
 					DefenderParties.Add(new ConversationAggressivePartyItemVM(item));
 				}
 			}
-			foreach (MobileParty item2 in partiesToJoinEnemySide)
+			foreach (MobileParty item2 in list2)
 			{
 				if (item2 != conversationParty && item2 != mainParty)
 				{
-					num2 += (double)item2.Party.TotalStrength;
+					num2 += (double)item2.Party.CalculateCurrentStrength();
 					AttackerParties.Add(new ConversationAggressivePartyItemVM(item2));
 				}
 			}
@@ -755,14 +758,14 @@ public class MissionConversationVM : ViewModel
 				}
 				if (heroObject.Clan == null)
 				{
-					ConversedHeroBanner = new ImageIdentifierVM();
+					ConversedHeroBanner = new BannerImageIdentifierVM(null);
 					IsRelationEnabled = false;
 					IsBannerEnabled = false;
 				}
 				else
 				{
-					ConversedHeroBanner = ((heroObject != null) ? new ImageIdentifierVM(heroObject.ClanBanner) : new ImageIdentifierVM());
-					TextObject hintText = ((heroObject != null) ? heroObject.Clan.Name : TextObject.Empty);
+					ConversedHeroBanner = ((heroObject != null) ? new BannerImageIdentifierVM(heroObject.ClanBanner) : new BannerImageIdentifierVM(null));
+					TextObject hintText = ((heroObject != null) ? heroObject.Clan.Name : TextObject.GetEmpty());
 					FactionHint = new HintViewModel(hintText);
 					IsBannerEnabled = true;
 				}
@@ -770,7 +773,7 @@ public class MissionConversationVM : ViewModel
 			}
 			else
 			{
-				ConversedHeroBanner = new ImageIdentifierVM();
+				ConversedHeroBanner = new BannerImageIdentifierVM(null);
 				IsRelationEnabled = false;
 				IsBannerEnabled = false;
 				IsCurrentCharacterValidInEncyclopedia = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(CharacterObject)).IsValidEncyclopediaItem((CharacterObject)_conversationManager.SpeakerAgent.Character);
@@ -897,6 +900,7 @@ public class MissionConversationVM : ViewModel
 	{
 		base.OnFinalize();
 		CampaignEvents.PersuasionProgressCommittedEvent.ClearListeners(this);
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(RefreshValues));
 		Persuasion?.OnFinalize();
 	}
 }

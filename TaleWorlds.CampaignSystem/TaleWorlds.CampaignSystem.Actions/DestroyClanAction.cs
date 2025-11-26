@@ -53,7 +53,7 @@ public static class DestroyClanAction
 			{
 				if (item2.IsTown || item2.IsCastle)
 				{
-					Hero randomElementWithPredicate = clan.Lords.GetRandomElementWithPredicate((Hero x) => !x.IsChild && x.IsAlive);
+					Hero randomElementWithPredicate = clan.AliveLords.GetRandomElementWithPredicate((Hero x) => !x.IsChild);
 					ChangeOwnerOfSettlementAction.ApplyByDestroyClan(item2, randomElementWithPredicate);
 				}
 			}

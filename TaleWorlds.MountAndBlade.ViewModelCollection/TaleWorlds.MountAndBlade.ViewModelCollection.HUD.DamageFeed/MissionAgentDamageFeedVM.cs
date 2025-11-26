@@ -41,7 +41,16 @@ public class MissionAgentDamageFeedVM : ViewModel
 
 	private void CombatLogManagerOnPrintCombatLog(CombatLogData logData)
 	{
-		if (logData.IsVictimAgentMine && logData.TotalDamage > 0)
+		int num = 0;
+		if (logData.IsVictimAgentMine)
+		{
+			num = logData.TotalDamage;
+		}
+		else if (logData.IsFriendlyFire)
+		{
+			num = logData.ReflectedDamage;
+		}
+		if (num > 0)
 		{
 			_takenDamageText.SetTextVariable("DAMAGE", logData.TotalDamage);
 			MissionAgentDamageFeedItemVM item = new MissionAgentDamageFeedItemVM(_takenDamageText.ToString(), RemoveItem);

@@ -224,15 +224,6 @@ public class PartyTroopTupleButtonWidget : ButtonWidget
 		}
 	}
 
-	protected override void OnDisconnectedFromRoot()
-	{
-		base.OnDisconnectedFromRoot();
-		if (ScreenWidget.CurrentMainTuple == this)
-		{
-			ScreenWidget.SetCurrentTuple(null, isLeftSide: false);
-		}
-	}
-
 	protected override void RefreshState()
 	{
 		base.RefreshState();
@@ -273,17 +264,6 @@ public class PartyTroopTupleButtonWidget : ButtonWidget
 				widget = widget.ParentWidget;
 			}
 		}
-	}
-
-	protected override void OnMouseReleased()
-	{
-		base.OnMouseReleased();
-		ScreenWidget?.SetCurrentTuple(this, IsTupleLeftSide);
-	}
-
-	public void ResetIsSelected()
-	{
-		base.IsSelected = false;
 	}
 
 	private void OnValueChanged(PropertyOwnerObject arg1, string arg2, int arg3)

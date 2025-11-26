@@ -218,10 +218,10 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		_queueManager = base.GameEntity.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
 		if (_queueManager == null)
 		{
-			GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity ce) => ce.GetScriptComponents<LadderQueueManager>().Any());
-			if (gameEntity != null)
+			WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity ce) => ce.GetScriptComponents<LadderQueueManager>().Any());
+			if (weakGameEntity.IsValid)
 			{
-				_queueManager = gameEntity.GetFirstScriptOfType<LadderQueueManager>();
+				_queueManager = weakGameEntity.GetFirstScriptOfType<LadderQueueManager>();
 			}
 		}
 		if (_queueManager != null)
@@ -248,12 +248,12 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 			DefenseSide = FormationAI.BehaviorSide.BehaviorSideNotSet;
 			break;
 		}
-		List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("middle_pos");
+		List<WeakGameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("middle_pos");
 		if (list.Count > 0)
 		{
-			GameEntity gameEntity2 = list.FirstOrDefault();
-			MiddlePosition = gameEntity2.GetFirstScriptOfType<TacticalPosition>();
-			MatrixFrame globalFrame = gameEntity2.GetGlobalFrame();
+			WeakGameEntity weakGameEntity2 = list.FirstOrDefault();
+			MiddlePosition = weakGameEntity2.GetFirstScriptOfType<TacticalPosition>();
+			MatrixFrame globalFrame = weakGameEntity2.GetGlobalFrame();
 			_middleFrame = new WorldFrame(globalFrame.rotation, globalFrame.origin.ToWorldPosition());
 			_middleFrame.Origin.GetGroundVec3();
 		}
@@ -262,12 +262,12 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 			MatrixFrame globalFrame2 = base.GameEntity.GetGlobalFrame();
 			_middleFrame = new WorldFrame(globalFrame2.rotation, globalFrame2.origin.ToWorldPosition());
 		}
-		List<GameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("wait_pos");
+		List<WeakGameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("wait_pos");
 		if (list2.Count > 0)
 		{
-			GameEntity gameEntity3 = list2.FirstOrDefault();
-			WaitPosition = gameEntity3.GetFirstScriptOfType<TacticalPosition>();
-			MatrixFrame globalFrame3 = gameEntity3.GetGlobalFrame();
+			WeakGameEntity weakGameEntity3 = list2.FirstOrDefault();
+			WaitPosition = weakGameEntity3.GetFirstScriptOfType<TacticalPosition>();
+			MatrixFrame globalFrame3 = weakGameEntity3.GetGlobalFrame();
 			_defenseWaitFrame = new WorldFrame(globalFrame3.rotation, globalFrame3.origin.ToWorldPosition());
 			_defenseWaitFrame.Origin.GetGroundVec3();
 		}
@@ -372,16 +372,20 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		base.GameEntity.GetFirstScriptOfType<DestructableComponent>()?.SetDisabled();
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return new TextObject("{=6wZUG0ev}Gate").ToString();
+		return new TextObject("{=6wZUG0ev}Gate");
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)
 	{
-		TextObject textObject = new TextObject(usableGameObject.GameEntity.HasTag("open") ? "{=5oozsaIb}{KEY} Open" : "{=TJj71hPO}{KEY} Close");
-		textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
-		return textObject;
+		if (!IsDeactivated)
+		{
+			TextObject textObject = new TextObject(usableGameObject.GameEntity.HasTag("open") ? "{=5oozsaIb}{KEY} Open" : "{=TJj71hPO}{KEY} Close");
+			textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
+			return textObject;
+		}
+		return TextObject.GetEmpty();
 	}
 
 	public override UsableMachineAIBase CreateAIBehaviorObject()
@@ -670,7 +674,7 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		bool flag2 = false;
 		for (int j = 0; j < _userFormations.Count; j++)
 		{
-			if (_userFormations[j].CountOfDetachableNonplayerUnits > 0)
+			if (_userFormations[j].CountOfDetachableNonPlayerUnits > 0)
 			{
 				flag2 = true;
 				break;
@@ -812,7 +816,7 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		return 10f;
 	}
 
-	public GameEntity GetTargetEntity()
+	public WeakGameEntity GetTargetEntity()
 	{
 		return base.GameEntity;
 	}
@@ -822,9 +826,24 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		return BattleSideEnum.Defender;
 	}
 
-	public GameEntity Entity()
+	public Vec3 GetTargetGlobalVelocity()
+	{
+		return Vec3.Zero;
+	}
+
+	public bool IsDestructable()
+	{
+		return base.GameEntity.HasScriptOfType<DestructableComponent>();
+	}
+
+	public WeakGameEntity Entity()
 	{
 		return base.GameEntity;
+	}
+
+	public (Vec3, Vec3) ComputeGlobalPhysicsBoundingBoxMinMax()
+	{
+		return base.GameEntity.ComputeGlobalPhysicsBoundingBoxMinMax();
 	}
 
 	protected void CollectGameEntities(bool calledFromOnInit)
@@ -832,7 +851,7 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		CollectDynamicGameEntities(calledFromOnInit);
 		if (!GameNetwork.IsClientOrReplay)
 		{
-			List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("plank");
+			List<WeakGameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("plank");
 			if (list.Count > 0)
 			{
 				_plank = list.FirstOrDefault().GetFirstScriptOfType<SynchedMissionObject>();
@@ -849,14 +868,14 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 	protected void CollectDynamicGameEntities(bool calledFromOnInit)
 	{
 		_attackOnlyDoorColliders.Clear();
-		List<GameEntity> list;
+		List<WeakGameEntity> list;
 		if (calledFromOnInit)
 		{
 			list = base.GameEntity.CollectChildrenEntitiesWithTag("gate").ToList();
 			_leftExtraColliderDisabled = false;
 			_rightExtraColliderDisabled = false;
-			_agentColliderLeft = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_l");
-			_agentColliderRight = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_r");
+			_agentColliderLeft = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("collider_agent_l"));
+			_agentColliderRight = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("collider_agent_r"));
 		}
 		else
 		{
@@ -872,62 +891,62 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		{
 			int num = int.MinValue;
 			int num2 = int.MaxValue;
-			GameEntity gameEntity = null;
-			GameEntity gameEntity2 = null;
-			foreach (GameEntity item in list)
+			WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
+			WeakGameEntity weakGameEntity2 = WeakGameEntity.Invalid;
+			foreach (WeakGameEntity item in list)
 			{
 				int num3 = int.Parse(item.Tags.FirstOrDefault((string x) => x.Contains("state_")).Split(new char[1] { '_' }).Last());
 				if (num3 > num)
 				{
 					num = num3;
-					gameEntity = item;
+					weakGameEntity = item;
 				}
 				if (num3 < num2)
 				{
 					num2 = num3;
-					gameEntity2 = item;
+					weakGameEntity2 = item;
 				}
 			}
-			_door = (calledFromOnInit ? gameEntity2.GetFirstScriptOfType<SynchedMissionObject>() : gameEntity.GetFirstScriptOfType<SynchedMissionObject>());
+			_door = (calledFromOnInit ? weakGameEntity2.GetFirstScriptOfType<SynchedMissionObject>() : weakGameEntity.GetFirstScriptOfType<SynchedMissionObject>());
 		}
 		else
 		{
 			_door = list[0].GetFirstScriptOfType<SynchedMissionObject>();
 		}
 		_doorSkeleton = _door.GameEntity.Skeleton;
-		GameEntity gameEntity3 = _door.GameEntity.CollectChildrenEntitiesWithTag("collider_r").FirstOrDefault();
-		if (gameEntity3 != null)
+		WeakGameEntity weakEntity = _door.GameEntity.CollectChildrenEntitiesWithTag("collider_r").FirstOrDefault();
+		if (weakEntity.IsValid)
 		{
-			_attackOnlyDoorColliders.Add(gameEntity3);
+			_attackOnlyDoorColliders.Add(TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakEntity));
 		}
-		GameEntity gameEntity4 = _door.GameEntity.CollectChildrenEntitiesWithTag("collider_l").FirstOrDefault();
-		if (gameEntity4 != null)
+		WeakGameEntity weakEntity2 = _door.GameEntity.CollectChildrenEntitiesWithTag("collider_l").FirstOrDefault();
+		if (weakEntity2.IsValid)
 		{
-			_attackOnlyDoorColliders.Add(gameEntity4);
+			_attackOnlyDoorColliders.Add(TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakEntity2));
 		}
-		if (gameEntity3 == null || gameEntity4 == null)
+		if (!weakEntity.IsValid || !weakEntity2.IsValid)
 		{
 			_agentColliderLeft?.SetVisibilityExcludeParents(visible: false);
 			_agentColliderRight?.SetVisibilityExcludeParents(visible: false);
 		}
-		GameEntity gameEntity5 = _door.GameEntity.CollectChildrenEntitiesWithTag(ExtraCollisionObjectTagLeft).FirstOrDefault();
-		if (gameEntity5 != null)
+		WeakGameEntity weakGameEntity3 = _door.GameEntity.CollectChildrenEntitiesWithTag(ExtraCollisionObjectTagLeft).FirstOrDefault();
+		if (weakGameEntity3.IsValid)
 		{
 			if (!ActivateExtraColliders)
 			{
-				gameEntity5.RemovePhysics();
+				weakGameEntity3.RemovePhysics();
 			}
 			else
 			{
 				if (!calledFromOnInit)
 				{
 					MatrixFrame frame = ((_extraColliderLeft != null) ? _extraColliderLeft.GetFrame() : _doorSkeleton.GetBoneEntitialFrameWithName(LeftDoorBoneName));
-					_extraColliderLeft = gameEntity5;
+					_extraColliderLeft = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakGameEntity3);
 					_extraColliderLeft.SetFrame(ref frame);
 				}
 				else
 				{
-					_extraColliderLeft = gameEntity5;
+					_extraColliderLeft = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakGameEntity3);
 				}
 				if (_leftExtraColliderDisabled)
 				{
@@ -939,24 +958,24 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 				}
 			}
 		}
-		GameEntity gameEntity6 = _door.GameEntity.CollectChildrenEntitiesWithTag(ExtraCollisionObjectTagRight).FirstOrDefault();
-		if (gameEntity6 != null)
+		WeakGameEntity weakGameEntity4 = _door.GameEntity.CollectChildrenEntitiesWithTag(ExtraCollisionObjectTagRight).FirstOrDefault();
+		if (weakGameEntity4.IsValid)
 		{
 			if (!ActivateExtraColliders)
 			{
-				gameEntity6.RemovePhysics();
+				weakGameEntity4.RemovePhysics();
 			}
 			else
 			{
 				if (!calledFromOnInit)
 				{
 					MatrixFrame frame2 = ((_extraColliderRight != null) ? _extraColliderRight.GetFrame() : _doorSkeleton.GetBoneEntitialFrameWithName(RightDoorBoneName));
-					_extraColliderRight = gameEntity6;
+					_extraColliderRight = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakGameEntity4);
 					_extraColliderRight.SetFrame(ref frame2);
 				}
 				else
 				{
-					_extraColliderRight = gameEntity6;
+					_extraColliderRight = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakGameEntity4);
 				}
 				if (_rightExtraColliderDisabled)
 				{
@@ -1057,16 +1076,16 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		if (base.GameEntity.HasTag("outer_gate"))
 		{
 			uint visibilityMask = base.GameEntity.GetVisibilityLevelMaskIncludingParents();
-			GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag("middle_pos") && x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
-			if (gameEntity != null)
+			WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity x) => x.HasTag("middle_pos") && x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
+			if (weakGameEntity.IsValid)
 			{
-				GameEntity gameEntity2 = base.Scene.FindEntitiesWithTag("inner_gate").FirstOrDefault((GameEntity x) => x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
-				if (gameEntity2 != null)
+				WeakGameEntity weakGameEntity2 = base.Scene.FindWeakEntitiesWithTag("inner_gate").FirstOrDefault((WeakGameEntity x) => x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
+				if (weakGameEntity2 != null)
 				{
-					if (gameEntity2.HasScriptOfType<CastleGate>())
+					if (weakGameEntity2.HasScriptOfType<CastleGate>())
 					{
-						Vec2 va = gameEntity2.GlobalPosition.AsVec2 - gameEntity.GlobalPosition.AsVec2;
-						Vec2 vb = base.GameEntity.GlobalPosition.AsVec2 - gameEntity.GlobalPosition.AsVec2;
+						Vec2 va = weakGameEntity2.GlobalPosition.AsVec2 - weakGameEntity.GlobalPosition.AsVec2;
+						Vec2 vb = base.GameEntity.GlobalPosition.AsVec2 - weakGameEntity.GlobalPosition.AsVec2;
 						if (Vec2.DotProduct(va, vb) <= 0f)
 						{
 							MBEditor.AddEntityWarning(base.GameEntity, "Outer gate's middle position must not be between outer and inner gate.");
@@ -1075,7 +1094,7 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 					}
 					else
 					{
-						MBEditor.AddEntityWarning(base.GameEntity, gameEntity2.Name + " this entity has inner gate tag but doesn't have castle gate script.");
+						MBEditor.AddEntityWarning(base.GameEntity, weakGameEntity2.Name + " this entity has inner gate tag but doesn't have castle gate script.");
 						result = true;
 					}
 				}

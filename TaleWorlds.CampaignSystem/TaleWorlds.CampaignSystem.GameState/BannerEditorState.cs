@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.GameState;
@@ -5,6 +6,8 @@ namespace TaleWorlds.CampaignSystem.GameState;
 public class BannerEditorState : TaleWorlds.Core.GameState
 {
 	private IBannerEditorStateHandler _handler;
+
+	private Action _onEndAction;
 
 	public override bool IsMenuState => true;
 
@@ -20,6 +23,15 @@ public class BannerEditorState : TaleWorlds.Core.GameState
 		}
 	}
 
+	public BannerEditorState()
+	{
+	}
+
+	public BannerEditorState(Action endAction)
+	{
+		_onEndAction = endAction;
+	}
+
 	public Clan GetClan()
 	{
 		return Clan.PlayerClan;
@@ -28,5 +40,11 @@ public class BannerEditorState : TaleWorlds.Core.GameState
 	public CharacterObject GetCharacter()
 	{
 		return CharacterObject.PlayerCharacter;
+	}
+
+	protected override void OnFinalize()
+	{
+		base.OnFinalize();
+		_onEndAction?.Invoke();
 	}
 }

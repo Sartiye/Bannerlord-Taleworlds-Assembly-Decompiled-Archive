@@ -38,7 +38,7 @@ public class HoverToggleWidget : Widget
 		base.OnUpdate(dt);
 		if (base.IsVisible)
 		{
-			IsOverWidget = IsMouseOverWidget();
+			IsOverWidget = IsPointInsideMeasuredArea(base.EventManager.MousePosition);
 			if (IsOverWidget && !_hoverBegan)
 			{
 				EventFired("HoverBegin");
@@ -54,23 +54,5 @@ public class HoverToggleWidget : Widget
 				WidgetToShow.IsVisible = _hoverBegan;
 			}
 		}
-	}
-
-	private bool IsMouseOverWidget()
-	{
-		if (IsBetween(base.EventManager.MousePosition.X, base.GlobalPosition.X, base.GlobalPosition.X + base.Size.X))
-		{
-			return IsBetween(base.EventManager.MousePosition.Y, base.GlobalPosition.Y, base.GlobalPosition.Y + base.Size.Y);
-		}
-		return false;
-	}
-
-	private bool IsBetween(float number, float min, float max)
-	{
-		if (number > min)
-		{
-			return number < max;
-		}
-		return false;
 	}
 }

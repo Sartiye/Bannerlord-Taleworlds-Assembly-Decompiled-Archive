@@ -30,6 +30,8 @@ public class MultiplayerIntermissionVotingManager
 
 	public bool IsDisableCultureVoteOverride;
 
+	public bool IsMapSelectedByAdmin;
+
 	public string InitialGameType;
 
 	private readonly Dictionary<PlayerId, List<string>> _votesOfPlayers;
@@ -62,6 +64,7 @@ public class MultiplayerIntermissionVotingManager
 		IsCultureVoteEnabled = true;
 		IsDisableMapVoteOverride = false;
 		IsDisableCultureVoteOverride = false;
+		IsMapSelectedByAdmin = false;
 	}
 
 	public void AddMapItem(string mapID)
@@ -84,9 +87,9 @@ public class MultiplayerIntermissionVotingManager
 		List<string> list = new List<string>();
 		for (int i = 0; i < UsableMaps.Count; i++)
 		{
-			if (UsableMaps[i].isCompatibleWithAllGameTypes || UsableMaps[i].compatibleGameTypes.Contains(gameType))
+			if (UsableMaps[i].IsCompatibleWithAllGameTypes || UsableMaps[i].CompatibleGameTypes.Contains(gameType))
 			{
-				list.Add(UsableMaps[i].map);
+				list.Add(UsableMaps[i].Map);
 			}
 		}
 		return list;
@@ -118,7 +121,7 @@ public class MultiplayerIntermissionVotingManager
 		}
 		else
 		{
-			Debug.FailedAssert("Item with ID does not exist.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerIntermissionVotingManager.cs", "AddVote", 116);
+			Debug.FailedAssert("Item with ID does not exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerIntermissionVotingManager.cs", "AddVote", 120);
 		}
 		if (!_votesOfPlayers.ContainsKey(voterID))
 		{
@@ -231,6 +234,10 @@ public class MultiplayerIntermissionVotingManager
 					id = list[random.Next(0, list.Count)].Id;
 				}
 				MultiplayerOptions.OptionType.Map.SetValue(id);
+			}
+			else if (list.Count == 1)
+			{
+				MultiplayerOptions.OptionType.Map.SetValue(list[0].Id);
 			}
 		}
 		if (!IsCultureVoteEnabled)

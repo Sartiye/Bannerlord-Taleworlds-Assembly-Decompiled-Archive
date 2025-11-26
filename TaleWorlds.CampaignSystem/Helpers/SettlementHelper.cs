@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.CampaignSystem.Map;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace Helpers;
 
@@ -27,142 +28,298 @@ public static class SettlementHelper
 		return result;
 	}
 
-	public static Settlement FindNearestSettlement(Func<Settlement, bool> condition, IMapPoint toMapPoint = null)
+	public static Settlement FindNearestSettlementToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
 	{
 		Settlement result = null;
-		float maximumDistance = Campaign.MapDiagonal * 2f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
+		float num = Campaign.MapDiagonal * 2f;
 		foreach (Settlement item in Settlement.All)
 		{
-			if ((condition == null || condition(item)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, item, maximumDistance, out var distance))
+			if (condition == null || condition(item))
 			{
-				result = item;
-				maximumDistance = distance;
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, item, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					result = item;
+					num = num2;
+				}
 			}
 		}
 		return result;
 	}
 
-	public static Settlement FindNearestHideout(Func<Settlement, bool> condition = null, IMapPoint toMapPoint = null)
+	public static Settlement FindNearestSettlementToMobileParty(MobileParty mobileParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
 	{
 		Settlement result = null;
-		float maximumDistance = 1E+09f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Settlement item in Settlement.All)
+		{
+			if (condition == null || condition(item))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, item, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					result = item;
+					num = num2;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static Settlement FindNearestSettlementToPoint(in CampaignVec2 point, Func<Settlement, bool> condition = null)
+	{
+		Settlement result = null;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Settlement item in Settlement.All)
+		{
+			if (condition == null || condition(item))
+			{
+				float num2 = item.Position.Distance(point);
+				if (num2 < num)
+				{
+					result = item;
+					num = num2;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static Hideout FindNearestHideoutToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement settlement = null;
+		float num = Campaign.MapDiagonal * 2f;
 		foreach (Hideout item in Hideout.All)
 		{
-			Settlement settlement = item.Settlement;
-			if ((condition == null || condition(settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement, maximumDistance, out var distance))
+			if (condition == null || condition(item.Settlement))
 			{
-				result = settlement;
-				maximumDistance = distance;
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, item.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = item.Settlement;
+					num = num2;
+				}
 			}
 		}
-		return result;
+		return settlement?.Hideout;
 	}
 
-	public static Settlement FindNearestTown(Func<Settlement, bool> condition = null, IMapPoint toMapPoint = null)
+	public static Hideout FindNearestHideoutToMobileParty(MobileParty fromMobileParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
 	{
-		Settlement result = null;
-		float maximumDistance = 1E+09f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
+		Settlement settlement = null;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Hideout item in Hideout.All)
+		{
+			if (condition == null || condition(item.Settlement))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(fromMobileParty, item.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = item.Settlement;
+					num = num2;
+				}
+			}
+		}
+		return settlement?.Hideout;
+	}
+
+	public static Town FindNearestTownToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement settlement = null;
+		float num = Campaign.MapDiagonal * 2f;
 		foreach (Town allTown in Town.AllTowns)
 		{
-			Settlement settlement = allTown.Settlement;
-			if ((condition == null || condition(settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement, maximumDistance, out var distance))
+			if (condition == null || condition(allTown.Settlement))
 			{
-				result = settlement;
-				maximumDistance = distance;
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, allTown.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = allTown.Settlement;
+					num = num2;
+				}
 			}
 		}
-		return result;
+		return settlement?.Town;
 	}
 
-	public static Settlement FindNearestFortification(Func<Settlement, bool> condition = null, IMapPoint toMapPoint = null)
+	public static Town FindNearestTownToMobileParty(MobileParty mobileParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
 	{
-		Settlement result = null;
-		float maximumDistance = 1E+09f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
+		Settlement settlement = null;
+		float num = Campaign.MapDiagonal * 2f;
 		foreach (Town allTown in Town.AllTowns)
 		{
-			Settlement settlement = allTown.Settlement;
-			if ((condition == null || condition(settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement, maximumDistance, out var distance))
+			if (condition == null || condition(allTown.Settlement))
 			{
-				result = settlement;
-				maximumDistance = distance;
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, allTown.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = allTown.Settlement;
+					num = num2;
+				}
 			}
 		}
-		foreach (Town allCastle in Town.AllCastles)
-		{
-			Settlement settlement2 = allCastle.Settlement;
-			if ((condition == null || condition(settlement2)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement2, maximumDistance, out var distance2))
-			{
-				result = settlement2;
-				maximumDistance = distance2;
-			}
-		}
-		return result;
+		return settlement?.Town;
 	}
 
-	public static Settlement FindNearestCastle(Func<Settlement, bool> condition = null, IMapPoint toMapPoint = null)
-	{
-		Settlement result = null;
-		float maximumDistance = 1E+09f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
-		foreach (Town allCastle in Town.AllCastles)
-		{
-			Settlement settlement = allCastle.Settlement;
-			if ((condition == null || condition(settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement, maximumDistance, out var distance))
-			{
-				result = settlement;
-				maximumDistance = distance;
-			}
-		}
-		return result;
-	}
-
-	public static Settlement FindNearestVillage(Func<Settlement, bool> condition = null, IMapPoint toMapPoint = null)
-	{
-		Settlement result = null;
-		float maximumDistance = 1E+09f;
-		IMapPoint fromMapPoint = toMapPoint ?? MobileParty.MainParty;
-		foreach (Village item in Village.All)
-		{
-			Settlement settlement = item.Settlement;
-			if ((condition == null || condition(settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(fromMapPoint, settlement, maximumDistance, out var distance))
-			{
-				result = settlement;
-				maximumDistance = distance;
-			}
-		}
-		return result;
-	}
-
-	private static SettlementComponent FindNearestSettlementToMapPointInternal(IMapPoint mapPoint, IEnumerable<SettlementComponent> settlementsToIterate, Func<Settlement, bool> condition = null)
-	{
-		SettlementComponent result = null;
-		float maximumDistance = Campaign.MapDiagonal * 2f;
-		foreach (SettlementComponent item in settlementsToIterate)
-		{
-			if ((condition == null || condition(item.Settlement)) && Campaign.Current.Models.MapDistanceModel.GetDistance(mapPoint, item.Settlement, maximumDistance, out var distance))
-			{
-				result = item;
-				maximumDistance = distance;
-			}
-		}
-		return result;
-	}
-
-	public static int FindNextSettlementAroundMapPoint(IMapPoint mapPoint, float maxDistance, int lastIndex)
+	public static int FindNextSettlementAroundMobileParty(MobileParty mobileParty, MobileParty.NavigationType navCapabilities, float maxDistance, int lastIndex, Func<Settlement, bool> condition = null)
 	{
 		for (int i = lastIndex + 1; i < Settlement.All.Count; i++)
 		{
-			Settlement toSettlement = Settlement.All[i];
-			if (Campaign.Current.Models.MapDistanceModel.GetDistance(mapPoint, toSettlement, maxDistance, out var _))
+			Settlement settlement = Settlement.All[i];
+			if ((condition == null || condition(settlement)) && DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, settlement, navCapabilities, out var _) < maxDistance)
 			{
 				return i;
 			}
 		}
 		return -1;
+	}
+
+	public static Settlement FindNearestCastleToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement result = null;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Town allCastle in Town.AllCastles)
+		{
+			if (condition == null || condition(allCastle.Settlement))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, allCastle.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					result = allCastle.Settlement;
+					num = num2;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static Settlement FindNearestCastleToMobileParty(MobileParty mobileParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement result = null;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Town allCastle in Town.AllCastles)
+		{
+			if (condition == null || condition(allCastle.Settlement))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, allCastle.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					result = allCastle.Settlement;
+					num = num2;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static Settlement FindNearestFortificationToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Town town = FindNearestTownToSettlement(fromSettlement, navCapabilities, condition);
+		Settlement settlement = FindNearestCastleToSettlement(fromSettlement, navCapabilities, condition);
+		float num = Campaign.MapDiagonal;
+		float landRatio;
+		if (settlement != null)
+		{
+			num = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, settlement, navCapabilities, out landRatio);
+		}
+		float num2 = Campaign.MapDiagonal;
+		if (town != null)
+		{
+			num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, town.Settlement, navCapabilities, out landRatio);
+		}
+		if (num > num2)
+		{
+			return town.Settlement;
+		}
+		return settlement;
+	}
+
+	public static Settlement FindNearestFortificationToMobileParty(MobileParty mobileParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Town town = ((mobileParty.CurrentSettlement != null) ? FindNearestTownToSettlement(mobileParty.CurrentSettlement, navCapabilities, condition) : FindNearestTownToMobileParty(mobileParty, navCapabilities, condition));
+		Settlement settlement = ((mobileParty.CurrentSettlement != null) ? FindNearestCastleToSettlement(mobileParty.CurrentSettlement, navCapabilities, condition) : FindNearestCastleToMobileParty(mobileParty, navCapabilities, condition));
+		float num = Campaign.MapDiagonal;
+		float landRatio;
+		if (settlement != null)
+		{
+			num = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, settlement, navCapabilities, out landRatio);
+		}
+		float num2 = Campaign.MapDiagonal;
+		if (town != null)
+		{
+			num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(mobileParty, town.Settlement, navCapabilities, out landRatio);
+		}
+		if (num > num2)
+		{
+			return town.Settlement;
+		}
+		return settlement;
+	}
+
+	public static Settlement FindFurthestFortificationToSettlement(MBReadOnlyList<Town> candidates, MobileParty.NavigationType navCapabilities, Settlement fromSettlement, out float furthestDistance)
+	{
+		Settlement result = null;
+		float num = float.MinValue;
+		foreach (Town candidate in candidates)
+		{
+			float landRatio;
+			float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, candidate.Settlement, navCapabilities, out landRatio);
+			if (num2 > num)
+			{
+				result = candidate.Settlement;
+				num = num2;
+			}
+		}
+		furthestDistance = num;
+		return result;
+	}
+
+	public static Village FindNearestVillageToSettlement(Settlement fromSettlement, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement settlement = null;
+		float num = Campaign.MapDiagonal * 2f;
+		foreach (Village item in Village.All)
+		{
+			if (condition == null || condition(item.Settlement))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(fromSettlement, item.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = item.Settlement;
+					num = num2;
+				}
+			}
+		}
+		return settlement?.Village;
+	}
+
+	public static Village FindNearestVillageToMobileParty(MobileParty fromParty, MobileParty.NavigationType navCapabilities, Func<Settlement, bool> condition = null)
+	{
+		Settlement settlement = null;
+		float num = float.MaxValue;
+		foreach (Village item in Village.All)
+		{
+			if (condition == null || condition(item.Settlement))
+			{
+				float landRatio;
+				float num2 = DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(fromParty, item.Settlement, navCapabilities, out landRatio);
+				if (num2 < num)
+				{
+					settlement = item.Settlement;
+					num = num2;
+				}
+			}
+		}
+		return settlement?.Village;
 	}
 
 	private static Settlement FindRandomInternal(Func<Settlement, bool> condition, IEnumerable<Settlement> settlementsToIterate)
@@ -213,7 +370,7 @@ public static class SettlementHelper
 				if (flag && mobileParty.MapEvent == null)
 				{
 					LeaveSettlementAction.ApplyForParty(mobileParty);
-					mobileParty.Ai.SetMoveModeHold();
+					mobileParty.SetMoveModeHold();
 				}
 			}
 			while (flag);
@@ -234,7 +391,7 @@ public static class SettlementHelper
 				if (flag2 && mobileParty2.MapEvent == null)
 				{
 					LeaveSettlementAction.ApplyForParty(mobileParty2);
-					mobileParty2.Ai.SetMoveModeHold();
+					mobileParty2.SetMoveModeHold();
 				}
 			}
 			while (flag2);
@@ -242,7 +399,7 @@ public static class SettlementHelper
 			{
 				if ((item.IsVillager || item.IsCaravan) && item.TargetSettlement == settlementWhichChangedFaction && item.CurrentSettlement != settlementWhichChangedFaction)
 				{
-					item.Ai.SetMoveModeHold();
+					item.SetMoveModeHold();
 				}
 			}
 		}
@@ -257,11 +414,11 @@ public static class SettlementHelper
 				if (allVillagerParty.CurrentSettlement != null && allVillagerParty.MapEvent == null)
 				{
 					LeaveSettlementAction.ApplyForParty(allVillagerParty);
-					allVillagerParty.Ai.SetMoveModeHold();
+					allVillagerParty.SetMoveModeHold();
 				}
 				else
 				{
-					allVillagerParty.Ai.SetMoveModeHold();
+					allVillagerParty.SetMoveModeHold();
 				}
 			}
 		}
@@ -296,62 +453,68 @@ public static class SettlementHelper
 	{
 		Settlement result = null;
 		float num = -1f;
-		uint num2 = 0u;
-		using (List<Hero>.Enumerator enumerator = hero.Clan.Lords.GetEnumerator())
-		{
-			while (enumerator.MoveNext() && enumerator.Current != hero)
-			{
-				num2++;
-			}
-		}
 		IFaction mapFaction = hero.MapFaction;
 		foreach (Settlement item in Settlement.All)
 		{
-			if (item.Party.MapEvent == null)
+			if (item.Party.MapEvent != null)
 			{
-				IFaction mapFaction2 = item.MapFaction;
-				float num3 = 0.0001f;
-				if (mapFaction2 == mapFaction)
+				continue;
+			}
+			float num2 = 0f;
+			IFaction mapFaction2 = item.MapFaction;
+			if (item.IsTown)
+			{
+				num2 = 1f;
+			}
+			else if (item.IsCastle)
+			{
+				num2 = 0.9f;
+			}
+			else if (item.IsVillage)
+			{
+				num2 = 0.8f;
+			}
+			else
+			{
+				if (!item.IsHideout)
 				{
-					num3 = 1f;
+					continue;
 				}
-				else if (FactionManager.IsAlliedWithFaction(mapFaction2, mapFaction))
-				{
-					num3 = 0.01f;
-				}
-				else if (FactionManager.IsNeutralWithFaction(mapFaction2, mapFaction))
-				{
-					num3 = 0.0005f;
-				}
-				float num4 = 0f;
-				if (item.IsTown)
-				{
-					num4 = 1f;
-				}
-				else if (item.IsCastle)
-				{
-					num4 = 0.9f;
-				}
-				else if (item.IsVillage)
-				{
-					num4 = 0.8f;
-				}
-				else if (item.IsHideout)
-				{
-					num4 = ((mapFaction2 == mapFaction) ? 0.2f : 0f);
-				}
-				float num5 = ((item.Town != null && item.Town.GarrisonParty != null && item.OwnerClan == hero.Clan) ? (item.Town.GarrisonParty.Party.TotalStrength / (item.IsTown ? 60f : 30f)) : 1f);
-				float num6 = ((item.IsUnderRaid || item.IsUnderSiege) ? 0.1f : 1f);
-				float num7 = ((item.OwnerClan == hero.Clan) ? 1f : 0.25f);
-				float num8 = item.RandomFloatWithSeed(num2, 0.5f, 1f);
-				float num9 = 1f - hero.MapFaction.InitialPosition.Distance(item.Position2D) / Campaign.MapDiagonal;
-				num9 *= num9;
-				float num10 = num3 * num4 * num6 * num7 * num5 * num8 * num9;
-				if (num10 > num)
-				{
-					num = num10;
-					result = item;
-				}
+				num2 = ((mapFaction2 == mapFaction) ? 0.2f : 0f);
+			}
+			float num3 = 0.0001f;
+			if (mapFaction2 == mapFaction)
+			{
+				num3 = 1f;
+			}
+			else if (DiplomacyHelper.IsSameFactionAndNotEliminated(mapFaction2, mapFaction))
+			{
+				num3 = 0.01f;
+			}
+			else if (FactionManager.IsNeutralWithFaction(mapFaction2, mapFaction))
+			{
+				num3 = 0.0005f;
+			}
+			float num4 = ((item.Town != null && item.Town.GarrisonParty != null && item.OwnerClan == hero.Clan) ? (item.Town.GarrisonParty.Party.CalculateCurrentStrength() / (item.IsTown ? 60f : 30f)) : 1f);
+			float num5 = ((item.IsUnderRaid || item.IsUnderSiege) ? 0.1f : 1f);
+			float num6 = ((item.OwnerClan == hero.Clan) ? 1f : 0.25f);
+			float num7 = item.RandomFloatWithSeed((uint)hero.RandomInt(), 0.5f, 1f);
+			float value = Campaign.Current.Models.MapDistanceModel.GetDistance(hero.MapFaction.FactionMidSettlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) / Campaign.MapDiagonal;
+			float num8 = 1f - TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+			float num9 = num8 * num8;
+			float num10 = 1f;
+			if (hero.LastKnownClosestSettlement != null)
+			{
+				value = Campaign.Current.Models.MapDistanceModel.GetDistance(hero.LastKnownClosestSettlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) / Campaign.MapDiagonal;
+				num10 = 1f - TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+				num10 *= num10;
+			}
+			float num11 = num9 * 0.33f + num10 * 0.66f;
+			float num12 = num3 * num2 * num5 * num6 * num4 * num7 * num11;
+			if (num12 > num)
+			{
+				num = num12;
+				result = item;
 			}
 		}
 		return result;
@@ -381,63 +544,6 @@ public static class SettlementHelper
 				yield return item2.Character.HeroObject;
 			}
 		}
-	}
-
-	public static int NumberOfVolunteersCanBeRecruitedForGarrison(Settlement settlement)
-	{
-		int num = 0;
-		Hero leader = settlement.OwnerClan.Leader;
-		foreach (Hero notable in settlement.Notables)
-		{
-			if (!notable.IsAlive)
-			{
-				continue;
-			}
-			int num2 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(leader, notable);
-			for (int i = 0; i < num2; i++)
-			{
-				if (notable.VolunteerTypes[i] != null)
-				{
-					num++;
-				}
-			}
-		}
-		foreach (Village boundVillage in settlement.BoundVillages)
-		{
-			if (boundVillage.VillageState == Village.VillageStates.Normal)
-			{
-				num += NumberOfVolunteersCanBeRecruitedForGarrison(boundVillage.Settlement);
-			}
-		}
-		return num;
-	}
-
-	public static bool IsThereAnyVolunteerCanBeRecruitedForGarrison(Settlement settlement)
-	{
-		Hero leader = settlement.OwnerClan.Leader;
-		foreach (Hero notable in settlement.Notables)
-		{
-			if (!notable.IsAlive)
-			{
-				continue;
-			}
-			int num = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(leader, notable);
-			for (int i = 0; i < num; i++)
-			{
-				if (notable.VolunteerTypes[i] != null)
-				{
-					return true;
-				}
-			}
-		}
-		foreach (Village boundVillage in settlement.BoundVillages)
-		{
-			if (boundVillage.VillageState == Village.VillageStates.Normal && IsThereAnyVolunteerCanBeRecruitedForGarrison(boundVillage.Settlement))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public static bool IsGarrisonStarving(Settlement settlement)
@@ -506,7 +612,57 @@ public static class SettlementHelper
 		}
 		if (mBList.Count > 0)
 		{
-			EnterSettlementAction.ApplyForCharacterOnly(HeroCreator.CreateHeroAtOccupation(mBList.GetRandomElement(), settlement), settlement);
+			EnterSettlementAction.ApplyForCharacterOnly(HeroCreator.CreateNotable(mBList.GetRandomElement(), settlement), settlement);
 		}
+	}
+
+	public static ExplainedNumber GetGarrisonChangeExplainedNumber(Town town)
+	{
+		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: true);
+		ExplainedNumber garrisonChangeExplainedNumber = Campaign.Current.GetCampaignBehavior<IGarrisonRecruitmentBehavior>().GetGarrisonChangeExplainedNumber(town);
+		if (garrisonChangeExplainedNumber.BaseNumber > 0f)
+		{
+			result.AddFromExplainedNumber(garrisonChangeExplainedNumber, new TextObject("{=basevalue}Base"));
+		}
+		if (town.GarrisonParty != null)
+		{
+			int totalManCount = Campaign.Current.Models.PartyDesertionModel.GetTroopsToDesert(town.GarrisonParty).TotalManCount;
+			if (totalManCount > 0)
+			{
+				TextObject baseText = new TextObject("{=ojBJ3aTO}Desertion");
+				result.SubtractFromExplainedNumber(new ExplainedNumber(totalManCount, includeDescriptions: true), baseText);
+			}
+		}
+		return result;
+	}
+
+	public static float GetNeighborScoreForConsideringClan(Settlement settlement, Clan consideringClan)
+	{
+		float num = 0f;
+		if (settlement.MapFaction == consideringClan.MapFaction && settlement.IsFortification)
+		{
+			HashSet<Settlement> hashSet = new HashSet<Settlement>();
+			HashSet<Settlement> hashSet2 = new HashSet<Settlement>();
+			foreach (Settlement neighborFortification in settlement.Town.GetNeighborFortifications(MobileParty.NavigationType.All))
+			{
+				if (!hashSet.Contains(neighborFortification))
+				{
+					hashSet.Add(neighborFortification);
+					num = ((!settlement.MapFaction.IsAtWarWith(neighborFortification.MapFaction)) ? ((settlement.MapFaction != consideringClan.MapFaction) ? (num + 0.05f) : (num + 0.1f)) : (num - 0.2f));
+				}
+			}
+			foreach (Settlement item in hashSet)
+			{
+				foreach (Settlement neighborFortification2 in item.Town.GetNeighborFortifications(MobileParty.NavigationType.All))
+				{
+					if (!hashSet.Contains(neighborFortification2) && !hashSet2.Contains(neighborFortification2))
+					{
+						hashSet2.Add(neighborFortification2);
+						num = ((!settlement.MapFaction.IsAtWarWith(neighborFortification2.MapFaction)) ? ((settlement.MapFaction != consideringClan.MapFaction) ? (num + 0.01f) : (num + 0.02f)) : (num - 0.04f));
+					}
+				}
+			}
+		}
+		return num;
 	}
 }

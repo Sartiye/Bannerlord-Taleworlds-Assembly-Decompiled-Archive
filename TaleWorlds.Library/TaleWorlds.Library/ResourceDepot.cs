@@ -24,7 +24,9 @@ public class ResourceDepot
 
 	public void AddLocation(string basePath, string location)
 	{
-		ResourceDepotLocation item = new ResourceDepotLocation(basePath, location, Path.GetFullPath(basePath + location));
+		basePath = basePath.Replace('\\', '/');
+		location = location.Replace('\\', '/');
+		ResourceDepotLocation item = new ResourceDepotLocation(basePath, location, basePath + location);
 		_resourceLocations.Add(item);
 	}
 
@@ -33,15 +35,16 @@ public class ResourceDepot
 		_files.Clear();
 		foreach (ResourceDepotLocation resourceLocation in _resourceLocations)
 		{
-			string fullPath = Path.GetFullPath(resourceLocation.BasePath + resourceLocation.Path);
+			Debug.Print("ResourceDepot:CollectResources: " + resourceLocation.FullPath + "\n");
+			string fullPath = resourceLocation.FullPath;
 			string[] files = Directory.GetFiles(resourceLocation.BasePath + resourceLocation.Path, "*", SearchOption.AllDirectories);
 			for (int i = 0; i < files.Length; i++)
 			{
-				string fullPath2 = Path.GetFullPath(files[i]);
-				fullPath2 = fullPath2.Replace('\\', '/');
-				string text = fullPath2.Substring(fullPath.Length);
-				string key = text.ToLower();
-				ResourceDepotFile value = new ResourceDepotFile(resourceLocation, text, fullPath2);
+				string text = files[i];
+				text = text.Replace('\\', '/');
+				string text2 = text.Replace('\\', '/').Substring(fullPath.Length);
+				string key = text2.ToLower();
+				ResourceDepotFile value = new ResourceDepotFile(resourceLocation, text2, text);
 				if (_files.ContainsKey(key))
 				{
 					_files[key] = value;
@@ -60,7 +63,7 @@ public class ResourceDepot
 		List<string> list = new List<string>();
 		foreach (ResourceDepotFile value2 in _files.Values)
 		{
-			string text = Path.GetFullPath(value2.BasePath + value2.Location + subDirectory).Replace('\\', '/').ToLower();
+			string text = (value2.BasePath + value2.Location + subDirectory).Replace('\\', '/').ToLower();
 			string fullPath = value2.FullPath;
 			string fullPathLowerCase = value2.FullPathLowerCase;
 			bool num = (!excludeSubContents && fullPathLowerCase.StartsWith(text)) || (excludeSubContents && string.Equals(Directory.GetParent(text).FullName, text, StringComparison.CurrentCultureIgnoreCase));

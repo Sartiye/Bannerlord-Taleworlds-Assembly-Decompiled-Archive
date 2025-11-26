@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Killing_blow", false)]
+[EngineStruct("Killing_blow", false, null)]
 public struct KillingBlow
 {
 	public Vec3 RagdollImpulseLocalPoint;

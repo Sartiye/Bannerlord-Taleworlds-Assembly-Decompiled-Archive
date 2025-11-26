@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Encyclopedia;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Pages;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
@@ -556,22 +557,24 @@ public class EncyclopediaNavigatorVM : ViewModel
 		if (SearchText.Length < MinCharAmountToShowResults)
 		{
 			SearchResults.Clear();
+			return;
 		}
-		else if (!isAppending || SearchText.Length == MinCharAmountToShowResults || isPasted)
+		string text = StringHelpers.RemoveDiacritics(_searchText);
+		if (!isAppending || SearchText.Length == MinCharAmountToShowResults || isPasted)
 		{
 			SearchResults.Clear();
 			foreach (EncyclopediaPage encyclopediaPage in Campaign.Current.EncyclopediaManager.GetEncyclopediaPages())
 			{
 				foreach (EncyclopediaListItem listItem in encyclopediaPage.GetListItems())
 				{
-					int num = listItem.Name.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase);
+					int num = StringHelpers.RemoveDiacritics(listItem.Name).IndexOf(text, StringComparison.InvariantCultureIgnoreCase);
 					if (num >= 0)
 					{
-						SearchResults.Add(new EncyclopediaSearchResultVM(listItem, _searchText, num));
+						SearchResults.Add(new EncyclopediaSearchResultVM(listItem, text, num));
 					}
 				}
 			}
-			_searchResultComparer.SearchText = _searchText;
+			_searchResultComparer.SearchText = text;
 			SearchResults.Sort(_searchResultComparer);
 		}
 		else
@@ -582,13 +585,13 @@ public class EncyclopediaNavigatorVM : ViewModel
 			}
 			foreach (EncyclopediaSearchResultVM item in SearchResults.ToList())
 			{
-				if (item.OrgNameText.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) < 0)
+				if (StringHelpers.RemoveDiacritics(item.OrgNameText).IndexOf(text, StringComparison.InvariantCultureIgnoreCase) == -1)
 				{
 					SearchResults.Remove(item);
 				}
 				else
 				{
-					item.UpdateSearchedText(_searchText);
+					item.UpdateSearchedText(text);
 				}
 			}
 		}

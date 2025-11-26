@@ -2,7 +2,7 @@ namespace TaleWorlds.Core;
 
 public interface IFaceGen
 {
-	BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags);
+	BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags, float variationAmount);
 
 	void GenerateParentBody(BodyProperties childBodyProperties, int race, ref BodyProperties motherBodyProperties, ref BodyProperties fatherBodyProperties);
 
@@ -29,4 +29,12 @@ public interface IFaceGen
 	Monster GetMonsterWithSuffix(int race, string suffix);
 
 	Monster GetBaseMonsterFromRace(int race);
+
+	int[] GetHairIndicesByTag(int race, int curGender, float age, string tag);
+
+	int[] GetFacialIndicesByTag(int race, int curGender, float age, string tag);
+
+	int[] GetTattooIndicesByTag(int race, int curGender, float age, string tag);
+
+	float GetTattooZeroProbability(int race, int curGender, float age);
 }

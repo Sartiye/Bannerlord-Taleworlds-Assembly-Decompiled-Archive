@@ -15,8 +15,6 @@ public abstract class BaseBattleMissionController : MissionLogic
 
 	protected int DeployedDefenderTroopCount { get; private set; }
 
-	protected bool IsDeploymentFinished => base.Mission.GetMissionBehavior<DeploymentHandler>() == null;
-
 	protected BaseBattleMissionController(bool isPlayerAttacker)
 	{
 		IsPlayerAttacker = isPlayerAttacker;
@@ -89,7 +87,7 @@ public abstract class BaseBattleMissionController : MissionLogic
 
 	public override bool MissionEnded(ref MissionResult missionResult)
 	{
-		if (!IsDeploymentFinished)
+		if (!base.Mission.IsDeploymentFinished)
 		{
 			return false;
 		}
@@ -171,31 +169,31 @@ public abstract class BaseBattleMissionController : MissionLogic
 	protected virtual void CreatePlayer()
 	{
 		game.PlayerTroop = Game.Current.ObjectManager.GetObject<BasicCharacterObject>("main_hero");
-		FormationClass formationClass = base.Mission.GetFormationSpawnClass(base.Mission.PlayerTeam.Side, FormationClass.NumberOfRegularFormations, isReinforcement: false);
+		FormationClass formationClass = base.Mission.GetFormationSpawnClass(base.Mission.PlayerTeam, FormationClass.NumberOfRegularFormations);
 		if (formationClass != FormationClass.NumberOfRegularFormations)
 		{
 			formationClass = game.PlayerTroop.DefaultFormationClass;
 		}
-		base.Mission.GetFormationSpawnFrame(base.Mission.PlayerTeam.Side, formationClass, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+		base.Mission.GetFormationSpawnFrame(base.Mission.PlayerTeam, formationClass, isReinforcement: false, out var spawnPosition, out var spawnDirection);
 		Mission mission = base.Mission;
 		AgentBuildData agentBuildData = new AgentBuildData(game.PlayerTroop).Team(base.Mission.PlayerTeam);
 		Vec3 position = spawnPosition.GetGroundVec3();
-		Agent agent = mission.SpawnAgent(agentBuildData.InitialPosition(in position).InitialDirection(in spawnDirection).Controller(Agent.ControllerType.Player));
+		Agent agent = mission.SpawnAgent(agentBuildData.InitialPosition(in position).InitialDirection(in spawnDirection).Controller(AgentControllerType.Player));
 		agent.WieldInitialWeapons();
 		base.Mission.MainAgent = agent;
 	}
 
 	protected void BecomeEnemy()
 	{
-		base.Mission.MainAgent.Controller = Agent.ControllerType.AI;
-		base.Mission.PlayerEnemyTeam.Leader.Controller = Agent.ControllerType.Player;
+		base.Mission.MainAgent.Controller = AgentControllerType.AI;
+		base.Mission.PlayerEnemyTeam.Leader.Controller = AgentControllerType.Player;
 		SwapTeams();
 	}
 
 	protected void BecomePlayer()
 	{
-		base.Mission.MainAgent.Controller = Agent.ControllerType.Player;
-		base.Mission.PlayerEnemyTeam.Leader.Controller = Agent.ControllerType.AI;
+		base.Mission.MainAgent.Controller = AgentControllerType.Player;
+		base.Mission.PlayerEnemyTeam.Leader.Controller = AgentControllerType.AI;
 		SwapTeams();
 	}
 

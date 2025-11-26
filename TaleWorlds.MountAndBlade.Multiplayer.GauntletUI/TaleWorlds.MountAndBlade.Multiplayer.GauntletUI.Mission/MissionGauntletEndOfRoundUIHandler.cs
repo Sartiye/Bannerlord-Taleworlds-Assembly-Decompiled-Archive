@@ -30,11 +30,8 @@ public class MissionGauntletEndOfRoundUIHandler : MissionView
 		_scoreboardComponent = base.Mission.GetMissionBehavior<MissionScoreboardComponent>();
 		_mpGameModeBase = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 		ViewOrderPriority = 23;
-		_ = UIResourceManager.SpriteData;
-		_ = UIResourceManager.ResourceContext;
-		_ = UIResourceManager.UIResourceDepot;
 		_dataSource = new MultiplayerEndOfRoundVM(_scoreboardComponent, _missionLobbyComponent, RoundComponent);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerAdminPanel", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerEndOfRound", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);

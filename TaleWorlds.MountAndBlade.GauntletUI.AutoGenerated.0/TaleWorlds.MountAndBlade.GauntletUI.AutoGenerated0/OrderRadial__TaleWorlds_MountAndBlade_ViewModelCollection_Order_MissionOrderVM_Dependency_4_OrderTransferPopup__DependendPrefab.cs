@@ -39,7 +39,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 
 	private TextWidget _widget_0_0_5;
 
-	private OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_Standard_TriplePopupCloseButtons__DependendPrefab _widget_1;
+	private OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_11_Standard_TriplePopupCloseButtons__DependendPrefab _widget_1;
 
 	private MissionOrderTroopControllerVM _datasource_Root;
 
@@ -77,7 +77,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_0_0_4.AddChild(_widget_0_0_4_2);
 		_widget_0_0_5 = new TextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_5);
-		_widget_1 = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_Standard_TriplePopupCloseButtons__DependendPrefab(base.Context);
+		_widget_1 = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_11_Standard_TriplePopupCloseButtons__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_1.CreateWidgets();
 	}
@@ -236,8 +236,8 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)_widget_0_0_2.GetChild(num)).DestroyDataSource();
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)_widget_0_0_2.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_TransferTargetList = null;
 		}
@@ -542,9 +542,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_2.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_2.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child4).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_2.RemoveChild(child4);
 			}
 			break;
@@ -560,27 +560,27 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 			OrderTroopItemVM dataSource = (OrderTroopItemVM)(generatedWidgetData.Data = _datasource_Root_TransferTargetList[e.NewIndex]);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, e.NewIndex);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, e.NewIndex);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_2.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_2.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).SetDataSource(null);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_2.RemoveChild(child);
 			break;
 		}
@@ -645,9 +645,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 				for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_0_2.GetChild(num);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_0_2.GetChild(num);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).SetDataSource(null);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_0_2.RemoveChild(child2);
 				}
 				_datasource_Root_TransferTargetList = null;
@@ -715,15 +715,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_TransferTargetList.ListChanged += OnList_datasource_Root_TransferTargetListChanged;
 			for (int i = 0; i < _datasource_Root_TransferTargetList.Count; i++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 				OrderTroopItemVM dataSource = (OrderTroopItemVM)(generatedWidgetData.Data = _datasource_Root_TransferTargetList[i]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, i);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, i);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 		_widget_1.SetDataSource(_datasource_Root);
@@ -737,9 +737,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_2.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_2.RemoveChild(child2);
 			}
 			_datasource_Root_TransferTargetList = null;
@@ -751,15 +751,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_TransferTargetList.ListChanged += OnList_datasource_Root_TransferTargetListChanged;
 			for (int i = 0; i < _datasource_Root_TransferTargetList.Count; i++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 				OrderTroopItemVM dataSource = (OrderTroopItemVM)(generatedWidgetData.Data = _datasource_Root_TransferTargetList[i]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, i);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, i);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

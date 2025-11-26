@@ -342,6 +342,7 @@ public class QuestItemVM : ViewModel
 		}
 		Name = questLogEntry.Title.ToString();
 		QuestGiverHero = new HeroVM(questLogEntry.RelatedHero);
+		UpdateIsUpdated();
 		IsTracked = false;
 		IsTrackable = false;
 		RefreshValues();
@@ -429,7 +430,7 @@ public class QuestItemVM : ViewModel
 		}
 		GameTexts.SetVariable("DAY_IS_PLURAL", (RemainingDays > 1) ? 1 : 0);
 		GameTexts.SetVariable("DAY", RemainingDays);
-		if (dueTime.ToHours - CampaignTime.Now.ToHours < 24.0)
+		if (dueTime.ToHours - CampaignTime.Now.ToHours < (double)CampaignTime.HoursInDay)
 		{
 			RemainingDaysText = GameTexts.FindText("str_less_than_a_day").ToString();
 			RemainingDaysTextCombined = GameTexts.FindText("str_less_than_a_day").ToString();

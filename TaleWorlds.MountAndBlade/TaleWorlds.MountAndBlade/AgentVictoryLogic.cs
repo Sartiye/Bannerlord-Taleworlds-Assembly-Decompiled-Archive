@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -37,6 +37,8 @@ public class AgentVictoryLogic : MissionLogic
 
 		public bool GotOrderRecently { get; private set; }
 
+		public bool IsCheeringPaused { get; private set; }
+
 		public CheeringAgent(Agent agent, bool isCheeringOnRetreat)
 		{
 			Agent = agent;
@@ -47,13 +49,18 @@ public class AgentVictoryLogic : MissionLogic
 		{
 			GotOrderRecently = true;
 		}
+
+		internal void UpdatePauseState(bool shouldCheeringBePaused)
+		{
+			IsCheeringPaused = shouldCheeringBePaused;
+		}
 	}
 
 	private const float HighCheerThreshold = 0.25f;
 
 	private const float MidCheerThreshold = 0.75f;
 
-	private const float YellOnCheerCancelProbability = 0.25f;
+	private const float YellIfOrderedInRetreatProbability = 0.25f;
 
 	private CheerActionGroupEnum _cheerActionGroup;
 
@@ -61,36 +68,36 @@ public class AgentVictoryLogic : MissionLogic
 
 	private readonly ActionIndexCache[] _lowCheerActions = new ActionIndexCache[10]
 	{
-		ActionIndexCache.Create("act_cheering_low_01"),
-		ActionIndexCache.Create("act_cheering_low_02"),
-		ActionIndexCache.Create("act_cheering_low_03"),
-		ActionIndexCache.Create("act_cheering_low_04"),
-		ActionIndexCache.Create("act_cheering_low_05"),
-		ActionIndexCache.Create("act_cheering_low_06"),
-		ActionIndexCache.Create("act_cheering_low_07"),
-		ActionIndexCache.Create("act_cheering_low_08"),
-		ActionIndexCache.Create("act_cheering_low_09"),
-		ActionIndexCache.Create("act_cheering_low_10")
+		ActionIndexCache.act_cheering_low_01,
+		ActionIndexCache.act_cheering_low_02,
+		ActionIndexCache.act_cheering_low_03,
+		ActionIndexCache.act_cheering_low_04,
+		ActionIndexCache.act_cheering_low_05,
+		ActionIndexCache.act_cheering_low_06,
+		ActionIndexCache.act_cheering_low_07,
+		ActionIndexCache.act_cheering_low_08,
+		ActionIndexCache.act_cheering_low_09,
+		ActionIndexCache.act_cheering_low_10
 	};
 
 	private readonly ActionIndexCache[] _midCheerActions = new ActionIndexCache[4]
 	{
-		ActionIndexCache.Create("act_cheer_1"),
-		ActionIndexCache.Create("act_cheer_2"),
-		ActionIndexCache.Create("act_cheer_3"),
-		ActionIndexCache.Create("act_cheer_4")
+		ActionIndexCache.act_cheer_1,
+		ActionIndexCache.act_cheer_2,
+		ActionIndexCache.act_cheer_3,
+		ActionIndexCache.act_cheer_4
 	};
 
 	private readonly ActionIndexCache[] _highCheerActions = new ActionIndexCache[8]
 	{
-		ActionIndexCache.Create("act_cheering_high_01"),
-		ActionIndexCache.Create("act_cheering_high_02"),
-		ActionIndexCache.Create("act_cheering_high_03"),
-		ActionIndexCache.Create("act_cheering_high_04"),
-		ActionIndexCache.Create("act_cheering_high_05"),
-		ActionIndexCache.Create("act_cheering_high_06"),
-		ActionIndexCache.Create("act_cheering_high_07"),
-		ActionIndexCache.Create("act_cheering_high_08")
+		ActionIndexCache.act_cheering_high_01,
+		ActionIndexCache.act_cheering_high_02,
+		ActionIndexCache.act_cheering_high_03,
+		ActionIndexCache.act_cheering_high_04,
+		ActionIndexCache.act_cheering_high_05,
+		ActionIndexCache.act_cheering_high_06,
+		ActionIndexCache.act_cheering_high_07,
+		ActionIndexCache.act_cheering_high_08
 	};
 
 	private ActionIndexCache[] _selectedCheerActions;
@@ -195,15 +202,17 @@ public class AgentVictoryLogic : MissionLogic
 			Agent agent = _cheeringAgents[num].Agent;
 			bool gotOrderRecently = _cheeringAgents[num].GotOrderRecently;
 			bool isCheeringOnRetreat = _cheeringAgents[num].IsCheeringOnRetreat;
+			bool isCheeringPaused = _cheeringAgents[num].IsCheeringPaused;
 			VictoryComponent component = agent.GetComponent<VictoryComponent>();
 			if (component != null)
 			{
 				bool flag = agent.GetComponent<HumanAIComponent>()?.GetCurrentlyMovingGameObject() != null;
 				bool flag2 = agent.GetCurrentAnimationFlag(0).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement) || agent.GetCurrentAnimationFlag(1).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement);
-				if (CheckIfIsInRetreat() && gotOrderRecently && !flag && !flag2)
+				bool flag3 = agent.IsInWater() || agent.IsUsingGameObject || flag || flag2;
+				if (CheckIfIsInRetreat() && gotOrderRecently)
 				{
 					agent.RemoveComponent(component);
-					agent.SetActionChannel(1, ActionIndexCache.act_none, ignorePriority: false, (uint)agent.GetCurrentActionPriority(1));
+					agent.SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: false, (AnimFlags)Math.Min(agent.GetCurrentActionPriority(1), 73));
 					if (MBRandom.RandomFloat > 0.25f)
 					{
 						agent.MakeVoice(SkinVoiceManager.VoiceType.Yell, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
@@ -214,11 +223,16 @@ public class AgentVictoryLogic : MissionLogic
 					}
 					_cheeringAgents.RemoveAt(num);
 				}
-				else if (component.CheckTimer())
+				else if (isCheeringPaused != flag3)
+				{
+					_cheeringAgents[num].UpdatePauseState(flag3);
+					isCheeringPaused = _cheeringAgents[num].IsCheeringPaused;
+				}
+				if (!(CheckIfIsInRetreat() && gotOrderRecently) && !isCheeringPaused && component.CheckTimer())
 				{
 					if (!agent.IsActive())
 					{
-						Debug.FailedAssert("Agent trying to cheer without being active", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "CheckAnimationAndVoice", 234);
+						Debug.FailedAssert("Agent trying to cheer without being active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "CheckAnimationAndVoice", 252);
 						Debug.Print("Agent trying to cheer without being active");
 					}
 					ChooseWeaponToCheerWithCheerAndUpdateTimer(agent, out var resetTimer);
@@ -282,15 +296,15 @@ public class AgentVictoryLogic : MissionLogic
 		{
 			if (agent.IsHuman && agent.IsAIControlled && agent.Team != null && side == agent.Team.Side && agent.CurrentWatchState == Agent.WatchState.Alarmed && agent.GetComponent<VictoryComponent>() == null)
 			{
-				if (_cheeringAgents.AnyQ((CheeringAgent a) => a.Agent == agent))
-				{
-					Debug.FailedAssert("Adding a duplicate agent in _cheeringAgents", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "SetTimersOfVictoryReactionsOnBattleEnd", 308);
-					Debug.Print("Adding a duplicate agent in _cheeringAgents");
-				}
-				agent.AddComponent(new VictoryComponent(agent, new RandomTimer(base.Mission.CurrentTime, _cheerReactionTimerData.MinDuration, _cheerReactionTimerData.MaxDuration)));
-				_cheeringAgents.Add(new CheeringAgent(agent, isCheeringOnRetreat: false));
+				RegisterAgentForCheerCheck(agent, isCheeringOnRetreat: false, _cheerReactionTimerData.MinDuration, _cheerReactionTimerData.MaxDuration);
 			}
 		}
+	}
+
+	private void RegisterAgentForCheerCheck(Agent agent, bool isCheeringOnRetreat, float minReactionTime, float maxReactionTime)
+	{
+		agent.AddComponent(new VictoryComponent(agent, new RandomTimer(base.Mission.CurrentTime, minReactionTime, maxReactionTime)));
+		_cheeringAgents.Add(new CheeringAgent(agent, isCheeringOnRetreat));
 	}
 
 	public void SetTimersOfVictoryReactionsOnRetreat(BattleSideEnum side)
@@ -307,36 +321,36 @@ public class AgentVictoryLogic : MissionLogic
 				break;
 			}
 			Agent agent2 = list[i];
-			EquipmentIndex wieldedItemIndex = agent2.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			bool num2 = wieldedItemIndex != EquipmentIndex.None && agent2.Equipment[wieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
-			EquipmentIndex wieldedItemIndex2 = agent2.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-			bool flag = wieldedItemIndex2 != EquipmentIndex.None && agent2.Equipment[wieldedItemIndex2].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
-			bool flag2 = agent2.GetComponent<HumanAIComponent>()?.GetCurrentlyMovingGameObject() != null;
-			bool flag3 = agent2.GetCurrentAnimationFlag(0).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement) || agent2.GetCurrentAnimationFlag(1).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement);
-			if (num2 || flag || agent2.IsUsingGameObject || flag2 || flag3)
+			EquipmentIndex primaryWieldedItemIndex = agent2.GetPrimaryWieldedItemIndex();
+			bool flag = primaryWieldedItemIndex != EquipmentIndex.None && agent2.Equipment[primaryWieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
+			EquipmentIndex offhandWieldedItemIndex = agent2.GetOffhandWieldedItemIndex();
+			bool flag2 = offhandWieldedItemIndex != EquipmentIndex.None && agent2.Equipment[offhandWieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
+			bool flag3 = agent2.GetComponent<HumanAIComponent>()?.GetCurrentlyMovingGameObject() != null;
+			bool flag4 = agent2.GetCurrentAnimationFlag(0).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement) || agent2.GetCurrentAnimationFlag(1).HasAnyFlag(AnimFlags.anf_synch_with_ladder_movement);
+			if (agent2.IsInWater() || flag || flag2 || agent2.IsUsingGameObject || flag3 || flag4)
 			{
 				continue;
 			}
-			int num3 = list.Count - i;
-			int num4 = num - list2.Count;
-			int num5 = num3 - num4;
-			float num6 = MBMath.ClampFloat((float)(num - num5) / (float)num, 0f, 1f);
-			if (num6 < 1f && agent2.TryGetImmediateEnemyAgentMovementData(out var maximumForwardUnlimitedSpeed, out var position))
+			int num2 = list.Count - i;
+			int num3 = num - list2.Count;
+			int num4 = num2 - num3;
+			float num5 = MBMath.ClampFloat((float)(num - num4) / (float)num, 0f, 1f);
+			if (num5 < 1f && agent2.TryGetImmediateEnemyAgentMovementData(out var maximumForwardUnlimitedSpeed, out var position))
 			{
-				float maximumForwardUnlimitedSpeed2 = agent2.MaximumForwardUnlimitedSpeed;
-				float num7 = maximumForwardUnlimitedSpeed;
-				if (maximumForwardUnlimitedSpeed2 > num7)
+				float maximumForwardUnlimitedSpeed2 = agent2.GetMaximumForwardUnlimitedSpeed();
+				float num6 = maximumForwardUnlimitedSpeed;
+				if (maximumForwardUnlimitedSpeed2 > num6)
 				{
-					float num8 = (agent2.Position - position).LengthSquared / (maximumForwardUnlimitedSpeed2 - num7);
-					if (num8 < 900f)
+					float num7 = (agent2.Position - position).LengthSquared / (maximumForwardUnlimitedSpeed2 - num6);
+					if (num7 < 900f)
 					{
-						float num9 = num6 - -1f;
-						float num10 = num8 / 900f;
-						num6 = -1f + num9 * num10;
+						float num8 = num5 - -1f;
+						float num9 = num7 / 900f;
+						num5 = -1f + num8 * num9;
 					}
 				}
 			}
-			if (MBRandom.RandomFloat <= 0.5f + 0.5f * num6)
+			if (MBRandom.RandomFloat <= 0.5f + 0.5f * num5)
 			{
 				list2.Add(agent2);
 			}
@@ -361,13 +375,7 @@ public class AgentVictoryLogic : MissionLogic
 	{
 		if (agent.IsActive() && agent.IsHuman && agent.IsAIControlled)
 		{
-			if (_cheeringAgents.AnyQ((CheeringAgent a) => a.Agent == agent))
-			{
-				Debug.FailedAssert("Adding a duplicate agent in _cheeringAgents", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "SetTimersOfVictoryReactionsForSingleAgent", 412);
-				Debug.Print("Adding a duplicate agent in _cheeringAgents");
-			}
-			agent.AddComponent(new VictoryComponent(agent, new RandomTimer(base.Mission.CurrentTime, minStartTime, maxStartTime)));
-			_cheeringAgents.Add(new CheeringAgent(agent, isCheeringOnRetreat));
+			RegisterAgentForCheerCheck(agent, isCheeringOnRetreat, minStartTime, maxStartTime);
 		}
 	}
 
@@ -378,8 +386,8 @@ public class AgentVictoryLogic : MissionLogic
 		{
 			return;
 		}
-		EquipmentIndex wieldedItemIndex = cheerAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		bool flag = wieldedItemIndex != EquipmentIndex.None && !cheerAgent.Equipment[wieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
+		EquipmentIndex primaryWieldedItemIndex = cheerAgent.GetPrimaryWieldedItemIndex();
+		bool flag = primaryWieldedItemIndex != EquipmentIndex.None && !cheerAgent.Equipment[primaryWieldedItemIndex].Item.ItemFlags.HasAnyFlag(ItemFlags.DropOnAnyAction);
 		if (!flag)
 		{
 			EquipmentIndex equipmentIndex = EquipmentIndex.None;
@@ -393,7 +401,7 @@ public class AgentVictoryLogic : MissionLogic
 			}
 			if (equipmentIndex == EquipmentIndex.None)
 			{
-				if (wieldedItemIndex != EquipmentIndex.None)
+				if (primaryWieldedItemIndex != EquipmentIndex.None)
 				{
 					cheerAgent.TryToSheathWeaponInHand(Agent.HandIndex.MainHand, Agent.WeaponWieldActionType.WithAnimation);
 				}
@@ -414,7 +422,7 @@ public class AgentVictoryLogic : MissionLogic
 			{
 				array = _midCheerActions;
 			}
-			cheerAgent.SetActionChannel(1, array[MBRandom.RandomInt(array.Length)], ignorePriority: false, 0uL);
+			cheerAgent.SetActionChannel(1, in array[MBRandom.RandomInt(array.Length)], ignorePriority: false, (AnimFlags)0uL);
 			cheerAgent.MakeVoice(SkinVoiceManager.VoiceType.Victory, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
 			resetTimer = true;
 		}

@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PartyHealingModel : GameModel
+public abstract class PartyHealingModel : MBGameModel<PartyHealingModel>
 {
 	public abstract float GetSurgeryChance(PartyBase party);
 
@@ -11,13 +11,13 @@ public abstract class PartyHealingModel : GameModel
 
 	public abstract int GetSkillXpFromHealingTroop(PartyBase party);
 
-	public abstract ExplainedNumber GetDailyHealingForRegulars(MobileParty party, bool includeDescriptions = false);
+	public abstract ExplainedNumber GetDailyHealingForRegulars(PartyBase partyBase, bool isPrisoner, bool includeDescriptions = false);
 
-	public abstract ExplainedNumber GetDailyHealingHpForHeroes(MobileParty party, bool includeDescriptions = false);
+	public abstract ExplainedNumber GetDailyHealingHpForHeroes(PartyBase partyBase, bool isPrisoners, bool includeDescriptions = false);
 
 	public abstract int GetHeroesEffectedHealingAmount(Hero hero, float healingRate);
 
 	public abstract float GetSiegeBombardmentHitSurgeryChance(PartyBase party);
 
-	public abstract int GetBattleEndHealingAmount(MobileParty party, Hero hero);
+	public abstract ExplainedNumber GetBattleEndHealingAmount(PartyBase partyBase, Hero hero);
 }

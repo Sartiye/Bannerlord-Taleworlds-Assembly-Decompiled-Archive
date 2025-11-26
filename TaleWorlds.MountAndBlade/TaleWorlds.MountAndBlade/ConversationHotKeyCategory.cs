@@ -12,7 +12,7 @@ public sealed class ConversationHotKeyCategory : GameKeyContext
 	public const string ContinueClick = "ContinueClick";
 
 	public ConversationHotKeyCategory()
-		: base("ConversationHotKeyCategory", 108)
+		: base("ConversationHotKeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();
@@ -25,11 +25,15 @@ public sealed class ConversationHotKeyCategory : GameKeyContext
 		{
 			new Key(InputKey.Space),
 			new Key(InputKey.Enter),
-			new Key(InputKey.NumpadEnter),
-			new Key(InputKey.ControllerRDown)
+			new Key(InputKey.NumpadEnter)
 		};
 		RegisterHotKey(new HotKey("ContinueKey", "ConversationHotKeyCategory", keys));
-		RegisterHotKey(new HotKey("ContinueClick", "ConversationHotKeyCategory", InputKey.LeftMouseButton));
+		List<Key> keys2 = new List<Key>
+		{
+			new Key(InputKey.LeftMouseButton),
+			new Key(InputKey.ControllerRDown)
+		};
+		RegisterHotKey(new HotKey("ContinueClick", "ConversationHotKeyCategory", keys2));
 	}
 
 	private void RegisterGameKeys()

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -79,9 +78,12 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		foreach (Hero item in hero.Clan.Heroes.Where((Hero x) => x.IsAlive))
+		foreach (Hero hero2 in hero.Clan.Heroes)
 		{
-			AddExtraLife(item);
+			if (hero2.IsAlive)
+			{
+				AddExtraLife(hero2);
+			}
 		}
 	}
 
@@ -186,7 +188,7 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 	{
 		if (hero.Clan != Clan.PlayerClan)
 		{
-			hero.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: true);
+			hero.HeroDeveloper.InitializeHeroDeveloper();
 		}
 	}
 
@@ -197,12 +199,12 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		{
 			Equipment randomElementInefficiently2 = randomElementInefficiently.GetCivilianEquipments().GetRandomElementInefficiently();
 			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElementInefficiently2);
-			new Equipment(isCivilian: false).FillFrom(randomElementInefficiently2, useSourceEquipmentType: false);
+			new Equipment(Equipment.EquipmentType.Battle).FillFrom(randomElementInefficiently2, useSourceEquipmentType: false);
 			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElementInefficiently2);
 		}
 		else
 		{
-			Debug.FailedAssert("Cant find child equipment template for " + hero.Name, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroReachesTeenAge", 217);
+			Debug.FailedAssert("Cant find child equipment template for " + hero.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroReachesTeenAge", 221);
 		}
 		if (hero.Clan == Clan.PlayerClan)
 		{
@@ -248,7 +250,7 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 				hero.SetTraitLevel(item, num);
 			}
 		}
-		hero.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: true);
+		hero.HeroDeveloper.InitializeHeroDeveloper();
 	}
 
 	private void OnHeroComesOfAge(Hero hero)
@@ -257,24 +259,13 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		bool flag = !hero.IsFemale || hero.Clan == Hero.MainHero.Clan || (hero.Mother != null && !hero.Mother.IsNoncombatant) || (hero.RandomIntWithSeed(17u, 0, 1) == 0 && hero.GetTraitLevel(DefaultTraits.Valor) == 1);
 		if (hero.Clan != Clan.PlayerClan)
 		{
-			foreach (TraitObject skillCategory in DefaultTraits.SkillCategories)
+			foreach (var item in Campaign.Current.Models.HeroCreationModel.GetInheritedSkillsForHero(hero))
 			{
-				hero.SetTraitLevel(skillCategory, 0);
+				hero.SetSkillValue(item.Item1, item.Item2);
 			}
-			if (flag)
-			{
-				hero.SetTraitLevel(DefaultTraits.CavalryFightingSkills, 5);
-				int value = MathF.Max(DefaultTraits.Commander.MinValue, 3 + hero.GetTraitLevel(DefaultTraits.Valor) + hero.GetTraitLevel(DefaultTraits.Generosity) + hero.RandomIntWithSeed(18u, -1, 2));
-				hero.SetTraitLevel(DefaultTraits.Commander, value);
-			}
-			int value2 = MathF.Max(DefaultTraits.Manager.MinValue, 3 + hero.GetTraitLevel(DefaultTraits.Honor) + hero.RandomIntWithSeed(19u, -1, 2));
-			hero.SetTraitLevel(DefaultTraits.Manager, value2);
-			int value3 = MathF.Max(DefaultTraits.Politician.MinValue, 3 + hero.GetTraitLevel(DefaultTraits.Calculating) + hero.RandomIntWithSeed(20u, -1, 2));
-			hero.SetTraitLevel(DefaultTraits.Politician, value3);
-			hero.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: true);
+			hero.HeroDeveloper.InitializeHeroDeveloper();
 		}
 		else
 		{
@@ -282,6 +273,14 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		}
 		MBList<MBEquipmentRoster> equipmentRostersForHeroComeOfAge = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForHeroComeOfAge(hero, isCivilian: false);
 		MBList<MBEquipmentRoster> equipmentRostersForHeroComeOfAge2 = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForHeroComeOfAge(hero, isCivilian: true);
+		if (equipmentRostersForHeroComeOfAge.IsEmpty())
+		{
+			equipmentRostersForHeroComeOfAge.Add(MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_bat_dummy"));
+		}
+		if (equipmentRostersForHeroComeOfAge2.IsEmpty())
+		{
+			equipmentRostersForHeroComeOfAge2.Add(MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_civ_dummy"));
+		}
 		MBEquipmentRoster randomElement = equipmentRostersForHeroComeOfAge.GetRandomElement();
 		MBEquipmentRoster randomElement2 = equipmentRostersForHeroComeOfAge2.GetRandomElement();
 		Equipment randomElement3 = randomElement.AllEquipments.GetRandomElement();

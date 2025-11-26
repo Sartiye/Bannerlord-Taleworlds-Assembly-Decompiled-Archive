@@ -5,7 +5,6 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.CraftingSystem;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -18,7 +17,7 @@ using TaleWorlds.SaveSystem;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
-public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignBehavior, ICampaignBehavior
+public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignBehavior, ICampaignBehavior, INonReadyObjectHandler
 {
 	public class CraftingCampaignBehaviorTypeDefiner : SaveableTypeDefiner
 	{
@@ -211,8 +210,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 	}
 
-	private const float WaitTargetHours = 8f;
-
 	private const float CraftingOrderReplaceChance = 0.05f;
 
 	private const float CreateCraftingOrderChance = 0.05f;
@@ -229,7 +226,9 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 
 	private const int MaxCraftingHistoryDesigns = 10;
 
-	private ItemObject _latestCraftedItem;
+	private const int BaseHeroCraftingStamina = 100;
+
+	private Hero _activeCraftingHero;
 
 	private ItemModifier _currentItemModifier;
 
@@ -241,43 +240,260 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 
 	private Dictionary<Hero, HeroCraftingRecord> _heroCraftingRecords = new Dictionary<Hero, HeroCraftingRecord>();
 
-	private List<WeaponDesign> _craftingHistory = new List<WeaponDesign>();
-
 	private Dictionary<Town, CraftingOrderSlots> _craftingOrders = new Dictionary<Town, CraftingOrderSlots>();
+
+	private List<ItemObject> _cratingItemsHistory = new List<ItemObject>();
+
+	private int _townOrderCount;
+
+	private int _craftedItemCount;
 
 	public IReadOnlyDictionary<Town, CraftingOrderSlots> CraftingOrders => _craftingOrders;
 
-	public IReadOnlyCollection<WeaponDesign> CraftingHistory => _craftingHistory;
+	public IReadOnlyCollection<WeaponDesign> CraftingHistory
+	{
+		get
+		{
+			MBList<WeaponDesign> mBList = new MBList<WeaponDesign>();
+			foreach (ItemObject item in _cratingItemsHistory)
+			{
+				WeaponDesign weaponDesign = item.WeaponDesign;
+				mBList.Add(new WeaponDesign(weaponDesign.Template, weaponDesign.WeaponName, weaponDesign.UsedPieces, weaponDesign.HashedCode));
+			}
+			return mBList;
+		}
+	}
+
+	private string GetNextCraftedItemId()
+	{
+		string result = $"crafted_item_{_craftedItemCount}";
+		_craftedItemCount++;
+		return result;
+	}
+
+	private string GetNextTownOrderId()
+	{
+		string result = $"town_order_{_townOrderCount}";
+		_townOrderCount++;
+		return result;
+	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
-		dataStore.SyncData("_latestCraftedItem", ref _latestCraftedItem);
+		dataStore.SyncData("_activeCraftingHero", ref _activeCraftingHero);
 		dataStore.SyncData("_craftedItemDictionary", ref _craftedItemDictionary);
 		dataStore.SyncData("_heroCraftingRecordsNew", ref _heroCraftingRecords);
 		dataStore.SyncData("_craftingOrders", ref _craftingOrders);
-		dataStore.SyncData("_craftingHistory", ref _craftingHistory);
+		dataStore.SyncData("_cratingItemsHistory", ref _cratingItemsHistory);
 		dataStore.SyncData("_openedPartsDictionary", ref _openedPartsDictionary);
 		dataStore.SyncData("_openNewPartXpDictionary", ref _openNewPartXpDictionary);
-		if (!dataStore.IsLoading || !MBSaveLoad.IsUpdatingGameVersion || !(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("e1.8.0")))
+		dataStore.SyncData("_townOrderCount", ref _townOrderCount);
+		dataStore.SyncData("_craftedItemCount", ref _craftedItemCount);
+		if (!dataStore.IsLoading || !MBSaveLoad.IsUpdatingGameVersion)
 		{
 			return;
 		}
-		List<CraftingPiece> data = new List<CraftingPiece>();
-		dataStore.SyncData("_openedParts", ref data);
-		if (data == null)
+		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("e1.8.0"))
 		{
-			return;
-		}
-		_openedPartsDictionary = new Dictionary<CraftingTemplate, List<CraftingPiece>>();
-		foreach (CraftingTemplate item in CraftingTemplate.All)
-		{
-			_openedPartsDictionary.Add(item, new List<CraftingPiece>());
-			foreach (CraftingPiece item2 in data)
+			List<CraftingPiece> data = new List<CraftingPiece>();
+			dataStore.SyncData("_openedParts", ref data);
+			if (data != null)
 			{
-				if (item.Pieces.Contains(item2) && !_openedPartsDictionary[item].Contains(item2))
+				_openedPartsDictionary = new Dictionary<CraftingTemplate, List<CraftingPiece>>();
+				foreach (CraftingTemplate item in CraftingTemplate.All)
 				{
-					_openedPartsDictionary[item].Add(item2);
+					_openedPartsDictionary.Add(item, new List<CraftingPiece>());
+					foreach (CraftingPiece item2 in data)
+					{
+						if (item.Pieces.Contains(item2) && !_openedPartsDictionary[item].Contains(item2))
+						{
+							_openedPartsDictionary[item].Add(item2);
+						}
+					}
 				}
+			}
+		}
+		if (!(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.2")))
+		{
+			return;
+		}
+		List<ItemObject> list = new List<ItemObject>();
+		for (int i = 0; i < _craftedItemDictionary.Count; i++)
+		{
+			KeyValuePair<ItemObject, CraftedItemInitializationData> keyValuePair = _craftedItemDictionary.ElementAt(i);
+			if (keyValuePair.Value.CraftedData.Template.IsReady)
+			{
+				bool flag = true;
+				PieceData[] buildOrders = keyValuePair.Value.CraftedData.Template.BuildOrders;
+				for (int j = 0; j < buildOrders.Length; j++)
+				{
+					PieceData pieceData = buildOrders[j];
+					bool flag2 = false;
+					WeaponDesignElement[] usedPieces = keyValuePair.Value.CraftedData.UsedPieces;
+					foreach (WeaponDesignElement weaponDesignElement in usedPieces)
+					{
+						if (pieceData.PieceType == weaponDesignElement.CraftingPiece.PieceType && weaponDesignElement.CraftingPiece.IsValid)
+						{
+							flag2 = true;
+						}
+					}
+					if (!flag2)
+					{
+						flag = false;
+						break;
+					}
+				}
+				if (flag)
+				{
+					string nextCraftedItemId = GetNextCraftedItemId();
+					keyValuePair.Key.StringId = nextCraftedItemId;
+					WeaponDesignElement[] array = new WeaponDesignElement[keyValuePair.Value.CraftedData.UsedPieces.Length];
+					for (int l = 0; l < keyValuePair.Value.CraftedData.UsedPieces.Length; l++)
+					{
+						array[l] = keyValuePair.Value.CraftedData.UsedPieces[l].GetCopy();
+					}
+					WeaponDesign craftedData = new WeaponDesign(keyValuePair.Value.CraftedData.Template, keyValuePair.Value.CraftedData.WeaponName, array, nextCraftedItemId);
+					_craftedItemDictionary[keyValuePair.Key] = new CraftedItemInitializationData(craftedData, keyValuePair.Value.ItemName, keyValuePair.Value.Culture);
+				}
+				else
+				{
+					list.Add(keyValuePair.Key);
+				}
+			}
+			else
+			{
+				list.Add(keyValuePair.Key);
+			}
+		}
+		foreach (ItemObject item3 in list)
+		{
+			_craftedItemDictionary.Remove(item3);
+		}
+		List<WeaponDesign> data2 = new List<WeaponDesign>();
+		dataStore.SyncData("_craftingHistory", ref data2);
+		foreach (WeaponDesign item4 in data2)
+		{
+			ItemObject itemObject = null;
+			foreach (KeyValuePair<ItemObject, CraftedItemInitializationData> item5 in _craftedItemDictionary)
+			{
+				WeaponDesign craftedData2 = item5.Value.CraftedData;
+				if (_cratingItemsHistory.Contains(item5.Key) || item4.Template != craftedData2.Template)
+				{
+					continue;
+				}
+				bool flag3 = true;
+				for (int m = 0; m < item4.UsedPieces.Length && flag3; m++)
+				{
+					if (item4.UsedPieces[m]?.CraftingPiece?.StringId != craftedData2.UsedPieces[m]?.CraftingPiece?.StringId)
+					{
+						flag3 = false;
+					}
+				}
+				if (flag3)
+				{
+					itemObject = item5.Key;
+					break;
+				}
+			}
+			if (itemObject != null)
+			{
+				_cratingItemsHistory.Add(itemObject);
+			}
+		}
+		for (int n = 0; n < _craftingOrders.Count; n++)
+		{
+			KeyValuePair<Town, CraftingOrderSlots> keyValuePair2 = _craftingOrders.ElementAt(n);
+			for (int num = 0; num < keyValuePair2.Value.Slots.Count(); num++)
+			{
+				string nextTownOrderId = GetNextTownOrderId();
+				CraftingOrder craftingOrder = keyValuePair2.Value.Slots[num];
+				if (craftingOrder != null)
+				{
+					WeaponDesign weaponDesignTemplate = craftingOrder.WeaponDesignTemplate;
+					WeaponDesign weaponDesignTemplate2 = new WeaponDesign(weaponDesignTemplate.Template, weaponDesignTemplate.WeaponName, weaponDesignTemplate.UsedPieces, nextTownOrderId);
+					CraftingTemplate templateFromId = CraftingTemplate.GetTemplateFromId(weaponDesignTemplate.Template.StringId);
+					CraftingOrder craftingOrder2 = new CraftingOrder(craftingOrder.OrderOwner, craftingOrder.DifficultyLevel, weaponDesignTemplate2, templateFromId, craftingOrder.DifficultyLevel, nextTownOrderId);
+					keyValuePair2.Value.Slots[num] = craftingOrder2;
+				}
+			}
+		}
+	}
+
+	void INonReadyObjectHandler.OnBeforeNonReadyObjectsDeleted()
+	{
+		if (_craftedItemDictionary.Count > 0)
+		{
+			InitializeCraftedItemData();
+		}
+		foreach (KeyValuePair<Town, CraftingOrderSlots> craftingOrder2 in CraftingOrders)
+		{
+			CraftingOrder[] slots = craftingOrder2.Value.Slots;
+			foreach (CraftingOrder craftingOrder in slots)
+			{
+				if (craftingOrder != null && !craftingOrder.IsPreCraftedWeaponDesignValid())
+				{
+					craftingOrder2.Value.RemoveTownOrder(craftingOrder);
+				}
+				else
+				{
+					craftingOrder?.InitializeCraftingOrderOnLoad();
+				}
+			}
+			List<CraftingOrder> list = new List<CraftingOrder>();
+			foreach (CraftingOrder customOrder in craftingOrder2.Value.CustomOrders)
+			{
+				if (!customOrder.IsPreCraftedWeaponDesignValid())
+				{
+					list.Add(customOrder);
+				}
+				else
+				{
+					customOrder.InitializeCraftingOrderOnLoad();
+				}
+			}
+			foreach (CraftingOrder item in list)
+			{
+				craftingOrder2.Value.RemoveCustomOrder(item);
+			}
+		}
+		for (int num = _cratingItemsHistory.Count - 1; num >= 0; num--)
+		{
+			ItemObject itemObject = _cratingItemsHistory[num];
+			if (itemObject == DefaultItems.Trash || itemObject == null)
+			{
+				_cratingItemsHistory.RemoveAt(num);
+			}
+		}
+	}
+
+	private void InitializeCraftedItemData()
+	{
+		for (int i = 0; i < _craftedItemDictionary.Count; i++)
+		{
+			KeyValuePair<ItemObject, CraftedItemInitializationData> keyValuePair = _craftedItemDictionary.ElementAt(i);
+			ItemObject key = keyValuePair.Key;
+			WeaponDesignElement[] array = new WeaponDesignElement[keyValuePair.Value.CraftedData.UsedPieces.Length];
+			for (int j = 0; j < keyValuePair.Value.CraftedData.UsedPieces.Length; j++)
+			{
+				array[j] = keyValuePair.Value.CraftedData.UsedPieces[j].GetCopy();
+			}
+			WeaponDesign craftedData = new WeaponDesign(keyValuePair.Value.CraftedData.Template, keyValuePair.Value.CraftedData.WeaponName, array, key.StringId);
+			_craftedItemDictionary[key] = new CraftedItemInitializationData(craftedData, keyValuePair.Value.ItemName, keyValuePair.Value.Culture);
+		}
+		foreach (KeyValuePair<ItemObject, CraftedItemInitializationData> item in _craftedItemDictionary)
+		{
+			ItemObject itemObject = Crafting.InitializePreCraftedWeaponOnLoad(item.Key, item.Value.CraftedData, item.Value.ItemName, item.Value.Culture);
+			if (itemObject == DefaultItems.Trash || itemObject == null)
+			{
+				if (MBObjectManager.Instance.GetObject(item.Key.Id) != null)
+				{
+					MBObjectManager.Instance.UnregisterObject(item.Key);
+				}
+			}
+			else
+			{
+				ItemObject.InitAsPlayerCraftedItem(ref itemObject);
+				itemObject.IsReady = true;
 			}
 		}
 	}
@@ -329,8 +545,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		{
 			return;
 		}
-		List<Hero> list = new List<Hero>();
-		list.AddRange(settlement.HeroesWithoutParty);
+		List<Hero> list = new List<Hero>(settlement.HeroesWithoutParty);
 		foreach (MobileParty party in settlement.Parties)
 		{
 			if (party.LeaderHero != null && !party.IsMainParty)
@@ -343,13 +558,13 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 			if (item != Hero.MainHero && MBRandom.RandomFloat <= 0.05f)
 			{
 				int availableSlot = CraftingOrders[settlement.Town].GetAvailableSlot();
-				if (availableSlot > -1)
+				if (availableSlot <= -1)
 				{
-					CreateTownOrder(item, availableSlot);
+					break;
 				}
+				CreateTownOrder(item, availableSlot);
 			}
 		}
-		list = null;
 	}
 
 	private void DailyTick()
@@ -371,13 +586,12 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 	{
 		foreach (KeyValuePair<Hero, HeroCraftingRecord> heroCraftingRecord in _heroCraftingRecords)
 		{
-			int maxHeroCraftingStamina = GetMaxHeroCraftingStamina(heroCraftingRecord.Key);
-			if (heroCraftingRecord.Value.CraftingStamina < maxHeroCraftingStamina)
+			if (heroCraftingRecord.Key.CurrentSettlement != null)
 			{
-				Hero key = heroCraftingRecord.Key;
-				if (key.CurrentSettlement != null)
+				int maxHeroCraftingStamina = GetMaxHeroCraftingStamina(heroCraftingRecord.Key);
+				if (heroCraftingRecord.Value.CraftingStamina < maxHeroCraftingStamina)
 				{
-					heroCraftingRecord.Value.CraftingStamina = MathF.Min(maxHeroCraftingStamina, heroCraftingRecord.Value.CraftingStamina + GetStaminaHourlyRecoveryRate(key));
+					heroCraftingRecord.Value.CraftingStamina = MathF.Min(maxHeroCraftingStamina, heroCraftingRecord.Value.CraftingStamina + GetStaminaHourlyRecoveryRate(heroCraftingRecord.Key));
 				}
 			}
 		}
@@ -404,7 +618,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 	}
 
-	private int GetStaminaHourlyRecoveryRate(Hero hero)
+	private static int GetStaminaHourlyRecoveryRate(Hero hero)
 	{
 		int num = 5 + MathF.Round((float)hero.GetSkillValue(DefaultSkills.Crafting) * 0.025f);
 		if (hero.GetPerkValue(DefaultPerks.Athletics.Stamina))
@@ -414,7 +628,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		return num;
 	}
 
-	private void OnNewItemCrafted(ItemObject itemObject, ItemModifier overridenItemModifier, bool isCraftingOrderItem)
+	private void OnNewItemCrafted(ItemObject itemObject, ItemModifier overriddenItemModifier, bool isCraftingOrderItem)
 	{
 		if (!_craftedItemDictionary.ContainsKey(itemObject))
 		{
@@ -493,107 +707,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		return true;
 	}
 
-	public void InitializeCraftingElements()
-	{
-		List<ItemObject> list = new List<ItemObject>();
-		foreach (KeyValuePair<ItemObject, CraftedItemInitializationData> item in _craftedItemDictionary)
-		{
-			bool flag = true;
-			WeaponDesign weaponDesign = item.Value.CraftedData;
-			if (!weaponDesign.Template.IsReady)
-			{
-				flag = false;
-			}
-			if (flag && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.1.0"))
-			{
-				WeaponDesignElement[] array = new WeaponDesignElement[item.Value.CraftedData.UsedPieces.Length];
-				for (int i = 0; i < item.Value.CraftedData.UsedPieces.Length; i++)
-				{
-					array[i] = item.Value.CraftedData.UsedPieces[i].GetCopy();
-				}
-				weaponDesign = new WeaponDesign(weaponDesign.Template, weaponDesign.WeaponName, array);
-			}
-			if (flag)
-			{
-				PieceData[] buildOrders = weaponDesign.Template.BuildOrders;
-				for (int j = 0; j < buildOrders.Length; j++)
-				{
-					PieceData pieceData = buildOrders[j];
-					bool flag2 = false;
-					WeaponDesignElement[] usedPieces = weaponDesign.UsedPieces;
-					foreach (WeaponDesignElement weaponDesignElement in usedPieces)
-					{
-						if (pieceData.PieceType == weaponDesignElement.CraftingPiece.PieceType && weaponDesignElement.CraftingPiece.IsValid)
-						{
-							flag2 = true;
-						}
-					}
-					if (!flag2)
-					{
-						flag = false;
-						break;
-					}
-				}
-			}
-			if (flag)
-			{
-				ItemObject itemObject = Crafting.InitializePreCraftedWeaponOnLoad(item.Key, weaponDesign, item.Value.ItemName, item.Value.Culture);
-				if (itemObject == DefaultItems.Trash || itemObject == null)
-				{
-					list.Add(item.Key);
-					if (MBObjectManager.Instance.GetObject(item.Key.Id) != null)
-					{
-						MBObjectManager.Instance.UnregisterObject(item.Key);
-					}
-				}
-				else
-				{
-					ItemObject.InitAsPlayerCraftedItem(ref itemObject);
-					itemObject.IsReady = true;
-				}
-			}
-			else
-			{
-				list.Add(item.Key);
-			}
-		}
-		foreach (ItemObject item2 in list)
-		{
-			_craftedItemDictionary.Remove(item2);
-		}
-		foreach (KeyValuePair<Town, CraftingOrderSlots> craftingOrder2 in CraftingOrders)
-		{
-			CraftingOrder[] slots = craftingOrder2.Value.Slots;
-			foreach (CraftingOrder craftingOrder in slots)
-			{
-				if (craftingOrder != null && !craftingOrder.IsPreCraftedWeaponDesignValid())
-				{
-					craftingOrder2.Value.RemoveTownOrder(craftingOrder);
-				}
-				else
-				{
-					craftingOrder?.InitializeCraftingOrderOnLoad();
-				}
-			}
-			List<CraftingOrder> list2 = new List<CraftingOrder>();
-			foreach (CraftingOrder customOrder in craftingOrder2.Value.CustomOrders)
-			{
-				if (!customOrder.IsPreCraftedWeaponDesignValid())
-				{
-					list2.Add(customOrder);
-				}
-				else
-				{
-					customOrder.InitializeCraftingOrderOnLoad();
-				}
-			}
-			foreach (CraftingOrder item3 in list2)
-			{
-				craftingOrder2.Value.RemoveCustomOrder(item3);
-			}
-		}
-	}
-
 	public int GetCraftingDifficulty(WeaponDesign weaponDesign)
 	{
 		return Campaign.Current.Models.SmithingModel.CalculateWeaponDesignDifficulty(weaponDesign);
@@ -603,63 +716,58 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 	{
 		if (_craftingOrders.IsEmpty())
 		{
-			foreach (Settlement item in Settlement.All)
+			foreach (Town allTown in Campaign.Current.AllTowns)
 			{
-				if (item.IsTown)
-				{
-					_craftingOrders.Add(item.Town, new CraftingOrderSlots());
-				}
+				_craftingOrders.Add(allTown, new CraftingOrderSlots());
 			}
 		}
-		foreach (KeyValuePair<CraftingTemplate, List<CraftingPiece>> item2 in _openedPartsDictionary.ToList())
+		foreach (KeyValuePair<CraftingTemplate, List<CraftingPiece>> item in _openedPartsDictionary.ToList())
+		{
+			if (!CraftingTemplate.All.Contains(item.Key))
+			{
+				_openedPartsDictionary.Remove(item.Key);
+			}
+		}
+		foreach (KeyValuePair<CraftingTemplate, float> item2 in _openNewPartXpDictionary.ToList())
 		{
 			if (!CraftingTemplate.All.Contains(item2.Key))
 			{
-				_openedPartsDictionary.Remove(item2.Key);
+				_openNewPartXpDictionary.Remove(item2.Key);
 			}
 		}
-		foreach (KeyValuePair<CraftingTemplate, float> item3 in _openNewPartXpDictionary.ToList())
+		foreach (CraftingTemplate item3 in CraftingTemplate.All)
 		{
-			if (!CraftingTemplate.All.Contains(item3.Key))
+			if (!_openNewPartXpDictionary.ContainsKey(item3))
 			{
-				_openNewPartXpDictionary.Remove(item3.Key);
+				_openNewPartXpDictionary.Add(item3, 0f);
 			}
-		}
-		foreach (CraftingTemplate item4 in CraftingTemplate.All)
-		{
-			if (!_openNewPartXpDictionary.ContainsKey(item4))
+			if (!_openedPartsDictionary.ContainsKey(item3))
 			{
-				_openNewPartXpDictionary.Add(item4, 0f);
+				_openedPartsDictionary.Add(item3, new List<CraftingPiece>());
 			}
-			if (!_openedPartsDictionary.ContainsKey(item4))
+			foreach (CraftingPiece item4 in _openedPartsDictionary[item3].ToList())
 			{
-				_openedPartsDictionary.Add(item4, new List<CraftingPiece>());
-			}
-			foreach (CraftingPiece item5 in _openedPartsDictionary[item4].ToList())
-			{
-				if (!item4.Pieces.Contains(item5))
+				if (!item3.Pieces.Contains(item4))
 				{
-					_openedPartsDictionary[item4].Remove(item5);
+					_openedPartsDictionary[item3].Remove(item4);
 				}
 			}
 		}
-	}
-
-	private void AddDialogs(CampaignGameStarter campaignGameStarter)
-	{
-		campaignGameStarter.AddDialogLine("blacksmith_begin", "start", "blacksmith_player", "{=gYByVHQy}Good day, {?PLAYER.GENDER}madam{?}sir{\\?}. How may I help you?", conversation_blacksmith_begin_on_condition, null);
-		campaignGameStarter.AddPlayerLine("blacksmith_craft_items", "blacksmith_player", "blacksmith_player_ok", "{=VXKGD0ta}I want to use your forge.", () => Campaign.Current.IsCraftingEnabled, conversation_blacksmith_craft_items_on_consequence);
-		campaignGameStarter.AddPlayerLine("blacksmith_leave", "blacksmith_player", "close_window", "{=iW9iKbb8}Nothing.", null, null);
-		campaignGameStarter.AddDialogLine("blacksmith_player_ok", "blacksmith_player_ok", "blacksmith_player_after_craft", "{=FJ0uAo6p}{CRAFTING_END_TEXT}", conversation_blacksmith_player_ok_on_condition, null);
-		campaignGameStarter.AddPlayerLine("blacksmith_player_after_craft_accept", "blacksmith_player_after_craft", "player_blacksmith_after_craft", "{=QUn2ugIX}Thank you. Here's your pay.", conversation_blacksmith_player_after_craft_accept_on_condition, conversation_blacksmith_player_after_craft_accept_on_consequence);
-		campaignGameStarter.AddDialogLine("blacksmith_player_after_craft_anything_else", "player_blacksmith_after_craft", "blacksmith_player_1", "{=IvY187PJ}No matter. Anything else?", conversation_blacksmith_player_after_craft_anything_else_on_condition, null);
-		campaignGameStarter.AddPlayerLine("blacksmith_craft_items_1", "blacksmith_player_1", "blacksmith_player_ok", "{=hrn1Cdwo}There is something else I need you to make.", () => Campaign.Current.IsCraftingEnabled, conversation_blacksmith_craft_items_on_consequence);
-		campaignGameStarter.AddPlayerLine("blacksmith_leave_1", "blacksmith_player_1", "close_window", "{=iW9iKbb8}Nothing.", null, null);
 	}
 
 	public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
 		AddDialogs(campaignGameStarter);
+	}
+
+	private void AddDialogs(CampaignGameStarter campaignGameStarter)
+	{
+		campaignGameStarter.AddDialogLine("blacksmith_begin", "start", "blacksmith_player", "{=gYByVHQy}Good day, {?PLAYER.GENDER}madam{?}sir{\\?}. How may I help you?", conversation_blacksmith_begin_on_condition, null);
+		campaignGameStarter.AddPlayerLine("blacksmith_craft_items", "blacksmith_player", "player_blacksmith_after_craft", "{=VXKGD0ta}I want to use your forge.", () => Campaign.Current.IsCraftingEnabled, conversation_blacksmith_craft_items_on_consequence);
+		campaignGameStarter.AddPlayerLine("blacksmith_leave", "blacksmith_player", "close_window", "{=iW9iKbb8}Nothing.", null, null);
+		campaignGameStarter.AddDialogLine("blacksmith_player_after_craft_anything_else", "player_blacksmith_after_craft", "blacksmith_player_1", "{=IvY187PJ}No matter. Anything else?", null, null);
+		campaignGameStarter.AddPlayerLine("blacksmith_craft_items_1", "blacksmith_player_1", "player_blacksmith_after_craft", "{=hrn1Cdwo}There is something else I need you to make.", () => Campaign.Current.IsCraftingEnabled, conversation_blacksmith_craft_items_on_consequence);
+		campaignGameStarter.AddPlayerLine("blacksmith_leave_1", "blacksmith_player_1", "close_window", "{=iW9iKbb8}Nothing.", null, null);
 	}
 
 	private bool conversation_blacksmith_begin_on_condition()
@@ -670,55 +778,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 	private void conversation_blacksmith_craft_items_on_consequence()
 	{
 		CraftingHelper.OpenCrafting(CraftingTemplate.All[0]);
-	}
-
-	private bool conversation_blacksmith_player_ok_on_condition()
-	{
-		if (CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Blacksmith)
-		{
-			if (_latestCraftedItem != null)
-			{
-				int value = _latestCraftedItem.Value;
-				TextObject textObject = new TextObject("{=zr80RMa6}This will cost you {AMOUNT}{GOLD_ICON}. Paid in advance, of course.");
-				textObject.SetTextVariable("AMOUNT", value.ToString());
-				MBTextManager.SetTextVariable("CRAFTING_END_TEXT", textObject);
-			}
-			else
-			{
-				MBTextManager.SetTextVariable("CRAFTING_END_TEXT", new TextObject("{=rrQx9jaV}It seems you're not interested."));
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private bool conversation_blacksmith_player_after_craft_accept_on_condition()
-	{
-		if (_latestCraftedItem != null)
-		{
-			int value = _latestCraftedItem.Value;
-			return Hero.MainHero.Gold >= value;
-		}
-		return false;
-	}
-
-	private void conversation_blacksmith_player_after_craft_accept_on_consequence()
-	{
-		ItemRoster itemRoster = new ItemRoster();
-		itemRoster.AddToCounts(_latestCraftedItem, 1);
-		_latestCraftedItem = null;
-		InventoryManager.OpenScreenAsTrade(itemRoster, Settlement.CurrentSettlement.Town);
-	}
-
-	private bool conversation_blacksmith_player_after_craft_anything_else_on_condition()
-	{
-		_latestCraftedItem = null;
-		return true;
-	}
-
-	public bool CanHeroUsePart(Hero hero, CraftingPiece craftingPiece)
-	{
-		return true;
 	}
 
 	public int GetHeroCraftingStamina(Hero hero)
@@ -783,7 +842,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		CampaignEventDispatcher.Instance.OnItemsRefined(hero, refineFormula);
 	}
 
-	public void DoSmelting(Hero hero, EquipmentElement equipmentElement)
+	public void DoSmelting(Hero currentCraftingHero, EquipmentElement equipmentElement)
 	{
 		ItemRoster itemRoster = MobileParty.MainParty.ItemRoster;
 		ItemObject item = equipmentElement.Item;
@@ -796,21 +855,43 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 			}
 		}
 		itemRoster.AddToCounts(equipmentElement, -1);
-		hero.AddSkillXp(DefaultSkills.Crafting, Campaign.Current.Models.SmithingModel.GetSkillXpForSmelting(item));
-		int energyCostForSmelting = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmelting(item, hero);
-		SetHeroCraftingStamina(hero, GetHeroCraftingStamina(hero) - energyCostForSmelting);
-		AddResearchPoints(item.WeaponDesign.Template, Campaign.Current.Models.SmithingModel.GetPartResearchGainForSmeltingItem(item, hero));
-		CampaignEventDispatcher.Instance.OnEquipmentSmeltedByHero(hero, equipmentElement);
+		currentCraftingHero.AddSkillXp(DefaultSkills.Crafting, Campaign.Current.Models.SmithingModel.GetSkillXpForSmelting(item));
+		int energyCostForSmelting = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmelting(item, currentCraftingHero);
+		SetHeroCraftingStamina(currentCraftingHero, GetHeroCraftingStamina(currentCraftingHero) - energyCostForSmelting);
+		AddResearchPoints(item.WeaponDesign.Template, Campaign.Current.Models.SmithingModel.GetPartResearchGainForSmeltingItem(item, currentCraftingHero));
+		CampaignEventDispatcher.Instance.OnEquipmentSmeltedByHero(currentCraftingHero, equipmentElement);
 	}
 
 	public ItemObject CreateCraftedWeaponInFreeBuildMode(Hero hero, WeaponDesign weaponDesign, ItemModifier weaponModifier = null)
 	{
-		SpendMaterials(weaponDesign);
-		if (GameStateManager.Current.ActiveState is CraftingState craftingState)
+		ItemObject itemObject = CreateCraftedWeaponInternal(isFreeMode: true, hero, weaponDesign, weaponModifier);
+		int skillXpForSmithingInFreeBuildMode = Campaign.Current.Models.SmithingModel.GetSkillXpForSmithingInFreeBuildMode(itemObject);
+		hero.AddSkillXp(DefaultSkills.Crafting, skillXpForSmithingInFreeBuildMode);
+		AddItemToHistory(itemObject);
+		return itemObject;
+	}
+
+	public ItemObject CreateCraftedWeaponInCraftingOrderMode(Hero crafterHero, CraftingOrder craftingOrder, WeaponDesign weaponDesign)
+	{
+		ItemObject itemObject = CreateCraftedWeaponInternal(isFreeMode: false, crafterHero, weaponDesign);
+		float xpAmount = craftingOrder.GetOrderExperience(itemObject, _currentItemModifier) + (float)Campaign.Current.Models.SmithingModel.GetSkillXpForSmithingInCraftingOrderMode(itemObject);
+		crafterHero.AddSkillXp(DefaultSkills.Crafting, xpAmount);
+		return itemObject;
+	}
+
+	private ItemObject CreateCraftedWeaponInternal(bool isFreeMode, Hero crafterHero, WeaponDesign weaponDesign, ItemModifier weaponModifier = null)
+	{
+		string nextCraftedItemId = GetNextCraftedItemId();
+		if (isFreeMode)
 		{
-			ItemObject itemObject = craftingState.CraftingLogic.GetCurrentCraftedItemObject(forceReCreate: true);
-			ItemObject.InitAsPlayerCraftedItem(ref itemObject);
-			MBObjectManager.Instance.RegisterObject(itemObject);
+			weaponDesign = new WeaponDesign(weaponDesign.Template, weaponDesign.WeaponName, weaponDesign.UsedPieces, nextCraftedItemId);
+		}
+		SpendMaterials(weaponDesign);
+		ItemObject itemObject = (GameStateManager.Current.ActiveState as CraftingState).CraftingLogic.GetCurrentCraftedItemObject(forceReCreate: true, nextCraftedItemId);
+		ItemObject.InitAsPlayerCraftedItem(ref itemObject);
+		MBObjectManager.Instance.RegisterObject(itemObject);
+		if (isFreeMode)
+		{
 			if (weaponModifier == null)
 			{
 				PartyBase.MainParty.ItemRoster.AddToCounts(itemObject, 1);
@@ -820,34 +901,12 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				EquipmentElement rosterElement = new EquipmentElement(itemObject, weaponModifier);
 				PartyBase.MainParty.ItemRoster.AddToCounts(rosterElement, 1);
 			}
-			CampaignEventDispatcher.Instance.OnNewItemCrafted(itemObject, weaponModifier, isCraftingOrderItem: false);
-			hero.AddSkillXp(DefaultSkills.Crafting, Campaign.Current.Models.SmithingModel.GetSkillXpForSmithingInFreeBuildMode(itemObject));
-			int energyCostForSmithing = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmithing(itemObject, hero);
-			SetHeroCraftingStamina(hero, GetHeroCraftingStamina(hero) - energyCostForSmithing);
-			AddResearchPoints(weaponDesign.Template, Campaign.Current.Models.SmithingModel.GetPartResearchGainForSmithingItem(itemObject, hero, isFreeBuildMode: true));
-			AddItemToHistory(craftingState.CraftingLogic.CurrentWeaponDesign);
-			return itemObject;
 		}
-		return null;
-	}
-
-	public ItemObject CreateCraftedWeaponInCraftingOrderMode(Hero crafterHero, CraftingOrder craftingOrder, WeaponDesign weaponDesign)
-	{
-		SpendMaterials(weaponDesign);
-		if (GameStateManager.Current.ActiveState is CraftingState craftingState)
-		{
-			ItemObject itemObject = craftingState.CraftingLogic.GetCurrentCraftedItemObject(forceReCreate: true);
-			ItemObject.InitAsPlayerCraftedItem(ref itemObject);
-			MBObjectManager.Instance.RegisterObject(itemObject);
-			Campaign.Current.CampaignEvents.OnNewItemCrafted(itemObject, null, isCraftingOrderItem: true);
-			float xpAmount = craftingOrder.GetOrderExperience(itemObject, _currentItemModifier) + (float)Campaign.Current.Models.SmithingModel.GetSkillXpForSmithingInCraftingOrderMode(itemObject);
-			crafterHero.AddSkillXp(DefaultSkills.Crafting, xpAmount);
-			int energyCostForSmithing = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmithing(itemObject, crafterHero);
-			SetHeroCraftingStamina(crafterHero, GetHeroCraftingStamina(crafterHero) - energyCostForSmithing);
-			AddResearchPoints(weaponDesign.Template, Campaign.Current.Models.SmithingModel.GetPartResearchGainForSmithingItem(itemObject, crafterHero, isFreeBuildMode: false));
-			return itemObject;
-		}
-		return null;
+		CampaignEventDispatcher.Instance.OnNewItemCrafted(itemObject, weaponModifier, !isFreeMode);
+		int energyCostForSmithing = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmithing(itemObject, crafterHero);
+		SetHeroCraftingStamina(crafterHero, GetHeroCraftingStamina(crafterHero) - energyCostForSmithing);
+		AddResearchPoints(weaponDesign.Template, Campaign.Current.Models.SmithingModel.GetPartResearchGainForSmithingItem(itemObject, crafterHero, isFreeMode));
+		return itemObject;
 	}
 
 	private static void SpendMaterials(WeaponDesign weaponDesign)
@@ -863,13 +922,23 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 	}
 
-	private void AddItemToHistory(WeaponDesign design)
+	private void AddItemToHistory(ItemObject craftedObject)
 	{
-		while (_craftingHistory.Count >= 10)
+		while (_cratingItemsHistory.Count >= 10)
 		{
-			_craftingHistory.RemoveAt(0);
+			_cratingItemsHistory.RemoveAt(0);
 		}
-		_craftingHistory.Add(design);
+		_cratingItemsHistory.Add(craftedObject);
+	}
+
+	public Hero GetActiveCraftingHero()
+	{
+		return _activeCraftingHero;
+	}
+
+	public void SetActiveCraftingHero(Hero hero)
+	{
+		_activeCraftingHero = hero;
 	}
 
 	public void CreateTownOrder(Hero orderOwner, int orderSlot)
@@ -881,11 +950,12 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		float townOrderDifficulty = GetTownOrderDifficulty(orderOwner.CurrentSettlement.Town, orderSlot);
 		int pieceTier = (int)townOrderDifficulty / 50;
 		CraftingTemplate randomElement = CraftingTemplate.All.GetRandomElement();
-		WeaponDesign weaponDesignTemplate = new WeaponDesign(randomElement, TextObject.Empty, GetWeaponPieces(randomElement, pieceTier));
-		_craftingOrders[orderOwner.CurrentSettlement.Town].AddTownOrder(new CraftingOrder(orderOwner, townOrderDifficulty, weaponDesignTemplate, randomElement, orderSlot));
+		string nextTownOrderId = GetNextTownOrderId();
+		WeaponDesign weaponDesignTemplate = new WeaponDesign(randomElement, TextObject.GetEmpty(), GetWeaponPieces(randomElement, pieceTier), nextTownOrderId);
+		_craftingOrders[orderOwner.CurrentSettlement.Town].AddTownOrder(new CraftingOrder(orderOwner, townOrderDifficulty, weaponDesignTemplate, randomElement, orderSlot, nextTownOrderId));
 	}
 
-	private float GetTownOrderDifficulty(Town town, int orderSlot)
+	private static float GetTownOrderDifficulty(Town town, int orderSlot)
 	{
 		int num = 0;
 		switch (orderSlot)
@@ -914,6 +984,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 
 	public CraftingOrder CreateCustomOrderForHero(Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null)
 	{
+		string nextTownOrderId = GetNextTownOrderId();
 		if (orderDifficulty < 0f)
 		{
 			orderDifficulty = GetRandomOrderDifficulty(orderOwner.CurrentSettlement.Town);
@@ -925,14 +996,14 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		if (weaponDesign == null)
 		{
 			int pieceTier = (int)orderDifficulty / 40;
-			weaponDesign = new WeaponDesign(craftingTemplate, TextObject.Empty, GetWeaponPieces(craftingTemplate, pieceTier));
+			weaponDesign = new WeaponDesign(craftingTemplate, TextObject.GetEmpty(), GetWeaponPieces(craftingTemplate, pieceTier), nextTownOrderId);
 		}
-		CraftingOrder craftingOrder = new CraftingOrder(orderOwner, orderDifficulty, weaponDesign, craftingTemplate);
+		CraftingOrder craftingOrder = new CraftingOrder(orderOwner, orderDifficulty, weaponDesign, craftingTemplate, -1, nextTownOrderId);
 		_craftingOrders[orderOwner.CurrentSettlement.Town].AddCustomOrder(craftingOrder);
 		return craftingOrder;
 	}
 
-	private float GetRandomOrderDifficulty(Town town)
+	private static float GetRandomOrderDifficulty(Town town)
 	{
 		int num = MBRandom.RandomInt(0, 6);
 		int num2 = 0;
@@ -1018,7 +1089,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		{
 			CreateTownOrder(mBList.GetRandomElement(), difficultyLevel);
 		}
-		mBList = null;
 	}
 
 	public void GetOrderResult(CraftingOrder craftingOrder, ItemObject craftedItem, out bool isSucceed, out TextObject orderRemark, out TextObject orderResult, out int finalReward)
@@ -1027,7 +1097,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		craftingOrder.CheckForBonusesAndPenalties(craftedItem, _currentItemModifier, out var craftedStatsSum, out var requiredStatsSum, out var thrustDamageCheck, out var swingDamageCheck);
 		isSucceed = craftedStatsSum >= requiredStatsSum && thrustDamageCheck && swingDamageCheck;
 		int num = finalReward - craftingOrder.BaseGoldReward;
-		orderRemark = TextObject.Empty;
+		orderRemark = TextObject.GetEmpty();
 		if (isSucceed)
 		{
 			orderResult = new TextObject("{=Nn49hU2W}The client is satisfied.");
@@ -1048,10 +1118,9 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 		else if (finalReward < craftingOrder.BaseGoldReward)
 		{
-			TextObject empty = TextObject.Empty;
-			empty = ((thrustDamageCheck && swingDamageCheck) ? new TextObject("{=wU76OPxM}\"This is worse than what I've asked for. I'm cutting {AMOUNT}{GOLD_ICON} from the price.\"") : new TextObject("{=WyuIksRB}\"This weapon does not have the damage type I wanted. I'm cutting {AMOUNT}{GOLD_ICON} from the price.\""));
-			empty.SetTextVariable("AMOUNT", MathF.Abs(num));
-			orderRemark = empty;
+			TextObject textObject = ((thrustDamageCheck && swingDamageCheck) ? new TextObject("{=wU76OPxM}\"This is worse than what I've asked for. I'm cutting {AMOUNT}{GOLD_ICON} from the price.\"") : new TextObject("{=WyuIksRB}\"This weapon does not have the damage type I wanted. I'm cutting {AMOUNT}{GOLD_ICON} from the price.\""));
+			textObject.SetTextVariable("AMOUNT", MathF.Abs(num));
+			orderRemark = textObject;
 		}
 	}
 
@@ -1126,7 +1195,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 
 	private void RemoveOrdersOfHeroWithoutCompletionIfExists(Hero hero)
 	{
-		new List<CraftingOrder>();
 		foreach (KeyValuePair<Town, CraftingOrderSlots> craftingOrder in _craftingOrders)
 		{
 			for (int i = 0; i < 6; i++)
@@ -1147,7 +1215,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1250);
+			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1408);
 		}
 	}
 

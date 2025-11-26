@@ -8,6 +8,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Ranked;
+using TaleWorlds.MountAndBlade.Multiplayer;
 using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade;
@@ -85,7 +86,7 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 	{
 		if (ChatHandler != null)
 		{
-			ChatHandler.ReceiveChatMessage(ChatChannelType.NaN, fromPlayer, message);
+			ChatHandler.ReceiveChatMessage(ChatChannelType.Private, fromPlayer, message);
 		}
 		ChatBox.AddWhisperMessage(fromPlayer, message);
 	}
@@ -381,7 +382,7 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 				LobbyState.SetConnectionState(isAuthenticated: false);
 				break;
 			default:
-				Debug.FailedAssert("Unexpected old state:" + oldState, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameClientHandler.cs", "HandleGameClientStateChange", 423);
+				Debug.FailedAssert("Unexpected old state:" + oldState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameClientHandler.cs", "HandleGameClientStateChange", 424);
 				break;
 			}
 			break;
@@ -438,9 +439,18 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 
 	void ILobbyClientSessionHandler.OnBattleServerInformationReceived(BattleServerInformationForClient battleServerInformation)
 	{
+		HandleBattleJoining(battleServerInformation);
+	}
+
+	private async void HandleBattleJoining(BattleServerInformationForClient battleServerInformation)
+	{
 		if (LobbyState != null)
 		{
 			LobbyState.OnBattleServerInformationReceived(battleServerInformation);
+		}
+		while (GameStateManager.Current.LastOrDefault<LobbyPracticeState>() != null)
+		{
+			await Task.Delay(5);
 		}
 		LobbyGameStateMatchmakerClient lobbyGameStateMatchmakerClient = Game.Current.GameStateManager.CreateState<LobbyGameStateMatchmakerClient>();
 		lobbyGameStateMatchmakerClient.SetStartingParameters(this, battleServerInformation.PeerIndex, battleServerInformation.SessionKey, battleServerInformation.ServerAddress, battleServerInformation.ServerPort, battleServerInformation.GameType, battleServerInformation.SceneName);

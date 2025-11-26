@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Map.MapNotificationTypes;
 using TaleWorlds.Core;
@@ -15,7 +14,7 @@ public class MapNotificationVM : ViewModel
 {
 	private INavigationHandler _navigationHandler;
 
-	private Action<Vec2> _fastMoveCameraToPosition;
+	private Action<CampaignVec2> _fastMoveCameraToPosition;
 
 	private Dictionary<Type, Type> _itemConstructors = new Dictionary<Type, Type>();
 
@@ -86,7 +85,7 @@ public class MapNotificationVM : ViewModel
 
 	public event Action<MapNotificationItemBaseVM> ReceiveNewNotification;
 
-	public MapNotificationVM(INavigationHandler navigationHandler, Action<Vec2> fastMoveCameraToPosition)
+	public MapNotificationVM(INavigationHandler navigationHandler, Action<CampaignVec2> fastMoveCameraToPosition)
 	{
 		_navigationHandler = navigationHandler;
 		_fastMoveCameraToPosition = fastMoveCameraToPosition;
@@ -129,6 +128,10 @@ public class MapNotificationVM : ViewModel
 		_itemConstructors.Add(typeof(PartyLeaderChangeNotification), typeof(PartyLeaderChangeNotificationVM));
 		_itemConstructors.Add(typeof(HeirComeOfAgeMapNotification), typeof(HeirComeOfAgeNotificationItemVM));
 		_itemConstructors.Add(typeof(KingdomDestroyedMapNotification), typeof(KingdomDestroyedNotificationItemVM));
+		_itemConstructors.Add(typeof(AllianceOfferMapNotification), typeof(AllianceOfferNotificationItemVM));
+		_itemConstructors.Add(typeof(AcceptCallToWarOfferMapNotification), typeof(AcceptCallToWarOfferNotificationItemVM));
+		_itemConstructors.Add(typeof(ProposeCallToWarOfferMapNotification), typeof(ProposeCallToWarOfferNotificationItemVM));
+		_itemConstructors.Add(typeof(TributeFinishedMapNotification), typeof(TributeFinishedMapNotificationVM));
 	}
 
 	public void RegisterMapNotificationType(Type data, Type item)
@@ -167,16 +170,6 @@ public class MapNotificationVM : ViewModel
 	private void OnNotificationItemFocus(MapNotificationItemBaseVM item)
 	{
 		FocusedNotificationItem = item;
-	}
-
-	private void GoToSettlement(Settlement settlement)
-	{
-		_fastMoveCameraToPosition(settlement.Position2D);
-	}
-
-	private void GoToPosOnMap(Vec2 posOnMap)
-	{
-		_fastMoveCameraToPosition(posOnMap);
 	}
 
 	public void AddMapNotification(InformationData data)

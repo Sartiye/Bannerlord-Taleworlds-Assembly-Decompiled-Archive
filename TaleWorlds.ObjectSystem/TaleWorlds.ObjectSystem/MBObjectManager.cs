@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -136,14 +137,17 @@ public sealed class MBObjectManager
 			return CreatePresumedObject(objectName);
 		}
 
-		private T CreatePresumedObject(string objectName)
+		private T CreatePresumedObject(string stringId)
 		{
-			return new T
+			T val = null;
+			ConstructorInfo constructor = typeof(T).GetConstructor(new Type[1] { typeof(string) });
+			val = ((!(constructor != null)) ? new T
 			{
-				StringId = objectName,
-				IsReady = false,
-				IsInitialized = false
-			};
+				StringId = stringId
+			} : ((T)constructor.Invoke(new object[1] { stringId })));
+			val.IsReady = false;
+			val.IsInitialized = false;
+			return val;
 		}
 
 		MBObjectBase IObjectTypeRecord.GetMBObject(string objId)
@@ -373,12 +377,22 @@ public sealed class MBObjectManager
 	{
 		if (NumRegisteredTypes > MaxRegisteredTypes)
 		{
-			Debug.FailedAssert(new MBTooManyRegisteredTypesException().ToString(), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "RegisterType", 66);
+			Debug.FailedAssert(new MBTooManyRegisteredTypesException().ToString(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "RegisterType", 64);
 		}
 		ObjectTypeRecords.Add(new ObjectTypeRecord<T>(typeId, classPrefix, classListPrefix, autoCreateInstance, isTemporary));
 	}
 
+	public bool HasType<T>() where T : MBObjectBase
+	{
+		return HasTypeInternal(typeof(T));
+	}
+
 	public bool HasType(Type type)
+	{
+		return HasTypeInternal(type);
+	}
+
+	private bool HasTypeInternal(Type type)
 	{
 		if (type.IsSealed)
 		{
@@ -412,7 +426,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.ElementName;
 			}
 		}
-		Debug.FailedAssert(type.Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "FindRegisteredClassPrefix", 108);
+		Debug.FailedAssert(type.Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "FindRegisteredClassPrefix", 116);
 		return null;
 	}
 
@@ -425,7 +439,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.ObjectClass;
 			}
 		}
-		Debug.FailedAssert(classPrefix + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "FindRegisteredType", 122);
+		Debug.FailedAssert(classPrefix + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "FindRegisteredType", 130);
 		return null;
 	}
 
@@ -452,7 +466,7 @@ public sealed class MBObjectManager
 				return;
 			}
 		}
-		Debug.FailedAssert(obj.GetType().Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "TryRegisterObjectWithoutInitialization", 153);
+		Debug.FailedAssert(obj.GetType().Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "TryRegisterObjectWithoutInitialization", 161);
 	}
 
 	private void RegisterObjectInternalWithoutTypeId<T>(T obj, bool presumed, out MBObjectBase registeredObject) where T : MBObjectBase
@@ -468,7 +482,7 @@ public sealed class MBObjectManager
 			}
 		}
 		registeredObject = null;
-		Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "RegisterObjectInternalWithoutTypeId", 170);
+		Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "RegisterObjectInternalWithoutTypeId", 178);
 	}
 
 	public void UnregisterObject(MBObjectBase obj)
@@ -487,7 +501,7 @@ public sealed class MBObjectManager
 				return;
 			}
 		}
-		Debug.FailedAssert("UnregisterObject call for an unregistered object! Type: " + obj.GetType(), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "UnregisterObject", 192);
+		Debug.FailedAssert("UnregisterObject call for an unregistered object! Type: " + obj.GetType(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "UnregisterObject", 200);
 	}
 
 	private void AfterUnregisterObject(MBObjectBase obj)
@@ -525,8 +539,35 @@ public sealed class MBObjectManager
 				}
 			}
 		}
-		Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 232);
 		return null;
+	}
+
+	public MBReadOnlyList<T> GetObjects<T>(Func<T, bool> predicate) where T : MBObjectBase
+	{
+		MBList<T> mBList = new MBList<T>();
+		Type typeFromHandle = typeof(T);
+		if (typeFromHandle.IsSealed)
+		{
+			foreach (IObjectTypeRecord objectTypeRecord in ObjectTypeRecords)
+			{
+				if (objectTypeRecord.ObjectClass == typeFromHandle)
+				{
+					ObjectTypeRecord<T> source = (ObjectTypeRecord<T>)objectTypeRecord;
+					mBList.AddRange(source.Where(predicate));
+				}
+			}
+		}
+		else
+		{
+			foreach (IObjectTypeRecord objectTypeRecord2 in ObjectTypeRecords)
+			{
+				if (typeFromHandle.IsAssignableFrom(objectTypeRecord2.ObjectClass))
+				{
+					mBList.AddRange(objectTypeRecord2.OfType<T>().Where(predicate));
+				}
+			}
+		}
+		return mBList;
 	}
 
 	public T GetObject<T>(string objectName) where T : MBObjectBase
@@ -652,7 +693,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.GetMBObject(objectId);
 			}
 		}
-		Debug.FailedAssert(objectId.GetTypeIndex() + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 391);
+		Debug.FailedAssert(objectId.GetTypeIndex() + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 424);
 		return null;
 	}
 
@@ -665,7 +706,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.GetMBObject(objectName);
 			}
 		}
-		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 406);
+		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 439);
 		return null;
 	}
 
@@ -689,7 +730,7 @@ public sealed class MBObjectManager
 				throw new MBCanNotCreatePresumedObjectException();
 			}
 		}
-		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetPresumedObject", 434);
+		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetPresumedObject", 467);
 		return null;
 	}
 
@@ -705,7 +746,7 @@ public sealed class MBObjectManager
 					return ((ObjectTypeRecord<T>)objectTypeRecord).GetObjectsList();
 				}
 			}
-			Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObjectTypeList", 471);
+			Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObjectTypeList", 504);
 			return null;
 		}
 		MBList<T> mBList = new MBList<T>();
@@ -755,32 +796,115 @@ public sealed class MBObjectManager
 		}
 	}
 
+	public static bool MergeElementAttributes(XElement element1, XElement element2)
+	{
+		if (element1 != null && element2 != null)
+		{
+			IEnumerable<XAttribute> enumerable = element2.Attributes();
+			bool flag = enumerable.Any((XAttribute a) => a.Name.LocalName == "_replaceWhileMerging" && a.Value == "true");
+			if (flag)
+			{
+				element1.RemoveAttributes();
+			}
+			{
+				foreach (XAttribute item in enumerable)
+				{
+					element1.SetAttributeValue(item.Name, item.Value);
+				}
+				return flag;
+			}
+		}
+		return false;
+	}
+
+	public static void MergeElements(XElement element1, XElement element2, string xsdPath)
+	{
+		bool num = MergeElementAttributes(element1, element2);
+		if (element1.Value != "" && element2.Value != "")
+		{
+			element1.Value = element2.Value;
+		}
+		Dictionary<string, XmlResource.XsdElement> elementSchema = XmlResource.XsdElementDictionary[xsdPath];
+		IEnumerable<XElement> enumerable = element2.Elements() ?? Enumerable.Empty<XElement>();
+		if (num)
+		{
+			element1.Elements().Remove();
+		}
+		Dictionary<XName, Dictionary<string, XElement>> dictionary = (from element in element1.Elements()
+			group element by element.Name).ToDictionary((IGrouping<XName, XElement> el) => el.Key, delegate(IGrouping<XName, XElement> el)
+		{
+			XElement element4 = el.First();
+			List<string> uniqueAttributes = elementSchema[XmlResource.GetFullXPathOfElement(element4, isXsd: false)].UniqueAttributes;
+			Dictionary<string, XElement> dictionary2 = new Dictionary<string, XElement>();
+			foreach (XElement element3 in el)
+			{
+				string key = string.Concat(uniqueAttributes.Select((string attribute) => element3?.Attribute(attribute)?.Value ?? string.Empty));
+				dictionary2[key] = element3;
+			}
+			return dictionary2;
+		});
+		foreach (XElement element2Element in enumerable)
+		{
+			if (dictionary.TryGetValue(element2Element.Name, out var value))
+			{
+				XElement value2 = value.First().Value;
+				if (elementSchema[XmlResource.GetFullXPathOfElement(value2, isXsd: false)].AlwaysPreferMerge)
+				{
+					MergeElements(value2, element2Element, xsdPath);
+					continue;
+				}
+				string text = string.Concat(elementSchema[XmlResource.GetFullXPathOfElement(value.First().Value, isXsd: false)].UniqueAttributes.Select((string attribute) => element2Element?.Attribute(attribute)?.Value ?? string.Empty));
+				if (value.TryGetValue(text, out var value3) && text != "")
+				{
+					MergeElements(value3, element2Element, xsdPath);
+				}
+				else if (element2Element.Attributes().Any((XAttribute a) => a.Name.LocalName == "_replaceWhileMerging" && a.Value == "true"))
+				{
+					MergeElements(value2, element2Element, xsdPath);
+				}
+				else
+				{
+					element1.Add(element2Element);
+				}
+			}
+			else
+			{
+				element1.Add(element2Element);
+			}
+		}
+	}
+
 	public static XmlDocument GetMergedXmlForManaged(string id, bool skipValidation, bool ignoreGameTypeInclusionCheck = true, string gameType = "")
 	{
 		List<Tuple<string, string>> list = new List<Tuple<string, string>>();
 		List<string> xsltList = new List<string>();
+		string xsdPath = ModuleHelper.GetXsdPath(id);
 		foreach (MbObjectXmlInformation xmlInformation in XmlResource.XmlInformationList)
 		{
-			if (!(xmlInformation.Id == id) || (!ignoreGameTypeInclusionCheck && xmlInformation.GameTypesIncluded.Count != 0 && !xmlInformation.GameTypesIncluded.Contains(gameType)))
+			if (!(xmlInformation.Id == id) || !ModuleHelper.IsModuleActive(xmlInformation.ModuleName) || (!ignoreGameTypeInclusionCheck && xmlInformation.GameTypesIncluded.Count != 0 && !xmlInformation.GameTypesIncluded.Contains(gameType)))
 			{
 				continue;
 			}
-			string xsdPath = ModuleHelper.GetXsdPath(xmlInformation.Id);
+			string text = ModuleHelper.GetXsdPathForModules(xmlInformation.ModuleName, xmlInformation.Id);
+			if (!File.Exists(text))
+			{
+				text = xsdPath;
+			}
 			string xmlPath = ModuleHelper.GetXmlPath(xmlInformation.ModuleName, xmlInformation.Name);
 			if (File.Exists(xmlPath))
 			{
-				list.Add(Tuple.Create(ModuleHelper.GetXmlPath(xmlInformation.ModuleName, xmlInformation.Name), xsdPath));
+				list.Add(Tuple.Create(ModuleHelper.GetXmlPath(xmlInformation.ModuleName, xmlInformation.Name), text));
 				HandleXsltList(ModuleHelper.GetXsltPath(xmlInformation.ModuleName, xmlInformation.Name), ref xsltList);
 				continue;
 			}
-			string text = xmlPath.Replace(".xml", "");
-			if (Directory.Exists(text))
+			string text2 = xmlPath.Replace(".xml", "");
+			if (Directory.Exists(text2))
 			{
-				FileInfo[] files = new DirectoryInfo(text).GetFiles("*.xml");
+				FileInfo[] files = new DirectoryInfo(text2).GetFiles("*.xml");
 				foreach (FileInfo fileInfo in files)
 				{
-					xmlPath = text + "/" + fileInfo.Name;
-					list.Add(Tuple.Create(xmlPath, xsdPath));
+					xmlPath = text2 + "/" + fileInfo.Name;
+					list.Add(Tuple.Create(xmlPath, text));
 					HandleXsltList(xmlPath.Replace(".xml", ".xsl"), ref xsltList);
 				}
 			}
@@ -798,6 +922,11 @@ public sealed class MBObjectManager
 		usedPaths = new List<string>();
 		List<Tuple<string, string>> list = new List<Tuple<string, string>>();
 		List<string> xsltList = new List<string>();
+		string text = ModuleHelper.GetXsdPath(id) ?? string.Empty;
+		if (!File.Exists(text))
+		{
+			text = "";
+		}
 		foreach (MbObjectXmlInformation mbprojXml in XmlResource.MbprojXmls)
 		{
 			if (mbprojXml.Id == id)
@@ -805,7 +934,7 @@ public sealed class MBObjectManager
 				if (File.Exists(ModuleHelper.GetXmlPathForNative(mbprojXml.ModuleName, mbprojXml.Name)))
 				{
 					usedPaths.Add(ModuleHelper.GetXmlPathForNativeWBase(mbprojXml.ModuleName, mbprojXml.Name));
-					list.Add(Tuple.Create(ModuleHelper.GetXmlPathForNative(mbprojXml.ModuleName, mbprojXml.Name), string.Empty));
+					list.Add(Tuple.Create(ModuleHelper.GetXmlPathForNative(mbprojXml.ModuleName, mbprojXml.Name), text));
 				}
 				else
 				{
@@ -846,7 +975,7 @@ public sealed class MBObjectManager
 			if (toBeMerged[i].Item1 != "")
 			{
 				XmlDocument xmlDocument2 = CreateDocumentFromXmlFile(toBeMerged[i].Item1, toBeMerged[i].Item2, skipValidation);
-				xmlDocument = MergeTwoXmls(xmlDocument, xmlDocument2);
+				xmlDocument = MergeTwoXmls(xmlDocument, xmlDocument2, toBeMerged[i].Item2, keepDuplicates: false);
 			}
 		}
 		return xmlDocument;
@@ -855,8 +984,9 @@ public sealed class MBObjectManager
 	public static XmlDocument ApplyXslt(string xsltPath, XmlDocument baseDocument)
 	{
 		XmlReader input = new XmlNodeReader(baseDocument);
+		XmlReader stylesheet = XmlReader.Create(new StreamReader(xsltPath));
 		XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
-		xslCompiledTransform.Load(xsltPath);
+		xslCompiledTransform.Load(stylesheet);
 		XmlDocument xmlDocument = new XmlDocument(baseDocument.CreateNavigator().NameTable);
 		using XmlWriter xmlWriter = xmlDocument.CreateNavigator().AppendChild();
 		xslCompiledTransform.Transform(input, xmlWriter);
@@ -864,11 +994,18 @@ public sealed class MBObjectManager
 		return xmlDocument;
 	}
 
-	public static XmlDocument MergeTwoXmls(XmlDocument xmlDocument1, XmlDocument xmlDocument2)
+	public static XmlDocument MergeTwoXmls(XmlDocument xmlDocument1, XmlDocument xmlDocument2, string xsdPath, bool keepDuplicates)
 	{
 		XDocument xDocument = ToXDocument(xmlDocument1);
 		XDocument xDocument2 = ToXDocument(xmlDocument2);
-		xDocument.Root.Add(xDocument2.Root.Elements());
+		if (keepDuplicates || xsdPath == "")
+		{
+			xDocument.Root.Add(xDocument2.Root.Elements());
+		}
+		else
+		{
+			MergeElements(xDocument.Root, xDocument2.Root, xsdPath);
+		}
 		return ToXmlDocument(xDocument);
 	}
 
@@ -928,7 +1065,7 @@ public sealed class MBObjectManager
 		XmlTextReader xmlTextReader = null;
 		try
 		{
-			xmlTextReader = new XmlTextReader(xsdPath);
+			xmlTextReader = new XmlTextReader(new StreamReader(xsdPath));
 			xmlSchemaSet.Add(null, xmlTextReader);
 		}
 		catch (FileNotFoundException)
@@ -949,6 +1086,20 @@ public sealed class MBObjectManager
 		{
 			Debug.Print("xsd file of " + xmlPath + " could not be read! " + ex4.Message, 0, Debug.DebugColor.Red);
 		}
+		try
+		{
+			xmlSchemaSet.Compile();
+			InjectOptionalAttrToAllComplexTypes(xmlSchemaSet, "boolean", "_replaceWhileMerging");
+			foreach (XmlSchema item in xmlSchemaSet.Schemas())
+			{
+				xmlSchemaSet.Reprocess(item);
+			}
+			xmlSchemaSet.Compile();
+		}
+		catch (Exception ex5)
+		{
+			Debug.Print("Schema overlay failed: " + ex5.Message, 0, Debug.DebugColor.Red);
+		}
 		XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
 		xmlReaderSettings.ValidationType = ValidationType.None;
 		xmlReaderSettings.Schemas.Add(xmlSchemaSet);
@@ -957,7 +1108,7 @@ public sealed class MBObjectManager
 		xmlReaderSettings.CloseInput = true;
 		try
 		{
-			XmlReader xmlReader = XmlReader.Create(xmlPath, xmlReaderSettings);
+			XmlReader xmlReader = XmlReader.Create(new StreamReader(xmlPath), xmlReaderSettings);
 			xmlDocument.Load(xmlReader);
 			xmlReader.Close();
 			XmlReaderSettings xmlReaderSettings2 = new XmlReaderSettings();
@@ -966,7 +1117,7 @@ public sealed class MBObjectManager
 			xmlReaderSettings2.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
 			xmlReaderSettings2.ValidationEventHandler += ValidationEventHandler;
 			xmlReaderSettings2.CloseInput = true;
-			xmlReader = XmlReader.Create(xmlPath, xmlReaderSettings2);
+			xmlReader = XmlReader.Create(new StreamReader(xmlPath), xmlReaderSettings2);
 			xmlDocument.Load(xmlReader);
 			xmlReader.Close();
 		}
@@ -975,6 +1126,199 @@ public sealed class MBObjectManager
 			_ = new Uri(xmlDocument.BaseURI).LocalPath;
 		}
 		xmlTextReader?.Close();
+	}
+
+	private static bool HasAttibuteAux(XmlSchemaAttribute schemaAttribute, string localName)
+	{
+		if (string.IsNullOrEmpty(schemaAttribute.Name) || !(schemaAttribute.Name == localName))
+		{
+			if (!schemaAttribute.RefName.IsEmpty)
+			{
+				return schemaAttribute.RefName.Name == localName;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private static bool HasAttribute(XmlSchemaComplexType complexType, string localName)
+	{
+		if (complexType.ContentModel is XmlSchemaComplexContent xmlSchemaComplexContent)
+		{
+			if (xmlSchemaComplexContent.Content is XmlSchemaComplexContentExtension xmlSchemaComplexContentExtension)
+			{
+				foreach (XmlSchemaObject attribute in xmlSchemaComplexContentExtension.Attributes)
+				{
+					if (attribute is XmlSchemaAttribute schemaAttribute && HasAttibuteAux(schemaAttribute, localName))
+					{
+						return true;
+					}
+				}
+			}
+			else if (xmlSchemaComplexContent.Content is XmlSchemaComplexContentRestriction xmlSchemaComplexContentRestriction)
+			{
+				foreach (XmlSchemaObject attribute2 in xmlSchemaComplexContentRestriction.Attributes)
+				{
+					if (attribute2 is XmlSchemaAttribute schemaAttribute2 && HasAttibuteAux(schemaAttribute2, localName))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		else if (complexType.ContentModel is XmlSchemaSimpleContent xmlSchemaSimpleContent)
+		{
+			if (xmlSchemaSimpleContent.Content is XmlSchemaSimpleContentExtension xmlSchemaSimpleContentExtension)
+			{
+				foreach (XmlSchemaObject attribute3 in xmlSchemaSimpleContentExtension.Attributes)
+				{
+					if (attribute3 is XmlSchemaAttribute schemaAttribute3 && HasAttibuteAux(schemaAttribute3, localName))
+					{
+						return true;
+					}
+				}
+			}
+			else if (xmlSchemaSimpleContent.Content is XmlSchemaSimpleContentRestriction xmlSchemaSimpleContentRestriction)
+			{
+				foreach (XmlSchemaObject attribute4 in xmlSchemaSimpleContentRestriction.Attributes)
+				{
+					if (attribute4 is XmlSchemaAttribute schemaAttribute4 && HasAttibuteAux(schemaAttribute4, localName))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		foreach (XmlSchemaObject attribute5 in complexType.Attributes)
+		{
+			if (attribute5 is XmlSchemaAttribute schemaAttribute5 && HasAttibuteAux(schemaAttribute5, localName))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static void InjectAttribute(XmlSchemaComplexType complexType, XmlQualifiedName qualifiedName, string attributeName)
+	{
+		if (HasAttribute(complexType, attributeName))
+		{
+			return;
+		}
+		XmlSchemaAttribute item = new XmlSchemaAttribute
+		{
+			Name = attributeName,
+			SchemaTypeName = qualifiedName,
+			Use = XmlSchemaUse.Optional,
+			Form = XmlSchemaForm.Unqualified
+		};
+		if (complexType.ContentModel is XmlSchemaComplexContent xmlSchemaComplexContent)
+		{
+			if (xmlSchemaComplexContent.Content is XmlSchemaComplexContentExtension xmlSchemaComplexContentExtension)
+			{
+				xmlSchemaComplexContentExtension.Attributes.Add(item);
+			}
+			else if (!(xmlSchemaComplexContent.Content is XmlSchemaComplexContentRestriction))
+			{
+				complexType.Attributes.Add(item);
+			}
+		}
+		else if (complexType.ContentModel is XmlSchemaSimpleContent xmlSchemaSimpleContent)
+		{
+			if (xmlSchemaSimpleContent.Content is XmlSchemaSimpleContentExtension xmlSchemaSimpleContentExtension)
+			{
+				xmlSchemaSimpleContentExtension.Attributes.Add(item);
+			}
+			else if (!(xmlSchemaSimpleContent.Content is XmlSchemaSimpleContentRestriction))
+			{
+				complexType.Attributes.Add(item);
+			}
+		}
+		else
+		{
+			complexType.Attributes.Add(item);
+		}
+	}
+
+	private static void InjectOptionalAttrToAllComplexTypes(XmlSchemaSet set, string type, string name)
+	{
+		XmlQualifiedName xmlQualifiedName = new XmlQualifiedName(type, "http://www.w3.org/2001/XMLSchema");
+		foreach (XmlSchema item in set.Schemas())
+		{
+			foreach (XmlSchemaObject item2 in item.Items)
+			{
+				if (item2 is XmlSchemaComplexType xmlSchemaComplexType)
+				{
+					InjectAttribute(xmlSchemaComplexType, xmlQualifiedName, name);
+					WalkParticle(xmlSchemaComplexType.Particle, xmlQualifiedName, name);
+				}
+				else if (item2 is XmlSchemaElement xmlSchemaElement)
+				{
+					if (xmlSchemaElement.SchemaType is XmlSchemaComplexType xmlSchemaComplexType2)
+					{
+						InjectAttribute(xmlSchemaComplexType2, xmlQualifiedName, name);
+						WalkParticle(xmlSchemaComplexType2.Particle, xmlQualifiedName, name);
+					}
+					if (xmlSchemaElement.ElementSchemaType is XmlSchemaComplexType xmlSchemaComplexType3)
+					{
+						InjectAttribute(xmlSchemaComplexType3, xmlQualifiedName, name);
+						WalkParticle(xmlSchemaComplexType3.Particle, xmlQualifiedName, name);
+					}
+				}
+				else if (item2 is XmlSchemaGroup xmlSchemaGroup)
+				{
+					WalkParticle(xmlSchemaGroup.Particle, xmlQualifiedName, name);
+				}
+			}
+		}
+	}
+
+	private static void WalkParticle(XmlSchemaParticle particle, XmlQualifiedName xsType, string name)
+	{
+		if (particle == null)
+		{
+			return;
+		}
+		if (particle is XmlSchemaElement xmlSchemaElement)
+		{
+			if (xmlSchemaElement.SchemaType is XmlSchemaComplexType xmlSchemaComplexType)
+			{
+				InjectAttribute(xmlSchemaComplexType, xsType, name);
+				WalkParticle(xmlSchemaComplexType.Particle, xsType, name);
+			}
+			if (xmlSchemaElement.ElementSchemaType is XmlSchemaComplexType xmlSchemaComplexType2)
+			{
+				InjectAttribute(xmlSchemaComplexType2, xsType, name);
+				WalkParticle(xmlSchemaComplexType2.Particle, xsType, name);
+			}
+		}
+		else
+		{
+			if (!(particle is XmlSchemaGroupBase xmlSchemaGroupBase))
+			{
+				return;
+			}
+			foreach (XmlSchemaObject item in xmlSchemaGroupBase.Items)
+			{
+				if (item is XmlSchemaElement xmlSchemaElement2)
+				{
+					if (xmlSchemaElement2.SchemaType is XmlSchemaComplexType xmlSchemaComplexType3)
+					{
+						InjectAttribute(xmlSchemaComplexType3, xsType, name);
+						WalkParticle(xmlSchemaComplexType3.Particle, xsType, name);
+					}
+					if (xmlSchemaElement2.ElementSchemaType is XmlSchemaComplexType xmlSchemaComplexType4)
+					{
+						InjectAttribute(xmlSchemaComplexType4, xsType, name);
+						WalkParticle(xmlSchemaComplexType4.Particle, xsType, name);
+					}
+				}
+				else if (item is XmlSchemaGroupBase particle2)
+				{
+					WalkParticle(particle2, xsType, name);
+				}
+			}
+		}
 	}
 
 	private static void ValidationEventHandler(object sender, ValidationEventArgs e)
@@ -1054,10 +1398,14 @@ public sealed class MBObjectManager
 
 	public MBObjectBase CreateObjectFromXmlNode(XmlNode node)
 	{
-		string name = node.Name;
+		return CreateObjectFromXmlNode(node, node.Name);
+	}
+
+	public MBObjectBase CreateObjectFromXmlNode(XmlNode node, string typeName)
+	{
 		foreach (IObjectTypeRecord objectTypeRecord in ObjectTypeRecords)
 		{
-			if (objectTypeRecord.ElementName == name)
+			if (objectTypeRecord.ElementName == typeName)
 			{
 				string value = node.Attributes["id"].Value;
 				MBObjectBase presumedObject = GetPresumedObject(objectTypeRecord.ElementName, value);

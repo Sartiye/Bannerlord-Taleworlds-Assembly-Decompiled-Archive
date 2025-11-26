@@ -130,7 +130,7 @@ public static class PlayerSiege
 	{
 		if (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
 		{
-			MobileParty.MainParty.Ai.SetMoveModeHold();
+			MobileParty.MainParty.SetMoveModeHold();
 		}
 		SetPlayerSiegeEvent();
 		if (!isSimulation)
@@ -144,17 +144,12 @@ public static class PlayerSiege
 		CampaignEventDispatcher.Instance.OnPlayerSiegeStarted();
 	}
 
-	public static void ClosePlayerSiege()
+	public static void FinalizePlayerSiege()
 	{
 		if (PlayerSiegeEvent != null)
 		{
 			BesiegedSettlement.Party.SetVisualAsDirty();
-			Campaign.Current.autoEnterTown = null;
-			if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
-			{
-				MobileParty.MainParty.Army.AiBehaviorObject = null;
-			}
-			MobileParty.MainParty.Ai.SetMoveModeHold();
+			MobileParty.MainParty.SetMoveModeHold();
 			TaleWorlds.Core.GameState gameState = Game.Current.GameStateManager.GameStates.FirstOrDefault((TaleWorlds.Core.GameState s) => s is MapState);
 			if (gameState != null)
 			{
@@ -178,7 +173,7 @@ public static class PlayerSiege
 			break;
 		}
 		case Settlement.SiegeState.Invalid:
-			Debug.FailedAssert("Siege state is invalid!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\PlayerSiege.cs", "StartSiegeMission", 189);
+			Debug.FailedAssert("Siege state is invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\PlayerSiege.cs", "StartSiegeMission", 181);
 			break;
 		}
 	}

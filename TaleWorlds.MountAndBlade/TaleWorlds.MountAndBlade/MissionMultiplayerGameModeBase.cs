@@ -41,6 +41,8 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 
 	public abstract bool IsGameModeUsingOpposingTeams { get; }
 
+	public virtual bool IsGameModeAllowChargeDamageOnFriendly => false;
+
 	public SpawnComponent SpawnComponent { get; private set; }
 
 	protected bool CanGameModeSystemsTickThisFrame { get; private set; }
@@ -192,7 +194,7 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 		return true;
 	}
 
-	public int GetScoreForKill(Agent killedAgent)
+	public virtual int GetScoreForKill(Agent killedAgent)
 	{
 		return 20;
 	}
@@ -362,7 +364,7 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 		{
 			return MissionLobbyComponent.IsClassAvailable(result);
 		}
-		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 388);
+		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 389);
 		return false;
 	}
 }

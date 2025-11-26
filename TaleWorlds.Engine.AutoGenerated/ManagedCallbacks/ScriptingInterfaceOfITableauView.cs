@@ -12,7 +12,7 @@ internal class ScriptingInterfaceOfITableauView : ITableauView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateTableauViewDelegate();
+	public delegate NativeObjectPointer CreateTableauViewDelegate(byte[] viewName);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -46,9 +46,17 @@ internal class ScriptingInterfaceOfITableauView : ITableauView
 
 	public static SetSortingEnabledDelegate call_SetSortingEnabledDelegate;
 
-	public TableauView CreateTableauView()
+	public TableauView CreateTableauView(string viewName)
 	{
-		NativeObjectPointer nativeObjectPointer = call_CreateTableauViewDelegate();
+		byte[] array = null;
+		if (viewName != null)
+		{
+			int byteCount = _utf8.GetByteCount(viewName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(viewName, 0, viewName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		NativeObjectPointer nativeObjectPointer = call_CreateTableauViewDelegate(array);
 		TableauView result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{

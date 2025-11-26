@@ -44,7 +44,7 @@ public class CampaignOptionItemVM : ViewModel
 
 	private string _valueAsString;
 
-	private SelectorVM<SelectorItemVM> _selectionSelector;
+	private CampaignOptionSelectorVM _selectionSelector;
 
 	public ICampaignOptionData OptionData { get; private set; }
 
@@ -129,8 +129,8 @@ public class CampaignOptionItemVM : ViewModel
 			{
 				_valueAsBoolean = value;
 				OnPropertyChangedWithValue(value, "ValueAsBoolean");
-				_onValueChanged?.Invoke(this);
 				_optionDataAsBoolean.SetValue(value ? 1f : 0f);
+				_onValueChanged?.Invoke(this);
 			}
 		}
 	}
@@ -165,6 +165,10 @@ public class CampaignOptionItemVM : ViewModel
 			{
 				_isDisabled = value;
 				OnPropertyChangedWithValue(value, "IsDisabled");
+				if (SelectionSelector != null)
+				{
+					SelectionSelector.IsEnabled = !value;
+				}
 			}
 		}
 	}
@@ -217,8 +221,8 @@ public class CampaignOptionItemVM : ViewModel
 				_valueAsRange = value;
 				OnPropertyChangedWithValue(value, "ValueAsRange");
 				ValueAsString = value.ToString("F1");
-				_onValueChanged?.Invoke(this);
 				_optionDataAsNumeric.SetValue(value);
+				_onValueChanged?.Invoke(this);
 			}
 		}
 	}
@@ -241,7 +245,7 @@ public class CampaignOptionItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public SelectorVM<SelectorItemVM> SelectionSelector
+	public CampaignOptionSelectorVM SelectionSelector
 	{
 		get
 		{
@@ -283,7 +287,7 @@ public class CampaignOptionItemVM : ViewModel
 			_optionDataAsSelection = OptionData as SelectionCampaignOptionData;
 			List<TextObject> selections = _optionDataAsSelection.Selections;
 			int selectedIndex = (int)_optionDataAsSelection.GetValue();
-			SelectionSelector = new SelectorVM<SelectorItemVM>(selections, selectedIndex, null);
+			SelectionSelector = new CampaignOptionSelectorVM(selections, selectedIndex, null);
 			SelectionSelector.SetOnChangeAction(OnSelectionOptionValueChanged);
 			OptionType = 2;
 			SelectionSelector.SelectedIndex = (int)_optionDataAsSelection.GetValue();

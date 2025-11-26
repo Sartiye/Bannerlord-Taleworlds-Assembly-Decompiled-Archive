@@ -95,6 +95,11 @@ public class MBDebugManager : IDebugManager
 		return MBDebug.DebugVector;
 	}
 
+	void IDebugManager.SetDebugVector(Vec3 value)
+	{
+		MBDebug.DebugVector = value;
+	}
+
 	void IDebugManager.SetTestModeEnabled(bool testModeEnabled)
 	{
 		MBDebug.TestModeEnabled = testModeEnabled;

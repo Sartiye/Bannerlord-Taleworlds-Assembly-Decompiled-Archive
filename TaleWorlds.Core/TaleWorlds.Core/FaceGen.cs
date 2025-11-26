@@ -1,3 +1,5 @@
+using System;
+
 namespace TaleWorlds.Core;
 
 public static class FaceGen
@@ -21,11 +23,11 @@ public static class FaceGen
 		_instance = faceGen;
 	}
 
-	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags)
+	public static BodyProperties GetRandomBodyProperties(int race, bool isFemale, BodyProperties bodyPropertiesMin, BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags, float variationAmount)
 	{
 		if (_instance != null)
 		{
-			return _instance.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tatooTags);
+			return _instance.GetRandomBodyProperties(race, isFemale, bodyPropertiesMin, bodyPropertiesMax, hairCoverType, seed, hairTags, beardTags, tatooTags, variationAmount);
 		}
 		return bodyPropertiesMin;
 	}
@@ -101,5 +103,41 @@ public static class FaceGen
 			return _instance.GetMaturityTypeWithAge(age);
 		}
 		return BodyMeshMaturityType.Child;
+	}
+
+	public static int[] GetHairIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		if (_instance != null)
+		{
+			return _instance.GetHairIndicesByTag(race, curGender, age, tag);
+		}
+		return Array.Empty<int>();
+	}
+
+	public static int[] GetFacialIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		if (_instance != null)
+		{
+			return _instance.GetFacialIndicesByTag(race, curGender, age, tag);
+		}
+		return Array.Empty<int>();
+	}
+
+	public static int[] GetTattooIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		if (_instance != null)
+		{
+			return _instance.GetTattooIndicesByTag(race, curGender, age, tag);
+		}
+		return Array.Empty<int>();
+	}
+
+	public static float GetTattooZeroProbability(int race, int curGender, float age)
+	{
+		if (_instance != null)
+		{
+			return _instance.GetTattooZeroProbability(race, curGender, age);
+		}
+		return 0f;
 	}
 }

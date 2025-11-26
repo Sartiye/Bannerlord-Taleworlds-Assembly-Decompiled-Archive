@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using TaleWorlds.PlayerServices;
 
@@ -6,7 +5,7 @@ namespace TaleWorlds.PlatformService;
 
 public interface IPlatformInvitationServices
 {
-	Task OnLogin();
+	Task<bool> OnLogin();
 
 	Task<bool> OnInviteToPlatformSession(PlayerId playerId);
 
@@ -14,7 +13,7 @@ public interface IPlatformInvitationServices
 
 	PlayerId GetInvitationPlayerId();
 
-	Task<Tuple<bool, ulong>> JoinSession();
+	Task<(bool Result, ulong InviterPlayerAccountId)> JoinSession();
 
 	Task LeaveSession(bool createNewSession);
 }

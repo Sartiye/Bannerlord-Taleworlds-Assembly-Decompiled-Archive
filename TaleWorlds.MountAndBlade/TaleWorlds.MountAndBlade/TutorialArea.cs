@@ -41,10 +41,10 @@ public class TutorialArea : MissionObject
 		}
 	}
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private TrainingType _typeOfTraining;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private string _tagPrefix = "A_";
 
 	private readonly List<TutorialEntity> _tagWeapon = new List<TutorialEntity>();

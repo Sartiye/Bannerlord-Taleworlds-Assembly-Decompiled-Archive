@@ -13,13 +13,13 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
-public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
+public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase, IVassalAndMercenaryOfferCampaignBehavior
 {
 	private const float MercenaryOfferCreationChance = 0.02f;
 
 	private const float VassalOfferCreationChance = 0.01f;
 
-	private const int MercenaryOfferCancelTimeInHours = 48;
+	private const int MercenaryOfferCancelTimeInDays = 2;
 
 	private static readonly TextObject MercenaryOfferDecisionPopUpExplanationText = new TextObject("{=TENbJKpP}The {OFFERED_KINGDOM_NAME} is offering you work as a mercenary, paying {GOLD_AMOUNT}{GOLD_ICON} per influence point that you would gain from fighting on their behalf. Do you accept?");
 
@@ -48,7 +48,6 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 			CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnHeroPrisonerTaken);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.OnVassalOrMercenaryServiceOfferedToPlayerEvent.AddNonSerializedListener(this, OnVassalOrMercenaryServiceOfferedToPlayer);
-			CampaignEvents.OnVassalOrMercenaryServiceOfferCanceledEvent.AddNonSerializedListener(this, OnVassalOrMercenaryServiceOfferCanceled);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, OnHeroRelationChanged);
 			CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
@@ -76,54 +75,71 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		}
 		if (_currentMercenaryOffer != null)
 		{
-			if (_currentMercenaryOffer.Item2.ElapsedHoursUntilNow >= 48f || !MercenaryKingdomSelectionConditionsHold(_currentMercenaryOffer.Item1))
+			if (_currentMercenaryOffer.Item2.ElapsedDaysUntilNow >= 2f || !MercenaryKingdomSelectionConditionsHold(_currentMercenaryOffer.Item1))
 			{
-				CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
-			}
-			return;
-		}
-		float randomFloat = MBRandom.RandomFloat;
-		if (randomFloat <= 0.02f && CanPlayerClanReceiveMercenaryOffer())
-		{
-			Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate(MercenaryKingdomSelectionConditionsHold);
-			if (randomElementWithPredicate != null)
-			{
-				CreateMercenaryOffer(randomElementWithPredicate);
+				CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 			}
 		}
-		else if (randomFloat <= 0.01f && CanPlayerClanReceiveVassalOffer())
+		else
 		{
-			Kingdom randomElementWithPredicate2 = Kingdom.All.GetRandomElementWithPredicate(VassalKingdomSelectionConditionsHold);
-			if (randomElementWithPredicate2 != null)
+			if (Hero.MainHero.IsPrisoner || MobileParty.MainParty.IsInRaftState)
 			{
-				CreateVassalOffer(randomElementWithPredicate2);
+				return;
+			}
+			float randomFloat = MBRandom.RandomFloat;
+			if (randomFloat <= 0.02f && CanPlayerClanReceiveMercenaryOffer())
+			{
+				Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate(MercenaryKingdomSelectionConditionsHold);
+				if (randomElementWithPredicate != null)
+				{
+					CreateMercenaryOffer(randomElementWithPredicate);
+				}
+			}
+			else if (randomFloat <= 0.01f && CanPlayerClanReceiveVassalOffer())
+			{
+				Kingdom randomElementWithPredicate2 = Kingdom.All.GetRandomElementWithPredicate(VassalKingdomSelectionConditionsHold);
+				if (randomElementWithPredicate2 != null)
+				{
+					CreateVassalOffer(randomElementWithPredicate2);
+				}
 			}
 		}
 	}
 
 	private bool VassalKingdomSelectionConditionsHold(Kingdom kingdom)
 	{
-		List<IFaction> playerWars;
-		List<IFaction> warsOfFactionToJoin;
-		if (!_vassalOffers.ContainsKey(kingdom))
+		if (!_vassalOffers.ContainsKey(kingdom) && FactionHelper.CanPlayerOfferVassalage(kingdom, out var _, out var _) && !kingdom.Leader.IsPrisoner)
 		{
-			return FactionHelper.CanPlayerOfferVassalage(kingdom, out playerWars, out warsOfFactionToJoin);
+			return !kingdom.Leader.IsFugitive;
 		}
 		return false;
 	}
 
 	private bool MercenaryKingdomSelectionConditionsHold(Kingdom kingdom)
 	{
-		List<IFaction> playerWars;
-		List<IFaction> warsOfFactionToJoin;
-		return FactionHelper.CanPlayerOfferMercenaryService(kingdom, out playerWars, out warsOfFactionToJoin);
+		if (!kingdom.IsEliminated && FactionHelper.CanPlayerOfferMercenaryService(kingdom, out var _, out var _) && !kingdom.Leader.IsPrisoner)
+		{
+			return !kingdom.Leader.IsFugitive;
+		}
+		return false;
 	}
 
 	private void OnHeroPrisonerTaken(PartyBase captor, Hero prisoner)
 	{
 		if (prisoner == Hero.MainHero && _currentMercenaryOffer != null)
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+			CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
+			{
+				foreach (Kingdom item in _vassalOffers.Keys.ToList())
+				{
+					CancelVassalOrMercenaryServiceOffer(item);
+				}
+				return;
+			}
+		}
+		if (prisoner.IsKingdomLeader)
+		{
+			CancelVassalOrMercenaryServiceOffer(prisoner.MapFaction as Kingdom);
 		}
 	}
 
@@ -135,7 +151,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		}
 		if (detail == ChangeKingdomAction.ChangeKingdomActionDetail.JoinAsMercenary && _currentMercenaryOffer != null && _currentMercenaryOffer.Item1 != newKingdom)
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+			CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 		}
 		else
 		{
@@ -146,11 +162,11 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 			_stopOffers = true;
 			if (_currentMercenaryOffer != null)
 			{
-				CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+				CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 			}
 			foreach (KeyValuePair<Kingdom, CampaignTime> item in _vassalOffers.ToDictionary((KeyValuePair<Kingdom, CampaignTime> x) => x.Key, (KeyValuePair<Kingdom, CampaignTime> x) => x.Value))
 			{
-				CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(item.Key);
+				CancelVassalOrMercenaryServiceOffer(item.Key);
 			}
 		}
 	}
@@ -163,16 +179,17 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnVassalOrMercenaryServiceOfferCanceled(Kingdom kingdom)
+	public void CancelVassalOrMercenaryServiceOffer(Kingdom kingdom)
 	{
 		ClearKingdomOffer(kingdom);
+		CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(kingdom);
 	}
 
 	private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 	{
 		if ((faction1 == Clan.PlayerClan || faction2 == Clan.PlayerClan) && _currentMercenaryOffer != null && !MercenaryKingdomSelectionConditionsHold(_currentMercenaryOffer.Item1))
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+			CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 		}
 	}
 
@@ -180,7 +197,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 	{
 		if ((effectiveHero == Hero.MainHero || effectiveHeroGainedRelationWith == Hero.MainHero) && _currentMercenaryOffer != null && !MercenaryKingdomSelectionConditionsHold(_currentMercenaryOffer.Item1))
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+			CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 		}
 	}
 
@@ -188,7 +205,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 	{
 		if ((_currentMercenaryOffer != null && _currentMercenaryOffer.Item1 == destroyedKingdom) || _vassalOffers.ContainsKey(destroyedKingdom))
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(destroyedKingdom);
+			CancelVassalOrMercenaryServiceOffer(destroyedKingdom);
 		}
 	}
 
@@ -196,7 +213,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 	{
 		if (_currentMercenaryOffer != null)
 		{
-			CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(_currentMercenaryOffer.Item1);
+			CancelVassalOrMercenaryServiceOffer(_currentMercenaryOffer.Item1);
 		}
 		if (_vassalOffers.IsEmpty())
 		{
@@ -206,7 +223,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		{
 			if (_vassalOffers.ContainsKey(item))
 			{
-				CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled(item);
+				CancelVassalOrMercenaryServiceOffer(item);
 			}
 		}
 	}
@@ -217,10 +234,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		{
 			_currentMercenaryOffer = null;
 		}
-		else if (_vassalOffers.Count > 0)
-		{
-			_vassalOffers.Clear();
-		}
+		_vassalOffers.Remove(kingdom);
 	}
 
 	private bool CanPlayerClanReceiveMercenaryOffer()
@@ -253,7 +267,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 		Kingdom item = _currentMercenaryOffer.Item1;
 		ClearKingdomOffer(_currentMercenaryOffer.Item1);
 		int mercenaryAwardFactorToJoinKingdom = Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(Clan.PlayerClan, item, neededAmountForClanToJoinCalculation: true);
-		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Clan.PlayerClan, item, mercenaryAwardFactorToJoinKingdom);
+		ChangeKingdomAction.ApplyByJoinFactionAsMercenary(Clan.PlayerClan, item, default(CampaignTime), mercenaryAwardFactorToJoinKingdom);
 	}
 
 	private void MercenaryOfferDeclined()
@@ -281,7 +295,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 	private void AddVassalDialogues(CampaignGameStarter campaignGameStarter)
 	{
 		campaignGameStarter.AddDialogLine("valid_vassal_offer_start", "start", "valid_vassal_offer_player_response", "{=aDABE6Md}Greetings, {PLAYER.NAME}. I am glad that you received my message. Are you interested in my offer?", valid_vassal_offer_start_condition, null, int.MaxValue);
-		campaignGameStarter.AddPlayerLine("vassal_offer_player_accepts_response", "valid_vassal_offer_player_response", "vassal_offer_start_oath", "{=IHXqZSnt}Yes, I am ready to accept your offer.", null, null);
+		campaignGameStarter.AddPlayerLine("vassal_offer_player_accepts_response", "valid_vassal_offer_player_response", "lord_give_oath_2", "{=IHXqZSnt}Yes, I am ready to accept your offer.", null, null);
 		campaignGameStarter.AddPlayerLine("vassal_offer_player_declines_response", "valid_vassal_offer_player_response", "vassal_offer_king_response_to_decline", "{=FAuoq2gT}While I am honored, I must decline your offer.", null, vassal_conversation_end_consequence);
 		campaignGameStarter.AddDialogLine("vassal_offer_king_response_to_accept_continue", "vassal_offer_start_oath", "vassal_offer_king_response_to_accept_start_oath_1_response", "{=54PbMkNw}Good. Then repeat the words of the oath with me: {OATH_LINE_1}", conversation_set_oath_phrases_on_condition, null);
 		campaignGameStarter.AddPlayerLine("vassal_offer_player_oath_1", "vassal_offer_king_response_to_accept_start_oath_1_response", "vassal_offer_king_response_to_accept_start_oath_2", "{=!}{OATH_LINE_1}", null, null);
@@ -429,7 +443,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 				if (flag)
 				{
 					Hero.OneToOneConversationHero.SetHasMet();
-					TextObject textObject = TextObject.Empty;
+					TextObject textObject;
 					if (offerKingdom.Leader.GetRelationWithPlayer() < (float)Campaign.Current.Models.DiplomacyModel.MinimumRelationWithConversationCharacterToJoinKingdom)
 					{
 						textObject = new TextObject("{=niWfuEeh}Well, {PLAYER.NAME}. Are you here about that offer I made? Seeing as what's happened between then and now, surely you realize that that offer no longer stands?");
@@ -451,6 +465,10 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 						}
 						textObject.SetTextVariable("WAR_KINGDOMS", GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: true));
 					}
+					else
+					{
+						textObject = TextObject.GetEmpty();
+					}
 					textObject.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 					MBTextManager.SetTextVariable("INVALID_REASON", textObject);
 				}
@@ -462,6 +480,6 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase
 
 	private void vassal_conversation_end_consequence()
 	{
-		CampaignEventDispatcher.Instance.OnVassalOrMercenaryServiceOfferCanceled((Kingdom)Hero.OneToOneConversationHero.MapFaction);
+		CancelVassalOrMercenaryServiceOffer((Kingdom)Hero.OneToOneConversationHero.MapFaction);
 	}
 }

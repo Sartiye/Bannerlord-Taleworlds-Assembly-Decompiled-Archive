@@ -237,7 +237,7 @@ public class PartyTradeVM : ViewModel
 	{
 		if (side != 0 && side != PartyScreenLogic.PartyRosterSide.Right)
 		{
-			Debug.FailedAssert("Troop has to be either from left or right side", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyTradeVM.cs", "UpdateTroopData", 50);
+			Debug.FailedAssert("Troop has to be either from left or right side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyTradeVM.cs", "UpdateTroopData", 50);
 			return;
 		}
 		TroopRosterElement? troopRosterElement = null;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -231,62 +232,66 @@ public class MultiplayerMissionMarkerListPanel : ListPanel
 		}
 		if (IsMarkerEnabled)
 		{
-			foreach (Widget allChildrenAndThi in base.AllChildrenAndThis)
+			List<Widget> allChildrenAndThisRecursive = GetAllChildrenAndThisRecursive();
+			for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
 			{
-				if (allChildrenAndThi != this && allChildrenAndThi != _activeWidget)
+				Widget widget = allChildrenAndThisRecursive[i];
+				if (widget != this && widget != _activeWidget)
 				{
 					Widget activeWidget = _activeWidget;
-					if (activeWidget == null || !activeWidget.CheckIsMyChildRecursive(allChildrenAndThi))
+					if (activeWidget == null || !activeWidget.CheckIsMyChildRecursive(widget))
 					{
-						if (allChildrenAndThi != RemovalTimeVisiblityWidget)
+						if (widget != RemovalTimeVisiblityWidget)
 						{
-							allChildrenAndThi.IsVisible = false;
+							widget.IsVisible = false;
 						}
 						continue;
 					}
 				}
 				float distanceRelatedAlphaTarget = GetDistanceRelatedAlphaTarget(Distance);
-				if (allChildrenAndThi == SpawnFlagIconWidget)
+				if (widget == SpawnFlagIconWidget)
 				{
-					allChildrenAndThi.SetAlpha(IsSpawnFlag ? LocalLerp(allChildrenAndThi.AlphaFactor, distanceRelatedAlphaTarget, delta) : 0f);
+					widget.SetAlpha(IsSpawnFlag ? LocalLerp(widget.AlphaFactor, distanceRelatedAlphaTarget, delta) : 0f);
 				}
 				else
 				{
-					allChildrenAndThi.SetAlpha(LocalLerp(allChildrenAndThi.AlphaFactor, distanceRelatedAlphaTarget, delta));
+					widget.SetAlpha(LocalLerp(widget.AlphaFactor, distanceRelatedAlphaTarget, delta));
 				}
-				if (allChildrenAndThi != RemovalTimeVisiblityWidget)
+				if (widget != RemovalTimeVisiblityWidget)
 				{
-					allChildrenAndThi.IsVisible = (double)allChildrenAndThi.AlphaFactor > 0.05;
+					widget.IsVisible = (double)widget.AlphaFactor > 0.05;
 				}
 			}
 		}
 		else
 		{
-			foreach (Widget allChildrenAndThi2 in base.AllChildrenAndThis)
+			List<Widget> allChildrenAndThisRecursive2 = GetAllChildrenAndThisRecursive();
+			for (int j = 0; j < allChildrenAndThisRecursive2.Count; j++)
 			{
-				if (allChildrenAndThi2 != this && allChildrenAndThi2 != _activeWidget)
+				Widget widget2 = allChildrenAndThisRecursive2[j];
+				if (widget2 != this && widget2 != _activeWidget)
 				{
 					Widget activeWidget2 = _activeWidget;
-					if (activeWidget2 == null || !activeWidget2.CheckIsMyChildRecursive(allChildrenAndThi2))
+					if (activeWidget2 == null || !activeWidget2.CheckIsMyChildRecursive(widget2))
 					{
-						if (allChildrenAndThi2 != RemovalTimeVisiblityWidget)
+						if (widget2 != RemovalTimeVisiblityWidget)
 						{
-							allChildrenAndThi2.IsVisible = false;
+							widget2.IsVisible = false;
 						}
 						continue;
 					}
 				}
-				if (allChildrenAndThi2 == SpawnFlagIconWidget)
+				if (widget2 == SpawnFlagIconWidget)
 				{
-					allChildrenAndThi2.SetAlpha(IsSpawnFlag ? LocalLerp(allChildrenAndThi2.AlphaFactor, 0f, delta) : 0f);
+					widget2.SetAlpha(IsSpawnFlag ? LocalLerp(widget2.AlphaFactor, 0f, delta) : 0f);
 				}
 				else
 				{
-					allChildrenAndThi2.SetAlpha(LocalLerp(allChildrenAndThi2.AlphaFactor, 0f, delta));
+					widget2.SetAlpha(LocalLerp(widget2.AlphaFactor, 0f, delta));
 				}
-				if (allChildrenAndThi2 != RemovalTimeVisiblityWidget)
+				if (widget2 != RemovalTimeVisiblityWidget)
 				{
-					allChildrenAndThi2.IsVisible = (double)allChildrenAndThi2.AlphaFactor > 0.05;
+					widget2.IsVisible = (double)widget2.AlphaFactor > 0.05;
 				}
 			}
 		}
@@ -326,53 +331,57 @@ public class MultiplayerMissionMarkerListPanel : ListPanel
 	{
 		if (IsMarkerEnabled)
 		{
-			foreach (Widget allChildrenAndThi in base.AllChildrenAndThis)
+			List<Widget> allChildrenAndThisRecursive = GetAllChildrenAndThisRecursive();
+			for (int i = 0; i < allChildrenAndThisRecursive.Count; i++)
 			{
-				if (allChildrenAndThi != this && allChildrenAndThi != _activeWidget)
+				Widget widget = allChildrenAndThisRecursive[i];
+				if (widget != this && widget != _activeWidget)
 				{
 					Widget activeWidget = _activeWidget;
-					if (activeWidget == null || !activeWidget.CheckIsMyChildRecursive(allChildrenAndThi))
+					if (activeWidget == null || !activeWidget.CheckIsMyChildRecursive(widget))
 					{
-						if (allChildrenAndThi != RemovalTimeVisiblityWidget)
+						if (widget != RemovalTimeVisiblityWidget)
 						{
-							allChildrenAndThi.IsVisible = false;
+							widget.IsVisible = false;
 						}
 						continue;
 					}
 				}
-				if (allChildrenAndThi == SpawnFlagIconWidget)
+				if (widget == SpawnFlagIconWidget)
 				{
-					allChildrenAndThi.SetAlpha(IsSpawnFlag ? 1 : 0);
+					widget.SetAlpha(IsSpawnFlag ? 1 : 0);
 				}
 				else
 				{
-					allChildrenAndThi.SetAlpha(1f);
+					widget.SetAlpha(1f);
 				}
-				if (allChildrenAndThi != RemovalTimeVisiblityWidget)
+				if (widget != RemovalTimeVisiblityWidget)
 				{
-					allChildrenAndThi.IsVisible = (double)allChildrenAndThi.AlphaFactor > 0.05;
+					widget.IsVisible = (double)widget.AlphaFactor > 0.05;
 				}
 			}
 			return;
 		}
-		foreach (Widget allChildrenAndThi2 in base.AllChildrenAndThis)
+		List<Widget> allChildrenAndThisRecursive2 = GetAllChildrenAndThisRecursive();
+		for (int j = 0; j < allChildrenAndThisRecursive2.Count; j++)
 		{
-			if (allChildrenAndThi2 != this && allChildrenAndThi2 != _activeWidget)
+			Widget widget2 = allChildrenAndThisRecursive2[j];
+			if (widget2 != this && widget2 != _activeWidget)
 			{
 				Widget activeWidget2 = _activeWidget;
-				if (activeWidget2 == null || !activeWidget2.CheckIsMyChildRecursive(allChildrenAndThi2))
+				if (activeWidget2 == null || !activeWidget2.CheckIsMyChildRecursive(widget2))
 				{
-					if (allChildrenAndThi2 != RemovalTimeVisiblityWidget)
+					if (widget2 != RemovalTimeVisiblityWidget)
 					{
-						allChildrenAndThi2.IsVisible = false;
+						widget2.IsVisible = false;
 					}
 					continue;
 				}
 			}
-			allChildrenAndThi2.SetAlpha(0f);
-			if (allChildrenAndThi2 != RemovalTimeVisiblityWidget)
+			widget2.SetAlpha(0f);
+			if (widget2 != RemovalTimeVisiblityWidget)
 			{
-				allChildrenAndThi2.IsVisible = false;
+				widget2.IsVisible = false;
 			}
 		}
 	}

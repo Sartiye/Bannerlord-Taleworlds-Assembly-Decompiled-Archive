@@ -1,4 +1,5 @@
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
@@ -10,26 +11,9 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 {
-	protected PartyBase GetEncounteredPartyBase(PartyBase attackerParty, PartyBase defenderParty)
-	{
-		if (attackerParty == PartyBase.MainParty || defenderParty == PartyBase.MainParty)
-		{
-			if (attackerParty != PartyBase.MainParty)
-			{
-				return attackerParty;
-			}
-			return defenderParty;
-		}
-		if (defenderParty.MapEvent == null)
-		{
-			return attackerParty;
-		}
-		return defenderParty;
-	}
-
 	public override string GetEncounterMenu(PartyBase attackerParty, PartyBase defenderParty, out bool startBattle, out bool joinBattle)
 	{
-		PartyBase encounteredPartyBase = GetEncounteredPartyBase(attackerParty, defenderParty);
+		PartyBase encounteredPartyBase = MapEventHelper.GetEncounteredPartyBase(attackerParty, defenderParty);
 		joinBattle = false;
 		startBattle = false;
 		if (defenderParty == null)
@@ -79,8 +63,16 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 					}
 					if (MobileParty.MainParty.BesiegedSettlement == null && MobileParty.MainParty.CurrentSettlement == null)
 					{
-						if (settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null && settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSiegeOutside)
+						if (settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null && (settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSiegeOutside || settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsSallyOut || settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockade))
 						{
+							return "join_encounter";
+						}
+						if (MobileParty.MainParty.IsCurrentlyAtSea)
+						{
+							if (!settlement.Party.SiegeEvent.IsBlockadeActive || settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+							{
+								return "naval_town_outside";
+							}
 							return "join_encounter";
 						}
 						return "join_siege_event";
@@ -92,6 +84,14 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 					{
 						return "encounter";
 					}
+					if (MobileParty.MainParty.IsCurrentlyAtSea)
+					{
+						if (!settlement.Party.SiegeEvent.IsBlockadeActive || settlement.Party.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+						{
+							return "naval_town_outside";
+						}
+						return "join_encounter";
+					}
 					return "join_siege_event";
 				}
 				if (settlement.MapFaction == MobileParty.MainParty.MapFaction && MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
@@ -101,6 +101,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 				if (settlement.IsCastle)
 				{
 					return "castle_outside";
+				}
+				if (MobileParty.MainParty.IsCurrentlyAtSea)
+				{
+					return "naval_town_outside";
 				}
 				return "town_outside";
 			}
@@ -118,23 +122,59 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 		{
 			if (MobileParty.MainParty.CurrentSettlement != null || (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty))
 			{
+				if ((encounteredPartyBase.MapEvent.IsBlockade || encounteredPartyBase.MapEvent.IsBlockadeSallyOut) && !Settlement.CurrentSettlement.SiegeEvent.IsBlockadeActive)
+				{
+					startBattle = false;
+					joinBattle = false;
+					return "besiegers_lift_the_blockade";
+				}
 				joinBattle = true;
 				return "encounter";
 			}
 			if (encounteredPartyBase.SiegeEvent != null && encounteredPartyBase.MapEvent.IsSiegeAssault)
 			{
+				if (MobileParty.MainParty.IsCurrentlyAtSea)
+				{
+					if (!encounteredPartyBase.SiegeEvent.IsBlockadeActive || encounteredPartyBase.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+					{
+						return "naval_town_outside";
+					}
+					return "join_encounter";
+				}
 				return "join_siege_event";
 			}
 			return "join_encounter";
 		}
-		if (encounteredPartyBase.IsMobile && ((encounteredPartyBase.MobileParty.IsGarrison && MobileParty.MainParty.BesiegedSettlement != null) || (MobileParty.MainParty.CurrentSettlement != null && encounteredPartyBase.MobileParty.BesiegedSettlement == MobileParty.MainParty.CurrentSettlement)))
-		{
-			startBattle = true;
-			joinBattle = false;
-			return "encounter";
-		}
 		if (encounteredPartyBase.IsMobile)
 		{
+			if ((encounteredPartyBase.MobileParty.IsGarrison && MobileParty.MainParty.BesiegedSettlement != null) || (MobileParty.MainParty.CurrentSettlement != null && encounteredPartyBase.MobileParty.BesiegedSettlement == MobileParty.MainParty.CurrentSettlement))
+			{
+				if (PlayerEncounter.Current.ForceBlockadeSallyOutAttack && !Settlement.CurrentSettlement.SiegeEvent.IsBlockadeActive)
+				{
+					startBattle = false;
+					joinBattle = false;
+					return "besiegers_lift_the_blockade";
+				}
+				startBattle = true;
+				joinBattle = false;
+				if (encounteredPartyBase.MobileParty.IsGarrison && encounteredPartyBase.MobileParty.IsTargetingPort)
+				{
+					return "player_blockade_got_attacked";
+				}
+				return "encounter";
+			}
+			if (encounteredPartyBase.SiegeEvent != null)
+			{
+				if (MobileParty.MainParty.IsCurrentlyAtSea)
+				{
+					if (!encounteredPartyBase.SiegeEvent.IsBlockadeActive || encounteredPartyBase.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+					{
+						return "naval_town_outside";
+					}
+					return "join_encounter";
+				}
+				return "join_siege_event";
+			}
 			return "encounter_meeting";
 		}
 		return null;
@@ -165,6 +205,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 		{
 			return null;
 		}
+		if (Hero.MainHero.DeathMark != 0)
+		{
+			return null;
+		}
 		if (mainParty.MapEvent != null)
 		{
 			return "encounter";
@@ -175,7 +219,11 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 		}
 		if (mainParty.AttachedTo != null)
 		{
-			if ((mainParty.AttachedTo.CurrentSettlement != null && !mainParty.AttachedTo.CurrentSettlement.IsUnderSiege) || (mainParty.AttachedTo.LastVisitedSettlement != null && mainParty.AttachedTo.LastVisitedSettlement.IsVillage && mainParty.AttachedTo.LastVisitedSettlement.Position2D.DistanceSquared(mainParty.AttachedTo.Position2D) < 1f))
+			if (mainParty.Army.LeaderParty != mainParty && !mainParty.Army.LeaderParty.IsCurrentlyAtSea && mainParty.Army.LeaderParty.IsTransitionInProgress && !mainParty.HasNavalNavigationCapability)
+			{
+				return "menu_player_kicked_out_from_army_navigation_incapability";
+			}
+			if ((mainParty.AttachedTo.CurrentSettlement != null && !mainParty.AttachedTo.CurrentSettlement.IsUnderSiege) || (mainParty.AttachedTo.LastVisitedSettlement != null && mainParty.AttachedTo.LastVisitedSettlement.IsVillage && mainParty.AttachedTo.LastVisitedSettlement.Position.DistanceSquared(mainParty.AttachedTo.Position) < 1f))
 			{
 				return "army_wait_at_settlement";
 			}
@@ -202,6 +250,14 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 					}
 					if (MobileParty.MainParty.BesiegedSettlement == null && MobileParty.MainParty.CurrentSettlement == null)
 					{
+						if (MobileParty.MainParty.IsCurrentlyAtSea)
+						{
+							if (!currentSettlement.SiegeEvent.IsBlockadeActive || currentSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
+							{
+								return "naval_town_outside";
+							}
+							return "join_encounter";
+						}
 						return "join_siege_event";
 					}
 					if (mainParty.CurrentSettlement.Party.MapEvent != null && mainParty.CurrentSettlement.Party.MapEvent.InvolvedParties.Contains(PartyBase.MainParty))
@@ -234,6 +290,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 				{
 					return "castle_outside";
 				}
+				if (MobileParty.MainParty.IsCurrentlyAtSea)
+				{
+					return "naval_town_outside";
+				}
 				return "town_outside";
 			}
 			if (currentSettlement.IsHideout)
@@ -257,5 +317,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 			}
 		}
 		return null;
+	}
+
+	public override bool IsPlunderMenu(string gameMenuId)
+	{
+		return gameMenuId == "raiding_village";
 	}
 }

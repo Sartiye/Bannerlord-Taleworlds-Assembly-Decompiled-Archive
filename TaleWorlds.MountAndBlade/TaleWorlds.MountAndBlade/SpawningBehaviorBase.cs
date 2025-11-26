@@ -5,6 +5,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Diamond;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -13,13 +14,13 @@ public abstract class SpawningBehaviorBase
 {
 	public delegate void OnSpawningEndedEventDelegate();
 
-	private static int MaxAgentCount = MBAPI.IMBAgent.GetMaximumNumberOfAgents();
-
-	private static int AgentCountThreshold = (int)((float)MaxAgentCount * 0.9f);
-
 	private const float SecondsToWaitForEachMountBeforeSelectingToFadeOut = 30f;
 
 	private const float SecondsToWaitBeforeNextMountCleanup = 5f;
+
+	private static readonly int _maxAgentCount = MBAPI.IMBAgent.GetMaximumNumberOfAgents();
+
+	private static readonly int _agentCountThreshold = (int)((float)_maxAgentCount * 0.9f);
 
 	protected MissionMultiplayerGameModeBase GameMode;
 
@@ -29,7 +30,7 @@ public abstract class SpawningBehaviorBase
 
 	protected bool IsSpawningEnabled;
 
-	protected Timer _spawnCheckTimer;
+	protected Timer SpawnCheckTimer;
 
 	protected float SpawningEndDelay = 1f;
 
@@ -40,10 +41,6 @@ public abstract class SpawningBehaviorBase
 	protected MissionLobbyComponent MissionLobbyComponent;
 
 	protected MissionLobbyEquipmentNetworkComponent MissionLobbyEquipmentNetworkComponent;
-
-	public static readonly ActionIndexCache PoseActionInfantry = ActionIndexCache.Create("act_walk_idle_unarmed");
-
-	public static readonly ActionIndexCache PoseActionCavalry = ActionIndexCache.Create("act_horse_stand_1");
 
 	private List<AgentBuildData> _agentsToBeSpawnedCache;
 
@@ -69,7 +66,7 @@ public abstract class SpawningBehaviorBase
 		MissionLobbyComponent = Mission.GetMissionBehavior<MissionLobbyComponent>();
 		MissionLobbyEquipmentNetworkComponent = Mission.GetMissionBehavior<MissionLobbyEquipmentNetworkComponent>();
 		MissionLobbyEquipmentNetworkComponent.OnEquipmentRefreshed += OnPeerEquipmentUpdated;
-		_spawnCheckTimer = new Timer(Mission.Current.CurrentTime, 0.2f);
+		SpawnCheckTimer = new Timer(Mission.Current.CurrentTime, 0.2f);
 		_agentsToBeSpawnedCache = new List<AgentBuildData>();
 		_nextTimeToCleanUpMounts = MissionTime.Now;
 		_botsCountForSides = new int[2];
@@ -86,6 +83,9 @@ public abstract class SpawningBehaviorBase
 		int count = Mission.Current.AllAgents.Count;
 		int num = 0;
 		_agentsToBeSpawnedCache.Clear();
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
 			if (!networkPeer.IsSynchronized)
@@ -128,16 +128,17 @@ public abstract class SpawningBehaviorBase
 			{
 				bool flag2 = num3 == 0;
 				BasicCharacterObject basicCharacterObject = (flag2 ? mPHeroClassForPeer.HeroCharacter : ((flag && num3 == 1) ? mPHeroClassForPeer.BannerBearerCharacter : mPHeroClassForPeer.TroopCharacter));
-				uint color = ((!GameMode.IsGameModeUsingOpposingTeams || component.Team == Mission.AttackerTeam) ? component.Culture.Color : component.Culture.ClothAlternativeColor);
-				uint color2 = ((!GameMode.IsGameModeUsingOpposingTeams || component.Team == Mission.AttackerTeam) ? component.Culture.Color2 : component.Culture.ClothAlternativeColor2);
-				uint color3 = ((!GameMode.IsGameModeUsingOpposingTeams || component.Team == Mission.AttackerTeam) ? component.Culture.BackgroundColor1 : component.Culture.BackgroundColor2);
-				uint color4 = ((!GameMode.IsGameModeUsingOpposingTeams || component.Team == Mission.AttackerTeam) ? component.Culture.ForegroundColor1 : component.Culture.ForegroundColor2);
-				Banner banner = new Banner(component.Peer.BannerCode, color3, color4);
+				MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = multiplayerBattleColors.GetPeerColors(component);
+				uint clothingColor1Uint = peerColors.ClothingColor1Uint;
+				uint clothingColor2Uint = peerColors.ClothingColor2Uint;
+				uint bannerBackgroundColorUint = peerColors.BannerBackgroundColorUint;
+				uint bannerForegroundColorUint = peerColors.BannerForegroundColorUint;
+				Banner banner = new Banner(component.Peer.BannerCode, bannerBackgroundColorUint, bannerForegroundColorUint);
 				AgentBuildData agentBuildData = new AgentBuildData(basicCharacterObject).VisualsIndex(num3).Team(component.Team).TroopOrigin(new BasicBattleAgentOrigin(basicCharacterObject))
 					.Formation(component.ControlledFormation)
 					.IsFemale(flag2 ? component.Peer.IsFemale : basicCharacterObject.IsFemale)
-					.ClothingColor1(color)
-					.ClothingColor2(color2)
+					.ClothingColor1(clothingColor1Uint)
+					.ClothingColor2(clothingColor2Uint)
 					.Banner(banner);
 				if (flag2)
 				{
@@ -147,7 +148,7 @@ public abstract class SpawningBehaviorBase
 				{
 					agentBuildData.OwningMissionPeer(component);
 				}
-				Equipment equipment = (flag2 ? basicCharacterObject.Equipment.Clone() : Equipment.GetRandomEquipmentElements(basicCharacterObject, randomEquipmentModifier: false, isCivilianEquipment: false, MBRandom.RandomInt()));
+				Equipment equipment = (flag2 ? basicCharacterObject.Equipment.Clone() : Equipment.GetRandomEquipmentElements(basicCharacterObject, randomEquipmentModifier: false, Equipment.EquipmentType.Battle, MBRandom.RandomInt()));
 				IEnumerable<(EquipmentIndex, EquipmentElement)> enumerable2 = ((!flag2) ? enumerable : onSpawnPerkHandler?.GetAlternativeEquipments(isPlayer: true));
 				if (enumerable2 != null)
 				{
@@ -169,7 +170,7 @@ public abstract class SpawningBehaviorBase
 				else
 				{
 					agentBuildData.EquipmentSeed(MissionLobbyComponent.GetRandomFaceSeedForCharacter(basicCharacterObject, agentBuildData.AgentVisualsIndex));
-					agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, basicCharacterObject.GetBodyPropertiesMin(), basicCharacterObject.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, basicCharacterObject.HairTags, basicCharacterObject.BeardTags, basicCharacterObject.TattooTags));
+					agentBuildData.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData.AgentRace, agentBuildData.AgentIsFemale, basicCharacterObject.GetBodyPropertiesMin(), basicCharacterObject.GetBodyPropertiesMax(), (int)agentBuildData.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData.AgentEquipmentSeed, basicCharacterObject.BodyPropertyRange.HairTags, basicCharacterObject.BodyPropertyRange.BeardTags, basicCharacterObject.BodyPropertyRange.TattooTags));
 				}
 				if (component.ControlledFormation != null && component.ControlledFormation.Banner == null)
 				{
@@ -178,7 +179,7 @@ public abstract class SpawningBehaviorBase
 				MatrixFrame spawnFrame = SpawnComponent.GetSpawnFrame(component.Team, equipment[EquipmentIndex.ArmorItemEndSlot].Item != null, component.SpawnCountThisRound == 0);
 				if (spawnFrame.IsIdentity)
 				{
-					goto IL_0587;
+					goto IL_04ff;
 				}
 				Vec3 origin = spawnFrame.origin;
 				Vec3? agentInitialPosition = agentBuildData.AgentInitialPosition;
@@ -189,14 +190,14 @@ public abstract class SpawningBehaviorBase
 					Vec2? agentInitialDirection = agentBuildData.AgentInitialDirection;
 					if (!(value != agentInitialDirection))
 					{
-						goto IL_0587;
+						goto IL_04ff;
 					}
 				}
 				agentBuildData.InitialPosition(in spawnFrame.origin);
 				value = spawnFrame.rotation.f.AsVec2.Normalized();
 				agentBuildData.InitialDirection(in value);
-				goto IL_05a0;
-				IL_05a0:
+				goto IL_0518;
+				IL_0518:
 				if (component.ControlledAgent != null && !flag2)
 				{
 					MatrixFrame frame = component.ControlledAgent.Frame;
@@ -207,7 +208,7 @@ public abstract class SpawningBehaviorBase
 					rotation.MakeUnit();
 					bool flag3 = !basicCharacterObject.Equipment[EquipmentIndex.ArmorItemEndSlot].IsEmpty;
 					int num4 = TaleWorlds.Library.MathF.Min(num2, 10);
-					MatrixFrame matrixFrame2 = Formation.GetFormationFramesForBeforeFormationCreation((float)num4 * Formation.GetDefaultUnitDiameter(flag3) + (float)(num4 - 1) * Formation.GetDefaultMinimumInterval(flag3), num2, flag3, new WorldPosition(Mission.Current.Scene, matrixFrame.origin), rotation)[num3 - 1].ToGroundMatrixFrame();
+					MatrixFrame matrixFrame2 = Formation.GetFormationFramesForBeforeFormationCreation((float)num4 * Formation.GetDefaultUnitDiameter(flag3) + (float)(num4 - 1) * Formation.GetDefaultMinimumUnitInterval(flag3), num2, flag3, new WorldPosition(Mission.Current.Scene, matrixFrame.origin), rotation)[num3 - 1].ToGroundMatrixFrame();
 					agentBuildData.InitialPosition(in matrixFrame2.origin);
 					value = matrixFrame2.rotation.f.AsVec2.Normalized();
 					agentBuildData.InitialDirection(in value);
@@ -220,13 +221,13 @@ public abstract class SpawningBehaviorBase
 				}
 				num3++;
 				continue;
-				IL_0587:
-				Debug.FailedAssert("Spawn frame could not be found.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "OnTick", 216);
-				goto IL_05a0;
+				IL_04ff:
+				Debug.FailedAssert("Spawn frame could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "OnTick", 213);
+				goto IL_0518;
 			}
 		}
 		int num5 = num + count;
-		if (num5 > AgentCountThreshold && _nextTimeToCleanUpMounts.IsPast)
+		if (num5 > _agentCountThreshold && _nextTimeToCleanUpMounts.IsPast)
 		{
 			_nextTimeToCleanUpMounts = MissionTime.SecondsFromNow(5f);
 			for (int num6 = Mission.Current.MountsWithoutRiders.Count - 1; num6 >= 0; num6--)
@@ -239,7 +240,7 @@ public abstract class SpawningBehaviorBase
 				}
 			}
 		}
-		int num7 = MaxAgentCount - num5;
+		int num7 = _maxAgentCount - num5;
 		if (num7 >= 0)
 		{
 			for (int num8 = _agentsToBeSpawnedCache.Count - 1; num8 >= 0; num8--)
@@ -285,9 +286,18 @@ public abstract class SpawningBehaviorBase
 				};
 				if (num7 >= 4)
 				{
-					for (int i = 0; i < Math.Min(num7 / 2, array[0].Item3 + array[1].Item3); i++)
+					int num9 = Math.Min(num7 / 2, array[0].Item3 + array[1].Item3);
+					BattleSideEnum battleSideEnum = BattleSideEnum.Defender;
+					while (num9 > 0)
 					{
-						SpawnBot(array[i % 2].Item1, array[i % 2].Item2);
+						int num10 = (int)battleSideEnum;
+						if (array[num10].Item3 > 0)
+						{
+							SpawnBot(array[num10].Item1, array[num10].Item2);
+							array[num10].Item3--;
+							num9--;
+						}
+						battleSideEnum = battleSideEnum.GetOppositeSide();
 					}
 				}
 			}
@@ -395,19 +405,23 @@ public abstract class SpawningBehaviorBase
 		{
 			return networkPeer.PlayerConnectionInfo.GetParameter<PlayerData>("PlayerData").BodyProperties;
 		}
-		Debug.FailedAssert("networkCommunicator != null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "GetBodyProperties", 510);
+		Debug.FailedAssert("networkCommunicator != null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "GetBodyProperties", 518);
 		Team team = missionPeer.Team;
 		BasicCharacterObject troopCharacter = MultiplayerClassDivisions.GetMPHeroClasses(cultureLimit).ToMBList().GetRandomElement()
 			.TroopCharacter;
 		MatrixFrame spawnFrame = SpawnComponent.GetSpawnFrame(team, troopCharacter.HasMount(), isInitialSpawn: true);
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
+		MultiplayerBattleColors.MultiplayerCultureColorInfo multiplayerCultureColorInfo = ((cultureLimit == @object) ? multiplayerBattleColors.AttackerColors : multiplayerBattleColors.DefenderColors);
 		AgentBuildData agentBuildData = new AgentBuildData(troopCharacter).Team(team).InitialPosition(in spawnFrame.origin);
 		Vec2 direction = spawnFrame.rotation.f.AsVec2.Normalized();
 		AgentBuildData agentBuildData2 = agentBuildData.InitialDirection(in direction).TroopOrigin(new BasicBattleAgentOrigin(troopCharacter)).EquipmentSeed(MissionLobbyComponent.GetRandomFaceSeedForCharacter(troopCharacter))
-			.ClothingColor1((team.Side == BattleSideEnum.Attacker) ? cultureLimit.Color : cultureLimit.ClothAlternativeColor)
-			.ClothingColor2((team.Side == BattleSideEnum.Attacker) ? cultureLimit.Color2 : cultureLimit.ClothAlternativeColor2)
+			.ClothingColor1(multiplayerCultureColorInfo.ClothingColor1Uint)
+			.ClothingColor2(multiplayerCultureColorInfo.ClothingColor2Uint)
 			.IsFemale(troopCharacter.IsFemale);
-		agentBuildData2.Equipment(Equipment.GetRandomEquipmentElements(troopCharacter, !GameNetwork.IsMultiplayer, isCivilianEquipment: false, agentBuildData2.AgentEquipmentSeed));
-		agentBuildData2.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData2.AgentRace, agentBuildData2.AgentIsFemale, troopCharacter.GetBodyPropertiesMin(), troopCharacter.GetBodyPropertiesMax(), (int)agentBuildData2.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData2.AgentEquipmentSeed, troopCharacter.HairTags, troopCharacter.BeardTags, troopCharacter.TattooTags));
+		agentBuildData2.Equipment(Equipment.GetRandomEquipmentElements(troopCharacter, !GameNetwork.IsMultiplayer, Equipment.EquipmentType.Battle, agentBuildData2.AgentEquipmentSeed));
+		agentBuildData2.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData2.AgentRace, agentBuildData2.AgentIsFemale, troopCharacter.GetBodyPropertiesMin(), troopCharacter.GetBodyPropertiesMax(), (int)agentBuildData2.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData2.AgentEquipmentSeed, troopCharacter.BodyPropertyRange.HairTags, troopCharacter.BodyPropertyRange.BeardTags, troopCharacter.BodyPropertyRange.TattooTags));
 		return agentBuildData2.AgentBodyProperties;
 	}
 
@@ -416,16 +430,20 @@ public abstract class SpawningBehaviorBase
 		BasicCharacterObject troopCharacter = MultiplayerClassDivisions.GetMPHeroClasses(cultureLimit).ToMBList().GetRandomElement()
 			.TroopCharacter;
 		MatrixFrame spawnFrame = SpawnComponent.GetSpawnFrame(agentTeam, troopCharacter.HasMount(), isInitialSpawn: true);
+		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
+		MultiplayerBattleColors.MultiplayerCultureColorInfo multiplayerCultureColorInfo = ((cultureLimit == @object) ? multiplayerBattleColors.AttackerColors : multiplayerBattleColors.DefenderColors);
 		AgentBuildData agentBuildData = new AgentBuildData(troopCharacter).Team(agentTeam).InitialPosition(in spawnFrame.origin);
 		Vec2 direction = spawnFrame.rotation.f.AsVec2.Normalized();
 		AgentBuildData agentBuildData2 = agentBuildData.InitialDirection(in direction).TroopOrigin(new BasicBattleAgentOrigin(troopCharacter)).EquipmentSeed(MissionLobbyComponent.GetRandomFaceSeedForCharacter(troopCharacter))
-			.ClothingColor1((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color : cultureLimit.ClothAlternativeColor)
-			.ClothingColor2((agentTeam.Side == BattleSideEnum.Attacker) ? cultureLimit.Color2 : cultureLimit.ClothAlternativeColor2)
+			.ClothingColor1(multiplayerCultureColorInfo.ClothingColor1Uint)
+			.ClothingColor2(multiplayerCultureColorInfo.ClothingColor2Uint)
 			.IsFemale(troopCharacter.IsFemale);
-		agentBuildData2.Equipment(Equipment.GetRandomEquipmentElements(troopCharacter, !GameNetwork.IsMultiplayer, isCivilianEquipment: false, agentBuildData2.AgentEquipmentSeed));
-		agentBuildData2.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData2.AgentRace, agentBuildData2.AgentIsFemale, troopCharacter.GetBodyPropertiesMin(), troopCharacter.GetBodyPropertiesMax(), (int)agentBuildData2.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData2.AgentEquipmentSeed, troopCharacter.HairTags, troopCharacter.BeardTags, troopCharacter.TattooTags));
+		agentBuildData2.Equipment(Equipment.GetRandomEquipmentElements(troopCharacter, !GameNetwork.IsMultiplayer, Equipment.EquipmentType.Battle, agentBuildData2.AgentEquipmentSeed));
+		agentBuildData2.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData2.AgentRace, agentBuildData2.AgentIsFemale, troopCharacter.GetBodyPropertiesMin(), troopCharacter.GetBodyPropertiesMax(), (int)agentBuildData2.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData2.AgentEquipmentSeed, troopCharacter.BodyPropertyRange.HairTags, troopCharacter.BodyPropertyRange.BeardTags, troopCharacter.BodyPropertyRange.TattooTags));
 		Agent agent = Mission.SpawnAgent(agentBuildData2);
-		agent.AIStateFlags |= Agent.AIStateFlag.Alarmed;
+		agent.SetAlarmState(Agent.AIStateFlag.Alarmed);
 		_botsCountForSides[(int)agent.Team.Side]++;
 	}
 

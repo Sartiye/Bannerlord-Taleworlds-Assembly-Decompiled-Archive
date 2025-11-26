@@ -80,7 +80,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_1.SuggestedHeight = 700f;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1.Sprite = base.Context.SpriteData.GetSprite("fog_smoke");
+		_widget_1.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\fog_smoke");
 		_widget_1.ColorFactor = 1.1f;
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2.HeightSizePolicy = SizePolicy.Fixed;
@@ -88,7 +88,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_2.SuggestedHeight = 700f;
 		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_2.Sprite = base.Context.SpriteData.GetSprite("fog_smoke");
+		_widget_2.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\fog_smoke");
 		_widget_2.ColorFactor = 1.1f;
 		_widget_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_3.HeightSizePolicy = SizePolicy.Fixed;
@@ -96,7 +96,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_3.SuggestedHeight = 1080f;
 		_widget_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_3.VerticalAlignment = VerticalAlignment.Center;
-		_widget_3.Sprite = base.Context.SpriteData.GetSprite("fog_particles");
+		_widget_3.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\fog_particles");
 		_widget_3.AlphaFactor = 0.8f;
 		_widget_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_4.HeightSizePolicy = SizePolicy.Fixed;
@@ -104,7 +104,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_4.SuggestedHeight = 1080f;
 		_widget_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4.Sprite = base.Context.SpriteData.GetSprite("fog_particles");
+		_widget_4.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\fog_particles");
 		_widget_4.AlphaFactor = 0.8f;
 	}
 

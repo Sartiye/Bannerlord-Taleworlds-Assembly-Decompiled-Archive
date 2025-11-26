@@ -1,4 +1,3 @@
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 
@@ -10,146 +9,187 @@ public static class SetPartyAiAction
 	{
 		GoToSettlement,
 		PatrolAroundSettlement,
+		PatrolAroundPoint,
 		RaidSettlement,
 		BesiegeSettlement,
 		EngageParty,
 		GoAroundParty,
 		DefendParty,
-		EscortParty
+		EscortParty,
+		MoveToNearestLand
 	}
 
-	private static void ApplyInternal(MobileParty owner, IMapPoint subject, SetPartyAiActionDetail detail)
+	private static void ApplyInternal(MobileParty owner, Settlement settlement, MobileParty mobileParty, CampaignVec2 position, SetPartyAiActionDetail detail, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
 		switch (detail)
 		{
 		case SetPartyAiActionDetail.GoToSettlement:
-			if (owner.DefaultBehavior != AiBehavior.GoToSettlement || owner.TargetSettlement != subject)
+			if (owner.DefaultBehavior != AiBehavior.GoToSettlement || owner.TargetSettlement != settlement || navigationType != owner.DesiredAiNavigationType || owner.IsTargetingPort != isTargetingPort || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMoveGoToSettlement((Settlement)subject);
+				if (isFromPort && !owner.IsTransitionInProgress)
+				{
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveGoToSettlement(settlement, navigationType, isTargetingPort);
 			}
-			if (owner.Army != null)
+			if (owner.Army != null && owner.Army.LeaderParty == owner)
 			{
-				owner.Army.ArmyType = Army.ArmyTypes.Patrolling;
-				owner.Army.AIBehavior = Army.AIBehaviorFlags.GoToSettlement;
-				owner.Army.AiBehaviorObject = subject;
+				owner.Army.ArmyType = Army.ArmyTypes.Defender;
+				owner.Army.AiBehaviorObject = settlement;
 			}
 			break;
 		case SetPartyAiActionDetail.PatrolAroundSettlement:
-			if (owner.DefaultBehavior != AiBehavior.PatrolAroundPoint || owner.TargetSettlement != subject)
+			if (owner.DefaultBehavior != AiBehavior.PatrolAroundPoint || owner.TargetSettlement != settlement || navigationType != owner.DesiredAiNavigationType || owner.IsTargetingPort != isTargetingPort || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMovePatrolAroundSettlement((Settlement)subject);
+				if (isFromPort && !owner.IsTransitionInProgress)
+				{
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMovePatrolAroundSettlement(settlement, navigationType, isTargetingPort);
 			}
-			if (owner.Army != null)
+			if (owner.Army != null && owner.Army.LeaderParty == owner)
 			{
-				owner.Army.ArmyType = Army.ArmyTypes.Patrolling;
-				owner.Army.AIBehavior = Army.AIBehaviorFlags.Patrolling;
-				owner.Army.AiBehaviorObject = subject;
+				owner.Army.ArmyType = Army.ArmyTypes.Defender;
+				owner.Army.AiBehaviorObject = settlement;
 			}
 			break;
 		case SetPartyAiActionDetail.RaidSettlement:
-			if (owner.DefaultBehavior != AiBehavior.RaidSettlement || owner.TargetSettlement != subject)
+			if (owner.DefaultBehavior != AiBehavior.RaidSettlement || owner.TargetSettlement != settlement || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMoveRaidSettlement((Settlement)subject);
-				if (owner.Army != null)
+				if (isFromPort && !owner.IsTransitionInProgress)
 				{
-					owner.Army.AIBehavior = Army.AIBehaviorFlags.TravellingToAssignment;
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveRaidSettlement(settlement, navigationType);
+				if (owner.Army != null && owner.Army.LeaderParty == owner)
+				{
 					owner.Army.ArmyType = Army.ArmyTypes.Raider;
-					owner.Army.AiBehaviorObject = subject;
+					owner.Army.AiBehaviorObject = settlement;
 				}
 			}
 			break;
 		case SetPartyAiActionDetail.BesiegeSettlement:
-			if (owner.DefaultBehavior != AiBehavior.BesiegeSettlement || owner.TargetSettlement != subject)
+			if (owner.DefaultBehavior != AiBehavior.BesiegeSettlement || owner.TargetSettlement != settlement || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMoveBesiegeSettlement((Settlement)subject);
-				if (owner.Army != null)
+				if (isFromPort && !owner.IsTransitionInProgress)
 				{
-					owner.Army.AIBehavior = Army.AIBehaviorFlags.TravellingToAssignment;
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveBesiegeSettlement(settlement, navigationType);
+				if (owner.Army != null && owner.Army.LeaderParty == owner)
+				{
 					owner.Army.ArmyType = Army.ArmyTypes.Besieger;
-					owner.Army.AiBehaviorObject = subject;
+					owner.Army.AiBehaviorObject = settlement;
 				}
 			}
 			break;
 		case SetPartyAiActionDetail.GoAroundParty:
-			if (owner.DefaultBehavior != AiBehavior.GoAroundParty || owner != subject)
+			if (owner.DefaultBehavior != AiBehavior.GoAroundParty || owner != mobileParty || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMoveGoAroundParty((MobileParty)subject);
+				if (isFromPort && !owner.IsTransitionInProgress)
+				{
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveGoAroundParty(mobileParty, navigationType);
 			}
 			break;
 		case SetPartyAiActionDetail.EngageParty:
-			if (owner.DefaultBehavior != AiBehavior.EngageParty || owner != subject)
+			if (owner.DefaultBehavior != AiBehavior.EngageParty || owner != mobileParty || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort)
 			{
-				owner.Ai.SetMoveEngageParty((MobileParty)subject);
+				if (isFromPort && !owner.IsTransitionInProgress)
+				{
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveEngageParty(mobileParty, navigationType);
 			}
 			break;
 		case SetPartyAiActionDetail.DefendParty:
-			if (owner.DefaultBehavior != AiBehavior.DefendSettlement || owner != subject)
+			if (owner.DefaultBehavior != AiBehavior.DefendSettlement || owner != mobileParty || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort || owner.IsTargetingPort != isTargetingPort)
 			{
-				owner.Ai.SetMoveDefendSettlement((Settlement)subject);
-				if (owner.Army != null)
+				if (isFromPort && !owner.IsTransitionInProgress)
 				{
-					owner.Army.AIBehavior = Army.AIBehaviorFlags.Defending;
+					owner.StartTransitionNextFrameToExitFromPort = true;
+				}
+				owner.SetMoveDefendSettlement(settlement, isTargetingPort, navigationType);
+				if (owner.Army != null && owner.Army.LeaderParty == owner)
+				{
 					owner.Army.ArmyType = Army.ArmyTypes.Defender;
-					owner.Army.AiBehaviorObject = subject;
+					owner.Army.AiBehaviorObject = settlement;
 				}
 			}
 			break;
 		case SetPartyAiActionDetail.EscortParty:
-			if (owner.DefaultBehavior != AiBehavior.EscortParty || owner.TargetParty != subject)
+			if (owner.DefaultBehavior != AiBehavior.EscortParty || owner.TargetParty != mobileParty || navigationType != owner.DesiredAiNavigationType || owner.StartTransitionNextFrameToExitFromPort != isFromPort || owner.IsTargetingPort != isTargetingPort)
 			{
-				MobileParty mobileParty = (MobileParty)subject;
-				owner.Ai.SetMoveEscortParty(mobileParty);
-				if (owner.IsLordParty && mobileParty.IsLordParty && owner != MobileParty.MainParty && owner.Army == null && mobileParty.Army != null)
+				if (isFromPort && !owner.IsTransitionInProgress)
 				{
-					owner.Army = mobileParty.Army;
+					owner.StartTransitionNextFrameToExitFromPort = true;
 				}
+				owner.SetMoveEscortParty(mobileParty, navigationType, isTargetingPort);
+			}
+			break;
+		case SetPartyAiActionDetail.MoveToNearestLand:
+			if (owner.DefaultBehavior != AiBehavior.MoveToNearestLandOrPort)
+			{
+				owner.SetMoveToNearestLand(settlement);
+			}
+			break;
+		case SetPartyAiActionDetail.PatrolAroundPoint:
+			if (owner.DefaultBehavior != AiBehavior.PatrolAroundPoint || navigationType != owner.DesiredAiNavigationType)
+			{
+				owner.SetMovePatrolAroundPoint(position, navigationType);
 			}
 			break;
 		}
 	}
 
-	public static void GetAction(MobileParty owner, Settlement settlement)
+	public static void GetActionForVisitingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.GoToSettlement);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.GoToSettlement, navigationType, isFromPort, isTargetingPort);
 	}
 
-	public static void GetActionForVisitingSettlement(MobileParty owner, Settlement settlement)
+	public static void GetActionForPatrollingAroundSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.GoToSettlement);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.PatrolAroundSettlement, navigationType, isFromPort, isTargetingPort);
 	}
 
-	public static void GetActionForPatrollingAroundSettlement(MobileParty owner, Settlement settlement)
+	public static void GetActionForPatrollingAroundPoint(MobileParty owner, CampaignVec2 position, MobileParty.NavigationType navigationType, bool isFromPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.PatrolAroundSettlement);
+		ApplyInternal(owner, null, null, position, SetPartyAiActionDetail.PatrolAroundPoint, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForRaidingSettlement(MobileParty owner, Settlement settlement)
+	public static void GetActionForRaidingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.RaidSettlement);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.RaidSettlement, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForBesiegingSettlement(MobileParty owner, Settlement settlement)
+	public static void GetActionForBesiegingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.BesiegeSettlement);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.BesiegeSettlement, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForEngagingParty(MobileParty owner, MobileParty mobileParty)
+	public static void GetActionForEngagingParty(MobileParty owner, MobileParty mobileParty, MobileParty.NavigationType navigationType, bool isFromPort)
 	{
-		ApplyInternal(owner, mobileParty, SetPartyAiActionDetail.EngageParty);
+		ApplyInternal(owner, null, mobileParty, CampaignVec2.Zero, SetPartyAiActionDetail.EngageParty, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForGoingAroundParty(MobileParty owner, MobileParty mobileParty)
+	public static void GetActionForGoingAroundParty(MobileParty owner, MobileParty mobileParty, MobileParty.NavigationType navigationType, bool isFromPort)
 	{
-		ApplyInternal(owner, mobileParty, SetPartyAiActionDetail.GoAroundParty);
+		ApplyInternal(owner, null, mobileParty, CampaignVec2.Zero, SetPartyAiActionDetail.GoAroundParty, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForDefendingSettlement(MobileParty owner, Settlement settlement)
+	public static void GetActionForDefendingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
-		ApplyInternal(owner, settlement, SetPartyAiActionDetail.DefendParty);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.DefendParty, navigationType, isFromPort, isTargetingPort);
 	}
 
-	public static void GetActionForEscortingParty(MobileParty owner, MobileParty mobileParty)
+	public static void GetActionForEscortingParty(MobileParty owner, MobileParty mobileParty, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
-		ApplyInternal(owner, mobileParty, SetPartyAiActionDetail.EscortParty);
+		ApplyInternal(owner, null, mobileParty, CampaignVec2.Zero, SetPartyAiActionDetail.EscortParty, navigationType, isFromPort, isTargetingPort);
+	}
+
+	public static void GetActionForMovingToNearestLand(MobileParty owner, Settlement settlement)
+	{
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.MoveToNearestLand, MobileParty.NavigationType.Naval, isFromPort: false, isTargetingPort: false);
 	}
 }

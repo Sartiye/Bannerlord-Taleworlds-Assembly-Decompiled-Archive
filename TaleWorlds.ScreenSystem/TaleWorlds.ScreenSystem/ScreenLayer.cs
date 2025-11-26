@@ -8,7 +8,7 @@ namespace TaleWorlds.ScreenSystem;
 
 public abstract class ScreenLayer : IComparable
 {
-	public readonly string _categoryId;
+	public string Name { get; private set; }
 
 	public float Scale => ScreenManager.Scale;
 
@@ -18,19 +18,11 @@ public abstract class ScreenLayer : IComparable
 
 	public InputRestrictions InputRestrictions { get; private set; }
 
-	public string Name { get; set; }
-
 	public bool LastActiveState { get; set; }
 
-	public bool Finalized { get; private set; }
+	public bool IsFinalized { get; private set; }
 
 	public bool IsActive { get; private set; }
-
-	public bool MouseEnabled { get; protected internal set; }
-
-	public bool KeyboardEnabled { get; protected internal set; }
-
-	public bool GamepadEnabled { get; protected internal set; }
 
 	public bool IsHitThisFrame { get; internal set; }
 
@@ -40,24 +32,22 @@ public abstract class ScreenLayer : IComparable
 
 	protected InputType _usedInputs { get; set; }
 
-	protected bool? _isMousePressedByThisLayer { get; set; }
-
 	public int ScreenOrderInLastFrame { get; internal set; }
 
 	public InputUsageMask InputUsageMask => InputRestrictions.InputUsageMask;
 
-	protected ScreenLayer(int localOrder, string categoryId)
+	public static event Action<ScreenLayer> OnLayerActiveStateChanged;
+
+	protected ScreenLayer(string name, int localOrder)
 	{
 		InputRestrictions = new InputRestrictions(localOrder);
 		Input = new InputContext();
-		_categoryId = categoryId;
-		Name = "ScreenLayer";
+		Name = name;
 		LastActiveState = true;
-		Finalized = false;
+		IsFinalized = false;
 		IsActive = false;
 		IsFocusLayer = false;
 		_usedInputs = InputType.None;
-		_isMousePressedByThisLayer = null;
 		ActiveCursor = CursorType.Default;
 	}
 
@@ -65,11 +55,11 @@ public abstract class ScreenLayer : IComparable
 	{
 	}
 
-	protected internal virtual void LateTick(float dt)
+	protected internal virtual void LateUpdate(float dt)
 	{
 	}
 
-	protected internal virtual void OnLateUpdate(float dt)
+	protected internal virtual void RenderTick(float dt)
 	{
 	}
 
@@ -79,16 +69,37 @@ public abstract class ScreenLayer : IComparable
 
 	internal void HandleFinalize()
 	{
+		if (IsFinalized)
+		{
+			Debug.FailedAssert("Screen layer is already finalized", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenLayer.cs", "HandleFinalize", 74);
+			return;
+		}
 		OnFinalize();
-		Finalized = true;
+		IsFinalized = true;
+	}
+
+	internal void HandleGainFocus()
+	{
+		Input.ResetLastDownKeys();
+		OnGainFocus();
+	}
+
+	internal void HandleLoseFocus()
+	{
+		Input.ResetLastDownKeys();
+		OnLoseFocus();
 	}
 
 	protected virtual void OnActivate()
 	{
-		Finalized = false;
+		IsFinalized = false;
 	}
 
 	protected virtual void OnDeactivate()
+	{
+	}
+
+	protected internal virtual void OnGainFocus()
 	{
 	}
 
@@ -100,6 +111,7 @@ public abstract class ScreenLayer : IComparable
 	{
 		IsActive = true;
 		OnActivate();
+		ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
 	}
 
 	internal void HandleDeactivate()
@@ -107,6 +119,7 @@ public abstract class ScreenLayer : IComparable
 		OnDeactivate();
 		IsActive = false;
 		ScreenManager.TryLoseFocus(this);
+		ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
 	}
 
 	protected virtual void OnFinalize()
@@ -120,24 +133,17 @@ public abstract class ScreenLayer : IComparable
 	public virtual void DrawDebugInfo()
 	{
 		ScreenManager.EngineInterface.DrawDebugText($"Order: {InputRestrictions.Order}");
+		ScreenManager.EngineInterface.DrawDebugText($"Is Layer Focusable: {IsFocusLayer}");
+		ScreenManager.EngineInterface.DrawDebugText($"Is FocusedLayer: {this == ScreenManager.FocusedLayer}");
 		ScreenManager.EngineInterface.DrawDebugText($"Keys Allowed: {Input.IsKeysAllowed}");
 		ScreenManager.EngineInterface.DrawDebugText($"Controller Allowed: {Input.IsControllerAllowed}");
 		ScreenManager.EngineInterface.DrawDebugText($"Mouse Button Allowed: {Input.IsMouseButtonAllowed}");
 		ScreenManager.EngineInterface.DrawDebugText($"Mouse Wheel Allowed: {Input.IsMouseWheelAllowed}");
 	}
 
-	public virtual void EarlyProcessEvents(InputType handledInputs, bool? isMousePressed)
+	public virtual void EarlyProcessEvents(InputType handledInputs)
 	{
 		_usedInputs = handledInputs;
-		_isMousePressedByThisLayer = isMousePressed;
-		if (isMousePressed == true)
-		{
-			Input.MouseOnMe = true;
-		}
-		if (Input.MouseOnMe)
-		{
-			_usedInputs |= InputType.MouseButton;
-		}
 	}
 
 	public virtual void ProcessEvents()
@@ -145,14 +151,6 @@ public abstract class ScreenLayer : IComparable
 		Input.IsKeysAllowed = _usedInputs.HasAnyFlag(InputType.Key);
 		Input.IsMouseButtonAllowed = _usedInputs.HasAnyFlag(InputType.MouseButton);
 		Input.IsMouseWheelAllowed = _usedInputs.HasAnyFlag(InputType.MouseWheel);
-	}
-
-	public virtual void LateProcessEvents()
-	{
-		if (_isMousePressedByThisLayer == false)
-		{
-			Input.MouseOnMe = false;
-		}
 	}
 
 	public virtual bool HitTest(Vector2 position)

@@ -34,7 +34,7 @@ public class ClosestFlagCondition : MPPerkCondition<MissionMultiplayerFlagDomina
 		if (text != null && !Enum.TryParse<FlagOwner>(text, ignoreCase: true, out _owner))
 		{
 			_owner = FlagOwner.Any;
-			Debug.FailedAssert("provided 'owner' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\ClosestFlagCondition.cs", "Deserialize", 40);
+			Debug.FailedAssert("provided 'owner' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\ClosestFlagCondition.cs", "Deserialize", 40);
 		}
 	}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using TaleWorlds.Library;
 
@@ -29,6 +30,8 @@ public class ModuleInfo
 
 	public bool IsRequiredOfficial => Type == ModuleType.Official;
 
+	public bool IsActive { get; private set; }
+
 	public ApplicationVersion Version { get; private set; }
 
 	public ModuleCategory Category { get; private set; }
@@ -57,6 +60,7 @@ public class ModuleInfo
 		SubModules = new List<SubModuleInfo>();
 		ModulesToLoadAfterThis = new List<DependedModule>();
 		IncompatibleModules = new List<DependedModule>();
+		IsActive = true;
 	}
 
 	public void LoadWithFullPath(string fullPath)
@@ -66,12 +70,19 @@ public class ModuleInfo
 		ModulesToLoadAfterThis.Clear();
 		IncompatibleModules.Clear();
 		FolderPath = fullPath;
+		string text = FolderPath + "/SubModule.xml";
+		Debug.Print("LoadWithFullPath  subModulePath = " + text);
+		StreamReader txtReader = new StreamReader(text);
 		XmlDocument xmlDocument = new XmlDocument();
-		xmlDocument.Load(FolderPath + "/SubModule.xml");
+		xmlDocument.Load(txtReader);
 		XmlNode xmlNode = xmlDocument.SelectSingleNode("Module");
 		Name = xmlNode.SelectSingleNode("Name").Attributes["value"].InnerText;
 		Id = xmlNode.SelectSingleNode("Id").Attributes["value"].InnerText;
-		Version = ApplicationVersion.FromString(xmlNode.SelectSingleNode("Version").Attributes["value"].InnerText, 0);
+		if (!Id.Contains(';'.ToString()))
+		{
+			Id.Contains(':'.ToString());
+		}
+		Version = ApplicationVersion.FromString(xmlNode.SelectSingleNode("Version").Attributes["value"].InnerText);
 		IsDefault = xmlNode.SelectSingleNode("DefaultModule")?.Attributes["value"].InnerText.Equals("true") ?? false;
 		XmlNode xmlNode2 = xmlNode.SelectSingleNode("ModuleType");
 		if (xmlNode2 != null && Enum.TryParse<ModuleType>(xmlNode2.Attributes["value"].InnerText, out var result))
@@ -97,7 +108,7 @@ public class ModuleInfo
 				{
 					try
 					{
-						version = ApplicationVersion.FromString(xmlNodeList[i].Attributes["DependentVersion"].InnerText, 0);
+						version = ApplicationVersion.FromString(xmlNodeList[i].Attributes["DependentVersion"].InnerText);
 					}
 					catch
 					{
@@ -149,8 +160,18 @@ public class ModuleInfo
 		}
 	}
 
+	public void ActivateModule()
+	{
+		IsActive = true;
+	}
+
+	public void DeactivateModule()
+	{
+		IsActive = false;
+	}
+
 	public void UpdateVersionChangeSet()
 	{
-		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 54620);
+		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 102350);
 	}
 }

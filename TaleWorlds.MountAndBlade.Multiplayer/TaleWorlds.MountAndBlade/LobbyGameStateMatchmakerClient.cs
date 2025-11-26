@@ -49,7 +49,7 @@ public sealed class LobbyGameStateMatchmakerClient : LobbyGameState
 		BannerlordNetwork.StartMultiplayerLobbyMission(LobbyMissionType.Matchmaker);
 		if (!Module.CurrentModule.StartMultiplayerGame(_multiplayerGameType, _scene))
 		{
-			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameState.cs", "StartMultiplayer", 301);
+			Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameState.cs", "StartMultiplayer", 301);
 		}
 		PlatformServices.Instance?.CheckPrivilege(Privilege.Chat, displayResolveUI: true, delegate(bool result)
 		{

@@ -12,6 +12,8 @@ public interface IMissionTroopSupplier
 
 	IEnumerable<IAgentOriginBase> SupplyTroops(int numberToAllocate);
 
+	IAgentOriginBase SupplyOneTroop();
+
 	IEnumerable<IAgentOriginBase> GetAllTroops();
 
 	BasicCharacterObject GetGeneralCharacter();

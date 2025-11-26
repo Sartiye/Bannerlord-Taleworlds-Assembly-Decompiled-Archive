@@ -66,14 +66,14 @@ public static class PermaMuteList
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Could not load muted players. " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 61);
+			Debug.FailedAssert("Could not load muted players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 61);
 			try
 			{
 				FileHelper.DeleteFile(PermaMuteFilePath);
 			}
 			catch (Exception ex2)
 			{
-				Debug.FailedAssert("Could not delete muted players file. " + ex2.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 68);
+				Debug.FailedAssert("Could not delete muted players file. " + ex2.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 68);
 			}
 		}
 	}
@@ -87,7 +87,7 @@ public static class PermaMuteList
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Could not save muted players. " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "SaveMutedPlayers", 83);
+			Debug.FailedAssert("Could not save muted players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "SaveMutedPlayers", 83);
 		}
 	}
 

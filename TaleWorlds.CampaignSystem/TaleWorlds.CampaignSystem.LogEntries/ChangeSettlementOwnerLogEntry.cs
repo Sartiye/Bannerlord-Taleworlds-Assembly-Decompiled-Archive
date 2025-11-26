@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Helpers;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
@@ -107,16 +108,20 @@ public class ChangeSettlementOwnerLogEntry : LogEntry, IEncyclopediaLog, IWarLog
 		}
 	}
 
-	public override int GetAsRumor(Settlement talkSettlement, ref TextObject comment)
+	public override int GetAsRumor(Settlement talkSettlement, out TextObject comment)
 	{
 		int result = 0;
 		Settlement settlement = Settlement;
-		if (NewClan.IsBanditFaction && settlement.IsHideout && Campaign.Current.Models.MapDistanceModel.GetDistance(talkSettlement, settlement, 60f, out var _))
+		if (NewClan.IsBanditFaction && settlement.IsHideout)
 		{
-			comment = new TextObject("{=MXGtQ6YV}I hear {.%}{BANDIT_NAME}{.%} have moved into the old {HIDEOUT_NAME} near here. Travellers better watch themselves.");
-			comment.SetTextVariable("BANDIT_NAME", NewClan.Name);
-			comment.SetTextVariable("HIDEOUT_NAME", settlement.Name);
-			return 4;
+			MobileParty.NavigationType navigationType = ((!NewClan.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.All);
+			if (Campaign.Current.Models.MapDistanceModel.GetDistance(talkSettlement, settlement, isFromPort: false, isTargetingPort: false, navigationType) < Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType))
+			{
+				comment = new TextObject("{=MXGtQ6YV}I hear {.%}{BANDIT_NAME}{.%} have moved into the old {HIDEOUT_NAME} near here. Travellers better watch themselves.");
+				comment.SetTextVariable("BANDIT_NAME", NewClan.Name);
+				comment.SetTextVariable("HIDEOUT_NAME", settlement.Name);
+				return 4;
+			}
 		}
 		if (_bySiege && PreviousClan == talkSettlement.MapFaction)
 		{
@@ -125,6 +130,7 @@ public class ChangeSettlementOwnerLogEntry : LogEntry, IEncyclopediaLog, IWarLog
 			comment.SetTextVariable("FORTRESS_NAME", settlement.Name);
 			return 10;
 		}
+		comment = null;
 		return result;
 	}
 

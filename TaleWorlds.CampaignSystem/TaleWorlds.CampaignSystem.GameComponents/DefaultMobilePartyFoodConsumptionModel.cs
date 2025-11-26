@@ -9,6 +9,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumptionModel
 {
+	private const float MinimumDailyFoodConsumption = 0.01f;
+
 	private static readonly TextObject _partyConsumption = new TextObject("{=UrFzdy4z}Daily Consumption");
 
 	public override int NumberOfMenOnMapToEatOneFood => 20;
@@ -23,7 +25,7 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 	public override ExplainedNumber CalculateDailyFoodConsumptionf(MobileParty party, ExplainedNumber baseConsumption)
 	{
 		CalculatePerkEffects(party, ref baseConsumption);
-		baseConsumption.LimitMax(0f);
+		baseConsumption.LimitMax(-0.01f);
 		return baseConsumption;
 	}
 
@@ -49,8 +51,11 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 			float value = (float)num / (float)party.MemberRoster.TotalManCount * DefaultPerks.Roguery.Promises.PrimaryBonus;
 			result.AddFactor(value, DefaultPerks.Roguery.Promises.Name);
 		}
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Spartan, party, isPrimaryBonus: false, ref result);
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.WarriorsDiet, party, isPrimaryBonus: true, ref result);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Spartan, party, isPrimaryBonus: false, ref result, party.IsCurrentlyAtSea);
+		if (!party.IsCurrentlyAtSea)
+		{
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.WarriorsDiet, party, isPrimaryBonus: true, ref result);
+		}
 		if (party.EffectiveQuartermaster != null)
 		{
 			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Steward.PriceOfLoyalty, party.EffectiveQuartermaster.CharacterObject, DefaultSkills.Steward, applyPrimaryBonus: true, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
@@ -66,7 +71,7 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 		}
 		if (party.Army != null)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.StiffUpperLip, party, isPrimaryBonus: true, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.StiffUpperLip, party, isPrimaryBonus: true, ref result, party.IsCurrentlyAtSea);
 		}
 		if (party.SiegeEvent?.BesiegerCamp != null)
 		{
@@ -83,7 +88,7 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 
 	public override bool DoesPartyConsumeFood(MobileParty mobileParty)
 	{
-		if (mobileParty.IsActive && (mobileParty.LeaderHero == null || mobileParty.LeaderHero.IsLord || mobileParty.LeaderHero.Clan == Clan.PlayerClan || mobileParty.LeaderHero.IsMinorFactionHero) && !mobileParty.IsGarrison && !mobileParty.IsCaravan && !mobileParty.IsBandit && !mobileParty.IsMilitia)
+		if (mobileParty.IsActive && (mobileParty.LeaderHero == null || mobileParty.LeaderHero.IsLord || mobileParty.LeaderHero.Clan == Clan.PlayerClan || mobileParty.LeaderHero.IsMinorFactionHero) && !mobileParty.IsGarrison && !mobileParty.IsCaravan && !mobileParty.IsBandit && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty)
 		{
 			return !mobileParty.IsVillager;
 		}

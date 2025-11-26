@@ -13,23 +13,11 @@ namespace TaleWorlds.MountAndBlade;
 
 public class Ballista : RangedSiegeWeapon, ISpawnable
 {
-	private static readonly ActionIndexCache act_usage_ballista_ammo_pick_up_end = ActionIndexCache.Create("act_usage_ballista_ammo_pick_up_end");
-
-	private static readonly ActionIndexCache act_usage_ballista_ammo_pick_up_start = ActionIndexCache.Create("act_usage_ballista_ammo_pick_up_start");
-
-	private static readonly ActionIndexCache act_usage_ballista_ammo_place_end = ActionIndexCache.Create("act_usage_ballista_ammo_place_end");
-
-	private static readonly ActionIndexCache act_usage_ballista_ammo_place_start = ActionIndexCache.Create("act_usage_ballista_ammo_place_start");
-
-	private static readonly ActionIndexCache act_usage_ballista_idle = ActionIndexCache.Create("act_usage_ballista_idle");
-
-	private static readonly ActionIndexCache act_usage_ballista_reload = ActionIndexCache.Create("act_usage_ballista_reload");
-
-	private static readonly ActionIndexCache act_strike_bent_over = ActionIndexCache.Create("act_strike_bent_over");
-
 	public string NavelTag = "BallistaNavel";
 
 	public string BodyTag = "BallistaBody";
+
+	public string SkeletonTag = "SkeletonEntity";
 
 	public float AnimationHeightDifference;
 
@@ -43,22 +31,22 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 
 	private MatrixFrame _missileInitialLocalFrame;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string IdleActionName = "act_usage_ballista_idle_attacker";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string ReloadActionName = "act_usage_ballista_reload_attacker";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string PlaceAmmoStartActionName = "act_usage_ballista_ammo_place_start_attacker";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string PlaceAmmoEndActionName = "act_usage_ballista_ammo_place_end_attacker";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string PickUpAmmoStartActionName = "act_usage_ballista_ammo_pick_up_start_attacker";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	protected string PickUpAmmoEndActionName = "act_usage_ballista_ammo_pick_up_end_attacker";
 
 	private ActionIndexCache _idleAnimationActionIndex;
@@ -73,9 +61,7 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 
 	private ActionIndexCache _pickUpAmmoEndAnimationActionIndex;
 
-	private float _verticalOffsetAngle;
-
-	[EditableScriptComponentVariable(false)]
+	[EditableScriptComponentVariable(true, "")]
 	public float HorizontalDirectionRestriction = System.MathF.PI / 2f;
 
 	public float BallistaShootingSpeed = 120f;
@@ -92,6 +78,12 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 
 	public override Vec3 CanShootAtPointCheckingOffset => new Vec3(0f, 0f, 0.5f);
 
+	protected override bool WeaponMovesDownToReload => true;
+
+	public override string MultipleProjectileId => "ballista_c_projectile_grape";
+
+	public override string MultipleProjectileFlyingId => "ballista_c_projectile_grape_projectile";
+
 	protected override float MaximumBallisticError => 0.5f;
 
 	protected override float HorizontalAimSensitivity => 1f;
@@ -102,8 +94,16 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 	{
 		SkeletonOwnerObjects = new SynchedMissionObject[1];
 		Skeletons = new Skeleton[1];
-		SkeletonOwnerObjects[0] = ballistaBody;
-		Skeletons[0] = ballistaBody.GameEntity.Skeleton;
+		List<SynchedMissionObject> list = ballistaBody.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(SkeletonTag);
+		if (list.Count == 0)
+		{
+			SkeletonOwnerObjects[0] = ballistaBody;
+		}
+		else
+		{
+			SkeletonOwnerObjects[0] = list[0];
+		}
+		Skeletons[0] = SkeletonOwnerObjects[0].GameEntity.Skeleton;
 		base.SkeletonName = "ballista_skeleton";
 		base.FireAnimation = "ballista_fire";
 		base.FireAnimationIndex = MBAnimation.GetAnimationIndexWithName("ballista_fire");
@@ -124,29 +124,37 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 
 	protected internal override void OnInit()
 	{
-		ballistaBody = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>(BodyTag)[0];
-		ballistaNavel = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>(NavelTag)[0];
+		ballistaBody = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(BodyTag)[0];
+		ballistaNavel = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>(NavelTag)[0];
 		RotationObject = this;
 		base.OnInit();
 		UsesMouseForAiming = true;
 		GetSoundEventIndices();
 		_ballistaNavelInitialFrame = ballistaNavel.GameEntity.GetFrame();
-		MatrixFrame globalFrame = ballistaBody.GameEntity.GetGlobalFrame();
+		MatrixFrame m = ballistaBody.GameEntity.GetGlobalFrame();
 		_ballistaBodyInitialLocalFrame = ballistaBody.GameEntity.GetFrame();
-		MatrixFrame globalFrame2 = base.PilotStandingPoint.GameEntity.GetGlobalFrame();
+		MatrixFrame globalFrame = base.PilotStandingPoint.GameEntity.GetGlobalFrame();
 		_pilotInitialLocalFrame = base.PilotStandingPoint.GameEntity.GetFrame();
-		_pilotInitialLocalIKFrame = globalFrame2.TransformToLocal(globalFrame);
+		_pilotInitialLocalIKFrame = globalFrame.TransformToLocal(in m);
 		_missileInitialLocalFrame = base.Projectile.GameEntity.GetFrame();
 		base.PilotStandingPoint.AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
-		MissileStartingPositionEntityForSimulation = base.Projectile.GameEntity.Parent.GetChildren().FirstOrDefault((GameEntity x) => x.Name == "projectile_leaving_position");
+		MissileStartingPositionEntityForSimulation = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.Projectile.GameEntity.Parent.GetChildren().FirstOrDefault((WeakGameEntity x) => x.Name == "projectile_leaving_position"));
 		EnemyRangeToStopUsing = 7f;
 		AttackClickWillReload = true;
 		WeaponNeedsClickToReload = true;
 		SetScriptComponentToTick(GetTickRequirement());
-		Vec3 shootingDirection = ShootingDirection;
-		Vec3 v = new Vec3(0f, shootingDirection.AsVec2.Length, shootingDirection.z);
-		_verticalOffsetAngle = Vec3.AngleBetweenTwoVectors(v, Vec3.Forward);
 		ApplyAimChange();
+	}
+
+	public override void OnPilotAssignedDuringSpawn()
+	{
+		base.PilotAgent.SetActionChannel(1, in _idleAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL);
+		MatrixFrame globalFrame = base.PilotStandingPoint.GameEntity.GetGlobalFrame();
+		base.PilotAgent.TeleportToPosition(globalFrame.origin);
+		base.PilotAgent.DisableScriptedMovement();
+		Agent pilotAgent = base.PilotAgent;
+		Vec2 direction = globalFrame.rotation.f.AsVec2.Normalized();
+		pilotAgent.SetMovementDirection(in direction);
 	}
 
 	protected override bool CanRotate()
@@ -194,7 +202,7 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 	{
 		if (base.PilotAgent == null)
 		{
-			targetReleaseAngle = 0f;
+			TargetReleaseAngle = 0f;
 		}
 		base.HandleUserAiming(dt);
 	}
@@ -202,14 +210,14 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 	protected override void ApplyAimChange()
 	{
 		MatrixFrame frame = _ballistaNavelInitialFrame;
-		frame.rotation.RotateAboutUp(currentDirection);
-		ballistaNavel.GameEntity.SetFrame(ref frame);
-		MatrixFrame m = _ballistaNavelInitialFrame.TransformToLocal(_pilotInitialLocalFrame);
-		MatrixFrame frame2 = frame.TransformToParent(m);
-		base.PilotStandingPoint.GameEntity.SetFrame(ref frame2);
+		frame.rotation.RotateAboutAnArbitraryVector(in _ballistaNavelInitialFrame.rotation.u, CurrentDirection);
+		ballistaNavel.GameEntity.SetLocalFrame(ref frame, isTeleportation: false);
+		MatrixFrame m = _ballistaNavelInitialFrame.TransformToLocal(in _pilotInitialLocalFrame);
+		MatrixFrame frame2 = frame.TransformToParent(in m);
+		base.PilotStandingPoint.GameEntity.SetLocalFrame(ref frame2, isTeleportation: false);
 		MatrixFrame frame3 = _ballistaBodyInitialLocalFrame;
-		frame3.rotation.RotateAboutSide(0f - currentReleaseAngle + _verticalOffsetAngle);
-		ballistaBody.GameEntity.SetFrame(ref frame3);
+		frame3.rotation.RotateAboutAnArbitraryVector(in frame3.rotation.s, 0f - CurrentReleaseAngle);
+		ballistaBody.GameEntity.SetLocalFrame(ref frame3, isTeleportation: false);
 	}
 
 	protected override void ApplyCurrentDirectionToEntity()
@@ -221,7 +229,7 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 	{
 		MoveSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/ballista/move");
 		ReloadSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/ballista/reload");
-		ReloadEndSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/ballista/reload_end");
+		FireSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/ballista/fire");
 	}
 
 	protected internal override bool IsTargetValid(ITargetable target)
@@ -261,12 +269,12 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			ref MatrixFrame pilotInitialLocalIKFrame = ref _pilotInitialLocalIKFrame;
 			MatrixFrame boundEntityGlobalFrame = ballistaBody.GameEntity.GetGlobalFrame();
 			pilotAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in pilotInitialLocalIKFrame, in boundEntityGlobalFrame, AnimationHeightDifference);
-			ActionIndexValueCache currentActionValue = base.PilotAgent.GetCurrentActionValue(1);
-			if (currentActionValue == _pickUpAmmoEndAnimationActionIndex || currentActionValue == _placeAmmoStartAnimationActionIndex)
+			ActionIndexCache currentAction = base.PilotAgent.GetCurrentAction(1);
+			if (currentAction == _pickUpAmmoEndAnimationActionIndex || currentAction == _placeAmmoStartAnimationActionIndex)
 			{
-				MatrixFrame boneEntitialFrame = base.PilotAgent.AgentVisuals.GetBoneEntitialFrame(base.PilotAgent.Monster.MainHandItemBoneIndex, useBoneMapping: false);
-				boneEntitialFrame = base.PilotAgent.AgentVisuals.GetGlobalFrame().TransformToParent(boneEntitialFrame);
-				base.Projectile.GameEntity.SetGlobalFrame(in boneEntitialFrame);
+				MatrixFrame m = base.PilotAgent.AgentVisuals.GetBoneEntitialFrame(base.PilotAgent.Monster.MainHandItemBoneIndex, useBoneMapping: false);
+				m = base.PilotAgent.AgentVisuals.GetGlobalFrame().TransformToParent(in m);
+				base.Projectile.GameEntity.SetGlobalFrame(in m);
 			}
 			else
 			{
@@ -280,7 +288,8 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 		switch (base.State)
 		{
 		case WeaponState.Reloading:
-			if (base.PilotAgent != null && !base.PilotAgent.SetActionChannel(1, _reloadAnimationActionIndex, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+			FinalReloadSpeed = MissionGameModels.Current.MissionSiegeEngineCalculationModel.CalculateReloadSpeed(base.PilotAgent, BaseReloadSpeed);
+			if (base.PilotAgent != null && !base.PilotAgent.SetActionChannel(1, in _reloadAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 			{
 				base.PilotAgent.StopUsingGameObjectMT();
 			}
@@ -290,16 +299,18 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			bool value = false;
 			if (base.PilotAgent != null)
 			{
-				ActionIndexValueCache currentActionValue2 = base.PilotAgent.GetCurrentActionValue(1);
-				if (currentActionValue2 != _pickUpAmmoStartAnimationActionIndex && currentActionValue2 != _pickUpAmmoEndAnimationActionIndex && currentActionValue2 != _placeAmmoStartAnimationActionIndex && currentActionValue2 != _placeAmmoEndAnimationActionIndex && !base.PilotAgent.SetActionChannel(1, _pickUpAmmoStartAnimationActionIndex, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+				ActionIndexCache currentAction2 = base.PilotAgent.GetCurrentAction(1);
+				FinalReloadSpeed = MissionGameModels.Current.MissionSiegeEngineCalculationModel.CalculateReloadSpeed(base.PilotAgent, BaseReloadSpeed);
+				base.PilotAgent.SetCurrentActionSpeed(1, FinalReloadSpeed);
+				if (currentAction2 != _pickUpAmmoStartAnimationActionIndex && currentAction2 != _pickUpAmmoEndAnimationActionIndex && currentAction2 != _placeAmmoStartAnimationActionIndex && currentAction2 != _placeAmmoEndAnimationActionIndex && !base.PilotAgent.SetActionChannel(1, in _pickUpAmmoStartAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 				{
 					base.PilotAgent.StopUsingGameObjectMT();
 				}
-				else if (currentActionValue2 == _pickUpAmmoEndAnimationActionIndex || currentActionValue2 == _placeAmmoStartAnimationActionIndex)
+				else if (currentAction2 == _pickUpAmmoEndAnimationActionIndex || currentAction2 == _placeAmmoStartAnimationActionIndex)
 				{
 					value = true;
 				}
-				else if (currentActionValue2 == _placeAmmoEndAnimationActionIndex)
+				else if (currentAction2 == _placeAmmoEndAnimationActionIndex)
 				{
 					value = true;
 					_changeToState = WeaponState.WaitingBeforeIdle;
@@ -313,9 +324,9 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			{
 				_changeToState = WeaponState.Idle;
 			}
-			else if (base.PilotAgent.GetCurrentActionValue(1) != _placeAmmoEndAnimationActionIndex)
+			else if (base.PilotAgent.GetCurrentAction(1) != _placeAmmoEndAnimationActionIndex)
 			{
-				if (base.PilotAgent.Controller != Agent.ControllerType.AI)
+				if (base.PilotAgent.Controller != AgentControllerType.AI)
 				{
 					base.PilotAgent.StopUsingGameObjectMT();
 				}
@@ -324,7 +335,7 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			else if (base.PilotAgent.GetCurrentActionProgress(1) > 0.9999f)
 			{
 				_changeToState = WeaponState.Idle;
-				if (base.PilotAgent != null && !base.PilotAgent.SetActionChannel(1, _idleAnimationActionIndex, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+				if (base.PilotAgent != null && !base.PilotAgent.SetActionChannel(1, in _idleAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 				{
 					base.PilotAgent.StopUsingGameObjectMT();
 				}
@@ -337,12 +348,12 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 		}
 		if (base.PilotAgent.IsInBeingStruckAction)
 		{
-			if (base.PilotAgent.GetCurrentActionValue(1) != act_strike_bent_over)
+			if (base.PilotAgent.GetCurrentAction(1) != ActionIndexCache.act_strike_bent_over)
 			{
-				base.PilotAgent.SetActionChannel(1, act_strike_bent_over, ignorePriority: false, 0uL);
+				base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_strike_bent_over, ignorePriority: false, (AnimFlags)0uL);
 			}
 		}
-		else if (!base.PilotAgent.SetActionChannel(1, _idleAnimationActionIndex, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+		else if (!base.PilotAgent.SetActionChannel(1, in _idleAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 		{
 			base.PilotAgent.StopUsingGameObjectMT();
 		}
@@ -355,25 +366,15 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 		return textObject;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return new TextObject("{=abbALYlp}Ballista").ToString();
+		return new TextObject("{=abbALYlp}Ballista");
 	}
 
 	protected override void UpdateAmmoMesh()
 	{
 		int num = 8 - base.AmmoCount;
-		foreach (GameEntity child in base.GameEntity.GetChildren())
-		{
-			for (int i = 0; i < child.MultiMeshComponentCount; i++)
-			{
-				MetaMesh metaMesh = child.GetMetaMesh(i);
-				for (int j = 0; j < metaMesh.MeshCount; j++)
-				{
-					metaMesh.GetMeshAtIndex(j).SetVectorArgument(0f, num, 0f, 0f);
-				}
-			}
-		}
+		base.GameEntity.SetVectorArgument(0f, num, 0f, 0f);
 	}
 
 	public override float ProcessTargetValue(float baseValue, TargetFlags flags)

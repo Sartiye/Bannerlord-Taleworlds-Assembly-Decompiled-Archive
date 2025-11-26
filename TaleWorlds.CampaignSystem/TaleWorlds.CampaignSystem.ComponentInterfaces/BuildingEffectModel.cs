@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BuildingEffectModel : GameModel
+public abstract class BuildingEffectModel : MBGameModel<BuildingEffectModel>
 {
-	public abstract float GetBuildingEffectAmount(Building building, BuildingEffectEnum effect);
+	public abstract ExplainedNumber GetBuildingEffect(Building building, BuildingEffectEnum effect);
 }

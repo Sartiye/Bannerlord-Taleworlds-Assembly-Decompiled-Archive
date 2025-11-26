@@ -83,4 +83,14 @@ public class ContainerSaveId : SaveId
 		SaveId valueId = ((list.Count > 1) ? list[1] : null);
 		return new ContainerSaveId(containerType, keyId, valueId);
 	}
+
+	public override int GetSizeInBytes()
+	{
+		int num = 2 + KeyId.GetSizeInBytes();
+		if (ContainerType == ContainerType.Dictionary)
+		{
+			num += ValueId.GetSizeInBytes();
+		}
+		return num;
+	}
 }

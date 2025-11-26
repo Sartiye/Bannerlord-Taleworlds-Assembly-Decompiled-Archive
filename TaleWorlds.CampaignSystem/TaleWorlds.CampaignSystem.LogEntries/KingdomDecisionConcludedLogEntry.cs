@@ -16,7 +16,7 @@ public class KingdomDecisionConcludedLogEntry : LogEntry, IChatNotification
 	[SaveableField(4)]
 	private readonly TextObject _notificationText;
 
-	public override CampaignTime KeepInHistoryTime => CampaignTime.Weeks(1f);
+	public override CampaignTime KeepInHistoryTime => CampaignTime.Days(7f);
 
 	public bool IsVisibleNotification => _isVisibleNotification;
 

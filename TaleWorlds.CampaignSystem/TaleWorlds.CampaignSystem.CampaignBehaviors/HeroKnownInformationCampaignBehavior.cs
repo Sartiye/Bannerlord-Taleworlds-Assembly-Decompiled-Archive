@@ -20,7 +20,7 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.ConversationEnded.AddNonSerializedListener(this, ConversationEnded);
 		CampaignEvents.OnAgentJoinedConversationEvent.AddNonSerializedListener(this, OnAgentJoinedConversation);
 		CampaignEvents.OnPlayerMetHeroEvent.AddNonSerializedListener(this, OnPlayerMetHero);
-		CampaignEvents.HeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
+		CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
 		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinishedEvent);
 		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
@@ -132,10 +132,21 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 
 	private void OnPlayerLearnsAboutHero(Hero hero)
 	{
+		UpdateHeroLocation(hero);
 		if (hero.Clan != Clan.PlayerClan)
 		{
-			TextObject textObject = new TextObject("{=lLMlPcl4}You have discovered {HERO.NAME}");
-			textObject.SetCharacterProperties("HERO", hero.CharacterObject);
+			TextObject textObject = new TextObject("{=oSghSUxp}You've learned about {?IS_RULER}{RULER_NAME_AND_TITLE}{?}{HERO.NAME}{\\?}.");
+			textObject.SetTextVariable("IS_RULER", hero.IsKingdomLeader ? 1 : 0);
+			if (hero.IsKingdomLeader)
+			{
+				TextObject textObject2 = GameTexts.FindText("str_faction_ruler_name_with_title", hero.MapFaction.Culture.StringId);
+				textObject2.SetCharacterProperties("RULER", hero.CharacterObject);
+				textObject.SetTextVariable("RULER_NAME_AND_TITLE", textObject2);
+			}
+			else
+			{
+				textObject.SetCharacterProperties("HERO", hero.CharacterObject);
+			}
 			InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
 		}
 	}
@@ -160,7 +171,7 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (LocationCharacter character in location.GetCharacterList())
 		{
-			if (character.Character.IsHero && !character.IsHidden && character.Character.HeroObject.CurrentSettlement == Settlement.CurrentSettlement)
+			if (character.Character.IsHero && character.Character.HeroObject.CurrentSettlement == Settlement.CurrentSettlement)
 			{
 				character.Character.HeroObject.IsKnownToPlayer = true;
 			}
@@ -169,7 +180,6 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 
 	private void OnPlayerMetHero(Hero hero)
 	{
-		UpdateHeroLocation(hero);
 		hero.IsKnownToPlayer = true;
 	}
 
@@ -195,13 +205,20 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 
 	private void UpdateHeroLocation(Hero hero)
 	{
-		if (hero.IsActive || hero.IsPrisoner)
+		if (hero.IsKnownToPlayer)
 		{
-			Settlement closestSettlement = HeroHelper.GetClosestSettlement(hero);
-			if (closestSettlement != null)
+			if (hero.IsActive || hero.IsPrisoner)
 			{
-				hero.UpdateLastKnownClosestSettlement(closestSettlement);
+				Settlement closestSettlement = HeroHelper.GetClosestSettlement(hero);
+				if (closestSettlement != null)
+				{
+					hero.UpdateLastKnownClosestSettlement(closestSettlement);
+				}
 			}
+		}
+		else
+		{
+			hero.UpdateLastKnownClosestSettlement(null);
 		}
 	}
 
@@ -262,7 +279,12 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 		{
 			if (conversationCharacter.IsHero)
 			{
-				conversationCharacter.HeroObject.SetHasMet();
+				bool result = true;
+				CampaignEventDispatcher.Instance.CanPlayerMeetWithHeroAfterConversation(conversationCharacter.HeroObject, ref result);
+				if (result)
+				{
+					conversationCharacter.HeroObject.SetHasMet();
+				}
 			}
 		}
 	}

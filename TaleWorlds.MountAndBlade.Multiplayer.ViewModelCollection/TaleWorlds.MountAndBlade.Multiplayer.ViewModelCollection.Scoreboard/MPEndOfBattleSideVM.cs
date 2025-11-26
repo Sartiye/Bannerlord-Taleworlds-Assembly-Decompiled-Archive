@@ -1,5 +1,6 @@
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Scoreboard;
 
@@ -125,19 +126,19 @@ public class MPEndOfBattleSideVM : ViewModel
 		}
 	}
 
-	public MPEndOfBattleSideVM(MissionScoreboardComponent missionScoreboardComponent, MissionScoreboardComponent.MissionScoreboardSide side, BasicCultureObject culture, bool useSecondary)
+	public MPEndOfBattleSideVM(MissionScoreboardComponent missionScoreboardComponent, MissionScoreboardComponent.MissionScoreboardSide side, MultiplayerBattleColors.MultiplayerCultureColorInfo cultureColorInfo)
 	{
 		_missionScoreboardComponent = missionScoreboardComponent;
 		Side = side;
-		_culture = culture;
+		_culture = cultureColorInfo.Culture;
 		if (Side != null)
 		{
-			CultureId = culture.StringId;
+			CultureId = _culture.StringId;
 			Score = Side.SideScore;
 			IsRoundWinner = _missionScoreboardComponent.RoundWinner == side.Side || _missionScoreboardComponent.RoundWinner == BattleSideEnum.None;
 		}
-		CultureColor1 = Color.FromUint(useSecondary ? culture.Color2 : culture.Color);
-		CultureColor2 = Color.FromUint(useSecondary ? culture.Color : culture.Color2);
+		CultureColor1 = cultureColorInfo.Color1;
+		CultureColor2 = cultureColorInfo.Color2;
 		RefreshValues();
 	}
 

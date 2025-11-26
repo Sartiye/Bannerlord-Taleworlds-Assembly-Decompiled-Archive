@@ -151,6 +151,11 @@ public class Imgui
 		return EngineApplicationInterface.IImgui.Combo(label, ref selectedIndex, items);
 	}
 
+	public static bool ComboCustomSeperator(string label, ref int selectedIndex, string items, char seperator)
+	{
+		return EngineApplicationInterface.IImgui.ComboCustomSeperator(label, ref selectedIndex, items, seperator.ToString());
+	}
+
 	public static bool InputInt(string label, ref int value)
 	{
 		return EngineApplicationInterface.IImgui.InputInt(label, ref value);
@@ -199,6 +204,20 @@ public class Imgui
 	public static bool InputFloat(string label, ref float val, float step, float stepFast, int decimalPrecision = -1)
 	{
 		return EngineApplicationInterface.IImgui.InputFloat(label, ref val, step, stepFast, decimalPrecision);
+	}
+
+	public static bool InputText(string label, ref string text)
+	{
+		bool changed = false;
+		text = EngineApplicationInterface.IImgui.InputText(label, text, ref changed);
+		return changed;
+	}
+
+	public static bool InputTextMultilineCopyPaste(string label, int textBoxHeight, ref string text)
+	{
+		bool changed = false;
+		text = EngineApplicationInterface.IImgui.InputTextMultilineCopyPaste(label, text, textBoxHeight, ref changed);
+		return changed;
 	}
 
 	public static bool InputFloat2(string label, ref float val0, ref float val1, int decimalPrecision = -1)

@@ -99,16 +99,11 @@ public class MissionGamepadEffectsView : MissionView
 			{
 				if (mainAgent.CurrentlyUsedGameObject != _currentlyUsedMissionObject)
 				{
-					if (GetUsableMachineFromUsableMissionObject(mainAgent.CurrentlyUsedGameObject) is RangedSiegeWeapon currentlyUsedSiegeWeapon)
-					{
-						_currentlyUsedSiegeWeapon = currentlyUsedSiegeWeapon;
-					}
 					_currentlyUsedMissionObject = mainAgent.CurrentlyUsedGameObject;
+					UsableMachine usableMachineFromUsableMissionObject = GetUsableMachineFromUsableMissionObject(_currentlyUsedMissionObject);
+					_currentlyUsedSiegeWeapon = ((usableMachineFromUsableMissionObject is RangedSiegeWeapon rangedSiegeWeapon) ? rangedSiegeWeapon : null);
 				}
-				if (_currentlyUsedSiegeWeapon != null)
-				{
-					HandleRangedSiegeEngineAdaptiveTriggers(_currentlyUsedSiegeWeapon);
-				}
+				HandleRangedSiegeEngineAdaptiveTriggers(_currentlyUsedSiegeWeapon);
 			}
 			else
 			{
@@ -120,6 +115,8 @@ public class MissionGamepadEffectsView : MissionView
 		}
 		else
 		{
+			_currentlyUsedSiegeWeapon = null;
+			_currentlyUsedMissionObject = null;
 			ResetTriggerFeedback();
 			ResetTriggerVibration();
 		}
@@ -177,6 +174,8 @@ public class MissionGamepadEffectsView : MissionView
 			_usingAlternativeAiming = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.EnableAlternateAiming) != 0f;
 			if (isAdaptiveTriggerEnabled && !_isAdaptiveTriggerEnabled)
 			{
+				_currentlyUsedSiegeWeapon = null;
+				_currentlyUsedMissionObject = null;
 				ResetTriggerFeedback();
 				ResetTriggerVibration();
 			}
@@ -378,15 +377,15 @@ public class MissionGamepadEffectsView : MissionView
 
 	private UsableMachine GetUsableMachineFromUsableMissionObject(UsableMissionObject usableMissionObject)
 	{
-		if (usableMissionObject is StandingPoint { GameEntity: var gameEntity })
+		if (usableMissionObject is StandingPoint { GameEntity: var weakGameEntity })
 		{
-			while (gameEntity != null && !gameEntity.HasScriptOfType<UsableMachine>())
+			while (weakGameEntity.IsValid && !weakGameEntity.HasScriptOfType<UsableMachine>())
 			{
-				gameEntity = gameEntity.Parent;
+				weakGameEntity = weakGameEntity.Parent;
 			}
-			if (gameEntity != null)
+			if (weakGameEntity.IsValid)
 			{
-				UsableMachine firstScriptOfType = gameEntity.GetFirstScriptOfType<UsableMachine>();
+				UsableMachine firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 				if (firstScriptOfType != null)
 				{
 					return firstScriptOfType;
@@ -426,7 +425,7 @@ public class MissionGamepadEffectsView : MissionView
 				SetTriggerWeaponEffect(0, 0, 0, 4, 7, 7);
 				break;
 			default:
-				Debug.FailedAssert("Unexpected trigger state:" + triggerState, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionGamepadEffectsView.cs", "SetTriggerState", 500);
+				Debug.FailedAssert("Unexpected trigger state:" + triggerState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionGamepadEffectsView.cs", "SetTriggerState", 495);
 				break;
 			}
 			_triggerState = triggerState;

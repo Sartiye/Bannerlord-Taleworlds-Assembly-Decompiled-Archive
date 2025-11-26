@@ -1,6 +1,7 @@
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
@@ -14,7 +15,7 @@ public class DefaultCompanionHiringPriceCalculationModel : CompanionHiringPriceC
 		Town town = companion.CurrentSettlement?.Town;
 		if (town == null)
 		{
-			town = SettlementHelper.FindNearestTown().Town;
+			town = SettlementHelper.FindNearestTownToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.All);
 		}
 		float num = 0f;
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumEquipmentSetSlots; equipmentIndex++)

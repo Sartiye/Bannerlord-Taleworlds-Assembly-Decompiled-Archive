@@ -16,9 +16,9 @@ public sealed class VideoPlayerView : View
 		return EngineApplicationInterface.IVideoPlayerView.CreateVideoPlayerView();
 	}
 
-	public void PlayVideo(string videoFileName, string soundFileName, float framerate)
+	public void PlayVideo(string videoFileName, string soundFileName, float framerate, bool looping)
 	{
-		EngineApplicationInterface.IVideoPlayerView.PlayVideo(base.Pointer, videoFileName, soundFileName, framerate);
+		EngineApplicationInterface.IVideoPlayerView.PlayVideo(base.Pointer, videoFileName, soundFileName, framerate, looping);
 	}
 
 	public void StopVideo()

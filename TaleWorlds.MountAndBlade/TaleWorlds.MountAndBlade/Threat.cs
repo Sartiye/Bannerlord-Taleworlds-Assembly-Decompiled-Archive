@@ -5,7 +5,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class Threat
 {
-	public ITargetable WeaponEntity;
+	public ITargetable TargetableObject;
 
 	public Formation Formation;
 
@@ -13,13 +13,15 @@ public class Threat
 
 	public float ThreatValue;
 
+	public bool ForceTarget;
+
 	public string Name
 	{
 		get
 		{
-			if (WeaponEntity != null)
+			if (TargetableObject != null)
 			{
-				return WeaponEntity.Entity().Name;
+				return TargetableObject.Entity().Name;
 			}
 			if (Agent != null)
 			{
@@ -29,18 +31,20 @@ public class Threat
 			{
 				return Formation.ToString();
 			}
-			TaleWorlds.Library.Debug.FailedAssert("Invalid threat", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "Name", 38);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid threat", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "Name", 39);
 			return "Invalid";
 		}
 	}
 
-	public Vec3 Position
+	public Vec3 TargetingPosition
 	{
 		get
 		{
-			if (WeaponEntity != null)
+			if (TargetableObject != null)
 			{
-				return (WeaponEntity.GetTargetEntity().PhysicsGlobalBoxMax + WeaponEntity.GetTargetEntity().PhysicsGlobalBoxMin) * 0.5f + WeaponEntity.GetTargetingOffset();
+				(Vec3, Vec3) tuple = TargetableObject.ComputeGlobalPhysicsBoundingBoxMinMax();
+				var (vec, _) = tuple;
+				return (tuple.Item2 + vec) * 0.5f + TargetableObject.GetTargetingOffset();
 			}
 			if (Agent != null)
 			{
@@ -50,49 +54,7 @@ public class Threat
 			{
 				return Formation.GetMedianAgent(excludeDetachedUnits: false, excludePlayer: false, Formation.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false)).Position;
 			}
-			TaleWorlds.Library.Debug.FailedAssert("Invalid threat", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "Position", 62);
-			return Vec3.Invalid;
-		}
-	}
-
-	public Vec3 BoundingBoxMin
-	{
-		get
-		{
-			if (WeaponEntity != null)
-			{
-				return WeaponEntity.GetTargetEntity().PhysicsGlobalBoxMin + WeaponEntity.GetTargetingOffset();
-			}
-			if (Agent != null)
-			{
-				return Agent.CollisionCapsule.GetBoxMin();
-			}
-			if (Formation != null)
-			{
-				TaleWorlds.Library.Debug.FailedAssert("Nobody should be requesting a bounding box for a formation", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "BoundingBoxMin", 82);
-				return Vec3.Invalid;
-			}
-			return Vec3.Invalid;
-		}
-	}
-
-	public Vec3 BoundingBoxMax
-	{
-		get
-		{
-			if (WeaponEntity != null)
-			{
-				return WeaponEntity.GetTargetEntity().PhysicsGlobalBoxMax + WeaponEntity.GetTargetingOffset();
-			}
-			if (Agent != null)
-			{
-				return Agent.CollisionCapsule.GetBoxMax();
-			}
-			if (Formation != null)
-			{
-				TaleWorlds.Library.Debug.FailedAssert("Nobody should be requesting a bounding box for a formation", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "BoundingBoxMax", 106);
-				return Vec3.Invalid;
-			}
+			TaleWorlds.Library.Debug.FailedAssert("Invalid threat", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "TargetingPosition", 64);
 			return Vec3.Invalid;
 		}
 	}
@@ -102,15 +64,34 @@ public class Threat
 		return base.GetHashCode();
 	}
 
-	public Vec3 GetVelocity()
+	public (Vec3, Vec3) ComputeGlobalTargetingBoundingBoxMinMax()
 	{
-		if (WeaponEntity != null)
+		if (TargetableObject != null)
 		{
-			_ = Vec3.Zero;
-			if (WeaponEntity is IMoveableSiegeWeapon moveableSiegeWeapon)
-			{
-				return moveableSiegeWeapon.MovementComponent.Velocity;
-			}
+			var (vec, vec2) = TargetableObject.ComputeGlobalPhysicsBoundingBoxMinMax();
+			return (vec + TargetableObject.GetTargetingOffset(), vec2 + TargetableObject.GetTargetingOffset());
+		}
+		if (Agent != null)
+		{
+			return Agent.CollisionCapsule.GetBoxMinMax();
+		}
+		if (Formation != null)
+		{
+			TaleWorlds.Library.Debug.FailedAssert("Nobody should be requesting a bounding box for a formation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Threat.cs", "ComputeGlobalTargetingBoundingBoxMinMax", 83);
+			return (Vec3.Invalid, Vec3.Invalid);
+		}
+		return (Vec3.Invalid, Vec3.Invalid);
+	}
+
+	public Vec3 GetGlobalVelocity()
+	{
+		if (TargetableObject != null)
+		{
+			return TargetableObject.GetTargetGlobalVelocity();
+		}
+		if (Agent != null)
+		{
+			return new Vec3(Agent.GetAverageRealGlobalVelocity().AsVec2);
 		}
 		return Vec3.Zero;
 	}
@@ -119,7 +100,7 @@ public class Threat
 	{
 		if (obj is Threat threat)
 		{
-			if (WeaponEntity == threat.WeaponEntity)
+			if (TargetableObject == threat.TargetableObject)
 			{
 				return Formation == threat.Formation;
 			}

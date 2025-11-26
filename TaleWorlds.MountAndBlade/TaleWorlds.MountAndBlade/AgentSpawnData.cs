@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Agent_spawn_data", false)]
+[EngineStruct("Agent_spawn_data", false, null)]
 public struct AgentSpawnData
 {
 	public int HitPoints;

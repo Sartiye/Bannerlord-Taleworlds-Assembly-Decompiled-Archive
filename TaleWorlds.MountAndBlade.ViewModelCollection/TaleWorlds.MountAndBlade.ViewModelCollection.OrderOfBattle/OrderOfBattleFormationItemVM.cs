@@ -20,8 +20,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	public static Action OnHeroesChanged;
 
-	public static Action<OrderOfBattleFormationItemVM> OnFilterSelectionToggled;
-
 	public static Action<OrderOfBattleFormationItemVM> OnClassSelectionToggled;
 
 	public static Action<OrderOfBattleFormationItemVM> OnFilterUseToggled;
@@ -36,11 +34,13 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	public static Func<FormationClass, bool> HasAnyTroopWithClass;
 
-	public static Action<OrderOfBattleFormationItemVM> OnAcceptCommander;
+	public static Action<OrderOfBattleFormationItemVM> OnAcceptCaptain;
 
 	public static Action<OrderOfBattleFormationItemVM> OnAcceptHeroTroops;
 
-	private OrderOfBattleHeroItemVM _unassignedCommander;
+	public static Action OnFormationClassChanged;
+
+	private OrderOfBattleHeroItemVM _unassignedCaptain;
 
 	private readonly TextObject _formationTooltipTitleText = new TextObject("{=cZNA5Z6l}Formation {NUMBER}");
 
@@ -50,11 +50,11 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private readonly TextObject _cantAdjustSingledOutText = new TextObject("{=7jhe9cT9}You need to have at least one more formation of this type to change this formation's type.");
 
-	private readonly TextObject _commanderSlotHintText = new TextObject("{=RvKwdXWs}Commander");
+	private readonly TextObject _captainSlotHintText = new TextObject("{=shipcaptain}Captain");
 
 	private readonly TextObject _heroTroopSlotHintText = new TextObject("{=VyMD4iRV}Hero Troops");
 
-	private readonly TextObject _assignCommanderHintText = new TextObject("{=MssTzJJb}Assign as Commander");
+	private readonly TextObject _assignCaptainHintText = new TextObject("{=rHEi6aVz}Assign as Captain");
 
 	private readonly TextObject _assignHeroTroopHintText = new TextObject("{=ngyMTaqr}Assign as Hero Troop");
 
@@ -68,11 +68,13 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private float _wPosAfterPositionCalculation;
 
+	private bool _isMarkerWorldPositionDirty;
+
 	private bool _isSelected;
 
 	private bool _hasFormation;
 
-	private bool _hasCommander;
+	private bool _hasCaptain;
 
 	private bool _isControlledByPlayer;
 
@@ -80,21 +82,17 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private bool _isSelectable;
 
-	private bool _isFiltered;
-
 	private bool _isAdjustable;
 
 	private bool _isMarkerShown;
 
 	private bool _isBeingFocused;
 
-	private bool _isAcceptingCommander;
+	private bool _isAcceptingCaptain;
 
 	private bool _isAcceptingHeroTroops;
 
 	private bool _isHeroTroopsOverflowing;
-
-	private bool _isFilterSelectionActive;
 
 	private bool _isClassSelectionActive;
 
@@ -108,11 +106,13 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private int _troopCount;
 
+	private int _bannerBearerCount;
+
 	private int _wSign;
 
 	private Vec2 _screenPosition;
 
-	private OrderOfBattleHeroItemVM _commander;
+	private OrderOfBattleHeroItemVM _captain;
 
 	private MBBindingList<OrderOfBattleHeroItemVM> _heroTroops;
 
@@ -122,17 +122,17 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private MBBindingList<OrderOfBattleFormationFilterSelectorItemVM> _filterItems;
 
-	private MBBindingList<OrderOfBattleFormationFilterSelectorItemVM> _activeFilterItems;
-
 	private BasicTooltipViewModel _tooltip;
+
+	private BasicTooltipViewModel _bannerBearerTooltip;
 
 	private HintViewModel _cantAdjustHint;
 
-	private HintViewModel _commanderSlotHint;
+	private HintViewModel _captainSlotHint;
 
 	private HintViewModel _heroTroopSlotHint;
 
-	private HintViewModel _assignCommanderHint;
+	private HintViewModel _assignCaptainHint;
 
 	private HintViewModel _assignHeroTroopHint;
 
@@ -177,18 +177,18 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool HasCommander
+	public bool HasCaptain
 	{
 		get
 		{
-			return _hasCommander;
+			return _hasCaptain;
 		}
 		set
 		{
-			if (value != _hasCommander)
+			if (value != _hasCaptain)
 			{
-				_hasCommander = value;
-				OnPropertyChangedWithValue(value, "HasCommander");
+				_hasCaptain = value;
+				OnPropertyChangedWithValue(value, "HasCaptain");
 			}
 		}
 	}
@@ -223,6 +223,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				_isControlledByPlayer = value;
 				OnPropertyChangedWithValue(value, "IsControlledByPlayer");
+				OnIsControlledByPlayerChanged();
 			}
 		}
 	}
@@ -240,23 +241,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				_isSelectable = value;
 				OnPropertyChangedWithValue(value, "IsSelectable");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsFiltered
-	{
-		get
-		{
-			return _isFiltered;
-		}
-		set
-		{
-			if (value != _isFiltered)
-			{
-				_isFiltered = value;
-				OnPropertyChangedWithValue(value, "IsFiltered");
 			}
 		}
 	}
@@ -313,18 +297,18 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsAcceptingCommander
+	public bool IsAcceptingCaptain
 	{
 		get
 		{
-			return _isAcceptingCommander;
+			return _isAcceptingCaptain;
 		}
 		set
 		{
-			if (value != _isAcceptingCommander)
+			if (value != _isAcceptingCaptain)
 			{
-				_isAcceptingCommander = value;
-				OnPropertyChangedWithValue(value, "IsAcceptingCommander");
+				_isAcceptingCaptain = value;
+				OnPropertyChangedWithValue(value, "IsAcceptingCaptain");
 			}
 		}
 	}
@@ -359,24 +343,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				_isHeroTroopsOverflowing = value;
 				OnPropertyChangedWithValue(value, "IsHeroTroopsOverflowing");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsFilterSelectionActive
-	{
-		get
-		{
-			return _isFilterSelectionActive;
-		}
-		set
-		{
-			if (value != _isFilterSelectionActive)
-			{
-				_isFilterSelectionActive = value;
-				OnPropertyChangedWithValue(value, "IsFilterSelectionActive");
-				OnFilterSelectionToggled?.Invoke(this);
 			}
 		}
 	}
@@ -468,6 +434,23 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public int BannerBearerCount
+	{
+		get
+		{
+			return _bannerBearerCount;
+		}
+		set
+		{
+			if (value != _bannerBearerCount)
+			{
+				_bannerBearerCount = value;
+				OnPropertyChangedWithValue(value, "BannerBearerCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public int OrderOfBattleFormationClassInt
 	{
 		get
@@ -519,19 +502,19 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public OrderOfBattleHeroItemVM Commander
+	public OrderOfBattleHeroItemVM Captain
 	{
 		get
 		{
-			return _commander;
+			return _captain;
 		}
 		set
 		{
-			if (value != _commander)
+			if (value != _captain)
 			{
-				_commander = value;
-				OnPropertyChangedWithValue(value, "Commander");
-				HandleCommanderAssignment(value);
+				_captain = value;
+				OnPropertyChangedWithValue(value, "Captain");
+				HandleCaptainAssignment(value);
 			}
 		}
 	}
@@ -605,23 +588,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public MBBindingList<OrderOfBattleFormationFilterSelectorItemVM> ActiveFilterItems
-	{
-		get
-		{
-			return _activeFilterItems;
-		}
-		set
-		{
-			if (value != _activeFilterItems)
-			{
-				_activeFilterItems = value;
-				OnPropertyChangedWithValue(value, "ActiveFilterItems");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public BasicTooltipViewModel Tooltip
 	{
 		get
@@ -634,6 +600,23 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				_tooltip = value;
 				OnPropertyChangedWithValue(value, "Tooltip");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel BannerBearerTooltip
+	{
+		get
+		{
+			return _bannerBearerTooltip;
+		}
+		set
+		{
+			if (value != _bannerBearerTooltip)
+			{
+				_bannerBearerTooltip = value;
+				OnPropertyChangedWithValue(value, "BannerBearerTooltip");
 			}
 		}
 	}
@@ -656,18 +639,18 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel CommanderSlotHint
+	public HintViewModel CaptainSlotHint
 	{
 		get
 		{
-			return _commanderSlotHint;
+			return _captainSlotHint;
 		}
 		set
 		{
-			if (value != _commanderSlotHint)
+			if (value != _captainSlotHint)
 			{
-				_commanderSlotHint = value;
-				OnPropertyChangedWithValue(value, "CommanderSlotHint");
+				_captainSlotHint = value;
+				OnPropertyChangedWithValue(value, "CaptainSlotHint");
 			}
 		}
 	}
@@ -690,18 +673,18 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel AssignCommanderHint
+	public HintViewModel AssignCaptainHint
 	{
 		get
 		{
-			return _assignCommanderHint;
+			return _assignCaptainHint;
 		}
 		set
 		{
-			if (value != _assignCommanderHint)
+			if (value != _assignCaptainHint)
 			{
-				_assignCommanderHint = value;
-				OnPropertyChangedWithValue(value, "AssignCommanderHint");
+				_assignCaptainHint = value;
+				OnPropertyChangedWithValue(value, "AssignCaptainHint");
 			}
 		}
 	}
@@ -764,7 +747,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		_bannerBearerLogic = Mission.Current.GetMissionBehavior<BannerBearerLogic>();
 		HasFormation = false;
 		FilterItems = new MBBindingList<OrderOfBattleFormationFilterSelectorItemVM>();
-		ActiveFilterItems = new MBBindingList<OrderOfBattleFormationFilterSelectorItemVM>();
 		for (FormationFilterType formationFilterType = FormationFilterType.Shield; formationFilterType < FormationFilterType.NumberOfFilterTypes; formationFilterType++)
 		{
 			FilterItems.Add(new OrderOfBattleFormationFilterSelectorItemVM(formationFilterType, OnFilterToggled));
@@ -783,9 +765,10 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			new OrderOfBattleFormationClassVM(this)
 		};
 		HeroTroops = new MBBindingList<OrderOfBattleHeroItemVM>();
-		_unassignedCommander = new OrderOfBattleHeroItemVM();
-		Commander = _unassignedCommander;
+		_unassignedCaptain = new OrderOfBattleHeroItemVM();
+		Captain = _unassignedCaptain;
 		Tooltip = new BasicTooltipViewModel(() => GetTooltip());
+		BannerBearerTooltip = new BasicTooltipViewModel(() => GetBannerBearerTooltip());
 		IsControlledByPlayer = Mission.Current.PlayerTeam.IsPlayerGeneral;
 		_worldPosition = Vec3.Zero;
 		RefreshValues();
@@ -795,14 +778,19 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	{
 		base.RefreshValues();
 		FormationIsEmptyText = new TextObject("{=P3IWytsr}Formation is currently empty").ToString();
-		CommanderSlotHint = new HintViewModel(_commanderSlotHintText);
+		CaptainSlotHint = new HintViewModel(_captainSlotHintText);
 		HeroTroopSlotHint = new HintViewModel(_heroTroopSlotHintText);
-		AssignCommanderHint = new HintViewModel(_assignCommanderHintText);
+		AssignCaptainHint = new HintViewModel(_assignCaptainHintText);
 		AssignHeroTroopHint = new HintViewModel(_assignHeroTroopHintText);
 	}
 
 	public void Tick()
 	{
+		if (_isMarkerWorldPositionDirty)
+		{
+			_isMarkerWorldPositionDirty = false;
+			RefreshMarkerWorldPosition();
+		}
 		Classes.ApplyActionOnAllItems(delegate(OrderOfBattleFormationClassVM c)
 		{
 			c.UpdateWeightAdjustable();
@@ -857,7 +845,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 					formationTypeToSet = ((formationClass == FormationClass.Cavalry) ? DeploymentFormationClass.CavalryAndHorseArcher : DeploymentFormationClass.HorseArcher);
 					break;
 				default:
-					Debug.FailedAssert("Formation doesn't have a proper primary class. Value : " + formation.PhysicalClass.GetName(), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleFormationItemVM.cs", "RefreshFormation", 175);
+					Debug.FailedAssert("Formation doesn't have a proper primary class. Value : " + formation.PhysicalClass.GetName(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleFormationItemVM.cs", "RefreshFormation", 182);
 					break;
 				}
 			}
@@ -872,11 +860,16 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		{
 			FormationClassSelector.SelectedIndex = 0;
 		}
-		TitleText = Common.ToRoman(Formation.Index + 1);
+		TitleText = (Formation.Index + 1).ToString();
 		OnSizeChanged();
 	}
 
-	public void RefreshMarkerWorldPosition()
+	public void MakeMarkerWorldPositionDirty()
+	{
+		_isMarkerWorldPositionDirty = true;
+	}
+
+	private void RefreshMarkerWorldPosition()
 	{
 		if (Formation != null)
 		{
@@ -892,6 +885,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	public void OnSizeChanged()
 	{
 		TroopCount = Formation?.CountOfUnits ?? 0;
+		BannerBearerCount = ((Formation != null) ? _bannerBearerLogic.GetFormationBannerBearers(Formation).Count : 0);
 		RefreshMarkerWorldPosition();
 		IsSelectable = FormationClassSelector.SelectedIndex != 0 && IsControlledByPlayer && TroopCount > 0;
 		if (!IsSelectable && IsSelected)
@@ -900,7 +894,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		}
 		foreach (OrderOfBattleFormationClassVM @class in Classes)
 		{
-			@class.UpdateWeightText();
+			@class.UpdateTroopCountText();
 		}
 		UpdateAdjustable();
 	}
@@ -917,18 +911,18 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		{
 			Classes[0].Class = FormationClass.NumberOfAllFormations;
 			Classes[1].Class = FormationClass.NumberOfAllFormations;
-			if (Commander != _unassignedCommander)
+			if (Captain != _unassignedCaptain)
 			{
-				UnassignCommander();
+				UnassignCaptain();
 			}
 			List<OrderOfBattleHeroItemVM> list = HeroTroops.ToList();
 			for (int i = 0; i < list.Count; i++)
 			{
 				RemoveHeroTroop(list[i]);
 			}
-			for (int num = ActiveFilterItems.Count - 1; num >= 0; num--)
+			for (int num = FilterItems.Count - 1; num >= 0; num--)
 			{
-				ActiveFilterItems[num].IsActive = false;
+				FilterItems[num].IsActive = false;
 			}
 			break;
 		}
@@ -964,6 +958,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		}
 		HasFormation = Classes.Any((OrderOfBattleFormationClassVM c) => c.Class != FormationClass.NumberOfAllFormations);
 		UpdateAdjustable();
+		OnFormationClassChanged?.Invoke();
 	}
 
 	public DeploymentFormationClass GetOrderOfBattleClass()
@@ -997,17 +992,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 
 	private void OnFilterToggled(OrderOfBattleFormationFilterSelectorItemVM filterItem)
 	{
-		if (filterItem.IsActive)
-		{
-			ActiveFilterItems.Add(filterItem);
-		}
-		else
-		{
-			ActiveFilterItems.Remove(filterItem);
-		}
-		IsFiltered = ActiveFilterItems.Count > 0;
 		OnFilterUseToggled?.Invoke(this);
-		ActiveFilterItems.Sort(new OrderOfBattleFormationFilterSelectorItemComparer());
 	}
 
 	private bool HasAnyActiveFilter()
@@ -1050,23 +1035,6 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		return num == 1;
 	}
 
-	public bool OnlyHasClass(FormationClass formationClass)
-	{
-		bool flag = false;
-		for (int i = 0; i < Classes.Count; i++)
-		{
-			if (!flag && Classes[i].Class == formationClass && !Classes[i].IsUnset)
-			{
-				flag = true;
-			}
-			if (flag && Classes[i].Class != FormationClass.NumberOfAllFormations)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public bool HasClass(FormationClass formationClass)
 	{
 		for (int i = 0; i < Classes.Count; i++)
@@ -1093,8 +1061,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		GameTexts.SetVariable("NUMBER", TitleText);
 		List<TooltipProperty> list = new List<TooltipProperty>
 		{
-			new TooltipProperty(_formationTooltipTitleText.ToString(), string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title),
-			new TooltipProperty(string.Empty, string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.DefaultSeperator)
+			new TooltipProperty(_formationTooltipTitleText.ToString(), string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title)
 		};
 		if (FormationClassSelector.SelectedItem == null)
 		{
@@ -1102,6 +1069,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		}
 		List<Agent> list2 = new List<Agent>();
 		int[] array = new int[4];
+		int[] array2 = new int[4];
 		foreach (IFormationUnit allUnit in Formation.Arrangement.GetAllUnits())
 		{
 			if (!(allUnit is Agent agent2))
@@ -1112,12 +1080,13 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				list2.Add(agent2);
 			}
-			else if (agent2.Banner == null)
+			FormationClass actualTroopType = GetActualTroopType(agent2);
+			if (actualTroopType >= FormationClass.Infantry && actualTroopType < FormationClass.NumberOfDefaultFormations)
 			{
-				FormationClass formationClass = agent2.Character.GetFormationClass();
-				if (formationClass >= FormationClass.Infantry && formationClass < FormationClass.NumberOfDefaultFormations)
+				array[(int)actualTroopType]++;
+				if (agent2.Banner != null)
 				{
-					array[(int)formationClass]++;
+					array2[(int)actualTroopType]++;
 				}
 			}
 		}
@@ -1127,93 +1096,148 @@ public class OrderOfBattleFormationItemVM : ViewModel
 			{
 				list2.Add(detachedUnit);
 			}
-			else if (detachedUnit.Banner == null)
+			FormationClass actualTroopType2 = GetActualTroopType(detachedUnit);
+			if (actualTroopType2 >= FormationClass.Infantry && actualTroopType2 < FormationClass.NumberOfDefaultFormations)
 			{
-				FormationClass formationClass2 = detachedUnit.Character.GetFormationClass();
-				if (formationClass2 >= FormationClass.Infantry && formationClass2 < FormationClass.NumberOfDefaultFormations)
+				array[(int)actualTroopType2]++;
+				if (detachedUnit.Banner != null)
 				{
-					array[(int)formationClass2]++;
+					array2[(int)actualTroopType2]++;
 				}
 			}
 		}
-		for (FormationClass formationClass3 = FormationClass.Infantry; formationClass3 < FormationClass.NumberOfDefaultFormations; formationClass3++)
+		bool flag = false;
+		for (FormationClass formationClass = FormationClass.Infantry; formationClass < FormationClass.NumberOfDefaultFormations; formationClass++)
 		{
-			int num = array[(int)formationClass3];
+			int num = array[(int)formationClass];
+			int num2 = array2[(int)formationClass];
 			List<Agent> list3 = new List<Agent>();
 			for (int i = 0; i < list2.Count; i++)
 			{
 				Agent agent3 = list2[i];
-				if ((formationClass3 == FormationClass.Infantry && QueryLibrary.IsInfantry(agent3)) || (formationClass3 == FormationClass.Ranged && QueryLibrary.IsRanged(agent3)) || (formationClass3 == FormationClass.Cavalry && QueryLibrary.IsCavalry(agent3)) || (formationClass3 == FormationClass.HorseArcher && QueryLibrary.IsRangedCavalry(agent3)))
+				if (formationClass == GetActualTroopType(agent3))
 				{
 					list3.Add(agent3);
 				}
 			}
-			if (num > 0 || list3.Count > 0)
+			if (num <= 0)
 			{
-				int num2 = (int)formationClass3;
-				list.Add(new TooltipProperty(GameTexts.FindText("str_troop_group_name", num2.ToString()).ToString(), num.ToString(), 0));
-				for (int j = 0; j < list3.Count; j++)
-				{
-					list.Add(new TooltipProperty(list3[j].Name, " ", 0));
-				}
+				continue;
+			}
+			if (flag)
+			{
 				list.Add(new TooltipProperty(string.Empty, string.Empty, -1));
 			}
-		}
-		List<Agent> formationBannerBearers = _bannerBearerLogic.GetFormationBannerBearers(Formation);
-		if (formationBannerBearers.Count > 0)
-		{
-			list.Add(new TooltipProperty(new TextObject("{=scnSXrYC}Banner Bearers").ToString(), formationBannerBearers.Count.ToString(), 0));
+			else
+			{
+				flag = true;
+			}
+			int num3 = OrderOfBattleFormationClassVM.GetTotalCountOfTroopType(formationClass);
+			if (num3 < num)
+			{
+				Debug.FailedAssert($"Total troop count of type {formationClass} is lower than the individually calculated troopCount!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleFormationItemVM.cs", "GetTooltip", 537);
+				num3 = num;
+			}
+			int variable = TaleWorlds.Library.MathF.Ceiling(100f * (float)num / (float)num3);
+			string variable2 = new TextObject("{=9pCzjSTa}{PERCENTAGE}% of troop type").SetTextVariable("PERCENTAGE", variable).ToString();
+			string value = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis").SetTextVariable("RANK", num.ToString()).SetTextVariable("NUMBER", variable2)
+				.ToString();
+			int num4 = (int)formationClass;
+			list.Add(new TooltipProperty(GameTexts.FindText("str_troop_group_name", num4.ToString()).ToString(), value, 0));
+			if (list3.Count > 0 || num2 > 0)
+			{
+				list.Add(new TooltipProperty(string.Empty, string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
+			}
+			foreach (Agent item in list3)
+			{
+				list.Add(new TooltipProperty(item.Name, " ", 0));
+			}
+			if (num2 > 0)
+			{
+				list.Add(new TooltipProperty(new TextObject("{=scnSXrYC}Banner Bearers").ToString(), num2.ToString(), 0));
+			}
 		}
 		if (HasAnyActiveFilter())
 		{
 			list.Add(new TooltipProperty(string.Empty, string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.DefaultSeperator));
 		}
-		DeploymentFormationClass formationClass4 = FormationClassSelector.SelectedItem.FormationClass;
+		DeploymentFormationClass formationClass2 = FormationClassSelector.SelectedItem.FormationClass;
 		if (HasFilter(FormationFilterType.Shield))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => agent.HasShieldCached));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.Shield));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.Shield));
 			list.Add(new TooltipProperty(FormationFilterType.Shield.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		if (HasFilter(FormationFilterType.Spear))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => agent.HasSpearCached));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.Spear));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.Spear));
 			list.Add(new TooltipProperty(FormationFilterType.Spear.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		if (HasFilter(FormationFilterType.Thrown))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => agent.HasThrownCached));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.Thrown));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.Thrown));
 			list.Add(new TooltipProperty(FormationFilterType.Thrown.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		if (HasFilter(FormationFilterType.Heavy))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => MissionGameModels.Current.AgentStatCalculateModel.HasHeavyArmor(agent)));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.Heavy));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.Heavy));
 			list.Add(new TooltipProperty(FormationFilterType.Heavy.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		if (HasFilter(FormationFilterType.HighTier))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => agent.Character.GetBattleTier() >= 4));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.HighTier));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.HighTier));
 			list.Add(new TooltipProperty(FormationFilterType.HighTier.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		if (HasFilter(FormationFilterType.LowTier))
 		{
 			GameTexts.SetVariable("TROOP_COUNT", Formation.GetCountOfUnitsWithCondition((Agent agent) => agent.Character.GetBattleTier() <= 3));
-			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass4, FormationFilterType.LowTier));
+			GameTexts.SetVariable("TOTAL_TROOP_COUNT", GetTotalTroopCountWithFilter(formationClass2, FormationFilterType.LowTier));
 			list.Add(new TooltipProperty(FormationFilterType.LowTier.GetFilterName().ToString(), _filteredTroopCountInfoText.ToString(), 0));
 		}
 		return list;
 	}
 
-	public void UnassignCommander()
+	private List<TooltipProperty> GetBannerBearerTooltip()
 	{
-		if (Commander != _unassignedCommander)
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		if (BannerBearerCount > 0)
 		{
-			Commander.CurrentAssignedFormationItem = null;
-			Commander = _unassignedCommander;
+			list.Add(new TooltipProperty(new TextObject("{=scnSXrYC}Banner Bearers").ToString(), BannerBearerCount.ToString(), 0));
+		}
+		return list;
+	}
+
+	private FormationClass GetActualTroopType(Agent agent)
+	{
+		if (QueryLibrary.IsInfantry(agent))
+		{
+			return FormationClass.Infantry;
+		}
+		if (QueryLibrary.IsRanged(agent))
+		{
+			return FormationClass.Ranged;
+		}
+		if (QueryLibrary.IsCavalry(agent))
+		{
+			return FormationClass.Cavalry;
+		}
+		if (QueryLibrary.IsRangedCavalry(agent))
+		{
+			return FormationClass.HorseArcher;
+		}
+		return FormationClass.NumberOfAllFormations;
+	}
+
+	public void UnassignCaptain()
+	{
+		if (Captain != _unassignedCaptain)
+		{
+			Captain.CurrentAssignedFormationItem = null;
+			Captain = _unassignedCaptain;
 		}
 	}
 
@@ -1222,20 +1246,17 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		OnSelection?.Invoke(this);
 	}
 
-	private void HandleCommanderAssignment(OrderOfBattleHeroItemVM newCommander)
+	private void HandleCaptainAssignment(OrderOfBattleHeroItemVM newCaptain)
 	{
-		HasCommander = newCommander != _unassignedCommander;
-		if (HasCommander)
+		HasCaptain = newCaptain != _unassignedCaptain;
+		if (HasCaptain)
 		{
-			Agent agent = newCommander.Agent;
+			Agent agent = newCaptain.Agent;
 			agent.Formation = Formation;
 			Formation.Captain = agent;
-			newCommander.CurrentAssignedFormationItem = this;
-			_bannerBearerLogic?.SetFormationBanner(Formation, newCommander.BannerOfHero);
-			if (agent.IsAIControlled)
-			{
-				agent.Team.DetachmentManager.RemoveScoresOfAgentFromDetachments(agent);
-			}
+			newCaptain.CurrentAssignedFormationItem = this;
+			_bannerBearerLogic?.SetFormationBanner(Formation, newCaptain.BannerOfHero);
+			agent.TryRemoveAllDetachmentScores();
 		}
 		else if (Formation != null)
 		{
@@ -1244,12 +1265,12 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		}
 		RefreshFormation();
 		OnSizeChanged();
-		newCommander.RefreshInformation();
+		newCaptain.RefreshInformation();
 	}
 
-	public void ExecuteAcceptCommander()
+	public void ExecuteAcceptCaptain()
 	{
-		OnAcceptCommander?.Invoke(this);
+		OnAcceptCaptain?.Invoke(this);
 	}
 
 	public void ExecuteAcceptHeroTroops()
@@ -1261,7 +1282,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 	{
 		if (IsControlledByPlayer)
 		{
-			IsAcceptingCommander = selectedHeroCount == 1 && HasFormation;
+			IsAcceptingCaptain = selectedHeroCount == 1 && HasFormation;
 			if (!hasOwnHeroTroopInSelection)
 			{
 				IsAcceptingHeroTroops = selectedHeroCount >= 1 && HasFormation;
@@ -1269,7 +1290,7 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		}
 		else
 		{
-			IsAcceptingCommander = selectedHeroCount == 1 && HasFormation && (Commander == _unassignedCommander || !Commander.IsAssignedBeforePlayer);
+			IsAcceptingCaptain = selectedHeroCount == 1 && HasFormation && (Captain == _unassignedCaptain || !Captain.IsAssignedBeforePlayer);
 		}
 	}
 
@@ -1304,5 +1325,13 @@ public class OrderOfBattleFormationItemVM : ViewModel
 		OverflowHeroTroopCountText = (HeroTroops.Count - 8 + 1).ToString("+#;-#;0");
 		Formation.Refresh();
 		OnHeroesChanged?.Invoke();
+	}
+
+	private void OnIsControlledByPlayerChanged()
+	{
+		foreach (OrderOfBattleFormationFilterSelectorItemVM filterItem in FilterItems)
+		{
+			filterItem.IsEnabled = IsControlledByPlayer;
+		}
 	}
 }

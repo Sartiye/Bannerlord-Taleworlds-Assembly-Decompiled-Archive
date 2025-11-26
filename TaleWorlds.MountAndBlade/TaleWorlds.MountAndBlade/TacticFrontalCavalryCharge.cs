@@ -101,9 +101,9 @@ public class TacticFrontalCavalryCharge : TacticComponent
 
 	private bool HasBattleBeenJoined()
 	{
-		if (_cavalry?.QuerySystem.ClosestEnemyFormation != null && !(_cavalry.AI.ActiveBehavior is BehaviorCharge) && !(_cavalry.AI.ActiveBehavior is BehaviorTacticalCharge))
+		if (_cavalry?.CachedClosestEnemyFormation != null && !(_cavalry.AI.ActiveBehavior is BehaviorCharge) && !(_cavalry.AI.ActiveBehavior is BehaviorTacticalCharge))
 		{
-			return _cavalry.QuerySystem.MedianPosition.AsVec2.Distance(_cavalry.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / _cavalry.QuerySystem.ClosestEnemyFormation.MovementSpeedMaximum <= 7f + (_hasBattleBeenJoined ? 7f : 0f);
+			return _cavalry.CachedMedianPosition.AsVec2.Distance(_cavalry.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / _cavalry.CachedClosestEnemyFormation.MovementSpeedMaximum <= 7f + (_hasBattleBeenJoined ? 7f : 0f);
 		}
 		return true;
 	}
@@ -136,7 +136,7 @@ public class TacticFrontalCavalryCharge : TacticComponent
 		return true;
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

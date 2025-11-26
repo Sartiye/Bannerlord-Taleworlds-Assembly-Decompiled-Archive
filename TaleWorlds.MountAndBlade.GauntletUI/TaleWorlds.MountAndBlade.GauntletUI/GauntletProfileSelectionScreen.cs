@@ -32,7 +32,7 @@ public class GauntletProfileSelectionScreen : MBProfileSelectionScreenBase
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		_gauntletLayer = new GauntletLayer(1);
+		_gauntletLayer = new GauntletLayer("ProfileSelection", 1);
 		_dataSource = new ProfileSelectionVM(_state.IsDirectPlayPossible);
 		_dataSource?.OnActivate(_state.IsDirectPlayPossible);
 		_gauntletLayer.LoadMovie("ProfileSelectionScreen", _dataSource);

@@ -1,17 +1,16 @@
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.Map;
 
 public class WeatherNode
 {
-	public Vec2 Position;
+	public CampaignVec2 Position;
 
 	public MapWeatherModel.WeatherEvent CurrentWeatherEvent;
 
 	public bool IsVisuallyDirty { get; private set; }
 
-	public WeatherNode(Vec2 position)
+	public WeatherNode(CampaignVec2 position)
 	{
 		Position = position;
 		CurrentWeatherEvent = MapWeatherModel.WeatherEvent.Clear;

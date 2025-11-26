@@ -55,7 +55,7 @@ public class CubicBezier
 		_y2 = y2;
 		if (!(0.0 <= _x1) || !(_x1 <= 1.0) || !(0.0 <= _x2) || !(_x2 <= 1.0))
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\CubicBezier.cs", ".ctor", 129);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\CubicBezier.cs", ".ctor", 129);
 			throw new ArgumentOutOfRangeException();
 		}
 		for (int i = 0; i < 11; i++)

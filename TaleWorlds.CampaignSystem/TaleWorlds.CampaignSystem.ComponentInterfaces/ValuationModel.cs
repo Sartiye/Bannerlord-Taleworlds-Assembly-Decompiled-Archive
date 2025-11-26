@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ValuationModel : GameModel
+public abstract class ValuationModel : MBGameModel<ValuationModel>
 {
 	public abstract float GetValueOfTroop(CharacterObject troop);
 

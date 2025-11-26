@@ -2,7 +2,6 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Options;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -24,15 +23,13 @@ public class MissionGauntletOptionsUIHandler : MissionView
 
 	private OptionsVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private KeybindingPopup _keybindingPopup;
 
 	private KeyOptionVM _currentKey;
 
 	private SpriteCategory _optionsSpriteCategory;
-
-	private SpriteCategory _fullScreensSpriteCategory;
 
 	private bool _initialClothSimValue;
 
@@ -128,6 +125,7 @@ public class MissionGauntletOptionsUIHandler : MissionView
 		IsEnabled = true;
 		OnEscapeMenuToggled(isOpened: true);
 		_initialClothSimValue = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.ClothSimulation) == 0f;
+		InformationManager.HideAllMessages();
 	}
 
 	private void OnCloseOptions()
@@ -168,13 +166,10 @@ public class MissionGauntletOptionsUIHandler : MissionView
 			_dataSource.SetPreviousTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToPreviousTab"));
 			_dataSource.SetNextTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToNextTab"));
 			_dataSource.SetResetInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Reset"));
-			_gauntletLayer = new GauntletLayer(++ViewOrderPriority);
+			_gauntletLayer = new GauntletLayer("MissionOptions", ++ViewOrderPriority);
 			_gauntletLayer.InputRestrictions.SetInputRestrictions();
 			_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
-			_optionsSpriteCategory = UIResourceManager.SpriteData.SpriteCategories["ui_options"];
-			_optionsSpriteCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
-			_fullScreensSpriteCategory = UIResourceManager.SpriteData.SpriteCategories["ui_fullscreens"];
-			_fullScreensSpriteCategory.Load(UIResourceManager.ResourceContext, UIResourceManager.UIResourceDepot);
+			_optionsSpriteCategory = UIResourceManager.LoadSpriteCategory("ui_options");
 			_movie = _gauntletLayer.LoadMovie("Options", _dataSource);
 			base.MissionScreen.AddLayer(_gauntletLayer);
 			_gauntletLayer.IsFocusLayer = true;
@@ -189,7 +184,6 @@ public class MissionGauntletOptionsUIHandler : MissionView
 			base.MissionScreen.RemoveLayer(_gauntletLayer);
 			_keybindingPopup?.OnToggle(isActive: false);
 			_optionsSpriteCategory.Unload();
-			_fullScreensSpriteCategory.Unload();
 			_gauntletLayer = null;
 			_dataSource.OnFinalize();
 			_dataSource = null;
@@ -210,7 +204,7 @@ public class MissionGauntletOptionsUIHandler : MissionView
 		AuxiliaryKeyOptionVM auxiliaryKey;
 		if (key.IsControllerInput)
 		{
-			Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 239);
+			Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 235);
 			MBInformationManager.AddQuickInformation(new TextObject("{=B41vvGuo}Invalid key"));
 			_keybindingPopup.OnToggle(isActive: false);
 		}
@@ -219,11 +213,15 @@ public class MissionGauntletOptionsUIHandler : MissionView
 			GameKeyGroupVM gameKeyGroupVM = _dataSource.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey));
 			if (gameKeyGroupVM == null)
 			{
-				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 251);
+				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 247);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 			}
 			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			{
+				_keybindingPopup.OnToggle(isActive: false);
+			}
+			else if (key.InputKey == gameKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
 			}
@@ -243,11 +241,15 @@ public class MissionGauntletOptionsUIHandler : MissionView
 			AuxiliaryKeyGroupVM auxiliaryKeyGroupVM = _dataSource.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey));
 			if (auxiliaryKeyGroupVM == null)
 			{
-				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 278);
+				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 278);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 			}
 			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			{
+				_keybindingPopup.OnToggle(isActive: false);
+			}
+			else if (key.InputKey == auxiliaryKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
 			}

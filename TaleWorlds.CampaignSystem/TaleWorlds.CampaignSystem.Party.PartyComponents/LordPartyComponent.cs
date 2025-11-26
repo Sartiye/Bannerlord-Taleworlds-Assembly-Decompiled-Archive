@@ -11,6 +11,44 @@ namespace TaleWorlds.CampaignSystem.Party.PartyComponents;
 
 public class LordPartyComponent : WarPartyComponent
 {
+	public class InitializationArgs
+	{
+		public readonly CampaignVec2 Position;
+
+		public readonly float SpawnRadius;
+
+		public readonly Settlement SpawnSettlement;
+
+		public InitializationArgs(CampaignVec2 position, float spawnRadius, Settlement spawnSettlement)
+		{
+			Position = position;
+			SpawnRadius = spawnRadius;
+			SpawnSettlement = spawnSettlement;
+		}
+
+		public void InitializeLordPartyProperties(MobileParty mobileParty, Hero owner)
+		{
+			mobileParty.AddElementToMemberRoster(owner.CharacterObject, 1, insertAtFront: true);
+			if (mobileParty == MobileParty.MainParty || owner.Clan == Clan.PlayerClan)
+			{
+				mobileParty.InitializeMobilePartyAtPosition(Position);
+			}
+			else
+			{
+				PartyTemplateObject pt = (owner.Clan.IsRebelClan ? owner.Clan.Culture.RebelsPartyTemplate : owner.Clan.DefaultPartyTemplate);
+				mobileParty.InitializeMobilePartyAroundPosition(pt, Position, SpawnRadius);
+			}
+			mobileParty.ItemRoster.Add(new ItemRosterElement(DefaultItems.Grain, MBRandom.RandomInt(15, 30)));
+			if (SpawnSettlement != null)
+			{
+				MobileParty.NavigationType navigationType = ((!mobileParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
+				mobileParty.SetMoveGoToSettlement(SpawnSettlement, navigationType, mobileParty.IsCurrentlyAtSea);
+			}
+		}
+	}
+
+	private InitializationArgs _initializationArgs;
+
 	[CachedData]
 	private TextObject _cachedName;
 
@@ -18,7 +56,7 @@ public class LordPartyComponent : WarPartyComponent
 	private Hero _leader;
 
 	[SaveableField(40)]
-	private int _wagePaymentLimit = Campaign.Current.Models.PartyWageModel.MaxWage;
+	private int _wagePaymentLimit = Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit;
 
 	public override Hero PartyOwner => Owner;
 
@@ -33,6 +71,8 @@ public class LordPartyComponent : WarPartyComponent
 			return _cachedName ?? new TextObject("{=!}unnamedMobileParty");
 		}
 	}
+
+	public override bool CanHaveNavalNavigationCapability => true;
 
 	public override Settlement HomeSettlement => Owner.HomeSettlement;
 
@@ -75,18 +115,38 @@ public class LordPartyComponent : WarPartyComponent
 		_wagePaymentLimit = newLimit;
 	}
 
-	public static MobileParty CreateLordParty(string stringId, Hero hero, Vec2 position, float spawnRadius, Settlement spawnSettlement, Hero partyLeader)
+	protected override void OnMobilePartySetOnCreation()
 	{
-		return MobileParty.CreateParty(hero.CharacterObject.StringId + "_party_1", new LordPartyComponent(hero, partyLeader), delegate(MobileParty mobileParty)
+		base.MobileParty.ActualClan = Owner.Clan;
+		base.MobileParty.Party.SetVisualAsDirty();
+		if (base.MobileParty != MobileParty.MainParty && base.MobileParty.Owner.Clan != Clan.PlayerClan)
 		{
-			mobileParty.LordPartyComponent.InitializeLordPartyProperties(mobileParty, position, spawnRadius, spawnSettlement);
-		});
+			base.MobileParty.Aggressiveness = 0.9f + 0.1f * (float)Owner.GetTraitLevel(DefaultTraits.Valor) - 0.05f * (float)Owner.GetTraitLevel(DefaultTraits.Mercy);
+			Owner.PassedTimeAtHomeSettlement = (int)(MBRandom.RandomFloat * 100f);
+		}
+		if (_initializationArgs != null)
+		{
+			_initializationArgs.InitializeLordPartyProperties(base.MobileParty, Owner);
+			_initializationArgs = null;
+		}
 	}
 
-	protected internal LordPartyComponent(Hero owner, Hero leader)
+	public static MobileParty CreateLordParty(string stringId, Hero hero, CampaignVec2 position, float spawnRadius, Settlement spawnSettlement, Hero partyLeader)
+	{
+		InitializationArgs args = new InitializationArgs(position, spawnRadius, spawnSettlement);
+		return MobileParty.CreateParty(stringId + "_party_1", new LordPartyComponent(hero, partyLeader, args));
+	}
+
+	public static void ConvertPartyToLordParty(MobileParty mobileParty, Hero owner, Hero partyLeader)
+	{
+		mobileParty.SetPartyComponent(new LordPartyComponent(owner, partyLeader, null));
+	}
+
+	protected LordPartyComponent(Hero owner, Hero leader, InitializationArgs args)
 	{
 		Owner = owner;
 		_leader = leader;
+		_initializationArgs = args;
 	}
 
 	internal void ChangePartyOwner(Hero owner)
@@ -95,10 +155,14 @@ public class LordPartyComponent : WarPartyComponent
 		Owner = owner;
 	}
 
-	public override void ChangePartyLeader(Hero newLeader)
+	protected override void OnChangePartyLeader(Hero newLeader)
 	{
 		_leader = newLeader;
 		ClearCachedName();
+		if (_leader != null)
+		{
+			ChangePartyOwner(newLeader);
+		}
 	}
 
 	public override void ClearCachedName()
@@ -112,32 +176,5 @@ public class LordPartyComponent : WarPartyComponent
 		textObject.SetCharacterProperties("TROOP", Owner.CharacterObject);
 		textObject.SetTextVariable("IS_LORDPARTY", 1);
 		return textObject;
-	}
-
-	private void InitializeLordPartyProperties(MobileParty mobileParty, Vec2 position, float spawnRadius, Settlement spawnSettlement)
-	{
-		mobileParty.AddElementToMemberRoster(Owner.CharacterObject, 1, insertAtFront: true);
-		mobileParty.ActualClan = Owner.Clan;
-		int troopNumberLimit = ((Owner != Hero.MainHero && Owner.Clan != Clan.PlayerClan) ? ((int)MathF.Min(Owner.Clan.IsRebelClan ? 40f : 19f, (Owner.Clan.IsRebelClan ? 0.2f : 0.1f) * (float)mobileParty.Party.PartySizeLimit)) : 0);
-		if (!Campaign.Current.GameStarted)
-		{
-			float randomFloat = MBRandom.RandomFloat;
-			float num = MathF.Sqrt(MBRandom.RandomFloat);
-			float num2 = 1f - randomFloat * num;
-			troopNumberLimit = (int)((float)mobileParty.Party.PartySizeLimit * num2);
-		}
-		mobileParty.InitializeMobilePartyAroundPosition(Owner.Clan.DefaultPartyTemplate, position, spawnRadius, 0f, troopNumberLimit);
-		mobileParty.Party.SetVisualAsDirty();
-		if (spawnSettlement != null)
-		{
-			mobileParty.Ai.SetMoveGoToSettlement(spawnSettlement);
-		}
-		mobileParty.Aggressiveness = 0.9f + 0.1f * (float)Owner.GetTraitLevel(DefaultTraits.Valor) - 0.05f * (float)Owner.GetTraitLevel(DefaultTraits.Mercy);
-		mobileParty.ItemRoster.Add(new ItemRosterElement(DefaultItems.Grain, MBRandom.RandomInt(15, 30)));
-		Owner.PassedTimeAtHomeSettlement = (int)(MBRandom.RandomFloat * 100f);
-		if (spawnSettlement != null)
-		{
-			mobileParty.Ai.SetMoveGoToSettlement(spawnSettlement);
-		}
 	}
 }

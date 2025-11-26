@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ClanPoliticsModel : GameModel
+public abstract class ClanPoliticsModel : MBGameModel<ClanPoliticsModel>
 {
 	public abstract ExplainedNumber CalculateInfluenceChange(Clan clan, bool includeDescriptions = false);
 

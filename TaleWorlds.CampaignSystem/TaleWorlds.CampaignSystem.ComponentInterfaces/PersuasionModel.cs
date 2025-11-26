@@ -5,7 +5,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PersuasionModel : GameModel
+public abstract class PersuasionModel : MBGameModel<PersuasionModel>
 {
 	public abstract int GetSkillXpFromPersuasion(PersuasionDifficulty difficulty, int argumentDifficultyBonusCoefficient);
 

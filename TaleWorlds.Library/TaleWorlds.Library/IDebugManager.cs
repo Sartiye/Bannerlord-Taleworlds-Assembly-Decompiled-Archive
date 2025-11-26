@@ -40,6 +40,8 @@ public interface IDebugManager
 
 	Vec3 GetDebugVector();
 
+	void SetDebugVector(Vec3 value);
+
 	void SetCrashReportCustomString(string customString);
 
 	void SetCrashReportCustomStack(string customStack);

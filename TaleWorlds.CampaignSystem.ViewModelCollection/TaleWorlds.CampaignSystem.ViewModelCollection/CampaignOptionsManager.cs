@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection;
 
@@ -23,13 +24,12 @@ public static class CampaignOptionsManager
 
 	public static void Initialize()
 	{
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		for (int i = 0; i < assemblies.Length; i++)
+		foreach (Assembly activeGameAssembly in ModuleHelper.GetActiveGameAssemblies())
 		{
-			List<Type> typesSafe = assemblies[i].GetTypesSafe();
-			for (int j = 0; j < typesSafe.Count; j++)
+			List<Type> typesSafe = activeGameAssembly.GetTypesSafe();
+			for (int i = 0; i < typesSafe.Count; i++)
 			{
-				Type type = typesSafe[j];
+				Type type = typesSafe[i];
 				if (type != null && type != typeof(ICampaignOptionProvider) && typeof(ICampaignOptionProvider).IsAssignableFrom(type))
 				{
 					ICampaignOptionProvider item = Activator.CreateInstance(type) as ICampaignOptionProvider;

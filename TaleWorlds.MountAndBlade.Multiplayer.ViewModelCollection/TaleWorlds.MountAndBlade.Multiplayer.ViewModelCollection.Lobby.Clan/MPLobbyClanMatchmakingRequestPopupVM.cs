@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
@@ -26,7 +27,7 @@ public class MPLobbyClanMatchmakingRequestPopupVM : ViewModel
 
 	private string _doYouAcceptText;
 
-	private ImageIdentifierVM _clanSigil;
+	private BannerImageIdentifierVM _clanSigil;
 
 	private MPLobbyPlayerBaseVM _challengerPartyLeader;
 
@@ -152,7 +153,7 @@ public class MPLobbyClanMatchmakingRequestPopupVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanSigil
+	public BannerImageIdentifierVM ClanSigil
 	{
 		get
 		{
@@ -227,7 +228,7 @@ public class MPLobbyClanMatchmakingRequestPopupVM : ViewModel
 		case PremadeGameType.Clan:
 			IsClanMatch = true;
 			ClanName = clanName;
-			ClanSigil = new ImageIdentifierVM(BannerCode.CreateFrom(clanSigilCode), nineGrid: true);
+			ClanSigil = new BannerImageIdentifierVM(new Banner(clanSigilCode), nineGrid: true);
 			break;
 		case PremadeGameType.Practice:
 			IsPracticeMatch = true;

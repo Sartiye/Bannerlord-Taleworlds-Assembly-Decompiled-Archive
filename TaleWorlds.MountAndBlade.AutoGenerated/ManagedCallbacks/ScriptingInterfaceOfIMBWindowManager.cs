@@ -22,6 +22,11 @@ internal class ScriptingInterfaceOfIMBWindowManager : IMBWindowManager
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetScreenResolutionDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void PreDisplayDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -45,6 +50,8 @@ internal class ScriptingInterfaceOfIMBWindowManager : IMBWindowManager
 
 	public static EraseMessageLinesDelegate call_EraseMessageLinesDelegate;
 
+	public static GetScreenResolutionDelegate call_GetScreenResolutionDelegate;
+
 	public static PreDisplayDelegate call_PreDisplayDelegate;
 
 	public static ScreenToWorldDelegate call_ScreenToWorldDelegate;
@@ -61,6 +68,11 @@ internal class ScriptingInterfaceOfIMBWindowManager : IMBWindowManager
 	public void EraseMessageLines()
 	{
 		call_EraseMessageLinesDelegate();
+	}
+
+	public Vec2 GetScreenResolution()
+	{
+		return call_GetScreenResolutionDelegate();
 	}
 
 	public void PreDisplay()

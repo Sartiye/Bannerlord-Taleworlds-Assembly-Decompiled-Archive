@@ -15,7 +15,7 @@ public class CharacterMarriedLogEntry : LogEntry, IEncyclopediaLog, IChatNotific
 	[SaveableField(131)]
 	public readonly Hero MarriedTo;
 
-	public override CampaignTime KeepInHistoryTime => CampaignTime.Weeks(240f);
+	public override CampaignTime KeepInHistoryTime => CampaignTime.Days(1680f);
 
 	public override ChatNotificationType NotificationType => DiplomaticNotification(MarriedHero.Clan, MarriedTo.Clan);
 

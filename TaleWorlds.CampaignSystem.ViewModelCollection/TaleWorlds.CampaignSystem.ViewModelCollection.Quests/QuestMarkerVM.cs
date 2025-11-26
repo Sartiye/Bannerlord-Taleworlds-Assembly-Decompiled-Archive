@@ -12,11 +12,11 @@ public class QuestMarkerVM : ViewModel
 
 	private HintViewModel _questHint;
 
-	public TextObject QuestTitle { get; }
+	public TextObject QuestTitle { get; private set; }
 
-	public TextObject QuestHintText { get; }
+	public TextObject QuestHintText { get; private set; }
 
-	public CampaignUIHelper.IssueQuestFlags IssueQuestFlag { get; }
+	public CampaignUIHelper.IssueQuestFlags IssueQuestFlag { get; private set; }
 
 	[DataSourceProperty]
 	public bool IsTrackMarker
@@ -71,9 +71,14 @@ public class QuestMarkerVM : ViewModel
 
 	public QuestMarkerVM(CampaignUIHelper.IssueQuestFlags issueQuestFlag, TextObject questTitle = null, TextObject questHintText = null)
 	{
+		RefreshWith(issueQuestFlag, questTitle, questHintText);
+	}
+
+	public void RefreshWith(CampaignUIHelper.IssueQuestFlags issueQuestFlag, TextObject questTitle = null, TextObject questHintText = null)
+	{
 		IssueQuestFlag = issueQuestFlag;
 		QuestMarkerType = (int)issueQuestFlag;
-		QuestTitle = questTitle ?? TextObject.Empty;
+		QuestTitle = questTitle ?? TextObject.GetEmpty();
 		QuestHintText = questHintText;
 		if (QuestHintText != null)
 		{

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.Library;
 using TaleWorlds.Localization.Expressions;
@@ -6,7 +7,10 @@ namespace TaleWorlds.Localization.TextProcessor;
 
 internal class MBTextParser
 {
-	private Stack<TextExpression> _symbolSequence;
+	[ThreadStatic]
+	private static MBTextParser _instance;
+
+	private Stack<TextExpression> _symbolSequence = new Stack<TextExpression>();
 
 	private TextExpression _lookaheadFirst;
 
@@ -22,6 +26,14 @@ internal class MBTextParser
 
 	internal TextExpression LookAheadThird => _lookaheadThird;
 
+	private static void Clear()
+	{
+		_instance._symbolSequence.Clear();
+		_instance._lookaheadFirst = null;
+		_instance._lookaheadSecond = null;
+		_instance._lookaheadThird = null;
+	}
+
 	private TextExpression GetSimpleToken(TokenType tokenType, string strValue)
 	{
 		return tokenType switch
@@ -30,7 +42,7 @@ internal class MBTextParser
 			TokenType.Number => new SimpleNumberExpression(strValue), 
 			TokenType.Identifier => new VariableExpression(strValue, null), 
 			TokenType.LanguageMarker => new LangaugeMarkerExpression(strValue), 
-			TokenType.textId => new TextIdExpression(strValue), 
+			TokenType.TextId => new TextIdExpression(strValue), 
 			TokenType.QualifiedIdentifier => new QualifiedIdentifierExpression(strValue), 
 			TokenType.ParameterWithAttribute => new ParameterWithAttributeExpression(strValue), 
 			TokenType.StartsWith => new StartsWithExpression(strValue), 
@@ -40,7 +52,6 @@ internal class MBTextParser
 
 	private void LoadSequenceStack(List<MBTextToken> tokens)
 	{
-		_symbolSequence = new Stack<TextExpression>();
 		for (int num = tokens.Count - 1; num >= 0; num--)
 		{
 			TextExpression simpleToken = GetSimpleToken(tokens[num].TokenType, tokens[num].Value);
@@ -112,7 +123,7 @@ internal class MBTextParser
 
 	private bool IsRootExpression(TokenType tokenType)
 	{
-		if (tokenType != TokenType.Text && tokenType != TokenType.SimpleExpression && tokenType != TokenType.ConditionalExpression && tokenType != TokenType.textId && tokenType != TokenType.SelectionExpression && tokenType != TokenType.MultiStatement && tokenType != TokenType.FieldExpression)
+		if (tokenType != TokenType.Text && tokenType != TokenType.SimpleExpression && tokenType != TokenType.ConditionalExpression && tokenType != TokenType.TextId && tokenType != TokenType.SelectionExpression && tokenType != TokenType.MultiStatement && tokenType != TokenType.FieldExpression)
 		{
 			return tokenType == TokenType.LanguageMarker;
 		}
@@ -233,7 +244,7 @@ internal class MBTextParser
 		}
 		if (LookAheadFirst.TokenType != TokenType.Identifier)
 		{
-			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckFieldStatement", 289);
+			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckFieldStatement", 299);
 			return false;
 		}
 		TextExpression lookAheadFirst = LookAheadFirst;
@@ -271,7 +282,7 @@ internal class MBTextParser
 				tokenType = LookAheadFirst.TokenType;
 				if (!IsArithmeticExpression(tokenType))
 				{
-					Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckConditionalStatement", 336);
+					Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckConditionalStatement", 346);
 					return false;
 				}
 				list.Add(LookAheadFirst);
@@ -317,7 +328,7 @@ internal class MBTextParser
 		TokenType tokenType = LookAheadFirst.TokenType;
 		if (!IsArithmeticExpression(tokenType))
 		{
-			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckSelectionStatement", 382);
+			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckSelectionStatement", 392);
 			return false;
 		}
 		TextExpression lookAheadFirst = LookAheadFirst;
@@ -343,7 +354,7 @@ internal class MBTextParser
 				DiscardToken();
 				break;
 			default:
-				Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckSelectionStatement", 414);
+				Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "CheckSelectionStatement", 424);
 				return false;
 			}
 		}
@@ -388,7 +399,7 @@ internal class MBTextParser
 				DiscardToken();
 				continue;
 			}
-			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeFunction", 472);
+			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeFunction", 482);
 			return false;
 		}
 		DiscardToken(TokenType.CloseParenthesis);
@@ -529,7 +540,7 @@ internal class MBTextParser
 				PushToken(token);
 				return true;
 			}
-			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeOuterAritmeticExpression", 646);
+			Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeOuterAritmeticExpression", 656);
 		}
 		return false;
 	}
@@ -556,7 +567,7 @@ internal class MBTextParser
 			}
 			if (!IsArithmeticExpression(LookAheadFirst.TokenType))
 			{
-				Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeComparisonExpression", 690);
+				Debug.FailedAssert("Can not parse the text: " + LookAheadFirst, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\TextProcessor\\MbTextParser.cs", "ConsumeComparisonExpression", 700);
 				return false;
 			}
 			TextExpression lookAheadFirst2 = LookAheadFirst;
@@ -618,6 +629,14 @@ internal class MBTextParser
 
 	internal static MBTextModel Parse(List<MBTextToken> tokens)
 	{
-		return new MBTextParser().ParseInternal(tokens);
+		if (_instance == null)
+		{
+			_instance = new MBTextParser();
+		}
+		else
+		{
+			Clear();
+		}
+		return _instance.ParseInternal(tokens);
 	}
 }

@@ -71,7 +71,7 @@ public class SiegeLane
 		{
 			for (int i = 0; i < DefensePoints.Count; i++)
 			{
-				if (DefensePoints[i] is CastleGate { IsGateOpen: not false } castleGate && castleGate.GameEntity.HasTag("outer_gate"))
+				if (DefensePoints[i] is CastleGate { IsGateOpen: not false, GameEntity: var gameEntity } && gameEntity.HasTag("outer_gate"))
 				{
 					return false;
 				}
@@ -80,7 +80,7 @@ public class SiegeLane
 		for (int j = 0; j < PrimarySiegeWeapons.Count; j++)
 		{
 			IPrimarySiegeWeapon primarySiegeWeapon = PrimarySiegeWeapons[j];
-			if ((!(primarySiegeWeapon is UsableMachine usableMachine) || usableMachine.GameEntity != null) && !(primarySiegeWeapon is SiegeTower { IsDestroyed: not false }) && (primarySiegeWeapon.HasCompletedAction() || !(primarySiegeWeapon is BatteringRam { IsDestroyed: not false })))
+			if (!(primarySiegeWeapon is UsableMachine { GameEntity: { IsValid: false } }) && !(primarySiegeWeapon is SiegeTower { IsDestroyed: not false }) && (primarySiegeWeapon.HasCompletedAction() || !(primarySiegeWeapon is BatteringRam { IsDestroyed: not false })))
 			{
 				return false;
 			}
@@ -150,7 +150,7 @@ public class SiegeLane
 		for (int k = 0; k < PrimarySiegeWeapons.Count; k++)
 		{
 			SiegeWeapon siegeWeapon = PrimarySiegeWeapons[k] as SiegeWeapon;
-			if (!siegeWeapon.IsDeactivated && !siegeWeapon.IsDestroyed)
+			if ((PrimarySiegeWeapons[k].HasCompletedAction() || !siegeWeapon.IsDeactivated) && !siegeWeapon.IsDestroyed)
 			{
 				num += PrimarySiegeWeapons[k].SiegeWeaponPriority;
 			}

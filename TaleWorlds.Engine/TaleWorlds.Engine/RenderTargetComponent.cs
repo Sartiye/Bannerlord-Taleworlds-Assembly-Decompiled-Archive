@@ -25,13 +25,13 @@ public sealed class RenderTargetComponent : DotNetObject
 		this.PaintNeeded = null;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static RenderTargetComponent CreateRenderTargetComponent(Texture renderTarget)
 	{
 		return new RenderTargetComponent(renderTarget);
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void OnPaintNeeded()
 	{
 		this.PaintNeeded?.Invoke(RenderTarget, EventArgs.Empty);

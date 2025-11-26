@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
 using TaleWorlds.CampaignSystem.Party;
 
@@ -14,10 +15,19 @@ public class ArmyCreationNotificationItemVM : MapNotificationItemBaseVM
 		base.NotificationIdentifier = "armycreation";
 		_onInspect = delegate
 		{
-			GoToMapPosition(Army?.LeaderParty?.Position2D ?? MobileParty.MainParty.Position2D);
+			GoToMapPosition(Army?.LeaderParty?.Position ?? MobileParty.MainParty.Position);
 		};
 		CampaignEvents.OnPartyJoinedArmyEvent.AddNonSerializedListener(this, OnPartyJoinedArmy);
 		CampaignEvents.ArmyDispersed.AddNonSerializedListener(this, OnArmyDispersed);
+		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
+	}
+
+	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
+	{
+		if (clan == MobileParty.MainParty.ActualClan && oldKingdom != newKingdom)
+		{
+			ExecuteRemove();
+		}
 	}
 
 	private void OnArmyDispersed(Army arg1, Army.ArmyDispersionReason arg2, bool isPlayersArmy)
@@ -41,5 +51,6 @@ public class ArmyCreationNotificationItemVM : MapNotificationItemBaseVM
 		base.OnFinalize();
 		CampaignEvents.OnPartyJoinedArmyEvent.ClearListeners(this);
 		CampaignEvents.ArmyDispersed.ClearListeners(this);
+		CampaignEvents.OnClanChangedKingdomEvent.ClearListeners(this);
 	}
 }

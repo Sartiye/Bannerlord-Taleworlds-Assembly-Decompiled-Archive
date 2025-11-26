@@ -29,6 +29,11 @@ public class MBWindowManager
 		MBAPI.IMBWindowManager.ScreenToWorld(camera.Pointer, screenX, screenY, w, ref worldSpacePosition);
 	}
 
+	public static Vec2 GetScreenResolution()
+	{
+		return MBAPI.IMBWindowManager.GetScreenResolution();
+	}
+
 	public static void PreDisplay()
 	{
 		MBAPI.IMBWindowManager.PreDisplay();

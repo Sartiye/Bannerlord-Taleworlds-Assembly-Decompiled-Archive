@@ -5,7 +5,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public interface IAgentVisual
 {
-	void SetAction(ActionIndexCache actionName, float startProgress = 0f, bool forceFaceMorphRestart = true);
+	void SetAction(in ActionIndexCache actionName, float startProgress = 0f, bool forceFaceMorphRestart = true);
 
 	MBAgentVisuals GetVisuals();
 

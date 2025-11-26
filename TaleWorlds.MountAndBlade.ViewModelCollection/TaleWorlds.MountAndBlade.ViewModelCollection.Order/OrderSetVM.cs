@@ -1,150 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using TaleWorlds.Core;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order.Visual;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
-public class OrderSetVM : ViewModel
+public class OrderSetVM : OrderItemBaseVM
 {
-	public OrderSetType OrderSetType = OrderSetType.None;
-
-	internal OrderSubType OrderSubType = OrderSubType.None;
-
-	private readonly bool _isMultiplayer;
-
-	private readonly int _index = -1;
-
-	private readonly Action<OrderItemVM, OrderSetType, bool> OnSetExecution;
-
-	private bool _isToggleActivationOrder;
-
-	private bool _showOrders;
-
-	private bool _canUseShortcuts;
-
-	private OrderItemVM _titleOrder;
-
-	private MBBindingList<OrderItemVM> _orders;
-
-	private string _titleText;
-
-	private InputKeyItemVM _titleOrderKey;
+	public delegate void OnOrderSetSelectionStateChangedDelegate(OrderSetVM orderSet, bool isSelected);
 
 	private string _selectedOrderText;
 
-	internal IEnumerable<OrderSubType> SubOrdersSP
-	{
-		get
-		{
-			switch (OrderSetType)
-			{
-			case OrderSetType.Movement:
-				yield return OrderSubType.MoveToPosition;
-				yield return OrderSubType.FollowMe;
-				yield return OrderSubType.Charge;
-				yield return OrderSubType.Advance;
-				yield return OrderSubType.Fallback;
-				yield return OrderSubType.Stop;
-				yield return OrderSubType.Retreat;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Form:
-				yield return OrderSubType.FormLine;
-				yield return OrderSubType.FormClose;
-				yield return OrderSubType.FormLoose;
-				yield return OrderSubType.FormCircular;
-				yield return OrderSubType.FormSchiltron;
-				yield return OrderSubType.FormV;
-				yield return OrderSubType.FormColumn;
-				yield return OrderSubType.FormScatter;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Toggle:
-				yield return OrderSubType.ToggleFacing;
-				yield return OrderSubType.ToggleFire;
-				yield return OrderSubType.ToggleMount;
-				yield return OrderSubType.ToggleAI;
-				yield return OrderSubType.ToggleTransfer;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Facing:
-				yield return OrderSubType.ActivationFaceDirection;
-				yield return OrderSubType.FaceEnemy;
-				break;
-			default:
-				yield return OrderSubType.None;
-				break;
-			}
-		}
-	}
+	private OrderItemVM _soloOrder;
 
-	internal IEnumerable<OrderSubType> SubOrdersMP
-	{
-		get
-		{
-			switch (OrderSetType)
-			{
-			case OrderSetType.Movement:
-				yield return OrderSubType.MoveToPosition;
-				yield return OrderSubType.FollowMe;
-				yield return OrderSubType.Charge;
-				yield return OrderSubType.Advance;
-				yield return OrderSubType.Fallback;
-				yield return OrderSubType.Stop;
-				yield return OrderSubType.Retreat;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Form:
-				yield return OrderSubType.FormLine;
-				yield return OrderSubType.FormClose;
-				yield return OrderSubType.FormLoose;
-				yield return OrderSubType.FormCircular;
-				yield return OrderSubType.FormSchiltron;
-				yield return OrderSubType.FormV;
-				yield return OrderSubType.FormColumn;
-				yield return OrderSubType.FormScatter;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Toggle:
-				yield return OrderSubType.ToggleFacing;
-				yield return OrderSubType.ToggleFire;
-				yield return OrderSubType.ToggleMount;
-				yield return OrderSubType.Return;
-				break;
-			case OrderSetType.Facing:
-				yield return OrderSubType.ActivationFaceDirection;
-				yield return OrderSubType.FaceEnemy;
-				break;
-			default:
-				yield return OrderSubType.None;
-				break;
-			}
-		}
-	}
+	private MBBindingList<OrderItemVM> _orders;
 
-	public bool ContainsOrders { get; private set; }
+	public bool HasSingleOrder => SoloOrder != null;
 
-	[DataSourceProperty]
-	public bool CanUseShortcuts
-	{
-		get
-		{
-			return _canUseShortcuts;
-		}
-		set
-		{
-			if (value != _canUseShortcuts)
-			{
-				_canUseShortcuts = value;
-				OnPropertyChangedWithValue(value, "CanUseShortcuts");
-			}
-		}
-	}
+	public VisualOrderSet OrderSet { get; }
 
 	[DataSourceProperty]
 	public string SelectedOrderText
@@ -164,18 +35,18 @@ public class OrderSetVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string TitleText
+	public OrderItemVM SoloOrder
 	{
 		get
 		{
-			return _titleText;
+			return _soloOrder;
 		}
 		set
 		{
-			if (value != _titleText)
+			if (value != _soloOrder)
 			{
-				_titleText = value;
-				OnPropertyChangedWithValue(value, "TitleText");
+				_soloOrder = value;
+				OnPropertyChangedWithValue(value, "SoloOrder");
 			}
 		}
 	}
@@ -197,285 +68,129 @@ public class OrderSetVM : ViewModel
 		}
 	}
 
-	[DataSourceProperty]
-	public OrderItemVM TitleOrder
-	{
-		get
-		{
-			return _titleOrder;
-		}
-		set
-		{
-			if (value != _titleOrder)
-			{
-				_titleOrder = value;
-				OnPropertyChangedWithValue(value, "TitleOrder");
-			}
-		}
-	}
+	public static event OnOrderSetSelectionStateChangedDelegate OnSelectionStateChanged;
 
-	[DataSourceProperty]
-	public InputKeyItemVM TitleOrderKey
+	public OrderSetVM(OrderController orderController, VisualOrderSet collection)
+		: base(orderController)
 	{
-		get
-		{
-			return _titleOrderKey;
-		}
-		set
-		{
-			if (value != _titleOrderKey)
-			{
-				_titleOrderKey = value;
-				OnPropertyChanged("TitleOrderKey");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool ShowOrders
-	{
-		get
-		{
-			if (_showOrders)
-			{
-				return ContainsOrders;
-			}
-			return false;
-		}
-		set
-		{
-			_showOrders = value;
-			OnPropertyChangedWithValue(value, "ShowOrders");
-		}
-	}
-
-	internal OrderSetVM(OrderSetType orderSetType, Action<OrderItemVM, OrderSetType, bool> onExecution, bool isMultiplayer)
-	{
-		ContainsOrders = true;
-		OrderSetType = orderSetType;
-		OnSetExecution = onExecution;
-		_isMultiplayer = isMultiplayer;
+		OrderSet = collection;
 		Orders = new MBBindingList<OrderItemVM>();
-		TitleOrderKey = InputKeyItemVM.CreateFromGameKey(GetOrderGameKey((int)orderSetType), isConsoleOnly: false);
+		RefreshOrders();
 		RefreshValues();
-		TitleOrder.IsActive = true;
-	}
-
-	internal OrderSetVM(OrderSubType orderSubType, int index, Action<OrderItemVM, OrderSetType, bool> onExecution, bool isMultiplayer)
-	{
-		ContainsOrders = false;
-		OrderSubType = orderSubType;
-		OnSetExecution = onExecution;
-		_isMultiplayer = isMultiplayer;
-		_index = index;
-		Orders = new MBBindingList<OrderItemVM>();
-		TitleOrderKey = InputKeyItemVM.CreateFromGameKey(GetOrderGameKey(index), isConsoleOnly: false);
-		RefreshValues();
-		TitleOrder.IsActive = true;
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		TitleOrder?.OnFinalize();
-		if (ContainsOrders)
-		{
-			TitleOrder = new OrderItemVM(OrderSetType, GameTexts.FindText("str_order_set_name", OrderSetType.ToString()), OnExecuteOrderSet)
-			{
-				ShortcutKey = InputKeyItemVM.CreateFromGameKey(GetOrderGameKey(GetOrderIndexFromOrderSetType(OrderSetType)), isConsoleOnly: false),
-				IsTitle = true
-			};
-			TitleText = GameTexts.FindText("str_order_set_name", OrderSetType.ToString()).ToString().Trim(new char[1] { ' ' });
-		}
-		else
-		{
-			_isToggleActivationOrder = OrderSubType > OrderSubType.ToggleStart && OrderSubType < OrderSubType.ToggleEnd;
-			TextObject textObject = null;
-			textObject = ((!_isToggleActivationOrder) ? GameTexts.FindText("str_order_name", OrderSubType.ToString()) : GameTexts.FindText("str_order_name_off", OrderSubType.ToString()));
-			TitleText = textObject.ToString();
-			TitleOrder = new OrderItemVM(OrderSubType, OrderSetType.None, textObject, OnExecuteOrderSet)
-			{
-				IsTitle = true,
-				ShortcutKey = InputKeyItemVM.CreateFromGameKey(GetOrderGameKey(_index), isConsoleOnly: false)
-			};
-		}
-		MBTextManager.SetTextVariable("SHORTCUT", "");
-		if (!ContainsOrders)
-		{
-			return;
-		}
-		OrderSubType[] array = (_isMultiplayer ? SubOrdersMP.ToArray() : SubOrdersSP.ToArray());
-		foreach (OrderItemVM order in Orders)
-		{
-			order.ShortcutKey.OnFinalize();
-		}
-		Orders.Clear();
-		for (int i = 0; i < array.Length; i++)
-		{
-			OrderSubType orderSubType = array[i];
-			TextObject textObject2 = null;
-			OrderItemVM orderItemVM = new OrderItemVM(tooltipText: (OrderSetType != OrderSetType.Toggle) ? GameTexts.FindText("str_order_name", orderSubType.ToString()) : GameTexts.FindText("str_order_name_off", orderSubType.ToString()), orderSubType: orderSubType, orderSetType: OrderSetType, onExecuteAction: OnExecuteSubOrder);
-			Orders.Add(orderItemVM);
-			if (orderSubType == OrderSubType.Return)
-			{
-				orderItemVM.ShortcutKey = InputKeyItemVM.CreateFromGameKey(HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(76), isConsoleOnly: false);
-			}
-			else
-			{
-				orderItemVM.ShortcutKey = InputKeyItemVM.CreateFromGameKey(GetOrderGameKey(i), isConsoleOnly: false);
-			}
-		}
-	}
-
-	private int GetOrderIndexFromOrderSetType(OrderSetType orderSetType)
-	{
-		if (BannerlordConfig.OrderLayoutType == 0)
-		{
-			return (int)orderSetType;
-		}
-		return orderSetType switch
-		{
-			OrderSetType.Movement => 0, 
-			OrderSetType.Facing => 1, 
-			OrderSetType.Form => 2, 
-			_ => -1, 
-		};
-	}
-
-	private static GameKey GetOrderGameKey(int index)
-	{
-		switch (index)
-		{
-		case 0:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(68);
-		case 1:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(69);
-		case 2:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(70);
-		case 3:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(71);
-		case 4:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(72);
-		case 5:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(73);
-		case 6:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(74);
-		case 7:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(75);
-		case 8:
-			return HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(76);
-		default:
-			Debug.FailedAssert("Invalid order game key index", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSetVM.cs", "GetOrderGameKey", 346);
-			return null;
-		}
-	}
-
-	private void OnExecuteSubOrder(OrderItemVM orderItem, bool fromSelection)
-	{
-		OnSetExecution(orderItem, OrderSetType, fromSelection);
-		if (fromSelection)
-		{
-			SelectedOrderText = orderItem.MainTitle;
-		}
-	}
-
-	private void OnExecuteOrderSet(OrderItemVM orderItem, bool fromSelection)
-	{
-		OnSetExecution(orderItem, OrderSetType, fromSelection);
-		if (fromSelection)
-		{
-			SelectedOrderText = orderItem.MainTitle;
-		}
-	}
-
-	public void ResetActiveStatus(bool disable = false)
-	{
-		TitleOrder.SelectionState = ((!disable) ? 1 : 0);
-		if (ContainsOrders)
-		{
-			foreach (OrderItemVM order in Orders)
-			{
-				order.SelectionState = ((!disable) ? 1 : 0);
-			}
-			if (OrderSetType == OrderSetType.Toggle)
-			{
-				Orders.ApplyActionOnAllItems(delegate(OrderItemVM o)
-				{
-					o.SetActiveState(isActive: false);
-				});
-			}
-		}
-		else
-		{
-			TitleOrder.SetActiveState(isActive: false);
-		}
-	}
-
-	public void FinalizeActiveStatus(bool forceDisable = false)
-	{
-		TitleOrder.FinalizeActiveStatus();
-		if (forceDisable)
-		{
-			return;
-		}
-		foreach (OrderItemVM order in Orders)
-		{
-			order.FinalizeActiveStatus();
-		}
-	}
-
-	internal OrderItemVM GetOrder(OrderSubType type)
-	{
-		if (ContainsOrders)
-		{
-			return Orders.FirstOrDefault((OrderItemVM order) => order.OrderSubType == type);
-		}
-		if (type == TitleOrder.OrderSubType)
-		{
-			return TitleOrder;
-		}
-		Debug.FailedAssert("Couldn't find order item " + type, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSetVM.cs", "GetOrder", 442);
-		return null;
-	}
-
-	public void SetActiveOrder(OrderItemVM order)
-	{
-		if (OrderSetType != OrderSetType.Toggle)
-		{
-			TitleOrder.OrderIconID = ((order.OrderSubType == OrderSubType.None) ? "MultipleSelection" : order.OrderIconID);
-			TitleOrder.MainTitle = order.MainTitle;
-			SelectedOrderText = order.MainTitle;
-		}
-		else
-		{
-			order.SetActiveState(isActive: true);
-		}
-	}
-
-	public void UpdateCanUseShortcuts(bool value)
-	{
-		CanUseShortcuts = value;
-		if (TitleOrder != null)
-		{
-			TitleOrder.CanUseShortcuts = value;
-		}
-		for (int i = 0; i < Orders.Count; i++)
-		{
-			Orders[i].CanUseShortcuts = value;
-		}
+		base.Name = OrderSet.GetName(_orderController).ToString();
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
-		if (ContainsOrders)
+		if (SoloOrder != null)
 		{
-			foreach (OrderItemVM order in Orders)
+			SoloOrder = null;
+		}
+		for (int i = 0; i < Orders.Count; i++)
+		{
+			Orders[i].OnFinalize();
+		}
+		base.ShortcutKey?.OnFinalize();
+	}
+
+	protected override void OnExecuteAction(VisualOrderExecutionParameters executionParameters)
+	{
+		if (OrderSet.IsSoloOrder)
+		{
+			SoloOrder.ExecuteAction(executionParameters);
+		}
+		else
+		{
+			OrderSetVM.OnSelectionStateChanged?.Invoke(this, isSelected: true);
+		}
+		RefreshOrderStates();
+	}
+
+	protected override void OnRefreshState()
+	{
+		base.Name = OrderSet.GetName(_orderController).ToString();
+		if (OrderSet.IsSoloOrder)
+		{
+			OrderState activeState = OrderSet.SoloOrder.GetActiveState(_orderController);
+			base.SelectionState = activeState.ToString();
+			base.IsActive = activeState == OrderState.Active;
+		}
+		else
+		{
+			base.IsActive = false;
+			base.SelectionState = OrderState.Default.ToString();
+		}
+	}
+
+	public void ExecuteSelect()
+	{
+		OrderSetVM.OnSelectionStateChanged?.Invoke(this, isSelected: true);
+	}
+
+	public void ExecuteDeSelect()
+	{
+		OrderSetVM.OnSelectionStateChanged?.Invoke(this, isSelected: false);
+	}
+
+	public void OnOrderExecuted(OrderItemVM order)
+	{
+		RefreshOrderStates();
+		RefreshValues();
+	}
+
+	public void RefreshOrders()
+	{
+		Orders.Clear();
+		if (SoloOrder != null)
+		{
+			SoloOrder = null;
+		}
+		if (OrderSet != null)
+		{
+			MBReadOnlyList<VisualOrder> orders = OrderSet.Orders;
+			for (int i = 0; i < orders.Count; i++)
 			{
-				order.ShortcutKey.OnFinalize();
+				Orders.Add(new OrderItemVM(_orderController, orders[i]));
+			}
+			if (OrderSet.IsSoloOrder)
+			{
+				SoloOrder = Orders[0];
 			}
 		}
-		TitleOrder.ShortcutKey.OnFinalize();
-		TitleOrderKey.OnFinalize();
+	}
+
+	protected override void OnSelectedStateChanged(bool isSelected)
+	{
+		base.OnSelectedStateChanged(isSelected);
+		OrderSetVM.OnSelectionStateChanged?.Invoke(this, isSelected);
+		if (SoloOrder != null)
+		{
+			SoloOrder.IsSelected = isSelected;
+		}
+	}
+
+	public void RefreshOrderStates()
+	{
+		base.OrderIconId = OrderSet.IconId;
+		RefreshState();
+		for (int i = 0; i < Orders.Count; i++)
+		{
+			Orders[i].RefreshState();
+		}
+	}
+
+	public void UpdateCanUseShortcuts(bool value)
+	{
+		base.CanUseShortcuts = value;
+		for (int i = 0; i < Orders.Count; i++)
+		{
+			Orders[i].CanUseShortcuts = value;
+		}
 	}
 }

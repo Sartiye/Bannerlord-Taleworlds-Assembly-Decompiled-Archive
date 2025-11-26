@@ -1,6 +1,7 @@
 using System;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -11,7 +12,7 @@ public class SettlementGovernorSelectionItemVM : ViewModel
 {
 	private readonly Action<SettlementGovernorSelectionItemVM> _onSelection;
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
 	private string _name;
 
@@ -20,7 +21,7 @@ public class SettlementGovernorSelectionItemVM : ViewModel
 	public Hero Governor { get; }
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -76,12 +77,12 @@ public class SettlementGovernorSelectionItemVM : ViewModel
 		_onSelection = onSelection;
 		if (governor != null)
 		{
-			Visual = new ImageIdentifierVM(CampaignUIHelper.GetCharacterCode(Governor.CharacterObject, useCivilian: true));
+			Visual = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(Governor.CharacterObject, useCivilian: true));
 			GovernorHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetHeroGovernorEffectsTooltip(Governor, Settlement.CurrentSettlement));
 		}
 		else
 		{
-			Visual = new ImageIdentifierVM();
+			Visual = new CharacterImageIdentifierVM(null);
 			GovernorHint = new BasicTooltipViewModel();
 		}
 		RefreshValues();
@@ -95,7 +96,7 @@ public class SettlementGovernorSelectionItemVM : ViewModel
 			Name = Governor.Name.ToString();
 			return;
 		}
-		Visual = new ImageIdentifierVM();
+		Visual = new CharacterImageIdentifierVM(null);
 		Name = new TextObject("{=koX9okuG}None").ToString();
 	}
 

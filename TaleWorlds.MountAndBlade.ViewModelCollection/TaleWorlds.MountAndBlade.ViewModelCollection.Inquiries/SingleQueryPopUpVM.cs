@@ -128,14 +128,14 @@ public class SingleQueryPopUpVM : PopUpBaseVM
 			(base.IsButtonOkEnabled, _) = tuple;
 			if (!string.Equals(_lastButtonOkHint, tuple.Item2, StringComparison.OrdinalIgnoreCase))
 			{
-				base.ButtonOkHint.HintText = (string.IsNullOrEmpty(tuple.Item2) ? TextObject.Empty : new TextObject("{=!}" + tuple.Item2));
+				base.ButtonOkHint.HintText = (string.IsNullOrEmpty(tuple.Item2) ? TextObject.GetEmpty() : new TextObject("{=!}" + tuple.Item2));
 				_lastButtonOkHint = tuple.Item2;
 			}
 		}
 		else
 		{
 			base.IsButtonOkEnabled = true;
-			base.ButtonOkHint.HintText = TextObject.Empty;
+			base.ButtonOkHint.HintText = TextObject.GetEmpty();
 			_lastButtonOkHint = string.Empty;
 		}
 		if (_data.GetIsNegativeOptionEnabled != null)
@@ -144,14 +144,14 @@ public class SingleQueryPopUpVM : PopUpBaseVM
 			(base.IsButtonCancelEnabled, _) = tuple3;
 			if (!string.Equals(_lastButtonCancelHint, tuple3.Item2, StringComparison.OrdinalIgnoreCase))
 			{
-				base.ButtonCancelHint.HintText = (string.IsNullOrEmpty(tuple3.Item2) ? TextObject.Empty : new TextObject("{=!}" + tuple3.Item2));
+				base.ButtonCancelHint.HintText = (string.IsNullOrEmpty(tuple3.Item2) ? TextObject.GetEmpty() : new TextObject("{=!}" + tuple3.Item2));
 				_lastButtonCancelHint = tuple3.Item2;
 			}
 		}
 		else
 		{
 			base.IsButtonCancelEnabled = true;
-			base.ButtonCancelHint.HintText = TextObject.Empty;
+			base.ButtonCancelHint.HintText = TextObject.GetEmpty();
 			_lastButtonCancelHint = string.Empty;
 		}
 	}

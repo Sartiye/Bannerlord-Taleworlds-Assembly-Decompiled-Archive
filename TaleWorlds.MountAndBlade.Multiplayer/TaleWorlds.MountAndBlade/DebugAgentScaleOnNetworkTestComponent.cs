@@ -1,6 +1,6 @@
 using System;
 using NetworkMessages.FromServer;
-using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.Missions;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -17,7 +17,7 @@ internal sealed class DebugAgentScaleOnNetworkTestComponent : UdpNetworkComponen
 		float totalMissionTime = MBCommon.GetTotalMissionTime();
 		if (_lastTestSendTime < totalMissionTime + 10f)
 		{
-			MBReadOnlyList<Agent> agents = Mission.Current.Agents;
+			AgentReadOnlyList agents = Mission.Current.Agents;
 			int count = agents.Count;
 			_lastTestSendTime = totalMissionTime;
 			int index = (int)(new Random().NextDouble() * (double)count);

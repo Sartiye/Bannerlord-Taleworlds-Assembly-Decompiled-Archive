@@ -17,4 +17,9 @@ internal class Mat2BasicTypeSerializer : IBasicTypeSerializer
 		Vec2 vec2 = reader.ReadVec2();
 		return new Mat2(vec.x, vec.y, vec2.x, vec2.y);
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 16;
+	}
 }

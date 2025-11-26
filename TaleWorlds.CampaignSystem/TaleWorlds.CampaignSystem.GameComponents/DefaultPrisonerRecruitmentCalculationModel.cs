@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
@@ -13,38 +14,38 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 		return (character.Level + 6) * (character.Level + 6) - 10;
 	}
 
-	public override int GetConformityChangePerHour(PartyBase party, CharacterObject troopToBoost)
+	public override ExplainedNumber GetConformityChangePerHour(PartyBase party, CharacterObject troopToBoost)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(10f);
+		ExplainedNumber stat = new ExplainedNumber(10f);
 		if (party.LeaderHero != null)
 		{
-			explainedNumber.Add((float)party.LeaderHero.GetSkillValue(DefaultSkills.Leadership) * 0.05f);
+			stat.Add((float)party.LeaderHero.GetSkillValue(DefaultSkills.Leadership) * 0.05f);
 		}
-		if (troopToBoost.Tier <= 3 && party.MobileParty.HasPerk(DefaultPerks.Leadership.FerventAttacker, checkSecondaryRole: true))
+		if (troopToBoost.Tier <= 3 && party.MobileParty != null && !party.MobileParty.IsCurrentlyAtSea)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Leadership.FerventAttacker.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.FerventAttacker, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		if (troopToBoost.Tier >= 4 && party.MobileParty.HasPerk(DefaultPerks.Leadership.StoutDefender, checkSecondaryRole: true))
+		if (troopToBoost.Tier >= 4 && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.StoutDefender, checkSecondaryRole: true))
 		{
-			explainedNumber.AddFactor(DefaultPerks.Leadership.StoutDefender.SecondaryBonus);
+			stat.AddFactor(DefaultPerks.Leadership.StoutDefender.SecondaryBonus);
 		}
-		if (troopToBoost.Occupation != Occupation.Bandit && party.MobileParty.HasPerk(DefaultPerks.Leadership.LoyaltyAndHonor, checkSecondaryRole: true))
+		if (troopToBoost.Occupation != Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.LoyaltyAndHonor, checkSecondaryRole: true))
 		{
-			explainedNumber.AddFactor(DefaultPerks.Leadership.LoyaltyAndHonor.SecondaryBonus);
+			stat.AddFactor(DefaultPerks.Leadership.LoyaltyAndHonor.SecondaryBonus);
 		}
-		if (troopToBoost.IsInfantry && party.MobileParty.HasPerk(DefaultPerks.Leadership.LeadByExample))
+		if (troopToBoost.IsInfantry)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Leadership.LeadByExample.PrimaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, party.MobileParty, isPrimaryBonus: true, ref stat, party.MobileParty.IsCurrentlyAtSea);
 		}
-		if (troopToBoost.IsRanged && party.MobileParty.HasPerk(DefaultPerks.Leadership.TrustedCommander))
+		if (troopToBoost.IsRanged)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Leadership.TrustedCommander.PrimaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, isPrimaryBonus: true, ref stat, party.MobileParty.IsCurrentlyAtSea);
 		}
-		if (troopToBoost.Occupation == Occupation.Bandit && party.MobileParty.HasPerk(DefaultPerks.Roguery.Promises, checkSecondaryRole: true))
+		if (troopToBoost.Occupation == Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Roguery.Promises, checkSecondaryRole: true))
 		{
-			explainedNumber.AddFactor(DefaultPerks.Roguery.Promises.SecondaryBonus);
+			stat.AddFactor(DefaultPerks.Roguery.Promises.SecondaryBonus);
 		}
-		return MathF.Round(explainedNumber.ResultNumber);
+		return stat;
 	}
 
 	public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
@@ -85,9 +86,9 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 
 	public override bool ShouldPartyRecruitPrisoners(PartyBase party)
 	{
-		if (party.MobileParty.Morale > 30f || party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true))
+		if (party.IsMobile && (party.MobileParty.Morale > 30f || party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true)) && party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount && !party.MobileParty.IsWageLimitExceeded())
 		{
-			return party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount;
+			return !party.MobileParty.IsPatrolParty;
 		}
 		return false;
 	}

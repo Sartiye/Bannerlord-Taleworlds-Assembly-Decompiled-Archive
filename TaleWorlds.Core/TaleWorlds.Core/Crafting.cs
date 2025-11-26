@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.Core;
 
@@ -155,6 +154,7 @@ public class Crafting
 				int missileSpeed = 0;
 				MatrixFrame stickingFrame = MatrixFrame.Identity;
 				short reloadPhaseCount = 1;
+				Vec3 o;
 				if (_weaponDescription.WeaponClass == WeaponClass.Javelin || _weaponDescription.WeaponClass == WeaponClass.ThrowingAxe || _weaponDescription.WeaponClass == WeaponClass.ThrowingKnife)
 				{
 					short num = (short)(isAlternative ? 1 : bladeData.StackAmount);
@@ -177,26 +177,29 @@ public class Crafting
 						break;
 					}
 					missileSpeed = TaleWorlds.Library.MathF.Floor(CalculateMissileSpeed());
-					Mat3 identity = Mat3.Identity;
+					Mat3 rot = Mat3.Identity;
 					switch (_weaponDescription.WeaponClass)
 					{
 					case WeaponClass.Javelin:
-						identity.RotateAboutSide(System.MathF.PI / 2f);
-						stickingFrame = new MatrixFrame(identity, -Vec3.Up * _currentWeaponReach);
+						rot.RotateAboutSide(System.MathF.PI / 2f);
+						o = -Vec3.Up * _currentWeaponReach;
+						stickingFrame = new MatrixFrame(in rot, in o);
 						break;
 					case WeaponClass.ThrowingAxe:
 					{
 						float bladeWidth = _craftedData.UsedPieces[0].CraftingPiece.BladeData.BladeWidth;
 						float num2 = _craftedData.PiecePivotDistances[0];
 						float scaledDistanceToNextPiece = _craftedData.UsedPieces[0].ScaledDistanceToNextPiece;
-						identity.RotateAboutUp(System.MathF.PI / 2f);
-						identity.RotateAboutSide((0f - (15f + scaledDistanceToNextPiece * 3f / num2 * 25f)) * (System.MathF.PI / 180f));
-						stickingFrame = new MatrixFrame(identity, -identity.u * (num2 + scaledDistanceToNextPiece * 0.6f) - identity.f * bladeWidth * 0.8f);
+						rot.RotateAboutUp(System.MathF.PI / 2f);
+						rot.RotateAboutSide((0f - (15f + scaledDistanceToNextPiece * 3f / num2 * 25f)) * (System.MathF.PI / 180f));
+						o = -rot.u * (num2 + scaledDistanceToNextPiece * 0.6f) - rot.f * bladeWidth * 0.8f;
+						stickingFrame = new MatrixFrame(in rot, in o);
 						break;
 					}
 					case WeaponClass.ThrowingKnife:
-						identity.RotateAboutForward(-System.MathF.PI / 2f);
-						stickingFrame = new MatrixFrame(identity, Vec3.Side * _currentWeaponReach);
+						rot.RotateAboutForward(-System.MathF.PI / 2f);
+						o = Vec3.Side * _currentWeaponReach;
+						stickingFrame = new MatrixFrame(in rot, in o);
 						break;
 					}
 				}
@@ -214,17 +217,18 @@ public class Crafting
 					rotationSpeed = new Vec3(0f, 24f);
 				}
 				weapon.Init(_weaponDescription.StringId, bladeData.PhysicsMaterial, GetItemUsage(), bladeData.ThrustDamageType, bladeData.SwingDamageType, GetWeaponHandArmorBonus(), (int)(_currentWeaponReach * 100f), TaleWorlds.Library.MathF.Round(GetWeaponBalance(), 2), _currentWeaponInertia, _currentWeaponCenterOfMass, TaleWorlds.Library.MathF.Floor(_currentWeaponHandling), TaleWorlds.Library.MathF.Round(_swingDamageFactor, 2), TaleWorlds.Library.MathF.Round(_thrustDamageFactor, 2), maxDataValue, passBySoundCode, accuracy, missileSpeed, stickingFrame, GetAmmoClass(), _currentWeaponSweetSpot, TaleWorlds.Library.MathF.Floor(_currentWeaponSwingSpeed * 4.5454545f), TaleWorlds.Library.MathF.Round(_currentWeaponSwingDamage), TaleWorlds.Library.MathF.Floor(_currentWeaponThrustSpeed * 11.764706f), TaleWorlds.Library.MathF.Round(_currentWeaponThrustDamage), rotationSpeed, _currentWeaponTier, reloadPhaseCount);
-				Mat3 identity2 = Mat3.Identity;
+				Mat3 rot2 = Mat3.Identity;
 				Vec3 v = Vec3.Zero;
 				if (_weaponDescription.RotatedInHand)
 				{
-					identity2.RotateAboutSide(System.MathF.PI);
+					rot2.RotateAboutSide(System.MathF.PI);
 				}
 				if (_weaponDescription.UseCenterOfMassAsHandBase)
 				{
 					v = -Vec3.Up * _currentWeaponCenterOfMass;
 				}
-				weapon.SetFrame(new MatrixFrame(identity2, identity2.TransformToParent(v)));
+				o = rot2.TransformToParent(in v);
+				weapon.SetFrame(new MatrixFrame(in rot2, in o));
 			}
 
 			private float CalculateSweetSpot()
@@ -398,7 +402,7 @@ public class Crafting
 					break;
 				default:
 					damage = 0f;
-					Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateMissileDamage", 508);
+					Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateMissileDamage", 508);
 					break;
 				}
 			}
@@ -416,7 +420,7 @@ public class Crafting
 				{
 					return result;
 				}
-				Debug.FailedAssert("Couldn't calculate weapon tier", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateWeaponTier", 529);
+				Debug.FailedAssert("Couldn't calculate weapon tier", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateWeaponTier", 529);
 				return WeaponComponentData.WeaponTiers.Tier1;
 			}
 
@@ -460,7 +464,7 @@ public class Crafting
 				{
 					return _currentWeaponThrustSpeed * 3.6f;
 				}
-				Debug.FailedAssert("Weapon is not a missile.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateMissileSpeed", 580);
+				Debug.FailedAssert("Weapon is not a missile.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "CalculateMissileSpeed", 580);
 				return 10f;
 			}
 
@@ -649,13 +653,12 @@ public class Crafting
 		CurrentCulture = culture;
 	}
 
-	public void SetCraftedWeaponName(TextObject name)
+	public void SetCraftedWeaponName(TextObject weaponName)
 	{
-		if (!name.Equals(CraftedWeaponName.ToString()))
+		if (!weaponName.Equals(CraftedWeaponName))
 		{
-			CraftedWeaponName = name;
-			_craftedItemObject.WeaponDesign.SetWeaponName(CraftedWeaponName);
-			_craftedItemObject.SetName(CraftedWeaponName);
+			CraftedWeaponName = weaponName;
+			_craftedItemObject.SetCraftedWeaponName(CraftedWeaponName);
 		}
 	}
 
@@ -687,7 +690,7 @@ public class Crafting
 				array[i] = WeaponDesignElement.GetInvalidPieceForType((CraftingPiece.PieceTypes)i);
 			}
 		}
-		CurrentWeaponDesign = new WeaponDesign(CurrentCraftingTemplate, null, array);
+		CurrentWeaponDesign = new WeaponDesign(CurrentCraftingTemplate, null, array, CurrentCraftingTemplate.StringId);
 		_history.Add(CurrentWeaponDesign);
 	}
 
@@ -827,7 +830,7 @@ public class Crafting
 		return new TextObject("{=!}RANDOM_NAME");
 	}
 
-	public static void GenerateItem(WeaponDesign weaponDesignTemplate, TextObject name, BasicCultureObject culture, ItemModifierGroup itemModifierGroup, ref ItemObject itemObject)
+	public static void GenerateItem(WeaponDesign weaponDesignTemplate, TextObject name, BasicCultureObject culture, ItemModifierGroup itemModifierGroup, ref ItemObject itemObject, string customId = null)
 	{
 		if (itemObject == null)
 		{
@@ -839,10 +842,17 @@ public class Crafting
 			WeaponDesignElement weaponDesignElement = weaponDesignTemplate.UsedPieces[i];
 			array[i] = WeaponDesignElement.CreateUsablePiece(weaponDesignElement.CraftingPiece, weaponDesignElement.ScalePercentage);
 		}
-		WeaponDesign weaponDesign = new WeaponDesign(weaponDesignTemplate.Template, name, array);
+		WeaponDesign weaponDesign = new WeaponDesign(weaponDesignTemplate.Template, name, array, customId);
 		float weight = TaleWorlds.Library.MathF.Round(weaponDesign.UsedPieces.Sum((WeaponDesignElement selectedUsablePiece) => selectedUsablePiece.ScaledWeight), 2);
 		float appearance = (weaponDesign.UsedPieces[3].IsValid ? weaponDesign.UsedPieces[3].CraftingPiece.Appearance : weaponDesign.UsedPieces[0].CraftingPiece.Appearance);
-		itemObject.StringId = ((!string.IsNullOrEmpty(itemObject.StringId)) ? itemObject.StringId : weaponDesign.HashedCode);
+		if (!string.IsNullOrEmpty(customId))
+		{
+			itemObject.StringId = customId;
+		}
+		else
+		{
+			itemObject.StringId = ((!string.IsNullOrEmpty(itemObject.StringId)) ? itemObject.StringId : weaponDesignTemplate.Template.StringId);
+		}
 		ItemObject.InitCraftedItemObject(ref itemObject, name, culture, GetItemFlags(weaponDesign), weight, appearance, weaponDesign, weaponDesign.Template.ItemType);
 		itemObject = CraftedItemGenerationHelper.GenerateCraftedItem(itemObject, weaponDesign, itemModifierGroup);
 		if (itemObject != null)
@@ -861,21 +871,21 @@ public class Crafting
 		return weaponDesign.UsedPieces[0].CraftingPiece.AdditionalItemFlags;
 	}
 
-	private void SetItemObject(ItemObject itemObject = null)
+	private void SetItemObject(ItemObject itemObject = null, string customId = null)
 	{
 		if (itemObject == null)
 		{
 			itemObject = new ItemObject();
 		}
-		GenerateItem(CurrentWeaponDesign, CraftedWeaponName, CurrentCulture, CurrentItemModifierGroup, ref itemObject);
+		GenerateItem(CurrentWeaponDesign, CraftedWeaponName, CurrentCulture, CurrentItemModifierGroup, ref itemObject, customId);
 		_craftedItemObject = itemObject;
 	}
 
-	public ItemObject GetCurrentCraftedItemObject(bool forceReCreate = false)
+	public ItemObject GetCurrentCraftedItemObject(bool forceReCreate = false, string customId = null)
 	{
 		if (forceReCreate)
 		{
-			SetItemObject();
+			SetItemObject(null, customId);
 		}
 		return _craftedItemObject;
 	}
@@ -884,7 +894,7 @@ public class Crafting
 	{
 		WeaponComponentData weapon = craftedItemObject.GetWeaponWithUsageIndex(usageIndex);
 		DamageTypes statDamageType = DamageTypes.Invalid;
-		foreach (KeyValuePair<CraftingTemplate.CraftingStatTypes, float> statData in template.GetStatDatas(usageIndex, weapon.ThrustDamageType, weapon.SwingDamageType))
+		foreach (KeyValuePair<CraftingTemplate.CraftingStatTypes, float> statData in template.GetStatDatas(weapon.WeaponDescriptionId, weapon.ThrustDamageType, weapon.SwingDamageType))
 		{
 			TextObject textObject = GameTexts.FindText("str_crafting_stat", statData.Key.ToString());
 			switch (statData.Key)
@@ -902,7 +912,7 @@ public class Crafting
 				}
 				else
 				{
-					Debug.FailedAssert("Missile damage type is missing.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "GetStatDatasFromTemplate", 1170);
+					Debug.FailedAssert("Missile damage type is missing.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "GetStatDatasFromTemplate", 1192);
 				}
 				break;
 			case CraftingTemplate.CraftingStatTypes.ThrustDamage:
@@ -943,7 +953,7 @@ public class Crafting
 	public IEnumerable<CraftingStatData> GetStatDatas(int usageIndex)
 	{
 		WeaponComponentData weapon = _craftedItemObject.GetWeaponWithUsageIndex(usageIndex);
-		foreach (KeyValuePair<CraftingTemplate.CraftingStatTypes, float> statData in CurrentCraftingTemplate.GetStatDatas(usageIndex, weapon.ThrustDamageType, weapon.SwingDamageType))
+		foreach (KeyValuePair<CraftingTemplate.CraftingStatTypes, float> statData in CurrentCraftingTemplate.GetStatDatas(weapon.WeaponDescriptionId, weapon.ThrustDamageType, weapon.SwingDamageType))
 		{
 			DamageTypes damageType = DamageTypes.Invalid;
 			TextObject textObject = GameTexts.FindText("str_crafting_stat", statData.Key.ToString());
@@ -962,7 +972,7 @@ public class Crafting
 				}
 				else
 				{
-					Debug.FailedAssert("Missile damage type is missing.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "GetStatDatas", 1255);
+					Debug.FailedAssert("Missile damage type is missing.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Crafting.cs", "GetStatDatas", 1277);
 				}
 				break;
 			case CraftingTemplate.CraftingStatTypes.ThrustDamage:
@@ -1057,7 +1067,7 @@ public class Crafting
 		}
 	}
 
-	public static ItemObject CreatePreCraftedWeapon(ItemObject itemObject, WeaponDesignElement[] usedPieces, string templateId, TextObject weaponName, ItemModifierGroup itemModifierGroup)
+	public static ItemObject CreatePreCraftedWeaponOnDeserialize(ItemObject itemObject, WeaponDesignElement[] usedPieces, string templateId, TextObject craftedWeaponName, ItemModifierGroup itemModifierGroup)
 	{
 		for (int i = 0; i < usedPieces.Length; i++)
 		{
@@ -1066,13 +1076,17 @@ public class Crafting
 				usedPieces[i] = WeaponDesignElement.GetInvalidPieceForType((CraftingPiece.PieceTypes)i);
 			}
 		}
-		TextObject textObject = ((!TextObject.IsNullOrEmpty(weaponName)) ? weaponName : new TextObject("{=Uz1HHeKg}Crafted Random Weapon"));
-		WeaponDesign weaponDesign = new WeaponDesign(CraftingTemplate.GetTemplateFromId(templateId), textObject, usedPieces);
-		Crafting crafting = new Crafting(CraftingTemplate.GetTemplateFromId(templateId), null, textObject);
+		if (TextObject.IsNullOrEmpty(craftedWeaponName))
+		{
+			Debug.Print("ItemObject with id = (" + itemObject.StringId + ") name is null from xml, make sure this is intended");
+			craftedWeaponName = new TextObject("{=Uz1HHeKg}Crafted Random Weapon");
+		}
+		WeaponDesign weaponDesign = new WeaponDesign(CraftingTemplate.GetTemplateFromId(templateId), craftedWeaponName, usedPieces, itemObject.StringId);
+		Crafting crafting = new Crafting(CraftingTemplate.GetTemplateFromId(templateId), null, craftedWeaponName);
 		crafting.CurrentWeaponDesign = weaponDesign;
 		crafting.CurrentItemModifierGroup = itemModifierGroup;
 		crafting._history = new List<WeaponDesign> { weaponDesign };
-		crafting.SetItemObject(itemObject);
+		crafting.SetItemObject(itemObject, itemObject.StringId);
 		return crafting._craftedItemObject;
 	}
 
@@ -1081,25 +1095,7 @@ public class Crafting
 		Crafting crafting = new Crafting(craftedData.Template, culture, itemName);
 		crafting.CurrentWeaponDesign = craftedData;
 		crafting._history = new List<WeaponDesign> { craftedData };
-		crafting.SetItemObject(itemObject);
+		crafting.SetItemObject(itemObject, itemObject.StringId);
 		return crafting._craftedItemObject;
-	}
-
-	public static ItemObject CreateRandomCraftedItem(BasicCultureObject culture)
-	{
-		CraftingTemplate randomElement = CraftingTemplate.All.GetRandomElement();
-		TextObject textObject = new TextObject("{=uZhHh7pm}Crafted {CURR_TEMPLATE_NAME}");
-		textObject.SetTextVariable("CURR_TEMPLATE_NAME", randomElement.TemplateName);
-		Crafting crafting = new Crafting(randomElement, culture, textObject);
-		crafting.Init();
-		crafting.Randomize();
-		string hashedCode = crafting._craftedItemObject.WeaponDesign.HashedCode;
-		crafting._craftedItemObject.StringId = hashedCode;
-		ItemObject itemObject = MBObjectManager.Instance.GetObject<ItemObject>(hashedCode);
-		if (itemObject == null)
-		{
-			itemObject = MBObjectManager.Instance.RegisterObject(crafting._craftedItemObject);
-		}
-		return itemObject;
 	}
 }

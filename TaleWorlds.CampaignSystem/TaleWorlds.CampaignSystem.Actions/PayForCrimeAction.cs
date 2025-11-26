@@ -43,7 +43,7 @@ public static class PayForCrimeAction
 		}
 		if (!flag)
 		{
-			float num2 = MathF.Min(faction.MainHeroCrimeRating, Campaign.Current.Models.CrimeModel.GetMinAcceptableCrimeRating(faction));
+			float num2 = MathF.Min(faction.MainHeroCrimeRating, Campaign.Current.Models.CrimeModel.GetCrimeRatingAfterPunishment());
 			ChangeCrimeRatingAction.Apply(faction, num2 - faction.MainHeroCrimeRating);
 		}
 	}

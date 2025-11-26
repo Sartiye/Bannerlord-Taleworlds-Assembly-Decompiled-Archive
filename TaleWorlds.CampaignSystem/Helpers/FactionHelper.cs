@@ -36,16 +36,54 @@ public static class FactionHelper
 		return num * 2f;
 	}
 
+	public static IEnumerable<Kingdom> GetEnemyKingdoms(IFaction faction)
+	{
+		return faction.FactionsAtWarWith.Where((IFaction x) => x.IsKingdomFaction).Cast<Kingdom>();
+	}
+
+	public static IEnumerable<StanceLink> GetStances(IFaction faction)
+	{
+		List<StanceLink> list = new List<StanceLink>();
+		foreach (Kingdom item in Kingdom.All)
+		{
+			if (item != faction)
+			{
+				StanceLink stanceWith = faction.GetStanceWith(item);
+				if (stanceWith != null)
+				{
+					list.Add(stanceWith);
+				}
+			}
+		}
+		foreach (Clan item2 in Clan.All)
+		{
+			if (item2 != faction)
+			{
+				StanceLink stanceWith2 = faction.GetStanceWith(item2);
+				if (stanceWith2 != null)
+				{
+					list.Add(stanceWith2);
+				}
+			}
+		}
+		return list;
+	}
+
 	public static float GetPowerRatioToEnemies(Kingdom kingdom)
 	{
-		float totalStrength = kingdom.TotalStrength;
+		float currentTotalStrength = kingdom.CurrentTotalStrength;
 		float totalEnemyKingdomPower = GetTotalEnemyKingdomPower(kingdom);
-		return totalStrength / (totalEnemyKingdomPower + 0.0001f);
+		return currentTotalStrength / (totalEnemyKingdomPower + 0.0001f);
 	}
 
 	private static List<TextObject> IsFactionNameApplicable(string name)
 	{
 		List<TextObject> list = new List<TextObject>();
+		if (name == null)
+		{
+			Debug.FailedAssert("Calling IsFactionNameApplicable with null string!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "IsFactionNameApplicable", 5496);
+			name = string.Empty;
+		}
 		if (name.Length > 50 || name.Length < 1)
 		{
 			TextObject item = GameTexts.FindText("str_faction_name_invalid_character_count").SetTextVariable("MIN", 1).SetTextVariable("MAX", 50);
@@ -70,7 +108,8 @@ public static class FactionHelper
 	{
 		string item = string.Empty;
 		List<TextObject> list = IsFactionNameApplicable(name);
-		if (Clan.All.Any((Clan x) => x != Clan.PlayerClan && string.Equals(x.Name.ToString(), name, StringComparison.InvariantCultureIgnoreCase)))
+		MBReadOnlyList<Clan> all = Clan.All;
+		if (all != null && all.Any((Clan x) => x != Clan.PlayerClan && string.Equals(x.Name.ToString(), name, StringComparison.InvariantCultureIgnoreCase)))
 		{
 			list.Add(GameTexts.FindText("str_clan_name_invalid_already_exist"));
 		}
@@ -95,7 +134,8 @@ public static class FactionHelper
 	{
 		string item = string.Empty;
 		List<TextObject> list = IsFactionNameApplicable(name);
-		if (Kingdom.All.Any((Kingdom x) => x != Clan.PlayerClan.Kingdom && string.Equals(x.Name.ToString(), name, StringComparison.InvariantCultureIgnoreCase)))
+		MBReadOnlyList<Kingdom> all = Kingdom.All;
+		if (all != null && all.Any((Kingdom x) => x != Clan.PlayerClan.Kingdom && string.Equals(x.Name.ToString(), name, StringComparison.InvariantCultureIgnoreCase)))
 		{
 			list.Add(GameTexts.FindText("str_kingdom_name_invalid_already_exist"));
 		}
@@ -118,9 +158,9 @@ public static class FactionHelper
 
 	public static float GetPowerRatioToTributePayedKingdoms(Kingdom kingdom)
 	{
-		float totalStrength = kingdom.TotalStrength;
+		float currentTotalStrength = kingdom.CurrentTotalStrength;
 		float totalTributePayedKingdomsPower = GetTotalTributePayedKingdomsPower(kingdom);
-		return totalStrength / (totalTributePayedKingdomsPower + 0.0001f);
+		return currentTotalStrength / (totalTributePayedKingdomsPower + 0.0001f);
 	}
 
 	public static bool CanClanBeGrantedFief(Clan clan)
@@ -136,7 +176,7 @@ public static class FactionHelper
 	{
 		float num = Campaign.Current.Settlements.Where((Settlement settlement) => (settlement.IsVillage || settlement.IsTown || settlement.IsCastle) && settlement.OwnerClan.Leader == Hero.MainHero).Sum((Settlement settlement) => settlement.GetSettlementValueForFaction(Hero.OneToOneConversationHero.MapFaction));
 		float num2 = (asVassal ? 50f : 10f);
-		float num3 = Clan.PlayerClan.Renown + (asVassal ? (num / 5000f) : 0f) + (asVassal ? ((float)Hero.MainHero.Gold / 10000f) : 0f) + TaleWorlds.Library.MathF.Min(num2, Clan.PlayerClan.Renown) / num2 * 0.2f * Clan.PlayerClan.TotalStrength + Hero.OneToOneConversationHero.MapFaction.Leader.GetRelationWithPlayer() * 2f;
+		float num3 = Clan.PlayerClan.Renown + (asVassal ? (num / 5000f) : 0f) + (asVassal ? ((float)Hero.MainHero.Gold / 10000f) : 0f) + TaleWorlds.Library.MathF.Min(num2, Clan.PlayerClan.Renown) / num2 * 0.2f * Clan.PlayerClan.CurrentTotalStrength + Hero.OneToOneConversationHero.MapFaction.Leader.GetRelationWithPlayer() * 2f;
 		if (!asVassal)
 		{
 			return num3 > 25f;
@@ -147,9 +187,9 @@ public static class FactionHelper
 	public static float GetTotalEnemyKingdomPower(Kingdom kingdom)
 	{
 		float num = 0f;
-		foreach (Kingdom enemyKingdom in FactionManager.GetEnemyKingdoms(kingdom))
+		foreach (Kingdom enemyKingdom in GetEnemyKingdoms(kingdom))
 		{
-			num += enemyKingdom.TotalStrength;
+			num += enemyKingdom.CurrentTotalStrength;
 		}
 		return num;
 	}
@@ -157,16 +197,16 @@ public static class FactionHelper
 	public static float GetTotalTributePayedKingdomsPower(Kingdom kingdom)
 	{
 		float num = 0f;
-		foreach (StanceLink stance in kingdom.Stances)
+		foreach (StanceLink stance in GetStances(kingdom))
 		{
+			IFaction faction = ((stance.Faction1 == kingdom) ? stance.Faction2 : stance.Faction1);
 			if (stance.IsNeutral)
 			{
-				int dailyTributePaid = stance.GetDailyTributePaid(kingdom);
-				if (dailyTributePaid < 0)
+				int dailyTributeToPay = stance.GetDailyTributeToPay(kingdom);
+				if (dailyTributeToPay < 0)
 				{
-					float num2 = TaleWorlds.Library.MathF.Sqrt(TaleWorlds.Library.MathF.Min(1f, (float)(-dailyTributePaid) / 4000f));
-					IFaction faction = ((stance.Faction1 == kingdom) ? stance.Faction2 : stance.Faction1);
-					num += num2 * faction.TotalStrength;
+					float num2 = TaleWorlds.Library.MathF.Sqrt(TaleWorlds.Library.MathF.Min(1f, (float)(-dailyTributeToPay) / 4000f));
+					num += num2 * faction.CurrentTotalStrength;
 				}
 			}
 		}
@@ -230,7 +270,7 @@ public static class FactionHelper
 		float num = 0f;
 		int num2 = kingdom?.Clans.Count((Clan x) => !x.IsUnderMercenaryService) ?? 0;
 		MBReadOnlyList<Town> obj = ((kingdom != null) ? kingdom.Fiefs : clan.Fiefs);
-		float num3 = ((kingdom != null) ? ((kingdom.TotalStrength + (float)(num2 * 500)) / 2f) : clan.TotalStrength);
+		float num3 = ((kingdom != null) ? ((kingdom.CurrentTotalStrength + (float)(num2 * 500)) / 2f) : clan.CurrentTotalStrength);
 		float num4 = 0f;
 		float num5 = 0f;
 		foreach (Town item in obj)
@@ -266,7 +306,7 @@ public static class FactionHelper
 					MobileParty mobileParty = warPartyComponent.MobileParty;
 					if (mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty.TargetSettlement == noble.PartyBelongedTo.MapEvent.MapEventSettlement && mobileParty.CurrentSettlement == null)
 					{
-						mobileParty.Ai.SetMoveModeHold();
+						mobileParty.SetMoveModeHold();
 					}
 				}
 			}
@@ -275,7 +315,7 @@ public static class FactionHelper
 			{
 				if (item.IsMobile)
 				{
-					item.MobileParty.Ai.SetMoveModeHold();
+					item.MobileParty.SetMoveModeHold();
 				}
 			}
 		}
@@ -291,11 +331,11 @@ public static class FactionHelper
 				MobileParty mobileParty2 = warPartyComponent2.MobileParty;
 				if (mobileParty2.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty2.TargetSettlement == partyBelongedTo.BesiegedSettlement && mobileParty2.CurrentSettlement == null)
 				{
-					mobileParty2.Ai.SetMoveModeHold();
+					mobileParty2.SetMoveModeHold();
 				}
 			}
 			partyBelongedTo.BesiegerCamp = null;
-			partyBelongedTo.Ai.SetMoveModeHold();
+			partyBelongedTo.SetMoveModeHold();
 		}
 		if ((partyBelongedTo.DefaultBehavior == AiBehavior.RaidSettlement || partyBelongedTo.DefaultBehavior == AiBehavior.BesiegeSettlement || partyBelongedTo.DefaultBehavior == AiBehavior.AssaultSettlement) && ((faction.IsKingdomFaction && partyBelongedTo.TargetSettlement.MapFaction == faction) || (!faction.IsKingdomFaction && partyBelongedTo.TargetSettlement.OwnerClan == faction)))
 		{
@@ -303,31 +343,31 @@ public static class FactionHelper
 			{
 				partyBelongedTo.Army.FinishArmyObjective();
 			}
-			partyBelongedTo.Ai.SetMoveModeHold();
+			partyBelongedTo.SetMoveModeHold();
 		}
 		if (partyBelongedTo.ShortTermBehavior == AiBehavior.EngageParty && partyBelongedTo.ShortTermTargetParty != null && partyBelongedTo.ShortTermTargetParty.MapFaction == faction)
 		{
-			partyBelongedTo.Ai.SetMoveModeHold();
+			partyBelongedTo.SetMoveModeHold();
 		}
 	}
 
 	public static void FinishAllRelatedHostileActionsOfFactionToFaction(IFaction faction1, IFaction faction2)
 	{
-		foreach (Hero lord in faction1.Lords)
+		foreach (Hero aliveLord in faction1.AliveLords)
 		{
-			FinishAllRelatedHostileActionsOfNobleToFaction(lord, faction2);
+			FinishAllRelatedHostileActionsOfNobleToFaction(aliveLord, faction2);
 		}
 	}
 
 	public static void FinishAllRelatedHostileActions(Clan clan1, Clan clan2)
 	{
-		foreach (Hero lord in clan1.Lords)
+		foreach (Hero aliveLord in clan1.AliveLords)
 		{
-			FinishAllRelatedHostileActionsOfNobleToFaction(lord, clan2);
+			FinishAllRelatedHostileActionsOfNobleToFaction(aliveLord, clan2);
 		}
-		foreach (Hero lord2 in clan2.Lords)
+		foreach (Hero aliveLord2 in clan2.AliveLords)
 		{
-			FinishAllRelatedHostileActionsOfNobleToFaction(lord2, clan1);
+			FinishAllRelatedHostileActionsOfNobleToFaction(aliveLord2, clan1);
 		}
 	}
 
@@ -345,14 +385,14 @@ public static class FactionHelper
 
 	public static void AdjustFactionStancesForClanJoiningKingdom(Clan joiningClan, Kingdom kingdomToJoin)
 	{
-		foreach (StanceLink item in new List<StanceLink>(joiningClan.Stances))
+		foreach (StanceLink stance in GetStances(joiningClan))
 		{
-			if (item.IsAtConstantWar)
+			if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(stance.Faction1, stance.Faction2))
 			{
 				continue;
 			}
-			IFaction faction = ((item.Faction1 == joiningClan) ? item.Faction2 : item.Faction1);
-			if (item.IsAtWar)
+			IFaction faction = ((stance.Faction1 == joiningClan) ? stance.Faction2 : stance.Faction1);
+			if (stance.IsAtWar)
 			{
 				if (!kingdomToJoin.IsAtWarWith(faction))
 				{
@@ -363,7 +403,7 @@ public static class FactionHelper
 			}
 			else
 			{
-				item.ResetPeaceStats();
+				stance.ResetPeaceStats();
 			}
 		}
 	}
@@ -388,11 +428,11 @@ public static class FactionHelper
 			}
 			TextObject obj = ((num == 1) ? new TextObject("{=bIWDtytH}the {ETHNIC_TERM}") : new TextObject("{=JrT9bBEK}{FACTION_LIEGE}'s {ETHNIC_TERM}"));
 			obj.SetTextVariable("ETHNIC_TERM", GameTexts.FindText("str_neutral_term_for_culture", faction.Culture.StringId));
-			obj.SetTextVariable("FACTION_LIEGE", (faction.Leader != null) ? faction.Leader.Name : TextObject.Empty);
+			obj.SetTextVariable("FACTION_LIEGE", (faction.Leader != null) ? faction.Leader.Name : TextObject.GetEmpty());
 			return obj;
 		}
 		TextObject obj2 = ((!pejorative) ? new TextObject("{=WWFnlL3O}{FACTION_LIEGE}'s followers") : new TextObject("{=uujU2fSA}{FACTION_LIEGE}'s scum"));
-		obj2.SetTextVariable("FACTION_LIEGE", (faction.Leader != null) ? faction.Leader.Name : TextObject.Empty);
+		obj2.SetTextVariable("FACTION_LIEGE", (faction.Leader != null) ? faction.Leader.Name : TextObject.GetEmpty());
 		return obj2;
 	}
 
@@ -438,19 +478,34 @@ public static class FactionHelper
 			foreach (Town allFief in Town.AllFiefs)
 			{
 				Settlement settlement = allFief.Settlement;
-				if (settlement.MapFaction != faction && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, faction.FactionMidSettlement, num, out var distance))
+				if (settlement.MapFaction != faction)
 				{
-					num = distance;
+					float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, faction.FactionMidSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
+					if (num > distance)
+					{
+						num = distance;
+					}
 				}
 			}
 		}
 		return num;
 	}
 
-	public static Settlement FactionMidSettlement(IFaction faction)
+	public static Settlement GetMidSettlementOfFaction(IFaction faction)
 	{
 		Settlement result = null;
-		if (faction.Settlements.Count > 0)
+		if (faction.Settlements.Count == 0)
+		{
+			if (faction is Clan clan)
+			{
+				result = clan.HomeSettlement;
+			}
+			else if (faction is Kingdom kingdom)
+			{
+				result = kingdom.InitialHomeSettlement;
+			}
+		}
+		else
 		{
 			float num = float.MaxValue;
 			result = faction.Settlements[0];
@@ -461,14 +516,14 @@ public static class FactionHelper
 				{
 					if (settlement != settlement2)
 					{
-						float num3 = Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, settlement2);
+						float num3 = Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, settlement2, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
 						if (settlement2.IsVillage)
 						{
-							num3 *= 0.2f;
+							num3 *= 0.1f;
 						}
-						if (settlement2.IsFortification)
+						else if (settlement2.IsCastle)
 						{
-							num3 *= (float)settlement2.BoundVillages.Count * 0.1f;
+							num3 *= 0.25f;
 						}
 						num2 += num3;
 					}
@@ -479,14 +534,6 @@ public static class FactionHelper
 					result = settlement;
 				}
 			}
-		}
-		else if (faction is Clan clan)
-		{
-			result = clan.HomeSettlement;
-		}
-		else if (faction is Kingdom kingdom)
-		{
-			result = kingdom.InitialHomeLand;
 		}
 		return result;
 	}
@@ -527,14 +574,14 @@ public static class FactionHelper
 		Clan clan = null;
 		if (oldClan.Kingdom != null)
 		{
-			clan = ((oldClan.Kingdom.IsEliminated || oldClan.Kingdom.RulingClan == oldClan) ? oldClan.Kingdom.Clans.GetRandomElementWithPredicate((Clan t) => t != oldClan && !t.IsEliminated && !t.IsMinorFaction && !t.Lords.IsEmpty() && t.Lords.Any((Hero k) => !k.IsChild)) : oldClan.Kingdom.RulingClan);
+			clan = ((oldClan.Kingdom.IsEliminated || oldClan.Kingdom.RulingClan == oldClan) ? oldClan.Kingdom.Clans.GetRandomElementWithPredicate((Clan t) => t != oldClan && !t.IsEliminated && !t.IsMinorFaction && !t.AliveLords.IsEmpty() && t.AliveLords.Any((Hero k) => !k.IsChild)) : oldClan.Kingdom.RulingClan);
 		}
 		if (clan == null)
 		{
 			float num = float.MaxValue;
-			foreach (Clan item in Clan.All.Where((Clan t) => t != oldClan && !t.IsEliminated && !t.IsMinorFaction && !t.Lords.IsEmpty() && t.Lords.Any((Hero k) => !k.IsChild) && !t.IsBanditFaction))
+			foreach (Clan item in Clan.All.Where((Clan t) => t != oldClan && !t.IsEliminated && !t.IsMinorFaction && !t.AliveLords.IsEmpty() && t.AliveLords.Any((Hero k) => !k.IsChild) && !t.IsBanditFaction))
 			{
-				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(item.FactionMidSettlement, oldClan.FactionMidSettlement);
+				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(item.FactionMidSettlement, oldClan.FactionMidSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
 				if (distance < num)
 				{
 					clan = item;
@@ -584,6 +631,12 @@ public static class FactionHelper
 		}
 		if (hero.IsReleased)
 		{
+			explanation = new TextObject("{=jGIw0Xku}{HERO.NAME} has just escaped from {?HERO.GENDER}her{?}his{\\?} captors and is currently recovering.");
+			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
+			return false;
+		}
+		if (hero.IsFugitive || hero.IsDisabled || !hero.CanBeGovernorOrHavePartyRole())
+		{
 			explanation = new TextObject("{=nMmYZ3xi}{HERO.NAME} is not available right now.");
 			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
 			return false;
@@ -606,13 +659,7 @@ public static class FactionHelper
 			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
 			return false;
 		}
-		if (hero.IsFugitive || hero.IsDisabled || !hero.CanBeGovernorOrHavePartyRole())
-		{
-			explanation = new TextObject("{=nMmYZ3xi}{HERO.NAME} is not available right now.");
-			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
-			return false;
-		}
-		explanation = TextObject.Empty;
+		explanation = null;
 		return true;
 	}
 
@@ -623,7 +670,7 @@ public static class FactionHelper
 		float strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom = Campaign.Current.Models.DiplomacyModel.GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(offerKingdom);
 		foreach (Kingdom item in Kingdom.All)
 		{
-			if (Clan.PlayerClan.MapFaction.IsAtWarWith(item) && item.TotalStrength > strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom)
+			if (Clan.PlayerClan.MapFaction.IsAtWarWith(item) && item.CurrentTotalStrength > strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom)
 			{
 				playerWars.Add(item);
 			}
@@ -649,7 +696,7 @@ public static class FactionHelper
 		float strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom = Campaign.Current.Models.DiplomacyModel.GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(offerKingdom);
 		foreach (Kingdom item in Kingdom.All)
 		{
-			if (Clan.PlayerClan.MapFaction.IsAtWarWith(item) && item.TotalStrength > strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom)
+			if (Clan.PlayerClan.MapFaction.IsAtWarWith(item) && item.CurrentTotalStrength > strengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom)
 			{
 				playerWars.Add(item);
 			}
@@ -692,19 +739,21 @@ public static class FactionHelper
 			explanation = new TextObject("{=h0pBxG09}You can't recall a clan member while you are in a map event.");
 			return false;
 		}
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			explanation = new TextObject("{=3V2BTAfB}You cannot do this action when you are at sea.");
+			return false;
+		}
 		if (!IsMainClanMemberAvailableForRelocate(hero, out explanation))
 		{
 			return false;
 		}
-		explanation = new TextObject("{=NAseSXPl}It would take {HOUR} {?HOUR > 1}hours{?}hour{\\?} for {HERO.NAME} to arrive at your party.");
-		explanation.SetCharacterProperties("HERO", hero.CharacterObject);
-		float resultNumber = Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, targetParty.Party).ResultNumber;
-		explanation.SetTextVariable("HOUR", (int)Math.Ceiling(resultNumber));
 		return true;
 	}
 
 	public static bool IsMainClanMemberAvailableForPartyLeaderChange(Hero hero, bool isSend, MobileParty targetParty, out TextObject explanation)
 	{
+		int partyGoldLowerThreshold = Campaign.Current.Models.ClanFinanceModel.PartyGoldLowerThreshold;
 		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.IsMainParty && !isSend)
 		{
 			explanation = new TextObject("{=uhOCqJwd}{HERO.NAME} is already in the main party.");
@@ -726,6 +775,11 @@ public static class FactionHelper
 			explanation = new TextObject("{=2iRg3vpP}Target party is currently in an army right now.");
 			return false;
 		}
+		if (targetParty.IsCurrentlyAtSea)
+		{
+			explanation = new TextObject("{=TbD2qPLy}Target party is currently sailing.");
+			return false;
+		}
 		if (hero.CurrentSettlement != null && (hero.CurrentSettlement.IsUnderSiege || hero.CurrentSettlement.IsUnderRaid))
 		{
 			explanation = new TextObject("{=L9nn40qu}{HERO.NAME}{.o} location is under attack right now.");
@@ -738,8 +792,20 @@ public static class FactionHelper
 			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
 			return false;
 		}
+		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.IsCurrentlyAtSea)
+		{
+			explanation = new TextObject("{=1ELK1UbN}{HERO.NAME} is currently sailing.");
+			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
+			return false;
+		}
 		if (!IsMainClanMemberAvailableForRelocate(hero, out explanation))
 		{
+			return false;
+		}
+		if (partyGoldLowerThreshold - hero.Gold > Hero.MainHero.Gold)
+		{
+			explanation = new TextObject("{=xpCdwmlX}You don't have enough gold to make {HERO.NAME} a party leader.");
+			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
 			return false;
 		}
 		explanation = new TextObject("{=NAseSXPl}It would take {HOUR} {?HOUR > 1}hours{?}hour{\\?} for {HERO.NAME} to arrive at your party.");
@@ -751,6 +817,12 @@ public static class FactionHelper
 
 	public static bool IsMainClanMemberAvailableForSendingSettlement(Hero hero, Settlement targetSettlement, out TextObject explanation)
 	{
+		if (hero.PartyBelongedTo != null && (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInRaftState))
+		{
+			explanation = new TextObject("{=1ELK1UbN}{HERO.NAME} is currently sailing.");
+			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
+			return false;
+		}
 		if (hero.CurrentSettlement != null && (hero.CurrentSettlement.IsUnderSiege || hero.CurrentSettlement.IsUnderRaid))
 		{
 			explanation = new TextObject("{=L9nn40qu}{HERO.NAME}{.o} location is under attack right now.");
@@ -791,10 +863,19 @@ public static class FactionHelper
 			explanation = new TextObject("{=uoDuiBZR}You cannot assign yourself as a governor");
 			return false;
 		}
-		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.LeaderHero == hero)
+		if (hero.PartyBelongedTo != null)
 		{
-			explanation = new TextObject("{=pWObBhj5}You cannot assign a party leader as a new governor of a settlement");
-			return false;
+			if (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInRaftState)
+			{
+				explanation = new TextObject("{=1ELK1UbN}{HERO.NAME} is currently sailing.");
+				explanation.SetCharacterProperties("HERO", hero.CharacterObject);
+				return false;
+			}
+			if (hero.PartyBelongedTo.LeaderHero == hero)
+			{
+				explanation = new TextObject("{=pWObBhj5}You cannot assign a party leader as a new governor of a settlement");
+				return false;
+			}
 		}
 		if (hero.IsFugitive)
 		{
@@ -816,7 +897,7 @@ public static class FactionHelper
 		{
 			return false;
 		}
-		explanation = TextObject.Empty;
+		explanation = null;
 		return true;
 	}
 }

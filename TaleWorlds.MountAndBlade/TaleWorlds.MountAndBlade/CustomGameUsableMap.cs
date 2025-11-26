@@ -5,42 +5,42 @@ namespace TaleWorlds.MountAndBlade;
 
 public class CustomGameUsableMap
 {
-	public string map { get; private set; }
+	public string Map { get; private set; }
 
-	public bool isCompatibleWithAllGameTypes { get; private set; }
+	public bool IsCompatibleWithAllGameTypes { get; private set; }
 
-	public List<string> compatibleGameTypes { get; private set; }
+	public List<string> CompatibleGameTypes { get; private set; }
 
 	public CustomGameUsableMap(string map, bool isCompatibleWithAllGameTypes, List<string> compatibleGameTypes)
 	{
-		this.map = map;
-		this.isCompatibleWithAllGameTypes = isCompatibleWithAllGameTypes;
-		this.compatibleGameTypes = compatibleGameTypes;
+		Map = map;
+		IsCompatibleWithAllGameTypes = isCompatibleWithAllGameTypes;
+		CompatibleGameTypes = compatibleGameTypes;
 	}
 
 	public override bool Equals(object obj)
 	{
 		if (obj is CustomGameUsableMap customGameUsableMap)
 		{
-			if (customGameUsableMap.map != map || customGameUsableMap.isCompatibleWithAllGameTypes != isCompatibleWithAllGameTypes)
+			if (customGameUsableMap.Map != Map || customGameUsableMap.IsCompatibleWithAllGameTypes != IsCompatibleWithAllGameTypes)
 			{
 				return false;
 			}
-			if ((compatibleGameTypes == null || compatibleGameTypes.Count == 0) && (customGameUsableMap.compatibleGameTypes == null || customGameUsableMap.compatibleGameTypes.Count == 0))
+			if ((CompatibleGameTypes == null || CompatibleGameTypes.Count == 0) && (customGameUsableMap.CompatibleGameTypes == null || customGameUsableMap.CompatibleGameTypes.Count == 0))
 			{
 				return true;
 			}
-			if (compatibleGameTypes == null || compatibleGameTypes.Count == 0 || customGameUsableMap.compatibleGameTypes == null || customGameUsableMap.compatibleGameTypes.Count == 0)
+			if (CompatibleGameTypes == null || CompatibleGameTypes.Count == 0 || customGameUsableMap.CompatibleGameTypes == null || customGameUsableMap.CompatibleGameTypes.Count == 0)
 			{
 				return false;
 			}
-			return compatibleGameTypes.SequenceEqual(customGameUsableMap.compatibleGameTypes);
+			return CompatibleGameTypes.SequenceEqual(customGameUsableMap.CompatibleGameTypes);
 		}
 		return base.Equals(obj);
 	}
 
 	public override int GetHashCode()
 	{
-		return (((((map != null) ? map.GetHashCode() : 0) * 397) ^ isCompatibleWithAllGameTypes.GetHashCode()) * 397) ^ ((compatibleGameTypes != null) ? compatibleGameTypes.GetHashCode() : 0);
+		return (((((Map != null) ? Map.GetHashCode() : 0) * 397) ^ IsCompatibleWithAllGameTypes.GetHashCode()) * 397) ^ ((CompatibleGameTypes != null) ? CompatibleGameTypes.GetHashCode() : 0);
 	}
 }

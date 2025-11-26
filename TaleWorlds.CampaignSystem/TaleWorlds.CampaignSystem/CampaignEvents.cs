@@ -4,15 +4,20 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
+using TaleWorlds.CampaignSystem.CharacterCreationContent;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
 using TaleWorlds.CampaignSystem.CraftingSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.GameMenus;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
@@ -30,6 +35,8 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent<BarterData> _barterablesRequested = new MbEvent<BarterData>();
 
 	private readonly MbEvent<Hero, bool> _heroLevelledUp = new MbEvent<Hero, bool>();
+
+	private readonly MbEvent<BanditPartyComponent, Hideout> _onHomeHideoutChangedEvent = new MbEvent<BanditPartyComponent, Hideout>();
 
 	private readonly MbEvent<Hero, SkillObject, int, bool> _heroGainedSkill = new MbEvent<Hero, SkillObject, int, bool>();
 
@@ -55,7 +62,9 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Clan, Kingdom, Kingdom, ChangeKingdomAction.ChangeKingdomActionDetail, bool> _clanChangedKingdom = new MbEvent<Clan, Kingdom, Kingdom, ChangeKingdomAction.ChangeKingdomActionDetail, bool>();
 
-	private readonly MbEvent<Clan> _onCompanionClanCreatedEvent = new MbEvent<Clan>();
+	private readonly MbEvent<Clan, Kingdom, Kingdom> _onClanDefected = new MbEvent<Clan, Kingdom, Kingdom>();
+
+	private readonly MbEvent<Clan, bool> _onClanCreatedEvent = new MbEvent<Clan, bool>();
 
 	private readonly MbEvent<Hero, MobileParty> _onHeroJoinedPartyEvent = new MbEvent<Hero, MobileParty>();
 
@@ -79,9 +88,11 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Army, Army.ArmyDispersionReason, bool> _armyDispersed = new MbEvent<Army, Army.ArmyDispersionReason, bool>();
 
-	private readonly MbEvent<Army, Settlement> _armyGathered = new MbEvent<Army, Settlement>();
+	private readonly MbEvent<Army, IMapPoint> _armyGathered = new MbEvent<Army, IMapPoint>();
 
 	private readonly MbEvent<Hero, PerkObject> _perkOpenedEvent = new MbEvent<Hero, PerkObject>();
+
+	private readonly MbEvent<Hero, PerkObject> _perkResetEvent = new MbEvent<Hero, PerkObject>();
 
 	private readonly MbEvent<TraitObject, int> _playerTraitChangedEvent = new MbEvent<TraitObject, int>();
 
@@ -90,6 +101,8 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent<MobileParty, Settlement, Hero> _settlementEntered = new MbEvent<MobileParty, Settlement, Hero>();
 
 	private readonly MbEvent<MobileParty, Settlement, Hero> _afterSettlementEntered = new MbEvent<MobileParty, Settlement, Hero>();
+
+	private readonly MbEvent<MobileParty, Settlement, Hero> _beforeSettlementEntered = new MbEvent<MobileParty, Settlement, Hero>();
 
 	private readonly MbEvent<Town, CharacterObject, CharacterObject> _mercenaryTroopChangedInTown = new MbEvent<Town, CharacterObject, CharacterObject>();
 
@@ -103,7 +116,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero, Hero, Romance.RomanceLevelEnum> _romanticStateChanged = new MbEvent<Hero, Hero, Romance.RomanceLevelEnum>();
 
-	private readonly MbEvent<Hero, Hero, bool> _heroesMarried = new MbEvent<Hero, Hero, bool>();
+	private readonly MbEvent<Hero, Hero, bool> _beforeHeroesMarried = new MbEvent<Hero, Hero, bool>();
 
 	private readonly MbEvent<int, Town> _playerEliminatedFromTournament = new MbEvent<int, Town>();
 
@@ -131,6 +144,10 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<MobileParty> _mobilePartyCreated = new MbEvent<MobileParty>();
 
+	private readonly MbEvent<IInteractablePoint> _mapInteractableCreated = new MbEvent<IInteractablePoint>();
+
+	private readonly MbEvent<IInteractablePoint> _mapInteractableDestroyed = new MbEvent<IInteractablePoint>();
+
 	private readonly MbEvent<MobileParty, bool> _mobilePartyQuestStatusChanged = new MbEvent<MobileParty, bool>();
 
 	private readonly MbEvent<Hero, Hero, KillCharacterAction.KillCharacterActionDetail, bool> _heroKilled = new MbEvent<Hero, Hero, KillCharacterAction.KillCharacterActionDetail, bool>();
@@ -151,9 +168,9 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<PartyBase, Hero> _heroPrisonerTaken = new MbEvent<PartyBase, Hero>();
 
-	private readonly MbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail> _heroPrisonerReleased = new MbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail>();
+	private readonly MbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail, bool> _heroPrisonerReleased = new MbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail, bool>();
 
-	private readonly MbEvent<Hero> _characterBecameFugitive = new MbEvent<Hero>();
+	private readonly MbEvent<Hero, bool> _characterBecameFugitiveEvent = new MbEvent<Hero, bool>();
 
 	private readonly MbEvent<Hero> _playerMetHero = new MbEvent<Hero>();
 
@@ -169,7 +186,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<MenuCallbackArgs> _gameMenuOpened = new MbEvent<MenuCallbackArgs>();
 
-	private readonly MbEvent<MenuCallbackArgs> _afterGameMenuOpenedEvent = new MbEvent<MenuCallbackArgs>();
+	private readonly MbEvent<MenuCallbackArgs> _afterGameMenuInitializedEvent = new MbEvent<MenuCallbackArgs>();
 
 	private readonly MbEvent<MenuCallbackArgs> _beforeGameMenuOpenedEvent = new MbEvent<MenuCallbackArgs>();
 
@@ -205,9 +222,11 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero> _onRansomOfferCancelled = new MbEvent<Hero>();
 
-	private readonly MbEvent<IFaction, int> _onPeaceOfferedToPlayer = new MbEvent<IFaction, int>();
+	private readonly MbEvent<IFaction, int, int> _onPeaceOfferedToPlayer = new MbEvent<IFaction, int, int>();
 
-	private readonly MbEvent<IFaction> _onPeaceOfferCancelled = new MbEvent<IFaction>();
+	private readonly MbEvent<Kingdom, Kingdom> _onTradeAgreementSignedEvent = new MbEvent<Kingdom, Kingdom>();
+
+	private readonly MbEvent<IFaction> _onPeaceOfferResolved = new MbEvent<IFaction>();
 
 	private readonly MbEvent<Hero, Hero> _onMarriageOfferedToPlayerEvent = new MbEvent<Hero, Hero>();
 
@@ -216,6 +235,10 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent<Kingdom> _onVassalOrMercenaryServiceOfferedToPlayerEvent = new MbEvent<Kingdom>();
 
 	private readonly MbEvent<Kingdom> _onVassalOrMercenaryServiceOfferCanceledEvent = new MbEvent<Kingdom>();
+
+	private readonly MbEvent<Clan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails> _onMercenaryServiceStartedEvent = new MbEvent<Clan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails>();
+
+	private readonly MbEvent<Clan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails> _onMercenaryServiceEndedEvent = new MbEvent<Clan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails>();
 
 	private readonly MbEvent<IMission> _onMissionStartedEvent = new MbEvent<IMission>();
 
@@ -287,7 +310,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<MobileParty> _onPartyRemovedFromArmyEvent = new MbEvent<MobileParty>();
 
-	private readonly MbEvent<Hero, Army.ArmyLeaderThinkReason> _onArmyLeaderThinkEvent = new MbEvent<Hero, Army.ArmyLeaderThinkReason>();
+	private readonly MbEvent _onPlayerArmyLeaderChangedBehaviorEvent = new MbEvent();
 
 	private readonly MbEvent<IMission> _onMissionEndedEvent = new MbEvent<IMission>();
 
@@ -303,8 +326,6 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<float> _missionTickEvent = new MbEvent<float>();
 
-	private readonly MbEvent _setupPreConversationEvent = new MbEvent();
-
 	private MbEvent _armyOverlaySetDirty = new MbEvent();
 
 	private readonly MbEvent<int> _playerDesertedBattle = new MbEvent<int>();
@@ -316,6 +337,10 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent<Track> _trackLostEvent = new MbEvent<Track>();
 
 	private readonly MbEvent<Dictionary<string, int>> _locationCharactersAreReadyToSpawn = new MbEvent<Dictionary<string, int>>();
+
+	private readonly ReferenceMBEvent<MatrixFrame> _onBeforePlayerAgentSpawn = new ReferenceMBEvent<MatrixFrame>();
+
+	private readonly MbEvent _onPlayerAgentSpawned = new MbEvent();
 
 	private readonly MbEvent _locationCharactersSimulatedSpawned = new MbEvent();
 
@@ -331,7 +356,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero> _playerStartTalkFromMenu = new MbEvent<Hero>();
 
-	private readonly MbEvent<GameMenuOption> _gameMenuOptionSelectedEvent = new MbEvent<GameMenuOption>();
+	private readonly MbEvent<GameMenu, GameMenuOption> _gameMenuOptionSelectedEvent = new MbEvent<GameMenu, GameMenuOption>();
 
 	private readonly MbEvent<CharacterObject> _playerStartRecruitmentEvent = new MbEvent<CharacterObject>();
 
@@ -411,6 +436,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes> _siegeCompletedEvent = new MbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes>();
 
+	private readonly MbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes> _afterSiegeCompletedEvent = new MbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes>();
+
 	private readonly MbEvent<SiegeEvent, BattleSideEnum, SiegeEngineType> _siegeEngineBuiltEvent = new MbEvent<SiegeEvent, BattleSideEnum, SiegeEngineType>();
 
 	private readonly MbEvent<BattleSideEnum, RaidEventComponent> _raidCompletedEvent = new MbEvent<BattleSideEnum, RaidEventComponent>();
@@ -455,19 +482,23 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero, HeroGetsBusyReasons> _onHeroGetsBusy = new MbEvent<Hero, HeroGetsBusyReasons>();
 
-	private readonly MbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>, ItemRoster, MBList<TroopRosterElement>, float> _collectLootsEvent = new MbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>, ItemRoster, MBList<TroopRosterElement>, float>();
+	private readonly MbEvent<PartyBase, ItemRoster> _onCollectLootItems = new MbEvent<PartyBase, ItemRoster>();
 
-	private readonly MbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>> _distributeLootToPartyEvent = new MbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>>();
+	private readonly MbEvent<PartyBase, PartyBase, ItemRoster> _onLootDistributedToPartyEvent = new MbEvent<PartyBase, PartyBase, ItemRoster>();
 
 	private readonly MbEvent<Hero, Settlement, MobileParty, TeleportHeroAction.TeleportationDetail> _onHeroTeleportationRequestedEvent = new MbEvent<Hero, Settlement, MobileParty, TeleportHeroAction.TeleportationDetail>();
 
 	private readonly MbEvent<MobileParty> _onPartyLeaderChangeOfferCanceledEvent = new MbEvent<MobileParty>();
+
+	private readonly MbEvent<MobileParty, Hero> _onPartyLeaderChangedEvent = new MbEvent<MobileParty, Hero>();
 
 	private readonly MbEvent<Clan, float> _onClanInfluenceChangedEvent = new MbEvent<Clan, float>();
 
 	private readonly MbEvent<CharacterObject> _onPlayerPartyKnockedOrKilledTroopEvent = new MbEvent<CharacterObject>();
 
 	private readonly MbEvent<DefaultClanFinanceModel.AssetIncomeType, int> _onPlayerEarnedGoldFromAssetEvent = new MbEvent<DefaultClanFinanceModel.AssetIncomeType, int>();
+
+	private readonly MbEvent<Clan, IFaction> _onClanEarnedGoldFromTributeEvent = new MbEvent<Clan, IFaction>();
 
 	private readonly MbEvent _onMainPartyStarving = new MbEvent();
 
@@ -481,6 +512,52 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero, Crafting.RefiningFormula> _onItemsRefined = new MbEvent<Hero, Crafting.RefiningFormula>();
 
+	private readonly MbEvent<Dictionary<Hero, int>> _onHeirSelectionRequested = new MbEvent<Dictionary<Hero, int>>();
+
+	private readonly MbEvent<Hero> _onHeirSelectionOver = new MbEvent<Hero>();
+
+	private readonly MbEvent<MobileParty> _onMobilePartyRaftStateChanged = new MbEvent<MobileParty>();
+
+	private readonly MbEvent<CharacterCreationManager> _onCharacterCreationInitialized = new MbEvent<CharacterCreationManager>();
+
+	private readonly MbEvent<PartyBase, Ship, DestroyShipAction.ShipDestroyDetail> _onShipDestroyedEvent = new MbEvent<PartyBase, Ship, DestroyShipAction.ShipDestroyDetail>();
+
+	private readonly MbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail> _onShipOwnerChangedEvent = new MbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail>();
+
+	private readonly MbEvent<Ship, Settlement> _onShipRepairedEvent = new MbEvent<Ship, Settlement>();
+
+	private readonly MbEvent<Ship, Settlement> _onShipCreatedEvent = new MbEvent<Ship, Settlement>();
+
+	private readonly MbEvent<Figurehead> _onFigureheadUnlockedEvent = new MbEvent<Figurehead>();
+
+	private readonly MbEvent<MobileParty, Army> _onPartyLeftArmyEvent = new MbEvent<MobileParty, Army>();
+
+	private readonly MbEvent<PartyBase> _onPartyAddedToMapEventEvent = new MbEvent<PartyBase>();
+
+	private readonly MbEvent<Incident> _onIncidentResolvedEvent = new MbEvent<Incident>();
+
+	private readonly MbEvent<MobileParty> _onMobilePartyNavigationStateChangedEvent = new MbEvent<MobileParty>();
+
+	private readonly MbEvent<MobileParty> _onMobilePartyJoinedToSiegeEventEvent = new MbEvent<MobileParty>();
+
+	private readonly MbEvent<MobileParty> _onMobilePartyLeftSiegeEventEvent = new MbEvent<MobileParty>();
+
+	private readonly MbEvent<SiegeEvent> _onBlockadeActivatedEvent = new MbEvent<SiegeEvent>();
+
+	private readonly MbEvent<SiegeEvent> _onBlockadeDeactivatedEvent = new MbEvent<SiegeEvent>();
+
+	private readonly MbEvent<MapMarker> _onMapMarkerCreatedEvent = new MbEvent<MapMarker>();
+
+	private readonly MbEvent<MapMarker> _onMapMarkerRemovedEvent = new MbEvent<MapMarker>();
+
+	private readonly MbEvent<Kingdom, Kingdom> _onAllianceStartedEvent = new MbEvent<Kingdom, Kingdom>();
+
+	private readonly MbEvent<Kingdom, Kingdom> _onAllianceEndedEvent = new MbEvent<Kingdom, Kingdom>();
+
+	private readonly MbEvent<Kingdom, Kingdom, Kingdom> _onCallToWarAgreementStartedEvent = new MbEvent<Kingdom, Kingdom, Kingdom>();
+
+	private readonly MbEvent<Kingdom, Kingdom, Kingdom> _onCallToWarAgreementEndedEvent = new MbEvent<Kingdom, Kingdom, Kingdom>();
+
 	private readonly ReferenceMBEvent<Hero, bool> _canHeroLeadPartyEvent = new ReferenceMBEvent<Hero, bool>();
 
 	private readonly ReferenceMBEvent<Hero, bool> _canMarryEvent = new ReferenceMBEvent<Hero, bool>();
@@ -491,11 +568,15 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly ReferenceMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool> _canHeroDieEvent = new ReferenceMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool>();
 
+	private readonly ReferenceMBEvent<Hero, bool> _canPlayerMeetWithHeroAfterConversationEvent = new ReferenceMBEvent<Hero, bool>();
+
 	private readonly ReferenceMBEvent<Hero, bool> _canHeroBecomePrisonerEvent = new ReferenceMBEvent<Hero, bool>();
 
 	private readonly ReferenceMBEvent<Hero, bool> _canMoveToSettlementEvent = new ReferenceMBEvent<Hero, bool>();
 
-	private readonly ReferenceMBEvent<Hero, bool> _canHaveQuestsOrIssues = new ReferenceMBEvent<Hero, bool>();
+	private readonly ReferenceMBEvent<Hero, bool> _canHaveCampaignIssues = new ReferenceMBEvent<Hero, bool>();
+
+	private readonly ReferenceMBEvent<Settlement, object, int> _isSettlementBusy = new ReferenceMBEvent<Settlement, object, int>();
 
 	private readonly MbEvent<IFaction> _onMapEventContinuityNeedsUpdate = new MbEvent<IFaction>();
 
@@ -506,6 +587,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<BarterData> BarterablesRequested => Instance._barterablesRequested;
 
 	public static IMbEvent<Hero, bool> HeroLevelledUp => Instance._heroLevelledUp;
+
+	public static IMbEvent<BanditPartyComponent, Hideout> OnHomeHideoutChangedEvent => Instance._onHomeHideoutChangedEvent;
 
 	public static IMbEvent<Hero, SkillObject, int, bool> HeroGainedSkill => Instance._heroGainedSkill;
 
@@ -531,7 +614,9 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Clan, Kingdom, Kingdom, ChangeKingdomAction.ChangeKingdomActionDetail, bool> OnClanChangedKingdomEvent => Instance._clanChangedKingdom;
 
-	public static IMbEvent<Clan> OnCompanionClanCreatedEvent => Instance._onCompanionClanCreatedEvent;
+	public static IMbEvent<Clan, Kingdom, Kingdom> OnClanDefectedEvent => Instance._onClanDefected;
+
+	public static IMbEvent<Clan, bool> OnClanCreatedEvent => Instance._onClanCreatedEvent;
 
 	public static IMbEvent<Hero, MobileParty> OnHeroJoinedPartyEvent => Instance._onHeroJoinedPartyEvent;
 
@@ -555,9 +640,11 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Army, Army.ArmyDispersionReason, bool> ArmyDispersed => Instance._armyDispersed;
 
-	public static IMbEvent<Army, Settlement> ArmyGathered => Instance._armyGathered;
+	public static IMbEvent<Army, IMapPoint> ArmyGathered => Instance._armyGathered;
 
 	public static IMbEvent<Hero, PerkObject> PerkOpenedEvent => Instance._perkOpenedEvent;
+
+	public static IMbEvent<Hero, PerkObject> PerkResetEvent => Instance._perkResetEvent;
 
 	public static IMbEvent<TraitObject, int> PlayerTraitChangedEvent => Instance._playerTraitChangedEvent;
 
@@ -566,6 +653,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<MobileParty, Settlement, Hero> SettlementEntered => Instance._settlementEntered;
 
 	public static IMbEvent<MobileParty, Settlement, Hero> AfterSettlementEntered => Instance._afterSettlementEntered;
+
+	public static IMbEvent<MobileParty, Settlement, Hero> BeforeSettlementEnteredEvent => Instance._beforeSettlementEntered;
 
 	public static IMbEvent<Town, CharacterObject, CharacterObject> MercenaryTroopChangedInTown => Instance._mercenaryTroopChangedInTown;
 
@@ -579,7 +668,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero, Hero, Romance.RomanceLevelEnum> RomanticStateChanged => Instance._romanticStateChanged;
 
-	public static IMbEvent<Hero, Hero, bool> HeroesMarried => Instance._heroesMarried;
+	public static IMbEvent<Hero, Hero, bool> BeforeHeroesMarried => Instance._beforeHeroesMarried;
 
 	public static IMbEvent<int, Town> PlayerEliminatedFromTournament => Instance._playerEliminatedFromTournament;
 
@@ -607,6 +696,10 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<MobileParty> MobilePartyCreated => Instance._mobilePartyCreated;
 
+	public static IMbEvent<IInteractablePoint> MapInteractableCreated => Instance._mapInteractableCreated;
+
+	public static IMbEvent<IInteractablePoint> MapInteractableDestroyed => Instance._mapInteractableDestroyed;
+
 	public static IMbEvent<MobileParty, bool> MobilePartyQuestStatusChanged => Instance._mobilePartyQuestStatusChanged;
 
 	public static IMbEvent<Hero, Hero, KillCharacterAction.KillCharacterActionDetail, bool> HeroKilledEvent => Instance._heroKilled;
@@ -627,9 +720,9 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<PartyBase, Hero> HeroPrisonerTaken => Instance._heroPrisonerTaken;
 
-	public static IMbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail> HeroPrisonerReleased => Instance._heroPrisonerReleased;
+	public static IMbEvent<Hero, PartyBase, IFaction, EndCaptivityDetail, bool> HeroPrisonerReleased => Instance._heroPrisonerReleased;
 
-	public static IMbEvent<Hero> CharacterBecameFugitive => Instance._characterBecameFugitive;
+	public static IMbEvent<Hero, bool> CharacterBecameFugitiveEvent => Instance._characterBecameFugitiveEvent;
 
 	public static IMbEvent<Hero> OnPlayerMetHeroEvent => Instance._playerMetHero;
 
@@ -645,7 +738,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<MenuCallbackArgs> GameMenuOpened => Instance._gameMenuOpened;
 
-	public static IMbEvent<MenuCallbackArgs> AfterGameMenuOpenedEvent => Instance._afterGameMenuOpenedEvent;
+	public static IMbEvent<MenuCallbackArgs> AfterGameMenuInitializedEvent => Instance._afterGameMenuInitializedEvent;
 
 	public static IMbEvent<MenuCallbackArgs> BeforeGameMenuOpenedEvent => Instance._beforeGameMenuOpenedEvent;
 
@@ -681,9 +774,11 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero> OnRansomOfferCancelledEvent => Instance._onRansomOfferCancelled;
 
-	public static IMbEvent<IFaction, int> OnPeaceOfferedToPlayerEvent => Instance._onPeaceOfferedToPlayer;
+	public static IMbEvent<IFaction, int, int> OnPeaceOfferedToPlayerEvent => Instance._onPeaceOfferedToPlayer;
 
-	public static IMbEvent<IFaction> OnPeaceOfferCancelledEvent => Instance._onPeaceOfferCancelled;
+	public static IMbEvent<Kingdom, Kingdom> OnTradeAgreementSignedEvent => Instance._onTradeAgreementSignedEvent;
+
+	public static IMbEvent<IFaction> OnPeaceOfferResolvedEvent => Instance._onPeaceOfferResolved;
 
 	public static IMbEvent<Hero, Hero> OnMarriageOfferedToPlayerEvent => Instance._onMarriageOfferedToPlayerEvent;
 
@@ -692,6 +787,10 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<Kingdom> OnVassalOrMercenaryServiceOfferedToPlayerEvent => Instance._onVassalOrMercenaryServiceOfferedToPlayerEvent;
 
 	public static IMbEvent<Kingdom> OnVassalOrMercenaryServiceOfferCanceledEvent => Instance._onVassalOrMercenaryServiceOfferCanceledEvent;
+
+	public static IMbEvent<Clan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails> OnMercenaryServiceStartedEvent => Instance._onMercenaryServiceStartedEvent;
+
+	public static IMbEvent<Clan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails> OnMercenaryServiceEndedEvent => Instance._onMercenaryServiceEndedEvent;
 
 	public static IMbEvent<IMission> OnMissionStartedEvent => Instance._onMissionStartedEvent;
 
@@ -761,7 +860,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<MobileParty> PartyRemovedFromArmyEvent => Instance._onPartyRemovedFromArmyEvent;
 
-	public static IMbEvent<Hero, Army.ArmyLeaderThinkReason> OnArmyLeaderThinkEvent => Instance._onArmyLeaderThinkEvent;
+	public static IMbEvent OnPlayerArmyLeaderChangedBehaviorEvent => Instance._onPlayerArmyLeaderChangedBehaviorEvent;
 
 	public static IMbEvent<IMission> OnMissionEndedEvent => Instance._onMissionEndedEvent;
 
@@ -777,8 +876,6 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<float> MissionTickEvent => Instance._missionTickEvent;
 
-	public static IMbEvent SetupPreConversationEvent => Instance._setupPreConversationEvent;
-
 	public static IMbEvent ArmyOverlaySetDirtyEvent => Instance._armyOverlaySetDirty ?? (Instance._armyOverlaySetDirty = new MbEvent());
 
 	public static IMbEvent<int> PlayerDesertedBattleEvent => Instance._playerDesertedBattle;
@@ -790,6 +887,10 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<Track> TrackLostEvent => Instance._trackLostEvent;
 
 	public static IMbEvent<Dictionary<string, int>> LocationCharactersAreReadyToSpawnEvent => Instance._locationCharactersAreReadyToSpawn;
+
+	public static ReferenceIMBEvent<MatrixFrame> BeforePlayerAgentSpawnEvent => Instance._onBeforePlayerAgentSpawn;
+
+	public static IMbEvent PlayerAgentSpawned => Instance._onPlayerAgentSpawned;
 
 	public static IMbEvent LocationCharactersSimulatedEvent => Instance._locationCharactersSimulatedSpawned;
 
@@ -803,7 +904,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero> PlayerStartTalkFromMenu => Instance._playerStartTalkFromMenu;
 
-	public static IMbEvent<GameMenuOption> GameMenuOptionSelectedEvent => Instance._gameMenuOptionSelectedEvent;
+	public static IMbEvent<GameMenu, GameMenuOption> GameMenuOptionSelectedEvent => Instance._gameMenuOptionSelectedEvent;
 
 	public static IMbEvent<CharacterObject> PlayerStartRecruitmentEvent => Instance._playerStartRecruitmentEvent;
 
@@ -883,6 +984,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes> SiegeCompletedEvent => Instance._siegeCompletedEvent;
 
+	public static IMbEvent<Settlement, MobileParty, bool, MapEvent.BattleTypes> AfterSiegeCompletedEvent => Instance._afterSiegeCompletedEvent;
+
 	public static IMbEvent<SiegeEvent, BattleSideEnum, SiegeEngineType> SiegeEngineBuiltEvent => Instance._siegeEngineBuiltEvent;
 
 	public static IMbEvent<BattleSideEnum, RaidEventComponent> RaidCompletedEvent => Instance._raidCompletedEvent;
@@ -927,19 +1030,23 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero, HeroGetsBusyReasons> OnHeroGetsBusyEvent => Instance._onHeroGetsBusy;
 
-	public static IMbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>, ItemRoster, MBList<TroopRosterElement>, float> CollectLootsEvent => Instance._collectLootsEvent;
+	public static IMbEvent<PartyBase, ItemRoster> OnCollectLootsItemsEvent => Instance._onCollectLootItems;
 
-	public static IMbEvent<MapEvent, PartyBase, Dictionary<PartyBase, ItemRoster>> DistributeLootToPartyEvent => Instance._distributeLootToPartyEvent;
+	public static IMbEvent<PartyBase, PartyBase, ItemRoster> OnLootDistributedToPartyEvent => Instance._onLootDistributedToPartyEvent;
 
 	public static IMbEvent<Hero, Settlement, MobileParty, TeleportHeroAction.TeleportationDetail> OnHeroTeleportationRequestedEvent => Instance._onHeroTeleportationRequestedEvent;
 
 	public static IMbEvent<MobileParty> OnPartyLeaderChangeOfferCanceledEvent => Instance._onPartyLeaderChangeOfferCanceledEvent;
+
+	public static IMbEvent<MobileParty, Hero> OnPartyLeaderChangedEvent => Instance._onPartyLeaderChangedEvent;
 
 	public static IMbEvent<Clan, float> OnClanInfluenceChangedEvent => Instance._onClanInfluenceChangedEvent;
 
 	public static IMbEvent<CharacterObject> OnPlayerPartyKnockedOrKilledTroopEvent => Instance._onPlayerPartyKnockedOrKilledTroopEvent;
 
 	public static IMbEvent<DefaultClanFinanceModel.AssetIncomeType, int> OnPlayerEarnedGoldFromAssetEvent => Instance._onPlayerEarnedGoldFromAssetEvent;
+
+	public static IMbEvent<Clan, IFaction> OnClanEarnedGoldFromTributeEvent => Instance._onClanEarnedGoldFromTributeEvent;
 
 	public static IMbEvent OnMainPartyStarvingEvent => Instance._onMainPartyStarving;
 
@@ -953,6 +1060,52 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero, Crafting.RefiningFormula> OnItemsRefinedEvent => Instance._onItemsRefined;
 
+	public static IMbEvent<Dictionary<Hero, int>> OnHeirSelectionRequestedEvent => Instance._onHeirSelectionRequested;
+
+	public static IMbEvent<Hero> OnHeirSelectionOverEvent => Instance._onHeirSelectionOver;
+
+	public static IMbEvent<CharacterCreationManager> OnCharacterCreationInitializedEvent => Instance._onCharacterCreationInitialized;
+
+	public static IMbEvent<MobileParty> OnMobilePartyRaftStateChangedEvent => Instance._onMobilePartyRaftStateChanged;
+
+	public static IMbEvent<PartyBase, Ship, DestroyShipAction.ShipDestroyDetail> OnShipDestroyedEvent => Instance._onShipDestroyedEvent;
+
+	public static IMbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail> OnShipOwnerChangedEvent => Instance._onShipOwnerChangedEvent;
+
+	public static IMbEvent<Ship, Settlement> OnShipRepairedEvent => Instance._onShipRepairedEvent;
+
+	public static IMbEvent<Ship, Settlement> OnShipCreatedEvent => Instance._onShipCreatedEvent;
+
+	public static IMbEvent<Figurehead> OnFigureheadUnlockedEvent => Instance._onFigureheadUnlockedEvent;
+
+	public static IMbEvent<MobileParty, Army> OnPartyLeftArmyEvent => Instance._onPartyLeftArmyEvent;
+
+	public static IMbEvent<PartyBase> OnPartyAddedToMapEventEvent => Instance._onPartyAddedToMapEventEvent;
+
+	public static IMbEvent<Incident> OnIncidentResolvedEvent => Instance._onIncidentResolvedEvent;
+
+	public static IMbEvent<MobileParty> OnMobilePartyNavigationStateChangedEvent => Instance._onMobilePartyNavigationStateChangedEvent;
+
+	public static IMbEvent<MobileParty> OnMobilePartyJoinedToSiegeEventEvent => Instance._onMobilePartyJoinedToSiegeEventEvent;
+
+	public static IMbEvent<MobileParty> OnMobilePartyLeftSiegeEventEvent => Instance._onMobilePartyLeftSiegeEventEvent;
+
+	public static IMbEvent<SiegeEvent> OnBlockadeActivatedEvent => Instance._onBlockadeActivatedEvent;
+
+	public static IMbEvent<SiegeEvent> OnBlockadeDeactivatedEvent => Instance._onBlockadeDeactivatedEvent;
+
+	public static IMbEvent<MapMarker> OnMapMarkerCreatedEvent => Instance._onMapMarkerCreatedEvent;
+
+	public static IMbEvent<MapMarker> OnMapMarkerRemovedEvent => Instance._onMapMarkerRemovedEvent;
+
+	public static IMbEvent<Kingdom, Kingdom> OnAllianceStartedEvent => Instance._onAllianceStartedEvent;
+
+	public static IMbEvent<Kingdom, Kingdom> OnAllianceEndedEvent => Instance._onAllianceEndedEvent;
+
+	public static IMbEvent<Kingdom, Kingdom, Kingdom> OnCallToWarAgreementStartedEvent => Instance._onCallToWarAgreementStartedEvent;
+
+	public static IMbEvent<Kingdom, Kingdom, Kingdom> OnCallToWarAgreementEndedEvent => Instance._onCallToWarAgreementEndedEvent;
+
 	public static ReferenceIMBEvent<Hero, bool> CanHeroLeadPartyEvent => Instance._canHeroLeadPartyEvent;
 
 	public static ReferenceIMBEvent<Hero, bool> CanHeroMarryEvent => Instance._canMarryEvent;
@@ -963,24 +1116,30 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static ReferenceIMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool> CanHeroDieEvent => Instance._canHeroDieEvent;
 
+	public static ReferenceIMBEvent<Hero, bool> CanPlayerMeetWithHeroAfterConversationEvent => Instance._canPlayerMeetWithHeroAfterConversationEvent;
+
 	public static ReferenceIMBEvent<Hero, bool> CanHeroBecomePrisonerEvent => Instance._canHeroBecomePrisonerEvent;
 
 	public static ReferenceIMBEvent<Hero, bool> CanMoveToSettlementEvent => Instance._canMoveToSettlementEvent;
 
-	public static ReferenceIMBEvent<Hero, bool> CanHaveQuestsOrIssuesEvent => Instance._canHaveQuestsOrIssues;
+	public static ReferenceIMBEvent<Hero, bool> CanHaveCampaignIssuesEvent => Instance._canHaveCampaignIssues;
+
+	public static ReferenceIMBEvent<Settlement, object, int> IsSettlementBusyEvent => Instance._isSettlementBusy;
 
 	public static IMbEvent<IFaction> OnMapEventContinuityNeedsUpdateEvent => Instance._onMapEventContinuityNeedsUpdate;
 
 	public override void RemoveListeners(object obj)
 	{
 		_heroLevelledUp.ClearListeners(obj);
+		_onHomeHideoutChangedEvent.ClearListeners(obj);
 		_heroGainedSkill.ClearListeners(obj);
 		_heroRelationChanged.ClearListeners(obj);
 		_questLogAddedEvent.ClearListeners(obj);
 		_issueLogAddedEvent.ClearListeners(obj);
 		_onCharacterCreationIsOverEvent.ClearListeners(obj);
 		_clanChangedKingdom.ClearListeners(obj);
-		_onCompanionClanCreatedEvent.ClearListeners(obj);
+		_onClanDefected.ClearListeners(obj);
+		_onClanCreatedEvent.ClearListeners(obj);
 		_onHeroJoinedPartyEvent.ClearListeners(obj);
 		_partyAttachedParty.ClearListeners(obj);
 		_nearbyPartyAddedToPlayerMapEvent.ClearListeners(obj);
@@ -990,6 +1149,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_villageStateChanged.ClearListeners(obj);
 		_settlementEntered.ClearListeners(obj);
 		_afterSettlementEntered.ClearListeners(obj);
+		_beforeSettlementEntered.ClearListeners(obj);
 		_mercenaryTroopChangedInTown.ClearListeners(obj);
 		_mercenaryNumberChangedInTown.ClearListeners(obj);
 		_alleyOwnerChanged.ClearListeners(obj);
@@ -1003,12 +1163,14 @@ public class CampaignEvents : CampaignEventReceiver
 		_rebelliousClanDisbandedAtSettlement.ClearListeners(obj);
 		_mobilePartyDestroyed.ClearListeners(obj);
 		_mobilePartyCreated.ClearListeners(obj);
+		_mapInteractableCreated.ClearListeners(obj);
+		_mapInteractableDestroyed.ClearListeners(obj);
 		_mobilePartyQuestStatusChanged.ClearListeners(obj);
 		_heroKilled.ClearListeners(obj);
 		_characterDefeated.ClearListeners(obj);
 		_heroPrisonerTaken.ClearListeners(obj);
 		_onPartySizeChangedEvent.ClearListeners(obj);
-		_characterBecameFugitive.ClearListeners(obj);
+		_characterBecameFugitiveEvent.ClearListeners(obj);
 		_playerMetHero.ClearListeners(obj);
 		_playerLearnsAboutHero.ClearListeners(obj);
 		_renownGained.ClearListeners(obj);
@@ -1029,6 +1191,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_onMissionStartedEvent.ClearListeners(obj);
 		_beforeMissionOpenedEvent.ClearListeners(obj);
 		_onPartyRemovedEvent.ClearListeners(obj);
+		_onPartyLeaderChangedEvent.ClearListeners(obj);
 		_banditPartyRecruited.ClearListeners(obj);
 		_onSettlementOwnerChangedEvent.ClearListeners(obj);
 		_onGovernorChangedEvent.ClearListeners(obj);
@@ -1058,25 +1221,25 @@ public class CampaignEvents : CampaignEventReceiver
 		_onRansomOfferedToPlayer.ClearListeners(obj);
 		_onRansomOfferCancelled.ClearListeners(obj);
 		_onPeaceOfferedToPlayer.ClearListeners(obj);
-		_onPeaceOfferCancelled.ClearListeners(obj);
+		_onTradeAgreementSignedEvent.ClearListeners(obj);
+		_onPeaceOfferResolved.ClearListeners(obj);
 		_onMarriageOfferedToPlayerEvent.ClearListeners(obj);
 		_onMarriageOfferCanceledEvent.ClearListeners(obj);
 		_onVassalOrMercenaryServiceOfferedToPlayerEvent.ClearListeners(obj);
 		_onVassalOrMercenaryServiceOfferCanceledEvent.ClearListeners(obj);
-		_afterGameMenuOpenedEvent.ClearListeners(obj);
+		_afterGameMenuInitializedEvent.ClearListeners(obj);
 		_beforeGameMenuOpenedEvent.ClearListeners(obj);
 		_onChildConceived.ClearListeners(obj);
 		_onGivenBirthEvent.ClearListeners(obj);
 		_missionTickEvent.ClearListeners(obj);
 		_armyOverlaySetDirty.ClearListeners(obj);
-		_onArmyLeaderThinkEvent.ClearListeners(obj);
+		_onPlayerArmyLeaderChangedBehaviorEvent.ClearListeners(obj);
 		_partyVisibilityChanged.ClearListeners(obj);
 		_onHeroCreated.ClearListeners(obj);
 		_heroOccupationChangedEvent.ClearListeners(obj);
 		_onHeroWounded.ClearListeners(obj);
 		_playerDesertedBattle.ClearListeners(obj);
 		_companionRemoved.ClearListeners(obj);
-		_setupPreConversationEvent.ClearListeners(obj);
 		_trackLostEvent.ClearListeners(obj);
 		_trackDetectedEvent.ClearListeners(obj);
 		_locationCharactersAreReadyToSpawn.ClearListeners(obj);
@@ -1090,7 +1253,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_playerStartRecruitmentEvent.ClearListeners(obj);
 		_onAgentJoinedConversationEvent.ClearListeners(obj);
 		_onConversationEnded.ClearListeners(obj);
-		_heroesMarried.ClearListeners(obj);
+		_beforeHeroesMarried.ClearListeners(obj);
 		_onTroopsDesertedEvent.ClearListeners(obj);
 		_onBeforePlayerCharacterChangedEvent.ClearListeners(obj);
 		_onPlayerCharacterChangedEvent.ClearListeners(obj);
@@ -1135,6 +1298,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_onQuestStartedEvent.ClearListeners(obj);
 		_onPartyConsumedFoodEvent.ClearListeners(obj);
 		_siegeCompletedEvent.ClearListeners(obj);
+		_afterSiegeCompletedEvent.ClearListeners(obj);
 		_raidCompletedEvent.ClearListeners(obj);
 		_forceVolunteersCompletedEvent.ClearListeners(obj);
 		_forceSuppliesCompletedEvent.ClearListeners(obj);
@@ -1187,8 +1351,8 @@ public class CampaignEvents : CampaignEventReceiver
 		_onSaveOverEvent.ClearListeners(obj);
 		_onPlayerBodyPropertiesChangedEvent.ClearListeners(obj);
 		_rulingClanChanged.ClearListeners(obj);
-		_collectLootsEvent.ClearListeners(obj);
-		_distributeLootToPartyEvent.ClearListeners(obj);
+		_onCollectLootItems.ClearListeners(obj);
+		_onLootDistributedToPartyEvent.ClearListeners(obj);
 		_onHeroTeleportationRequestedEvent.ClearListeners(obj);
 		_onPartyLeaderChangeOfferCanceledEvent.ClearListeners(obj);
 		_canBeGovernorOrHavePartyRoleEvent.ClearListeners(obj);
@@ -1197,19 +1361,49 @@ public class CampaignEvents : CampaignEventReceiver
 		_canHeroDieEvent.ClearListeners(obj);
 		_canHeroBecomePrisonerEvent.ClearListeners(obj);
 		_canHeroEquipmentBeChangedEvent.ClearListeners(obj);
-		_canHaveQuestsOrIssues.ClearListeners(obj);
+		_canHaveCampaignIssues.ClearListeners(obj);
+		_isSettlementBusy.ClearListeners(obj);
 		_canMoveToSettlementEvent.ClearListeners(obj);
 		_onQuarterDailyPartyTick.ClearListeners(obj);
 		_onMainPartyStarving.ClearListeners(obj);
 		_onClanInfluenceChangedEvent.ClearListeners(obj);
 		_onPlayerPartyKnockedOrKilledTroopEvent.ClearListeners(obj);
 		_onPlayerEarnedGoldFromAssetEvent.ClearListeners(obj);
+		_onClanEarnedGoldFromTributeEvent.ClearListeners(obj);
 		_onPlayerJoinedTournamentEvent.ClearListeners(obj);
 		_onHeroUnregisteredEvent.ClearListeners(obj);
 		_onConfigChanged.ClearListeners(obj);
 		_onCraftingOrderCompleted.ClearListeners(obj);
 		_onItemsRefined.ClearListeners(obj);
 		_onMapEventContinuityNeedsUpdate.ClearListeners(obj);
+		_onPlayerAgentSpawned.ClearListeners(obj);
+		_onBeforePlayerAgentSpawn.ClearListeners(obj);
+		_perkResetEvent.ClearListeners(obj);
+		_onHeirSelectionOver.ClearListeners(obj);
+		_onMobilePartyRaftStateChanged.ClearListeners(obj);
+		_onCharacterCreationInitialized.ClearListeners(obj);
+		_onShipDestroyedEvent.ClearListeners(obj);
+		_onShipRepairedEvent.ClearListeners(obj);
+		_onShipCreatedEvent.ClearListeners(obj);
+		_onPartyLeftArmyEvent.ClearListeners(obj);
+		_onPartyAddedToMapEventEvent.ClearListeners(obj);
+		_onIncidentResolvedEvent.ClearListeners(obj);
+		_onFigureheadUnlockedEvent.ClearListeners(obj);
+		_onShipOwnerChangedEvent.ClearListeners(obj);
+		_onMobilePartyNavigationStateChangedEvent.ClearListeners(obj);
+		_onMobilePartyJoinedToSiegeEventEvent.ClearListeners(obj);
+		_onMobilePartyLeftSiegeEventEvent.ClearListeners(obj);
+		_onBlockadeActivatedEvent.ClearListeners(obj);
+		_onBlockadeDeactivatedEvent.ClearListeners(obj);
+		_onMercenaryServiceStartedEvent.ClearListeners(obj);
+		_onMercenaryServiceEndedEvent.ClearListeners(obj);
+		_canPlayerMeetWithHeroAfterConversationEvent.ClearListeners(obj);
+		_onMapMarkerCreatedEvent.ClearListeners(obj);
+		_onMapMarkerRemovedEvent.ClearListeners(obj);
+		_onAllianceStartedEvent.ClearListeners(obj);
+		_onAllianceEndedEvent.ClearListeners(obj);
+		_onCallToWarAgreementStartedEvent.ClearListeners(obj);
+		_onCallToWarAgreementEndedEvent.ClearListeners(obj);
 	}
 
 	public override void OnPlayerBodyPropertiesChanged()
@@ -1225,6 +1419,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnHeroLevelledUp(Hero hero, bool shouldNotify = true)
 	{
 		_heroLevelledUp.Invoke(hero, shouldNotify);
+	}
+
+	public override void OnHomeHideoutChanged(BanditPartyComponent banditPartyComponent, Hideout oldHomeHideout)
+	{
+		Instance._onHomeHideoutChangedEvent.Invoke(banditPartyComponent, oldHomeHideout);
 	}
 
 	public override void OnHeroGainedSkill(Hero hero, SkillObject skill, int change = 1, bool shouldNotify = true)
@@ -1287,9 +1486,14 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._clanChangedKingdom.Invoke(clan, oldKingdom, newKingdom, detail, showNotification);
 	}
 
-	public override void OnCompanionClanCreated(Clan clan)
+	public override void OnClanDefected(Clan clan, Kingdom oldKingdom, Kingdom newKingdom)
 	{
-		Instance._onCompanionClanCreatedEvent.Invoke(clan);
+		Instance._onClanDefected.Invoke(clan, oldKingdom, newKingdom);
+	}
+
+	public override void OnClanCreated(Clan clan, bool isCompanion)
+	{
+		Instance._onClanCreatedEvent.Invoke(clan, isCompanion);
 	}
 
 	public override void OnHeroJoinedParty(Hero hero, MobileParty mobileParty)
@@ -1347,14 +1551,19 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._armyDispersed.Invoke(army, reason, isPlayersArmy);
 	}
 
-	public override void OnArmyGathered(Army army, Settlement gatheringSettlement)
+	public override void OnArmyGathered(Army army, IMapPoint gatheringPoint)
 	{
-		Instance._armyGathered.Invoke(army, gatheringSettlement);
+		Instance._armyGathered.Invoke(army, gatheringPoint);
 	}
 
 	public override void OnPerkOpened(Hero hero, PerkObject perk)
 	{
 		Instance._perkOpenedEvent.Invoke(hero, perk);
+	}
+
+	public override void OnPerkReset(Hero hero, PerkObject perk)
+	{
+		Instance._perkResetEvent.Invoke(hero, perk);
 	}
 
 	public override void OnPlayerTraitChanged(TraitObject trait, int previousLevel)
@@ -1375,6 +1584,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnAfterSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
 	{
 		Instance._afterSettlementEntered.Invoke(party, settlement, hero);
+	}
+
+	public override void OnBeforeSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
+	{
+		Instance._beforeSettlementEntered.Invoke(party, settlement, hero);
 	}
 
 	public override void OnMercenaryTroopChangedInTown(Town town, CharacterObject oldTroopType, CharacterObject newTroopType)
@@ -1407,9 +1621,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._romanticStateChanged.Invoke(hero1, hero2, romanceLevel);
 	}
 
-	public override void OnHeroesMarried(Hero hero1, Hero hero2, bool showNotification = true)
+	public override void OnBeforeHeroesMarried(Hero hero1, Hero hero2, bool showNotification = true)
 	{
-		Instance._heroesMarried.Invoke(hero1, hero2, showNotification);
+		Instance._beforeHeroesMarried.Invoke(hero1, hero2, showNotification);
 	}
 
 	public override void OnPlayerEliminatedFromTournament(int round, Town town)
@@ -1477,6 +1691,16 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._mobilePartyCreated.Invoke(party);
 	}
 
+	public override void OnMapInteractableCreated(IInteractablePoint interactable)
+	{
+		Instance._mapInteractableCreated.Invoke(interactable);
+	}
+
+	public override void OnMapInteractableDestroyed(IInteractablePoint interactable)
+	{
+		Instance._mapInteractableDestroyed.Invoke(interactable);
+	}
+
 	public override void OnMobilePartyQuestStatusChanged(MobileParty party, bool isUsedByQuest)
 	{
 		Instance._mobilePartyQuestStatusChanged.Invoke(party, isUsedByQuest);
@@ -1527,14 +1751,14 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._heroPrisonerTaken.Invoke(capturer, prisoner);
 	}
 
-	public override void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+	public override void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification = true)
 	{
-		Instance._heroPrisonerReleased.Invoke(prisoner, party, capturerFaction, detail);
+		Instance._heroPrisonerReleased.Invoke(prisoner, party, capturerFaction, detail, showNotification);
 	}
 
-	public override void OnCharacterBecameFugitive(Hero hero)
+	public override void OnCharacterBecameFugitive(Hero hero, bool showNotification)
 	{
-		Instance._characterBecameFugitive.Invoke(hero);
+		Instance._characterBecameFugitiveEvent.Invoke(hero, showNotification);
 	}
 
 	public override void OnPlayerMetHero(Hero hero)
@@ -1572,9 +1796,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._gameMenuOpened.Invoke(args);
 	}
 
-	public override void AfterGameMenuOpened(MenuCallbackArgs args)
+	public override void AfterGameMenuInitialized(MenuCallbackArgs args)
 	{
-		Instance._afterGameMenuOpenedEvent.Invoke(args);
+		Instance._afterGameMenuInitializedEvent.Invoke(args);
 	}
 
 	public override void BeforeGameMenuOpened(MenuCallbackArgs args)
@@ -1662,14 +1886,19 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onRansomOfferCancelled.Invoke(captiveHero);
 	}
 
-	public override void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount)
+	public override void OnPeaceOfferedToPlayer(IFaction opponentFaction, int tributeAmount, int tributeDurationInDays)
 	{
-		Instance._onPeaceOfferedToPlayer.Invoke(opponentFaction, tributeAmount);
+		Instance._onPeaceOfferedToPlayer.Invoke(opponentFaction, tributeAmount, tributeDurationInDays);
 	}
 
-	public override void OnPeaceOfferCancelled(IFaction opponentFaction)
+	public override void OnTradeAgreementSigned(Kingdom kingdom, Kingdom other)
 	{
-		Instance._onPeaceOfferCancelled.Invoke(opponentFaction);
+		Instance._onTradeAgreementSignedEvent.Invoke(kingdom, other);
+	}
+
+	public override void OnPeaceOfferResolved(IFaction opponentFaction)
+	{
+		Instance._onPeaceOfferResolved.Invoke(opponentFaction);
 	}
 
 	public override void OnMarriageOfferedToPlayer(Hero suitor, Hero maiden)
@@ -1690,6 +1919,16 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnVassalOrMercenaryServiceOfferCanceled(Kingdom offeredKingdom)
 	{
 		Instance._onVassalOrMercenaryServiceOfferCanceledEvent.Invoke(offeredKingdom);
+	}
+
+	public override void OnMercenaryServiceStarted(Clan mercenaryClan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails details)
+	{
+		Instance._onMercenaryServiceStartedEvent.Invoke(mercenaryClan, details);
+	}
+
+	public override void OnMercenaryServiceEnded(Clan mercenaryClan, EndMercenaryServiceAction.EndMercenaryServiceActionDetails details)
+	{
+		Instance._onMercenaryServiceEndedEvent.Invoke(mercenaryClan, details);
 	}
 
 	public override void OnMissionStarted(IMission mission)
@@ -1857,9 +2096,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onPartyRemovedFromArmyEvent.Invoke(mobileParty);
 	}
 
-	public override void OnArmyLeaderThink(Hero hero, Army.ArmyLeaderThinkReason reason)
+	public override void OnPlayerArmyLeaderChangedBehavior()
 	{
-		Instance._onArmyLeaderThinkEvent.Invoke(hero, reason);
+		Instance._onPlayerArmyLeaderChangedBehaviorEvent.Invoke();
 	}
 
 	public override void OnMissionEnded(IMission mission)
@@ -1895,11 +2134,6 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void MissionTick(float dt)
 	{
 		Instance._missionTickEvent.Invoke(dt);
-	}
-
-	public static void SetupPreConversation()
-	{
-		Instance._setupPreConversationEvent.Invoke();
 	}
 
 	public override void OnArmyOverlaySetDirty()
@@ -1944,6 +2178,16 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._locationCharactersAreReadyToSpawn.Invoke(unusedUsablePointCount);
 	}
 
+	public override void OnBeforePlayerAgentSpawn(ref MatrixFrame spawnFrame)
+	{
+		Instance._onBeforePlayerAgentSpawn.Invoke(ref spawnFrame);
+	}
+
+	public override void OnPlayerAgentSpawned()
+	{
+		Instance._onPlayerAgentSpawned.Invoke();
+	}
+
 	public override void LocationCharactersSimulated()
 	{
 		Instance._locationCharactersSimulatedSpawned.Invoke();
@@ -1980,9 +2224,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._playerStartTalkFromMenu.Invoke(hero);
 	}
 
-	public override void OnGameMenuOptionSelected(GameMenuOption gameMenuOption)
+	public override void OnGameMenuOptionSelected(GameMenu gameMenu, GameMenuOption gameMenuOption)
 	{
-		Instance._gameMenuOptionSelectedEvent.Invoke(gameMenuOption);
+		Instance._gameMenuOptionSelectedEvent.Invoke(gameMenu, gameMenuOption);
 	}
 
 	public override void OnPlayerStartRecruitment(CharacterObject recruitTroopCharacter)
@@ -2180,6 +2424,11 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._siegeCompletedEvent.Invoke(siegeSettlement, attackerParty, isWin, battleType);
 	}
 
+	public override void AfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
+	{
+		Instance._afterSiegeCompletedEvent.Invoke(siegeSettlement, attackerParty, isWin, battleType);
+	}
+
 	public override void SiegeEngineBuilt(SiegeEvent siegeEvent, BattleSideEnum side, SiegeEngineType siegeEngineType)
 	{
 		Instance._siegeEngineBuiltEvent.Invoke(siegeEvent, side, siegeEngineType);
@@ -2290,14 +2539,14 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onHeroGetsBusy.Invoke(hero, heroGetsBusyReason);
 	}
 
-	public override void CollectLoots(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot, ItemRoster rosterToReceiveLoot, MBList<TroopRosterElement> lootedCasualties, float lootAmount)
+	public override void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
 	{
-		Instance._collectLootsEvent.Invoke(mapEvent, party, loot, rosterToReceiveLoot, lootedCasualties, lootAmount);
+		Instance._onCollectLootItems.Invoke(winnerParty, gainedLoots);
 	}
 
-	public override void OnLootDistributedToParty(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot)
+	public override void OnLootDistributedToParty(PartyBase winnerParty, PartyBase defeatedParty, ItemRoster lootedItems)
 	{
-		Instance._distributeLootToPartyEvent.Invoke(mapEvent, party, loot);
+		Instance._onLootDistributedToPartyEvent.Invoke(winnerParty, defeatedParty, lootedItems);
 	}
 
 	public override void OnHeroTeleportationRequested(Hero hero, Settlement targetSettlement, MobileParty targetParty, TeleportHeroAction.TeleportationDetail detail)
@@ -2308,6 +2557,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnPartyLeaderChangeOfferCanceled(MobileParty party)
 	{
 		Instance._onPartyLeaderChangeOfferCanceledEvent.Invoke(party);
+	}
+
+	public override void OnPartyLeaderChanged(MobileParty mobileParty, Hero oldLeader)
+	{
+		Instance._onPartyLeaderChangedEvent.Invoke(mobileParty, oldLeader);
 	}
 
 	public override void OnClanInfluenceChanged(Clan clan, float change)
@@ -2323,6 +2577,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnPlayerEarnedGoldFromAsset(DefaultClanFinanceModel.AssetIncomeType incomeType, int incomeAmount)
 	{
 		Instance._onPlayerEarnedGoldFromAssetEvent.Invoke(incomeType, incomeAmount);
+	}
+
+	public override void OnClanEarnedGoldFromTribute(Clan receiverClan, IFaction payingFaction)
+	{
+		Instance._onClanEarnedGoldFromTributeEvent.Invoke(receiverClan, payingFaction);
 	}
 
 	public override void OnMainPartyStarving()
@@ -2355,6 +2614,121 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onItemsRefined.Invoke(hero, refineFormula);
 	}
 
+	public override void OnHeirSelectionRequested(Dictionary<Hero, int> heirApparents)
+	{
+		Instance._onHeirSelectionRequested.Invoke(heirApparents);
+	}
+
+	public override void OnHeirSelectionOver(Hero selectedHero)
+	{
+		Instance._onHeirSelectionOver.Invoke(selectedHero);
+	}
+
+	public override void OnMobilePartyRaftStateChanged(MobileParty mobileParty)
+	{
+		Instance._onMobilePartyRaftStateChanged.Invoke(mobileParty);
+	}
+
+	public override void OnCharacterCreationInitialized(CharacterCreationManager characterCreationManager)
+	{
+		Instance._onCharacterCreationInitialized.Invoke(characterCreationManager);
+	}
+
+	public override void OnShipDestroyed(PartyBase owner, Ship ship, DestroyShipAction.ShipDestroyDetail detail)
+	{
+		Instance._onShipDestroyedEvent.Invoke(owner, ship, detail);
+	}
+
+	public override void OnShipOwnerChanged(Ship ship, PartyBase oldOwner, ChangeShipOwnerAction.ShipOwnerChangeDetail changeDetail)
+	{
+		Instance._onShipOwnerChangedEvent.Invoke(ship, oldOwner, changeDetail);
+	}
+
+	public override void OnShipRepaired(Ship ship, Settlement repairPort)
+	{
+		Instance._onShipRepairedEvent.Invoke(ship, repairPort);
+	}
+
+	public override void OnShipCreated(Ship ship, Settlement createdSettlement)
+	{
+		Instance._onShipCreatedEvent.Invoke(ship, createdSettlement);
+	}
+
+	public override void OnFigureheadUnlocked(Figurehead figurehead)
+	{
+		Instance._onFigureheadUnlockedEvent.Invoke(figurehead);
+	}
+
+	public override void OnPartyLeftArmy(MobileParty party, Army army)
+	{
+		Instance._onPartyLeftArmyEvent.Invoke(party, army);
+	}
+
+	public override void OnPartyAddedToMapEvent(PartyBase partyBase)
+	{
+		Instance._onPartyAddedToMapEventEvent.Invoke(partyBase);
+	}
+
+	public override void OnIncidentResolved(Incident incident)
+	{
+		Instance._onIncidentResolvedEvent.Invoke(incident);
+	}
+
+	public override void OnMobilePartyNavigationStateChanged(MobileParty mobileParty)
+	{
+		Instance._onMobilePartyNavigationStateChangedEvent.Invoke(mobileParty);
+	}
+
+	public override void OnMobilePartyJoinedToSiegeEvent(MobileParty mobileParty)
+	{
+		Instance._onMobilePartyJoinedToSiegeEventEvent.Invoke(mobileParty);
+	}
+
+	public override void OnMobilePartyLeftSiegeEvent(MobileParty mobileParty)
+	{
+		Instance._onMobilePartyLeftSiegeEventEvent.Invoke(mobileParty);
+	}
+
+	public override void OnBlockadeActivated(SiegeEvent siegeEvent)
+	{
+		Instance._onBlockadeActivatedEvent.Invoke(siegeEvent);
+	}
+
+	public override void OnBlockadeDeactivated(SiegeEvent siegeEvent)
+	{
+		Instance._onBlockadeDeactivatedEvent.Invoke(siegeEvent);
+	}
+
+	public override void OnMapMarkerCreated(MapMarker mapMarker)
+	{
+		Instance._onMapMarkerCreatedEvent.Invoke(mapMarker);
+	}
+
+	public override void OnMapMarkerRemoved(MapMarker mapMarker)
+	{
+		Instance._onMapMarkerRemovedEvent.Invoke(mapMarker);
+	}
+
+	public override void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		Instance._onAllianceStartedEvent.Invoke(kingdom1, kingdom2);
+	}
+
+	public override void OnAllianceEnded(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		Instance._onAllianceEndedEvent.Invoke(kingdom1, kingdom2);
+	}
+
+	public override void OnCallToWarAgreementStarted(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		Instance._onCallToWarAgreementStartedEvent.Invoke(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+	}
+
+	public override void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		Instance._onCallToWarAgreementEndedEvent.Invoke(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+	}
+
 	public override void CanHeroLeadParty(Hero hero, ref bool result)
 	{
 		Instance._canHeroLeadPartyEvent.Invoke(hero, ref result);
@@ -2380,6 +2754,11 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._canHeroDieEvent.Invoke(hero, causeOfDeath, ref result);
 	}
 
+	public override void CanPlayerMeetWithHeroAfterConversation(Hero hero, ref bool result)
+	{
+		Instance._canPlayerMeetWithHeroAfterConversationEvent.Invoke(hero, ref result);
+	}
+
 	public override void CanHeroBecomePrisoner(Hero hero, ref bool result)
 	{
 		Instance._canHeroBecomePrisonerEvent.Invoke(hero, ref result);
@@ -2390,9 +2769,14 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._canMoveToSettlementEvent.Invoke(hero, ref result);
 	}
 
-	public override void CanHaveQuestsOrIssues(Hero hero, ref bool result)
+	public override void CanHaveCampaignIssues(Hero hero, ref bool result)
 	{
-		Instance._canHaveQuestsOrIssues.Invoke(hero, ref result);
+		Instance._canHaveCampaignIssues.Invoke(hero, ref result);
+	}
+
+	public override void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+	{
+		Instance._isSettlementBusy.Invoke(settlement, asker, ref priority);
 	}
 
 	public override void OnMapEventContinuityNeedsUpdate(IFaction faction)

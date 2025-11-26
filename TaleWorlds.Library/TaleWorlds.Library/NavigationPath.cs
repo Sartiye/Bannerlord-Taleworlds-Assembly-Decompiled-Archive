@@ -41,4 +41,9 @@ public class NavigationPath : ISerializable
 			info.AddValue("y" + i, PathPoints[i].y);
 		}
 	}
+
+	public void OverridePathPointAtIndex(int index, in Vec2 newValue)
+	{
+		PathPoints[index] = newValue;
+	}
 }

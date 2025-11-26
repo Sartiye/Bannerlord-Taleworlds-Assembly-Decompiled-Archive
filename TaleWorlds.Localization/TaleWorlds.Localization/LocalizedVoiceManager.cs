@@ -15,6 +15,7 @@ public static class LocalizedVoiceManager
 		{
 			return value;
 		}
+		Debug.Print("Voice object for text id is not found: " + id, 0, Debug.DebugColor.Green);
 		return null;
 	}
 
@@ -55,7 +56,7 @@ public static class LocalizedVoiceManager
 		}
 		catch
 		{
-			Debug.FailedAssert("Could not parse: " + xmlPath, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedVoiceManager.cs", "LoadXmlFile", 69);
+			Debug.FailedAssert("Could not parse: " + xmlPath, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedVoiceManager.cs", "LoadXmlFile", 70);
 		}
 		return null;
 	}

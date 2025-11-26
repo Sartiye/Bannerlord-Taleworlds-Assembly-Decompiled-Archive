@@ -2,7 +2,6 @@ using System;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.TroopSuppliers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -18,6 +17,14 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 	private readonly int _rank;
 
 	private bool _isRemoved;
+
+	private bool _hasThrownWeapon;
+
+	private bool _hasHeavyArmor;
+
+	private bool _hasShield;
+
+	private bool _hasSpear;
 
 	public PartyBase Party => _supplier.GetParty(_descriptor);
 
@@ -39,6 +46,14 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 
 	public CharacterObject Troop => _supplier.GetTroop(_descriptor);
 
+	bool IAgentOriginBase.HasThrownWeapon => _hasThrownWeapon;
+
+	bool IAgentOriginBase.HasHeavyArmor => _hasHeavyArmor;
+
+	bool IAgentOriginBase.HasShield => _hasShield;
+
+	bool IAgentOriginBase.HasSpear => _hasSpear;
+
 	BasicCharacterObject IAgentOriginBase.Troop => Troop;
 
 	public UniqueTroopDescriptor TroopDesc => _descriptor;
@@ -53,7 +68,7 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 			{
 				return true;
 			}
-			return IsPartyUnderPlayerCommand(Party);
+			return PartyBase.IsPartyUnderPlayerCommand(Party);
 		}
 	}
 
@@ -68,6 +83,7 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 		_supplier = supplier;
 		_descriptor = descriptor;
 		_rank = rank;
+		AgentOriginUtilities.GetDefaultTroopTraits(Troop, out _hasThrownWeapon, out _hasSpear, out _hasShield, out _hasHeavyArmor);
 	}
 
 	public void SetWounded()
@@ -92,11 +108,11 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 		}
 	}
 
-	public void SetRouted()
+	public void SetRouted(bool isOrderRetreat)
 	{
 		if (!_isRemoved)
 		{
-			_supplier.OnTroopRouted(_descriptor);
+			_supplier.OnTroopRouted(_descriptor, isOrderRetreat);
 			_isRemoved = true;
 		}
 	}
@@ -119,22 +135,8 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 		throw new NotImplementedException();
 	}
 
-	public static bool IsPartyUnderPlayerCommand(PartyBase party)
+	TroopTraitsMask IAgentOriginBase.GetTraitsMask()
 	{
-		if (party == PartyBase.MainParty)
-		{
-			return true;
-		}
-		if (party.Side != PartyBase.MainParty.Side)
-		{
-			return false;
-		}
-		bool num = party.Owner == Hero.MainHero;
-		bool flag = party.MapFaction?.Leader == Hero.MainHero;
-		bool flag2 = party.MobileParty != null && party.MobileParty.DefaultBehavior == AiBehavior.EscortParty && party.MobileParty.TargetParty == MobileParty.MainParty;
-		bool flag3 = party.MobileParty != null && party.MobileParty.Army != null && party.MobileParty.Army.LeaderParty == MobileParty.MainParty;
-		Settlement mapEventSettlement = party.MapEvent.MapEventSettlement;
-		bool flag4 = mapEventSettlement != null && mapEventSettlement.OwnerClan.Leader == Hero.MainHero;
-		return num || flag || flag2 || flag3 || flag4;
+		return AgentOriginUtilities.GetDefaultTraitsMask(this);
 	}
 }

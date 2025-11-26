@@ -22,6 +22,8 @@ public class FillBarWidget : Widget
 
 	private bool _showNegativeChange;
 
+	private bool _customChangeColor;
+
 	[Editor(false)]
 	public int CurrentAmount
 	{
@@ -158,6 +160,23 @@ public class FillBarWidget : Widget
 		}
 	}
 
+	[Editor(false)]
+	public bool CustomChangeColor
+	{
+		get
+		{
+			return _customChangeColor;
+		}
+		set
+		{
+			if (_customChangeColor != value)
+			{
+				_customChangeColor = value;
+				OnPropertyChanged(value, "CustomChangeColor");
+			}
+		}
+	}
+
 	public Widget FillWidget
 	{
 		get
@@ -211,54 +230,70 @@ public class FillBarWidget : Widget
 	{
 	}
 
-	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
+	protected override void OnLateUpdate(float dt)
 	{
-		if (FillWidget != null)
+		base.OnLateUpdate(dt);
+		if (FillWidget == null)
 		{
-			float x = FillWidget.ParentWidget.Size.X;
-			float num = Mathf.Clamp(Mathf.Clamp(_initialAmount, 0f, _maxAmount) / _maxAmount, 0f, 1f);
-			FillWidget.ScaledSuggestedWidth = num * x;
-			if (ChangeWidget != null)
+			return;
+		}
+		float x = FillWidget.ParentWidget.Size.X;
+		if (_maxAmount == 0f)
+		{
+			FillWidget.ScaledSuggestedWidth = 0f;
+		}
+		else
+		{
+			float num = Mathf.Clamp(_initialAmount / _maxAmount, 0f, 1f);
+			FillWidget.ScaledSuggestedWidth = num * (x - FillWidget.ScaledMarginLeft - FillWidget.ScaledMarginRight);
+		}
+		if (ChangeWidget == null)
+		{
+			return;
+		}
+		float num2 = Mathf.Clamp(Mathf.Clamp(_currentAmount - _initialAmount, 0f - _maxAmount, _maxAmount) / _maxAmount, -1f, 1f);
+		if (num2 > 0f)
+		{
+			float num3 = x - ChangeWidget.ScaledMarginLeft - ChangeWidget.ScaledMarginRight;
+			if (CompletelyFillChange)
 			{
-				float num2 = Mathf.Clamp(Mathf.Clamp(_currentAmount - _initialAmount, 0f - _maxAmount, _maxAmount) / _maxAmount, -1f, 1f);
-				if (num2 > 0f)
-				{
-					if (CompletelyFillChange)
-					{
-						float num3 = Mathf.Clamp(Mathf.Clamp(_currentAmount, 0f, _maxAmount) / _maxAmount, 0f, 1f);
-						ChangeWidget.ScaledSuggestedWidth = num3 * x;
-					}
-					else
-					{
-						ChangeWidget.ScaledSuggestedWidth = Mathf.Clamp(num2 * x, 0f, x - FillWidget.ScaledSuggestedWidth);
-						ChangeWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth;
-					}
-					ChangeWidget.Color = new Color(1f, 1f, 1f);
-				}
-				else if (num2 < 0f && ShowNegativeChange)
-				{
-					ChangeWidget.ScaledSuggestedWidth = num2 * x * -1f;
-					ChangeWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth - ChangeWidget.ScaledSuggestedWidth;
-					ChangeWidget.Color = new Color(1f, 0f, 0f);
-				}
-				else
-				{
-					ChangeWidget.ScaledSuggestedWidth = 0f;
-				}
-				if (DividerWidget != null)
-				{
-					if (num2 > 0f)
-					{
-						DividerWidget.ScaledPositionXOffset = ChangeWidget.ScaledPositionXOffset - DividerWidget.Size.X;
-					}
-					else if (num2 < 0f)
-					{
-						DividerWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth - DividerWidget.Size.X;
-					}
-					DividerWidget.IsVisible = ChangeWidget != null && num2 != 0f;
-				}
+				float num4 = Mathf.Clamp(Mathf.Clamp(_currentAmount, 0f, _maxAmount) / _maxAmount, 0f, 1f);
+				ChangeWidget.ScaledSuggestedWidth = num4 * num3;
+			}
+			else
+			{
+				ChangeWidget.ScaledSuggestedWidth = Mathf.Clamp(num2 * num3, 0f, num3 - FillWidget.ScaledSuggestedWidth);
+				ChangeWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth;
+			}
+			if (!CustomChangeColor)
+			{
+				ChangeWidget.Color = new Color(1f, 1f, 1f);
 			}
 		}
-		base.OnRender(twoDimensionContext, drawContext);
+		else if (num2 < 0f && ShowNegativeChange)
+		{
+			ChangeWidget.ScaledSuggestedWidth = num2 * (x - ChangeWidget.ScaledMarginLeft - ChangeWidget.ScaledMarginRight) * -1f;
+			ChangeWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth - ChangeWidget.ScaledSuggestedWidth;
+			if (!CustomChangeColor)
+			{
+				ChangeWidget.Color = new Color(1f, 0f, 0f);
+			}
+		}
+		else
+		{
+			ChangeWidget.ScaledSuggestedWidth = 0f;
+		}
+		if (DividerWidget != null)
+		{
+			if (num2 > 0f)
+			{
+				DividerWidget.ScaledPositionXOffset = ChangeWidget.ScaledPositionXOffset - DividerWidget.Size.X;
+			}
+			else if (num2 < 0f)
+			{
+				DividerWidget.ScaledPositionXOffset = FillWidget.ScaledSuggestedWidth - DividerWidget.Size.X;
+			}
+			DividerWidget.IsVisible = ChangeWidget != null && num2 != 0f;
+		}
 	}
 }

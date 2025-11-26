@@ -8,7 +8,7 @@ public static class PersuasionHelper
 {
 	public static TextObject ShowSuccess(PersuasionOptionArgs optionArgs, bool showToPlayer = true)
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public static TextObject GetDefaultPersuasionOptionReaction(PersuasionOptionResult optionResult)

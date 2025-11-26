@@ -48,10 +48,6 @@ public class CharacterSpawner : ScriptComponentBehavior
 
 	public uint ClothColor2 { get; private set; }
 
-	~CharacterSpawner()
-	{
-	}
-
 	protected override void OnInit()
 	{
 		base.OnInit();
@@ -97,6 +93,15 @@ public class CharacterSpawner : ScriptComponentBehavior
 				_horseEntity.SetVisibilityExcludeParents(visible: false);
 			}
 		}
+		if (_agentVisuals != null)
+		{
+			Skeleton skeleton = _agentVisuals.GetVisuals().GetSkeleton();
+			if (skeleton != null)
+			{
+				skeleton.Freeze(p: false);
+				skeleton.TickAnimationsAndForceUpdate(0.001f, _agentVisuals.GetVisuals().GetGlobalFrame(), tickAnimsForChildren: false);
+			}
+		}
 	}
 
 	protected override void OnRemoved(int removeReason)
@@ -119,7 +124,7 @@ public class CharacterSpawner : ScriptComponentBehavior
 	{
 		if (_agentEntity != null && _agentEntity.Parent == base.GameEntity)
 		{
-			base.GameEntity.RemoveChild(_agentEntity, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: true, 34);
+			base.GameEntity.RemoveChild(_agentEntity.WeakEntity, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: true, 34);
 		}
 		if (_agentVisuals != null)
 		{
@@ -274,7 +279,7 @@ public class CharacterSpawner : ScriptComponentBehavior
 		base.GameEntity.BreakPrefab();
 		if (_agentEntity != null && _agentEntity.Parent == base.GameEntity)
 		{
-			base.GameEntity.RemoveChild(_agentEntity, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: true, 35);
+			base.GameEntity.RemoveChild(_agentEntity.WeakEntity, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: true, 35);
 		}
 		_agentVisuals?.Reset();
 		_agentVisuals?.GetVisuals()?.ManualInvalidate();
@@ -282,7 +287,7 @@ public class CharacterSpawner : ScriptComponentBehavior
 		{
 			_horseEntity.Scene.RemoveEntity(_horseEntity, 98);
 		}
-		_agentEntity = GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
+		_agentEntity = TaleWorlds.Engine.GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
 		_agentEntity.Name = "TableauCharacterAgentVisualsEntity";
 		_spawnFrame = _agentEntity.GetFrame();
 		BodyProperties bodyProperties = characterCode.BodyProperties;
@@ -305,7 +310,7 @@ public class CharacterSpawner : ScriptComponentBehavior
 			.SkeletonType(characterCode.IsFemale ? SkeletonType.Female : SkeletonType.Male)
 			.Entity(_agentEntity)
 			.ActionSet(MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, characterCode.IsFemale, ActionSetSuffix))
-			.ActionCode(ActionIndexCache.Create("act_inventory_idle_start"))
+			.ActionCode(in ActionIndexCache.act_inventory_idle_start)
 			.Scene(base.GameEntity.Scene)
 			.Monster(baseMonsterFromRace)
 			.PrepareImmediately(CreateFaceImmediately)
@@ -313,9 +318,22 @@ public class CharacterSpawner : ScriptComponentBehavior
 			.ClothColor1(ClothColor1)
 			.ClothColor2(ClothColor2)
 			.UseMorphAnims(useMorphAnims: true), "TableauCharacterAgentVisuals", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
-		_agentVisuals.SetAction(ActionIndexCache.Create(PoseAction), MBMath.ClampFloat(AnimationProgress, 0f, 1f));
-		base.GameEntity.AddChild(_agentEntity);
+		AgentVisuals agentVisuals = _agentVisuals;
+		ActionIndexCache actionIndex = ActionIndexCache.Create(PoseAction);
+		agentVisuals.SetAction(in actionIndex, MBMath.ClampFloat(AnimationProgress, 0f, 1f));
+		base.GameEntity.AddChild(_agentEntity.WeakEntity);
 		WieldWeapon(characterCode);
+		if (characterCode.FormationClass == FormationClass.Ranged)
+		{
+			Equipment equipment = _agentVisuals.GetEquipment();
+			for (int i = 0; i < 4; i++)
+			{
+				if (equipment[i].Item?.PrimaryWeapon != null)
+				{
+					MBDebug.Print("Ranged primary weapon: " + equipment[i].Item?.StringId + "\n");
+				}
+			}
+		}
 		MatrixFrame frame = MatrixFrame.Identity;
 		_agentVisuals.GetVisuals().SetFrame(ref frame);
 		if (HasMount)
@@ -328,17 +346,26 @@ public class CharacterSpawner : ScriptComponentBehavior
 		{
 			_horseEntity.SetVisibilityExcludeParents(visible: true);
 		}
+		_agentEntity.CheckResources(addToQueue: true, checkFaceResources: true);
 		Skeleton skeleton = _agentVisuals.GetVisuals().GetSkeleton();
 		skeleton.Freeze(p: false);
 		skeleton.TickAnimationsAndForceUpdate(0.001f, _agentVisuals.GetVisuals().GetGlobalFrame(), tickAnimsForChildren: false);
 		skeleton.SetUptoDate(value: false);
 		skeleton.Freeze(p: true);
-		_agentEntity.SetBoundingboxDirty();
+		foreach (WeakGameEntity child in _agentEntity.WeakEntity.GetChildren())
+		{
+			child.SetBoundingboxDirty();
+		}
 		skeleton.Freeze(p: false);
 		skeleton.TickAnimationsAndForceUpdate(0.001f, _agentVisuals.GetVisuals().GetGlobalFrame(), tickAnimsForChildren: false);
 		skeleton.SetAnimationParameterAtChannel(0, MBMath.ClampFloat(AnimationProgress, 0f, 1f));
 		skeleton.SetUptoDate(value: false);
 		skeleton.Freeze(p: true);
+		_agentEntity.SetBoundingboxDirty();
+		foreach (WeakGameEntity child2 in _agentEntity.WeakEntity.GetChildren())
+		{
+			child2.SetBoundingboxDirty();
+		}
 		skeleton.ManualInvalidate();
 		if (_horseEntity != null)
 		{
@@ -347,6 +374,11 @@ public class CharacterSpawner : ScriptComponentBehavior
 			_horseEntity.Skeleton.SetUptoDate(value: false);
 			_horseEntity.Skeleton.Freeze(p: true);
 			_horseEntity.SetBoundingboxDirty();
+			_horseEntity.SetBoundingboxDirty();
+			foreach (WeakGameEntity child3 in _horseEntity.WeakEntity.GetChildren())
+			{
+				child3.SetBoundingboxDirty();
+			}
 		}
 		if (_horseEntity != null)
 		{
@@ -355,6 +387,11 @@ public class CharacterSpawner : ScriptComponentBehavior
 			_horseEntity.Skeleton.SetAnimationParameterAtChannel(0, MBMath.ClampFloat(HorseAnimationProgress, 0f, 1f));
 			_horseEntity.Skeleton.SetUptoDate(value: false);
 			_horseEntity.Skeleton.Freeze(p: true);
+			_horseEntity.SetBoundingboxDirty();
+			foreach (WeakGameEntity child4 in _horseEntity.WeakEntity.GetChildren())
+			{
+				child4.SetBoundingboxDirty();
+			}
 		}
 		base.GameEntity.SetBoundingboxDirty();
 		if (!base.GameEntity.Scene.IsEditorScene())
@@ -376,7 +413,7 @@ public class CharacterSpawner : ScriptComponentBehavior
 		{
 			return;
 		}
-		WeaponFlags p = (WeaponFlags)0uL;
+		WeaponFlags weaponFlags = (WeaponFlags)0uL;
 		switch (characterCode.FormationClass)
 		{
 		case FormationClass.Infantry:
@@ -386,15 +423,16 @@ public class CharacterSpawner : ScriptComponentBehavior
 		case FormationClass.LightCavalry:
 		case FormationClass.NumberOfRegularFormations:
 		case FormationClass.Bodyguard:
-			p = WeaponFlags.MeleeWeapon;
+			weaponFlags = WeaponFlags.MeleeWeapon;
 			break;
 		case FormationClass.Ranged:
 		case FormationClass.HorseArcher:
-			p = WeaponFlags.RangedWeapon;
+			weaponFlags = WeaponFlags.RangedWeapon;
 			break;
 		}
 		int num = -1;
 		int num2 = -1;
+		WeaponComponentData weaponComponentData = null;
 		Equipment equipment = characterCode.CalculateEquipment();
 		for (int i = 0; i < 4; i++)
 		{
@@ -404,17 +442,30 @@ public class CharacterSpawner : ScriptComponentBehavior
 				{
 					num2 = i;
 				}
-				if (num == -1 && equipment[i].Item.PrimaryWeapon.WeaponFlags.HasAnyFlag(p))
+				if (num == -1 && equipment[i].Item.PrimaryWeapon.WeaponFlags.HasAnyFlag(weaponFlags))
 				{
 					num = i;
+					weaponComponentData = equipment[i].Item.PrimaryWeapon;
+				}
+			}
+		}
+		if (WieldOffHand && weaponFlags == WeaponFlags.RangedWeapon && weaponComponentData != null)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				WeaponComponentData weaponComponentData2 = equipment[j].Item?.PrimaryWeapon;
+				if (weaponComponentData2 != null && weaponComponentData2.IsAmmo && weaponComponentData2.WeaponClass == weaponComponentData.AmmoClass)
+				{
+					num2 = j;
 				}
 			}
 		}
 		if (num != -1 || num2 != -1)
 		{
 			AgentVisualsData copyAgentVisualsData = _agentVisuals.GetCopyAgentVisualsData();
-			copyAgentVisualsData.RightWieldedItemIndex(num).LeftWieldedItemIndex(num2).ActionCode(ActionIndexCache.Create(PoseAction))
-				.Frame(_spawnFrame);
+			AgentVisualsData agentVisualsData = copyAgentVisualsData.RightWieldedItemIndex(num).LeftWieldedItemIndex(num2);
+			ActionIndexCache actionCode = ActionIndexCache.Create(PoseAction);
+			agentVisualsData.ActionCode(in actionCode).Frame(_spawnFrame);
 			_agentVisuals.Refresh(needBatchedVersionForWeaponMeshes: false, copyAgentVisualsData);
 		}
 	}
@@ -428,14 +479,16 @@ public class CharacterSpawner : ScriptComponentBehavior
 			HasMount = false;
 			return;
 		}
-		_horseEntity = GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
+		_horseEntity = TaleWorlds.Engine.GameEntity.CreateEmpty(base.GameEntity.Scene, isModifiableFromEditor: false);
 		_horseEntity.Name = "MountEntity";
 		Monster monster = item.HorseComponent.Monster;
 		MBActionSet actionSet = MBActionSet.GetActionSet(monster.ActionSetCode);
 		_horseEntity.CreateAgentSkeleton(actionSet.GetSkeletonName(), isHumanoid: false, actionSet, monster.MonsterUsage, monster);
 		_horseEntity.CopyComponentsToSkeleton();
-		_horseEntity.Skeleton.SetAgentActionChannel(0, ActionIndexCache.Create(PoseActionForHorse), MBMath.ClampFloat(HorseAnimationProgress, 0f, 1f));
-		base.GameEntity.AddChild(_horseEntity);
+		Skeleton skeleton = _horseEntity.Skeleton;
+		ActionIndexCache actionIndex = ActionIndexCache.Create(PoseActionForHorse);
+		skeleton.SetAgentActionChannel(0, in actionIndex, MBMath.ClampFloat(HorseAnimationProgress, 0f, 1f));
+		base.GameEntity.AddChild(_horseEntity.WeakEntity);
 		MountVisualCreator.AddMountMeshToEntity(_horseEntity, equipment[10].Item, equipment[11].Item, MountCreationKey.GetRandomMountKeyString(equipment[10].Item, MBRandom.RandomInt()));
 		_horseEntity.SetVisibilityExcludeParents(visible: true);
 		_horseEntity.Skeleton.TickAnimations(0.01f, _agentVisuals.GetVisuals().GetGlobalFrame(), tickAnimsForChildren: true);

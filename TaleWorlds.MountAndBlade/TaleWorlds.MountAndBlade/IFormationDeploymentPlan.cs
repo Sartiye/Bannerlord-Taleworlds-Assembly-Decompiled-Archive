@@ -16,23 +16,13 @@ public interface IFormationDeploymentPlan
 
 	int PlannedTroopCount { get; }
 
-	int PlannedFootTroopCount { get; }
-
-	int PlannedMountedTroopCount { get; }
-
 	bool HasDimensions { get; }
-
-	bool HasSignificantMountedTroops { get; }
 
 	bool HasFrame();
 
-	FormationDeploymentFlank GetDefaultFlank(bool spawnWithHorses, int formationTroopCount, int infantryCount);
+	MatrixFrame GetFrame();
 
-	FormationDeploymentOrder GetFlankDeploymentOrder(int offset = 0);
-
-	MatrixFrame GetGroundFrame();
-
-	Vec3 GetGroundPosition();
+	Vec3 GetPosition();
 
 	Vec2 GetDirection();
 

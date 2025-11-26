@@ -4,21 +4,15 @@ namespace TaleWorlds.CampaignSystem.Inventory;
 
 public class TransferCommandResult
 {
-	public CharacterObject TransferCharacter { get; private set; }
-
-	public bool IsCivilianEquipment { get; private set; }
-
-	public Equipment TransferEquipment
+	public Equipment ResultSideEquipment => ResultSide switch
 	{
-		get
-		{
-			if (!IsCivilianEquipment)
-			{
-				return TransferCharacter?.FirstBattleEquipment;
-			}
-			return TransferCharacter?.FirstCivilianEquipment;
-		}
-	}
+		InventoryLogic.InventorySide.CivilianEquipment => TransferCharacter?.FirstCivilianEquipment, 
+		InventoryLogic.InventorySide.BattleEquipment => TransferCharacter?.FirstBattleEquipment, 
+		InventoryLogic.InventorySide.StealthEquipment => TransferCharacter?.FirstStealthEquipment, 
+		_ => null, 
+	};
+
+	public CharacterObject TransferCharacter { get; private set; }
 
 	public InventoryLogic.InventorySide ResultSide { get; private set; }
 
@@ -34,7 +28,7 @@ public class TransferCommandResult
 	{
 	}
 
-	public TransferCommandResult(InventoryLogic.InventorySide resultSide, ItemRosterElement effectedItemRosterElement, int effectedNumber, int finalNumber, EquipmentIndex effectedEquipmentIndex, CharacterObject transferCharacter, bool isCivilianEquipment)
+	public TransferCommandResult(InventoryLogic.InventorySide resultSide, ItemRosterElement effectedItemRosterElement, int effectedNumber, int finalNumber, EquipmentIndex effectedEquipmentIndex, CharacterObject transferCharacter)
 	{
 		ResultSide = resultSide;
 		EffectedItemRosterElement = effectedItemRosterElement;
@@ -42,6 +36,5 @@ public class TransferCommandResult
 		FinalNumber = finalNumber;
 		EffectedEquipmentIndex = effectedEquipmentIndex;
 		TransferCharacter = transferCharacter;
-		IsCivilianEquipment = isCivilianEquipment;
 	}
 }

@@ -155,7 +155,11 @@ public abstract class TeamAIComponent
 	{
 	}
 
-	public void OnMissionEnded()
+	public virtual void OnFormationFrameChanged(Agent agent, bool isFrameEnabled, WorldPosition frame)
+	{
+	}
+
+	public virtual void OnMissionEnded()
 	{
 		MBDebug.Print("Mission end received by teamAI");
 		foreach (Formation item in Team.FormationsIncludingSpecialAndEmpty)
@@ -169,6 +173,12 @@ public abstract class TeamAIComponent
 				item.StopUsingMachine(item2);
 			}
 		}
+	}
+
+	public void ResetTacticalPositions()
+	{
+		TacticalPositions = Mission.ActiveMissionObjects.FindAllWithType<TacticalPosition>().ToList();
+		TacticalRegions = Mission.ActiveMissionObjects.FindAllWithType<TacticalRegion>().ToList();
 	}
 
 	public void ResetTactic(bool keepCurrentTactic = true)
@@ -288,7 +298,7 @@ public abstract class TeamAIComponent
 			}
 		}
 		CheckIsDefenseApplicable();
-		TacticComponent tacticComponent = availableTactics.MaxBy((TacticComponent to) => to.GetTacticWeight() * ((to == _currentTactic) ? 1.5f : 1f));
+		TacticComponent tacticComponent = TaleWorlds.Core.Extensions.MaxBy(availableTactics, (TacticComponent to) => to.GetTacticWeight() * ((to == _currentTactic) ? 1.5f : 1f));
 		bool flag2 = false;
 		if (CurrentTactic == null)
 		{
@@ -329,7 +339,7 @@ public abstract class TeamAIComponent
 	{
 		if (Mission.Current.AllowAiTicking && Team.HasBots)
 		{
-			CurrentTactic.TickOccasionally();
+			CurrentTactic?.TickOccasionally();
 		}
 	}
 

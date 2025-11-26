@@ -57,6 +57,12 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool ComboCustomSeperatorDelegate(byte[] label, ref int selectedIndex, byte[] items, byte[] seperator);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void EndDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -93,6 +99,16 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool InputIntDelegate(byte[] label, ref int value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int InputTextDelegate(byte[] label, byte[] inputTest, [MarshalAs(UnmanagedType.U1)] ref bool changed);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int InputTextMultilineCopyPasteDelegate(byte[] label, byte[] inputTest, int textBoxHeight, [MarshalAs(UnmanagedType.U1)] ref bool changed);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -207,6 +223,8 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 
 	public static ComboDelegate call_ComboDelegate;
 
+	public static ComboCustomSeperatorDelegate call_ComboCustomSeperatorDelegate;
+
 	public static EndDelegate call_EndDelegate;
 
 	public static EndMainThreadScopeDelegate call_EndMainThreadScopeDelegate;
@@ -220,6 +238,10 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 	public static InputFloat4Delegate call_InputFloat4Delegate;
 
 	public static InputIntDelegate call_InputIntDelegate;
+
+	public static InputTextDelegate call_InputTextDelegate;
+
+	public static InputTextMultilineCopyPasteDelegate call_InputTextMultilineCopyPasteDelegate;
 
 	public static IsItemHoveredDelegate call_IsItemHoveredDelegate;
 
@@ -361,6 +383,35 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 		return call_ComboDelegate(array, ref selectedIndex, array2);
 	}
 
+	public bool ComboCustomSeperator(string label, ref int selectedIndex, string items, string seperator)
+	{
+		byte[] array = null;
+		if (label != null)
+		{
+			int byteCount = _utf8.GetByteCount(label);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(label, 0, label.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (items != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(items);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(items, 0, items.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		byte[] array3 = null;
+		if (seperator != null)
+		{
+			int byteCount3 = _utf8.GetByteCount(seperator);
+			array3 = ((byteCount3 < 1024) ? CallbackStringBufferManager.StringBuffer2 : new byte[byteCount3 + 1]);
+			_utf8.GetBytes(seperator, 0, seperator.Length, array3, 0);
+			array3[byteCount3] = 0;
+		}
+		return call_ComboCustomSeperatorDelegate(array, ref selectedIndex, array2, array3);
+	}
+
 	public void End()
 	{
 		call_EndDelegate();
@@ -434,6 +485,56 @@ internal class ScriptingInterfaceOfIImgui : IImgui
 			array[byteCount] = 0;
 		}
 		return call_InputIntDelegate(array, ref value);
+	}
+
+	public string InputText(string label, string inputTest, ref bool changed)
+	{
+		byte[] array = null;
+		if (label != null)
+		{
+			int byteCount = _utf8.GetByteCount(label);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(label, 0, label.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (inputTest != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(inputTest);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(inputTest, 0, inputTest.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		if (call_InputTextDelegate(array, array2, ref changed) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
+	}
+
+	public string InputTextMultilineCopyPaste(string label, string inputTest, int textBoxHeight, ref bool changed)
+	{
+		byte[] array = null;
+		if (label != null)
+		{
+			int byteCount = _utf8.GetByteCount(label);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(label, 0, label.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (inputTest != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(inputTest);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(inputTest, 0, inputTest.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		if (call_InputTextMultilineCopyPasteDelegate(array, array2, textBoxHeight, ref changed) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
 	}
 
 	public bool IsItemHovered()

@@ -32,12 +32,12 @@ public class AlternativeAttackDamageEffect : MPPerkEffect
 		if (text != null && !Enum.TryParse<AttackType>(text, ignoreCase: true, out _attackType))
 		{
 			_attackType = AttackType.Any;
-			Debug.FailedAssert("provided 'attack_type' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\AlternativeAttackDamageEffect.cs", "Deserialize", 34);
+			Debug.FailedAssert("provided 'attack_type' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\AlternativeAttackDamageEffect.cs", "Deserialize", 34);
 		}
 		string text2 = node?.Attributes?["value"]?.Value;
 		if (text2 == null || !float.TryParse(text2, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\AlternativeAttackDamageEffect.cs", "Deserialize", 40);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\AlternativeAttackDamageEffect.cs", "Deserialize", 40);
 		}
 	}
 

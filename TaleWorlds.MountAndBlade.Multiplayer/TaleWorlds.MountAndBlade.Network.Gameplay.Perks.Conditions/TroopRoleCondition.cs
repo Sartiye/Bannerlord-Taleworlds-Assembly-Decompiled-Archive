@@ -31,7 +31,7 @@ public class TroopRoleCondition : MPPerkCondition
 		if (text != null && !Enum.TryParse<Role>(text, ignoreCase: true, out _role))
 		{
 			_role = Role.Sergeant;
-			Debug.FailedAssert("provided 'role' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\TroopRoleCondition.cs", "Deserialize", 35);
+			Debug.FailedAssert("provided 'role' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Conditions\\TroopRoleCondition.cs", "Deserialize", 35);
 		}
 	}
 

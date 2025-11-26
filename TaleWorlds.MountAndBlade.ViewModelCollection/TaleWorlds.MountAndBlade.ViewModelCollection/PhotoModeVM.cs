@@ -14,6 +14,10 @@ public class PhotoModeVM : ViewModel
 {
 	private readonly Scene _missionScene;
 
+	private InputKeyItemVM _takePictureKey;
+
+	private InputKeyItemVM _fasterCameraKey;
+
 	private SelectorVM<SelectorItemVM> _colorGradeSelector;
 
 	private SelectorVM<SelectorItemVM> _overlaySelector;
@@ -248,6 +252,18 @@ public class PhotoModeVM : ViewModel
 		OverlaySelector = new SelectorVM<SelectorItemVM>(list2, _missionScene.GetSceneFilterIndex(), OnOverlaySelectionChanged);
 	}
 
+	public void AddTakePictureKey(GameKey key)
+	{
+		_takePictureKey = InputKeyItemVM.CreateFromGameKey(key, isConsoleOnly: false);
+		Keys.Add(_takePictureKey);
+	}
+
+	public void AddFasterCameraKey(HotKey hotkey)
+	{
+		_fasterCameraKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: false);
+		Keys.Add(_fasterCameraKey);
+	}
+
 	public void AddKey(GameKey key)
 	{
 		Keys.Add(InputKeyItemVM.CreateFromGameKey(key, isConsoleOnly: false));
@@ -306,5 +322,15 @@ public class PhotoModeVM : ViewModel
 		FocusEndValueOption.CurrentValue = 0f;
 		ExposureOption.CurrentValue = 0f;
 		VerticalFovOption.CurrentValue = 65f;
+	}
+
+	public void UpdateTakePictureKeyVisibility(bool canTakePicture)
+	{
+		_takePictureKey?.SetForcedVisibility(canTakePicture ? null : new bool?(false));
+	}
+
+	public void UpdateFasterCameraKeyVisibility(bool canMoveCamera)
+	{
+		_fasterCameraKey?.SetForcedVisibility(canMoveCamera ? null : new bool?(false));
 	}
 }

@@ -39,7 +39,7 @@ internal static class LibraryCallbacksGenerated
 
 	internal delegate int Managed_GetClassFields_delegate(IntPtr className, [MarshalAs(UnmanagedType.U1)] bool recursive, [MarshalAs(UnmanagedType.U1)] bool includeInternal, [MarshalAs(UnmanagedType.U1)] bool includeProtected, [MarshalAs(UnmanagedType.U1)] bool includePrivate);
 
-	internal delegate UIntPtr Managed_GetEnumNamesOfField_delegate(IntPtr className, IntPtr fieldName);
+	internal delegate UIntPtr Managed_GetEnumNamesOfField_delegate(uint classNameHash, uint fieldNameHash);
 
 	internal delegate long Managed_GetMemoryUsage_delegate();
 
@@ -58,7 +58,7 @@ internal static class LibraryCallbacksGenerated
 	internal delegate void Managed_GetVersionInts_delegate(ref int major, ref int minor, ref int revision);
 
 	[return: MarshalAs(UnmanagedType.U1)]
-	internal delegate bool Managed_IsClassFieldExists_delegate(IntPtr className, IntPtr fieldName);
+	internal delegate bool Managed_IsClassFieldExists_delegate(uint classNameHash, uint fieldNameHash);
 
 	internal delegate void Managed_LoadManagedComponent_delegate(IntPtr assemblyName, IntPtr managedInterface);
 
@@ -246,11 +246,9 @@ internal static class LibraryCallbacksGenerated
 	}
 
 	[MonoPInvokeCallback(typeof(Managed_GetEnumNamesOfField_delegate))]
-	internal static UIntPtr Managed_GetEnumNamesOfField(IntPtr className, IntPtr fieldName)
+	internal static UIntPtr Managed_GetEnumNamesOfField(uint classNameHash, uint fieldNameHash)
 	{
-		string? className2 = Marshal.PtrToStringAnsi(className);
-		string fieldName2 = Marshal.PtrToStringAnsi(fieldName);
-		string enumNamesOfField = Managed.GetEnumNamesOfField(className2, fieldName2);
+		string enumNamesOfField = Managed.GetEnumNamesOfField(classNameHash, fieldNameHash);
 		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
 		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, enumNamesOfField);
 		return threadLocalCachedRglVarString;
@@ -320,11 +318,9 @@ internal static class LibraryCallbacksGenerated
 	}
 
 	[MonoPInvokeCallback(typeof(Managed_IsClassFieldExists_delegate))]
-	internal static bool Managed_IsClassFieldExists(IntPtr className, IntPtr fieldName)
+	internal static bool Managed_IsClassFieldExists(uint classNameHash, uint fieldNameHash)
 	{
-		string? className2 = Marshal.PtrToStringAnsi(className);
-		string fieldName2 = Marshal.PtrToStringAnsi(fieldName);
-		return Managed.IsClassFieldExists(className2, fieldName2);
+		return Managed.IsClassFieldExists(classNameHash, fieldNameHash);
 	}
 
 	[MonoPInvokeCallback(typeof(Managed_LoadManagedComponent_delegate))]

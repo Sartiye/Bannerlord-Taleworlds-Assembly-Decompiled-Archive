@@ -24,7 +24,7 @@ public class CoreManaged : IManagedComponent
 		_instance = this;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	public static void Start()
 	{
 		Managed.Start(new IManagedComponent[0]);
@@ -64,7 +64,7 @@ public class CoreManaged : IManagedComponent
 		return dictionary;
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void OnLoadCommonFinished()
 	{
 		FaceGen.CreateInstance();
@@ -110,7 +110,7 @@ public class CoreManaged : IManagedComponent
 		}
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void Finalize()
 	{
 		Module.FinalizeCurrentModule();
@@ -122,19 +122,19 @@ public class CoreManaged : IManagedComponent
 		Module.CurrentModule.OnApplicationTick(dt);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void CheckSharedStructureSizes()
 	{
 		_callbackManager.CheckSharedStructureSizes();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void EngineApiMethodInterfaceInitializer(int id, IntPtr pointer)
 	{
 		_engineApiPointers.Add(id, pointer);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void FillEngineApiPointers()
 	{
 		foreach (KeyValuePair<int, IntPtr> engineApiPointer in _engineApiPointers)

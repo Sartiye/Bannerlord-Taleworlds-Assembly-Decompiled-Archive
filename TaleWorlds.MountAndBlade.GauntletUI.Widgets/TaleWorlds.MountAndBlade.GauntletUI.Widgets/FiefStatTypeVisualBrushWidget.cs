@@ -70,6 +70,15 @@ public class FiefStatTypeVisualBrushWidget : BrushWidget
 		case 7:
 			SetState("Security");
 			break;
+		case 8:
+			SetState("Shipyard");
+			break;
+		case 9:
+			SetState("Patrol");
+			break;
+		case 10:
+			SetState("CoastalPatrol");
+			break;
 		}
 	}
 }

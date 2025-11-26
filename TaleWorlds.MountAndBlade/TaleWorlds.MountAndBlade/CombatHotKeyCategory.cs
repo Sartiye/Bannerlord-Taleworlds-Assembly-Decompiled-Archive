@@ -69,6 +69,8 @@ public sealed class CombatHotKeyCategory : GameKeyContext
 
 	public const string ControllerEquipDropRDown = "ControllerEquipDropWeapon4";
 
+	public const string ControllerEquipDropRThumb = "ControllerEquipDropExtraWeapon";
+
 	public const string CheerBarkSelectFirstCategory = "CheerBarkSelectFirstCategory";
 
 	public const string CheerBarkSelectSecondCategory = "CheerBarkSelectSecondCategory";
@@ -83,10 +85,16 @@ public sealed class CombatHotKeyCategory : GameKeyContext
 
 	public const string CheerBarkItem4 = "CheerBarkItem4";
 
+	public const string ControlModeToggle = "ControlModeToggle";
+
+	public const string ControllerToggleWalk = "ControllerToggleWalk";
+
+	public const string ControllerToggleCrouch = "ControllerToggleCrouch";
+
 	public const string ForfeitSpawn = "ForfeitSpawn";
 
 	public CombatHotKeyCategory()
-		: base("CombatHotKeyCategory", 108)
+		: base("CombatHotKeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();
@@ -101,6 +109,7 @@ public sealed class CombatHotKeyCategory : GameKeyContext
 		RegisterHotKey(new HotKey("ControllerEquipDropWeapon2", "CombatHotKeyCategory", InputKey.ControllerRUp));
 		RegisterHotKey(new HotKey("ControllerEquipDropWeapon3", "CombatHotKeyCategory", InputKey.ControllerRLeft));
 		RegisterHotKey(new HotKey("ControllerEquipDropWeapon4", "CombatHotKeyCategory", InputKey.ControllerRDown));
+		RegisterHotKey(new HotKey("ControllerEquipDropExtraWeapon", "CombatHotKeyCategory", InputKey.ControllerRThumb));
 		RegisterHotKey(new HotKey("CheerBarkSelectFirstCategory", "CombatHotKeyCategory", new List<Key>
 		{
 			new Key(InputKey.LeftMouseButton),
@@ -121,6 +130,9 @@ public sealed class CombatHotKeyCategory : GameKeyContext
 			new Key(InputKey.X),
 			new Key(InputKey.ControllerRLeft)
 		}));
+		RegisterHotKey(new HotKey("ControlModeToggle", "CombatHotKeyCategory", InputKey.ControllerLDown));
+		RegisterHotKey(new HotKey("ControllerToggleWalk", "CombatHotKeyCategory", InputKey.ControllerRUp));
+		RegisterHotKey(new HotKey("ControllerToggleCrouch", "CombatHotKeyCategory", InputKey.ControllerRDown));
 	}
 
 	private void RegisterGameKeys()

@@ -66,14 +66,14 @@ public class BehaviorAssaultWalls : BehaviorComponent
 		}
 		else
 		{
-			IPrimarySiegeWeapon primarySiegeWeapon = _primarySiegeWeapons.MaxBy((IPrimarySiegeWeapon psw) => psw.SiegeWeaponPriority);
+			IPrimarySiegeWeapon primarySiegeWeapon = Extensions.MaxBy(_primarySiegeWeapons, (IPrimarySiegeWeapon psw) => psw.SiegeWeaponPriority);
 			_wallSegment = primarySiegeWeapon.TargetCastlePosition as WallSegment;
 		}
 		_stopOrder = MovementOrder.MovementOrderStop;
 		_chargeOrder = MovementOrder.MovementOrderCharge;
 		bool flag = _teamAISiegeComponent.OuterGate != null && _behaviorSide == _teamAISiegeComponent.OuterGate.DefenseSide;
-		_attackEntityOrderOuterGate = ((flag && !_teamAISiegeComponent.OuterGate.IsDeactivated && _teamAISiegeComponent.OuterGate.State != 0) ? MovementOrder.MovementOrderAttackEntity(_teamAISiegeComponent.OuterGate.GameEntity, surroundEntity: false) : MovementOrder.MovementOrderStop);
-		_attackEntityOrderInnerGate = ((flag && _teamAISiegeComponent.InnerGate != null && !_teamAISiegeComponent.InnerGate.IsDeactivated && _teamAISiegeComponent.InnerGate.State != 0) ? MovementOrder.MovementOrderAttackEntity(_teamAISiegeComponent.InnerGate.GameEntity, surroundEntity: false) : MovementOrder.MovementOrderStop);
+		_attackEntityOrderOuterGate = ((flag && !_teamAISiegeComponent.OuterGate.IsDeactivated && _teamAISiegeComponent.OuterGate.State != 0) ? MovementOrder.MovementOrderAttackEntity(GameEntity.CreateFromWeakEntity(_teamAISiegeComponent.OuterGate.GameEntity), surroundEntity: false) : MovementOrder.MovementOrderStop);
+		_attackEntityOrderInnerGate = ((flag && _teamAISiegeComponent.InnerGate != null && !_teamAISiegeComponent.InnerGate.IsDeactivated && _teamAISiegeComponent.InnerGate.State != 0) ? MovementOrder.MovementOrderAttackEntity(GameEntity.CreateFromWeakEntity(_teamAISiegeComponent.InnerGate.GameEntity), surroundEntity: false) : MovementOrder.MovementOrderStop);
 		WorldPosition origin = _teamAISiegeComponent.OuterGate.MiddleFrame.Origin;
 		_castleGateMoveOrder = MovementOrder.MovementOrderMove(origin);
 		if (_isGateLane)
@@ -138,14 +138,14 @@ public class BehaviorAssaultWalls : BehaviorComponent
 				SiegeLane siegeLane = TeamAISiegeComponent.SiegeLanes[(int)_behaviorSide];
 				flag = siegeLane.IsUnderAttack() && !siegeLane.IsDefended();
 			}
-			if (flag || base.Formation.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(_wallSegment.MiddleFrame.Origin.GetNavMeshVec3()) < base.Formation.Depth * base.Formation.Depth)
+			if (flag || base.Formation.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(_wallSegment.MiddleFrame.Origin.GetNavMeshVec3()) < base.Formation.Depth * base.Formation.Depth)
 			{
 				return BehaviorState.TakeControl;
 			}
 			return BehaviorState.ClimbWall;
 		}
 		case BehaviorState.TakeControl:
-			if (base.Formation.QuerySystem.ClosestEnemyFormation != null)
+			if (base.Formation.CachedClosestEnemyFormation != null)
 			{
 				if (!TeamAISiegeComponent.SiegeLanes.FirstOrDefault((SiegeLane sl) => sl.LaneSide == _behaviorSide).IsDefended())
 				{
@@ -157,7 +157,7 @@ public class BehaviorAssaultWalls : BehaviorComponent
 				}
 				return BehaviorState.TakeControl;
 			}
-			return BehaviorState.Deciding;
+			return BehaviorState.Stop;
 		case BehaviorState.AttackEntity:
 			if (_teamAISiegeComponent.OuterGate.IsGateOpen && _teamAISiegeComponent.InnerGate.IsGateOpen)
 			{
@@ -177,14 +177,14 @@ public class BehaviorAssaultWalls : BehaviorComponent
 				{
 					return BehaviorState.Deciding;
 				}
-				if (base.Formation.QuerySystem.ClosestEnemyFormation == null)
+				if (base.Formation.CachedClosestEnemyFormation == null)
 				{
 					return BehaviorState.Stop;
 				}
 			}
 			return BehaviorState.Charging;
 		default:
-			if (base.Formation.QuerySystem.ClosestEnemyFormation != null)
+			if (base.Formation.CachedClosestEnemyFormation != null)
 			{
 				return BehaviorState.Deciding;
 			}
@@ -205,26 +205,12 @@ public class BehaviorAssaultWalls : BehaviorComponent
 			CurrentArrangementOrder = ArrangementOrder.ArrangementOrderLine;
 			break;
 		case BehaviorState.TakeControl:
-			if (base.Formation.QuerySystem.ClosestEnemyFormation != null)
-			{
-				base.CurrentOrder = MovementOrder.MovementOrderChargeToTarget(base.Formation.QuerySystem.ClosestEnemyFormation.Formation);
-			}
-			else
-			{
-				base.CurrentOrder = MovementOrder.MovementOrderCharge;
-			}
+			base.CurrentOrder = ((base.Formation.CachedClosestEnemyFormation != null) ? MovementOrder.MovementOrderChargeToTarget(base.Formation.CachedClosestEnemyFormation.Formation) : MovementOrder.MovementOrderCharge);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(-_wallSegment.MiddleFrame.Rotation.f.AsVec2.Normalized());
 			CurrentArrangementOrder = ArrangementOrder.ArrangementOrderLine;
 			break;
 		case BehaviorState.AttackEntity:
-			if (!_teamAISiegeComponent.OuterGate.IsGateOpen)
-			{
-				base.CurrentOrder = _attackEntityOrderOuterGate;
-			}
-			else
-			{
-				base.CurrentOrder = _attackEntityOrderInnerGate;
-			}
+			base.CurrentOrder = ((!_teamAISiegeComponent.OuterGate.IsGateOpen) ? _attackEntityOrderOuterGate : _attackEntityOrderInnerGate);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 			CurrentArrangementOrder = ArrangementOrder.ArrangementOrderLine;
 			break;
@@ -239,7 +225,7 @@ public class BehaviorAssaultWalls : BehaviorComponent
 			CurrentArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
 			break;
 		case BehaviorState.Stop:
-			base.CurrentOrder = _stopOrder;
+			base.CurrentOrder = _chargeOrder;
 			break;
 		}
 	}
@@ -264,7 +250,7 @@ public class BehaviorAssaultWalls : BehaviorComponent
 				base.Formation.StartUsingMachine(primarySiegeWeapon as UsableMachine);
 			}
 		}
-		if (_behaviorState == BehaviorState.MoveToGate)
+		if (_behaviorState == BehaviorState.MoveToGate || _behaviorState == BehaviorState.Stop || _behaviorState == BehaviorState.Charging || _behaviorState == BehaviorState.TakeControl)
 		{
 			CastleGate innerGate = _teamAISiegeComponent.InnerGate;
 			if (innerGate != null && !innerGate.IsGateOpen && !innerGate.IsDestroyed)
@@ -295,18 +281,18 @@ public class BehaviorAssaultWalls : BehaviorComponent
 			}
 		}
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = CurrentArrangementOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(CurrentArrangementOrder);
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

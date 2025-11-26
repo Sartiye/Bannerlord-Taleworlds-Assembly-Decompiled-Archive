@@ -58,6 +58,8 @@ public static class SkinVoiceManager
 
 		public static readonly SkinVoiceType HorseRally = new SkinVoiceType("HorseRally");
 
+		public static readonly SkinVoiceType Drown = new SkinVoiceType("Drown");
+
 		public static readonly SkinVoiceType Infantry = new SkinVoiceType("Infantry");
 
 		public static readonly SkinVoiceType Cavalry = new SkinVoiceType("Cavalry");
@@ -109,6 +111,10 @@ public static class SkinVoiceManager
 		public static readonly SkinVoiceType CommandDelegate = new SkinVoiceType("CommandDelegate");
 
 		public static readonly SkinVoiceType CommandUndelegate = new SkinVoiceType("CommandUndelegate");
+
+		public static readonly SkinVoiceType BoardAtWill = new SkinVoiceType("BoardAtWill");
+
+		public static readonly SkinVoiceType AvoidBoarding = new SkinVoiceType("AvoidBoarding");
 
 		public static readonly SkinVoiceType FormLine = new SkinVoiceType("FormLine");
 

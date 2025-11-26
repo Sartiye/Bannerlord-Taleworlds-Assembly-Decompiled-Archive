@@ -71,8 +71,9 @@ public sealed class CreateMissile : GameNetworkMessage
 		else
 		{
 			Vec3 f = GameNetworkMessage.ReadVec3FromPacket(CompressionBasic.UnitVectorCompressionInfo, ref bufferReadValid);
-			Orientation = new Mat3(Vec3.Side, f, Vec3.Up);
+			Orientation = new Mat3(in Vec3.Side, in f, in Vec3.Up);
 			Orientation.Orthonormalize();
+			MissionObjectToIgnoreId = MissionObjectId.Invalid;
 		}
 		IsPrimaryWeaponShot = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		return bufferReadValid;

@@ -14,13 +14,11 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 {
 	private static readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
 
-	private static readonly TextObject VeryLowSecurity = new TextObject("{=IaJ4lhzx}Very Low Security");
-
 	private static readonly TextObject VeryLowLoyalty = new TextObject("{=CcQzFnpN}Very Low Loyalty");
 
-	public override float SettlementCommissionRateTown => 0.06f;
+	public override float SettlementCommissionRateTown => 0.7f;
 
-	public override float SettlementCommissionRateVillage => 0.7f;
+	public override float SettlementCommissionRateVillage => 1f;
 
 	public override int SettlementCommissionDecreaseSecurityThreshold => 75;
 
@@ -36,9 +34,14 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 		return SettlementCommissionRateTown * num;
 	}
 
-	public override float GetVillageTaxRatio()
+	public override float GetVillageTaxRatio(Village village)
 	{
-		return SettlementCommissionRateVillage;
+		float num = SettlementCommissionRateVillage;
+		if (village.Settlement.OwnerClan.Kingdom != null && village.Settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.LandGrantsForVeteran))
+		{
+			num -= num * 0.05f;
+		}
+		return num;
 	}
 
 	public override float GetTownCommissionChangeBasedOnSecurity(Town town, float commission)
@@ -77,33 +80,29 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 	{
 		float rawTax = CalculateDailyTax(town, ref result);
 		CalculatePolicyGoldCut(town, rawTax, ref result);
-		if (town.IsTown || town.IsCastle)
+		if (PerkHelper.GetPerkValueForTown(DefaultPerks.Bow.QuickDraw, town))
 		{
-			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Bow.QuickDraw, town))
-			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.QuickDraw, town, ref result);
-			}
-			Hero governor = town.Governor;
-			if (governor != null && governor.GetPerkValue(DefaultPerks.Steward.Logistician))
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.QuickDraw, town, ref result);
+		}
+		if (town.Governor != null)
+		{
+			if (town.Governor.GetPerkValue(DefaultPerks.Steward.Logistician))
 			{
 				PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Logistician, town, ref result);
 			}
-		}
-		if (town.IsTown)
-		{
-			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Scouting.DesertBorn, town))
-			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Scouting.DesertBorn, town, ref result);
-			}
-			if (town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Steward.PriceOfLoyalty))
+			if (town.Governor.GetPerkValue(DefaultPerks.Steward.PriceOfLoyalty))
 			{
 				int num = town.Governor.GetSkillValue(DefaultSkills.Steward) - Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus;
 				result.AddFactor(DefaultPerks.Steward.PriceOfLoyalty.SecondaryBonus * (float)num, DefaultPerks.Steward.PriceOfLoyalty.Name);
 			}
-			if (town.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat))
+			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Scouting.DesertBorn, town))
 			{
-				result.AddFactor(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Scouting.DesertBorn, town, ref result);
 			}
+		}
+		if (town.IsTown && town.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat))
+		{
+			result.AddFactor(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat.EffectBonus, GameTexts.FindText("str_culture"));
 		}
 		GetSettlementTaxChangeDueToIssues(town, ref result);
 		CalculateSettlementTaxDueToSecurity(town, ref result);
@@ -144,38 +143,35 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 
 	private void CalculateSettlementTaxDueToBuildings(Town town, ref ExplainedNumber result)
 	{
-		if (!town.IsTown && !town.IsCastle)
-		{
-			return;
-		}
-		foreach (Building building in town.Buildings)
-		{
-			float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.Tax);
-			result.AddFactor(buildingEffectAmount * 0.01f, building.Name);
-		}
+		town.AddEffectOfBuildings(BuildingEffectEnum.TaxPerDay, ref result);
+		town.AddEffectOfBuildings(BuildingEffectEnum.DenarByBoundVillageHeartPerDay, ref result);
 	}
 
 	private void CalculatePolicyGoldCut(Town town, float rawTax, ref ExplainedNumber explainedNumber)
 	{
-		if (town.MapFaction.IsKingdomFaction)
+		if (!town.MapFaction.IsKingdomFaction)
 		{
-			Kingdom obj = (Kingdom)town.MapFaction;
-			if (obj.ActivePolicies.Contains(DefaultPolicies.Magistrates))
+			return;
+		}
+		Kingdom kingdom = (Kingdom)town.MapFaction;
+		if (town.IsTown)
+		{
+			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Magistrates))
 			{
 				explainedNumber.Add(-0.05f * rawTax, DefaultPolicies.Magistrates.Name);
 			}
-			if (obj.ActivePolicies.Contains(DefaultPolicies.Cantons))
-			{
-				explainedNumber.Add(-0.1f * rawTax, DefaultPolicies.Cantons.Name);
-			}
-			if (obj.ActivePolicies.Contains(DefaultPolicies.Bailiffs))
+			if (kingdom.ActivePolicies.Contains(DefaultPolicies.Bailiffs))
 			{
 				explainedNumber.Add(-0.05f * rawTax, DefaultPolicies.Bailiffs.Name);
 			}
-			if (obj.ActivePolicies.Contains(DefaultPolicies.TribunesOfThePeople))
+			if (kingdom.ActivePolicies.Contains(DefaultPolicies.TribunesOfThePeople))
 			{
 				explainedNumber.Add(-0.05f * rawTax, DefaultPolicies.TribunesOfThePeople.Name);
 			}
+		}
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.Cantons))
+		{
+			explainedNumber.Add(-0.1f * rawTax, DefaultPolicies.Cantons.Name);
 		}
 	}
 
@@ -186,6 +182,10 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 
 	public override int CalculateVillageTaxFromIncome(Village village, int marketIncome)
 	{
-		return (int)((float)marketIncome * GetVillageTaxRatio());
+		if (marketIncome == 0)
+		{
+			return 0;
+		}
+		return (int)((float)marketIncome * Campaign.Current.Models.SettlementTaxModel.GetVillageTaxRatio(village));
 	}
 }

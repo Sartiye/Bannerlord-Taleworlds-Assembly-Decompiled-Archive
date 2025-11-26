@@ -78,7 +78,7 @@ public class MBReadOnlyDictionary<TKey, TValue> : ICollection, IEnumerable, IRea
 		}
 		catch (ArrayTypeMismatchException)
 		{
-			Debug.FailedAssert("Invalid array type", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\MBReadOnlyDictionary.cs", "CopyTo", 96);
+			Debug.FailedAssert("Invalid array type", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\MBReadOnlyDictionary.cs", "CopyTo", 95);
 		}
 	}
 }

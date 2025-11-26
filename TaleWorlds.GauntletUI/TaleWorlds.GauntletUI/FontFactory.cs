@@ -10,6 +10,8 @@ namespace TaleWorlds.GauntletUI;
 
 public class FontFactory
 {
+	private Language _currentLangugage;
+
 	private readonly Dictionary<string, Font> _bitmapFonts;
 
 	private readonly ResourceDepot _resourceDepot;
@@ -18,11 +20,52 @@ public class FontFactory
 
 	private SpriteData _latestSpriteData;
 
-	public string DefaultLangageID { get; private set; }
+	public Language DefaultLanguage { get; private set; }
 
-	public string CurrentLangageID { get; private set; }
+	public Language CurrentLanguage
+	{
+		get
+		{
+			if (_currentLangugage != null)
+			{
+				return _currentLangugage;
+			}
+			if (DefaultLanguage != null)
+			{
+				Debug.Print("Couldn't find language in language map: " + _currentLangugage?.LanguageID);
+				Debug.FailedAssert("Couldn't find language in language map: " + _currentLangugage?.LanguageID, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "CurrentLanguage", 26);
+				_currentLangugage = DefaultLanguage;
+				return _currentLangugage;
+			}
+			if (_fontLanguageMap.TryGetValue("English", out var value))
+			{
+				Debug.Print("Couldn't find default language(" + (DefaultLanguage?.LanguageID ?? "INVALID") + ") in language map.");
+				Debug.FailedAssert("Couldn't find default language(" + (DefaultLanguage?.LanguageID ?? "INVALID") + ") in language map.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "CurrentLanguage", 35);
+				DefaultLanguage = value;
+				_currentLangugage = value;
+				return _currentLangugage;
+			}
+			Debug.Print("Couldn't find English language in language map.");
+			Debug.FailedAssert("Couldn't find English language in language map.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "CurrentLanguage", 45);
+			DefaultLanguage = _fontLanguageMap.FirstOrDefault().Value;
+			_currentLangugage = DefaultLanguage;
+			if (_currentLangugage == null)
+			{
+				Debug.Print("There are no languages in language map");
+				Debug.FailedAssert("There are no languages in language map", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "CurrentLanguage", 54);
+			}
+			return _currentLangugage;
+		}
+		private set
+		{
+			if (value != _currentLangugage)
+			{
+				_currentLangugage = value;
+			}
+		}
+	}
 
-	public Font DefaultFont => GetCurrentLanguage().DefaultFont;
+	public Font DefaultFont => CurrentLanguage.DefaultFont;
 
 	public FontFactory(ResourceDepot resourceDepot)
 	{
@@ -56,14 +99,14 @@ public class FontFactory
 				}
 				catch (Exception)
 				{
-					Debug.FailedAssert("Failed to load language at path: " + text, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "LoadAllFonts", 71);
+					Debug.FailedAssert("Failed to load language at path: " + text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "LoadAllFonts", 128);
 				}
 			}
 		}
-		if (string.IsNullOrEmpty(DefaultLangageID))
+		if (DefaultLanguage == null && _fontLanguageMap.TryGetValue("English", out var value))
 		{
-			DefaultLangageID = "English";
-			CurrentLangageID = DefaultLangageID;
+			DefaultLanguage = value;
+			CurrentLanguage = DefaultLanguage;
 		}
 		_latestSpriteData = spriteData;
 	}
@@ -85,11 +128,7 @@ public class FontFactory
 		XmlDocument xmlDocument = new XmlDocument();
 		xmlDocument.Load(sourceXMLPath);
 		XmlElement xmlElement = xmlDocument["Languages"];
-		if (!string.IsNullOrEmpty(xmlElement.Attributes["DefaultLanguage"]?.InnerText))
-		{
-			DefaultLangageID = xmlElement.Attributes["DefaultLanguage"]?.InnerText ?? "English";
-			CurrentLangageID = DefaultLangageID;
-		}
+		_ = xmlElement.Attributes["DefaultLanguage"]?.InnerText;
 		foreach (XmlNode item in xmlElement)
 		{
 			if (item.NodeType == XmlNodeType.Element && item.Name == "Language")
@@ -105,39 +144,23 @@ public class FontFactory
 				}
 			}
 		}
-	}
-
-	public Language GetCurrentLanguage()
-	{
-		Language language = null;
-		if (_fontLanguageMap.TryGetValue(CurrentLangageID, out var value))
+		string text = xmlElement.Attributes["DefaultLanguage"]?.InnerText;
+		if (!string.IsNullOrEmpty(text) && _fontLanguageMap.TryGetValue(text, out var value2))
 		{
-			language = value;
+			DefaultLanguage = value2;
+			CurrentLanguage = DefaultLanguage;
+			return;
 		}
-		else if (DefaultLangageID != null && _fontLanguageMap.TryGetValue(DefaultLangageID, out value))
+		Debug.FailedAssert("DefaultLanguage cannot be found in the dictionary.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "LoadLocalizationValues", 200);
+		if (_fontLanguageMap.TryGetValue("English", out value2))
 		{
-			Debug.Print("Couldn't find language in language map: " + CurrentLangageID);
-			Debug.FailedAssert("Couldn't find language in language map: " + CurrentLangageID, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "GetCurrentLanguage", 148);
-			language = value;
-		}
-		else if (_fontLanguageMap.TryGetValue("English", out value))
-		{
-			Debug.Print("Couldn't find default language(" + (DefaultLangageID ?? "INVALID") + ") in language map.");
-			Debug.FailedAssert("Couldn't find default language(" + (DefaultLangageID ?? "INVALID") + ") in language map.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "GetCurrentLanguage", 154);
-			language = value;
+			DefaultLanguage = value2;
+			CurrentLanguage = DefaultLanguage;
 		}
 		else
 		{
-			Debug.Print("Couldn't find English language in language map.");
-			Debug.FailedAssert("Couldn't find English language in language map.", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "GetCurrentLanguage", 160);
-			language = _fontLanguageMap.FirstOrDefault().Value;
+			Debug.FailedAssert("English cannot be found in the dictionary.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "LoadLocalizationValues", 209);
 		}
-		if (language == null)
-		{
-			Debug.Print("There are no languages in language map");
-			Debug.FailedAssert("There are no languages in language map", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "GetCurrentLanguage", 167);
-		}
-		return language;
 	}
 
 	public Font GetFont(string fontName)
@@ -165,21 +188,26 @@ public class FontFactory
 		{
 			return DefaultFont;
 		}
-		if (CurrentLangageID != DefaultLangageID)
+		if (DefaultLanguage != CurrentLanguage && CurrentLanguage != null && CurrentLanguage.FontMapHasKey(englishFontName))
 		{
-			Language currentLanguage = GetCurrentLanguage();
-			if (currentLanguage.FontMapHasKey(englishFontName))
-			{
-				return currentLanguage.GetMappedFont(englishFontName);
-			}
-			return DefaultFont;
+			return CurrentLanguage.GetMappedFont(englishFontName);
 		}
 		return GetFont(englishFontName);
 	}
 
 	public void OnLanguageChange(string newLanguageCode)
 	{
-		CurrentLangageID = newLanguageCode;
+		if (CurrentLanguage?.LanguageID != newLanguageCode)
+		{
+			if (!string.IsNullOrEmpty(newLanguageCode) && _fontLanguageMap.TryGetValue(newLanguageCode, out var value))
+			{
+				CurrentLanguage = value;
+			}
+			else
+			{
+				Debug.FailedAssert(newLanguageCode + " doesn't exist in the dictionary!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\FontFactory.cs", "OnLanguageChange", 260);
+			}
+		}
 	}
 
 	public Font GetUsableFontForCharacter(int characterCode)
@@ -196,12 +224,16 @@ public class FontFactory
 
 	public void CheckForUpdates()
 	{
-		string currentLangageID = CurrentLangageID;
-		CurrentLangageID = null;
-		DefaultLangageID = null;
+		_ = CurrentLanguage?.LanguageID;
+		DefaultLanguage = null;
+		CurrentLanguage = null;
 		_bitmapFonts.Clear();
 		_fontLanguageMap.Clear();
 		LoadAllFonts(_latestSpriteData);
-		CurrentLangageID = currentLangageID;
+		Language language = null;
+		if (language != null)
+		{
+			CurrentLanguage = language;
+		}
 	}
 }

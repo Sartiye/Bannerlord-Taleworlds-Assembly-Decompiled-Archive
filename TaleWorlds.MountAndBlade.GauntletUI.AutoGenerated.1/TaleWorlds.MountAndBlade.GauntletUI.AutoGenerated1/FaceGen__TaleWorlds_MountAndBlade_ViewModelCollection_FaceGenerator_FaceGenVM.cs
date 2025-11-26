@@ -66,7 +66,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 
 	private Widget _widget_2;
 
-	private RichTextWidget _widget_2_0;
+	private TextWidget _widget_2_0;
 
 	private Widget _widget_2_1;
 
@@ -238,7 +238,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1_6.AddChild(_widget_1_6_1);
 		_widget_2 = new Widget(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_2_0 = new RichTextWidget(base.Context);
+		_widget_2_0 = new TextWidget(base.Context);
 		_widget_2.AddChild(_widget_2_0);
 		_widget_2_1 = new Widget(base.Context);
 		_widget_2.AddChild(_widget_2_1);

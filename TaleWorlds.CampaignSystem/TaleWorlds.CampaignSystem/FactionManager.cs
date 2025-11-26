@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
@@ -35,30 +36,37 @@ public class FactionManager
 
 	internal void AfterLoad()
 	{
-		foreach (StanceLink item in _stances.GetStanceLinks().ToList())
+		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0"))
 		{
-			if (item.Faction1 != item.Faction2)
+			List<StanceLink> list = new List<StanceLink>();
+			foreach (StanceLink stanceLink in _stances.GetStanceLinks())
 			{
-				if (!item.Faction1.IsEliminated && !item.Faction2.IsEliminated)
+				if (Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(stanceLink.Faction1, stanceLink.Faction2).HasValue)
 				{
-					AddStanceToFaction(item.Faction1, item);
-					AddStanceToFaction(item.Faction2, item);
+					list.Add(stanceLink);
 				}
-				else
-				{
-					RemoveStance(item);
-				}
+			}
+			foreach (StanceLink item in list)
+			{
+				_stances.RemoveStance(item);
+			}
+		}
+		foreach (StanceLink item2 in _stances.GetStanceLinks().ToList())
+		{
+			if (item2.Faction1 != item2.Faction2 && (item2.Faction1.IsEliminated || item2.Faction2.IsEliminated))
+			{
+				RemoveStance(item2);
 			}
 		}
 		if (!MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.9.35637")))
 		{
 			return;
 		}
-		foreach (StanceLink stanceLink in _stances.GetStanceLinks())
+		foreach (StanceLink stanceLink2 in _stances.GetStanceLinks())
 		{
-			if (stanceLink.IsAtConstantWar && !stanceLink.IsAtWar)
+			if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(stanceLink2.Faction1, stanceLink2.Faction2) && !stanceLink2.IsAtWar)
 			{
-				stanceLink.StanceType = StanceType.War;
+				stanceLink2.StanceType = StanceType.War;
 			}
 		}
 	}
@@ -68,8 +76,7 @@ public class FactionManager
 		StanceLink stanceLink = _stances.GetStance(faction1, faction2);
 		if (stanceLink == null)
 		{
-			bool flag = (faction1.IsBanditFaction && !faction2.IsBanditFaction) || (!faction1.IsBanditFaction && faction2.IsBanditFaction);
-			stanceLink = new StanceLink(flag ? StanceType.War : StanceType.Neutral, faction1, faction2, flag);
+			stanceLink = new StanceLink((Campaign.Current.Models.DiplomacyModel.GetDefaultDiplomaticStance(faction1, faction2) == DiplomacyModel.DiplomacyStance.War) ? StanceType.War : StanceType.Neutral, faction1, faction2);
 			AddStance(faction1, faction2, stanceLink);
 		}
 		return stanceLink;
@@ -77,73 +84,56 @@ public class FactionManager
 
 	private void AddStance(IFaction faction1, IFaction faction2, StanceLink stanceLink)
 	{
-		if (!faction1.IsEliminated && !faction2.IsEliminated)
+		if (!faction1.IsEliminated && !faction2.IsEliminated && !Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2).HasValue)
 		{
 			_stances.AddStance(stanceLink);
-			AddStanceToFaction(faction1, stanceLink);
-			AddStanceToFaction(faction2, stanceLink);
+			if (stanceLink.IsAtWar && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(faction1, faction2))
+			{
+				faction1.UpdateFactionsAtWarWith();
+				faction2.UpdateFactionsAtWarWith();
+			}
 		}
 	}
 
 	private void RemoveStance(StanceLink stance)
 	{
 		_stances.RemoveStance(stance);
-		RemoveStanceFromFaction(stance.Faction1, stance);
-		RemoveStanceFromFaction(stance.Faction2, stance);
 	}
 
-	private static void AddStanceToFaction(IFaction faction1, StanceLink stanceLink)
-	{
-		if (faction1 is Kingdom kingdom)
-		{
-			kingdom.AddStanceInternal(stanceLink);
-		}
-		else
-		{
-			(faction1 as Clan).AddStanceInternal(stanceLink);
-		}
-	}
-
-	private static void RemoveStanceFromFaction(IFaction faction1, StanceLink stanceLink)
-	{
-		if (faction1 is Kingdom kingdom)
-		{
-			kingdom.RemoveStanceInternal(stanceLink);
-		}
-		else
-		{
-			(faction1 as Clan).RemoveStanceInternal(stanceLink);
-		}
-	}
-
-	private static StanceLink SetStance(IFaction faction1, IFaction faction2, StanceType stanceType)
+	private static void SetStance(IFaction faction1, IFaction faction2, StanceType stanceType)
 	{
 		StanceLink stanceLinkInternal = Instance.GetStanceLinkInternal(faction1, faction2);
+		StanceType stanceType2 = stanceLinkInternal.StanceType;
 		stanceLinkInternal.StanceType = stanceType;
-		return stanceLinkInternal;
-	}
-
-	public static void DeclareAlliance(IFaction faction1, IFaction faction2)
-	{
-		if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+		if (stanceType2 == StanceType.War || stanceType == StanceType.War)
 		{
-			SetStance(faction1, faction2, StanceType.Neutral);
+			faction1.UpdateFactionsAtWarWith();
+			faction2.UpdateFactionsAtWarWith();
 		}
 	}
 
-	public static void DeclareWar(IFaction faction1, IFaction faction2, bool isAtConstantWar = false)
+	public static void DeclareWar(IFaction faction1, IFaction faction2)
 	{
-		if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+		DiplomacyModel.DiplomacyStance? shallowDiplomaticStance = Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2);
+		if (faction1 != faction2 && !shallowDiplomaticStance.HasValue)
 		{
-			SetStance(faction1, faction2, StanceType.War).IsAtConstantWar = isAtConstantWar;
+			SetStance(faction1, faction2, StanceType.War);
 		}
 	}
 
 	public static void SetNeutral(IFaction faction1, IFaction faction2)
 	{
-		if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+		DiplomacyModel.DiplomacyStance? shallowDiplomaticStance = Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2);
+		if (faction1 != faction2 && !shallowDiplomaticStance.HasValue)
 		{
-			Instance.GetStanceLinkInternal(faction1, faction2).StanceType = StanceType.Neutral;
+			StanceLink stanceLinkInternal = Instance.GetStanceLinkInternal(faction1, faction2);
+			StanceType stanceType = stanceLinkInternal.StanceType;
+			stanceLinkInternal.StanceType = StanceType.Neutral;
+			if (stanceType == StanceType.War)
+			{
+				faction1.UpdateFactionsAtWarWith();
+				faction2.UpdateFactionsAtWarWith();
+			}
 		}
 	}
 
@@ -153,27 +143,37 @@ public class FactionManager
 		{
 			return false;
 		}
-		return Instance.GetStanceLinkInternal(faction1, faction2).IsAtWar;
-	}
-
-	public static bool IsAlliedWithFaction(IFaction faction1, IFaction faction2)
-	{
-		if (faction1 == null || faction2 == null || faction1.IsEliminated || faction2.IsEliminated)
-		{
-			return false;
-		}
-		if (faction1 == faction2)
+		if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(faction1, faction2))
 		{
 			return true;
 		}
-		return Instance.GetStanceLinkInternal(faction1, faction2)?.IsAllied ?? false;
+		DiplomacyModel.DiplomacyStance? shallowDiplomaticStance = Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2);
+		if (shallowDiplomaticStance.HasValue)
+		{
+			return shallowDiplomaticStance == DiplomacyModel.DiplomacyStance.War;
+		}
+		return Instance.GetStanceLinkInternal(faction1, faction2).IsAtWar;
 	}
 
-	public static bool IsNeutralWithFaction(IFaction faction1, IFaction faction2)
+	public static bool IsAtConstantWarAgainstFaction(IFaction faction1, IFaction faction2)
 	{
 		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated)
 		{
 			return false;
+		}
+		return Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(faction1, faction2);
+	}
+
+	public static bool IsNeutralWithFaction(IFaction faction1, IFaction faction2)
+	{
+		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated || Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(faction1, faction2))
+		{
+			return false;
+		}
+		DiplomacyModel.DiplomacyStance? shallowDiplomaticStance = Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2);
+		if (shallowDiplomaticStance.HasValue)
+		{
+			return shallowDiplomaticStance == DiplomacyModel.DiplomacyStance.Neutral;
 		}
 		StanceLink stanceLinkInternal = Instance.GetStanceLinkInternal(faction1, faction2);
 		if (stanceLinkInternal == null && ((faction1.IsBanditFaction && !faction2.IsBanditFaction && !faction2.IsOutlaw) || (faction2.IsBanditFaction && !faction1.IsBanditFaction && !faction1.IsOutlaw)))
@@ -185,102 +185,64 @@ public class FactionManager
 
 	internal void RemoveFactionsFromCampaignWars(IFaction faction1)
 	{
-		if (faction1.MapFaction == faction1)
+		if (faction1.MapFaction != faction1)
 		{
-			StanceLink[] array = faction1.Stances.ToArray();
-			foreach (StanceLink stance in array)
-			{
-				RemoveStance(stance);
-			}
+			return;
 		}
-	}
-
-	public static IEnumerable<IFaction> GetEnemyFactions(IFaction faction)
-	{
-		foreach (StanceLink stance in faction.Stances)
+		StanceLink[] array = (from x in _stances.GetStanceLinks()
+			where x.Faction1 == faction1 || x.Faction2 == faction1
+			select x).ToArray();
+		foreach (StanceLink stance in array)
 		{
-			if (stance.IsAtWar)
-			{
-				IFaction faction2 = null;
-				if (stance.Faction1 == faction)
-				{
-					faction2 = stance.Faction2;
-				}
-				else if (stance.Faction2 == faction)
-				{
-					faction2 = stance.Faction1;
-				}
-				if (faction2.IsMapFaction && !faction2.IsBanditFaction)
-				{
-					yield return faction2;
-				}
-			}
+			RemoveStance(stance);
 		}
-	}
-
-	public static IEnumerable<Kingdom> GetEnemyKingdoms(Kingdom faction)
-	{
-		foreach (StanceLink stance in faction.Stances)
+		foreach (IFaction item in faction1.FactionsAtWarWith)
 		{
-			if (stance.IsAtWar)
-			{
-				IFaction faction2 = null;
-				if (stance.Faction1 == faction)
-				{
-					faction2 = stance.Faction2;
-				}
-				else if (stance.Faction2 == faction)
-				{
-					faction2 = stance.Faction1;
-				}
-				if (faction2 != null && faction2.IsKingdomFaction)
-				{
-					yield return faction2 as Kingdom;
-				}
-			}
+			item.UpdateFactionsAtWarWith();
 		}
+		faction1.UpdateFactionsAtWarWith();
 	}
 
 	public static int GetRelationBetweenClans(Clan clan1, Clan clan2)
 	{
 		float num = 0f;
 		float num2 = 1E-05f;
-		if ((clan1.Lords.Count == 0 && clan1.IsBanditFaction && !clan2.IsBanditFaction) || (clan2.Lords.Count == 0 && clan2.IsBanditFaction && !clan1.IsBanditFaction))
+		if ((clan1.AliveLords.Count == 0 && clan1.IsBanditFaction && !clan2.IsBanditFaction) || (clan2.AliveLords.Count == 0 && clan2.IsBanditFaction && !clan1.IsBanditFaction))
 		{
 			return -10;
 		}
-		foreach (Hero lord in clan1.Lords)
+		foreach (Hero aliveLord in clan1.AliveLords)
 		{
-			if (!(lord.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge))
+			if (!(aliveLord.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge))
 			{
 				continue;
 			}
-			foreach (Hero lord2 in clan2.Lords)
+			foreach (Hero aliveLord2 in clan2.AliveLords)
 			{
-				if (lord2.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
+				if (aliveLord2.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
 				{
 					float num3 = 0.1f;
-					if (lord == clan1.Leader)
+					if (aliveLord == clan1.Leader)
 					{
 						num3 += 0.2f;
 					}
-					else if (lord == clan1.Leader?.Spouse)
+					else if (aliveLord == clan1.Leader?.Spouse)
 					{
 						num3 += 0.05f;
 					}
-					if (lord2 == clan2.Leader)
+					if (aliveLord2 == clan2.Leader)
 					{
 						num3 += 0.2f;
 					}
-					else if (lord2 == clan2.Leader?.Spouse)
+					else if (aliveLord2 == clan2.Leader?.Spouse)
 					{
 						num3 += 0.05f;
 					}
-					if (lord == clan1.Leader && lord2 == clan2.Leader)
+					if (aliveLord == clan1.Leader && aliveLord2 == clan2.Leader)
 					{
 						num3 *= 20f;
 					}
-					int baseHeroRelation = lord.GetBaseHeroRelation(lord2);
+					int baseHeroRelation = aliveLord.GetBaseHeroRelation(aliveLord2);
 					num += num3 * (float)baseHeroRelation;
 					num2 += num3;
 				}

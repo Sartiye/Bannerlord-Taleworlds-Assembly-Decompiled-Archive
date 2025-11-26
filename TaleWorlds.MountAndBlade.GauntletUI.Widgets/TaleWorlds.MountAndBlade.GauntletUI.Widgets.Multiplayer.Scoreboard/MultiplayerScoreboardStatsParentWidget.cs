@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -84,13 +85,14 @@ public class MultiplayerScoreboardStatsParentWidget : Widget
 	private void RefreshActiveState()
 	{
 		float alphaFactor = (IsActive ? ActiveAlpha : InactiveAlpha);
-		foreach (Widget allChild in base.AllChildren)
+		List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			if (allChild is RichTextWidget widget)
+			if (allChildrenRecursive[i] is RichTextWidget widget)
 			{
 				widget.SetAlpha(alphaFactor);
 			}
-			else if (allChild is TextWidget widget2)
+			else if (allChildrenRecursive[i] is TextWidget widget2)
 			{
 				widget2.SetAlpha(alphaFactor);
 			}

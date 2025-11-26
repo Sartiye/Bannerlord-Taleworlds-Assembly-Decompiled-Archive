@@ -93,8 +93,8 @@ public class EncyclopediaSearchBarBrushWidget : BrushWidget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		bool flag = base.EventManager.LatestMouseUpWidget == this || CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget);
-		bool flag2 = SearchResultPanel.VerticalScrollbar.CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget);
+		bool flag = base.EventManager.LatestMouseUpWidget == this || CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget) || base.EventManager.LatestMouseDownWidget == this || CheckIsMyChildRecursive(base.EventManager.LatestMouseDownWidget);
+		bool flag2 = SearchResultPanel.CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget) || SearchResultPanel.CheckIsMyChildRecursive(base.EventManager.LatestMouseDownWidget);
 		ShowResults = (flag || flag2) && SearchInputWidget.Text.Length >= MinCharAmountToShowResults;
 		SearchResultPanel.IsVisible = ShowResults;
 	}

@@ -117,7 +117,7 @@ public class CampaignObjectManager
 			return null;
 		}
 
-		public T Find(Predicate<T> predicate)
+		public T FindFirst(Predicate<T> predicate)
 		{
 			foreach (T registeredObject in _registeredObjects)
 			{
@@ -127,6 +127,19 @@ public class CampaignObjectManager
 				}
 			}
 			return null;
+		}
+
+		public MBReadOnlyList<T> FindAll(Predicate<T> predicate)
+		{
+			MBList<T> mBList = new MBList<T>();
+			foreach (T registeredObject in _registeredObjects)
+			{
+				if (predicate == null || predicate(registeredObject))
+				{
+					mBList.Add(registeredObject);
+				}
+			}
+			return mBList;
 		}
 
 		public static string FindNextUniqueStringId(List<CampaignObjectType<T>> lists, string id)
@@ -213,6 +226,8 @@ public class CampaignObjectManager
 
 	private MBList<MobileParty> _caravanParties;
 
+	private MBList<MobileParty> _patrolParties;
+
 	private MBList<MobileParty> _militiaParties;
 
 	private MBList<MobileParty> _garrisonParties;
@@ -233,6 +248,8 @@ public class CampaignObjectManager
 	public MBReadOnlyList<MobileParty> MobileParties => _mobileParties;
 
 	public MBReadOnlyList<MobileParty> CaravanParties => _caravanParties;
+
+	public MBReadOnlyList<MobileParty> PatrolParties => _patrolParties;
 
 	public MBReadOnlyList<MobileParty> MilitiaParties => _militiaParties;
 
@@ -263,6 +280,7 @@ public class CampaignObjectManager
 		_objects = new ICampaignObjectType[5];
 		_mobileParties = new MBList<MobileParty>();
 		_caravanParties = new MBList<MobileParty>();
+		_patrolParties = new MBList<MobileParty>();
 		_militiaParties = new MBList<MobileParty>();
 		_garrisonParties = new MBList<MobileParty>();
 		_customParties = new MBList<MobileParty>();
@@ -309,6 +327,7 @@ public class CampaignObjectManager
 		_objects = new ICampaignObjectType[5];
 		_factions = new MBList<IFaction>();
 		_caravanParties = new MBList<MobileParty>();
+		_patrolParties = new MBList<MobileParty>();
 		_militiaParties = new MBList<MobileParty>();
 		_garrisonParties = new MBList<MobileParty>();
 		_customParties = new MBList<MobileParty>();
@@ -420,17 +439,6 @@ public class CampaignObjectManager
 			if (item.IsVillage)
 			{
 				item.OwnerClan.OnBoundVillageAdded(item.Village);
-			}
-		}
-		foreach (Clan item2 in Clan.All)
-		{
-			if (item2.Kingdom == null)
-			{
-				continue;
-			}
-			foreach (Hero hero in item2.Heroes)
-			{
-				item2.Kingdom.OnHeroAdded(hero);
 			}
 		}
 	}
@@ -548,6 +556,10 @@ public class CampaignObjectManager
 		{
 			_caravanParties.Add(party);
 		}
+		else if (party.IsPatrolParty)
+		{
+			_patrolParties.Add(party);
+		}
 		else if (party.IsLordParty)
 		{
 			_lordParties.Add(party);
@@ -583,6 +595,10 @@ public class CampaignObjectManager
 		else if (party.IsCaravan)
 		{
 			_caravanParties.Remove(party);
+		}
+		else if (party.IsPatrolParty)
+		{
+			_patrolParties.Remove(party);
 		}
 		else if (party.IsLordParty)
 		{
@@ -620,14 +636,14 @@ public class CampaignObjectManager
 		((CampaignObjectType<T>)_objects[(int)targetList])?.UnregisterItem(obj);
 	}
 
-	public T Find<T>(Predicate<T> predicate) where T : MBObjectBase
+	public T FindFirst<T>(Predicate<T> predicate) where T : MBObjectBase
 	{
 		ICampaignObjectType[] objects = _objects;
 		foreach (ICampaignObjectType campaignObjectType in objects)
 		{
 			if (typeof(T) == campaignObjectType.ObjectClass)
 			{
-				T val = ((CampaignObjectType<T>)campaignObjectType).Find(predicate);
+				T val = ((CampaignObjectType<T>)campaignObjectType).FindFirst(predicate);
 				if (val != null)
 				{
 					return val;
@@ -635,6 +651,24 @@ public class CampaignObjectManager
 			}
 		}
 		return null;
+	}
+
+	public MBReadOnlyList<T> FindAll<T>(Predicate<T> predicate) where T : MBObjectBase
+	{
+		MBList<T> mBList = new MBList<T>();
+		ICampaignObjectType[] objects = _objects;
+		foreach (ICampaignObjectType campaignObjectType in objects)
+		{
+			if (typeof(T) == campaignObjectType.ObjectClass)
+			{
+				MBReadOnlyList<T> mBReadOnlyList = ((CampaignObjectType<T>)campaignObjectType).FindAll(predicate);
+				if (mBReadOnlyList != null)
+				{
+					mBList.AddRange(mBReadOnlyList);
+				}
+			}
+		}
+		return mBList;
 	}
 
 	private uint GetNextUniqueObjectIdOfType<T>() where T : MBObjectBase

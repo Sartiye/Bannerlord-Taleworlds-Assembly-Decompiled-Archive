@@ -37,15 +37,11 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 
 	private AgentVisuals _humanAgentVisuals;
 
-	private ActionIndexCache _initialStateActionCode;
+	private ActionIndexCache _initialStateActionCode = ActionIndexCache.act_none;
 
-	private ActionIndexCache _positiveStateActionCode;
+	private ActionIndexCache _positiveStateActionCode = ActionIndexCache.act_none;
 
-	private ActionIndexCache _negativeStateActionCode;
-
-	private static readonly ActionIndexCache default_act_horse_stand = ActionIndexCache.Create("act_horse_stand_1");
-
-	private static readonly ActionIndexCache default_act_camel_stand = ActionIndexCache.Create("act_camel_stand_1");
+	private ActionIndexCache _negativeStateActionCode = ActionIndexCache.act_none;
 
 	public CompositeComponent AddedPrefabComponent { get; private set; }
 
@@ -81,7 +77,7 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 			copyAgentVisualsData.RightWieldedItemIndex(rightWieldedItemIndex).LeftWieldedItemIndex(leftWieldedItemIndex).Equipment(equipment);
 			_humanAgentVisuals.Refresh(needBatchedVersionForWeaponMeshes: false, copyAgentVisualsData);
 		}
-		else if (!flag2 && !flag2)
+		else
 		{
 			AgentVisualsData copyAgentVisualsData2 = _humanAgentVisuals.GetCopyAgentVisualsData();
 			Equipment equipment2 = _humanAgentVisuals.GetEquipment().Clone();
@@ -90,7 +86,7 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 		}
 		if (PrefabItem != "")
 		{
-			if (!GameEntity.PrefabExists(PrefabItem))
+			if (!TaleWorlds.Engine.GameEntity.PrefabExists(PrefabItem))
 			{
 				MBDebug.ShowWarning("Cannot find prefab '" + PrefabItem + "' for popup agent '" + base.GameEntity.Name + "'");
 			}
@@ -99,10 +95,10 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 				AddedPrefabComponent = _humanAgentVisuals.AddPrefabToAgentVisualBoneByBoneType(PrefabItem, PrefabBone);
 				if (AddedPrefabComponent != null)
 				{
-					MatrixFrame frame = AddedPrefabComponent.Frame;
-					MatrixFrame identity = MatrixFrame.Identity;
-					identity.origin = AttachedPrefabOffset;
-					AddedPrefabComponent.Frame = identity * frame;
+					MatrixFrame m = AddedPrefabComponent.Frame;
+					MatrixFrame m2 = MatrixFrame.Identity;
+					m2.origin = AttachedPrefabOffset;
+					AddedPrefabComponent.Frame = m2 * m;
 				}
 			}
 		}
@@ -120,11 +116,11 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 
 	public void SetInitialState()
 	{
-		if (_initialStateActionCode != null)
+		if (_initialStateActionCode != ActionIndexCache.act_none)
 		{
 			float startProgress = (StartWithRandomProgress ? MBRandom.RandomFloatRanged(0.5f) : 0f);
-			_humanAgentVisuals?.SetAction(_initialStateActionCode, startProgress);
-			_mountAgentVisuals?.SetAction(_initialStateActionCode, startProgress);
+			_humanAgentVisuals?.SetAction(in _initialStateActionCode, startProgress);
+			_mountAgentVisuals?.SetAction(in _initialStateActionCode, startProgress);
 		}
 		if (!string.IsNullOrEmpty(InitialFaceAnimCode))
 		{
@@ -138,10 +134,10 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 
 	public void SetPositiveState()
 	{
-		if (_positiveStateActionCode != null)
+		if (_positiveStateActionCode != ActionIndexCache.act_none)
 		{
-			_humanAgentVisuals?.SetAction(_positiveStateActionCode);
-			_mountAgentVisuals?.SetAction(_positiveStateActionCode);
+			_humanAgentVisuals?.SetAction(in _positiveStateActionCode);
+			_mountAgentVisuals?.SetAction(in _positiveStateActionCode);
 		}
 		if (!string.IsNullOrEmpty(PositiveFaceAnimCode))
 		{
@@ -155,10 +151,10 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 
 	public void SetNegativeState()
 	{
-		if (_negativeStateActionCode != null)
+		if (_negativeStateActionCode != ActionIndexCache.act_none)
 		{
-			_humanAgentVisuals?.SetAction(_negativeStateActionCode);
-			_mountAgentVisuals?.SetAction(_negativeStateActionCode);
+			_humanAgentVisuals?.SetAction(in _negativeStateActionCode);
+			_mountAgentVisuals?.SetAction(in _negativeStateActionCode);
 		}
 		if (!string.IsNullOrEmpty(NegativeFaceAnimCode))
 		{
@@ -176,9 +172,9 @@ public class PopupSceneSpawnPoint : ScriptComponentBehavior
 		_humanAgentVisuals = null;
 		_mountAgentVisuals?.Reset();
 		_mountAgentVisuals = null;
-		_initialStateActionCode = null;
-		_positiveStateActionCode = null;
-		_negativeStateActionCode = null;
+		_initialStateActionCode = ActionIndexCache.act_none;
+		_positiveStateActionCode = ActionIndexCache.act_none;
+		_negativeStateActionCode = ActionIndexCache.act_none;
 	}
 
 	public override TickRequirement GetTickRequirement()

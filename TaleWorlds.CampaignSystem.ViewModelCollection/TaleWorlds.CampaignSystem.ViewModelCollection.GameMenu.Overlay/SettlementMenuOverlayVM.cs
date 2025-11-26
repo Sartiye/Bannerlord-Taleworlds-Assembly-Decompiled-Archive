@@ -1,20 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.Overlay;
+using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Events;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Quests;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Tutorial;
 using TaleWorlds.Library;
-using TaleWorlds.Library.EventSystem;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
@@ -22,43 +25,6 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
 [MenuOverlay("SettlementMenuOverlay")]
 public class SettlementMenuOverlayVM : GameMenuOverlay
 {
-	public class SettlementOverlayTalkPermissionEvent : EventBase
-	{
-		public Hero HeroToTalkTo;
-
-		public Action<bool, TextObject> IsTalkAvailable { get; private set; }
-
-		public SettlementOverlayTalkPermissionEvent(Hero heroToTalkTo, Action<bool, TextObject> isTalkAvailable)
-		{
-			HeroToTalkTo = heroToTalkTo;
-			IsTalkAvailable = isTalkAvailable;
-		}
-	}
-
-	public class SettlementOverylayQuickTalkPermissionEvent : EventBase
-	{
-		public Action<bool, TextObject> IsTalkAvailable { get; private set; }
-
-		public SettlementOverylayQuickTalkPermissionEvent(Action<bool, TextObject> isTalkAvailable)
-		{
-			IsTalkAvailable = isTalkAvailable;
-		}
-	}
-
-	public class SettlementOverlayLeaveCharacterPermissionEvent : EventBase
-	{
-		public Action<bool, TextObject> IsLeaveAvailable { get; private set; }
-
-		public SettlementOverlayLeaveCharacterPermissionEvent(Action<bool, TextObject> isLeaveAvailable)
-		{
-			IsLeaveAvailable = isLeaveAvailable;
-		}
-	}
-
-	public class CrimeValueInspectedInSettlementOverlayEvent : EventBase
-	{
-	}
-
 	private class CharacterComparer : IComparer<GameMenuPartyItemVM>
 	{
 		public int Compare(GameMenuPartyItemVM x, GameMenuPartyItemVM y)
@@ -75,9 +41,9 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		}
 	}
 
-	private readonly Settlement _settlement;
+	protected readonly Settlement _settlement;
 
-	private GameOverlays.MenuOverlayType _type;
+	private TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType _type;
 
 	private GameMenuOverlayActionVM _overlayTalkItem;
 
@@ -175,7 +141,13 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	private HintViewModel _leaveMembersHint;
 
-	private ImageIdentifierVM _settlementOwnerBanner;
+	private BannerImageIdentifierVM _settlementOwnerBanner;
+
+	private bool _isShipyardEnabled;
+
+	private string _shipyardLbl;
+
+	private BasicTooltipViewModel _shipyardHint;
 
 	[DataSourceProperty]
 	public string RemainingFoodText
@@ -518,7 +490,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM SettlementOwnerBanner
+	public BannerImageIdentifierVM SettlementOwnerBanner
 	{
 		get
 		{
@@ -840,7 +812,58 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		}
 	}
 
-	public SettlementMenuOverlayVM(GameOverlays.MenuOverlayType type)
+	[DataSourceProperty]
+	public bool IsShipyardEnabled
+	{
+		get
+		{
+			return _isShipyardEnabled;
+		}
+		set
+		{
+			if (value != _isShipyardEnabled)
+			{
+				_isShipyardEnabled = value;
+				OnPropertyChangedWithValue(value, "IsShipyardEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ShipyardLbl
+	{
+		get
+		{
+			return _shipyardLbl;
+		}
+		set
+		{
+			if (value != _shipyardLbl)
+			{
+				_shipyardLbl = value;
+				OnPropertyChangedWithValue(value, "ShipyardLbl");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel ShipyardHint
+	{
+		get
+		{
+			return _shipyardHint;
+		}
+		set
+		{
+			if (value != _shipyardHint)
+			{
+				_shipyardHint = value;
+				OnPropertyChangedWithValue(value, "ShipyardHint");
+			}
+		}
+	}
+
+	public SettlementMenuOverlayVM(TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType type)
 	{
 		_type = type;
 		_overlayTalkItem = null;
@@ -904,7 +927,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		if (_contextMenuItem.Character != null && (!_contextMenuItem.Character.IsHero || !_contextMenuItem.Character.HeroObject.IsPrisoner))
 		{
 			bool isEnabled = true;
-			TextObject hint = TextObject.Empty;
+			TextObject hint = TextObject.GetEmpty();
 			_mostRecentOverlayTalkPermission = null;
 			Game.Current.EventManager.TriggerEvent(new SettlementOverlayTalkPermissionEvent(_contextMenuItem.Character.HeroObject, OnSettlementOverlayTalkPermissionResult));
 			if (_mostRecentOverlayTalkPermission != null)
@@ -915,9 +938,9 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 			_overlayTalkItem = new GameMenuOverlayActionVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", "Conversation").ToString(), isEnabled, MenuOverlayContextList.Conversation, hint);
 			base.ContextList.Add(_overlayTalkItem);
 			bool isEnabled2 = true;
-			TextObject hint2 = TextObject.Empty;
+			TextObject hint2 = TextObject.GetEmpty();
 			_mostRecentOverlayQuickTalkPermission = null;
-			Game.Current.EventManager.TriggerEvent(new SettlementOverylayQuickTalkPermissionEvent(OnSettlementOverlayQuickTalkPermissionResult));
+			Game.Current.EventManager.TriggerEvent(new SettlementOverylayQuickTalkPermissionEvent(_contextMenuItem.Character.HeroObject, OnSettlementOverlayQuickTalkPermissionResult));
 			if (_mostRecentOverlayQuickTalkPermission != null)
 			{
 				isEnabled2 = _mostRecentOverlayQuickTalkPermission.Item1;
@@ -956,7 +979,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 					IssueList.Add(new StringItemWithHintVM(text, quest.QuestHint.HintText));
 				}
 			}
-			if (_contextMenuItem.Character.IsHero && _contextMenuItem.Character.HeroObject.PartyBelongedTo?.Army != null && _contextMenuItem.Character.HeroObject.PartyBelongedTo.Army.LeaderParty == _contextMenuItem.Character.HeroObject.PartyBelongedTo && MobileParty.MainParty.Army == null && FactionManager.IsAlliedWithFaction(_contextMenuItem.Character.HeroObject.MapFaction, Hero.MainHero.MapFaction))
+			if (_contextMenuItem.Character.IsHero && _contextMenuItem.Character.HeroObject.PartyBelongedTo?.Army != null && _contextMenuItem.Character.HeroObject.PartyBelongedTo.Army.LeaderParty == _contextMenuItem.Character.HeroObject.PartyBelongedTo && MobileParty.MainParty.Army == null && DiplomacyHelper.IsSameFactionAndNotEliminated(_contextMenuItem.Character.HeroObject.MapFaction, Hero.MainHero.MapFaction))
 			{
 				GameMenuOverlayActionVM item = new GameMenuOverlayActionVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", "JoinArmy").ToString(), isEnabled: true, MenuOverlayContextList.JoinArmy);
 				base.ContextList.Add(item);
@@ -983,14 +1006,14 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 				{
 					_overlayTalkItem = new GameMenuOverlayActionVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", "ManageGarrison").ToString(), isEnabled: true, MenuOverlayContextList.ManageGarrison);
 					base.ContextList.Add(_overlayTalkItem);
-					goto IL_065b;
+					goto IL_0685;
 				}
 			}
 		}
 		if (_contextMenuItem.Party.MapFaction == Hero.MainHero.MapFaction)
 		{
 			MobileParty mobileParty3 = _contextMenuItem.Party.MobileParty;
-			if (mobileParty3 != null && !mobileParty3.IsMainParty && (_contextMenuItem.Party.MobileParty == null || (!_contextMenuItem.Party.MobileParty.IsVillager && !_contextMenuItem.Party.MobileParty.IsCaravan && !_contextMenuItem.Party.MobileParty.IsMilitia)))
+			if (mobileParty3 != null && !mobileParty3.IsMainParty && (_contextMenuItem.Party.MobileParty == null || (!_contextMenuItem.Party.MobileParty.IsVillager && !_contextMenuItem.Party.MobileParty.IsCaravan && !_contextMenuItem.Party.MobileParty.IsPatrolParty && !_contextMenuItem.Party.MobileParty.IsMilitia)))
 			{
 				if (_contextMenuItem.Party.MobileParty.ActualClan == Clan.PlayerClan)
 				{
@@ -1004,12 +1027,12 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 				}
 			}
 		}
-		goto IL_065b;
-		IL_065b:
+		goto IL_0685;
+		IL_0685:
 		if (_contextMenuItem.Party.LeaderHero != null && _contextMenuItem.Party.LeaderHero != Hero.MainHero)
 		{
 			bool flag = CharacterList.Any((GameMenuPartyItemVM c) => c.Character == _contextMenuItem.Party.LeaderHero.CharacterObject);
-			TextObject hintText = ((!flag) ? GameTexts.FindText("str_menu_overlay_cant_talk_to_party_leader") : TextObject.Empty);
+			TextObject hintText = ((!flag) ? GameTexts.FindText("str_menu_overlay_cant_talk_to_party_leader") : TextObject.GetEmpty());
 			base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", "ConverseWithLeader").ToString(), flag, MenuOverlayContextList.ConverseWithLeader, hintText));
 		}
 		CharacterObject visualPartyLeader = CampaignUIHelper.GetVisualPartyLeader(_contextMenuItem.Party);
@@ -1068,7 +1091,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		return false;
 	}
 
-	public override void UpdateOverlayType(GameOverlays.MenuOverlayType newType)
+	public override void UpdateOverlayType(TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType newType)
 	{
 		_type = newType;
 		base.UpdateOverlayType(newType);
@@ -1082,12 +1105,12 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	private void UpdateCharacterList()
 	{
-		if (_type == GameOverlays.MenuOverlayType.SettlementWithCharacters || _type == GameOverlays.MenuOverlayType.SettlementWithBoth)
+		if (_type == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType.SettlementWithCharacters || _type == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType.SettlementWithBoth)
 		{
 			Dictionary<Hero, bool> dictionary = new Dictionary<Hero, bool>();
 			foreach (LocationCharacter item2 in Campaign.Current.GameMenuManager.MenuLocations.SelectMany((Location l) => l.GetCharacterList()))
 			{
-				if (WillBeListed(item2) && !dictionary.ContainsKey(item2.Character.HeroObject))
+				if (Campaign.Current.Models.HeroAgentLocationModel.WillBeListedInOverlay(item2) && !dictionary.ContainsKey(item2.Character.HeroObject))
 				{
 					dictionary.Add(item2.Character.HeroObject, item2.UseCivilianEquipment);
 				}
@@ -1118,7 +1141,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	private void UpdatePartyList()
 	{
-		if (_type == GameOverlays.MenuOverlayType.SettlementWithBoth || _type == GameOverlays.MenuOverlayType.SettlementWithParties)
+		if (_type == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType.SettlementWithBoth || _type == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuOverlayType.SettlementWithParties)
 		{
 			Settlement obj = MobileParty.MainParty.CurrentSettlement ?? MobileParty.MainParty.LastVisitedSettlement;
 			List<MobileParty> partiesInSettlement = new List<MobileParty>();
@@ -1185,16 +1208,6 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		return mobileParty?.IsActive ?? false;
 	}
 
-	private bool WillBeListed(LocationCharacter locationCharacter)
-	{
-		Settlement settlement = ((MobileParty.MainParty.CurrentSettlement != null) ? MobileParty.MainParty.CurrentSettlement : MobileParty.MainParty.LastVisitedSettlement);
-		if (locationCharacter.Character.IsHero && !locationCharacter.IsHidden && locationCharacter.Character.HeroObject.PartyBelongedTo != MobileParty.MainParty)
-		{
-			return locationCharacter.Character.HeroObject.CurrentSettlement == settlement;
-		}
-		return false;
-	}
-
 	private bool WillBeListed(CharacterObject character)
 	{
 		Settlement settlement = ((MobileParty.MainParty.CurrentSettlement != null) ? MobileParty.MainParty.CurrentSettlement : MobileParty.MainParty.LastVisitedSettlement);
@@ -1219,11 +1232,11 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		}
 		if (banner != null)
 		{
-			SettlementOwnerBanner = new ImageIdentifierVM(BannerCode.CreateFrom(banner), nineGrid: true);
+			SettlementOwnerBanner = new BannerImageIdentifierVM(banner, nineGrid: true);
 		}
 		else
 		{
-			SettlementOwnerBanner = new ImageIdentifierVM();
+			SettlementOwnerBanner = new BannerImageIdentifierVM(null);
 		}
 	}
 
@@ -1238,40 +1251,18 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		RemainingFoodText = (currentSettlement.IsFortification ? ((int)currentSettlement.Town.FoodStocks).ToString() : "-");
 		FoodChangeAmount = ((currentSettlement.Town != null) ? ((int)currentSettlement.Town.FoodChange) : 0);
 		MilitasLbl = ((int)currentSettlement.Militia).ToString();
-		MilitiaChangeAmount = ((currentSettlement.Town != null) ? ((int)currentSettlement.Town.MilitiaChange) : ((int)currentSettlement.Village.MilitiaChange));
+		MilitiaChangeAmount = (int)(currentSettlement.Town?.MilitiaChange ?? currentSettlement.Village?.MilitiaChange ?? 0f);
 		IsLoyaltyRebellionWarning = currentSettlement.IsTown && currentSettlement.Town.Loyalty < (float)Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold;
-		if (currentSettlement.IsFortification)
-		{
-			GarrisonAmount = currentSettlement.Town.GarrisonParty?.Party.NumberOfAllMembers ?? 0;
-			IsNoGarrisonWarning = GarrisonAmount < 1;
-		}
-		if (currentSettlement.IsFortification)
-		{
-			GarrisonLbl = currentSettlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString() ?? "0";
-			GarrisonChangeAmount = currentSettlement.Town.GarrisonChange;
-			WallsLbl = currentSettlement.Town.GetWallLevel().ToString();
-			WallsLevel = currentSettlement.Town.GetWallLevel();
-		}
-		else
-		{
-			GarrisonChangeAmount = 0;
-			WallsLbl = "-";
-			GarrisonLbl = "-";
-			WallsLevel = 1;
-		}
 		if (currentSettlement.IsFortification)
 		{
 			ProsperityLbl = ((int)currentSettlement.Town.Prosperity).ToString();
 			ProsperityChangeAmount = (int)currentSettlement.Town.ProsperityChange;
-		}
-		else
-		{
-			ProsperityLbl = ((int)currentSettlement.Village.Hearth).ToString();
-			ProsperityChangeAmount = (int)currentSettlement.Village.HearthChange;
-		}
-		SettlementNameLbl = string.Concat(currentSettlement.Name, (currentSettlement.IsVillage && currentSettlement.Village.VillageState != 0) ? ("(" + currentSettlement.Village.VillageState.ToString() + ")") : "");
-		if (currentSettlement.IsFortification)
-		{
+			GarrisonLbl = currentSettlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString() ?? "0";
+			GarrisonChangeAmount = (int)SettlementHelper.GetGarrisonChangeExplainedNumber(currentSettlement.Town).ResultNumber;
+			GarrisonAmount = currentSettlement.Town.GarrisonParty?.Party.NumberOfAllMembers ?? 0;
+			IsNoGarrisonWarning = GarrisonAmount < 1;
+			WallsLbl = currentSettlement.Town.GetWallLevel().ToString();
+			WallsLevel = currentSettlement.Town.GetWallLevel();
 			LoyaltyLbl = ((int)currentSettlement.Town.Loyalty).ToString();
 			LoyaltyChangeAmount = (int)currentSettlement.Town.LoyaltyChange;
 			SecurityLbl = ((int)currentSettlement.Town.Security).ToString();
@@ -1279,12 +1270,28 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		}
 		else
 		{
-			LoyaltyChangeAmount = 0;
+			GarrisonLbl = "-";
+			GarrisonChangeAmount = 0;
+			WallsLbl = "-";
+			WallsLevel = 1;
 			LoyaltyLbl = "-";
-			SecurityChangeAmount = 0;
+			LoyaltyChangeAmount = 0;
 			SecurityLbl = "-";
+			SecurityChangeAmount = 0;
+			if (currentSettlement.IsVillage)
+			{
+				ProsperityLbl = ((int)currentSettlement.Village.Hearth).ToString();
+				ProsperityChangeAmount = (int)currentSettlement.Village.HearthChange;
+			}
 		}
+		SettlementNameLbl = string.Concat(currentSettlement.Name, (currentSettlement.IsVillage && currentSettlement.Village.VillageState != 0) ? ("(" + currentSettlement.Village.VillageState.ToString() + ")") : "");
 		Game.Current.EventManager.TriggerEvent(new SettlementOverlayLeaveCharacterPermissionEvent(OnSettlementOverlayLeaveCharacterPermissionResult));
+		if (currentSettlement.IsVillage)
+		{
+			CanLeaveMembers = false;
+			LeaveMembersHint = new HintViewModel(new TextObject("{=y2M014jI}Cannot leave members in a village."));
+			return;
+		}
 		if (_mostRecentOverlayLeaveCharacterPermission != null)
 		{
 			CanLeaveMembers = _mostRecentOverlayLeaveCharacterPermission.Item1;
@@ -1451,7 +1458,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		{
 			if (!item.Character.IsPlayerCharacter)
 			{
-				list.Add(new InquiryElement(item.Character.HeroObject, item.Character.Name.ToString(), new ImageIdentifier(CampaignUIHelper.GetCharacterCode(item.Character))));
+				list.Add(new InquiryElement(item.Character.HeroObject, item.Character.Name.ToString(), new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.Character))));
 			}
 		}
 		MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=aGFxIvqx}Leave Member(s)").ToString(), string.Empty, list, isExitShown: true, 1, 0, new TextObject("{=FBYFcrWo}Leave in settlement").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), OnLeaveMembersInSettlement, OnLeaveMembersInSettlement));
@@ -1478,13 +1485,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
-		CampaignEvents.AfterSettlementEntered.ClearListeners(this);
-		CampaignEvents.OnSettlementLeftEvent.ClearListeners(this);
-		CampaignEvents.OnQuestCompletedEvent.ClearListeners(this);
-		CampaignEvents.WarDeclared.ClearListeners(this);
-		CampaignEvents.MakePeace.ClearListeners(this);
-		CampaignEvents.OnSettlementOwnerChangedEvent.ClearListeners(this);
-		CampaignEvents.TownRebelliosStateChanged.ClearListeners(this);
+		CampaignEventDispatcher.Instance.RemoveListeners(this);
 		Game.Current.EventManager.UnregisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 	}
 

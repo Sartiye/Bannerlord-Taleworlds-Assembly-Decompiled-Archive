@@ -28,5 +28,6 @@ public class WarningTextWidget : TextWidget
 	public WarningTextWidget(UIContext context)
 		: base(context)
 	{
+		base.UseGlobalTimeForAnimation = true;
 	}
 }

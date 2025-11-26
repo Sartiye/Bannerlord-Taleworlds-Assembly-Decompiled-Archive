@@ -30,11 +30,11 @@ public class WindMill : ScriptComponentBehavior
 
 	private void Rotate(float dt)
 	{
-		GameEntity gameEntity = base.GameEntity;
 		float num = rotationSpeed * 0.001f * dt;
-		MatrixFrame frame = gameEntity.GetFrame();
+		MatrixFrame frame = base.GameEntity.GetFrame();
 		frame.rotation.RotateAboutForward(num);
-		gameEntity.SetFrame(ref frame);
+		base.GameEntity.SetLocalFrame(ref frame, isTeleportation: false);
+		base.GameEntity.UpdateTriadFrameForEditorForAllChildren();
 		currentRotation += num;
 	}
 
@@ -73,9 +73,9 @@ public class WindMill : ScriptComponentBehavior
 		{
 			return;
 		}
-		IEnumerable<GameEntity> children = base.GameEntity.GetChildren();
+		IEnumerable<WeakGameEntity> children = base.GameEntity.GetChildren();
 		float num2 = 6.28f / num;
-		foreach (GameEntity item in children)
+		foreach (WeakGameEntity item in children)
 		{
 			int integerFromStringEnd = GetIntegerFromStringEnd(item.Name);
 			float currentPhase = currentRotation % 6.28f;

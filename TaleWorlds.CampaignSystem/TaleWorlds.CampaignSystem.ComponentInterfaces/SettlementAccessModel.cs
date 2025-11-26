@@ -4,7 +4,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SettlementAccessModel : GameModel
+public abstract class SettlementAccessModel : MBGameModel<SettlementAccessModel>
 {
 	public enum AccessLevel
 	{

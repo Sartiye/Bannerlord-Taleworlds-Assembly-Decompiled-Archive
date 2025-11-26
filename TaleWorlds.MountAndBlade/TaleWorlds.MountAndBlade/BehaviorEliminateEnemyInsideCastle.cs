@@ -91,7 +91,7 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 			}
 			return _behaviorSide;
 		}
-		int connectedSides = TeamAISiegeComponent.QuerySystem.DeterminePositionAssociatedSide(_targetEnemyFormation.QuerySystem.MedianPosition.GetNavMeshVec3());
+		int connectedSides = TeamAISiegeComponent.QuerySystem.DeterminePositionAssociatedSide(_targetEnemyFormation.CachedMedianPosition.GetNavMeshVec3());
 		IEnumerable<SiegeLane> source = TeamAISiegeComponent.SiegeLanes.Where((SiegeLane sl) => sl.LaneState != SiegeLane.LaneStateEnum.Conceited && !SiegeQuerySystem.AreSidesRelated(sl.LaneSide, connectedSides));
 		FormationAI.BehaviorSide result = _behaviorSide;
 		if (source.Any())
@@ -100,7 +100,7 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 			{
 				int leastDangerousLaneState = source.Min((SiegeLane pgl) => (int)pgl.LaneState);
 				IEnumerable<SiegeLane> source2 = source.Where((SiegeLane pgl) => pgl.LaneState == (SiegeLane.LaneStateEnum)leastDangerousLaneState);
-				result = ((source2.Count() > 1) ? source2.MinBy((SiegeLane ldl) => SiegeQuerySystem.SideDistance(1 << connectedSides, 1 << (int)ldl.LaneSide)).LaneSide : source2.First().LaneSide);
+				result = ((source2.Count() > 1) ? Extensions.MinBy(source2, (SiegeLane ldl) => SiegeQuerySystem.SideDistance(1 << connectedSides, 1 << (int)ldl.LaneSide)).LaneSide : source2.First().LaneSide);
 			}
 			else
 			{
@@ -129,7 +129,7 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 		}
 		else
 		{
-			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.QuerySystem.MedianPosition);
+			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.CachedMedianPosition);
 			_gatheringFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 		_attackOrder = MovementOrder.MovementOrderChargeToTarget(_targetEnemyFormation);
@@ -151,7 +151,7 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 		{
 			ConfirmGatheringSide();
 		}
-		bool flag = ((_behaviorState != BehaviorState.Attacking) ? (_targetEnemyFormation != null && (base.Formation.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(_gatherOrder.CreateNewOrderWorldPosition(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3()) < 100f || base.Formation.QuerySystem.FormationIntegrityData.DeviationOfPositionsExcludeFarAgents / ((base.Formation.QuerySystem.IdealAverageDisplacement != 0f) ? base.Formation.QuerySystem.IdealAverageDisplacement : 1f) <= 3f)) : (_targetEnemyFormation != null));
+		bool flag = ((_behaviorState != BehaviorState.Attacking) ? (_targetEnemyFormation != null && (base.Formation.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(_gatherOrder.CreateNewOrderWorldPositionMT(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3()) < 100f || base.Formation.CachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents / ((base.Formation.QuerySystem.IdealAverageDisplacement != 0f) ? base.Formation.QuerySystem.IdealAverageDisplacement : 1f) <= 3f)) : (_targetEnemyFormation != null));
 		BehaviorState behaviorState = ((!flag) ? BehaviorState.Gathering : BehaviorState.Attacking);
 		if (behaviorState != _behaviorState)
 		{
@@ -160,10 +160,10 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 			CurrentFacingOrder = ((_behaviorState == BehaviorState.Attacking) ? _attackFacingOrder : _gatheringFacingOrder);
 		}
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_behaviorState == BehaviorState.Gathering && _gatheringTacticalPos != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_gatheringTacticalPos.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_gatheringTacticalPos.Width));
 		}
 	}
 
@@ -173,10 +173,10 @@ public class BehaviorEliminateEnemyInsideCastle : BehaviorComponent
 		_behaviorSide = base.Formation.AI.Side;
 		ResetOrderPositions();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

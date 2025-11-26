@@ -14,13 +14,23 @@ public static class MBEquipmentRosterExtensions
 		return instance.AllEquipments.Where((Equipment x) => x.IsCivilian);
 	}
 
+	public static IEnumerable<Equipment> GetStealthEquipments(this MBEquipmentRoster instance)
+	{
+		return instance.AllEquipments.Where((Equipment x) => x.IsStealth);
+	}
+
 	public static IEnumerable<Equipment> GetBattleEquipments(this MBEquipmentRoster instance)
 	{
-		return instance.AllEquipments.Where((Equipment x) => !x.IsCivilian);
+		return instance.AllEquipments.Where((Equipment x) => x.IsBattle);
 	}
 
 	public static Equipment GetRandomCivilianEquipment(this MBEquipmentRoster instance)
 	{
 		return instance.AllEquipments.GetRandomElementWithPredicate((Equipment x) => x.IsCivilian);
+	}
+
+	public static Equipment GetRandomStealthEquipment(this MBEquipmentRoster instance)
+	{
+		return instance.AllEquipments.GetRandomElementWithPredicate((Equipment x) => x.IsStealth);
 	}
 }

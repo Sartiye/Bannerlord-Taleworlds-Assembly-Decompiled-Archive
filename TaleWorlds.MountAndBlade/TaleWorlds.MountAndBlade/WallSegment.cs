@@ -20,31 +20,31 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 
 	private const string BrokenChildTag = "broken_child";
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _properGroundOutsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _properGroundInsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _underDebrisOutsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _underDebrisInsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _overDebrisOutsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _overDebrisInsideNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _underDebrisGenericNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _overDebrisGenericNavmeshID = -1;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private int _onSolidWallGenericNavmeshID = -1;
 
 	public string SideTag;
@@ -98,13 +98,13 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 			DefenseSide = FormationAI.BehaviorSide.BehaviorSideNotSet;
 			break;
 		}
-		GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity ce) => ce.HasTag("solid_child"));
-		List<GameEntity> list = new List<GameEntity>();
-		List<GameEntity> list2 = new List<GameEntity>();
-		if (gameEntity != null)
+		WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity ce) => ce.HasTag("solid_child"));
+		List<WeakGameEntity> list = new List<WeakGameEntity>();
+		List<WeakGameEntity> list2 = new List<WeakGameEntity>();
+		if (weakGameEntity.IsValid)
 		{
-			list = gameEntity.CollectChildrenEntitiesWithTag("middle_pos");
-			list2 = gameEntity.CollectChildrenEntitiesWithTag("wait_pos");
+			list = weakGameEntity.CollectChildrenEntitiesWithTag("middle_pos");
+			list2 = weakGameEntity.CollectChildrenEntitiesWithTag("wait_pos");
 		}
 		else
 		{
@@ -114,9 +114,9 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 		MatrixFrame globalFrame;
 		if (list.Count > 0)
 		{
-			GameEntity gameEntity2 = list.FirstOrDefault();
-			MiddlePosition = gameEntity2.GetFirstScriptOfType<TacticalPosition>();
-			globalFrame = gameEntity2.GetGlobalFrame();
+			WeakGameEntity weakGameEntity2 = list[0];
+			MiddlePosition = weakGameEntity2.GetFirstScriptOfType<TacticalPosition>();
+			globalFrame = weakGameEntity2.GetGlobalFrame();
 		}
 		else
 		{
@@ -125,9 +125,9 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 		MiddleFrame = new WorldFrame(globalFrame.rotation, globalFrame.origin.ToWorldPosition());
 		if (list2.Count > 0)
 		{
-			GameEntity gameEntity3 = list2.FirstOrDefault();
-			WaitPosition = gameEntity3.GetFirstScriptOfType<TacticalPosition>();
-			globalFrame = gameEntity3.GetGlobalFrame();
+			WeakGameEntity weakGameEntity3 = list2[0];
+			WaitPosition = weakGameEntity3.GetFirstScriptOfType<TacticalPosition>();
+			globalFrame = weakGameEntity3.GetGlobalFrame();
 			DefenseWaitFrame = new WorldFrame(globalFrame.rotation, globalFrame.origin.ToWorldPosition());
 		}
 		else
@@ -143,13 +143,13 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 
 	public void OnChooseUsedWallSegment(bool isBroken)
 	{
-		GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity ce) => ce.HasTag("solid_child"));
-		GameEntity gameEntity2 = base.GameEntity.GetChildren().FirstOrDefault((GameEntity ce) => ce.HasTag("broken_child"));
+		WeakGameEntity firstChildEntityWithTag = base.GameEntity.GetFirstChildEntityWithTag("solid_child");
+		WeakGameEntity firstChildEntityWithTag2 = base.GameEntity.GetFirstChildEntityWithTag("broken_child");
 		Scene scene = base.GameEntity.Scene;
 		if (isBroken)
 		{
-			gameEntity.GetFirstScriptOfType<WallSegment>().SetDisabledSynched();
-			gameEntity2.GetFirstScriptOfType<WallSegment>().SetVisibleSynched(value: true);
+			firstChildEntityWithTag.GetFirstScriptOfType<WallSegment>().SetDisabledSynched();
+			firstChildEntityWithTag2.GetFirstScriptOfType<WallSegment>().SetVisibleSynched(value: true);
 			if (!GameNetwork.IsClientOrReplay)
 			{
 				if (_properGroundOutsideNavmeshID > 0 && _underDebrisOutsideNavmeshID > 0)
@@ -196,13 +196,13 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 				{
 					scene.SetAbilityOfFacesWithId(_onSolidWallGenericNavmeshID, isEnabled: false);
 				}
-				foreach (StrategicArea item in from c in gameEntity.GetChildren()
+				foreach (StrategicArea item in from c in firstChildEntityWithTag.GetChildren()
 					where c.HasScriptOfType<StrategicArea>()
 					select c.GetFirstScriptOfType<StrategicArea>())
 				{
 					item.OnParentGameEntityVisibilityChanged(isVisible: false);
 				}
-				foreach (StrategicArea item2 in from c in gameEntity2.GetChildren()
+				foreach (StrategicArea item2 in from c in firstChildEntityWithTag2.GetChildren()
 					where c.HasScriptOfType<StrategicArea>()
 					select c.GetFirstScriptOfType<StrategicArea>())
 				{
@@ -210,39 +210,39 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 				}
 			}
 			IsBreachedWall = true;
-			List<GameEntity> list = gameEntity2.CollectChildrenEntitiesWithTag("middle_pos");
+			List<WeakGameEntity> list = firstChildEntityWithTag2.CollectChildrenEntitiesWithTag("middle_pos");
 			if (list.Count > 0)
 			{
-				GameEntity gameEntity3 = list.FirstOrDefault();
-				MiddlePosition = gameEntity3.GetFirstScriptOfType<TacticalPosition>();
-				MatrixFrame globalFrame = gameEntity3.GetGlobalFrame();
+				WeakGameEntity weakGameEntity = list.FirstOrDefault();
+				MiddlePosition = weakGameEntity.GetFirstScriptOfType<TacticalPosition>();
+				MatrixFrame globalFrame = weakGameEntity.GetGlobalFrame();
 				MiddleFrame = new WorldFrame(globalFrame.rotation, globalFrame.origin.ToWorldPosition());
 			}
 			else
 			{
 				MBDebug.ShowWarning("Broken child of wall does not have middle position");
-				MatrixFrame globalFrame2 = gameEntity2.GetGlobalFrame();
+				MatrixFrame globalFrame2 = firstChildEntityWithTag2.GetGlobalFrame();
 				MiddleFrame = new WorldFrame(globalFrame2.rotation, new WorldPosition(scene, UIntPtr.Zero, globalFrame2.origin, hasValidZ: false));
 			}
-			List<GameEntity> list2 = gameEntity2.CollectChildrenEntitiesWithTag("wait_pos");
+			List<WeakGameEntity> list2 = firstChildEntityWithTag2.CollectChildrenEntitiesWithTag("wait_pos");
 			if (list2.Count > 0)
 			{
-				GameEntity gameEntity4 = list2.FirstOrDefault();
-				WaitPosition = gameEntity4.GetFirstScriptOfType<TacticalPosition>();
-				MatrixFrame globalFrame3 = gameEntity4.GetGlobalFrame();
+				WeakGameEntity weakGameEntity2 = list2.FirstOrDefault();
+				WaitPosition = weakGameEntity2.GetFirstScriptOfType<TacticalPosition>();
+				MatrixFrame globalFrame3 = weakGameEntity2.GetGlobalFrame();
 				DefenseWaitFrame = new WorldFrame(globalFrame3.rotation, globalFrame3.origin.ToWorldPosition());
 			}
 			else
 			{
 				DefenseWaitFrame = MiddleFrame;
 			}
-			gameEntity.GetFirstScriptOfType<WallSegment>()?.SetDisabledAndMakeInvisible(isParentObject: true);
-			GameEntity gameEntity5 = gameEntity2.CollectChildrenEntitiesWithTag("attacker_wait_pos").FirstOrDefault();
-			if (gameEntity5 != null)
+			firstChildEntityWithTag.GetFirstScriptOfType<WallSegment>()?.SetDisabledAndMakeInvisible(isParentObject: true);
+			WeakGameEntity weakGameEntity3 = firstChildEntityWithTag2.CollectChildrenEntitiesWithTag("attacker_wait_pos").FirstOrDefault();
+			if (weakGameEntity3.IsValid)
 			{
-				MatrixFrame globalFrame4 = gameEntity5.GetGlobalFrame();
+				MatrixFrame globalFrame4 = weakGameEntity3.GetGlobalFrame();
 				AttackerWaitFrame = new WorldFrame(globalFrame4.rotation, globalFrame4.origin.ToWorldPosition());
-				AttackerWaitPosition = gameEntity5.GetFirstScriptOfType<TacticalPosition>();
+				AttackerWaitPosition = weakGameEntity3.GetFirstScriptOfType<TacticalPosition>();
 			}
 		}
 		else
@@ -251,8 +251,8 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 			{
 				return;
 			}
-			gameEntity.GetFirstScriptOfType<WallSegment>().SetVisibleSynched(value: true);
-			gameEntity2.GetFirstScriptOfType<WallSegment>().SetDisabledSynched();
+			firstChildEntityWithTag.GetFirstScriptOfType<WallSegment>().SetVisibleSynched(value: true);
+			firstChildEntityWithTag2.GetFirstScriptOfType<WallSegment>().SetDisabledSynched();
 			if (_overDebrisOutsideNavmeshID > 0)
 			{
 				scene.SetAbilityOfFacesWithId(_overDebrisOutsideNavmeshID, isEnabled: false);
@@ -265,13 +265,13 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 			{
 				scene.SetAbilityOfFacesWithId(_overDebrisGenericNavmeshID, isEnabled: false);
 			}
-			foreach (StrategicArea item3 in from c in gameEntity.GetChildren()
+			foreach (StrategicArea item3 in from c in firstChildEntityWithTag.GetChildren()
 				where c.HasScriptOfType<StrategicArea>()
 				select c.GetFirstScriptOfType<StrategicArea>())
 			{
 				item3.OnParentGameEntityVisibilityChanged(isVisible: true);
 			}
-			foreach (StrategicArea item4 in from c in gameEntity2.GetChildren()
+			foreach (StrategicArea item4 in from c in firstChildEntityWithTag2.GetChildren()
 				where c.HasScriptOfType<StrategicArea>()
 				select c.GetFirstScriptOfType<StrategicArea>())
 			{

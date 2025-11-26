@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Numerics;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.PrefabSystem;
@@ -12,7 +11,7 @@ public class GauntletView : WidgetComponent
 {
 	private BindingPath _viewModelPath;
 
-	private Dictionary<string, ViewBindDataInfo> _bindDataInfos;
+	private Dictionary<string, List<ViewBindDataInfo>> _bindDataInfosByPath;
 
 	private Dictionary<string, ViewBindCommandInfo> _bindCommandInfos;
 
@@ -25,18 +24,6 @@ public class GauntletView : WidgetComponent
 	private List<GauntletView> _items;
 
 	internal bool AddedToChildren { get; private set; }
-
-	public object Tag
-	{
-		get
-		{
-			return base.Target.Tag;
-		}
-		set
-		{
-			base.Target.Tag = value;
-		}
-	}
 
 	public GauntletMovie GauntletMovie { get; private set; }
 
@@ -66,23 +53,6 @@ public class GauntletView : WidgetComponent
 			sb.Initialize(16, "ViewModelPathString");
 			WriteViewModelPathToStringBuilder(ref sb);
 			return sb.ToStringAndRelease();
-		}
-	}
-
-	public MBReadOnlyList<GauntletView> Children => _children;
-
-	public IEnumerable<GauntletView> AllChildren
-	{
-		get
-		{
-			foreach (GauntletView gauntletView in _children)
-			{
-				yield return gauntletView;
-				foreach (GauntletView allChild in gauntletView.AllChildren)
-				{
-					yield return allChild;
-				}
-			}
 		}
 	}
 
@@ -134,7 +104,7 @@ public class GauntletView : WidgetComponent
 		GauntletMovie = gauntletMovie;
 		Parent = parent;
 		_children = new MBList<GauntletView>(childCount);
-		_bindDataInfos = new Dictionary<string, ViewBindDataInfo>();
+		_bindDataInfosByPath = new Dictionary<string, List<ViewBindDataInfo>>();
 		_bindCommandInfos = new Dictionary<string, ViewBindCommandInfo>();
 		_items = new List<GauntletView>(childCount);
 	}
@@ -181,10 +151,15 @@ public class GauntletView : WidgetComponent
 				_viewModel.PropertyChangedWithIntValue += OnViewModelPropertyChangedWithValue;
 				_viewModel.PropertyChangedWithUIntValue += OnViewModelPropertyChangedWithValue;
 				_viewModel.PropertyChangedWithVec2Value += OnViewModelPropertyChangedWithValue;
-				foreach (ViewBindDataInfo value in _bindDataInfos.Values)
+				foreach (KeyValuePair<string, List<ViewBindDataInfo>> item in _bindDataInfosByPath)
 				{
-					object propertyValue = _viewModel.GetPropertyValue(value.Path.LastNode);
-					SetData(value.Property, propertyValue);
+					List<ViewBindDataInfo> value = item.Value;
+					for (int i = 0; i < value.Count; i++)
+					{
+						ViewBindDataInfo viewBindDataInfo = value[i];
+						object propertyValue = _viewModel.GetPropertyValue(viewBindDataInfo.Path.LastNode);
+						SetData(viewBindDataInfo.Property, propertyValue);
+					}
 				}
 			}
 		}
@@ -194,9 +169,9 @@ public class GauntletView : WidgetComponent
 			if (_bindingList != null)
 			{
 				_bindingList.ListChanged += OnViewModelBindingListChanged;
-				for (int i = 0; i < _bindingList.Count; i++)
+				for (int j = 0; j < _bindingList.Count; j++)
 				{
-					AddItemToList(i);
+					AddItemToList(j);
 				}
 			}
 		}
@@ -299,32 +274,19 @@ public class GauntletView : WidgetComponent
 
 	public void BindData(string property, BindingPath path)
 	{
-		ViewBindDataInfo viewBindDataInfo = new ViewBindDataInfo(this, property, path);
-		if (!_bindDataInfos.ContainsKey(path.Path))
+		ViewBindDataInfo item = new ViewBindDataInfo(this, property, path);
+		if (!_bindDataInfosByPath.ContainsKey(path.Path))
 		{
-			_bindDataInfos.Add(path.Path, viewBindDataInfo);
+			_bindDataInfosByPath.Add(path.Path, new List<ViewBindDataInfo>(1) { item });
 		}
 		else
 		{
-			_bindDataInfos[path.Path] = viewBindDataInfo;
+			_bindDataInfosByPath[path.Path].Add(item);
 		}
 		if (_viewModel != null)
 		{
 			object propertyValue = _viewModel.GetPropertyValue(path.LastNode);
-			SetData(viewBindDataInfo.Property, propertyValue);
-		}
-	}
-
-	public void ClearBinding(string propertyName)
-	{
-		KeyValuePair<string, ViewBindDataInfo>[] array = _bindDataInfos.ToArray();
-		for (int i = 0; i < array.Length; i++)
-		{
-			KeyValuePair<string, ViewBindDataInfo> keyValuePair = array[i];
-			if (keyValuePair.Value.Property == propertyName)
-			{
-				_bindDataInfos.Remove(keyValuePair.Key);
-			}
+			SetData(item.Property, propertyValue);
 		}
 	}
 
@@ -411,8 +373,21 @@ public class GauntletView : WidgetComponent
 		OnPropertyChanged(e.PropertyName, propertyValue);
 	}
 
+	private object ConvertCommandParameter(object parameter)
+	{
+		object result = parameter;
+		if (parameter is Widget)
+		{
+			Widget widget = (Widget)parameter;
+			GauntletView gauntletView = GauntletMovie.FindViewOf(widget);
+			result = ((gauntletView == null) ? null : ((gauntletView._viewModel == null) ? ((object)gauntletView._bindingList) : ((object)gauntletView._viewModel)));
+		}
+		return result;
+	}
+
 	private void OnPropertyChanged(string propertyName, object value)
 	{
+		List<ViewBindDataInfo> value2;
 		if (value is ViewModel || value is IMBBindingList)
 		{
 			MBStringBuilder sb = default(MBStringBuilder);
@@ -421,27 +396,42 @@ public class GauntletView : WidgetComponent
 			sb.Append("\\");
 			sb.Append(propertyName);
 			string path = sb.ToStringAndRelease();
+			for (int i = 0; i < _children.Count; i++)
 			{
-				foreach (GauntletView child in Children)
+				GauntletView gauntletView = _children[i];
+				if (BindingPath.IsRelatedWithPathAsString(path, gauntletView.ViewModelPathString))
 				{
-					if (BindingPath.IsRelatedWithPathAsString(path, child.ViewModelPathString))
-					{
-						child.RefreshBindingWithChildren();
-					}
+					gauntletView.RefreshBindingWithChildren();
 				}
-				return;
 			}
 		}
-		if (_bindDataInfos.Count > 0 && _bindDataInfos.TryGetValue(propertyName, out var value2))
+		else if (_bindDataInfosByPath.Count > 0 && _bindDataInfosByPath.TryGetValue(propertyName, out value2))
 		{
-			SetData(value2.Property, value);
+			for (int j = 0; j < value2.Count; j++)
+			{
+				SetData(value2[j].Property, value);
+			}
+		}
+		else
+		{
+			if (value != null)
+			{
+				return;
+			}
+			for (int k = 0; k < _children.Count; k++)
+			{
+				GauntletView gauntletView2 = _children[k];
+				if (gauntletView2._viewModelPath?.ToString() == propertyName)
+				{
+					gauntletView2.RefreshBindingWithChildren();
+				}
+			}
 		}
 	}
 
 	private void OnCommand(string command, object[] args)
 	{
-		ViewBindCommandInfo value = null;
-		if (_bindCommandInfos.TryGetValue(command, out value))
+		if (_bindCommandInfos.TryGetValue(command, out var value))
 		{
 			object[] array = null;
 			if (value.Parameter != null)
@@ -475,25 +465,17 @@ public class GauntletView : WidgetComponent
 		}
 	}
 
-	private object ConvertCommandParameter(object parameter)
+	private List<ViewBindDataInfo> GetBindDataInfosOfProperty(string propertyName)
 	{
-		object result = parameter;
-		if (parameter is Widget)
+		foreach (KeyValuePair<string, List<ViewBindDataInfo>> item in _bindDataInfosByPath)
 		{
-			Widget widget = (Widget)parameter;
-			GauntletView gauntletView = GauntletMovie.FindViewOf(widget);
-			result = ((gauntletView == null) ? null : ((gauntletView._viewModel == null) ? ((object)gauntletView._bindingList) : ((object)gauntletView._viewModel)));
-		}
-		return result;
-	}
-
-	private ViewBindDataInfo GetBindDataInfoOfProperty(string propertyName)
-	{
-		foreach (ViewBindDataInfo value in _bindDataInfos.Values)
-		{
-			if (value.Property == propertyName)
+			List<ViewBindDataInfo> value = item.Value;
+			for (int i = 0; i < value.Count; i++)
 			{
-				return value;
+				if (value[i].Property == propertyName)
+				{
+					return value;
+				}
 			}
 		}
 		return null;
@@ -522,8 +504,7 @@ public class GauntletView : WidgetComponent
 	{
 		GauntletView[] array = _items.ToArray();
 		_items.Clear();
-		GauntletView[] array2 = array;
-		foreach (GauntletView gauntletView in array2)
+		foreach (GauntletView gauntletView in array)
 		{
 			base.Target.OnBeforeRemovedChild(gauntletView.Target);
 			_children.Remove(gauntletView);
@@ -537,8 +518,20 @@ public class GauntletView : WidgetComponent
 		AddItemToList(index).RefreshBindingWithChildren();
 	}
 
+	private int ClampIndex(int index)
+	{
+		int num = MBMath.ClampInt(index, 0, _items.Count);
+		if (index != num)
+		{
+			Debug.FailedAssert("Invalid index for list", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.Data\\GauntletView.cs", "ClampIndex", 641);
+			index = num;
+		}
+		return index;
+	}
+
 	private GauntletView AddItemToList(int index)
 	{
+		index = ClampIndex(index);
 		for (int i = index; i < _items.Count; i++)
 		{
 			_items[i]._viewModelPath = new BindingPath(i + 1);
@@ -584,6 +577,7 @@ public class GauntletView : WidgetComponent
 
 	private void RemoveItemFromList(int index)
 	{
+		index = ClampIndex(index);
 		GauntletView gauntletView = _items[index];
 		_items.RemoveAt(index);
 		_children.Remove(gauntletView);
@@ -610,6 +604,7 @@ public class GauntletView : WidgetComponent
 
 	private void PreviewRemoveItemFromList(int index)
 	{
+		index = ClampIndex(index);
 		GauntletView gauntletView = _items[index];
 		base.Target.OnBeforeRemovedChild(gauntletView.Target);
 	}
@@ -621,12 +616,21 @@ public class GauntletView : WidgetComponent
 
 	private void OnViewPropertyChanged(string propertyName, object value)
 	{
-		if (_viewModel != null)
+		if (_viewModel == null)
 		{
-			ViewBindDataInfo bindDataInfoOfProperty = GetBindDataInfoOfProperty(propertyName);
-			if (bindDataInfoOfProperty != null)
+			return;
+		}
+		List<ViewBindDataInfo> bindDataInfosOfProperty = GetBindDataInfosOfProperty(propertyName);
+		if (bindDataInfosOfProperty == null)
+		{
+			return;
+		}
+		for (int i = 0; i < bindDataInfosOfProperty.Count; i++)
+		{
+			ViewBindDataInfo viewBindDataInfo = bindDataInfosOfProperty[i];
+			if (viewBindDataInfo.IsValid)
 			{
-				_viewModel.SetPropertyValue(bindDataInfoOfProperty.Path.LastNode, value);
+				_viewModel.SetPropertyValue(viewBindDataInfo.Path.LastNode, value);
 			}
 		}
 	}

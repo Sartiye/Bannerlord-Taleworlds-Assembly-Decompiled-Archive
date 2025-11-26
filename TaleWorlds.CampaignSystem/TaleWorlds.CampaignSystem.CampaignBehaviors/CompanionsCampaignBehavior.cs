@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
@@ -337,14 +336,11 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 
 	private void InitializeCompanionTemplateList()
 	{
-		foreach (CultureObject objectType in MBObjectManager.Instance.GetObjectTypeList<CultureObject>())
+		foreach (CharacterObject objectType in MBObjectManager.Instance.GetObjectTypeList<CharacterObject>())
 		{
-			foreach (CharacterObject notableAndWandererTemplate in objectType.NotableAndWandererTemplates)
+			if (objectType.IsTemplate && objectType.Occupation == Occupation.Wanderer)
 			{
-				if (notableAndWandererTemplate.Occupation == Occupation.Wanderer)
-				{
-					_companionsOfTemplates[GetTemplateTypeOfCompanion(notableAndWandererTemplate)].Add(notableAndWandererTemplate);
-				}
+				_companionsOfTemplates[GetTemplateTypeOfCompanion(objectType)].Add(objectType);
 			}
 		}
 	}
@@ -353,29 +349,16 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 	{
 		CompanionTemplateType result = CompanionTemplateType.Combat;
 		int num = 20;
-		foreach (SkillObject item2 in Skills.All)
+		foreach (SkillObject item in Skills.All)
 		{
-			int skillValue = character.GetSkillValue(item2);
+			int skillValue = character.GetSkillValue(item);
 			if (skillValue > num)
 			{
-				CompanionTemplateType templateTypeForSkill = GetTemplateTypeForSkill(item2);
+				CompanionTemplateType templateTypeForSkill = GetTemplateTypeForSkill(item);
 				if (templateTypeForSkill != CompanionTemplateType.Combat)
 				{
 					num = skillValue;
 					result = templateTypeForSkill;
-				}
-			}
-		}
-		foreach (Tuple<SkillObject, int> skillsDerivedFromTrait in Campaign.Current.Models.CharacterDevelopmentModel.GetSkillsDerivedFromTraits(null, character))
-		{
-			int item = skillsDerivedFromTrait.Item2;
-			if (item > num)
-			{
-				CompanionTemplateType templateTypeForSkill2 = GetTemplateTypeForSkill(skillsDerivedFromTrait.Item1);
-				if (templateTypeForSkill2 != CompanionTemplateType.Combat)
-				{
-					num = item;
-					result = templateTypeForSkill2;
 				}
 			}
 		}
@@ -392,7 +375,7 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 			{
 				settlement2 = Town.AllTowns.GetRandomElement().Settlement;
 			}
-			Hero hero = HeroCreator.CreateSpecialHero(companionTemplate, settlement2, null, null, Campaign.Current.Models.AgeModel.HeroComesOfAge + 5 + MBRandom.RandomInt(27));
+			Hero hero = HeroCreator.CreateSpecialHero(companionTemplate, settlement2, null, null, Campaign.Current.Models.AgeModel.HeroComesOfAge + 5 + MBRandom.RandomInt(12));
 			AdjustEquipment(hero);
 			hero.ChangeState(Hero.CharacterStates.Active);
 			EnterSettlementAction.ApplyForCharacterOnly(hero, settlement);

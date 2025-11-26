@@ -24,10 +24,10 @@ public class HasTableauCache : Attribute
 	{
 		TableauCacheTypes = new Dictionary<Type, MaterialCacheIDGetMethodDelegate>();
 		CollectTableauCacheTypesFrom(typeof(HasTableauCache).Assembly);
-		Assembly[] viewAssemblies = GetViewAssemblies();
-		for (int i = 0; i < viewAssemblies.Length; i++)
+		Assembly[] referencingAssembliesSafe = typeof(HasTableauCache).Assembly.GetReferencingAssembliesSafe();
+		for (int i = 0; i < referencingAssembliesSafe.Length; i++)
 		{
-			CollectTableauCacheTypesFrom(viewAssemblies[i]);
+			CollectTableauCacheTypesFrom(referencingAssembliesSafe[i]);
 		}
 	}
 
@@ -45,25 +45,5 @@ public class HasTableauCache : Attribute
 				TableauCacheTypes.Add(hasTableauCache.TableauCacheType, value);
 			}
 		}
-	}
-
-	private static Assembly[] GetViewAssemblies()
-	{
-		List<Assembly> list = new List<Assembly>();
-		Assembly assembly = typeof(HasTableauCache).Assembly;
-		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (Assembly assembly2 in assemblies)
-		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
-			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
-				{
-					list.Add(assembly2);
-					break;
-				}
-			}
-		}
-		return list.ToArray();
 	}
 }

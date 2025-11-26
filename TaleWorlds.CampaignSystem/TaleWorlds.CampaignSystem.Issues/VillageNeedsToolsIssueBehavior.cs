@@ -214,6 +214,10 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 			{
 				return -0.2f;
 			}
+			if (issueEffect == DefaultIssueEffects.IssueOwnerPower)
+			{
+				return -0.1f;
+			}
 			return 0f;
 		}
 
@@ -269,8 +273,7 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -280,10 +283,9 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(CostOfToolsForAlternativeSolution, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(CostOfToolsForAlternativeSolution, out explanation);
 			}
 			return false;
 		}
@@ -574,6 +576,12 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 			ChangeRelationAction.ApplyPlayerRelation(base.QuestGiver, -5);
 		}
 
+		public override void OnFailed()
+		{
+			base.QuestGiver.AddPower(-10f);
+			ChangeRelationAction.ApplyPlayerRelation(base.QuestGiver, -5);
+		}
+
 		private void FinishQuestSuccess1()
 		{
 			AddLog(QuestSuccessLog);
@@ -616,7 +624,7 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				GiveGoldAction.ApplyForQuestBetweenCharacters(questGiver, Hero.MainHero, gold);
+				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, gold);
 			}
 		}
 	}

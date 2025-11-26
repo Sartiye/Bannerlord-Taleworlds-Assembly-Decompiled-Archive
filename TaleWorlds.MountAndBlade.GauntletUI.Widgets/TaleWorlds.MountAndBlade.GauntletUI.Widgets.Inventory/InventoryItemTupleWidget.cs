@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -7,17 +5,9 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Inventory;
 
 public class InventoryItemTupleWidget : InventoryItemButtonWidget
 {
-	private readonly Action<Widget> _viewClickHandler;
-
-	private readonly Action<Widget> _equipClickHandler;
-
-	private readonly Action<Widget> _transferClickHandler;
-
-	private readonly Action<Widget> _sliderTransferClickHandler;
-
-	public List<Action<InventoryItemTupleWidget>> TransferRequestHandlers = new List<Action<InventoryItemTupleWidget>>();
-
 	private bool _isCivilianStateSet;
+
+	private bool _isStealthStateSet;
 
 	private float _extendedUpdateTimer;
 
@@ -43,17 +33,13 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 
 	private ButtonWidget _equipButton;
 
-	private ButtonWidget _viewButton;
-
-	private InventoryTransferButtonWidget _transferButton;
-
-	private ButtonWidget _sliderTransferButton;
-
 	private int _transactionCount;
 
 	private int _itemCount;
 
 	private bool _isCivilian;
+
+	private bool _isStealth;
 
 	private bool _isGenderDifferent;
 
@@ -65,7 +51,7 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 
 	private Brush _defaultBrush;
 
-	private Brush _civilianDisabledBrush;
+	private Brush _cantUseInSetBrush;
 
 	private Brush _characterCantUseBrush;
 
@@ -217,13 +203,11 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 				if (_slider != null)
 				{
 					_slider.intPropertyChanged -= SliderIntPropertyChanged;
-					_slider.PropertyChanged -= SliderValuePropertyChanged;
 				}
 				_slider = value;
 				if (_slider != null)
 				{
 					_slider.intPropertyChanged += SliderIntPropertyChanged;
-					_slider.PropertyChanged += SliderValuePropertyChanged;
 				}
 				OnPropertyChanged(value, "Slider");
 				Slider.AddState("Selected");
@@ -297,67 +281,8 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 		{
 			if (_equipButton != value)
 			{
-				_equipButton?.ClickEventHandlers.Remove(_equipClickHandler);
 				_equipButton = value;
-				_equipButton?.ClickEventHandlers.Add(_equipClickHandler);
 				OnPropertyChanged(value, "EquipButton");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public ButtonWidget ViewButton
-	{
-		get
-		{
-			return _viewButton;
-		}
-		set
-		{
-			if (_viewButton != value)
-			{
-				_viewButton?.ClickEventHandlers.Remove(_viewClickHandler);
-				_viewButton = value;
-				_viewButton?.ClickEventHandlers.Add(_viewClickHandler);
-				OnPropertyChanged(value, "ViewButton");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public InventoryTransferButtonWidget TransferButton
-	{
-		get
-		{
-			return _transferButton;
-		}
-		set
-		{
-			if (_transferButton != value)
-			{
-				_transferButton?.ClickEventHandlers.Remove(_transferClickHandler);
-				_transferButton = value;
-				_transferButton?.ClickEventHandlers.Add(_transferClickHandler);
-				OnPropertyChanged(value, "TransferButton");
-			}
-		}
-	}
-
-	[Editor(false)]
-	public ButtonWidget SliderTransferButton
-	{
-		get
-		{
-			return _sliderTransferButton;
-		}
-		set
-		{
-			if (_sliderTransferButton != value)
-			{
-				_sliderTransferButton?.ClickEventHandlers.Remove(_sliderTransferClickHandler);
-				_sliderTransferButton = value;
-				_sliderTransferButton?.ClickEventHandlers.Add(_sliderTransferClickHandler);
-				OnPropertyChanged(value, "SliderTransferButton");
 			}
 		}
 	}
@@ -411,7 +336,26 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 				_isCivilian = value;
 				OnPropertyChanged(value, "IsCivilian");
 				_isCivilianStateSet = true;
-				UpdateCivilianState();
+				UpdateEquipmentTypeState();
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool IsStealth
+	{
+		get
+		{
+			return _isStealth;
+		}
+		set
+		{
+			if (_isStealth != value || !_isStealthStateSet)
+			{
+				_isStealth = value;
+				OnPropertyChanged(value, "IsStealth");
+				_isStealthStateSet = true;
+				UpdateEquipmentTypeState();
 			}
 		}
 	}
@@ -429,7 +373,7 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 			{
 				_isGenderDifferent = value;
 				OnPropertyChanged(value, "IsGenderDifferent");
-				UpdateCivilianState();
+				UpdateEquipmentTypeState();
 			}
 		}
 	}
@@ -483,7 +427,7 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 			{
 				_canCharacterUseItem = value;
 				OnPropertyChanged(value, "CanCharacterUseItem");
-				UpdateCivilianState();
+				UpdateEquipmentTypeState();
 			}
 		}
 	}
@@ -506,18 +450,18 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 	}
 
 	[Editor(false)]
-	public Brush CivilianDisabledBrush
+	public Brush CantUseInSetBrush
 	{
 		get
 		{
-			return _civilianDisabledBrush;
+			return _cantUseInSetBrush;
 		}
 		set
 		{
-			if (_civilianDisabledBrush != value)
+			if (_cantUseInSetBrush != value)
 			{
-				_civilianDisabledBrush = value;
-				OnPropertyChanged(value, "CivilianDisabledBrush");
+				_cantUseInSetBrush = value;
+				OnPropertyChanged(value, "CantUseInSetBrush");
 			}
 		}
 	}
@@ -542,18 +486,20 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 	public InventoryItemTupleWidget(UIContext context)
 		: base(context)
 	{
-		_viewClickHandler = OnViewClick;
-		_equipClickHandler = OnEquipClick;
-		_transferClickHandler = delegate(Widget widget)
-		{
-			OnTransferClick(widget, 1);
-		};
-		_sliderTransferClickHandler = delegate
-		{
-			OnSliderTransferClick(TransactionCount);
-		};
 		base.OverrideDefaultStateSwitchingEnabled = false;
 		AddState("Selected");
+	}
+
+	protected override void OnConnectedToRoot()
+	{
+		base.OnConnectedToRoot();
+		base.ScreenWidget.intPropertyChanged += InventoryScreenWidgetOnPropertyChanged;
+	}
+
+	protected override void OnDisconnectedFromRoot()
+	{
+		base.OnDisconnectedFromRoot();
+		base.ScreenWidget.intPropertyChanged -= InventoryScreenWidgetOnPropertyChanged;
 	}
 
 	private void SetWidgetsState(string state)
@@ -627,13 +573,14 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 		}
 	}
 
-	private void UpdateCivilianState()
+	private void UpdateEquipmentTypeState()
 	{
 		if (base.ScreenWidget == null)
 		{
 			return;
 		}
-		bool flag = !base.ScreenWidget.IsInWarSet && !IsCivilian;
+		bool flag = base.ScreenWidget.EquipmentMode == 0 && !IsCivilian && IsEquipable;
+		bool flag2 = base.ScreenWidget.EquipmentMode == 2 && !IsStealth && IsEquipable;
 		if (!CanCharacterUseItem)
 		{
 			if (!MainContainer.Brush.IsCloneRelated(CharacterCantUseBrush))
@@ -643,11 +590,11 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 				EquipButton.IsEnabled = false;
 			}
 		}
-		else if (flag)
+		else if (flag || flag2)
 		{
-			if (!MainContainer.Brush.IsCloneRelated(CivilianDisabledBrush))
+			if (!MainContainer.Brush.IsCloneRelated(CantUseInSetBrush))
 			{
-				MainContainer.Brush = CivilianDisabledBrush;
+				MainContainer.Brush = CantUseInSetBrush;
 				EquipButton.IsVisible = true;
 				EquipButton.IsEnabled = false;
 			}
@@ -660,116 +607,11 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 		}
 	}
 
-	private void OnViewClick(Widget widget)
-	{
-		if (base.ScreenWidget != null)
-		{
-			base.ScreenWidget.ItemPreviewWidget.SetLastFocusedItem(this);
-		}
-	}
-
-	private void OnEquipClick(Widget widget)
-	{
-		EquipItem();
-	}
-
-	private void OnTransferClick(Widget widget, int count)
-	{
-		foreach (Action<InventoryItemTupleWidget> transferRequestHandler in TransferRequestHandlers)
-		{
-			transferRequestHandler(this);
-		}
-		if (base.IsRightSide)
-		{
-			ProcessBuyItem(playSound: true, count);
-		}
-		else
-		{
-			ProcessSellItem(playSound: true, count);
-		}
-	}
-
-	private void OnSliderTransferClick(int count)
-	{
-	}
-
-	public void ProcessBuyItem(bool playSound, int count = -1)
-	{
-		if (count == -1)
-		{
-			count = TransactionCount;
-		}
-		TransactionCount = count;
-		base.ScreenWidget.TransactionCount = count;
-		base.ScreenWidget.TargetEquipmentIndex = -1;
-		TransferButton.FireClickEvent();
-	}
-
-	public void ProcessSellItem(bool playSound, int count = -1)
-	{
-		if (count == -1)
-		{
-			count = TransactionCount;
-		}
-		TransactionCount = count;
-		base.ScreenWidget.TransactionCount = count;
-		base.ScreenWidget.TargetEquipmentIndex = -1;
-		TransferButton.FireClickEvent();
-	}
-
-	private void ProcessSelectItem()
-	{
-		if (base.ScreenWidget != null)
-		{
-			base.IsSelected = true;
-			base.ScreenWidget.SetCurrentTuple(this, !base.IsRightSide);
-		}
-	}
-
-	protected override void OnMouseReleased()
-	{
-		base.OnMouseReleased();
-		ProcessSelectItem();
-	}
-
-	protected override void OnMouseAlternateReleased()
-	{
-		base.OnMouseAlternateReleased();
-		EventFired("OnAlternateRelease");
-	}
-
-	protected override void OnConnectedToRoot()
-	{
-		base.OnConnectedToRoot();
-		base.ScreenWidget.boolPropertyChanged += InventoryScreenWidgetOnPropertyChanged;
-	}
-
-	protected override void OnDisconnectedFromRoot()
-	{
-		if (base.ScreenWidget != null)
-		{
-			base.ScreenWidget.boolPropertyChanged -= InventoryScreenWidgetOnPropertyChanged;
-			base.ScreenWidget.SetCurrentTuple(null, isLeftSide: false);
-		}
-	}
-
 	private void SliderIntPropertyChanged(PropertyOwnerObject owner, string propertyName, int value)
 	{
 		if (propertyName == "ValueInt")
 		{
 			TransactionCount = _slider.ValueInt;
-		}
-	}
-
-	private void SliderValuePropertyChanged(PropertyOwnerObject owner, string propertyName, object value)
-	{
-		if (!(propertyName == "OnMousePressed"))
-		{
-			return;
-		}
-		foreach (Action<InventoryItemTupleWidget> transferRequestHandler in TransferRequestHandlers)
-		{
-			transferRequestHandler(this);
 		}
 	}
 
@@ -781,11 +623,11 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 		}
 	}
 
-	private void InventoryScreenWidgetOnPropertyChanged(PropertyOwnerObject owner, string propertyName, bool value)
+	private void InventoryScreenWidgetOnPropertyChanged(PropertyOwnerObject owner, string propertyName, int value)
 	{
-		if (propertyName == "IsInWarSet")
+		if (propertyName == "EquipmentMode")
 		{
-			UpdateCivilianState();
+			UpdateEquipmentTypeState();
 		}
 	}
 

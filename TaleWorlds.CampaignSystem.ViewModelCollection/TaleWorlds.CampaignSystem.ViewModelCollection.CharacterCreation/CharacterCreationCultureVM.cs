@@ -150,8 +150,9 @@ public class CharacterCreationCultureVM : ViewModel
 	{
 		_onSelection = onSelection;
 		Culture = culture;
-		MBTextManager.SetTextVariable("FOCUS_VALUE", CharacterCreationContentBase.Instance.FocusToAddByCulture);
-		MBTextManager.SetTextVariable("EXP_VALUE", CharacterCreationContentBase.Instance.SkillLevelToAddByCulture);
+		TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreationContent characterCreationContent = (GameStateManager.Current.ActiveState as CharacterCreationState)?.CharacterCreationManager.CharacterCreationContent;
+		MBTextManager.SetTextVariable("FOCUS_VALUE", characterCreationContent.GetFocusToAddByCulture(culture));
+		MBTextManager.SetTextVariable("EXP_VALUE", characterCreationContent.GetSkillLevelToAddByCulture(culture));
 		DescriptionText = GameTexts.FindText("str_culture_description", Culture.StringId).ToString();
 		ShortenedNameText = GameTexts.FindText("str_culture_rich_name", Culture.StringId).ToString();
 		NameText = GameTexts.FindText("str_culture_rich_name", Culture.StringId).ToString();

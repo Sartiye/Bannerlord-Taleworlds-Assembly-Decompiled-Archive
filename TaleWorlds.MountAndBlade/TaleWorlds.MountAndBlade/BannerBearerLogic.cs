@@ -152,13 +152,14 @@ public class BannerBearerLogic : MissionLogic
 			}
 		}
 
-		public void RepositionFormation()
+		private void RepositionFormation()
 		{
 			Formation.SetMovementOrder(Formation.GetReadonlyMovementOrderReference());
 			Formation.ApplyActionOnEachUnit(delegate(Agent agent)
 			{
-				agent.UpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
+				agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
 			});
+			Formation.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 		}
 
 		public void UpdateBannerSearchers()
@@ -242,7 +243,6 @@ public class BannerBearerLogic : MissionLogic
 		{
 			List<Agent> bannerBearers = BannerBearers;
 			List<(Agent, bool)> list = new List<(Agent, bool)>();
-			List<Agent> list2 = new List<Agent>();
 			int num = 0;
 			BattleBannerBearersModel battleBannerBearersModel = MissionGameModels.Current.BattleBannerBearersModel;
 			if (battleBannerBearersModel.CanFormationDeployBannerBearers(Formation))
@@ -256,36 +256,28 @@ public class BannerBearerLogic : MissionLogic
 					}
 					else
 					{
-						list2.Add(item2);
+						list.Add((item2, false));
 					}
 				}
 			}
 			else
 			{
-				list2.AddRange(bannerBearers);
-			}
-			foreach (Agent item3 in list2)
-			{
-				bool item = false;
-				if (num > 0)
+				foreach (Agent item3 in bannerBearers)
 				{
-					item = true;
-					num--;
+					list.Add((item3, false));
 				}
-				list.Add((item3, item));
 			}
 			if (num > 0)
 			{
-				List<Agent> list3 = FindBannerBearableAgents(num);
-				for (int i = 0; i < list3.Count; i++)
+				List<Agent> list2 = FindBannerBearableAgents(num);
+				for (int i = 0; i < list2.Count; i++)
 				{
 					if (num <= 0)
 					{
 						break;
 					}
-					Agent agent = list3[i];
-					list2.Add(agent);
-					list.Add((agent, true));
+					Agent item = list2[i];
+					list.Add((item, true));
 					num--;
 				}
 			}
@@ -312,7 +304,7 @@ public class BannerBearerLogic : MissionLogic
 			}
 		}
 
-		public void RemoveBannerEntity(GameEntity entity)
+		public void RemoveBannerEntity(WeakGameEntity entity)
 		{
 			_bannerInstances.Remove(entity.Pointer);
 			UpdateBannerSearchers();
@@ -384,7 +376,7 @@ public class BannerBearerLogic : MissionLogic
 				BattleBannerBearersModel bannerBearerModel = MissionGameModels.Current.BattleBannerBearersModel;
 				foreach (IFormationUnit unitsWithoutLooseDetachedOne in Formation.UnitsWithoutLooseDetachedOnes)
 				{
-					if (unitsWithoutLooseDetachedOne is Agent { Banner: null } agent2 && bannerBearerModel.CanAgentBecomeBannerBearer(agent2))
+					if (unitsWithoutLooseDetachedOne is Agent agent2 && (agent2.Banner == null || agent2.Banner != BannerItem) && bannerBearerModel.CanAgentBecomeBannerBearer(agent2))
 					{
 						list.Add(agent2);
 					}
@@ -528,7 +520,7 @@ public class BannerBearerLogic : MissionLogic
 
 	private bool _isMissionEnded;
 
-	public MissionAgentSpawnLogic AgentSpawnLogic { get; private set; }
+	public IMissionAgentSpawnLogic AgentSpawnLogic { get; private set; }
 
 	public event Action<Formation> OnBannerBearersUpdated;
 
@@ -623,8 +615,8 @@ public class BannerBearerLogic : MissionLogic
 
 	public Formation GetFormationFromBanner(SpawnedItemEntity spawnedItem)
 	{
-		GameEntity gameEntity = spawnedItem.GameEntity;
-		gameEntity = ((gameEntity == null) ? spawnedItem.GameEntityWithWorldPosition.GameEntity : gameEntity);
+		WeakGameEntity gameEntity = spawnedItem.GameEntity;
+		gameEntity = ((!gameEntity.IsValid) ? spawnedItem.GameEntityWithWorldPosition.GameEntity : gameEntity);
 		return GetFormationControllerFromBannerEntity(gameEntity)?.Formation;
 	}
 
@@ -703,11 +695,11 @@ public class BannerBearerLogic : MissionLogic
 	{
 		if (IsBannerItem(spawnedItem.WeaponCopy.Item))
 		{
-			GameEntity gameEntity = spawnedItem.GameEntityWithWorldPosition.GameEntity;
+			WeakGameEntity gameEntity = spawnedItem.GameEntity;
 			FormationBannerController formationControllerFromBannerEntity = GetFormationControllerFromBannerEntity(gameEntity);
 			if (formationControllerFromBannerEntity != null)
 			{
-				formationControllerFromBannerEntity.OnBannerEntityPickedUp(gameEntity, agent);
+				formationControllerFromBannerEntity.OnBannerEntityPickedUp(GameEntity.CreateFromWeakEntity(gameEntity), agent);
 				formationControllerFromBannerEntity.UpdateAgentStats();
 			}
 		}
@@ -720,7 +712,7 @@ public class BannerBearerLogic : MissionLogic
 			FormationBannerController formationControllerFromBannerEntity = GetFormationControllerFromBannerEntity(spawnedItem.GameEntity);
 			if (formationControllerFromBannerEntity != null)
 			{
-				formationControllerFromBannerEntity.OnBannerEntityDropped(spawnedItem.GameEntity);
+				formationControllerFromBannerEntity.OnBannerEntityDropped(GameEntity.CreateFromWeakEntity(spawnedItem.GameEntity));
 				formationControllerFromBannerEntity.UpdateAgentStats();
 			}
 		}
@@ -738,7 +730,7 @@ public class BannerBearerLogic : MissionLogic
 	{
 		if (affectedAgent.Banner != null)
 		{
-			ForceDropAgentBanner(affectedAgent);
+			affectedAgent.Mission.AddTickAction(Mission.MissionTickAction.DropItem, affectedAgent, 4, 0);
 		}
 	}
 
@@ -749,18 +741,22 @@ public class BannerBearerLogic : MissionLogic
 			Formation formation = agent.Formation;
 			FormationBannerController formationControllerFromFormation = GetFormationControllerFromFormation(formation);
 			ItemObject bannerItem = formationControllerFromFormation.BannerItem;
+			if (agent.Banner != null)
+			{
+				RemoveBannerOfAgent(agent);
+			}
 			Equipment newSpawnEquipment = CreateBannerEquipmentForAgent(agent, bannerItem);
 			agent.UpdateSpawnEquipmentAndRefreshVisuals(newSpawnEquipment);
-			GameEntity weaponEntityFromEquipmentSlot = agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot);
-			AddBannerEntity(formationControllerFromFormation, weaponEntityFromEquipmentSlot);
-			formationControllerFromFormation.OnBannerEntityPickedUp(weaponEntityFromEquipmentSlot, agent);
+			GameEntity gameEntity = GameEntity.CreateFromWeakEntity(agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot));
+			AddBannerEntity(formationControllerFromFormation, gameEntity);
+			formationControllerFromFormation.OnBannerEntityPickedUp(gameEntity, agent);
 		}
 		else if (agent.Banner != null)
 		{
 			RemoveBannerOfAgent(agent);
 			agent.UpdateSpawnEquipmentAndRefreshVisuals(_initialSpawnEquipments[agent]);
 		}
-		agent.UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+		agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
 		agent.SetIsAIPaused(isPaused: true);
 		this.OnBannerBearerAgentUpdated?.Invoke(agent, willBecomeBannerBearer);
 	}
@@ -770,10 +766,10 @@ public class BannerBearerLogic : MissionLogic
 		FormationBannerController formationControllerFromFormation = GetFormationControllerFromFormation(formation);
 		ItemObject bannerItem = formationControllerFromFormation.BannerItem;
 		Agent agent = base.Mission.SpawnTroop(troopOrigin, isPlayerSide, hasFormation: true, spawnWithHorse, isReinforcement, formationTroopCount, formationTroopIndex, isAlarmed, wieldInitialWeapons, forceDismounted, initialPosition, initialDirection, specialActionSetSuffix, bannerItem, formationControllerFromFormation.Formation.FormationIndex, useTroopClassForSpawn);
-		agent.UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
-		GameEntity weaponEntityFromEquipmentSlot = agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot);
-		AddBannerEntity(formationControllerFromFormation, weaponEntityFromEquipmentSlot);
-		formationControllerFromFormation.OnBannerEntityPickedUp(weaponEntityFromEquipmentSlot, agent);
+		agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+		GameEntity gameEntity = GameEntity.CreateFromWeakEntity(agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot));
+		AddBannerEntity(formationControllerFromFormation, gameEntity);
+		formationControllerFromFormation.OnBannerEntityPickedUp(gameEntity, agent);
 		return agent;
 	}
 
@@ -792,7 +788,7 @@ public class BannerBearerLogic : MissionLogic
 		formationBannerController.AddBannerEntity(bannerEntity);
 	}
 
-	private void RemoveBannerEntity(FormationBannerController formationBannerController, GameEntity bannerEntity)
+	private void RemoveBannerEntity(FormationBannerController formationBannerController, WeakGameEntity bannerEntity)
 	{
 		_bannerToFormationMap.Remove(bannerEntity.Pointer);
 		formationBannerController.RemoveBannerEntity(bannerEntity);
@@ -807,7 +803,7 @@ public class BannerBearerLogic : MissionLogic
 		return value;
 	}
 
-	private FormationBannerController GetFormationControllerFromBannerEntity(GameEntity bannerEntity)
+	private FormationBannerController GetFormationControllerFromBannerEntity(WeakGameEntity bannerEntity)
 	{
 		if (_bannerToFormationMap.TryGetValue(bannerEntity.Pointer, out var value))
 		{
@@ -836,18 +832,12 @@ public class BannerBearerLogic : MissionLogic
 
 	private void RemoveBannerOfAgent(Agent agent)
 	{
-		GameEntity weaponEntityFromEquipmentSlot = agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot);
+		WeakGameEntity weaponEntityFromEquipmentSlot = agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot);
 		FormationBannerController formationControllerFromBannerEntity = GetFormationControllerFromBannerEntity(weaponEntityFromEquipmentSlot);
 		if (formationControllerFromBannerEntity != null)
 		{
 			RemoveBannerEntity(formationControllerFromBannerEntity, weaponEntityFromEquipmentSlot);
 			formationControllerFromBannerEntity.UpdateAgentStats();
 		}
-	}
-
-	private static void ForceDropAgentBanner(Agent agent)
-	{
-		_ = agent?.Banner;
-		agent.DropItem(EquipmentIndex.ExtraWeaponSlot);
 	}
 }

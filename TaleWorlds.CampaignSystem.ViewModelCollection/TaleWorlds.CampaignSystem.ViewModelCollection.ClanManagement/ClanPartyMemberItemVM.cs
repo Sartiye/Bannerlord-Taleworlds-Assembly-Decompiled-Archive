@@ -1,14 +1,15 @@
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 
 public class ClanPartyMemberItemVM : ViewModel
 {
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
-	private ImageIdentifierVM _banner_9;
+	private BannerImageIdentifierVM _banner_9;
 
 	private string _name;
 
@@ -36,7 +37,7 @@ public class ClanPartyMemberItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -53,7 +54,7 @@ public class ClanPartyMemberItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner_9
+	public BannerImageIdentifierVM Banner_9
 	{
 		get
 		{
@@ -108,7 +109,7 @@ public class ClanPartyMemberItemVM : ViewModel
 		HeroObject = hero;
 		IsLeader = hero == party.LeaderHero;
 		CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(hero.CharacterObject);
-		Visual = new ImageIdentifierVM(characterCode);
+		Visual = new CharacterImageIdentifierVM(characterCode);
 		HeroModel = new HeroViewModel();
 		HeroModel.FillFrom(HeroObject);
 		RefreshValues();
@@ -130,7 +131,7 @@ public class ClanPartyMemberItemVM : ViewModel
 	{
 		HeroModel = new HeroViewModel();
 		HeroModel.FillFrom(HeroObject);
-		Banner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(HeroObject.ClanBanner), nineGrid: true);
+		Banner_9 = new BannerImageIdentifierVM(HeroObject.ClanBanner, nineGrid: true);
 	}
 
 	public void ExecuteLink()

@@ -39,7 +39,7 @@ public class MissionScoreboardComponent : MissionNetwork
 		{
 			if (missionPeer == null || _playerGetterFunc == null)
 			{
-				Debug.FailedAssert("Scoreboard header values are invalid: Peer: " + (missionPeer?.ToString() ?? "NULL") + " Getter: " + (_playerGetterFunc?.ToString() ?? "NULL"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 43);
+				Debug.FailedAssert("Scoreboard header values are invalid: Peer: " + (missionPeer?.ToString() ?? "NULL") + " Getter: " + (_playerGetterFunc?.ToString() ?? "NULL"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 43);
 				return string.Empty;
 			}
 			try
@@ -48,7 +48,7 @@ public class MissionScoreboardComponent : MissionNetwork
 			}
 			catch (Exception ex)
 			{
-				Debug.FailedAssert($"An error occured while trying to get scoreboard value ({Id}) for peer: {missionPeer.Name}. Exception: {ex.InnerException}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 53);
+				Debug.FailedAssert($"An error occured while trying to get scoreboard value ({Id}) for peer: {missionPeer.Name}. Exception: {ex.InnerException}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 53);
 				return string.Empty;
 			}
 		}
@@ -57,7 +57,7 @@ public class MissionScoreboardComponent : MissionNetwork
 		{
 			if (botData == null || _botGetterFunc == null)
 			{
-				Debug.FailedAssert("Scoreboard header values are invalid: Bot Data: " + (botData?.ToString() ?? "NULL") + " Getter: " + (_botGetterFunc?.ToString() ?? "NULL"), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 62);
+				Debug.FailedAssert("Scoreboard header values are invalid: Bot Data: " + (botData?.ToString() ?? "NULL") + " Getter: " + (_botGetterFunc?.ToString() ?? "NULL"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 62);
 				return string.Empty;
 			}
 			try
@@ -66,7 +66,7 @@ public class MissionScoreboardComponent : MissionNetwork
 			}
 			catch (Exception ex)
 			{
-				Debug.FailedAssert($"An error occured while trying to get scoreboard value ({Id}) for a bot. Exception: {ex.InnerException}", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 72);
+				Debug.FailedAssert($"An error occured while trying to get scoreboard value ({Id}) for a bot. Exception: {ex.InnerException}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetValueOf", 72);
 				return string.Empty;
 			}
 		}
@@ -268,7 +268,7 @@ public class MissionScoreboardComponent : MissionNetwork
 		_missionLobbyComponent = base.Mission.GetMissionBehavior<MissionLobbyComponent>();
 		_missionNetworkComponent = base.Mission.GetMissionBehavior<MissionNetworkComponent>();
 		_mpGameModeBase = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
-		if (_missionLobbyComponent.MissionType == MultiplayerGameType.FreeForAll || _missionLobbyComponent.MissionType == MultiplayerGameType.Duel)
+		if (_missionLobbyComponent.MissionType == MultiplayerGameType.Duel)
 		{
 			_scoreboardSides = ScoreboardSides.OneSide;
 		}
@@ -388,7 +388,7 @@ public class MissionScoreboardComponent : MissionNetwork
 	{
 		if ((int)side > _sides.Length || side < BattleSideEnum.Defender)
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetRoundScore", 463);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetRoundScore", 462);
 			return 0;
 		}
 		return GetSideSafe(side).SideScore;

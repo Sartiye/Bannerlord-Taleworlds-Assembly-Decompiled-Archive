@@ -36,7 +36,7 @@ internal class ArchiveConcurrentSerializer : IArchiveContext
 				_writers.Add(managedThreadId, value);
 			}
 		}
-		foreach (SaveEntry allEntry in folder.AllEntries)
+		foreach (SaveEntry allEntry in folder.GetAllEntries())
 		{
 			SerializeEntryConcurrent(allEntry, value);
 		}
@@ -53,15 +53,11 @@ internal class ArchiveConcurrentSerializer : IArchiveContext
 
 	private void SerializeEntryConcurrent(SaveEntry entry, BinaryWriter writer)
 	{
-		BinaryWriter binaryWriter = BinaryWriterFactory.GetBinaryWriter();
-		binaryWriter.Write3ByteInt(entry.FolderId);
-		binaryWriter.Write3ByteInt(entry.Id.Id);
-		binaryWriter.WriteByte((byte)entry.Id.Extension);
-		binaryWriter.WriteShort((short)entry.Data.Length);
-		binaryWriter.WriteBytes(entry.Data);
-		byte[] data = binaryWriter.Data;
-		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
-		writer.WriteBytes(data);
+		writer.Write3ByteInt(entry.FolderId);
+		writer.Write3ByteInt(entry.Id.Id);
+		writer.WriteByte((byte)entry.Id.Extension);
+		writer.WriteShort((short)entry.Data.Length);
+		writer.WriteBytes(entry.Data);
 		Interlocked.Increment(ref _entryCount);
 	}
 
@@ -85,6 +81,6 @@ internal class ArchiveConcurrentSerializer : IArchiveContext
 		{
 			binaryWriter.AppendData(value);
 		}
-		return binaryWriter.Data;
+		return binaryWriter.GetFinalData();
 	}
 }

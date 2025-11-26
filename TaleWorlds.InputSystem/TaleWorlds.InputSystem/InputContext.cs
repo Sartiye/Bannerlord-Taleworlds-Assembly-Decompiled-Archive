@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using TaleWorlds.Library;
 
@@ -7,21 +6,15 @@ namespace TaleWorlds.InputSystem;
 
 public class InputContext : IInputContext
 {
-	private Dictionary<string, HotKey> _registeredHotKeys = new Dictionary<string, HotKey>();
+	private List<GameKey> _registeredGameKeys;
 
-	private List<GameKey> _registeredGameKeys = new List<GameKey>();
+	private Dictionary<string, HotKey> _registeredHotKeys;
 
-	private List<int> _lastFrameDownGameKeyIDs = new List<int>();
+	private Dictionary<string, GameAxisKey> _registeredGameAxisKeys;
 
-	private Dictionary<string, GameAxisKey> _registeredGameAxisKeys = new Dictionary<string, GameAxisKey>();
+	private List<Key> _downInputKeys;
 
-	private List<GameKey> _gameKeysToCurrentlyIgnore = new List<GameKey>();
-
-	private List<HotKey> _hotKeysToCurrentlyIgnore = new List<HotKey>();
-
-	private Dictionary<HotKey, bool> _lastFrameHotKeyDownMap = new Dictionary<HotKey, bool>();
-
-	private bool _isDownMapsReset;
+	private List<Key> _allKeysListMemoryCache = new List<Key>();
 
 	private readonly List<GameKeyContext> _categories;
 
@@ -38,6 +31,10 @@ public class InputContext : IInputContext
 	public InputContext()
 	{
 		_categories = new List<GameKeyContext>();
+		_registeredGameKeys = new List<GameKey>();
+		_registeredHotKeys = new Dictionary<string, HotKey>();
+		_registeredGameAxisKeys = new Dictionary<string, GameAxisKey>();
+		_downInputKeys = new List<Key>();
 		MouseOnMe = false;
 	}
 
@@ -112,63 +109,66 @@ public class InputContext : IInputContext
 		return _categories?.Contains(category) ?? false;
 	}
 
-	public void UpdateLastDownKeys()
+	private List<Key> GetAllAvailableKeys()
 	{
-		for (int num = _gameKeysToCurrentlyIgnore.Count - 1; num >= 0; num--)
-		{
-			if (IsGameKeyReleased(_gameKeysToCurrentlyIgnore[num]))
-			{
-				_gameKeysToCurrentlyIgnore.RemoveAt(num);
-			}
-		}
-		for (int num2 = _hotKeysToCurrentlyIgnore.Count - 1; num2 >= 0; num2--)
-		{
-			if (IsHotKeyReleased(_hotKeysToCurrentlyIgnore[num2]))
-			{
-				_hotKeysToCurrentlyIgnore.RemoveAt(num2);
-			}
-		}
+		_allKeysListMemoryCache.Clear();
 		for (int i = 0; i < _registeredGameKeys.Count; i++)
 		{
 			GameKey gameKey = _registeredGameKeys[i];
 			if (gameKey != null)
 			{
-				bool flag = IsGameKeyDown(gameKey);
-				if (_isDownMapsReset && flag)
+				if (gameKey.KeyboardKey != null)
 				{
-					_gameKeysToCurrentlyIgnore.Add(gameKey);
+					_allKeysListMemoryCache.Add(gameKey.KeyboardKey);
 				}
-				else if (!_lastFrameDownGameKeyIDs.Contains(gameKey.Id))
+				if (gameKey.ControllerKey != null)
 				{
-					_lastFrameDownGameKeyIDs.Add(gameKey.Id);
+					_allKeysListMemoryCache.Add(gameKey.ControllerKey);
 				}
 			}
 		}
 		foreach (HotKey value in _registeredHotKeys.Values)
 		{
-			bool flag2 = IsHotKeyDown(value);
-			if (_isDownMapsReset && flag2)
+			for (int j = 0; j < value.Keys.Count; j++)
 			{
-				_hotKeysToCurrentlyIgnore.Add(value);
-			}
-			else if (flag2)
-			{
-				_lastFrameHotKeyDownMap[value] = true;
+				if (value.Keys[j] != null)
+				{
+					_allKeysListMemoryCache.Add(value.Keys[j]);
+				}
 			}
 		}
-		_isDownMapsReset = false;
+		return _allKeysListMemoryCache;
+	}
+
+	public void RegisterDownKeys()
+	{
+		List<Key> allAvailableKeys = GetAllAvailableKeys();
+		for (int i = 0; i < allAvailableKeys.Count; i++)
+		{
+			Key key = allAvailableKeys[i];
+			if (key.IsPressed() && !_downInputKeys.Contains(key))
+			{
+				_downInputKeys.Add(key);
+			}
+		}
+	}
+
+	public void UnregisterReleasedKeys()
+	{
+		List<Key> allAvailableKeys = GetAllAvailableKeys();
+		for (int i = 0; i < allAvailableKeys.Count; i++)
+		{
+			Key key = allAvailableKeys[i];
+			if (key.IsReleased() && _downInputKeys.Contains(key))
+			{
+				_downInputKeys.Remove(key);
+			}
+		}
 	}
 
 	public void ResetLastDownKeys()
 	{
-		if (!_isDownMapsReset)
-		{
-			_lastFrameDownGameKeyIDs.Clear();
-			_lastFrameHotKeyDownMap.Clear();
-			_hotKeysToCurrentlyIgnore.Clear();
-			_gameKeysToCurrentlyIgnore.Clear();
-			_isDownMapsReset = true;
-		}
+		_downInputKeys.Clear();
 	}
 
 	private bool IsHotKeyDown(HotKey hotKey)
@@ -212,15 +212,6 @@ public class InputContext : IInputContext
 		return hotKey.IsPressed(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
 	}
 
-	public bool IsHotKeyDownAndReleased(string hotkey)
-	{
-		if (_registeredHotKeys.TryGetValue(hotkey, out var value) && _lastFrameHotKeyDownMap.ContainsKey(value) && !_hotKeysToCurrentlyIgnore.Contains(value))
-		{
-			return value.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
-		}
-		return false;
-	}
-
 	public bool IsHotKeyPressed(string hotKey)
 	{
 		if (_registeredHotKeys.TryGetValue(hotKey, out var value))
@@ -235,16 +226,6 @@ public class InputContext : IInputContext
 		return gameKey.IsPressed(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
 	}
 
-	public bool IsGameKeyDownAndReleased(int gameKey)
-	{
-		GameKey gameKey2 = _registeredGameKeys[gameKey];
-		if (_lastFrameDownGameKeyIDs.Contains(gameKey2.Id) && !_gameKeysToCurrentlyIgnore.Contains(gameKey2))
-		{
-			return gameKey2.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
-		}
-		return false;
-	}
-
 	public bool IsGameKeyPressed(int gameKey)
 	{
 		GameKey gameKey2 = _registeredGameKeys[gameKey];
@@ -253,7 +234,14 @@ public class InputContext : IInputContext
 
 	private bool IsHotKeyReleased(HotKey hotKey)
 	{
-		return hotKey.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
+		for (int i = 0; i < hotKey.Keys.Count; i++)
+		{
+			if (_downInputKeys.Contains(hotKey.Keys[i]))
+			{
+				return hotKey.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
+			}
+		}
+		return false;
 	}
 
 	public bool IsHotKeyReleased(string hotKey)
@@ -267,7 +255,11 @@ public class InputContext : IInputContext
 
 	private bool IsGameKeyReleased(GameKey gameKey)
 	{
-		return gameKey.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
+		if (_downInputKeys.Contains(gameKey.KeyboardKey) || _downInputKeys.Contains(gameKey.ControllerKey))
+		{
+			return gameKey.IsReleased(IsKeysAllowed, IsMouseButtonAllowed && MouseOnMe, IsMouseWheelAllowed, IsControllerAllowed);
+		}
+		return false;
 	}
 
 	public bool IsGameKeyReleased(int gameKey)
@@ -317,13 +309,17 @@ public class InputContext : IInputContext
 
 	internal bool CanUse(InputKey key)
 	{
-		if (Input.GetClickKeys().Any((InputKey k) => k == key))
+		InputKey[] clickKeys = Input.GetClickKeys();
+		for (int i = 0; i < clickKeys.Length; i++)
 		{
-			if (!IsMouseButtonAllowed)
+			if (clickKeys[i] == key)
 			{
-				return IsControllerAllowed;
+				if (!IsMouseButtonAllowed)
+				{
+					return IsControllerAllowed;
+				}
+				return true;
 			}
-			return true;
 		}
 		switch (key)
 		{
@@ -532,6 +528,16 @@ public class InputContext : IInputContext
 	public float GetMouseMoveY()
 	{
 		return Input.GetMouseMoveY();
+	}
+
+	public float GetNormalizedMouseMoveX()
+	{
+		return Input.GetNormalizedMouseMoveX();
+	}
+
+	public float GetNormalizedMouseMoveY()
+	{
+		return Input.GetNormalizedMouseMoveY();
 	}
 
 	public Vec2 GetControllerRightStickState()

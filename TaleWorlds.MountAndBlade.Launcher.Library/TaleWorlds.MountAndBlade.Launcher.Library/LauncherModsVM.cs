@@ -116,7 +116,7 @@ public class LauncherModsVM : ViewModel
 	{
 		_userDataManager = userDataManager;
 		_userData = _userDataManager.UserData;
-		_modulesCache = ModuleHelper.GetModules().ToList();
+		_modulesCache = ModuleHelper.GetModulesForLauncher();
 		_dllManager = new LauncherModsDLLManager(_userData, _modulesCache.SelectMany((ModuleInfo m) => m.SubModules).ToList());
 		Modules = new MBBindingList<LauncherModuleVM>();
 		IsDisabled = true;
@@ -158,8 +158,9 @@ public class LauncherModsVM : ViewModel
 		foreach (ModuleInfo item3 in MBMath.TopologySort(unorderedModList, (ModuleInfo module) => ModuleHelper.GetDependentModulesOf(unorderedModList, module)))
 		{
 			UserModData userModData = _userData.GetUserModData(isMultiplayer, item3.Id);
-			bool flag = ((_userDataManager.HasUserData() && userModData != null) ? (userModData.IsSelected || userModData.IsUpdatedToBeDefault(item3)) : (item3.IsRequiredOfficial || item3.IsDefault));
-			item3.IsSelected = (flag && AreAllDependenciesOfModulePresent(item3)) || item3.IsNative;
+			bool flag = false;
+			flag = ((!_userDataManager.HasUserData() || userModData == null) ? (item3.IsRequiredOfficial || item3.IsDefault) : (userModData.IsSelected || userModData.IsUpdatedToBeDefault(item3)));
+			item3.IsSelected = item3.IsNative || (flag && AreAllDependenciesOfModulePresent(item3));
 			LauncherModuleVM item = new LauncherModuleVM(item3, ChangeLoadingOrderOf, ChangeIsSelectedOf, AreAllDependenciesOfModulePresent, GetSubModuleVerifyData);
 			Modules.Add(item);
 		}

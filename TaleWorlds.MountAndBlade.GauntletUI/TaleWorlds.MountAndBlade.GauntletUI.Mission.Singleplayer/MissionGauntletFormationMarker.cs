@@ -1,36 +1,37 @@
 using System.Collections.Generic;
+using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.FormationMarker;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission.Singleplayer;
 
 [OverrideView(typeof(MissionFormationMarkerUIHandler))]
-public class MissionGauntletFormationMarker : MissionGauntletBattleUIBase
+public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 {
 	private MissionFormationMarkerVM _dataSource;
 
 	private GauntletLayer _gauntletLayer;
 
-	private List<CompassItemUpdateParams> _formationTargets;
+	private MissionFormationTargetSelectionHandler _formationTargetHandler;
 
 	private MBReadOnlyList<Formation> _focusedFormationsCache;
 
-	private MissionGauntletSingleplayerOrderUIHandler _orderHandler;
+	private readonly Vec3 _heightOffset = new Vec3(0f, 0f, 3f);
 
-	private MissionFormationTargetSelectionHandler _formationTargetHandler;
+	private float _fadeOutTimer;
 
 	protected override void OnCreateView()
 	{
-		_formationTargets = new List<CompassItemUpdateParams>();
-		_dataSource = new MissionFormationMarkerVM(base.Mission, base.MissionScreen.CombatCamera);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_dataSource = new MissionFormationMarkerVM(base.Mission);
+		_gauntletLayer = new GauntletLayer("MissionFormationMarker", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("FormationMarker", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
-		_orderHandler = base.Mission.GetMissionBehavior<MissionGauntletSingleplayerOrderUIHandler>();
 		_formationTargetHandler = base.Mission.GetMissionBehavior<MissionFormationTargetSelectionHandler>();
 		if (_formationTargetHandler != null)
 		{
@@ -50,34 +51,131 @@ public class MissionGauntletFormationMarker : MissionGauntletBattleUIBase
 		_dataSource = null;
 	}
 
+	protected override void OnSuspendView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+		}
+	}
+
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (!base.IsViewActive)
+		if (base.IsViewCreated)
 		{
-			return;
-		}
-		if (!_orderHandler.IsBattleDeployment)
-		{
-			_dataSource.IsEnabled = base.Input.IsGameKeyDown(5) || (_orderHandler?.IsOrderMenuActive ?? false);
-			if (_formationTargetHandler != null)
+			if (base.Mission.Mode != MissionMode.Deployment)
 			{
-				_dataSource.SetFocusedFormations(_focusedFormationsCache);
+				_dataSource.IsEnabled = base.Input.IsGameKeyDown(5) || base.Mission.IsOrderMenuOpen;
+			}
+			_dataSource.IsFormationTargetRelevant = _formationTargetHandler != null && base.Mission.IsOrderMenuOpen;
+			if (_dataSource.IsEnabled)
+			{
+				_dataSource.RefreshFormationMarkers();
+				RefreshTargetProperties();
+				UpdateMarkerPositions(_fadeOutTimer < 0f);
+				_fadeOutTimer = 2f;
+			}
+			else if (_fadeOutTimer >= 0f)
+			{
+				_fadeOutTimer -= dt;
+				UpdateMarkerPositions(isFirstFrame: false);
 			}
 		}
-		_dataSource.IsFormationTargetRelevant = _formationTargetHandler != null && (_orderHandler?.IsOrderMenuActive ?? false);
-		_dataSource.Tick(dt);
 	}
 
-	private void OnFormationFocusedFromHandler(MBReadOnlyList<Formation> obj)
+	private void UpdateMarkerPositions(bool isFirstFrame)
 	{
-		_focusedFormationsCache = obj;
+		for (int i = 0; i < _dataSource.Targets.Count; i++)
+		{
+			MissionFormationMarkerTargetVM missionFormationMarkerTargetVM = _dataSource.Targets[i];
+			float screenX = 0f;
+			float screenY = 0f;
+			float w = 0f;
+			WorldPosition cachedMedianPosition = missionFormationMarkerTargetVM.Formation.CachedMedianPosition;
+			if (cachedMedianPosition.IsValid)
+			{
+				MBWindowManager.WorldToScreen(base.MissionScreen.CombatCamera, cachedMedianPosition.GetGroundVec3() + _heightOffset, ref screenX, ref screenY, ref w);
+				if (!MathF.IsValidValue(w) || !MathF.IsValidValue(screenX) || !MathF.IsValidValue(screenY))
+				{
+					screenX = -10000f;
+					screenY = -10000f;
+					w = -1f;
+				}
+				missionFormationMarkerTargetVM.WSign = ((!(w < 0f)) ? 1 : (-1));
+			}
+			if (!missionFormationMarkerTargetVM.IsTargetingAFormation && (!cachedMedianPosition.IsValid || !MathF.IsValidValue(w) || w < 0f || !MathF.IsValidValue(screenX) || !MathF.IsValidValue(screenY)))
+			{
+				screenX = -10000f;
+				screenY = -10000f;
+				w = 0f;
+			}
+			if (isFirstFrame)
+			{
+				missionFormationMarkerTargetVM.ScreenPosition = new Vec2(screenX, screenY);
+			}
+			else
+			{
+				missionFormationMarkerTargetVM.ScreenPosition = Vec2.Lerp(missionFormationMarkerTargetVM.ScreenPosition, new Vec2(screenX, screenY), 0.9f);
+			}
+			missionFormationMarkerTargetVM.Distance = base.MissionScreen.CombatCamera.Position.Distance(cachedMedianPosition.GetGroundVec3());
+		}
+	}
+
+	private void RefreshTargetProperties()
+	{
+		if (!_dataSource.IsFormationTargetRelevant)
+		{
+			for (int i = 0; i < _dataSource.Targets.Count; i++)
+			{
+				_dataSource.Targets[i].SetTargetedState(isFocused: false, isTargetingAFormation: false);
+			}
+			return;
+		}
+		List<Formation> list = new List<Formation>();
+		MBReadOnlyList<Formation> mBReadOnlyList = Agent.Main?.Team.PlayerOrderController?.SelectedFormations;
+		if (mBReadOnlyList != null)
+		{
+			for (int j = 0; j < mBReadOnlyList.Count; j++)
+			{
+				if (mBReadOnlyList[j].TargetFormation != null)
+				{
+					MovementOrder readonlyMovementOrderReference = mBReadOnlyList[j].GetReadonlyMovementOrderReference();
+					if (readonlyMovementOrderReference.OrderType == OrderType.Charge || readonlyMovementOrderReference.OrderType == OrderType.Advance)
+					{
+						list.Add(mBReadOnlyList[j].TargetFormation);
+					}
+				}
+			}
+		}
+		for (int k = 0; k < _dataSource.Targets.Count; k++)
+		{
+			MissionFormationMarkerTargetVM missionFormationMarkerTargetVM = _dataSource.Targets[k];
+			if (missionFormationMarkerTargetVM.TeamType == 2)
+			{
+				bool isTargetingAFormation = list.Contains(missionFormationMarkerTargetVM.Formation);
+				missionFormationMarkerTargetVM.SetTargetedState(_focusedFormationsCache?.Contains(missionFormationMarkerTargetVM.Formation) ?? false, isTargetingAFormation);
+			}
+		}
+	}
+
+	private void OnFormationFocusedFromHandler(MBReadOnlyList<Formation> focusedFormations)
+	{
+		_focusedFormationsCache = focusedFormations;
 	}
 
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 0f;
 		}
@@ -86,7 +184,7 @@ public class MissionGauntletFormationMarker : MissionGauntletBattleUIBase
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_gauntletLayer.UIContext.ContextAlpha = 1f;
 		}

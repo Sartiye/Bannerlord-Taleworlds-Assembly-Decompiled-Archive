@@ -803,7 +803,7 @@ public class MPMatchmakingVM : ViewModel
 			{
 				if (!IsServerCustomGameListAvailable)
 				{
-					Debug.FailedAssert("Trying to open matchmaking when nothing is available", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\OfficialGame\\MPMatchmakingVM.cs", "TrySetMatchmakingSubPage", 182);
+					Debug.FailedAssert("Trying to open matchmaking when nothing is available", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\OfficialGame\\MPMatchmakingVM.cs", "TrySetMatchmakingSubPage", 182);
 					return;
 				}
 				newPage = MatchmakingSubPages.CustomGameList;
@@ -839,7 +839,7 @@ public class MPMatchmakingVM : ViewModel
 		{
 			foreach (MPMatchmakingItemVM quickplayGameType in QuickplayGameTypes)
 			{
-				quickplayGameType.IsSelected = lastGameTypes.Contains(quickplayGameType.Name);
+				quickplayGameType.IsSelected = lastGameTypes.Contains(quickplayGameType.Type);
 			}
 			return;
 		}

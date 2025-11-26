@@ -4,7 +4,7 @@ using TaleWorlds.DotNet;
 namespace TaleWorlds.MountAndBlade;
 
 [Flags]
-[EngineStruct("Combat_hit_result_flags", false)]
+[EngineStruct("Combat_hit_result_flags", true, "chrf", false)]
 public enum CombatHitResultFlags : byte
 {
 	NormalHit = 0,

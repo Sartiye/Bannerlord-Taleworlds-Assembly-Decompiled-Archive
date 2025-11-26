@@ -66,7 +66,7 @@ public class DefaultEncyclopediaConceptPage : EncyclopediaPage
 
 	public override bool IsValidEncyclopediaItem(object o)
 	{
-		if (o is Concept { Title: not null } concept)
+		if (o is Concept concept && concept.Title != null)
 		{
 			return concept.Description != null;
 		}

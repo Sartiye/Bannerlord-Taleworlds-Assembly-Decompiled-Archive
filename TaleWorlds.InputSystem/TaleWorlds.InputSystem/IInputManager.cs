@@ -32,6 +32,10 @@ public interface IInputManager
 
 	float GetMouseMoveY();
 
+	float GetNormalizedMouseMoveX();
+
+	float GetNormalizedMouseMoveY();
+
 	float GetGyroX();
 
 	float GetGyroY();

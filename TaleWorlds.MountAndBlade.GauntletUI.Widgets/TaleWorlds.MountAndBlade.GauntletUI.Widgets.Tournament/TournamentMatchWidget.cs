@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -21,9 +22,10 @@ public class TournamentMatchWidget : Widget
 				return;
 			}
 			_state = value;
-			foreach (Widget allChild in base.AllChildren)
+			List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+			for (int i = 0; i < allChildrenRecursive.Count; i++)
 			{
-				if (allChild is TournamentParticipantBrushWidget tournamentParticipantBrushWidget)
+				if (allChildrenRecursive[i] is TournamentParticipantBrushWidget tournamentParticipantBrushWidget)
 				{
 					tournamentParticipantBrushWidget.MatchState = State;
 				}

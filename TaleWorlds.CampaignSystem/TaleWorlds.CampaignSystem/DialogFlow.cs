@@ -24,10 +24,10 @@ public class DialogFlow
 		Priority = priority;
 	}
 
-	private DialogFlow Line(TextObject text, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, bool isRepeatable = false)
+	private DialogFlow Line(TextObject text, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, bool isRepeatable = false, string inputToken = null, string outputToken = null)
 	{
-		string text2 = Campaign.Current.ConversationManager.CreateToken();
-		AddLine(text, _currentToken, text2, byPlayer, speakerDelegate, listenerDelegate, isRepeatable);
+		string text2 = outputToken ?? Campaign.Current.ConversationManager.CreateToken();
+		AddLine(text, inputToken ?? _currentToken, text2, byPlayer, speakerDelegate, listenerDelegate, isRepeatable);
 		_currentToken = text2;
 		return this;
 	}
@@ -50,19 +50,19 @@ public class DialogFlow
 		return this;
 	}
 
-	public DialogFlow NpcLine(string npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcLine(string npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		return NpcLine(new TextObject(npcText), speakerDelegate, listenerDelegate);
+		return NpcLine(new TextObject(npcText), speakerDelegate, listenerDelegate, inputToken, outputToken);
 	}
 
-	public DialogFlow NpcLine(TextObject npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcLine(TextObject npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		return Line(npcText, byPlayer: false, speakerDelegate, listenerDelegate);
+		return Line(npcText, byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, inputToken, outputToken);
 	}
 
-	public DialogFlow NpcLineWithVariation(string npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcLineWithVariation(string npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		DialogFlow result = Line(TextObject.Empty, byPlayer: false, speakerDelegate, listenerDelegate);
+		DialogFlow result = Line(TextObject.GetEmpty(), byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, inputToken, outputToken);
 		List<GameTextManager.ChoiceTag> list = new List<GameTextManager.ChoiceTag>
 		{
 			new GameTextManager.ChoiceTag("DefaultTag", 1)
@@ -71,9 +71,9 @@ public class DialogFlow
 		return result;
 	}
 
-	public DialogFlow NpcLineWithVariation(TextObject npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcLineWithVariation(TextObject npcText, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		DialogFlow result = Line(TextObject.Empty, byPlayer: false, speakerDelegate, listenerDelegate);
+		DialogFlow result = Line(TextObject.GetEmpty(), byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, inputToken, outputToken);
 		List<GameTextManager.ChoiceTag> list = new List<GameTextManager.ChoiceTag>
 		{
 			new GameTextManager.ChoiceTag("DefaultTag", 1)
@@ -82,86 +82,86 @@ public class DialogFlow
 		return result;
 	}
 
-	public DialogFlow PlayerLine(string playerText, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerLine(string playerText, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		return Line(new TextObject(playerText), byPlayer: true, null, listenerDelegate);
+		return Line(new TextObject(playerText), byPlayer: true, null, listenerDelegate, isRepeatable: false, inputToken, outputToken);
 	}
 
-	public DialogFlow PlayerLine(TextObject playerText, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerLine(TextObject playerText, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		return Line(playerText, byPlayer: true, null, listenerDelegate);
+		return Line(playerText, byPlayer: true, null, listenerDelegate, isRepeatable: false, inputToken, outputToken);
 	}
 
-	private DialogFlow BeginOptions(bool byPlayer)
+	private DialogFlow BeginOptions(bool byPlayer, string inputToken = null, bool optionUsedOnce = false)
 	{
-		_curDialogFlowContext = new DialogFlowContext(_currentToken, byPlayer, _curDialogFlowContext);
+		_curDialogFlowContext = new DialogFlowContext(inputToken ?? _currentToken, byPlayer, _curDialogFlowContext, optionUsedOnce);
 		return this;
 	}
 
-	public DialogFlow BeginPlayerOptions()
+	public DialogFlow BeginPlayerOptions(string inputToken = null, bool optionUsedOnce = false)
 	{
-		return BeginOptions(byPlayer: true);
+		return BeginOptions(byPlayer: true, inputToken, optionUsedOnce);
 	}
 
-	public DialogFlow BeginNpcOptions()
+	public DialogFlow BeginNpcOptions(string inputToken = null, bool optionUsedOnce = false)
 	{
-		return BeginOptions(byPlayer: false);
+		return BeginOptions(byPlayer: false, inputToken, optionUsedOnce);
 	}
 
-	private DialogFlow Option(TextObject text, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, bool isRepeatable = false, bool isSpecialOption = false)
+	private DialogFlow Option(TextObject text, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, bool isRepeatable = false, bool isSpecialOption = false, string inputToken = null, string outputToken = null)
 	{
-		string text2 = Campaign.Current.ConversationManager.CreateToken();
-		AddLine(text, _curDialogFlowContext.Token, text2, byPlayer, speakerDelegate, listenerDelegate, isRepeatable, isSpecialOption);
+		string text2 = outputToken ?? Campaign.Current.ConversationManager.CreateToken();
+		AddLine(text, inputToken ?? _curDialogFlowContext.Token, text2, byPlayer, speakerDelegate, listenerDelegate, isRepeatable, isSpecialOption, _curDialogFlowContext.OptionsUsedOnlyOnce);
 		_currentToken = text2;
 		return this;
 	}
 
-	public DialogFlow PlayerOption(string text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerOption(string text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		return PlayerOption(new TextObject(text), listenerDelegate);
+		return PlayerOption(new TextObject(text), listenerDelegate, inputToken, outputToken);
 	}
 
-	public DialogFlow PlayerOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(text, byPlayer: true, null, listenerDelegate);
+		Option(text, byPlayer: true, null, listenerDelegate, isRepeatable: false, isSpecialOption: false, inputToken, outputToken);
 		return this;
 	}
 
-	public DialogFlow PlayerSpecialOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerSpecialOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(text, byPlayer: true, null, listenerDelegate, isRepeatable: false, isSpecialOption: true);
+		Option(text, byPlayer: true, null, listenerDelegate, isRepeatable: false, isSpecialOption: true, inputToken, outputToken);
 		return this;
 	}
 
-	public DialogFlow PlayerRepeatableOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow PlayerRepeatableOption(TextObject text, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(text, byPlayer: true, null, listenerDelegate, isRepeatable: true);
+		Option(text, byPlayer: true, null, listenerDelegate, isRepeatable: true, isSpecialOption: false, inputToken, outputToken);
 		return this;
 	}
 
-	public DialogFlow NpcOption(string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcOption(string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(new TextObject(text), byPlayer: false, speakerDelegate, listenerDelegate);
+		Option(new TextObject(text), byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, isSpecialOption: false, inputToken, outputToken);
 		_lastLine.ConditionDelegate = conditionDelegate;
 		return this;
 	}
 
-	public DialogFlow NpcOption(TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcOption(TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(text, byPlayer: false, speakerDelegate, listenerDelegate);
+		Option(text, byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, isSpecialOption: false, inputToken, outputToken);
 		_lastLine.ConditionDelegate = conditionDelegate;
 		return this;
 	}
 
-	public DialogFlow NpcOptionWithVariation(string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcOptionWithVariation(string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		NpcOptionWithVariation(new TextObject(text), conditionDelegate, speakerDelegate, listenerDelegate);
+		NpcOptionWithVariation(new TextObject(text), conditionDelegate, speakerDelegate, listenerDelegate, inputToken, outputToken);
 		return this;
 	}
 
-	public DialogFlow NpcOptionWithVariation(TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null)
+	public DialogFlow NpcOptionWithVariation(TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, string inputToken = null, string outputToken = null)
 	{
-		Option(TextObject.Empty, byPlayer: false, speakerDelegate, listenerDelegate);
+		Option(TextObject.GetEmpty(), byPlayer: false, speakerDelegate, listenerDelegate, isRepeatable: false, isSpecialOption: false, inputToken, outputToken);
 		List<GameTextManager.ChoiceTag> list = new List<GameTextManager.ChoiceTag>();
 		list.Add(new GameTextManager.ChoiceTag("DefaultTag", 1));
 		_lastLine.AddVariation(text, list);
@@ -208,7 +208,7 @@ public class DialogFlow
 		return new DialogFlow(inputToken ?? Campaign.Current.ConversationManager.CreateToken(), priority);
 	}
 
-	private DialogFlowLine AddLine(TextObject text, string inputToken, string outputToken, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate, bool isRepeatable, bool isSpecialOption = false)
+	private DialogFlowLine AddLine(TextObject text, string inputToken, string outputToken, bool byPlayer, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate, bool isRepeatable, bool isSpecialOption = false, bool usedOncePerConversation = false)
 	{
 		DialogFlowLine dialogFlowLine = new DialogFlowLine();
 		dialogFlowLine.Text = text;
@@ -219,6 +219,7 @@ public class DialogFlow
 		dialogFlowLine.ListenerDelegate = listenerDelegate;
 		dialogFlowLine.IsRepeatable = isRepeatable;
 		dialogFlowLine.IsSpecialOption = isSpecialOption;
+		dialogFlowLine.IsUsedOnce = usedOncePerConversation;
 		Lines.Add(dialogFlowLine);
 		_lastLine = dialogFlowLine;
 		return dialogFlowLine;
@@ -229,10 +230,24 @@ public class DialogFlow
 		return NpcOption(text, null);
 	}
 
+	public DialogFlow GenerateToken(out string token)
+	{
+		token = Campaign.Current.ConversationManager.CreateToken();
+		return this;
+	}
+
 	public DialogFlow GotoDialogState(string input)
 	{
 		_lastLine.OutputToken = input;
 		_currentToken = input;
+		return this;
+	}
+
+	public DialogFlow GotoDialogStateBranched(string input, ConversationSentence.OnConditionDelegate conditionDelegate, string alternative)
+	{
+		string text = ((conditionDelegate != null && conditionDelegate()) ? input : alternative);
+		_lastLine.OutputToken = text;
+		_currentToken = text;
 		return this;
 	}
 

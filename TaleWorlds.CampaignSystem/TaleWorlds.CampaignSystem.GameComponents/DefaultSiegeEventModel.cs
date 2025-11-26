@@ -255,7 +255,7 @@ public class DefaultSiegeEventModel : SiegeEventModel
 	public override int GetColleteralDamageCasualties(SiegeEngineType siegeEngineType, MobileParty party)
 	{
 		int num = 1;
-		if (party != null && party.HasPerk(DefaultPerks.Crossbow.Terror) && MBRandom.RandomFloat < DefaultPerks.Crossbow.Terror.PrimaryBonus)
+		if (party != null && !party.IsCurrentlyAtSea && party.HasPerk(DefaultPerks.Crossbow.Terror) && MBRandom.RandomFloat < DefaultPerks.Crossbow.Terror.PrimaryBonus)
 		{
 			num++;
 		}
@@ -350,46 +350,41 @@ public class DefaultSiegeEventModel : SiegeEventModel
 
 	public override float GetConstructionProgressPerHour(SiegeEngineType type, SiegeEvent siegeEvent, ISiegeEventSide side)
 	{
-		ExplainedNumber stat = new ExplainedNumber(0f, includeDescriptions: false, null);
+		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions: false, null);
 		float availableManDayPower = GetAvailableManDayPower(side);
 		float num = type.ManDayCost;
-		stat.Add(1f / (num / availableManDayPower * 24f), _baseConstructionSpeedText);
+		explainedNumber.Add(1f / (num / availableManDayPower * (float)CampaignTime.HoursInDay), _baseConstructionSpeedText);
 		MobileParty effectiveSiegePartyForSide = GetEffectiveSiegePartyForSide(siegeEvent, side.BattleSide);
 		if (effectiveSiegePartyForSide != null && (effectiveSiegePartyForSide?.EffectiveEngineer?.GetSkillValue(DefaultSkills.Engineering) ?? 0) > 0)
 		{
-			SkillHelper.AddSkillBonusForParty(DefaultSkills.Engineering, DefaultSkillEffects.SiegeEngineProductionBonus, effectiveSiegePartyForSide, ref stat);
+			SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.SiegeEngineProductionBonus, effectiveSiegePartyForSide, ref explainedNumber);
 		}
-		float num2 = 0f;
 		if (side.BattleSide == BattleSideEnum.Defender)
 		{
-			foreach (Building building in siegeEvent.BesiegedSettlement.Town.Buildings)
-			{
-				num2 += building.GetBuildingEffectAmount(BuildingEffectEnum.SiegeEngineSpeed);
-			}
-			stat.AddFactor(num2 * 0.01f, _constructionSpeedProjectBonusText);
+			siegeEvent.BesiegedSettlement.Town.AddEffectOfBuildings(BuildingEffectEnum.SiegeEngineSpeed, ref explainedNumber);
 			Hero governor = siegeEvent.BesiegedSettlement.Town.Governor;
 			if (governor?.CurrentSettlement != null && governor.CurrentSettlement == siegeEvent.BesiegedSettlement)
 			{
-				SkillHelper.AddSkillBonusForCharacter(DefaultSkills.Engineering, DefaultSkillEffects.SiegeEngineProductionBonus, governor.CharacterObject, ref stat);
+				SkillHelper.AddSkillBonusForTown(DefaultSkillEffects.SiegeEngineProductionBonus, siegeEvent.BesiegedSettlement.Town, ref explainedNumber);
 			}
 		}
 		if (siegeEvent?.BesiegerCamp.LeaderParty != null && siegeEvent.BesiegerCamp.LeaderParty.HasPerk(DefaultPerks.Steward.Sweatshops, checkSecondaryRole: true))
 		{
-			stat.AddFactor(DefaultPerks.Steward.Sweatshops.SecondaryBonus);
+			explainedNumber.AddFactor(DefaultPerks.Steward.Sweatshops.SecondaryBonus);
 		}
 		if (effectiveSiegePartyForSide != null)
 		{
 			SiegeEvent.SiegeEngineConstructionProgress siegePreparations = side.SiegeEngines.SiegePreparations;
 			if (siegePreparations != null && !siegePreparations.IsConstructed && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.ImprovedTools))
 			{
-				stat.AddFactor(DefaultPerks.Engineering.ImprovedTools.PrimaryBonus, DefaultPerks.Engineering.ImprovedTools.Name);
+				explainedNumber.AddFactor(DefaultPerks.Engineering.ImprovedTools.PrimaryBonus, DefaultPerks.Engineering.ImprovedTools.Name);
 			}
 			else
 			{
 				PerkObject perkObject = (type.IsRanged ? DefaultPerks.Engineering.TorsionEngines : DefaultPerks.Engineering.Scaffolds);
 				if (effectiveSiegePartyForSide.HasPerk(perkObject))
 				{
-					stat.AddFactor(perkObject.PrimaryBonus, perkObject.Name);
+					explainedNumber.AddFactor(perkObject.PrimaryBonus, perkObject.Name);
 				}
 			}
 		}
@@ -399,10 +394,10 @@ public class DefaultSiegeEventModel : SiegeEventModel
 			PerkObject salvager = DefaultPerks.Engineering.Salvager;
 			if (PerkHelper.GetPerkValueForTown(salvager, besiegedSettlement.Town))
 			{
-				stat.AddFactor(salvager.SecondaryBonus * besiegedSettlement.Militia, salvager.Name);
+				explainedNumber.AddFactor(salvager.SecondaryBonus * besiegedSettlement.Militia, salvager.Name);
 			}
 		}
-		return stat.ResultNumber;
+		return explainedNumber.ResultNumber;
 	}
 
 	public override float GetAvailableManDayPower(ISiegeEventSide side)
@@ -424,28 +419,17 @@ public class DefaultSiegeEventModel : SiegeEventModel
 		if (settlement.IsFortification)
 		{
 			Town town = settlement.Town;
-			Building building2 = town.Buildings.Find((Building building) => building.BuildingType == DefaultBuildingTypes.SettlementSiegeWorkshop);
-			if (building2 != null)
+			ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: false, null);
+			town.AddEffectOfBuildings(BuildingEffectEnum.BallistaOnSiegeStart, ref result);
+			for (int i = 0; (float)i < result.ResultNumber; i++)
 			{
-				switch (building2.CurrentLevel)
-				{
-				case 3:
-					list.Add(DefaultSiegeEngineTypes.Ballista);
-					list.Add(DefaultSiegeEngineTypes.Catapult);
-					goto case 2;
-				case 2:
-					list.Add(DefaultSiegeEngineTypes.Ballista);
-					list.Add(DefaultSiegeEngineTypes.Catapult);
-					goto case 1;
-				case 1:
-					list.Add(DefaultSiegeEngineTypes.Ballista);
-					break;
-				default:
-					Debug.FailedAssert("Invalid building level", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSiegeEventCalculationModel.cs", "GetPrebuiltSiegeEnginesOfSettlement", 568);
-					break;
-				case 0:
-					break;
-				}
+				list.Add(DefaultSiegeEngineTypes.Ballista);
+			}
+			ExplainedNumber result2 = new ExplainedNumber(0f, includeDescriptions: false, null);
+			town.AddEffectOfBuildings(BuildingEffectEnum.CatapultOnSiegeStart, ref result2);
+			for (int j = 0; (float)j < result2.ResultNumber; j++)
+			{
+				list.Add(DefaultSiegeEngineTypes.Catapult);
 			}
 			if (town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Engineering.SiegeWorks))
 			{
@@ -541,7 +525,7 @@ public class DefaultSiegeEventModel : SiegeEventModel
 				explainedNumber.AddFactor(DefaultPerks.Engineering.ArchitecturalCommisions.PrimaryBonus, DefaultPerks.Engineering.ArchitecturalCommisions.Name);
 			}
 		}
-		return TaleWorlds.Library.MathF.Round(1440f / explainedNumber.ResultNumber);
+		return TaleWorlds.Library.MathF.Round((float)(CampaignTime.MinutesInHour * CampaignTime.HoursInDay) / explainedNumber.ResultNumber);
 	}
 
 	public override IEnumerable<SiegeEngineType> GetAvailableAttackerRangedSiegeEngines(PartyBase party)

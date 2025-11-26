@@ -85,7 +85,7 @@ public class SiegeMissionPreparationHandler : MissionLogic
 		Debug.Print("{SIEGE} ArrangeEntitiesForMissionType", 0, Debug.DebugColor.DarkCyan, 64uL);
 		Debug.Print("{SIEGE} MissionType: " + _siegeMissionType, 0, Debug.DebugColor.DarkCyan, 64uL);
 		Debug.Print("{SIEGE} TagToBeRemoved: " + text, 0, Debug.DebugColor.DarkCyan, 64uL);
-		foreach (GameEntity item in MissionScene.FindEntitiesWithTag(text).ToList())
+		foreach (WeakGameEntity item in MissionScene.FindWeakEntitiesWithTag(text).ToList())
 		{
 			item.Remove(77);
 		}
@@ -106,18 +106,18 @@ public class SiegeMissionPreparationHandler : MissionLogic
 		float num3 = MBMath.Lerp(0f, 0.7f, 1f - num);
 		IEnumerable<SynchedMissionObject> enumerable = base.Mission.MissionObjects.OfType<SynchedMissionObject>();
 		IEnumerable<DestructableComponent> destructibleComponents = enumerable.OfType<DestructableComponent>();
-		foreach (StrategicArea item in base.Mission.ActiveMissionObjects.OfType<StrategicArea>().ToList())
+		foreach (StrategicArea item2 in base.Mission.ActiveMissionObjects.OfType<StrategicArea>().ToList())
 		{
-			item.DetermineAssociatedDestructibleComponents(destructibleComponents);
+			item2.DetermineAssociatedDestructibleComponents(destructibleComponents);
 		}
-		foreach (SynchedMissionObject item2 in enumerable)
+		foreach (SynchedMissionObject item3 in enumerable)
 		{
-			if (_hasAnySiegeTower && item2.GameEntity.HasTag("tower_merlon"))
+			if (_hasAnySiegeTower && item3.GameEntity.HasTag("tower_merlon"))
 			{
-				item2.SetVisibleSynched(value: false, forceChildrenVisible: true);
+				item3.SetVisibleSynched(value: false, forceChildrenVisible: true);
 				continue;
 			}
-			DestructableComponent firstScriptOfType = item2.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+			DestructableComponent firstScriptOfType = item3.GameEntity.GetFirstScriptOfType<DestructableComponent>();
 			if (firstScriptOfType != null && firstScriptOfType.CanBeDestroyedInitially && num3 > 0f && MBRandom.RandomFloat <= num3)
 			{
 				firstScriptOfType.PreDestroy();
@@ -125,21 +125,21 @@ public class SiegeMissionPreparationHandler : MissionLogic
 		}
 		if (num3 >= 0.1f)
 		{
-			List<GameEntity> list = base.Mission.Scene.FindEntitiesWithTag("damage_decal").ToList();
-			foreach (GameEntity item3 in list)
+			List<WeakGameEntity> list = base.Mission.Scene.FindWeakEntitiesWithTag("damage_decal").ToList();
+			foreach (WeakGameEntity item4 in list)
 			{
-				item3.GetFirstScriptOfType<SynchedMissionObject>().SetVisibleSynched(value: false);
+				item4.GetFirstScriptOfType<SynchedMissionObject>().SetVisibleSynched(value: false);
 			}
 			for (int num4 = MathF.Floor((float)list.Count * num3); num4 > 0; num4--)
 			{
-				GameEntity gameEntity = list[MBRandom.RandomInt(list.Count)];
-				list.Remove(gameEntity);
-				gameEntity.GetFirstScriptOfType<SynchedMissionObject>().SetVisibleSynched(value: true);
+				WeakGameEntity item = list[MBRandom.RandomInt(list.Count)];
+				list.Remove(item);
+				item.GetFirstScriptOfType<SynchedMissionObject>().SetVisibleSynched(value: true);
 			}
 		}
 		List<WallSegment> list2 = new List<WallSegment>();
 		List<WallSegment> list3 = (from ws in base.Mission.ActiveMissionObjects.FindAllWithType<WallSegment>()
-			where ws.DefenseSide != FormationAI.BehaviorSide.BehaviorSideNotSet && ws.GameEntity.GetChildren().Any((GameEntity ge) => ge.HasTag("broken_child"))
+			where ws.DefenseSide != FormationAI.BehaviorSide.BehaviorSideNotSet && ws.GameEntity.GetChildren().Any((WeakGameEntity ge) => ge.HasTag("broken_child"))
 			select ws).ToList();
 		wallHitPointPercentages = _wallHitPointPercentages;
 		foreach (float f in wallHitPointPercentages)
@@ -156,9 +156,9 @@ public class SiegeMissionPreparationHandler : MissionLogic
 			}
 			list3.Remove(wallSegment);
 		}
-		foreach (WallSegment item4 in list3)
+		foreach (WallSegment item5 in list3)
 		{
-			item4.OnChooseUsedWallSegment(isBroken: false);
+			item5.OnChooseUsedWallSegment(isBroken: false);
 		}
 		if (!(num3 >= 0.1f))
 		{
@@ -201,7 +201,7 @@ public class SiegeMissionPreparationHandler : MissionLogic
 
 	private void ArrangeSiegeMachinesForNonAssaultMission()
 	{
-		foreach (GameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
+		foreach (WeakGameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
 		{
 			SiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<SiegeWeapon>();
 			if (!(firstScriptOfType is RangedSiegeWeapon))

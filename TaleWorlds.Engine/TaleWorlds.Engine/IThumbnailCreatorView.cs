@@ -6,27 +6,30 @@ namespace TaleWorlds.Engine;
 [ApplicationInterfaceBase]
 internal interface IThumbnailCreatorView
 {
-	[EngineMethod("create_thumbnail_creator_view", false)]
+	[EngineMethod("create_thumbnail_creator_view", false, null, false)]
 	ThumbnailCreatorView CreateThumbnailCreatorView();
 
-	[EngineMethod("register_scene", false)]
+	[EngineMethod("register_scene", false, null, false)]
 	void RegisterScene(UIntPtr pointer, UIntPtr scene_ptr, bool use_postfx);
 
-	[EngineMethod("clear_requests", false)]
+	[EngineMethod("clear_requests", false, null, false)]
 	void ClearRequests(UIntPtr pointer);
 
-	[EngineMethod("cancel_request", false)]
+	[EngineMethod("cancel_request", false, null, false)]
 	void CancelRequest(UIntPtr pointer, string render_id);
 
-	[EngineMethod("register_entity", false)]
-	void RegisterEntity(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr texture_ptr, UIntPtr entity_ptr, string render_id, int allocationGroupIndex);
+	[EngineMethod("register_cached_entity", false, null, false)]
+	void RegisterCachedEntity(UIntPtr pointer, UIntPtr scene, UIntPtr entity_ptr, string cacheId);
 
-	[EngineMethod("register_entity_without_texture", false)]
-	void RegisterEntityWithoutTexture(UIntPtr pointer, UIntPtr scene_ptr, UIntPtr cam_ptr, UIntPtr entity_ptr, int width, int height, string render_id, string debug_name, int allocationGroupIndex);
+	[EngineMethod("unregister_cached_entity", false, null, false)]
+	void UnregisterCachedEntity(UIntPtr pointer, string cacheId);
 
-	[EngineMethod("get_number_of_pending_requests", false)]
+	[EngineMethod("register_render_request", false, null, false)]
+	void RegisterRenderRequest(UIntPtr pointer, ref ThumbnailRenderRequest request);
+
+	[EngineMethod("get_number_of_pending_requests", false, null, false)]
 	int GetNumberOfPendingRequests(UIntPtr pointer);
 
-	[EngineMethod("is_memory_cleared", false)]
+	[EngineMethod("is_memory_cleared", false, null, false)]
 	bool IsMemoryCleared(UIntPtr pointer);
 }

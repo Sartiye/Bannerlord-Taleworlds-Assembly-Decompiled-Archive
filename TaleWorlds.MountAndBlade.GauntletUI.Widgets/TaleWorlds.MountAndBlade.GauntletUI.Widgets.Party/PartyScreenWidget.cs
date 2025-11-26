@@ -9,15 +9,13 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Party;
 
 public class PartyScreenWidget : Widget
 {
-	private PartyTroopTupleButtonWidget _currentMainTuple;
+	private float _scrollToCharacterInSeconds = -1f;
 
-	private PartyTroopTupleButtonWidget _currentOtherTuple;
+	private Widget _latestMouseDownWidget;
 
 	private InputKeyVisualWidget _takeAllPrisonersInputKeyVisual;
 
 	private InputKeyVisualWidget _dismissAllPrisonersInputKeyVisual;
-
-	private PartyTroopTupleButtonWidget _newAddedTroop;
 
 	private Widget _upgradePopupParent;
 
@@ -49,9 +47,11 @@ public class PartyScreenWidget : Widget
 
 	private ListPanel _mainPrisonerList;
 
-	public PartyTroopTupleButtonWidget CurrentMainTuple => _currentMainTuple;
+	private bool _scrollToCharacter;
 
-	public PartyTroopTupleButtonWidget CurrentOtherTuple => _currentOtherTuple;
+	private bool _isScrollTargetPrisoner;
+
+	private string _scrollCharacterId;
 
 	public ScrollablePanel MainScrollPanel { get; set; }
 
@@ -266,7 +266,6 @@ public class PartyScreenWidget : Widget
 			if (_otherMemberList != value)
 			{
 				_otherMemberList = value;
-				value.ItemAddEventHandlers.Add(OnNewTroopAdded);
 			}
 		}
 	}
@@ -283,7 +282,6 @@ public class PartyScreenWidget : Widget
 			if (_otherPrisonerList != value)
 			{
 				_otherPrisonerList = value;
-				value.ItemAddEventHandlers.Add(OnNewTroopAdded);
 			}
 		}
 	}
@@ -300,7 +298,6 @@ public class PartyScreenWidget : Widget
 			if (_mainMemberList != value)
 			{
 				_mainMemberList = value;
-				value.ItemAddEventHandlers.Add(OnNewTroopAdded);
 			}
 		}
 	}
@@ -317,7 +314,57 @@ public class PartyScreenWidget : Widget
 			if (_mainPrisonerList != value)
 			{
 				_mainPrisonerList = value;
-				value.ItemAddEventHandlers.Add(OnNewTroopAdded);
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool ScrollToCharacter
+	{
+		get
+		{
+			return _scrollToCharacter;
+		}
+		set
+		{
+			if (value != _scrollToCharacter)
+			{
+				_scrollToCharacter = value;
+				OnPropertyChanged(value, "ScrollToCharacter");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public string ScrollCharacterId
+	{
+		get
+		{
+			return _scrollCharacterId;
+		}
+		set
+		{
+			if (value != _scrollCharacterId)
+			{
+				_scrollCharacterId = value;
+				OnPropertyChanged(value, "ScrollCharacterId");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool IsScrollTargetPrisoner
+	{
+		get
+		{
+			return _isScrollTargetPrisoner;
+		}
+		set
+		{
+			if (value != _isScrollTargetPrisoner)
+			{
+				_isScrollTargetPrisoner = value;
+				OnPropertyChanged(value, "IsScrollTargetPrisoner");
 			}
 		}
 	}
@@ -337,16 +384,21 @@ public class PartyScreenWidget : Widget
 		base.Context.EventManager.OnDragStarted -= OnDragStarted;
 	}
 
+	private Widget GetItemWithId(ListPanel charactersListPanel, string id)
+	{
+		return charactersListPanel?.FindChild((Widget x) => (x as PartyTroopTupleButtonWidget).CharacterID == id);
+	}
+
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
-		Widget latestMouseUpWidget = base.EventManager.LatestMouseUpWidget;
-		if (_currentMainTuple != null && latestMouseUpWidget != null && !(latestMouseUpWidget is PartyTroopTupleButtonWidget) && !_currentMainTuple.CheckIsMyChildRecursive(latestMouseUpWidget))
+		if (_latestMouseDownWidget != base.EventManager.LatestMouseDownWidget)
 		{
-			PartyTroopTupleButtonWidget currentOtherTuple = _currentOtherTuple;
-			if (currentOtherTuple != null && !currentOtherTuple.CheckIsMyChildRecursive(latestMouseUpWidget) && IsWidgetChildOfType<PartyFormationDropdownWidget>(latestMouseUpWidget) == null)
+			_latestMouseDownWidget = base.EventManager.LatestMouseDownWidget;
+			bool flag = _latestMouseDownWidget != null && (_latestMouseDownWidget is PartyTroopTupleButtonWidget || _latestMouseDownWidget.GetAllParents().Any((Widget x) => x is PartyTroopTupleButtonWidget));
+			if (_latestMouseDownWidget == null || (!flag && IsWidgetChildOfType<PartyFormationDropdownWidget>(_latestMouseDownWidget) == null))
 			{
-				SetCurrentTuple(null, isLeftSide: false);
+				EventFired("OnEmptyClick");
 			}
 		}
 		UpdateInputKeyVisualsVisibility();
@@ -355,51 +407,28 @@ public class PartyScreenWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_newAddedTroop != null)
+		if (ScrollToCharacter)
 		{
-			if (_newAddedTroop.CharacterID == _currentMainTuple?.CharacterID && _newAddedTroop.IsPrisoner == _currentMainTuple?.IsPrisoner && _newAddedTroop.IsTupleLeftSide != _currentMainTuple?.IsTupleLeftSide)
+			_scrollToCharacterInSeconds = 0.2f;
+			ScrollToCharacter = false;
+		}
+		if (!(_scrollToCharacterInSeconds >= 0f))
+		{
+			return;
+		}
+		_scrollToCharacterInSeconds -= dt;
+		if (_scrollToCharacterInSeconds <= 0f)
+		{
+			ScrollablePanel.AutoScrollParameters scrollParameters = new ScrollablePanel.AutoScrollParameters(100f, 100f, 0f, 0f, -1f, -1f, 0.35f);
+			if (IsScrollTargetPrisoner)
 			{
-				_currentOtherTuple = _newAddedTroop;
-				_currentOtherTuple.IsSelected = true;
-				UpdateScrollTarget();
+				OtherPrisonerList.FindParentPanel()?.ScrollToChild(GetItemWithId(OtherPrisonerList, ScrollCharacterId), scrollParameters);
+				MainPrisonerList.FindParentPanel()?.ScrollToChild(GetItemWithId(MainPrisonerList, ScrollCharacterId), scrollParameters);
 			}
-			_newAddedTroop = null;
-		}
-	}
-
-	public void SetCurrentTuple(PartyTroopTupleButtonWidget tuple, bool isLeftSide)
-	{
-		if (_currentMainTuple != null && _currentMainTuple != tuple)
-		{
-			_currentMainTuple.IsSelected = false;
-			if (_currentOtherTuple != null)
+			else
 			{
-				_currentOtherTuple.IsSelected = false;
-				_currentOtherTuple = null;
-			}
-		}
-		if (tuple == null)
-		{
-			_currentMainTuple = null;
-			RemoveZeroCountItems();
-			if (_currentOtherTuple != null)
-			{
-				_currentOtherTuple.IsSelected = false;
-				_currentOtherTuple = null;
-			}
-		}
-		else if (tuple == _currentMainTuple || tuple == _currentOtherTuple)
-		{
-			SetCurrentTuple(null, isLeftSide: false);
-		}
-		else
-		{
-			_currentMainTuple = tuple;
-			_currentOtherTuple = FindTupleWithTroopIDInList(_currentMainTuple.CharacterID, _currentMainTuple.IsTupleLeftSide, _currentMainTuple.IsPrisoner);
-			if (_currentOtherTuple != null)
-			{
-				_currentOtherTuple.IsSelected = true;
-				UpdateScrollTarget();
+				OtherMemberList.FindParentPanel()?.ScrollToChild(GetItemWithId(OtherMemberList, ScrollCharacterId), scrollParameters);
+				MainMemberList.FindParentPanel()?.ScrollToChild(GetItemWithId(MainMemberList, ScrollCharacterId), scrollParameters);
 			}
 		}
 	}
@@ -416,14 +445,14 @@ public class PartyScreenWidget : Widget
 				if (partyTroopTupleButtonWidget.IsTupleLeftSide)
 				{
 					TransferInputKeyVisual.KeyID = _takeAllPrisonersInputKeyVisual.KeyID;
-					TransferInputKeyVisual.ScaledPositionXOffset = partyTroopTupleButtonWidget.GlobalPosition.X + partyTroopTupleButtonWidget.Size.X - 65f * base._scaleToUse - base.EventManager.LeftUsableAreaStart;
-					TransferInputKeyVisual.ScaledPositionYOffset = partyTroopTupleButtonWidget.GlobalPosition.Y - 13f * base._scaleToUse - base.EventManager.TopUsableAreaStart;
+					TransferInputKeyVisual.ScaledPositionXOffset = partyTroopTupleButtonWidget.GlobalPosition.X + partyTroopTupleButtonWidget.Size.X - 65f * base._scaleToUse;
+					TransferInputKeyVisual.ScaledPositionYOffset = partyTroopTupleButtonWidget.GlobalPosition.Y - 13f * base._scaleToUse;
 				}
 				else
 				{
 					TransferInputKeyVisual.KeyID = _dismissAllPrisonersInputKeyVisual.KeyID;
-					TransferInputKeyVisual.ScaledPositionXOffset = partyTroopTupleButtonWidget.GlobalPosition.X + 5f * base._scaleToUse - base.EventManager.LeftUsableAreaStart;
-					TransferInputKeyVisual.ScaledPositionYOffset = partyTroopTupleButtonWidget.GlobalPosition.Y - 13f * base._scaleToUse - base.EventManager.TopUsableAreaStart;
+					TransferInputKeyVisual.ScaledPositionXOffset = partyTroopTupleButtonWidget.GlobalPosition.X + 5f * base._scaleToUse;
+					TransferInputKeyVisual.ScaledPositionYOffset = partyTroopTupleButtonWidget.GlobalPosition.Y - 13f * base._scaleToUse;
 				}
 			}
 			else
@@ -459,20 +488,13 @@ public class PartyScreenWidget : Widget
 
 	private void OnDragStarted()
 	{
+		EventFired("OnEmptyClick");
 		RemoveZeroCountItems();
 	}
 
 	private void RemoveZeroCountItems()
 	{
 		EventFired("RemoveZeroCounts");
-	}
-
-	private void UpdateScrollTarget()
-	{
-		if (_currentOtherTuple?.ParentWidget != null)
-		{
-			(_currentOtherTuple.IsTupleLeftSide ? OtherScrollPanel : MainScrollPanel).ScrollToChild(_currentOtherTuple, -1f, 1f, 0, 400, 0.35f);
-		}
 	}
 
 	private bool IsAnyPopupOpen()
@@ -483,14 +505,6 @@ public class PartyScreenWidget : Widget
 			return UpgradePopupParent?.IsVisible ?? false;
 		}
 		return true;
-	}
-
-	private void OnNewTroopAdded(Widget parent, Widget addedChild)
-	{
-		if (_currentMainTuple != null && addedChild is PartyTroopTupleButtonWidget newAddedTroop)
-		{
-			_newAddedTroop = newAddedTroop;
-		}
 	}
 
 	private T IsWidgetChildOfType<T>(Widget currentWidget) where T : Widget

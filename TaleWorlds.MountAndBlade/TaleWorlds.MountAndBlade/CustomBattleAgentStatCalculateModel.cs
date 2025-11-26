@@ -20,34 +20,38 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 	public override void InitializeAgentStats(Agent agent, Equipment spawnEquipment, AgentDrivenProperties agentDrivenProperties, AgentBuildData agentBuildData)
 	{
 		agentDrivenProperties.ArmorEncumbrance = spawnEquipment.GetTotalWeightOfArmor(agent.IsHuman);
+		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
 		if (agent.IsHuman)
 		{
 			agentDrivenProperties.ArmorHead = spawnEquipment.GetHeadArmorSum();
 			agentDrivenProperties.ArmorTorso = spawnEquipment.GetHumanBodyArmorSum();
 			agentDrivenProperties.ArmorLegs = spawnEquipment.GetLegArmorSum();
 			agentDrivenProperties.ArmorArms = spawnEquipment.GetArmArmorSum();
-			return;
 		}
-		agentDrivenProperties.AiSpeciesIndex = (int)spawnEquipment[EquipmentIndex.ArmorItemEndSlot].Item.Id.InternalValue;
-		agentDrivenProperties.AttributeRiding = 0.8f + ((spawnEquipment[EquipmentIndex.HorseHarness].Item != null) ? 0.2f : 0f);
-		float num = 0f;
-		for (int i = 1; i < 12; i++)
+		else
 		{
-			if (spawnEquipment[i].Item != null)
+			agentDrivenProperties.AiSpeciesIndex = (int)spawnEquipment[EquipmentIndex.ArmorItemEndSlot].Item.Id.InternalValue;
+			agentDrivenProperties.AttributeRiding = 0.8f + ((spawnEquipment[EquipmentIndex.HorseHarness].Item != null) ? 0.2f : 0f);
+			float num = 0f;
+			for (int i = 1; i < 12; i++)
 			{
-				num += (float)spawnEquipment[i].GetModifiedMountBodyArmor();
+				if (spawnEquipment[i].Item != null)
+				{
+					num += (float)spawnEquipment[i].GetModifiedMountBodyArmor();
+				}
+			}
+			agentDrivenProperties.ArmorTorso = num;
+			ItemObject item = spawnEquipment[EquipmentIndex.ArmorItemEndSlot].Item;
+			if (item != null)
+			{
+				_ = item.HorseComponent;
+				EquipmentElement equipmentElement = spawnEquipment[EquipmentIndex.ArmorItemEndSlot];
+				EquipmentElement harness = spawnEquipment[EquipmentIndex.HorseHarness];
+				agentDrivenProperties.MountChargeDamage = (float)equipmentElement.GetModifiedMountCharge(in harness) * 0.01f;
+				agentDrivenProperties.MountDifficulty = equipmentElement.Item.Difficulty;
 			}
 		}
-		agentDrivenProperties.ArmorTorso = num;
-		ItemObject item = spawnEquipment[EquipmentIndex.ArmorItemEndSlot].Item;
-		if (item != null)
-		{
-			_ = item.HorseComponent;
-			EquipmentElement equipmentElement = spawnEquipment[EquipmentIndex.ArmorItemEndSlot];
-			EquipmentElement harness = spawnEquipment[EquipmentIndex.HorseHarness];
-			agentDrivenProperties.MountChargeDamage = (float)equipmentElement.GetModifiedMountCharge(in harness) * 0.01f;
-			agentDrivenProperties.MountDifficulty = equipmentElement.Item.Difficulty;
-		}
+		agentDrivenProperties.OffhandWeaponDefendSpeedMultiplier = 1f;
 	}
 
 	public override void UpdateAgentStats(Agent agent, AgentDrivenProperties agentDrivenProperties)
@@ -88,6 +92,31 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 			else if (skillObject == DefaultSkills.Throwing)
 			{
 				num += (float)effectiveSkill * 0.0006f;
+			}
+		}
+		return Math.Max(0f, num);
+	}
+
+	public override float GetEquipmentStealthBonus(Agent agent)
+	{
+		return 0f;
+	}
+
+	public override float GetSneakAttackMultiplier(Agent agent, WeaponComponentData weapon)
+	{
+		BasicCharacterObject character = agent.Character;
+		float num = 1f;
+		if (weapon != null && character != null)
+		{
+			int skillValue = character.GetSkillValue(DefaultSkills.Roguery);
+			num += 0.5f + (float)skillValue * 0.002f;
+			if (weapon.WeaponClass == WeaponClass.Dagger)
+			{
+				num *= 3f;
+			}
+			else if (weapon.WeaponClass == WeaponClass.ThrowingKnife)
+			{
+				num *= 2f;
 			}
 		}
 		return Math.Max(0f, num);
@@ -134,6 +163,11 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		return float.MaxValue;
 	}
 
+	public override float GetBreatheHoldMaxDuration(Agent agent, float baseBreatheHoldMaxDuration)
+	{
+		return baseBreatheHoldMaxDuration;
+	}
+
 	private int GetSkillValueForItem(Agent agent, ItemObject primaryItem)
 	{
 		return GetEffectiveSkill(agent, (primaryItem != null) ? primaryItem.RelevantSkill : DefaultSkills.Athletics);
@@ -146,11 +180,11 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		float num = equipment.GetTotalWeightOfWeapons();
 		int weight = agent.Monster.Weight;
 		float num2 = agentDrivenProperties.ArmorEncumbrance + num;
-		EquipmentIndex wieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		EquipmentIndex wieldedItemIndex2 = agent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-		if (wieldedItemIndex != EquipmentIndex.None)
+		EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
+		EquipmentIndex offhandWieldedItemIndex = agent.GetOffhandWieldedItemIndex();
+		if (primaryWieldedItemIndex != EquipmentIndex.None)
 		{
-			ItemObject item = equipment[wieldedItemIndex].Item;
+			ItemObject item = equipment[primaryWieldedItemIndex].Item;
 			WeaponComponent weaponComponent = item.WeaponComponent;
 			if (weaponComponent != null)
 			{
@@ -158,17 +192,16 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 				num += 1.5f * item.Weight * TaleWorlds.Library.MathF.Sqrt(realWeaponLength);
 			}
 		}
-		if (wieldedItemIndex2 != EquipmentIndex.None)
+		if (offhandWieldedItemIndex != EquipmentIndex.None)
 		{
-			ItemObject item2 = equipment[wieldedItemIndex2].Item;
+			ItemObject item2 = equipment[offhandWieldedItemIndex].Item;
 			num += 1.5f * item2.Weight;
 		}
+		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
 		agentDrivenProperties.WeaponsEncumbrance = num;
-		EquipmentIndex wieldedItemIndex3 = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		WeaponComponentData weaponComponentData = ((wieldedItemIndex3 != EquipmentIndex.None) ? equipment[wieldedItemIndex3].CurrentUsageItem : null);
-		ItemObject primaryItem = ((wieldedItemIndex3 != EquipmentIndex.None) ? equipment[wieldedItemIndex3].Item : null);
-		EquipmentIndex wieldedItemIndex4 = agent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-		WeaponComponentData secondaryItem = ((wieldedItemIndex4 != EquipmentIndex.None) ? equipment[wieldedItemIndex4].CurrentUsageItem : null);
+		WeaponComponentData weaponComponentData = ((primaryWieldedItemIndex != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex].CurrentUsageItem : null);
+		ItemObject primaryItem = ((primaryWieldedItemIndex != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex].Item : null);
+		WeaponComponentData secondaryItem = ((offhandWieldedItemIndex != EquipmentIndex.None) ? equipment[offhandWieldedItemIndex].CurrentUsageItem : null);
 		agentDrivenProperties.SwingSpeedMultiplier = 0.93f + 0.0007f * (float)GetSkillValueForItem(agent, primaryItem);
 		agentDrivenProperties.ThrustOrRangedReadySpeedMultiplier = agentDrivenProperties.SwingSpeedMultiplier;
 		agentDrivenProperties.HandlingMultiplier = 1f;
@@ -177,7 +210,7 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.ReloadSpeed = 0.93f + 0.0007f * (float)GetSkillValueForItem(agent, primaryItem);
 		agentDrivenProperties.MissileSpeedMultiplier = 1f;
 		agentDrivenProperties.ReloadMovementPenaltyFactor = 1f;
-		SetAllWeaponInaccuracy(agent, agentDrivenProperties, (int)wieldedItemIndex3, weaponComponentData);
+		SetAllWeaponInaccuracy(agent, agentDrivenProperties, (int)primaryWieldedItemIndex, weaponComponentData);
 		int effectiveSkill = GetEffectiveSkill(agent, DefaultSkills.Athletics);
 		int effectiveSkill2 = GetEffectiveSkill(agent, DefaultSkills.Riding);
 		if (weaponComponentData != null)
@@ -210,10 +243,20 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 				}
 				else if (weaponComponentData2.RelevantSkill == DefaultSkills.Throwing)
 				{
-					float value2 = ((float)thrustSpeed - 89f) / 13f;
-					value2 = MBMath.ClampFloat(value2, 0f, 1f);
-					agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 0.5f;
-					agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.5f * MBMath.Lerp(1.5f, 0.8f, value2);
+					if (weaponComponentData2.WeaponClass == WeaponClass.Sling)
+					{
+						float value2 = ((float)thrustSpeed - 30f) / 90f;
+						value2 = MBMath.ClampFloat(value2, 0f, 1f);
+						agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 5f;
+						agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 2.4f * MBMath.Lerp(2.4f, 1.2f, value2);
+					}
+					else
+					{
+						float value3 = ((float)thrustSpeed - 89f) / 13f;
+						value3 = MBMath.ClampFloat(value3, 0f, 1f);
+						agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 0.5f;
+						agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.5f * MBMath.Lerp(1.5f, 0.8f, value3);
+					}
 				}
 				else if (weaponComponentData2.RelevantSkill == DefaultSkills.Crossbow)
 				{
@@ -223,9 +266,9 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 				if (weaponComponentData2.WeaponClass == WeaponClass.Bow)
 				{
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.3f + (95.75f - (float)thrustSpeed) * 0.005f;
-					float value3 = ((float)thrustSpeed - 45f) / 90f;
-					value3 = MBMath.ClampFloat(value3, 0f, 1f);
-					agentDrivenProperties.WeaponUnsteadyBeginTime = 0.6f + (float)effectiveSkillForWeapon * 0.01f * MBMath.Lerp(2f, 4f, value3);
+					float value4 = ((float)thrustSpeed - 45f) / 90f;
+					value4 = MBMath.ClampFloat(value4, 0f, 1f);
+					agentDrivenProperties.WeaponUnsteadyBeginTime = 0.6f + (float)effectiveSkillForWeapon * 0.01f * MBMath.Lerp(2f, 4f, value4);
 					if (agent.IsAIControlled)
 					{
 						agentDrivenProperties.WeaponUnsteadyBeginTime *= 4f;
@@ -239,6 +282,13 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 2.5f + (float)effectiveSkillForWeapon * 0.01f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 10f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.025f;
+				}
+				else if (weaponComponentData2.WeaponClass == WeaponClass.Sling)
+				{
+					agentDrivenProperties.WeaponBestAccuracyWaitTime = 2.6f + (89f - (float)thrustSpeed) * 0.12f;
+					agentDrivenProperties.WeaponUnsteadyBeginTime = 3f + (float)effectiveSkillForWeapon * 0.064f;
+					agentDrivenProperties.WeaponUnsteadyEndTime = 22f + agentDrivenProperties.WeaponUnsteadyBeginTime;
+					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.2f;
 				}
 				else
 				{
@@ -263,6 +313,8 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		float managedParameter2 = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.BipedalCombatSpeedMaxMultiplier);
 		float amount = TaleWorlds.Library.MathF.Min(num2 / (float)weight, 1f);
 		agentDrivenProperties.CombatMaxSpeedMultiplier = TaleWorlds.Library.MathF.Min(MBMath.Lerp(managedParameter2, managedParameter, amount), 1f);
+		int effectiveSkill3 = GetEffectiveSkill(agent, DefaultSkills.Roguery);
+		agentDrivenProperties.CrouchedSpeedMultiplier = 1f + (float)effectiveSkill3 * 0.001f;
 		agentDrivenProperties.AttributeShieldMissileCollisionBodySizeAdder = 0.3f;
 		float num8 = agent.MountAgent?.GetAgentDrivenPropertyValue(DrivenProperty.AttributeRiding) ?? 1f;
 		agentDrivenProperties.AttributeRiding = (float)effectiveSkill2 * num8;
@@ -287,7 +339,7 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 			{
 				num9 += TaleWorlds.Library.MathF.Min(0.3f, rainDensity + fog);
 			}
-			if (!MBMath.IsBetween(agent.Mission.Scene.TimeOfDay, 4f, 20.01f))
+			if (!agent.Mission.Scene.IsDayTime)
 			{
 				num9 += 0.1f;
 			}

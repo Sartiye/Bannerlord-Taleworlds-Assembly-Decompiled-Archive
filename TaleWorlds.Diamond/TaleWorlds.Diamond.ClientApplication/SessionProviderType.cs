@@ -4,7 +4,5 @@ public enum SessionProviderType
 {
 	None,
 	Rest,
-	ThreadedRest,
-	Socket,
-	InnerProcess
+	ThreadedRest
 }

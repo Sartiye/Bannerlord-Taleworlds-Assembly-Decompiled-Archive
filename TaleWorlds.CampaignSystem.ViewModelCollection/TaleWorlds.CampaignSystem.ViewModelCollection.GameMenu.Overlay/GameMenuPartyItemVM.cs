@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Quests;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -40,11 +41,13 @@ public class GameMenuPartyItemVM : ViewModel
 
 	private int _partyWoundedSize;
 
+	private int _shipCount;
+
 	private int _relation = -101;
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
-	private ImageIdentifierVM _banner_9;
+	private BannerImageIdentifierVM _banner_9;
 
 	private string _settlementPath;
 
@@ -59,6 +62,8 @@ public class GameMenuPartyItemVM : ViewModel
 	private string _professionText;
 
 	private string _powerText;
+
+	private string _encyclopediaCursorEffect;
 
 	private bool _isIdle;
 
@@ -77,6 +82,8 @@ public class GameMenuPartyItemVM : ViewModel
 	private bool _isMergedWithArmy;
 
 	private bool _isCharacterInPrison;
+
+	private bool _hasShips;
 
 	[DataSourceProperty]
 	public int Relation
@@ -142,6 +149,23 @@ public class GameMenuPartyItemVM : ViewModel
 			{
 				_isCharacterInPrison = value;
 				OnPropertyChangedWithValue(value, "IsCharacterInPrison");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasShips
+	{
+		get
+		{
+			return _hasShips;
+		}
+		set
+		{
+			if (value != _hasShips)
+			{
+				_hasShips = value;
+				OnPropertyChangedWithValue(value, "HasShips");
 			}
 		}
 	}
@@ -351,7 +375,24 @@ public class GameMenuPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public string EncyclopediaCursorEffect
+	{
+		get
+		{
+			return _encyclopediaCursorEffect;
+		}
+		set
+		{
+			if (value != _encyclopediaCursorEffect)
+			{
+				_encyclopediaCursorEffect = value;
+				OnPropertyChangedWithValue(value, "EncyclopediaCursorEffect");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -368,7 +409,7 @@ public class GameMenuPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner_9
+	public BannerImageIdentifierVM Banner_9
 	{
 		get
 		{
@@ -419,6 +460,23 @@ public class GameMenuPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public int ShipCount
+	{
+		get
+		{
+			return _shipCount;
+		}
+		set
+		{
+			if (value != _shipCount)
+			{
+				_shipCount = value;
+				OnPropertyChangedWithValue(value, "ShipCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string PartySizeLbl
 	{
 		get
@@ -454,7 +512,8 @@ public class GameMenuPartyItemVM : ViewModel
 
 	public GameMenuPartyItemVM()
 	{
-		Visual = new ImageIdentifierVM();
+		Visual = new CharacterImageIdentifierVM(null);
+		RegisterEvents();
 	}
 
 	public GameMenuPartyItemVM(Action<GameMenuPartyItemVM> onSetAsContextMenuActiveItem, Settlement settlement)
@@ -463,7 +522,7 @@ public class GameMenuPartyItemVM : ViewModel
 		Settlement = settlement;
 		SettlementComponent settlementComponent = settlement.SettlementComponent;
 		SettlementPath = ((settlementComponent == null) ? "placeholder" : (settlementComponent.BackgroundMeshName + "_t"));
-		Visual = new ImageIdentifierVM();
+		Visual = new CharacterImageIdentifierVM(null);
 		NameText = settlement.Name.ToString();
 		PartySize = -1;
 		PartyWoundedSize = -1;
@@ -473,6 +532,7 @@ public class GameMenuPartyItemVM : ViewModel
 		IsEnemy = false;
 		Quests = new MBBindingList<QuestMarkerVM>();
 		RefreshProperties();
+		RegisterEvents();
 	}
 
 	public GameMenuPartyItemVM(Action<GameMenuPartyItemVM> onSetAsContextMenuActiveItem, PartyBase item, bool canShowQuest)
@@ -483,15 +543,16 @@ public class GameMenuPartyItemVM : ViewModel
 		if (visualPartyLeader != null)
 		{
 			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(visualPartyLeader);
-			Visual = new ImageIdentifierVM(characterCode);
+			Visual = new CharacterImageIdentifierVM(characterCode);
 		}
 		else
 		{
-			Visual = new ImageIdentifierVM();
+			Visual = new CharacterImageIdentifierVM(null);
 		}
 		Quests = new MBBindingList<QuestMarkerVM>();
 		_canShowQuest = canShowQuest;
 		RefreshProperties();
+		RegisterEvents();
 	}
 
 	public GameMenuPartyItemVM(Action<GameMenuPartyItemVM> onSetAsContextMenuActiveItem, CharacterObject character, bool useCivilianEquipment)
@@ -500,9 +561,9 @@ public class GameMenuPartyItemVM : ViewModel
 		Character = character;
 		_useCivilianEquipment = useCivilianEquipment;
 		CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(character, useCivilianEquipment);
-		Visual = new ImageIdentifierVM(characterCode);
+		Visual = new CharacterImageIdentifierVM(characterCode);
 		Hero heroObject = Character.HeroObject;
-		Banner_9 = (((heroObject != null && heroObject.IsLord) || (Character.IsHero && Character.HeroObject.Clan == Clan.PlayerClan && character.HeroObject.IsLord)) ? new ImageIdentifierVM(BannerCode.CreateFrom(Character.HeroObject.ClanBanner), nineGrid: true) : new ImageIdentifierVM());
+		Banner_9 = (((heroObject != null && heroObject.IsLord) || (Character.IsHero && Character.HeroObject.Clan == Clan.PlayerClan && character.HeroObject.IsLord)) ? new BannerImageIdentifierVM(Character.HeroObject.ClanBanner, nineGrid: true) : new BannerImageIdentifierVM(null));
 		NameText = Character.Name.ToString();
 		PartySize = -1;
 		PartyWoundedSize = -1;
@@ -510,6 +571,7 @@ public class GameMenuPartyItemVM : ViewModel
 		IsPlayer = character.IsPlayerCharacter;
 		Quests = new MBBindingList<QuestMarkerVM>();
 		RefreshProperties();
+		RegisterEvents();
 	}
 
 	public override void RefreshValues()
@@ -525,31 +587,10 @@ public class GameMenuPartyItemVM : ViewModel
 
 	public void ExecuteOpenEncyclopedia()
 	{
-		if (Character != null)
+		string encyclopediaPageLink = GetEncyclopediaPageLink();
+		if (!string.IsNullOrEmpty(encyclopediaPageLink))
 		{
-			Campaign.Current.EncyclopediaManager.GoToLink(Character.EncyclopediaLink);
-		}
-		else
-		{
-			if (Party == null)
-			{
-				return;
-			}
-			if (Party.LeaderHero != null)
-			{
-				Campaign.Current.EncyclopediaManager.GoToLink(Party.LeaderHero.EncyclopediaLink);
-				return;
-			}
-			if (Party.Owner != null)
-			{
-				Campaign.Current.EncyclopediaManager.GoToLink(Party.Owner.EncyclopediaLink);
-				return;
-			}
-			CharacterObject visualPartyLeader = CampaignUIHelper.GetVisualPartyLeader(Party);
-			if (visualPartyLeader != null)
-			{
-				Campaign.Current.EncyclopediaManager.GoToLink(visualPartyLeader.EncyclopediaLink);
-			}
+			Campaign.Current.EncyclopediaManager.GoToLink(encyclopediaPageLink);
 		}
 	}
 
@@ -566,7 +607,7 @@ public class GameMenuPartyItemVM : ViewModel
 		}
 		else if (Settlement != null)
 		{
-			InformationManager.ShowTooltip(typeof(Settlement), Settlement, true);
+			InformationManager.ShowTooltip(typeof(Settlement), Settlement);
 		}
 		else
 		{
@@ -576,23 +617,24 @@ public class GameMenuPartyItemVM : ViewModel
 
 	public void RefreshProperties()
 	{
+		EncyclopediaCursorEffect = ((!string.IsNullOrEmpty(GetEncyclopediaPageLink())) ? "RightClickLink" : null);
 		if (Party != null)
 		{
-			PartyWoundedSize = Party.NumberOfAllMembers - Party.NumberOfHealthyMembers;
-			PartySize = Party.NumberOfHealthyMembers;
-			PartySizeLbl = Party.NumberOfHealthyMembers.ToString();
+			RefreshCounts();
 			Relation = HeroVM.GetRelation(Party.LeaderHero);
 			LocationText = " ";
 			TextObject name = Party.Name;
 			if (Party.IsMobile)
 			{
 				name = Party.MobileParty.Name;
-				if (Party.MobileParty.Position2D.DistanceSquared(MobileParty.MainParty.Position2D) > 9f)
+				float getEncounterJoiningRadius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius;
+				if (Party.MobileParty.Position.DistanceSquared(MobileParty.MainParty.Position) > getEncounterJoiningRadius * getEncounterJoiningRadius)
 				{
 					if (Party.MobileParty.MapEvent == null)
 					{
 						GameTexts.SetVariable("LEFT", GameTexts.FindText("str_distance_to_army_leader"));
-						GameTexts.SetVariable("RIGHT", CampaignUIHelper.GetPartyDistanceByTimeText((int)Campaign.Current.Models.MapDistanceModel.GetDistance(Party.MobileParty, MobileParty.MainParty), Party.MobileParty.Speed));
+						float num = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(Party.MobileParty, MobileParty.MainParty, Party.MobileParty.NavigationCapability);
+						GameTexts.SetVariable("RIGHT", CampaignUIHelper.GetPartyDistanceByTimeText((int)num, Party.MobileParty.Speed));
 						LocationText = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString();
 					}
 					else
@@ -612,6 +654,7 @@ public class GameMenuPartyItemVM : ViewModel
 			}
 			NameText = name.ToString();
 			ProfessionText = " ";
+			HasShips = Party.Ships.Count > 0;
 		}
 		else if (Character != null)
 		{
@@ -621,7 +664,7 @@ public class GameMenuPartyItemVM : ViewModel
 			GameTexts.SetVariable("LOCATION", (Character.HeroObject?.CurrentSettlement != null) ? Character.HeroObject.CurrentSettlement.Name.ToString() : "");
 			Hero heroObject = Character.HeroObject;
 			DescriptionText = ((heroObject != null && !heroObject.IsSpecial) ? GameTexts.FindText("str_character_in_town").ToString() : string.Empty);
-			GameTexts.SetVariable("LOCATION", LocationComplex.Current?.GetLocationOfCharacter(Character.HeroObject)?.Name ?? TextObject.Empty);
+			GameTexts.SetVariable("LOCATION", LocationComplex.Current?.GetLocationOfCharacter(Character.HeroObject)?.Name ?? TextObject.GetEmpty());
 			LocationText = GameTexts.FindText("str_location_colon").ToString();
 			GameTexts.SetVariable("PROFESSION", HeroHelper.GetCharacterTypeName(Character.HeroObject));
 			ProfessionText = GameTexts.FindText("str_profession_colon").ToString();
@@ -631,6 +674,7 @@ public class GameMenuPartyItemVM : ViewModel
 				PowerText = GameTexts.FindText("str_power_colon").ToString();
 			}
 			NameText = Character.Name.ToString();
+			HasShips = false;
 		}
 		RefreshQuestStatus();
 		RefreshRelationStatus();
@@ -657,7 +701,7 @@ public class GameMenuPartyItemVM : ViewModel
 			List<QuestBase> questsRelatedToParty = CampaignUIHelper.GetQuestsRelatedToParty(Party.MobileParty);
 			for (int j = 0; j < questsRelatedToParty.Count; j++)
 			{
-				TextObject questHintText = ((questsRelatedToParty[j].JournalEntries.Count > 0) ? questsRelatedToParty[j].JournalEntries[0].LogText : TextObject.Empty);
+				TextObject questHintText = ((questsRelatedToParty[j].JournalEntries.Count > 0) ? questsRelatedToParty[j].JournalEntries[0].LogText : TextObject.GetEmpty());
 				CampaignUIHelper.IssueQuestFlags issueQuestFlag = ((hero == null || questsRelatedToParty[j].QuestGiver != hero) ? (questsRelatedToParty[j].IsSpecialQuest ? CampaignUIHelper.IssueQuestFlags.TrackedStoryQuest : CampaignUIHelper.IssueQuestFlags.TrackedIssue) : (questsRelatedToParty[j].IsSpecialQuest ? CampaignUIHelper.IssueQuestFlags.ActiveStoryQuest : CampaignUIHelper.IssueQuestFlags.ActiveIssue));
 				Quests.Add(new QuestMarkerVM(issueQuestFlag, questsRelatedToParty[j].Title, questHintText));
 			}
@@ -690,7 +734,7 @@ public class GameMenuPartyItemVM : ViewModel
 			{
 				IsEnemy = true;
 			}
-			else if (FactionManager.IsAlliedWithFaction(faction, Hero.MainHero.MapFaction))
+			else if (DiplomacyHelper.IsSameFactionAndNotEliminated(faction, Hero.MainHero.MapFaction))
 			{
 				IsAlly = true;
 			}
@@ -699,7 +743,7 @@ public class GameMenuPartyItemVM : ViewModel
 				IsNeutral = true;
 			}
 		}
-		else
+		else if (!IsPlayer)
 		{
 			IsNeutral = true;
 		}
@@ -714,7 +758,7 @@ public class GameMenuPartyItemVM : ViewModel
 		if (Character != null)
 		{
 			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(Character, _useCivilianEquipment);
-			Visual = new ImageIdentifierVM(characterCode);
+			Visual = new CharacterImageIdentifierVM(characterCode);
 		}
 		else if (Party != null)
 		{
@@ -722,13 +766,24 @@ public class GameMenuPartyItemVM : ViewModel
 			if (visualPartyLeader != null)
 			{
 				CharacterCode characterCode2 = CampaignUIHelper.GetCharacterCode(visualPartyLeader);
-				Visual = new ImageIdentifierVM(characterCode2);
+				Visual = new CharacterImageIdentifierVM(characterCode2);
 			}
 			else
 			{
-				Visual = new ImageIdentifierVM();
+				Visual = new CharacterImageIdentifierVM(null);
 			}
 		}
+	}
+
+	public void RefreshCounts()
+	{
+		if (PartySize != Party.NumberOfHealthyMembers || PartyWoundedSize != Party.NumberOfAllMembers - Party.NumberOfHealthyMembers)
+		{
+			PartyWoundedSize = Party.NumberOfAllMembers - Party.NumberOfHealthyMembers;
+			PartySize = Party.NumberOfHealthyMembers;
+			PartySizeLbl = Party.NumberOfHealthyMembers.ToString();
+		}
+		ShipCount = Party.Ships?.Count ?? 0;
 	}
 
 	public string GetPartyDescriptionTextFromValues()
@@ -741,7 +796,7 @@ public class GameMenuPartyItemVM : ViewModel
 		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_map_tooltip_speed").ToString());
 		GameTexts.SetVariable("RIGHT", Party.MobileParty.Speed.ToString("F"));
 		string content3 = GameTexts.FindText("str_LEFT_colon_RIGHT").ToString();
-		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_seeing_range").ToString());
+		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_view_distance").ToString());
 		GameTexts.SetVariable("RIGHT", Party.MobileParty.SeeingRange);
 		string content4 = GameTexts.FindText("str_LEFT_colon_RIGHT").ToString();
 		GameTexts.SetVariable("STR1", content);
@@ -753,5 +808,73 @@ public class GameMenuPartyItemVM : ViewModel
 		GameTexts.SetVariable("STR1", content5);
 		GameTexts.SetVariable("STR2", content4);
 		return GameTexts.FindText("str_string_newline_string").ToString();
+	}
+
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		UnregisterEvents();
+	}
+
+	private void RegisterEvents()
+	{
+		CampaignEvents.OnPlayerBodyPropertiesChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChangedEvent);
+	}
+
+	private void OnPlayerCharacterChangedEvent()
+	{
+		CharacterObject characterObject = ((Party != null) ? PartyBaseHelper.GetVisualPartyLeader(Party) : Character);
+		if (characterObject == CharacterObject.PlayerCharacter)
+		{
+			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(characterObject);
+			Visual = new CharacterImageIdentifierVM(characterCode);
+		}
+	}
+
+	private void UnregisterEvents()
+	{
+		CampaignEventDispatcher.Instance.RemoveListeners(this);
+	}
+
+	private string GetEncyclopediaPageLink()
+	{
+		PartyBase party = Party;
+		if (party == null || !party.MobileParty.IsCaravan)
+		{
+			PartyBase party2 = Party;
+			if (party2 == null || !party2.MobileParty.IsGarrison)
+			{
+				PartyBase party3 = Party;
+				if (party3 == null || !party3.MobileParty.IsMilitia)
+				{
+					PartyBase party4 = Party;
+					if (party4 == null || !party4.MobileParty.IsVillager)
+					{
+						if (Character != null)
+						{
+							return Character.EncyclopediaLink;
+						}
+						if (Party != null)
+						{
+							if (Party.LeaderHero != null)
+							{
+								return Party.LeaderHero.EncyclopediaLink;
+							}
+							if (Party.Owner != null)
+							{
+								return Party.Owner.EncyclopediaLink;
+							}
+							CharacterObject visualPartyLeader = CampaignUIHelper.GetVisualPartyLeader(Party);
+							if (visualPartyLeader != null)
+							{
+								return visualPartyLeader.EncyclopediaLink;
+							}
+						}
+						return null;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

@@ -78,6 +78,7 @@ public class ElementNotificationWidget : Widget
 	public ElementNotificationWidget(UIContext context)
 		: base(context)
 	{
+		base.IsVisible = false;
 	}
 
 	protected override void OnUpdate(float dt)

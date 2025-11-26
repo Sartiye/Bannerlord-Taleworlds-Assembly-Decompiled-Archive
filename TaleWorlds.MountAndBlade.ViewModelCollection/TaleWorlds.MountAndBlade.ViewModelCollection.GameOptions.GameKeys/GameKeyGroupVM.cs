@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 
@@ -143,7 +142,14 @@ public class GameKeyGroupVM : ViewModel
 
 	internal bool IsChanged()
 	{
-		return GameKeys.Any((GameKeyOptionVM k) => k.IsChanged());
+		for (int i = 0; i < GameKeys.Count; i++)
+		{
+			if (GameKeys[i].IsChanged())
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void OnGamepadActiveStateChanged()

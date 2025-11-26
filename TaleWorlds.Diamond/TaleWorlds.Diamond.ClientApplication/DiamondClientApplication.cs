@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
-using TaleWorlds.Diamond.InnerProcess;
 using TaleWorlds.Library;
 using TaleWorlds.Library.Http;
 using TaleWorlds.ServiceDiscovery.Client;
@@ -71,17 +70,14 @@ public class DiamondClientApplication
 	public object CreateClientSessionProvider(string clientName, Type clientType, SessionProviderType sessionProviderType, ParameterContainer parameters)
 	{
 		object obj = null;
-		switch (sessionProviderType)
+		if (sessionProviderType == SessionProviderType.ThreadedRest)
 		{
-		case SessionProviderType.Rest:
-		case SessionProviderType.ThreadedRest:
-		{
-			Type type2 = ((sessionProviderType == SessionProviderType.Rest) ? typeof(GenericRestSessionProvider<>) : typeof(GenericThreadedRestSessionProvider<>)).MakeGenericType(clientType);
-			parameters.TryGetParameter(clientName + ".Address", out var outValue2);
-			if (ServiceAddress.IsServiceAddress(outValue2))
+			Type type = ((sessionProviderType == SessionProviderType.Rest) ? typeof(GenericRestSessionProvider<>) : typeof(GenericThreadedRestSessionProvider<>)).MakeGenericType(clientType);
+			parameters.TryGetParameter(clientName + ".Address", out var outValue);
+			if (ServiceAddress.IsServiceAddress(outValue))
 			{
-				parameters.TryGetParameter(clientName + ".ServiceDiscovery.Address", out var outValue3);
-				ServiceAddressManager.ResolveAddress(outValue3, ref outValue2);
+				parameters.TryGetParameter(clientName + ".ServiceDiscovery.Address", out var outValue2);
+				ServiceAddressManager.ResolveAddress(outValue2, ref outValue);
 			}
 			string text = clientName + ".Proxy.";
 			Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -93,24 +89,15 @@ public class DiamondClientApplication
 				}
 			}
 			ProxyAddressMap = dictionary;
-			if (dictionary.TryGetValue(outValue2, out var value))
+			if (dictionary.TryGetValue(outValue, out var value))
 			{
-				outValue2 = value;
+				outValue = value;
 			}
 			IHttpDriver httpDriver = null;
-			httpDriver = ((!parameters.TryGetParameter(clientName + ".HttpDriver", out var outValue4)) ? HttpDriverManager.GetDefaultHttpDriver() : HttpDriverManager.GetHttpDriver(outValue4));
-			return Activator.CreateInstance(type2, outValue2, httpDriver);
+			httpDriver = ((!parameters.TryGetParameter(clientName + ".HttpDriver", out var outValue3)) ? HttpDriverManager.GetDefaultHttpDriver() : HttpDriverManager.GetHttpDriver(outValue3));
+			return Activator.CreateInstance(type, outValue, httpDriver);
 		}
-		case SessionProviderType.InnerProcess:
-		{
-			InnerProcessManager innerProcessManager = ((InnerProcessManagerClientObject)GetObject("InnerProcessManager")).InnerProcessManager;
-			Type type = typeof(GenericInnerProcessSessionProvider<>).MakeGenericType(clientType);
-			parameters.TryGetParameterAsUInt16(clientName + ".Port", out var outValue);
-			return Activator.CreateInstance(type, innerProcessManager, outValue);
-		}
-		default:
-			throw new NotImplementedException("Other session provider types are not supported yet.");
-		}
+		throw new NotImplementedException("Other session provider types are not supported yet.");
 	}
 
 	private static Assembly[] GetDiamondAssemblies()

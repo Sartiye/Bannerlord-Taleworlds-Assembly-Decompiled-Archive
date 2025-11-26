@@ -1,8 +1,10 @@
 using System;
 using Helpers;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Clans;
 using TaleWorlds.Core;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -13,6 +15,10 @@ public class KingdomGiftFiefPopupVM : ViewModel
 	private Settlement _settlementToGive;
 
 	private Action _onSettlementGranted;
+
+	private InputKeyItemVM _doneInputKey;
+
+	private InputKeyItemVM _cancelInputKey;
 
 	private bool _isAnyClanSelected;
 
@@ -41,6 +47,40 @@ public class KingdomGiftFiefPopupVM : ViewModel
 	private string _fiefsText;
 
 	private string _typeText;
+
+	[DataSourceProperty]
+	public InputKeyItemVM DoneInputKey
+	{
+		get
+		{
+			return _doneInputKey;
+		}
+		set
+		{
+			if (value != _doneInputKey)
+			{
+				_doneInputKey = value;
+				OnPropertyChangedWithValue(value, "DoneInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM CancelInputKey
+	{
+		get
+		{
+			return _cancelInputKey;
+		}
+		set
+		{
+			if (value != _cancelInputKey)
+			{
+				_cancelInputKey = value;
+				OnPropertyChangedWithValue(value, "CancelInputKey");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public bool IsAnyClanSelected
@@ -343,24 +383,36 @@ public class KingdomGiftFiefPopupVM : ViewModel
 		IsOpen = true;
 	}
 
-	public void Close()
+	public void ExecuteGiftSettlement()
+	{
+		if (_settlementToGive != null && CurrentSelectedClan != null)
+		{
+			Campaign.Current.KingdomManager.GiftSettlementOwnership(_settlementToGive, CurrentSelectedClan.Clan);
+			ExecuteClose();
+			_onSettlementGranted();
+		}
+	}
+
+	public void ExecuteClose()
 	{
 		_settlementToGive = null;
 		IsOpen = false;
 	}
 
-	private void ExecuteGiftSettlement()
+	public override void OnFinalize()
 	{
-		if (_settlementToGive != null && CurrentSelectedClan != null)
-		{
-			Campaign.Current.KingdomManager.GiftSettlementOwnership(_settlementToGive, CurrentSelectedClan.Clan);
-			Close();
-			_onSettlementGranted();
-		}
+		base.OnFinalize();
+		DoneInputKey?.OnFinalize();
+		CancelInputKey?.OnFinalize();
 	}
 
-	private void ExecuteClose()
+	public void SetDoneInputKey(HotKey hotKey)
 	{
-		Close();
+		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void SetCancelInputKey(HotKey hotKey)
+	{
+		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

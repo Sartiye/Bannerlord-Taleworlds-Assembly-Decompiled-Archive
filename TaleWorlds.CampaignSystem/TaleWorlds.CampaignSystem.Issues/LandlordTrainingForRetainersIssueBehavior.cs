@@ -45,7 +45,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=q2aed7tv}Train troops for {ISSUE_OWNER.NAME}");
+				TextObject textObject = new TextObject("{=q2aed7tv}Train Troops for {ISSUE_OWNER.NAME}");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.IssueOwner.CharacterObject, textObject);
 				return textObject;
 			}
@@ -102,7 +102,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=AndfZYIJ}Your companion managed to return all of the troops {ISSUE_GIVER.LINK} gave you to train. {?ISSUE_GIVER.GENDER}She{?}He{\\?} sends you the following letter.\n\n“{?PLAYER.GENDER}Madam{?}Sir{\\?}, Thank you for looking after my men. You honored our agreement, and you have my gratitude. Please accept this {GOLD}{GOLD_ICON}.");
+				TextObject textObject = new TextObject("{=AndfZYIJ}Your companion managed to return all of the troops {ISSUE_GIVER.LINK} gave you to train. {?ISSUE_GIVER.GENDER}She{?}He{\\?} sends you the following letter.{newline}{newline}“{?PLAYER.GENDER}Madam{?}Sir{\\?}, Thank you for looking after my men. You honored our agreement, and you have my gratitude. Please accept this {GOLD}{GOLD_ICON}.");
 				textObject.SetCharacterProperties("ISSUE_GIVER", base.IssueOwner.CharacterObject);
 				textObject.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 				textObject.SetTextVariable("GOLD", RewardGold);
@@ -142,8 +142,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -160,8 +159,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -253,11 +251,11 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 
 		private int _borrowedTroopCount => 3 + TaleWorlds.Library.MathF.Ceiling(17f * _difficultyMultiplier);
 
-		private TextObject _questStartLog
+		private TextObject QuestStartLog
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=fcRLq8LL}{QUEST_GIVER.LINK}, a landowner in {QUEST_SETTLEMENT}, asked you to train some recruits for {?QUEST_GIVER.GENDER}her{?}him{\\?}. {?QUEST_GIVER.GENDER}She{?}He{\\?} gave you {NUMBER_OF_MEN} men, hoping to take them back when once they have some experience.\nThe easiest way to train them without putting them in too much danger is to attack weak parties.");
+				TextObject textObject = new TextObject("{=fcRLq8LL}{QUEST_GIVER.LINK}, a landowner in {QUEST_SETTLEMENT}, asked you to train some recruits for {?QUEST_GIVER.GENDER}her{?}him{\\?}. {?QUEST_GIVER.GENDER}She{?}He{\\?} gave you {NUMBER_OF_MEN} men, hoping to take them back when once they have some experience.{newline}The easiest way to train them without putting them in too much danger is to attack weak parties.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("QUEST_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
 				textObject.SetTextVariable("NUMBER_OF_MEN", _borrowedTroopCount);
@@ -265,7 +263,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _totalSuccessLog
+		private TextObject TotalSuccessLog
 		{
 			get
 			{
@@ -277,7 +275,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _partialSuccessLog
+		private TextObject PartialSuccessLog
 		{
 			get
 			{
@@ -287,7 +285,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _weakSuccessLog
+		private TextObject WeakSuccessLog
 		{
 			get
 			{
@@ -297,7 +295,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _failLog
+		private TextObject FailLog
 		{
 			get
 			{
@@ -307,7 +305,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _epicFailLog
+		private TextObject EpicFailLog
 		{
 			get
 			{
@@ -317,7 +315,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _cancelLogOnWarDeclared
+		private TextObject CancelLogOnWarDeclared
 		{
 			get
 			{
@@ -328,7 +326,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -338,7 +336,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _timeoutLog
+		private TextObject TimeoutLog
 		{
 			get
 			{
@@ -348,7 +346,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _crimeLog
+		private TextObject CrimeLog
 		{
 			get
 			{
@@ -363,7 +361,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=q2aed7tv}Train troops for {ISSUE_OWNER.NAME}");
+				TextObject textObject = new TextObject("{=q2aed7tv}Train Troops for {ISSUE_OWNER.NAME}");
 				textObject.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject);
 				return textObject;
 			}
@@ -454,7 +452,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			_questTargetChar.SetTransferableInPartyScreen(isTransferable: false);
 			PartyBase.MainParty.AddElementToMemberRoster(_questGivenChar, _borrowedTroopCount);
 			PartyBase.MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 3);
-			_playerStartsQuestLog = AddDiscreteLog(_questStartLog, new TextObject("{=wUb5h4a3}Trained Troops"), PartyBase.MainParty.MemberRoster.GetTroopCount(_questTargetChar), _borrowedTroopCount);
+			_playerStartsQuestLog = AddDiscreteLog(QuestStartLog, new TextObject("{=wUb5h4a3}Trained Troops"), PartyBase.MainParty.MemberRoster.GetTroopCount(_questTargetChar), _borrowedTroopCount);
 		}
 
 		private void OnPlayerBattleEnd(MapEvent mapEvent)
@@ -521,13 +519,13 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_cancelLogOnWarDeclared);
+				CompleteQuestWithCancel(CancelLogOnWarDeclared);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _cancelLogOnWarDeclared);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, CancelLogOnWarDeclared);
 		}
 
 		private void RemoveBorrowedTroopsFromParty(PartyBase party)
@@ -631,7 +629,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			});
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			base.QuestGiver.AddPower(10f);
-			AddLog(_totalSuccessLog);
+			AddLog(TotalSuccessLog);
 			CompleteQuestWithSuccess();
 		}
 
@@ -645,7 +643,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			});
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			base.QuestGiver.AddPower(10f);
-			AddLog(_partialSuccessLog);
+			AddLog(PartialSuccessLog);
 			CompleteQuestWithSuccess();
 		}
 
@@ -659,7 +657,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			});
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			base.QuestGiver.AddPower(10f);
-			AddLog(_weakSuccessLog);
+			AddLog(WeakSuccessLog);
 			CompleteQuestWithSuccess();
 		}
 
@@ -667,7 +665,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			RelationshipChangeWithQuestGiver = -5;
 			base.QuestGiver.AddPower(-10f);
-			AddLog(_failLog);
+			AddLog(FailLog);
 			CompleteQuestWithFail();
 		}
 
@@ -676,12 +674,11 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			Campaign.Current.TimeControlMode = _campaignTimeControlModeCacheForDecisionPopUp;
 			RelationshipChangeWithQuestGiver = -10;
 			base.QuestGiver.AddPower(-10f);
-			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 10f);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -10)
 			});
-			AddLog(_epicFailLog);
+			AddLog(EpicFailLog);
 			CompleteQuestWithFail();
 		}
 
@@ -694,7 +691,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -50)
 			};
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(Hero.MainHero, effectedTraits);
-			CompleteQuestWithFail(_crimeLog);
+			CompleteQuestWithFail(CrimeLog);
 		}
 
 		protected override void OnFinalize()
@@ -727,7 +724,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			RelationshipChangeWithQuestGiver = -5;
 			base.QuestGiver.AddPower(-10f);
 			RemoveBorrowedTroopsFromParty(PartyBase.MainParty);
-			AddLog(_timeoutLog);
+			AddLog(TimeoutLog);
 		}
 	}
 

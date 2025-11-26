@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Map;
+using TaleWorlds.CampaignSystem.Map.DistanceCache;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -21,7 +24,7 @@ using TaleWorlds.SaveSystem.Load;
 
 namespace TaleWorlds.CampaignSystem.Settlements;
 
-public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint, ITrackableCampaignObject, ITrackableBase, ISiegeEventSide, IMapEntity, IRandomOwner
+public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint, ITrackableCampaignObject, ITrackableBase, ISiegeEventSide, IRandomOwner, ISettlementDataHolder
 {
 	public enum SiegeState
 	{
@@ -35,15 +38,6 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 
 	[CachedData]
 	private int _numberOfLordPartiesAt;
-
-	[SaveableField(104)]
-	public int CanBeClaimed;
-
-	[SaveableField(105)]
-	public float ClaimValue;
-
-	[SaveableField(106)]
-	public Hero ClaimedBy;
 
 	[SaveableField(107)]
 	public bool HasVisited;
@@ -78,9 +72,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	[CachedData]
 	private MBList<Hero> _notablesCache;
 
-	private Vec2 _gatePosition;
-
-	private Vec2 _position;
+	private CampaignVec2 _position;
 
 	public CultureObject Culture;
 
@@ -122,6 +114,26 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	public bool IsActive { get; set; }
 
 	public Hero Owner => OwnerClan.Leader;
+
+	public Banner Banner
+	{
+		get
+		{
+			if (Party.CustomBanner != null)
+			{
+				return Party.CustomBanner;
+			}
+			if (SettlementComponent != null && SettlementComponent.GetDefaultComponentBanner() != null)
+			{
+				return SettlementComponent.GetDefaultComponentBanner();
+			}
+			if (OwnerClan != null)
+			{
+				return OwnerClan.Banner;
+			}
+			return null;
+		}
+	}
 
 	public bool IsVisible
 	{
@@ -167,10 +179,16 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	}
 
 	[SaveableProperty(115)]
-	public float NumberOfEnemiesSpottedAround { get; set; }
+	public float NearbyLandThreatIntensity { get; set; }
+
+	[SaveableProperty(139)]
+	public float NearbyNavalThreatIntensity { get; set; }
 
 	[SaveableProperty(128)]
-	public float NumberOfAlliesSpottedAround { get; set; }
+	public float NearbyLandAllyIntensity { get; set; }
+
+	[SaveableProperty(140)]
+	public float NearbyNavalAllyIntensity { get; set; }
 
 	Settlement ILocatable<Settlement>.NextLocatable
 	{
@@ -186,7 +204,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 
 	public int RandomValue => Party.RandomValue;
 
-	public Vec2 GetPosition2D => Position2D;
+	public Vec2 GetPosition2D => Position.ToVec2();
 
 	public float Militia
 	{
@@ -250,6 +268,8 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 
 	public MBReadOnlyList<MobileParty> Parties => _partiesCache;
 
+	public PatrolPartyComponent PatrolParty { get; private set; }
+
 	public MBReadOnlyList<Hero> HeroesWithoutParty => _heroesWithoutPartyCache;
 
 	public MBReadOnlyList<Hero> Notables => _notablesCache;
@@ -257,24 +277,13 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	[SaveableProperty(152)]
 	public SettlementComponent SettlementComponent { get; private set; }
 
-	public Vec2 GatePosition
-	{
-		get
-		{
-			return _gatePosition;
-		}
-		private set
-		{
-			_gatePosition = value;
-			Campaign current = Campaign.Current;
-			if (current.MapSceneWrapper != null)
-			{
-				CurrentNavigationFace = current.MapSceneWrapper.GetFaceIndex(_gatePosition);
-			}
-		}
-	}
+	public CampaignVec2 GatePosition { get; private set; }
 
-	public Vec2 Position2D
+	public CampaignVec2 PortPosition { get; private set; }
+
+	public PathFaceRecord CurrentNavigationFace => Position.Face;
+
+	public CampaignVec2 Position
 	{
 		get
 		{
@@ -287,19 +296,19 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 	}
 
-	public PathFaceRecord CurrentNavigationFace { get; private set; }
+	public bool HasPort { get; private set; }
 
-	public IFaction MapFaction => Town?.MapFaction ?? Village?.Bound.MapFaction ?? Hideout?.MapFaction ?? null;
+	public IFaction MapFaction => SettlementComponent?.MapFaction;
 
 	public TextObject Name
 	{
 		get
 		{
+			if (!TextObject.IsNullOrEmpty(Party.CustomName))
+			{
+				return Party.CustomName;
+			}
 			return _name;
-		}
-		set
-		{
-			SetName(value);
 		}
 	}
 
@@ -506,14 +515,6 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 	}
 
-	public bool IsAlerted => NumberOfEnemiesSpottedAround >= 1f;
-
-	bool IMapEntity.IsMobileEntity => false;
-
-	bool IMapEntity.ShowCircleAroundEntity => true;
-
-	Vec2 IMapEntity.InteractionPosition => GatePosition;
-
 	internal static void AutoGeneratedStaticCollectObjectsSettlement(object o, List<object> collectedObjects)
 	{
 		((Settlement)o).AutoGeneratedInstanceCollectObjects(collectedObjects);
@@ -522,7 +523,6 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	protected override void AutoGeneratedInstanceCollectObjects(List<object> collectedObjects)
 	{
 		base.AutoGeneratedInstanceCollectObjects(collectedObjects);
-		collectedObjects.Add(ClaimedBy);
 		collectedObjects.Add(Stash);
 		collectedObjects.Add(_nextLocatable);
 		collectedObjects.Add(_settlementWallSectionHitPointsRatioList);
@@ -559,14 +559,24 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		return ((Settlement)o).IsActive;
 	}
 
-	internal static object AutoGeneratedGetMemberValueNumberOfEnemiesSpottedAround(object o)
+	internal static object AutoGeneratedGetMemberValueNearbyLandThreatIntensity(object o)
 	{
-		return ((Settlement)o).NumberOfEnemiesSpottedAround;
+		return ((Settlement)o).NearbyLandThreatIntensity;
 	}
 
-	internal static object AutoGeneratedGetMemberValueNumberOfAlliesSpottedAround(object o)
+	internal static object AutoGeneratedGetMemberValueNearbyNavalThreatIntensity(object o)
 	{
-		return ((Settlement)o).NumberOfAlliesSpottedAround;
+		return ((Settlement)o).NearbyNavalThreatIntensity;
+	}
+
+	internal static object AutoGeneratedGetMemberValueNearbyLandAllyIntensity(object o)
+	{
+		return ((Settlement)o).NearbyLandAllyIntensity;
+	}
+
+	internal static object AutoGeneratedGetMemberValueNearbyNavalAllyIntensity(object o)
+	{
+		return ((Settlement)o).NearbyNavalAllyIntensity;
 	}
 
 	internal static object AutoGeneratedGetMemberValueSettlementHitPoints(object o)
@@ -624,21 +634,6 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		return ((Settlement)o).NumberOfLordPartiesTargeting;
 	}
 
-	internal static object AutoGeneratedGetMemberValueCanBeClaimed(object o)
-	{
-		return ((Settlement)o).CanBeClaimed;
-	}
-
-	internal static object AutoGeneratedGetMemberValueClaimValue(object o)
-	{
-		return ((Settlement)o).ClaimValue;
-	}
-
-	internal static object AutoGeneratedGetMemberValueClaimedBy(object o)
-	{
-		return ((Settlement)o).ClaimedBy;
-	}
-
 	internal static object AutoGeneratedGetMemberValueHasVisited(object o)
 	{
 		return ((Settlement)o).HasVisited;
@@ -694,11 +689,9 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		_settlementWallSectionHitPointsRatioList[index] = MBMath.ClampFloat(hitPointsRatio, 0f, 1f);
 	}
 
-	public Vec3 GetLogicalPosition()
+	public Vec3 GetPositionAsVec3()
 	{
-		float height = 0f;
-		Campaign.Current.MapSceneWrapper.GetHeightAtPoint(Position2D, ref height);
-		return new Vec3(Position2D.x, Position2D.y, height);
+		return Position.AsVec3();
 	}
 
 	public void SetGarrisonWagePaymentLimit(int limit)
@@ -739,20 +732,6 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		_boundVillages.Remove(village);
 	}
 
-	private void SetName(TextObject name)
-	{
-		_name = name;
-		SetNameAttributes();
-	}
-
-	private void SetNameAttributes()
-	{
-		_name.SetTextVariable("IS_SETTLEMENT", 1);
-		_name.SetTextVariable("IS_CASTLE", IsCastle ? 1 : 0);
-		_name.SetTextVariable("IS_TOWN", IsTown ? 1 : 0);
-		_name.SetTextVariable("IS_HIDEOUT", IsHideout ? 1 : 0);
-	}
-
 	private void InitSettlement()
 	{
 		_partiesCache = new MBList<MobileParty>();
@@ -790,16 +769,34 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		IsActive = true;
 		Party = new PartyBase(this);
 		InitSettlement();
-		_position = Vec2.Zero;
+		_position = CampaignVec2.Invalid;
 		LocationComplex = locationComplex;
 		Alleys = new List<Alley>();
 		HasVisited = false;
 		Stash = new ItemRoster();
+		((ILocatable<Settlement>)this).LocatorNodeIndex = -1;
 	}
 
 	public float GetSettlementValueForEnemyHero(Hero hero)
 	{
 		return Campaign.Current.Models.SettlementValueModel.CalculateSettlementValueForEnemyHero(this, hero);
+	}
+
+	public bool IsSettlementBusy(object asker)
+	{
+		return GetSettlementBusynessPriority(asker) > 0;
+	}
+
+	public bool IsSettlementBusy(object asker, int limitingPriority)
+	{
+		return GetSettlementBusynessPriority(asker) > limitingPriority;
+	}
+
+	public int GetSettlementBusynessPriority(object asker)
+	{
+		int flags = 0;
+		CampaignEventDispatcher.Instance.IsSettlementBusy(this, asker, ref flags);
+		return flags;
 	}
 
 	public float GetValue(Hero hero = null, bool countAlsoBoundedSettlements = true)
@@ -821,7 +818,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		float num2 = 1f;
 		if (hero != null && hero.Clan.Settlements.Count > 0)
 		{
-			float value = TaleWorlds.Library.MathF.Pow(Campaign.Current.Models.MapDistanceModel.GetDistance(hero.Clan.FactionMidSettlement, this) / Campaign.AverageDistanceBetweenTwoFortifications * 4f, 2f);
+			float value = TaleWorlds.Library.MathF.Pow(Campaign.Current.Models.MapDistanceModel.GetDistance(hero.Clan.FactionMidSettlement, this, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All) / Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 4f, 2f);
 			value = TaleWorlds.Library.MathF.Clamp(value, 0f, 100f);
 			value -= 16f;
 			num2 *= (100f - value) / 100f;
@@ -863,7 +860,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 		else
 		{
-			Debug.FailedAssert("mobileParty is already in mobileParties List!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "AddMobileParty", 648);
+			Debug.FailedAssert("mobileParty is already in mobileParties List!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "AddMobileParty", 676);
 		}
 	}
 
@@ -879,8 +876,13 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 		else
 		{
-			Debug.FailedAssert("mobileParty is not in mobileParties List", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "RemoveMobileParty", 667);
+			Debug.FailedAssert("mobileParty is not in mobileParties List", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "RemoveMobileParty", 695);
 		}
+	}
+
+	internal void SetPatrolParty(PatrolPartyComponent patrolParty)
+	{
+		PatrolParty = patrolParty;
 	}
 
 	internal void AddHeroWithoutParty(Hero individual)
@@ -892,7 +894,27 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 		else
 		{
-			Debug.FailedAssert("Notable is already in Notable List!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "AddHeroWithoutParty", 686);
+			Debug.FailedAssert("Notable is already in Notable List!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "AddHeroWithoutParty", 720);
+		}
+	}
+
+	public void OnPartyInteraction(MobileParty engagingParty)
+	{
+		if (engagingParty.ShortTermTargetSettlement != null && ((engagingParty.IsCurrentlyAtSea && engagingParty.IsTargetingPort) || ((engagingParty.ShortTermTargetSettlement.Party.SiegeEvent == null || engagingParty == MobileParty.MainParty || engagingParty.MapFaction == engagingParty.ShortTermTargetSettlement.SiegeEvent.BesiegerCamp.MapFaction) && (engagingParty.ShortTermTargetSettlement.Party.MapEvent == null || engagingParty == MobileParty.MainParty || engagingParty.MapFaction == engagingParty.ShortTermTargetSettlement.Party.MapEvent.AttackerSide.LeaderParty.MapFaction || (engagingParty.ShortTermTargetSettlement.Party.MapEvent.IsSallyOut && engagingParty.MapFaction == engagingParty.ShortTermTargetSettlement.Party.MapEvent.DefenderSide.LeaderParty.MapFaction)))))
+		{
+			if (engagingParty == MobileParty.MainParty && (engagingParty.ShortTermTargetSettlement.Party.MapEvent == null || !engagingParty.ShortTermTargetSettlement.Party.MapEvent.IsRaid || engagingParty.ShortTermTargetSettlement.Party.MapEvent.DefenderSide.NumRemainingSimulationTroops > 0))
+			{
+				(Game.Current.GameStateManager.ActiveState as MapState)?.OnMainPartyEncounter();
+			}
+			if (engagingParty.ShortTermTargetSettlement.Party.MapEvent != null && engagingParty.ShortTermTargetSettlement.Party.MapEvent.IsRaid && engagingParty.DefaultBehavior == AiBehavior.RaidSettlement)
+			{
+				engagingParty.Ai.RethinkAtNextHourlyTick = true;
+				engagingParty.SetMoveModeHold();
+			}
+			else
+			{
+				EncounterManager.StartSettlementEncounter(engagingParty, engagingParty.ShortTermTargetSettlement);
+			}
 		}
 	}
 
@@ -905,7 +927,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 		else
 		{
-			Debug.FailedAssert("Notable is not in Notable List", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "RemoveHeroWithoutParty", 700);
+			Debug.FailedAssert("Notable is not in Notable List", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Settlements\\Settlement.cs", "RemoveHeroWithoutParty", 773);
 		}
 	}
 
@@ -923,34 +945,46 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 
 	public override void Deserialize(MBObjectManager objectManager, XmlNode node)
 	{
-		bool isInitialized = base.IsInitialized;
 		base.Deserialize(objectManager, node);
-		Name = new TextObject(node.Attributes["name"].Value);
-		Position2D = new Vec2((float)Convert.ToDouble(node.Attributes["posX"].Value), (float)Convert.ToDouble(node.Attributes["posY"].Value));
-		GatePosition = Position2D;
+		_name = new TextObject(node.Attributes["name"].Value);
+		Vec2 pos = new Vec2((float)Convert.ToDouble(node.Attributes["posX"].Value), (float)Convert.ToDouble(node.Attributes["posY"].Value));
+		Position = new CampaignVec2(pos, isOnLand: true);
+		GatePosition = new CampaignVec2(pos, isOnLand: true);
 		if (node.Attributes["gate_posX"] != null)
 		{
-			GatePosition = new Vec2((float)Convert.ToDouble(node.Attributes["gate_posX"].Value), (float)Convert.ToDouble(node.Attributes["gate_posY"].Value));
+			GatePosition = new CampaignVec2(new Vec2((float)Convert.ToDouble(node.Attributes["gate_posX"].Value), (float)Convert.ToDouble(node.Attributes["gate_posY"].Value)), isOnLand: true);
+		}
+		PortPosition = new CampaignVec2(pos, isOnLand: false);
+		if (node.Attributes["port_posX"] != null)
+		{
+			PortPosition = new CampaignVec2(new Vec2((float)Convert.ToDouble(node.Attributes["port_posX"].Value), (float)Convert.ToDouble(node.Attributes["port_posY"].Value)), isOnLand: false);
+			HasPort = PortPosition.ToVec2() != Vec2.Zero;
 		}
 		Culture = objectManager.ReadObjectReferenceFromXml<CultureObject>("culture", node);
-		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.Empty);
-		if (Campaign.Current != null && Campaign.Current.MapSceneWrapper != null && !Campaign.Current.MapSceneWrapper.GetFaceIndex(Position2D).IsValid())
-		{
-			Debug.Print(string.Concat("Center position of settlement(", GetName(), ") is invalid"));
-		}
+		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.GetEmpty());
 		foreach (XmlNode childNode in node.ChildNodes)
 		{
 			if (childNode.Name == "Components")
 			{
 				foreach (XmlNode childNode2 in childNode.ChildNodes)
 				{
-					SetSettlementComponent((SettlementComponent)objectManager.CreateObjectFromXmlNode(childNode2));
+					SettlementComponent settlementComponent;
+					if (childNode2.Name == "CustomSettlementComponent")
+					{
+						string typeName = childNode2.Attributes["component_name"]?.Value;
+						settlementComponent = (SettlementComponent)objectManager.CreateObjectFromXmlNode(childNode2, typeName);
+					}
+					else
+					{
+						settlementComponent = (SettlementComponent)objectManager.CreateObjectFromXmlNode(childNode2);
+					}
+					SetSettlementComponent(settlementComponent);
 				}
 			}
 			if (childNode.Name == "Locations")
 			{
 				LocationComplexTemplate complexTemplate = (LocationComplexTemplate)objectManager.ReadObjectReferenceFromXml("complex_template", typeof(LocationComplexTemplate), childNode);
-				if (!isInitialized)
+				if (Campaign.Current.CampaignGameLoadingType != Campaign.GameLoadingType.SavedCampaign || LocationComplex == null)
 				{
 					LocationComplex = new LocationComplex(complexTemplate);
 				}
@@ -989,7 +1023,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 				{
 					string value = childNode4.Attributes["name"].Value;
 					string tag = "alley_" + (num + 1);
-					if (!isInitialized)
+					if (Campaign.Current.CampaignGameLoadingType != Campaign.GameLoadingType.SavedCampaign)
 					{
 						Alleys.Add(new Alley(this, tag, new TextObject(value)));
 					}
@@ -1000,14 +1034,8 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 					num++;
 				}
 			}
-			foreach (Alley alley in Alleys)
-			{
-				foreach (Alley alley2 in Alleys)
-				{
-				}
-			}
 		}
-		if (!isInitialized)
+		if (Campaign.Current.CampaignGameLoadingType != Campaign.GameLoadingType.SavedCampaign)
 		{
 			Clan clan = objectManager.ReadObjectReferenceFromXml<Clan>("owner", node);
 			if (clan != null && Town != null)
@@ -1015,7 +1043,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 				Town.OwnerClan = clan;
 			}
 		}
-		SetNameAttributes();
+		_name.SetSettlementProperties(this);
 	}
 
 	public void OnFinishLoadState()
@@ -1024,25 +1052,18 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		{
 			foreach (Building building in Town.Buildings)
 			{
-				if (building.BuildingType.IsDefaultProject && building.CurrentLevel != 1)
+				if (building.BuildingType.IsDailyProject && building.CurrentLevel != 1)
 				{
 					building.CurrentLevel = 1;
 				}
 			}
 		}
-		Party.UpdateVisibilityAndInspected();
-	}
-
-	public void OnGameInitialized()
-	{
-		Campaign current = Campaign.Current;
-		CurrentNavigationFace = current.MapSceneWrapper.GetFaceIndex(GatePosition);
+		Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 	}
 
 	public void OnGameCreated()
 	{
 		SettlementComponent?.OnInit();
-		CreateFigure();
 		Party.SetLevelMaskIsDirty();
 		for (int i = 0; i < WallSectionCount; i++)
 		{
@@ -1053,6 +1074,7 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 	public void OnSessionStart()
 	{
 		Party?.SetVisualAsDirty();
+		SettlementComponent.OnSessionStart();
 	}
 
 	[LoadInitializationCallback]
@@ -1064,12 +1086,61 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		_notablesCache = new MBList<Hero>();
 	}
 
+	public void CheckPositionsForMapChangeAndUpdateIfNeeded()
+	{
+		foreach (MobileParty item in MobileParty.All)
+		{
+			if (item.CurrentSettlement != this)
+			{
+				continue;
+			}
+			if (IsFortification)
+			{
+				CampaignVec2 positionAfterMapChange = (item.IsCurrentlyAtSea ? PortPosition : GatePosition);
+				item.SetPositionAfterMapChange(positionAfterMapChange);
+				continue;
+			}
+			float num = (IsVillage ? Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringVillage : Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringTown);
+			if (item.Position.Distance(GatePosition) > num)
+			{
+				item.SetPositionAfterMapChange(GatePosition);
+			}
+		}
+		if (Party.SiegeEvent != null)
+		{
+			Party.SiegeEvent.SetPositionAfterMapChange(GatePosition);
+		}
+		else if (Party.MapEvent != null)
+		{
+			switch (Party.MapEvent.EventType)
+			{
+			case MapEvent.BattleTypes.Raid:
+			case MapEvent.BattleTypes.IsForcingVolunteers:
+			case MapEvent.BattleTypes.IsForcingSupplies:
+			case MapEvent.BattleTypes.Hideout:
+				Party.MapEvent.SetPositionAfterMapChange(GatePosition);
+				break;
+			case MapEvent.BattleTypes.FieldBattle:
+			case MapEvent.BattleTypes.Siege:
+			case MapEvent.BattleTypes.SallyOut:
+			case MapEvent.BattleTypes.SiegeOutside:
+			case MapEvent.BattleTypes.BlockadeBattle:
+			case MapEvent.BattleTypes.BlockadeSallyOutBattle:
+				break;
+			}
+		}
+	}
+
 	[LateLoadInitializationCallback]
 	private void OnLateLoad(MetaData metaData, ObjectLoadData objectLoadData)
 	{
 		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0"))
 		{
-			_oldProsperityObsolete = (float)objectLoadData.GetMemberValueBySaveId(118);
+			object memberValueBySaveId = objectLoadData.GetMemberValueBySaveId(118);
+			if (memberValueBySaveId != null)
+			{
+				_oldProsperityObsolete = (float)memberValueBySaveId;
+			}
 		}
 	}
 
@@ -1103,32 +1174,24 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		LocationComplex?.ClearTempCharacters();
 	}
 
+	public Vec3 GetPosition()
+	{
+		return GetPositionAsVec3();
+	}
+
 	TextObject ITrackableBase.GetName()
 	{
 		return Name;
 	}
 
-	public Vec3 GetPosition()
+	Vec3 ITrackableBase.GetPosition()
 	{
-		return GetLogicalPosition();
+		return GetPosition();
 	}
 
-	public float GetTrackDistanceToMainAgent()
+	Banner ITrackableCampaignObject.GetBanner()
 	{
-		return GetPosition().Distance(Hero.MainHero.GetPosition());
-	}
-
-	public bool CheckTracked(BasicCharacterObject basicCharacter)
-	{
-		if (!Notables.Any((Hero t) => t.CharacterObject == basicCharacter) && !Party.PrisonRoster.GetTroopRoster().Any((TroopRosterElement t) => t.Character == basicCharacter))
-		{
-			return Parties.Any((MobileParty p) => p.CheckTracked(basicCharacter));
-		}
-		return true;
-	}
-
-	private void CreateFigure()
-	{
+		return Banner;
 	}
 
 	public void SetNextSiegeState()
@@ -1144,16 +1207,23 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		CurrentSiegeState = SiegeState.OnTheWalls;
 	}
 
-	public void AddGarrisonParty(bool addInitialGarrison = false)
+	public void AddGarrisonParty()
 	{
-		GarrisonPartyComponent.CreateGarrisonParty("garrison_party_" + base.StringId + "_" + OwnerClan.StringId + "_1", this, addInitialGarrison);
+		GarrisonPartyComponent.CreateGarrisonParty("garrison_party_" + base.StringId + "_" + OwnerClan.StringId + "_1", this);
 	}
 
 	protected override void AfterLoad()
 	{
 		if (SiegeEvent != null && SiegeEvent.BesiegerCamp.LeaderParty == null)
 		{
-			SiegeEvent.FinalizeSiegeEvent();
+			if (SiegeEvent.BesiegedSettlement.Party.MapEvent != null)
+			{
+				SiegeEvent.BesiegedSettlement.Party.MapEvent.FinalizeEvent();
+			}
+			else if (SiegeEvent != null)
+			{
+				SiegeEvent.FinalizeSiegeEvent();
+			}
 		}
 		_notablesCache = new MBList<Hero>();
 		CollectNotablesToCache();
@@ -1180,7 +1250,10 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		{
 			int num = TaleWorlds.Library.MathF.Floor(_readyMilitia);
 			_readyMilitia -= num;
-			AddMilitiasToParty(MilitiaPartyComponent.MobileParty, num);
+			if (num > 0)
+			{
+				AddMilitiasToParty(MilitiaPartyComponent.MobileParty, num);
+			}
 		}
 		else if ((int)_readyMilitia < -1)
 		{
@@ -1190,59 +1263,54 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		}
 	}
 
-	private void AddMilitiasToParty(MobileParty militaParty, int militiaToAdd)
+	private void AddMilitiasToParty(MobileParty militiaParty, int militiaNumberToAdd)
 	{
-		Campaign.Current.Models.SettlementMilitiaModel.CalculateMilitiaSpawnRate(this, out var meleeTroopRate, out var _);
-		AddTroopToMilitiaParty(militaParty, Culture.MeleeMilitiaTroop, Culture.MeleeEliteMilitiaTroop, meleeTroopRate, ref militiaToAdd);
-		AddTroopToMilitiaParty(militaParty, Culture.RangedMilitiaTroop, Culture.RangedEliteMilitiaTroop, 1f, ref militiaToAdd);
+		Campaign.Current.Models.SettlementMilitiaModel.CalculateMilitiaSpawnRate(this, out var meleeTroopRate, out var rangedTroopRate);
+		AddTroopToMilitiaParty(militiaParty, Culture.MeleeMilitiaTroop, Culture.MeleeEliteMilitiaTroop, meleeTroopRate, militiaNumberToAdd);
+		AddTroopToMilitiaParty(militiaParty, Culture.RangedMilitiaTroop, Culture.RangedEliteMilitiaTroop, rangedTroopRate, militiaNumberToAdd);
 	}
 
-	private void AddTroopToMilitiaParty(MobileParty militaParty, CharacterObject militiaTroop, CharacterObject eliteMilitiaTroop, float troopRatio, ref int numberToAddRemaining)
+	private void AddTroopToMilitiaParty(MobileParty militiaParty, CharacterObject militiaTroop, CharacterObject veteranMilitiaTroop, float troopRatio, int militiaNumberToAdd)
 	{
-		if (numberToAddRemaining <= 0)
-		{
-			return;
-		}
-		int num = MBRandom.RoundRandomized(troopRatio * (float)numberToAddRemaining);
-		float num2 = Campaign.Current.Models.SettlementMilitiaModel.CalculateEliteMilitiaSpawnChance(this);
+		int num = MBRandom.RoundRandomized(troopRatio * (float)militiaNumberToAdd);
+		float resultNumber = Campaign.Current.Models.SettlementMilitiaModel.CalculateVeteranMilitiaSpawnChance(this).ResultNumber;
 		for (int i = 0; i < num; i++)
 		{
-			if (MBRandom.RandomFloat < num2)
+			if (MBRandom.RandomFloat < resultNumber)
 			{
-				militaParty.MemberRoster.AddToCounts(eliteMilitiaTroop, 1);
+				militiaParty.MemberRoster.AddToCounts(veteranMilitiaTroop, 1);
 			}
 			else
 			{
-				militaParty.MemberRoster.AddToCounts(militiaTroop, 1);
+				militiaParty.MemberRoster.AddToCounts(militiaTroop, 1);
 			}
 		}
-		numberToAddRemaining -= num;
 	}
 
-	private static void RemoveMilitiasFromParty(MobileParty militaParty, int numberToRemove)
+	private static void RemoveMilitiasFromParty(MobileParty militiaParty, int numberToRemove)
 	{
-		if (militaParty.MemberRoster.TotalManCount <= numberToRemove)
+		if (militiaParty.MemberRoster.TotalManCount <= numberToRemove)
 		{
-			militaParty.MemberRoster.Clear();
+			militiaParty.MemberRoster.Clear();
 			return;
 		}
-		float num = (float)numberToRemove / (float)militaParty.MemberRoster.TotalManCount;
+		float num = (float)numberToRemove / (float)militiaParty.MemberRoster.TotalManCount;
 		int num2 = numberToRemove;
-		for (int i = 0; i < militaParty.MemberRoster.Count; i++)
+		for (int i = 0; i < militiaParty.MemberRoster.Count; i++)
 		{
-			int num3 = MBRandom.RoundRandomized((float)militaParty.MemberRoster.GetElementNumber(i) * num);
+			int num3 = MBRandom.RoundRandomized((float)militiaParty.MemberRoster.GetElementNumber(i) * num);
 			if (num3 > num2)
 			{
 				num3 = num2;
 			}
-			militaParty.MemberRoster.AddToCountsAtIndex(i, -num3, 0, 0, removeDepleted: false);
+			militiaParty.MemberRoster.AddToCountsAtIndex(i, -num3, 0, 0, removeDepleted: false);
 			num2 -= num3;
 			if (num2 <= 0)
 			{
 				break;
 			}
 		}
-		militaParty.MemberRoster.RemoveZeroCounts();
+		militiaParty.MemberRoster.RemoveZeroCounts();
 	}
 
 	public void SetSiegeStrategy(SiegeStrategy strategy)
@@ -1310,77 +1378,33 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		Party.SetVisualAsDirty();
 	}
 
-	bool IMapEntity.OnMapClick(bool followModifierUsed)
-	{
-		if (IsVisible)
-		{
-			MobileParty.MainParty.Ai.SetMoveGoToSettlement(this);
-			return true;
-		}
-		return false;
-	}
-
-	void IMapEntity.OnOpenEncyclopedia()
-	{
-		Campaign.Current.EncyclopediaManager.GoToLink(EncyclopediaLink);
-	}
-
-	void IMapEntity.OnHover()
-	{
-		InformationManager.ShowTooltip(typeof(Settlement), this, false);
-	}
-
-	bool IMapEntity.IsEnemyOf(IFaction faction)
-	{
-		return FactionManager.IsAtWarAgainstFaction(MapFaction, faction);
-	}
-
-	bool IMapEntity.IsAllyOf(IFaction faction)
-	{
-		return FactionManager.IsAlliedWithFaction(MapFaction, faction);
-	}
-
-	public void OnPartyInteraction(MobileParty mobileParty)
-	{
-		if (mobileParty.ShortTermTargetSettlement != null && (mobileParty.ShortTermTargetSettlement.Party.SiegeEvent == null || mobileParty == MobileParty.MainParty || mobileParty.MapFaction == mobileParty.ShortTermTargetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapFaction) && (mobileParty.ShortTermTargetSettlement.Party.MapEvent == null || mobileParty == MobileParty.MainParty || mobileParty.MapFaction == mobileParty.ShortTermTargetSettlement.Party.MapEvent.AttackerSide.LeaderParty.MapFaction || (mobileParty.ShortTermTargetSettlement.Party.MapEvent.IsSallyOut && mobileParty.MapFaction == mobileParty.ShortTermTargetSettlement.Party.MapEvent.DefenderSide.LeaderParty.MapFaction)))
-		{
-			if (mobileParty == MobileParty.MainParty && (mobileParty.ShortTermTargetSettlement.Party.MapEvent == null || !mobileParty.ShortTermTargetSettlement.Party.MapEvent.IsRaid || mobileParty.ShortTermTargetSettlement.Party.MapEvent.DefenderSide.NumRemainingSimulationTroops > 0))
-			{
-				(Game.Current.GameStateManager.ActiveState as MapState)?.OnMainPartyEncounter();
-			}
-			if (mobileParty.ShortTermTargetSettlement.Party.MapEvent != null && mobileParty.ShortTermTargetSettlement.Party.MapEvent.IsRaid && mobileParty.DefaultBehavior == AiBehavior.RaidSettlement)
-			{
-				mobileParty.Ai.RethinkAtNextHourlyTick = true;
-				mobileParty.Ai.SetMoveModeHold();
-			}
-			else
-			{
-				EncounterManager.StartSettlementEncounter(mobileParty, mobileParty.ShortTermTargetSettlement);
-			}
-		}
-	}
-
-	public void GetMountAndHarnessVisualIdsForPartyIcon(out string mountStringId, out string harnessStringId)
-	{
-		mountStringId = "";
-		harnessStringId = "";
-	}
-
-	public void SetSettlementComponent(SettlementComponent settlementComponent)
+	private void SetSettlementComponent(SettlementComponent settlementComponent)
 	{
 		settlementComponent.Owner = Party;
 		SettlementComponent = settlementComponent;
-		if (SettlementComponent is Town)
+		if (SettlementComponent is Town town)
 		{
-			Town = SettlementComponent as Town;
+			Town = town;
 		}
-		else if (SettlementComponent is Village)
+		else if (SettlementComponent is Village village)
 		{
-			Village = SettlementComponent as Village;
+			Village = village;
 		}
-		else if (SettlementComponent is Hideout)
+		else if (SettlementComponent is Hideout hideout)
 		{
-			Hideout = SettlementComponent as Hideout;
+			Hideout = hideout;
 		}
+	}
+
+	[SpecialName]
+	bool ITrackableCampaignObject.get_IsReady()
+	{
+		return base.IsReady;
+	}
+
+	[SpecialName]
+	string ISettlementDataHolder.get_StringId()
+	{
+		return base.StringId;
 	}
 }

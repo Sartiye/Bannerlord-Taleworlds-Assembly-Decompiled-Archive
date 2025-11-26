@@ -16,7 +16,7 @@ public sealed class BoardGameHotkeyCategory : GameKeyContext
 	public const string BoardGameRollDice = "BoardGameRollDice";
 
 	public BoardGameHotkeyCategory()
-		: base("BoardGameHotkeyCategory", 108)
+		: base("BoardGameHotkeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

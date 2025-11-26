@@ -14,6 +14,8 @@ public class PartyUpgradeButtonWidget : ButtonWidget
 
 	private Brush _insufficientBrush;
 
+	private BrushWidget _marinerTroopBrush;
+
 	private bool _isAvailable;
 
 	private bool _isInsufficient;
@@ -48,6 +50,23 @@ public class PartyUpgradeButtonWidget : ButtonWidget
 			{
 				_defaultBrush = value;
 				OnPropertyChanged(value, "DefaultBrush");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public BrushWidget MarinerTroopBrush
+	{
+		get
+		{
+			return _marinerTroopBrush;
+		}
+		set
+		{
+			if (_marinerTroopBrush != value)
+			{
+				_marinerTroopBrush = value;
+				OnPropertyChanged(value, "MarinerTroopBrush");
 			}
 		}
 	}
@@ -135,6 +154,8 @@ public class PartyUpgradeButtonWidget : ButtonWidget
 			{
 				ImageIdentifierWidget.Brush.GlobalColor = new Color(1f, 1f, 1f);
 				ImageIdentifierWidget.Brush.SaturationFactor = -100f;
+				_marinerTroopBrush.SetState("Disabled");
+				base.UpdateChildrenStates = false;
 				base.IsEnabled = true;
 				base.Brush = UnavailableBrush;
 			}
@@ -142,6 +163,8 @@ public class PartyUpgradeButtonWidget : ButtonWidget
 			{
 				ImageIdentifierWidget.Brush.GlobalColor = new Color(0.9f, 0.5f, 0.5f);
 				ImageIdentifierWidget.Brush.SaturationFactor = -150f;
+				_marinerTroopBrush.SetState("Disabled");
+				base.UpdateChildrenStates = false;
 				base.IsEnabled = true;
 				base.Brush = InsufficientBrush;
 			}
@@ -149,6 +172,8 @@ public class PartyUpgradeButtonWidget : ButtonWidget
 			{
 				ImageIdentifierWidget.Brush.GlobalColor = new Color(1f, 1f, 1f);
 				ImageIdentifierWidget.Brush.SaturationFactor = 0f;
+				_marinerTroopBrush.SetState("Default");
+				base.UpdateChildrenStates = true;
 				base.IsEnabled = true;
 				base.Brush = DefaultBrush;
 			}

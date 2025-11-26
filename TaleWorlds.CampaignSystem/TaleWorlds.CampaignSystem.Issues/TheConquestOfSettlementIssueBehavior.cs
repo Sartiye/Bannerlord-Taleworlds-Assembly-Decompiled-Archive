@@ -259,7 +259,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=6d2VIgH3}{QUEST_GIVER.LINK}: Thank you. My lords see you as an example, and see your conquest of {TARGET_SETTLEMENT} as be a stepping stone toward further victories. {?QUEST_GIVER.GENDER}She{?}He{\\?} is grateful for your service and gave you {REWARD}{GOLD_ICON}.");
+				TextObject textObject = new TextObject("{=6d2VIgH3}{QUEST_GIVER.LINK}: Thank you. My lords see you as an example, and see your conquest of {TARGET_SETTLEMENT} as be a stepping stone toward further victories. {?QUEST_GIVER.GENDER}She{?}He{\\?} is grateful for your service and gave you {REWARD}{GOLD_ICON} denars.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				textObject.SetTextVariable("REWARD", RewardGold);
@@ -271,7 +271,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=1NtZ4BJh}{QUEST_GIVER.LINK}: Thank you. My lords see the conquest of {TARGET_SETTLEMENT} was a stepping stone toward further victories. {?QUEST_GIVER.GENDER}She{?}He{\\?} is grateful for your service. Because you didn't lead the army {?QUEST_GIVER.GENDER}She{?}He{\\?} gave you {LESSER_REWARD}{GOLD_ICON} of denars.");
+				TextObject textObject = new TextObject("{=1NtZ4BJh}{QUEST_GIVER.LINK}: Thank you. My lords see the conquest of {TARGET_SETTLEMENT} was a stepping stone toward further victories. {?QUEST_GIVER.GENDER}She{?}He{\\?} is grateful for your service. Because you didn't lead the army, {?QUEST_GIVER.GENDER}she{?}he{\\?} gave you {LESSER_REWARD}{GOLD_ICON} denars.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
@@ -469,7 +469,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 			questLesserSuccessLog.SetTextVariable("LESSER_REWARD", num);
 			AddLog(questLesserSuccessLog);
 			GainRenownAction.Apply(Hero.MainHero, 5f);
-			GiveGoldAction.ApplyForQuestBetweenCharacters(null, Hero.MainHero, num);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, num);
 			RelationshipChangeWithQuestGiver = 1;
 			foreach (Settlement item in base.QuestGiver.Clan.Settlements.Where((Settlement x) => x.IsFortification))
 			{
@@ -483,7 +483,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		{
 			AddLog(QuestSuccessLog);
 			RelationshipChangeWithQuestGiver = 5;
-			GiveGoldAction.ApplyForQuestBetweenCharacters(null, Hero.MainHero, RewardGold);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			foreach (Settlement item in base.QuestGiver.Clan.Settlements.Where((Settlement x) => x.IsFortification))
 			{
 				item.Town.Security += boost;
@@ -584,17 +584,19 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		targetSettlement = null;
 		if (issueGiver.IsLord && issueGiver.MapFaction.IsKingdomFaction && issueGiver.IsFactionLeader && !issueGiver.IsPrisoner && issueGiver.GetMapPoint() != null && issueGiver.Clan.Settlements.Any((Settlement x) => x.IsFortification))
 		{
+			float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 2f;
 			MBList<Settlement> mBList = new MBList<Settlement>();
+			CampaignVec2 toPoint = issueGiver.GetCampaignPosition();
 			foreach (Town allTown in Campaign.Current.AllTowns)
 			{
-				if (allTown.MapFaction.IsAtWarWith(issueGiver.MapFaction) && allTown.Settlement.Position2D.DistanceSquared(issueGiver.GetMapPoint().Position2D) < 7500f)
+				if (allTown.MapFaction.IsAtWarWith(issueGiver.MapFaction) && Campaign.Current.Models.MapDistanceModel.GetDistance(allTown.Settlement, in toPoint, isFromPort: false, MobileParty.NavigationType.Default) < num)
 				{
 					mBList.Add(allTown.Settlement);
 				}
 			}
 			foreach (Town allCastle in Campaign.Current.AllCastles)
 			{
-				if (allCastle.MapFaction.IsAtWarWith(issueGiver.MapFaction) && allCastle.Settlement.Position2D.DistanceSquared(issueGiver.GetMapPoint().Position2D) < 7500f)
+				if (allCastle.MapFaction.IsAtWarWith(issueGiver.MapFaction) && Campaign.Current.Models.MapDistanceModel.GetDistance(allCastle.Settlement, in toPoint, isFromPort: false, MobileParty.NavigationType.Default) < num)
 				{
 					mBList.Add(allCastle.Settlement);
 				}

@@ -4,6 +4,8 @@ public class AudioData
 {
 	public string filePathRelativeToProjectDir;
 
+	public string moduleId;
+
 	public int sampleCountTotal;
 
 	public int sampleCountPreBeat;

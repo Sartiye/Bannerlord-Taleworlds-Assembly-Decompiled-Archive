@@ -266,7 +266,7 @@ public class ChatBox : GameHandler
 		{
 			OnMessageReceivedAtDedicatedServer?.Invoke(fromPeer, message);
 		}
-		if (fromPeer.IsMuted || CustomGameMutedPlayerManager.IsUserMuted(fromPeer.VirtualPlayer.Id))
+		if (fromPeer.IsMuted || MultiplayerGlobalMutedPlayersManager.IsUserMuted(fromPeer.VirtualPlayer.Id))
 		{
 			GameNetwork.BeginModuleEventAsServer(fromPeer);
 			GameNetwork.WriteMessage(new ServerMessage("str_multiplayer_muted_message", isMessageTextId: true));

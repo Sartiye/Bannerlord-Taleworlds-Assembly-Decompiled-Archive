@@ -41,11 +41,11 @@ public class MissionGauntletPollingProgress : MissionView
 		MultiplayerPollComponent multiplayerPollComponent4 = _multiplayerPollComponent;
 		multiplayerPollComponent4.OnPollCancelled = (Action)Delegate.Combine(multiplayerPollComponent4.OnPollCancelled, new Action(OnPollClosed));
 		_dataSource = new MultiplayerPollProgressVM();
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerPollingProgress", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerPollingProgress", _dataSource);
 		_input.RegisterHotKeyCategory(HotKeyManager.GetCategory("PollHotkeyCategory"));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(106));
-		_dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(107));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(109));
+		_dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(110));
 		base.MissionScreen.AddLayer(_gauntletLayer);
 	}
 
@@ -90,13 +90,13 @@ public class MissionGauntletPollingProgress : MissionView
 		base.OnMissionScreenTick(dt);
 		if (_isActive && !_isVoteOpenForMyPeer)
 		{
-			if (_input.IsGameKeyPressed(106))
+			if (_input.IsGameKeyPressed(109))
 			{
 				_isActive = false;
 				_multiplayerPollComponent.Vote(accepted: true);
 				_dataSource.OnPollOptionPicked();
 			}
-			else if (_input.IsGameKeyPressed(107))
+			else if (_input.IsGameKeyPressed(110))
 			{
 				_isActive = false;
 				_multiplayerPollComponent.Vote(accepted: false);

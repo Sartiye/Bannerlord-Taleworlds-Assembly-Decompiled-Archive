@@ -133,10 +133,15 @@ public class InitialMenuAnimControllerWidget : Widget
 		{
 			float num = InitialWaitTime + WaitTimeBetweenOptions * (float)i;
 			float num2 = num + OptionFadeInTime;
+			Widget child = OptionsList.GetChild(i);
 			if (_timer < num2)
 			{
 				float alphaFactor = MathF.Clamp((_timer - num) / (num2 - num), 0f, 1f);
-				OptionsList.GetChild(i)?.SetGlobalAlphaRecursively(alphaFactor);
+				child?.SetGlobalAlphaRecursively(alphaFactor);
+			}
+			else
+			{
+				child?.SetGlobalAlphaRecursively(1f);
 			}
 		}
 		_isFinalized = _timer > InitialWaitTime + WaitTimeBetweenOptions * (float)(_totalOptionCount - 1) + OptionFadeInTime;

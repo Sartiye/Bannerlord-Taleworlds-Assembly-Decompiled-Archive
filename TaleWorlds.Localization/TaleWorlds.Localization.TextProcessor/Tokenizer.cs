@@ -23,7 +23,7 @@ internal class Tokenizer
 			new TokenDefinition(TokenType.Seperator, "{\\:}", 1),
 			new TokenDefinition(TokenType.ConditionFollowUp, "{\\:\\?", 1),
 			new TokenDefinition(TokenType.LanguageMarker, "{\\.[a-zA-Z_^%][a-zA-Z\\d_]*}", 1),
-			new TokenDefinition(TokenType.textId, "{=[a-zA-Z\\d_\\!\\*][a-zA-Z\\d_\\.]*}", 1),
+			new TokenDefinition(TokenType.TextId, "{=[a-zA-Z\\d_\\!\\*][a-zA-Z\\d_\\.]*}", 1),
 			new TokenDefinition(TokenType.CloseBraces, "}", 1),
 			new TokenDefinition(TokenType.OpenBraces, "{", 1),
 			new TokenDefinition(TokenType.Minus, "\\-", 1),

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -82,6 +81,27 @@ public static class Common
 		return array;
 	}
 
+	public static string CreateNanoIdFrom(string input)
+	{
+		byte[] array = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(input));
+		StringBuilder stringBuilder = new StringBuilder(8);
+		int num = 0;
+		int num2 = 0;
+		int num3 = 0;
+		while (stringBuilder.Length < 8 && num3 < array.Length)
+		{
+			num2 = (num2 << 8) | array[num3++];
+			num += 8;
+			while (num >= 6)
+			{
+				num -= 6;
+				int num4 = (num2 >> num) & 0x3F;
+				stringBuilder.Append("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[num4 % "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".Length]);
+			}
+		}
+		return stringBuilder.ToString();
+	}
+
 	public static string CalculateMD5Hash(string input)
 	{
 		MD5 mD = MD5.Create();
@@ -101,7 +121,7 @@ public static class Common
 	{
 		if (number < 0 || number > 3999)
 		{
-			Debug.FailedAssert("Requested roman number has to be between 1 and 3999. Fix number!", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Common.cs", "ToRoman", 88);
+			Debug.FailedAssert("Requested roman number has to be between 1 and 3999. Fix number!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Common.cs", "ToRoman", 116);
 		}
 		if (number < 1)
 		{
@@ -159,7 +179,7 @@ public static class Common
 		{
 			return "I" + ToRoman(number - 1);
 		}
-		Debug.FailedAssert("ToRoman error", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Common.cs", "ToRoman", 104);
+		Debug.FailedAssert("ToRoman error", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Common.cs", "ToRoman", 132);
 		return "";
 	}
 
@@ -187,40 +207,6 @@ public static class Common
 	public static T DeserializeObjectFromJson<T>(string json)
 	{
 		return JsonConvert.DeserializeObject<T>(json);
-	}
-
-	public static byte[] SerializeObject(object sObject)
-	{
-		MemoryStream memoryStream = new MemoryStream();
-		BinaryFormatter binaryFormatter = new BinaryFormatter();
-		try
-		{
-			binaryFormatter.Serialize(memoryStream, sObject);
-		}
-		catch (Exception ex)
-		{
-			Debug.Print(ex.ToString());
-		}
-		return memoryStream.ToArray();
-	}
-
-	public static object DeserializeObject(byte[] serializeData)
-	{
-		return DeserializeObject(serializeData, 0, serializeData.Length);
-	}
-
-	public static object DeserializeObject(byte[] serializeData, int index, int length)
-	{
-		MemoryStream serializationStream = new MemoryStream(serializeData, index, length, writable: false);
-		BinaryFormatter binaryFormatter = new BinaryFormatter();
-		try
-		{
-			return binaryFormatter.Deserialize(serializationStream);
-		}
-		catch (Exception)
-		{
-			throw;
-		}
 	}
 
 	public static byte[] FromUrlSafeBase64(string base64)

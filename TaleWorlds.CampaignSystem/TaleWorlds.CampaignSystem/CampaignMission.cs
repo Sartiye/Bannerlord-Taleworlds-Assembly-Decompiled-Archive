@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem;
 
@@ -23,6 +24,10 @@ public static class CampaignMission
 
 		IMission OpenBattleMission(string scene, bool usesTownDecalAtlas);
 
+		IMission OpenNavalBattleMission(MissionInitializerRecord rec);
+
+		IMission OpenNavalSetPieceBattleMission(MissionInitializerRecord rec, MBList<IShipOrigin> playerShips, MBList<IShipOrigin> playerAllyShips, MBList<IShipOrigin> enemyShips);
+
 		IMission OpenHideoutBattleMission(string scene, FlattenedTroopRoster playerTroops);
 
 		IMission OpenTownCenterMission(string scene, int townUpgradeLevel, Location location, CharacterObject talkToChar, string playerSpawnTag);
@@ -33,13 +38,13 @@ public static class CampaignMission
 
 		IMission OpenIndoorMission(string scene, int upgradeLevel, Location location, CharacterObject talkToChar);
 
-		IMission OpenPrisonBreakMission(string scene, Location location, CharacterObject prisonerCharacter, CharacterObject companionCharacter = null);
+		IMission OpenPrisonBreakMission(string scene, Location location, CharacterObject prisonerCharacter);
 
 		IMission OpenArenaStartMission(string scene, Location location, CharacterObject talkToChar);
 
 		IMission OpenArenaDuelMission(string scene, Location location, CharacterObject duelCharacter, bool requireCivilianEquipment, bool spawnBOthSidesWithHorse, Action<CharacterObject> onDuelEndAction, float customAgentHealth);
 
-		IMission OpenConversationMission(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData, string specialScene = "", string sceneLevels = "");
+		IMission OpenConversationMission(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData, string specialScene = "", string sceneLevels = "", bool isMultiAgentConversation = false);
 
 		IMission OpenMeetingMission(string scene, CharacterObject character);
 
@@ -49,7 +54,11 @@ public static class CampaignMission
 
 		IMission OpenBattleMissionWhileEnteringSettlement(string scene, int upgradeLevel, int numberOfMaxTroopToBeSpawnedForPlayer, int numberOfMaxTroopToBeSpawnedForOpponent);
 
-		IMission OpenRetirementMission(string scene, Location location, CharacterObject talkToChar = null, string sceneLevels = null);
+		IMission OpenRetirementMission(string scene, Location location, CharacterObject talkToChar = null, string sceneLevels = null, string unconsciousMenuId = "");
+
+		IMission OpenHideoutAmbushMission(string sceneName, FlattenedTroopRoster playerTroops, Location location);
+
+		IMission OpenDisguiseMission(string scene, bool willSetUpContact, string sceneLevels, Location fromLocation);
 	}
 
 	public static ICampaignMission Current { get; set; }
@@ -99,6 +108,16 @@ public static class CampaignMission
 		return Campaign.Current.CampaignMissionManager.OpenBattleMission(rec);
 	}
 
+	public static IMission OpenNavalBattleMission(MissionInitializerRecord rec)
+	{
+		return Campaign.Current.CampaignMissionManager.OpenNavalBattleMission(rec);
+	}
+
+	public static IMission OpenNavalSetPieceBattleMission(MissionInitializerRecord rec, MBList<IShipOrigin> playerShips, MBList<IShipOrigin> playerAllyShips, MBList<IShipOrigin> enemyShips)
+	{
+		return Campaign.Current.CampaignMissionManager.OpenNavalSetPieceBattleMission(rec, playerShips, playerAllyShips, enemyShips);
+	}
+
 	public static IMission OpenCaravanBattleMission(MissionInitializerRecord rec, bool isCaravan)
 	{
 		return Campaign.Current.CampaignMissionManager.OpenCaravanBattleMission(rec, isCaravan);
@@ -124,9 +143,9 @@ public static class CampaignMission
 		return Campaign.Current.CampaignMissionManager.OpenIndoorMission(scene, upgradeLevel, location, talkToChar);
 	}
 
-	public static IMission OpenPrisonBreakMission(string scene, Location location, CharacterObject prisonerCharacter, CharacterObject companionCharacter = null)
+	public static IMission OpenPrisonBreakMission(string scene, Location location, CharacterObject prisonerCharacter)
 	{
-		return Campaign.Current.CampaignMissionManager.OpenPrisonBreakMission(scene, location, prisonerCharacter, companionCharacter);
+		return Campaign.Current.CampaignMissionManager.OpenPrisonBreakMission(scene, location, prisonerCharacter);
 	}
 
 	public static IMission OpenArenaStartMission(string scene, Location location, CharacterObject talkToChar)
@@ -139,13 +158,23 @@ public static class CampaignMission
 		return Campaign.Current.CampaignMissionManager.OpenArenaDuelMission(scene, location, talkToChar, requireCivilianEquipment, spawnBothSidesWithHorse, onDuelEnd, customAgentHealth);
 	}
 
-	public static IMission OpenConversationMission(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData, string specialScene = "", string sceneLevels = "")
+	public static IMission OpenConversationMission(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData, string specialScene = "", string sceneLevels = "", bool isMultiAgentConversation = false)
 	{
-		return Campaign.Current.CampaignMissionManager.OpenConversationMission(playerCharacterData, conversationPartnerData, specialScene, sceneLevels);
+		return Campaign.Current.CampaignMissionManager.OpenConversationMission(playerCharacterData, conversationPartnerData, specialScene, sceneLevels, isMultiAgentConversation);
 	}
 
-	public static IMission OpenRetirementMission(string scene, Location location, CharacterObject talkToChar = null, string sceneLevels = null)
+	public static IMission OpenRetirementMission(string scene, Location location, CharacterObject talkToChar = null, string sceneLevels = null, string unconsciousMenuId = "")
 	{
-		return Campaign.Current.CampaignMissionManager.OpenRetirementMission(scene, location, talkToChar, sceneLevels);
+		return Campaign.Current.CampaignMissionManager.OpenRetirementMission(scene, location, talkToChar, sceneLevels, unconsciousMenuId);
+	}
+
+	public static IMission OpenHideoutAmbushMission(string sceneName, FlattenedTroopRoster playerTroops, Location location)
+	{
+		return Campaign.Current.CampaignMissionManager.OpenHideoutAmbushMission(sceneName, playerTroops, location);
+	}
+
+	public static IMission OpenDisguiseMission(string scene, bool willSetUpContact, string sceneLevels, Location fromLocation)
+	{
+		return Campaign.Current.CampaignMissionManager.OpenDisguiseMission(scene, willSetUpContact, sceneLevels, fromLocation);
 	}
 }

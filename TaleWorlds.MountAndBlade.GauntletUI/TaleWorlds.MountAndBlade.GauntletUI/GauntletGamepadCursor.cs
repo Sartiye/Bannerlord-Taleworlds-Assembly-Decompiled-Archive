@@ -17,7 +17,7 @@ public class GauntletGamepadCursor : GlobalLayer
 	public GauntletGamepadCursor()
 	{
 		_dataSource = new GamepadCursorViewModel();
-		_layer = new GauntletLayer(100001);
+		_layer = new GauntletLayer("GamepadCusor", 115001);
 		_layer.LoadMovie("GamepadCursor", _dataSource);
 		_layer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Invalid);
 		base.Layer = _layer;
@@ -50,7 +50,7 @@ public class GauntletGamepadCursor : GlobalLayer
 		}
 	}
 
-	private static Vec2 GetCursorPosition()
+	private Vec2 GetCursorPosition()
 	{
 		Vec2 mousePositionPixel = Input.MousePositionPixel;
 		Vec2 vec = Vec2.One - ScreenManager.UsableArea;

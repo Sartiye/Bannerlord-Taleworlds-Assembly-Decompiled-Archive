@@ -43,6 +43,11 @@ internal class ScriptingInterfaceOfIPhysicsShape : IPhysicsShape
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetBoundingBoxDelegate(UIntPtr shapePointer, out BoundingBox boundingBox);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate Vec3 GetBoundingBoxCenterDelegate(UIntPtr shapePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -144,6 +149,8 @@ internal class ScriptingInterfaceOfIPhysicsShape : IPhysicsShape
 
 	public static CreateBodyCopyDelegate call_CreateBodyCopyDelegate;
 
+	public static GetBoundingBoxDelegate call_GetBoundingBoxDelegate;
+
 	public static GetBoundingBoxCenterDelegate call_GetBoundingBoxCenterDelegate;
 
 	public static GetCapsuleDelegate call_GetCapsuleDelegate;
@@ -223,6 +230,11 @@ internal class ScriptingInterfaceOfIPhysicsShape : IPhysicsShape
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public void GetBoundingBox(UIntPtr shapePointer, out BoundingBox boundingBox)
+	{
+		call_GetBoundingBoxDelegate(shapePointer, out boundingBox);
 	}
 
 	public Vec3 GetBoundingBoxCenter(UIntPtr shapePointer)

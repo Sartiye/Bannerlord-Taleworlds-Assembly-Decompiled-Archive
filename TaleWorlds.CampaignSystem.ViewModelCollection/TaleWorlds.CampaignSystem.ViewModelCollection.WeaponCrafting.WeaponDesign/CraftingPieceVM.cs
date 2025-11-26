@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -15,7 +16,7 @@ public class CraftingPieceVM : ViewModel
 
 	private bool _isFilteredOut;
 
-	public ImageIdentifierVM _imageIdentifier;
+	public CraftingPieceImageIdentifierVM _imageIdentifier;
 
 	public int _pieceType = -1;
 
@@ -153,7 +154,7 @@ public class CraftingPieceVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public CraftingPieceImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -205,7 +206,7 @@ public class CraftingPieceVM : ViewModel
 
 	public CraftingPieceVM()
 	{
-		ImageIdentifier = new ImageIdentifierVM();
+		ImageIdentifier = new CraftingPieceImageIdentifierVM(null, string.Empty);
 	}
 
 	public CraftingPieceVM(Action<CraftingPieceVM> selectWeaponPart, string templateId, WeaponDesignElement usableCraftingPiece, int pieceType, int index, bool isOpened)
@@ -214,7 +215,7 @@ public class CraftingPieceVM : ViewModel
 		CraftingPiece = usableCraftingPiece;
 		Tier = usableCraftingPiece.CraftingPiece.PieceTier;
 		TierText = Common.ToRoman(Tier);
-		ImageIdentifier = new ImageIdentifierVM(usableCraftingPiece.CraftingPiece, templateId);
+		ImageIdentifier = new CraftingPieceImageIdentifierVM(usableCraftingPiece.CraftingPiece, templateId);
 		PieceType = pieceType;
 		Index = index;
 		PlayerHasPiece = isOpened;

@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -50,9 +53,14 @@ public class EducationGainGroupItemVM : ViewModel
 		AttributeObj = attributeObj;
 		Skills = new MBBindingList<EducationGainedSkillItemVM>();
 		Attribute = new EducationGainedAttributeItemVM(AttributeObj);
-		foreach (SkillObject skill in AttributeObj.Skills)
+		List<SkillObject> list = TaleWorlds.CampaignSystem.Extensions.Skills.All.ToList();
+		list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list)
 		{
-			Skills.Add(new EducationGainedSkillItemVM(skill));
+			if (!CampaignUIHelper.GetIsNavalSkill(skill) && skill.Attributes.FirstOrDefault() == AttributeObj && !Skills.Any((EducationGainedSkillItemVM s) => s.SkillObj == skill))
+			{
+				Skills.Add(new EducationGainedSkillItemVM(skill));
+			}
 		}
 	}
 

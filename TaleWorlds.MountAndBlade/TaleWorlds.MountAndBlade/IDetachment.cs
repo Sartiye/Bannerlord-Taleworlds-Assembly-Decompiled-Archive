@@ -53,7 +53,7 @@ public interface IDetachment
 
 	bool IsStandingPointAvailableForAgent(Agent agent);
 
-	void AddAgent(Agent agent, int slotIndex = -1);
+	void AddAgent(Agent agent, int slotIndex = -1, Agent.AIScriptedFrameFlags customFlags = Agent.AIScriptedFrameFlags.None);
 
 	void RemoveAgent(Agent detachedAgent);
 

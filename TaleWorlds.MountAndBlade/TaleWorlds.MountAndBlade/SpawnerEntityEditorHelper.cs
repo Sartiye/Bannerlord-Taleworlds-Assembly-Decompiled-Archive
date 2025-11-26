@@ -70,7 +70,7 @@ public class SpawnerEntityEditorHelper
 		}
 		else
 		{
-			Debug.FailedAssert("No prefab found. Spawner script will remove itself.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerEntityEditorHelper.cs", ".ctor", 75);
+			Debug.FailedAssert("No prefab found. Spawner script will remove itself.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SpawnerEntityEditorHelper.cs", ".ctor", 75);
 			spawner.GameEntity.RemoveScriptComponent(spawner_.ScriptComponent.Pointer, 11);
 		}
 	}
@@ -104,7 +104,9 @@ public class SpawnerEntityEditorHelper
 		}
 		if (LockGhostParent)
 		{
-			bool num = SpawnedGhostEntity.GetFrame() != MatrixFrame.Identity;
+			MatrixFrame m = SpawnedGhostEntity.GetFrame();
+			MatrixFrame m2 = MatrixFrame.Identity;
+			bool num = m != m2;
 			MatrixFrame frame = MatrixFrame.Identity;
 			SpawnedGhostEntity.SetFrame(ref frame);
 			if (num)
@@ -137,59 +139,138 @@ public class SpawnerEntityEditorHelper
 			switch (item.Item2.TypeOfPermission)
 			{
 			case PermissionType.scale:
-				if (!frame.origin.NearlyEquals(keyValuePair.Value.origin, 0.0001f) || !frame.rotation.f.NormalizedCopy().NearlyEquals(keyValuePair.Value.rotation.f.NormalizedCopy(), 0.0001f) || !frame.rotation.u.NormalizedCopy().NearlyEquals(keyValuePair.Value.rotation.u.NormalizedCopy(), 0.0001f) || !frame.rotation.s.NormalizedCopy().NearlyEquals(keyValuePair.Value.rotation.s.NormalizedCopy(), 0.0001f))
+			{
+				ref Vec3 origin = ref frame.origin;
+				MatrixFrame value = keyValuePair.Value;
+				if (!origin.NearlyEquals(in value.origin, 0.0001f))
+				{
+					break;
+				}
+				Vec3 vec = frame.rotation.f.NormalizedCopy();
+				Vec3 v = keyValuePair.Value.rotation.f.NormalizedCopy();
+				if (!vec.NearlyEquals(in v, 0.0001f))
+				{
+					break;
+				}
+				vec = frame.rotation.u.NormalizedCopy();
+				Vec3 v2 = keyValuePair.Value.rotation.u.NormalizedCopy();
+				if (!vec.NearlyEquals(in v2, 0.0001f))
+				{
+					break;
+				}
+				vec = frame.rotation.s.NormalizedCopy();
+				Vec3 v3 = keyValuePair.Value.rotation.s.NormalizedCopy();
+				if (!vec.NearlyEquals(in v3, 0.0001f))
 				{
 					break;
 				}
 				switch (item.Item2.PermittedAxis)
 				{
 				case Axis.x:
-					if (!frame.rotation.f.NearlyEquals(keyValuePair.Value.rotation.f))
+				{
+					ref Vec3 f4 = ref frame.rotation.f;
+					value = keyValuePair.Value;
+					if (!f4.NearlyEquals(in value.rotation.f))
 					{
 						ChangeStableChildMatrixFrame(item.Item1, frame);
 						item.Item3(frame.rotation.f.Length);
 					}
 					break;
+				}
 				case Axis.y:
-					if (!frame.rotation.s.NearlyEquals(keyValuePair.Value.rotation.s))
+				{
+					ref Vec3 s4 = ref frame.rotation.s;
+					value = keyValuePair.Value;
+					if (!s4.NearlyEquals(in value.rotation.s))
 					{
 						ChangeStableChildMatrixFrame(item.Item1, frame);
 						item.Item3(frame.rotation.s.Length);
 					}
 					break;
+				}
 				case Axis.z:
-					if (!frame.rotation.u.NearlyEquals(keyValuePair.Value.rotation.u))
+				{
+					ref Vec3 u4 = ref frame.rotation.u;
+					value = keyValuePair.Value;
+					if (!u4.NearlyEquals(in value.rotation.u))
 					{
 						ChangeStableChildMatrixFrame(item.Item1, frame);
 						item.Item3(frame.rotation.u.Length);
 					}
 					break;
 				}
+				}
 				break;
+			}
 			case PermissionType.rotation:
 				switch (item.Item2.PermittedAxis)
 				{
 				case Axis.x:
-					if (!frame.rotation.f.NearlyEquals(keyValuePair.Value.rotation.f) && !frame.rotation.u.NearlyEquals(keyValuePair.Value.rotation.u) && frame.rotation.s.NearlyEquals(keyValuePair.Value.rotation.s))
+				{
+					ref Vec3 f2 = ref frame.rotation.f;
+					MatrixFrame value = keyValuePair.Value;
+					if (f2.NearlyEquals(in value.rotation.f))
 					{
-						ChangeStableChildMatrixFrame(item.Item1, frame);
-						item.Item3(frame.rotation.GetEulerAngles().x);
+						break;
+					}
+					ref Vec3 u2 = ref frame.rotation.u;
+					MatrixFrame value2 = keyValuePair.Value;
+					if (!u2.NearlyEquals(in value2.rotation.u))
+					{
+						ref Vec3 s2 = ref frame.rotation.s;
+						MatrixFrame value3 = keyValuePair.Value;
+						if (s2.NearlyEquals(in value3.rotation.s))
+						{
+							ChangeStableChildMatrixFrame(item.Item1, frame);
+							item.Item3(frame.rotation.GetEulerAngles().x);
+						}
 					}
 					break;
+				}
 				case Axis.y:
-					if (!frame.rotation.s.NearlyEquals(keyValuePair.Value.rotation.s) && !frame.rotation.u.NearlyEquals(keyValuePair.Value.rotation.u) && frame.rotation.f.NearlyEquals(keyValuePair.Value.rotation.f))
+				{
+					ref Vec3 s3 = ref frame.rotation.s;
+					MatrixFrame value = keyValuePair.Value;
+					if (s3.NearlyEquals(in value.rotation.s))
 					{
-						ChangeStableChildMatrixFrame(item.Item1, frame);
-						item.Item3(frame.rotation.GetEulerAngles().y);
+						break;
+					}
+					ref Vec3 u3 = ref frame.rotation.u;
+					MatrixFrame value2 = keyValuePair.Value;
+					if (!u3.NearlyEquals(in value2.rotation.u))
+					{
+						ref Vec3 f3 = ref frame.rotation.f;
+						MatrixFrame value3 = keyValuePair.Value;
+						if (f3.NearlyEquals(in value3.rotation.f))
+						{
+							ChangeStableChildMatrixFrame(item.Item1, frame);
+							item.Item3(frame.rotation.GetEulerAngles().y);
+						}
 					}
 					break;
+				}
 				case Axis.z:
-					if (!frame.rotation.f.NearlyEquals(keyValuePair.Value.rotation.f) && !frame.rotation.s.NearlyEquals(keyValuePair.Value.rotation.s) && frame.rotation.u.NearlyEquals(keyValuePair.Value.rotation.u))
+				{
+					ref Vec3 f = ref frame.rotation.f;
+					MatrixFrame value = keyValuePair.Value;
+					if (f.NearlyEquals(in value.rotation.f))
 					{
-						ChangeStableChildMatrixFrame(item.Item1, frame);
-						item.Item3(frame.rotation.GetEulerAngles().z);
+						break;
+					}
+					ref Vec3 s = ref frame.rotation.s;
+					MatrixFrame value2 = keyValuePair.Value;
+					if (!s.NearlyEquals(in value2.rotation.s))
+					{
+						ref Vec3 u = ref frame.rotation.u;
+						MatrixFrame value3 = keyValuePair.Value;
+						if (u.NearlyEquals(in value3.rotation.u))
+						{
+							ChangeStableChildMatrixFrame(item.Item1, frame);
+							item.Item3(frame.rotation.GetEulerAngles().z);
+						}
 					}
 					break;
+				}
 				}
 				break;
 			}
@@ -217,7 +298,7 @@ public class SpawnerEntityEditorHelper
 		}
 	}
 
-	private GameEntity AddGhostEntity(GameEntity parent, List<string> possibleEntityNames)
+	private GameEntity AddGhostEntity(WeakGameEntity parent, List<string> possibleEntityNames)
 	{
 		spawner_.GameEntity.RemoveAllChildren();
 		foreach (string possibleEntityName in possibleEntityNames)
@@ -232,9 +313,9 @@ public class SpawnerEntityEditorHelper
 		{
 			return null;
 		}
-		SpawnedGhostEntity.SetMobility(GameEntity.Mobility.dynamic);
+		SpawnedGhostEntity.SetMobility(GameEntity.Mobility.Dynamic);
 		SpawnedGhostEntity.EntityFlags |= EntityFlags.DontSaveToScene;
-		parent.AddChild(SpawnedGhostEntity);
+		parent.AddChild(SpawnedGhostEntity.WeakEntity);
 		MatrixFrame frame = MatrixFrame.Identity;
 		SpawnedGhostEntity.SetFrame(ref frame);
 		GetChildrenInitialFrames();
@@ -369,10 +450,10 @@ public class SpawnerEntityEditorHelper
 		}
 		if (_tracker.IsValid)
 		{
-			MatrixFrame globalFrame = spawner_.GameEntity.GetGlobalFrame();
+			MatrixFrame m = spawner_.GameEntity.GetGlobalFrame();
 			_tracker.Advance(0f);
 			_tracker.CurrentFrameAndColor(out var frame, out var color);
-			if (globalFrame != frame)
+			if (m != frame)
 			{
 				spawner_.GameEntity.SetGlobalFrame(in frame);
 				spawner_.GameEntity.UpdateTriadFrameForEditor();
@@ -383,27 +464,32 @@ public class SpawnerEntityEditorHelper
 			{
 				frame = LinearInterpolatedIK(ref _tracker);
 			}
-			if (globalFrame != frame)
+			if (m != frame)
 			{
 				SpawnedGhostEntity.SetGlobalFrame(in frame);
 				SpawnedGhostEntity.UpdateTriadFrameForEditor();
 			}
 			_tracker.Reset();
 		}
-		else if (SpawnedGhostEntity.GetGlobalFrame() != spawner_.GameEntity.GetGlobalFrame())
+		else
 		{
-			GameEntity spawnedGhostEntity = SpawnedGhostEntity;
-			MatrixFrame frame2 = spawner_.GameEntity.GetGlobalFrame();
-			spawnedGhostEntity.SetGlobalFrame(in frame2);
-			SpawnedGhostEntity.UpdateTriadFrameForEditor();
+			MatrixFrame m2 = SpawnedGhostEntity.GetGlobalFrame();
+			MatrixFrame m3 = spawner_.GameEntity.GetGlobalFrame();
+			if (m2 != m3)
+			{
+				GameEntity spawnedGhostEntity = SpawnedGhostEntity;
+				m2 = spawner_.GameEntity.GetGlobalFrame();
+				spawnedGhostEntity.SetGlobalFrame(in m2);
+				SpawnedGhostEntity.UpdateTriadFrameForEditor();
+			}
 		}
 	}
 
 	private MatrixFrame LinearInterpolatedIK(ref PathTracker pathTracker)
 	{
 		pathTracker.CurrentFrameAndColor(out var frame, out var color);
-		MatrixFrame m = SiegeWeaponMovementComponent.FindGroundFrameForWheelsStatic(ref frame, 2.45f, 1.3f, SpawnedGhostEntity, _wheels, SpawnedGhostEntity.Scene);
-		return MatrixFrame.Lerp(frame, m, color.x);
+		MatrixFrame m = SiegeWeaponMovementComponent.FindGroundFrameForWheelsStatic(ref frame, 2.45f, 1.3f, SpawnedGhostEntity.WeakEntity, _wheels, SpawnedGhostEntity.Scene);
+		return MatrixFrame.Lerp(in frame, in m, color.x);
 	}
 
 	private static object GetFieldValue(object src, string propName)

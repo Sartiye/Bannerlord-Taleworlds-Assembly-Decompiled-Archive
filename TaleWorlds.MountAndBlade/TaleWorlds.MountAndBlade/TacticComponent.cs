@@ -84,7 +84,7 @@ public abstract class TacticComponent
 		IsTacticReapplyNeeded = true;
 	}
 
-	protected internal virtual void TickOccasionally()
+	public virtual void TickOccasionally()
 	{
 		TeamAIComponent teamAI = Team.TeamAI;
 		if (teamAI.GetIsFirstTacticChosen)
@@ -598,7 +598,7 @@ public abstract class TacticComponent
 			List<Formation> list = FormationsIncludingEmpty.Where(isEligible).ToList();
 			if (list.Count > 0)
 			{
-				formation = list.MaxBy((Formation f) => f.CountOfUnits);
+				formation = TaleWorlds.Core.Extensions.MaxBy(list, (Formation f) => f.CountOfUnits);
 				IsTacticReapplyNeeded = true;
 				return true;
 			}

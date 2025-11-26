@@ -7,6 +7,7 @@ using TaleWorlds.Engine.Options;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.Options;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.GameKeys;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.GamepadOptions;
@@ -91,8 +92,6 @@ public class OptionsVM : ViewModel
 	private string _doneLbl;
 
 	private string _resetLbl;
-
-	private string _gameVersionText;
 
 	private bool _isDevelopmentMode;
 
@@ -201,23 +200,6 @@ public class OptionsVM : ViewModel
 			{
 				_resetLbl = value;
 				OnPropertyChangedWithValue(value, "ResetLbl");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string GameVersionText
-	{
-		get
-		{
-			return _gameVersionText;
-		}
-		set
-		{
-			if (value != _gameVersionText)
-			{
-				_gameVersionText = value;
-				OnPropertyChangedWithValue(value, "GameVersionText");
 			}
 		}
 	}
@@ -462,7 +444,7 @@ public class OptionsVM : ViewModel
 		_groupedCategories.Add(_audioOptionCategory);
 		_groupedCategories.Add(_gameplayOptionCategory);
 		_performanceManagedOptions = _performanceOptionCategory.GetManagedOptions();
-		_gameKeyCategory = new GameKeyOptionCategoryVM(_onKeybindRequest, OptionsProvider.GetGameKeyCategoriesList(CurrentOptionsMode == OptionsMode.Multiplayer));
+		_gameKeyCategory = new GameKeyOptionCategoryVM(_onKeybindRequest, OptionsProvider.GetGameKeyCategoriesList(CurrentOptionsMode == OptionsMode.Multiplayer), OptionsProvider.GetHiddenGameKeys(ModuleHelper.IsModuleActive("NavalDLC")));
 		TextObject name = new TextObject("{=SQpGQzTI}Controller");
 		_gamepadCategory = new GamepadOptionCategoryVM(this, name, OptionsProvider.GetControllerOptionCategory(), isEnabled: true, isResetSupported: true);
 		_categories = new List<ViewModel>();
@@ -499,7 +481,6 @@ public class OptionsVM : ViewModel
 		IsConsole = true;
 		_performanceOptionCategory?.InitializeDependentConfigs(UpdateDependentConfigs);
 		IsConsole = false;
-		GameVersionText = Utilities.GetApplicationVersionWithBuildNumber().ToString();
 		RefreshValues();
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Combine(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
 		_isInitialized = true;
@@ -637,7 +618,7 @@ public class OptionsVM : ViewModel
 			{
 				_overallOption.Selector.SelectedIndex = (int)configQuality;
 			}
-			if (!_isCancelling && (nativeOptionsType == NativeOptions.NativeOptionsType.SelectedAdapter || nativeOptionsType == NativeOptions.NativeOptionsType.SoundDevice || nativeOptionsType == NativeOptions.NativeOptionsType.SoundOutput))
+			if (!_isCancelling && (nativeOptionsType == NativeOptions.NativeOptionsType.SelectedAdapter || nativeOptionsType == NativeOptions.NativeOptionsType.SoundDevice))
 			{
 				InformationManager.ShowInquiry(new InquiryData(Module.CurrentModule.GlobalTextManager.FindText("str_option_restart_required").ToString(), Module.CurrentModule.GlobalTextManager.FindText("str_option_restart_required_desc").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, Module.CurrentModule.GlobalTextManager.FindText("str_ok").ToString(), string.Empty, null, null));
 			}
@@ -965,7 +946,7 @@ public class OptionsVM : ViewModel
 		}
 		bool throwEvent = GameKeyOptionGroups.IsChanged();
 		GameKeyOptionGroups.ApplyValues();
-		HotKeyManager.Save(throwEvent);
+		HotKeyManager.SaveAsync(throwEvent);
 		enumerable = enumerable.Concat(_performanceOptionCategory.AllOptions);
 		enumerable = enumerable.Where((GenericOptionDataVM x) => x != _monitorOption && x != _resolutionOption && x != _refreshRateOption && x != _displayModeOption);
 		foreach (GenericOptionDataVM item2 in enumerable)
@@ -1004,7 +985,7 @@ public class OptionsVM : ViewModel
 
 	public bool IsOptionsChanged()
 	{
-		return (_groupedCategories.Any((GroupedOptionCategoryVM c) => c.IsChanged()) || GameKeyOptionGroups.IsChanged()) | _performanceOptionCategory.IsChanged();
+		return _groupedCategories.Any((GroupedOptionCategoryVM c) => c.IsChanged()) | (_performanceOptionCategory.IsChanged() || GameKeyOptionGroups.IsChanged());
 	}
 
 	private void OnResetToDefaults()
@@ -1069,7 +1050,7 @@ public class OptionsVM : ViewModel
 				TextObject optionActionName = Module.CurrentModule.GlobalTextManager.FindText("str_options_type_action", text);
 				return new ActionOptionDataVM(actionOptionData.OnAction, this, actionOptionData, name, optionActionName, textObject);
 			}
-			Debug.FailedAssert("Given option data does not match with any option type!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 902);
+			Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 900);
 			return null;
 		}
 		if (option is ActionOptionData actionOptionData2)
@@ -1081,7 +1062,7 @@ public class OptionsVM : ViewModel
 			textObject2.SetTextVariable("newline", "\n");
 			return new ActionOptionDataVM(actionOptionData2.OnAction, this, actionOptionData2, name2, optionActionName2, textObject2);
 		}
-		Debug.FailedAssert("Given option data does not match with any option type!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 925);
+		Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 923);
 		return null;
 	}
 

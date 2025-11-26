@@ -217,7 +217,7 @@ public class LauncherModuleVM : ViewModel
 		SubModules = new MBBindingList<LauncherSubModule>();
 		IsOfficial = Info.IsOfficial;
 		VersionText = Info.Version.ToString();
-		Name = moduleInfo.Name;
+		Name = ProcessModuleName(moduleInfo.Name);
 		string text = string.Empty;
 		if (moduleInfo.DependedModules.Count > 0)
 		{
@@ -281,6 +281,15 @@ public class LauncherModuleVM : ViewModel
 			text2 = "Couldn't verify some or all of the code included in this module.\n\nTaleWorlds is not responsible for consequences arising from running unverified/unofficial code.";
 		}
 		DangerousHint = new LauncherHintVM(text2);
+	}
+
+	private static string ProcessModuleName(string originalModuleName)
+	{
+		if (originalModuleName == "NavalDLC")
+		{
+			return "War Sails";
+		}
+		return originalModuleName;
 	}
 
 	private void UpdateIsDisabled()

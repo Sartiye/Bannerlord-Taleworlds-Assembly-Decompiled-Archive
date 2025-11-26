@@ -13,10 +13,12 @@ public sealed class ScoreboardHotKeyCategory : GameKeyContext
 
 	public const string ToggleFastForward = "ToggleFastForward";
 
+	public const string TogglePause = "TogglePause";
+
 	public const string MenuShowContextMenu = "MenuShowContextMenu";
 
 	public ScoreboardHotKeyCategory()
-		: base("ScoreboardHotKeyCategory", 108)
+		: base("ScoreboardHotKeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();
@@ -31,11 +33,19 @@ public sealed class ScoreboardHotKeyCategory : GameKeyContext
 			new Key(InputKey.ControllerRUp)
 		};
 		RegisterHotKey(new HotKey("ToggleFastForward", "ScoreboardHotKeyCategory", keys));
+		List<Key> keys2 = new List<Key>
+		{
+			new Key(InputKey.Escape),
+			new Key(InputKey.ControllerROption)
+		};
+		RegisterHotKey(new HotKey("TogglePause", "ScoreboardHotKeyCategory", keys2));
 		RegisterHotKey(new HotKey("MenuShowContextMenu", "ScoreboardHotKeyCategory", InputKey.RightMouseButton));
-		List<Key> list = new List<Key>();
-		list.Add(new Key(InputKey.Tab));
-		list.Add(new Key(InputKey.ControllerRRight));
-		RegisterHotKey(new HotKey("HoldShow", "ScoreboardHotKeyCategory", list));
+		List<Key> keys3 = new List<Key>
+		{
+			new Key(InputKey.Tab),
+			new Key(InputKey.ControllerRRight)
+		};
+		RegisterHotKey(new HotKey("HoldShow", "ScoreboardHotKeyCategory", keys3));
 	}
 
 	private void RegisterGameKeys()

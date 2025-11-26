@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -33,13 +34,14 @@ public class PartyTroopManagementItemButtonWidget : ButtonWidget
 		if (ActionButtonsContainer != null)
 		{
 			int num = 0;
-			foreach (Widget allChild in ActionButtonsContainer.AllChildren)
+			List<Widget> allChildrenRecursive = ActionButtonsContainer.GetAllChildrenRecursive();
+			for (int i = 0; i < allChildrenRecursive.Count; i++)
 			{
-				if (allChild.Id == "ActionButton")
+				if (allChildrenRecursive[i].Id == "ActionButton")
 				{
 					if (num == index)
 					{
-						return allChild;
+						return allChildrenRecursive[i];
 					}
 					num++;
 				}

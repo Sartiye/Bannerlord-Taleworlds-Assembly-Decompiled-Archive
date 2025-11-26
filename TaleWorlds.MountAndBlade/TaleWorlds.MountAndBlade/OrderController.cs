@@ -11,59 +11,15 @@ namespace TaleWorlds.MountAndBlade;
 
 public class OrderController
 {
-	private static readonly ActionIndexCache act_command = ActionIndexCache.Create("act_command");
-
-	private static readonly ActionIndexCache act_command_leftstance = ActionIndexCache.Create("act_command_leftstance");
-
-	private static readonly ActionIndexCache act_command_unarmed = ActionIndexCache.Create("act_command_unarmed");
-
-	private static readonly ActionIndexCache act_command_unarmed_leftstance = ActionIndexCache.Create("act_command_unarmed_leftstance");
-
-	private static readonly ActionIndexCache act_command_2h = ActionIndexCache.Create("act_command_2h");
-
-	private static readonly ActionIndexCache act_command_2h_leftstance = ActionIndexCache.Create("act_command_2h_leftstance");
-
-	private static readonly ActionIndexCache act_command_bow = ActionIndexCache.Create("act_command_bow");
-
-	private static readonly ActionIndexCache act_command_follow = ActionIndexCache.Create("act_command_follow");
-
-	private static readonly ActionIndexCache act_command_follow_leftstance = ActionIndexCache.Create("act_command_follow_leftstance");
-
-	private static readonly ActionIndexCache act_command_follow_unarmed = ActionIndexCache.Create("act_command_follow_unarmed");
-
-	private static readonly ActionIndexCache act_command_follow_unarmed_leftstance = ActionIndexCache.Create("act_command_follow_unarmed_leftstance");
-
-	private static readonly ActionIndexCache act_command_follow_2h = ActionIndexCache.Create("act_command_follow_2h");
-
-	private static readonly ActionIndexCache act_command_follow_2h_leftstance = ActionIndexCache.Create("act_command_follow_2h_leftstance");
-
-	private static readonly ActionIndexCache act_command_follow_bow = ActionIndexCache.Create("act_command_follow_bow");
-
-	private static readonly ActionIndexCache act_horse_command = ActionIndexCache.Create("act_horse_command");
-
-	private static readonly ActionIndexCache act_horse_command_unarmed = ActionIndexCache.Create("act_horse_command_unarmed");
-
-	private static readonly ActionIndexCache act_horse_command_2h = ActionIndexCache.Create("act_horse_command_2h");
-
-	private static readonly ActionIndexCache act_horse_command_bow = ActionIndexCache.Create("act_horse_command_bow");
-
-	private static readonly ActionIndexCache act_horse_command_follow = ActionIndexCache.Create("act_horse_command_follow");
-
-	private static readonly ActionIndexCache act_horse_command_follow_unarmed = ActionIndexCache.Create("act_horse_command_follow_unarmed");
-
-	private static readonly ActionIndexCache act_horse_command_follow_2h = ActionIndexCache.Create("act_horse_command_follow_2h");
-
-	private static readonly ActionIndexCache act_horse_command_follow_bow = ActionIndexCache.Create("act_horse_command_follow_bow");
-
 	public const float FormationGapInLine = 1.5f;
 
-	private readonly Mission _mission;
+	protected readonly Mission _mission;
 
-	private readonly Team _team;
+	public readonly Team Team;
 
 	public Agent Owner;
 
-	private readonly MBList<Formation> _selectedFormations;
+	protected readonly MBList<Formation> _selectedFormations;
 
 	private Dictionary<Formation, float> actualWidths;
 
@@ -73,9 +29,11 @@ public class OrderController
 
 	private List<(Formation, OrderType)> overridenOrders;
 
+	protected bool _formationUpdateEnabledAfterSetOrder = true;
+
 	private bool _gesturesEnabled;
 
-	private bool _formationUpdateEnabledAfterSetOrder = true;
+	private MissionTimer _yellingAfterChargeOrderTimer;
 
 	public SiegeWeaponController SiegeWeaponController { get; private set; }
 
@@ -92,27 +50,35 @@ public class OrderController
 	public OrderController(Mission mission, Team team, Agent owner)
 	{
 		_mission = mission;
-		_team = team;
+		Team = team;
 		Owner = owner;
 		_gesturesEnabled = true;
 		_selectedFormations = new MBList<Formation>();
-		SiegeWeaponController = new SiegeWeaponController(mission, _team);
+		SiegeWeaponController = new SiegeWeaponController(mission, Team);
 		simulationFormations = new Dictionary<Formation, Formation>();
 		actualWidths = new Dictionary<Formation, float>();
 		actualUnitSpacings = new Dictionary<Formation, int>();
-		foreach (Formation item in _team.FormationsIncludingEmpty)
+		_yellingAfterChargeOrderTimer = new MissionTimer(30f);
+		_yellingAfterChargeOrderTimer.Set(-30f);
+		foreach (Formation item in Team.FormationsIncludingEmpty)
 		{
 			item.OnWidthChanged += Formation_OnWidthChanged;
 			item.OnUnitSpacingChanged += Formation_OnUnitSpacingChanged;
 		}
-		if (_team.IsPlayerGeneral)
+		if (Team.IsPlayerGeneral)
 		{
-			foreach (Formation item2 in _team.FormationsIncludingEmpty)
+			foreach (Formation item2 in Team.FormationsIncludingEmpty)
 			{
 				item2.PlayerOwner = owner;
 			}
 		}
 		CreateDefaultOrderOverrides();
+	}
+
+	internal void AssignDelegatesToController(OrderController newController)
+	{
+		newController.OnOrderIssued = this.OnOrderIssued;
+		newController.OnSelectedFormationsChanged = this.OnSelectedFormationsChanged;
 	}
 
 	private void Formation_OnUnitSpacingChanged(Formation formation)
@@ -125,7 +91,7 @@ public class OrderController
 		actualWidths.Remove(formation);
 	}
 
-	private void OnSelectedFormationsCollectionChanged()
+	protected void OnSelectedFormationsCollectionChanged()
 	{
 		this.OnSelectedFormationsChanged?.Invoke();
 		foreach (Formation item in SelectedFormations.Except(simulationFormations.Keys))
@@ -134,7 +100,7 @@ public class OrderController
 		}
 	}
 
-	private void SelectFormation(Formation formation, Agent selectorAgent)
+	protected virtual void SelectFormation(Formation formation, Agent selectorAgent)
 	{
 		if (!_selectedFormations.Contains(formation) && IsFormationSelectable(formation, selectorAgent))
 		{
@@ -154,7 +120,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Formation already selected or is not selectable", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SelectFormation", 208);
+			TaleWorlds.Library.Debug.FailedAssert("Formation already selected or is not selectable", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SelectFormation", 194);
 		}
 	}
 
@@ -179,7 +145,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Trying to deselect an unselected formation", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "DeselectFormation", 234);
+			TaleWorlds.Library.Debug.FailedAssert("Trying to deselect an unselected formation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "DeselectFormation", 220);
 		}
 	}
 
@@ -205,7 +171,7 @@ public class OrderController
 		_gesturesEnabled = oldValue;
 	}
 
-	private bool IsFormationSelectable(Formation formation, Agent selectorAgent)
+	protected bool IsFormationSelectable(Formation formation, Agent selectorAgent)
 	{
 		if (selectorAgent == null || formation.PlayerOwner == selectorAgent)
 		{
@@ -214,7 +180,7 @@ public class OrderController
 		return false;
 	}
 
-	private bool AreGesturesEnabled()
+	protected bool AreGesturesEnabled()
 	{
 		if (_gesturesEnabled && _mission.IsOrderGesturesEnabled())
 		{
@@ -223,7 +189,7 @@ public class OrderController
 		return false;
 	}
 
-	private void SelectAllFormations(Agent selectorAgent, bool uiFeedback)
+	protected virtual void SelectAllFormations(Agent selectorAgent, bool uiFeedback)
 	{
 		if (GameNetwork.IsClient)
 		{
@@ -237,7 +203,7 @@ public class OrderController
 		}
 		MBDebug.Print("Selected formations being cleared. Select all formations:");
 		_selectedFormations.Clear();
-		foreach (Formation item in _team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && IsFormationSelectable(f, selectorAgent)))
+		foreach (Formation item in Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && IsFormationSelectable(f, selectorAgent)))
 		{
 			MBDebug.Print(string.Concat(item.RepresentativeClass, " added to selected formations."));
 			_selectedFormations.Add(item);
@@ -263,7 +229,7 @@ public class OrderController
 		OnSelectedFormationsCollectionChanged();
 	}
 
-	public void SetOrder(OrderType orderType)
+	public virtual void SetOrder(OrderType orderType)
 	{
 		MBDebug.Print(string.Concat("SetOrder ", orderType, "on team"));
 		BeforeSetOrder(orderType);
@@ -335,20 +301,20 @@ public class OrderController
 			foreach (Formation selectedFormation8 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation8);
-				selectedFormation8.FacingOrder = facingOrderLookAtEnemy;
+				selectedFormation8.SetFacingOrder(facingOrderLookAtEnemy);
 			}
 			break;
 		}
 		case OrderType.HoldFire:
 			foreach (Formation selectedFormation9 in SelectedFormations)
 			{
-				selectedFormation9.FiringOrder = FiringOrder.FiringOrderHoldYourFire;
+				selectedFormation9.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
 			}
 			break;
 		case OrderType.FireAtWill:
 			foreach (Formation selectedFormation10 in SelectedFormations)
 			{
-				selectedFormation10.FiringOrder = FiringOrder.FiringOrderFireAtWill;
+				selectedFormation10.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 			}
 			break;
 		case OrderType.Dismount:
@@ -358,7 +324,7 @@ public class OrderController
 				{
 					TryCancelStopOrder(selectedFormation11);
 				}
-				selectedFormation11.RidingOrder = RidingOrder.RidingOrderDismount;
+				selectedFormation11.SetRidingOrder(RidingOrder.RidingOrderDismount);
 			}
 			break;
 		case OrderType.Mount:
@@ -368,7 +334,7 @@ public class OrderController
 				{
 					TryCancelStopOrder(selectedFormation12);
 				}
-				selectedFormation12.RidingOrder = RidingOrder.RidingOrderMount;
+				selectedFormation12.SetRidingOrder(RidingOrder.RidingOrderMount);
 			}
 			break;
 		case OrderType.AIControlOn:
@@ -387,241 +353,318 @@ public class OrderController
 			foreach (Formation selectedFormation15 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation15);
-				selectedFormation15.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+				selectedFormation15.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 			}
 			break;
 		case OrderType.ArrangementCloseOrder:
 			foreach (Formation selectedFormation16 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation16);
-				selectedFormation16.ArrangementOrder = ArrangementOrder.ArrangementOrderShieldWall;
+				selectedFormation16.SetArrangementOrder(ArrangementOrder.ArrangementOrderShieldWall);
 			}
 			break;
 		case OrderType.ArrangementLoose:
 			foreach (Formation selectedFormation17 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation17);
-				selectedFormation17.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
+				selectedFormation17.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
 			}
 			break;
 		case OrderType.ArrangementCircular:
 			foreach (Formation selectedFormation18 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation18);
-				selectedFormation18.ArrangementOrder = ArrangementOrder.ArrangementOrderCircle;
+				selectedFormation18.SetArrangementOrder(ArrangementOrder.ArrangementOrderCircle);
 			}
 			break;
 		case OrderType.ArrangementSchiltron:
 			foreach (Formation selectedFormation19 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation19);
-				selectedFormation19.ArrangementOrder = ArrangementOrder.ArrangementOrderSquare;
+				selectedFormation19.SetArrangementOrder(ArrangementOrder.ArrangementOrderSquare);
 			}
 			break;
 		case OrderType.ArrangementVee:
 			foreach (Formation selectedFormation20 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation20);
-				selectedFormation20.ArrangementOrder = ArrangementOrder.ArrangementOrderSkein;
+				selectedFormation20.SetArrangementOrder(ArrangementOrder.ArrangementOrderSkein);
 			}
 			break;
 		case OrderType.ArrangementColumn:
 			foreach (Formation selectedFormation21 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation21);
-				selectedFormation21.ArrangementOrder = ArrangementOrder.ArrangementOrderColumn;
+				selectedFormation21.SetArrangementOrder(ArrangementOrder.ArrangementOrderColumn);
 			}
 			break;
 		case OrderType.ArrangementScatter:
 			foreach (Formation selectedFormation22 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation22);
-				selectedFormation22.ArrangementOrder = ArrangementOrder.ArrangementOrderScatter;
+				selectedFormation22.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
 			}
 			break;
 		case OrderType.FormDeep:
 			foreach (Formation selectedFormation23 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation23);
-				selectedFormation23.FormOrder = FormOrder.FormOrderDeep;
+				selectedFormation23.SetFormOrder(FormOrder.FormOrderDeep);
 			}
 			break;
 		case OrderType.FormWide:
 			foreach (Formation selectedFormation24 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation24);
-				selectedFormation24.FormOrder = FormOrder.FormOrderWide;
+				selectedFormation24.SetFormOrder(FormOrder.FormOrderWide);
 			}
 			break;
 		case OrderType.FormWider:
 			foreach (Formation selectedFormation25 in SelectedFormations)
 			{
 				TryCancelStopOrder(selectedFormation25);
-				selectedFormation25.FormOrder = FormOrder.FormOrderWider;
+				selectedFormation25.SetFormOrder(FormOrder.FormOrderWider);
 			}
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrder", 634);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrder", 620);
 			break;
 		}
 		AfterSetOrder(orderType);
-		if (this.OnOrderIssued != null)
-		{
-			this.OnOrderIssued(orderType, SelectedFormations, this);
-		}
+		FireOnOrderIssued(orderType, SelectedFormations, this);
 	}
 
-	private static void PlayOrderGestures(OrderType orderType, Agent agent, MBList<Formation> selectedFormations)
+	private void PlayOrderGestures(OrderType orderType)
 	{
-		switch (orderType)
+		if (!LoadingWindow.IsLoadingWindowActive)
 		{
-		case OrderType.FireAtWill:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FireAtWill, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.HoldFire:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.HoldFire, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.Mount:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Mount, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.Dismount:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Dismount, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.Move:
-		case OrderType.MoveToLineSegment:
-		case OrderType.MoveToLineSegmentWithHorizontalLayout:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Move, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.Charge:
-		case OrderType.ChargeWithTarget:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Charge, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.FollowMe:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Follow, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.Retreat:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Retreat, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.AdvanceTenPaces:
-		case OrderType.Advance:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Advance, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.FallBackTenPaces:
-		case OrderType.FallBack:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FallBack, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.StandYourGround:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.Stop, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementLine:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormLine, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementCloseOrder:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormShieldWall, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementLoose:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormLoose, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementCircular:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormCircle, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementSchiltron:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormSquare, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementVee:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormSkein, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementColumn:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormColumn, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.ArrangementScatter:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FormScatter, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.AIControlOn:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.CommandDelegate, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.AIControlOff:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.CommandUndelegate, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.LookAtEnemy:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FaceEnemy, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
-		case OrderType.LookAtDirection:
-			agent.MakeVoice(SkinVoiceManager.VoiceType.FaceDirection, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-			break;
+			switch (orderType)
+			{
+			case OrderType.FireAtWill:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FireAtWill, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.HoldFire:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.HoldFire, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.Mount:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Mount, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.Dismount:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Dismount, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.Move:
+			case OrderType.MoveToLineSegment:
+			case OrderType.MoveToLineSegmentWithHorizontalLayout:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Move, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.Charge:
+			case OrderType.ChargeWithTarget:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Charge, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.FollowMe:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Follow, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.Retreat:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Retreat, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.AdvanceTenPaces:
+			case OrderType.Advance:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Advance, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.FallBackTenPaces:
+			case OrderType.FallBack:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FallBack, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.StandYourGround:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.Stop, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementLine:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormLine, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementCloseOrder:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormShieldWall, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementLoose:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormLoose, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementCircular:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormCircle, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementSchiltron:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormSquare, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementVee:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormSkein, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementColumn:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormColumn, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.ArrangementScatter:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.FormScatter, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.AIControlOn:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.CommandDelegate, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.AIControlOff:
+				Owner.MakeVoice(SkinVoiceManager.VoiceType.CommandUndelegate, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				break;
+			case OrderType.LookAtEnemy:
+				if (Mission.Current.IsNavalBattle)
+				{
+					Owner.MakeVoice(SkinVoiceManager.VoiceType.BoardAtWill, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				}
+				else
+				{
+					Owner.MakeVoice(SkinVoiceManager.VoiceType.FaceEnemy, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				}
+				break;
+			case OrderType.LookAtDirection:
+				if (Mission.Current.IsNavalBattle)
+				{
+					Owner.MakeVoice(SkinVoiceManager.VoiceType.AvoidBoarding, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				}
+				else
+				{
+					Owner.MakeVoice(SkinVoiceManager.VoiceType.FaceDirection, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				}
+				break;
+			}
 		}
-		if (selectedFormations.Count <= 0 || agent == null || agent.Controller == Agent.ControllerType.AI)
+		if (_selectedFormations.Count > 0 && Owner != null && Owner.Controller != AgentControllerType.AI)
 		{
-			return;
+			MissionWeapon wieldedWeapon = Owner.WieldedWeapon;
+			switch ((!wieldedWeapon.IsEmpty) ? wieldedWeapon.Item.PrimaryWeapon.WeaponClass : WeaponClass.Undefined)
+			{
+			case WeaponClass.Undefined:
+			case WeaponClass.Sling:
+			case WeaponClass.Stone:
+			case WeaponClass.BallistaStone:
+				if (Owner.MountAgent == null)
+				{
+					Agent owner3 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType != OrderType.FollowMe) ? (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_unarmed_leftstance : ActionIndexCache.act_command_unarmed) : (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_follow_unarmed_leftstance : ActionIndexCache.act_command_follow_unarmed));
+					owner3.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				else
+				{
+					Agent owner4 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType == OrderType.FollowMe) ? ActionIndexCache.act_horse_command_follow_unarmed : ActionIndexCache.act_horse_command_unarmed);
+					owner4.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				break;
+			case WeaponClass.Dagger:
+			case WeaponClass.OneHandedSword:
+			case WeaponClass.OneHandedAxe:
+			case WeaponClass.Mace:
+			case WeaponClass.Pick:
+			case WeaponClass.OneHandedPolearm:
+			case WeaponClass.ThrowingAxe:
+			case WeaponClass.ThrowingKnife:
+				if (Owner.MountAgent == null)
+				{
+					Agent owner5 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType != OrderType.FollowMe) ? (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_leftstance : ActionIndexCache.act_command) : (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_follow_leftstance : ActionIndexCache.act_command_follow));
+					owner5.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				else
+				{
+					Agent owner6 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType == OrderType.FollowMe) ? ActionIndexCache.act_horse_command_follow : ActionIndexCache.act_horse_command);
+					owner6.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				break;
+			case WeaponClass.TwoHandedSword:
+			case WeaponClass.TwoHandedAxe:
+			case WeaponClass.TwoHandedMace:
+			case WeaponClass.TwoHandedPolearm:
+			case WeaponClass.LowGripPolearm:
+			case WeaponClass.Crossbow:
+			case WeaponClass.Javelin:
+			case WeaponClass.Pistol:
+			case WeaponClass.Musket:
+				if (Owner.MountAgent == null)
+				{
+					Agent owner7 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType != OrderType.FollowMe) ? (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_2h_leftstance : ActionIndexCache.act_command_2h) : (Owner.GetIsLeftStance() ? ActionIndexCache.act_command_follow_2h_leftstance : ActionIndexCache.act_command_follow_2h));
+					owner7.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				else
+				{
+					Agent owner8 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType == OrderType.FollowMe) ? ActionIndexCache.act_horse_command_follow_2h : ActionIndexCache.act_horse_command_2h);
+					owner8.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				break;
+			case WeaponClass.Bow:
+				if (Owner.MountAgent == null)
+				{
+					Agent owner = Owner;
+					ActionIndexCache actionIndexCache = ((orderType == OrderType.FollowMe) ? ActionIndexCache.act_command_follow_bow : ActionIndexCache.act_command_bow);
+					owner.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				else
+				{
+					Agent owner2 = Owner;
+					ActionIndexCache actionIndexCache = ((orderType == OrderType.FollowMe) ? ActionIndexCache.act_horse_command_follow_bow : ActionIndexCache.act_horse_command_bow);
+					owner2.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL);
+				}
+				break;
+			default:
+				TaleWorlds.Library.Debug.FailedAssert("Unexpected weapon class.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayOrderGestures", 819);
+				break;
+			case WeaponClass.Boulder:
+			case WeaponClass.BallistaBoulder:
+				break;
+			}
 		}
-		MissionWeapon wieldedWeapon = agent.WieldedWeapon;
-		switch ((!wieldedWeapon.IsEmpty) ? wieldedWeapon.Item.PrimaryWeapon.WeaponClass : WeaponClass.Undefined)
+		foreach (Formation selectedFormation in _selectedFormations)
 		{
-		case WeaponClass.Undefined:
-		case WeaponClass.Stone:
-			if (agent.MountAgent == null)
+			Agent medianAgent = selectedFormation.GetMedianAgent(excludeDetachedUnits: false, excludePlayer: true, selectedFormation.CachedAveragePosition);
+			if (medianAgent == null)
 			{
-				agent.SetActionChannel(1, (orderType != OrderType.FollowMe) ? (agent.GetIsLeftStance() ? act_command_unarmed_leftstance : act_command_unarmed) : (agent.GetIsLeftStance() ? act_command_follow_unarmed_leftstance : act_command_follow_unarmed), ignorePriority: false, 0uL);
+				continue;
 			}
-			else
+			Vec3 position = medianAgent.Position;
+			switch (orderType)
 			{
-				agent.SetActionChannel(1, (orderType == OrderType.FollowMe) ? act_horse_command_follow_unarmed : act_horse_command_unarmed, ignorePriority: false, 0uL);
+			case OrderType.Move:
+			case OrderType.MoveToLineSegment:
+			case OrderType.MoveToLineSegmentWithHorizontalLayout:
+			case OrderType.FollowMe:
+			case OrderType.AdvanceTenPaces:
+			case OrderType.Advance:
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/move"), position);
+				break;
+			case OrderType.Charge:
+			case OrderType.ChargeWithTarget:
+			case OrderType.AttackEntity:
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/attack"), position);
+				if (_yellingAfterChargeOrderTimer.Check(reset: true))
+				{
+					selectedFormation.ApplyActionOnEachUnit(delegate(Agent yellingAgent)
+					{
+						yellingAgent.YellingBehaviour();
+					});
+				}
+				break;
+			case OrderType.StandYourGround:
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/stop"), position);
+				break;
+			case OrderType.ArrangementLine:
+			case OrderType.ArrangementCloseOrder:
+			case OrderType.ArrangementLoose:
+			case OrderType.ArrangementCircular:
+			case OrderType.ArrangementSchiltron:
+			case OrderType.ArrangementVee:
+			case OrderType.ArrangementColumn:
+			case OrderType.ArrangementScatter:
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/formation"), position);
+				break;
 			}
-			break;
-		case WeaponClass.Dagger:
-		case WeaponClass.OneHandedSword:
-		case WeaponClass.OneHandedAxe:
-		case WeaponClass.Mace:
-		case WeaponClass.Pick:
-		case WeaponClass.OneHandedPolearm:
-		case WeaponClass.ThrowingAxe:
-		case WeaponClass.ThrowingKnife:
-			if (agent.MountAgent == null)
-			{
-				agent.SetActionChannel(1, (orderType != OrderType.FollowMe) ? (agent.GetIsLeftStance() ? act_command_leftstance : act_command) : (agent.GetIsLeftStance() ? act_command_follow_leftstance : act_command_follow), ignorePriority: false, 0uL);
-			}
-			else
-			{
-				agent.SetActionChannel(1, (orderType == OrderType.FollowMe) ? act_horse_command_follow : act_horse_command, ignorePriority: false, 0uL);
-			}
-			break;
-		case WeaponClass.TwoHandedSword:
-		case WeaponClass.TwoHandedAxe:
-		case WeaponClass.TwoHandedMace:
-		case WeaponClass.TwoHandedPolearm:
-		case WeaponClass.LowGripPolearm:
-		case WeaponClass.Crossbow:
-		case WeaponClass.Javelin:
-		case WeaponClass.Pistol:
-		case WeaponClass.Musket:
-			if (agent.MountAgent == null)
-			{
-				agent.SetActionChannel(1, (orderType != OrderType.FollowMe) ? (agent.GetIsLeftStance() ? act_command_2h_leftstance : act_command_2h) : (agent.GetIsLeftStance() ? act_command_follow_2h_leftstance : act_command_follow_2h), ignorePriority: false, 0uL);
-			}
-			else
-			{
-				agent.SetActionChannel(1, (orderType == OrderType.FollowMe) ? act_horse_command_follow_2h : act_horse_command_2h, ignorePriority: false, 0uL);
-			}
-			break;
-		case WeaponClass.Bow:
-			if (agent.MountAgent == null)
-			{
-				agent.SetActionChannel(1, (orderType == OrderType.FollowMe) ? act_command_follow_bow : act_command_bow, ignorePriority: false, 0uL);
-			}
-			else
-			{
-				agent.SetActionChannel(1, (orderType == OrderType.FollowMe) ? act_horse_command_follow_bow : act_horse_command_bow, ignorePriority: false, 0uL);
-			}
-			break;
-		default:
-			TaleWorlds.Library.Debug.FailedAssert("Unexpected weapon class.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayOrderGestures", 811);
-			break;
-		case WeaponClass.Boulder:
-			break;
 		}
 	}
 
-	private static void PlayFormationSelectedGesture(Formation formation, Agent agent)
+	protected static void PlayFormationSelectedGesture(Formation formation, Agent agent)
 	{
 		if (formation.SecondaryLogicalClasses.Any())
 		{
@@ -643,7 +686,7 @@ public class OrderController
 			agent.MakeVoice(SkinVoiceManager.VoiceType.HorseArchers, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayFormationSelectedGesture", 847);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayFormationSelectedGesture", 899);
 			break;
 		}
 	}
@@ -663,8 +706,9 @@ public class OrderController
 				}
 				selectedFormation.ApplyActionOnEachUnit(delegate(Agent agent)
 				{
-					agent.UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+					agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
 				}, flag ? Mission.Current.MainAgent : null);
+				selectedFormation.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 			}
 			MBDebug.Print("Update cached and formation values on each agent complete, number of selected formations: " + SelectedFormations.Count);
 			_mission.SetRandomDecideTimeOfAgentsWithIndices(selectedFormation.CollectUnitIndices());
@@ -673,11 +717,11 @@ public class OrderController
 		MBDebug.Print("After set order loop complete, number of selected formations: " + SelectedFormations.Count);
 		if (Owner != null && AreGesturesEnabled())
 		{
-			PlayOrderGestures(orderType, Owner, _selectedFormations);
+			PlayOrderGestures(orderType);
 		}
 	}
 
-	private void BeforeSetOrder(OrderType orderType)
+	protected void BeforeSetOrder(OrderType orderType)
 	{
 		foreach (Formation item in SelectedFormations.Where((Formation f) => !IsFormationSelectable(f, Owner)).ToList())
 		{
@@ -696,7 +740,7 @@ public class OrderController
 		}
 	}
 
-	public void SetOrderWithAgent(OrderType orderType, Agent agent)
+	public virtual void SetOrderWithAgent(OrderType orderType, Agent agent)
 	{
 		MBDebug.Print(string.Concat("SetOrderWithAgent ", orderType, " ", agent.Name, "on team"));
 		BeforeSetOrder(orderType);
@@ -706,29 +750,22 @@ public class OrderController
 			GameNetwork.WriteMessage(new ApplyOrderWithAgent(orderType, agent.Index));
 			GameNetwork.EndModuleEventAsClient();
 		}
-		switch (orderType)
+		if (orderType == OrderType.FollowMe)
 		{
-		case OrderType.FollowMe:
 			foreach (Formation selectedFormation in SelectedFormations)
 			{
 				selectedFormation.SetMovementOrder(MovementOrder.MovementOrderFollow(agent));
 			}
-			break;
-		case OrderType.GuardMe:
-			foreach (Formation selectedFormation2 in SelectedFormations)
-			{
-				selectedFormation2.SetMovementOrder(MovementOrder.MovementOrderGuard(agent));
-			}
-			break;
-		default:
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithAgent", 947);
-			break;
+		}
+		else
+		{
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithAgent", 988);
 		}
 		AfterSetOrder(orderType);
-		this.OnOrderIssued?.Invoke(orderType, SelectedFormations, this, agent);
+		FireOnOrderIssued(orderType, SelectedFormations, this, agent);
 	}
 
-	public void SetOrderWithPosition(OrderType orderType, WorldPosition orderPosition)
+	public virtual void SetOrderWithPosition(OrderType orderType, WorldPosition orderPosition)
 	{
 		MBDebug.Print(string.Concat("SetOrderWithPosition ", orderType, " ", orderPosition, "on team"));
 		BeforeSetOrder(orderType);
@@ -751,7 +788,7 @@ public class OrderController
 			FacingOrder facingOrder = FacingOrder.FacingOrderLookAtDirection(GetOrderLookAtDirection(SelectedFormations, orderPosition.AsVec2));
 			foreach (Formation selectedFormation2 in SelectedFormations)
 			{
-				selectedFormation2.FacingOrder = facingOrder;
+				selectedFormation2.SetFacingOrder(facingOrder);
 			}
 			break;
 		}
@@ -760,22 +797,19 @@ public class OrderController
 			float orderFormCustomWidth = GetOrderFormCustomWidth(SelectedFormations, orderPosition.GetGroundVec3());
 			foreach (Formation selectedFormation3 in SelectedFormations)
 			{
-				selectedFormation3.FormOrder = FormOrder.FormOrderCustom(orderFormCustomWidth);
+				selectedFormation3.SetFormOrder(FormOrder.FormOrderCustom(orderFormCustomWidth));
 			}
 			break;
 		}
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithPosition", 997);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithPosition", 1038);
 			break;
 		}
 		AfterSetOrder(orderType);
-		if (this.OnOrderIssued != null)
-		{
-			this.OnOrderIssued(orderType, SelectedFormations, this, orderPosition);
-		}
+		FireOnOrderIssued(orderType, SelectedFormations, this, orderPosition);
 	}
 
-	public void SetOrderWithFormation(OrderType orderType, Formation orderFormation)
+	public virtual void SetOrderWithFormation(OrderType orderType, Formation orderFormation)
 	{
 		MBDebug.Print(string.Concat("SetOrderWithFormation ", orderType, " ", orderFormation, "on team"));
 		BeforeSetOrder(orderType);
@@ -802,14 +836,11 @@ public class OrderController
 			}
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormation", 1040);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormation", 1078);
 			break;
 		}
 		AfterSetOrder(orderType);
-		if (this.OnOrderIssued != null)
-		{
-			this.OnOrderIssued(orderType, SelectedFormations, this, orderFormation);
-		}
+		FireOnOrderIssued(orderType, SelectedFormations, this, orderFormation);
 	}
 
 	public void SetOrderWithFormationAndPercentage(OrderType orderType, Formation orderFormation, float percentage)
@@ -823,16 +854,14 @@ public class OrderController
 			GameNetwork.WriteMessage(new ApplyOrderWithFormationAndPercentage(orderType, orderFormation.Index, value));
 			GameNetwork.EndModuleEventAsClient();
 		}
-		TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndPercentage", 1081);
+		TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndPercentage", 1116);
 		AfterSetOrder(orderType);
-		if (this.OnOrderIssued != null)
-		{
-			this.OnOrderIssued(orderType, SelectedFormations, this, orderFormation, percentage);
-		}
+		FireOnOrderIssued(orderType, SelectedFormations, this, orderFormation, percentage);
 	}
 
 	public void TransferUnitWithPriorityFunction(Formation orderFormation, int number, bool hasShield, bool hasSpear, bool hasThrown, bool isHeavy, bool isRanged, bool isMounted, bool excludeBannerman, List<Agent> excludedAgents)
 	{
+		TroopFilteringUtilities.GetPriorityFunction(TroopFilteringUtilities.GetFilter(isMounted, isRanged, !isRanged, isHeavy, hasThrown, hasSpear, hasShield), out Func<Agent, int> priorityFunc);
 		BeforeSetOrder(OrderType.Transfer);
 		if (GameNetwork.IsClient)
 		{
@@ -856,7 +885,7 @@ public class OrderController
 			{
 				selectedFormation.OnMassUnitTransferStart();
 				orderFormation.OnMassUnitTransferStart();
-				selectedFormation.TransferUnitsWithPriorityFunction(orderFormation, num4, priorityFunction, excludeBannerman, excludedAgents);
+				selectedFormation.TransferUnitsWithPriorityFunction(orderFormation, num4, priorityFunc, excludeBannerman, excludedAgents);
 				selectedFormation.OnMassUnitTransferEnd();
 				orderFormation.OnMassUnitTransferEnd();
 			}
@@ -882,25 +911,17 @@ public class OrderController
 			{
 				array[i + 1] = list[i];
 			}
-			this.OnOrderIssued(OrderType.Transfer, SelectedFormations, this, orderFormation, array);
+			FireOnOrderIssued(OrderType.Transfer, SelectedFormations, this, orderFormation, array);
 		}
 		else
 		{
-			this.OnOrderIssued(OrderType.Transfer, SelectedFormations, this, orderFormation, number);
-		}
-		int priorityFunction(Agent agent)
-		{
-			if (agent != null)
-			{
-				return ((hasShield && agent.HasShieldCached) ? 1 : 0) + ((hasSpear && agent.HasSpearCached) ? 1 : 0) + ((hasThrown && agent.HasThrownCached) ? 1 : 0) + ((isHeavy && MissionGameModels.Current.AgentStatCalculateModel.HasHeavyArmor(agent)) ? 1 : 0) + ((isRanged == agent.IsRangedCached) ? 10 : 0) + ((isMounted == agent.HasMount) ? 100 : 0);
-			}
-			return (hasShield ? 1 : 0) + (hasSpear ? 1 : 0) + (hasThrown ? 1 : 0) + (isHeavy ? 1 : 0) + 10 + 100;
+			FireOnOrderIssued(OrderType.Transfer, SelectedFormations, this, orderFormation, number);
 		}
 	}
 
-	public void RearrangeFormationsAccordingToFilters(Team team, List<Tuple<Formation, int, Team.TroopFilter, List<Agent>>> MassTransferData)
+	public void RearrangeFormationsAccordingToFilters(Team team, List<(Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents)> MassTransferData)
 	{
-		team.RearrangeFormationsAccordingToFilters(MassTransferData);
+		team.RearrangeFormationsAccordingToFilter(MassTransferData);
 	}
 
 	public void SetOrderWithFormationAndNumber(OrderType orderType, Formation orderFormation, int number)
@@ -946,7 +967,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndNumber", 1330);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndNumber", 1358);
 		}
 		AfterSetOrder(orderType);
 		if (this.OnOrderIssued == null)
@@ -961,15 +982,15 @@ public class OrderController
 			{
 				array[i + 1] = list[i];
 			}
-			this.OnOrderIssued(orderType, SelectedFormations, this, orderFormation, array);
+			FireOnOrderIssued(orderType, SelectedFormations, this, orderFormation, array);
 		}
 		else
 		{
-			this.OnOrderIssued(orderType, SelectedFormations, this, orderFormation, number);
+			FireOnOrderIssued(orderType, SelectedFormations, this, orderFormation, number);
 		}
 	}
 
-	public void SetOrderWithTwoPositions(OrderType orderType, WorldPosition position1, WorldPosition position2)
+	public virtual void SetOrderWithTwoPositions(OrderType orderType, WorldPosition position1, WorldPosition position2)
 	{
 		MBDebug.Print(string.Concat("SetOrderWithTwoPositions ", orderType, " ", position1, " ", position2, "on team"));
 		BeforeSetOrder(orderType);
@@ -990,16 +1011,13 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Invalid order type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithTwoPositions", 1384);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithTwoPositions", 1412);
 		}
 		AfterSetOrder(orderType);
-		if (this.OnOrderIssued != null)
-		{
-			this.OnOrderIssued(orderType, SelectedFormations, this, position1, position2);
-		}
+		FireOnOrderIssued(orderType, SelectedFormations, this, position1, position2);
 	}
 
-	public void SetOrderWithOrderableObject(IOrderable target)
+	public virtual void SetOrderWithOrderableObject(IOrderable target)
 	{
 		BattleSideEnum side = SelectedFormations[0].Team.Side;
 		OrderType order = target.GetOrder(side);
@@ -1021,10 +1039,10 @@ public class OrderController
 		}
 		case OrderType.AttackEntity:
 		{
-			GameEntity gameEntity = missionObject.GameEntity;
+			WeakGameEntity gameEntity = missionObject.GameEntity;
 			foreach (Formation selectedFormation in SelectedFormations)
 			{
-				selectedFormation.SetMovementOrder(MovementOrder.MovementOrderAttackEntity(gameEntity, !(missionObject is CastleGate)));
+				selectedFormation.SetMovementOrder(MovementOrder.MovementOrderAttackEntity(GameEntity.CreateFromWeakEntity(gameEntity), !(missionObject is CastleGate)));
 			}
 			break;
 		}
@@ -1080,14 +1098,14 @@ public class OrderController
 			Vec2 direction = waitEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized();
 			foreach (Formation selectedFormation4 in SelectedFormations)
 			{
-				selectedFormation4.FacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
+				selectedFormation4.SetFacingOrder(FacingOrder.FacingOrderLookAtDirection(direction));
 				selectedFormation4.SetMovementOrder(MovementOrder.MovementOrderFollowEntity(waitEntity));
 			}
 			break;
 		}
 		}
 		AfterSetOrder(order);
-		this.OnOrderIssued?.Invoke(order, SelectedFormations, this, target);
+		FireOnOrderIssued(order, SelectedFormations, this, target);
 	}
 
 	public static OrderType GetActiveMovementOrderOf(Formation formation)
@@ -1095,10 +1113,6 @@ public class OrderController
 		switch (formation.GetReadonlyMovementOrderReference().MovementState)
 		{
 		case MovementOrder.MovementStateEnum.Charge:
-			if (formation.GetReadonlyMovementOrderReference().OrderType == OrderType.GuardMe)
-			{
-				return OrderType.GuardMe;
-			}
 			return OrderType.Charge;
 		case MovementOrder.MovementStateEnum.Hold:
 			return formation.GetReadonlyMovementOrderReference().OrderType switch
@@ -1114,7 +1128,7 @@ public class OrderController
 		case MovementOrder.MovementStateEnum.StandGround:
 			return OrderType.StandYourGround;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetActiveMovementOrderOf", 1543);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetActiveMovementOrderOf", 1565);
 			return OrderType.Move;
 		}
 	}
@@ -1229,7 +1243,7 @@ public class OrderController
 			{
 				num2 = formations.Max((Formation f) => f.Width);
 			}
-			Vec2 direction = formations.MaxBy((Formation f) => f.CountOfUnitsWithoutDetachedOnes).Direction;
+			Vec2 direction = TaleWorlds.Core.Extensions.MaxBy(formations, (Formation f) => f.CountOfUnitsWithoutDetachedOnes).Direction;
 			direction.RotateCCW(-System.MathF.PI / 2f);
 			direction.Normalize();
 			formationLineEnd = Mission.Current.GetStraightPathToTarget(formationLineBegin.AsVec2 + num2 / 2f * direction, formationLineBegin);
@@ -1457,9 +1471,13 @@ public class OrderController
 			{
 				WorldPosition position = ((!_mission.IsTeleportingAgents || agent.CanTeleport()) ? agent.Formation.GetOrderPositionOfUnit(agent) : agent.GetWorldPosition());
 				bool flag = position.IsValid;
-				if (!GameNetwork.IsMultiplayer && _mission.Mode == MissionMode.Deployment)
+				if (!GameNetwork.IsMultiplayer && _mission.Mode == MissionMode.Deployment && !_mission.IsNavalBattle)
 				{
-					MBSceneUtilities.ProjectPositionToDeploymentBoundaries(agent.Formation.Team.Side, ref position);
+					IMissionDeploymentPlan deploymentPlan = agent.Mission.DeploymentPlan;
+					if (deploymentPlan.SupportsNavmesh())
+					{
+						deploymentPlan.ProjectPositionToDeploymentBoundaries(agent.Formation.Team, ref position);
+					}
 					flag = _mission.IsFormationUnitPositionAvailable(ref position, agent.Formation.Team);
 				}
 				if (flag && agent.Position.AsVec2.DistanceSquared(position.AsVec2) >= minDistanceSq)
@@ -1536,7 +1554,7 @@ public class OrderController
 			}
 			if (actualWidths.TryGetValue(formation2, out var value2))
 			{
-				formation2.FormOrder = FormOrder.FormOrderCustom(value2);
+				formation2.SetFormOrder(FormOrder.FormOrderCustom(value2));
 			}
 		}
 		formations = GetSortedFormations(formations, isFormationLayoutVertical);
@@ -1565,7 +1583,7 @@ public class OrderController
 			}
 			if (item.Width != item3 && item.ArrangementOrder.OrderEnum != ArrangementOrder.ArrangementOrderEnum.Column)
 			{
-				item.FormOrder = FormOrder.FormOrderCustom(item3);
+				item.SetFormOrder(FormOrder.FormOrderCustom(item3));
 				if (isLineShort)
 				{
 					actualWidths[item] = width;
@@ -1574,41 +1592,36 @@ public class OrderController
 			if (!isLineShort)
 			{
 				item.SetMovementOrder(MovementOrder.MovementOrderMove(item4));
-				item.FacingOrder = FacingOrder.FacingOrderLookAtDirection(item5);
-				item.FormOrder = FormOrder.FormOrderCustom(item3);
-				if (this.OnOrderIssued != null)
-				{
-					MBList<Formation> appliedFormations = new MBList<Formation> { item };
-					this.OnOrderIssued(OrderType.Move, appliedFormations, this, item4);
-					this.OnOrderIssued(OrderType.LookAtDirection, appliedFormations, this, item5);
-					this.OnOrderIssued(OrderType.FormCustom, appliedFormations, this, item3);
-				}
+				item.SetFacingOrder(FacingOrder.FacingOrderLookAtDirection(item5));
+				item.SetFormOrder(FormOrder.FormOrderCustom(item3));
+				MBList<Formation> appliedFormations = new MBList<Formation> { item };
+				FireOnOrderIssued(OrderType.Move, appliedFormations, this, item4);
+				FireOnOrderIssued(OrderType.LookAtDirection, appliedFormations, this, item5);
+				FireOnOrderIssued(OrderType.FormCustom, appliedFormations, this, item3);
 				continue;
 			}
-			Formation formation = formations.MaxBy((Formation f) => f.CountOfUnitsWithoutDetachedOnes);
+			Formation formation = TaleWorlds.Core.Extensions.MaxBy(formations, (Formation f) => f.CountOfUnitsWithoutDetachedOnes);
 			switch (GetActiveFacingOrderOf(formation))
 			{
 			case OrderType.LookAtEnemy:
+			{
 				item.SetMovementOrder(MovementOrder.MovementOrderMove(item4));
-				if (this.OnOrderIssued != null)
-				{
-					MBList<Formation> appliedFormations3 = new MBList<Formation> { item };
-					this.OnOrderIssued(OrderType.Move, appliedFormations3, this, item4);
-					this.OnOrderIssued(OrderType.LookAtEnemy, appliedFormations3, this);
-				}
+				MBList<Formation> appliedFormations3 = new MBList<Formation> { item };
+				FireOnOrderIssued(OrderType.Move, appliedFormations3, this, item4);
+				FireOnOrderIssued(OrderType.LookAtEnemy, appliedFormations3, this);
 				break;
+			}
 			case OrderType.LookAtDirection:
+			{
 				item.SetMovementOrder(MovementOrder.MovementOrderMove(item4));
-				item.FacingOrder = FacingOrder.FacingOrderLookAtDirection(formation.Direction);
-				if (this.OnOrderIssued != null)
-				{
-					MBList<Formation> appliedFormations2 = new MBList<Formation> { item };
-					this.OnOrderIssued(OrderType.Move, appliedFormations2, this, item4);
-					this.OnOrderIssued(OrderType.LookAtDirection, appliedFormations2, this, formation.Direction);
-				}
+				item.SetFacingOrder(FacingOrder.FacingOrderLookAtDirection(formation.Direction));
+				MBList<Formation> appliedFormations2 = new MBList<Formation> { item };
+				FireOnOrderIssued(OrderType.Move, appliedFormations2, this, item4);
+				FireOnOrderIssued(OrderType.LookAtDirection, appliedFormations2, this, formation.Direction);
 				break;
+			}
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "MoveToLineSegment", 2361);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "MoveToLineSegment", 2379);
 				break;
 			}
 		}
@@ -1618,10 +1631,10 @@ public class OrderController
 	{
 		if (!formations.Any())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetOrderLookAtDirection", 2381);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetOrderLookAtDirection", 2399);
 			return Vec2.One;
 		}
-		Formation formation = formations.MaxBy((Formation f) => f.CountOfUnitsWithoutDetachedOnes);
+		Formation formation = TaleWorlds.Core.Extensions.MaxBy(formations, (Formation f) => f.CountOfUnitsWithoutDetachedOnes);
 		return (target - formation.OrderPosition).Normalized();
 	}
 
@@ -1633,7 +1646,7 @@ public class OrderController
 	public void TransferUnits(Formation source, Formation target, int count)
 	{
 		source.TransferUnitsAux(target, count, isPlayerOrder: false, count < source.CountOfUnits && target.CountOfUnits > 0);
-		this.OnOrderIssued?.Invoke(OrderType.Transfer, new MBList<Formation> { source }, this, target, count);
+		FireOnOrderIssued(OrderType.Transfer, new MBList<Formation> { source }, this, target, count);
 	}
 
 	public IEnumerable<Formation> SplitFormation(Formation formation, int count = 2)
@@ -1654,13 +1667,21 @@ public class OrderController
 				{
 					formation.TransferUnitsAux(formation2, num, isPlayerOrder: false, useSelectivePop: false);
 					list.Add(formation2);
-					this.OnOrderIssued?.Invoke(OrderType.Transfer, new MBList<Formation> { formation }, this, formation2, num);
+					FireOnOrderIssued(OrderType.Transfer, new MBList<Formation> { formation }, this, formation2, num);
 					break;
 				}
 			}
 			count--;
 		}
 		return list;
+	}
+
+	protected void FireOnOrderIssued(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController, params object[] delegateParams)
+	{
+		if (this.OnOrderIssued != null)
+		{
+			this.OnOrderIssued(orderType, appliedFormations, orderController, delegateParams);
+		}
 	}
 
 	[Conditional("DEBUG")]
@@ -1692,25 +1713,24 @@ public class OrderController
 		return OrderType.None;
 	}
 
+	public void SetFormationUpdateEnabledAfterSetOrder(bool value)
+	{
+		_formationUpdateEnabledAfterSetOrder = value;
+	}
+
 	private void CreateDefaultOrderOverrides()
 	{
 		AddOrderOverride(delegate(Formation formation, MovementOrder order)
 		{
 			if (formation.ArrangementOrder.OrderType == OrderType.ArrangementCloseOrder && order.OrderType == OrderType.StandYourGround)
 			{
-				Vec2 averagePosition = formation.QuerySystem.AveragePosition;
-				float movementSpeed = formation.QuerySystem.MovementSpeed;
-				WorldPosition medianPosition = formation.QuerySystem.MedianPosition;
-				medianPosition.SetVec2(averagePosition + formation.Direction * formation.Depth * (0.5f + movementSpeed));
-				return MovementOrder.MovementOrderMove(medianPosition);
+				Vec2 cachedAveragePosition = formation.CachedAveragePosition;
+				WorldPosition cachedMedianPosition = formation.CachedMedianPosition;
+				cachedMedianPosition.SetVec2(cachedAveragePosition + formation.Direction * formation.Depth * (0.5f + formation.CachedMovementSpeed));
+				return MovementOrder.MovementOrderMove(cachedMedianPosition);
 			}
 			return MovementOrder.MovementOrderStop;
 		});
-	}
-
-	internal void SetFormationUpdateEnabledAfterSetOrder(bool value)
-	{
-		_formationUpdateEnabledAfterSetOrder = value;
 	}
 
 	private static void TryCancelStopOrder(Formation formation)

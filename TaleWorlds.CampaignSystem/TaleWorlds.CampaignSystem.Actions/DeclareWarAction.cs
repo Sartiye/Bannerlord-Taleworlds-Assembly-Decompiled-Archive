@@ -13,7 +13,9 @@ public static class DeclareWarAction
 		CausedByKingdomDecision,
 		CausedByRebellion,
 		CausedByCrimeRatingChange,
-		CausedByKingdomCreation
+		CausedByKingdomCreation,
+		CausedByClaimOnThrone,
+		CausedByCallToWarAgreement
 	}
 
 	private static void ApplyInternal(IFaction faction1, IFaction faction2, DeclareWarDetail declareWarDetail)
@@ -80,5 +82,15 @@ public static class DeclareWarAction
 	public static void ApplyByKingdomCreation(IFaction faction1, IFaction faction2)
 	{
 		ApplyInternal(faction1, faction2, DeclareWarDetail.CausedByKingdomCreation);
+	}
+
+	public static void ApplyByClaimOnThrone(IFaction faction1, IFaction faction2)
+	{
+		ApplyInternal(faction1, faction2, DeclareWarDetail.CausedByClaimOnThrone);
+	}
+
+	public static void ApplyByCallToWarAgreement(IFaction faction1, IFaction faction2)
+	{
+		ApplyInternal(faction1, faction2, DeclareWarDetail.CausedByCallToWarAgreement);
 	}
 }

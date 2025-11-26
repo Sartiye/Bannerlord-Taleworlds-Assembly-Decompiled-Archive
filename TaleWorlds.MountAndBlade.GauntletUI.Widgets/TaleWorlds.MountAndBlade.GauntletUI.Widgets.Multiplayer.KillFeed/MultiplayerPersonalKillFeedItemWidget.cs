@@ -120,11 +120,6 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 		{
 			base.PositionYOffset = 0f;
 		}
-	}
-
-	protected override void OnLateUpdate(float dt)
-	{
-		base.OnLateUpdate(dt);
 		if (!_initialized)
 		{
 			this.SetGlobalAlphaRecursively(0f);
@@ -229,7 +224,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			NotificationTypeIconWidget.SetState("NormalKillHeadshot");
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 177);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 172);
 			NotificationTypeIconWidget.IsVisible = false;
 			break;
 		}
@@ -267,7 +262,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 218);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 213);
 			MessageTextWidget.IsVisible = false;
 			break;
 		}
@@ -310,7 +305,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 264);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 259);
 			AmountTextWidget.IsVisible = false;
 			break;
 		}
@@ -343,7 +338,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 300);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 295);
 			NotificationBackgroundWidget.SetState("Hidden");
 			break;
 		case 5:

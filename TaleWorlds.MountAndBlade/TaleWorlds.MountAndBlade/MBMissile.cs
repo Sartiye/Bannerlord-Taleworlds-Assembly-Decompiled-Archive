@@ -18,9 +18,19 @@ public abstract class MBMissile
 		return MBAPI.IMBMission.GetPositionOfMissile(_mission.Pointer, Index);
 	}
 
+	public Vec3 GetOldPosition()
+	{
+		return MBAPI.IMBMission.GetOldPositionOfMissile(_mission.Pointer, Index);
+	}
+
 	public Vec3 GetVelocity()
 	{
 		return MBAPI.IMBMission.GetVelocityOfMissile(_mission.Pointer, Index);
+	}
+
+	public void SetVelocity(in Vec3 velocity)
+	{
+		MBAPI.IMBMission.SetVelocityOfMissile(_mission.Pointer, Index, in velocity);
 	}
 
 	public bool GetHasRigidBody()

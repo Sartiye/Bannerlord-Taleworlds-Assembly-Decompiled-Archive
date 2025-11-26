@@ -32,12 +32,12 @@ public sealed class CraftingHotkeyCategory : GameKeyContext
 
 	public const string ControllerRotationAxisY = "CameraAxisY";
 
-	public const int ControllerZoomIn = 55;
+	public const int ControllerZoomIn = 56;
 
-	public const int ControllerZoomOut = 56;
+	public const int ControllerZoomOut = 57;
 
 	public CraftingHotkeyCategory()
-		: base("CraftingHotkeyCategory", 108)
+		: base("CraftingHotkeyCategory", 111)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();
@@ -79,8 +79,8 @@ public sealed class CraftingHotkeyCategory : GameKeyContext
 
 	private void RegisterGameKeys()
 	{
-		RegisterGameKey(new GameKey(55, "ControllerZoomIn", "CraftingHotkeyCategory", InputKey.Invalid, InputKey.ControllerRTrigger));
-		RegisterGameKey(new GameKey(56, "ControllerZoomOut", "CraftingHotkeyCategory", InputKey.Invalid, InputKey.ControllerLTrigger));
+		RegisterGameKey(new GameKey(56, "ControllerZoomIn", "CraftingHotkeyCategory", InputKey.Invalid, InputKey.ControllerRTrigger));
+		RegisterGameKey(new GameKey(57, "ControllerZoomOut", "CraftingHotkeyCategory", InputKey.Invalid, InputKey.ControllerLTrigger));
 	}
 
 	private void RegisterGameAxisKeys()

@@ -124,6 +124,11 @@ public class MBFastRandom
 		return 5.9604645E-08f * (float)(int)(0xFFFFFF & num);
 	}
 
+	public float NextFloatRanged(float minVal, float maxVal)
+	{
+		return minVal + NextFloat() * (maxVal - minVal);
+	}
+
 	public void NextBytes(byte[] buffer)
 	{
 		int num = 0;

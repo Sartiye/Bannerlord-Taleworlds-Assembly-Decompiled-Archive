@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -142,17 +143,14 @@ public class PerkItemButtonWidget : ButtonWidget
 		}
 		float alphaFactor = (isActive ? 1f : 1f);
 		float colorFactor = (isActive ? 1.3f : 0.75f);
-		foreach (Widget allChildrenAndThi in base.AllChildrenAndThis)
+		List<BrushWidget> list = FindChildrenWithType<BrushWidget>();
+		for (int i = 0; i < list.Count; i++)
 		{
-			if (!(allChildrenAndThi is BrushWidget brushWidget))
+			foreach (Style style in list[i].Brush.Styles)
 			{
-				continue;
-			}
-			foreach (Style style in brushWidget.Brush.Styles)
-			{
-				for (int i = 0; i < style.LayerCount; i++)
+				for (int j = 0; j < style.LayerCount; j++)
 				{
-					StyleLayer layer = style.GetLayer(i);
+					StyleLayer layer = style.GetLayer(j);
 					layer.AlphaFactor = alphaFactor;
 					layer.ColorFactor = colorFactor;
 				}
@@ -160,9 +158,9 @@ public class PerkItemButtonWidget : ButtonWidget
 		}
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (_isSelectable)
 		{
 			base.Context.TwoDimensionContext.PlaySound("popup");
@@ -199,7 +197,7 @@ public class PerkItemButtonWidget : ButtonWidget
 			_isSelectable = false;
 			break;
 		default:
-			Debug.FailedAssert("Perk visual state is not defined", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CharacterDeveloper\\PerkItemButtonWidget.cs", "UpdatePerkStateVisual", 134);
+			Debug.FailedAssert("Perk visual state is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CharacterDeveloper\\PerkItemButtonWidget.cs", "UpdatePerkStateVisual", 132);
 			break;
 		}
 	}

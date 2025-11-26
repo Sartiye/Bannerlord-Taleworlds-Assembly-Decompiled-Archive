@@ -3,7 +3,7 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -208,8 +208,8 @@ public class SettlementClaimantPreliminaryDecision : KingdomDecision
 		else
 		{
 			num2 += (float)num * 0.7f;
-			float totalStrength = Settlement.OwnerClan.TotalStrength;
-			num2 += totalStrength * 0.01f;
+			float currentTotalStrength = Settlement.OwnerClan.CurrentTotalStrength;
+			num2 += currentTotalStrength * 0.01f;
 		}
 		float result = 0f;
 		if (shouldSettlementOwnerChange)
@@ -291,8 +291,7 @@ public class SettlementClaimantPreliminaryDecision : KingdomDecision
 
 	public override TextObject GetChosenOutcomeText(DecisionOutcome chosenOutcome, SupportStatus supportStatus, bool isShortVersion = false)
 	{
-		TextObject empty = TextObject.Empty;
-		empty = (((SettlementClaimantPreliminaryOutcome)chosenOutcome).ShouldSettlementOwnerChange ? (supportStatus switch
+		TextObject textObject = (((SettlementClaimantPreliminaryOutcome)chosenOutcome).ShouldSettlementOwnerChange ? (supportStatus switch
 		{
 			SupportStatus.Majority => new TextObject("{=Zo65bOpH}{RULER.NAME} has decided to give {SETTLEMENT} to a new clan with the support of with {?RULER.GENDER}her{?}his{\\?} council."), 
 			SupportStatus.Minority => new TextObject("{=w3sfcpoa}{RULER.NAME} has decided to give {SETTLEMENT} to a new clan despite the opposition of {?RULER.GENDER}her{?}his{\\?} council"), 
@@ -303,10 +302,10 @@ public class SettlementClaimantPreliminaryDecision : KingdomDecision
 			SupportStatus.Minority => new TextObject("{=9Cbeagow}{RULER.NAME} has decided against giving {SETTLEMENT} to a new clan over the objections of {?RULER.GENDER}her{?}his{\\?} council."), 
 			_ => new TextObject("{=fP8NHthR}{RULER.NAME} has decided against giving {SETTLEMENT} to a new clan, with {?RULER.GENDER}her{?}his{\\?} council evenly split on the matter."), 
 		}));
-		empty.SetTextVariable("SETTLEMENT", Settlement.Name);
-		empty.SetTextVariable("KINGDOM", Settlement.MapFaction.InformalName);
-		StringHelpers.SetCharacterProperties("RULER", Settlement.MapFaction.Leader.CharacterObject, empty);
-		return empty;
+		textObject.SetTextVariable("SETTLEMENT", Settlement.Name);
+		textObject.SetTextVariable("KINGDOM", Settlement.MapFaction.InformalName);
+		StringHelpers.SetCharacterProperties("RULER", Settlement.MapFaction.Leader.CharacterObject, textObject);
+		return textObject;
 	}
 
 	public override DecisionOutcome GetQueriedDecisionOutcome(MBReadOnlyList<DecisionOutcome> possibleOutcomes)

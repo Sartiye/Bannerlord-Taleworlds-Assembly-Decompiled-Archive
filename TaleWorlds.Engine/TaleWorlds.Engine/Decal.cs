@@ -38,9 +38,29 @@ public sealed class Decal : GameEntityComponent
 		return EngineApplicationInterface.IDecal.CreateCopy(base.Pointer);
 	}
 
+	public void CheckAndRegisterToDecalSet()
+	{
+		EngineApplicationInterface.IDecal.CheckAndRegisterToDecalSet(base.Pointer);
+	}
+
+	public void SetIsVisible(bool value)
+	{
+		EngineApplicationInterface.IDecal.SetIsVisible(base.Pointer, value);
+	}
+
 	public uint GetFactor1()
 	{
 		return EngineApplicationInterface.IDecal.GetFactor1(base.Pointer);
+	}
+
+	public void OverrideRoadBoundaryP0(Vec2 data)
+	{
+		EngineApplicationInterface.IDecal.OverrideRoadBoundaryP0(base.Pointer, in data);
+	}
+
+	public void OverrideRoadBoundaryP1(Vec2 data)
+	{
+		EngineApplicationInterface.IDecal.OverrideRoadBoundaryP1(base.Pointer, in data);
 	}
 
 	public void SetFactor1Linear(uint linearFactorColor1)
@@ -51,6 +71,11 @@ public sealed class Decal : GameEntityComponent
 	public void SetFactor1(uint factorColor1)
 	{
 		EngineApplicationInterface.IDecal.SetFactor1(base.Pointer, factorColor1);
+	}
+
+	public void SetAlpha(float alpha)
+	{
+		EngineApplicationInterface.IDecal.SetAlpha(base.Pointer, alpha);
 	}
 
 	public void SetVectorArgument(float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3)

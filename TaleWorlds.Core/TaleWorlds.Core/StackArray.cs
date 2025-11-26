@@ -4,6 +4,46 @@ namespace TaleWorlds.Core;
 
 public class StackArray
 {
+	public struct StackArray3Float
+	{
+		private float _element0;
+
+		private float _element1;
+
+		private float _element2;
+
+		public const int Length = 3;
+
+		public float this[int index]
+		{
+			get
+			{
+				return index switch
+				{
+					0 => _element0, 
+					1 => _element1, 
+					2 => _element2, 
+					_ => 0f, 
+				};
+			}
+			set
+			{
+				switch (index)
+				{
+				case 0:
+					_element0 = value;
+					break;
+				case 1:
+					_element1 = value;
+					break;
+				case 2:
+					_element2 = value;
+					break;
+				}
+			}
+		}
+	}
+
 	public struct StackArray5Float
 	{
 		private float _element0;

@@ -5,10 +5,9 @@ namespace TaleWorlds.MountAndBlade.View.Screens;
 
 public class SceneEditorLayer : ScreenLayer
 {
-	public SceneEditorLayer(string categoryId = "SceneEditorLayer")
-		: base(-100, categoryId)
+	public SceneEditorLayer()
+		: base("SceneEditorLayer", -100)
 	{
-		base.Name = "SceneEditorLayer";
 	}
 
 	protected override void OnActivate()

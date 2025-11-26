@@ -86,7 +86,7 @@ internal class AdminPanelOption<T> : IAdminPanelOptionInternal<T>, IAdminPanelOp
 		case MultiplayerOptions.OptionValueType.String:
 			return (T)(object)optionType.GetStrValue(accessMode);
 		case MultiplayerOptions.OptionValueType.Enum:
-			Debug.FailedAssert("Unsupported option value type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\Internal\\AdminPanelOption.cs", "GetOptionValue", 63);
+			Debug.FailedAssert("Unsupported option value type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\Internal\\AdminPanelOption.cs", "GetOptionValue", 63);
 			break;
 		}
 		return default(T);

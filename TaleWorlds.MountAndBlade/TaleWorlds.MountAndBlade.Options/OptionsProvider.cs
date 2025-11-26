@@ -98,23 +98,23 @@ public static class OptionsProvider
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.DepthOfField);
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.Bloom);
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.FilmGrain);
-		if (NativeOptions.CheckGFXSupportStatus(65))
+		if (NativeOptions.CheckGFXSupportStatus(64))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXVignette);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(64))
+		if (NativeOptions.CheckGFXSupportStatus(63))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXChromaticAberration);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(62))
+		if (NativeOptions.CheckGFXSupportStatus(61))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXLensFlare);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(66))
+		if (NativeOptions.CheckGFXSupportStatus(65))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXHexagonVignette);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(63))
+		if (NativeOptions.CheckGFXSupportStatus(62))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXStreaks);
 		}
@@ -133,6 +133,7 @@ public static class OptionsProvider
 		if (!isMultiplayer)
 		{
 			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.BattleSize);
+			yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.PhysicsTickRate);
 		}
 		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.AnimationSamplingQuality);
 	}
@@ -148,8 +149,8 @@ public static class OptionsProvider
 		yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.SoundVolume);
 		yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.MusicVolume);
 		yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.VoiceOverVolume);
+		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.SoundPreset);
 		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.SoundDevice);
-		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.SoundOutput);
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.KeepSoundInBackground);
 		if (isMultiplayer)
 		{
@@ -182,9 +183,8 @@ public static class OptionsProvider
 		if (!isMultiplayer)
 		{
 			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.VoiceLanguage);
-			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.UnitSpawnPrioritization);
-			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ReinforcementWaveCount);
 		}
+		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.PlayerReceivedDamageDifficulty);
 	}
 
 	private static IEnumerable<OptionGroup> GetGameplayOptionGroups(bool isMainMenu, bool isMultiplayer)
@@ -234,6 +234,7 @@ public static class OptionsProvider
 	{
 		yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.TrailAmount);
 		yield return new ManagedNumericOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity);
+		yield return new ManagedBooleanOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners);
 		yield return new ManagedBooleanOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ShowBlood);
 	}
 
@@ -283,6 +284,8 @@ public static class OptionsProvider
 	{
 		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AutoTrackAttackedSettlements);
 		yield return new ManagedNumericOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AutoSaveInterval);
+		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.UnitSpawnPrioritization);
+		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ReinforcementWaveCount);
 	}
 
 	public static IEnumerable<string> GetGameKeyCategoriesList(bool isMultiplayer)
@@ -300,6 +303,14 @@ public static class OptionsProvider
 			yield return GameKeyMainCategories.PollCategory;
 		}
 		yield return GameKeyMainCategories.ChatCategory;
+	}
+
+	public static IEnumerable<int> GetHiddenGameKeys(bool isNavalModuleActive)
+	{
+		if (!isNavalModuleActive)
+		{
+			yield return 45;
+		}
 	}
 
 	public static OptionCategory GetControllerOptionCategory()

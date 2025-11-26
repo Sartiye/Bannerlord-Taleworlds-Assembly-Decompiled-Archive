@@ -14,17 +14,23 @@ public sealed class GameModels : GameModelsManager
 
 	public PartyHealingModel PartyHealingModel { get; private set; }
 
+	public CaravanModel CaravanModel { get; private set; }
+
 	public PartyTrainingModel PartyTrainingModel { get; private set; }
 
 	public BarterModel BarterModel { get; private set; }
 
 	public PersuasionModel PersuasionModel { get; private set; }
 
+	public DefectionModel DefectionModel { get; private set; }
+
 	public CombatSimulationModel CombatSimulationModel { get; private set; }
 
 	public CombatXpModel CombatXpModel { get; private set; }
 
 	public GenericXpModel GenericXpModel { get; private set; }
+
+	public TradeAgreementModel TradeAgreementModel { get; private set; }
 
 	public SmithingModel SmithingModel { get; private set; }
 
@@ -44,9 +50,15 @@ public sealed class GameModels : GameModelsManager
 
 	public PartyDesertionModel PartyDesertionModel { get; private set; }
 
+	public PartyTransitionModel PartyTransitionModel { get; private set; }
+
 	public DiplomacyModel DiplomacyModel { get; private set; }
 
+	public AllianceModel AllianceModel { get; private set; }
+
 	public MinorFactionsModel MinorFactionsModel { get; private set; }
+
+	public HideoutModel HideoutModel { get; private set; }
 
 	public KingdomCreationModel KingdomCreationModel { get; private set; }
 
@@ -60,11 +72,15 @@ public sealed class GameModels : GameModelsManager
 
 	public EncounterModel EncounterModel { get; private set; }
 
+	public SettlementPatrolModel SettlementPatrolModel { get; private set; }
+
 	public ItemDiscardModel ItemDiscardModel { get; private set; }
 
 	public ValuationModel ValuationModel { get; private set; }
 
 	public PartySizeLimitModel PartySizeLimitModel { get; private set; }
+
+	public PartyShipLimitModel PartyShipLimitModel { get; private set; }
 
 	public InventoryCapacityModel InventoryCapacityModel { get; private set; }
 
@@ -75,6 +91,8 @@ public sealed class GameModels : GameModelsManager
 	public VolunteerModel VolunteerModel { get; private set; }
 
 	public RomanceModel RomanceModel { get; private set; }
+
+	public MobilePartyAIModel MobilePartyAIModel { get; private set; }
 
 	public ArmyManagementCalculationModel ArmyManagementCalculationModel { get; private set; }
 
@@ -88,13 +106,15 @@ public sealed class GameModels : GameModelsManager
 
 	public MapDistanceModel MapDistanceModel { get; private set; }
 
+	public PartyNavigationModel PartyNavigationModel { get; private set; }
+
 	public MapWeatherModel MapWeatherModel { get; private set; }
 
 	public TargetScoreCalculatingModel TargetScoreCalculatingModel { get; private set; }
 
 	public TradeItemPriceFactorModel TradeItemPriceFactorModel { get; private set; }
 
-	public SettlementEconomyModel SettlementConsumptionModel { get; private set; }
+	public SettlementEconomyModel SettlementEconomyModel { get; private set; }
 
 	public SettlementFoodModel SettlementFoodModel { get; private set; }
 
@@ -119,6 +139,8 @@ public sealed class GameModels : GameModelsManager
 	public ClanFinanceModel ClanFinanceModel { get; private set; }
 
 	public SettlementTaxModel SettlementTaxModel { get; private set; }
+
+	public HeroAgentLocationModel HeroAgentLocationModel { get; private set; }
 
 	public HeirSelectionCalculationModel HeirSelectionCalculationModel { get; private set; }
 
@@ -206,6 +228,30 @@ public sealed class GameModels : GameModelsManager
 
 	public VoiceOverModel VoiceOverModel { get; private set; }
 
+	public CampaignTimeModel CampaignTimeModel { get; private set; }
+
+	public VillageTradeModel VillageTradeModel { get; private set; }
+
+	public HeroCreationModel HeroCreationModel { get; private set; }
+
+	public CampaignShipDamageModel CampaignShipDamageModel { get; private set; }
+
+	public CampaignShipParametersModel CampaignShipParametersModel { get; private set; }
+
+	public BuildingModel BuildingModel { get; private set; }
+
+	public ShipCostModel ShipCostModel { get; private set; }
+
+	public ShipStatModel ShipStatModel { get; private set; }
+
+	public SceneModel SceneModel { get; private set; }
+
+	public BodyPropertiesModel BodyPropertiesModel { get; private set; }
+
+	public IncidentModel IncidentModel { get; private set; }
+
+	public FleetManagementModel FleetManagementModel { get; private set; }
+
 	private void GetSpecificGameBehaviors()
 	{
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign || Campaign.Current.GameMode == CampaignGameMode.Tutorial)
@@ -213,12 +259,14 @@ public sealed class GameModels : GameModelsManager
 			CharacterDevelopmentModel = GetGameModel<CharacterDevelopmentModel>();
 			CharacterStatsModel = GetGameModel<CharacterStatsModel>();
 			EncounterModel = GetGameModel<EncounterModel>();
+			SettlementPatrolModel = GetGameModel<SettlementPatrolModel>();
 			ItemDiscardModel = GetGameModel<ItemDiscardModel>();
 			ValuationModel = GetGameModel<ValuationModel>();
 			MapVisibilityModel = GetGameModel<MapVisibilityModel>();
 			InformationRestrictionModel = GetGameModel<InformationRestrictionModel>();
 			PartySpeedCalculatingModel = GetGameModel<PartySpeedModel>();
 			PartyHealingModel = GetGameModel<PartyHealingModel>();
+			CaravanModel = GetGameModel<CaravanModel>();
 			PartyTrainingModel = GetGameModel<PartyTrainingModel>();
 			PartyTradeModel = GetGameModel<PartyTradeModel>();
 			RansomValueCalculationModel = GetGameModel<RansomValueCalculationModel>();
@@ -226,13 +274,17 @@ public sealed class GameModels : GameModelsManager
 			CombatSimulationModel = GetGameModel<CombatSimulationModel>();
 			CombatXpModel = GetGameModel<CombatXpModel>();
 			GenericXpModel = GetGameModel<GenericXpModel>();
+			TradeAgreementModel = GetGameModel<TradeAgreementModel>();
 			SmithingModel = GetGameModel<SmithingModel>();
 			MobilePartyFoodConsumptionModel = GetGameModel<MobilePartyFoodConsumptionModel>();
 			PartyImpairmentModel = GetGameModel<PartyImpairmentModel>();
 			PartyFoodBuyingModel = GetGameModel<PartyFoodBuyingModel>();
 			PartyMoraleModel = GetGameModel<PartyMoraleModel>();
 			PartyDesertionModel = GetGameModel<PartyDesertionModel>();
+			HideoutModel = GetGameModel<HideoutModel>();
 			DiplomacyModel = GetGameModel<DiplomacyModel>();
+			AllianceModel = GetGameModel<AllianceModel>();
+			PartyTransitionModel = GetGameModel<PartyTransitionModel>();
 			MinorFactionsModel = GetGameModel<MinorFactionsModel>();
 			KingdomCreationModel = GetGameModel<KingdomCreationModel>();
 			EmissaryModel = GetGameModel<EmissaryModel>();
@@ -246,15 +298,17 @@ public sealed class GameModels : GameModelsManager
 			BattleRewardModel = GetGameModel<BattleRewardModel>();
 			MapTrackModel = GetGameModel<MapTrackModel>();
 			MapDistanceModel = GetGameModel<MapDistanceModel>();
+			PartyNavigationModel = GetGameModel<PartyNavigationModel>();
 			MapWeatherModel = GetGameModel<MapWeatherModel>();
 			TargetScoreCalculatingModel = GetGameModel<TargetScoreCalculatingModel>();
 			PartySizeLimitModel = GetGameModel<PartySizeLimitModel>();
+			PartyShipLimitModel = GetGameModel<PartyShipLimitModel>();
 			PartyWageModel = GetGameModel<PartyWageModel>();
 			PlayerProgressionModel = GetGameModel<PlayerProgressionModel>();
 			InventoryCapacityModel = GetGameModel<InventoryCapacityModel>();
 			TradeItemPriceFactorModel = GetGameModel<TradeItemPriceFactorModel>();
 			SettlementValueModel = GetGameModel<SettlementValueModel>();
-			SettlementConsumptionModel = GetGameModel<SettlementEconomyModel>();
+			SettlementEconomyModel = GetGameModel<SettlementEconomyModel>();
 			SettlementMilitiaModel = GetGameModel<SettlementMilitiaModel>();
 			SettlementFoodModel = GetGameModel<SettlementFoodModel>();
 			SettlementLoyaltyModel = GetGameModel<SettlementLoyaltyModel>();
@@ -262,8 +316,10 @@ public sealed class GameModels : GameModelsManager
 			SettlementProsperityModel = GetGameModel<SettlementProsperityModel>();
 			SettlementGarrisonModel = GetGameModel<SettlementGarrisonModel>();
 			SettlementTaxModel = GetGameModel<SettlementTaxModel>();
+			HeroAgentLocationModel = GetGameModel<HeroAgentLocationModel>();
 			BarterModel = GetGameModel<BarterModel>();
 			PersuasionModel = GetGameModel<PersuasionModel>();
+			DefectionModel = GetGameModel<DefectionModel>();
 			ClanTierModel = GetGameModel<ClanTierModel>();
 			VassalRewardsModel = GetGameModel<VassalRewardsModel>();
 			ClanPoliticsModel = GetGameModel<ClanPoliticsModel>();
@@ -310,17 +366,26 @@ public sealed class GameModels : GameModelsManager
 			EquipmentSelectionModel = GetGameModel<EquipmentSelectionModel>();
 			AlleyModel = GetGameModel<AlleyModel>();
 			VoiceOverModel = GetGameModel<VoiceOverModel>();
+			CampaignTimeModel = GetGameModel<CampaignTimeModel>();
+			VillageTradeModel = GetGameModel<VillageTradeModel>();
+			PartyNavigationModel = GetGameModel<PartyNavigationModel>();
+			MobilePartyAIModel = GetGameModel<MobilePartyAIModel>();
+			HeroCreationModel = GetGameModel<HeroCreationModel>();
+			CampaignShipDamageModel = GetGameModel<CampaignShipDamageModel>();
+			CampaignShipParametersModel = GetGameModel<CampaignShipParametersModel>();
+			BuildingModel = GetGameModel<BuildingModel>();
+			ShipCostModel = GetGameModel<ShipCostModel>();
+			SceneModel = GetGameModel<SceneModel>();
+			IncidentModel = GetGameModel<IncidentModel>();
+			BodyPropertiesModel = GetGameModel<BodyPropertiesModel>();
+			FleetManagementModel = GetGameModel<FleetManagementModel>();
+			ShipStatModel = GetGameModel<ShipStatModel>();
 		}
-	}
-
-	private void MakeGameComponentBindings()
-	{
 	}
 
 	public GameModels(IEnumerable<GameModel> inputComponents)
 		: base(inputComponents)
 	{
 		GetSpecificGameBehaviors();
-		MakeGameComponentBindings();
 	}
 }

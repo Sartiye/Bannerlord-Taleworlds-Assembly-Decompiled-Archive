@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 using TaleWorlds.ObjectSystem;
 
@@ -13,7 +12,7 @@ internal static class LobbyTauntHelper
 {
 	public static Equipment PrepareForTaunt(Equipment originalEquipment, TauntCosmeticElement taunt, bool doNotAddComplimentaryWeapons = false)
 	{
-		MBReadOnlyList<TauntUsageManager.TauntUsage> mBReadOnlyList = TauntUsageManager.GetUsageSet(taunt.Id)?.GetUsages();
+		MBReadOnlyList<TauntUsageManager.TauntUsage> mBReadOnlyList = TauntUsageManager.Instance.GetUsageSet(taunt.Id)?.GetUsages();
 		if (mBReadOnlyList == null || mBReadOnlyList.Count == 0)
 		{
 			return originalEquipment;

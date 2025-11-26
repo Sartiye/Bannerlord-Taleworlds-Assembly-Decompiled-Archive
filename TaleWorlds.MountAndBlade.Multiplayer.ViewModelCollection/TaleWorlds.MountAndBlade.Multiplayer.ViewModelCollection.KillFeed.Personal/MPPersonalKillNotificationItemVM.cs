@@ -161,7 +161,7 @@ public class MPPersonalKillNotificationItemVM : ViewModel
 			Message = GameTexts.FindText("str_gold_gain_perk_bonus").ToString();
 			break;
 		default:
-			Debug.FailedAssert("Undefined gold change type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\Personal\\MPPersonalKillNotificationItemVM.cs", ".ctor", 117);
+			Debug.FailedAssert("Undefined gold change type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\Personal\\MPPersonalKillNotificationItemVM.cs", ".ctor", 117);
 			Message = "";
 			break;
 		}

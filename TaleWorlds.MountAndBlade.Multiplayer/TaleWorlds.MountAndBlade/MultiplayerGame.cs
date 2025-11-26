@@ -4,6 +4,7 @@ using TaleWorlds.Avatar.PlayerServices;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
+using TaleWorlds.MountAndBlade.ComponentInterfaces;
 using TaleWorlds.MountAndBlade.Diamond.MultiplayerBadges;
 using TaleWorlds.ObjectSystem;
 
@@ -64,6 +65,7 @@ public class MultiplayerGame : GameType
 		basicGameStarter.AddModel(new DefaultAgentDecideKilledOrUnconsciousModel());
 		basicGameStarter.AddModel(new DefaultDamageParticleModel());
 		basicGameStarter.AddModel(new DefaultItemPickupModel());
+		basicGameStarter.AddModel(new DefaultSiegeEngineCalculationModel());
 	}
 
 	public static Dictionary<string, Equipment> ReadDefaultEquipments(string defaultEquipmentsPath)
@@ -76,7 +78,7 @@ public class MultiplayerGame : GameType
 			if (childNode.NodeType == XmlNodeType.Element)
 			{
 				string value = childNode.Attributes["name"].Value;
-				Equipment equipment = new Equipment(isCivilian: false);
+				Equipment equipment = new Equipment(Equipment.EquipmentType.Battle);
 				equipment.Deserialize(null, childNode);
 				dictionary.Add(value, equipment);
 			}

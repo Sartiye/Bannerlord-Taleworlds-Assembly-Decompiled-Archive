@@ -1,5 +1,4 @@
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
 using TaleWorlds.ScreenSystem;
@@ -10,14 +9,14 @@ public class MultiplayerAdminInformationScreen : GlobalLayer
 {
 	private MultiplayerAdminInformationVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	public static MultiplayerAdminInformationScreen Current { get; private set; }
 
 	public MultiplayerAdminInformationScreen()
 	{
 		_dataSource = new MultiplayerAdminInformationVM();
-		GauntletLayer gauntletLayer = new GauntletLayer(300);
+		GauntletLayer gauntletLayer = new GauntletLayer("MultiplayerAdminInformation", 15300);
 		_movie = gauntletLayer.LoadMovie("MultiplayerAdminInformation", _dataSource);
 		base.Layer = gauntletLayer;
 		InformationManager.OnAddSystemNotification += OnSystemNotificationReceived;
@@ -48,7 +47,7 @@ public class MultiplayerAdminInformationScreen : GlobalLayer
 		{
 			Current.OnFinalize();
 			ScreenManager.RemoveGlobalLayer(Current);
-			Current._movie.Release();
+			(Current.Layer as GauntletLayer).ReleaseMovie(Current._movie);
 			Current._dataSource = null;
 			Current = null;
 		}

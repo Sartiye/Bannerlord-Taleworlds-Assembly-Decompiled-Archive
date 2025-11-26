@@ -11,7 +11,7 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
 public class MissionOrderTroopControllerVM : ViewModel
 {
-	private class TroopItemFormationIndexComparer : IComparer<OrderTroopItemVM>
+	protected class TroopItemFormationIndexComparer : IComparer<OrderTroopItemVM>
 	{
 		public int Compare(OrderTroopItemVM x, OrderTroopItemVM y)
 		{
@@ -20,19 +20,17 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	private readonly MissionOrderVM _missionOrder;
+	protected readonly MissionOrderVM MissionOrder;
 
-	private readonly Action _onTransferFinised;
+	protected readonly Action OnTransferFinished;
 
-	private readonly bool _isMultiplayer;
+	protected List<MissionOrderVM.FormationConfiguration> FilterData;
 
-	private List<(int, List<int>)> _filterData;
+	protected bool IsDeployment;
 
-	private bool _isDeployment;
+	protected TroopItemFormationIndexComparer FormationIndexComparer;
 
-	private TroopItemFormationIndexComparer _formationIndexComparer;
-
-	private MBBindingList<OrderTroopItemVM> _troopList;
+	private readonly OrderTroopItemVM _emptyTroopItemVM;
 
 	private bool _isTransferActive;
 
@@ -50,17 +48,35 @@ public class MissionOrderTroopControllerVM : ViewModel
 
 	private bool _isTransferValid;
 
+	private OrderTroopItemVM _troopItem0;
+
+	private OrderTroopItemVM _troopItem1;
+
+	private OrderTroopItemVM _troopItem2;
+
+	private OrderTroopItemVM _troopItem3;
+
+	private OrderTroopItemVM _troopItem4;
+
+	private OrderTroopItemVM _troopItem5;
+
+	private OrderTroopItemVM _troopItem6;
+
+	private OrderTroopItemVM _troopItem7;
+
 	private InputKeyItemVM _doneInputKey;
 
 	private InputKeyItemVM _cancelInputKey;
 
 	private InputKeyItemVM _resetInputKey;
 
-	private Mission Mission => Mission.Current;
+	public MBList<OrderTroopItemVM> TroopList { get; private set; }
 
-	private Team Team => Mission.Current.PlayerTeam;
+	private Agent MainAgent => Mission.Current.MainAgent;
 
-	public OrderController OrderController => Team.PlayerOrderController;
+	protected Team Team => Mission.Current.PlayerTeam;
+
+	protected OrderController OrderController => Mission.Current.PlayerTeam.PlayerOrderController;
 
 	[DataSourceProperty]
 	public bool IsTransferActive
@@ -76,12 +92,11 @@ public class MissionOrderTroopControllerVM : ViewModel
 				return;
 			}
 			_isTransferActive = value;
-			OnPropertyChanged("IsTransferActive");
-			_missionOrder.IsTroopPlacingActive = !value;
-			if (_missionOrder.OrderSetsWithOrdersByType.ContainsKey(OrderSetType.Toggle))
+			OnPropertyChangedWithValue(value, "IsTransferActive");
+			MissionOrder.IsTroopPlacingActive = !value;
+			for (int i = 0; i < MissionOrder.OrderSets.Count; i++)
 			{
-				_missionOrder.OrderSetsWithOrdersByType[OrderSetType.Toggle].GetOrder(OrderSubType.ToggleTransfer).SelectionState = ((!value) ? 1 : 3);
-				_missionOrder.OrderSetsWithOrdersByType[OrderSetType.Toggle].FinalizeActiveStatus();
+				MissionOrder.OrderSets[i].ExecuteDeSelect();
 			}
 			if (_isTransferActive)
 			{
@@ -92,9 +107,9 @@ public class MissionOrderTroopControllerVM : ViewModel
 					transferTarget.IsAmmoAvailable = transferTarget.Formation.QuerySystem.RangedUnitRatio > 0f || transferTarget.Formation.QuerySystem.RangedCavalryUnitRatio > 0f;
 				}
 			}
-			if (Mission != null)
+			if (Mission.Current != null)
 			{
-				Mission.IsTransferMenuOpen = value;
+				Mission.Current.IsTransferMenuOpen = value;
 			}
 		}
 	}
@@ -111,7 +126,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _isTransferValid)
 			{
 				_isTransferValid = value;
-				OnPropertyChanged("IsTransferValid");
+				OnPropertyChangedWithValue(value, "IsTransferValid");
 				if (!value)
 				{
 					TransferTitleText = "";
@@ -132,7 +147,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _transferTargetList)
 			{
 				_transferTargetList = value;
-				OnPropertyChanged("TransferTargetList");
+				OnPropertyChangedWithValue(value, "TransferTargetList");
 			}
 		}
 	}
@@ -149,7 +164,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _transferMaxValue)
 			{
 				_transferMaxValue = value;
-				OnPropertyChanged("TransferMaxValue");
+				OnPropertyChangedWithValue(value, "TransferMaxValue");
 			}
 		}
 	}
@@ -166,7 +181,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _transferValue)
 			{
 				_transferValue = value;
-				OnPropertyChanged("TransferValue");
+				OnPropertyChangedWithValue(value, "TransferValue");
 			}
 		}
 	}
@@ -183,7 +198,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _transferTitleText)
 			{
 				_transferTitleText = value;
-				OnPropertyChanged("TransferTitleText");
+				OnPropertyChangedWithValue(value, "TransferTitleText");
 			}
 		}
 	}
@@ -200,7 +215,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _acceptText)
 			{
 				_acceptText = value;
-				OnPropertyChanged("AcceptText");
+				OnPropertyChangedWithValue(value, "AcceptText");
 			}
 		}
 	}
@@ -217,24 +232,143 @@ public class MissionOrderTroopControllerVM : ViewModel
 			if (value != _cancelText)
 			{
 				_cancelText = value;
-				OnPropertyChanged("CancelText");
+				OnPropertyChangedWithValue(value, "CancelText");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public MBBindingList<OrderTroopItemVM> TroopList
+	public OrderTroopItemVM TroopItem0
 	{
 		get
 		{
-			return _troopList;
+			return _troopItem0;
 		}
 		set
 		{
-			if (value != _troopList)
+			if (value != _troopItem0)
 			{
-				_troopList = value;
-				OnPropertyChanged("TroopList");
+				_troopItem0 = value;
+				OnPropertyChangedWithValue(value, "TroopItem0");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem1
+	{
+		get
+		{
+			return _troopItem1;
+		}
+		set
+		{
+			if (value != _troopItem1)
+			{
+				_troopItem1 = value;
+				OnPropertyChangedWithValue(value, "TroopItem1");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem2
+	{
+		get
+		{
+			return _troopItem2;
+		}
+		set
+		{
+			if (value != _troopItem2)
+			{
+				_troopItem2 = value;
+				OnPropertyChangedWithValue(value, "TroopItem2");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem3
+	{
+		get
+		{
+			return _troopItem3;
+		}
+		set
+		{
+			if (value != _troopItem3)
+			{
+				_troopItem3 = value;
+				OnPropertyChangedWithValue(value, "TroopItem3");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem4
+	{
+		get
+		{
+			return _troopItem4;
+		}
+		set
+		{
+			if (value != _troopItem4)
+			{
+				_troopItem4 = value;
+				OnPropertyChangedWithValue(value, "TroopItem4");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem5
+	{
+		get
+		{
+			return _troopItem5;
+		}
+		set
+		{
+			if (value != _troopItem5)
+			{
+				_troopItem5 = value;
+				OnPropertyChangedWithValue(value, "TroopItem5");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem6
+	{
+		get
+		{
+			return _troopItem6;
+		}
+		set
+		{
+			if (value != _troopItem6)
+			{
+				_troopItem6 = value;
+				OnPropertyChangedWithValue(value, "TroopItem6");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public OrderTroopItemVM TroopItem7
+	{
+		get
+		{
+			return _troopItem7;
+		}
+		set
+		{
+			if (value != _troopItem7)
+			{
+				_troopItem7 = value;
+				OnPropertyChangedWithValue(value, "TroopItem7");
 			}
 		}
 	}
@@ -290,41 +424,51 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	public MissionOrderTroopControllerVM(MissionOrderVM missionOrder, bool isMultiplayer, bool isDeployment, Action onTransferFinised)
+	public MissionOrderTroopControllerVM(MissionOrderVM missionOrder, bool isDeployment, Action onTransferFinised)
 	{
-		_missionOrder = missionOrder;
-		_onTransferFinised = onTransferFinised;
-		_isMultiplayer = isMultiplayer;
-		_isDeployment = isDeployment;
-		TroopList = new MBBindingList<OrderTroopItemVM>();
+		MissionOrder = missionOrder;
+		OnTransferFinished = onTransferFinised;
+		_emptyTroopItemVM = new OrderTroopItemVM();
+		IsDeployment = isDeployment;
+		TroopList = new MBList<OrderTroopItemVM>();
 		TransferTargetList = new MBBindingList<OrderTroopItemVM>();
-		TroopList.Clear();
-		TransferTargetList.Clear();
 		for (int i = 0; i < 8; i++)
 		{
-			OrderTroopItemVM orderTroopItemVM = new OrderTroopItemVM(Team.GetFormation((FormationClass)i), ExecuteSelectTransferTroop, GetFormationMorale);
+			Formation formation = Team.GetFormation((FormationClass)i);
+			OrderTroopItemVM orderTroopItemVM = CreateTroopItemVM(formation, ExecuteSelectTransferTroop, GetFormationMorale);
 			TransferTargetList.Add(orderTroopItemVM);
 			orderTroopItemVM.IsSelected = false;
 		}
-		Team.OnOrderIssued += OrderController_OnTroopOrderIssued;
-		if (TroopList.Count > 0)
-		{
-			OnSelectFormation(TroopList[0]);
-		}
-		_formationIndexComparer = new TroopItemFormationIndexComparer();
+		FormationIndexComparer = new TroopItemFormationIndexComparer();
 		SortFormations();
+		OrderController.OnOrderIssued += OrderController_OnTroopOrderIssued;
+		OrderController.OnSelectedFormationsChanged += OrderController_OnSelectedFormationsChanged;
 		RefreshValues();
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		_troopList.ApplyActionOnAllItems(delegate(OrderTroopItemVM x)
+		TroopList.ForEach(delegate(OrderTroopItemVM x)
 		{
 			x.RefreshValues();
 		});
 		AcceptText = GameTexts.FindText("str_selection_widget_accept").ToString();
 		CancelText = GameTexts.FindText("str_selection_widget_cancel").ToString();
+	}
+
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		OrderController.OnOrderIssued -= OrderController_OnTroopOrderIssued;
+		OrderController.OnSelectedFormationsChanged -= OrderController_OnSelectedFormationsChanged;
+		_emptyTroopItemVM.OnFinalize();
+		TroopList.ForEach(delegate(OrderTroopItemVM x)
+		{
+			x.OnFinalize();
+		});
+		TroopList.Clear();
+		TransferTargetList.Clear();
 	}
 
 	public void ExecuteSelectAll()
@@ -340,7 +484,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 		targetTroop.IsSelected = targetTroop.IsSelectable;
 		IsTransferValid = targetTroop.IsSelectable;
-		GameTexts.SetVariable("FORMATION_INDEX", Common.ToRoman(targetTroop.Formation.Index + 1));
+		GameTexts.SetVariable("FORMATION_INDEX", targetTroop.FormationName);
 		TransferTitleText = new TextObject("{=DvnRkWQg}Transfer Troops To {FORMATION_INDEX}").ToString();
 	}
 
@@ -361,13 +505,14 @@ public class MissionOrderTroopControllerVM : ViewModel
 				i--;
 			}
 		}
-		_onTransferFinised?.DynamicInvokeWithLog();
+		OnTransferFinished?.DynamicInvokeWithLog();
+		UpdateTroops();
 	}
 
 	public void ExecuteCancelTransfer()
 	{
 		IsTransferActive = false;
-		_onTransferFinised?.DynamicInvokeWithLog();
+		OnTransferFinished?.DynamicInvokeWithLog();
 	}
 
 	public void ExecuteReset()
@@ -375,180 +520,57 @@ public class MissionOrderTroopControllerVM : ViewModel
 		RefreshValues();
 	}
 
-	internal void SetTroopActiveOrders(OrderTroopItemVM item)
+	public void SetTroopActiveOrders(OrderTroopItemVM item)
 	{
-		bool flag = BannerlordConfig.OrderLayoutType == 1;
-		item.ActiveOrders.Clear();
-		List<OrderSubType> list = new List<OrderSubType>();
-		OrderType orderType = OrderUIHelper.GetOrderOverrideForUI(item.Formation, OrderSetType.Movement);
-		if (orderType == OrderType.None)
+		item.ClearActiveOrders();
+		foreach (OrderSetVM orderSet in MissionOrder.OrderSets)
 		{
-			orderType = OrderController.GetActiveMovementOrderOf(item.Formation);
-		}
-		switch (orderType)
-		{
-		case OrderType.Move:
-			list.Add(OrderSubType.MoveToPosition);
-			break;
-		case OrderType.Charge:
-			list.Add(OrderSubType.Charge);
-			break;
-		case OrderType.FollowMe:
-			list.Add(OrderSubType.FollowMe);
-			break;
-		case OrderType.StandYourGround:
-			list.Add(OrderSubType.Stop);
-			break;
-		case OrderType.Retreat:
-			list.Add(OrderSubType.Retreat);
-			break;
-		case OrderType.Advance:
-			list.Add(OrderSubType.Advance);
-			break;
-		case OrderType.FallBack:
-			list.Add(OrderSubType.Fallback);
-			break;
-		case OrderType.ChargeWithTarget:
-			list.Add(OrderSubType.Charge);
-			break;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 175);
-			break;
-		}
-		OrderType orderType2 = OrderUIHelper.GetOrderOverrideForUI(item.Formation, OrderSetType.Form);
-		if (orderType2 == OrderType.None)
-		{
-			orderType2 = OrderController.GetActiveArrangementOrderOf(item.Formation);
-		}
-		switch (orderType2)
-		{
-		case OrderType.ArrangementLine:
-			list.Add(OrderSubType.FormLine);
-			break;
-		case OrderType.ArrangementCloseOrder:
-			list.Add(OrderSubType.FormClose);
-			break;
-		case OrderType.ArrangementLoose:
-			list.Add(OrderSubType.FormLoose);
-			break;
-		case OrderType.ArrangementCircular:
-			list.Add(OrderSubType.FormCircular);
-			break;
-		case OrderType.ArrangementSchiltron:
-			list.Add(OrderSubType.FormSchiltron);
-			break;
-		case OrderType.ArrangementVee:
-			list.Add(OrderSubType.FormV);
-			break;
-		case OrderType.ArrangementColumn:
-			list.Add(OrderSubType.FormColumn);
-			break;
-		case OrderType.ArrangementScatter:
-			list.Add(OrderSubType.FormScatter);
-			break;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 220);
-			break;
-		}
-		switch (OrderController.GetActiveRidingOrderOf(item.Formation))
-		{
-		case OrderType.Dismount:
-			list.Add(OrderSubType.ToggleMount);
-			break;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 234);
-			break;
-		case OrderType.Mount:
-			break;
-		}
-		switch (OrderController.GetActiveFiringOrderOf(item.Formation))
-		{
-		case OrderType.HoldFire:
-			list.Add(OrderSubType.ToggleFire);
-			break;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 248);
-			break;
-		case OrderType.FireAtWill:
-			break;
-		}
-		if (!_isMultiplayer)
-		{
-			switch (OrderController.GetActiveAIControlOrderOf(item.Formation))
+			foreach (OrderItemVM order in orderSet.Orders)
 			{
-			case OrderType.AIControlOn:
-				list.Add(OrderSubType.ToggleAI);
-				break;
-			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 264);
-				break;
-			case OrderType.AIControlOff:
-				break;
+				if (order.Order.GetFormationHasOrder(item.Formation))
+				{
+					item.AddActiveOrder(order);
+				}
 			}
-		}
-		switch (OrderController.GetActiveFacingOrderOf(item.Formation))
-		{
-		case OrderType.LookAtDirection:
-			list.Add(OrderSubType.ActivationFaceDirection);
-			break;
-		case OrderType.LookAtEnemy:
-			list.Add(flag ? OrderSubType.FaceEnemy : OrderSubType.ToggleFacing);
-			break;
-		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "SetTroopActiveOrders", 280);
-			break;
-		}
-		foreach (OrderSubType item2 in list)
-		{
-			item.ActiveOrders.AddRange(_missionOrder.GetAllOrderItemsForSubType(item2));
 		}
 	}
 
-	internal void SelectAllFormations(bool uiFeedback = true)
+	public virtual void SelectAllFormations(bool uiFeedback = true)
 	{
-		foreach (OrderSetVM value in _missionOrder.OrderSetsWithOrdersByType.Values)
+		foreach (OrderSetVM orderSet in MissionOrder.OrderSets)
 		{
-			value.ShowOrders = false;
+			orderSet.ExecuteDeSelect();
 		}
 		if (TroopList.Any((OrderTroopItemVM t) => t.IsSelectable))
 		{
+			OrderController.ClearSelectedFormations();
 			OrderController.SelectAllFormations(uiFeedback);
 			if (uiFeedback && OrderController.SelectedFormations.Count > 0)
 			{
 				InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=xTv4tCbZ}Everybody!! Listen to me").ToString()));
 			}
 		}
-		foreach (OrderTroopItemVM troop in TroopList)
-		{
-			troop.IsSelected = troop.IsSelectable;
-		}
-		_missionOrder.SetActiveOrders();
+		MissionOrder.SetActiveOrders();
 	}
 
-	internal void AddSelectedFormation(OrderTroopItemVM item)
+	public virtual void AddSelectedFormation(OrderTroopItemVM item)
 	{
 		if (item.IsSelectable)
 		{
 			Formation formation = Team.GetFormation(item.InitialFormationClass);
 			OrderController.SelectFormation(formation);
-			item.IsSelected = true;
-			_missionOrder.SetActiveOrders();
+			MissionOrder.SetActiveOrders();
 		}
 	}
 
-	internal void SetSelectedFormation(OrderTroopItemVM item)
+	public void SetSelectedFormation(OrderTroopItemVM item)
 	{
 		UpdateTroops();
-		if (!item.IsSelectable)
+		if (item.IsSelectable)
 		{
-			return;
+			OrderController.ClearSelectedFormations();
+			AddSelectedFormation(item);
 		}
-		OrderController.ClearSelectedFormations();
-		foreach (OrderTroopItemVM troop in TroopList)
-		{
-			troop.IsSelected = false;
-		}
-		AddSelectedFormation(item);
 	}
 
 	public void OnDeselectFormation(int index)
@@ -557,7 +579,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 		OnDeselectFormation(item);
 	}
 
-	internal void OnDeselectFormation(OrderTroopItemVM item)
+	public void OnDeselectFormation(OrderTroopItemVM item)
 	{
 		if (item == null)
 		{
@@ -568,31 +590,30 @@ public class MissionOrderTroopControllerVM : ViewModel
 		{
 			OrderController.DeselectFormation(formation);
 		}
-		item.IsSelected = false;
-		if (_isDeployment)
+		if (IsDeployment)
 		{
 			if (TroopList.Count((OrderTroopItemVM t) => t.IsSelected) != 0)
 			{
-				_missionOrder.SetActiveOrders();
+				MissionOrder.SetActiveOrders();
 				return;
 			}
-			_missionOrder.TryCloseToggleOrder(dontApplySelected: true);
-			_missionOrder.IsTroopPlacingActive = false;
+			MissionOrder.TryCloseToggleOrder();
+			MissionOrder.IsTroopPlacingActive = false;
 		}
 		else
 		{
-			_missionOrder.SetActiveOrders();
+			MissionOrder.SetActiveOrders();
 		}
 	}
 
-	internal void OnSelectFormation(OrderTroopItemVM item)
+	public void OnSelectFormation(OrderTroopItemVM item)
 	{
-		foreach (OrderSetVM value in _missionOrder.OrderSetsWithOrdersByType.Values)
+		foreach (OrderSetVM orderSet in MissionOrder.OrderSets)
 		{
-			value.ShowOrders = false;
+			orderSet.ExecuteDeSelect();
 		}
 		UpdateTroops();
-		_missionOrder.IsTroopPlacingActive = true;
+		MissionOrder.IsTroopPlacingActive = true;
 		if (TaleWorlds.InputSystem.Input.IsKeyDown(InputKey.LeftControl))
 		{
 			if (item.IsSelected)
@@ -621,107 +642,93 @@ public class MissionOrderTroopControllerVM : ViewModel
 		TransferValue = TransferMaxValue;
 	}
 
-	internal void CheckSelectableFormations()
+	private void UpdateFormationSelectedStates()
 	{
-		foreach (OrderTroopItemVM troop in TroopList)
+		for (int i = 0; i < TroopList.Count; i++)
 		{
-			Formation formation = Team.GetFormation(troop.InitialFormationClass);
-			if (formation != null)
+			OrderTroopItemVM orderTroopItemVM = TroopList[i];
+			orderTroopItemVM.IsSelectable = OrderController.IsFormationSelectable(orderTroopItemVM.Formation);
+			if (orderTroopItemVM.IsSelectable && OrderController.IsFormationListening(orderTroopItemVM.Formation))
 			{
-				bool isSelectable = OrderController.IsFormationSelectable(formation);
-				troop.IsSelectable = isSelectable;
-				if (!troop.IsSelectable && troop.IsSelected)
-				{
-					OnDeselectFormation(troop);
-				}
+				orderTroopItemVM.IsSelected = true;
 			}
-		}
-	}
-
-	internal void UpdateTroops()
-	{
-		List<Formation> list = ((Mission.MainAgent == null || Mission.MainAgent.Controller == Agent.ControllerType.Player) ? Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && (!f.IsPlayerTroopInFormation || f.CountOfUnits > 1)).ToList() : Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0).ToList());
-		foreach (OrderTroopItemVM troop in TroopList)
-		{
-			SetTroopActiveOrders(troop);
-			troop.IsSelectable = OrderController.IsFormationSelectable(troop.Formation);
-			if (troop.IsSelectable && OrderController.IsFormationListening(troop.Formation))
-			{
-				troop.IsSelected = true;
-			}
-		}
-		for (int i = 0; i < list.Count; i++)
-		{
-			Formation formation = list[i];
-			if (formation != null && TroopList.All((OrderTroopItemVM item) => item.Formation != formation))
-			{
-				OrderTroopItemVM troopItem = new OrderTroopItemVM(formation, OnSelectFormation, GetFormationMorale);
-				troopItem = AddTroopItemIfNotExist(troopItem);
-				SetTroopActiveOrders(troopItem);
-				troopItem.IsSelectable = OrderController.IsFormationSelectable(formation);
-				if (troopItem.IsSelectable && OrderController.IsFormationListening(formation))
-				{
-					troopItem.IsSelected = true;
-				}
-				SortFormations();
-			}
-		}
-	}
-
-	public void AddTroops(Agent agent)
-	{
-		if (agent.Team != Team || agent.Formation == null || agent.IsPlayerControlled)
-		{
-			return;
-		}
-		Formation formation = agent.Formation;
-		OrderTroopItemVM orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM item) => item.Formation.FormationIndex == formation.FormationIndex);
-		if (orderTroopItemVM == null)
-		{
-			OrderTroopItemVM troopItem = new OrderTroopItemVM(formation, OnSelectFormation, GetFormationMorale);
-			troopItem = AddTroopItemIfNotExist(troopItem);
-			SetTroopActiveOrders(troopItem);
-			troopItem.IsSelectable = OrderController.IsFormationSelectable(formation);
-			if (troopItem.IsSelectable && OrderController.IsFormationListening(formation))
-			{
-				troopItem.IsSelected = true;
-			}
-		}
-		else
-		{
-			orderTroopItemVM.SetFormationClassFromFormation(formation);
-			bool isSelectable = OrderController.IsFormationSelectable(formation);
-			orderTroopItemVM.IsSelectable = isSelectable;
-		}
-	}
-
-	public void RemoveTroops(Agent agent)
-	{
-		if (agent.Team != Team || agent.Formation == null)
-		{
-			return;
-		}
-		Formation formation = agent.Formation;
-		OrderTroopItemVM orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM item) => item.Formation.FormationIndex == formation.FormationIndex);
-		if (orderTroopItemVM != null)
-		{
-			orderTroopItemVM.OnFormationAgentRemoved(agent);
-			orderTroopItemVM.SetFormationClassFromFormation(formation);
-			orderTroopItemVM.IsSelectable = OrderController.IsFormationSelectable(formation);
-			if (!orderTroopItemVM.IsSelectable && orderTroopItemVM.IsSelected)
+			else if (!orderTroopItemVM.IsSelectable && orderTroopItemVM.IsSelected)
 			{
 				OnDeselectFormation(orderTroopItemVM);
 			}
 		}
 	}
 
+	protected virtual OrderTroopItemVM CreateTroopItemVM(Formation formation, Action<OrderTroopItemVM> onSelectFormation, Func<Formation, int> getFormationMorale)
+	{
+		return new OrderTroopItemVM(formation, onSelectFormation, getFormationMorale);
+	}
+
+	public void UpdateTroops()
+	{
+		List<Formation> list = ((MainAgent == null || MainAgent.Controller == AgentControllerType.Player) ? Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && (!f.IsPlayerTroopInFormation || f.CountOfUnits > 1)).ToList() : Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0).ToList());
+		for (int i = 0; i < list.Count; i++)
+		{
+			Formation formation = list[i];
+			if (formation != null && !TroopList.Any((OrderTroopItemVM item) => item.Formation == formation))
+			{
+				AddTroopItemIfNotExist(CreateTroopItemVM(formation, OnSelectFormation, GetFormationMorale));
+			}
+		}
+		for (int j = 0; j < TroopList.Count; j++)
+		{
+			TroopList[j].UpdateVisuals();
+		}
+		SortFormations();
+		UpdateFormationSelectedStates();
+		RefreshTroopItemBindings();
+	}
+
+	public void AddTroops(Agent agent)
+	{
+		if (agent.Team == Team && agent.Formation != null && !agent.IsPlayerControlled)
+		{
+			Formation formation = agent.Formation;
+			OrderTroopItemVM orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM item) => item.Formation.FormationIndex == formation.FormationIndex);
+			if (orderTroopItemVM == null)
+			{
+				AddTroopItemIfNotExist(CreateTroopItemVM(formation, OnSelectFormation, GetFormationMorale));
+			}
+			else
+			{
+				orderTroopItemVM.SetFormationClassFromFormation(formation);
+			}
+			SortFormations();
+			UpdateFormationSelectedStates();
+		}
+	}
+
+	public void RemoveTroops(Agent agent)
+	{
+		if (agent.Team == Team && agent.Formation != null)
+		{
+			Formation formation = agent.Formation;
+			OrderTroopItemVM orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM item) => item.Formation.FormationIndex == formation.FormationIndex);
+			if (orderTroopItemVM != null)
+			{
+				orderTroopItemVM.OnFormationAgentRemoved(agent);
+				orderTroopItemVM.SetFormationClassFromFormation(formation);
+			}
+			UpdateFormationSelectedStates();
+		}
+	}
+
+	public void OnTroopOrderIssued(List<OrderTroopItemVM> selectedFormations, OrderItemVM orderItem)
+	{
+		foreach (OrderSetVM orderSet in MissionOrder.OrderSets)
+		{
+			orderSet.RefreshOrderStates();
+		}
+		MissionOrder.SelectedOrderSet?.ExecuteDeSelect();
+	}
+
 	private void OrderController_OnTroopOrderIssued(OrderType orderType, IEnumerable<Formation> appliedFormations, OrderController orderController, params object[] delegateParams)
 	{
-		foreach (OrderSetVM value in _missionOrder.OrderSetsWithOrdersByType.Values)
-		{
-			value.TitleOrder.IsActive = value.TitleOrder.SelectionState != 0;
-		}
-		_missionOrder.OrderSetsWithOrdersByType[OrderSetType.Movement].ShowOrders = false;
 		if (orderType == OrderType.Transfer)
 		{
 			if (!(delegateParams[1] is object[]))
@@ -741,15 +748,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 						break;
 					}
 				}
-				OrderTroopItemVM troopItem = new OrderTroopItemVM(formation, OnSelectFormation, GetFormationMorale);
-				troopItem = AddTroopItemIfNotExist(troopItem, index);
-				SetTroopActiveOrders(troopItem);
-				troopItem.IsSelectable = OrderController.IsFormationSelectable(formation);
-				if (troopItem.IsSelectable && OrderController.IsFormationListening(formation))
-				{
-					troopItem.IsSelected = true;
-				}
-				OnFiltersSet(_filterData);
+				AddTroopItemIfNotExist(CreateTroopItemVM(formation, OnSelectFormation, GetFormationMorale), index);
 			}
 			else
 			{
@@ -769,15 +768,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 							break;
 						}
 					}
-					OrderTroopItemVM troopItem2 = new OrderTroopItemVM(sourceFormation2, OnSelectFormation, GetFormationMorale);
-					troopItem2 = AddTroopItemIfNotExist(troopItem2, index2);
-					SetTroopActiveOrders(troopItem2);
-					troopItem2.IsSelectable = OrderController.IsFormationSelectable(sourceFormation2);
-					if (troopItem2.IsSelectable && OrderController.IsFormationListening(sourceFormation2))
-					{
-						troopItem2.IsSelected = true;
-					}
-					OnFiltersSet(_filterData);
+					AddTroopItemIfNotExist(CreateTroopItemVM(sourceFormation2, OnSelectFormation, GetFormationMorale), index2);
 				}
 				else
 				{
@@ -792,45 +783,94 @@ public class MissionOrderTroopControllerVM : ViewModel
 			}
 		}
 		UpdateTroops();
-		SortFormations();
 		foreach (OrderTroopItemVM item in TroopList.Where((OrderTroopItemVM item) => item.IsSelected))
 		{
 			SetTroopActiveOrders(item);
 		}
-		_missionOrder.SetActiveOrders();
-		CheckSelectableFormations();
-	}
-
-	public override void OnFinalize()
-	{
-		base.OnFinalize();
-		Team.OnOrderIssued -= OrderController_OnTroopOrderIssued;
-		foreach (OrderTroopItemVM troop in TroopList)
+		MissionOrder.SetActiveOrders();
+		UpdateFormationSelectedStates();
+		switch (orderType)
 		{
-			troop.OnFinalize();
+		case OrderType.Move:
+		case OrderType.MoveToLineSegment:
+		case OrderType.MoveToLineSegmentWithHorizontalLayout:
+		{
+			OrderItemVM orderItemVM2 = FindOrderWithId("order_movement_move");
+			if (orderItemVM2 != null)
+			{
+				MissionOrder.OnOrderExecuted(orderItemVM2);
+			}
+			break;
 		}
-		_transferTargetList = null;
+		case OrderType.Charge:
+		case OrderType.Advance:
+		{
+			OrderItemVM orderItemVM = FindOrderWithId("order_movement_advance") ?? FindOrderWithId("order_movement_charge");
+			if (orderItemVM != null)
+			{
+				MissionOrder.OnOrderExecuted(orderItemVM);
+			}
+			break;
+		}
+		}
+		if (MissionOrder.IsToggleOrderShown && !MissionOrder.IsDeployment)
+		{
+			MissionOrder.TryCloseToggleOrder();
+		}
 	}
 
-	internal void IntervalUpdate()
+	private OrderItemVM FindOrderWithId(string orderId)
+	{
+		for (int i = 0; i < MissionOrder.OrderSets.Count; i++)
+		{
+			OrderSetVM orderSetVM = MissionOrder.OrderSets[i];
+			for (int j = 0; j < orderSetVM.Orders.Count; j++)
+			{
+				OrderItemVM orderItemVM = orderSetVM.Orders[j];
+				if (orderItemVM.OrderIconId == orderId)
+				{
+					return orderItemVM;
+				}
+			}
+		}
+		return null;
+	}
+
+	private void OrderController_OnSelectedFormationsChanged()
+	{
+		for (int i = 0; i < TroopList.Count; i++)
+		{
+			OrderTroopItemVM orderTroopItemVM = TroopList[i];
+			orderTroopItemVM.IsSelected = OrderController.IsFormationListening(orderTroopItemVM.Formation);
+		}
+	}
+
+	internal void Update()
+	{
+		for (int i = 0; i < TroopList.Count; i++)
+		{
+			TroopList[i].Update();
+		}
+	}
+
+	public void IntervalUpdate()
 	{
 		for (int num = TroopList.Count - 1; num >= 0; num--)
 		{
 			OrderTroopItemVM orderTroopItemVM = TroopList[num];
-			Formation formation = Team.GetFormation(orderTroopItemVM.InitialFormationClass);
+			Formation formation = orderTroopItemVM.Formation;
 			if (formation != null && formation.CountOfUnits > 0)
 			{
 				orderTroopItemVM.UnderAttackOfType = (int)formation.GetUnderAttackTypeOfUnits();
 				orderTroopItemVM.BehaviorType = (int)formation.GetMovementTypeOfUnits();
-				if (!_isDeployment)
+				if (!IsDeployment)
 				{
 					orderTroopItemVM.Morale = (int)MissionGameModels.Current.BattleMoraleModel.GetAverageMorale(formation);
 					if (orderTroopItemVM.SetFormationClassFromFormation(formation))
 					{
 						UpdateTroops();
 					}
-					orderTroopItemVM.IsAmmoAvailable = formation.QuerySystem.RangedUnitRatio > 0f || formation.QuerySystem.RangedCavalryUnitRatio > 0f;
-					if (orderTroopItemVM.IsAmmoAvailable)
+					if (formation.QuerySystem.RangedUnitRatio > 0f || formation.QuerySystem.RangedCavalryUnitRatio > 0f)
 					{
 						int totalCurrentAmmo = 0;
 						int totalMaxAmmo = 0;
@@ -843,7 +883,19 @@ public class MissionOrderTroopControllerVM : ViewModel
 								totalMaxAmmo += maxAmmo;
 							}
 						});
-						orderTroopItemVM.AmmoPercentage = (float)totalCurrentAmmo / (float)totalMaxAmmo;
+						if (totalMaxAmmo > 0)
+						{
+							orderTroopItemVM.IsAmmoAvailable = true;
+							orderTroopItemVM.AmmoPercentage = (float)totalCurrentAmmo / (float)totalMaxAmmo;
+						}
+						else
+						{
+							orderTroopItemVM.IsAmmoAvailable = false;
+						}
+					}
+					else
+					{
+						orderTroopItemVM.IsAmmoAvailable = false;
 					}
 				}
 			}
@@ -855,7 +907,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	internal void RefreshTroopFormationTargetVisuals()
+	public void RefreshTroopFormationTargetVisuals()
 	{
 		for (int i = 0; i < TroopList.Count; i++)
 		{
@@ -863,10 +915,14 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	internal void OnSelectFormationWithIndex(int formationTroopIndex)
+	public void OnSelectFormationWithIndex(int formationTroopIndex)
 	{
 		UpdateTroops();
-		OrderTroopItemVM orderTroopItemVM = TroopList.SingleOrDefault((OrderTroopItemVM t) => t.Formation.Index == formationTroopIndex);
+		OrderTroopItemVM orderTroopItemVM = null;
+		if (formationTroopIndex >= 0)
+		{
+			orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.Formation.Index == formationTroopIndex);
+		}
 		if (orderTroopItemVM != null)
 		{
 			if (orderTroopItemVM.IsSelectable)
@@ -880,22 +936,14 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	internal void SetCurrentActiveOrders()
+	public void SetCurrentActiveOrders()
 	{
-		List<OrderSubjectVM> list = (from item in TroopList.Cast<OrderSubjectVM>().ToList()
-			where item.IsSelected && item.IsSelectable
-			select item).ToList();
-		if (!list.IsEmpty())
+		foreach (OrderTroopItemVM troop in TroopList)
 		{
-			return;
-		}
-		OrderController.SelectAllFormations();
-		foreach (OrderTroopItemVM item in TroopList.Where((OrderTroopItemVM s) => OrderController.SelectedFormations.Contains(s.Formation)))
-		{
-			item.IsSelected = true;
-			item.IsSelectable = true;
-			SetTroopActiveOrders(item);
-			list.Add(item);
+			if (troop.IsSelected)
+			{
+				SetTroopActiveOrders(troop);
+			}
 		}
 	}
 
@@ -914,24 +962,23 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 	}
 
-	public void OnFiltersSet(List<(int, List<int>)> filterData)
+	public void OnFiltersSet(List<MissionOrderVM.FormationConfiguration> filterData)
 	{
 		if (filterData == null)
 		{
 			return;
 		}
-		_filterData = filterData;
-		foreach (var filter in filterData)
+		FilterData = filterData;
+		foreach (MissionOrderVM.FormationConfiguration filter in filterData)
 		{
-			TroopList.FirstOrDefault((OrderTroopItemVM f) => f.Formation.Index == filter.Item1)?.UpdateFilterData(filter.Item2);
-			TransferTargetList.FirstOrDefault((OrderTroopItemVM f) => f.Formation.Index == filter.Item1)?.UpdateFilterData(filter.Item2);
+			TroopList.FirstOrDefault((OrderTroopItemVM f) => f.Formation.Index == filter.FormationIndex)?.UpdateFilterData(filter.Filters);
+			TransferTargetList.FirstOrDefault((OrderTroopItemVM f) => f.Formation.Index == filter.FormationIndex)?.UpdateFilterData(filter.Filters);
 		}
 	}
 
 	public void OnDeploymentFinished()
 	{
-		_isDeployment = false;
-		SortFormations();
+		IsDeployment = false;
 		for (int num = TroopList.Count - 1; num >= 0; num--)
 		{
 			if (TroopList[num].CurrentMemberCount <= 0)
@@ -939,18 +986,24 @@ public class MissionOrderTroopControllerVM : ViewModel
 				TroopList.RemoveAt(num);
 			}
 		}
-		SelectAllFormations(uiFeedback: false);
+		SortFormations();
+		OrderController.ClearSelectedFormations();
+	}
+
+	public void OnAfterDeploymentFinished()
+	{
+		UpdateTroops();
 	}
 
 	private void SortFormations()
 	{
-		TroopList.Sort(_formationIndexComparer);
-		TransferTargetList.Sort(_formationIndexComparer);
+		TroopList.Sort(FormationIndexComparer.Compare);
+		TransferTargetList.Sort(FormationIndexComparer);
 	}
 
 	private int GetFormationMorale(Formation formation)
 	{
-		if (!_isDeployment)
+		if (!IsDeployment)
 		{
 			return (int)MissionGameModels.Current.BattleMoraleModel.GetAverageMorale(formation);
 		}
@@ -984,9 +1037,28 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Added troop item is null!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 882);
+			Debug.FailedAssert("Added troop item is null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 728);
 		}
+		OnAfterNewTroopItemAdded();
+		RefreshTroopItemBindings();
 		return orderTroopItemVM;
+	}
+
+	protected virtual void OnAfterNewTroopItemAdded()
+	{
+		OnFiltersSet(FilterData);
+	}
+
+	private void RefreshTroopItemBindings()
+	{
+		TroopItem0 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 0) ?? _emptyTroopItemVM;
+		TroopItem1 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 1) ?? _emptyTroopItemVM;
+		TroopItem2 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 2) ?? _emptyTroopItemVM;
+		TroopItem3 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 3) ?? _emptyTroopItemVM;
+		TroopItem4 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 4) ?? _emptyTroopItemVM;
+		TroopItem5 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 5) ?? _emptyTroopItemVM;
+		TroopItem6 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 6) ?? _emptyTroopItemVM;
+		TroopItem7 = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.FormationIndex == 7) ?? _emptyTroopItemVM;
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)

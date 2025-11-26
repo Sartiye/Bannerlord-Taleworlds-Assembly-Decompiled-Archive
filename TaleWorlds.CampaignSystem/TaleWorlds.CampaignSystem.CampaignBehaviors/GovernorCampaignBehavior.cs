@@ -58,7 +58,7 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		Hero governor = settlement.Town.Governor;
-		if (governor.GetPerkValue(DefaultPerks.Charm.InBloom) && MBRandom.RandomFloat <= DefaultPerks.Charm.InBloom.SecondaryBonus)
+		if (MBRandom.RandomFloat <= DefaultPerks.Charm.InBloom.SecondaryBonus && governor.GetPerkValue(DefaultPerks.Charm.InBloom))
 		{
 			Hero randomElementWithPredicate = settlement.Notables.GetRandomElementWithPredicate((Hero x) => x.IsFemale != governor.IsFemale);
 			if (randomElementWithPredicate != null)
@@ -66,7 +66,7 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate, 1);
 			}
 		}
-		if (governor.GetPerkValue(DefaultPerks.Charm.YoungAndRespectful) && MBRandom.RandomFloat <= DefaultPerks.Charm.YoungAndRespectful.SecondaryBonus)
+		if (MBRandom.RandomFloat <= DefaultPerks.Charm.YoungAndRespectful.SecondaryBonus && governor.GetPerkValue(DefaultPerks.Charm.YoungAndRespectful))
 		{
 			Hero randomElementWithPredicate2 = settlement.Notables.GetRandomElementWithPredicate((Hero x) => x.IsFemale == governor.IsFemale);
 			if (randomElementWithPredicate2 != null)
@@ -74,7 +74,7 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate2, 1);
 			}
 		}
-		if (governor.GetPerkValue(DefaultPerks.Charm.MeaningfulFavors) && MBRandom.RandomFloat <= DefaultPerks.Charm.MeaningfulFavors.SecondaryBonus)
+		if (MBRandom.RandomFloat <= DefaultPerks.Charm.MeaningfulFavors.SecondaryBonus && governor.GetPerkValue(DefaultPerks.Charm.MeaningfulFavors))
 		{
 			foreach (Hero notable in settlement.Notables)
 			{
@@ -144,7 +144,7 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 	private bool governor_talk_start_reply_on_condition()
 	{
 		Settlement currentSettlement = Hero.OneToOneConversationHero.CurrentSettlement;
-		TextObject textObject = TextObject.Empty;
+		TextObject textObject = TextObject.GetEmpty();
 		switch (currentSettlement.Town.GetProsperityLevel())
 		{
 		case SettlementComponent.ProsperityLevel.High:
@@ -267,7 +267,7 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 
 	private void governor_talk_kingdom_creation_name_selection_on_consequence()
 	{
-		_kingdomCreationChosenName = TextObject.Empty;
+		_kingdomCreationChosenName = TextObject.GetEmpty();
 		InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=RuaA8t97}Kingdom Name").ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_done").ToString(), GameTexts.FindText("str_cancel").ToString(), OnKingdomNameSelectionDone, OnKingdomNameSelectionCancel, shouldInputBeObfuscated: false, FactionHelper.IsKingdomNameApplicable));
 	}
 

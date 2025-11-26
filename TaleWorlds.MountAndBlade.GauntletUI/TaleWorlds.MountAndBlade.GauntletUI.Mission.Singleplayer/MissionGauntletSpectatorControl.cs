@@ -22,7 +22,8 @@ public class MissionGauntletSpectatorControl : MissionView
 		_dataSource = new MissionSpectatorControlVM(base.Mission);
 		_dataSource.SetPrevCharacterInputKey(HotKeyManager.GetCategory("CombatHotKeyCategory").GetGameKey(10));
 		_dataSource.SetNextCharacterInputKey(HotKeyManager.GetCategory("CombatHotKeyCategory").GetGameKey(9));
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_dataSource.SetTakeControlInputKey(HotKeyManager.GetCategory("CombatHotKeyCategory").GetGameKey(16));
+		_gauntletLayer = new GauntletLayer("MissionSpectatorControl", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("SpectatorControl", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		base.MissionScreen.OnSpectateAgentFocusIn += _dataSource.OnSpectatedAgentFocusIn;
@@ -53,8 +54,10 @@ public class MissionGauntletSpectatorControl : MissionView
 		goto IL_00b6;
 		IL_00b6:
 		dataSource.IsEnabled = (byte)isEnabled != 0;
-		bool mainAgentStatus = base.Mission.PlayerTeam != null && base.Mission.MainAgent == null;
-		_dataSource.SetMainAgentStatus(mainAgentStatus);
+		bool flag2 = base.Mission.PlayerTeam != null && base.Mission.MainAgent == null;
+		_dataSource.SetMainAgentStatus(flag2);
+		_dataSource.IsTakeControlRelevant = flag2 && base.Mission.CanPlayerTakeControlOfAnotherAgentWhenDead;
+		_dataSource.IsTakeControlEnabled = base.MissionScreen.LastFollowedAgent != null && base.Mission.CanTakeControlOfAgent(base.MissionScreen.LastFollowedAgent);
 	}
 
 	public override void OnMissionScreenFinalize()

@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class DailyTroopXpBonusModel : GameModel
+public abstract class DailyTroopXpBonusModel : MBGameModel<DailyTroopXpBonusModel>
 {
 	public abstract int CalculateDailyTroopXpBonus(Town town);
 

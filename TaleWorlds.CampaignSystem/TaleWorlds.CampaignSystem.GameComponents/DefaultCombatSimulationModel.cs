@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
@@ -13,56 +15,69 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultCombatSimulationModel : CombatSimulationModel
 {
-	public override int SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle)
+	public override ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, float strikerSideMorale, float struckSideMorale)
 	{
-		MilitaryPowerModel militaryPowerModel = Campaign.Current.Models.MilitaryPowerModel;
-		float troopPower = militaryPowerModel.GetTroopPower(strikerTroop, strikerParty.Side, strikerParty.MapEvent.SimulationContext, strikerParty.MapEventSide.LeaderSimulationModifier);
-		float troopPower2 = militaryPowerModel.GetTroopPower(struckTroop, struckParty.Side, struckParty.MapEvent.SimulationContext, struckParty.MapEventSide.LeaderSimulationModifier);
-		int num = (int)((0.5f + 0.5f * MBRandom.RandomFloat) * (40f * MathF.Pow(troopPower / troopPower2, 0.7f) * strikerAdvantage));
+		float troopPower = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(strikerTroop, strikerParty.Side, strikerParty.MapEvent.SimulationContext, strikerParty.MapEventSide.LeaderSimulationModifier);
+		float troopPower2 = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(struckTroop, struckParty.Side, struckParty.MapEvent.SimulationContext, struckParty.MapEventSide.LeaderSimulationModifier);
+		int num = (int)((0.5f + 0.5f * MBRandom.RandomFloat) * (40f * TaleWorlds.Library.MathF.Pow(troopPower / troopPower2, 0.7f) * strikerAdvantage));
 		ExplainedNumber effectiveDamage = new ExplainedNumber(num);
 		if (strikerParty.IsMobile && struckParty.IsMobile)
 		{
 			CalculateSimulationDamagePerkEffects(strikerTroop, struckTroop, strikerParty.MobileParty, struckParty.MobileParty, ref effectiveDamage, battle);
 		}
-		return (int)effectiveDamage.ResultNumber;
+		CalculateSimulationMoraleEffects(strikerSideMorale, struckSideMorale, ref effectiveDamage);
+		return effectiveDamage;
 	}
 
-	private void CalculateSimulationDamagePerkEffects(CharacterObject strikerTroop, CharacterObject struckTroop, MobileParty strikerParty, MobileParty struckParty, ref ExplainedNumber effectiveDamage, MapEvent battle)
+	public override ExplainedNumber SimulateHit(Ship strikerShip, Ship struckShip, PartyBase strikerParty, PartyBase struckParty, SiegeEngineType siegeEngine, float strikerAdvantage, MapEvent battle, out int troopCasualties)
 	{
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.TightFormations) && strikerTroop.IsInfantry && struckTroop.IsMounted)
+		troopCasualties = 0;
+		return new ExplainedNumber(0f, includeDescriptions: false, null);
+	}
+
+	private static void CalculateSimulationMoraleEffects(float strikerMorale, float struckMorale, ref ExplainedNumber effectiveDamage)
+	{
+		float num = TaleWorlds.Library.MathF.Min(strikerMorale - 50f, 0f);
+		float num2 = TaleWorlds.Library.MathF.Max(struckMorale - 50f, 0f);
+		effectiveDamage.AddFactor((num - num2) * 0.005f);
+	}
+
+	private static void CalculateSimulationDamagePerkEffects(CharacterObject strikerTroop, CharacterObject struckTroop, MobileParty strikerParty, MobileParty struckParty, ref ExplainedNumber effectiveDamage, MapEvent battle)
+	{
+		if (!strikerParty.IsCurrentlyAtSea && strikerTroop.IsInfantry && struckTroop.IsMounted)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.TightFormations, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (struckParty.HasPerk(DefaultPerks.Tactics.LooseFormations) && struckTroop.IsInfantry && strikerTroop.IsRanged)
+		if (!strikerParty.IsCurrentlyAtSea && struckParty.HasPerk(DefaultPerks.Tactics.LooseFormations) && struckTroop.IsInfantry && strikerTroop.IsRanged)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LooseFormations, struckParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(strikerParty.CurrentNavigationFace);
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.ExtendedSkirmish) && (faceTerrainType == TerrainType.Snow || faceTerrainType == TerrainType.Forest))
+		if (faceTerrainType == TerrainType.Snow || faceTerrainType == TerrainType.Forest)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.ExtendedSkirmish, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.DecisiveBattle) && (faceTerrainType == TerrainType.Plain || faceTerrainType == TerrainType.Steppe || faceTerrainType == TerrainType.Desert))
+		if (faceTerrainType == TerrainType.Plain || faceTerrainType == TerrainType.Steppe || faceTerrainType == TerrainType.Desert)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.DecisiveBattle, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!strikerParty.IsBandit && struckParty.IsBandit && strikerParty.HasPerk(DefaultPerks.Tactics.LawKeeper))
+		if (!strikerParty.IsCurrentlyAtSea && !strikerParty.IsBandit && struckParty.IsBandit)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LawKeeper, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.Coaching))
+		if (!strikerParty.IsCurrentlyAtSea)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Coaching, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (struckParty.HasPerk(DefaultPerks.Tactics.EliteReserves) && struckTroop.Tier >= 3)
+		if (!struckParty.IsCurrentlyAtSea && struckTroop.Tier >= 3)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.EliteReserves, struckParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.Encirclement) && strikerParty.MemberRoster.TotalHealthyCount > struckParty.MemberRoster.TotalHealthyCount)
+		if (!strikerParty.IsCurrentlyAtSea && strikerParty.MemberRoster.TotalHealthyCount > struckParty.MemberRoster.TotalHealthyCount)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Encirclement, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (strikerParty.HasPerk(DefaultPerks.Tactics.Counteroffensive, checkSecondaryRole: true) && strikerParty.MemberRoster.TotalHealthyCount < struckParty.MemberRoster.TotalHealthyCount)
+		if (!strikerParty.IsCurrentlyAtSea && strikerParty.MemberRoster.TotalHealthyCount < struckParty.MemberRoster.TotalHealthyCount)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
 		}
@@ -81,25 +96,25 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Besieged, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (flag && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard))
+		if (flag && !strikerParty.IsCurrentlyAtSea && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard))
 		{
 			effectiveDamage.AddFactor(DefaultPerks.Scouting.Vanguard.PrimaryBonus, DefaultPerks.Scouting.Vanguard.Name);
 		}
-		if ((battle.IsSiegeOutside || battle.IsSallyOut) && flag3 && strikerParty.HasPerk(DefaultPerks.Scouting.Rearguard))
+		if ((battle.IsSiegeOutside || battle.IsSallyOut) && flag3 && !strikerParty.IsCurrentlyAtSea)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Rearguard, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
 		}
-		if (battle.IsSallyOut && flag && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard, checkSecondaryRole: true))
+		if (battle.IsSallyOut && flag && !strikerParty.IsCurrentlyAtSea && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard, checkSecondaryRole: true))
 		{
 			effectiveDamage.AddFactor(DefaultPerks.Scouting.Vanguard.SecondaryBonus, DefaultPerks.Scouting.Vanguard.Name);
 		}
-		if (battle.IsFieldBattle && flag2 && strikerParty.HasPerk(DefaultPerks.Tactics.Counteroffensive))
+		if (battle.IsFieldBattle && flag2 && !strikerParty.IsCurrentlyAtSea)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (strikerParty.Army != null && strikerParty.LeaderHero != null && strikerParty.Army.LeaderParty == strikerParty && strikerParty.LeaderHero.GetPerkValue(DefaultPerks.Tactics.TacticalMastery))
+		if (strikerParty.Army != null && strikerParty.LeaderHero != null && strikerParty.Army.LeaderParty == strikerParty)
 		{
-			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Tactics.TacticalMastery, strikerParty.LeaderHero.CharacterObject, DefaultSkills.Tactics, applyPrimaryBonus: true, ref effectiveDamage, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
+			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Tactics.TacticalMastery, strikerParty.LeaderHero.CharacterObject, DefaultSkills.Tactics, applyPrimaryBonus: true, ref effectiveDamage, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus, strikerParty.IsCurrentlyAtSea);
 		}
 	}
 
@@ -123,7 +138,6 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 	{
 		if (settlement.SiegeEvent != null && settlement.IsFortification)
 		{
-			settlement.Town.GetWallLevel();
 			bool flag = false;
 			int num = 0;
 			int num2 = 0;
@@ -198,7 +212,7 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 				num4 *= 0.25f;
 			}
 			float num5 = 1f + num4;
-			float num6 = 1f + ((flag || num > 0) ? 0.12f : 0f) + (flag2 ? 0.24f : (flag ? 0.16f : 0f)) + ((num > 1) ? 0.24f : ((num == 1) ? 0.16f : 0f)) + (float)num2 * 0.08f + (float)num3 * 0.12f;
+			float num6 = 1f + ((flag || num > 0) ? 0.25f : 0f) + (flag2 ? 0.24f : (flag ? 0.16f : 0f)) + ((num > 1) ? 0.24f : ((num == 1) ? 0.16f : 0f)) + (float)num2 * 0.08f + (float)num3 * 0.12f;
 			float baseNumber = num5 / num6;
 			ExplainedNumber effectiveAdvantage = new ExplainedNumber(baseNumber);
 			ISiegeEventSide siegeEventSide = settlement.SiegeEvent.GetSiegeEventSide(BattleSideEnum.Attacker);
@@ -212,9 +226,9 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		return 1f;
 	}
 
-	private void CalculateSettlementAdvantagePerkEffects(Settlement settlement, ref ExplainedNumber effectiveAdvantage, ISiegeEventSide opposingSide)
+	private static void CalculateSettlementAdvantagePerkEffects(Settlement settlement, ref ExplainedNumber effectiveAdvantage, ISiegeEventSide opposingSide)
 	{
-		if (opposingSide.GetInvolvedPartiesForEventType().Any((PartyBase x) => x.MobileParty.HasPerk(DefaultPerks.Tactics.OnTheMarch)))
+		if (opposingSide.GetInvolvedPartiesForEventType().Any((PartyBase x) => x.MobileParty.HasPerk(DefaultPerks.Tactics.OnTheMarch) && !x.MobileParty.IsCurrentlyAtSea))
 		{
 			effectiveAdvantage.AddFactor(DefaultPerks.Tactics.OnTheMarch.PrimaryBonus, DefaultPerks.Tactics.OnTheMarch.Name);
 		}
@@ -224,72 +238,94 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		}
 	}
 
-	public override (int defenderRounds, int attackerRounds) GetSimulationRoundsForBattle(MapEvent mapEvent, int numDefenders, int numAttackers)
+	public override (int defenderRounds, int attackerRounds) GetSimulationTicksForBattleRound(MapEvent mapEvent)
 	{
-		if (mapEvent.IsInvulnerable)
-		{
-			return (defenderRounds: 0, attackerRounds: 0);
-		}
 		MapEvent.BattleTypes eventType = mapEvent.EventType;
 		Settlement mapEventSettlement = mapEvent.MapEventSettlement;
-		if (eventType == MapEvent.BattleTypes.Siege)
+		int item = 0;
+		int item2 = 0;
+		int numRemainingSimulationTroops = mapEvent.DefenderSide.NumRemainingSimulationTroops;
+		int numRemainingSimulationTroops2 = mapEvent.AttackerSide.NumRemainingSimulationTroops;
+		if (!mapEvent.IsInvulnerable)
 		{
-			float num = GetSettlementAdvantage(mapEventSettlement) * 0.7f;
-			float num2 = 1f + MathF.Pow(numDefenders, 0.3f);
-			float num3 = MathF.Max(num2 * num, (float)((numDefenders + 1) / (numAttackers + 1)));
-			if ((mapEventSettlement.IsTown && numDefenders > 100) || (mapEventSettlement.IsCastle && numDefenders > 30))
+			if (eventType == MapEvent.BattleTypes.Siege && ((mapEventSettlement.IsTown && numRemainingSimulationTroops > 100) || (mapEventSettlement.IsCastle && numRemainingSimulationTroops > 30)))
 			{
-				return (defenderRounds: MathF.Round(0.5f + num3), attackerRounds: MathF.Round(0.5f + num2));
+				float num = GetSettlementAdvantage(mapEventSettlement) * 0.7f;
+				item2 = TaleWorlds.Library.MathF.Round(1.5f + TaleWorlds.Library.MathF.Pow(numRemainingSimulationTroops, 0.3f)) * 2;
+				item = TaleWorlds.Library.MathF.Round(0.5f + TaleWorlds.Library.MathF.Max(1f + TaleWorlds.Library.MathF.Pow(numRemainingSimulationTroops, 0.3f) * num, (float)((numRemainingSimulationTroops + 1) / (numRemainingSimulationTroops2 + 1)))) * 2;
 			}
-		}
-		int item;
-		int item2;
-		if (numDefenders <= 10)
-		{
-			item = MBRandom.RoundRandomized(MathF.Min((float)numAttackers * 3f, (float)numDefenders * 0.3f));
-			item2 = MBRandom.RoundRandomized(MathF.Min((float)numDefenders * 3f, (float)numAttackers * 0.3f));
-		}
-		else
-		{
-			item = MBRandom.RoundRandomized(MathF.Min((float)numAttackers * 2f, MathF.Pow(numDefenders, 0.6f)));
-			item2 = MBRandom.RoundRandomized(MathF.Min((float)numDefenders * 2f, MathF.Pow(numAttackers, 0.6f)));
+			else if (numRemainingSimulationTroops <= 10)
+			{
+				item = Math.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Min((float)numRemainingSimulationTroops2 * 3f, (float)numRemainingSimulationTroops * 0.3f)), 1);
+				item2 = Math.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Min((float)numRemainingSimulationTroops * 3f, (float)numRemainingSimulationTroops2 * 0.3f)), 1);
+			}
+			else
+			{
+				item = TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Min((float)numRemainingSimulationTroops2 * 2f, TaleWorlds.Library.MathF.Pow(numRemainingSimulationTroops, 0.6f)));
+				item2 = TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Min((float)numRemainingSimulationTroops * 2f, TaleWorlds.Library.MathF.Pow(numRemainingSimulationTroops2, 0.6f)));
+			}
+			if (mapEvent.RetreatingSide != BattleSideEnum.None)
+			{
+				if (mapEvent.RetreatingSide == BattleSideEnum.Attacker)
+				{
+					item2 = 0;
+				}
+				else
+				{
+					item = 0;
+				}
+			}
 		}
 		return (defenderRounds: item, attackerRounds: item2);
 	}
 
-	public override (float defenderAdvantage, float attackerAdvantage) GetBattleAdvantage(PartyBase defenderParty, PartyBase attackerParty, MapEvent.BattleTypes mapEventType, Settlement settlement)
+	public override void GetBattleAdvantage(MapEvent mapEvent, out ExplainedNumber defenderAdvantage, out ExplainedNumber attackerAdvantage)
 	{
-		float num = 1f;
-		float item = 1f * PartyBattleAdvantage(defenderParty, attackerParty);
-		num *= PartyBattleAdvantage(attackerParty, defenderParty);
-		if (mapEventType == MapEvent.BattleTypes.Siege)
+		defenderAdvantage = GetPartyBattleAdvantage(mapEvent, mapEvent.DefenderSide.LeaderParty, mapEvent.AttackerSide.LeaderParty);
+		attackerAdvantage = GetPartyBattleAdvantage(mapEvent, mapEvent.AttackerSide.LeaderParty, mapEvent.DefenderSide.LeaderParty);
+		if (mapEvent.EventType == MapEvent.BattleTypes.Siege)
 		{
-			num *= 0.9f;
+			attackerAdvantage.AddFactor(-0.1f);
 		}
-		return (defenderAdvantage: item, attackerAdvantage: num);
 	}
 
-	private float PartyBattleAdvantage(PartyBase party, PartyBase opposingParty)
+	private static ExplainedNumber GetPartyBattleAdvantage(MapEvent mapEvent, PartyBase party, PartyBase opposingParty)
 	{
-		float num = 1f;
+		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
 		if (party.LeaderHero != null)
 		{
-			int skillValue = party.LeaderHero.GetSkillValue(DefaultSkills.Tactics);
-			float num2 = DefaultSkillEffects.TacticsAdvantage.PrimaryBonus * (float)skillValue * 0.01f;
-			num += num2;
-			if (party.LeaderHero.GetPerkValue(DefaultPerks.Scouting.Patrols) && opposingParty.Culture.IsBandit)
+			if (!mapEvent.IsNavalMapEvent)
 			{
-				num += DefaultPerks.Scouting.Patrols.SecondaryBonus * num;
+				SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.TacticsAdvantage, party.LeaderHero.CharacterObject, ref explainedNumber);
+			}
+			if (party.IsMobile && opposingParty.Culture.IsBandit && !party.MobileParty.IsCurrentlyAtSea)
+			{
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Patrols, party.MobileParty, isPrimaryBonus: false, ref explainedNumber);
 			}
 		}
-		if (party.IsMobile && opposingParty.IsMobile && party.LeaderHero != null && opposingParty.LeaderHero != null && party.MobileParty.HasPerk(DefaultPerks.Tactics.PreBattleManeuvers, checkSecondaryRole: true))
+		if (party.IsMobile && !party.MobileParty.IsCurrentlyAtSea && opposingParty.IsMobile && party.LeaderHero != null && opposingParty.LeaderHero != null && party.MobileParty.HasPerk(DefaultPerks.Tactics.PreBattleManeuvers, checkSecondaryRole: true))
 		{
-			int num3 = party.LeaderHero.GetSkillValue(DefaultSkills.Tactics) - opposingParty.LeaderHero.GetSkillValue(DefaultSkills.Tactics);
-			if (num3 > 0)
+			int num = party.LeaderHero.GetSkillValue(DefaultSkills.Tactics) - opposingParty.LeaderHero.GetSkillValue(DefaultSkills.Tactics);
+			if (num > 0)
 			{
-				num += (float)num3 * 0.01f;
+				explainedNumber.Add((float)num * 0.01f);
 			}
 		}
-		return num;
+		return explainedNumber;
+	}
+
+	public override float GetShipSiegeEngineHitChance(Ship ship, SiegeEngineType siegeEngineType, BattleSideEnum battleSide)
+	{
+		return 0f;
+	}
+
+	public override int GetPursuitRoundCount(MapEvent mapEvent)
+	{
+		return 4;
+	}
+
+	public override float GetBluntDamageChance(CharacterObject strikerTroop, CharacterObject strikedTroop, PartyBase strikerParty, PartyBase strikedParty, MapEvent battle)
+	{
+		return 0.1f;
 	}
 }

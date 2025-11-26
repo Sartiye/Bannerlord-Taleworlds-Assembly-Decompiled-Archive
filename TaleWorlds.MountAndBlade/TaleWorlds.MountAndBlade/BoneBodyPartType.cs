@@ -2,7 +2,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Bone_body_part_type", false)]
+[EngineStruct("Bone_body_part_type", false, null)]
 public enum BoneBodyPartType : sbyte
 {
 	None = -1,

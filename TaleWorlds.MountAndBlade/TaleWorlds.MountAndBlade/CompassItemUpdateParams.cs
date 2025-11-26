@@ -15,7 +15,7 @@ public struct CompassItemUpdateParams
 
 	public readonly uint Color2;
 
-	public readonly BannerCode BannerCode;
+	public readonly Banner Banner;
 
 	public readonly bool IsAttacker;
 
@@ -33,13 +33,13 @@ public struct CompassItemUpdateParams
 		IsAlly = false;
 	}
 
-	public CompassItemUpdateParams(object item, TargetIconType targetType, Vec3 worldPosition, BannerCode bannerCode, bool isAttacker, bool isAlly)
+	public CompassItemUpdateParams(object item, TargetIconType targetType, Vec3 worldPosition, Banner banner, bool isAttacker, bool isAlly)
 	{
 		this = default(CompassItemUpdateParams);
 		Item = item;
 		TargetType = targetType;
 		WorldPosition = worldPosition;
-		BannerCode = bannerCode;
+		Banner = banner;
 		IsAttacker = isAttacker;
 		IsAlly = isAlly;
 	}

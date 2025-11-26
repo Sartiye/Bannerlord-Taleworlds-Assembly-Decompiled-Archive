@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Helpers;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Armies;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -24,9 +27,9 @@ public class KingdomSettlementItemVM : KingdomItemVM
 
 	private string _governorName;
 
-	private ImageIdentifierVM _ownerClanBanner;
+	private BannerImageIdentifierVM _ownerClanBanner;
 
-	private ImageIdentifierVM _ownerClanBanner_9;
+	private BannerImageIdentifierVM _ownerClanBanner_9;
 
 	private HeroVM _owner;
 
@@ -181,7 +184,7 @@ public class KingdomSettlementItemVM : KingdomItemVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM OwnerClanBanner
+	public BannerImageIdentifierVM OwnerClanBanner
 	{
 		get
 		{
@@ -198,7 +201,7 @@ public class KingdomSettlementItemVM : KingdomItemVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM OwnerClanBanner_9
+	public BannerImageIdentifierVM OwnerClanBanner_9
 	{
 		get
 		{
@@ -276,8 +279,8 @@ public class KingdomSettlementItemVM : KingdomItemVM
 		ItemProperties = new MBBindingList<SelectableFiefItemPropertyVM>();
 		ImageName = ((settlementComponent != null) ? settlementComponent.WaitMeshName : "");
 		Owner = new HeroVM(settlement.OwnerClan.Leader);
-		OwnerClanBanner = new ImageIdentifierVM(Settlement.OwnerClan.Banner);
-		OwnerClanBanner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(Settlement.OwnerClan.Banner), nineGrid: true);
+		OwnerClanBanner = new BannerImageIdentifierVM(Settlement.OwnerClan.Banner);
+		OwnerClanBanner_9 = new BannerImageIdentifierVM(Settlement.OwnerClan.Banner, nineGrid: true);
 		Town town = settlement.Town;
 		WallLevel = town?.GetWallLevel() ?? (-1);
 		if (town != null)
@@ -308,41 +311,47 @@ public class KingdomSettlementItemVM : KingdomItemVM
 		UpdateProperties();
 	}
 
-	private void UpdateProperties()
+	protected virtual void UpdateProperties()
 	{
 		ItemProperties.Clear();
-		int num = (int)Settlement.Militia;
-		List<TooltipProperty> militiaHint = (Settlement.IsVillage ? CampaignUIHelper.GetVillageMilitiaTooltip(Settlement.Village) : CampaignUIHelper.GetTownMilitiaTooltip(Settlement.Town));
-		int changeAmount = ((Settlement.Town != null) ? ((int)Settlement.Town.MilitiaChange) : ((int)Settlement.Village.MilitiaChange));
-		ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_militia").ToString(), num.ToString(), changeAmount, SelectableItemPropertyVM.PropertyType.Militia, new BasicTooltipViewModel(() => militiaHint)));
-		BasicTooltipViewModel hint5;
 		if (Settlement.Town != null)
 		{
-			BasicTooltipViewModel hint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(Settlement.Town));
-			int changeAmount2 = (int)Settlement.Town.FoodChange;
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_food_stocks").ToString(), ((int)Settlement.Town.FoodStocks).ToString(), changeAmount2, SelectableItemPropertyVM.PropertyType.Food, hint));
+			BasicTooltipViewModel hint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownWallsTooltip(Settlement.Town));
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_walls").ToString(), Settlement.Town.GetWallLevel().ToString(), 0, SelectableItemPropertyVM.PropertyType.Wall, hint));
 			BasicTooltipViewModel hint2 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownGarrisonTooltip(Settlement.Town));
-			int garrisonChange = Settlement.Town.GarrisonChange;
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_garrison").ToString(), Settlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString() ?? "0", garrisonChange, SelectableItemPropertyVM.PropertyType.Garrison, hint2));
-			BasicTooltipViewModel hint3 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownLoyaltyTooltip(Settlement.Town));
-			int changeAmount3 = (int)Settlement.Town.LoyaltyChange;
-			bool isWarning = Settlement.IsTown && Settlement.Town.Loyalty < (float)Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold;
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_loyalty").ToString(), $"{Settlement.Town.Loyalty:0.#}", changeAmount3, SelectableItemPropertyVM.PropertyType.Loyalty, hint3, isWarning));
-			BasicTooltipViewModel hint4 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownWallsTooltip(Settlement.Town));
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_walls").ToString(), Settlement.Town.GetWallLevel().ToString(), 0, SelectableItemPropertyVM.PropertyType.Wall, hint4));
-			hint5 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(Settlement.Town));
-			BasicTooltipViewModel hint6 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(Settlement.Town));
-			int changeAmount4 = (int)Settlement.Town.SecurityChange;
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_security").ToString(), $"{Settlement.Town.Security:0.#}", changeAmount4, SelectableItemPropertyVM.PropertyType.Security, hint6));
+			int changeAmount = (int)SettlementHelper.GetGarrisonChangeExplainedNumber(Settlement.Town).ResultNumber;
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_garrison").ToString(), Settlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString() ?? "0", changeAmount, SelectableItemPropertyVM.PropertyType.Garrison, hint2));
 		}
-		else
+		int num = (int)Settlement.Militia;
+		List<TooltipProperty> militiaHint = (Settlement.IsVillage ? CampaignUIHelper.GetVillageMilitiaTooltip(Settlement.Village) : CampaignUIHelper.GetTownMilitiaTooltip(Settlement.Town));
+		int changeAmount2 = ((Settlement.Town != null) ? ((int)Settlement.Town.MilitiaChange) : ((int)Settlement.Village.MilitiaChange));
+		ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_militia").ToString(), num.ToString(), changeAmount2, SelectableItemPropertyVM.PropertyType.Militia, new BasicTooltipViewModel(() => militiaHint)));
+		if (Settlement.Town != null)
 		{
-			hint5 = new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageProsperityTooltip(Settlement.Village));
+			BasicTooltipViewModel hint3 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(Settlement.Town));
+			int changeAmount3 = (int)Settlement.Town.FoodChange;
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_food_stocks").ToString(), ((int)Settlement.Town.FoodStocks).ToString(), changeAmount3, SelectableItemPropertyVM.PropertyType.Food, hint3));
 		}
-		int changeAmount5 = ((Settlement.Town != null) ? ((int)Settlement.Town.ProsperityChange) : ((int)Settlement.Village.HearthChange));
+		int changeAmount4 = ((Settlement.Town != null) ? ((int)Settlement.Town.ProsperityChange) : ((int)Settlement.Village.HearthChange));
 		if (Settlement.IsFortification)
 		{
-			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_prosperity").ToString(), $"{Settlement.Town.Prosperity:0.#}", changeAmount5, SelectableItemPropertyVM.PropertyType.Prosperity, hint5));
+			BasicTooltipViewModel hint4 = ((Settlement.Town == null) ? new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageProsperityTooltip(Settlement.Village)) : new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(Settlement.Town)));
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_prosperity").ToString(), $"{Settlement.Town.Prosperity:0.#}", changeAmount4, SelectableItemPropertyVM.PropertyType.Prosperity, hint4));
+		}
+		if (Settlement.Town != null)
+		{
+			BasicTooltipViewModel hint5 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownLoyaltyTooltip(Settlement.Town));
+			int changeAmount5 = (int)Settlement.Town.LoyaltyChange;
+			bool isWarning = Settlement.IsTown && Settlement.Town.Loyalty < (float)Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold;
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_loyalty").ToString(), $"{Settlement.Town.Loyalty:0.#}", changeAmount5, SelectableItemPropertyVM.PropertyType.Loyalty, hint5, isWarning));
+			BasicTooltipViewModel hint6 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(Settlement.Town));
+			int changeAmount6 = (int)Settlement.Town.SecurityChange;
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_security").ToString(), $"{Settlement.Town.Security:0.#}", changeAmount6, SelectableItemPropertyVM.PropertyType.Security, hint6));
+		}
+		if (Settlement.IsTown)
+		{
+			BasicTooltipViewModel hint7 = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownPatrolTooltip(Settlement.Town));
+			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_patrol").ToString(), Campaign.Current.GetCampaignBehavior<IPatrolPartiesCampaignBehavior>().GetSettlementPatrolStatus(Settlement).ToString(), 0, SelectableItemPropertyVM.PropertyType.Patrol, hint7));
 		}
 	}
 

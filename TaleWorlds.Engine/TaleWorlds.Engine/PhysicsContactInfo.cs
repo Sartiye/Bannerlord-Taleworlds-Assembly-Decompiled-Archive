@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglPhysics_contact_info", false)]
+[EngineStruct("rglPhysics_contact_info", false, null)]
 public struct PhysicsContactInfo
 {
 	public Vec3 Position;

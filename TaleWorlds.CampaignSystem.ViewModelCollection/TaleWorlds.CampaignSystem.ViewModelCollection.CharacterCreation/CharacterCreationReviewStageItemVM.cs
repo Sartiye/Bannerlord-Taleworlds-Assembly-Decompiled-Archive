@@ -1,4 +1,4 @@
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterCreation;
@@ -7,7 +7,7 @@ public class CharacterCreationReviewStageItemVM : ViewModel
 {
 	private bool _hasImage;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private BannerImageIdentifierVM _imageIdentifier;
 
 	private string _title;
 
@@ -33,7 +33,7 @@ public class CharacterCreationReviewStageItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public BannerImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -100,7 +100,7 @@ public class CharacterCreationReviewStageItemVM : ViewModel
 		}
 	}
 
-	public CharacterCreationReviewStageItemVM(ImageIdentifierVM imageIdentifier, string title, string text, string description)
+	public CharacterCreationReviewStageItemVM(BannerImageIdentifierVM imageIdentifier, string title, string text, string description)
 		: this(title, text, description)
 	{
 		HasImage = true;

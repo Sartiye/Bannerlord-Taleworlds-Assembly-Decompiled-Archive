@@ -27,7 +27,7 @@ public class MainHeroBattleDeathNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = DeadHero.BattleEquipment.Clone();
@@ -41,7 +41,7 @@ public class MainHeroBattleDeathNotificationItem : SceneNotificationData
 			BodyProperties bodyProperties = randomTroopForCulture.GetBodyProperties(equipment2, MBRandom.RandomInt(100));
 			list.Add(new SceneNotificationCharacter(randomTroopForCulture, equipment2, bodyProperties));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public MainHeroBattleDeathNotificationItem(Hero deadHero, CultureObject killerCulture = null)

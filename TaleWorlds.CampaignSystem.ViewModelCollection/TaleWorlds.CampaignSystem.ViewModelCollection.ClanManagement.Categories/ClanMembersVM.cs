@@ -289,17 +289,17 @@ public class ClanMembersVM : ViewModel
 		Companions.Clear();
 		SortController.ResetAllStates();
 		List<Hero> list = new List<Hero>();
-		foreach (Hero lord in _faction.Lords)
+		foreach (Hero aliveLord in _faction.AliveLords)
 		{
-			if (lord.IsAlive && !lord.IsDisabled)
+			if (!aliveLord.IsDisabled)
 			{
-				if (lord == Hero.MainHero)
+				if (aliveLord == Hero.MainHero)
 				{
-					list.Insert(0, lord);
+					list.Insert(0, aliveLord);
 				}
 				else
 				{
-					list.Add(lord);
+					list.Add(aliveLord);
 				}
 			}
 		}

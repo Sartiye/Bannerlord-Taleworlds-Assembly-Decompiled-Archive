@@ -5,7 +5,7 @@ using TaleWorlds.Diamond;
 namespace Messages.FromBattleServerManager.ToBattleServer;
 
 [Serializable]
-[MessageDescription("BattleServerManager", "BattleServer")]
+[MessageDescription("BattleServerManager", "BattleServer", true)]
 [DataContract]
 public class BattleServerReadyResponseMessage : LoginResultObject
 {

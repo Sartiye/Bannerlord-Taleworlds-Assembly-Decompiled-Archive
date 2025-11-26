@@ -55,21 +55,23 @@ public class WidgetFactory
 		{
 			prefabExtension.RegisterAttributeTypes(WidgetAttributeContext);
 		}
-		foreach (Type item in WidgetInfo.CollectWidgetTypes())
+		WidgetInfo[] widgetInfos = WidgetInfo.GetWidgetInfos();
+		for (int i = 0; i < widgetInfos.Length; i++)
 		{
+			Type type = widgetInfos[i].Type;
 			bool flag = true;
-			if (_builtinTypes.ContainsKey(item.Name) && assemblyOrder != null)
+			if (_builtinTypes.ContainsKey(type.Name) && assemblyOrder != null)
 			{
-				flag = assemblyOrder.IndexOf(item.Assembly.GetName().Name + ".dll") > assemblyOrder.IndexOf(_builtinTypes[item.Name].Assembly.GetName().Name + ".dll");
+				flag = assemblyOrder.IndexOf(type.Assembly.GetName().Name + ".dll") > assemblyOrder.IndexOf(_builtinTypes[type.Name].Assembly.GetName().Name + ".dll");
 			}
 			if (flag)
 			{
-				_builtinTypes[item.Name] = item;
+				_builtinTypes[type.Name] = type;
 			}
 		}
-		foreach (KeyValuePair<string, string> item2 in GetPrefabNamesAndPathsFromCurrentPath())
+		foreach (KeyValuePair<string, string> item in GetPrefabNamesAndPathsFromCurrentPath())
 		{
-			AddCustomType(item2.Key, item2.Value);
+			AddCustomType(item.Key, item.Value);
 		}
 	}
 
@@ -78,17 +80,17 @@ public class WidgetFactory
 		string[] files = _resourceDepot.GetFiles(_resourceFolder, ".xml");
 		Dictionary<string, string> dictionary = new Dictionary<string, string>();
 		string[] array = files;
-		foreach (string path in array)
+		foreach (string text in array)
 		{
-			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-			string directoryName = Path.GetDirectoryName(path);
+			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(text);
+			string text2 = text.Substring(0, text.LastIndexOf('/') + 1);
 			if (!dictionary.ContainsKey(fileNameWithoutExtension))
 			{
-				dictionary.Add(fileNameWithoutExtension, directoryName + "\\");
+				dictionary.Add(fileNameWithoutExtension, text2);
 				continue;
 			}
-			Debug.FailedAssert("This prefab has already been added: " + fileNameWithoutExtension + ". Previous Directory: " + dictionary[fileNameWithoutExtension] + " | New Directory: " + directoryName, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetPrefabNamesAndPathsFromCurrentPath", 94);
-			dictionary[fileNameWithoutExtension] = directoryName + "\\";
+			Debug.FailedAssert("This prefab has already been added: " + fileNameWithoutExtension + ". Previous Directory: " + dictionary[fileNameWithoutExtension] + " | New Directory: " + text2, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetPrefabNamesAndPathsFromCurrentPath", 96);
+			dictionary[fileNameWithoutExtension] = text2;
 		}
 		return dictionary;
 	}
@@ -129,7 +131,7 @@ public class WidgetFactory
 		{
 			return value;
 		}
-		Debug.FailedAssert("false", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetCustomTypePath", 139);
+		Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetCustomTypePath", 141);
 		return "";
 	}
 
@@ -143,7 +145,7 @@ public class WidgetFactory
 		else
 		{
 			widget = new Widget(context);
-			Debug.FailedAssert("builtin widget type not found in CreateBuiltinWidget(" + typeName + ")", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "CreateBuiltinWidget", 160);
+			Debug.FailedAssert("builtin widget type not found in CreateBuiltinWidget(" + typeName + ")", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "CreateBuiltinWidget", 162);
 		}
 		return widget;
 	}
@@ -162,7 +164,7 @@ public class WidgetFactory
 			_liveInstanceTracker[typeName] = 1;
 			return customWidgetType.WidgetPrefab;
 		}
-		Debug.FailedAssert("Couldn't find Custom Widget type: " + typeName, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetCustomType", 183);
+		Debug.FailedAssert("Couldn't find Custom Widget type: " + typeName, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetFactory.cs", "GetCustomType", 185);
 		return null;
 	}
 

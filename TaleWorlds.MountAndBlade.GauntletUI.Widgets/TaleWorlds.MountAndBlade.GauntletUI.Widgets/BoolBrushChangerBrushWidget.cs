@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -128,9 +129,10 @@ public class BoolBrushChangerBrushWidget : BrushWidget
 		{
 			return;
 		}
-		foreach (Widget allChild in brushWidget.AllChildren)
+		List<Widget> allChildrenRecursive = brushWidget.GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			if (allChild is BrushWidget brushWidget2)
+			if (allChildrenRecursive[i] is BrushWidget brushWidget2)
 			{
 				brushWidget2.Brush = brush;
 			}

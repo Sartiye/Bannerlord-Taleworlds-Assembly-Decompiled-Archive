@@ -1,333 +1,191 @@
-using System.Collections.Generic;
-using System.IO;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultMapDistanceModel : MapDistanceModel
 {
-	private readonly Dictionary<(Settlement, Settlement), float> _settlementDistanceCache = new Dictionary<(Settlement, Settlement), float>();
+	private INavigationCache _navigationCache;
 
-	private readonly Dictionary<int, Settlement> _navigationMeshClosestSettlementCache = new Dictionary<int, Settlement>();
+	public override int RegionSwitchCostFromLandToSea => 0;
 
-	private readonly List<Settlement> _settlementsToConsider = new List<Settlement>();
+	public override int RegionSwitchCostFromSeaToLand => 0;
 
-	public override float MaximumDistanceBetweenTwoSettlements { get; set; }
+	public override float MaximumSpawnDistanceForCompanionsAfterDisband => 150f;
 
-	public void LoadCacheFromFile(System.IO.BinaryReader reader)
+	public override void RegisterDistanceCache(MobileParty.NavigationType navigationCapability, INavigationCache cacheToRegister)
 	{
-		_settlementDistanceCache.Clear();
-		if (reader == null)
-		{
-			for (int i = 0; i < Settlement.All.Count; i++)
-			{
-				Settlement settlement = Settlement.All[i];
-				_settlementsToConsider.Add(settlement);
-				for (int j = i + 1; j < Settlement.All.Count; j++)
-				{
-					Settlement settlement2 = Settlement.All[j];
-					float distance = GetDistance(settlement.GatePosition, settlement2.GatePosition, settlement.CurrentNavigationFace, settlement2.CurrentNavigationFace);
-					if (settlement.Id.InternalValue <= settlement2.Id.InternalValue)
-					{
-						AddNewPairToDistanceCache((settlement, settlement2), distance);
-					}
-					else
-					{
-						AddNewPairToDistanceCache((settlement2, settlement), distance);
-					}
-				}
-			}
-			int numberOfNavigationMeshFaces = Campaign.Current.MapSceneWrapper.GetNumberOfNavigationMeshFaces();
-			for (int k = 0; k < numberOfNavigationMeshFaces; k++)
-			{
-				PathFaceRecord face = new PathFaceRecord(k, -1, -1);
-				Vec2 navigationMeshCenterPosition = Campaign.Current.MapSceneWrapper.GetNavigationMeshCenterPosition(face);
-				face = Campaign.Current.MapSceneWrapper.GetFaceIndex(navigationMeshCenterPosition);
-				TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(face);
-				if (faceTerrainType == TerrainType.Mountain || faceTerrainType == TerrainType.Lake || faceTerrainType == TerrainType.Water || faceTerrainType == TerrainType.River || faceTerrainType == TerrainType.Canyon || faceTerrainType == TerrainType.RuralArea)
-				{
-					continue;
-				}
-				float num = float.MaxValue;
-				Settlement settlement3 = null;
-				foreach (Settlement item in Settlement.All)
-				{
-					if ((settlement3 == null || navigationMeshCenterPosition.DistanceSquared(item.GatePosition) < num * num) && Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(face, item.CurrentNavigationFace, navigationMeshCenterPosition, item.GatePosition, 0.1f, num, out var distance2) && distance2 < num)
-					{
-						num = distance2;
-						settlement3 = item;
-					}
-				}
-				if (settlement3 != null)
-				{
-					_navigationMeshClosestSettlementCache[k] = settlement3;
-				}
-			}
-			return;
-		}
-		int num2 = reader.ReadInt32();
-		for (int l = 0; l < num2; l++)
-		{
-			Settlement settlement4 = Settlement.Find(reader.ReadString());
-			_settlementsToConsider.Add(settlement4);
-			for (int m = l + 1; m < num2; m++)
-			{
-				Settlement settlement5 = Settlement.Find(reader.ReadString());
-				float distance3 = reader.ReadSingle();
-				if (settlement4.Id.InternalValue <= settlement5.Id.InternalValue)
-				{
-					AddNewPairToDistanceCache((settlement4, settlement5), distance3);
-				}
-				else
-				{
-					AddNewPairToDistanceCache((settlement5, settlement4), distance3);
-				}
-			}
-		}
-		for (int num3 = reader.ReadInt32(); num3 >= 0; num3 = reader.ReadInt32())
-		{
-			Settlement value = Settlement.Find(reader.ReadString());
-			_navigationMeshClosestSettlementCache[num3] = value;
-		}
+		_navigationCache = cacheToRegister;
+		cacheToRegister.FinalizeInitialization();
 	}
 
-	public override float GetDistance(Settlement fromSettlement, Settlement toSettlement)
+	public override float GetMaximumDistanceBetweenTwoConnectedSettlements(MobileParty.NavigationType navigationCapabilities)
 	{
-		float value;
-		if (fromSettlement == toSettlement)
-		{
-			value = 0f;
-		}
-		else if (fromSettlement.Id.InternalValue <= toSettlement.Id.InternalValue)
-		{
-			(Settlement, Settlement) tuple = (fromSettlement, toSettlement);
-			if (!_settlementDistanceCache.TryGetValue(tuple, out value))
-			{
-				value = GetDistance(fromSettlement.GatePosition, toSettlement.GatePosition, fromSettlement.CurrentNavigationFace, toSettlement.CurrentNavigationFace);
-				AddNewPairToDistanceCache(tuple, value);
-			}
-		}
-		else
-		{
-			(Settlement, Settlement) tuple2 = (toSettlement, fromSettlement);
-			if (!_settlementDistanceCache.TryGetValue(tuple2, out value))
-			{
-				value = GetDistance(toSettlement.GatePosition, fromSettlement.GatePosition, toSettlement.CurrentNavigationFace, fromSettlement.CurrentNavigationFace);
-				AddNewPairToDistanceCache(tuple2, value);
-			}
-		}
-		return value;
+		return _navigationCache?.MaximumDistanceBetweenTwoConnectedSettlements ?? 0f;
 	}
 
-	public override float GetDistance(MobileParty fromParty, Settlement toSettlement)
+	public override float GetLandRatioOfPathBetweenSettlements(Settlement fromSettlement, Settlement toSettlement, bool isFromPort, bool isTargetingPort)
 	{
-		if (fromParty.CurrentSettlement != null)
+		if (_navigationCache != null)
 		{
-			return GetDistance(fromParty.CurrentSettlement, toSettlement);
+			_navigationCache.GetSettlementToSettlementDistanceWithLandRatio(fromSettlement, isAtSea1: false, toSettlement, isAtSea2: false, out var landRatio);
+			return landRatio;
 		}
-		if (fromParty.CurrentNavigationFace.FaceIndex == toSettlement.CurrentNavigationFace.FaceIndex)
-		{
-			return fromParty.Position2D.Distance(toSettlement.GatePosition);
-		}
-		Settlement closestSettlementForNavigationMesh = GetClosestSettlementForNavigationMesh(fromParty.CurrentNavigationFace);
-		return fromParty.Position2D.Distance(toSettlement.GatePosition) - closestSettlementForNavigationMesh.GatePosition.Distance(toSettlement.GatePosition) + GetDistance(closestSettlementForNavigationMesh, toSettlement);
+		return 1f;
 	}
 
-	public override float GetDistance(MobileParty fromParty, MobileParty toParty)
+	public override float GetDistance(Settlement fromSettlement, Settlement toSettlement, bool isFromPort = false, bool isTargetingPort = false, MobileParty.NavigationType navigationCapability = MobileParty.NavigationType.Default)
 	{
-		if (fromParty.CurrentNavigationFace.FaceIndex == toParty.CurrentNavigationFace.FaceIndex)
-		{
-			return fromParty.Position2D.Distance(toParty.Position2D);
-		}
-		Settlement settlement = fromParty.CurrentSettlement ?? GetClosestSettlementForNavigationMesh(fromParty.CurrentNavigationFace);
-		Settlement settlement2 = toParty.CurrentSettlement ?? GetClosestSettlementForNavigationMesh(toParty.CurrentNavigationFace);
-		return fromParty.Position2D.Distance(toParty.Position2D) - settlement.GatePosition.Distance(settlement2.GatePosition) + GetDistance(settlement, settlement2);
+		float landRatio;
+		return GetDistance(fromSettlement, toSettlement, isFromPort, isTargetingPort, MobileParty.NavigationType.Default, out landRatio);
 	}
 
-	public override bool GetDistance(Settlement fromSettlement, Settlement toSettlement, float maximumDistance, out float distance)
+	public override float GetDistance(Settlement fromSettlement, Settlement toSettlement, bool isFromPort, bool isTargetingPort, MobileParty.NavigationType navigationCapability, out float landRatio)
 	{
-		bool flag;
-		if (fromSettlement == toSettlement)
+		float result = float.MaxValue;
+		landRatio = 1f;
+		if (fromSettlement != null && toSettlement != null)
 		{
-			distance = 0f;
-			flag = true;
-		}
-		else if (fromSettlement.CurrentNavigationFace.FaceIndex == toSettlement.CurrentNavigationFace.FaceIndex)
-		{
-			distance = fromSettlement.GatePosition.Distance(toSettlement.GatePosition);
-			flag = distance <= maximumDistance;
-		}
-		else if (fromSettlement.Id.InternalValue <= toSettlement.Id.InternalValue)
-		{
-			(Settlement, Settlement) tuple = (fromSettlement, toSettlement);
-			if (_settlementDistanceCache.TryGetValue(tuple, out distance))
+			if (fromSettlement != toSettlement)
 			{
-				flag = distance <= maximumDistance;
+				return _navigationCache.GetSettlementToSettlementDistanceWithLandRatio(fromSettlement, isFromPort, toSettlement, isTargetingPort, out landRatio);
 			}
-			else
-			{
-				flag = GetDistanceWithDistanceLimit(fromSettlement.GatePosition, toSettlement.GatePosition, Campaign.Current.MapSceneWrapper.GetFaceIndex(fromSettlement.GatePosition), Campaign.Current.MapSceneWrapper.GetFaceIndex(toSettlement.GatePosition), maximumDistance, out distance);
-				if (flag)
-				{
-					AddNewPairToDistanceCache(tuple, distance);
-				}
-			}
-		}
-		else
-		{
-			(Settlement, Settlement) tuple2 = (toSettlement, fromSettlement);
-			if (_settlementDistanceCache.TryGetValue(tuple2, out distance))
-			{
-				flag = distance <= maximumDistance;
-			}
-			else
-			{
-				flag = GetDistanceWithDistanceLimit(toSettlement.GatePosition, fromSettlement.GatePosition, Campaign.Current.MapSceneWrapper.GetFaceIndex(toSettlement.GatePosition), Campaign.Current.MapSceneWrapper.GetFaceIndex(fromSettlement.GatePosition), maximumDistance, out distance);
-				if (flag)
-				{
-					AddNewPairToDistanceCache(tuple2, distance);
-				}
-			}
-		}
-		return flag;
-	}
-
-	public override bool GetDistance(MobileParty fromParty, Settlement toSettlement, float maximumDistance, out float distance)
-	{
-		bool result = false;
-		if (fromParty.CurrentSettlement != null)
-		{
-			result = GetDistance(fromParty.CurrentSettlement, toSettlement, maximumDistance, out distance);
-		}
-		else if (fromParty.CurrentNavigationFace.FaceIndex == toSettlement.CurrentNavigationFace.FaceIndex)
-		{
-			distance = fromParty.Position2D.Distance(toSettlement.GatePosition);
-			result = distance <= maximumDistance;
-		}
-		else
-		{
-			Settlement closestSettlementForNavigationMesh = GetClosestSettlementForNavigationMesh(fromParty.CurrentNavigationFace);
-			if (GetDistance(closestSettlementForNavigationMesh, toSettlement, maximumDistance, out distance))
-			{
-				distance += fromParty.Position2D.Distance(toSettlement.GatePosition) - closestSettlementForNavigationMesh.GatePosition.Distance(toSettlement.GatePosition);
-				result = distance <= maximumDistance;
-			}
+			result = 0f;
 		}
 		return result;
 	}
 
-	public override bool GetDistance(IMapPoint fromMapPoint, MobileParty toParty, float maximumDistance, out float distance)
+	public override float GetDistance(MobileParty fromMobileParty, Settlement toSettlement, bool isTargetingPort, MobileParty.NavigationType customCapability, out float estimatedLandRatio)
 	{
-		bool result = false;
-		if (fromMapPoint.CurrentNavigationFace.FaceIndex == toParty.CurrentNavigationFace.FaceIndex)
+		float value = 100000000f;
+		estimatedLandRatio = 1f;
+		if (fromMobileParty.CurrentNavigationFace.FaceIndex == toSettlement.GatePosition.Face.FaceIndex)
 		{
-			distance = fromMapPoint.Position2D.Distance(toParty.Position2D);
-			result = distance <= maximumDistance;
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromMobileParty.Position.Face), MobileParty.NavigationType.Default))
+			{
+				value = fromMobileParty.Position.Distance(toSettlement.GatePosition);
+			}
+		}
+		else if (fromMobileParty.IsCurrentlyAtSea)
+		{
+			value = 100000000f;
 		}
 		else
 		{
-			Settlement closestSettlementForNavigationMesh = GetClosestSettlementForNavigationMesh(fromMapPoint.CurrentNavigationFace);
-			Settlement settlement = toParty.CurrentSettlement ?? GetClosestSettlementForNavigationMesh(toParty.CurrentNavigationFace);
-			if (GetDistance(closestSettlementForNavigationMesh, settlement, maximumDistance, out distance))
+			Settlement item = Campaign.Current.Models.MapDistanceModel.GetClosestEntranceToFace(fromMobileParty.CurrentNavigationFace, MobileParty.NavigationType.Default).Item1;
+			if (item != null)
 			{
-				distance += fromMapPoint.Position2D.Distance(toParty.Position2D) - closestSettlementForNavigationMesh.GatePosition.Distance(settlement.GatePosition);
-				result = distance <= maximumDistance;
+				value = fromMobileParty.Position.Distance(toSettlement.GatePosition) - item.GatePosition.Distance(toSettlement.GatePosition) + Campaign.Current.Models.MapDistanceModel.GetDistance(item, toSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
 			}
 		}
-		return result;
+		return MBMath.ClampFloat(value, 0f, float.MaxValue);
 	}
 
-	public override bool GetDistance(IMapPoint fromMapPoint, Settlement toSettlement, float maximumDistance, out float distance)
+	public override float GetDistance(MobileParty fromMobileParty, MobileParty toMobileParty, MobileParty.NavigationType customCapability, out float landRatio)
 	{
-		bool result = false;
-		if (fromMapPoint.CurrentNavigationFace.FaceIndex == toSettlement.CurrentNavigationFace.FaceIndex)
-		{
-			distance = fromMapPoint.Position2D.Distance(toSettlement.GatePosition);
-			result = distance <= maximumDistance;
-		}
-		else
-		{
-			distance = 100f;
-			Settlement closestSettlementForNavigationMesh = GetClosestSettlementForNavigationMesh(fromMapPoint.CurrentNavigationFace);
-			if (GetDistance(closestSettlementForNavigationMesh, toSettlement, maximumDistance, out distance))
-			{
-				distance += fromMapPoint.Position2D.Distance(toSettlement.GatePosition) - closestSettlementForNavigationMesh.GatePosition.Distance(toSettlement.GatePosition);
-				result = distance <= maximumDistance;
-			}
-		}
-		return result;
-	}
-
-	public override bool GetDistance(IMapPoint fromMapPoint, in Vec2 toPoint, float maximumDistance, out float distance)
-	{
-		bool result = false;
-		PathFaceRecord faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(toPoint);
-		if (fromMapPoint.CurrentNavigationFace.FaceIndex == faceIndex.FaceIndex)
-		{
-			distance = fromMapPoint.Position2D.Distance(toPoint);
-			result = distance <= maximumDistance;
-		}
-		else
-		{
-			Settlement closestSettlementForNavigationMesh = GetClosestSettlementForNavigationMesh(fromMapPoint.CurrentNavigationFace);
-			Settlement closestSettlementForNavigationMesh2 = GetClosestSettlementForNavigationMesh(faceIndex);
-			if (GetDistance(closestSettlementForNavigationMesh, closestSettlementForNavigationMesh2, maximumDistance, out distance))
-			{
-				distance += fromMapPoint.Position2D.Distance(toPoint) - closestSettlementForNavigationMesh.GatePosition.Distance(closestSettlementForNavigationMesh2.GatePosition);
-				result = distance <= maximumDistance;
-			}
-		}
-		return result;
-	}
-
-	private float GetDistance(Vec2 pos1, Vec2 pos2, PathFaceRecord faceIndex1, PathFaceRecord faceIndex2)
-	{
-		Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(faceIndex1, faceIndex2, pos1, pos2, 0.1f, float.MaxValue, out var distance);
+		Campaign.Current.Models.MapDistanceModel.GetDistance(fromMobileParty, toMobileParty, customCapability, 100000000f, out var distance, out landRatio);
 		return distance;
 	}
 
-	private bool GetDistanceWithDistanceLimit(Vec2 pos1, Vec2 pos2, PathFaceRecord faceIndex1, PathFaceRecord faceIndex2, float distanceLimit, out float distance)
+	public override bool GetDistance(MobileParty fromMobileParty, MobileParty toMobileParty, MobileParty.NavigationType customCapability, float maxDistance, out float distance, out float landRatio)
 	{
-		if (pos1.DistanceSquared(pos2) > distanceLimit * distanceLimit)
+		landRatio = 1f;
+		distance = float.MaxValue;
+		if (fromMobileParty.CurrentNavigationFace.FaceIndex == toMobileParty.CurrentNavigationFace.FaceIndex)
+		{
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromMobileParty.Position.Face), MobileParty.NavigationType.Default))
+			{
+				distance = fromMobileParty.Position.Distance(toMobileParty.Position);
+			}
+		}
+		else if (fromMobileParty.IsCurrentlyAtSea || toMobileParty.IsCurrentlyAtSea)
 		{
 			distance = float.MaxValue;
-			return false;
 		}
-		return Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(faceIndex1, faceIndex2, pos1, pos2, 0.1f, distanceLimit, out distance);
+		else
+		{
+			distance = fromMobileParty.Position.Distance(toMobileParty.Position);
+		}
+		distance = MBMath.ClampFloat(distance, 0f, float.MaxValue);
+		return distance <= maxDistance;
 	}
 
-	public override Settlement GetClosestSettlementForNavigationMesh(PathFaceRecord face)
+	public override float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
 	{
-		if (!_navigationMeshClosestSettlementCache.TryGetValue(face.FaceIndex, out var value))
+		float value = float.MaxValue;
+		landRatio = 1f;
+		PathFaceRecord face = toPoint.Face;
+		if (fromMobileParty.CurrentNavigationFace.FaceIndex == face.FaceIndex)
 		{
-			Vec2 navigationMeshCenterPosition = Campaign.Current.MapSceneWrapper.GetNavigationMeshCenterPosition(face);
-			float num = float.MaxValue;
-			foreach (Settlement item in _settlementsToConsider)
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromMobileParty.Position.Face), MobileParty.NavigationType.Default))
 			{
-				float num2 = item.GatePosition.DistanceSquared(navigationMeshCenterPosition);
-				if (num > num2)
-				{
-					num = num2;
-					value = item;
-				}
+				value = fromMobileParty.Position.Distance(toPoint);
 			}
-			_navigationMeshClosestSettlementCache[face.FaceIndex] = value;
 		}
-		return value;
+		else
+		{
+			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+			(Settlement, bool) closestEntranceToFace = mapDistanceModel.GetClosestEntranceToFace(fromMobileParty.CurrentNavigationFace, MobileParty.NavigationType.Default);
+			(Settlement, bool) closestEntranceToFace2 = mapDistanceModel.GetClosestEntranceToFace(face, MobileParty.NavigationType.Default);
+			var (settlement, _) = closestEntranceToFace;
+			var (settlement2, _) = closestEntranceToFace2;
+			if (settlement != null && settlement2 != null)
+			{
+				value = fromMobileParty.Position.Distance(toPoint) - settlement.GatePosition.Distance(settlement2.GatePosition) + GetDistance(settlement, settlement2, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+			}
+		}
+		return MBMath.ClampFloat(value, 0f, float.MaxValue);
 	}
 
-	private void AddNewPairToDistanceCache((Settlement, Settlement) pair, float distance)
+	public override float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType customCapability)
 	{
-		_settlementDistanceCache.Add(pair, distance);
-		if (distance > MaximumDistanceBetweenTwoSettlements)
+		float value = float.MaxValue;
+		CampaignVec2 campaignVec = (isFromPort ? fromSettlement.PortPosition : fromSettlement.GatePosition);
+		PathFaceRecord face = toPoint.Face;
+		PathFaceRecord face2 = campaignVec.Face;
+		if (face2.FaceIndex == face.FaceIndex)
 		{
-			MaximumDistanceBetweenTwoSettlements = distance;
-			Campaign.Current.UpdateMaximumDistanceBetweenTwoSettlements();
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(face2), MobileParty.NavigationType.Default))
+			{
+				value = campaignVec.Distance(toPoint);
+			}
 		}
+		else
+		{
+			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+			Settlement item = mapDistanceModel.GetClosestEntranceToFace(face, MobileParty.NavigationType.Default).Item1;
+			if (item != null)
+			{
+				value = fromSettlement.GatePosition.Distance(toPoint) - fromSettlement.GatePosition.Distance(item.GatePosition) + mapDistanceModel.GetDistance(fromSettlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+			}
+		}
+		return MBMath.ClampFloat(value, 0f, 100000000f);
+	}
+
+	public override bool PathExistBetweenPoints(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType)
+	{
+		if (fromPoint.IsOnLand)
+		{
+			return toPoint.IsOnLand;
+		}
+		return false;
+	}
+
+	public override (Settlement, bool) GetClosestEntranceToFace(PathFaceRecord face, MobileParty.NavigationType navigationCapabilities)
+	{
+		bool isAtSea;
+		return (_navigationCache.GetClosestSettlementToFaceIndex(face.FaceIndex, out isAtSea), isAtSea);
+	}
+
+	public override MBReadOnlyList<Settlement> GetNeighborsOfFortification(Town town, MobileParty.NavigationType navigationCapabilities)
+	{
+		return _navigationCache.GetNeighbors(town.Settlement);
+	}
+
+	public override float GetTransitionCostAdjustment(Settlement settlement1, bool isFromPort, Settlement settlement2, bool isTargetingPort, bool fromIsCurrentlyAtSea, bool toIsCurrentlyAtSea)
+	{
+		return 0f;
 	}
 }

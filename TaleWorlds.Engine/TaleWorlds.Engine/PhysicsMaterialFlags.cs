@@ -4,7 +4,7 @@ using TaleWorlds.DotNet;
 namespace TaleWorlds.Engine;
 
 [Flags]
-[EngineStruct("rglPhysics_material::rglPhymat_flags", false)]
+[EngineStruct("rglPhysics_material::rglPhymat_flags", true, "rgl_phymat", false)]
 public enum PhysicsMaterialFlags : byte
 {
 	None = 0,

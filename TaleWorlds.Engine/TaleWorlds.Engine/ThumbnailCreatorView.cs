@@ -15,7 +15,7 @@ public sealed class ThumbnailCreatorView : View
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static void OnThumbnailRenderComplete(string renderId, Texture renderTarget)
 	{
 		renderCallback(renderId, renderTarget);
@@ -31,9 +31,19 @@ public sealed class ThumbnailCreatorView : View
 		EngineApplicationInterface.IThumbnailCreatorView.RegisterScene(base.Pointer, scene.Pointer, usePostFx);
 	}
 
-	public void RegisterEntity(Scene scene, Camera cam, Texture texture, GameEntity itemEntity, int allocationGroupIndex, string renderId = "")
+	public void RegisterCachedEntity(Scene scene, GameEntity entity, string cacheId)
 	{
-		EngineApplicationInterface.IThumbnailCreatorView.RegisterEntity(base.Pointer, scene.Pointer, cam.Pointer, texture.Pointer, itemEntity.Pointer, renderId, allocationGroupIndex);
+		EngineApplicationInterface.IThumbnailCreatorView.RegisterCachedEntity(base.Pointer, scene.Pointer, entity.Pointer, cacheId);
+	}
+
+	public void UnregisterCachedEntity(string cacheId)
+	{
+		EngineApplicationInterface.IThumbnailCreatorView.UnregisterCachedEntity(base.Pointer, cacheId);
+	}
+
+	public void RegisterRenderRequest(ref ThumbnailRenderRequest request)
+	{
+		EngineApplicationInterface.IThumbnailCreatorView.RegisterRenderRequest(base.Pointer, ref request);
 	}
 
 	public void ClearRequests()
@@ -44,11 +54,6 @@ public sealed class ThumbnailCreatorView : View
 	public void CancelRequest(string renderID)
 	{
 		EngineApplicationInterface.IThumbnailCreatorView.CancelRequest(base.Pointer, renderID);
-	}
-
-	public void RegisterEntityWithoutTexture(Scene scene, Camera camera, GameEntity entity, int width, int height, int allocationGroupIndex, string renderId = "", string debugName = "")
-	{
-		EngineApplicationInterface.IThumbnailCreatorView.RegisterEntityWithoutTexture(base.Pointer, scene.Pointer, camera.Pointer, entity.Pointer, width, height, renderId, debugName, allocationGroupIndex);
 	}
 
 	public int GetNumberOfPendingRequests()

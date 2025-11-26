@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.Map;
@@ -90,7 +91,7 @@ internal class LocatorGrid<T> where T : ILocatable<T>
 				}
 				locatable2 = locatable2.NextLocatable;
 			}
-			Debug.FailedAssert("cannot remove party from MapLocator: " + locatable.ToString(), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Map\\LocatorGrid.cs", "RemoveFromList", 134);
+			Debug.FailedAssert("cannot remove party from MapLocator: " + locatable.ToString(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Map\\LocatorGrid.cs", "RemoveFromList", 134);
 		}
 	}
 
@@ -160,15 +161,21 @@ internal class LocatorGrid<T> where T : ILocatable<T>
 
 	private void GetBoundaries(Vec2 position, float radius, out int minX, out int minY, out int maxX, out int maxY)
 	{
-		Vec2 vec = new Vec2(MathF.Min(radius, (float)(_width - 1) * _gridNodeSize * 0.5f), MathF.Min(radius, (float)(_height - 1) * _gridNodeSize * 0.5f));
+		Vec2 vec = new Vec2(radius, radius);
 		GetGridIndices(position - vec, out minX, out minY);
 		GetGridIndices(position + vec, out maxX, out maxY);
+		int num = Math.Min(maxX - minX, _width - 1);
+		int num2 = Math.Min(maxY - minY, _height - 1);
+		minX %= _width;
+		minY %= _height;
+		maxX = minX + num;
+		maxY = minY + num2;
 	}
 
 	private void GetGridIndices(Vec2 position, out int x, out int y)
 	{
-		x = MathF.Floor(position.x / _gridNodeSize);
-		y = MathF.Floor(position.y / _gridNodeSize);
+		x = TaleWorlds.Library.MathF.Floor(position.x / _gridNodeSize);
+		y = TaleWorlds.Library.MathF.Floor(position.y / _gridNodeSize);
 	}
 
 	private int Pos2NodeIndex(Vec2 position)

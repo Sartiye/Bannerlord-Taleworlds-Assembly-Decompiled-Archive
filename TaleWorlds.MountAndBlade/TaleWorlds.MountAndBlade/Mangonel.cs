@@ -20,40 +20,6 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 
 	private const string VerticalAdjusterTag = "vertical_adjuster";
 
-	private static readonly ActionIndexCache act_usage_mangonel_idle = ActionIndexCache.Create("act_usage_mangonel_idle");
-
-	private static readonly ActionIndexCache act_usage_mangonel_load_ammo_begin = ActionIndexCache.Create("act_usage_mangonel_load_ammo_begin");
-
-	private static readonly ActionIndexCache act_usage_mangonel_load_ammo_end = ActionIndexCache.Create("act_usage_mangonel_load_ammo_end");
-
-	private static readonly ActionIndexCache act_pickup_boulder_begin = ActionIndexCache.Create("act_pickup_boulder_begin");
-
-	private static readonly ActionIndexCache act_pickup_boulder_end = ActionIndexCache.Create("act_pickup_boulder_end");
-
-	private static readonly ActionIndexCache act_usage_mangonel_reload = ActionIndexCache.Create("act_usage_mangonel_reload");
-
-	private static readonly ActionIndexCache act_usage_mangonel_reload_2 = ActionIndexCache.Create("act_usage_mangonel_reload_2");
-
-	private static readonly ActionIndexCache act_usage_mangonel_reload_2_idle = ActionIndexCache.Create("act_usage_mangonel_reload_2_idle");
-
-	private static readonly ActionIndexCache act_usage_mangonel_rotate_left = ActionIndexCache.Create("act_usage_mangonel_rotate_left");
-
-	private static readonly ActionIndexCache act_usage_mangonel_rotate_right = ActionIndexCache.Create("act_usage_mangonel_rotate_right");
-
-	private static readonly ActionIndexCache act_usage_mangonel_shoot = ActionIndexCache.Create("act_usage_mangonel_shoot");
-
-	private static readonly ActionIndexCache act_usage_mangonel_big_idle = ActionIndexCache.Create("act_usage_mangonel_big_idle");
-
-	private static readonly ActionIndexCache act_usage_mangonel_big_shoot = ActionIndexCache.Create("act_usage_mangonel_big_shoot");
-
-	private static readonly ActionIndexCache act_usage_mangonel_big_reload = ActionIndexCache.Create("act_usage_mangonel_big_reload");
-
-	private static readonly ActionIndexCache act_usage_mangonel_big_load_ammo_begin = ActionIndexCache.Create("act_usage_mangonel_big_load_ammo_begin");
-
-	private static readonly ActionIndexCache act_usage_mangonel_big_load_ammo_end = ActionIndexCache.Create("act_usage_mangonel_big_load_ammo_end");
-
-	private static readonly ActionIndexCache act_strike_bent_over = ActionIndexCache.Create("act_strike_bent_over");
-
 	private string _missileBoneName = "end_throwarm";
 
 	private List<StandingPoint> _rotateStandingPoints;
@@ -138,7 +104,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 	{
 		get
 		{
-			if (_defaultSide == BattleSideEnum.Defender)
+			if (DefaultSide == BattleSideEnum.Defender)
 			{
 				return 0.25f;
 			}
@@ -161,8 +127,9 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		get
 		{
 			Mat3 rotation = _body.GameEntity.GetGlobalFrame().rotation;
-			rotation.RotateAboutSide(0f - currentReleaseAngle);
-			return rotation.TransformToParent(new Vec3(0f, -1f));
+			rotation.RotateAboutSide(0f - CurrentReleaseAngle);
+			Vec3 v = new Vec3(0f, -1f);
+			return rotation.TransformToParent(in v);
 		}
 	}
 
@@ -221,21 +188,9 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		return new MangonelAI(this);
 	}
 
-	public override void AfterMissionStart()
-	{
-		if (AmmoPickUpStandingPoints != null)
-		{
-			foreach (StandingPointWithWeaponRequirement ammoPickUpStandingPoint in AmmoPickUpStandingPoints)
-			{
-				ammoPickUpStandingPoint.LockUserFrames = true;
-			}
-		}
-		UpdateProjectilePosition();
-	}
-
 	public override SiegeEngineType GetSiegeEngineType()
 	{
-		if (_defaultSide != BattleSideEnum.Attacker)
+		if (DefaultSide != BattleSideEnum.Attacker)
 		{
 			return DefaultSiegeEngineTypes.Catapult;
 		}
@@ -244,27 +199,27 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 
 	protected internal override void OnInit()
 	{
-		List<SynchedMissionObject> list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("rope");
+		List<SynchedMissionObject> list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("rope");
 		if (list.Count > 0)
 		{
 			_rope = list[0];
 		}
-		list = base.GameEntity.CollectObjectsWithTag<SynchedMissionObject>("body");
+		list = base.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<SynchedMissionObject>("body");
 		_body = list[0];
 		_bodySkeleton = _body.GameEntity.Skeleton;
 		RotationObject = _body;
-		List<GameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("vertical_adjuster");
-		_verticalAdjuster = list2[0];
+		List<WeakGameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("vertical_adjuster");
+		_verticalAdjuster = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(list2[0]);
 		_verticalAdjusterSkeleton = _verticalAdjuster.Skeleton;
 		if (_verticalAdjusterSkeleton != null)
 		{
 			_verticalAdjusterSkeleton.SetAnimationAtChannel(MangonelAimAnimation, 0);
 		}
 		_verticalAdjusterStartingLocalFrame = _verticalAdjuster.GetFrame();
-		_verticalAdjusterStartingLocalFrame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToLocal(_verticalAdjusterStartingLocalFrame);
+		_verticalAdjusterStartingLocalFrame = _body.GameEntity.GetBoneEntitialFrameWithIndex(0).TransformToLocal(in _verticalAdjusterStartingLocalFrame);
 		base.OnInit();
-		timeGapBetweenShootActionAndProjectileLeaving = 0.23f;
-		timeGapBetweenShootingEndAndReloadingStart = 0f;
+		TimeGapBetweenShootActionAndProjectileLeaving = 0.23f;
+		TimeGapBetweenShootingEndAndReloadingStart = 0f;
 		_rotateStandingPoints = new List<StandingPoint>();
 		if (base.StandingPoints != null)
 		{
@@ -282,11 +237,11 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 					}
 				}
 			}
-			MatrixFrame globalFrame = _body.GameEntity.GetGlobalFrame();
+			MatrixFrame frame = _body.GameEntity.GetGlobalFrame();
 			_standingPointLocalIKFrames = new MatrixFrame[base.StandingPoints.Count];
 			for (int i = 0; i < base.StandingPoints.Count; i++)
 			{
-				_standingPointLocalIKFrames[i] = base.StandingPoints[i].GameEntity.GetGlobalFrame().TransformToLocal(globalFrame);
+				_standingPointLocalIKFrames[i] = base.StandingPoints[i].GameEntity.GetGlobalFrame().TransformToLocalNonOrthogonal(in frame);
 				base.StandingPoints[i].AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 			}
 		}
@@ -305,10 +260,29 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		}
 		EnemyRangeToStopUsing = 9f;
 		SetScriptComponentToTick(GetTickRequirement());
+		if (base.AmmoPickUpPoints != null)
+		{
+			foreach (StandingPoint ammoPickUpPoint in base.AmmoPickUpPoints)
+			{
+				ammoPickUpPoint.LockUserFrames = true;
+			}
+		}
+		UpdateProjectilePosition();
 	}
 
 	protected internal override void OnEditorInit()
 	{
+	}
+
+	public override void OnPilotAssignedDuringSpawn()
+	{
+		base.PilotAgent.SetActionChannel(1, in _idleAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL);
+		MatrixFrame globalFrame = base.PilotStandingPoint.GameEntity.GetGlobalFrame();
+		base.PilotAgent.TeleportToPosition(globalFrame.origin);
+		base.PilotAgent.DisableScriptedMovement();
+		Agent pilotAgent = base.PilotAgent;
+		Vec2 direction = globalFrame.rotation.f.AsVec2.Normalized();
+		pilotAgent.SetMovementDirection(in direction);
 	}
 
 	protected override bool CanRotate()
@@ -338,19 +312,19 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		}
 		if (!GameNetwork.IsClientOrReplay)
 		{
-			foreach (StandingPointWithWeaponRequirement ammoPickUpStandingPoint in AmmoPickUpStandingPoints)
+			foreach (StandingPoint ammoPickUpPoint in base.AmmoPickUpPoints)
 			{
-				if (!ammoPickUpStandingPoint.HasUser)
+				if (!ammoPickUpPoint.HasUser)
 				{
 					continue;
 				}
-				Agent userAgent = ammoPickUpStandingPoint.UserAgent;
-				ActionIndexValueCache currentActionValue = userAgent.GetCurrentActionValue(1);
-				if (currentActionValue == act_pickup_boulder_begin)
+				Agent userAgent = ammoPickUpPoint.UserAgent;
+				ActionIndexCache currentAction = userAgent.GetCurrentAction(1);
+				if (currentAction == ActionIndexCache.act_pickup_boulder_begin)
 				{
 					continue;
 				}
-				if (currentActionValue == act_pickup_boulder_end)
+				if (currentAction == ActionIndexCache.act_pickup_boulder_end)
 				{
 					MissionWeapon weapon = new MissionWeapon(OriginalMissileItem, null, null, 1);
 					userAgent.EquipWeaponToExtraSlotAndWield(ref weapon);
@@ -372,7 +346,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 						ReloaderAgent = null;
 					}
 				}
-				else if (!userAgent.SetActionChannel(1, act_pickup_boulder_begin, ignorePriority: false, 0uL) && userAgent.Controller != Agent.ControllerType.AI)
+				else if (!userAgent.SetActionChannel(1, in ActionIndexCache.act_pickup_boulder_begin, ignorePriority: false, (AnimFlags)0uL) && userAgent.Controller != AgentControllerType.AI)
 				{
 					userAgent.StopUsingGameObject();
 				}
@@ -395,13 +369,13 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 			if (LoadAmmoStandingPoint.HasUser)
 			{
 				Agent userAgent2 = LoadAmmoStandingPoint.UserAgent;
-				if (userAgent2.GetCurrentActionValue(1) == _loadAmmoEndAnimationActionIndex)
+				if (userAgent2.GetCurrentAction(1) == _loadAmmoEndAnimationActionIndex)
 				{
-					EquipmentIndex wieldedItemIndex = userAgent2.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-					if (wieldedItemIndex != EquipmentIndex.None && userAgent2.Equipment[wieldedItemIndex].CurrentUsageItem.WeaponClass == OriginalMissileItem.PrimaryWeapon.WeaponClass)
+					EquipmentIndex primaryWieldedItemIndex = userAgent2.GetPrimaryWieldedItemIndex();
+					if (primaryWieldedItemIndex != EquipmentIndex.None && userAgent2.Equipment[primaryWieldedItemIndex].CurrentUsageItem.WeaponClass == OriginalMissileItem.PrimaryWeapon.WeaponClass)
 					{
-						ChangeProjectileEntityServer(userAgent2, userAgent2.Equipment[wieldedItemIndex].Item.StringId);
-						userAgent2.RemoveEquippedWeapon(wieldedItemIndex);
+						ChangeProjectileEntityServer(userAgent2, userAgent2.Equipment[primaryWieldedItemIndex].Item.StringId);
+						userAgent2.RemoveEquippedWeapon(primaryWieldedItemIndex);
 						_timeElapsedAfterLoading = 0f;
 						base.Projectile.SetVisibleSynched(value: true);
 						base.State = WeaponState.WaitingBeforeIdle;
@@ -417,7 +391,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 				}
 				else
 				{
-					if (!(userAgent2.GetCurrentActionValue(1) != _loadAmmoBeginAnimationActionIndex) || userAgent2.SetActionChannel(1, _loadAmmoBeginAnimationActionIndex, ignorePriority: false, 0uL))
+					if (!(userAgent2.GetCurrentAction(1) != _loadAmmoBeginAnimationActionIndex) || userAgent2.SetActionChannel(1, in _loadAmmoBeginAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL))
 					{
 						break;
 					}
@@ -438,8 +412,8 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 			else if (LoadAmmoStandingPoint.HasAIMovingTo)
 			{
 				Agent movingAgent = LoadAmmoStandingPoint.MovingAgent;
-				EquipmentIndex wieldedItemIndex2 = movingAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-				if (wieldedItemIndex2 == EquipmentIndex.None || movingAgent.Equipment[wieldedItemIndex2].CurrentUsageItem.WeaponClass != OriginalMissileItem.PrimaryWeapon.WeaponClass)
+				EquipmentIndex primaryWieldedItemIndex2 = movingAgent.GetPrimaryWieldedItemIndex();
+				if (primaryWieldedItemIndex2 == EquipmentIndex.None || movingAgent.Equipment[primaryWieldedItemIndex2].CurrentUsageItem.WeaponClass != OriginalMissileItem.PrimaryWeapon.WeaponClass)
 				{
 					movingAgent.StopUsingGameObject(isSuccessful: true, Agent.StopUsingGameObjectFlags.None);
 					SendAgentToAmmoPickup(movingAgent);
@@ -465,10 +439,10 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		}
 		if (_verticalAdjusterSkeleton != null)
 		{
-			float parameter = MBMath.ClampFloat((currentReleaseAngle - BottomReleaseAngleRestriction) / (TopReleaseAngleRestriction - BottomReleaseAngleRestriction), 0f, 1f);
+			float parameter = MBMath.ClampFloat((CurrentReleaseAngle - BottomReleaseAngleRestriction) / (TopReleaseAngleRestriction - BottomReleaseAngleRestriction), 0f, 1f);
 			_verticalAdjusterSkeleton.SetAnimationParameterAtChannel(0, parameter);
 		}
-		MatrixFrame frame = Skeletons[0].GetBoneEntitialFrameWithIndex(0).TransformToParent(_verticalAdjusterStartingLocalFrame);
+		MatrixFrame frame = Skeletons[0].GetBoneEntitialFrameWithIndex(0).TransformToParent(in _verticalAdjusterStartingLocalFrame);
 		_verticalAdjuster.SetFrame(ref frame);
 		MatrixFrame boundEntityGlobalFrame = _body.GameEntity.GetGlobalFrame();
 		for (int i = 0; i < base.StandingPoints.Count; i++)
@@ -477,24 +451,20 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 			{
 				continue;
 			}
-			if (base.StandingPoints[i].UserAgent.IsInBeingStruckAction)
+			if (base.StandingPoints[i].UserAgent.IsInBeingStruckAction || base.AmmoPickUpPoints.IndexOf(base.StandingPoints[i]) >= 0)
 			{
 				base.StandingPoints[i].UserAgent.ClearHandInverseKinematics();
+				continue;
 			}
-			else if (base.StandingPoints[i] != base.PilotStandingPoint)
+			ActionIndexCache currentAction = base.StandingPoints[i].UserAgent.GetCurrentAction(1);
+			float currentActionProgress = base.StandingPoints[i].UserAgent.GetCurrentActionProgress(1);
+			if (currentAction != _reload2IdleActionIndex && (currentAction != _reload2AnimationActionIndex || currentActionProgress > 0.1f) && (currentAction != _shootAnimationActionIndex || currentActionProgress < 0.15f))
 			{
-				if (base.StandingPoints[i].UserAgent.GetCurrentActionValue(1) != _reload2IdleActionIndex)
-				{
-					base.StandingPoints[i].UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in _standingPointLocalIKFrames[i], in boundEntityGlobalFrame);
-				}
-				else
-				{
-					base.StandingPoints[i].UserAgent.ClearHandInverseKinematics();
-				}
+				base.StandingPoints[i].UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in _standingPointLocalIKFrames[i], in boundEntityGlobalFrame);
 			}
 			else
 			{
-				base.StandingPoints[i].UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in _standingPointLocalIKFrames[i], in boundEntityGlobalFrame);
+				base.StandingPoints[i].UserAgent.ClearHandInverseKinematics();
 			}
 		}
 		if (!GameNetwork.IsClientOrReplay)
@@ -502,39 +472,44 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 			for (int j = 0; j < _rotateStandingPoints.Count; j++)
 			{
 				StandingPoint standingPoint = _rotateStandingPoints[j];
-				if (standingPoint.HasUser && !standingPoint.UserAgent.SetActionChannel(1, (j == 0) ? _rotateLeftAnimationActionIndex : _rotateRightAnimationActionIndex, ignorePriority: false, 0uL) && standingPoint.UserAgent.Controller != Agent.ControllerType.AI)
+				if (standingPoint.HasUser)
 				{
-					standingPoint.UserAgent.StopUsingGameObjectMT();
+					Agent userAgent = standingPoint.UserAgent;
+					ActionIndexCache actionIndexCache = ((j == 0) ? _rotateLeftAnimationActionIndex : _rotateRightAnimationActionIndex);
+					if (!userAgent.SetActionChannel(1, in actionIndexCache, ignorePriority: false, (AnimFlags)0uL) && standingPoint.UserAgent.Controller != AgentControllerType.AI)
+					{
+						standingPoint.UserAgent.StopUsingGameObjectMT();
+					}
 				}
 			}
 			if (base.PilotAgent != null)
 			{
-				ActionIndexValueCache currentActionValue = base.PilotAgent.GetCurrentActionValue(1);
+				ActionIndexCache currentAction2 = base.PilotAgent.GetCurrentAction(1);
 				if (base.State == WeaponState.WaitingBeforeProjectileLeaving)
 				{
 					if (base.PilotAgent.IsInBeingStruckAction)
 					{
-						if (currentActionValue != ActionIndexValueCache.act_none && currentActionValue != act_strike_bent_over)
+						if (currentAction2 != ActionIndexCache.act_none && currentAction2 != ActionIndexCache.act_strike_bent_over)
 						{
-							base.PilotAgent.SetActionChannel(1, act_strike_bent_over, ignorePriority: false, 0uL);
+							base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_strike_bent_over, ignorePriority: false, (AnimFlags)0uL);
 						}
 					}
-					else if (!base.PilotAgent.SetActionChannel(1, _shootAnimationActionIndex, ignorePriority: false, 0uL) && base.PilotAgent.Controller != Agent.ControllerType.AI)
+					else if (!base.PilotAgent.SetActionChannel(1, in _shootAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && base.PilotAgent.Controller != AgentControllerType.AI)
 					{
 						base.PilotAgent.StopUsingGameObjectMT();
 					}
 				}
-				else if (!base.PilotAgent.SetActionChannel(1, _idleAnimationActionIndex, ignorePriority: false, 0uL) && currentActionValue != _reload1AnimationActionIndex && currentActionValue != _shootAnimationActionIndex && base.PilotAgent.Controller != Agent.ControllerType.AI)
+				else if (!base.PilotAgent.SetActionChannel(1, in _idleAnimationActionIndex, ignorePriority: false, (AnimFlags)0uL) && currentAction2 != _reload1AnimationActionIndex && currentAction2 != _shootAnimationActionIndex && base.PilotAgent.Controller != AgentControllerType.AI)
 				{
 					base.PilotAgent.StopUsingGameObjectMT();
 				}
 			}
 			if (_reloadWithoutPilot.HasUser)
 			{
-				Agent userAgent = _reloadWithoutPilot.UserAgent;
-				if (!userAgent.SetActionChannel(1, _reload2IdleActionIndex, ignorePriority: false, 0uL) && userAgent.GetCurrentActionValue(1) != _reload2AnimationActionIndex && userAgent.Controller != Agent.ControllerType.AI)
+				Agent userAgent2 = _reloadWithoutPilot.UserAgent;
+				if (!userAgent2.SetActionChannel(1, in _reload2IdleActionIndex, ignorePriority: false, (AnimFlags)0uL) && userAgent2.GetCurrentAction(1) != _reload2AnimationActionIndex && userAgent2.Controller != AgentControllerType.AI)
 				{
-					userAgent.StopUsingGameObjectMT();
+					userAgent2.StopUsingGameObjectMT();
 				}
 			}
 		}
@@ -549,15 +524,15 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 			{
 				continue;
 			}
-			ActionIndexValueCache currentActionValue2 = reloadStandingPoint.UserAgent.GetCurrentActionValue(1);
-			if (currentActionValue2 == _reload1AnimationActionIndex || currentActionValue2 == _reload2AnimationActionIndex)
+			ActionIndexCache currentAction3 = reloadStandingPoint.UserAgent.GetCurrentAction(1);
+			if (currentAction3 == _reload1AnimationActionIndex || currentAction3 == _reload2AnimationActionIndex)
 			{
 				reloadStandingPoint.UserAgent.SetCurrentActionProgress(1, _bodySkeleton.GetAnimationParameterAtChannel(0));
 			}
 			else if (!GameNetwork.IsClientOrReplay)
 			{
-				ActionIndexCache actionIndexCache = ((reloadStandingPoint == base.PilotStandingPoint) ? _reload1AnimationActionIndex : _reload2AnimationActionIndex);
-				if (!reloadStandingPoint.UserAgent.SetActionChannel(1, actionIndexCache, ignorePriority: false, 0uL, 0f, 1f, -0.2f, 0.4f, _bodySkeleton.GetAnimationParameterAtChannel(0)) && reloadStandingPoint.UserAgent.Controller != Agent.ControllerType.AI)
+				ActionIndexCache actionIndexCache2 = ((reloadStandingPoint == base.PilotStandingPoint) ? _reload1AnimationActionIndex : _reload2AnimationActionIndex);
+				if (!reloadStandingPoint.UserAgent.SetActionChannel(1, in actionIndexCache2, ignorePriority: false, (AnimFlags)0uL, 0f, 1f, -0.2f, 0.4f, _bodySkeleton.GetAnimationParameterAtChannel(0)) && reloadStandingPoint.UserAgent.Controller != AgentControllerType.AI)
 				{
 					reloadStandingPoint.UserAgent.StopUsingGameObjectMT();
 				}
@@ -611,7 +586,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 	{
 		MoveSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/mangonel/move");
 		ReloadSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/mangonel/reload");
-		ReloadEndSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/mangonel/reload_end");
+		FireSoundIndex = SoundEvent.GetEventIdFromString("event:/mission/siege/mangonel/fire");
 	}
 
 	protected override void ApplyAimChange()
@@ -620,13 +595,13 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		ShootingDirection.Normalize();
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
 		if (!gameEntity.HasTag(AmmoPickUpTag))
 		{
-			return new TextObject("{=NbpcDXtJ}Mangonel").ToString();
+			return new TextObject("{=NbpcDXtJ}Mangonel");
 		}
-		return new TextObject("{=pzfbPbWW}Boulder").ToString();
+		return new TextObject("{=pzfbPbWW}Boulder");
 	}
 
 	public override TextObject GetActionTextForStandingPoint(UsableMissionObject usableGameObject)

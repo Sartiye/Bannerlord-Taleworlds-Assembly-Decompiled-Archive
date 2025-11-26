@@ -65,8 +65,6 @@ public struct Quaternion
 
 	public static Quaternion Identity => new Quaternion(0f, 0f, 0f, 1f);
 
-	public Mat3 ToMat3 => Mat3FromQuaternion(this);
-
 	public Quaternion(float x, float y, float z, float w)
 	{
 		X = x;
@@ -125,6 +123,20 @@ public struct Quaternion
 	public static Quaternion operator *(float s, Quaternion v)
 	{
 		return v * s;
+	}
+
+	public static Quaternion operator *(Quaternion a, Quaternion b)
+	{
+		float w = a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z;
+		float x = a.W * b.X + a.X * b.W + a.Y * b.Z - a.Z * b.Y;
+		float y = a.W * b.Y - a.X * b.Z + a.Y * b.W + a.Z * b.X;
+		float z = a.W * b.Z + a.X * b.Y - a.Y * b.X + a.Z * b.W;
+		return new Quaternion(x, y, z, w);
+	}
+
+	public static Quaternion operator /(Quaternion v, float s)
+	{
+		return new Quaternion(v.X / s, v.Y / s, v.Z / s, v.W / s);
 	}
 
 	public float Normalize()
@@ -265,7 +277,7 @@ public struct Quaternion
 		}
 		float num6;
 		float num7;
-		if (0.9 >= (double)num2)
+		if (0.9995f >= num2)
 		{
 			float num3 = MathF.Acos(num2);
 			float num4 = 1f / MathF.Sin(num3);
@@ -284,6 +296,7 @@ public struct Quaternion
 		result.Y = num6 * from.Y + num7 * to.Y;
 		result.Z = num6 * from.Z + num7 * to.Z;
 		result.W = num6 * from.W + num7 * to.W;
+		result.Normalize();
 		return result;
 	}
 
@@ -358,39 +371,39 @@ public struct Quaternion
 	{
 		Quaternion result = default(Quaternion);
 		float num;
-		if (m[2][2] < 0f)
+		if (m.u.z < 0f)
 		{
-			if (m[0][0] > m[1][1])
+			if (m.s.x > m.f.y)
 			{
-				num = 1f + m[0][0] - m[1][1] - m[2][2];
-				result.W = m[1][2] - m[2][1];
+				num = 1f + m.s.x - m.f.y - m.u.z;
+				result.W = m.f.z - m.u.y;
 				result.X = num;
-				result.Y = m[0][1] + m[1][0];
-				result.Z = m[2][0] + m[0][2];
+				result.Y = m.s.y + m.f.x;
+				result.Z = m.u.x + m.s.z;
 			}
 			else
 			{
-				num = 1f - m[0][0] + m[1][1] - m[2][2];
-				result.W = m[2][0] - m[0][2];
-				result.X = m[0][1] + m[1][0];
+				num = 1f - m.s.x + m.f.y - m.u.z;
+				result.W = m.u.x - m.s.z;
+				result.X = m.s.y + m.f.x;
 				result.Y = num;
-				result.Z = m[1][2] + m[2][1];
+				result.Z = m.f.z + m.u.y;
 			}
 		}
-		else if (m[0][0] < 0f - m[1][1])
+		else if (m.s.x < 0f - m.f.y)
 		{
-			num = 1f - m[0][0] - m[1][1] + m[2][2];
-			result.W = m[0][1] - m[1][0];
-			result.X = m[2][0] + m[0][2];
-			result.Y = m[1][2] + m[2][1];
+			num = 1f - m.s.x - m.f.y + m.u.z;
+			result.W = m.s.y - m.f.x;
+			result.X = m.u.x + m.s.z;
+			result.Y = m.f.z + m.u.y;
 			result.Z = num;
 		}
 		else
 		{
-			num = (result.W = 1f + m[0][0] + m[1][1] + m[2][2]);
-			result.X = m[1][2] - m[2][1];
-			result.Y = m[2][0] - m[0][2];
-			result.Z = m[0][1] - m[1][0];
+			num = (result.W = 1f + m.s.x + m.f.y + m.u.z);
+			result.X = m.f.z - m.u.y;
+			result.Y = m.u.x - m.s.z;
+			result.Z = m.s.y - m.f.x;
 		}
 		float num2 = 0.5f / MathF.Sqrt(num);
 		result.W *= num2;
@@ -472,8 +485,29 @@ public struct Quaternion
 		return X * q2.X + Y * q2.Y + Z * q2.Z + W * q2.W;
 	}
 
+	public Mat3 ToMat3()
+	{
+		return Mat3FromQuaternion(this);
+	}
+
 	public bool InverseDirection(Quaternion q2)
 	{
 		return Dotp4(q2) < 0f;
+	}
+
+	public Quaternion Conjugate()
+	{
+		return new Quaternion(0f - X, 0f - Y, 0f - Z, W);
+	}
+
+	public Quaternion Inverse()
+	{
+		float num = X * X + Y * Y + Z * Z + W * W;
+		if (num == 0f)
+		{
+			Debug.FailedAssert("Cannot invert a quaternion with zero norm.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Quaternion.cs", "Inverse", 608);
+			return this;
+		}
+		return Conjugate() / num;
 	}
 }

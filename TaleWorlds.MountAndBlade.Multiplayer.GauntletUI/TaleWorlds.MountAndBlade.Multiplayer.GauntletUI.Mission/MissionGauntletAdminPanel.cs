@@ -1,5 +1,4 @@
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.Admin;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
@@ -22,7 +21,7 @@ public class MissionGauntletAdminPanel : MissionView
 
 	private MultiplayerAdminPanelVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private bool _isActive;
 
@@ -199,7 +198,7 @@ public class MissionGauntletAdminPanel : MissionView
 				}
 				_dataSource = new MultiplayerAdminPanelVM(OnEscapeMenuToggled, mBList, OnCreateOptionViewModel, OnCreateActionViewModel);
 			}
-			_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+			_gauntletLayer = new GauntletLayer("MultiplayerAdminPanel", ViewOrderPriority);
 			_movie = _gauntletLayer.LoadMovie("MultiplayerAdminPanel", _dataSource);
 			_gauntletLayer.InputRestrictions.SetInputRestrictions();
 			base.MissionScreen.AddLayer(_gauntletLayer);

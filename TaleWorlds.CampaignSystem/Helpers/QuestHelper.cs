@@ -16,18 +16,18 @@ namespace Helpers;
 
 public static class QuestHelper
 {
-	public static void AddMapArrowFromPointToTarget(TextObject name, Vec2 sourcePosition, Vec2 targetPosition, float life, float error)
+	public static void AddMapArrowFromPointToTarget(TextObject name, CampaignVec2 sourcePosition, CampaignVec2 targetPosition, float life, float error)
 	{
-		Vec2 vec = targetPosition - sourcePosition;
+		Vec2 vec = targetPosition.ToVec2() - sourcePosition.ToVec2();
 		vec.Normalize();
 		vec.x += error * (MBRandom.RandomFloat - 0.5f);
 		vec.y += error * (MBRandom.RandomFloat - 0.5f);
 		vec.Normalize();
-		Vec2 trackPosition = sourcePosition + vec * 4f;
+		CampaignVec2 trackPosition = sourcePosition + vec * 4f;
 		Campaign.Current.GetCampaignBehavior<IMapTracksCampaignBehavior>()?.AddMapArrow(name, trackPosition, vec, life);
 	}
 
-	public static bool CheckGoldForAlternativeSolution(int requiredGold, ref TextObject explanation)
+	public static bool CheckGoldForAlternativeSolution(int requiredGold, out TextObject explanation)
 	{
 		if (Hero.MainHero.Gold < requiredGold)
 		{
@@ -35,6 +35,7 @@ public static class QuestHelper
 			explanation.SetTextVariable("GOLD_AMOUNT", requiredGold);
 			return false;
 		}
+		explanation = null;
 		return true;
 	}
 
@@ -48,7 +49,7 @@ public static class QuestHelper
 		};
 	}
 
-	public static bool CheckRosterForAlternativeSolution(TroopRoster troopRoster, int requiredTroopCount, ref TextObject explanation, int minimumTier = 0, bool mountedRequired = false)
+	public static bool CheckRosterForAlternativeSolution(TroopRoster troopRoster, int requiredTroopCount, out TextObject explanation, int minimumTier = 0, bool mountedRequired = false)
 	{
 		int num = 0;
 		foreach (TroopRosterElement item in troopRoster.GetTroopRoster())
@@ -73,6 +74,7 @@ public static class QuestHelper
 			explanation.SetTextVariable("NUMBER", requiredTroopCount);
 			return false;
 		}
+		explanation = null;
 		return true;
 	}
 
@@ -105,7 +107,7 @@ public static class QuestHelper
 		textObject.SetTextVariable("SETTLEMENT", mapEvent.MapEventSettlement.EncyclopediaLinkWithName);
 		StringHelpers.SetCharacterProperties("QUEST_GIVER", quest.QuestGiver.CharacterObject, textObject);
 		quest.CompleteQuestWithFail(textObject);
-		ChangeRelationAction.ApplyPlayerRelation(quest.QuestGiver, -10);
+		ChangeRelationAction.ApplyPlayerRelation(quest.QuestGiver, -5);
 		quest.QuestGiver.AddPower(-10f);
 		TraitLevelingHelper.OnIssueSolvedThroughAlternativeSolution(Hero.MainHero, new Tuple<TraitObject, int>[1]
 		{

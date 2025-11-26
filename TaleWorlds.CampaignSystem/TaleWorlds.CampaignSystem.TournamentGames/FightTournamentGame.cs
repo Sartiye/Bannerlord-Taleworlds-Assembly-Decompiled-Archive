@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
@@ -341,7 +340,15 @@ public class FightTournamentGame : TournamentGame
 				{
 					if (_possibleBannerRewardItemObjectsCache == null || _possibleBannerRewardItemObjectsCache.IsEmpty())
 					{
-						CachePossibleBannerItems(isElite: false);
+						MBList<ItemObject> regularRewardItems = Campaign.Current.Models.TournamentModel.GetRegularRewardItems(base.Town, 1600, 5000);
+						_possibleBannerRewardItemObjectsCache = new MBList<ItemObject>();
+						foreach (ItemObject item in regularRewardItems)
+						{
+							if (item.IsBannerItem)
+							{
+								_possibleBannerRewardItemObjectsCache.Add(item);
+							}
+						}
 					}
 					itemObject = _possibleBannerRewardItemObjectsCache.GetRandomElement();
 				}
@@ -349,7 +356,8 @@ public class FightTournamentGame : TournamentGame
 				{
 					if (_possibleRegularRewardItemObjectsCache == null || _possibleRegularRewardItemObjectsCache.IsEmpty())
 					{
-						CachePossibleRegularRewardItems();
+						_possibleRegularRewardItemObjectsCache = Campaign.Current.Models.TournamentModel.GetRegularRewardItems(base.Town, 1600, 5000);
+						_possibleRegularRewardItemObjectsCache.Sort((ItemObject x, ItemObject y) => x.Value.CompareTo(y.Value));
 					}
 					int num2 = _possibleRegularRewardItemObjectsCache.Count / 4;
 					int num3 = Math.Min(_possibleRegularRewardItemObjectsCache.Count, num2 * (num + 1));
@@ -362,14 +370,14 @@ public class FightTournamentGame : TournamentGame
 				}
 				if (_possibleEliteRewardItemObjectsCache == null || _possibleEliteRewardItemObjectsCache.IsEmpty())
 				{
-					CachePossibleEliteRewardItems();
+					_possibleEliteRewardItemObjectsCache = Campaign.Current.Models.TournamentModel.GetEliteRewardItems(base.Town, 1600, 5000);
 				}
 				return _possibleEliteRewardItemObjectsCache.GetRandomElement();
 			}
 			if (_possibleEliteRewardItemObjectsCache == null || _possibleEliteRewardItemObjectsCache.IsEmpty())
 			{
-				CachePossibleEliteRewardItems();
-				CachePossibleBannerItems(isElite: true);
+				_possibleEliteRewardItemObjectsCache = Campaign.Current.Models.TournamentModel.GetEliteRewardItems(base.Town, 1600, 5000);
+				_possibleEliteRewardItemObjectsCache.Sort((ItemObject x, ItemObject y) => x.Value.CompareTo(y.Value));
 			}
 			int minValue2 = 0;
 			int maxValue = _possibleEliteRewardItemObjectsCache.Count;
@@ -384,75 +392,5 @@ public class FightTournamentGame : TournamentGame
 			return _possibleEliteRewardItemObjectsCache[MBRandom.RandomInt(minValue2, maxValue)];
 		}
 		return base.Prize;
-	}
-
-	private void CachePossibleBannerItems(bool isElite)
-	{
-		if (_possibleBannerRewardItemObjectsCache == null)
-		{
-			_possibleBannerRewardItemObjectsCache = new MBList<ItemObject>();
-		}
-		foreach (ItemObject possibleRewardBannerItem in Campaign.Current.Models.BannerItemModel.GetPossibleRewardBannerItems())
-		{
-			if (isElite)
-			{
-				if (possibleRewardBannerItem.BannerComponent.BannerLevel == 3)
-				{
-					_possibleEliteRewardItemObjectsCache.Add(possibleRewardBannerItem);
-				}
-			}
-			else if (possibleRewardBannerItem.BannerComponent.BannerLevel == 1 || possibleRewardBannerItem.BannerComponent.BannerLevel == 2)
-			{
-				_possibleBannerRewardItemObjectsCache.Add(possibleRewardBannerItem);
-			}
-		}
-	}
-
-	private void CachePossibleRegularRewardItems()
-	{
-		if (_possibleRegularRewardItemObjectsCache == null)
-		{
-			_possibleRegularRewardItemObjectsCache = new MBList<ItemObject>();
-		}
-		MBList<ItemObject> mBList = new MBList<ItemObject>();
-		foreach (ItemObject item in Items.All)
-		{
-			if (item.Value > 1600 && item.Value < 5000 && !item.NotMerchandise && (item.IsCraftedWeapon || item.IsMountable || item.ArmorComponent != null) && !item.IsCraftedByPlayer)
-			{
-				if (item.Culture == base.Town.Culture)
-				{
-					_possibleRegularRewardItemObjectsCache.Add(item);
-				}
-				else
-				{
-					mBList.Add(item);
-				}
-			}
-		}
-		if (_possibleRegularRewardItemObjectsCache.IsEmpty())
-		{
-			_possibleRegularRewardItemObjectsCache.AddRange(mBList);
-		}
-		_possibleRegularRewardItemObjectsCache.Sort((ItemObject x, ItemObject y) => x.Value.CompareTo(y.Value));
-	}
-
-	private void CachePossibleEliteRewardItems()
-	{
-		if (_possibleEliteRewardItemObjectsCache == null)
-		{
-			_possibleEliteRewardItemObjectsCache = new MBList<ItemObject>();
-		}
-		string[] array = new string[31]
-		{
-			"winds_fury_sword_t3", "bone_crusher_mace_t3", "tyrhung_sword_t3", "pernach_mace_t3", "early_retirement_2hsword_t3", "black_heart_2haxe_t3", "knights_fall_mace_t3", "the_scalpel_sword_t3", "judgement_mace_t3", "dawnbreaker_sword_t3",
-			"ambassador_sword_t3", "heavy_nasalhelm_over_imperial_mail", "sturgian_helmet_closed", "full_helm_over_laced_coif", "desert_mail_coif", "heavy_nasalhelm_over_imperial_mail", "plumed_nomad_helmet", "ridged_northernhelm", "noble_horse_southern", "noble_horse_imperial",
-			"noble_horse_western", "noble_horse_eastern", "noble_horse_battania", "noble_horse_northern", "special_camel", "western_crowned_helmet", "northern_warlord_helmet", "battania_warlord_pauldrons", "aserai_armor_02_b", "white_coat_over_mail",
-			"spiked_helmet_with_facemask"
-		};
-		foreach (string objectName in array)
-		{
-			_possibleEliteRewardItemObjectsCache.Add(Game.Current.ObjectManager.GetObject<ItemObject>(objectName));
-		}
-		_possibleEliteRewardItemObjectsCache.Sort((ItemObject x, ItemObject y) => x.Value.CompareTo(y.Value));
 	}
 }

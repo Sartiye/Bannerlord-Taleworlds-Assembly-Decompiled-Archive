@@ -59,13 +59,13 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 
 	private MBBindingList<StringPairItemWithActionVM> _playerActions;
 
-	private HintViewModel _firstHint;
+	private HintViewModel _firstPageHint;
 
-	private HintViewModel _lastHint;
+	private HintViewModel _lastPageHint;
 
-	private HintViewModel _previousHint;
+	private HintViewModel _previousPageHint;
 
-	private HintViewModel _nextHint;
+	private HintViewModel _nextPageHint;
 
 	[DataSourceProperty]
 	public InputKeyItemVM CancelInputKey
@@ -396,69 +396,69 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel PreviousHint
+	public HintViewModel PreviousPageHint
 	{
 		get
 		{
-			return _previousHint;
+			return _previousPageHint;
 		}
 		set
 		{
-			if (value != _previousHint)
+			if (value != _previousPageHint)
 			{
-				_previousHint = value;
-				OnPropertyChangedWithValue(value, "PreviousHint");
+				_previousPageHint = value;
+				OnPropertyChangedWithValue(value, "PreviousPageHint");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public HintViewModel NextHint
+	public HintViewModel NextPageHint
 	{
 		get
 		{
-			return _nextHint;
+			return _nextPageHint;
 		}
 		set
 		{
-			if (value != _nextHint)
+			if (value != _nextPageHint)
 			{
-				_nextHint = value;
-				OnPropertyChangedWithValue(value, "NextHint");
+				_nextPageHint = value;
+				OnPropertyChangedWithValue(value, "NextPageHint");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public HintViewModel FirstHint
+	public HintViewModel FirstPageHint
 	{
 		get
 		{
-			return _firstHint;
+			return _firstPageHint;
 		}
 		set
 		{
-			if (value != _firstHint)
+			if (value != _firstPageHint)
 			{
-				_firstHint = value;
-				OnPropertyChangedWithValue(value, "FirstHint");
+				_firstPageHint = value;
+				OnPropertyChangedWithValue(value, "FirstPageHint");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public HintViewModel LastHint
+	public HintViewModel LastPageHint
 	{
 		get
 		{
-			return _lastHint;
+			return _lastPageHint;
 		}
 		set
 		{
-			if (value != _lastHint)
+			if (value != _lastPageHint)
 			{
-				_lastHint = value;
-				OnPropertyChangedWithValue(value, "LastHint");
+				_lastPageHint = value;
+				OnPropertyChangedWithValue(value, "LastPageHint");
 			}
 		}
 	}
@@ -468,19 +468,19 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 		_lobbyState = lobbyState;
 		LeaderboardPlayers = new MBBindingList<MPLobbyLeaderboardPlayerItemVM>();
 		PlayerActions = new MBBindingList<StringPairItemWithActionVM>();
-		FirstHint = new HintViewModel(GameTexts.FindText("str_first"));
-		LastHint = new HintViewModel(GameTexts.FindText("str_last"));
-		PreviousHint = new HintViewModel(GameTexts.FindText("str_previous"));
-		NextHint = new HintViewModel(GameTexts.FindText("str_next"));
+		FirstPageHint = new HintViewModel(GameTexts.FindText("str_first_page"));
+		LastPageHint = new HintViewModel(GameTexts.FindText("str_last_page"));
+		PreviousPageHint = new HintViewModel(GameTexts.FindText("str_previous"));
+		NextPageHint = new HintViewModel(GameTexts.FindText("str_next"));
 		RefreshValues();
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		TitleText = new TextObject("{=vGF5S2hE}Leaderboard").ToString();
 		CloseText = new TextObject("{=yQstzabbe}Close").ToString();
 		NoDataAvailableText = _noDataAvailableTextObject.ToString();
+		RefreshTitleText();
 		RefreshCurrentPageText();
 	}
 
@@ -494,27 +494,6 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 	{
 		IsPreviousPageAvailable = !IsDataLoading && CurrentPageIndex > 0;
 		IsNextPageAvailable = !IsDataLoading && CurrentPageIndex < TotalPageCount - 1;
-	}
-
-	public async void OpenWith(string gameType)
-	{
-		_currentGameType = gameType;
-		CurrentPageIndex = 0;
-		HasData = false;
-		IsEnabled = true;
-		IsDataLoading = true;
-		LeaderboardPlayers.Clear();
-		int num = await NetworkMain.GameClient.GetRankedLeaderboardCount(gameType);
-		TotalPageCount = (num + 100 - 1) / 100;
-		HasData = num > 0;
-		if (HasData)
-		{
-			LoadDataForPage(0);
-		}
-		else
-		{
-			IsDataLoading = false;
-		}
 	}
 
 	private async void LoadDataForPage(int pageIndex)
@@ -533,6 +512,28 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 			}
 		}
 		IsDataLoading = false;
+	}
+
+	public async void OpenWith(string gameType)
+	{
+		_currentGameType = gameType;
+		RefreshTitleText();
+		CurrentPageIndex = 0;
+		HasData = false;
+		IsEnabled = true;
+		IsDataLoading = true;
+		LeaderboardPlayers.Clear();
+		int num = await NetworkMain.GameClient.GetRankedLeaderboardCount(gameType);
+		TotalPageCount = (num + 100 - 1) / 100;
+		HasData = num > 0;
+		if (HasData)
+		{
+			LoadDataForPage(0);
+		}
+		else
+		{
+			IsDataLoading = false;
+		}
 	}
 
 	public void ExecuteLoadFirstPage()
@@ -574,6 +575,19 @@ public class MPLobbyRankLeaderboardVM : ViewModel
 	public void ExecuteClosePopup()
 	{
 		IsEnabled = false;
+	}
+
+	private void RefreshTitleText()
+	{
+		if (string.IsNullOrEmpty(_currentGameType))
+		{
+			TitleText = new TextObject("{=vGF5S2hE}Leaderboard").ToString();
+		}
+		else
+		{
+			TitleText = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").SetTextVariable("LEFT", new TextObject("{=vGF5S2hE}Leaderboard").ToString()).SetTextVariable("RIGHT", GameTexts.FindText("str_multiplayer_official_game_type_name", _currentGameType).ToString())
+				.ToString();
+		}
 	}
 
 	public void ActivatePlayerActions(MPLobbyLeaderboardPlayerItemVM playerVM)

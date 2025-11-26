@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
@@ -70,7 +70,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 
 	private MPTeammateCompassTargetVM _datasource_Root_PlayerProperties_CompassElement;
 
-	private ImageIdentifierVM _datasource_Root_PlayerProperties_CompassElement_Banner;
+	private BannerImageIdentifierVM _datasource_Root_PlayerProperties_CompassElement_Banner;
 
 	public MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_MPDeathCardVM(UIContext context)
 		: base(context)
@@ -1094,9 +1094,17 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 
 	private void HandleWidgetPropertyChangeOf_widget_0_0_0_0_0_0_0_1(string propertyName)
 	{
-		if (!(propertyName == "ImageId") && !(propertyName == "AdditionalArgs"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "ImageId":
+			_datasource_Root_PlayerProperties_CompassElement_Banner.Id = _widget_0_0_0_0_0_0_0_1.ImageId;
+			break;
+		case "AdditionalArgs":
+			_datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs = _widget_0_0_0_0_0_0_0_1.AdditionalArgs;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName = _widget_0_0_0_0_0_0_0_1.TextureProviderName;
+			break;
 		}
 	}
 
@@ -1367,8 +1375,8 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 		case "AdditionalArgs":
 			_widget_0_0_0_0_0_0_0_1.AdditionalArgs = _datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs;
 			break;
-		case "ImageTypeCode":
-			_widget_0_0_0_0_0_0_0_1.ImageTypeCode = _datasource_Root_PlayerProperties_CompassElement_Banner.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_0_0_0_0_0_0_0_1.TextureProviderName = _datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName;
 			break;
 		}
 	}
@@ -1711,7 +1719,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 				_datasource_Root_PlayerProperties_CompassElement_Banner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerProperties_CompassElement_Banner;
 				_widget_0_0_0_0_0_0_0_1.ImageId = _datasource_Root_PlayerProperties_CompassElement_Banner.Id;
 				_widget_0_0_0_0_0_0_0_1.AdditionalArgs = _datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs;
-				_widget_0_0_0_0_0_0_0_1.ImageTypeCode = _datasource_Root_PlayerProperties_CompassElement_Banner.ImageTypeCode;
+				_widget_0_0_0_0_0_0_0_1.TextureProviderName = _datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName;
 				_widget_0_0_0_0_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
@@ -1883,7 +1891,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 				_datasource_Root_PlayerProperties_CompassElement_Banner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerProperties_CompassElement_Banner;
 				_widget_0_0_0_0_0_0_0_1.ImageId = _datasource_Root_PlayerProperties_CompassElement_Banner.Id;
 				_widget_0_0_0_0_0_0_0_1.AdditionalArgs = _datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs;
-				_widget_0_0_0_0_0_0_0_1.ImageTypeCode = _datasource_Root_PlayerProperties_CompassElement_Banner.ImageTypeCode;
+				_widget_0_0_0_0_0_0_0_1.TextureProviderName = _datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName;
 				_widget_0_0_0_0_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
@@ -2028,7 +2036,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 				_datasource_Root_PlayerProperties_CompassElement_Banner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerProperties_CompassElement_Banner;
 				_widget_0_0_0_0_0_0_0_1.ImageId = _datasource_Root_PlayerProperties_CompassElement_Banner.Id;
 				_widget_0_0_0_0_0_0_0_1.AdditionalArgs = _datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs;
-				_widget_0_0_0_0_0_0_0_1.ImageTypeCode = _datasource_Root_PlayerProperties_CompassElement_Banner.ImageTypeCode;
+				_widget_0_0_0_0_0_0_0_1.TextureProviderName = _datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName;
 				_widget_0_0_0_0_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 				_widget_0_0_0_0_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
@@ -2042,7 +2050,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_PlayerProperties_CompassElement_Banner(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_PlayerProperties_CompassElement_Banner(BannerImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_PlayerProperties_CompassElement_Banner != null)
 		{
@@ -2081,7 +2089,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 			_datasource_Root_PlayerProperties_CompassElement_Banner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PlayerProperties_CompassElement_Banner;
 			_widget_0_0_0_0_0_0_0_1.ImageId = _datasource_Root_PlayerProperties_CompassElement_Banner.Id;
 			_widget_0_0_0_0_0_0_0_1.AdditionalArgs = _datasource_Root_PlayerProperties_CompassElement_Banner.AdditionalArgs;
-			_widget_0_0_0_0_0_0_0_1.ImageTypeCode = _datasource_Root_PlayerProperties_CompassElement_Banner.ImageTypeCode;
+			_widget_0_0_0_0_0_0_0_1.TextureProviderName = _datasource_Root_PlayerProperties_CompassElement_Banner.TextureProviderName;
 			_widget_0_0_0_0_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 			_widget_0_0_0_0_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;
 			_widget_0_0_0_0_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0_0_0_0_1;

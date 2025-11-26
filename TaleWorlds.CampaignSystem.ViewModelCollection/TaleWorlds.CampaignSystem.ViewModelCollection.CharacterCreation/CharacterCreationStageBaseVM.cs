@@ -7,7 +7,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterCreation;
 
 public abstract class CharacterCreationStageBaseVM : ViewModel
 {
-	protected readonly TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation _characterCreation;
+	protected readonly CharacterCreationManager CharacterCreationManager;
 
 	protected readonly Action _affirmativeAction;
 
@@ -17,13 +17,15 @@ public abstract class CharacterCreationStageBaseVM : ViewModel
 
 	protected readonly TextObject _negativeActionText;
 
-	private readonly Action<int> _goToIndex;
-
 	private string _title = "";
 
 	private string _description = "";
 
 	private string _selectionText = "";
+
+	private string _nextStageText;
+
+	private string _previousStageText;
 
 	private int _totalStageCount = -1;
 
@@ -33,11 +35,7 @@ public abstract class CharacterCreationStageBaseVM : ViewModel
 
 	private bool _anyItemSelected;
 
-	public bool CanAdvance => CanAdvanceToNextStage();
-
-	public string NextStageText => _affirmativeActionText.ToString();
-
-	public string PreviousStageText => _negativeActionText.ToString();
+	private bool _canAdvance;
 
 	[DataSourceProperty]
 	public string Title
@@ -86,6 +84,40 @@ public abstract class CharacterCreationStageBaseVM : ViewModel
 			{
 				_selectionText = value;
 				OnPropertyChangedWithValue(value, "SelectionText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string NextStageText
+	{
+		get
+		{
+			return _nextStageText;
+		}
+		set
+		{
+			if (value != _nextStageText)
+			{
+				_nextStageText = value;
+				OnPropertyChangedWithValue(value, "NextStageText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string PreviousStageText
+	{
+		get
+		{
+			return _previousStageText;
+		}
+		set
+		{
+			if (value != _previousStageText)
+			{
+				_previousStageText = value;
+				OnPropertyChangedWithValue(value, "PreviousStageText");
 			}
 		}
 	}
@@ -158,17 +190,32 @@ public abstract class CharacterCreationStageBaseVM : ViewModel
 		}
 	}
 
-	protected CharacterCreationStageBaseVM(TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText, int currentStageIndex, int totalStagesCount, int furthestIndex, Action<int> goToIndex)
+	[DataSourceProperty]
+	public bool CanAdvance
 	{
-		_characterCreation = characterCreation;
-		_goToIndex = goToIndex;
+		get
+		{
+			return _canAdvance;
+		}
+		set
+		{
+			if (value != _canAdvance)
+			{
+				_canAdvance = value;
+				OnPropertyChangedWithValue(value, "CanAdvance");
+			}
+		}
+	}
+
+	protected CharacterCreationStageBaseVM(CharacterCreationManager characterCreationManager, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText)
+	{
+		CharacterCreationManager = characterCreationManager;
 		_affirmativeAction = affirmativeAction;
 		_negativeAction = negativeAction;
 		_affirmativeActionText = affirmativeActionText;
 		_negativeActionText = negativeActionText;
-		TotalStageCount = totalStagesCount;
-		CurrentStageIndex = currentStageIndex;
-		FurthestIndex = furthestIndex;
+		NextStageText = _affirmativeActionText?.ToString();
+		PreviousStageText = _negativeActionText?.ToString();
 	}
 
 	public abstract void OnNextStage();
@@ -176,9 +223,4 @@ public abstract class CharacterCreationStageBaseVM : ViewModel
 	public abstract void OnPreviousStage();
 
 	public abstract bool CanAdvanceToNextStage();
-
-	public virtual void ExecuteGoToIndex(int index)
-	{
-		_goToIndex(index);
-	}
 }

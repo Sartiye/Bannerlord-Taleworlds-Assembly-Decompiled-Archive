@@ -50,19 +50,7 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 
 	private float _additionalFrequencyScore;
 
-	private Settlement[] _settlements;
-
-	private MBCampaignEvent _periodicEvent;
-
-	private Settlement CurrentTickSettlement
-	{
-		get
-		{
-			CampaignTime campaignTime = new CampaignTime(CampaignTime.Days(1f).NumTicks / _settlements.Length);
-			int num = (int)(CampaignTime.Now.NumTicks / campaignTime.NumTicks) % _settlements.Length;
-			return _settlements[num];
-		}
-	}
+	private List<IssueData> _cachedIssueDataList = new List<IssueData>();
 
 	public override void RegisterEvents()
 	{
@@ -72,6 +60,34 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnIssueUpdatedEvent.AddNonSerializedListener(this, OnIssueUpdated);
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, OnSettlementDailyTick);
+	}
+
+	private void OnSettlementDailyTick(Settlement settlement)
+	{
+		float num = 0f;
+		for (int i = 0; i < settlement.HeroesWithoutParty.Count; i++)
+		{
+			if (settlement.HeroesWithoutParty[i].Issue != null)
+			{
+				num += 1f;
+			}
+		}
+		int num2 = (settlement.IsTown ? 1 : 1);
+		int num3 = (settlement.IsTown ? 3 : 2);
+		if (!(num < (float)num3) || (!(num < (float)num2) && !(MBRandom.RandomFloat < GetIssueGenerationChance(num, num3))))
+		{
+			return;
+		}
+		int num4 = 0;
+		foreach (KeyValuePair<Hero, IssueBase> issue in Campaign.Current.IssueManager.Issues)
+		{
+			if (!issue.Value.IsTriedToSolveBefore)
+			{
+				num4++;
+			}
+		}
+		CreateAnIssueForSettlementNotables(settlement, num4 + 1);
 	}
 
 	private void OnNewGameCreatedPartialFollowUpEnd(CampaignGameStarter starter)
@@ -96,33 +112,41 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		Campaign.Current.ConversationManager.EnableSentenceSort();
 	}
 
-	private void OnSettlementTick(MBCampaignEvent campaignEvent, object[] delegateParams)
-	{
-		Settlement currentTickSettlement = CurrentTickSettlement;
-		int num = Campaign.Current.IssueManager.Issues.Count((KeyValuePair<Hero, IssueBase> x) => !x.Value.IsTriedToSolveBefore);
-		int num2 = currentTickSettlement.HeroesWithoutParty.Count((Hero x) => x.Issue != null);
-		int num3 = (currentTickSettlement.IsTown ? 1 : 1);
-		int num4 = (currentTickSettlement.IsTown ? 3 : 2);
-		if (num4 > 0 && num2 < num4 && (num2 < num3 || MBRandom.RandomFloat < GetIssueGenerationChance(num2, num4)))
-		{
-			CreateAnIssueForSettlementNotables(currentTickSettlement, num + 1);
-		}
-	}
-
 	private void DailyTickClan(Clan clan)
 	{
-		if (IsClanSuitableForIssueCreation(clan))
+		if (!IsClanSuitableForIssueCreation(clan))
 		{
-			int num = Campaign.Current.IssueManager.Issues.Count((KeyValuePair<Hero, IssueBase> x) => !x.Value.IsTriedToSolveBefore);
-			int num2 = clan.Heroes.Count((Hero x) => x.Issue != null);
-			int num3 = clan.Heroes.Count((Hero x) => x.IsAlive && !x.IsChild && x.IsLord);
-			int num4 = TaleWorlds.Library.MathF.Ceiling((float)num3 * 0.1f);
-			int num5 = TaleWorlds.Library.MathF.Floor((float)num3 * 0.2f);
-			if (num5 > 0 && num2 < num5 && (num2 < num4 || MBRandom.RandomFloat < GetIssueGenerationChance(num2, num5)))
+			return;
+		}
+		int num = 0;
+		int num2 = 0;
+		for (int i = 0; i < clan.Heroes.Count; i++)
+		{
+			Hero hero = clan.Heroes[i];
+			if (hero.Issue != null)
 			{
-				CreateAnIssueForClanNobles(clan, num + 1);
+				num++;
+			}
+			if (hero.IsAlive && !hero.IsChild && hero.IsLord)
+			{
+				num2++;
 			}
 		}
+		int num3 = TaleWorlds.Library.MathF.Ceiling((float)num2 * 0.1f);
+		int num4 = TaleWorlds.Library.MathF.Floor((float)num2 * 0.2f);
+		if (num4 <= 0 || num >= num4 || (num >= num3 && !(MBRandom.RandomFloat < GetIssueGenerationChance(num, num4))))
+		{
+			return;
+		}
+		int num5 = 0;
+		foreach (KeyValuePair<Hero, IssueBase> issue in Campaign.Current.IssueManager.Issues)
+		{
+			if (!issue.Value.IsTriedToSolveBefore)
+			{
+				num5++;
+			}
+		}
+		CreateAnIssueForClanNobles(clan, num5 + 1);
 	}
 
 	private bool IsClanSuitableForIssueCreation(Clan clan)
@@ -151,9 +175,9 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private float GetIssueGenerationChance(int currentIssueCount, int maxIssueCount)
+	private float GetIssueGenerationChance(float currentIssueCount, int maxIssueCount)
 	{
-		float num = 1f - (float)currentIssueCount / (float)maxIssueCount;
+		float num = 1f - currentIssueCount / (float)maxIssueCount;
 		return 0.3f * num * num;
 	}
 
@@ -204,17 +228,16 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 
 	private bool CreateAnIssueForSettlementNotables(Settlement settlement, int totalDesiredIssueCount)
 	{
-		List<IssueData> list = new List<IssueData>();
 		IssueManager issueManager = Campaign.Current.IssueManager;
 		foreach (Hero notable in settlement.Notables)
 		{
-			if (notable.Issue != null || !notable.CanHaveQuestsOrIssues())
+			if (notable.Issue != null || !notable.CanHaveCampaignIssues())
 			{
 				continue;
 			}
-			List<PotentialIssueData> list2 = Campaign.Current.IssueManager.CheckForIssues(notable);
-			int totalFrequencyScore = list2.SumQ((PotentialIssueData x) => GetFrequencyScore(x.Frequency));
-			foreach (PotentialIssueData item in list2)
+			List<PotentialIssueData> list = Campaign.Current.IssueManager.CheckForIssues(notable);
+			int totalFrequencyScore = list.SumQ((PotentialIssueData x) => GetFrequencyScore(x.Frequency));
+			foreach (PotentialIssueData item in list)
 			{
 				PotentialIssueData pid = item;
 				if (pid.IsValid)
@@ -222,54 +245,59 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 					float num = CalculateIssueScoreForNotable(in pid, settlement, totalDesiredIssueCount, totalFrequencyScore);
 					if (num > 0f && !issueManager.HasIssueCoolDown(pid.IssueType, notable))
 					{
-						list.Add(new IssueData(pid, notable, num));
+						_cachedIssueDataList.Add(new IssueData(pid, notable, num));
 					}
 				}
 			}
 		}
-		if (list.Count > 0)
+		if (_cachedIssueDataList.Count > 0)
 		{
-			List<(IssueData, float)> list3 = new List<(IssueData, float)>();
-			foreach (IssueData item2 in list)
+			List<(IssueData, float)> list2 = new List<(IssueData, float)>();
+			foreach (IssueData cachedIssueData in _cachedIssueDataList)
 			{
-				list3.Add((item2, item2.Score));
+				list2.Add((cachedIssueData, cachedIssueData.Score));
 			}
-			IssueData issueData = MBRandom.ChooseWeighted(list3);
+			IssueData issueData = MBRandom.ChooseWeighted(list2);
 			Campaign.Current.IssueManager.CreateNewIssue(in issueData.PotentialIssueData, issueData.Hero);
+			_cachedIssueDataList.Clear();
 			return true;
 		}
+		_cachedIssueDataList.Clear();
 		return false;
 	}
 
 	private bool CreateAnIssueForClanNobles(Clan clan, int totalDesiredIssueCount)
 	{
-		List<IssueData> list = new List<IssueData>();
+		IssueData? issueData = null;
+		float num = 0f;
 		IssueManager issueManager = Campaign.Current.IssueManager;
-		foreach (Hero lord in clan.Lords)
+		foreach (Hero aliveLord in clan.AliveLords)
 		{
-			if (lord.Clan == Clan.PlayerClan || !lord.CanHaveQuestsOrIssues() || !(lord.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge) || (!lord.IsActive && !lord.IsPrisoner) || lord.Issue != null)
+			if (aliveLord.Clan == Clan.PlayerClan || !aliveLord.CanHaveCampaignIssues() || !(aliveLord.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge) || (!aliveLord.IsActive && !aliveLord.IsPrisoner) || aliveLord.Issue != null)
 			{
 				continue;
 			}
-			List<PotentialIssueData> list2 = Campaign.Current.IssueManager.CheckForIssues(lord);
-			int totalFrequencyScore = list2.SumQ((PotentialIssueData x) => GetFrequencyScore(x.Frequency));
-			foreach (PotentialIssueData item in list2)
+			List<PotentialIssueData> list = Campaign.Current.IssueManager.CheckForIssues(aliveLord);
+			int totalFrequencyScore = list.SumQ((PotentialIssueData x) => GetFrequencyScore(x.Frequency));
+			foreach (PotentialIssueData item in list)
 			{
 				PotentialIssueData pid = item;
 				if (pid.IsValid)
 				{
-					float num = CalculateIssueScoreForClan(in pid, clan, totalDesiredIssueCount, totalFrequencyScore);
-					if (num > 0f && !issueManager.HasIssueCoolDown(pid.IssueType, lord))
+					float num2 = CalculateIssueScoreForClan(in pid, clan, totalDesiredIssueCount, totalFrequencyScore);
+					if (num2 > num && !issueManager.HasIssueCoolDown(pid.IssueType, aliveLord))
 					{
-						list.Add(new IssueData(pid, lord, num));
+						issueData = new IssueData(pid, aliveLord, num2);
+						num = num2;
 					}
 				}
 			}
 		}
-		if (list.Count > 0)
+		if (issueData.HasValue)
 		{
-			IssueData issueData = list.OrderByDescending((IssueData x) => x.Score).First();
-			Campaign.Current.IssueManager.CreateNewIssue(in issueData.PotentialIssueData, issueData.Hero);
+			IssueManager issueManager2 = Campaign.Current.IssueManager;
+			IssueData value = issueData.Value;
+			issueManager2.CreateNewIssue(in value.PotentialIssueData, issueData.Value.Hero);
 			return true;
 		}
 		return false;
@@ -379,7 +407,7 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			GainRenownAction.Apply(issueSolver, TaleWorlds.Library.MathF.Round(DefaultPerks.Charm.Oratory.PrimaryBonus));
 			GainKingdomInfluenceAction.ApplyForDefault(issueSolver, TaleWorlds.Library.MathF.Round(DefaultPerks.Charm.Oratory.PrimaryBonus));
 		}
-		if ((details == IssueBase.IssueUpdateDetails.IssueFail || details == IssueBase.IssueUpdateDetails.IssueFinishedWithSuccess || details == IssueBase.IssueUpdateDetails.IssueFinishedWithBetrayal || details == IssueBase.IssueUpdateDetails.IssueTimedOut || details == IssueBase.IssueUpdateDetails.SentTroopsFinishedQuest) && issueSolver != null && issue.IssueOwner != null)
+		if ((details == IssueBase.IssueUpdateDetails.IssueFail || details == IssueBase.IssueUpdateDetails.IssueFinishedWithSuccess || details == IssueBase.IssueUpdateDetails.IssueFinishedWithBetrayal || details == IssueBase.IssueUpdateDetails.IssueTimedOut || details == IssueBase.IssueUpdateDetails.SentTroopsFinishedQuest || details == IssueBase.IssueUpdateDetails.SentTroopsFailedQuest) && issueSolver != null && issue.IssueOwner != null)
 		{
 			int num = (issue.IsSolvingWithQuest ? issue.IssueQuest.RelationshipChangeWithQuestGiver : issue.RelationshipChangeWithIssueOwner);
 			if (num > 0)
@@ -411,13 +439,8 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 
 	private void OnSessionLaunched(CampaignGameStarter starter)
 	{
-		List<Settlement> list = Settlement.All.Where((Settlement x) => x.IsTown || x.IsVillage).ToList();
-		DeterministicShuffle(list);
-		_settlements = list.ToArray();
-		CampaignTime campaignTime = new CampaignTime(CampaignTime.Days(1f).NumTicks / _settlements.Length);
-		CampaignTime initialWait = campaignTime - new CampaignTime(CampaignTime.Now.NumTicks % campaignTime.NumTicks);
-		_periodicEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(campaignTime, initialWait);
-		_periodicEvent.AddHandler(OnSettlementTick);
+		List<Settlement> settlements = Settlement.All.Where((Settlement x) => x.IsTown || x.IsVillage).ToList();
+		DeterministicShuffle(settlements);
 		AddDialogues(starter);
 	}
 
@@ -560,7 +583,7 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		int totalAlternativeSolutionNeededMenCount = issueOwnersIssue.GetTotalAlternativeSolutionNeededMenCount();
 		if (totalAlternativeSolutionNeededMenCount > 1)
 		{
-			PartyScreenManager.OpenScreenAsQuest(issueOwnersIssue.AlternativeSolutionSentTroops, new TextObject("{=FbLOFO88}Select troops for mission"), totalAlternativeSolutionNeededMenCount + 1, issueOwnersIssue.GetTotalAlternativeSolutionDurationInDays(), PartyScreenDoneCondition, PartyScreenDoneClicked, TroopTransferableDelegate);
+			PartyScreenHelper.OpenScreenAsQuest(issueOwnersIssue.AlternativeSolutionSentTroops, new TextObject("{=FbLOFO88}Select troops for mission"), totalAlternativeSolutionNeededMenCount + 1, issueOwnersIssue.GetTotalAlternativeSolutionDurationInDays(), PartyScreenDoneCondition, PartyScreenDoneClicked, TroopTransferableDelegate);
 		}
 		else
 		{
@@ -593,12 +616,12 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 	private static bool issue_offer_player_accept_alternative_3_clickable_condition(out TextObject explanation)
 	{
 		bool result = true;
-		explanation = TextObject.Empty;
 		if (!(ConversationSentence.CurrentProcessedRepeatObject is Hero hero) || hero.PartyBelongedTo != MobileParty.MainParty)
 		{
+			explanation = null;
 			result = false;
 		}
-		else if (!hero.CanHaveQuestsOrIssues())
+		else if (!hero.CanHaveCampaignIssues())
 		{
 			explanation = new TextObject("{=DBabgrcC}This hero is not available right now.");
 			result = false;
@@ -612,6 +635,10 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		{
 			explanation = new TextObject("{=BaKOWJb6}This hero is pregnant.");
 			result = false;
+		}
+		else
+		{
+			explanation = null;
 		}
 		return result;
 	}
@@ -651,7 +678,6 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 	private static bool DoTroopsSatisfyAlternativeSolutionInternal(TroopRoster troopRoster, out TextObject explanation)
 	{
 		IssueBase issueOwnersIssue = GetIssueOwnersIssue();
-		explanation = TextObject.Empty;
 		int totalAlternativeSolutionNeededMenCount = issueOwnersIssue.GetTotalAlternativeSolutionNeededMenCount();
 		if (troopRoster.TotalRegulars >= totalAlternativeSolutionNeededMenCount && troopRoster.TotalRegulars - troopRoster.TotalWoundedRegulars < totalAlternativeSolutionNeededMenCount)
 		{
@@ -677,20 +703,20 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			(int, int) causalityForHero = issueModel.GetCausalityForHero(hero, issueOwnersIssue);
 			if (causalityForHero.Item2 > 0)
 			{
-				TextObject empty = TextObject.Empty;
+				TextObject textObject;
 				if (causalityForHero.Item1 == causalityForHero.Item2)
 				{
-					empty = new TextObject("{=zPlFvCRm}{NUMBER_OF_TROOPS} troop loss");
-					empty.SetTextVariable("NUMBER_OF_TROOPS", causalityForHero.Item1);
+					textObject = new TextObject("{=zPlFvCRm}{NUMBER_OF_TROOPS} troop loss");
+					textObject.SetTextVariable("NUMBER_OF_TROOPS", causalityForHero.Item1);
 				}
 				else
 				{
-					empty = new TextObject("{=bdlomGZ1}{MIN_NUMBER_OF_TROOPS} - {MAX_NUMBER_OF_TROOPS_LOST} troop loss");
-					empty.SetTextVariable("MIN_NUMBER_OF_TROOPS", causalityForHero.Item1);
-					empty.SetTextVariable("MAX_NUMBER_OF_TROOPS_LOST", causalityForHero.Item2);
+					textObject = new TextObject("{=bdlomGZ1}{MIN_NUMBER_OF_TROOPS} - {MAX_NUMBER_OF_TROOPS_LOST} troop loss");
+					textObject.SetTextVariable("MIN_NUMBER_OF_TROOPS", causalityForHero.Item1);
+					textObject.SetTextVariable("MAX_NUMBER_OF_TROOPS_LOST", causalityForHero.Item2);
 				}
 				flag = true;
-				list.Add(empty);
+				list.Add(textObject);
 			}
 		}
 		if (issueOwnersIssue.AlternativeSolutionHasFailureRisk)
@@ -699,9 +725,9 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			if (failureRiskForHero > 0f)
 			{
 				failureRiskForHero = (int)(failureRiskForHero * 100f);
-				TextObject textObject = new TextObject("{=9tLYXGGc}{FAILURE_RISK}% risk of failure");
-				textObject.SetTextVariable("FAILURE_RISK", failureRiskForHero);
-				list.Add(textObject);
+				TextObject textObject2 = new TextObject("{=9tLYXGGc}{FAILURE_RISK}% risk of failure");
+				textObject2.SetTextVariable("FAILURE_RISK", failureRiskForHero);
+				list.Add(textObject2);
 				flag = true;
 			}
 			else
@@ -715,9 +741,9 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			int troopsRequiredForHero = issueModel.GetTroopsRequiredForHero(hero, issueOwnersIssue);
 			if (troopsRequiredForHero > 0)
 			{
-				TextObject textObject2 = new TextObject("{=b3bJXMt2}{NUMBER_OF_TROOPS} required troops");
-				textObject2.SetTextVariable("NUMBER_OF_TROOPS", troopsRequiredForHero);
-				list.Add(textObject2);
+				TextObject textObject3 = new TextObject("{=b3bJXMt2}{NUMBER_OF_TROOPS} required troops");
+				textObject3.SetTextVariable("NUMBER_OF_TROOPS", troopsRequiredForHero);
+				list.Add(textObject3);
 				flag = true;
 			}
 		}
@@ -726,9 +752,9 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			CampaignTime durationOfResolutionForHero = issueModel.GetDurationOfResolutionForHero(hero, issueOwnersIssue);
 			if (durationOfResolutionForHero > CampaignTime.Days(0f))
 			{
-				TextObject textObject3 = new TextObject("{=ImatoO4Y}{DURATION_IN_DAYS} required days to complete");
-				textObject3.SetTextVariable("DURATION_IN_DAYS", (float)durationOfResolutionForHero.ToDays);
-				list.Add(textObject3);
+				TextObject textObject4 = new TextObject("{=ImatoO4Y}{DURATION_IN_DAYS} required days to complete");
+				textObject4.SetTextVariable("DURATION_IN_DAYS", (float)durationOfResolutionForHero.ToDays);
+				list.Add(textObject4);
 				flag = true;
 			}
 		}
@@ -737,22 +763,22 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 			(SkillObject, int) issueAlternativeSolutionSkill = issueModel.GetIssueAlternativeSolutionSkill(hero, issueOwnersIssue);
 			if (issueAlternativeSolutionSkill.Item1 != null)
 			{
-				TextObject textObject4 = new TextObject("{=!}{SKILL}: {NUMBER}");
-				textObject4.SetTextVariable("SKILL", issueAlternativeSolutionSkill.Item1.Name);
-				textObject4.SetTextVariable("NUMBER", hero.GetSkillValue(issueAlternativeSolutionSkill.Item1));
-				list.Add(textObject4);
+				TextObject textObject5 = new TextObject("{=!}{SKILL}: {NUMBER}");
+				textObject5.SetTextVariable("SKILL", issueAlternativeSolutionSkill.Item1.Name);
+				textObject5.SetTextVariable("NUMBER", hero.GetSkillValue(issueAlternativeSolutionSkill.Item1));
+				list.Add(textObject5);
 			}
 		}
 		if (list.IsEmpty())
 		{
-			ConversationSentence.SelectedRepeatLine.SetTextVariable("COMPANION_SCALED_PARAMETERS", TextObject.Empty);
+			ConversationSentence.SelectedRepeatLine.SetTextVariable("COMPANION_SCALED_PARAMETERS", TextObject.GetEmpty());
 		}
 		else
 		{
 			TextObject variable = GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: false);
-			TextObject textObject5 = GameTexts.FindText("str_STR_in_parentheses");
-			textObject5.SetTextVariable("STR", variable);
-			ConversationSentence.SelectedRepeatLine.SetTextVariable("COMPANION_SCALED_PARAMETERS", textObject5);
+			TextObject textObject6 = GameTexts.FindText("str_STR_in_parentheses");
+			textObject6.SetTextVariable("STR", variable);
+			ConversationSentence.SelectedRepeatLine.SetTextVariable("COMPANION_SCALED_PARAMETERS", textObject6);
 		}
 		return true;
 	}
@@ -762,7 +788,7 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		List<Hero> list = new List<Hero>();
 		foreach (TroopRosterElement item in MobileParty.MainParty.MemberRoster.GetTroopRoster())
 		{
-			if (item.Character.IsHero && !item.Character.IsPlayerCharacter && item.Character.HeroObject.CanHaveQuestsOrIssues())
+			if (item.Character.IsHero && !item.Character.IsPlayerCharacter && item.Character.HeroObject.CanHaveCampaignIssues())
 			{
 				list.Add(item.Character.HeroObject);
 			}
@@ -826,17 +852,24 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 	{
 		IssueBase issueOwnersIssue = GetIssueOwnersIssue();
 		if ((from m in MobileParty.MainParty.MemberRoster.GetTroopRoster()
-			where m.Character.IsHero && !m.Character.IsPlayerCharacter && m.Character.HeroObject.CanHaveQuestsOrIssues()
+			where m.Character.IsHero && !m.Character.IsPlayerCharacter && m.Character.HeroObject.CanHaveCampaignIssues()
 			select m).IsEmpty())
 		{
-			explanation = new TextObject("{=qjpNREwg}You don't have any companions or family members.");
+			if (MobileParty.MainParty.IsCurrentlyAtSea)
+			{
+				explanation = new TextObject("{=3V2BTAfB}You cannot do this action when you are at sea.");
+			}
+			else
+			{
+				explanation = new TextObject("{=qjpNREwg}You don't have any companions or family members.");
+			}
 			return false;
 		}
 		if (!issueOwnersIssue.AlternativeSolutionCondition(out explanation))
 		{
 			return false;
 		}
-		explanation = TextObject.Empty;
+		explanation = null;
 		return true;
 	}
 

@@ -13,4 +13,9 @@ internal class DoubleBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadDouble();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 8;
+	}
 }

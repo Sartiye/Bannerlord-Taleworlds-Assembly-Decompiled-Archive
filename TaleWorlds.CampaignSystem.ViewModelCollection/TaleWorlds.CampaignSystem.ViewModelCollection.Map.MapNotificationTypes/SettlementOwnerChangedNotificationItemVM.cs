@@ -18,7 +18,8 @@ public class SettlementOwnerChangedNotificationItemVM : MapNotificationItemBaseV
 		base.NotificationIdentifier = "settlementownerchanged";
 		_onInspect = delegate
 		{
-			GoToMapPosition(_settlement.Position2D);
+			GoToMapPosition(_settlement.Position);
+			ExecuteRemove();
 		};
 		CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
 	}

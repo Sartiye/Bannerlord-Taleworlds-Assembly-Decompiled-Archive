@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.ExtraWidgets;
@@ -39,7 +39,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private MPTeammateCompassTargetVM _datasource_Root_CompassElement;
 
-	private ImageIdentifierVM _datasource_Root_Avatar;
+	private PlayerAvatarImageIdentifierVM _datasource_Root_Avatar;
 
 	public HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_HUDExtensions_MissionMultiplayerHUDExtensionVM_Dependency_9_ItemTemplate(UIContext context)
 		: base(context)
@@ -575,9 +575,17 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private void HandleWidgetPropertyChangeOf_widget_3(string propertyName)
 	{
-		if (!(propertyName == "AdditionalArgs") && !(propertyName == "ImageId"))
+		switch (propertyName)
 		{
-			_ = propertyName == "ImageTypeCode";
+		case "AdditionalArgs":
+			_datasource_Root_Avatar.AdditionalArgs = _widget_3.AdditionalArgs;
+			break;
+		case "ImageId":
+			_datasource_Root_Avatar.Id = _widget_3.ImageId;
+			break;
+		case "TextureProviderName":
+			_datasource_Root_Avatar.TextureProviderName = _widget_3.TextureProviderName;
+			break;
 		}
 	}
 
@@ -760,8 +768,8 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		case "Id":
 			_widget_3.ImageId = _datasource_Root_Avatar.Id;
 			break;
-		case "ImageTypeCode":
-			_widget_3.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+		case "TextureProviderName":
+			_widget_3.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 			break;
 		}
 	}
@@ -954,7 +962,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 				_datasource_Root_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Avatar;
 				_widget_3.AdditionalArgs = _datasource_Root_Avatar.AdditionalArgs;
 				_widget_3.ImageId = _datasource_Root_Avatar.Id;
-				_widget_3.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+				_widget_3.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 				_widget_3.PropertyChanged += PropertyChangedListenerOf_widget_3;
 				_widget_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3;
 				_widget_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3;
@@ -1001,7 +1009,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Avatar(ImageIdentifierVM newDataSource)
+	private void RefreshDataSource_datasource_Root_Avatar(PlayerAvatarImageIdentifierVM newDataSource)
 	{
 		if (_datasource_Root_Avatar != null)
 		{
@@ -1040,7 +1048,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root_Avatar.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Avatar;
 			_widget_3.AdditionalArgs = _datasource_Root_Avatar.AdditionalArgs;
 			_widget_3.ImageId = _datasource_Root_Avatar.Id;
-			_widget_3.ImageTypeCode = _datasource_Root_Avatar.ImageTypeCode;
+			_widget_3.TextureProviderName = _datasource_Root_Avatar.TextureProviderName;
 			_widget_3.PropertyChanged += PropertyChangedListenerOf_widget_3;
 			_widget_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3;
 			_widget_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3;

@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Localization;
 
@@ -43,6 +44,8 @@ public struct PartyScreenLogicInitializationData
 
 	public IsTroopTransferableDelegate TroopTransferableDelegate;
 
+	public CanTalkToHeroDelegate CanTalkToTroopDelegate;
+
 	public PartyPresentationCancelButtonDelegate PartyPresentationCancelButtonDelegate;
 
 	public PartyScreenClosedDelegate PartyScreenClosedDelegate;
@@ -63,7 +66,9 @@ public struct PartyScreenLogicInitializationData
 
 	public PartyScreenLogic.TransferState AccompanyingTransferState;
 
-	public static PartyScreenLogicInitializationData CreateBasicInitDataWithMainParty(TroopRoster leftMemberRoster, TroopRoster leftPrisonerRoster, PartyScreenLogic.TransferState memberTransferState, PartyScreenLogic.TransferState prisonerTransferState, PartyScreenLogic.TransferState accompanyingTransferState, IsTroopTransferableDelegate troopTransferableDelegate, PartyBase leftOwnerParty = null, TextObject leftPartyName = null, TextObject header = null, Hero leftLeaderHero = null, int leftPartyMembersSizeLimit = 0, int leftPartyPrisonersSizeLimit = 0, PartyPresentationDoneButtonDelegate partyPresentationDoneButtonDelegate = null, PartyPresentationDoneButtonConditionDelegate partyPresentationDoneButtonConditionDelegate = null, PartyPresentationCancelButtonDelegate partyPresentationCancelButtonDelegate = null, PartyPresentationCancelButtonActivateDelegate partyPresentationCancelButtonActivateDelegate = null, PartyScreenClosedDelegate partyScreenClosedDelegate = null, bool isDismissMode = false, bool transferHealthiesGetWoundedsFirst = false, bool isTroopUpgradesDisabled = false, bool showProgressBar = false, int questModeWageDaysMultiplier = 0)
+	public PartyScreenHelper.PartyScreenMode PartyScreenMode;
+
+	public static PartyScreenLogicInitializationData CreateBasicInitDataWithMainParty(TroopRoster leftMemberRoster, TroopRoster leftPrisonerRoster, PartyScreenLogic.TransferState memberTransferState, PartyScreenLogic.TransferState prisonerTransferState, PartyScreenLogic.TransferState accompanyingTransferState, IsTroopTransferableDelegate troopTransferableDelegate, PartyScreenHelper.PartyScreenMode partyScreenMode, PartyBase leftOwnerParty = null, TextObject leftPartyName = null, TextObject header = null, Hero leftLeaderHero = null, int leftPartyMembersSizeLimit = 0, int leftPartyPrisonersSizeLimit = 0, PartyPresentationDoneButtonDelegate partyPresentationDoneButtonDelegate = null, PartyPresentationDoneButtonConditionDelegate partyPresentationDoneButtonConditionDelegate = null, PartyPresentationCancelButtonDelegate partyPresentationCancelButtonDelegate = null, PartyPresentationCancelButtonActivateDelegate partyPresentationCancelButtonActivateDelegate = null, PartyScreenClosedDelegate partyScreenClosedDelegate = null, bool isDismissMode = false, bool transferHealthiesGetWoundedsFirst = false, bool isTroopUpgradesDisabled = false, bool showProgressBar = false, int questModeWageDaysMultiplier = 0)
 	{
 		PartyScreenLogicInitializationData result = default(PartyScreenLogicInitializationData);
 		result.LeftOwnerParty = leftOwnerParty;
@@ -81,6 +86,7 @@ public struct PartyScreenLogicInitializationData
 		result.LeftPartyName = leftPartyName;
 		result.RightPartyName = PartyBase.MainParty.Name;
 		result.TroopTransferableDelegate = troopTransferableDelegate;
+		result.PartyScreenMode = partyScreenMode;
 		result.PartyPresentationDoneButtonDelegate = partyPresentationDoneButtonDelegate;
 		result.PartyPresentationDoneButtonConditionDelegate = partyPresentationDoneButtonConditionDelegate;
 		result.PartyPresentationCancelButtonActivateDelegate = partyPresentationCancelButtonActivateDelegate;
@@ -98,7 +104,7 @@ public struct PartyScreenLogicInitializationData
 		return result;
 	}
 
-	public static PartyScreenLogicInitializationData CreateBasicInitDataWithMainPartyAndOther(MobileParty party, PartyScreenLogic.TransferState memberTransferState, PartyScreenLogic.TransferState prisonerTransferState, PartyScreenLogic.TransferState accompanyingTransferState, IsTroopTransferableDelegate troopTransferableDelegate, TextObject header = null, PartyPresentationDoneButtonDelegate partyPresentationDoneButtonDelegate = null, PartyPresentationDoneButtonConditionDelegate partyPresentationDoneButtonConditionDelegate = null, PartyPresentationCancelButtonDelegate partyPresentationCancelButtonDelegate = null, PartyPresentationCancelButtonActivateDelegate partyPresentationCancelButtonActivateDelegate = null, PartyScreenClosedDelegate partyScreenClosedDelegate = null, bool isDismissMode = false, bool transferHealthiesGetWoundedsFirst = false, bool isTroopUpgradesDisabled = true, bool showProgressBar = false)
+	public static PartyScreenLogicInitializationData CreateBasicInitDataWithMainPartyAndOther(MobileParty party, PartyScreenLogic.TransferState memberTransferState, PartyScreenLogic.TransferState prisonerTransferState, PartyScreenLogic.TransferState accompanyingTransferState, IsTroopTransferableDelegate troopTransferableDelegate, PartyScreenHelper.PartyScreenMode partyScreenMode, TextObject header = null, PartyPresentationDoneButtonDelegate partyPresentationDoneButtonDelegate = null, PartyPresentationDoneButtonConditionDelegate partyPresentationDoneButtonConditionDelegate = null, PartyPresentationCancelButtonDelegate partyPresentationCancelButtonDelegate = null, PartyPresentationCancelButtonActivateDelegate partyPresentationCancelButtonActivateDelegate = null, PartyScreenClosedDelegate partyScreenClosedDelegate = null, bool isDismissMode = false, bool transferHealthiesGetWoundedsFirst = false, bool isTroopUpgradesDisabled = true, bool showProgressBar = false)
 	{
 		PartyScreenLogicInitializationData result = default(PartyScreenLogicInitializationData);
 		result.LeftOwnerParty = party.Party;
@@ -116,6 +122,7 @@ public struct PartyScreenLogicInitializationData
 		result.LeftPartyName = party.Name;
 		result.RightPartyName = PartyBase.MainParty.Name;
 		result.TroopTransferableDelegate = troopTransferableDelegate;
+		result.PartyScreenMode = partyScreenMode;
 		result.PartyPresentationDoneButtonDelegate = partyPresentationDoneButtonDelegate;
 		result.PartyPresentationDoneButtonConditionDelegate = partyPresentationDoneButtonConditionDelegate;
 		result.PartyPresentationCancelButtonActivateDelegate = partyPresentationCancelButtonActivateDelegate;

@@ -25,7 +25,7 @@ public class MissionBoundaryWallView : MissionView
 			MatrixFrame frame = MatrixFrame.Identity;
 			gameEntity.SetGlobalFrame(in frame);
 			gameEntity.Name = "boundary_wall";
-			gameEntity.SetMobility(GameEntity.Mobility.stationary);
+			gameEntity.SetMobility(GameEntity.Mobility.Stationary);
 			gameEntity.EntityFlags |= EntityFlags.DoNotRenderToEnvmap;
 		}
 	}

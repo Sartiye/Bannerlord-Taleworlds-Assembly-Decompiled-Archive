@@ -21,7 +21,7 @@ internal class ScriptingInterfaceOfITelemetry : ITelemetry
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetTelemetryLevelMaskDelegate();
+	public delegate TelemetryLevelMask GetTelemetryLevelMaskDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -71,7 +71,7 @@ internal class ScriptingInterfaceOfITelemetry : ITelemetry
 		call_EndTelemetryScopeDelegate();
 	}
 
-	public uint GetTelemetryLevelMask()
+	public TelemetryLevelMask GetTelemetryLevelMask()
 	{
 		return call_GetTelemetryLevelMaskDelegate();
 	}

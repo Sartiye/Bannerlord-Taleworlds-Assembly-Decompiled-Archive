@@ -5,7 +5,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SiegeAftermathModel : GameModel
+public abstract class SiegeAftermathModel : MBGameModel<SiegeAftermathModel>
 {
 	public abstract int GetSiegeAftermathTraitXpChangeForPlayer(TraitObject trait, Settlement devastatedSettlement, SiegeAftermathAction.SiegeAftermath aftermathType);
 }

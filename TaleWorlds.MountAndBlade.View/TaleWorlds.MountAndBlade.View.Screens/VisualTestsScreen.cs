@@ -188,7 +188,7 @@ public class VisualTestsScreen : ScreenBase
 	{
 		_scene = Scene.CreateNewScene();
 		_scene.SetName("VisualTestScreen");
-		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene, 32);
+		_agentRendererSceneController = MBAgentRendererSceneController.CreateNewAgentRendererSceneController(_scene);
 		_scene.Read(scene_name);
 		_scene.SetUseConstantTime(value: true);
 		_scene.SetOcclusionMode(mode: true);

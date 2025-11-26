@@ -1,6 +1,6 @@
 using System;
+using System.Numerics;
 using TaleWorlds.GauntletUI.BaseTypes;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.GauntletUI;
@@ -245,12 +245,11 @@ public class CircleActionSelectorWidget : Widget
 
 	private void UpdateAverageMouseDirection()
 	{
-		IInputContext inputContext = base.EventManager.InputContext;
-		bool isMouseActive = inputContext.GetIsMouseActive();
-		Vec2 vec = (isMouseActive ? new Vec2(inputContext.GetMouseMoveX(), inputContext.GetMouseMoveY()) : inputContext.GetControllerRightStickState());
+		bool isMouseActive = base.Context.InputContext.GetIsMouseActive();
+		Vector2 vector = (isMouseActive ? base.Context.InputContext.GetMouseMovement() : base.Context.InputContext.GetControllerRightStickState());
 		if (isMouseActive)
 		{
-			_mouseMoveAccumulated += vec;
+			_mouseMoveAccumulated += (Vec2)vector;
 			if (_mouseMoveAccumulated.LengthSquared > 15625f)
 			{
 				_mouseMoveAccumulated.Normalize();
@@ -260,7 +259,7 @@ public class CircleActionSelectorWidget : Widget
 		}
 		else
 		{
-			_mouseDirection = new Vec2(vec.X, vec.Y);
+			_mouseDirection = new Vec2(vector.X, vector.Y);
 		}
 	}
 

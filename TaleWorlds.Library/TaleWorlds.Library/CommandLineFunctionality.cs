@@ -77,9 +77,12 @@ public static class CommandLineFunctionality
 					{
 						string name = commandLineArgumentFunction.Name;
 						string text = commandLineArgumentFunction.GroupName + "." + name;
-						list.Add(text);
-						CommandLineFunction value = new CommandLineFunction((Func<List<string>, string>)Delegate.CreateDelegate(typeof(Func<List<string>, string>), methodInfo));
-						AllFunctions.Add(text, value);
+						if (!AllFunctions.ContainsKey(text))
+						{
+							list.Add(text);
+							CommandLineFunction value = new CommandLineFunction((Func<List<string>, string>)Delegate.CreateDelegate(typeof(Func<List<string>, string>), methodInfo));
+							AllFunctions.Add(text, value);
+						}
 					}
 				}
 			}

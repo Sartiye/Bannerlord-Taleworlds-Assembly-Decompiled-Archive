@@ -15,6 +15,7 @@ public class CustomBattleMoraleModel : BattleMoraleModel
 		float num = CalculateCasualtiesFactor(battleSide);
 		SkillObject relevantSkillFromWeaponClass = WeaponComponentData.GetRelevantSkillFromWeaponClass((WeaponClass)killingBlow.WeaponClass);
 		bool flag = relevantSkillFromWeaponClass == DefaultSkills.Bow || relevantSkillFromWeaponClass == DefaultSkills.Crossbow || relevantSkillFromWeaponClass == DefaultSkills.Throwing;
+		bool flag2 = relevantSkillFromWeaponClass == DefaultSkills.OneHanded || relevantSkillFromWeaponClass == DefaultSkills.TwoHanded || relevantSkillFromWeaponClass == DefaultSkills.Polearm;
 		bool num2 = killingBlow.WeaponRecordWeaponFlags.HasAnyFlag(WeaponFlags.AffectsArea | WeaponFlags.AffectsAreaBig | WeaponFlags.MultiplePenetration);
 		float num3 = 0.75f;
 		if (num2)
@@ -30,15 +31,21 @@ public class CustomBattleMoraleModel : BattleMoraleModel
 			num3 = 0.5f;
 		}
 		num3 = Math.Max(0f, num3);
-		FactoredNumber factoredNumber = new FactoredNumber(battleImportance * 3f * num3);
-		FactoredNumber bonuses = new FactoredNumber(battleImportance * 4f * num3 * num);
+		FactoredNumber bonuses = new FactoredNumber(battleImportance * 3f * num3);
+		FactoredNumber bonuses2 = new FactoredNumber(battleImportance * 4f * num3 * num);
 		Formation formation = affectedAgent.Formation;
 		BannerComponent activeBanner = MissionGameModels.Current.BattleBannerBearersModel.GetActiveBanner(formation);
 		if (activeBanner != null)
 		{
-			BannerHelper.AddBannerBonusForBanner(DefaultBannerEffects.DecreasedMoraleShock, activeBanner, ref bonuses);
+			BannerHelper.AddBannerBonusForBanner(DefaultBannerEffects.DecreasedMoraleShock, activeBanner, ref bonuses2);
 		}
-		return (affectedSideMaxMoraleLoss: TaleWorlds.Library.MathF.Max(bonuses.ResultNumber, 0f), affectorSideMaxMoraleGain: TaleWorlds.Library.MathF.Max(factoredNumber.ResultNumber, 0f));
+		Formation formation2 = affectorAgent.Formation;
+		BannerComponent activeBanner2 = MissionGameModels.Current.BattleBannerBearersModel.GetActiveBanner(formation2);
+		if (activeBanner2 != null && affectorAgent.Character.DefaultFormationClass == FormationClass.Infantry && flag2)
+		{
+			BannerHelper.AddBannerBonusForBanner(DefaultBannerEffects.IncreasedMoraleShockByMeleeTroops, activeBanner2, ref bonuses);
+		}
+		return (affectedSideMaxMoraleLoss: TaleWorlds.Library.MathF.Max(bonuses2.ResultNumber, 0f), affectorSideMaxMoraleGain: TaleWorlds.Library.MathF.Max(bonuses.ResultNumber, 0f));
 	}
 
 	public override (float affectedSideMaxMoraleLoss, float affectorSideMaxMoraleGain) CalculateMaxMoraleChangeDueToAgentPanicked(Agent agent)
@@ -109,5 +116,20 @@ public class CustomBattleMoraleModel : BattleMoraleModel
 			return MBMath.ClampFloat(num / (float)num2, 0f, 100f);
 		}
 		return 0f;
+	}
+
+	public override float CalculateMoraleChangeOnShipSunk(IShipOrigin shipOrigin)
+	{
+		return 0f;
+	}
+
+	public override float CalculateMoraleOnRamming(Agent agent, IShipOrigin rammingShip, IShipOrigin rammedShip)
+	{
+		return agent.GetMorale();
+	}
+
+	public override float CalculateMoraleOnShipsConnected(Agent agent, IShipOrigin ownerShip, IShipOrigin targetShip)
+	{
+		return agent.GetMorale();
 	}
 }

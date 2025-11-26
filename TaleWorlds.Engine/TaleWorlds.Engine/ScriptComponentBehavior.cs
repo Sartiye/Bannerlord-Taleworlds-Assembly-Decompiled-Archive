@@ -15,14 +15,17 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		TickOccasionally = 1u,
 		Tick = 2u,
 		TickParallel = 4u,
-		TickParallel2 = 8u
+		TickParallel2 = 8u,
+		FixedTick = 0x10u,
+		FixedParallelTick = 0x20u,
+		TickParallel3 = 0x40u
 	}
 
 	private static List<ScriptComponentBehavior> _prefabScriptComponents;
 
 	private static List<ScriptComponentBehavior> _undoStackScriptComponents;
 
-	private WeakNativeObjectReference _gameEntity;
+	private WeakGameEntity _gameEntity;
 
 	private WeakNativeObjectReference _scriptComponent;
 
@@ -32,17 +35,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 
 	private WeakNativeObjectReference _scene;
 
-	public GameEntity GameEntity
-	{
-		get
-		{
-			return _gameEntity?.GetNativeObject() as GameEntity;
-		}
-		private set
-		{
-			_gameEntity = new WeakNativeObjectReference(value);
-		}
-	}
+	public WeakGameEntity GameEntity => _gameEntity;
 
 	public ManagedScriptComponent ScriptComponent
 	{
@@ -72,7 +65,6 @@ public abstract class ScriptComponentBehavior : DotNetObject
 
 	protected void InvalidateWeakPointersIfValid()
 	{
-		_gameEntity.ManualInvalidate();
 		_scriptComponent.ManualInvalidate();
 	}
 
@@ -87,10 +79,10 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	internal void Construct(GameEntity myEntity, ManagedScriptComponent scriptComponent)
+	internal void Construct(UIntPtr myEntityPtr, ManagedScriptComponent scriptComponent)
 	{
-		GameEntity = myEntity;
-		Scene = myEntity.Scene;
+		_gameEntity = new WeakGameEntity(myEntityPtr);
+		Scene = _gameEntity.Scene;
 		ScriptComponent = scriptComponent;
 	}
 
@@ -101,71 +93,33 @@ public abstract class ScriptComponentBehavior : DotNetObject
 
 	private void SetScriptComponentToTickAux(TickRequirement value)
 	{
-		if (_lastTickRequirement == value)
+		if (_lastTickRequirement != value)
 		{
-			return;
+			ManagedScriptHolder.UpdateTickRequirement(this, _lastTickRequirement, value);
+			_lastTickRequirement = value;
 		}
-		if (value.HasAnyFlag(TickRequirement.Tick) != _lastTickRequirement.HasAnyFlag(TickRequirement.Tick))
-		{
-			if (_lastTickRequirement.HasAnyFlag(TickRequirement.Tick))
-			{
-				ManagedScriptHolder.RemoveScriptComponentFromTickList(this);
-			}
-			else
-			{
-				ManagedScriptHolder.AddScriptComponentToTickList(this);
-			}
-		}
-		if (value.HasAnyFlag(TickRequirement.TickOccasionally) != _lastTickRequirement.HasAnyFlag(TickRequirement.TickOccasionally))
-		{
-			if (_lastTickRequirement.HasAnyFlag(TickRequirement.TickOccasionally))
-			{
-				ManagedScriptHolder.RemoveScriptComponentFromTickOccasionallyList(this);
-			}
-			else
-			{
-				ManagedScriptHolder.AddScriptComponentToTickOccasionallyList(this);
-			}
-		}
-		if (value.HasAnyFlag(TickRequirement.TickParallel) != _lastTickRequirement.HasAnyFlag(TickRequirement.TickParallel))
-		{
-			if (_lastTickRequirement.HasAnyFlag(TickRequirement.TickParallel))
-			{
-				ManagedScriptHolder.RemoveScriptComponentFromParallelTickList(this);
-			}
-			else
-			{
-				ManagedScriptHolder.AddScriptComponentToParallelTickList(this);
-			}
-		}
-		if (value.HasAnyFlag(TickRequirement.TickParallel2) != _lastTickRequirement.HasAnyFlag(TickRequirement.TickParallel2))
-		{
-			if (_lastTickRequirement.HasAnyFlag(TickRequirement.TickParallel2))
-			{
-				ManagedScriptHolder.RemoveScriptComponentFromParallelTick2List(this);
-			}
-			else
-			{
-				ManagedScriptHolder.AddScriptComponentToParallelTick2List(this);
-			}
-		}
-		_lastTickRequirement = value;
 	}
 
-	public void SetScriptComponentToTick(TickRequirement value)
+	public void SetScriptComponentToTick(TickRequirement tickReq)
 	{
-		SetScriptComponentToTickAux(value);
+		if (ManagedScriptHolder != null)
+		{
+			SetScriptComponentToTickAux(tickReq);
+		}
 	}
 
 	public void SetScriptComponentToTickMT(TickRequirement value)
 	{
-		lock (ManagedScriptHolder.AddRemoveLockObject)
+		if (ManagedScriptHolder != null)
 		{
-			SetScriptComponentToTickAux(value);
+			lock (ManagedScriptHolder.AddRemoveLockObject)
+			{
+				SetScriptComponentToTickAux(value);
+			}
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void AddScriptComponentToTick()
 	{
 		lock (_prefabScriptComponents)
@@ -177,7 +131,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void RegisterAsPrefabScriptComponent()
 	{
 		lock (_prefabScriptComponents)
@@ -189,7 +143,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void DeregisterAsPrefabScriptComponent()
 	{
 		lock (_prefabScriptComponents)
@@ -198,7 +152,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void RegisterAsUndoStackScriptComponent()
 	{
 		if (!_undoStackScriptComponents.Contains(this))
@@ -207,7 +161,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal void DeregisterAsUndoStackScriptComponent()
 	{
 		if (_undoStackScriptComponents.Contains(this))
@@ -216,23 +170,22 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		}
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void SetScene(Scene scene)
 	{
 		Scene = scene;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void OnInit()
 	{
 	}
 
-	[EngineCallback]
-	protected internal virtual void HandleOnRemoved(int removeReason)
+	[EngineCallback(null, false)]
+	protected internal void HandleOnRemoved(int removeReason)
 	{
 		OnRemoved(removeReason);
 		_scene = null;
-		_gameEntity = null;
 	}
 
 	protected virtual void OnRemoved(int removeReason)
@@ -244,86 +197,142 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		return TickRequirement.None;
 	}
 
+	protected internal virtual bool CanPhysicsCollideBetweenTwoEntities(WeakGameEntity myEntity, WeakGameEntity otherEntity)
+	{
+		return true;
+	}
+
+	protected internal virtual void OnFixedTick(float fixedDt)
+	{
+		Debug.FailedAssert("This base function should never be called.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnFixedTick", 253);
+	}
+
+	protected internal virtual void OnParallelFixedTick(float fixedDt)
+	{
+		Debug.FailedAssert("This base function should never be called.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnParallelFixedTick", 259);
+	}
+
 	protected internal virtual void OnTick(float dt)
 	{
-		Debug.FailedAssert("This base function should never be called.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTick", 256);
+		Debug.FailedAssert("This base function should never be called.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTick", 265);
 	}
 
 	protected internal virtual void OnTickParallel(float dt)
 	{
-		Debug.FailedAssert("This base function should never be called.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTickParallel", 262);
+		Debug.FailedAssert("This base function should never be called.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTickParallel", 271);
 	}
 
 	protected internal virtual void OnTickParallel2(float dt)
 	{
 	}
 
-	protected internal virtual void OnTickOccasionally(float currentFrameDeltaTime)
+	protected internal virtual void OnTickParallel3(float dt)
 	{
-		Debug.FailedAssert("This base function should never be called.", "C:\\Develop\\MB3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTickOccasionally", 274);
 	}
 
-	[EngineCallback]
+	protected internal virtual void OnTickOccasionally(float currentFrameDeltaTime)
+	{
+		Debug.FailedAssert("This base function should never be called.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\ScriptComponentBehavior.cs", "OnTickOccasionally", 289);
+	}
+
+	[EngineCallback(null, false)]
 	protected internal virtual void OnPreInit()
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void OnEditorInit()
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void OnEditorTick(float dt)
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void OnEditorValidate()
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual bool IsOnlyVisual()
 	{
 		return false;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual bool MovesEntity()
 	{
 		return true;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual bool DisablesOroCreation()
 	{
 		return true;
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual void OnEditorVariableChanged(string variableName)
 	{
 	}
 
-	[EngineCallback]
+	protected internal virtual bool SkeletonPostIntegrateCallback(AnimResult animResult)
+	{
+		return false;
+	}
+
+	[EngineCallback(null, false)]
+	internal static bool SkeletonPostIntegrateCallbackAux(ScriptComponentBehavior script, UIntPtr animResultPointer)
+	{
+		AnimResult animResult = AnimResult.CreateWithPointer(animResultPointer);
+		return script.SkeletonPostIntegrateCallback(animResult);
+	}
+
+	[EngineCallback(null, false)]
 	protected internal virtual void OnSceneSave(string saveFolder)
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	protected internal virtual bool OnCheckForProblems()
 	{
 		return false;
 	}
 
-	[EngineCallback]
-	protected internal virtual void OnPhysicsCollision(ref PhysicsContact contact)
+	[EngineCallback(null, false)]
+	protected internal virtual void OnSaveAsPrefab()
 	{
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
+	protected internal virtual void OnTerrainReload(int step)
+	{
+	}
+
+	[EngineCallback(null, false)]
+	protected internal void OnPhysicsCollisionAux(ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1, bool isFirstShape)
+	{
+		OnPhysicsCollision(ref contact, new WeakGameEntity(entity0), new WeakGameEntity(entity1), isFirstShape);
+	}
+
+	protected internal virtual void OnPhysicsCollision(ref PhysicsContact contact, WeakGameEntity entity0, WeakGameEntity entity1, bool isFirstShape)
+	{
+	}
+
+	[EngineCallback(null, false)]
 	protected internal virtual void OnEditModeVisibilityChanged(bool currentVisibility)
+	{
+	}
+
+	[EngineCallback(null, false)]
+	protected internal virtual void OnBoundingBoxValidate()
+	{
+	}
+
+	[EngineCallback(null, false)]
+	protected internal virtual void OnDynamicNavmeshVertexUpdate()
 	{
 	}
 
@@ -331,40 +340,64 @@ public abstract class ScriptComponentBehavior : DotNetObject
 	{
 		foreach (KeyValuePair<string, Type> moduleType in Managed.ModuleTypes)
 		{
+			Type value = moduleType.Value;
 			string key = moduleType.Key;
-			CachedFields.Add(key, CollectEditableFields(key));
+			object[] customAttributesSafe = value.GetCustomAttributesSafe(typeof(ScriptComponentParams), inherit: true);
+			if (customAttributesSafe.Length != 0)
+			{
+				ScriptComponentParams scriptComponentParams = (ScriptComponentParams)customAttributesSafe[0];
+				if (scriptComponentParams.NameOverride.Length > 0)
+				{
+					key = scriptComponentParams.NameOverride;
+				}
+			}
+			CachedFields.Add(key, CollectEditableFields(value));
 		}
 	}
 
-	private static string[] CollectEditableFields(string className)
+	private static string[] CollectEditableFields(Type type)
 	{
 		List<string> list = new List<string>();
-		if (Managed.ModuleTypes.TryGetValue(className, out var value))
+		List<FieldInfo> list2 = new List<FieldInfo>();
+		while (type != null)
 		{
-			FieldInfo[] fields = value.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			for (int i = 0; i < fields.Length; i++)
+			list2.AddRange(type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
+			type = type.BaseType;
+		}
+		for (int i = 0; i < list2.Count; i++)
+		{
+			FieldInfo fieldInfo = list2[i];
+			string item = list2[i].Name;
+			object[] customAttributesSafe = fieldInfo.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
+			bool flag = false;
+			if (customAttributesSafe.Length != 0)
 			{
-				FieldInfo fieldInfo = fields[i];
-				object[] customAttributesSafe = fieldInfo.GetCustomAttributesSafe(typeof(EditableScriptComponentVariable), inherit: true);
-				bool flag = false;
-				if (customAttributesSafe.Length != 0)
+				EditableScriptComponentVariable editableScriptComponentVariable = (EditableScriptComponentVariable)customAttributesSafe[0];
+				_ = fieldInfo.IsStatic;
+				_ = fieldInfo.IsInitOnly;
+				if (editableScriptComponentVariable.OverrideFieldName.Length > 0)
 				{
-					flag = ((EditableScriptComponentVariable)customAttributesSafe[0]).Visible;
+					item = editableScriptComponentVariable.OverrideFieldName;
 				}
-				else if (!fieldInfo.IsPrivate && !fieldInfo.IsFamily)
-				{
-					flag = true;
-				}
-				if (flag)
-				{
-					list.Add(fields[i].Name);
-				}
+				flag = editableScriptComponentVariable.Visible;
+			}
+			else if (!fieldInfo.IsPrivate && !fieldInfo.IsFamily)
+			{
+				flag = true;
+			}
+			if (fieldInfo.IsStatic)
+			{
+				flag = false;
+			}
+			if (flag)
+			{
+				list.Add(item);
 			}
 		}
 		return list.ToArray();
 	}
 
-	[EngineCallback]
+	[EngineCallback(null, false)]
 	internal static string[] GetEditableFields(string className)
 	{
 		CachedFields.TryGetValue(className, out var value);

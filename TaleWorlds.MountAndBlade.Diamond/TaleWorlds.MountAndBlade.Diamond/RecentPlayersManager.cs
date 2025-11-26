@@ -105,14 +105,14 @@ public static class RecentPlayersManager
 			}
 			catch (Exception ex)
 			{
-				Debug.FailedAssert("Could not recent players. " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 80);
+				Debug.FailedAssert("Could not recent players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 80);
 				try
 				{
 					FileHelper.DeleteFile(RecentPlayerFilePath);
 				}
 				catch (Exception ex2)
 				{
-					Debug.FailedAssert("Could not delete recent players file. " + ex2.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 87);
+					Debug.FailedAssert("Could not delete recent players file. " + ex2.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 87);
 				}
 			}
 		}

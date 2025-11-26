@@ -25,21 +25,21 @@ public class BehaviorVanguard : BehaviorComponent
 			_mainFormation = base.Formation.Team.FormationsIncludingEmpty.FirstOrDefaultQ((Formation f) => f.CountOfUnits > 0 && f.AI.IsMainFormation);
 		}
 		Vec2 direction;
-		WorldPosition medianPosition;
+		WorldPosition cachedMedianPosition;
 		if (_mainFormation != null)
 		{
 			direction = _mainFormation.Direction;
-			Vec2 vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.QuerySystem.MedianPosition.AsVec2).Normalized();
-			medianPosition = _mainFormation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(_mainFormation.CurrentPosition + vec * ((_mainFormation.Depth + base.Formation.Depth) * 0.5f + 10f));
+			Vec2 vec = (base.Formation.QuerySystem.Team.MedianTargetFormationPosition.AsVec2 - _mainFormation.CachedMedianPosition.AsVec2).Normalized();
+			cachedMedianPosition = _mainFormation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(_mainFormation.CurrentPosition + vec * ((_mainFormation.Depth + base.Formation.Depth) * 0.5f + 10f));
 		}
 		else
 		{
 			direction = base.Formation.Direction;
-			medianPosition = base.Formation.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			cachedMedianPosition = base.Formation.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
 		}
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 	}
 
@@ -53,14 +53,14 @@ public class BehaviorVanguard : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.QuerySystem.AveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2) > 1600f && base.Formation.QuerySystem.UnderRangedAttackRatio > 0.2f - ((base.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.Loose) ? 0.1f : 0f))
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.CachedAveragePosition.DistanceSquared(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2) > 1600f && base.Formation.QuerySystem.UnderRangedAttackRatio > 0.2f - ((base.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.Loose) ? 0.1f : 0f))
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
 		}
 		else
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 		}
 	}
 
@@ -68,10 +68,10 @@ public class BehaviorVanguard : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	public override TextObject GetBehaviorString()

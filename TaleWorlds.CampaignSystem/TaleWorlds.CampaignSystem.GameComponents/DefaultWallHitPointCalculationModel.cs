@@ -31,7 +31,7 @@ public class DefaultWallHitPointCalculationModel : WallHitPointCalculationModel
 			num += 67000f;
 			break;
 		default:
-			Debug.FailedAssert(string.Concat("Settlement \"", town.Name, "\" has a wrong wall level set."), "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultWallHitPointCalculationModel.cs", "CalculateMaximumWallHitPointInternal", 35);
+			Debug.FailedAssert(string.Concat("Settlement \"", town.Name, "\" has a wrong wall level set."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultWallHitPointCalculationModel.cs", "CalculateMaximumWallHitPointInternal", 35);
 			num += -1f;
 			break;
 		}

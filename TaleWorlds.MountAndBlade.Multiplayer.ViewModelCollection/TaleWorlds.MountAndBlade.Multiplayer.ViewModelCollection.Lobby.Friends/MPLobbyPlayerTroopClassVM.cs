@@ -1,4 +1,4 @@
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Friends;
@@ -7,7 +7,7 @@ public class MPLobbyPlayerTroopClassVM : ViewModel
 {
 	private string _name;
 
-	private ImageIdentifierVM _preview;
+	private CharacterImageIdentifierVM _preview;
 
 	[DataSourceProperty]
 	public string Name
@@ -27,7 +27,7 @@ public class MPLobbyPlayerTroopClassVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Preview
+	public CharacterImageIdentifierVM Preview
 	{
 		get
 		{
@@ -46,6 +46,6 @@ public class MPLobbyPlayerTroopClassVM : ViewModel
 	public MPLobbyPlayerTroopClassVM()
 	{
 		Name = "Varangian Guard";
-		Preview = new ImageIdentifierVM();
+		Preview = new CharacterImageIdentifierVM(null);
 	}
 }

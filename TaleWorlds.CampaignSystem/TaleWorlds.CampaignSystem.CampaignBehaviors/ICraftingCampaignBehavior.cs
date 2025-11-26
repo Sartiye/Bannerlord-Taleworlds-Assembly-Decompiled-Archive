@@ -24,8 +24,6 @@ public interface ICraftingCampaignBehavior : ICampaignBehavior
 
 	int GetCraftingDifficulty(WeaponDesign weaponDesign);
 
-	bool CanHeroUsePart(Hero hero, CraftingPiece craftingPiece);
-
 	int GetHeroCraftingStamina(Hero hero);
 
 	void SetHeroCraftingStamina(Hero hero, int value);
@@ -36,15 +34,17 @@ public interface ICraftingCampaignBehavior : ICampaignBehavior
 
 	void DoSmelting(Hero currentCraftingHero, EquipmentElement equipmentElement);
 
-	ItemObject CreateCraftedWeaponInFreeBuildMode(Hero hero, WeaponDesign currentWeaponDesign, ItemModifier weaponModifier = null);
+	ItemObject CreateCraftedWeaponInFreeBuildMode(Hero hero, WeaponDesign weaponDesign, ItemModifier weaponModifier = null);
 
 	ItemObject CreateCraftedWeaponInCraftingOrderMode(Hero crafterHero, CraftingOrder craftingOrder, WeaponDesign weaponDesign);
 
 	bool IsOpened(CraftingPiece craftingPiece, CraftingTemplate craftingTemplate);
 
-	void InitializeCraftingElements();
-
 	CraftingOrder CreateCustomOrderForHero(Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null);
 
 	void CancelCustomOrder(Town town, CraftingOrder craftingOrder);
+
+	Hero GetActiveCraftingHero();
+
+	void SetActiveCraftingHero(Hero hero);
 }

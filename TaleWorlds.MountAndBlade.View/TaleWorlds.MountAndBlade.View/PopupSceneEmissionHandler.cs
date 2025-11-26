@@ -30,7 +30,7 @@ public class PopupSceneEmissionHandler : ScriptComponentBehavior
 	protected override void OnTick(float dt)
 	{
 		timeElapsed += dt;
-		foreach (GameEntity child in base.GameEntity.GetChildren())
+		foreach (WeakGameEntity child in base.GameEntity.GetChildren())
 		{
 			Mesh firstMesh = child.GetFirstMesh();
 			if (firstMesh != null)

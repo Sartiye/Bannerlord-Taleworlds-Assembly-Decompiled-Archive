@@ -12,6 +12,8 @@ public class LocationCharacter
 {
 	public delegate void AddBehaviorsDelegate(IAgent agent);
 
+	public delegate void AfterAgentCreatedDelegate(IAgent agent);
+
 	public enum CharacterRelations
 	{
 		Neutral,
@@ -39,7 +41,11 @@ public class LocationCharacter
 
 	public string SpecialTargetTag { get; set; }
 
+	public bool ForceSpawnInSpecialTargetTag { get; set; }
+
 	public AddBehaviorsDelegate AddBehaviors { get; }
+
+	public AfterAgentCreatedDelegate AfterAgentCreated { get; }
 
 	public bool FixedLocation { get; }
 
@@ -47,9 +53,7 @@ public class LocationCharacter
 
 	public ItemObject SpecialItem { get; }
 
-	public bool IsHidden { get; set; }
-
-	public LocationCharacter(AgentData agentData, AddBehaviorsDelegate addBehaviorsDelegate, string spawnTag, bool fixedLocation, CharacterRelations characterRelation, string actionSetCode, bool useCivilianEquipment, bool isFixedCharacter = false, ItemObject specialItem = null, bool isHidden = false, bool isVisualTracked = false, bool overrideBodyProperties = true)
+	public LocationCharacter(AgentData agentData, AddBehaviorsDelegate addBehaviorsDelegate, string spawnTag, bool fixedLocation, CharacterRelations characterRelation, string actionSetCode, bool useCivilianEquipment, bool isFixedCharacter = false, ItemObject specialItem = null, bool isHidden = false, bool isVisualTracked = false, bool overrideBodyProperties = true, AfterAgentCreatedDelegate afterAgentCreated = null, bool forceSpawnOnSpecialTargetTag = false)
 	{
 		AgentData = agentData;
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign)
@@ -57,7 +61,7 @@ public class LocationCharacter
 			int seed = -2;
 			if (overrideBodyProperties)
 			{
-				seed = (isFixedCharacter ? (Settlement.CurrentSettlement.StringId.GetDeterministicHashCode() + Character.StringId.GetDeterministicHashCode()) : agentData.AgentEquipmentSeed);
+				seed = (isFixedCharacter ? (Settlement.CurrentSettlement.StringId + "_" + Character.StringId).GetDeterministicHashCode() : agentData.AgentEquipmentSeed);
 			}
 			AgentData.BodyProperties(Character.GetBodyProperties(Character.Equipment, seed));
 		}
@@ -70,8 +74,12 @@ public class LocationCharacter
 		CharacterRelation = characterRelation;
 		SpecialItem = specialItem;
 		UseCivilianEquipment = useCivilianEquipment;
-		IsHidden = isHidden;
+		AfterAgentCreated = afterAgentCreated;
 		IsVisualTracked = isVisualTracked;
+		if (forceSpawnOnSpecialTargetTag)
+		{
+			ForceSpawnInSpecialTargetTag = true;
+		}
 	}
 
 	public void SetAlleyOfCharacter(Alley alley)
@@ -84,10 +92,5 @@ public class LocationCharacter
 		UniqueTroopDescriptor uniqueNo = new UniqueTroopDescriptor(FlattenedTroopRoster.GenerateUniqueNoFromParty(party, 0));
 		Monster monsterWithSuffix = FaceGen.GetMonsterWithSuffix(hero.CharacterObject.Race, "_settlement");
 		return new LocationCharacter(new AgentData(new PartyAgentOrigin(PartyBase.MainParty, hero.CharacterObject, -1, uniqueNo)).Monster(monsterWithSuffix).NoHorses(noHorses: true), addBehaviorsDelegate, null, fixedLocation: false, CharacterRelations.Friendly, null, !PlayerEncounter.LocationEncounter.Settlement.IsVillage);
-	}
-
-	public override string ToString()
-	{
-		return Character.Name.ToString();
 	}
 }

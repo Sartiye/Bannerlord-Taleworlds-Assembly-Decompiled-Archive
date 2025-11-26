@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace TaleWorlds.MountAndBlade.View;
 
@@ -53,7 +54,7 @@ public static class ItemCollectionElementViewExtensions
 
 	public static MetaMesh GetItemMeshForInventory(this ItemRosterElement rosterElement, bool isFemale = false)
 	{
-		if (rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Arrows && rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Bolts)
+		if (rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Arrows && rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Bolts && rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.SlingStones)
 		{
 			return rosterElement.EquipmentElement.GetMultiMesh(isFemale, hasGloves: false, needBatchedVersion: false);
 		}
@@ -174,22 +175,22 @@ public static class ItemCollectionElementViewExtensions
 			}
 			if (banner != null)
 			{
+				BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual("ItemCollectionElementViewExtensions");
 				if (material == null)
 				{
 					material = Material.GetDefaultTableauSampleMaterial(transparency: true);
 				}
 				uint flagMask = (uint)material.GetShader().GetMaterialShaderFlagMask("use_tableau_blending");
-				Dictionary<Tuple<Material, BannerCode>, Material> dictionary = null;
+				Dictionary<Tuple<Material, Banner>, Material> dictionary = null;
 				if (ViewSubModule.BannerTexturedMaterialCache != null)
 				{
 					dictionary = ViewSubModule.BannerTexturedMaterialCache;
 				}
-				BannerCode item2 = BannerCode.CreateFrom(banner);
 				if (dictionary != null)
 				{
-					if (dictionary.ContainsKey(new Tuple<Material, BannerCode>(material, item2)))
+					if (dictionary.ContainsKey(new Tuple<Material, Banner>(material, banner)))
 					{
-						tableauMaterial = dictionary[new Tuple<Material, BannerCode>(material, item2)];
+						tableauMaterial = dictionary[new Tuple<Material, Banner>(material, banner)];
 					}
 					else
 					{
@@ -200,8 +201,8 @@ public static class ItemCollectionElementViewExtensions
 							tableauMaterial.SetShaderFlags(shaderFlags2 | flagMask);
 							tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
 						};
-						banner.GetTableauTextureSmall(setAction);
-						dictionary.Add(new Tuple<Material, BannerCode>(material, item2), tableauMaterial);
+						banner.GetTableauTextureSmall(in debugInfo, setAction);
+						dictionary.Add(new Tuple<Material, Banner>(material, banner), tableauMaterial);
 					}
 				}
 				else
@@ -213,7 +214,7 @@ public static class ItemCollectionElementViewExtensions
 						tableauMaterial.SetShaderFlags(shaderFlags | flagMask);
 						tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
 					};
-					banner.GetTableauTextureSmall(setAction2);
+					banner.GetTableauTextureSmall(in debugInfo, setAction2);
 				}
 			}
 		}
@@ -275,6 +276,7 @@ public static class ItemCollectionElementViewExtensions
 				identity.RotateAboutUp(-System.MathF.PI / 2f);
 				break;
 			case ItemObject.ItemTypeEnum.Bow:
+			case ItemObject.ItemTypeEnum.Sling:
 				identity.RotateAboutSide(-System.MathF.PI / 2f);
 				identity.RotateAboutForward(-System.MathF.PI / 4f);
 				break;
@@ -283,6 +285,7 @@ public static class ItemCollectionElementViewExtensions
 				identity.RotateAboutForward(-System.MathF.PI / 4f);
 				break;
 			case ItemObject.ItemTypeEnum.Bolts:
+			case ItemObject.ItemTypeEnum.SlingStones:
 			case ItemObject.ItemTypeEnum.Thrown:
 				identity.RotateAboutSide(-System.MathF.PI / 2f);
 				identity.RotateAboutForward(-System.MathF.PI / 4f);
@@ -340,8 +343,10 @@ public static class ItemCollectionElementViewExtensions
 			case ItemObject.ItemTypeEnum.TwoHandedWeapon:
 			case ItemObject.ItemTypeEnum.Polearm:
 			case ItemObject.ItemTypeEnum.Bolts:
+			case ItemObject.ItemTypeEnum.SlingStones:
 			case ItemObject.ItemTypeEnum.Bow:
 			case ItemObject.ItemTypeEnum.Crossbow:
+			case ItemObject.ItemTypeEnum.Sling:
 			case ItemObject.ItemTypeEnum.Thrown:
 				identity.RotateAboutSide(-System.MathF.PI / 2f);
 				identity.RotateAboutForward(-System.MathF.PI / 4f);

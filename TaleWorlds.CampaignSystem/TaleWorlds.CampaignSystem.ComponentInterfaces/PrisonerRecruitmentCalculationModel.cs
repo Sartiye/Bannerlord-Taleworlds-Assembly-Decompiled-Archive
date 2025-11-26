@@ -3,11 +3,11 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PrisonerRecruitmentCalculationModel : GameModel
+public abstract class PrisonerRecruitmentCalculationModel : MBGameModel<PrisonerRecruitmentCalculationModel>
 {
 	public abstract int GetConformityNeededToRecruitPrisoner(CharacterObject character);
 
-	public abstract int GetConformityChangePerHour(PartyBase party, CharacterObject character);
+	public abstract ExplainedNumber GetConformityChangePerHour(PartyBase party, CharacterObject character);
 
 	public abstract int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num);
 

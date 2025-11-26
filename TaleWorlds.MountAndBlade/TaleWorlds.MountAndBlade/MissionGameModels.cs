@@ -36,6 +36,10 @@ public sealed class MissionGameModels : GameModelsManager
 
 	public ItemPickupModel ItemPickupModel { get; private set; }
 
+	public MissionShipParametersModel MissionShipParametersModel { get; private set; }
+
+	public MissionSiegeEngineCalculationModel MissionSiegeEngineCalculationModel { get; private set; }
+
 	private void GetSpecificGameBehaviors()
 	{
 		AgentStatCalculateModel = GetGameModel<AgentStatCalculateModel>();
@@ -52,6 +56,8 @@ public sealed class MissionGameModels : GameModelsManager
 		AutoBlockModel = GetGameModel<AutoBlockModel>();
 		DamageParticleModel = GetGameModel<DamageParticleModel>();
 		ItemPickupModel = GetGameModel<ItemPickupModel>();
+		MissionShipParametersModel = GetGameModel<MissionShipParametersModel>();
+		MissionSiegeEngineCalculationModel = GetGameModel<MissionSiegeEngineCalculationModel>();
 	}
 
 	private void MakeGameComponentBindings()

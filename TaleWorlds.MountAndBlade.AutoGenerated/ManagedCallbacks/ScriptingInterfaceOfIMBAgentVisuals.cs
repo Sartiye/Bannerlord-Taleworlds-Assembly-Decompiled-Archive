@@ -88,7 +88,7 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate UIntPtr CreateAgentRendererSceneControllerDelegate(UIntPtr scenePointer, int maxRenderCount);
+	public delegate UIntPtr CreateAgentRendererSceneControllerDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -128,7 +128,17 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate MatrixFrame GetBoneEntitialFrameAtAnimationProgressDelegate(UIntPtr agentVisualsPtr, sbyte boneIndex, int animationIndex, float progress);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetBoneTypeDataDelegate(UIntPtr pointer, sbyte boneIndex, ref BoneBodyTypeData boneBodyTypeData);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetCurrentHeadLookDirectionDelegate(UIntPtr agentVisualsPtr);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -168,6 +178,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetMovementModeDelegate(UIntPtr agentVisualsPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate sbyte GetRealBoneIndexDelegate(UIntPtr agentVisualsPtr, HumanBone boneType);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -180,6 +195,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool GetVisibleDelegate(UIntPtr agentVisualsPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetVisualStrengthOfAgentVisualDelegate(UIntPtr agentVisualsPtr, UIntPtr targetagentVisualsPtr, UIntPtr missionPointer, float ambientLightStrength, float sunMoonLightStrength, int agentIndexToIgnore);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -240,12 +260,17 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetAttachedPositionForRopeEntityAfterAnimationPostIntegrateDelegate(UIntPtr agentVisualsPtr, UIntPtr ropeEntity, sbyte bone);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetClothComponentKeepStateOfAllMeshesDelegate(UIntPtr agentVisualsPtr, [MarshalAs(UnmanagedType.U1)] bool keepState);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetClothWindToWeaponAtIndexDelegate(UIntPtr agentVisualsPtr, Vec3 windDirection, [MarshalAs(UnmanagedType.U1)] bool isLocal, int index);
+	public delegate void SetClothWindToWeaponAtIndexDelegate(UIntPtr agentVisualsPtr, Vec3 windVector, [MarshalAs(UnmanagedType.U1)] bool isLocal, int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -393,7 +418,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 
 	public static GetBoneEntitialFrameDelegate call_GetBoneEntitialFrameDelegate;
 
+	public static GetBoneEntitialFrameAtAnimationProgressDelegate call_GetBoneEntitialFrameAtAnimationProgressDelegate;
+
 	public static GetBoneTypeDataDelegate call_GetBoneTypeDataDelegate;
+
+	public static GetCurrentHeadLookDirectionDelegate call_GetCurrentHeadLookDirectionDelegate;
 
 	public static GetCurrentHelmetScalingFactorDelegate call_GetCurrentHelmetScalingFactorDelegate;
 
@@ -409,11 +438,15 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 
 	public static GetGlobalStableNeckPointDelegate call_GetGlobalStableNeckPointDelegate;
 
+	public static GetMovementModeDelegate call_GetMovementModeDelegate;
+
 	public static GetRealBoneIndexDelegate call_GetRealBoneIndexDelegate;
 
 	public static GetSkeletonDelegate call_GetSkeletonDelegate;
 
 	public static GetVisibleDelegate call_GetVisibleDelegate;
+
+	public static GetVisualStrengthOfAgentVisualDelegate call_GetVisualStrengthOfAgentVisualDelegate;
 
 	public static IsValidDelegate call_IsValidDelegate;
 
@@ -436,6 +469,8 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	public static SetAgentLodMakeZeroOrMaxDelegate call_SetAgentLodMakeZeroOrMaxDelegate;
 
 	public static SetAsContourEntityDelegate call_SetAsContourEntityDelegate;
+
+	public static SetAttachedPositionForRopeEntityAfterAnimationPostIntegrateDelegate call_SetAttachedPositionForRopeEntityAfterAnimationPostIntegrateDelegate;
 
 	public static SetClothComponentKeepStateOfAllMeshesDelegate call_SetClothComponentKeepStateOfAllMeshesDelegate;
 
@@ -596,9 +631,9 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 		call_ClearWeaponMeshesDelegate(agentVisualsPtr, weaponVisualIndex);
 	}
 
-	public UIntPtr CreateAgentRendererSceneController(UIntPtr scenePointer, int maxRenderCount)
+	public UIntPtr CreateAgentRendererSceneController(UIntPtr scenePointer)
 	{
-		return call_CreateAgentRendererSceneControllerDelegate(scenePointer, maxRenderCount);
+		return call_CreateAgentRendererSceneControllerDelegate(scenePointer);
 	}
 
 	public MBAgentVisuals CreateAgentVisuals(UIntPtr scenePtr, string ownerName, Vec3 eyeOffset)
@@ -659,9 +694,19 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 		call_GetBoneEntitialFrameDelegate(agentVisualsPtr, bone, useBoneMapping, ref outFrame);
 	}
 
+	public MatrixFrame GetBoneEntitialFrameAtAnimationProgress(UIntPtr agentVisualsPtr, sbyte boneIndex, int animationIndex, float progress)
+	{
+		return call_GetBoneEntitialFrameAtAnimationProgressDelegate(agentVisualsPtr, boneIndex, animationIndex, progress);
+	}
+
 	public void GetBoneTypeData(UIntPtr pointer, sbyte boneIndex, ref BoneBodyTypeData boneBodyTypeData)
 	{
 		call_GetBoneTypeDataDelegate(pointer, boneIndex, ref boneBodyTypeData);
+	}
+
+	public Vec3 GetCurrentHeadLookDirection(UIntPtr agentVisualsPtr)
+	{
+		return call_GetCurrentHeadLookDirectionDelegate(agentVisualsPtr);
 	}
 
 	public Vec3 GetCurrentHelmetScalingFactor(UIntPtr agentVisualsPtr)
@@ -706,6 +751,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 		return call_GetGlobalStableNeckPointDelegate(agentVisualsPtr, isHumanoid);
 	}
 
+	public int GetMovementMode(UIntPtr agentVisualsPtr)
+	{
+		return call_GetMovementModeDelegate(agentVisualsPtr);
+	}
+
 	public sbyte GetRealBoneIndex(UIntPtr agentVisualsPtr, HumanBone boneType)
 	{
 		return call_GetRealBoneIndexDelegate(agentVisualsPtr, boneType);
@@ -726,6 +776,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	public bool GetVisible(UIntPtr agentVisualsPtr)
 	{
 		return call_GetVisibleDelegate(agentVisualsPtr);
+	}
+
+	public float GetVisualStrengthOfAgentVisual(UIntPtr agentVisualsPtr, UIntPtr targetagentVisualsPtr, UIntPtr missionPointer, float ambientLightStrength, float sunMoonLightStrength, int agentIndexToIgnore)
+	{
+		return call_GetVisualStrengthOfAgentVisualDelegate(agentVisualsPtr, targetagentVisualsPtr, missionPointer, ambientLightStrength, sunMoonLightStrength, agentIndexToIgnore);
 	}
 
 	public bool IsValid(UIntPtr agentVisualsPtr)
@@ -783,14 +838,19 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 		call_SetAsContourEntityDelegate(agentVisualsPtr, color);
 	}
 
+	public void SetAttachedPositionForRopeEntityAfterAnimationPostIntegrate(UIntPtr agentVisualsPtr, UIntPtr ropeEntity, sbyte bone)
+	{
+		call_SetAttachedPositionForRopeEntityAfterAnimationPostIntegrateDelegate(agentVisualsPtr, ropeEntity, bone);
+	}
+
 	public void SetClothComponentKeepStateOfAllMeshes(UIntPtr agentVisualsPtr, bool keepState)
 	{
 		call_SetClothComponentKeepStateOfAllMeshesDelegate(agentVisualsPtr, keepState);
 	}
 
-	public void SetClothWindToWeaponAtIndex(UIntPtr agentVisualsPtr, Vec3 windDirection, bool isLocal, int index)
+	public void SetClothWindToWeaponAtIndex(UIntPtr agentVisualsPtr, Vec3 windVector, bool isLocal, int index)
 	{
-		call_SetClothWindToWeaponAtIndexDelegate(agentVisualsPtr, windDirection, isLocal, index);
+		call_SetClothWindToWeaponAtIndexDelegate(agentVisualsPtr, windVector, isLocal, index);
 	}
 
 	public void SetContourState(UIntPtr agentVisualsPtr, bool alwaysVisible)

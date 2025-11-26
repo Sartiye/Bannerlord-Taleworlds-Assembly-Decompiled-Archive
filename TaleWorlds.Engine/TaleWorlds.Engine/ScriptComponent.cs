@@ -14,4 +14,9 @@ public abstract class ScriptComponent : NativeObject
 	{
 		Construct(pointer);
 	}
+
+	public string GetName()
+	{
+		return EngineApplicationInterface.IScriptComponent.GetName(base.Pointer);
+	}
 }

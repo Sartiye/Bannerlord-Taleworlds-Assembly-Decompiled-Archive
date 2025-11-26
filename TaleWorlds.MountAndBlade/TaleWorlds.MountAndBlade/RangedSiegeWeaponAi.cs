@@ -27,7 +27,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 
 		public List<Vec3> WeaponPositions;
 
-		private readonly List<ITargetable> _potentialTargetUsableMachines;
+		private readonly List<ITargetable> _potentialTargetObjects;
 
 		private readonly List<ICastleKeyPosition> _referencePositions;
 
@@ -36,9 +36,9 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 			Weapon = weapon;
 			WeaponPositions = new List<Vec3> { Weapon.GameEntity.GlobalPosition };
 			_targetAgent = null;
-			IEnumerable<UsableMachine> source = Mission.Current.ActiveMissionObjects.FindAllWithType<UsableMachine>();
-			_potentialTargetUsableMachines = (from um in source.WhereQ((UsableMachine um) => um.GameEntity.HasScriptOfType<DestructableComponent>() && um is ITargetable targetable && targetable.GetSide() != Weapon.Side && targetable.GetTargetEntity() != null)
-				select um as ITargetable).ToList();
+			IEnumerable<MissionObject> source = Mission.Current.ActiveMissionObjects.WhereQ((MissionObject mo) => mo is ITargetable);
+			_potentialTargetObjects = (from to in source.WhereQ((MissionObject to) => to is ITargetable targetable && targetable.IsDestructable() && targetable.GetTargetEntity() != null)
+				select to as ITargetable).ToList();
 			_referencePositions = source.OfType<ICastleKeyPosition>().ToList();
 			_getMostDangerousThreat = new FindMostDangerousThreat();
 		}
@@ -46,7 +46,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		public Threat PrepareTargetFromTask()
 		{
 			_currentThreat = _getMostDangerousThreat.GetResult(out var targetAgent);
-			if (_currentThreat != null && _currentThreat.WeaponEntity == null)
+			if (_currentThreat != null && _currentThreat.TargetableObject == null)
 			{
 				_currentThreat.Agent = _targetAgent;
 				if (_targetAgent == null || !_targetAgent.IsActive() || _targetAgent.Formation != _currentThreat.Formation || !Weapon.CanShootAtAgent(_targetAgent))
@@ -79,7 +79,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 					_currentThreat.Agent = _targetAgent;
 				}
 			}
-			if (_currentThreat != null && _currentThreat.WeaponEntity == null && _currentThreat.Agent == null)
+			if (_currentThreat != null && _currentThreat.TargetableObject == null && _currentThreat.Agent == null)
 			{
 				_currentThreat = null;
 			}
@@ -111,19 +111,20 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		public List<Threat> GetAllThreats()
 		{
 			List<Threat> list = new List<Threat>();
-			for (int num = _potentialTargetUsableMachines.Count - 1; num >= 0; num--)
+			for (int num = _potentialTargetObjects.Count - 1; num >= 0; num--)
 			{
-				ITargetable targetable = _potentialTargetUsableMachines[num];
-				if (targetable is UsableMachine usableMachine && (usableMachine.IsDestroyed || usableMachine.IsDeactivated || usableMachine.GameEntity == null))
+				ITargetable targetable = _potentialTargetObjects[num];
+				if ((targetable is UsableMachine usableMachine && (usableMachine.IsDestroyed || usableMachine.IsDeactivated || !usableMachine.GameEntity.IsValid)) || targetable is MissionObject { IsDisabled: not false } || targetable.GetSide() == Weapon.Side)
 				{
-					_potentialTargetUsableMachines.RemoveAt(num);
+					_potentialTargetObjects.RemoveAt(num);
 				}
 				else
 				{
 					Threat item = new Threat
 					{
-						WeaponEntity = targetable,
-						ThreatValue = Weapon.ProcessTargetValue(targetable.GetTargetValue(WeaponPositions), targetable.GetTargetFlags())
+						TargetableObject = targetable,
+						ThreatValue = Weapon.ProcessTargetValue(targetable.GetTargetValue(WeaponPositions), targetable.GetTargetFlags()),
+						ForceTarget = targetable.Entity().HasTag("attackMe")
 					};
 					list.Add(item);
 				}
@@ -144,7 +145,8 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 							list.Add(new Threat
 							{
 								Formation = item2,
-								ThreatValue = Weapon.ProcessTargetValue(targetValueOfFormation, GetTargetFlagsOfFormation())
+								ThreatValue = Weapon.ProcessTargetValue(targetValueOfFormation, GetTargetFlagsOfFormation()),
+								ForceTarget = false
 							});
 						}
 					}
@@ -178,7 +180,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		{
 			ICastleKeyPosition closestCastlePosition;
 			float minimumDistanceBetweenPositions = GetMinimumDistanceBetweenPositions(formation.GetMedianAgent(excludeDetachedUnits: false, excludePlayer: false, formation.GetAveragePositionOfUnits(excludeDetachedUnits: false, excludePlayer: false)).Position, referencePositions, out closestCastlePosition);
-			bool flag = closestCastlePosition.AttackerSiegeWeapon != null && closestCastlePosition.AttackerSiegeWeapon.HasCompletedAction();
+			bool flag = closestCastlePosition != null && closestCastlePosition.AttackerSiegeWeapon != null && closestCastlePosition.AttackerSiegeWeapon.HasCompletedAction();
 			float num;
 			if (formation.PhysicalClass.IsRanged())
 			{
@@ -193,7 +195,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		{
 			if (referencePositions != null && referencePositions.Count() != 0)
 			{
-				closestCastlePosition = referencePositions.MinBy((ICastleKeyPosition rp) => rp.GetPosition().DistanceSquared(position));
+				closestCastlePosition = TaleWorlds.Core.Extensions.MinBy(referencePositions, (ICastleKeyPosition rp) => rp.GetPosition().DistanceSquared(position));
 				return TaleWorlds.Library.MathF.Sqrt(closestCastlePosition.GetPosition().DistanceSquared(position));
 			}
 			closestCastlePosition = null;
@@ -204,7 +206,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		{
 			List<ITargetable> list = new List<ITargetable>();
 			List<Threat> list2 = new List<Threat>();
-			foreach (GameEntity item2 in Mission.Current.ActiveMissionObjects.Select((MissionObject amo) => amo.GameEntity))
+			foreach (WeakGameEntity item2 in Mission.Current.ActiveMissionObjects.Select((MissionObject amo) => amo.GameEntity))
 			{
 				if (item2.GetFirstScriptOfType<UsableMachine>() is ITargetable item)
 				{
@@ -214,16 +216,19 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 			list.RemoveAll((ITargetable um) => um.GetSide() == BattleSideEnum.Defender);
 			list2.AddRange(list.Select((ITargetable um) => new Threat
 			{
-				WeaponEntity = um,
-				ThreatValue = um.GetTargetValue(castleKeyPositions.Select((ICastleKeyPosition c) => c.GetPosition()).ToList())
+				TargetableObject = um,
+				ThreatValue = um.GetTargetValue(castleKeyPositions.Select((ICastleKeyPosition c) => c.GetPosition()).ToList()),
+				ForceTarget = um.Entity().HasTag("attackMe")
 			}));
-			return list2.MaxBy((Threat t) => t.ThreatValue);
+			return TaleWorlds.Core.Extensions.MaxBy(list2, (Threat t) => t.ThreatValue);
 		}
 	}
 
 	private const float TargetEvaluationDelay = 0.5f;
 
 	private const int MaxTargetEvaluationCount = 4;
+
+	public const string ForceTargetEntityTag = "attackMe";
 
 	private readonly ThreatSeeker _threatSeeker;
 
@@ -256,60 +261,70 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 			{
 				rangedSiegeWeapon.AiRequestsManualReload();
 			}
-			if (_threatSeeker.UpdateThreatSeekerTask() && dt > 0f && _target == null && rangedSiegeWeapon.State == RangedSiegeWeapon.WeaponState.Idle)
+			UpdateAim(rangedSiegeWeapon, dt);
+		}
+		AfterTick(agentToCompareTo, formationToCompareTo, potentialUsersTeam, dt);
+	}
+
+	protected virtual void UpdateAim(RangedSiegeWeapon rangedSiegeWeapon, float dt)
+	{
+		if (_threatSeeker.UpdateThreatSeekerTask() && dt > 0f && _target == null && rangedSiegeWeapon.State == RangedSiegeWeapon.WeaponState.Idle)
+		{
+			if (_delayTimer <= 0f)
 			{
-				if (_delayTimer <= 0f)
-				{
-					FindNextTarget();
-				}
-				_delayTimer -= dt;
+				FindNextTarget();
 			}
-			if (_target != null)
+			_delayTimer -= dt;
+		}
+		if (_target == null)
+		{
+			return;
+		}
+		if (_target.Agent != null && !_target.Agent.IsActive())
+		{
+			_target = null;
+		}
+		else if (rangedSiegeWeapon.State == RangedSiegeWeapon.WeaponState.Idle && rangedSiegeWeapon.UserCountNotInStruckAction > 0)
+		{
+			if (DebugSiegeBehavior.ToggleTargetDebug && UsableMachine.PilotAgent != null)
 			{
-				if (_target.Agent != null && !_target.Agent.IsActive())
+				_target.ComputeGlobalTargetingBoundingBoxMinMax();
+				_ = _target.TargetingPosition;
+			}
+			if (_targetEvaluationTimer.Check(Mission.Current.CurrentTime))
+			{
+				var (boxMin, boxMax) = _target.ComputeGlobalTargetingBoundingBoxMinMax();
+				if (!((RangedSiegeWeapon)UsableMachine).CanShootAtBox(boxMin, boxMax))
 				{
-					_target = null;
-					return;
+					_cannotShootCounter++;
 				}
-				if (rangedSiegeWeapon.State == RangedSiegeWeapon.WeaponState.Idle && rangedSiegeWeapon.UserCountNotInStruckAction > 0)
+			}
+			if (_cannotShootCounter < 4)
+			{
+				if (rangedSiegeWeapon.AimAtThreat(_target) && rangedSiegeWeapon.PilotAgent != null)
 				{
-					if (DebugSiegeBehavior.ToggleTargetDebug)
+					_delayTimer -= dt;
+					if (_delayTimer <= 0f && rangedSiegeWeapon.CanShootAtThreat(_target))
 					{
-						_ = UsableMachine.PilotAgent;
-					}
-					if (_targetEvaluationTimer.Check(Mission.Current.CurrentTime) && !((RangedSiegeWeapon)UsableMachine).CanShootAtBox(_target.BoundingBoxMin, _target.BoundingBoxMax))
-					{
-						_cannotShootCounter++;
-					}
-					if (_cannotShootCounter < 4)
-					{
-						if (rangedSiegeWeapon.AimAtThreat(_target) && rangedSiegeWeapon.PilotAgent != null)
-						{
-							_delayTimer -= dt;
-							if (_delayTimer <= 0f)
-							{
-								rangedSiegeWeapon.AiRequestsShoot();
-								_target = null;
-								SetTargetingTimer();
-								_cannotShootCounter = 0;
-								_targetEvaluationTimer.Reset(Mission.Current.CurrentTime);
-							}
-						}
-					}
-					else
-					{
+						rangedSiegeWeapon.AiRequestsShoot();
 						_target = null;
 						SetTargetingTimer();
 						_cannotShootCounter = 0;
+						_targetEvaluationTimer.Reset(Mission.Current.CurrentTime);
 					}
 				}
-				else
-				{
-					_targetEvaluationTimer.Reset(Mission.Current.CurrentTime);
-				}
+			}
+			else
+			{
+				_target = null;
+				SetTargetingTimer();
+				_cannotShootCounter = 0;
 			}
 		}
-		AfterTick(agentToCompareTo, formationToCompareTo, potentialUsersTeam, dt);
+		else
+		{
+			_targetEvaluationTimer.Reset(Mission.Current.CurrentTime);
+		}
 	}
 
 	private void SetTargetFromThreatSeeker()

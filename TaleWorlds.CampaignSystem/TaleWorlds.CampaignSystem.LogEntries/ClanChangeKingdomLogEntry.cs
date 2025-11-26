@@ -91,7 +91,7 @@ public class ClanChangeKingdomLogEntry : LogEntry, IChatNotification, IWarLog
 			textObject.SetTextVariable("CLAN_NAME", Clan.Name);
 			return textObject;
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public override ImportanceEnum GetImportanceForClan(Clan clan)

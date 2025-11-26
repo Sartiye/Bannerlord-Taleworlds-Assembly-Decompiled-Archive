@@ -10,16 +10,19 @@ public class VisualDefinition
 
 	public float DelayOnBegin { get; private set; }
 
-	public bool EaseIn { get; private set; }
+	public AnimationInterpolation.Type EaseType { get; private set; }
+
+	public AnimationInterpolation.Function EaseFunction { get; private set; }
 
 	public Dictionary<string, VisualState> VisualStates { get; private set; }
 
-	public VisualDefinition(string name, float transitionDuration, float delayOnBegin, bool easeIn)
+	public VisualDefinition(string name, float transitionDuration, float delayOnBegin, AnimationInterpolation.Type easeType, AnimationInterpolation.Function easeFunction)
 	{
 		Name = name;
 		TransitionDuration = transitionDuration;
 		DelayOnBegin = delayOnBegin;
-		EaseIn = easeIn;
+		EaseType = easeType;
+		EaseFunction = easeFunction;
 		VisualStates = new Dictionary<string, VisualState>();
 	}
 

@@ -4,7 +4,6 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -20,6 +19,8 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 
 	private const float BannerItemUpdateChance = 0.1f;
 
+	private const float GiveBannerItemChance = 0.25f;
+
 	private Dictionary<Hero, CampaignTime> _heroNextBannerLootTime = new Dictionary<Hero, CampaignTime>();
 
 	public override void RegisterEvents()
@@ -27,10 +28,10 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, GiveBannersToHeroes);
 		CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, DailyTickHero);
-		CampaignEvents.CollectLootsEvent.AddNonSerializedListener(this, CollectLoots);
+		CampaignEvents.OnCollectLootsItemsEvent.AddNonSerializedListener(this, OnCollectLootItems);
 		CampaignEvents.HeroComesOfAgeEvent.AddNonSerializedListener(this, OnHeroComesOfAge);
 		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
-		CampaignEvents.OnCompanionClanCreatedEvent.AddNonSerializedListener(this, OnCompanionClanCreated);
+		CampaignEvents.OnClanCreatedEvent.AddNonSerializedListener(this, OnClanCreated);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -66,18 +67,25 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 		}
 		EquipmentElement bannerItem = hero.BannerItem;
 		BannerItemModel bannerItemModel = Campaign.Current.Models.BannerItemModel;
-		if (bannerItem.IsInvalid() || !bannerItemModel.CanBannerBeUpdated(bannerItem.Item) || !(MBRandom.RandomFloat < 0.1f))
+		if (!bannerItem.IsInvalid() && bannerItemModel.CanBannerBeUpdated(bannerItem.Item) && MBRandom.RandomFloat < 0.1f)
 		{
-			return;
-		}
-		int bannerLevel = ((BannerComponent)bannerItem.Item.ItemComponent).BannerLevel;
-		int bannerItemLevelForHero = bannerItemModel.GetBannerItemLevelForHero(hero);
-		if (bannerLevel != bannerItemLevelForHero)
-		{
-			ItemObject upgradeBannerForHero = GetUpgradeBannerForHero(hero, bannerItemLevelForHero);
-			if (upgradeBannerForHero != null)
+			int bannerLevel = ((BannerComponent)bannerItem.Item.ItemComponent).BannerLevel;
+			int bannerItemLevelForHero = bannerItemModel.GetBannerItemLevelForHero(hero);
+			if (bannerLevel != bannerItemLevelForHero)
 			{
-				hero.BannerItem = new EquipmentElement(upgradeBannerForHero);
+				ItemObject upgradeBannerForHero = GetUpgradeBannerForHero(hero, bannerItemLevelForHero);
+				if (upgradeBannerForHero != null)
+				{
+					hero.BannerItem = new EquipmentElement(upgradeBannerForHero);
+				}
+			}
+		}
+		else if (bannerItem.IsInvalid() && CanBannerBeGivenToHero(hero) && MBRandom.RandomFloat < 0.25f && !hero.IsPrisoner)
+		{
+			ItemObject randomBannerItemForHero = BannerHelper.GetRandomBannerItemForHero(hero);
+			if (randomBannerItemForHero != null)
+			{
+				hero.BannerItem = new EquipmentElement(randomBannerItemForHero);
 			}
 		}
 	}
@@ -96,27 +104,44 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 		return BannerHelper.GetRandomBannerItemForHero(hero);
 	}
 
-	private void CollectLoots(MapEvent mapEvent, PartyBase party, Dictionary<PartyBase, ItemRoster> loot, ItemRoster lootedItems, MBList<TroopRosterElement> lootedCasualties, float lootAmount)
+	private void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
 	{
-		if (party != PartyBase.MainParty || !mapEvent.IsPlayerMapEvent || mapEvent.WinningSide != mapEvent.PlayerSide)
+		if (winnerParty != PartyBase.MainParty)
 		{
 			return;
 		}
-		ItemObject[] array = new ItemObject[2];
-		if (mapEvent.IsHideoutBattle)
+		MapEvent mapEvent = MobileParty.MainParty.MapEvent;
+		ItemObject itemObject = null;
+		itemObject = Campaign.Current.Models.BattleRewardModel.GetBannerRewardForWinningMapEvent(mapEvent);
+		if (itemObject != null)
 		{
-			array[0] = GetBannerRewardForHideoutBattle();
+			gainedLoots.AddToCounts(itemObject, 1);
 		}
-		else if (mapEvent.AttackerSide.MissionSide == mapEvent.PlayerSide && mapEvent.IsSiegeAssault)
+		Hero hero = null;
+		MBReadOnlyList<MapEventParty> mBReadOnlyList = mapEvent.PartiesOnSide(mapEvent.DefeatedSide);
+		if (mBReadOnlyList.Exists((MapEventParty x) => x.Party.IsMobile && x.Party.MobileParty.Army != null))
 		{
-			array[0] = GetBannerRewardForCapturingFortification(mapEvent.MapEventSettlement);
-		}
-		array[1] = GetBannerRewardForDefeatingNoble(mapEvent, lootedCasualties);
-		foreach (ItemObject itemObject in array)
-		{
-			if (itemObject != null)
+			foreach (MapEventParty item in mBReadOnlyList)
 			{
-				lootedItems.AddToCounts(itemObject, 1);
+				if (item.Party.IsMobile && item.Party.MobileParty.Army != null && !item.Party.MobileParty.Army.ArmyOwner.BannerItem.IsInvalid() && CanBannerBeLootedFromHero(item.Party.MobileParty.Army.ArmyOwner))
+				{
+					hero = item.Party.MobileParty.Army.ArmyOwner;
+					break;
+				}
+			}
+		}
+		if (hero == null)
+		{
+			hero = mBReadOnlyList.GetRandomElementWithPredicate((MapEventParty x) => x.Party.LeaderHero != null && !x.Party.LeaderHero.BannerItem.IsInvalid() && CanBannerBeLootedFromHero(x.Party.LeaderHero))?.Party.LeaderHero;
+		}
+		if (hero != null)
+		{
+			float bannerLootChanceFromDefeatedHero = Campaign.Current.Models.BattleRewardModel.GetBannerLootChanceFromDefeatedHero(hero);
+			if (MBRandom.RandomFloat <= bannerLootChanceFromDefeatedHero)
+			{
+				LogBannerLootForHero(hero, ((BannerComponent)hero.BannerItem.Item.ItemComponent).BannerLevel);
+				gainedLoots.AddToCounts(hero.BannerItem.Item, 1);
+				hero.BannerItem = new EquipmentElement(null);
 			}
 		}
 	}
@@ -145,8 +170,12 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnCompanionClanCreated(Clan clan)
+	private void OnClanCreated(Clan clan, bool isCompanion)
 	{
+		if (!isCompanion)
+		{
+			return;
+		}
 		Hero leader = clan.Leader;
 		if (leader.BannerItem.IsInvalid())
 		{
@@ -191,64 +220,6 @@ public class BannerCampaignBehavior : CampaignBehaviorBase
 		{
 			_heroNextBannerLootTime[hero] = value;
 		}
-	}
-
-	private ItemObject GetBannerRewardForHideoutBattle()
-	{
-		if (MBRandom.RandomFloat <= Campaign.Current.Models.BattleRewardModel.DestroyHideoutBannerLootChance)
-		{
-			return Campaign.Current.Models.BannerItemModel.GetPossibleRewardBannerItems().ToMBList().GetRandomElementWithPredicate((ItemObject i) => ((BannerComponent)i.ItemComponent).BannerLevel == 1 && (i.Culture == null || i.Culture.StringId == "neutral_culture"));
-		}
-		return null;
-	}
-
-	private ItemObject GetBannerRewardForCapturingFortification(Settlement settlement)
-	{
-		if (MBRandom.RandomFloat <= Campaign.Current.Models.BattleRewardModel.CaptureSettlementBannerLootChance)
-		{
-			MBList<ItemObject> mBList = Campaign.Current.Models.BannerItemModel.GetPossibleRewardBannerItems().ToMBList();
-			mBList.Shuffle();
-			int wallLevel = settlement.Town.GetWallLevel();
-			foreach (ItemObject item in mBList)
-			{
-				if (((BannerComponent)item.ItemComponent).BannerLevel == wallLevel && (item.Culture == null || item.Culture.StringId == "neutral_culture" || item.Culture == settlement.Culture))
-				{
-					return item;
-				}
-			}
-		}
-		return null;
-	}
-
-	private ItemObject GetBannerRewardForDefeatingNoble(MapEvent mapEvent, MBList<TroopRosterElement> lootedCasualties)
-	{
-		Hero hero = null;
-		foreach (MapEventParty item in mapEvent.PartiesOnSide(mapEvent.DefeatedSide))
-		{
-			if (item.Party.IsMobile && item.Party.MobileParty.Army != null)
-			{
-				hero = item.Party.MobileParty.Army.ArmyOwner;
-				if (hero.BannerItem.IsInvalid())
-				{
-					hero = null;
-				}
-				break;
-			}
-		}
-		if (hero == null)
-		{
-			hero = lootedCasualties.GetRandomElementWithPredicate((TroopRosterElement t) => t.Character.IsHero && !t.Character.HeroObject.BannerItem.IsInvalid()).Character?.HeroObject;
-		}
-		if (hero != null && CanBannerBeLootedFromHero(hero))
-		{
-			float num = ((hero.Clan?.Kingdom?.RulingClan.Leader == hero) ? Campaign.Current.Models.BattleRewardModel.DefeatKingdomRulerBannerLootChance : ((hero.Clan?.Leader != hero) ? Campaign.Current.Models.BattleRewardModel.DefeatRegularHeroBannerLootChance : Campaign.Current.Models.BattleRewardModel.DefeatClanLeaderBannerLootChance));
-			if (MBRandom.RandomFloat <= num)
-			{
-				LogBannerLootForHero(hero, ((BannerComponent)hero.BannerItem.Item.ItemComponent).BannerLevel);
-				return hero.BannerItem.Item;
-			}
-		}
-		return null;
 	}
 
 	private bool CanBannerBeGivenToHero(Hero hero)

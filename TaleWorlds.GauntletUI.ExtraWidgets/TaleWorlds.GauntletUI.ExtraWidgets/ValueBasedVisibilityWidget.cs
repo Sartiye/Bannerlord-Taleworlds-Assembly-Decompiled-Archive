@@ -14,51 +14,38 @@ public class ValueBasedVisibilityWidget : Widget
 		NotEqual
 	}
 
-	private int _indexToBeVisible;
-
-	private int _indexToWatch = -1;
+	private WatchTypes _watchType;
 
 	private float _indexToBeVisibleFloat;
 
 	private float _indexToWatchFloat = -1f;
 
-	public WatchTypes WatchType { get; set; }
+	public WatchTypes WatchType
+	{
+		get
+		{
+			return _watchType;
+		}
+		set
+		{
+			if (value != _watchType)
+			{
+				_watchType = value;
+				UpdateIsVisible();
+			}
+		}
+	}
 
 	[Editor(false)]
 	public int IndexToWatch
 	{
 		get
 		{
-			return _indexToWatch;
+			return (int)IndexToWatchFloat;
 		}
 		set
 		{
-			if (_indexToWatch != value)
-			{
-				_indexToWatch = value;
-				OnPropertyChanged(value, "IndexToWatch");
-				switch (WatchType)
-				{
-				case WatchTypes.Equal:
-					base.IsVisible = value == IndexToBeVisible;
-					break;
-				case WatchTypes.BiggerThan:
-					base.IsVisible = value > IndexToBeVisible;
-					break;
-				case WatchTypes.LessThan:
-					base.IsVisible = value < IndexToBeVisible;
-					break;
-				case WatchTypes.BiggerThanEqual:
-					base.IsVisible = value >= IndexToBeVisible;
-					break;
-				case WatchTypes.LessThanEqual:
-					base.IsVisible = value <= IndexToBeVisible;
-					break;
-				case WatchTypes.NotEqual:
-					base.IsVisible = value != IndexToBeVisible;
-					break;
-				}
-			}
+			IndexToWatchFloat = value;
 		}
 	}
 
@@ -75,27 +62,7 @@ public class ValueBasedVisibilityWidget : Widget
 			{
 				_indexToWatchFloat = value;
 				OnPropertyChanged(value, "IndexToWatchFloat");
-				switch (WatchType)
-				{
-				case WatchTypes.Equal:
-					base.IsVisible = value == IndexToBeVisibleFloat;
-					break;
-				case WatchTypes.BiggerThan:
-					base.IsVisible = value > IndexToBeVisibleFloat;
-					break;
-				case WatchTypes.LessThan:
-					base.IsVisible = value < IndexToBeVisibleFloat;
-					break;
-				case WatchTypes.BiggerThanEqual:
-					base.IsVisible = value >= IndexToBeVisibleFloat;
-					break;
-				case WatchTypes.LessThanEqual:
-					base.IsVisible = value <= IndexToBeVisibleFloat;
-					break;
-				case WatchTypes.NotEqual:
-					base.IsVisible = value != IndexToBeVisibleFloat;
-					break;
-				}
+				UpdateIsVisible();
 			}
 		}
 	}
@@ -105,15 +72,11 @@ public class ValueBasedVisibilityWidget : Widget
 	{
 		get
 		{
-			return _indexToBeVisible;
+			return (int)IndexToBeVisibleFloat;
 		}
 		set
 		{
-			if (_indexToBeVisible != value)
-			{
-				_indexToBeVisible = value;
-				OnPropertyChanged(value, "IndexToBeVisible");
-			}
+			IndexToBeVisibleFloat = value;
 		}
 	}
 
@@ -130,6 +93,7 @@ public class ValueBasedVisibilityWidget : Widget
 			{
 				_indexToBeVisibleFloat = value;
 				OnPropertyChanged(value, "IndexToBeVisibleFloat");
+				UpdateIsVisible();
 			}
 		}
 	}
@@ -137,5 +101,31 @@ public class ValueBasedVisibilityWidget : Widget
 	public ValueBasedVisibilityWidget(UIContext context)
 		: base(context)
 	{
+		UpdateIsVisible();
+	}
+
+	private void UpdateIsVisible()
+	{
+		switch (WatchType)
+		{
+		case WatchTypes.Equal:
+			base.IsVisible = IndexToWatchFloat == IndexToBeVisibleFloat;
+			break;
+		case WatchTypes.BiggerThan:
+			base.IsVisible = IndexToWatchFloat > IndexToBeVisibleFloat;
+			break;
+		case WatchTypes.LessThan:
+			base.IsVisible = IndexToWatchFloat < IndexToBeVisibleFloat;
+			break;
+		case WatchTypes.BiggerThanEqual:
+			base.IsVisible = IndexToWatchFloat >= IndexToBeVisibleFloat;
+			break;
+		case WatchTypes.LessThanEqual:
+			base.IsVisible = IndexToWatchFloat <= IndexToBeVisibleFloat;
+			break;
+		case WatchTypes.NotEqual:
+			base.IsVisible = IndexToWatchFloat != IndexToBeVisibleFloat;
+			break;
+		}
 	}
 }

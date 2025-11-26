@@ -3,16 +3,22 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglTwo_dimension_mesh_draw_data", false)]
+[EngineStruct("rglTwo_dimension_mesh_draw_data", false, null)]
 public struct TwoDimensionMeshDrawData
 {
-	public float DrawX;
+	public MatrixFrame MatrixFrame;
 
-	public float DrawY;
+	public Vec3 ClipRectInfo;
 
-	public float ScreenWidth;
+	public Vec3 Uvs;
 
-	public float ScreenHeight;
+	public Vec2 SpriteSize;
+
+	public Vec2 ScreenSize;
+
+	public Vec2 ScreenScale;
+
+	public Vec3 NinePatchBorders;
 
 	public Vec2 ClipCircleCenter;
 
@@ -32,35 +38,9 @@ public struct TwoDimensionMeshDrawData
 
 	public float ValueFactor;
 
-	public float OverlayTextureWidth;
+	public Vec2 OverlayOffset;
 
-	public float OverlayTextureHeight;
-
-	public Vec2 ClipRectPosition;
-
-	public Vec2 ClipRectSize;
-
-	public Vec2 StartCoordinate;
-
-	public Vec2 Size;
+	public Vec2 OverlayScale;
 
 	public int Layer;
-
-	public float OverlayXOffset;
-
-	public float OverlayYOffset;
-
-	public float Width;
-
-	public float Height;
-
-	public float MinU;
-
-	public float MinV;
-
-	public float MaxU;
-
-	public float MaxV;
-
-	public uint Type;
 }

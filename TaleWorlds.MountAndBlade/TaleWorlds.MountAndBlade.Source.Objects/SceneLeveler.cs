@@ -89,14 +89,14 @@ public class SceneLeveler : ScriptComponentBehavior
 				continue;
 			}
 			string prefabName = ConvertPrefabName(text, levelMask);
-			GameEntity gameEntity = GameEntity.Instantiate(base.Scene, prefabName, item.GetGlobalFrame());
+			GameEntity gameEntity = TaleWorlds.Engine.GameEntity.Instantiate(base.Scene, prefabName, item.GetGlobalFrame());
 			if (gameEntity == null)
 			{
 				num3++;
 				continue;
 			}
 			num4++;
-			GameEntity.UpgradeLevelMask upgradeLevelMask2 = upgradeLevelMask & ~GameEntity.UpgradeLevelMask.Level1 & ~GameEntity.UpgradeLevelMask.Level2 & ~GameEntity.UpgradeLevelMask.Level3;
+			GameEntity.UpgradeLevelMask upgradeLevelMask2 = upgradeLevelMask & ~TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1 & ~TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2 & ~TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3;
 			upgradeLevelMask2 |= levelMask;
 			gameEntity.SetUpgradeLevelMask(upgradeLevelMask2);
 			CopyScriptParameters(gameEntity, item);
@@ -126,9 +126,9 @@ public class SceneLeveler : ScriptComponentBehavior
 	{
 		return level switch
 		{
-			2 => GameEntity.UpgradeLevelMask.Level2, 
-			1 => GameEntity.UpgradeLevelMask.Level1, 
-			_ => GameEntity.UpgradeLevelMask.Level3, 
+			2 => TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2, 
+			1 => TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1, 
+			_ => TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3, 
 		};
 	}
 
@@ -136,9 +136,9 @@ public class SceneLeveler : ScriptComponentBehavior
 	{
 		return levelMask switch
 		{
-			GameEntity.UpgradeLevelMask.Level1 => "_l1", 
-			GameEntity.UpgradeLevelMask.Level2 => "_l2", 
-			GameEntity.UpgradeLevelMask.Level3 => "_l3", 
+			TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1 => "_l1", 
+			TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2 => "_l2", 
+			TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3 => "_l3", 
 			_ => "", 
 		};
 	}
@@ -147,17 +147,17 @@ public class SceneLeveler : ScriptComponentBehavior
 	{
 		string text = prefabName;
 		string levelSubString = GetLevelSubString(newLevelMask);
-		if (newLevelMask != GameEntity.UpgradeLevelMask.Level1)
+		if (newLevelMask != TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1)
 		{
-			text = text.Replace(GetLevelSubString(GameEntity.UpgradeLevelMask.Level1), levelSubString);
+			text = text.Replace(GetLevelSubString(TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1), levelSubString);
 		}
-		if (newLevelMask != GameEntity.UpgradeLevelMask.Level2)
+		if (newLevelMask != TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2)
 		{
-			text = text.Replace(GetLevelSubString(GameEntity.UpgradeLevelMask.Level2), levelSubString);
+			text = text.Replace(GetLevelSubString(TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2), levelSubString);
 		}
-		if (newLevelMask != GameEntity.UpgradeLevelMask.Level3)
+		if (newLevelMask != TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3)
 		{
-			text = text.Replace(GetLevelSubString(GameEntity.UpgradeLevelMask.Level3), levelSubString);
+			text = text.Replace(GetLevelSubString(TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3), levelSubString);
 		}
 		if (text.Equals(prefabName))
 		{
@@ -215,7 +215,7 @@ public class SceneLeveler : ScriptComponentBehavior
 	{
 		List<GameEntity> entities = new List<GameEntity>();
 		base.Scene.GetEntities(ref entities);
-		List<GameEntity> list = entities.FindAll((GameEntity x) => x.GetUpgradeLevelMask() == GameEntity.UpgradeLevelMask.None);
+		List<GameEntity> list = entities.FindAll((GameEntity x) => x.GetUpgradeLevelMask() == TaleWorlds.Engine.GameEntity.UpgradeLevelMask.None);
 		TextObject textObject = new TextObject("{=!}Selected entity count : {SELECTED_ENTITIES}");
 		textObject.SetTextVariable("SELECTED_ENTITIES", list.Count);
 		MessageManager.DisplayMessage(textObject.ToString());
@@ -231,7 +231,7 @@ public class SceneLeveler : ScriptComponentBehavior
 		Utilities.GetEntitiesOfSelectionSet(SourceSelectionSetName, ref gameEntities);
 		for (int num = gameEntities.Count - 1; num >= 0; num--)
 		{
-			if ((gameEntities[num].GetUpgradeLevelMask() & (GameEntity.UpgradeLevelMask.Level1 | GameEntity.UpgradeLevelMask.Level2 | GameEntity.UpgradeLevelMask.Level3)) == 0)
+			if ((gameEntities[num].GetUpgradeLevelMask() & (TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level1 | TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level2 | TaleWorlds.Engine.GameEntity.UpgradeLevelMask.Level3)) == 0)
 			{
 				gameEntities.RemoveAt(num);
 			}

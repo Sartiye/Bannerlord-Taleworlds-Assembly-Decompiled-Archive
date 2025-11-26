@@ -32,6 +32,8 @@ public static class UISoundsHelper
 		public const string PartyPanelOpenSound = "event:/ui/panels/panel_party_open";
 
 		public const string QuestPanelOpenSound = "event:/ui/panels/panel_quest_open";
+
+		public const string CraftingPanelOpenSound = "event:/ui/panels/panel_settlement_enter_smithy";
 	}
 
 	public static class SiegeSounds
@@ -101,6 +103,25 @@ public static class UISoundsHelper
 	public static class MultiplayerSounds
 	{
 		public const string MatchReadySound = "event:/ui/multiplayer/match_ready";
+	}
+
+	public static class OrderOfBattleSounds
+	{
+		public const string ClassSelectionDropdownSound = "event:/ui/oob/dropdown";
+
+		public const string OfficerPickSound = "event:/ui/oob/officer_pick";
+	}
+
+	public static class PortSounds
+	{
+		public const string ConfirmSound = "event:/ui/port/confirm_ship";
+
+		public const string ChooseShipSound = "event:/ui/port/choose_ship";
+	}
+
+	public static class KingdomSounds
+	{
+		public const string ConfirmVoteSound = "event:/ui/reign/decision";
 	}
 
 	public static void PlayUISound(string soundName)

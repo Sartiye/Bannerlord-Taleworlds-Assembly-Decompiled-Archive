@@ -70,6 +70,12 @@ public static class GainKingdomInfluenceAction
 				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Tactics.Besieged, hero2.CharacterObject, isPrimaryBonus: false, ref stat);
 			}
 			ChangeClanInfluenceAction.Apply(clan, stat.ResultNumber);
+			if (detail == InfluenceGainingReason.DonatePrisoners && party == MobileParty.MainParty)
+			{
+				MBTextManager.SetTextVariable("INFLUENCE", (int)gainedInfluence);
+				MBTextManager.SetTextVariable("NEW_INFLUENCE", (int)clan.Influence);
+				InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_influence_gain_message").ToString()));
+			}
 			if (detail == InfluenceGainingReason.Battle && hero == Hero.MainHero)
 			{
 				MBTextManager.SetTextVariable("INFLUENCE", (int)gainedInfluence);

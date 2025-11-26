@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
@@ -77,33 +78,58 @@ public class EndCaptivityLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 
 	public TextObject GetNotificationText()
 	{
-		TextObject textObject = new TextObject("{=6u3t174w}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} is now free.");
-		switch (Detail)
-		{
-		case EndCaptivityDetail.Death:
-			textObject = new TextObject("{=XbQFAKUz}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has died while being held captive by the {CAPTURER_FACTION}.");
-			break;
-		case EndCaptivityDetail.Ransom:
-			textObject = new TextObject("{=pX0MgdZA}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has been ransomed from the {CAPTURER_FACTION}.");
-			break;
-		case EndCaptivityDetail.ReleasedAfterBattle:
-			textObject = new TextObject("{=hp4jLl3M}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has been released after battle.");
-			break;
-		case EndCaptivityDetail.ReleasedAfterEscape:
-			textObject = new TextObject("{=krTrNonp}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has escaped from captivity.");
-			break;
-		case EndCaptivityDetail.ReleasedAfterPeace:
-			textObject = new TextObject("{=wlhJGG0q}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has been freed because of a peace declaration.");
-			break;
-		case EndCaptivityDetail.ReleasedByCompensation:
-			textObject = new TextObject("{=krTrNonp}{PRISONER_LORD.LINK}{?PRISONER_LORD_HAS_FACTION_LINK} of the {PRISONER_LORD_FACTION_LINK}{?}{\\?} has escaped from captivity.");
-			break;
-		}
 		Clan clan = Prisoner.Clan;
+		TextObject textObject;
 		if (clan != null && !clan.IsMinorFaction)
 		{
-			textObject.SetTextVariable("PRISONER_LORD_FACTION_LINK", Prisoner.MapFaction.EncyclopediaLinkWithName);
-			textObject.SetTextVariable("PRISONER_LORD_HAS_FACTION_LINK", 1);
+			textObject = GameTexts.FindText("str_released_lord_with_faction_free");
+			switch (Detail)
+			{
+			case EndCaptivityDetail.Death:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_death");
+				break;
+			case EndCaptivityDetail.Ransom:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_ransom");
+				break;
+			case EndCaptivityDetail.ReleasedAfterBattle:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_battle");
+				break;
+			case EndCaptivityDetail.ReleasedAfterEscape:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_escape");
+				break;
+			case EndCaptivityDetail.ReleasedAfterPeace:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_peace");
+				break;
+			case EndCaptivityDetail.ReleasedByCompensation:
+				textObject = GameTexts.FindText("str_released_lord_with_faction_escape");
+				break;
+			}
+			textObject.SetTextVariable("PRISONER_FACTION_LINK", Prisoner.MapFaction.EncyclopediaLinkWithName);
+		}
+		else
+		{
+			textObject = GameTexts.FindText("str_released_lord_free");
+			switch (Detail)
+			{
+			case EndCaptivityDetail.Death:
+				textObject = GameTexts.FindText("str_released_lord_death");
+				break;
+			case EndCaptivityDetail.Ransom:
+				textObject = GameTexts.FindText("str_released_lord_ransom");
+				break;
+			case EndCaptivityDetail.ReleasedAfterBattle:
+				textObject = GameTexts.FindText("str_released_lord_battle");
+				break;
+			case EndCaptivityDetail.ReleasedAfterEscape:
+				textObject = GameTexts.FindText("str_released_lord_escape");
+				break;
+			case EndCaptivityDetail.ReleasedAfterPeace:
+				textObject = GameTexts.FindText("str_released_lord_peace");
+				break;
+			case EndCaptivityDetail.ReleasedByCompensation:
+				textObject = GameTexts.FindText("str_released_lord_escape");
+				break;
+			}
 		}
 		StringHelpers.SetCharacterProperties("PRISONER_LORD", Prisoner.CharacterObject, textObject);
 		if (CapturerMapFaction != null)
@@ -130,5 +156,18 @@ public class EndCaptivityLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 				comment = "str_comment_captivity_release_companion";
 			}
 		}
+	}
+
+	public override bool IsValid()
+	{
+		if (Prisoner != null)
+		{
+			if (Prisoner.IsRebel)
+			{
+				return Prisoner.IsAlive;
+			}
+			return true;
+		}
+		return false;
 	}
 }

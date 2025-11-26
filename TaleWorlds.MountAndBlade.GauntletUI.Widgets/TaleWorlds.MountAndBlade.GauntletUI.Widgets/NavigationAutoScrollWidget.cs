@@ -14,9 +14,13 @@ public class NavigationAutoScrollWidget : Widget
 
 	public ScrollablePanel ParentPanel { get; set; }
 
-	public int ScrollYOffset { get; set; }
+	public int AutoScrollTopOffset { get; set; }
 
-	public int ScrollXOffset { get; set; }
+	public int AutoScrollBottomOffset { get; set; }
+
+	public int AutoScrollLeftOffset { get; set; }
+
+	public int AutoScrollRightOffset { get; set; }
 
 	public bool IncludeChildren
 	{
@@ -100,7 +104,8 @@ public class NavigationAutoScrollWidget : Widget
 	{
 		if (ParentPanel != null)
 		{
-			ParentPanel.ScrollToChild(ScrollTarget ?? widget, -1f, -1f, ScrollXOffset, ScrollYOffset);
+			ScrollablePanel.AutoScrollParameters scrollParameters = new ScrollablePanel.AutoScrollParameters(AutoScrollTopOffset, AutoScrollBottomOffset, AutoScrollLeftOffset, AutoScrollRightOffset);
+			ParentPanel.ScrollToChild(ScrollTarget ?? widget, scrollParameters);
 		}
 	}
 

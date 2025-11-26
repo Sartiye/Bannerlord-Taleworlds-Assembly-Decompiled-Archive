@@ -168,9 +168,11 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0_1_0_2.TextWidget = _widget_0_0_1_0_2_3_0;
 		_widget_0_0_1_0_2.UpButton = _widget_0_0_1_0_2_4;
 		_widget_0_0_1_0_2_0.TrackedWidget = _widget_0_0_1_0_2_2;
-		_widget_0_0_1_0_2_0.ScrollYOffset = 50;
+		_widget_0_0_1_0_2_0.AutoScrollTopOffset = 50;
+		_widget_0_0_1_0_2_0.AutoScrollBottomOffset = 50;
 		_widget_0_0_1_0_2_1.TrackedWidget = _widget_0_0_1_0_2_4;
-		_widget_0_0_1_0_2_1.ScrollYOffset = 50;
+		_widget_0_0_1_0_2_1.AutoScrollTopOffset = 50;
+		_widget_0_0_1_0_2_1.AutoScrollBottomOffset = 50;
 		_widget_0_0_1_0_2_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_0_2_2.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_0_2_2.SuggestedWidth = 29f;

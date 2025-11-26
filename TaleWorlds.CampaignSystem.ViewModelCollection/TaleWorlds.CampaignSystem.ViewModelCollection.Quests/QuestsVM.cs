@@ -534,27 +534,35 @@ public class QuestsVM : ViewModel
 
 	private void SetSelectedItem(QuestItemVM quest)
 	{
-		if (_selectedQuest != quest)
+		if (SelectedQuest != quest)
 		{
 			CurrentQuestStages.Clear();
-			if (_selectedQuest != null)
+			if (SelectedQuest != null)
 			{
-				_selectedQuest.IsSelected = false;
-			}
-			if (quest != null)
-			{
-				quest.IsSelected = true;
+				SelectedQuest.IsSelected = false;
+				foreach (QuestStageVM stage in SelectedQuest.Stages)
+				{
+					stage.UpdateIsNew();
+				}
+				SelectedQuest.UpdateIsUpdated();
 			}
 			SelectedQuest = quest;
-			if (_selectedQuest != null)
+			if (SelectedQuest != null)
 			{
-				CurrentQuestGiverHero = _selectedQuest.QuestGiverHero;
-				CurrentQuestTitle = _selectedQuest.Name;
-				IsCurrentQuestGiverHeroHidden = _selectedQuest.IsQuestGiverHeroHidden;
-				foreach (QuestStageVM stage in _selectedQuest.Stages)
+				SelectedQuest.IsSelected = true;
+				CurrentQuestGiverHero = SelectedQuest.QuestGiverHero;
+				CurrentQuestTitle = SelectedQuest.Name;
+				IsCurrentQuestGiverHeroHidden = SelectedQuest.IsQuestGiverHeroHidden;
+				foreach (QuestStageVM stage2 in SelectedQuest.Stages)
 				{
-					CurrentQuestStages.Add(stage);
+					CurrentQuestStages.Add(stage2);
 				}
+				foreach (QuestStageVM stage3 in SelectedQuest.Stages)
+				{
+					stage3.UpdateIsNew();
+					_viewDataTracker.OnQuestLogExamined(stage3.Log);
+				}
+				SelectedQuest.IsUpdated = false;
 			}
 			else
 			{
@@ -565,12 +573,6 @@ public class QuestsVM : ViewModel
 		}
 		_viewDataTracker.SetQuestSelection(quest.Quest);
 		TimeRemainingHint = new HintViewModel(new TextObject("{=2nN1QuxZ}This quest will be failed unless completed in this time."));
-		foreach (QuestStageVM stage2 in _selectedQuest.Stages)
-		{
-			_viewDataTracker.OnQuestLogExamined(stage2.Log);
-			stage2.UpdateIsNew();
-			_selectedQuest.UpdateIsUpdated();
-		}
 	}
 
 	public void ExecuteOpenQuestGiverEncyclopedia()

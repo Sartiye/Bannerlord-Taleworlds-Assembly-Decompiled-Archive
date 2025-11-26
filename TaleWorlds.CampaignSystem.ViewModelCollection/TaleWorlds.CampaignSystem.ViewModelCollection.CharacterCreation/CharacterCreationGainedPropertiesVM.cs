@@ -12,9 +12,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterCreation;
 
 public class CharacterCreationGainedPropertiesVM : ViewModel
 {
-	private readonly TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation _characterCreation;
-
-	private readonly int _currentIndex;
+	private readonly CharacterCreationManager _characterCreationManager;
 
 	private readonly Dictionary<CharacterAttribute, Tuple<int, int>> _affectedAttributesMap;
 
@@ -23,6 +21,8 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 	private MBBindingList<CharacterCreationGainGroupItemVM> _gainGroups;
 
 	private MBBindingList<EncyclopediaTraitItemVM> _gainedTraits;
+
+	private MBBindingList<CharacterCreationGainedSkillItemVM> _otherSkills;
 
 	[DataSourceProperty]
 	public MBBindingList<CharacterCreationGainGroupItemVM> GainGroups
@@ -58,16 +58,44 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 		}
 	}
 
-	public CharacterCreationGainedPropertiesVM(TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, int currentIndex)
+	[DataSourceProperty]
+	public MBBindingList<CharacterCreationGainedSkillItemVM> OtherSkills
 	{
-		_characterCreation = characterCreation;
-		_currentIndex = currentIndex;
+		get
+		{
+			return _otherSkills;
+		}
+		set
+		{
+			if (value != _otherSkills)
+			{
+				_otherSkills = value;
+				OnPropertyChangedWithValue(value, "OtherSkills");
+			}
+		}
+	}
+
+	public CharacterCreationGainedPropertiesVM(CharacterCreationManager characterCreationManager)
+	{
+		_characterCreationManager = characterCreationManager;
 		_affectedAttributesMap = new Dictionary<CharacterAttribute, Tuple<int, int>>();
 		_affectedSkillMap = new Dictionary<SkillObject, Tuple<int, int>>();
 		GainGroups = new MBBindingList<CharacterCreationGainGroupItemVM>();
-		foreach (CharacterAttribute item in Attributes.All)
+		OtherSkills = new MBBindingList<CharacterCreationGainedSkillItemVM>();
+		List<CharacterAttribute> list = Attributes.All.ToList();
+		list.Sort(CampaignUIHelper.CharacterAttributeComparerInstance);
+		foreach (CharacterAttribute item in list)
 		{
-			GainGroups.Add(new CharacterCreationGainGroupItemVM(item, _characterCreation, _currentIndex));
+			GainGroups.Add(new CharacterCreationGainGroupItemVM(item));
+		}
+		List<SkillObject> list2 = Skills.All.ToList();
+		list2.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list2)
+		{
+			if (!GainGroups.Any((CharacterCreationGainGroupItemVM attribute) => attribute.Skills.Any((CharacterCreationGainedSkillItemVM attributeSkill) => attributeSkill.SkillId == skill.StringId)))
+			{
+				OtherSkills.Add(new CharacterCreationGainedSkillItemVM(skill));
+			}
 		}
 		GainedTraits = new MBBindingList<EncyclopediaTraitItemVM>();
 		UpdateValues();
@@ -80,6 +108,10 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 		GainGroups.ApplyActionOnAllItems(delegate(CharacterCreationGainGroupItemVM g)
 		{
 			g.ResetValues();
+		});
+		OtherSkills.ApplyActionOnAllItems(delegate(CharacterCreationGainedSkillItemVM s)
+		{
+			s.ResetValues();
 		});
 		PopulateInitialValues();
 		PopulateGainedAttributeValues();
@@ -126,60 +158,52 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 
 	private void PopulateGainedAttributeValues()
 	{
-		for (int i = 0; i < _characterCreation.CharacterCreationMenuCount; i++)
+		foreach (KeyValuePair<NarrativeMenu, NarrativeMenuOption> selectedOption in _characterCreationManager.SelectedOptions)
 		{
-			int selectedOptionId = (_characterCreation.GetSelectedOptions(i).Any() ? _characterCreation.GetSelectedOptions(i).First() : (-1));
+			NarrativeMenu key = selectedOption.Key;
+			NarrativeMenuOption value = selectedOption.Value;
 			int num = 0;
 			int num2 = 0;
 			int num3 = 0;
 			int num4 = 0;
-			if (selectedOptionId == -1)
+			if (key == _characterCreationManager.CurrentMenu)
 			{
-				continue;
-			}
-			CharacterCreationOption characterCreationOption = _characterCreation.GetCurrentMenuOptions(i).SingleOrDefault((CharacterCreationOption o) => o.Id == selectedOptionId);
-			if (characterCreationOption == null)
-			{
-				continue;
-			}
-			if (i == _currentIndex)
-			{
-				num3 = characterCreationOption.AttributeLevelToAdd;
+				num = value.Args.AttributeLevelToAdd;
 			}
 			else
 			{
-				num4 += characterCreationOption.AttributeLevelToAdd;
+				num2 += value.Args.AttributeLevelToAdd;
 			}
-			if (characterCreationOption.EffectedAttribute != null)
+			if (value.Args.EffectedAttribute != null)
 			{
-				if (_affectedAttributesMap.ContainsKey(characterCreationOption.EffectedAttribute))
+				if (_affectedAttributesMap.ContainsKey(value.Args.EffectedAttribute))
 				{
-					Tuple<int, int> tuple = _affectedAttributesMap[characterCreationOption.EffectedAttribute];
-					_affectedAttributesMap[characterCreationOption.EffectedAttribute] = new Tuple<int, int>(tuple.Item1 + num4, tuple.Item2 + num3);
+					Tuple<int, int> tuple = _affectedAttributesMap[value.Args.EffectedAttribute];
+					_affectedAttributesMap[value.Args.EffectedAttribute] = new Tuple<int, int>(tuple.Item1 + num2, tuple.Item2 + num);
 				}
 				else
 				{
-					_affectedAttributesMap.Add(characterCreationOption.EffectedAttribute, new Tuple<int, int>(num4, num3));
+					_affectedAttributesMap.Add(value.Args.EffectedAttribute, new Tuple<int, int>(num2, num));
 				}
 			}
-			if (i == _currentIndex)
+			if (key == _characterCreationManager.CurrentMenu)
 			{
-				num = characterCreationOption.FocusToAdd;
+				num3 = value.Args.FocusToAdd;
 			}
 			else
 			{
-				num2 += characterCreationOption.FocusToAdd;
+				num4 += value.Args.FocusToAdd;
 			}
-			foreach (SkillObject affectedSkill in characterCreationOption.AffectedSkills)
+			foreach (SkillObject affectedSkill in value.Args.AffectedSkills)
 			{
 				if (_affectedSkillMap.ContainsKey(affectedSkill))
 				{
 					Tuple<int, int> tuple2 = _affectedSkillMap[affectedSkill];
-					_affectedSkillMap[affectedSkill] = new Tuple<int, int>(tuple2.Item1 + num2, tuple2.Item2 + num);
+					_affectedSkillMap[affectedSkill] = new Tuple<int, int>(tuple2.Item1 + num4, tuple2.Item2 + num3);
 				}
 				else
 				{
-					_affectedSkillMap.Add(affectedSkill, new Tuple<int, int>(num2, num));
+					_affectedSkillMap.Add(affectedSkill, new Tuple<int, int>(num4, num3));
 				}
 			}
 		}
@@ -188,19 +212,14 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 	private void PopulateGainedTraitValues()
 	{
 		GainedTraits.Clear();
-		for (int i = 0; i < _characterCreation.CharacterCreationMenuCount; i++)
+		foreach (KeyValuePair<NarrativeMenu, NarrativeMenuOption> selectedOption in _characterCreationManager.SelectedOptions)
 		{
-			int selectedOptionId = (_characterCreation.GetSelectedOptions(i).Any() ? _characterCreation.GetSelectedOptions(i).First() : (-1));
-			if (selectedOptionId == -1)
+			NarrativeMenuOption value = selectedOption.Value;
+			if (value.Args.AffectedTraits == null || value.Args.AffectedTraits.Count <= 0)
 			{
 				continue;
 			}
-			CharacterCreationOption characterCreationOption = _characterCreation.GetCurrentMenuOptions(i).SingleOrDefault((CharacterCreationOption o) => o.Id == selectedOptionId);
-			if (characterCreationOption?.AffectedTraits == null || characterCreationOption.AffectedTraits.Count <= 0)
-			{
-				continue;
-			}
-			foreach (TraitObject effectedTrait in characterCreationOption.AffectedTraits)
+			foreach (TraitObject effectedTrait in value.Args.AffectedTraits)
 			{
 				if (GainedTraits.FirstOrDefault((EncyclopediaTraitItemVM t) => t.TraitId == effectedTrait.StringId) == null)
 				{
@@ -217,6 +236,23 @@ public class CharacterCreationGainedPropertiesVM : ViewModel
 
 	private CharacterCreationGainedSkillItemVM GetItemFromSkill(SkillObject skill)
 	{
-		return GainGroups.SingleOrDefault((CharacterCreationGainGroupItemVM g) => g.Skills.SingleOrDefault((CharacterCreationGainedSkillItemVM s) => s.SkillObj == skill) != null)?.Skills.SingleOrDefault((CharacterCreationGainedSkillItemVM s) => s.SkillObj == skill);
+		foreach (CharacterCreationGainGroupItemVM gainGroup in GainGroups)
+		{
+			foreach (CharacterCreationGainedSkillItemVM skill2 in gainGroup.Skills)
+			{
+				if (skill2.SkillObj == skill)
+				{
+					return skill2;
+				}
+			}
+		}
+		foreach (CharacterCreationGainedSkillItemVM otherSkill in OtherSkills)
+		{
+			if (otherSkill.SkillObj == skill)
+			{
+				return otherSkill;
+			}
+		}
+		return null;
 	}
 }

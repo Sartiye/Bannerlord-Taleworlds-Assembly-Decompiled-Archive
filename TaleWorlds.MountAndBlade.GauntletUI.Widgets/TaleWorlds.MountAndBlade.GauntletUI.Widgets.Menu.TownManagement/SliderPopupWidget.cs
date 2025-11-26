@@ -93,7 +93,7 @@ public class SliderPopupWidget : Widget
 		{
 			SliderValueTextWidget.Text = ReserveAmountSlider.ValueInt.ToString();
 		}
-		if (base.ParentWidget.IsVisible && base.EventManager.LatestMouseDownWidget != PopupParentWidget && base.EventManager.LatestMouseUpWidget != PopupParentWidget && !CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget) && !CheckIsMyChildRecursive(base.EventManager.LatestMouseDownWidget))
+		if (base.ParentWidget.IsVisible && base.EventManager.LatestMouseDownWidget != this && base.EventManager.LatestMouseDownWidget != base.ParentWidget && base.EventManager.LatestMouseDownWidget != PopupParentWidget && !CheckIsMyChildRecursive(base.EventManager.LatestMouseDownWidget))
 		{
 			EventFired("ClosePopup");
 		}

@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BuildingConstructionModel : GameModel
+public abstract class BuildingConstructionModel : MBGameModel<BuildingConstructionModel>
 {
 	public abstract int TownBoostCost { get; }
 

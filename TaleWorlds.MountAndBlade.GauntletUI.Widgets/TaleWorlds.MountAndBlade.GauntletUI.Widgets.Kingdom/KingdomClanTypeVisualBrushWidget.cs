@@ -47,7 +47,7 @@ public class KingdomClanTypeVisualBrushWidget : BrushWidget
 		}
 		else
 		{
-			Debug.FailedAssert("This clan type is not defined in widget", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Kingdom\\KingdomClanTypeVisualBrushWidget.cs", "UpdateTypeVisual", 37);
+			Debug.FailedAssert("This clan type is not defined in widget", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Kingdom\\KingdomClanTypeVisualBrushWidget.cs", "UpdateTypeVisual", 37);
 		}
 	}
 }

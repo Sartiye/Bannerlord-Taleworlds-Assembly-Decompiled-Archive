@@ -3,7 +3,7 @@ using TaleWorlds.GauntletUI.BaseTypes;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
-public class IconOffsetButtonWidget : ButtonWidget
+public class IconOffsetButtonWidget : IconBrushWidget
 {
 	public int NormalXOffset { get; set; }
 
@@ -23,6 +23,12 @@ public class IconOffsetButtonWidget : ButtonWidget
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
+		BrushLayer brushLayer = base.IconBrush?.GetLayer(base.IconID);
+		if (brushLayer?.Sprite != null)
+		{
+			base.SuggestedWidth = brushLayer.Sprite.Width;
+			base.SuggestedHeight = brushLayer.Sprite.Height;
+		}
 		if (ButtonIcon != null)
 		{
 			if (base.IsPressed || base.IsSelected)

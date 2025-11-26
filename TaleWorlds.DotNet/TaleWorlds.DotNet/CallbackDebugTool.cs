@@ -19,7 +19,7 @@ public static class CallbackDebugTool
 
 	private static ulong FrameCount = 0uL;
 
-	[Conditional("DEBUG")]
+	[Conditional("DEBUG_MORE")]
 	public static void AddLog([CallerMemberName] string memberName = "")
 	{
 		lock (Logs)
@@ -37,13 +37,13 @@ public static class CallbackDebugTool
 		}
 	}
 
-	[Conditional("DEBUG")]
+	[Conditional("DEBUG_MORE")]
 	public static void FrameEnd()
 	{
 		FrameCount++;
 	}
 
-	[Conditional("DEBUG")]
+	[Conditional("DEBUG_MORE")]
 	public static void Reset()
 	{
 		Logs = new Dictionary<string, CallbackLog>();

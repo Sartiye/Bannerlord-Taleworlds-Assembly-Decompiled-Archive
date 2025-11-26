@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
@@ -19,6 +18,8 @@ public class MissionFormationTargetSelectionHandler : MissionView
 	private readonly MBList<Formation> _focusedFormationCache;
 
 	private Vec2 _centerOfScreen = new Vec2(Screen.RealScreenResolutionWidth / 2f, Screen.RealScreenResolutionHeight / 2f);
+
+	private bool _isTargetingDisabled;
 
 	private Camera ActiveCamera => base.MissionScreen.CustomCamera ?? base.MissionScreen.CombatCamera;
 
@@ -39,23 +40,26 @@ public class MissionFormationTargetSelectionHandler : MissionView
 		{
 			return;
 		}
-		Vec3 position = ActiveCamera.Position;
-		_centerOfScreen.x = Screen.RealScreenResolutionWidth / 2f;
-		_centerOfScreen.y = Screen.RealScreenResolutionHeight / 2f;
-		for (int i = 0; i < base.Mission.Teams.Count; i++)
+		if (!_isTargetingDisabled)
 		{
-			Team team = base.Mission.Teams[i];
-			if (team.IsPlayerAlly)
+			Vec3 position = ActiveCamera.Position;
+			_centerOfScreen.x = Screen.RealScreenResolutionWidth / 2f;
+			_centerOfScreen.y = Screen.RealScreenResolutionHeight / 2f;
+			for (int i = 0; i < base.Mission.Teams.Count; i++)
 			{
-				continue;
-			}
-			for (int j = 0; j < team.FormationsIncludingEmpty.Count; j++)
-			{
-				Formation formation = team.FormationsIncludingEmpty[j];
-				if (formation.CountOfUnits > 0)
+				Team team = base.Mission.Teams[i];
+				if (team.IsPlayerAlly)
 				{
-					float formationDistanceToCenter = GetFormationDistanceToCenter(formation, position);
-					_distanceCache.Add((formation, formationDistanceToCenter));
+					continue;
+				}
+				for (int j = 0; j < team.FormationsIncludingEmpty.Count; j++)
+				{
+					Formation formation = team.FormationsIncludingEmpty[j];
+					if (formation.CountOfUnits > 0)
+					{
+						float formationDistanceToCenter = GetFormationDistanceToCenter(formation, position);
+						_distanceCache.Add((formation, formationDistanceToCenter));
+					}
 				}
 			}
 		}
@@ -88,9 +92,8 @@ public class MissionFormationTargetSelectionHandler : MissionView
 
 	private float GetFormationDistanceToCenter(Formation formation, Vec3 cameraPosition)
 	{
-		WorldPosition medianPosition = formation.QuerySystem.MedianPosition;
-		medianPosition.SetVec2(formation.QuerySystem.AveragePosition);
-		float num = formation.QuerySystem.AveragePosition.Distance(cameraPosition.AsVec2);
+		WorldPosition cachedMedianPosition = formation.CachedMedianPosition;
+		float num = cachedMedianPosition.AsVec2.Distance(cameraPosition.AsVec2);
 		if (num >= 1000f)
 		{
 			return 2.1474836E+09f;
@@ -102,12 +105,26 @@ public class MissionFormationTargetSelectionHandler : MissionView
 		float screenX = 0f;
 		float screenY = 0f;
 		float w = 0f;
-		MBWindowManager.WorldToScreenInsideUsableArea(ActiveCamera, medianPosition.GetGroundVec3() + new Vec3(0f, 0f, 3f), ref screenX, ref screenY, ref w);
+		MBWindowManager.WorldToScreenInsideUsableArea(ActiveCamera, cachedMedianPosition.GetGroundVec3() + new Vec3(0f, 0f, 3f), ref screenX, ref screenY, ref w);
 		if (w <= 0f)
 		{
 			return 2.1474836E+09f;
 		}
 		return new Vec2(screenX, screenY).Distance(_centerOfScreen);
+	}
+
+	public void SetIsFormationTargetingDisabled(bool isDisabled)
+	{
+		if (_isTargetingDisabled != isDisabled)
+		{
+			_isTargetingDisabled = isDisabled;
+			if (isDisabled)
+			{
+				_distanceCache.Clear();
+				_focusedFormationCache.Clear();
+				this.OnFormationFocused?.Invoke(null);
+			}
+		}
 	}
 
 	public override void OnRemoveBehavior()
@@ -116,10 +133,5 @@ public class MissionFormationTargetSelectionHandler : MissionView
 		_focusedFormationCache.Clear();
 		this.OnFormationFocused = null;
 		base.OnRemoveBehavior();
-	}
-
-	[Conditional("DEBUG")]
-	public void TickDebug()
-	{
 	}
 }

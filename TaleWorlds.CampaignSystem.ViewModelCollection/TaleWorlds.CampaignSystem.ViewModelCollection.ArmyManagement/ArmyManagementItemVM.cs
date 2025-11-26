@@ -1,10 +1,11 @@
 using System;
-using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -28,9 +29,9 @@ public class ArmyManagementItemVM : ViewModel
 
 	private InputKeyItemVM _removeInputKey;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
-	private ImageIdentifierVM _lordFace;
+	private CharacterImageIdentifierVM _lordFace;
 
 	private string _nameText;
 
@@ -42,9 +43,15 @@ public class ArmyManagementItemVM : ViewModel
 
 	private int _strength = -1;
 
+	private int _shipCount = -1;
+
+	private bool _hasShip;
+
 	private string _distanceText;
 
 	private int _cost = -1;
+
+	private bool _isCostRelevant;
 
 	private bool _isEligible;
 
@@ -111,6 +118,7 @@ public class ArmyManagementItemVM : ViewModel
 			{
 				_isInCart = value;
 				OnPropertyChangedWithValue(value, "IsInCart");
+				UpdateIsCostRelevant();
 			}
 		}
 	}
@@ -145,6 +153,41 @@ public class ArmyManagementItemVM : ViewModel
 			{
 				_strength = value;
 				OnPropertyChangedWithValue(value, "Strength");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int ShipCount
+	{
+		get
+		{
+			return _shipCount;
+		}
+		set
+		{
+			if (value != _shipCount)
+			{
+				_shipCount = value;
+				OnPropertyChangedWithValue(value, "ShipCount");
+				HasShip = _shipCount > 0;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasShip
+	{
+		get
+		{
+			return _hasShip;
+		}
+		set
+		{
+			if (value != _hasShip)
+			{
+				_hasShip = value;
+				OnPropertyChangedWithValue(value, "HasShip");
 			}
 		}
 	}
@@ -196,6 +239,24 @@ public class ArmyManagementItemVM : ViewModel
 			{
 				_cost = value;
 				OnPropertyChangedWithValue(value, "Cost");
+				UpdateIsCostRelevant();
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsCostRelevant
+	{
+		get
+		{
+			return _isCostRelevant;
+		}
+		set
+		{
+			if (value != _isCostRelevant)
+			{
+				_isCostRelevant = value;
+				OnPropertyChangedWithValue(value, "IsCostRelevant");
 			}
 		}
 	}
@@ -218,7 +279,7 @@ public class ArmyManagementItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -235,7 +296,7 @@ public class ArmyManagementItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM LordFace
+	public CharacterImageIdentifierVM LordFace
 	{
 		get
 		{
@@ -281,6 +342,7 @@ public class ArmyManagementItemVM : ViewModel
 			{
 				_isAlreadyWithPlayer = value;
 				OnPropertyChangedWithValue(value, "IsAlreadyWithPlayer");
+				UpdateIsCostRelevant();
 			}
 		}
 	}
@@ -343,18 +405,26 @@ public class ArmyManagementItemVM : ViewModel
 		_onRemove = onRemove;
 		_onFocus = onFocus;
 		Party = mobileParty;
-		_eligibilityReason = TextObject.Empty;
-		ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(mobileParty.LeaderHero.ClanBanner), nineGrid: true);
+		_eligibilityReason = TextObject.GetEmpty();
+		ClanBanner = new BannerImageIdentifierVM(mobileParty.LeaderHero.ClanBanner, nineGrid: true);
 		CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(mobileParty.LeaderHero.CharacterObject);
-		LordFace = new ImageIdentifierVM(characterCode);
+		LordFace = new CharacterImageIdentifierVM(characterCode);
 		Relation = armyManagementCalculationModel.GetPartyRelation(mobileParty.LeaderHero);
-		Strength = Party.MemberRoster.TotalManCount;
-		_distance = Campaign.Current.Models.MapDistanceModel.GetDistance(Party, MobileParty.MainParty);
-		DistInTime = TaleWorlds.Library.MathF.Ceiling(_distance / Party.Speed);
+		Strength = Party.Party.NumberOfHealthyMembers;
+		ShipCount = Party.Ships.Count;
+		_distance = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(Party, MobileParty.MainParty, Party.NavigationCapability);
+		if (MobileParty.MainParty.IsCurrentlyAtSea && !Party.HasNavalNavigationCapability)
+		{
+			DistInTime = 2.1474836E+09f;
+		}
+		else
+		{
+			DistInTime = TaleWorlds.Library.MathF.Ceiling(_distance / Party.Speed);
+			Cost = armyManagementCalculationModel.CalculatePartyInfluenceCost(MobileParty.MainParty, mobileParty);
+		}
 		Clan = mobileParty.LeaderHero.Clan;
 		IsMainHero = mobileParty.IsMainParty;
 		UpdateEligibility();
-		Cost = armyManagementCalculationModel.CalculatePartyInfluenceCost(MobileParty.MainParty, mobileParty);
 		IsTransferDisabled = IsMainHero || PlayerSiege.PlayerSiegeEvent != null;
 		RefreshValues();
 	}
@@ -367,7 +437,7 @@ public class ArmyManagementItemVM : ViewModel
 		NameText = Party.Name.ToString();
 		if (!Party.IsMainParty)
 		{
-			DistanceText = (((int)_distance < 5) ? GameTexts.FindText("str_nearby").ToString() : CampaignUIHelper.GetPartyDistanceByTimeText((int)_distance, Party.Speed));
+			DistanceText = (((int)_distance < 5) ? GameTexts.FindText("str_nearby").ToString() : CampaignUIHelper.GetPartyDistanceByTimeTextAbbreviated((int)_distance, Party.Speed));
 		}
 	}
 
@@ -417,62 +487,37 @@ public class ArmyManagementItemVM : ViewModel
 	public void UpdateEligibility()
 	{
 		ArmyManagementCalculationModel armyManagementCalculationModel = Campaign.Current.Models?.ArmyManagementCalculationModel;
-		float num = armyManagementCalculationModel?.GetPartySizeScore(Party) ?? 0f;
-		IDisbandPartyCampaignBehavior behavior = Campaign.Current.CampaignBehaviorManager.GetBehavior<IDisbandPartyCampaignBehavior>();
-		bool isEligible = false;
-		_eligibilityReason = TextObject.Empty;
+		bool flag = true;
+		_eligibilityReason = TextObject.GetEmpty();
 		if (!CanJoinBackWithoutCost)
 		{
-			if (PlayerSiege.PlayerSiegeEvent != null)
+			if (IsInCart && !IsAlreadyWithPlayer)
 			{
-				_eligibilityReason = GameTexts.FindText("str_action_disabled_reason_siege");
-			}
-			else if (Party == null)
-			{
-				_eligibilityReason = new TextObject("{=f6vTzVar}Does not have a mobile party.");
-			}
-			else if (Party.LeaderHero == Hero.MainHero.MapFaction?.Leader)
-			{
-				_eligibilityReason = new TextObject("{=ipLqVv1f}You cannot invite the ruler's party to your army.");
-			}
-			else if (Party.Army != null && Party.Army != Hero.MainHero.PartyBelongedTo?.Army)
-			{
-				_eligibilityReason = new TextObject("{=aROohsat}Already in another army.");
-			}
-			else if (Party.Army != null && Party.Army == Hero.MainHero.PartyBelongedTo?.Army)
-			{
-				_eligibilityReason = new TextObject("{=Vq8yavES}Already in army.");
-			}
-			else if (Party.MapEvent != null || Party.SiegeEvent != null)
-			{
-				_eligibilityReason = new TextObject("{=pkbUiKFJ}Currently fighting an enemy.");
-			}
-			else if (num <= 0.4f)
-			{
-				_eligibilityReason = new TextObject("{=SVJlOYCB}Party has less men than 40% of it's party size limit.");
-			}
-			else if (IsInCart)
-			{
+				flag = false;
 				_eligibilityReason = new TextObject("{=idRXFzQ6}Already added to the army.");
-			}
-			else if (Party.IsDisbanding || (behavior != null && behavior.IsPartyWaitingForDisband(Party)))
-			{
-				_eligibilityReason = new TextObject("{=tFGM0yav}This party is disbanding.");
-			}
-			else if (armyManagementCalculationModel != null && !armyManagementCalculationModel.CheckPartyEligibility(Party))
-			{
-				_eligibilityReason = new TextObject("{=nuK4Afnr}Party is not eligible to join the army.");
 			}
 			else
 			{
-				isEligible = true;
+				flag = armyManagementCalculationModel.CheckPartyEligibility(Party, out _eligibilityReason);
+				if (flag)
+				{
+					flag = CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out _eligibilityReason);
+				}
 			}
+		}
+		IsEligible = flag;
+	}
+
+	private void UpdateIsCostRelevant()
+	{
+		if (Cost == 0 && IsAlreadyWithPlayer && IsInCart)
+		{
+			IsCostRelevant = false;
 		}
 		else
 		{
-			isEligible = true;
+			IsCostRelevant = true;
 		}
-		IsEligible = isEligible;
 	}
 
 	public void ExecuteBeginHint()
@@ -485,6 +530,11 @@ public class ArmyManagementItemVM : ViewModel
 		InformationManager.ShowTooltip(typeof(MobileParty), Party, true, true);
 	}
 
+	public void ExecuteBeginClanHint()
+	{
+		InformationManager.ShowTooltip(typeof(Clan), Party?.ActualClan, true, true);
+	}
+
 	public void ExecuteEndHint()
 	{
 		MBInformationManager.HideInformations();
@@ -495,6 +545,14 @@ public class ArmyManagementItemVM : ViewModel
 		if (Party?.LeaderHero != null)
 		{
 			Campaign.Current.EncyclopediaManager.GoToLink(Party.LeaderHero.EncyclopediaLink);
+		}
+	}
+
+	public void ExecuteOpenClanEncyclopedia()
+	{
+		if (Party?.ActualClan != null)
+		{
+			Campaign.Current.EncyclopediaManager.GoToLink(Party.ActualClan.EncyclopediaLink);
 		}
 	}
 }

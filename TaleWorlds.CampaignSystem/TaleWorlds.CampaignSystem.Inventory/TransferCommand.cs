@@ -4,24 +4,21 @@ namespace TaleWorlds.CampaignSystem.Inventory;
 
 public struct TransferCommand
 {
-	public enum CommandType
+	public Equipment FromSideEquipment => FromSide switch
 	{
-		Transfer
-	}
+		InventoryLogic.InventorySide.CivilianEquipment => Character?.FirstCivilianEquipment, 
+		InventoryLogic.InventorySide.BattleEquipment => Character?.FirstBattleEquipment, 
+		InventoryLogic.InventorySide.StealthEquipment => Character?.FirstStealthEquipment, 
+		_ => null, 
+	};
 
-	public CommandType TypeOfCommand { get; private set; }
-
-	public Equipment CharacterEquipment
+	public Equipment ToSideEquipment => ToSide switch
 	{
-		get
-		{
-			if (!IsCivilianEquipment)
-			{
-				return Character?.FirstBattleEquipment;
-			}
-			return Character?.FirstCivilianEquipment;
-		}
-	}
+		InventoryLogic.InventorySide.CivilianEquipment => Character?.FirstCivilianEquipment, 
+		InventoryLogic.InventorySide.BattleEquipment => Character?.FirstBattleEquipment, 
+		InventoryLogic.InventorySide.StealthEquipment => Character?.FirstStealthEquipment, 
+		_ => null, 
+	};
 
 	public InventoryLogic.InventorySide FromSide { get; private set; }
 
@@ -37,12 +34,9 @@ public struct TransferCommand
 
 	public CharacterObject Character { get; private set; }
 
-	public bool IsCivilianEquipment { get; private set; }
-
-	public static TransferCommand Transfer(int amount, InventoryLogic.InventorySide fromSide, InventoryLogic.InventorySide toSide, ItemRosterElement elementToTransfer, EquipmentIndex fromEquipmentIndex, EquipmentIndex toEquipmentIndex, CharacterObject character, bool civilianEquipment)
+	public static TransferCommand Transfer(int amount, InventoryLogic.InventorySide fromSide, InventoryLogic.InventorySide toSide, ItemRosterElement elementToTransfer, EquipmentIndex fromEquipmentIndex, EquipmentIndex toEquipmentIndex, CharacterObject character)
 	{
 		TransferCommand result = default(TransferCommand);
-		result.TypeOfCommand = CommandType.Transfer;
 		result.FromSide = fromSide;
 		result.ToSide = toSide;
 		result.ElementToTransfer = elementToTransfer;
@@ -50,7 +44,6 @@ public struct TransferCommand
 		result.ToEquipmentIndex = toEquipmentIndex;
 		result.Character = character;
 		result.Amount = amount;
-		result.IsCivilianEquipment = civilianEquipment;
 		return result;
 	}
 }

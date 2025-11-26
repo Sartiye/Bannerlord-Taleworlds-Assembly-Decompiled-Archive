@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 
@@ -11,7 +10,7 @@ public class DefaultPregnancyModel : PregnancyModel
 
 	private const int MaxPregnancyAge = 45;
 
-	public override float PregnancyDurationInDays => 36f;
+	public override float PregnancyDurationInDays => (Campaign.Current.Options.AccelerationMode == GameAccelerationMode.Fast) ? 18 : 36;
 
 	public override float MaternalMortalityProbabilityInLabor => 0.015f;
 
@@ -34,10 +33,10 @@ public class DefaultPregnancyModel : PregnancyModel
 	{
 		int num = hero.Children.Count + 1;
 		float num2 = 4 + 4 * hero.Clan.Tier;
-		int num3 = hero.Clan.Lords.Count((Hero x) => x.IsAlive);
-		float num4 = ((hero != Hero.MainHero && hero.Spouse != Hero.MainHero) ? Math.Min(1f, (2f * num2 - (float)num3) / num2) : 1f);
-		float num5 = (1.2f - (hero.Age - 18f) * 0.04f) / (float)(num * num) * 0.12f * num4;
-		float baseNumber = ((hero.Spouse != null && IsHeroAgeSuitableForPregnancy(hero)) ? num5 : 0f);
+		int count = hero.Clan.AliveLords.Count;
+		float num3 = ((hero != Hero.MainHero && hero.Spouse != Hero.MainHero) ? Math.Min(1f, (2f * num2 - (float)count) / num2) : 1f);
+		float num4 = (1.2f - (hero.Age - 18f) * 0.04f) / (float)(num * num) * 0.12f * num3;
+		float baseNumber = ((hero.Spouse != null && IsHeroAgeSuitableForPregnancy(hero)) ? num4 : 0f);
 		ExplainedNumber explainedNumber = new ExplainedNumber(baseNumber);
 		if (hero.GetPerkValue(DefaultPerks.Charm.Virile) || hero.Spouse.GetPerkValue(DefaultPerks.Charm.Virile))
 		{

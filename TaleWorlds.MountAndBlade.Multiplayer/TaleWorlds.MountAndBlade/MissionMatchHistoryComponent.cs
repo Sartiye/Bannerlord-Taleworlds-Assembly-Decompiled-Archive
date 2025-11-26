@@ -48,7 +48,7 @@ public class MissionMatchHistoryComponent : MissionNetwork
 
 	public override void OnBehaviorInitialize()
 	{
-		MultiplayerGameType multiplayerGameType = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>()?.GameType ?? MultiplayerGameType.FreeForAll;
+		MultiplayerGameType multiplayerGameType = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>()?.GameType ?? MultiplayerGameType.TeamDeathmatch;
 		_matchHistoryData.GameType = multiplayerGameType.ToString();
 	}
 

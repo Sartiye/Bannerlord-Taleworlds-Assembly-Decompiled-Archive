@@ -11,9 +11,9 @@ public abstract class GameEntityComponent : NativeObject
 		Construct(pointer);
 	}
 
-	public GameEntity GetEntity()
+	public WeakGameEntity GetEntity()
 	{
-		return EngineApplicationInterface.IGameEntityComponent.GetEntity(this);
+		return new WeakGameEntity(EngineApplicationInterface.IGameEntityComponent.GetEntityPointer(base.Pointer));
 	}
 
 	public virtual MetaMesh GetFirstMetaMesh()

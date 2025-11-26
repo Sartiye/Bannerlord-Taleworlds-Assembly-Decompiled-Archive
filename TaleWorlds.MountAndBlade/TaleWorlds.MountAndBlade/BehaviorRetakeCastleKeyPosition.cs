@@ -50,7 +50,7 @@ public class BehaviorRetakeCastleKeyPosition : BehaviorComponent
 		if (source.Any())
 		{
 			int nearestSafeSideDistance = source.Min((SiegeLane pgl) => SiegeQuerySystem.SideDistance(1 << (int)_behaviorSide, 1 << (int)pgl.LaneSide));
-			return source.Where((SiegeLane pgl) => SiegeQuerySystem.SideDistance(1 << (int)_behaviorSide, 1 << (int)pgl.LaneSide) == nearestSafeSideDistance).MinBy((SiegeLane pgl) => pgl.DefenderOrigin.GetGroundVec3().DistanceSquared(base.Formation.QuerySystem.MedianPosition.GetGroundVec3())).LaneSide;
+			return Extensions.MinBy(source.Where((SiegeLane pgl) => SiegeQuerySystem.SideDistance(1 << (int)_behaviorSide, 1 << (int)pgl.LaneSide) == nearestSafeSideDistance), (SiegeLane pgl) => pgl.DefenderOrigin.GetGroundVec3().DistanceSquared(base.Formation.CachedMedianPosition.GetGroundVec3())).LaneSide;
 		}
 		return _behaviorSide;
 	}
@@ -84,7 +84,7 @@ public class BehaviorRetakeCastleKeyPosition : BehaviorComponent
 		}
 		else
 		{
-			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.QuerySystem.MedianPosition);
+			_gatherOrder = MovementOrder.MovementOrderMove(base.Formation.CachedMedianPosition);
 			_gatheringFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 		SiegeLane siegeLane2 = TeamAISiegeComponent.SiegeLanes.FirstOrDefault((SiegeLane sl) => sl.LaneSide == _behaviorSide);
@@ -110,7 +110,7 @@ public class BehaviorRetakeCastleKeyPosition : BehaviorComponent
 		bool flag = true;
 		if (_behaviorState != BehaviorState.Attacking)
 		{
-			flag = base.Formation.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(_gatherOrder.CreateNewOrderWorldPosition(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3()) < 100f || base.Formation.QuerySystem.FormationIntegrityData.DeviationOfPositionsExcludeFarAgents / ((base.Formation.QuerySystem.IdealAverageDisplacement != 0f) ? base.Formation.QuerySystem.IdealAverageDisplacement : 1f) <= 3f;
+			flag = base.Formation.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(_gatherOrder.CreateNewOrderWorldPositionMT(base.Formation, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3).GetNavMeshVec3()) < 100f || base.Formation.CachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents / ((base.Formation.QuerySystem.IdealAverageDisplacement != 0f) ? base.Formation.QuerySystem.IdealAverageDisplacement : 1f) <= 3f;
 		}
 		BehaviorState behaviorState = ((!flag) ? BehaviorState.Gathering : BehaviorState.Attacking);
 		if (behaviorState != _behaviorState)
@@ -120,10 +120,10 @@ public class BehaviorRetakeCastleKeyPosition : BehaviorComponent
 			CurrentFacingOrder = ((_behaviorState == BehaviorState.Attacking) ? _attackFacingOrder : _gatheringFacingOrder);
 		}
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_behaviorState == BehaviorState.Gathering && _gatheringTacticalPos != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_gatheringTacticalPos.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_gatheringTacticalPos.Width));
 		}
 	}
 
@@ -133,10 +133,10 @@ public class BehaviorRetakeCastleKeyPosition : BehaviorComponent
 		_behaviorSide = base.Formation.AI.Side;
 		ResetOrderPositions();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

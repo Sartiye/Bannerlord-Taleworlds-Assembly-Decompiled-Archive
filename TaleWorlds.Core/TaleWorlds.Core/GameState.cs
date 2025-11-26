@@ -34,8 +34,6 @@ public abstract class GameState : MBObjectBase
 
 	public virtual bool IsMenuState => false;
 
-	public virtual bool IsMission => false;
-
 	public bool Activated { get; private set; }
 
 	protected GameState()
@@ -45,6 +43,10 @@ public abstract class GameState : MBObjectBase
 
 	public bool RegisterListener(IGameStateListener listener)
 	{
+		if (listener == null)
+		{
+			Debug.FailedAssert("Can not register null listener to game state.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\GameState.cs", "RegisterListener", 47);
+		}
 		if (_listeners.Contains(listener))
 		{
 			return false;

@@ -4,8 +4,12 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class MapVisibilityModel : GameModel
+public abstract class MapVisibilityModel : MBGameModel<MapVisibilityModel>
 {
+	public abstract float MaximumSeeingRange();
+
+	public abstract float GetPartySpottingRangeBase(MobileParty party);
+
 	public abstract ExplainedNumber GetPartySpottingRange(MobileParty party, bool includeDescriptions = false);
 
 	public abstract float GetPartyRelativeInspectionRange(IMapPoint party);

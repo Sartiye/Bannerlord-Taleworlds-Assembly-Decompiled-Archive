@@ -190,6 +190,24 @@ public class EncyclopediaListVM : EncyclopediaPageVM
 		});
 	}
 
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		Game.Current.EventManager.UnregisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
+		SortController?.OnFinalize();
+		SortController = null;
+		FilterGroups.ApplyActionOnAllItems(delegate(EncyclopediaFilterGroupVM x)
+		{
+			x.OnFinalize();
+		});
+		FilterGroups.Clear();
+		Items.ApplyActionOnAllItems(delegate(EncyclopediaListItemVM x)
+		{
+			x.OnFinalize();
+		});
+		Items.Clear();
+	}
+
 	public override string GetName()
 	{
 		return Page.GetName().ToString();

@@ -1,13 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace TaleWorlds.DotNet;
 
 public abstract class ManagedObject
 {
+	private class ManagedObjectKeeper
+	{
+		internal int TimerToReleaseStrongRef;
+
+		internal GCHandle gcHandle;
+	}
+
 	private const int ManagedObjectFirstReferencesTickCount = 200;
 
-	private static List<List<ManagedObject>> _managedObjectFirstReferences;
+	private static Dictionary<int, ManagedObjectKeeper> _managedObjectKeepReferences;
+
+	private static int _totalCreatedObjectCount;
 
 	private ManagedObjectOwner _managedObjectOwner;
 
@@ -29,9 +39,9 @@ public abstract class ManagedObject
 
 	internal static void FinalizeManagedObjects()
 	{
-		lock (_managedObjectFirstReferences)
+		lock (_managedObjectKeepReferences)
 		{
-			_managedObjectFirstReferences.Clear();
+			_managedObjectKeepReferences.Clear();
 		}
 	}
 
@@ -43,11 +53,7 @@ public abstract class ManagedObject
 
 	static ManagedObject()
 	{
-		_managedObjectFirstReferences = new List<List<ManagedObject>>();
-		for (int i = 0; i < 200; i++)
-		{
-			_managedObjectFirstReferences.Add(new List<ManagedObject>());
-		}
+		_managedObjectKeepReferences = new Dictionary<int, ManagedObjectKeeper>();
 	}
 
 	protected ManagedObject(UIntPtr ptr, bool createManagedObjectOwner)
@@ -81,53 +87,53 @@ public abstract class ManagedObject
 
 	internal static void HandleManagedObjects()
 	{
-		lock (_managedObjectFirstReferences)
+		lock (_managedObjectKeepReferences)
 		{
-			List<ManagedObject> list = _managedObjectFirstReferences[199];
-			for (int num = 199; num > 0; num--)
+			List<int> list = new List<int>();
+			foreach (KeyValuePair<int, ManagedObjectKeeper> managedObjectKeepReference in _managedObjectKeepReferences)
 			{
-				_managedObjectFirstReferences[num] = _managedObjectFirstReferences[num - 1];
+				managedObjectKeepReference.Value.TimerToReleaseStrongRef--;
+				if (managedObjectKeepReference.Value.TimerToReleaseStrongRef == 0)
+				{
+					managedObjectKeepReference.Value.gcHandle.Free();
+					list.Add(managedObjectKeepReference.Key);
+				}
 			}
-			list.Clear();
-			_managedObjectFirstReferences[0] = list;
+			foreach (int item in list)
+			{
+				_managedObjectKeepReferences.Remove(item);
+			}
 		}
 	}
 
 	internal static void ManagedObjectFetched(ManagedObject managedObject)
 	{
-		lock (_managedObjectFirstReferences)
+		lock (_managedObjectKeepReferences)
 		{
 			if (!Managed.Closing)
 			{
-				_managedObjectFirstReferences[0].Add(managedObject);
+				_totalCreatedObjectCount++;
+				ManagedObjectKeeper managedObjectKeeper = new ManagedObjectKeeper();
+				managedObjectKeeper.gcHandle = GCHandle.Alloc(managedObject);
+				managedObjectKeeper.TimerToReleaseStrongRef = 200;
+				_managedObjectKeepReferences.Add(_totalCreatedObjectCount, managedObjectKeeper);
 			}
 		}
 	}
 
-	internal static void FlushManagedObjects()
-	{
-		lock (_managedObjectFirstReferences)
-		{
-			for (int i = 0; i < 200; i++)
-			{
-				_managedObjectFirstReferences[i].Clear();
-			}
-		}
-	}
-
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static int GetAliveManagedObjectCount()
 	{
 		return ManagedObjectOwner.NumberOfAliveManagedObjects;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetAliveManagedObjectNames()
 	{
 		return ManagedObjectOwner.GetAliveManagedObjectNames();
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetCreationCallstack(string name)
 	{
 		return ManagedObjectOwner.GetAliveManagedObjectCreationCallstacks(name);
@@ -138,7 +144,7 @@ public abstract class ManagedObject
 		return _managedObjectOwner.NativeId;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal string GetClassOfObject()
 	{
 		return GetType().Name;

@@ -12,7 +12,7 @@ public class FakeInventoryListener : InventoryListener
 
 	public override TextObject GetTraderName()
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public override void SetGold(int gold)

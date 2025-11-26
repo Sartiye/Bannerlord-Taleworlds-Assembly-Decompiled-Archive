@@ -20,8 +20,12 @@ public class FindingItemOnMapBehavior : CampaignBehaviorBase
 
 	public void DailyTickParty(MobileParty party)
 	{
+		if (!(MBRandom.RandomFloat < DefaultPerks.Scouting.BeastWhisperer.PrimaryBonus) || !party.HasPerk(DefaultPerks.Scouting.BeastWhisperer))
+		{
+			return;
+		}
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace);
-		if ((faceTerrainType != TerrainType.Steppe && faceTerrainType != TerrainType.Plain) || !party.HasPerk(DefaultPerks.Scouting.BeastWhisperer) || !(MBRandom.RandomFloat < DefaultPerks.Scouting.BeastWhisperer.PrimaryBonus))
+		if (faceTerrainType != TerrainType.Steppe && faceTerrainType != TerrainType.Plain)
 		{
 			return;
 		}

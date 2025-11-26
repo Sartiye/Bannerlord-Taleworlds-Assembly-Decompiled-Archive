@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
-using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
@@ -19,134 +20,85 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 		{
 			unitSpawnPrioritizations = Game.Current.UnitSpawnPrioritization;
 		}
-		if (unitSpawnPrioritizations != 0 && !forcePriorityTroops)
+		if (includePlayer)
 		{
-			StackArray.StackArray8Int stackArray8Int = default(StackArray.StackArray8Int);
+			List<KeyValuePair<int, FlattenedTroopRosterElement>> list = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
+			List<KeyValuePair<int, FlattenedTroopRosterElement>> list2 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
+			List<KeyValuePair<int, FlattenedTroopRosterElement>> list3 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			int num = 0;
-			foreach (FlattenedTroopRosterElement troop2 in battleParty.Troops)
+			foreach (FlattenedTroopRosterElement troop in battleParty.Troops)
 			{
-				if (CanTroopJoinBattle(troop2, includePlayer))
+				if (CanTroopJoinBattle(troop, includePlayer))
 				{
-					stackArray8Int[(int)troop2.Troop.DefaultFormationClass]++;
-					num++;
-				}
-			}
-			StackArray.StackArray8Int stackArray8Int2 = default(StackArray.StackArray8Int);
-			float num2 = 1000f;
-			{
-				foreach (FlattenedTroopRosterElement troop3 in battleParty.Troops)
-				{
-					if (!CanTroopJoinBattle(troop3, includePlayer))
+					int key = 0;
+					switch (unitSpawnPrioritizations)
 					{
-						continue;
+					case UnitSpawnPrioritizations.Default:
+						key = num;
+						break;
+					case UnitSpawnPrioritizations.HighLevel:
+						key = troop.Troop.Level;
+						break;
+					case UnitSpawnPrioritizations.LowLevel:
+						key = -troop.Troop.Level;
+						break;
 					}
-					CharacterObject troop = troop3.Troop;
-					FormationClass formationClass = troop.GetFormationClass();
-					float num3;
-					if (priorityTroops != null && IsPriorityTroop(troop3, priorityTroops))
+					bool isHero = troop.Troop.IsHero;
+					if (isHero && troop.Troop.IsPlayerCharacter)
 					{
-						num3 = num2--;
+						key = int.MaxValue;
 					}
-					else
+					bool flag2 = false;
+					if (priorityTroops != null)
 					{
-						float num4 = (float)stackArray8Int[(int)formationClass] / (float)((unitSpawnPrioritizations == UnitSpawnPrioritizations.Homogeneous) ? (stackArray8Int2[(int)formationClass] + 1) : num);
-						num3 = (troop.IsHero ? num2-- : num4);
-						if (!troop.IsHero && (unitSpawnPrioritizations == UnitSpawnPrioritizations.HighLevel || unitSpawnPrioritizations == UnitSpawnPrioritizations.LowLevel))
+						foreach (FlattenedTroopRosterElement priorityTroop in priorityTroops)
 						{
-							num3 += (float)troop.Level;
-							if (unitSpawnPrioritizations == UnitSpawnPrioritizations.LowLevel)
+							if (priorityTroop.Troop == troop.Troop)
 							{
-								num3 *= -1f;
+								flag2 = true;
+								break;
 							}
 						}
 					}
-					stackArray8Int[(int)formationClass]--;
-					stackArray8Int2[(int)formationClass]++;
-					priorityList.Add((troop3, battleParty, num3));
-				}
-				return;
-			}
-		}
-		int numberOfHealthyMembers = battleParty.Party.NumberOfHealthyMembers;
-		foreach (FlattenedTroopRosterElement troop4 in battleParty.Troops)
-		{
-			if (!CanTroopJoinBattle(troop4, includePlayer))
-			{
-				continue;
-			}
-			float num5 = 1f;
-			if (troop4.Troop.IsHero)
-			{
-				num5 *= 150f;
-				if (priorityTroops != null)
-				{
-					UniqueTroopDescriptor descriptor = priorityTroops.FindIndexOfCharacter(troop4.Troop);
-					if (descriptor.IsValid)
+					if (isHero)
 					{
-						num5 *= 100f;
-						priorityTroops.Remove(descriptor);
+						list2.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
+					}
+					else if (flag2)
+					{
+						list3.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
+					}
+					else
+					{
+						list.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
 					}
 				}
-				if (troop4.Troop.HeroObject.IsHumanPlayerCharacter)
-				{
-					num5 *= 10f;
-				}
-				priorityList.Add((troop4, battleParty, num5));
-				continue;
+				num++;
 			}
-			int num6 = 0;
-			int num7 = 0;
-			for (int i = 0; i < battleParty.Party.MemberRoster.Count; i++)
+			list = list.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
+			list3 = list3.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
+			list2 = list2.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
+			for (int i = 0; i < list.Count; i++)
 			{
-				TroopRosterElement elementCopyAtIndex = battleParty.Party.MemberRoster.GetElementCopyAtIndex(i);
-				if (!elementCopyAtIndex.Character.IsHero)
-				{
-					if (elementCopyAtIndex.Character == troop4.Troop)
-					{
-						num6 = i - num7;
-						break;
-					}
-				}
-				else
-				{
-					num7++;
-				}
+				priorityList.Add((list[i].Value, battleParty, (float)(i + 1) / (float)list.Count));
 			}
-			int num8 = (int)(100f / MathF.Pow(1.2f, num6));
-			if (num8 < 10)
+			for (int j = 0; j < list3.Count; j++)
 			{
-				num8 = 10;
+				priorityList.Add((list3[j].Value, battleParty, 1f + (float)(j + 1) / (float)list3.Count));
 			}
-			int num9 = numberOfHealthyMembers / sizeOfSide * 100;
-			if (num9 < 10)
+			for (int k = 0; k < list2.Count; k++)
 			{
-				num9 = 10;
+				priorityList.Add((list2[k].Value, battleParty, 2f + (float)(k + 1) / (float)list2.Count));
 			}
-			int num10 = 0;
-			if (priorityTroops != null)
-			{
-				UniqueTroopDescriptor descriptor2 = priorityTroops.FindIndexOfCharacter(troop4.Troop);
-				if (descriptor2.IsValid)
-				{
-					num10 = 20000;
-					priorityTroops.Remove(descriptor2);
-				}
-			}
-			num5 = num10 + MBRandom.RandomInt((int)((float)num8 * 0.5f + (float)num9 * 0.5f));
-			priorityList.Add((troop4, battleParty, num5));
+			return;
 		}
-	}
-
-	private bool IsPriorityTroop(FlattenedTroopRosterElement troop, FlattenedTroopRoster priorityTroops)
-	{
-		foreach (FlattenedTroopRosterElement priorityTroop in priorityTroops)
+		foreach (FlattenedTroopRosterElement troop2 in battleParty.Troops)
 		{
-			if (priorityTroop.Troop == troop.Troop)
+			if (CanTroopJoinBattle(troop2, includePlayer))
 			{
-				return true;
+				priorityList.Add((troop2, battleParty, 2.1474836E+09f));
 			}
 		}
-		return false;
 	}
 
 	private bool CanTroopJoinBattle(FlattenedTroopRosterElement troopRoster, bool includePlayer)

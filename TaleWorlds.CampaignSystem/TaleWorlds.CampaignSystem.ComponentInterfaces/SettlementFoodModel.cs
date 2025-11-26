@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SettlementFoodModel : GameModel
+public abstract class SettlementFoodModel : MBGameModel<SettlementFoodModel>
 {
 	public abstract int FoodStocksUpperLimit { get; }
 

@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -31,7 +32,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 
 	private HeroVM _leader;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
 	private string _membersText;
 
@@ -295,7 +296,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -602,12 +603,12 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 				num += item.Gold;
 			}
 		}
-		Banner = new ImageIdentifierVM(BannerCode.CreateFrom(_faction.Banner), nineGrid: true);
+		Banner = new BannerImageIdentifierVM(_faction.Banner, nineGrid: true);
 		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
 		{
 			if (allLordParty.MapFaction == _faction && !allLordParty.IsDisbanding)
 			{
-				num2 += allLordParty.Party.TotalStrength;
+				num2 += allLordParty.Party.CalculateCurrentStrength();
 			}
 		}
 		ProsperityText = num.ToString();
@@ -641,7 +642,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 		GameTexts.SetVariable("LEFT", new TextObject("{=tTLvo8sM}Clan Tier").ToString());
 		ClanInfo.Add(new StringPairItemVM(GameTexts.FindText("str_LEFT_colon").ToString(), _clan.Tier.ToString()));
 		GameTexts.SetVariable("LEFT", new TextObject("{=ODEnkg0o}Clan Strength").ToString());
-		ClanInfo.Add(new StringPairItemVM(GameTexts.FindText("str_LEFT_colon").ToString(), _clan.TotalStrength.ToString("F0")));
+		ClanInfo.Add(new StringPairItemVM(GameTexts.FindText("str_LEFT_colon").ToString(), _clan.CurrentTotalStrength.ToString("F0")));
 		GameTexts.SetVariable("LEFT", GameTexts.FindText("str_wealth").ToString());
 		ClanInfo.Add(new StringPairItemVM(GameTexts.FindText("str_LEFT_colon").ToString(), CampaignUIHelper.GetClanWealthStatusText(_clan)));
 		IsClanDestroyed = _clan.IsEliminated;

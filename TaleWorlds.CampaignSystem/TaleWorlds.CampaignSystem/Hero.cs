@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Serialization;
 using Helpers;
@@ -57,42 +58,31 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	[SaveableField(181)]
 	private TextObject _name;
 
-	[SaveableField(201)]
-	public string HairTags = "";
-
-	[SaveableField(202)]
-	public string BeardTags = "";
-
-	[SaveableField(203)]
-	public string TattooTags = "";
-
 	[SaveableField(260)]
 	private CharacterStates _heroState;
 
 	[SaveableField(270)]
-	private CharacterTraits _heroTraits;
+	private PropertyOwner<TraitObject> _heroTraits;
 
 	[SaveableField(280)]
-	private CharacterPerks _heroPerks;
+	private PropertyOwner<PerkObject> _heroPerks;
 
 	[SaveableField(290)]
-	private CharacterSkills _heroSkills;
+	private PropertyOwner<SkillObject> _heroSkills;
 
 	[SaveableField(301)]
-	private CharacterAttributes _characterAttributes;
+	private PropertyOwner<CharacterAttribute> _characterAttributes;
 
 	internal bool IsNobleForOldSaves;
 
 	[SaveableField(370)]
 	public int Level;
 
-	public const int HeroWoundedHealthLevel = 20;
+	[SaveableField(810)]
+	public bool HiddenInEncyclopedia;
 
 	[SaveableField(380)]
 	private Clan _companionOf;
-
-	[SaveableField(420)]
-	public int SpcDaysInLocation;
 
 	[SaveableField(430)]
 	private int _health;
@@ -146,6 +136,9 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	[CachedData]
 	private Settlement _homeSettlement;
 
+	[CachedData]
+	private float _powerModifier = -1f;
+
 	[SaveableField(650)]
 	private int _gold;
 
@@ -156,7 +149,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	private Hero _mother;
 
 	[SaveableField(720)]
-	private readonly MBList<Hero> _exSpouses;
+	private readonly MBList<Hero> _exSpouses = new MBList<Hero>();
 
 	[SaveableField(730)]
 	private Hero _spouse;
@@ -168,10 +161,10 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	public bool IsPregnant;
 
 	[SaveableField(770)]
-	private IHeroDeveloper _heroDeveloper;
+	private HeroDeveloper _heroDeveloper;
 
 	[SaveableProperty(100)]
-	internal StaticBodyProperties StaticBodyProperties { get; set; }
+	public StaticBodyProperties StaticBodyProperties { get; set; }
 
 	[SaveableProperty(111)]
 	public float Weight { get; set; }
@@ -209,7 +202,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	public TextObject EncyclopediaLinkWithName => HyperlinkTexts.GetHeroHyperlinkText(EncyclopediaLink, Name);
 
 	[SaveableProperty(200)]
-	public bool IsFemale { get; private set; }
+	public bool IsFemale { get; set; }
 
 	[SaveableProperty(210)]
 	private Equipment _battleEquipment { get; set; }
@@ -217,9 +210,14 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	[SaveableProperty(220)]
 	private Equipment _civilianEquipment { get; set; }
 
+	[SaveableProperty(881)]
+	private Equipment _stealthEquipment { get; set; }
+
 	public Equipment BattleEquipment => _battleEquipment ?? Campaign.Current.DeadBattleEquipment;
 
 	public Equipment CivilianEquipment => _civilianEquipment ?? Campaign.Current.DeadCivilianEquipment;
+
+	public Equipment StealthEquipment => _stealthEquipment ?? Campaign.Current.DefaultStealthEquipment;
 
 	[SaveableProperty(240)]
 	public CampaignTime CaptivityStartTime { get; set; }
@@ -239,34 +237,16 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		}
 	}
 
+	public IReadOnlyPropertyOwner<CharacterAttribute> CharacterAttributes => _characterAttributes;
+
 	[SaveableProperty(320)]
 	public bool IsMinorFactionHero { get; set; }
 
 	public IssueBase Issue { get; private set; }
 
-	public bool CanBeCompanion
-	{
-		get
-		{
-			if (IsWanderer)
-			{
-				return CompanionOf == null;
-			}
-			return false;
-		}
-	}
+	public int WoundedHealthLimit => Campaign.Current.Models.CharacterStatsModel.WoundedHitPointLimit(this);
 
-	public bool IsNoncombatant
-	{
-		get
-		{
-			if (GetSkillValue(DefaultSkills.OneHanded) < 50 && GetSkillValue(DefaultSkills.TwoHanded) < 50 && GetSkillValue(DefaultSkills.Polearm) < 50 && GetSkillValue(DefaultSkills.Throwing) < 50 && GetSkillValue(DefaultSkills.Crossbow) < 50)
-			{
-				return GetSkillValue(DefaultSkills.Bow) < 50;
-			}
-			return false;
-		}
-	}
+	public bool IsNoncombatant => !Campaign.Current.Models.HeroCreationModel.IsHeroCombatant(this);
 
 	public Clan CompanionOf
 	{
@@ -346,7 +326,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 
 	public bool IsTemplate => CharacterObject.IsTemplate;
 
-	public bool IsWounded => HitPoints <= 20;
+	public bool IsWounded => HitPoints <= WoundedHealthLimit;
 
 	public bool IsPlayerCompanion => CompanionOf == Clan.PlayerClan;
 
@@ -440,7 +420,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			{
 				_health = CharacterObject.MaxHitPoints();
 			}
-			if (health <= 20 != _health <= 20)
+			if (health <= WoundedHealthLimit != _health <= WoundedHealthLimit)
 			{
 				if (PartyBelongedTo != null)
 				{
@@ -451,7 +431,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 					PartyBelongedToAsPrisoner.PrisonRoster.OnHeroHealthStatusChanged(this);
 				}
 			}
-			if (health > 20 && IsWounded)
+			if (health > WoundedHealthLimit && IsWounded)
 			{
 				CampaignEventDispatcher.Instance.OnHeroWounded(this);
 			}
@@ -480,7 +460,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			}
 			return _deathDay;
 		}
-		set
+		private set
 		{
 			_deathDay = value;
 		}
@@ -738,6 +718,18 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		}
 	}
 
+	public float PowerModifier
+	{
+		get
+		{
+			if (_powerModifier == -1f)
+			{
+				_powerModifier = Campaign.Current.Models.MilitaryPowerModel.GetPowerModifierOfHero(this);
+			}
+			return _powerModifier;
+		}
+	}
+
 	public Settlement CurrentSettlement
 	{
 		get
@@ -881,7 +873,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		}
 	}
 
-	public IHeroDeveloper HeroDeveloper => _heroDeveloper;
+	public HeroDeveloper HeroDeveloper => _heroDeveloper;
 
 	public MBReadOnlyList<Workshop> OwnedWorkshops => _ownedWorkshops;
 
@@ -933,6 +925,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		collectedObjects.Add(EncyclopediaText);
 		collectedObjects.Add(_battleEquipment);
 		collectedObjects.Add(_civilianEquipment);
+		collectedObjects.Add(_stealthEquipment);
 		CampaignTime.AutoGeneratedStaticCollectObjectsCampaignTime(CaptivityStartTime, collectedObjects);
 		collectedObjects.Add(DeathMarkKillerHero);
 		collectedObjects.Add(LastKnownClosestSettlement);
@@ -973,6 +966,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	internal static object AutoGeneratedGetMemberValue_civilianEquipment(object o)
 	{
 		return ((Hero)o)._civilianEquipment;
+	}
+
+	internal static object AutoGeneratedGetMemberValue_stealthEquipment(object o)
+	{
+		return ((Hero)o)._stealthEquipment;
 	}
 
 	internal static object AutoGeneratedGetMemberValueCaptivityStartTime(object o)
@@ -1040,29 +1038,14 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		return ((Hero)o).VolunteerTypes;
 	}
 
-	internal static object AutoGeneratedGetMemberValueHairTags(object o)
-	{
-		return ((Hero)o).HairTags;
-	}
-
-	internal static object AutoGeneratedGetMemberValueBeardTags(object o)
-	{
-		return ((Hero)o).BeardTags;
-	}
-
-	internal static object AutoGeneratedGetMemberValueTattooTags(object o)
-	{
-		return ((Hero)o).TattooTags;
-	}
-
 	internal static object AutoGeneratedGetMemberValueLevel(object o)
 	{
 		return ((Hero)o).Level;
 	}
 
-	internal static object AutoGeneratedGetMemberValueSpcDaysInLocation(object o)
+	internal static object AutoGeneratedGetMemberValueHiddenInEncyclopedia(object o)
 	{
-		return ((Hero)o).SpcDaysInLocation;
+		return ((Hero)o).HiddenInEncyclopedia;
 	}
 
 	internal static object AutoGeneratedGetMemberValueCulture(object o)
@@ -1235,10 +1218,16 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		return ((Hero)o)._heroDeveloper;
 	}
 
-	public void SetCharacterObject(CharacterObject characterObject)
+	private void SetCharacterObject(CharacterObject characterObject)
 	{
 		_characterObject = characterObject;
 		SetInitialValuesFromCharacter(_characterObject);
+		_characterObject.HeroObject = this;
+	}
+
+	public override TextObject GetName()
+	{
+		return Name;
 	}
 
 	public void SetName(TextObject fullName, TextObject firstName)
@@ -1249,16 +1238,6 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		{
 			PartyBelongedTo.PartyComponent.ClearCachedName();
 		}
-	}
-
-	public void UpdatePlayerGender(bool isFemale)
-	{
-		IsFemale = isFemale;
-	}
-
-	public CharacterTraits GetHeroTraits()
-	{
-		return _heroTraits;
 	}
 
 	public void OnIssueCreatedForHero(IssueBase issue)
@@ -1294,6 +1273,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		_defaultAge = (birthday.IsNow ? 0.001f : _birthDay.ElapsedYearsUntilNow);
 	}
 
+	public void SetDeathDay(CampaignTime deathDay)
+	{
+		_deathDay = deathDay;
+	}
+
 	public void AddPower(float value)
 	{
 		_power += value;
@@ -1303,6 +1287,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		HasMet = true;
 		LastMeetingTimeWithPlayer = CampaignTime.Now;
+	}
+
+	public void UpdatePowerModifier()
+	{
+		_powerModifier = Campaign.Current.Models.MilitaryPowerModel.GetPowerModifierOfHero(this);
 	}
 
 	public void UpdateHomeSettlement()
@@ -1427,10 +1416,17 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 
 	internal void SetPerkValueInternal(PerkObject perk, bool value)
 	{
-		_heroPerks.SetPropertyValue(perk, value ? 1 : 0);
-		if (value)
+		if (_heroPerks.GetPropertyValue(perk) == 1 != value)
 		{
-			CampaignEventDispatcher.Instance.OnPerkOpened(this, perk);
+			_heroPerks.SetPropertyValue(perk, value ? 1 : 0);
+			if (value)
+			{
+				CampaignEventDispatcher.Instance.OnPerkOpened(this, perk);
+			}
+			else
+			{
+				CampaignEventDispatcher.Instance.OnPerkReset(this, perk);
+			}
 		}
 	}
 
@@ -1449,44 +1445,44 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		HitPoints = TaleWorlds.Library.MathF.Min(HitPoints, MaxHitPoints);
 	}
 
-	public static Hero CreateHero(string stringID)
+	public Hero(string stringId, CharacterObject characterObject, CampaignTime birthDay)
+		: this()
 	{
-		stringID = Campaign.Current.CampaignObjectManager.FindNextUniqueStringId<Hero>(stringID);
-		Hero hero = new Hero(stringID);
-		Campaign.Current.CampaignObjectManager.AddHero(hero);
-		return hero;
+		_birthDay = birthDay;
+		base.StringId = Campaign.Current.CampaignObjectManager.FindNextUniqueStringId<Hero>(stringId);
+		SetCharacterObject(characterObject);
+		Campaign.Current.CampaignObjectManager.AddHero(this);
 	}
 
-	public Hero(string stringID)
+	public Hero(string stringId, CharacterObject characterObject, CampaignTime birthDay, CampaignTime deathDay)
+		: this()
 	{
-		base.StringId = stringID;
-		_heroDeveloper = new HeroDeveloper(this);
-		_exSpouses = new MBList<Hero>();
-		Init();
+		_birthDay = birthDay;
+		_deathDay = deathDay;
+		_heroState = ((_deathDay != CampaignTime.Never) ? CharacterStates.Dead : CharacterStates.NotSpawned);
+		base.StringId = Campaign.Current.CampaignObjectManager.FindNextUniqueStringId<Hero>(stringId);
+		SetCharacterObject(characterObject);
+		Campaign.Current.CampaignObjectManager.AddHero(this);
 	}
 
 	public Hero()
 	{
-		_heroDeveloper = new HeroDeveloper(this);
-		_exSpouses = new MBList<Hero>();
-		Init();
-	}
-
-	public void Init()
-	{
 		_battleEquipment = null;
 		_civilianEquipment = null;
+		_stealthEquipment = null;
 		_gold = 0;
 		OwnedCaravans = new List<CaravanPartyComponent>();
 		OwnedAlleys = new List<Alley>();
 		SpecialItems = new MBList<ItemObject>();
 		_health = 1;
+		_birthDay = default(CampaignTime);
 		_deathDay = CampaignTime.Never;
-		HeroState = CharacterStates.NotSpawned;
-		_heroSkills = new CharacterSkills();
-		_heroTraits = new CharacterTraits();
-		_heroPerks = new CharacterPerks();
-		_characterAttributes = new CharacterAttributes();
+		_heroState = CharacterStates.NotSpawned;
+		_heroDeveloper = new HeroDeveloper(this);
+		_heroSkills = new PropertyOwner<SkillObject>();
+		_heroTraits = new PropertyOwner<TraitObject>();
+		_heroPerks = new PropertyOwner<PerkObject>();
+		_characterAttributes = new PropertyOwner<CharacterAttribute>();
 		VolunteerTypes = new CharacterObject[6];
 	}
 
@@ -1521,15 +1517,6 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		}
 	}
 
-	[LateLoadInitializationCallback]
-	private void OnAfterLoad(MetaData metaData)
-	{
-		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.8.31599")) && !CharacterObject.IsTemplate && !CharacterObject.HiddenInEncylopedia && PartyBelongedTo != null && PartyBelongedTo.LeaderHero != this && (CharacterObject.Occupation == Occupation.Soldier || CharacterObject.Occupation == Occupation.Mercenary || CharacterObject.Occupation == Occupation.Bandit || CharacterObject.Occupation == Occupation.Gangster || CharacterObject.Occupation == Occupation.CaravanGuard || (CharacterObject.Occupation == Occupation.Villager && CharacterObject.UpgradeTargets.Length != 0)))
-		{
-			PartyBelongedTo.MemberRoster.AddToCounts(CharacterObject, -PartyBelongedTo.MemberRoster.GetTroopCount(CharacterObject));
-		}
-	}
-
 	protected override void PreAfterLoad()
 	{
 		if (!_characterObject.IsObsolete)
@@ -1552,18 +1539,62 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		{
 			if (Name.Attributes == null || !Name.Attributes.ContainsKey("FIRSTNAME"))
 			{
-				Name.SetTextVariable("FIRSTNAME", FirstName);
+				Name.SetTextVariable("FIRSTNAME", FirstName.CopyTextObject());
 			}
 			if (Name.Attributes == null || !Name.Attributes.ContainsKey("FEMALE"))
 			{
 				Name.SetTextVariable("FEMALE", IsFemale ? 1 : 0);
 			}
 		}
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.8.31599")) && !CharacterObject.IsTemplate && !CharacterObject.HiddenInEncyclopedia && PartyBelongedTo != null && PartyBelongedTo.LeaderHero != this && (CharacterObject.Occupation == Occupation.Soldier || CharacterObject.Occupation == Occupation.Mercenary || CharacterObject.Occupation == Occupation.Bandit || CharacterObject.Occupation == Occupation.Gangster || CharacterObject.Occupation == Occupation.CaravanGuard || (CharacterObject.Occupation == Occupation.Villager && CharacterObject.UpgradeTargets.Length != 0)))
+		{
+			PartyBelongedTo.MemberRoster.AddToCounts(CharacterObject, -PartyBelongedTo.MemberRoster.GetTroopCount(CharacterObject));
+		}
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0") && IsNoncombatant)
+		{
+			if (BattleEquipment.IsEmpty())
+			{
+				if (Template != null)
+				{
+					_battleEquipment = Template.FirstBattleEquipment.Clone();
+				}
+				else
+				{
+					_battleEquipment = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_bat_dummy").AllEquipments.GetRandomElement();
+				}
+			}
+			if (CivilianEquipment.IsEmpty())
+			{
+				if (Template != null)
+				{
+					_civilianEquipment = Template.FirstCivilianEquipment.Clone();
+				}
+				else
+				{
+					_civilianEquipment = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_civ_dummy").AllEquipments.GetRandomElement();
+				}
+			}
+		}
+		UpdatePowerModifier();
+	}
+
+	private void ClearChangedPerks()
+	{
+		foreach (PerkObject item in _heroPerks.GetProperties().ToMBList())
+		{
+			if (item == null || item.IsTrash || (float)GetSkillValue(item.Skill) < item.RequiredSkillValue)
+			{
+				_heroPerks.SetPropertyValue(item, 0);
+			}
+		}
 	}
 
 	protected override void AfterLoad()
 	{
-		_heroPerks?.ClearChangedPerks(this);
+		if (IsAlive)
+		{
+			ClearChangedPerks();
+		}
 		HeroDeveloper?.AfterLoad();
 		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.9.35637")) && GovernorOf != null && (PartyBelongedTo != null || PartyBelongedToAsPrisoner != null))
 		{
@@ -1619,7 +1650,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 				{
 					Clan clan = null;
 					int num2 = int.MaxValue;
-					for (int i = 0; i < Clan.All.Count(); i++)
+					for (int i = 0; i < Clan.All.Count; i++)
 					{
 						Clan clan2 = Clan.All[i];
 						if (clan2 != Clan.PlayerClan && !clan2.IsBanditFaction && !clan2.IsRebelClan && !clan2.IsEliminated && Culture == clan2.Culture && clan2.Heroes.Count < num2)
@@ -1645,7 +1676,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			}
 			UpdateHomeSettlement();
 		}
-		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.8.31599")) || CharacterObject.IsTemplate || CharacterObject.HiddenInEncylopedia || (CharacterObject.Occupation != Occupation.Soldier && CharacterObject.Occupation != Occupation.Mercenary && CharacterObject.Occupation != Occupation.Bandit && CharacterObject.Occupation != Occupation.Gangster && CharacterObject.Occupation != Occupation.CaravanGuard && (CharacterObject.Occupation != Occupation.Villager || CharacterObject.UpgradeTargets.Length == 0)))
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.8.31599")) || CharacterObject.IsTemplate || CharacterObject.HiddenInEncyclopedia || (CharacterObject.Occupation != Occupation.Soldier && CharacterObject.Occupation != Occupation.Mercenary && CharacterObject.Occupation != Occupation.Bandit && CharacterObject.Occupation != Occupation.Gangster && CharacterObject.Occupation != Occupation.CaravanGuard && (CharacterObject.Occupation != Occupation.Villager || CharacterObject.UpgradeTargets.Length == 0)))
 		{
 			return;
 		}
@@ -1676,7 +1707,12 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		CharacterStates heroState = _heroState;
 		_heroState = newState;
+		_clan?.OnHeroChangedState(this, heroState);
 		Campaign.Current.CampaignObjectManager.HeroStateChanged(this, heroState);
+		if (newState == CharacterStates.Traveling)
+		{
+			CampaignEventDispatcher.Instance.OnHeroGetsBusy(this, HeroGetsBusyReasons.Traveling);
+		}
 	}
 
 	public bool IsHealthFull()
@@ -1707,8 +1743,13 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		base.Deserialize(objectManager, node);
 		CharacterObject @object = MBObjectManager.Instance.GetObject<CharacterObject>(base.StringId);
+		float age = @object.Age;
 		SetCharacterObject(@object);
-		StaticBodyProperties = CharacterObject.GetBodyPropertiesMin().StaticProperties;
+		foreach (var (skill, value) in Campaign.Current.Models.HeroCreationModel.GetDefaultSkillsForHero(this))
+		{
+			SetSkillValue(skill, value);
+		}
+		StaticBodyProperties = CharacterObject.GetBodyPropertiesMin(returnBaseValue: true).StaticProperties;
 		DynamicBodyProperties dynamicBodyProperties = CharacterObject.GetBodyPropertiesMin(returnBaseValue: true).DynamicProperties;
 		if (dynamicBodyProperties == DynamicBodyProperties.Invalid)
 		{
@@ -1721,9 +1762,8 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		_heroState = (flag ? CharacterStates.Dead : CharacterStates.NotSpawned);
 		if (IsDead)
 		{
-			HeroHelper.GetRandomDeathDayAndBirthDay((int)@object.Age, out _birthDay, out _deathDay);
+			HeroHelper.GetRandomDeathDayAndBirthDay((int)age, out _birthDay, out _deathDay);
 		}
-		CharacterObject.HeroObject = this;
 		Father = objectManager.ReadObjectReferenceFromXml("father", typeof(Hero), node) as Hero;
 		Mother = objectManager.ReadObjectReferenceFromXml("mother", typeof(Hero), node) as Hero;
 		if (Spouse == null)
@@ -1735,7 +1775,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		{
 			Clan = clan;
 		}
-		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.Empty);
+		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.GetEmpty());
 		XmlNode xmlNode = node.Attributes["preferred_upgrade_formation"];
 		PreferredUpgradeFormation = FormationClass.NumberOfAllFormations;
 		if (xmlNode != null && Enum.TryParse<FormationClass>(xmlNode.InnerText, ignoreCase: true, out var result))
@@ -1794,9 +1834,13 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			{
 				MBTextManager.SetTextVariable("CLAN_DESCRIPTION", "{=KZxKVby0}an organization");
 			}
-			if (o == MainHero && o.GetTraitLevel(DefaultTraits.Mercy) == 0 && o.GetTraitLevel(DefaultTraits.Honor) == 0 && o.GetTraitLevel(DefaultTraits.Generosity) == 0 && o.GetTraitLevel(DefaultTraits.Valor) == 0 && o.GetTraitLevel(DefaultTraits.Calculating) == 0)
+			if (o == MainHero)
 			{
-				return new TextObject("{=FHjM62IY}{LORD.FIRSTNAME} is a member of the {CLAN_NAME}, a rising new clan. {?LORD.GENDER}She{?}He{\\?} is still making {?LORD.GENDER}her{?}his{\\?} reputation.");
+				if (o.GetTraitLevel(DefaultTraits.Mercy) == 0 && o.GetTraitLevel(DefaultTraits.Honor) == 0 && o.GetTraitLevel(DefaultTraits.Generosity) == 0 && o.GetTraitLevel(DefaultTraits.Valor) == 0 && o.GetTraitLevel(DefaultTraits.Calculating) == 0)
+				{
+					return new TextObject("{=V097rA1v}{LORD.FIRSTNAME} is a head of the {CLAN_NAME}, a rising new clan. {?LORD.GENDER}She{?}He{\\?} is still making {?LORD.GENDER}her{?}his{\\?} reputation.");
+				}
+				return new TextObject("{=hRfXSdlP}{LORD.FIRSTNAME} is a head of the {CLAN_NAME}, {CLAN_DESCRIPTION} from the lands of the {FACTION_NAME}. {?LORD.GENDER}She{?}He{\\?} has the reputation of being {REPUTATION}.");
 			}
 			return new TextObject("{=9Obe3S6L}{LORD.FIRSTNAME} is a member of the {CLAN_NAME}, {CLAN_DESCRIPTION} from the lands of the {FACTION_NAME}. {?LORD.GENDER}She{?}He{\\?} has the reputation of being {REPUTATION}.");
 		}
@@ -1854,6 +1898,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		VolunteerTypes = null;
 		_battleEquipment = null;
 		_civilianEquipment = null;
+		_stealthEquipment = null;
 		SupporterOf = null;
 		DeathMarkKillerHero = null;
 		LastKnownClosestSettlement = null;
@@ -1867,7 +1912,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			{
 				_partyBelongedTo.PartyComponent.ChangePartyLeader(null);
 			}
-			_partyBelongedTo.RemoveHeroPerkRole(this);
+			_partyBelongedTo.RemoveHeroPartyRole(this);
 		}
 		_partyBelongedTo = party;
 	}
@@ -1896,6 +1941,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 
 	public bool CanBecomePrisoner()
 	{
+		if (!IsLord && !IsPlayerCompanion && !IsSpecial)
+		{
+			Debug.FailedAssert("Only lords, companions and special quest heroes can become prisoners! Check CanBecomePrisoner usage.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Hero.cs", "CanBecomePrisoner", 1828);
+			return false;
+		}
 		if (this != MainHero)
 		{
 			return true;
@@ -1912,71 +1962,15 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		return result;
 	}
 
-	public bool CanHaveQuestsOrIssues()
+	public bool CanHaveCampaignIssues()
 	{
 		if (Issue != null)
 		{
 			return false;
 		}
 		bool result = true;
-		CampaignEventDispatcher.Instance.CanHaveQuestsOrIssues(this, ref result);
+		CampaignEventDispatcher.Instance.CanHaveCampaignIssues(this, ref result);
 		return result;
-	}
-
-	public string AssignVoice()
-	{
-		_ = CharacterObject.Age;
-		GetTraitLevel(DefaultTraits.Mercy);
-		int traitLevel = GetTraitLevel(DefaultTraits.Generosity);
-		GetTraitLevel(DefaultTraits.Valor);
-		int traitLevel2 = GetTraitLevel(DefaultTraits.Calculating);
-		int traitLevel3 = GetTraitLevel(DefaultTraits.Honor);
-		int traitLevel4 = GetTraitLevel(DefaultTraits.Politician);
-		int traitLevel5 = GetTraitLevel(DefaultTraits.Commander);
-		string text = null;
-		if (CharacterObject.Culture.StringId == "empire")
-		{
-			goto IL_00be;
-		}
-		if (CharacterObject.Culture.StringId == "vlandia")
-		{
-			Clan clan = Clan;
-			if ((clan != null && clan.IsNoble) || IsMerchant)
-			{
-				goto IL_00be;
-			}
-		}
-		if (CharacterObject.Culture.StringId == "empire" || CharacterObject.Culture.StringId == "vlandia")
-		{
-			text = "lowerwest";
-		}
-		else if (CharacterObject.Culture.StringId == "sturgia" || CharacterObject.Culture.StringId == "battania")
-		{
-			text = "north";
-		}
-		else if (CharacterObject.Culture.StringId == "aserai" || CharacterObject.Culture.StringId == "khuzait")
-		{
-			text = "east";
-		}
-		goto IL_018e;
-		IL_018e:
-		string text2 = "earnest";
-		if (traitLevel4 < 3 && traitLevel < 0)
-		{
-			text2 = "curt";
-		}
-		else if (traitLevel4 < 3 && traitLevel5 < 5)
-		{
-			text2 = "softspoken";
-		}
-		else if (traitLevel2 - traitLevel3 > -1)
-		{
-			text2 = "ironic";
-		}
-		return text2 + "_" + text;
-		IL_00be:
-		text = "upperwest";
-		goto IL_018e;
 	}
 
 	public void AddInfluenceWithKingdom(float additionalInfluence)
@@ -2055,11 +2049,6 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		StaticBodyProperties = bodyProperties.StaticProperties;
 	}
 
-	public void ModifyPlayersFamilyAppearance(StaticBodyProperties staticBodyProperties)
-	{
-		StaticBodyProperties = staticBodyProperties;
-	}
-
 	public void AddOwnedWorkshop(Workshop workshop)
 	{
 		if (!_ownedWorkshops.Contains(workshop))
@@ -2079,6 +2068,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	public static Hero FindFirst(Func<Hero, bool> predicate)
 	{
 		return Campaign.Current.Characters.FirstOrDefault((CharacterObject x) => x.IsHero && predicate(x.HeroObject))?.HeroObject;
+	}
+
+	public static Hero Find(string stringId)
+	{
+		return Campaign.Current.CampaignObjectManager.Find<Hero>(stringId);
 	}
 
 	public static IEnumerable<Hero> FindAll(Func<Hero, bool> predicate)
@@ -2123,27 +2117,42 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		PartyBelongedToAsPrisoner = null;
 	}
 
+	public Vec3 GetPositionAsVec3()
+	{
+		return GetCampaignPosition().AsVec3();
+	}
+
+	public CampaignVec2 GetCampaignPosition()
+	{
+		CampaignVec2 result = CampaignVec2.Invalid;
+		if (CurrentSettlement != null)
+		{
+			result = CurrentSettlement.GatePosition;
+		}
+		else if (IsPrisoner && PartyBelongedToAsPrisoner != null)
+		{
+			result = (PartyBelongedToAsPrisoner.IsSettlement ? PartyBelongedToAsPrisoner.Settlement.GatePosition : PartyBelongedToAsPrisoner.MobileParty.Position);
+		}
+		else if (PartyBelongedTo != null)
+		{
+			result = PartyBelongedTo.Position;
+		}
+		return result;
+	}
+
 	TextObject ITrackableBase.GetName()
 	{
 		return Name;
 	}
 
-	public Vec3 GetPosition()
+	Vec3 ITrackableBase.GetPosition()
 	{
-		Vec3 result = Vec3.Zero;
-		if (CurrentSettlement != null)
-		{
-			result = CurrentSettlement.GetLogicalPosition();
-		}
-		else if (IsPrisoner && PartyBelongedToAsPrisoner != null)
-		{
-			result = (PartyBelongedToAsPrisoner.IsSettlement ? PartyBelongedToAsPrisoner.Settlement.GetLogicalPosition() : PartyBelongedToAsPrisoner.MobileParty.GetLogicalPosition());
-		}
-		else if (PartyBelongedTo != null)
-		{
-			result = PartyBelongedTo.GetLogicalPosition();
-		}
-		return result;
+		return GetPositionAsVec3();
+	}
+
+	Banner ITrackableCampaignObject.GetBanner()
+	{
+		return ClanBanner;
 	}
 
 	public IMapPoint GetMapPoint()
@@ -2163,39 +2172,26 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 		return PartyBelongedTo;
 	}
 
-	public float GetTrackDistanceToMainAgent()
-	{
-		return GetPosition().Distance(MainHero.GetPosition());
-	}
-
-	public bool CheckTracked(BasicCharacterObject basicCharacter)
-	{
-		return CharacterObject == basicCharacter;
-	}
-
 	private void SetInitialValuesFromCharacter(CharacterObject characterObject)
 	{
-		foreach (SkillObject item in Skills.All)
+		foreach (TraitObject item in TraitObject.All)
 		{
-			SetSkillValue(item, characterObject.GetSkillValue(item));
-		}
-		foreach (TraitObject item2 in TraitObject.All)
-		{
-			SetTraitLevel(item2, characterObject.GetTraitLevel(item2));
+			SetTraitLevel(item, characterObject.GetTraitLevel(item));
 		}
 		Level = characterObject.Level;
 		SetName(characterObject.Name, characterObject.Name);
 		Culture = characterObject.Culture;
-		HairTags = characterObject.HairTags;
-		BeardTags = characterObject.BeardTags;
-		TattooTags = characterObject.TattooTags;
 		_defaultAge = characterObject.Age;
-		_birthDay = HeroHelper.GetRandomBirthDayForAge(_defaultAge);
+		if (_birthDay == CampaignTime.Zero)
+		{
+			_birthDay = HeroHelper.GetRandomBirthDayForAge(_defaultAge);
+		}
 		HitPoints = characterObject.MaxHitPoints();
 		IsFemale = characterObject.IsFemale;
 		Occupation = CharacterObject.GetDefaultOccupation();
-		List<Equipment> list = characterObject.AllEquipments.Where((Equipment t) => !t.IsEmpty() && !t.IsCivilian).ToList();
-		List<Equipment> list2 = characterObject.AllEquipments.Where((Equipment t) => !t.IsEmpty() && t.IsCivilian).ToList();
+		List<Equipment> list = characterObject.BattleEquipments.Where((Equipment x) => !x.IsEmpty()).ToList();
+		List<Equipment> list2 = characterObject.CivilianEquipments.Where((Equipment x) => !x.IsEmpty()).ToList();
+		List<Equipment> list3 = characterObject.StealthEquipments.Where((Equipment x) => !x.IsEmpty()).ToList();
 		if (list.IsEmpty())
 		{
 			CultureObject @object = Game.Current.ObjectManager.GetObject<CultureObject>("neutral_culture");
@@ -2206,12 +2202,22 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 			CultureObject object2 = Game.Current.ObjectManager.GetObject<CultureObject>("neutral_culture");
 			list2.AddRange(object2.DefaultCivilianEquipmentRoster.AllEquipments);
 		}
-		if (!list.IsEmpty() && !list2.IsEmpty())
+		if (list3.IsEmpty())
 		{
-			Equipment equipment = list[this.RandomInt(list.Count)];
-			Equipment equipment2 = list2[this.RandomInt(list2.Count)];
-			_battleEquipment = equipment.Clone();
-			_civilianEquipment = equipment2.Clone();
+			CultureObject object3 = Game.Current.ObjectManager.GetObject<CultureObject>("neutral_culture");
+			list3.AddRange(object3.DefaultStealthEquipmentRoster.AllEquipments);
+		}
+		if (!list.IsEmpty())
+		{
+			_battleEquipment = list.GetRandomElement().Clone();
+		}
+		if (!list2.IsEmpty())
+		{
+			_civilianEquipment = list2.GetRandomElement().Clone();
+		}
+		if (!list3.IsEmpty())
+		{
+			_stealthEquipment = list3.GetRandomElement().Clone();
 		}
 	}
 
@@ -2219,6 +2225,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		_battleEquipment = Template.FirstBattleEquipment.Clone();
 		_civilianEquipment = Template.FirstCivilianEquipment.Clone();
+		_stealthEquipment = Template.FirstStealthEquipment.Clone();
 	}
 
 	public void ChangeHeroGold(int changeAmount)
@@ -2334,5 +2341,11 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	internal void ResetClanForOldSave()
 	{
 		_clan = null;
+	}
+
+	[SpecialName]
+	bool ITrackableCampaignObject.get_IsReady()
+	{
+		return base.IsReady;
 	}
 }

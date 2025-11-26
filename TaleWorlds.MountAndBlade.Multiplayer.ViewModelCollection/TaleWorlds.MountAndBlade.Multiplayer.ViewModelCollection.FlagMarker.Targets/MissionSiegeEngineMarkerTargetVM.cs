@@ -46,7 +46,7 @@ public class MissionSiegeEngineMarkerTargetVM : MissionMarkerTargetVM
 	public MissionSiegeEngineMarkerTargetVM(SiegeWeapon siegeEngine)
 		: base(MissionMarkerType.SiegeEngine)
 	{
-		_siegeEngine = siegeEngine.GameEntity;
+		_siegeEngine = GameEntity.CreateFromWeakEntity(siegeEngine.GameEntity);
 		Side = siegeEngine.Side;
 		SiegeEngineID = siegeEngine.GetSiegeEngineType().StringId;
 		RefreshColor((Side == BattleSideEnum.Attacker) ? Mission.Current.AttackerTeam.Color : Mission.Current.DefenderTeam.Color, (Side == BattleSideEnum.Attacker) ? Mission.Current.AttackerTeam.Color2 : Mission.Current.DefenderTeam.Color2);

@@ -32,6 +32,18 @@ internal class ObjectSaveData
 
 	internal int FieldCount => _fieldValues.Count;
 
+	internal int ChildCount => _childStructs.Count;
+
+	public int GetFolderCount()
+	{
+		int num = 1;
+		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
+		{
+			num += childStruct.Value.GetFolderCount();
+		}
+		return num;
+	}
+
 	public ObjectSaveData(ISaveContext context, int objectId, object target, bool isClass)
 	{
 		ObjectId = objectId;
@@ -55,6 +67,16 @@ internal class ObjectSaveData
 		{
 			throw new Exception("Could not find type definition of type: " + Type);
 		}
+	}
+
+	public int GetEntryCount()
+	{
+		int num = 1 + PropertyCount + FieldCount;
+		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
+		{
+			num += childStruct.Value.GetEntryCount();
+		}
+		return num;
 	}
 
 	public void CollectMembers()
@@ -162,6 +184,90 @@ internal class ObjectSaveData
 		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
 	}
 
+	public void SaveHeaderFolderTo(BinaryWriter headerWriter, int folderId)
+	{
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.Write3ByteInt(folderId);
+		headerWriter.Write3ByteInt(ObjectId);
+		SaveFolderExtension value = (IsClass ? SaveFolderExtension.Object : SaveFolderExtension.Struct);
+		headerWriter.WriteByte((byte)value);
+	}
+
+	public void SaveHeaderDataTo(BinaryWriter headerWriter, int folderId)
+	{
+		headerWriter.Write3ByteInt(folderId);
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.WriteByte(8);
+		WriteHeader(headerWriter);
+	}
+
+	private int GetHeaderDataSize()
+	{
+		return 4 + _typeDefinition.SaveId.GetSizeInBytes();
+	}
+
+	public int GetHeaderSize()
+	{
+		return GetHeaderDataSize() + 19;
+	}
+
+	public int GetDataSize()
+	{
+		int num = 31 + _typeDefinition.SaveId.GetSizeInBytes();
+		foreach (KeyValuePair<FieldInfo, FieldSaveData> fieldValue in _fieldValues)
+		{
+			num += GetMemberEntrySize();
+			num += fieldValue.Value.GetDataSize();
+		}
+		foreach (KeyValuePair<PropertyInfo, PropertySaveData> propertyValue in _propertyValues)
+		{
+			num += GetMemberEntrySize();
+			num += propertyValue.Value.GetDataSize();
+		}
+		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
+		{
+			num += childStruct.Value.GetDataSize() - 8;
+		}
+		return num;
+	}
+
+	public void SaveDataFolder(BinaryWriter writer, int parentFolderId, ref int folderId)
+	{
+		writer.Write3ByteInt(parentFolderId);
+		writer.Write3ByteInt(folderId);
+		writer.Write3ByteInt(ObjectId);
+		SaveFolderExtension value = (IsClass ? SaveFolderExtension.Object : SaveFolderExtension.Struct);
+		writer.WriteByte((byte)value);
+		int parentFolderId2 = folderId;
+		folderId++;
+		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
+		{
+			childStruct.Value.SaveDataFolder(writer, parentFolderId2, ref folderId);
+		}
+	}
+
+	public void SaveTo(BinaryWriter writer, ref int folderId)
+	{
+		SaveHeaderDataTo(writer, folderId);
+		int num = 0;
+		foreach (KeyValuePair<FieldInfo, FieldSaveData> fieldValue in _fieldValues)
+		{
+			WriteMemberEntry(writer, fieldValue.Value, folderId, num++, SaveEntryExtension.Field);
+			fieldValue.Value.SaveTo(writer);
+		}
+		num = 0;
+		foreach (KeyValuePair<PropertyInfo, PropertySaveData> propertyValue in _propertyValues)
+		{
+			WriteMemberEntry(writer, propertyValue.Value, folderId, num++, SaveEntryExtension.Property);
+			propertyValue.Value.SaveTo(writer);
+		}
+		folderId++;
+		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
+		{
+			childStruct.Value.SaveTo(writer, ref folderId);
+		}
+	}
+
 	public void SaveTo(SaveEntryFolder parentFolder, IArchiveContext archiveContext)
 	{
 		SaveFolderExtension extension = (IsClass ? SaveFolderExtension.Object : SaveFolderExtension.Struct);
@@ -195,6 +301,27 @@ internal class ObjectSaveData
 		{
 			value3.SaveTo(saveEntryFolder, archiveContext);
 		}
+	}
+
+	private void WriteHeader(BinaryWriter writer)
+	{
+		writer.WriteShort((short)GetHeaderDataSize());
+		_typeDefinition.SaveId.WriteTo(writer);
+		writer.WriteShort((short)_propertyValues.Count);
+		writer.WriteShort((short)_childStructs.Count);
+	}
+
+	private void WriteMemberEntry(BinaryWriter writer, VariableSaveData data, int parentFolderId, int id, SaveEntryExtension extension)
+	{
+		writer.Write3ByteInt(parentFolderId);
+		writer.Write3ByteInt(id);
+		writer.WriteByte((byte)extension);
+		writer.WriteShort((short)data.GetDataSize());
+	}
+
+	private int GetMemberEntrySize()
+	{
+		return 9;
 	}
 
 	internal static void GetChildObjectFrom(ISaveContext context, object target, MemberDefinition memberDefinition, List<object> collectedObjects)

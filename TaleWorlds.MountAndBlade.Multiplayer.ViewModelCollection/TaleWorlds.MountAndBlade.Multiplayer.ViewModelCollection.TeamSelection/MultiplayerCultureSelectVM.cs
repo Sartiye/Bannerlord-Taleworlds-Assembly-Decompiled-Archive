@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.TeamSelection;
@@ -214,10 +215,11 @@ public class MultiplayerCultureSelectVM : ViewModel
 		_secondCulture = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
 		FirstCultureCode = _firstCulture.StringId;
 		SecondCultureCode = _secondCulture.StringId;
-		FirstCultureColor1 = Color.FromUint(_firstCulture.Color);
-		FirstCultureColor2 = Color.FromUint(_firstCulture.Color2);
-		SecondCultureColor1 = Color.FromUint(_secondCulture.Color);
-		SecondCultureColor2 = Color.FromUint(_secondCulture.Color2);
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(_firstCulture, _secondCulture);
+		FirstCultureColor1 = multiplayerBattleColors.AttackerColors.Color1;
+		FirstCultureColor2 = multiplayerBattleColors.AttackerColors.Color2;
+		SecondCultureColor1 = multiplayerBattleColors.DefenderColors.Color1;
+		SecondCultureColor2 = multiplayerBattleColors.DefenderColors.Color2;
 		RefreshValues();
 	}
 
@@ -241,7 +243,7 @@ public class MultiplayerCultureSelectVM : ViewModel
 			_onCultureSelected?.Invoke(_secondCulture);
 			break;
 		default:
-			Debug.FailedAssert("Invalid Culture Index!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\TeamSelection\\MultiplayerCultureSelectVM.cs", "ExecuteSelectCulture", 62);
+			Debug.FailedAssert("Invalid Culture Index!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\TeamSelection\\MultiplayerCultureSelectVM.cs", "ExecuteSelectCulture", 65);
 			break;
 		}
 	}

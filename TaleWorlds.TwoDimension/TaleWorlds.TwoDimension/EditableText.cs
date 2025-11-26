@@ -16,6 +16,8 @@ public class EditableText : RichText
 
 	private Regex _nextWordRegex;
 
+	private float _scrollTextWhileDraggingCooldown;
+
 	public int CursorPosition { get; private set; }
 
 	public bool HighlightStart { get; set; }
@@ -71,10 +73,11 @@ public class EditableText : RichText
 
 	public void ResetSelected()
 	{
-		_visibleStart = 0;
 		_selectionAnchor = 0;
 		SelectedTextBegin = 0;
 		SelectedTextEnd = 0;
+		HighlightStart = false;
+		HighlightEnd = true;
 	}
 
 	public void BeginSelection()
@@ -87,41 +90,68 @@ public class EditableText : RichText
 		return SelectedTextEnd != SelectedTextBegin;
 	}
 
-	public Vector2 GetCursorPosition(Font font, float fontSize, float scale)
+	public Vector2 GetCursorPosition()
 	{
-		float num = fontSize / (float)font.Size;
-		float num2 = (float)font.LineHeight * num * scale;
-		string word = VisibleText.Substring(_visibleStart, CursorPosition - _visibleStart);
-		float num3 = font.GetWordWidth(word, 0.5f) * num * scale;
-		float num4 = font.GetWordWidth(_realVisibleText, 0.5f) * num * scale;
-		float num5 = 0f;
+		StyleFontContainer.FontData fontData = base.StyleFontContainer.GetFontData("Default");
+		Font font = fontData.Font;
+		float num = fontData.FontSize / (float)font.Size;
+		float num2 = (float)font.LineHeight * num;
+		float wordWidth = GetWordWidth(_realVisibleText);
+		float wordWidth2 = GetWordWidth(_realVisibleText.Substring(0, Math.Min(_realVisibleText.Length, CursorPosition - _visibleStart)));
+		float num3 = 0f;
 		if (base.HorizontalAlignment == TextHorizontalAlignment.Center)
 		{
-			num5 = ((float)base.Width - num4) * 0.5f;
+			num3 = ((float)base.Width - wordWidth) * 0.5f;
 		}
 		else if (base.HorizontalAlignment == TextHorizontalAlignment.Right)
 		{
-			num5 = (float)base.Width - num4;
+			num3 = (float)base.Width - wordWidth;
 		}
 		float y = 0f;
 		if (base.VerticalAlignment == TextVerticalAlignment.Center)
 		{
-			y = ((float)base.Height - num2) * 0.5f;
+			y = ((float)base.Height - num2 + 2.5f) * 0.5f;
 		}
 		else if (base.VerticalAlignment == TextVerticalAlignment.Bottom)
 		{
-			y = (float)base.Height - num2;
+			y = (float)base.Height - num2 + 2.5f;
 		}
-		return new Vector2(num5 + num3, y);
+		return new Vector2(num3 + wordWidth2, y);
 	}
 
-	private void UpdateSelectedText(Vector2 mousePosition)
+	private float GetWordWidth(string word)
+	{
+		float num = 0f;
+		for (int i = 0; i < word.Length; i++)
+		{
+			num += GetCharacterWidth(word[i]);
+		}
+		return num;
+	}
+
+	private float GetCharacterWidth(char character)
+	{
+		StyleFontContainer.FontData fontData = base.StyleFontContainer.GetFontData("Default");
+		Font font = fontData.Font;
+		float num = 0f;
+		float num2 = 1f;
+		if (!font.Characters.ContainsKey(character))
+		{
+			Font font2 = _getUsableFontForCharacter(character) ?? fontData.Font;
+			num2 = fontData.FontSize / (float)font2.Size;
+			return font2.GetCharacterWidth(character, 0.5f) * num2;
+		}
+		num2 = fontData.FontSize / (float)font.Size;
+		return font.GetCharacterWidth(character, 0.5f) * num2;
+	}
+
+	private void UpdateSelectedText(float dt, Vector2 mousePosition)
 	{
 		string text = VisibleText;
 		_visibleStart = Math.Min(_visibleStart, CursorPosition);
 		StyleFontContainer.FontData fontData = base.StyleFontContainer.GetFontData("Default");
-		float num = fontData.FontSize / (float)fontData.Font.Size;
-		int num2 = 10;
+		float scale = fontData.FontSize / (float)fontData.Font.Size;
+		int num = 10;
 		int i;
 		for (i = 0; i < _visibleStart; i++)
 		{
@@ -129,17 +159,18 @@ public class EditableText : RichText
 			{
 				break;
 			}
-			if (!(fontData.Font.GetWordWidth(text, 0f) * num > (float)(base.Width - num2 - num2)))
+			if (!(GetWordWidth(text) > (float)(base.Width - num - num)))
 			{
 				break;
 			}
 			text = text.Substring(1);
 		}
-		while (text.Length > CursorPosition - _visibleStart && text != "" && fontData.Font.GetWordWidth(text, 0f) * num > (float)(base.Width - num2 - num2))
+		_visibleStart = i;
+		while (text.Length > CursorPosition - _visibleStart && text != "" && GetWordWidth(text) > (float)(base.Width - num - num))
 		{
 			text = text.Substring(0, text.Length - 1);
 		}
-		while (text != "" && fontData.Font.GetWordWidth(text, 0f) * num > (float)(base.Width - num2 - num2))
+		while (text != "" && GetWordWidth(text) > (float)(base.Width - num - num))
 		{
 			text = text.Substring(1);
 			i++;
@@ -159,49 +190,39 @@ public class EditableText : RichText
 		}
 		if (HighlightStart)
 		{
-			SelectedTextBegin = FindCharacterPosition(VisibleText, text, num, mousePosition2, i);
+			int position = FindCharacterPosition(dt, VisibleText, text, scale, mousePosition2, i);
 			HighlightStart = false;
-			SetCursor(SelectedTextBegin);
+			SetCursor(position);
+			BeginSelection();
 		}
 		if (!HighlightEnd)
 		{
-			SelectedTextEnd = FindCharacterPosition(VisibleText, text, num, mousePosition2, i);
-			SetCursor(SelectedTextEnd);
+			int position2 = FindCharacterPosition(dt, VisibleText, text, scale, mousePosition2, i);
+			SetCursor(position2, visible: true, withSelection: true);
 		}
-		else if (SelectedTextBegin > SelectedTextEnd)
+		int num2 = Math.Min(Math.Max(SelectedTextBegin - i, 0), text.Length);
+		int num3 = Math.Min(Math.Max(SelectedTextEnd - i, 0), text.Length);
+		if (num2 > num3)
 		{
-			int selectedTextBegin = SelectedTextBegin;
-			SelectedTextBegin = SelectedTextEnd;
-			SelectedTextEnd = selectedTextBegin;
-		}
-		int num3 = Math.Min(Math.Max(SelectedTextBegin - i, 0), text.Length);
-		int num4 = Math.Min(Math.Max(SelectedTextEnd - i, 0), text.Length);
-		if (num3 > num4)
-		{
-			int num5 = num3;
+			int num4 = num2;
+			num2 = num3;
 			num3 = num4;
-			num4 = num5;
 		}
-		if (num3 > num4)
-		{
-			int num6 = num3;
-			num3 = num4;
-			num4 = num6;
-		}
-		string value = text.Substring(0, num3) + "<span style=\"Highlight\">" + text.Substring(num3, num4 - num3) + "</span>" + text.Substring(num4, text.Length - num4);
-		_realVisibleText = text.Substring(0, num3) + text.Substring(num3, num4 - num3) + text.Substring(num4, text.Length - num4);
+		string value = text.Substring(0, num2) + "<span style=\"Highlight\">" + text.Substring(num2, num3 - num2) + "</span>" + text.Substring(num3, text.Length - num3);
+		_realVisibleText = text.Substring(0, num2) + text.Substring(num2, num3 - num2) + text.Substring(num3, text.Length - num3);
 		base.Value = value;
 	}
 
-	public override void Update(SpriteData spriteData, Vector2 focusPosition, bool focus, bool isFixedWidth, bool isFixedHeight, float renderScale)
+	public override void Update(float dt, SpriteData spriteData, Vector2 focusPosition, bool focus, bool isFixedWidth, bool isFixedHeight, float renderScale)
 	{
-		base.Update(spriteData, focusPosition, focus, isFixedWidth, isFixedHeight, renderScale);
-		UpdateSelectedText(focusPosition);
+		base.Update(dt, spriteData, focusPosition, focus, isFixedWidth, isFixedHeight, renderScale);
+		UpdateSelectedText(dt, focusPosition);
 	}
 
 	public void SelectAll()
 	{
 		SelectedTextBegin = 0;
+		_selectionAnchor = 0;
 		SetCursor(VisibleText.Length, visible: true, withSelection: true);
 	}
 
@@ -240,32 +261,55 @@ public class EditableText : RichText
 			SelectedTextBegin = Math.Min(num, _selectionAnchor);
 			SelectedTextEnd = Math.Max(num, _selectionAnchor);
 		}
+		else
+		{
+			SelectedTextBegin = 0;
+			SelectedTextEnd = 0;
+			_selectionAnchor = 0;
+		}
 	}
 
-	private int FindCharacterPosition(string fullText, string text, float scale, Vector2 mousePosition, int omitCount)
+	private int FindCharacterPosition(float dt, string fullText, string visibleText, float scale, Vector2 mousePosition, int omitCount)
 	{
-		int length = text.Length;
-		int i = 0;
-		int num = 0;
-		float num2 = 0f;
 		if (mousePosition.X > (float)base.Width + 15f * scale)
 		{
-			return Math.Min(omitCount + length + 1, fullText.Length);
+			int num = (int)((mousePosition.X - (float)base.Width) / (15f * scale));
+			if (_scrollTextWhileDraggingCooldown > 0f)
+			{
+				_scrollTextWhileDraggingCooldown -= dt;
+				return Math.Min(omitCount + visibleText.Length, fullText.Length);
+			}
+			_scrollTextWhileDraggingCooldown = 0.033f;
+			return Math.Min(omitCount + visibleText.Length + num, fullText.Length);
 		}
 		if (mousePosition.X < -15f * scale)
 		{
-			return Math.Max(omitCount - 1, 0);
-		}
-		StyleFontContainer.FontData fontData = base.StyleFontContainer.GetFontData("Default");
-		for (; i < length; i++)
-		{
-			num = i + omitCount;
-			num2 = fontData.Font.GetWordWidth(text.Substring(0, i + 1), 0f) * scale;
-			if (num2 > mousePosition.X)
+			int num2 = (int)((0f - mousePosition.X) / (15f * scale));
+			if (_scrollTextWhileDraggingCooldown > 0f)
 			{
-				return num;
+				_scrollTextWhileDraggingCooldown -= dt;
+				return Math.Max(omitCount, 0);
+			}
+			_scrollTextWhileDraggingCooldown = 0.033f;
+			return Math.Max(omitCount - num2, 0);
+		}
+		_scrollTextWhileDraggingCooldown = 0f;
+		int i = 0;
+		float num3 = 0f;
+		for (; i < visibleText.Length; i++)
+		{
+			float num4 = num3;
+			num3 += GetCharacterWidth(visibleText[i]);
+			if (num3 > mousePosition.X)
+			{
+				float num5 = mousePosition.X - num4;
+				if (!(num3 - mousePosition.X > num5))
+				{
+					return omitCount + i + 1;
+				}
+				return omitCount + i;
 			}
 		}
-		return i + omitCount;
+		return omitCount + i;
 	}
 }

@@ -21,4 +21,9 @@ internal class QuaternionBasicTypeSerializer : IBasicTypeSerializer
 		float w = reader.ReadFloat();
 		return new Quaternion(x, y, z, w);
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 16;
+	}
 }

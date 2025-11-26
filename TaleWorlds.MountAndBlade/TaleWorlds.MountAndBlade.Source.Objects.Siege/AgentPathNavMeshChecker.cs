@@ -86,8 +86,7 @@ public class AgentPathNavMeshChecker
 				{
 					num = nearbyAgent.Position.Distance(_pathFrameToCheck.origin);
 				}
-				float maximumForwardUnlimitedSpeed = nearbyAgent.MaximumForwardUnlimitedSpeed;
-				if (num < _radiusToCheck * 2f || num / maximumForwardUnlimitedSpeed < _agentMoveTime)
+				if (num < _radiusToCheck * 2f || num / nearbyAgent.GetMaximumForwardUnlimitedSpeed() < _agentMoveTime)
 				{
 					flag = true;
 				}

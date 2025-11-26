@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
-public abstract class BattleSpawnModel : GameModel
+public abstract class BattleSpawnModel : MBGameModel<BattleSpawnModel>
 {
 	public virtual void OnMissionStart()
 	{

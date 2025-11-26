@@ -29,4 +29,9 @@ public class TypeSaveId : SaveId
 	{
 		return new TypeSaveId(reader.ReadInt());
 	}
+
+	public override int GetSizeInBytes()
+	{
+		return 5;
+	}
 }

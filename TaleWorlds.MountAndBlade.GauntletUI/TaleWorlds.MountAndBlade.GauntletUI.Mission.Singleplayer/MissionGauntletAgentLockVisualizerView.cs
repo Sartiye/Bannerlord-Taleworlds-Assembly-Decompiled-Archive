@@ -4,11 +4,12 @@ using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission.Singleplayer;
 
 [OverrideView(typeof(MissionAgentLockVisualizerView))]
-public class MissionGauntletAgentLockVisualizerView : MissionGauntletBattleUIBase
+public class MissionGauntletAgentLockVisualizerView : MissionBattleUIBaseView
 {
 	private GauntletLayer _layer;
 
@@ -26,7 +27,7 @@ public class MissionGauntletAgentLockVisualizerView : MissionGauntletBattleUIBas
 		_missionMainAgentController.OnLockedAgentChanged += OnLockedAgentChanged;
 		_missionMainAgentController.OnPotentialLockedAgentChanged += OnPotentialLockedAgentChanged;
 		_dataSource = new MissionAgentLockVisualizerVM();
-		_layer = new GauntletLayer(10);
+		_layer = new GauntletLayer("MissionAgentLockVisualizer", 10);
 		_layer.LoadMovie("AgentLockTargets", _dataSource);
 		base.MissionScreen.AddLayer(_layer);
 	}
@@ -38,6 +39,22 @@ public class MissionGauntletAgentLockVisualizerView : MissionGauntletBattleUIBas
 		_dataSource = null;
 		_layer = null;
 		_missionMainAgentController = null;
+	}
+
+	protected override void OnSuspendView()
+	{
+		if (_layer != null)
+		{
+			ScreenManager.SetSuspendLayer(_layer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_layer != null)
+		{
+			ScreenManager.SetSuspendLayer(_layer, isSuspended: false);
+		}
 	}
 
 	private void OnPotentialLockedAgentChanged(Agent newPotentialAgent)
@@ -63,7 +80,7 @@ public class MissionGauntletAgentLockVisualizerView : MissionGauntletBattleUIBas
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (!base.IsViewActive || _dataSource == null)
+		if (!base.IsViewCreated || _dataSource == null)
 		{
 			return;
 		}

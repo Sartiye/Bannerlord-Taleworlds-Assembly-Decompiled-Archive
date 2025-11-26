@@ -5,13 +5,6 @@ namespace TaleWorlds.Core;
 
 public sealed class BannerEffect : PropertyObject
 {
-	public enum EffectIncrementType
-	{
-		Invalid = -1,
-		Add,
-		AddFactor
-	}
-
 	private readonly float[] _levelBonuses = new float[3];
 
 	public EffectIncrementType IncrementType { get; private set; }

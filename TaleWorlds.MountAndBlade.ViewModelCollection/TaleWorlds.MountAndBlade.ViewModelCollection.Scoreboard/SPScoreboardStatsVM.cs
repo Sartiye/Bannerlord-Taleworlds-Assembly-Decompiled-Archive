@@ -219,7 +219,7 @@ public class SPScoreboardStatsVM : ViewModel
 
 	public SPScoreboardStatsVM GetScoreForOneAliveMember()
 	{
-		return new SPScoreboardStatsVM(TextObject.Empty)
+		return new SPScoreboardStatsVM(TextObject.GetEmpty())
 		{
 			Remaining = MathF.Min(1, Remaining),
 			Dead = 0,

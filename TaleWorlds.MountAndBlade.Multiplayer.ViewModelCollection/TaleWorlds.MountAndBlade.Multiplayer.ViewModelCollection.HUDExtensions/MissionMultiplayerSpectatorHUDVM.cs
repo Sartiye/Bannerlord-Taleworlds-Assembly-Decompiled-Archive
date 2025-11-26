@@ -362,7 +362,7 @@ public class MissionMultiplayerSpectatorHUDVM : ViewModel
 	{
 		_mission = mission;
 		MissionLobbyComponent missionBehavior = mission.GetMissionBehavior<MissionLobbyComponent>();
-		_isTeamsEnabled = missionBehavior.MissionType != 0 && missionBehavior.MissionType != MultiplayerGameType.Duel;
+		_isTeamsEnabled = missionBehavior.MissionType != MultiplayerGameType.Duel;
 		_isFlagDominationMode = Mission.Current.HasMissionBehavior<MissionMultiplayerGameModeFlagDominationClient>();
 		RefreshValues();
 	}
@@ -403,28 +403,28 @@ public class MissionMultiplayerSpectatorHUDVM : ViewModel
 			SpectatedPlayerMountCurrentHealth = _spectatedAgent.MountAgent.Health;
 			SpectatedPlayerMountHealthLimit = _spectatedAgent.MountAgent.HealthLimit;
 		}
-		EquipmentIndex wieldedItemIndex = _spectatedAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		EquipmentIndex wieldedItemIndex2 = _spectatedAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+		EquipmentIndex primaryWieldedItemIndex = _spectatedAgent.GetPrimaryWieldedItemIndex();
+		EquipmentIndex offhandWieldedItemIndex = _spectatedAgent.GetOffhandWieldedItemIndex();
 		int num = -1;
-		if (wieldedItemIndex != EquipmentIndex.None && _spectatedAgent.Equipment[wieldedItemIndex].CurrentUsageItem != null)
+		if (primaryWieldedItemIndex != EquipmentIndex.None && _spectatedAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem != null)
 		{
-			if (_spectatedAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsRangedWeapon && _spectatedAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsConsumable)
+			if (_spectatedAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsRangedWeapon && _spectatedAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsConsumable)
 			{
-				int ammoAmount = _spectatedAgent.Equipment.GetAmmoAmount(wieldedItemIndex);
-				if (_spectatedAgent.Equipment[wieldedItemIndex].ModifiedMaxAmount == 1 || ammoAmount > 0)
+				int ammoAmount = _spectatedAgent.Equipment.GetAmmoAmount(primaryWieldedItemIndex);
+				if (_spectatedAgent.Equipment[primaryWieldedItemIndex].ModifiedMaxAmount == 1 || ammoAmount > 0)
 				{
-					num = ((_spectatedAgent.Equipment[wieldedItemIndex].ModifiedMaxAmount == 1) ? (-1) : ammoAmount);
+					num = ((_spectatedAgent.Equipment[primaryWieldedItemIndex].ModifiedMaxAmount == 1) ? (-1) : ammoAmount);
 				}
 			}
-			else if (_spectatedAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
+			else if (_spectatedAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
 			{
-				bool flag = _spectatedAgent.Equipment[wieldedItemIndex].CurrentUsageItem.WeaponClass == WeaponClass.Crossbow;
-				num = _spectatedAgent.Equipment.GetAmmoAmount(wieldedItemIndex) + (flag ? _spectatedAgent.Equipment[wieldedItemIndex].Ammo : 0);
+				bool flag = _spectatedAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.WeaponClass == WeaponClass.Crossbow;
+				num = _spectatedAgent.Equipment.GetAmmoAmount(primaryWieldedItemIndex) + (flag ? _spectatedAgent.Equipment[primaryWieldedItemIndex].Ammo : 0);
 			}
 		}
-		if (wieldedItemIndex2 != EquipmentIndex.None && _spectatedAgent.Equipment[wieldedItemIndex2].CurrentUsageItem != null)
+		if (offhandWieldedItemIndex != EquipmentIndex.None && _spectatedAgent.Equipment[offhandWieldedItemIndex].CurrentUsageItem != null)
 		{
-			MissionWeapon missionWeapon = _spectatedAgent.Equipment[wieldedItemIndex2];
+			MissionWeapon missionWeapon = _spectatedAgent.Equipment[offhandWieldedItemIndex];
 			AgentHasShield = missionWeapon.CurrentUsageItem.IsShield;
 			if (AgentHasShield)
 			{
@@ -454,8 +454,8 @@ public class MissionMultiplayerSpectatorHUDVM : ViewModel
 		if (missionPeer != null)
 		{
 			TargetIconType iconType = MultiplayerClassDivisions.GetMPHeroClassForPeer(missionPeer)?.IconType ?? TargetIconType.None;
-			BannerCode bannercode = BannerCode.CreateFrom(new Banner(missionPeer.Peer.BannerCode, missionPeer.Team.Color, missionPeer.Team.Color2));
-			CompassElement = new MPTeammateCompassTargetVM(iconType, missionPeer.Team.Color, missionPeer.Team.Color2, bannercode, missionPeer.Team.IsPlayerAlly);
+			Banner banner = new Banner(missionPeer.Peer.BannerCode, missionPeer.Team.Color, missionPeer.Team.Color2);
+			CompassElement = new MPTeammateCompassTargetVM(iconType, missionPeer.Team.Color, missionPeer.Team.Color2, banner, missionPeer.Team.IsPlayerAlly);
 			AgentHasCompassElement = true;
 		}
 	}

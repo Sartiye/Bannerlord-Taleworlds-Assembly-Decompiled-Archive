@@ -45,13 +45,15 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 
 	private Agent _userAgent;
 
+	private bool _areUserPositionsUpdatedInTheMachineTick;
+
 	private readonly List<UsableMissionObjectComponent> _components;
 
-	[EditableScriptComponentVariable(false)]
-	public TextObject DescriptionMessage = TextObject.Empty;
+	[EditableScriptComponentVariable(false, "")]
+	public TextObject DescriptionMessage = TextObject.GetEmpty();
 
-	[EditableScriptComponentVariable(false)]
-	public TextObject ActionMessage = TextObject.Empty;
+	[EditableScriptComponentVariable(false, "")]
+	public TextObject ActionMessage = TextObject.GetEmpty();
 
 	private bool _needsSingleThreadTickOnce;
 
@@ -60,6 +62,8 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 	private bool _isDisabledForPlayers;
 
 	public virtual FocusableObjectType FocusableObjectType => FocusableObjectType.Item;
+
+	public virtual bool IsFocusable => true;
 
 	public Agent UserAgent
 	{
@@ -97,6 +101,12 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 			return false;
 		}
 	}
+
+	public virtual bool DisableCombatActionsOnUse => !IsInstantUse;
+
+	public virtual bool LockUserFrames { get; set; }
+
+	public virtual bool LockUserPositions { get; set; }
 
 	public bool IsInstantUse { get; protected set; }
 
@@ -154,7 +164,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		}
 	}
 
-	public virtual GameEntity InteractionEntity => base.GameEntity;
+	public virtual WeakGameEntity InteractionEntity => base.GameEntity;
 
 	public bool HasAIUser
 	{
@@ -172,12 +182,6 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 
 	public virtual bool HasAIMovingTo => MovingAgent != null;
 
-	public virtual bool DisableCombatActionsOnUse => !IsInstantUse;
-
-	protected internal virtual bool LockUserFrames { get; set; }
-
-	protected internal virtual bool LockUserPositions { get; set; }
-
 	public bool IsVisible
 	{
 		get
@@ -187,15 +191,15 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		set
 		{
 			base.GameEntity.SetVisibilityExcludeParents(value);
-			foreach (UsableMissionObjectComponent component in _components)
-			{
-				if (component is IVisible)
-				{
-					Debug.FailedAssert("Unexpected component in UsableMissionObject", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMissionObject.cs", "IsVisible", 746);
-					((IVisible)component).IsVisible = value;
-				}
-			}
 		}
+	}
+
+	protected UsableMissionObject(bool isInstantUse = false)
+	{
+		_components = new List<UsableMissionObjectComponent>();
+		IsInstantUse = isInstantUse;
+		GameEntityWithWorldPosition = null;
+		_needsSingleThreadTickOnce = false;
 	}
 
 	public virtual void OnUserConversationStart()
@@ -204,6 +208,16 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 
 	public virtual void OnUserConversationEnd()
 	{
+	}
+
+	public void SetAreUserPositionsUpdatedInTheMachineTick(bool value)
+	{
+		_areUserPositionsUpdatedInTheMachineTick = value;
+	}
+
+	public bool GetIsUserPositionsUpdatedInTheMachineTick()
+	{
+		return _areUserPositionsUpdatedInTheMachineTick;
 	}
 
 	public void SetIsDeactivatedSynched(bool value)
@@ -238,17 +252,9 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 	{
 		if (!IsDeactivated && agent.MountAgent == null && (!IsDisabledForPlayers || agent.IsAIControlled))
 		{
-			return !agent.IsOnLand();
+			return !agent.IsAbleToUseMachine();
 		}
 		return true;
-	}
-
-	protected UsableMissionObject(bool isInstantUse = false)
-	{
-		_components = new List<UsableMissionObjectComponent>();
-		IsInstantUse = isInstantUse;
-		GameEntityWithWorldPosition = null;
-		_needsSingleThreadTickOnce = false;
 	}
 
 	public void AddComponent(UsableMissionObjectComponent component)
@@ -275,9 +281,9 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		CollectChildEntitiesAux(base.GameEntity);
 	}
 
-	private void CollectChildEntitiesAux(GameEntity entity)
+	private void CollectChildEntitiesAux(WeakGameEntity entity)
 	{
-		foreach (GameEntity child in entity.GetChildren())
+		foreach (WeakGameEntity child in entity.GetChildren())
 		{
 			CollectChildEntity(child);
 			if (child.GetScriptComponents().IsEmpty())
@@ -292,7 +298,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		GameEntityWithWorldPosition = new GameEntityWithWorldPosition(base.GameEntity);
 	}
 
-	protected virtual void CollectChildEntity(GameEntity childEntity)
+	protected virtual void CollectChildEntity(WeakGameEntity childEntity)
 	{
 	}
 
@@ -342,7 +348,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 
 	public virtual TextObject GetInfoTextForBeingNotInteractable(Agent userAgent)
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public virtual void SetUserForClient(Agent userAgent)
@@ -352,7 +358,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		userAgent?.SetUsedGameObjectForClient(this);
 	}
 
-	public virtual void OnUse(Agent userAgent)
+	public virtual void OnUse(Agent userAgent, sbyte agentBoneIndex)
 	{
 		if (!GameNetwork.IsClientOrReplay)
 		{
@@ -385,7 +391,8 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		else if (LockUserFrames)
 		{
 			WorldFrame userFrameForAgent = GetUserFrameForAgent(userAgent);
-			userAgent.SetTargetPositionAndDirection(userFrameForAgent.Origin.AsVec2, userFrameForAgent.Rotation.f);
+			Vec2 targetPosition = userFrameForAgent.Origin.AsVec2;
+			userAgent.SetTargetPositionAndDirection(in targetPosition, in userFrameForAgent.Rotation.f);
 		}
 		else if (LockUserPositions)
 		{
@@ -524,12 +531,14 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		{
 			component.OnTick(dt);
 		}
-		if (HasUser && HasUserPositionsChanged(UserAgent))
+		if (!_areUserPositionsUpdatedInTheMachineTick && HasUser && HasUserPositionsChanged(UserAgent))
 		{
 			if (LockUserFrames)
 			{
 				WorldFrame userFrameForAgent = GetUserFrameForAgent(UserAgent);
-				UserAgent.SetTargetPositionAndDirection(userFrameForAgent.Origin.AsVec2, userFrameForAgent.Rotation.f);
+				Agent userAgent = UserAgent;
+				Vec2 targetPosition = userFrameForAgent.Origin.AsVec2;
+				userAgent.SetTargetPositionAndDirection(in targetPosition, in userFrameForAgent.Rotation.f);
 			}
 			else if (LockUserPositions)
 			{
@@ -607,11 +616,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 
 	public virtual bool HasUserPositionsChanged(Agent agent)
 	{
-		if (LockUserFrames || LockUserPositions)
-		{
-			return base.GameEntity.GetHasFrameChanged();
-		}
-		return false;
+		return base.GameEntity.GetHasFrameChanged();
 	}
 
 	public override void WriteToNetwork()
@@ -629,6 +634,11 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 	public virtual bool IsUsableByAgent(Agent userAgent)
 	{
 		return true;
+	}
+
+	public void SetCustomLocalFrame(in MatrixFrame customLocalFrame)
+	{
+		GameEntityWithWorldPosition.SetCustomLocalFrame(in customLocalFrame);
 	}
 
 	public override void OnEndMission()
@@ -664,5 +674,5 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		}
 	}
 
-	public abstract string GetDescriptionText(GameEntity gameEntity = null);
+	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity);
 }

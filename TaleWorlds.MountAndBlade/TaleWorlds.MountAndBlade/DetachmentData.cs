@@ -15,7 +15,7 @@ public class DetachmentData
 
 	public float firstTime;
 
-	public int AgentCount => joinedFormations.SumQ((Formation f) => f.CountOfDetachableNonplayerUnits) + MovingAgentCount + DefendingAgentCount;
+	public int AgentCount => joinedFormations.SumQ((Formation f) => f.CountOfDetachableNonPlayerUnits) + MovingAgentCount + DefendingAgentCount;
 
 	public bool IsPrecalculated()
 	{

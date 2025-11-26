@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
@@ -33,9 +34,9 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		private int TotalPartyCount => (int)(2f + 6f * base.IssueDifficultyMultiplier);
 
-		public override int AlternativeSolutionBaseNeededMenCount => 8 + MathF.Ceiling(11f * base.IssueDifficultyMultiplier);
+		public override int AlternativeSolutionBaseNeededMenCount => 8 + TaleWorlds.Library.MathF.Ceiling(11f * base.IssueDifficultyMultiplier);
 
-		protected override int AlternativeSolutionBaseDurationInDaysInternal => 5 + MathF.Ceiling(7f * base.IssueDifficultyMultiplier);
+		protected override int AlternativeSolutionBaseDurationInDaysInternal => 5 + TaleWorlds.Library.MathF.Ceiling(7f * base.IssueDifficultyMultiplier);
 
 		protected override int RewardGold => (int)(400f + 1500f * base.IssueDifficultyMultiplier);
 
@@ -155,7 +156,6 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			: base(issueOwner, CampaignTime.DaysFromNow(15f))
 		{
 			RelatedHideout = relatedHideout;
-			Campaign.Current.BusyHideouts.Add(relatedHideout.Settlement);
 		}
 
 		protected override float GetIssueEffectAmountInternal(IssueEffect issueEffect)
@@ -182,14 +182,12 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -263,16 +261,17 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		protected override void OnGameLoad()
 		{
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9"))
+			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && RelatedHideout == null)
 			{
-				if (RelatedHideout == null)
-				{
-					CompleteIssueWithCancel();
-				}
-				else if (!Campaign.Current.BusyHideouts.Contains(RelatedHideout.Settlement))
-				{
-					Campaign.Current.BusyHideouts.Add(RelatedHideout.Settlement);
-				}
+				CompleteIssueWithCancel();
+			}
+		}
+
+		public override void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == RelatedHideout.Settlement)
+			{
+				priority = Math.Max(priority, 100);
 			}
 		}
 
@@ -291,10 +290,6 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		protected override void OnIssueFinalized()
 		{
-			if (RelatedHideout != null)
-			{
-				Campaign.Current.BusyHideouts.Remove(RelatedHideout.Settlement);
-			}
 		}
 	}
 
@@ -315,6 +310,8 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 		[SaveableField(70)]
 		private Hideout _relatedHideout;
 
+		private const float ValidBanditPartyEnableAiChance = 0.05f;
+
 		[SaveableField(60)]
 		private JournalLog _questProgressLogTest;
 
@@ -332,7 +329,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		private int _questPartyProgress => _destroyedPartyCount + _recruitedPartyCount;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -346,7 +343,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _successQuestLogText1
+		private TextObject SuccessQuestLogText1
 		{
 			get
 			{
@@ -359,7 +356,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _successQuestLogText2
+		private TextObject SuccessQuestLogText2
 		{
 			get
 			{
@@ -371,7 +368,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _successQuestLogText3
+		private TextObject SuccessQuestLogText3
 		{
 			get
 			{
@@ -383,7 +380,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _timeoutLog
+		private TextObject TimeoutLog
 		{
 			get
 			{
@@ -394,7 +391,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _questGiverVillageRaided
+		private TextObject QuestGiverVillageRaided
 		{
 			get
 			{
@@ -405,7 +402,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _questCanceledWarDeclaredLog
+		private TextObject QuestCanceledWarDeclaredLog
 		{
 			get
 			{
@@ -415,7 +412,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -476,7 +473,6 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			_recruitedPartyCount = 0;
 			_validPartiesList = new List<MobileParty>();
 			_relatedHideout = relatedHideout;
-			Campaign.Current.BusyHideouts.Add(relatedHideout.Settlement);
 			AddHideoutPartiesToValidPartiesList();
 			SetDialogs();
 			InitializeQuestOnCreation();
@@ -508,7 +504,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			_questProgressLogTest = AddDiscreteLog(_playerStartsQuestLogText, new TextObject("{=HzcLsnYn}Destroyed parties"), _destroyedPartyCount, _totalPartyCount, null, hideInformation: true);
+			_questProgressLogTest = AddDiscreteLog(PlayerStartsQuestLogText, new TextObject("{=HzcLsnYn}Destroyed parties"), _destroyedPartyCount, _totalPartyCount, null, hideInformation: true);
 		}
 
 		private void AddQuestStepLog()
@@ -531,7 +527,6 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 		protected override void RegisterEvents()
 		{
-			CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
 			CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, MobilePartyDestroyed);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
@@ -541,20 +536,25 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 			CampaignEvents.OnSettlementLeftEvent.AddNonSerializedListener(this, OnSettlementLeft);
 			CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+			CampaignEvents.IsSettlementBusyEvent.AddNonSerializedListener(this, IsSettlementBusy);
+		}
+
+		private void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+		{
+			if (asker != this && settlement == _relatedHideout.Settlement)
+			{
+				priority = Math.Max(priority, 200);
+			}
 		}
 
 		private void OnGameLoadFinished()
 		{
-			if (_relatedHideout == null)
+			if (_relatedHideout == null && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9"))
 			{
-				Settlement settlement = SettlementHelper.FindNearestHideout((Settlement x) => x.Hideout.IsInfested);
-				if (settlement != null)
+				Hideout hideout = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.Default, (Settlement x) => x.Hideout.IsInfested);
+				if (hideout != null && Campaign.Current.Models.MapDistanceModel.GetDistance(base.QuestGiver.CurrentSettlement, hideout.Settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 1.25f)
 				{
-					Campaign.Current.Models.MapDistanceModel.GetDistance(base.QuestGiver.CurrentSettlement, settlement, 100f, out var distance);
-					if (distance < 50f)
-					{
-						_relatedHideout = settlement.Hideout;
-					}
+					_relatedHideout = hideout;
 				}
 				if (_relatedHideout != null)
 				{
@@ -565,15 +565,9 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 					CompleteQuestWithCancel();
 				}
 			}
-			if (_relatedHideout != null && base.IsOngoing && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9"))
+			if (_relatedHideout != null && base.IsOngoing && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.9") && _relatedHideout.Settlement.IsSettlementBusy(this))
 			{
-				if (!Campaign.Current.BusyHideouts.Contains(_relatedHideout.Settlement))
-				{
-					Campaign.Current.BusyHideouts.Add(_relatedHideout.Settlement);
-					return;
-				}
 				CompleteQuestWithCancel();
-				Campaign.Current.BusyHideouts.Add(_relatedHideout.Settlement);
 			}
 		}
 
@@ -626,7 +620,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 		{
 			if (village == base.QuestGiver.CurrentSettlement.Village)
 			{
-				AddLog(_questGiverVillageRaided);
+				AddLog(QuestGiverVillageRaided);
 				CompleteQuestWithCancel();
 			}
 		}
@@ -635,13 +629,13 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_questCanceledWarDeclaredLog);
+				CompleteQuestWithCancel(QuestCanceledWarDeclaredLog);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _questCanceledWarDeclaredLog);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, QuestCanceledWarDeclaredLog);
 		}
 
 		private void MobilePartyDestroyed(MobileParty mobileParty, PartyBase destroyerParty)
@@ -653,13 +647,13 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			}
 		}
 
-		private void HourlyTickParty(MobileParty mobileParty)
+		protected override void HourlyTickParty(MobileParty mobileParty)
 		{
-			if (!base.IsOngoing || !mobileParty.IsBandit || mobileParty.MapEvent != null || !mobileParty.MapFaction.IsBanditFaction || mobileParty.IsCurrentlyUsedByAQuest)
+			if (!base.IsOngoing || !mobileParty.IsBandit || mobileParty.MapEvent != null || !mobileParty.MapFaction.IsBanditFaction || mobileParty.IsCurrentlyUsedByAQuest || mobileParty.IsCurrentlyAtSea)
 			{
 				return;
 			}
-			if (mobileParty.Position2D.DistanceSquared(base.QuestGiver.CurrentSettlement.Position2D) <= 1600f)
+			if (((mobileParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty.CurrentSettlement, base.QuestGiver.CurrentSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default, out var landRatio) : Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty, base.QuestGiver.CurrentSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out landRatio)) <= ValidBanditPartyDistance)
 			{
 				if (!_validPartiesList.Contains(mobileParty))
 				{
@@ -670,12 +664,12 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 					_validPartiesList.Add(mobileParty);
 					if (mobileParty.CurrentSettlement == null && MBRandom.RandomFloat < 1f / (float)_validPartiesList.Count)
 					{
-						SetPartyAiAction.GetActionForPatrollingAroundSettlement(mobileParty, base.QuestGiver.CurrentSettlement);
+						SetPartyAiAction.GetActionForPatrollingAroundSettlement(mobileParty, base.QuestGiver.CurrentSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 						mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 						mobileParty.IgnoreForHours(500f);
 					}
 				}
-				else if (MBRandom.RandomFloat < 0.2f)
+				else if (MBRandom.RandomFloat < 0.05f)
 				{
 					mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 				}
@@ -692,15 +686,15 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 		{
 			if (_destroyedPartyCount == _totalPartyCount)
 			{
-				AddLog(_successQuestLogText1);
+				AddLog(SuccessQuestLogText1);
 			}
 			else if (_recruitedPartyCount != 0 && _recruitedPartyCount < _totalPartyCount)
 			{
-				AddLog(_successQuestLogText2);
+				AddLog(SuccessQuestLogText2);
 			}
 			else
 			{
-				AddLog(_successQuestLogText3);
+				AddLog(SuccessQuestLogText3);
 			}
 			RelationshipChangeWithQuestGiver = 3;
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
@@ -729,7 +723,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			{
 				base.QuestGiver.CurrentSettlement.Town.Prosperity -= 10f;
 			}
-			AddLog(_timeoutLog);
+			AddLog(TimeoutLog);
 		}
 
 		protected override void InitializeQuestOnGameLoad()
@@ -749,10 +743,6 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				}
 			}
 			_validPartiesList.Clear();
-			if (_relatedHideout != null)
-			{
-				Campaign.Current.BusyHideouts.Remove(_relatedHideout.Settlement);
-			}
 		}
 	}
 
@@ -772,13 +762,52 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 
 	private const IssueBase.IssueFrequency MerchantNeedsHelpWithOutlawsIssueFrequency = IssueBase.IssueFrequency.VeryCommon;
 
-	private const int ValidBanditPartyDistance = 40;
+	private readonly Dictionary<Settlement, List<Hideout>> _closestHideoutsToSettlements = new Dictionary<Settlement, List<Hideout>>();
 
-	private const int NeededHideoutDistanceToSpawnTheQuest = 50;
+	private static float ValidBanditPartyDistance => NeededHideoutDistanceToSpawnTheQuest * 0.75f;
+
+	private static float NeededHideoutDistanceToSpawnTheQuest => Campaign.Current.EstimatedAverageBanditPartySpeed * (float)CampaignTime.HoursInDay;
 
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnCheckForIssueEvent.AddNonSerializedListener(this, OnCheckForIssue);
+		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameEarlyLoaded);
+	}
+
+	private void OnGameEarlyLoaded(CampaignGameStarter obj)
+	{
+		InitializeCache();
+	}
+
+	private void OnNewGameCreated(CampaignGameStarter obj)
+	{
+		InitializeCache();
+	}
+
+	private void InitializeCache()
+	{
+		foreach (Settlement item in Settlement.All)
+		{
+			if (!item.IsTown && !item.IsVillage)
+			{
+				continue;
+			}
+			foreach (Hideout item2 in Hideout.All)
+			{
+				if (Campaign.Current.Models.MapDistanceModel.GetDistance(item2.Settlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 1.25f)
+				{
+					if (!_closestHideoutsToSettlements.ContainsKey(item))
+					{
+						_closestHideoutsToSettlements.Add(item, new List<Hideout> { item2 });
+					}
+					else
+					{
+						_closestHideoutsToSettlements[item].Add(item2);
+					}
+				}
+			}
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -788,15 +817,13 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 	private bool ConditionsHold(Hero issueGiver, out Hideout hideout)
 	{
 		hideout = null;
-		if (issueGiver.IsMerchant || issueGiver.IsRuralNotable)
+		if ((issueGiver.IsMerchant || issueGiver.IsRuralNotable) && _closestHideoutsToSettlements.TryGetValue(issueGiver.CurrentSettlement, out var value))
 		{
-			Settlement settlement = SettlementHelper.FindNearestHideout((Settlement x) => x.Hideout.IsInfested && !Campaign.Current.BusyHideouts.Contains(x));
-			if (settlement != null)
+			foreach (Hideout item in value)
 			{
-				Campaign.Current.Models.MapDistanceModel.GetDistance(issueGiver.GetMapPoint(), settlement, 100f, out var distance);
-				if (distance < 50f)
+				if (item.IsInfested && !item.Settlement.IsSettlementBusy(this))
 				{
-					hideout = settlement.Hideout;
+					hideout = item;
 					return true;
 				}
 			}

@@ -25,7 +25,7 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 
 	public override void OnTick(float dt)
 	{
-		if (IsSpawningEnabled && _spawnCheckTimer.Check(Mission.Current.CurrentTime))
+		if (IsSpawningEnabled && SpawnCheckTimer.Check(Mission.Current.CurrentTime))
 		{
 			SpawnAgents();
 		}

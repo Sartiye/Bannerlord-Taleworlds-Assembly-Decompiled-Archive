@@ -12,7 +12,7 @@ internal static class GamepadNavigationHelper
 {
 	internal static void GetRelatedLineOfScope(GamepadNavigationScope scope, Vector2 fromPosition, GamepadNavigationTypes movement, out Vector2 lineBegin, out Vector2 lineEnd, out bool isFromWidget)
 	{
-		Rectangle discoveryRectangle = scope.GetDiscoveryRectangle();
+		SimpleRectangle discoveryRectangle = scope.GetDiscoveryRectangle();
 		if (discoveryRectangle.IsPointInside(fromPosition))
 		{
 			Widget approximatelyClosestWidgetToPosition = scope.GetApproximatelyClosestWidgetToPosition(fromPosition, movement);
@@ -56,27 +56,27 @@ internal static class GamepadNavigationHelper
 
 	internal static void GetRelatedLineOfWidget(Widget widget, GamepadNavigationTypes movement, out Vector2 lineBegin, out Vector2 lineEnd)
 	{
-		Vector2 globalPosition = widget.GlobalPosition;
-		Vector2 vector = new Vector2(widget.GlobalPosition.X + widget.Size.X, widget.GlobalPosition.Y);
-		Vector2 vector2 = widget.GlobalPosition + widget.Size;
-		Vector2 vector3 = new Vector2(widget.GlobalPosition.X, widget.GlobalPosition.Y + widget.Size.Y);
+		Vector2 topLeft = widget.AreaRect.TopLeft;
+		Vector2 topRight = widget.AreaRect.TopRight;
+		Vector2 bottomRight = widget.AreaRect.BottomRight;
+		Vector2 bottomLeft = widget.AreaRect.BottomLeft;
 		switch (movement)
 		{
 		case GamepadNavigationTypes.Up:
-			lineBegin = vector3;
-			lineEnd = vector2;
+			lineBegin = bottomLeft;
+			lineEnd = bottomRight;
 			break;
 		case GamepadNavigationTypes.Right:
-			lineBegin = globalPosition;
-			lineEnd = vector3;
+			lineBegin = topLeft;
+			lineEnd = bottomLeft;
 			break;
 		case GamepadNavigationTypes.Down:
-			lineBegin = globalPosition;
-			lineEnd = vector;
+			lineBegin = topLeft;
+			lineEnd = topRight;
 			break;
 		case GamepadNavigationTypes.Left:
-			lineBegin = vector;
-			lineEnd = vector2;
+			lineBegin = topRight;
+			lineEnd = bottomRight;
 			break;
 		default:
 			lineBegin = Vector2.Zero;
@@ -87,41 +87,38 @@ internal static class GamepadNavigationHelper
 
 	internal static float GetDistanceToClosestWidgetEdge(Widget widget, Vector2 point, GamepadNavigationTypes movement, out Vector2 closestPointOnEdge)
 	{
-		Vector2 globalPosition = widget.GlobalPosition;
-		Vector2 size = widget.Size;
-		Rectangle rectangle = new Rectangle(globalPosition.X, globalPosition.Y, size.X, size.Y);
 		switch (movement)
 		{
 		case GamepadNavigationTypes.Up:
 		{
-			Vector2 lineBegin4 = new Vector2(rectangle.X, rectangle.Y2);
-			Vector2 lineEnd4 = new Vector2(rectangle.X2, rectangle.Y2);
-			closestPointOnEdge = GetClosestPointOnLineSegment(lineBegin4, lineEnd4, point);
+			Vector2 bottomLeft2 = widget.AreaRect.BottomLeft;
+			Vector2 bottomRight2 = widget.AreaRect.BottomRight;
+			closestPointOnEdge = GetClosestPointOnLineSegment(bottomLeft2, bottomRight2, point);
 			return Vector2.Distance(closestPointOnEdge, point);
 		}
 		case GamepadNavigationTypes.Right:
 		{
-			Vector2 lineBegin3 = new Vector2(rectangle.X, rectangle.Y);
-			Vector2 lineEnd3 = new Vector2(rectangle.X, rectangle.Y2);
-			closestPointOnEdge = GetClosestPointOnLineSegment(lineBegin3, lineEnd3, point);
+			Vector2 topLeft2 = widget.AreaRect.TopLeft;
+			Vector2 bottomLeft = widget.AreaRect.BottomLeft;
+			closestPointOnEdge = GetClosestPointOnLineSegment(topLeft2, bottomLeft, point);
 			return Vector2.Distance(closestPointOnEdge, point);
 		}
 		case GamepadNavigationTypes.Down:
 		{
-			Vector2 lineBegin2 = new Vector2(rectangle.X, rectangle.Y);
-			Vector2 lineEnd2 = new Vector2(rectangle.X2, rectangle.Y);
-			closestPointOnEdge = GetClosestPointOnLineSegment(lineBegin2, lineEnd2, point);
+			Vector2 topLeft = widget.AreaRect.TopLeft;
+			Vector2 topRight2 = widget.AreaRect.TopRight;
+			closestPointOnEdge = GetClosestPointOnLineSegment(topLeft, topRight2, point);
 			return Vector2.Distance(closestPointOnEdge, point);
 		}
 		case GamepadNavigationTypes.Left:
 		{
-			Vector2 lineBegin = new Vector2(rectangle.X2, rectangle.Y);
-			Vector2 lineEnd = new Vector2(rectangle.X2, rectangle.Y2);
-			closestPointOnEdge = GetClosestPointOnLineSegment(lineBegin, lineEnd, point);
+			Vector2 topRight = widget.AreaRect.TopRight;
+			Vector2 bottomRight = widget.AreaRect.BottomRight;
+			closestPointOnEdge = GetClosestPointOnLineSegment(topRight, bottomRight, point);
 			return Vector2.Distance(closestPointOnEdge, point);
 		}
 		default:
-			closestPointOnEdge = globalPosition + size / 2f;
+			closestPointOnEdge = widget.AreaRect.GetCenter();
 			return Vector2.Distance(closestPointOnEdge, point);
 		}
 	}
@@ -149,7 +146,7 @@ internal static class GamepadNavigationHelper
 		return lineBegin + vector * num2;
 	}
 
-	internal static GamepadNavigationTypes GetMovementsToReachRectangle(Vector2 fromPosition, Rectangle rect)
+	internal static GamepadNavigationTypes GetMovementsToReachRectangle(Vector2 fromPosition, SimpleRectangle rect)
 	{
 		GamepadNavigationTypes gamepadNavigationTypes = GamepadNavigationTypes.None;
 		if (fromPosition.X > rect.X + rect.Width)
@@ -200,26 +197,26 @@ internal static class GamepadNavigationHelper
 		if (fromScope != null)
 		{
 			Widget lastNavigatedWidget = fromScope.LastNavigatedWidget;
-			Rectangle rectangle = (fromScope.UseDiscoveryAreaAsScopeEdges ? fromScope.GetDiscoveryRectangle() : fromScope.GetRectangle());
-			if (fromScope.NavigateFromScopeEdges || !rectangle.IsPointInside(fromPosition))
+			SimpleRectangle simpleRectangle = (fromScope.UseDiscoveryAreaAsScopeEdges ? fromScope.GetDiscoveryRectangle() : fromScope.GetRectangle());
+			if (fromScope.NavigateFromScopeEdges || !simpleRectangle.IsPointInside(fromPosition))
 			{
 				if (lastNavigatedWidget != null)
 				{
-					fromPosition = lastNavigatedWidget.GlobalPosition + lastNavigatedWidget.Size / 2f;
+					fromPosition = lastNavigatedWidget.AreaRect.GetCenter();
 				}
 				switch (movement)
 				{
 				case GamepadNavigationTypes.Up:
-					fromPosition.Y = rectangle.Y;
+					fromPosition.Y = simpleRectangle.Y;
 					break;
 				case GamepadNavigationTypes.Right:
-					fromPosition.X = rectangle.X2;
+					fromPosition.X = simpleRectangle.X2;
 					break;
 				case GamepadNavigationTypes.Down:
-					fromPosition.Y = rectangle.Y2;
+					fromPosition.Y = simpleRectangle.Y2;
 					break;
 				case GamepadNavigationTypes.Left:
-					fromPosition.X = rectangle.X;
+					fromPosition.X = simpleRectangle.X;
 					break;
 				}
 			}
@@ -341,7 +338,7 @@ internal static class GamepadNavigationHelper
 		case GamepadNavigationTypes.Down:
 			return MathF.Abs(p1.Y - p2.Y);
 		default:
-			Debug.FailedAssert("Invalid gamepad movement type:" + movement, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\GamepadNavigation\\GamepadNavigationHelper.cs", "GetDirectionalDistanceBetweenTwoPoints", 411);
+			Debug.FailedAssert("Invalid gamepad movement type:" + movement, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\GamepadNavigation\\GamepadNavigationHelper.cs", "GetDirectionalDistanceBetweenTwoPoints", 406);
 			return 0f;
 		}
 	}

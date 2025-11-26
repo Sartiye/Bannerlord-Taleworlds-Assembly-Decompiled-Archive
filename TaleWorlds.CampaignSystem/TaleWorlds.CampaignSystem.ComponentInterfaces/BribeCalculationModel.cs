@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BribeCalculationModel : GameModel
+public abstract class BribeCalculationModel : MBGameModel<BribeCalculationModel>
 {
 	public abstract int GetBribeToEnterLordsHall(Settlement settlement);
 

@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.LogEntries;
+using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -25,6 +29,12 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 	private int _numOfRecruitablePrisoners;
 
 	private List<JournalLog> _unExaminedQuestLogs = new List<JournalLog>();
+
+	private IReadOnlyList<JournalLog> _unExaminedQuestLogsReadOnly;
+
+	private readonly Dictionary<JournalLog, JournalLogEntry> _unExaminedQuestLogJournalEntries = new Dictionary<JournalLog, JournalLogEntry>();
+
+	private bool _isUnExaminedQuestLogJournalEntriesDirty;
 
 	private List<Army> _unExaminedArmies = new List<Army>();
 
@@ -64,17 +74,47 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 	[SaveableField(51)]
 	private int _questSortTypeSelection;
 
+	private List<ItemRosterElement> _plunderItems;
+
+	private List<Figurehead> _unexaminedFigureheads;
+
 	public bool IsPartyNotificationActive { get; private set; }
 
-	public bool IsQuestNotificationActive => _unExaminedQuestLogs.Count > 0;
+	public bool IsQuestNotificationActive => UnExaminedQuestLogs.Count > 0;
 
-	public List<JournalLog> UnExaminedQuestLogs => _unExaminedQuestLogs;
+	public IReadOnlyList<JournalLog> UnExaminedQuestLogs
+	{
+		get
+		{
+			if (_isUnExaminedQuestLogJournalEntriesDirty)
+			{
+				UpdateJournalLogEntries();
+			}
+			for (int num = _unExaminedQuestLogs.Count - 1; num >= 0; num--)
+			{
+				JournalLogEntry journalLogEntry = _unExaminedQuestLogJournalEntries[_unExaminedQuestLogs[num]];
+				CampaignTime campaignTime = journalLogEntry.KeepInHistoryTime + journalLogEntry.GameTime;
+				if (!journalLogEntry.IsValid() || campaignTime.IsPast)
+				{
+					_unExaminedQuestLogJournalEntries.Remove(_unExaminedQuestLogs[num]);
+					_unExaminedQuestLogs.RemoveAt(num);
+				}
+			}
+			if (_unExaminedQuestLogsReadOnly == null || _unExaminedQuestLogs.Count != _unExaminedQuestLogsReadOnly.Count)
+			{
+				_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
+			}
+			return _unExaminedQuestLogsReadOnly;
+		}
+	}
 
 	public List<Army> UnExaminedArmies => _unExaminedArmies;
 
 	public int NumOfKingdomArmyNotifications => UnExaminedArmies.Count;
 
 	public bool IsCharacterNotificationActive => _isCharacterNotificationActive;
+
+	public IReadOnlyList<Figurehead> UnexaminedFigureheads => _unexaminedFigureheads;
 
 	public ViewDataTrackerCampaignBehavior()
 	{
@@ -88,12 +128,13 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_encyclopediaBookmarkedSettlements = new List<Settlement>();
 		_encyclopediaBookmarkedUnits = new List<CharacterObject>();
 		_inventorySortPreferences = new Dictionary<int, Tuple<int, int>>();
+		_plunderItems = new List<ItemRosterElement>();
+		_unexaminedFigureheads = new List<Figurehead>();
 	}
 
-	public string GetPartyNotificationText()
+	public TextObject GetPartyNotificationText()
 	{
-		_recruitNotificationText.SetTextVariable("NUMBER", _numOfRecruitablePrisoners);
-		return _recruitNotificationText.ToString();
+		return _recruitNotificationText.CopyTextObject().SetTextVariable("NUMBER", _numOfRecruitablePrisoners);
 	}
 
 	public void ClearPartyNotification()
@@ -139,10 +180,9 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_examinedPrisonerCharacterList = dictionary;
 	}
 
-	public string GetQuestNotificationText()
+	public TextObject GetQuestNotificationText()
 	{
-		_questNotificationText.SetTextVariable("NUMBER", _unExaminedQuestLogs.Count);
-		return _questNotificationText.ToString();
+		return _questNotificationText.CopyTextObject().SetTextVariable("NUMBER", UnExaminedQuestLogs.Count);
 	}
 
 	public void OnQuestLogExamined(JournalLog log)
@@ -150,17 +190,51 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		if (_unExaminedQuestLogs.Contains(log))
 		{
 			_unExaminedQuestLogs.Remove(log);
+			_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
+			IEnumerable<JournalLog> entries = _unExaminedQuestLogJournalEntries[log].GetEntries();
+			if (_unExaminedQuestLogs.All((JournalLog x) => !entries.Contains(x)))
+			{
+				_unExaminedQuestLogJournalEntries.Remove(log);
+			}
 		}
 	}
 
 	private void OnQuestLogAdded(QuestBase obj, bool hideInformation)
 	{
 		_unExaminedQuestLogs.Add(obj.JournalEntries[obj.JournalEntries.Count - 1]);
+		_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
+		_isUnExaminedQuestLogJournalEntriesDirty = true;
 	}
 
 	private void OnIssueLogAdded(IssueBase obj, bool hideInformation)
 	{
 		_unExaminedQuestLogs.Add(obj.JournalEntries[obj.JournalEntries.Count - 1]);
+		_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
+		_isUnExaminedQuestLogJournalEntriesDirty = true;
+	}
+
+	private void UpdateJournalLogEntries()
+	{
+		_unExaminedQuestLogJournalEntries.Clear();
+		JournalLogEntry[] source = Campaign.Current.LogEntryHistory.GetGameActionLogs((JournalLogEntry x) => true).ToArray();
+		for (int num = _unExaminedQuestLogs.Count - 1; num >= 0; num--)
+		{
+			JournalLog unExaminedQuestLog = _unExaminedQuestLogs[num];
+			JournalLogEntry journalLogEntry = source.FirstOrDefault((JournalLogEntry x) => x.GetEntries().Contains(unExaminedQuestLog));
+			if (journalLogEntry == null)
+			{
+				_unExaminedQuestLogs.RemoveAt(num);
+			}
+			else
+			{
+				_unExaminedQuestLogJournalEntries.Add(unExaminedQuestLog, journalLogEntry);
+			}
+		}
+		if (_unExaminedQuestLogs.Count != _unExaminedQuestLogsReadOnly.Count)
+		{
+			_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
+		}
+		_isUnExaminedQuestLogJournalEntriesDirty = false;
 	}
 
 	public void OnArmyExamined(Army army)
@@ -191,17 +265,16 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_numOfPerks = 0;
 	}
 
-	public string GetCharacterNotificationText()
+	public TextObject GetCharacterNotificationText()
 	{
-		_characterNotificationText.SetTextVariable("NUMBER", _numOfPerks);
-		return _characterNotificationText.ToString();
+		return _characterNotificationText.CopyTextObject().SetTextVariable("NUMBER", _numOfPerks);
 	}
 
 	private void OnHeroGainedSkill(Hero hero, SkillObject skill, int change = 1, bool shouldNotify = true)
 	{
 		if ((hero == Hero.MainHero || hero.Clan == Clan.PlayerClan) && PerkHelper.AvailablePerkCountOfHero(hero) > 0)
 		{
-			_isCharacterNotificationActive = true;
+			_isCharacterNotificationActive = shouldNotify;
 			_numOfPerks++;
 		}
 	}
@@ -210,14 +283,16 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 	{
 		if (hero == Hero.MainHero)
 		{
-			_isCharacterNotificationActive = true;
+			_isCharacterNotificationActive = shouldNotify;
 		}
 	}
 
 	private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
 	{
+		_unExaminedQuestLogsReadOnly = _unExaminedQuestLogs.AsReadOnly();
 		UpdatePartyNotification();
 		UpdatePrisonerRecruitValue();
+		UpdateJournalLogEntries();
 	}
 
 	public bool GetMapBarExtendedState()
@@ -394,6 +469,21 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		return _questSelection;
 	}
 
+	public MBReadOnlyList<ItemRosterElement> GetPlunderItems()
+	{
+		return new MBReadOnlyList<ItemRosterElement>(_plunderItems);
+	}
+
+	private void OnFigureheadUnlocked(Figurehead newFigurehead)
+	{
+		_unexaminedFigureheads.Add(newFigurehead);
+	}
+
+	public void OnFigureheadExamined(Figurehead figurehead)
+	{
+		_unexaminedFigureheads.Remove(figurehead);
+	}
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.HeroGainedSkill.AddNonSerializedListener(this, OnHeroGainedSkill);
@@ -403,6 +493,45 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		CampaignEvents.QuestLogAddedEvent.AddNonSerializedListener(this, OnQuestLogAdded);
 		CampaignEvents.IssueLogAddedEvent.AddNonSerializedListener(this, OnIssueLogAdded);
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+		CampaignEvents.ItemsLooted.AddNonSerializedListener(this, OnPlayerPlunderedItems);
+		CampaignEvents.RaidCompletedEvent.AddNonSerializedListener(this, OnRaidCompleted);
+		CampaignEvents.OnFigureheadUnlockedEvent.AddNonSerializedListener(this, OnFigureheadUnlocked);
+	}
+
+	private void OnRaidCompleted(BattleSideEnum winnerSide, RaidEventComponent raidEvent)
+	{
+		if (raidEvent.IsPlayerMapEvent)
+		{
+			_plunderItems.Clear();
+		}
+	}
+
+	private void OnPlayerPlunderedItems(MobileParty mobileParty, ItemRoster items)
+	{
+		if (mobileParty != MobileParty.MainParty)
+		{
+			return;
+		}
+		for (int i = 0; i < items.Count; i++)
+		{
+			ItemRosterElement item = items[i];
+			bool flag = false;
+			for (int j = 0; j < _plunderItems.Count; j++)
+			{
+				if (_plunderItems[j].EquipmentElement.IsEqualTo(item.EquipmentElement))
+				{
+					ItemRosterElement value = _plunderItems[j];
+					value.Amount += item.Amount;
+					_plunderItems[j] = value;
+					flag = true;
+					break;
+				}
+			}
+			if (!flag)
+			{
+				_plunderItems.Add(item);
+			}
+		}
 	}
 
 	public void SetQuestSortTypeSelection(int questSortTypeSelection)
@@ -436,5 +565,7 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		dataStore.SyncData("_isCharacterNotificationActive", ref _isCharacterNotificationActive);
 		dataStore.SyncData("_numOfPerks", ref _numOfPerks);
 		dataStore.SyncData("_examinedPrisonerCharacterList", ref _examinedPrisonerCharacterList);
+		dataStore.SyncData("_plunderItems", ref _plunderItems);
+		dataStore.SyncData("_unexaminedFigureheads", ref _unexaminedFigureheads);
 	}
 }

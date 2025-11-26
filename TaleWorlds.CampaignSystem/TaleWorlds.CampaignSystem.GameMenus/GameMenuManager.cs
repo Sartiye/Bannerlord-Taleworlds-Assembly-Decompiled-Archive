@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -110,35 +109,47 @@ public class GameMenuManager
 
 	public void RefreshMenuOptions(MenuContext menuContext)
 	{
-		if (menuContext.GameMenu != null)
+		if (menuContext.GameMenu == null)
 		{
-			if (Game.Current == null)
-			{
-				throw new MBNullParameterException("Game");
-			}
-			int virtualMenuOptionAmount = Campaign.Current.GameMenuManager.GetVirtualMenuOptionAmount(menuContext);
-			for (int i = 0; i < virtualMenuOptionAmount; i++)
-			{
-				GetMenuOptionConditionsHold(menuContext, i);
-			}
+			Debug.FailedAssert("Current game menu empty, can not run RefreshMenuOptions", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "RefreshMenuOptions", 143);
 		}
-		else if (menuContext.GameMenu == null)
+		else if (Game.Current == null)
 		{
-			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionConditionsHold");
+			Debug.FailedAssert("Game is null during RefreshMenuOptions", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "RefreshMenuOptions", 148);
+		}
+		else
+		{
+			menuContext.Handler.OnMenuRefresh();
+		}
+	}
+
+	public void RefreshMenuOptionConditions(MenuContext menuContext)
+	{
+		if (menuContext.GameMenu == null)
+		{
+			Debug.FailedAssert("Current game menu empty, can not run RefreshMenuOptionConditions", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "RefreshMenuOptionConditions", 161);
+			return;
+		}
+		if (Game.Current == null)
+		{
+			Debug.FailedAssert("Game is null during RefreshMenuOptionConditions", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "RefreshMenuOptionConditions", 166);
+			return;
+		}
+		int virtualMenuOptionAmount = Campaign.Current.GameMenuManager.GetVirtualMenuOptionAmount(menuContext);
+		for (int i = 0; i < virtualMenuOptionAmount; i++)
+		{
+			GetMenuOptionConditionsHold(menuContext, i);
 		}
 	}
 
 	public string GetMenuOptionIdString(MenuContext menuContext, int menuItemNumber)
 	{
-		if (menuContext.GameMenu != null)
-		{
-			return menuContext.GameMenu.GetMenuOptionIdString(menuItemNumber);
-		}
 		if (menuContext.GameMenu == null)
 		{
-			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionIdString");
+			Debug.FailedAssert("Current game menu empty, can not run GetMenuOptionIdString", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "GetMenuOptionIdString", 183);
+			return "";
 		}
-		return "";
+		return menuContext.GameMenu.GetMenuOptionIdString(menuItemNumber);
 	}
 
 	internal bool GetMenuOptionIsLeave(MenuContext menuContext, int menuItemNumber)
@@ -174,11 +185,11 @@ public class GameMenuManager
 	{
 		if (menuContext.GameMenu != null)
 		{
-			menuContext.GameMenu.MenuRepeatObjects = list.ToList();
+			menuContext.GameMenu.SetMenuRepeatObjects(list);
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "SetRepeatObjectList", 228);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuManager.cs", "SetRepeatObjectList", 237);
 		}
 	}
 
@@ -197,16 +208,16 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetVirtualMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
-	public GameOverlays.MenuOverlayType GetMenuOverlayType(MenuContext menuContext)
+	public GameMenu.MenuOverlayType GetMenuOverlayType(MenuContext menuContext)
 	{
 		if (menuContext.GameMenu != null)
 		{
 			return menuContext.GameMenu.OverlayType;
 		}
-		return GameOverlays.MenuOverlayType.SettlementWithCharacters;
+		return GameMenu.MenuOverlayType.SettlementWithCharacters;
 	}
 
 	public TextObject GetVirtualMenuOptionText(MenuContext menuContext, int virtualMenuItemIndex)
@@ -224,7 +235,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetVirtualMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public GameMenuOption GetVirtualGameMenuOption(MenuContext menuContext, int virtualMenuItemIndex)
@@ -256,7 +267,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetVirtualMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public float GetVirtualMenuProgress(MenuContext menuContext)
@@ -431,7 +442,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	private TextObject GetMenuOptionText(MenuContext menuContext, int menuItemNumber)
@@ -444,7 +455,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	private TextObject GetMenuOptionText2(MenuContext menuContext, int menuItemNumber)
@@ -457,7 +468,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	private TextObject GetMenuOptionTooltip(MenuContext menuContext, int menuItemNumber)
@@ -470,7 +481,7 @@ public class GameMenuManager
 		{
 			throw new MBMisuseException("Current game menu empty, can not run GetMenuOptionText");
 		}
-		return TextObject.Empty;
+		return null;
 	}
 
 	public void AddGameMenu(GameMenu gameMenu)

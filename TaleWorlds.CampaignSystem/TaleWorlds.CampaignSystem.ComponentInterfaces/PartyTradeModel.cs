@@ -3,13 +3,9 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PartyTradeModel : GameModel
+public abstract class PartyTradeModel : MBGameModel<PartyTradeModel>
 {
 	public abstract int CaravanTransactionHighestValueItemCount { get; }
-
-	public abstract int SmallCaravanFormingCostForPlayer { get; }
-
-	public abstract int LargeCaravanFormingCostForPlayer { get; }
 
 	public abstract float GetTradePenaltyFactor(MobileParty party);
 }

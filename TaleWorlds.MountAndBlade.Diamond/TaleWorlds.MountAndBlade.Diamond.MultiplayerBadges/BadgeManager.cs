@@ -76,7 +76,7 @@ public static class BadgeManager
 					BadgeType result = BadgeType.Custom;
 					if (!Enum.TryParse<BadgeType>(childNode2.Attributes["type"].Value, ignoreCase: true, out result))
 					{
-						Debug.FailedAssert("No 'type' was provided for a badge", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "LoadFromXml", 82);
+						Debug.FailedAssert("No 'type' was provided for a badge", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "LoadFromXml", 82);
 					}
 					Badge badge = null;
 					switch (result)
@@ -135,12 +135,12 @@ public static class BadgeManager
 	{
 		if (playerData == null)
 		{
-			Debug.FailedAssert("PlayerData is null on get value", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionValue", 143);
+			Debug.FailedAssert("PlayerData is null on get value", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionValue", 143);
 			return "";
 		}
 		if (!condition.Parameters.TryGetValue("property", out var value))
 		{
-			Debug.FailedAssert("Condition with type PlayerData does not have Property parameter", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionValue", 150);
+			Debug.FailedAssert("Condition with type PlayerData does not have Property parameter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionValue", 150);
 			return "";
 		}
 		if (value == "ShownBadgeId")
@@ -154,12 +154,12 @@ public static class BadgeManager
 	{
 		if (playerData == null)
 		{
-			Debug.FailedAssert("PlayerData is null on get value", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionNumericValue", 167);
+			Debug.FailedAssert("PlayerData is null on get value", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionNumericValue", 167);
 			return 0;
 		}
 		if (!condition.Parameters.TryGetValue("property", out var value))
 		{
-			Debug.FailedAssert("Condition with type PlayerDataNumeric does not have Property parameter", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionNumericValue", 174);
+			Debug.FailedAssert("Condition with type PlayerDataNumeric does not have Property parameter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\MultiplayerBadges\\BadgeManager.cs", "GetBadgeConditionNumericValue", 174);
 			return 0;
 		}
 		int result = 0;

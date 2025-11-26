@@ -35,10 +35,10 @@ public class MissionGauntletKillNotificationUIHandler : MissionView
 	{
 		base.OnMissionScreenInitialize();
 		ViewOrderPriority = 2;
-		_isGeneralFeedEnabled = _doesGameModeAllowGeneralFeed && BannerlordConfig.ReportCasualtiesType < 2;
+		_isGeneralFeedEnabled = _doesGameModeAllowGeneralFeed && BannerlordConfig.KillFeedVisualType < 2;
 		_isPersonalFeedEnabled = BannerlordConfig.ReportPersonalDamage;
 		_dataSource = new MPKillFeedVM();
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerKillFeed", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerKillFeed", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		CombatLogManager.OnGenerateCombatLog += OnCombatLogManagerOnPrintCombatLog;
@@ -50,7 +50,7 @@ public class MissionGauntletKillNotificationUIHandler : MissionView
 		switch (changedManagedOptionsType)
 		{
 		case ManagedOptions.ManagedOptionsType.ReportCasualtiesType:
-			_isGeneralFeedEnabled = _doesGameModeAllowGeneralFeed && BannerlordConfig.ReportCasualtiesType < 2;
+			_isGeneralFeedEnabled = _doesGameModeAllowGeneralFeed && BannerlordConfig.KillFeedVisualType < 2;
 			break;
 		case ManagedOptions.ManagedOptionsType.ReportPersonalDamage:
 			_isPersonalFeedEnabled = BannerlordConfig.ReportPersonalDamage;

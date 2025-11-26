@@ -29,6 +29,7 @@ public class TeamAISiegeDefender : TeamAISiegeComponent
 	{
 		if (formation.AI.GetBehavior<BehaviorCharge>() == null)
 		{
+			formation.ForceCalculateCaches();
 			if (formation.FormationIndex == FormationClass.NumberOfRegularFormations)
 			{
 				formation.AI.AddAiBehavior(new BehaviorGeneral(formation));

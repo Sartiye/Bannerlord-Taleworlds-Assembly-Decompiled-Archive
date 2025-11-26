@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.Core;
@@ -210,13 +211,16 @@ public class DefaultSmithingModel : SmithingModel
 		int num = CalculateWeaponDesignDifficulty(weaponDesign);
 		int skillValue = hero.CharacterObject.GetSkillValue(DefaultSkills.Crafting);
 		List<(ItemQuality, float)> list = new List<(ItemQuality, float)>();
-		float x = TaleWorlds.Library.MathF.Clamp(skillValue - num, -300f, 300f);
-		list.Add((ItemQuality.Poor, 0.36f * (1f - CalculateSigmoidFunction(x, -70f, 0.018f))));
-		list.Add((ItemQuality.Inferior, 0.45f * (1f - CalculateSigmoidFunction(x, -55f, 0.018f))));
-		list.Add((ItemQuality.Common, CalculateSigmoidFunction(x, 25f, 0.018f)));
-		list.Add((ItemQuality.Fine, 0.36f * CalculateSigmoidFunction(x, 40f, 0.018f)));
-		list.Add((ItemQuality.Masterwork, 0.27f * CalculateSigmoidFunction(x, 70f, 0.018f)));
-		list.Add((ItemQuality.Legendary, 0.18f * CalculateSigmoidFunction(x, 115f, 0.018f)));
+		ExplainedNumber explainedNumber = new ExplainedNumber(-num);
+		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.SmithingLevel, hero.CharacterObject, ref explainedNumber);
+		explainedNumber.LimitMin(-300f);
+		explainedNumber.LimitMax(300f);
+		list.Add((ItemQuality.Poor, 0.36f * (1f - CalculateSigmoidFunction(explainedNumber.ResultNumber, -70f, 0.018f))));
+		list.Add((ItemQuality.Inferior, 0.45f * (1f - CalculateSigmoidFunction(explainedNumber.ResultNumber, -55f, 0.018f))));
+		list.Add((ItemQuality.Common, CalculateSigmoidFunction(explainedNumber.ResultNumber, 25f, 0.018f)));
+		list.Add((ItemQuality.Fine, 0.36f * CalculateSigmoidFunction(explainedNumber.ResultNumber, 40f, 0.018f)));
+		list.Add((ItemQuality.Masterwork, 0.27f * CalculateSigmoidFunction(explainedNumber.ResultNumber, 70f, 0.018f)));
+		list.Add((ItemQuality.Legendary, 0.18f * CalculateSigmoidFunction(explainedNumber.ResultNumber, 115f, 0.018f)));
 		float num2 = list.Sum<(ItemQuality, float)>(((ItemQuality quality, float probability) tuple) => tuple.probability);
 		for (int i = 0; i < list.Count; i++)
 		{

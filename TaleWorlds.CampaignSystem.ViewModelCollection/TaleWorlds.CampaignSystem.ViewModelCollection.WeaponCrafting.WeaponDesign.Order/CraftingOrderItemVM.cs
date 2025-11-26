@@ -348,7 +348,7 @@ public class CraftingOrderItemVM : ViewModel
 		WeaponAttributes.Clear();
 		if (CraftingOrder.PreCraftedWeaponDesignItem?.Weapons == null)
 		{
-			Debug.FailedAssert("Crafting order does not contain any valid weapons", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\Order\\CraftingOrderItemVM.cs", "RefreshStats", 71);
+			Debug.FailedAssert("Crafting order does not contain any valid weapons", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\Order\\CraftingOrderItemVM.cs", "RefreshStats", 71);
 			return;
 		}
 		CraftingOrder.GetStatWeapon();

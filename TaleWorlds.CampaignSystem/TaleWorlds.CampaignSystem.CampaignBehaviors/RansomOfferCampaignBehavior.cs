@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
@@ -22,7 +21,7 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 
 	private const float RansomOfferChanceForPrisonersKeptByAI = 0.1f;
 
-	private const float MapNotificationAutoDeclineDurationInHours = 48f;
+	private const float MapNotificationAutoDeclineDurationInDays = 2f;
 
 	private const int AmountOfGoldLeftAfterRansom = 1000;
 
@@ -64,7 +63,7 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 
 	private void DailyTickHero(Hero hero)
 	{
-		if (hero.IsPrisoner && hero.Clan != null && hero.PartyBelongedToAsPrisoner != null && hero.PartyBelongedToAsPrisoner.MapFaction != null && !hero.PartyBelongedToAsPrisoner.MapFaction.IsBanditFaction && hero != Hero.MainHero && hero.Clan.Lords.Count > 1)
+		if (hero.IsPrisoner && hero.Clan != null && hero.PartyBelongedToAsPrisoner != null && hero.PartyBelongedToAsPrisoner.MapFaction != null && !hero.PartyBelongedToAsPrisoner.MapFaction.IsBanditFaction && hero != Hero.MainHero && hero.Clan.AliveLords.Count > 1 && hero.MapFaction != null)
 		{
 			ConsiderRansomPrisoner(hero);
 		}
@@ -77,14 +76,14 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		Hero hero2 = ((hero.Clan.Leader != hero) ? hero.Clan.Leader : hero.Clan.Lords.Where((Hero t) => t != hero.Clan.Leader).GetRandomElementInefficiently());
+		Hero hero2 = ((hero.Clan.Leader != hero) ? hero.Clan.Leader : hero.Clan.AliveLords.Where((Hero t) => t != hero.Clan.Leader).GetRandomElementInefficiently());
 		if (hero2 == Hero.MainHero && hero2.IsPrisoner)
 		{
 			return;
 		}
 		if (captorClanOfPrisoner == Clan.PlayerClan || hero.Clan == Clan.PlayerClan)
 		{
-			if (_currentRansomHero != null)
+			if (_currentRansomHero != null || MobileParty.MainParty.IsInRaftState)
 			{
 				return;
 			}
@@ -92,7 +91,7 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 			if (MBRandom.RandomFloat < num)
 			{
 				float num2 = (float)new SetPrisonerFreeBarterable(hero, captorClanOfPrisoner.Leader, hero.PartyBelongedToAsPrisoner, hero2).GetUnitValueForFaction(hero.Clan) * 1.1f;
-				if (num2 > 1E-05f && MBRandom.RandomFloat < num && (float)(hero2.Gold + 1000) >= num2)
+				if (num2 > 1E-05f && (float)(hero2.Gold + 1000) >= num2)
 				{
 					SetCurrentRansomHero(hero, hero2);
 					StringHelpers.SetCharacterProperties("CAPTIVE_HERO", hero.CharacterObject, RansomOfferDescriptionText);
@@ -123,6 +122,10 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 				}
 				return hero.PartyBelongedToAsPrisoner.Owner.Clan;
 			}
+			if (hero.PartyBelongedToAsPrisoner.MobileParty.IsPatrolParty)
+			{
+				return hero.PartyBelongedToAsPrisoner.MobileParty.HomeSettlement.OwnerClan;
+			}
 			return hero.PartyBelongedToAsPrisoner.MobileParty.ActualClan;
 		}
 		return hero.PartyBelongedToAsPrisoner.Settlement.OwnerClan;
@@ -139,8 +142,8 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 	{
 		Clan captorClanOfPrisoner = GetCaptorClanOfPrisoner(captiveHero);
 		Clan clan = ((captiveHero.Clan == Clan.PlayerClan) ? captorClanOfPrisoner : captiveHero.Clan);
-		Hero hero = ((captiveHero.Clan.Leader != captiveHero) ? captiveHero.Clan.Leader : captiveHero.Clan.Lords.Where((Hero t) => t != captiveHero.Clan.Leader).GetRandomElementInefficiently());
-		int ransomPrice = (int)Math.Min(hero.Gold, (float)new SetPrisonerFreeBarterable(captiveHero, captorClanOfPrisoner.Leader, captiveHero.PartyBelongedToAsPrisoner, hero).GetUnitValueForFaction(captiveHero.Clan) * 1.1f);
+		Hero ransomPayer = ((captiveHero.Clan.Leader != captiveHero) ? captiveHero.Clan.Leader : captiveHero.Clan.AliveLords.Where((Hero t) => t != captiveHero.Clan.Leader).GetRandomElementInefficiently());
+		int ransomPrice = (int)((float)new SetPrisonerFreeBarterable(captiveHero, captorClanOfPrisoner.Leader, captiveHero.PartyBelongedToAsPrisoner, ransomPayer).GetUnitValueForFaction(captiveHero.Clan) * 1.1f);
 		TextObject textObject = ((captorClanOfPrisoner == Clan.PlayerClan) ? RansomPanelDescriptionPlayerHeldPrisonerText : RansomPanelDescriptionNpcHeldPrisonerText);
 		textObject.SetTextVariable("CLAN_NAME", clan.Name);
 		textObject.SetTextVariable("GOLD_AMOUNT", ransomPrice);
@@ -150,7 +153,16 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		InformationManager.ShowInquiry(new InquiryData(RansomPanelTitleText.ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, RansomPanelAffirmativeText.ToString(), RansomPanelNegativeText.ToString(), delegate
 		{
 			AcceptRansomOffer(ransomPrice);
-		}, DeclineRansomOffer), pauseGameActiveState: true);
+		}, DeclineRansomOffer, "", 0f, null, () => IsAffirmativeOptionEnabled(ransomPayer, ransomPrice)), pauseGameActiveState: true);
+	}
+
+	private (bool, string) IsAffirmativeOptionEnabled(Hero ransomPayer, int ransomPrice)
+	{
+		if (ransomPayer == Hero.MainHero && ransomPayer.Gold < ransomPrice)
+		{
+			return (false, "{=d0kbtGYn}You don't have enough gold.");
+		}
+		return (true, string.Empty);
 	}
 
 	private void AcceptRansomOffer(int ransomPrice)
@@ -158,6 +170,10 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		if (_heroesWithDeclinedRansomOffers.Contains(_currentRansomHero))
 		{
 			_heroesWithDeclinedRansomOffers.Remove(_currentRansomHero);
+		}
+		if (_currentRansomPayer.Gold < ransomPrice + 1000 && _currentRansomPayer != Hero.MainHero)
+		{
+			_currentRansomPayer.Gold = ransomPrice + 1000;
 		}
 		GiveGoldAction.ApplyBetweenCharacters(_currentRansomPayer, GetCaptorClanOfPrisoner(_currentRansomHero).Leader, ransomPrice);
 		EndCaptivityAction.ApplyByRansom(_currentRansomHero, _currentRansomHero.Clan.Leader);
@@ -216,14 +232,14 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail)
+	private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification)
 	{
 		HandleDeclineRansomOffer(prisoner);
 	}
 
 	private void HourlyTick()
 	{
-		if (_currentRansomHero != null && _currentRansomOfferDate.ElapsedHoursUntilNow >= 48f)
+		if (_currentRansomHero != null && _currentRansomOfferDate.ElapsedDaysUntilNow >= 2f)
 		{
 			CampaignEventDispatcher.Instance.OnRansomOfferCancelled(_currentRansomHero);
 			DeclineRansomOffer();

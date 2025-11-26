@@ -1,5 +1,4 @@
 using TaleWorlds.Core;
-using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.Network.Messages;
@@ -13,7 +12,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 
 	public int VictimAgentIndex { get; private set; }
 
-	public bool IsVictimEntity { get; private set; }
+	public MissionObjectId MissionObjectHitId { get; private set; }
 
 	public DamageTypes DamageType { get; private set; }
 
@@ -39,15 +38,17 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 
 	public int ModifiedDamage { get; private set; }
 
+	public int ReflectedDamage { get; private set; }
+
 	public CombatLogNetworkMessage()
 	{
 	}
 
-	public CombatLogNetworkMessage(int attackerAgentIndex, int victimAgentIndex, GameEntity hitEntity, CombatLogData combatLogData)
+	public CombatLogNetworkMessage(int attackerAgentIndex, int victimAgentIndex, MissionObjectId missionObjectHitId, CombatLogData combatLogData)
 	{
 		AttackerAgentIndex = attackerAgentIndex;
 		VictimAgentIndex = victimAgentIndex;
-		IsVictimEntity = hitEntity != null;
+		MissionObjectHitId = missionObjectHitId;
 		DamageType = combatLogData.DamageType;
 		CrushedThrough = combatLogData.CrushedThrough;
 		Chamber = combatLogData.Chamber;
@@ -60,13 +61,14 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		InflictedDamage = combatLogData.InflictedDamage;
 		AbsorbedDamage = combatLogData.AbsorbedDamage;
 		ModifiedDamage = combatLogData.ModifiedDamage;
+		ReflectedDamage = combatLogData.ReflectedDamage;
 	}
 
 	protected override void OnWrite()
 	{
 		GameNetworkMessage.WriteAgentIndexToPacket(AttackerAgentIndex);
 		GameNetworkMessage.WriteAgentIndexToPacket(VictimAgentIndex);
-		GameNetworkMessage.WriteBoolToPacket(IsVictimEntity);
+		GameNetworkMessage.WriteMissionObjectIdToPacket(MissionObjectHitId);
 		GameNetworkMessage.WriteIntToPacket((int)DamageType, CompressionBasic.AgentHitDamageTypeCompressionInfo);
 		GameNetworkMessage.WriteBoolToPacket(CrushedThrough);
 		GameNetworkMessage.WriteBoolToPacket(Chamber);
@@ -79,9 +81,11 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		AbsorbedDamage = MBMath.ClampInt(AbsorbedDamage, 0, 2000);
 		InflictedDamage = MBMath.ClampInt(InflictedDamage, 0, 2000);
 		ModifiedDamage = MBMath.ClampInt(ModifiedDamage, -2000, 2000);
+		ReflectedDamage = MBMath.ClampInt(ReflectedDamage, 0, 2000);
 		GameNetworkMessage.WriteIntToPacket(AbsorbedDamage, CompressionBasic.AgentHitDamageCompressionInfo);
 		GameNetworkMessage.WriteIntToPacket(InflictedDamage, CompressionBasic.AgentHitDamageCompressionInfo);
 		GameNetworkMessage.WriteIntToPacket(ModifiedDamage, CompressionBasic.AgentHitModifiedDamageCompressionInfo);
+		GameNetworkMessage.WriteIntToPacket(ReflectedDamage, CompressionBasic.AgentHitDamageCompressionInfo);
 	}
 
 	protected override bool OnRead()
@@ -89,7 +93,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		bool bufferReadValid = true;
 		AttackerAgentIndex = GameNetworkMessage.ReadAgentIndexFromPacket(ref bufferReadValid);
 		VictimAgentIndex = GameNetworkMessage.ReadAgentIndexFromPacket(ref bufferReadValid);
-		IsVictimEntity = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		MissionObjectHitId = GameNetworkMessage.ReadMissionObjectIdFromPacket(ref bufferReadValid);
 		DamageType = (DamageTypes)GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitDamageTypeCompressionInfo, ref bufferReadValid);
 		CrushedThrough = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		Chamber = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
@@ -102,6 +106,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		AbsorbedDamage = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitDamageCompressionInfo, ref bufferReadValid);
 		InflictedDamage = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitDamageCompressionInfo, ref bufferReadValid);
 		ModifiedDamage = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitModifiedDamageCompressionInfo, ref bufferReadValid);
+		ReflectedDamage = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitDamageCompressionInfo, ref bufferReadValid);
 		return bufferReadValid;
 	}
 

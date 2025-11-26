@@ -1,4 +1,6 @@
 using System;
+using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -11,6 +13,8 @@ public class CraftingHeroPopupVM : ViewModel
 	private bool _isVisible;
 
 	private string _selectHeroText;
+
+	private InputKeyItemVM _exitInputKey;
 
 	[DataSourceProperty]
 	public bool IsVisible
@@ -49,6 +53,23 @@ public class CraftingHeroPopupVM : ViewModel
 	[DataSourceProperty]
 	public MBBindingList<CraftingAvailableHeroItemVM> CraftingHeroes => GetCraftingHeroes();
 
+	[DataSourceProperty]
+	public InputKeyItemVM ExitInputKey
+	{
+		get
+		{
+			return _exitInputKey;
+		}
+		set
+		{
+			if (value != _exitInputKey)
+			{
+				_exitInputKey = value;
+				OnPropertyChangedWithValue(value, "ExitInputKey");
+			}
+		}
+	}
+
 	public CraftingHeroPopupVM(Func<MBBindingList<CraftingAvailableHeroItemVM>> getCraftingHeroes)
 	{
 		GetCraftingHeroes = getCraftingHeroes;
@@ -63,5 +84,16 @@ public class CraftingHeroPopupVM : ViewModel
 	public void ExecuteClosePopup()
 	{
 		IsVisible = false;
+	}
+
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		ExitInputKey?.OnFinalize();
+	}
+
+	public void SetExitInputKey(HotKey hotKey)
+	{
+		ExitInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

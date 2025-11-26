@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Clans;
@@ -21,9 +22,9 @@ public class KingdomClanItemVM : KingdomItemVM
 
 	private string _name;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
-	private ImageIdentifierVM _banner_9;
+	private BannerImageIdentifierVM _banner_9;
 
 	private MBBindingList<HeroVM> _members;
 
@@ -125,7 +126,7 @@ public class KingdomClanItemVM : KingdomItemVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -142,7 +143,7 @@ public class KingdomClanItemVM : KingdomItemVM
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner_9
+	public BannerImageIdentifierVM Banner_9
 	{
 		get
 		{
@@ -213,8 +214,8 @@ public class KingdomClanItemVM : KingdomItemVM
 	{
 		Clan = clan;
 		_onSelect = onSelect;
-		Banner = new ImageIdentifierVM(clan.Banner);
-		Banner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(clan.Banner), nineGrid: true);
+		Banner = new BannerImageIdentifierVM(clan.Banner);
+		Banner_9 = new BannerImageIdentifierVM(clan.Banner, nineGrid: true);
 		RefreshValues();
 		Refresh();
 	}

@@ -1,5 +1,5 @@
 using System;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -38,7 +38,7 @@ public abstract class MPArmoryCosmeticItemBaseVM : ViewModel
 
 	private string _previewText;
 
-	private ImageIdentifierVM _icon;
+	private ItemImageIdentifierVM _icon;
 
 	private InputKeyItemVM _actionKey;
 
@@ -255,7 +255,7 @@ public abstract class MPArmoryCosmeticItemBaseVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Icon
+	public ItemImageIdentifierVM Icon
 	{
 		get
 		{

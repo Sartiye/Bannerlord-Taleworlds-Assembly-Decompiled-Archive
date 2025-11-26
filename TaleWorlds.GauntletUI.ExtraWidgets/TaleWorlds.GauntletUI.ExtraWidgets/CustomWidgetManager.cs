@@ -4,9 +4,8 @@ namespace TaleWorlds.GauntletUI.ExtraWidgets;
 
 public static class CustomWidgetManager
 {
-	public static void Initilize()
+	public static void TouchAssembly()
 	{
-		WidgetInfo.Reload();
 		Debug.Print("Loading GauntletUI Extra Custom Widgets");
 	}
 }

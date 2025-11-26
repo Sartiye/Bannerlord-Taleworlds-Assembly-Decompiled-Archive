@@ -3,7 +3,6 @@ using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.KillFeed.General;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.KillFeed.General;
 
@@ -21,11 +20,11 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 
 	private Widget _widget_0_0_0_0;
 
-	private AutoHideTextWidget _widget_0_0_1;
+	private TextWidget _widget_0_0_1;
 
 	private Widget _widget_0_0_2;
 
-	private AutoHideTextWidget _widget_0_0_3;
+	private TextWidget _widget_0_0_3;
 
 	private Widget _widget_0_0_4;
 
@@ -36,6 +35,20 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 	public SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_HUD_KillFeed_SPKillFeedVM_Dependency_1_ItemTemplate(UIContext context)
 		: base(context)
 	{
+	}
+
+	private VisualDefinition CreateVisualDefinitionPersonalKillFeed()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("PersonalKillFeed", 0.62f, 0f, AnimationInterpolation.Type.EaseInOut, AnimationInterpolation.Function.Cubic);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 0f
+		});
+		visualDefinition.AddVisualState(new VisualState("Passive")
+		{
+			PositionYOffset = -60f
+		});
+		return visualDefinition;
 	}
 
 	public void CreateWidgets()
@@ -49,11 +62,11 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0_0.AddChild(_widget_0_0_0);
 		_widget_0_0_0_0 = new Widget(base.Context);
 		_widget_0_0_0.AddChild(_widget_0_0_0_0);
-		_widget_0_0_1 = new AutoHideTextWidget(base.Context);
+		_widget_0_0_1 = new TextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);
 		_widget_0_0_2 = new Widget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_2);
-		_widget_0_0_3 = new AutoHideTextWidget(base.Context);
+		_widget_0_0_3 = new TextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_3);
 		_widget_0_0_4 = new Widget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_4);
@@ -82,10 +95,13 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		base.HorizontalAlignment = HorizontalAlignment.Right;
 		base.VictimTypeWidget = _widget_0_0_4;
 		base.MurdererTypeWidget = _widget_0_0_0;
+		base.FadeInTime = 0.5f;
+		base.StayTime = 3f;
+		base.FadeOutTime = 0.5f;
 		base.ActionIconWidget = _widget_0_0_2;
-		base.BackgroundWidget = _widget_0;
 		base.VictimNameWidget = _widget_0_0_3;
 		base.MurdererNameWidget = _widget_0_0_1;
+		base.TroopTypeIconBrush = base.Context.GetBrush("Compass.Type.Icons");
 		_widget_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare");
 		_widget_0.AlphaFactor = 0.5f;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -116,6 +132,7 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0_0_0_0.MarginLeft = 10f;
 		_widget_0_0_0_0.MarginRight = 10f;
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_1.MaxWidth = 450f;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1.Brush = base.Context.GetBrush("SPHUD.KillFeed.Text");
 		_widget_0_0_2.WidthSizePolicy = SizePolicy.Fixed;
@@ -128,6 +145,7 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0_0_2.MarginRight = 10f;
 		_widget_0_0_2.Sprite = base.Context.SpriteData.GetSprite("General\\Mission\\PersonalKillfeed\\kill_feed_skull");
 		_widget_0_0_3.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_3.MaxWidth = 450f;
 		_widget_0_0_3.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_3.Brush = base.Context.GetBrush("SPHUD.KillFeed.Text");
 		_widget_0_0_4.Sprite = base.Context.SpriteData.GetSprite("MPHud\\class_icon_bg");
@@ -174,6 +192,33 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+			_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
+			_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
+			_widget_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0;
+			_widget_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0;
+			_widget_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0;
+			_widget_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0;
+			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
+			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
+			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_3.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_3;
 			_datasource_Root = null;
 		}
 	}
@@ -238,9 +283,194 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 
 	private void HandleWidgetPropertyChangeOf_widget(string propertyName)
 	{
-		if (propertyName == "Message")
+		switch (propertyName)
 		{
-			_datasource_Root.Message = _widget.Message;
+		case "MurdererName":
+			_datasource_Root.MurdererName = _widget.MurdererName;
+			break;
+		case "MurdererType":
+			_datasource_Root.MurdererType = _widget.MurdererType;
+			break;
+		case "VictimName":
+			_datasource_Root.VictimName = _widget.VictimName;
+			break;
+		case "VictimType":
+			_datasource_Root.VictimType = _widget.VictimType;
+			break;
+		case "IsUnconscious":
+			_datasource_Root.IsUnconscious = _widget.IsUnconscious;
+			break;
+		case "IsHeadshot":
+			_datasource_Root.IsHeadshot = _widget.IsHeadshot;
+			break;
+		case "IsSuicide":
+			_datasource_Root.IsSuicide = _widget.IsSuicide;
+			break;
+		case "IsDrowning":
+			_datasource_Root.IsDrowning = _widget.IsDrowning;
+			break;
+		case "IsPaused":
+			_datasource_Root.IsPaused = _widget.IsPaused;
+			break;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0(string propertyName)
+	{
+		if (propertyName == "Color")
+		{
+			_datasource_Root.BackgroundColor = _widget_0.Color;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_1(string propertyName)
+	{
+		if (propertyName == "Text")
+		{
+			_datasource_Root.MurdererName = _widget_0_0_1.Text;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_3(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_3(string propertyName)
+	{
+		if (propertyName == "Text")
+		{
+			_datasource_Root.VictimName = _widget_0_0_3.Text;
 		}
 	}
 
@@ -291,9 +521,40 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root(string propertyName)
 	{
-		if (propertyName == "Message")
+		switch (propertyName)
 		{
-			_widget.Message = _datasource_Root.Message;
+		case "MurdererName":
+			_widget.MurdererName = _datasource_Root.MurdererName;
+			_widget_0_0_1.Text = _datasource_Root.MurdererName;
+			break;
+		case "MurdererType":
+			_widget.MurdererType = _datasource_Root.MurdererType;
+			break;
+		case "VictimName":
+			_widget.VictimName = _datasource_Root.VictimName;
+			_widget_0_0_3.Text = _datasource_Root.VictimName;
+			break;
+		case "VictimType":
+			_widget.VictimType = _datasource_Root.VictimType;
+			break;
+		case "IsUnconscious":
+			_widget.IsUnconscious = _datasource_Root.IsUnconscious;
+			break;
+		case "IsHeadshot":
+			_widget.IsHeadshot = _datasource_Root.IsHeadshot;
+			break;
+		case "IsSuicide":
+			_widget.IsSuicide = _datasource_Root.IsSuicide;
+			break;
+		case "IsDrowning":
+			_widget.IsDrowning = _datasource_Root.IsDrowning;
+			break;
+		case "IsPaused":
+			_widget.IsPaused = _datasource_Root.IsPaused;
+			break;
+		case "BackgroundColor":
+			_widget_0.Color = _datasource_Root.BackgroundColor;
+			break;
 		}
 	}
 
@@ -320,6 +581,33 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+			_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
+			_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
+			_widget_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0;
+			_widget_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0;
+			_widget_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0;
+			_widget_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0;
+			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
+			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
+			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_3.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_3;
 			_datasource_Root = null;
 		}
 		_datasource_Root = newDataSource;
@@ -334,7 +622,15 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			_widget.Message = _datasource_Root.Message;
+			_widget.MurdererName = _datasource_Root.MurdererName;
+			_widget.MurdererType = _datasource_Root.MurdererType;
+			_widget.VictimName = _datasource_Root.VictimName;
+			_widget.VictimType = _datasource_Root.VictimType;
+			_widget.IsUnconscious = _datasource_Root.IsUnconscious;
+			_widget.IsHeadshot = _datasource_Root.IsHeadshot;
+			_widget.IsSuicide = _datasource_Root.IsSuicide;
+			_widget.IsDrowning = _datasource_Root.IsDrowning;
+			_widget.IsPaused = _datasource_Root.IsPaused;
 			_widget.EventFire += EventListenerOf_widget;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
@@ -345,6 +641,36 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
+			_widget_0.Color = _datasource_Root.BackgroundColor;
+			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
+			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
+			_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;
+			_widget_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0;
+			_widget_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0;
+			_widget_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0;
+			_widget_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0;
+			_widget_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0;
+			_widget_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0_1.Text = _datasource_Root.MurdererName;
+			_widget_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_3.Text = _datasource_Root.VictimName;
+			_widget_0_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_3;
+			_widget_0_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_3;
 		}
 	}
 }

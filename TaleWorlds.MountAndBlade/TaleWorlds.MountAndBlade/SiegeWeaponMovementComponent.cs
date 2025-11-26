@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NetworkMessages.FromServer;
+using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -11,10 +12,6 @@ namespace TaleWorlds.MountAndBlade;
 public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 {
 	public const string GhostObjectTag = "ghost_object";
-
-	private static readonly ActionIndexCache act_strike_bent_over = ActionIndexCache.Create("act_strike_bent_over");
-
-	private static readonly ActionIndexCache act_usage_siege_machine_push = ActionIndexCache.Create("act_usage_siege_machine_push");
 
 	private const string WheelTag = "wheel";
 
@@ -104,16 +101,16 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		base.OnAdded(scene);
 		_path = scene.GetPathWithName(PathEntityName);
 		Vec3 scaleVector = MainObject.GameEntity.GetFrame().rotation.GetScaleVector();
-		_wheels = MainObject.GameEntity.CollectChildrenEntitiesWithTag("wheel");
-		_standingPoints = MainObject.GameEntity.CollectObjectsWithTag<StandingPoint>("move");
+		_wheels = GameEntity.CreateFromWeakEntity(MainObject.GameEntity).CollectChildrenEntitiesWithTag("wheel");
+		_standingPoints = MainObject.GameEntity.CollectScriptComponentsWithTagIncludingChildrenRecursive<StandingPoint>("move");
 		_pathTracker = new PathTracker(_path, scaleVector);
 		_pathTracker.Reset();
 		SetTargetFrame();
-		MatrixFrame globalFrame = MainObject.GameEntity.GetGlobalFrame();
+		MatrixFrame m = MainObject.GameEntity.GetGlobalFrame();
 		_standingPointLocalIKFrames = new MatrixFrame[_standingPoints.Count];
 		for (int i = 0; i < _standingPoints.Count; i++)
 		{
-			_standingPointLocalIKFrames[i] = _standingPoints[i].GameEntity.GetGlobalFrame().TransformToLocal(globalFrame);
+			_standingPointLocalIKFrames[i] = _standingPoints[i].GameEntity.GetGlobalFrame().TransformToLocal(in m);
 			_standingPoints[i].AddComponent(new ClearHandInverseKinematicsOnStopUsageComponent());
 		}
 		Velocity = Vec3.Zero;
@@ -137,7 +134,7 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		_pathTracker = new PathTracker(pathWithName, scaleVector);
 		_ghostEntityPathTracker = new PathTracker(pathWithName, scaleVector);
 		_ghostObjectPos = ((pathWithName != null) ? pathWithName.GetTotalLength() : 0f);
-		_wheels = MainObject.GameEntity.CollectChildrenEntitiesWithTag("wheel");
+		_wheels = GameEntity.CreateFromWeakEntity(MainObject.GameEntity).CollectChildrenEntitiesWithTag("wheel");
 	}
 
 	private void SetPath()
@@ -164,7 +161,7 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 	public void OnEditorInit()
 	{
 		SetPath();
-		_wheels = MainObject.GameEntity.CollectChildrenEntitiesWithTag("wheel");
+		_wheels = GameEntity.CreateFromWeakEntity(MainObject.GameEntity).CollectChildrenEntitiesWithTag("wheel");
 	}
 
 	private void UpdateGhostObject(float dt)
@@ -175,7 +172,7 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 			_pathTracker.Advance(_pathTracker.GetPathLength());
 			_ghostEntityPathTracker.Advance(_ghostEntityPathTracker.GetPathLength());
 		}
-		List<GameEntity> list = MainObject.GameEntity.CollectChildrenEntitiesWithTag("ghost_object");
+		List<WeakGameEntity> list = MainObject.GameEntity.CollectChildrenEntitiesWithTag("ghost_object");
 		if (MainObject.GameEntity.IsSelectedOnEditor())
 		{
 			if (_pathTracker.IsValid)
@@ -204,15 +201,14 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		{
 			return;
 		}
-		GameEntity gameEntity = list[0];
+		WeakGameEntity weakGameEntity = list[0];
 		if (MainObject is IPathHolder { EditorGhostEntityMove: not false })
 		{
 			if (_ghostEntityPathTracker.IsValid)
 			{
 				_ghostEntityPathTracker.Advance(0.05f * GhostEntitySpeedMultiplier);
-				MatrixFrame identity = MatrixFrame.Identity;
-				identity = LinearInterpolatedIK(ref _ghostEntityPathTracker);
-				gameEntity.SetGlobalFrame(in identity);
+				MatrixFrame frame = LinearInterpolatedIK(ref _ghostEntityPathTracker);
+				weakGameEntity.SetGlobalFrame(in frame);
 				if (_ghostEntityPathTracker.HasReachedEnd)
 				{
 					_ghostEntityPathTracker.Reset();
@@ -222,9 +218,9 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		else if (_pathTracker.IsValid)
 		{
 			_pathTracker.Advance(_ghostObjectPos);
-			MatrixFrame frame = LinearInterpolatedIK(ref _pathTracker);
-			MatrixFrame frame2 = FindGroundFrameForWheels(ref frame);
-			gameEntity.SetGlobalFrame(in frame2);
+			MatrixFrame frame2 = LinearInterpolatedIK(ref _pathTracker);
+			MatrixFrame frame3 = FindGroundFrameForWheels(ref frame2);
+			weakGameEntity.SetGlobalFrame(in frame3);
 			_pathTracker.Reset();
 		}
 	}
@@ -243,7 +239,7 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 	{
 		pathTracker.CurrentFrameAndColor(out var frame, out var color);
 		MatrixFrame m = FindGroundFrameForWheels(ref frame);
-		return MatrixFrame.Lerp(frame, m, color.x);
+		return MatrixFrame.Lerp(in frame, in m, color.x);
 	}
 
 	public void SetDistanceTraveledAsClient(float distance)
@@ -304,45 +300,45 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 					continue;
 				}
 				Agent userAgent = standingPoint.UserAgent;
-				ActionIndexValueCache actionIndexValueCache = userAgent.GetCurrentActionValue(0);
-				ActionIndexValueCache actionIndexValueCache2 = userAgent.GetCurrentActionValue(1);
-				if (actionIndexValueCache != act_usage_siege_machine_push)
+				ActionIndexCache actionIndexCache = userAgent.GetCurrentAction(0);
+				ActionIndexCache actionIndexCache2 = userAgent.GetCurrentAction(1);
+				if (actionIndexCache != ActionIndexCache.act_usage_siege_machine_push)
 				{
-					if (userAgent.SetActionChannel(0, act_usage_siege_machine_push, ignorePriority: false, 0uL, 0f, CurrentSpeed, MBAnimation.GetAnimationBlendInPeriod(MBActionSet.GetAnimationIndexOfAction(userAgent.ActionSet, act_usage_siege_machine_push)) * CurrentSpeed))
+					if (userAgent.SetActionChannel(0, in ActionIndexCache.act_usage_siege_machine_push, ignorePriority: false, (AnimFlags)0uL, 0f, CurrentSpeed, MBAnimation.GetAnimationBlendInPeriod(MBActionSet.GetAnimationIndexOfAction(userAgent.ActionSet, in ActionIndexCache.act_usage_siege_machine_push)) * CurrentSpeed))
 					{
-						actionIndexValueCache = ActionIndexValueCache.Create(act_usage_siege_machine_push);
+						actionIndexCache = ActionIndexCache.act_usage_siege_machine_push;
 					}
-					else if (MBMath.IsBetween((int)userAgent.GetCurrentActionType(0), 47, 51) && actionIndexValueCache != act_strike_bent_over && userAgent.SetActionChannel(0, act_strike_bent_over, ignorePriority: false, 0uL))
+					else if (MBMath.IsBetween((int)userAgent.GetCurrentActionType(0), 48, 52) && actionIndexCache != ActionIndexCache.act_strike_bent_over && userAgent.SetActionChannel(0, in ActionIndexCache.act_strike_bent_over, ignorePriority: false, (AnimFlags)0uL))
 					{
-						actionIndexValueCache = ActionIndexValueCache.Create(act_strike_bent_over);
+						actionIndexCache = ActionIndexCache.act_strike_bent_over;
 					}
 				}
-				if (actionIndexValueCache2 != act_usage_siege_machine_push)
+				if (actionIndexCache2 != ActionIndexCache.act_usage_siege_machine_push)
 				{
-					if (userAgent.SetActionChannel(1, act_usage_siege_machine_push, ignorePriority: false, 0uL, 0f, CurrentSpeed, MBAnimation.GetAnimationBlendInPeriod(MBActionSet.GetAnimationIndexOfAction(userAgent.ActionSet, act_usage_siege_machine_push)) * CurrentSpeed))
+					if (userAgent.SetActionChannel(1, in ActionIndexCache.act_usage_siege_machine_push, ignorePriority: false, (AnimFlags)0uL, 0f, CurrentSpeed, MBAnimation.GetAnimationBlendInPeriod(MBActionSet.GetAnimationIndexOfAction(userAgent.ActionSet, in ActionIndexCache.act_usage_siege_machine_push)) * CurrentSpeed))
 					{
-						actionIndexValueCache2 = ActionIndexValueCache.Create(act_usage_siege_machine_push);
+						actionIndexCache2 = ActionIndexCache.act_usage_siege_machine_push;
 					}
-					else if (MBMath.IsBetween((int)userAgent.GetCurrentActionType(1), 47, 51) && actionIndexValueCache2 != act_strike_bent_over && userAgent.SetActionChannel(1, act_strike_bent_over, ignorePriority: false, 0uL))
+					else if (MBMath.IsBetween((int)userAgent.GetCurrentActionType(1), 48, 52) && actionIndexCache2 != ActionIndexCache.act_strike_bent_over && userAgent.SetActionChannel(1, in ActionIndexCache.act_strike_bent_over, ignorePriority: false, (AnimFlags)0uL))
 					{
-						actionIndexValueCache2 = ActionIndexValueCache.Create(act_strike_bent_over);
+						actionIndexCache2 = ActionIndexCache.act_strike_bent_over;
 					}
 				}
-				if (actionIndexValueCache == act_usage_siege_machine_push)
+				if (actionIndexCache == ActionIndexCache.act_usage_siege_machine_push)
 				{
 					userAgent.SetCurrentActionSpeed(0, CurrentSpeed);
 				}
-				if (actionIndexValueCache2 == act_usage_siege_machine_push)
+				if (actionIndexCache2 == ActionIndexCache.act_usage_siege_machine_push)
 				{
 					userAgent.SetCurrentActionSpeed(1, CurrentSpeed);
 				}
-				if ((actionIndexValueCache == act_usage_siege_machine_push || actionIndexValueCache == act_strike_bent_over) && (actionIndexValueCache2 == act_usage_siege_machine_push || actionIndexValueCache2 == act_strike_bent_over))
+				if ((actionIndexCache == ActionIndexCache.act_usage_siege_machine_push || actionIndexCache == ActionIndexCache.act_strike_bent_over) && (actionIndexCache2 == ActionIndexCache.act_usage_siege_machine_push || actionIndexCache2 == ActionIndexCache.act_strike_bent_over))
 				{
 					standingPoint.UserAgent.SetHandInverseKinematicsFrameForMissionObjectUsage(in _standingPointLocalIKFrames[i], in boundEntityGlobalFrame);
 					continue;
 				}
 				standingPoint.UserAgent.ClearHandInverseKinematics();
-				if (!GameNetwork.IsClientOrReplay && userAgent.Controller != Agent.ControllerType.AI)
+				if (!GameNetwork.IsClientOrReplay && userAgent.Controller != AgentControllerType.AI)
 				{
 					userAgent.StopUsingGameObjectMT(isSuccessful: false);
 				}
@@ -396,9 +392,9 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		if (_pathTracker.PathExists())
 		{
 			MatrixFrame frame = LinearInterpolatedIK(ref _pathTracker);
-			GameEntity gameEntity = MainObject.GameEntity;
+			WeakGameEntity gameEntity = MainObject.GameEntity;
 			Velocity = gameEntity.GlobalPosition;
-			gameEntity.SetGlobalFrameMT(in frame);
+			gameEntity.SetGlobalFrame(in frame, isTeleportation: false);
 			Velocity = (gameEntity.GlobalPosition - Velocity).NormalizedCopy() * CurrentSpeed;
 		}
 	}
@@ -495,7 +491,7 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		SetTargetFrame();
 	}
 
-	public static MatrixFrame FindGroundFrameForWheelsStatic(ref MatrixFrame frame, float axleLength, float wheelDiameter, GameEntity gameEntity, List<GameEntity> wheels, Scene scene)
+	public static MatrixFrame FindGroundFrameForWheelsStatic(ref MatrixFrame frame, float axleLength, float wheelDiameter, WeakGameEntity gameEntity, List<GameEntity> wheels, Scene scene)
 	{
 		Vec3.StackArray8Vec3 stackArray8Vec = default(Vec3.StackArray8Vec3);
 		bool visibilityExcludeParents = gameEntity.GetVisibilityExcludeParents();
@@ -508,11 +504,12 @@ public class SiegeWeaponMovementComponent : UsableMissionObjectComponent
 		{
 			foreach (GameEntity wheel in wheels)
 			{
-				Vec3 vec = frame.TransformToParent(wheel.GetFrame().origin);
+				MatrixFrame frame2 = wheel.GetFrame();
+				Vec3 vec = frame.TransformToParent(in frame2.origin);
 				Vec3 vec2 = vec + frame.rotation.s * axleLength + (wheelDiameter * 0.5f + 0.5f) * frame.rotation.u;
 				Vec3 vec3 = vec - frame.rotation.s * axleLength + (wheelDiameter * 0.5f + 0.5f) * frame.rotation.u;
-				vec2.z = scene.GetGroundHeightAtPositionMT(vec2);
-				vec3.z = scene.GetGroundHeightAtPositionMT(vec3);
+				vec2.z = scene.GetGroundHeightAtPosition(vec2);
+				vec3.z = scene.GetGroundHeightAtPosition(vec3);
 				stackArray8Vec[num++] = vec2;
 				stackArray8Vec[num++] = vec3;
 			}

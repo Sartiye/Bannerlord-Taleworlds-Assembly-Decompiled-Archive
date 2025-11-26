@@ -429,7 +429,7 @@ public class CharacterViewModel : ViewModel
 
 	public CharacterViewModel(StanceTypes stance = StanceTypes.None)
 	{
-		_equipment = new Equipment(isCivilian: false);
+		_equipment = new Equipment(Equipment.EquipmentType.Battle);
 		EquipmentCode = _equipment.CalculateEquipmentCode();
 		StanceIndex = (int)stance;
 	}
@@ -452,7 +452,7 @@ public class CharacterViewModel : ViewModel
 		}
 	}
 
-	public void FillFrom(BasicCharacterObject character, int seed = -1)
+	public void FillFrom(BasicCharacterObject character, int seed = -1, string bannerCode = null)
 	{
 		if (FaceGen.GetMaturityTypeWithAge(character.Age) > BodyMeshMaturityType.Child)
 		{
@@ -469,6 +469,7 @@ public class CharacterViewModel : ViewModel
 			_equipment = character.Equipment?.Clone();
 			HasMount = _equipment?[10].Item != null;
 			EquipmentCode = _equipment?.CalculateEquipmentCode();
+			BannerCodeText = bannerCode;
 		}
 	}
 
@@ -484,6 +485,7 @@ public class CharacterViewModel : ViewModel
 		_equipment = characterViewModel._equipment.Clone();
 		HasMount = _equipment?[10].Item != null;
 		EquipmentCode = _equipment?.CalculateEquipmentCode();
+		BannerCodeText = characterViewModel.BannerCodeText;
 	}
 
 	public void ExecuteEquipWeaponAtIndex(EquipmentIndex index, bool isLeftHand)

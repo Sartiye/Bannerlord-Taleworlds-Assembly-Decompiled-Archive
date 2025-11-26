@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -7,10 +8,10 @@ using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 
@@ -36,9 +37,9 @@ public class ClanLordItemVM : ViewModel
 
 	private readonly TextObject _talkToHeroHintText = new TextObject("{=j4BdjLYp}Start a conversation with this clan member.");
 
-	private ImageIdentifierVM _visual;
+	private CharacterImageIdentifierVM _visual;
 
-	private ImageIdentifierVM _banner_9;
+	private BannerImageIdentifierVM _banner_9;
 
 	private bool _isSelected;
 
@@ -325,7 +326,7 @@ public class ClanLordItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public CharacterImageIdentifierVM Visual
 	{
 		get
 		{
@@ -342,7 +343,7 @@ public class ClanLordItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner_9
+	public BannerImageIdentifierVM Banner_9
 	{
 		get
 		{
@@ -520,11 +521,11 @@ public class ClanLordItemVM : ViewModel
 		_showHeroOnMap = showHeroOnMap;
 		_teleportationBehavior = teleportationBehavior;
 		CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(hero.CharacterObject);
-		Visual = new ImageIdentifierVM(characterCode);
+		Visual = new CharacterImageIdentifierVM(characterCode);
 		Skills = new MBBindingList<EncyclopediaSkillVM>();
 		Traits = new MBBindingList<EncyclopediaTraitItemVM>();
-		IsFamilyMember = Hero.MainHero.Clan.Lords.Contains(_hero);
-		Banner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(hero.ClanBanner), nineGrid: true);
+		IsFamilyMember = Hero.MainHero.Clan.AliveLords.Contains(_hero);
+		Banner_9 = new BannerImageIdentifierVM(hero.ClanBanner, nineGrid: true);
 		RefreshValues();
 	}
 
@@ -552,8 +553,9 @@ public class ClanLordItemVM : ViewModel
 		Traits.Clear();
 		IsMainHero = _hero == Hero.MainHero;
 		IsPregnant = _hero.IsPregnant;
-		foreach (SkillObject item in (from s in TaleWorlds.CampaignSystem.Extensions.Skills.All
-			group s by s.CharacterAttribute.Id).SelectMany((IGrouping<MBGUID, SkillObject> s) => s).ToList())
+		List<SkillObject> list = TaleWorlds.CampaignSystem.Extensions.Skills.All.ToList();
+		list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject item in list)
 		{
 			Skills.Add(new EncyclopediaSkillVM(item, _hero.GetSkillValue(item)));
 		}
@@ -576,16 +578,17 @@ public class ClanLordItemVM : ViewModel
 		}
 		HeroModel = new HeroViewModel();
 		HeroModel.FillFrom(_hero);
-		Banner_9 = new ImageIdentifierVM(BannerCode.CreateFrom(_hero.ClanBanner), nineGrid: true);
-		CanShowLocationOfHero = (_hero.IsActive || (_hero.IsPrisoner && _hero.CurrentSettlement != null)) && _hero.PartyBelongedTo != MobileParty.MainParty;
-		ShowOnMapHint = new HintViewModel(CanShowLocationOfHero ? _showLocationOfHeroOnMap : TextObject.Empty);
-		TextObject disabledReason = TextObject.Empty;
-		bool flag = _hero.PartyBelongedTo == MobileParty.MainParty;
-		IsTalkVisible = flag && !IsMainHero;
+		Banner_9 = new BannerImageIdentifierVM(_hero.ClanBanner, nineGrid: true);
+		bool flag = MobileParty.MainParty.CurrentSettlement == null || MobileParty.MainParty.CurrentSettlement == _hero.CurrentSettlement;
+		CanShowLocationOfHero = _hero.GetCampaignPosition().IsValid() && _hero.PartyBelongedTo != MobileParty.MainParty && flag;
+		ShowOnMapHint = new HintViewModel(CanShowLocationOfHero ? _showLocationOfHeroOnMap : TextObject.GetEmpty());
+		TextObject disabledReason = TextObject.GetEmpty();
+		bool flag2 = _hero.PartyBelongedTo == MobileParty.MainParty;
+		IsTalkVisible = flag2 && !IsMainHero;
 		IsTalkEnabled = IsTalkVisible && CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out disabledReason);
 		IsTeleporting = _teleportationBehavior.GetTargetOfTeleportingHero(_hero, out var _, out var _, out var _);
-		TextObject disabledReason2 = TextObject.Empty;
-		IsRecallVisible = !IsMainHero && !flag && !IsTeleporting;
+		TextObject disabledReason2 = TextObject.GetEmpty();
+		IsRecallVisible = !IsMainHero && !flag2 && !IsTeleporting;
 		IsRecallEnabled = IsRecallVisible && CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out disabledReason2) && FactionHelper.IsMainClanMemberAvailableForRecall(_hero, MobileParty.MainParty, out disabledReason2);
 		RecallHint = new HintViewModel(IsRecallEnabled ? _recallHeroToMainPartyHintText : disabledReason2);
 		TalkHint = new HintViewModel(IsTalkEnabled ? _talkToHeroHintText : disabledReason);
@@ -640,7 +643,7 @@ public class ClanLordItemVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Suggested name is not acceptable. This shouldn't happen", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanLordItemVM.cs", "OnNamingHeroOver", 190);
+			Debug.FailedAssert("Suggested name is not acceptable. This shouldn't happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanLordItemVM.cs", "OnNamingHeroOver", 203);
 		}
 	}
 

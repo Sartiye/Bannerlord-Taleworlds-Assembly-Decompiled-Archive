@@ -39,4 +39,19 @@ public class MultiplayerBattleMoraleModel : BattleMoraleModel
 	{
 		return 0f;
 	}
+
+	public override float CalculateMoraleChangeOnShipSunk(IShipOrigin shipOrigin)
+	{
+		return 0f;
+	}
+
+	public override float CalculateMoraleOnRamming(Agent agent, IShipOrigin rammingShip, IShipOrigin rammedShip)
+	{
+		return agent.GetMorale();
+	}
+
+	public override float CalculateMoraleOnShipsConnected(Agent agent, IShipOrigin ownerShip, IShipOrigin targetShip)
+	{
+		return agent.GetMorale();
+	}
 }

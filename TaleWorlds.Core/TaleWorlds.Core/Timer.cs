@@ -2,11 +2,11 @@ namespace TaleWorlds.Core;
 
 public class Timer
 {
-	private float _startTime;
-
 	private float _latestGameTime;
 
 	private bool _autoReset;
+
+	public float StartTime { get; protected set; }
 
 	public float Duration { get; protected set; }
 
@@ -14,7 +14,7 @@ public class Timer
 
 	public Timer(float gameTime, float duration, bool autoReset = true)
 	{
-		_startTime = gameTime;
+		StartTime = gameTime;
 		_latestGameTime = gameTime;
 		_autoReset = autoReset;
 		Duration = duration;
@@ -26,7 +26,7 @@ public class Timer
 		if (Duration <= 0f)
 		{
 			PreviousDeltaTime = ElapsedTime();
-			_startTime = gameTime;
+			StartTime = gameTime;
 			return true;
 		}
 		bool result = false;
@@ -37,7 +37,7 @@ public class Timer
 			{
 				while (ElapsedTime() >= Duration)
 				{
-					_startTime += Duration;
+					StartTime += Duration;
 				}
 			}
 			result = true;
@@ -47,7 +47,7 @@ public class Timer
 
 	public float ElapsedTime()
 	{
-		return _latestGameTime - _startTime;
+		return _latestGameTime - StartTime;
 	}
 
 	public void Reset(float gameTime)
@@ -57,13 +57,13 @@ public class Timer
 
 	public void Reset(float gameTime, float newDuration)
 	{
-		_startTime = gameTime;
+		StartTime = gameTime;
 		_latestGameTime = gameTime;
 		Duration = newDuration;
 	}
 
 	public void AdjustStartTime(float deltaTime)
 	{
-		_startTime += deltaTime;
+		StartTime += deltaTime;
 	}
 }

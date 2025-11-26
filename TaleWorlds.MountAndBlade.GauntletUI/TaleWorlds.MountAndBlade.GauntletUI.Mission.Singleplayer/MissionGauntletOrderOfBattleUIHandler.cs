@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
@@ -21,11 +20,9 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 
 	private GauntletLayer _gauntletLayer;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private SpriteCategory _orderOfBattleCategory;
-
-	private DeploymentMissionView _deploymentMissionView;
 
 	private MissionGauntletSingleplayerOrderUIHandler _orderUIHandler;
 
@@ -35,45 +32,48 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 
 	private bool _isActive;
 
-	private bool _isDeploymentFinished;
+	private bool _wereHotkeysEnabledLastFrame;
+
+	private bool _isResetPressed;
+
+	private bool _isReadyPressed;
+
+	private bool _isAnyHeroSelected;
+
+	private bool _isClassSelectionEnabled;
 
 	private float _cachedOrderTypeSetting;
 
 	public MissionGauntletOrderOfBattleUIHandler(OrderOfBattleVM dataSource)
 	{
 		_dataSource = dataSource;
+		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("OrderOfBattleHotKeyCategory").GetHotKey("Confirm"));
+		_dataSource.SetResetInputKey(HotKeyManager.GetCategory("OrderOfBattleHotKeyCategory").GetHotKey("AutoDeploy"));
 		ViewOrderPriority = 13;
 	}
 
 	public override void OnMissionScreenInitialize()
 	{
 		base.OnMissionScreenInitialize();
-		_deploymentMissionView = base.Mission.GetMissionBehavior<DeploymentMissionView>();
-		DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-		deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Combine(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
 		_playerRoleMissionController = base.Mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>();
 		_playerRoleMissionController.OnPlayerTurnToChooseFormationToLead += OnPlayerTurnToChooseFormationToLead;
 		_playerRoleMissionController.OnAllFormationsAssignedSergeants += OnAllFormationsAssignedSergeants;
 		_orderUIHandler = base.Mission.GetMissionBehavior<MissionGauntletSingleplayerOrderUIHandler>();
-		_orderUIHandler.OnCameraControlsToggled += OnCameraControlsToggled;
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
 		OrderTroopPlacer orderTroopPlacer = _orderTroopPlacer;
 		orderTroopPlacer.OnUnitDeployed = (Action)Delegate.Combine(orderTroopPlacer.OnUnitDeployed, new Action(OnUnitDeployed));
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MissionOrderOfBattle", ViewOrderPriority);
 		_movie = _gauntletLayer.LoadMovie("OrderOfBattle", _dataSource);
-		SpriteData spriteData = UIResourceManager.SpriteData;
-		TwoDimensionEngineResourceContext resourceContext = UIResourceManager.ResourceContext;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		_orderOfBattleCategory = spriteData.SpriteCategories["ui_order_of_battle"];
-		_orderOfBattleCategory.Load(resourceContext, uIResourceDepot);
+		_orderOfBattleCategory = UIResourceManager.LoadSpriteCategory("ui_order_of_battle");
+		base.MissionScreen.SceneLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("OrderOfBattleHotKeyCategory"));
+		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("OrderOfBattleHotKeyCategory"));
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
-		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 	}
 
 	public override bool IsReady()
 	{
-		if (!_isDeploymentFinished)
+		if (!base.Mission.IsDeploymentFinished)
 		{
 			return _orderOfBattleCategory.IsLoaded;
 		}
@@ -85,45 +85,99 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 		base.OnMissionTick(dt);
 		if (_isActive)
 		{
-			TickInput();
 			_dataSource.Tick();
+		}
+	}
+
+	public override void OnMissionScreenTick(float dt)
+	{
+		base.OnMissionScreenTick(dt);
+		if (_isActive)
+		{
+			_wereHotkeysEnabledLastFrame = _dataSource.AreHotkeysEnabled;
+			HandleLayerFocus(out _isAnyHeroSelected, out _isClassSelectionEnabled);
+			_dataSource.AreHotkeysEnabled = !base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen && TaleWorlds.InputSystem.Input.IsGamepadActive && !_gauntletLayer.IsFocusLayer;
+			TickInput();
+		}
+	}
+
+	private void DestroyView()
+	{
+		if (_gauntletLayer != null || _dataSource != null)
+		{
+			if (_isActive)
+			{
+				ManagedOptions.SetConfig(ManagedOptions.ManagedOptionsType.OrderType, _cachedOrderTypeSetting);
+			}
+			_isActive = false;
+			base.MissionScreen.SetDisplayDialog(value: false);
+			_dataSource.OnFinalize();
+			_dataSource = null;
+			base.MissionScreen.RemoveLayer(_gauntletLayer);
+			_gauntletLayer = null;
+			_orderOfBattleCategory.Unload();
+			_playerRoleMissionController.OnPlayerTurnToChooseFormationToLead -= OnPlayerTurnToChooseFormationToLead;
+			_playerRoleMissionController.OnAllFormationsAssignedSergeants -= OnAllFormationsAssignedSergeants;
+			OrderTroopPlacer orderTroopPlacer = _orderTroopPlacer;
+			orderTroopPlacer.OnUnitDeployed = (Action)Delegate.Remove(orderTroopPlacer.OnUnitDeployed, new Action(OnUnitDeployed));
 		}
 	}
 
 	private void TickInput()
 	{
-		HandleLayerFocus(out var isAnyHeroSelected, out var isClassSelectionEnabled, out var isFilterSelectionEnabled);
-		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
-		{
-			if (isClassSelectionEnabled)
-			{
-				_dataSource.ExecuteDisableAllClassSelections();
-			}
-			else if (isFilterSelectionEnabled)
-			{
-				_dataSource.ExecuteDisableAllFilterSelections();
-			}
-			else if (isAnyHeroSelected)
-			{
-				_dataSource.ExecuteClearHeroSelection();
-			}
-		}
 		if (base.MissionScreen.SceneLayer.Input.IsKeyDown(InputKey.RightMouseButton) || base.MissionScreen.SceneLayer.Input.IsKeyDown(InputKey.ControllerLTrigger))
 		{
 			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
+			_dataSource.AreCameraControlsEnabled = true;
 		}
 		else
 		{
-			_gauntletLayer.InputRestrictions.SetInputRestrictions();
+			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: true);
+			_dataSource.AreCameraControlsEnabled = false;
+		}
+		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+		{
+			if (_isClassSelectionEnabled)
+			{
+				UISoundsHelper.PlayUISound("event:/ui/oob/dropdown");
+				_dataSource.ExecuteDisableAllClassSelections();
+			}
+			else if (_isAnyHeroSelected && _dataSource.CanToggleHeroSelection)
+			{
+				UISoundsHelper.PlayUISound("event:/ui/oob/officer_pick");
+				_dataSource.ExecuteClearHeroSelection();
+			}
+		}
+		if (base.MissionScreen.SceneLayer.Input.IsHotKeyPressed("AutoDeploy"))
+		{
+			_isResetPressed = _dataSource.AreHotkeysEnabled && _wereHotkeysEnabledLastFrame;
+		}
+		if (base.MissionScreen.SceneLayer.Input.IsHotKeyPressed("Confirm"))
+		{
+			_isReadyPressed = _dataSource.AreHotkeysEnabled && _wereHotkeysEnabledLastFrame;
+		}
+		if (!_dataSource.AreHotkeysEnabled)
+		{
+			_isResetPressed = false;
+			_isReadyPressed = false;
+		}
+		if (base.MissionScreen.SceneLayer.Input.IsHotKeyReleased("AutoDeploy") && _dataSource.AreHotkeysEnabled && _isResetPressed)
+		{
+			UISoundsHelper.PlayUISound("event:/ui/default");
+			_dataSource.ExecuteAutoDeploy();
+		}
+		if (base.MissionScreen.SceneLayer.Input.IsHotKeyReleased("Confirm") && _dataSource.AreHotkeysEnabled && _dataSource.CanStartMission && _isReadyPressed)
+		{
+			UISoundsHelper.PlayUISound("event:/ui/default");
+			_dataSource.ExecuteBeginMission();
 		}
 	}
 
-	private void HandleLayerFocus(out bool isAnyHeroSelected, out bool isClassSelectionEnabled, out bool isFilterSelectionEnabled)
+	private void HandleLayerFocus(out bool isAnyHeroSelected, out bool isClassSelectionEnabled)
 	{
 		isAnyHeroSelected = _dataSource.HasSelectedHeroes;
 		isClassSelectionEnabled = _dataSource.IsAnyClassSelectionEnabled();
-		isFilterSelectionEnabled = _dataSource.IsAnyFilterSelectionEnabled();
-		bool flag = isAnyHeroSelected | isClassSelectionEnabled | isFilterSelectionEnabled;
+		bool flag = isAnyHeroSelected | isClassSelectionEnabled;
 		if (_gauntletLayer.IsFocusLayer && !flag)
 		{
 			base.MissionScreen.SetDisplayDialog(value: false);
@@ -140,25 +194,25 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 
 	public override void OnMissionScreenFinalize()
 	{
-		_dataSource.OnFinalize();
-		_dataSource = null;
-		_gauntletLayer.ReleaseMovie(_movie);
-		base.MissionScreen.RemoveLayer(_gauntletLayer);
-		_gauntletLayer = null;
-		_orderOfBattleCategory.Unload();
+		DestroyView();
 		base.OnMissionScreenFinalize();
 	}
 
 	public override bool OnEscape()
 	{
 		bool flag = false;
-		if (_orderUIHandler != null && _orderUIHandler.IsOrderMenuActive)
+		if (_isActive)
 		{
-			flag = _orderUIHandler.OnEscape();
-		}
-		if (!flag)
-		{
-			flag = _dataSource.OnEscape();
+			bool flag2 = false;
+			if (_orderUIHandler != null && _orderUIHandler.IsOrderMenuActive)
+			{
+				flag2 = _orderUIHandler.IsAnyOrderSetActive;
+				flag = _orderUIHandler.OnEscape();
+			}
+			if (!flag2)
+			{
+				flag = _dataSource.OnEscape() || flag;
+			}
 		}
 		return flag;
 	}
@@ -166,13 +220,19 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 
 	public override bool IsOpeningEscapeMenuOnFocusChangeAllowed()
@@ -184,12 +244,11 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 	{
 		if (base.Mission.PlayerTeam == null)
 		{
-			Debug.FailedAssert("Player team must be initialized before OOB", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletOrderOfBattleUIHandler.cs", "OnPlayerTurnToChooseFormationToLead", 199);
+			Debug.FailedAssert("Player team must be initialized before OOB", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletOrderOfBattleUIHandler.cs", "OnPlayerTurnToChooseFormationToLead", 285);
 		}
 		_cachedOrderTypeSetting = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.OrderType);
 		ManagedOptions.SetConfig(ManagedOptions.ManagedOptionsType.OrderType, 1f);
 		_dataSource.Initialize(base.Mission, base.MissionScreen.CombatCamera, SelectFormationAtIndex, DeselectFormationAtIndex, ClearFormationSelection, OnAutoDeploy, OnBeginMission, lockedFormationIndicesAndSergeants);
-		_orderUIHandler.SetIsOrderPreconfigured(_dataSource.IsOrderPreconfigured);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
 		_isActive = true;
 	}
@@ -199,33 +258,12 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 		_dataSource.OnAllFormationsAssignedSergeants(formationsWithLooselyAssignedSergeants);
 	}
 
-	private void OnDeploymentFinish()
+	public override void OnDeploymentFinished()
 	{
+		base.OnDeploymentFinished();
 		bool playerDeployed = MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle();
 		_dataSource.OnDeploymentFinalized(playerDeployed);
-		if (_isActive)
-		{
-			ManagedOptions.SetConfig(ManagedOptions.ManagedOptionsType.OrderType, _cachedOrderTypeSetting);
-			_isActive = false;
-			_gauntletLayer.InputRestrictions.ResetInputRestrictions();
-		}
-		_isDeploymentFinished = true;
-		DeploymentMissionView deploymentMissionView = _deploymentMissionView;
-		deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Remove(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(OnDeploymentFinish));
-		_playerRoleMissionController.OnPlayerTurnToChooseFormationToLead -= OnPlayerTurnToChooseFormationToLead;
-		_playerRoleMissionController.OnAllFormationsAssignedSergeants -= OnAllFormationsAssignedSergeants;
-		OrderTroopPlacer orderTroopPlacer = _orderTroopPlacer;
-		orderTroopPlacer.OnUnitDeployed = (Action)Delegate.Remove(orderTroopPlacer.OnUnitDeployed, new Action(OnUnitDeployed));
-		_orderUIHandler.OnCameraControlsToggled -= OnCameraControlsToggled;
-		_orderOfBattleCategory.Unload();
-		ScreenManager.TryLoseFocus(_gauntletLayer);
-		_gauntletLayer.IsFocusLayer = false;
-		base.MissionScreen.SetDisplayDialog(value: false);
-	}
-
-	private void OnCameraControlsToggled(bool isEnabled)
-	{
-		_dataSource.AreCameraControlsEnabled = isEnabled;
+		DestroyView();
 	}
 
 	private void SelectFormationAtIndex(int index)
@@ -250,8 +288,8 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 
 	private void OnBeginMission()
 	{
-		_orderUIHandler.OnBeginMission();
 		_orderUIHandler.OnFiltersSet(_dataSource.CurrentConfiguration);
+		_orderUIHandler.OnBeginMission();
 	}
 
 	private void OnUnitDeployed()

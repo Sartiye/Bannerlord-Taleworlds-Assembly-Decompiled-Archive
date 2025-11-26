@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
-using TaleWorlds.Engine.Screens;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade;
@@ -14,19 +15,11 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 {
 	private Camera _camera;
 
-	protected SceneLayer _sceneLayer;
+	protected VideoPlayerView _videoPlayerView;
 
-	private int _frameCountSinceReadyToRender;
+	private Vec2 _screenResUsedForVideo = Vec2.Zero;
 
-	private const int _numOfFramesToWaitAfterReadyToRender = 8;
-
-	private GameEntity _cameraAnimationEntity;
-
-	private Scene _scene;
-
-	private bool _buttonInvokeMessage;
-
-	private string _buttonToInvoke;
+	private bool _isPlayingVideo;
 
 	protected InitialState _state { get; private set; }
 
@@ -60,10 +53,6 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		_sceneLayer = new SceneLayer();
-		AddLayer(_sceneLayer);
-		_sceneLayer.SceneView.SetResolutionScaling(value: true);
-		_sceneLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		_camera = Camera.CreateCamera();
 		Common.MemoryCleanupGC();
 		if (Game.Current != null)
@@ -76,46 +65,19 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 	protected override void OnFinalize()
 	{
 		_camera = null;
-		_sceneLayer = null;
-		_cameraAnimationEntity = null;
-		_scene = null;
+		_videoPlayerView.SetEnable(value: false);
+		_videoPlayerView.FinalizePlayer();
 		base.OnFinalize();
 	}
 
 	protected sealed override void OnFrameTick(float dt)
 	{
 		base.OnFrameTick(dt);
-		if (_buttonInvokeMessage)
-		{
-			_buttonInvokeMessage = false;
-			Module.CurrentModule.ExecuteInitialStateOptionWithId(_buttonToInvoke);
-		}
-		if (_sceneLayer == null)
+		if (_videoPlayerView == null)
 		{
 			Console.WriteLine("InitialScreen::OnFrameTick scene view null");
 		}
-		if (_scene == null)
-		{
-			return;
-		}
-		if (_sceneLayer != null && _sceneLayer.SceneView.ReadyToRender())
-		{
-			if (_frameCountSinceReadyToRender > 8)
-			{
-				Utilities.DisableGlobalLoadingWindow();
-				LoadingWindow.DisableGlobalLoadingWindow();
-			}
-			else
-			{
-				_frameCountSinceReadyToRender++;
-			}
-		}
-		if (_sceneLayer != null)
-		{
-			_sceneLayer.SetCamera(_camera);
-		}
-		SoundManager.SetListenerFrame(_camera.Frame);
-		_scene.Tick(dt);
+		LoadingWindow.DisableGlobalLoadingWindow();
 		if (Input.IsKeyDown(InputKey.LeftControl) && Input.IsKeyReleased(InputKey.E))
 		{
 			OnEditModeEnterPress();
@@ -124,10 +86,20 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 		{
 			OnInitialScreenTick(dt);
 		}
+		Vec2 screenResolution = MBWindowManager.GetScreenResolution();
+		if (_screenResUsedForVideo != screenResolution)
+		{
+			RefreshVideoAspect(screenResolution);
+			_screenResUsedForVideo = screenResolution;
+		}
 	}
 
 	protected virtual void OnInitialScreenTick(float dt)
 	{
+		if (_videoPlayerView == null || !_isPlayingVideo)
+		{
+			RefreshScene();
+		}
 	}
 
 	protected override void OnActivate()
@@ -136,38 +108,80 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 		if (Utilities.renderingActive)
 		{
 			RefreshScene();
+			Utilities.DisableGlobalLoadingWindow();
 		}
-		_frameCountSinceReadyToRender = 0;
 		if (NativeConfig.DoLocalizationCheckAtStartup)
 		{
 			LocalizedTextManager.CheckValidity(new List<string>());
 		}
+		Module.CurrentModule.SetCanLoadModules(canLoadModules: true);
 	}
 
 	private void RefreshScene()
 	{
-		if (_scene == null)
+		_isPlayingVideo = false;
+		if (_videoPlayerView != null)
 		{
-			_scene = Scene.CreateNewScene(initialize_physics: true, enable_decals: false);
-			_scene.SetName("MBInitialScreenBase");
-			_scene.SetPlaySoundEventsAfterReadyToRender(value: true);
-			SceneInitializationData initData = new SceneInitializationData(initializeWithDefaults: true);
-			_scene.Read("main_menu_a", ref initData);
-			for (int i = 0; i < 40; i++)
+			_videoPlayerView.StopVideo();
+			_videoPlayerView.FinalizePlayer();
+			_videoPlayerView = null;
+		}
+		_videoPlayerView = VideoPlayerView.CreateVideoPlayerView();
+		List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+		foreach (ModuleInfo activeModule in ModuleHelper.GetActiveModules())
+		{
+			string path = System.IO.Path.Combine(activeModule.FolderPath, "Videos", "initial_menu").ToString();
+			if (!Directory.Exists(path))
 			{
-				_scene.Tick(0.1f);
+				continue;
 			}
-			Vec3 dofParams = default(Vec3);
-			_scene.FindEntityWithTag("camera_instance").GetCameraParamsFromCameraScript(_camera, ref dofParams);
+			string searchPattern = "*_pc.ivf";
+			string[] directories = Directory.GetDirectories(path);
+			foreach (string path2 in directories)
+			{
+				string[] files = Directory.GetFiles(path2, "*.ogg");
+				bool flag = files.Length != 0;
+				string[] files2 = Directory.GetFiles(path2, searchPattern);
+				bool flag2 = files2.Length != 0;
+				if (flag && flag2)
+				{
+					list.Add(new KeyValuePair<string, string>(files2[0], files[0]));
+				}
+			}
 		}
-		SoundManager.SetListenerFrame(_camera.Frame);
-		if (_sceneLayer != null)
+		float framerate = 24f;
+		string text = string.Empty;
+		string text2 = string.Empty;
+		if (list.Count > 0)
 		{
-			_sceneLayer.SetScene(_scene);
-			_sceneLayer.SceneView.SetEnable(value: true);
-			_sceneLayer.SceneView.SetSceneUsesShadows(value: true);
+			int count = list.Count;
+			int index = new Random(DateTime.Now.Second).Next(count);
+			text = list[index].Key;
+			text2 = list[index].Value;
+			_videoPlayerView.PlayVideo(text, text2, framerate, looping: true);
+			_isPlayingVideo = true;
 		}
-		_cameraAnimationEntity = GameEntity.CreateEmpty(_scene);
+		Vec2 screenResolution = MBWindowManager.GetScreenResolution();
+		RefreshVideoAspect(screenResolution);
+		Debug.Print($"Initial Screen: Video is playing after refresh: {_isPlayingVideo} {text}::{text2}");
+	}
+
+	private void RefreshVideoAspect(Vec2 screenRes)
+	{
+		float num = screenRes.x / screenRes.y;
+		if (num > 1.7777778f)
+		{
+			float num2 = 1f - 1.7777778f / num;
+			_videoPlayerView.SetOffset(new Vec2(num2 * 0.5f, 0f));
+			_videoPlayerView.SetScale(new Vec2(1f - num2, 1f));
+		}
+		else if (num < 1.7777778f)
+		{
+			float num3 = screenRes.y / screenRes.x;
+			float num4 = 1f - 0.5625f / num3;
+			_videoPlayerView.SetOffset(new Vec2(0f, num4 * 0.5f));
+			_videoPlayerView.SetScale(new Vec2(1f, 1f - num4));
+		}
 	}
 
 	private void OnSceneEditorWindowOpen()
@@ -177,31 +191,21 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 
 	protected override void OnDeactivate()
 	{
-		_sceneLayer.SceneView.SetEnable(value: false);
-		_sceneLayer.SceneView.ClearAll(clearScene: true, removeTerrain: true);
-		_scene.ManualInvalidate();
-		_scene = null;
 		base.OnDeactivate();
+		_videoPlayerView.StopVideo();
+		Module.CurrentModule.SetCanLoadModules(canLoadModules: false);
 	}
 
 	protected override void OnPause()
 	{
 		LoadingWindow.DisableGlobalLoadingWindow();
+		_videoPlayerView.StopVideo();
 		base.OnPause();
-		if (_scene != null)
-		{
-			_scene.FinishSceneSounds();
-		}
 	}
 
 	protected override void OnResume()
 	{
 		base.OnResume();
-		if (_scene != null)
-		{
-			_ = _frameCountSinceReadyToRender;
-			_ = 0;
-		}
 	}
 
 	public static void DoExitButtonAction()
@@ -211,7 +215,7 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 
 	public bool StartedRendering()
 	{
-		return _sceneLayer.SceneView.ReadyToRender();
+		return true;
 	}
 
 	public static void OnEditModeEnterPress()

@@ -31,22 +31,19 @@ public class InitialChildGenerationCampaignBehavior : CampaignBehaviorBase
 			List<Hero> list = new List<Hero>();
 			MBList<Hero> mBList = new MBList<Hero>();
 			MBList<Hero> mBList2 = new MBList<Hero>();
-			foreach (Hero lord in clan.Lords)
+			foreach (Hero aliveLord in clan.AliveLords)
 			{
-				if (lord.IsAlive)
+				if (aliveLord.IsChild)
 				{
-					if (lord.IsChild)
-					{
-						list.Add(lord);
-					}
-					else if (lord.IsFemale)
-					{
-						mBList.Add(lord);
-					}
-					else
-					{
-						mBList2.Add(lord);
-					}
+					list.Add(aliveLord);
+				}
+				else if (aliveLord.IsFemale)
+				{
+					mBList.Add(aliveLord);
+				}
+				else
+				{
+					mBList2.Add(aliveLord);
 				}
 			}
 			int num = MathF.Ceiling((float)(mBList2.Count + mBList.Count) / 2f) - list.Count;
@@ -64,7 +61,7 @@ public class InitialChildGenerationCampaignBehavior : CampaignBehaviorBase
 					MBList<Clan> e = Clan.NonBanditFactions.Where((Clan t) => t != clan && t.Culture == clan.Culture).ToMBList();
 					for (int j = 0; j < 10; j++)
 					{
-						hero = e.GetRandomElement().Lords.Where((Hero t) => t.IsAlive && t.IsFemale == isFemale).ToMBList().GetRandomElement();
+						hero = e.GetRandomElement().AliveLords.Where((Hero t) => t.IsFemale == isFemale).ToMBList().GetRandomElement();
 						if (hero != null)
 						{
 							break;
@@ -74,15 +71,15 @@ public class InitialChildGenerationCampaignBehavior : CampaignBehaviorBase
 				if (hero != null)
 				{
 					int age = MBRandom.RandomInt(2, 18);
-					Hero hero2 = HeroCreator.CreateSpecialHero(hero.CharacterObject, clan.HomeSettlement, clan, null, age);
+					Hero hero2 = HeroCreator.CreateChild(hero.CharacterObject, clan.HomeSettlement, clan, age);
 					hero2.UpdateHomeSettlement();
-					hero2.HeroDeveloper.InitializeHeroDeveloper(isByNaturalGrowth: true);
+					hero2.HeroDeveloper.InitializeHeroDeveloper();
 					MBEquipmentRoster randomElementInefficiently = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForInitialChildrenGeneration(hero2).GetRandomElementInefficiently();
 					if (randomElementInefficiently != null)
 					{
 						Equipment randomCivilianEquipment = randomElementInefficiently.GetRandomCivilianEquipment();
 						EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, randomCivilianEquipment);
-						Equipment equipment = new Equipment(isCivilian: false);
+						Equipment equipment = new Equipment(Equipment.EquipmentType.Battle);
 						equipment.FillFrom(randomCivilianEquipment, useSourceEquipmentType: false);
 						EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, equipment);
 					}

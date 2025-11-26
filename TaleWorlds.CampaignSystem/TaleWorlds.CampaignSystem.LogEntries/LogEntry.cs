@@ -156,14 +156,15 @@ public abstract class LogEntry
 		score = ImportanceEnum.Zero;
 	}
 
-	public virtual int GetAsRumor(Settlement settlement, ref TextObject comment)
+	public virtual int GetAsRumor(Settlement settlement, out TextObject comment)
 	{
+		comment = TextObject.GetEmpty();
 		return 0;
 	}
 
 	public virtual TextObject GetHistoricComment(Hero talkTroop)
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public virtual int AsReasonForEnmity(Hero referenceHero1, Hero referenceHero2)
@@ -184,5 +185,10 @@ public abstract class LogEntry
 	public virtual int GetValueAsPoliticsShowedWeakness(Hero referenceTroop, Hero liege)
 	{
 		return 0;
+	}
+
+	public virtual bool IsValid()
+	{
+		return true;
 	}
 }

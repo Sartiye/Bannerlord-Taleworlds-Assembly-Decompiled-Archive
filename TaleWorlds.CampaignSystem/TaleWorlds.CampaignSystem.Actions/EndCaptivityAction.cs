@@ -8,13 +8,22 @@ namespace TaleWorlds.CampaignSystem.Actions;
 
 public static class EndCaptivityAction
 {
-	private static void ApplyInternal(Hero prisoner, EndCaptivityDetail detail, Hero facilitatior = null)
+	private static void ApplyInternal(Hero prisoner, EndCaptivityDetail detail, Hero facilitatior = null, bool showNotification = true)
 	{
 		PartyBase partyBelongedToAsPrisoner = prisoner.PartyBelongedToAsPrisoner;
 		IFaction capturerFaction = partyBelongedToAsPrisoner?.MapFaction;
 		if (prisoner == Hero.MainHero)
 		{
 			PlayerCaptivity.EndCaptivity();
+			if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.IsSettlement)
+			{
+				MobileParty.MainParty.Position = partyBelongedToAsPrisoner.Settlement.GatePosition;
+				MobileParty.MainParty.IsCurrentlyAtSea = false;
+			}
+			else if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.IsMobile)
+			{
+				MobileParty.MainParty.IsCurrentlyAtSea = partyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea;
+			}
 			if (facilitatior != null && detail != EndCaptivityDetail.Death)
 			{
 				StringHelpers.SetCharacterProperties("FACILITATOR", facilitatior.CharacterObject);
@@ -52,7 +61,7 @@ public static class EndCaptivityAction
 			return;
 		}
 		prisoner.CurrentSettlement?.AddHeroWithoutParty(prisoner);
-		CampaignEventDispatcher.Instance.OnHeroPrisonerReleased(prisoner, partyBelongedToAsPrisoner, capturerFaction, detail);
+		CampaignEventDispatcher.Instance.OnHeroPrisonerReleased(prisoner, partyBelongedToAsPrisoner, capturerFaction, detail, showNotification);
 	}
 
 	public static void ApplyByReleasedAfterBattle(Hero character)
@@ -70,9 +79,9 @@ public static class EndCaptivityAction
 		ApplyInternal(character, EndCaptivityDetail.ReleasedAfterPeace, facilitator);
 	}
 
-	public static void ApplyByEscape(Hero character, Hero facilitator = null)
+	public static void ApplyByEscape(Hero character, Hero facilitator = null, bool showNotification = true)
 	{
-		ApplyInternal(character, EndCaptivityDetail.ReleasedAfterEscape, facilitator);
+		ApplyInternal(character, EndCaptivityDetail.ReleasedAfterEscape, facilitator, showNotification);
 	}
 
 	public static void ApplyByDeath(Hero character)

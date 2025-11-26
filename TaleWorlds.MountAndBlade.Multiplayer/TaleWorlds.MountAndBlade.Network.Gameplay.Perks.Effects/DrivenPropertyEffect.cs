@@ -25,12 +25,12 @@ public class DrivenPropertyEffect : MPPerkEffect
 		_isRatio = (node?.Attributes?["is_ratio"]?.Value)?.ToLower() == "true";
 		if (!Enum.TryParse<DrivenProperty>(node?.Attributes?["driven_property"]?.Value, ignoreCase: true, out _drivenProperty))
 		{
-			Debug.FailedAssert("provided 'driven_property' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\DrivenPropertyEffect.cs", "Deserialize", 28);
+			Debug.FailedAssert("provided 'driven_property' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\DrivenPropertyEffect.cs", "Deserialize", 28);
 		}
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !float.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\DrivenPropertyEffect.cs", "Deserialize", 35);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\DrivenPropertyEffect.cs", "Deserialize", 35);
 		}
 	}
 

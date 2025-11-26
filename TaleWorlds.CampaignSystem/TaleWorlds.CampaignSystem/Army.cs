@@ -1,15 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.CampaignSystem.Encounters;
-using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Map;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
@@ -18,24 +17,8 @@ using TaleWorlds.SaveSystem;
 
 namespace TaleWorlds.CampaignSystem;
 
-public class Army
+public class Army : ITrackableCampaignObject, ITrackableBase
 {
-	public enum AIBehaviorFlags
-	{
-		Unassigned,
-		PreGathering,
-		Gathering,
-		WaitingForArmyMembers,
-		TravellingToAssignment,
-		Besieging,
-		AssaultingTown,
-		Raiding,
-		Defending,
-		Patrolling,
-		GoToSettlement,
-		NumberOfAIBehaviorFlags
-	}
-
 	public enum ArmyTypes
 	{
 		Besieger,
@@ -43,18 +26,6 @@ public class Army
 		Defender,
 		Patrolling,
 		NumberOfArmyTypes
-	}
-
-	private enum MainPartyCurrentAction
-	{
-		Idle,
-		GatherAroundHero,
-		GatherAroundSettlement,
-		GoToSettlement,
-		RaidSettlement,
-		BesiegeSettlement,
-		PatrolAroundSettlement,
-		DefendingSettlement
 	}
 
 	public enum ArmyDispersionReason
@@ -72,44 +43,18 @@ public class Army
 		ArmyLeaderIsDead,
 		FoodProblem,
 		NotEnoughTroop,
-		NoActiveWar
+		NoActiveWar,
+		NoShipToUse,
+		Inactivity
 	}
-
-	public enum ArmyLeaderThinkReason
-	{
-		Unknown,
-		FromGatheringToWaiting,
-		FromTravellingToBesieging,
-		FromWaitingToTravelling,
-		ChangingTarget,
-		FromTravellingToRaiding,
-		FromTravellingToDefending,
-		FromRaidingToTravelling,
-		FromBesiegingToTravelling,
-		FromDefendingToTravelling,
-		FromPatrollingToDefending,
-		FromBesiegingToDefending,
-		FromDefendingToBesieging,
-		FromDefendingToPatrolling,
-		FromUnassignedToPatrolling,
-		FromUnassignedToTravelling
-	}
-
-	private const float MaximumWaitTime = 72f;
-
-	private const float ArmyGatheringConcludingTickFrequency = 1f;
-
-	private const float GatheringDistance = 3.5f;
-
-	private const float DefaultGatheringWaitTime = 24f;
-
-	private const float MinimumDistanceWhileGatheringAsAttackerArmy = 40f;
 
 	private const float CheckingForBoostingCohesionThreshold = 50f;
 
 	private const float DisbandCohesionThreshold = 30f;
 
-	private const float StrengthThresholdRatioForGathering = 0.7f;
+	private const float StrengthThresholdRatioForGathering = 0.9f;
+
+	private const float StrengthThresholdRatioForGatheringAfterTimeThreshold = 0.75f;
 
 	[SaveableField(1)]
 	private readonly MBList<MobileParty> _parties;
@@ -118,10 +63,7 @@ public class Army
 	private CampaignTime _creationTime;
 
 	[SaveableField(7)]
-	private float _armyGatheringTime;
-
-	[SaveableField(9)]
-	private float _waitTimeStart;
+	private float _armyGatheringStartTime;
 
 	[SaveableField(10)]
 	private bool _armyIsDispersing;
@@ -135,18 +77,24 @@ public class Army
 	[SaveableField(16)]
 	private IMapPoint _aiBehaviorObject;
 
+	[SaveableField(20)]
+	private int _inactivityCounter;
+
 	[CachedData]
 	private MBCampaignEvent _hourlyTickEvent;
 
 	[CachedData]
 	private MBCampaignEvent _tickEvent;
 
+	private float MinimumDistanceToTargetWhileGatheringAsAttackerArmy => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(LeaderParty.NavigationCapability) * 0.66f;
+
+	public float GatheringPositionMaxDistanceToTheSettlement => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(LeaderParty.NavigationCapability) * 0.2f;
+
+	public float GatheringPositionMinDistanceToTheSettlement => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(LeaderParty.NavigationCapability) * 0.1f;
+
 	public MBReadOnlyList<MobileParty> Parties => _parties;
 
 	public TextObject EncyclopediaLinkWithName => ArmyOwner.EncyclopediaLinkWithName;
-
-	[SaveableProperty(2)]
-	public AIBehaviorFlags AIBehavior { get; set; }
 
 	[SaveableProperty(3)]
 	public ArmyTypes ArmyType { get; set; }
@@ -171,14 +119,14 @@ public class Army
 
 	public int LeaderPartyAndAttachedPartiesCount => LeaderParty.AttachedParties.Count + 1;
 
-	public float TotalStrength
+	public float EstimatedStrength
 	{
 		get
 		{
-			float num = LeaderParty.Party.TotalStrength;
+			float num = LeaderParty.Party.EstimatedStrength;
 			foreach (MobileParty attachedParty in LeaderParty.AttachedParties)
 			{
-				num += attachedParty.Party.TotalStrength;
+				num += attachedParty.Party.EstimatedStrength;
 			}
 			return num;
 		}
@@ -214,10 +162,6 @@ public class Army
 				StopTrackingTargetSettlement();
 				StartTrackingTargetSettlement(value);
 			}
-			if (value == null)
-			{
-				AIBehavior = AIBehaviorFlags.Unassigned;
-			}
 			_aiBehaviorObject = value;
 		}
 	}
@@ -225,22 +169,48 @@ public class Army
 	[SaveableProperty(17)]
 	public TextObject Name { get; private set; }
 
+	private float InactivityThreshold => (float)CampaignTime.HoursInDay * 2f;
+
 	public int TotalHealthyMembers => LeaderParty.Party.NumberOfHealthyMembers + LeaderParty.AttachedParties.Sum((MobileParty mobileParty) => mobileParty.Party.NumberOfHealthyMembers);
 
 	public int TotalManCount => LeaderParty.Party.MemberRoster.TotalManCount + LeaderParty.AttachedParties.Sum((MobileParty mobileParty) => mobileParty.Party.MemberRoster.TotalManCount);
 
 	public int TotalRegularCount => LeaderParty.Party.MemberRoster.TotalRegulars + LeaderParty.AttachedParties.Sum((MobileParty mobileParty) => mobileParty.Party.MemberRoster.TotalRegulars);
 
+	public bool IsReady => true;
+
+	public bool IsArmyInGatheringState => LeaderParty.AttachedParties.Count + 1 < _parties.Count;
+
 	public override string ToString()
 	{
 		return Name.ToString();
+	}
+
+	public float CalculateCurrentStrength()
+	{
+		float num = LeaderParty.Party.CalculateCurrentStrength();
+		foreach (MobileParty attachedParty in LeaderParty.AttachedParties)
+		{
+			num += attachedParty.Party.CalculateCurrentStrength();
+		}
+		return num;
+	}
+
+	public float GetCustomStrength(BattleSideEnum side, MapEvent.PowerCalculationContext context)
+	{
+		float num = LeaderParty.Party.GetCustomStrength(side, context);
+		foreach (MobileParty attachedParty in LeaderParty.AttachedParties)
+		{
+			num += attachedParty.Party.GetCustomStrength(side, context);
+		}
+		return num;
 	}
 
 	public Army(Kingdom kingdom, MobileParty leaderParty, ArmyTypes armyType)
 	{
 		Kingdom = kingdom;
 		_parties = new MBList<MobileParty>();
-		_armyGatheringTime = 0f;
+		_armyGatheringStartTime = 0f;
 		_creationTime = CampaignTime.Now;
 		LeaderParty = leaderParty;
 		LeaderParty.Army = this;
@@ -254,7 +224,7 @@ public class Army
 	public void UpdateName()
 	{
 		Name = new TextObject("{=nbmctMLk}{LEADER_NAME}{.o} Army");
-		Name.SetTextVariable("LEADER_NAME", (ArmyOwner != null) ? ArmyOwner.Name : ((LeaderParty.Owner != null) ? LeaderParty.Owner.Name : TextObject.Empty));
+		Name.SetTextVariable("LEADER_NAME", (ArmyOwner != null) ? ArmyOwner.Name : ((LeaderParty.Owner != null) ? LeaderParty.Owner.Name : TextObject.GetEmpty()));
 	}
 
 	private void AddEventHandlers()
@@ -269,20 +239,29 @@ public class Army
 		_hourlyTickEvent.AddHandler(HourlyTick);
 		_tickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Hours(0.1f), CampaignTime.Hours(1f));
 		_tickEvent.AddHandler(Tick);
+		CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
+		CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, OnSiegeStarted);
+	}
+
+	private void OnSiegeStarted(SiegeEvent siegeEvent)
+	{
+		if (IsArmyInGatheringState && AiBehaviorObject is Settlement settlement && settlement == siegeEvent.BesiegedSettlement && LeaderParty.SiegeEvent == null)
+		{
+			FindBestGatheringSettlementAndMoveTheLeader(settlement);
+		}
+	}
+
+	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
+	{
+		if (IsArmyInGatheringState && AiBehaviorObject is Settlement settlement2 && settlement2 == settlement && settlement.MapFaction != LeaderParty.MapFaction)
+		{
+			FindBestGatheringSettlementAndMoveTheLeader(settlement);
+		}
 	}
 
 	internal void OnAfterLoad()
 	{
 		AddEventHandlers();
-	}
-
-	[LoadInitializationCallback]
-	private void OnLoad(MetaData metaData)
-	{
-		if (AiBehaviorObject == null)
-		{
-			AIBehavior = AIBehaviorFlags.Unassigned;
-		}
 	}
 
 	public bool DoesLeaderPartyAndAttachedPartiesContain(MobileParty party)
@@ -313,33 +292,35 @@ public class Army
 			num += partySizeRatio;
 		}
 		float b = num / (float)Parties.Count;
-		float num2 = TaleWorlds.Library.MathF.Min(1f, b);
+		float num2 = MathF.Min(1f, b);
 		float num3 = Campaign.Current.Models.TargetScoreCalculatingModel.CurrentObjectiveValue(LeaderParty);
 		if (!(num3 > 0.01f))
 		{
 			return;
 		}
 		num3 *= num2;
-		num3 *= ((_numberOfBoosts == 0) ? 1f : (1f / TaleWorlds.Library.MathF.Pow(1f + (float)_numberOfBoosts, 0.7f)));
+		num3 *= ((_numberOfBoosts == 0) ? 1f : (1f / MathF.Pow(1f + (float)_numberOfBoosts, 0.7f)));
 		ArmyManagementCalculationModel armyManagementCalculationModel = Campaign.Current.Models.ArmyManagementCalculationModel;
-		float num4 = TaleWorlds.Library.MathF.Min(100f, 100f - Cohesion);
+		float num4 = MathF.Min(100f, 100f - Cohesion);
 		int num5 = armyManagementCalculationModel.CalculateTotalInfluenceCost(this, num4);
 		if (!(LeaderParty.Party.Owner.Clan.Influence > (float)num5))
 		{
 			return;
 		}
-		float num6 = TaleWorlds.Library.MathF.Min(9f, TaleWorlds.Library.MathF.Sqrt(LeaderParty.Party.Owner.Clan.Influence / (float)num5));
+		float num6 = MathF.Min(9f, MathF.Sqrt(LeaderParty.Party.Owner.Clan.Influence / (float)num5));
 		float num7 = ((LeaderParty.BesiegedSettlement != null) ? 2f : 1f);
 		if (LeaderParty.BesiegedSettlement == null && LeaderParty.DefaultBehavior == AiBehavior.BesiegeSettlement)
 		{
-			float num8 = LeaderParty.Position2D.Distance(LeaderParty.TargetSettlement.Position2D);
-			if (num8 < 125f)
+			float estimatedLandRatio;
+			float num8 = ((LeaderParty.CurrentSettlement == null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty, LeaderParty.TargetSettlement, LeaderParty.IsTargetingPort, LeaderParty.NavigationCapability, out estimatedLandRatio) : Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty.CurrentSettlement, LeaderParty.TargetSettlement, LeaderParty.IsCurrentlyAtSea, LeaderParty.IsTargetingPort, LeaderParty.NavigationCapability));
+			float num9 = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(LeaderParty.NavigationCapability) * 2f;
+			if (num8 < num9)
 			{
-				num7 += (1f - num8 / 125f) * (1f - num8 / 125f);
+				num7 += (1f - num8 / num9) * (1f - num8 / num9);
 			}
 		}
-		float num9 = num3 * num7 * 0.25f * num6;
-		if (MBRandom.RandomFloat < num9)
+		float num10 = num3 * num7 * 0.25f * num6;
+		if (MBRandom.RandomFloat < num10)
 		{
 			BoostCohesionWithInfluence(num4, num5);
 		}
@@ -363,14 +344,13 @@ public class Army
 			return;
 		}
 		RecalculateArmyMorale();
-		Cohesion += DailyCohesionChange / 24f;
-		if (LeaderParty == MobileParty.MainParty)
+		Cohesion += DailyCohesionChange / (float)CampaignTime.HoursInDay;
+		if (LeaderParty != MobileParty.MainParty)
 		{
-			CheckMainPartyGathering();
-			CheckMainPartyTravelingToAssignment();
-		}
-		else
-		{
+			if (_armyGatheringStartTime == 0f)
+			{
+				CheckAndSetArmyGatheringTime();
+			}
 			MoveLeaderToGatheringLocationIfNeeded();
 			if (Cohesion < 50f)
 			{
@@ -381,54 +361,28 @@ public class Army
 					return;
 				}
 			}
-			switch (AIBehavior)
+			if (LeaderParty.DefaultBehavior == AiBehavior.BesiegeSettlement && IsAnotherEnemyBesiegingTarget())
 			{
-			case AIBehaviorFlags.Gathering:
-				ThinkAboutConcludingArmyGathering();
-				break;
-			case AIBehaviorFlags.WaitingForArmyMembers:
-				ThinkAboutTravelingToAssignment();
-				break;
-			case AIBehaviorFlags.Defending:
-				switch (ArmyType)
-				{
-				case ArmyTypes.Besieger:
-					if (AnyoneBesiegingTarget())
-					{
-						FinishArmyObjective();
-					}
-					else
-					{
-						IsAtSiegeLocation();
-					}
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-				case ArmyTypes.Raider:
-				case ArmyTypes.Defender:
-				case ArmyTypes.Patrolling:
-				case ArmyTypes.NumberOfArmyTypes:
-					break;
-				}
-				break;
-			case AIBehaviorFlags.TravellingToAssignment:
-				if (ArmyType == ArmyTypes.Besieger)
-				{
-					IsAtSiegeLocation();
-				}
-				break;
+				FinishArmyObjective();
 			}
 		}
 		CheckArmyDispersion();
-		CallArmyMembersToArmyIfNeeded();
 		ApplyHostileActionInfluenceAwards();
 	}
 
-	private void Tick(MBCampaignEvent campaignevent, object[] delegateparams)
+	private void CheckAndSetArmyGatheringTime()
+	{
+		if (AiBehaviorObject is Settlement toSettlement && LeaderParty.DefaultBehavior == AiBehavior.GoToPoint && ((LeaderParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty.CurrentSettlement, toSettlement, isFromPort: false, isTargetingPort: false, LeaderParty.DesiredAiNavigationType) : Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty, toSettlement, isTargetingPort: false, LeaderParty.DesiredAiNavigationType, out var _)) < GatheringPositionMaxDistanceToTheSettlement * 2f)
+		{
+			_armyGatheringStartTime = Campaign.CurrentTime;
+		}
+	}
+
+	private void Tick(MBCampaignEvent campaignEvent, object[] delegateParams)
 	{
 		foreach (MobileParty party in _parties)
 		{
-			if (party.AttachedTo == null && party.Army != null && party.ShortTermTargetParty == LeaderParty && party.MapEvent == null && (party.Position2D - LeaderParty.Position2D).LengthSquared < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty)
+			if (party.AttachedTo == null && party.Army != null && party.ShortTermTargetParty == LeaderParty && party.MapEvent == null && party.IsCurrentlyAtSea == LeaderParty.IsCurrentlyAtSea && (party.Position - LeaderParty.Position).LengthSquared < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty)
 			{
 				AddPartyToMergedParties(party);
 				if (party.IsMainParty)
@@ -447,8 +401,6 @@ public class Army
 			if (Cohesion <= 0.1f)
 			{
 				DisbandArmyAction.ApplyByCohesionDepleted(this);
-				GameMenu.ActivateGameMenu("army_dispersed");
-				MBTextManager.SetTextVariable("ARMY_DISPERSE_REASON", new TextObject("{=rJBgDaxe}Your army has disbanded due to lack of cohesion."));
 			}
 			return;
 		}
@@ -463,57 +415,72 @@ public class Army
 		if ((float)num / (float)LeaderPartyAndAttachedPartiesCount > 0.5f)
 		{
 			DisbandArmyAction.ApplyByFoodProblem(this);
+			return;
 		}
-		else if (MBRandom.RandomFloat < 0.25f && !FactionManager.GetEnemyFactions(LeaderParty.MapFaction as Kingdom).AnyQ((IFaction x) => x.Fiefs.Any()))
+		if (MBRandom.RandomFloat < 0.25f && !LeaderParty.MapFaction.FactionsAtWarWith.AnyQ((IFaction x) => x.Fiefs.Any()))
 		{
 			DisbandArmyAction.ApplyByNoActiveWar(this);
+			return;
 		}
-		else if (Cohesion <= 0.1f)
+		if (Cohesion <= 0.1f)
 		{
 			DisbandArmyAction.ApplyByCohesionDepleted(this);
+			return;
 		}
-		else if (!LeaderParty.IsActive)
+		if (!LeaderParty.IsActive)
 		{
 			DisbandArmyAction.ApplyByUnknownReason(this);
+		}
+		CheckInactivity();
+	}
+
+	private void CheckInactivity()
+	{
+		if (!IsWaitingForArmyMembers())
+		{
+			switch (LeaderParty.DefaultBehavior)
+			{
+			case AiBehavior.Hold:
+				_inactivityCounter++;
+				break;
+			case AiBehavior.GoToSettlement:
+				if (!LeaderParty.TargetSettlement.MapFaction.IsAtWarWith(LeaderParty.MapFaction))
+				{
+					_inactivityCounter++;
+				}
+				break;
+			case AiBehavior.AssaultSettlement:
+			case AiBehavior.RaidSettlement:
+			case AiBehavior.BesiegeSettlement:
+			case AiBehavior.DefendSettlement:
+				_inactivityCounter -= 2;
+				break;
+			case AiBehavior.PatrolAroundPoint:
+				_inactivityCounter++;
+				break;
+			}
+			AiBehavior shortTermBehavior = LeaderParty.ShortTermBehavior;
+			if (shortTermBehavior == AiBehavior.EngageParty)
+			{
+				_inactivityCounter--;
+			}
+		}
+		_inactivityCounter = MBMath.ClampInt(_inactivityCounter, 0, (int)InactivityThreshold);
+		if ((float)_inactivityCounter >= InactivityThreshold)
+		{
+			DisbandArmyAction.ApplyByInactivity(this);
 		}
 	}
 
 	private void MoveLeaderToGatheringLocationIfNeeded()
 	{
-		if (AiBehaviorObject != null && (AIBehavior == AIBehaviorFlags.Gathering || AIBehavior == AIBehaviorFlags.WaitingForArmyMembers) && LeaderParty.MapEvent == null && LeaderParty.ShortTermBehavior == AiBehavior.Hold)
+		if (AiBehaviorObject != null && LeaderParty.MapEvent == null && LeaderParty.ShortTermBehavior == AiBehavior.Hold)
 		{
 			Settlement settlement = AiBehaviorObject as Settlement;
-			Vec2 centerPosition = (settlement.IsFortification ? settlement.GatePosition : settlement.Position2D);
+			CampaignVec2 centerPosition = (LeaderParty.IsTargetingPort ? settlement.PortPosition : settlement.GatePosition);
 			if (!settlement.IsUnderSiege && !settlement.IsUnderRaid)
 			{
-				LeaderParty.SendPartyToReachablePointAroundPosition(centerPosition, 6f, 3f);
-			}
-		}
-	}
-
-	private void CheckMainPartyTravelingToAssignment()
-	{
-		if (AIBehavior == AIBehaviorFlags.Gathering && AiBehaviorObject != null && !Campaign.Current.Models.MapDistanceModel.GetDistance(AiBehaviorObject, MobileParty.MainParty, 3.5f, out var _))
-		{
-			AIBehavior = AIBehaviorFlags.TravellingToAssignment;
-		}
-	}
-
-	private void CallArmyMembersToArmyIfNeeded()
-	{
-		for (int num = Parties.Count - 1; num >= 0; num--)
-		{
-			MobileParty mobileParty = Parties[num];
-			if (mobileParty != LeaderParty && !DoesLeaderPartyAndAttachedPartiesContain(mobileParty) && mobileParty != MobileParty.MainParty)
-			{
-				if (mobileParty.MapEvent == null && mobileParty.TargetParty != LeaderParty && (mobileParty.CurrentSettlement == null || !mobileParty.CurrentSettlement.IsUnderSiege))
-				{
-					mobileParty.Ai.SetMoveEscortParty(LeaderParty);
-				}
-				if (mobileParty.Party.IsStarving)
-				{
-					mobileParty.Army = null;
-				}
+				SendLeaderPartyToReachablePointAroundPosition(centerPosition, 6f, 3f);
 			}
 		}
 	}
@@ -535,120 +502,6 @@ public class Army
 		}
 	}
 
-	private void CheckMainPartyGathering()
-	{
-		if (AIBehavior == AIBehaviorFlags.PreGathering && AiBehaviorObject != null && Campaign.Current.Models.MapDistanceModel.GetDistance(AiBehaviorObject, MobileParty.MainParty, 3.5f, out var _))
-		{
-			AIBehavior = AIBehaviorFlags.Gathering;
-		}
-	}
-
-	private MainPartyCurrentAction GetMainPartyCurrentAction()
-	{
-		if (PlayerEncounter.EncounterSettlement == null)
-		{
-			return MainPartyCurrentAction.PatrolAroundSettlement;
-		}
-		Settlement encounterSettlement = PlayerEncounter.EncounterSettlement;
-		if (MobileParty.MainParty.IsActive)
-		{
-			if (encounterSettlement.IsUnderSiege)
-			{
-				if (encounterSettlement.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction))
-				{
-					return MainPartyCurrentAction.BesiegeSettlement;
-				}
-				return MainPartyCurrentAction.DefendingSettlement;
-			}
-			if (encounterSettlement.IsUnderRaid)
-			{
-				if (encounterSettlement.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction))
-				{
-					return MainPartyCurrentAction.RaidSettlement;
-				}
-				return MainPartyCurrentAction.DefendingSettlement;
-			}
-		}
-		return MainPartyCurrentAction.GoToSettlement;
-	}
-
-	public static ArmyLeaderThinkReason GetBehaviorChangeExplanation(AIBehaviorFlags previousBehavior, AIBehaviorFlags currentBehavior)
-	{
-		switch (previousBehavior)
-		{
-		case AIBehaviorFlags.Gathering:
-			if (currentBehavior == AIBehaviorFlags.WaitingForArmyMembers)
-			{
-				return ArmyLeaderThinkReason.FromGatheringToWaiting;
-			}
-			break;
-		case AIBehaviorFlags.WaitingForArmyMembers:
-			if (currentBehavior == AIBehaviorFlags.TravellingToAssignment)
-			{
-				return ArmyLeaderThinkReason.FromWaitingToTravelling;
-			}
-			break;
-		case AIBehaviorFlags.TravellingToAssignment:
-			switch (currentBehavior)
-			{
-			case AIBehaviorFlags.TravellingToAssignment:
-				return ArmyLeaderThinkReason.ChangingTarget;
-			case AIBehaviorFlags.Besieging:
-				return ArmyLeaderThinkReason.FromTravellingToBesieging;
-			case AIBehaviorFlags.Raiding:
-				return ArmyLeaderThinkReason.FromTravellingToRaiding;
-			case AIBehaviorFlags.Defending:
-				return ArmyLeaderThinkReason.FromTravellingToDefending;
-			}
-			break;
-		case AIBehaviorFlags.Besieging:
-			switch (currentBehavior)
-			{
-			case AIBehaviorFlags.TravellingToAssignment:
-				return ArmyLeaderThinkReason.FromBesiegingToTravelling;
-			case AIBehaviorFlags.Defending:
-				return ArmyLeaderThinkReason.FromBesiegingToDefending;
-			}
-			break;
-		case AIBehaviorFlags.Defending:
-			switch (currentBehavior)
-			{
-			case AIBehaviorFlags.TravellingToAssignment:
-				return ArmyLeaderThinkReason.FromDefendingToTravelling;
-			case AIBehaviorFlags.Besieging:
-				return ArmyLeaderThinkReason.FromDefendingToBesieging;
-			case AIBehaviorFlags.Patrolling:
-				return ArmyLeaderThinkReason.FromDefendingToPatrolling;
-			}
-			break;
-		case AIBehaviorFlags.Raiding:
-			if (currentBehavior == AIBehaviorFlags.TravellingToAssignment)
-			{
-				return ArmyLeaderThinkReason.FromRaidingToTravelling;
-			}
-			break;
-		case AIBehaviorFlags.Patrolling:
-			switch (currentBehavior)
-			{
-			case AIBehaviorFlags.Patrolling:
-				return ArmyLeaderThinkReason.ChangingTarget;
-			case AIBehaviorFlags.Defending:
-				return ArmyLeaderThinkReason.FromPatrollingToDefending;
-			}
-			break;
-		case AIBehaviorFlags.Unassigned:
-			switch (currentBehavior)
-			{
-			case AIBehaviorFlags.Patrolling:
-				return ArmyLeaderThinkReason.FromUnassignedToPatrolling;
-			case AIBehaviorFlags.TravellingToAssignment:
-				return ArmyLeaderThinkReason.FromUnassignedToTravelling;
-			}
-			break;
-		}
-		return ArmyLeaderThinkReason.Unknown;
-	}
-
 	public TextObject GetNotificationText()
 	{
 		if (LeaderParty != MobileParty.MainParty)
@@ -661,224 +514,180 @@ public class Army
 		return null;
 	}
 
-	public TextObject GetBehaviorText(bool setWithLink = false)
+	public TextObject GetLongTermBehaviorText(bool setWithLink = false)
 	{
-		if (LeaderParty == MobileParty.MainParty)
+		if (LeaderParty.IsMainParty)
 		{
-			MainPartyCurrentAction mainPartyCurrentAction = GetMainPartyCurrentAction();
-			TextObject variable = ((!setWithLink) ? PlayerEncounter.EncounterSettlement?.Name : PlayerEncounter.EncounterSettlement?.EncyclopediaLinkWithName);
-			TextObject textObject;
-			switch (mainPartyCurrentAction)
-			{
-			case MainPartyCurrentAction.Idle:
-				return new TextObject("{=sBahcJcl}Idle.");
-			case MainPartyCurrentAction.GatherAroundHero:
-				textObject = GameTexts.FindText("str_army_gathering_around_hero");
-				textObject.SetTextVariable("PARTY_NAME", MobileParty.MainParty.Name);
-				break;
-			case MainPartyCurrentAction.GatherAroundSettlement:
-				textObject = GameTexts.FindText("str_army_gathering");
-				break;
-			case MainPartyCurrentAction.GoToSettlement:
-				textObject = ((Settlement.CurrentSettlement == null) ? GameTexts.FindText("str_army_going_to_settlement") : GameTexts.FindText("str_army_waiting_in_settlement"));
-				break;
-			case MainPartyCurrentAction.RaidSettlement:
-				textObject = GameTexts.FindText("str_army_raiding_settlement");
-				textObject.SetTextVariable("RAIDING_PROCESS", (int)(100f * (1f - PlayerEncounter.EncounterSettlement?.SettlementHitPoints)).Value);
-				break;
-			case MainPartyCurrentAction.BesiegeSettlement:
-				textObject = GameTexts.FindText("str_army_besieging_settlement");
-				break;
-			case MainPartyCurrentAction.PatrolAroundSettlement:
-			{
-				Settlement settlement = null;
-				float num = Campaign.MapDiagonalSquared;
-				foreach (Settlement item in Settlement.All)
-				{
-					if (!item.IsHideout)
-					{
-						float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(MobileParty.MainParty, item);
-						if (distance < num)
-						{
-							num = distance;
-							settlement = item;
-						}
-					}
-				}
-				variable = (setWithLink ? settlement.EncyclopediaLinkWithName : settlement.Name);
-				textObject = GameTexts.FindText("str_army_patrolling_travelling");
-				break;
-			}
-			case MainPartyCurrentAction.DefendingSettlement:
-				textObject = GameTexts.FindText("str_army_defending");
-				textObject.SetTextVariable("SETTLEMENT_NAME", variable);
-				break;
-			default:
-				return new TextObject("{=av14a64q}Thinking");
-			}
-			textObject.SetTextVariable("SETTLEMENT_NAME", variable);
-			return textObject;
+			return GetLongTermBehaviorTextForPlayerParty();
 		}
-		float distance2;
-		switch (AIBehavior)
+		return GetLongTermBehaviorTextForAILeadedParty(setWithLink);
+	}
+
+	private TextObject GetLongTermBehaviorTextForPlayerParty()
+	{
+		TextObject textObject;
+		if (MobileParty.MainParty.TargetSettlement != null && MobileParty.MainParty.CurrentSettlement != MobileParty.MainParty.TargetSettlement)
 		{
-		case AIBehaviorFlags.PreGathering:
-		case AIBehaviorFlags.Gathering:
-		case AIBehaviorFlags.WaitingForArmyMembers:
+			textObject = GameTexts.FindText("str_army_going_to_settlement");
+			textObject.SetTextVariable("SETTLEMENT_NAME", LeaderParty.Ai.AiBehaviorPartyBase.Name);
+		}
+		else if (MobileParty.MainParty.CurrentSettlement != null)
 		{
-			TextObject textObject;
-			if (LeaderParty != MobileParty.MainParty)
+			textObject = GameTexts.FindText("str_army_waiting_in_settlement");
+			textObject.SetTextVariable("SETTLEMENT_NAME", MobileParty.MainParty.CurrentSettlement.Name);
+		}
+		else if (MobileParty.MainParty.TargetParty == null)
+		{
+			textObject = ((!MobileParty.MainParty.IsMoving) ? new TextObject("{=RClxLG6N}Holding.") : new TextObject("{=b9TbdM9A}Moving to a point."));
+		}
+		else
+		{
+			textObject = new TextObject("{=P4QFKVSU}Moving to {TARGET_PARTY}.");
+			textObject.SetTextVariable("TARGET_PARTY", MobileParty.MainParty.TargetParty.Name);
+		}
+		return textObject;
+	}
+
+	private TextObject GetLongTermBehaviorTextForAILeadedParty(bool setWithLink)
+	{
+		switch (LeaderParty.DefaultBehavior)
+		{
+		case AiBehavior.Hold:
+		case AiBehavior.GoToPoint:
+			if (IsWaitingForArmyMembers() && AiBehaviorObject != null)
 			{
-				textObject = GameTexts.FindText("str_army_gathering");
+				TextObject textObject = GameTexts.FindText("str_army_gathering");
 				textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
+				return textObject;
 			}
-			else
-			{
-				textObject = GameTexts.FindText("str_army_gathering_around_hero");
-				textObject.SetTextVariable("PARTY_NAME", MobileParty.MainParty.Name);
-			}
-			return textObject;
-		}
-		case AIBehaviorFlags.GoToSettlement:
+			break;
+		case AiBehavior.GoToSettlement:
 		{
 			TextObject textObject = ((LeaderParty.CurrentSettlement == null) ? GameTexts.FindText("str_army_going_to_settlement") : GameTexts.FindText("str_army_waiting_in_settlement"));
 			textObject.SetTextVariable("SETTLEMENT_NAME", (setWithLink && AiBehaviorObject is Settlement) ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : (AiBehaviorObject.Name ?? LeaderParty.Ai.AiBehaviorPartyBase.Name));
 			return textObject;
 		}
-		case AIBehaviorFlags.TravellingToAssignment:
+		case AiBehavior.BesiegeSettlement:
 		{
-			TextObject textObject;
-			if (LeaderParty.MapEvent != null && LeaderParty.MapEvent.MapEventSettlement != null && AiBehaviorObject != null && LeaderParty.MapEvent.MapEventSettlement == AiBehaviorObject)
-			{
-				switch (ArmyType)
-				{
-				case ArmyTypes.Besieger:
-					textObject = GameTexts.FindText("str_army_besieging_settlement");
-					break;
-				case ArmyTypes.Raider:
-				{
-					Settlement settlement2 = (Settlement)AiBehaviorObject;
-					textObject = GameTexts.FindText("str_army_raiding_settlement");
-					textObject.SetTextVariable("RAIDING_PROCESS", (int)(100f * (1f - settlement2.SettlementHitPoints)));
-					break;
-				}
-				case ArmyTypes.Patrolling:
-					textObject = GameTexts.FindText("str_army_patrolling_travelling");
-					break;
-				case ArmyTypes.Defender:
-					textObject = GameTexts.FindText("str_army_defending_travelling");
-					break;
-				default:
-					return new TextObject("{=av14a64q}Thinking");
-				}
-				textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
-				return textObject;
-			}
-			switch (ArmyType)
-			{
-			case ArmyTypes.Besieger:
-				textObject = GameTexts.FindText("str_army_besieging_travelling");
-				break;
-			case ArmyTypes.Raider:
-				textObject = GameTexts.FindText("str_army_raiding_travelling");
-				break;
-			case ArmyTypes.Patrolling:
-				textObject = GameTexts.FindText("str_army_patrolling_travelling");
-				break;
-			case ArmyTypes.Defender:
-				textObject = GameTexts.FindText("str_army_defending_travelling");
-				break;
-			default:
-				return new TextObject("{=av14a64q}Thinking");
-			}
-			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
-			return textObject;
-		}
-		case AIBehaviorFlags.Besieging:
-		{
-			TextObject textObject = ((!Campaign.Current.Models.MapDistanceModel.GetDistance(AiBehaviorObject, MobileParty.MainParty, 15f, out distance2)) ? GameTexts.FindText("str_army_besieging_travelling") : GameTexts.FindText("str_army_besieging"));
-			Settlement settlement3 = (Settlement)AiBehaviorObject;
-			if (settlement3.IsVillage)
+			Settlement settlement = (Settlement)AiBehaviorObject;
+			TextObject textObject = GameTexts.FindText((LeaderParty.SiegeEvent != null) ? "str_army_besieging" : "str_army_besieging_travelling");
+			if (settlement.IsVillage)
 			{
 				textObject = GameTexts.FindText("str_army_patrolling_travelling");
 			}
-			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? settlement3.EncyclopediaLinkWithName : AiBehaviorObject.Name);
+			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? settlement.EncyclopediaLinkWithName : AiBehaviorObject.Name);
 			return textObject;
 		}
-		case AIBehaviorFlags.Raiding:
+		case AiBehavior.RaidSettlement:
 		{
-			TextObject textObject = ((!Campaign.Current.Models.MapDistanceModel.GetDistance(AiBehaviorObject, MobileParty.MainParty, 15f, out distance2)) ? GameTexts.FindText("str_army_raiding_travelling") : GameTexts.FindText("str_army_raiding"));
-			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
+			Settlement settlement2 = (Settlement)AiBehaviorObject;
+			TextObject textObject = ((LeaderParty.MapEvent != null && LeaderParty.MapEvent.IsRaid) ? GameTexts.FindText("str_army_raiding") : GameTexts.FindText("str_army_raiding_travelling"));
+			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? settlement2.EncyclopediaLinkWithName : AiBehaviorObject.Name);
 			return textObject;
 		}
-		case AIBehaviorFlags.Defending:
+		case AiBehavior.DefendSettlement:
 		{
-			TextObject textObject = ((!Campaign.Current.Models.MapDistanceModel.GetDistance(AiBehaviorObject, MobileParty.MainParty, 15f, out distance2)) ? GameTexts.FindText("str_army_defending_travelling") : GameTexts.FindText("str_army_defending"));
-			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
+			Settlement settlement = (Settlement)AiBehaviorObject;
+			TextObject textObject = ((LeaderParty.Position.Distance(settlement.Position) > Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay * 0.33f) ? GameTexts.FindText("str_army_defending_travelling") : GameTexts.FindText("str_army_defending"));
+			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? settlement.EncyclopediaLinkWithName : AiBehaviorObject.Name);
 			return textObject;
 		}
-		case AIBehaviorFlags.Patrolling:
+		case AiBehavior.PatrolAroundPoint:
 		{
 			TextObject textObject = GameTexts.FindText("str_army_patrolling_travelling");
 			textObject.SetTextVariable("SETTLEMENT_NAME", setWithLink ? ((Settlement)AiBehaviorObject).EncyclopediaLinkWithName : AiBehaviorObject.Name);
 			return textObject;
 		}
-		default:
-			return new TextObject("{=av14a64q}Thinking");
 		}
+		if (LeaderParty.MapEvent != null)
+		{
+			TextObject textObject;
+			if (LeaderParty.MapEvent.MapEventSettlement != null)
+			{
+				textObject = ((LeaderParty.MapEventSide == LeaderParty.MapEvent.DefenderSide) ? new TextObject("{=rGy8vjOv}Defending {TARGET_SETTLEMENT}.") : new TextObject("{=exnL6SS7}Attacking {TARGET_SETTLEMENT}."));
+				textObject.SetTextVariable("TARGET_SETTLEMENT", LeaderParty.MapEvent.MapEventSettlement.Name);
+				return textObject;
+			}
+			textObject = new TextObject("{=5bzk75Ql}Engaging {TARGET_PARTY}.");
+			textObject.SetTextVariable("TARGET_PARTY", (LeaderParty.MapEventSide == LeaderParty.MapEvent.DefenderSide) ? LeaderParty.MapEvent.AttackerSide.LeaderParty.Name : LeaderParty.MapEvent.DefenderSide.LeaderParty.Name);
+			return textObject;
+		}
+		if (LeaderParty.SiegeEvent != null)
+		{
+			TextObject textObject = new TextObject("{=JTxI3sW2}Besieging {TARGET_SETTLEMENT}.");
+			textObject.SetTextVariable("TARGET_SETTLEMENT", LeaderParty.BesiegedSettlement.Name);
+			return textObject;
+		}
+		return TextObject.GetEmpty();
 	}
 
-	public void Gather(Settlement initialHostileSettlement)
+	public void Gather(Settlement initialHostileSettlement, MBReadOnlyList<MobileParty> partiesToCallToArmy = null)
 	{
-		_armyGatheringTime = Campaign.CurrentTime;
+		Settlement gatheringPoint = null;
 		if (LeaderParty != MobileParty.MainParty)
 		{
-			Settlement settlement = (Settlement)(AiBehaviorObject = FindBestInitialGatheringSettlement(initialHostileSettlement));
-			Vec2 centerPosition = (settlement.IsFortification ? settlement.GatePosition : settlement.Position2D);
-			LeaderParty.SendPartyToReachablePointAroundPosition(centerPosition, 6f, 3f);
-			CallPartiesToArmy();
+			FindBestGatheringSettlementAndMoveTheLeader(initialHostileSettlement);
+			if (partiesToCallToArmy != null)
+			{
+				foreach (MobileParty item in partiesToCallToArmy)
+				{
+					item.Army = this;
+				}
+			}
 		}
 		else
 		{
-			AiBehaviorObject = SettlementHelper.FindNearestSettlement((Settlement x) => x.IsFortification || x.IsVillage);
+			Settlement settlement = SettlementHelper.FindNearestSettlementToMobileParty(MobileParty.MainParty, MobileParty.MainParty.NavigationCapability, (Settlement x) => x.IsFortification || x.IsVillage);
+			if (settlement == null)
+			{
+				CampaignVec2 point = MobileParty.MainParty.Position;
+				settlement = SettlementHelper.FindNearestSettlementToPoint(in point);
+			}
+			gatheringPoint = settlement;
 		}
-		GatherArmyAction.Apply(LeaderParty, (Settlement)AiBehaviorObject);
+		GatherArmyAction.Apply(LeaderParty, gatheringPoint);
 	}
 
-	private Settlement FindBestInitialGatheringSettlement(Settlement initialHostileTargetSettlement)
+	private void FindBestGatheringSettlementAndMoveTheLeader(Settlement focusSettlement)
 	{
 		Settlement settlement = null;
 		Hero leaderHero = LeaderParty.LeaderHero;
-		float num = 0f;
+		float num = float.MinValue;
 		if (leaderHero != null && leaderHero.IsActive)
 		{
 			foreach (Settlement settlement2 in Kingdom.Settlements)
 			{
-				if (!settlement2.IsVillage && !settlement2.IsFortification)
+				if (!settlement2.IsFortification || settlement2.IsUnderSiege)
 				{
 					continue;
 				}
-				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(initialHostileTargetSettlement, settlement2);
-				if (!(distance > 40f))
+				float num2 = float.MaxValue;
+				num2 = ((LeaderParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty.CurrentSettlement, settlement2, isFromPort: false, isTargetingPort: false, LeaderParty.NavigationCapability, out var landRatio) : Campaign.Current.Models.MapDistanceModel.GetDistance(LeaderParty, settlement2, isTargetingPort: false, LeaderParty.NavigationCapability, out landRatio));
+				if (!(num2 < Campaign.MapDiagonalSquared))
 				{
 					continue;
 				}
-				float num2 = 0f;
+				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(focusSettlement, settlement2, isFromPort: false, isTargetingPort: false, LeaderParty.NavigationCapability);
+				if (!(distance < Campaign.MapDiagonalSquared) || !(distance > MinimumDistanceToTargetWhileGatheringAsAttackerArmy))
+				{
+					continue;
+				}
+				float num3 = 0f;
 				if (settlement == null)
 				{
-					num2 += 0.001f;
+					num3 += 0.001f;
 				}
-				if (settlement2 == initialHostileTargetSettlement || settlement2.Party.MapEvent != null)
+				if (settlement2 == focusSettlement || settlement2.Party.MapEvent != null)
 				{
 					continue;
 				}
 				if (settlement2.MapFaction == Kingdom)
 				{
-					num2 += 10f;
+					num3 += 10f;
 				}
 				else if (!FactionManager.IsAtWarAgainstFaction(settlement2.MapFaction, Kingdom))
 				{
-					num2 += 2f;
+					num3 += 2f;
 				}
 				bool flag = false;
 				foreach (Army army in Kingdom.Armies)
@@ -890,20 +699,16 @@ public class Army
 				}
 				if (!flag)
 				{
-					num2 += 10f;
+					num3 += 10f;
 				}
-				float num3 = distance / (Campaign.MapDiagonal * 0.1f);
-				float num4 = 20f * (1f - num3);
-				float num5 = (settlement2.Position2D - LeaderParty.Position2D).Length / (Campaign.MapDiagonal * 0.1f);
-				float num6 = 5f * (1f - num5);
-				float num7 = num2 + num4 * 0.5f + num6 * 0.1f;
-				if (num7 < 0f)
+				float num4 = distance / (Campaign.MapDiagonalSquared * 0.1f);
+				float num5 = 20f * (1f - num4);
+				float num6 = (settlement2.Position - LeaderParty.Position).Length / (Campaign.MapDiagonalSquared * 0.1f);
+				float num7 = 5f * (1f - num6);
+				float num8 = num3 + num5 * 0.5f + num7 * 0.1f;
+				if (num8 > num)
 				{
-					num7 = 0f;
-				}
-				if (num7 > num)
-				{
-					num = num7;
+					num = num8;
 					settlement = settlement2;
 				}
 			}
@@ -914,89 +719,47 @@ public class Army
 		}
 		if (settlement == null)
 		{
-			settlement = Kingdom.Settlements.FirstOrDefault() ?? LeaderParty.HomeSettlement;
+			settlement = SettlementHelper.FindNearestFortificationToMobileParty(LeaderParty, LeaderParty.NavigationCapability);
 		}
-		return settlement;
+		AiBehaviorObject = settlement;
+		CampaignVec2 gatePosition = settlement.GatePosition;
+		SendLeaderPartyToReachablePointAroundPosition(gatePosition, GatheringPositionMaxDistanceToTheSettlement, GatheringPositionMinDistanceToTheSettlement);
 	}
 
-	private void CallPartiesToArmy()
+	public bool IsWaitingForArmyMembers()
 	{
-		foreach (MobileParty item in Campaign.Current.Models.ArmyManagementCalculationModel.GetMobilePartiesToCallToArmy(LeaderParty))
+		if (_armyGatheringStartTime > 0f)
 		{
-			SetPartyAiAction.GetActionForEscortingParty(item, LeaderParty);
-		}
-	}
-
-	public void ThinkAboutConcludingArmyGathering()
-	{
-		float currentTime = Campaign.CurrentTime;
-		float num = 0f;
-		float num2 = ((ArmyType == ArmyTypes.Defender) ? 1f : 2f);
-		float num3 = currentTime - _armyGatheringTime;
-		if (num3 > 24f)
-		{
-			num = 1f * ((num3 - 24f) / (num2 * 24f));
-		}
-		else if (num3 > (num2 + 1f) * 24f)
-		{
-			num = 1f;
-		}
-		if (MBRandom.RandomFloat < num)
-		{
-			_waitTimeStart = Campaign.CurrentTime;
-			AIBehavior = AIBehaviorFlags.WaitingForArmyMembers;
-			if (Parties.Count <= 1)
+			bool flag = false;
+			float num = Campaign.CurrentTime - _armyGatheringStartTime;
+			float num2 = EstimatedStrength / Parties.SumQ((MobileParty x) => x.Party.EstimatedStrength);
+			if (num < Campaign.Current.Models.ArmyManagementCalculationModel.MaximumWaitTime)
 			{
-				DisbandArmyAction.ApplyByNotEnoughParty(this);
+				flag = num2 > 0.9f;
 			}
-		}
-	}
-
-	public void ThinkAboutTravelingToAssignment()
-	{
-		bool flag = false;
-		if (Campaign.CurrentTime - _waitTimeStart < 72f)
-		{
-			if (LeaderParty.Position2D.DistanceSquared(AiBehaviorObject.Position2D) < 100f)
+			else
 			{
-				flag = TotalStrength / Parties.SumQ((MobileParty x) => x.Party.TotalStrength) > 0.7f;
+				float num3 = (num - Campaign.Current.Models.ArmyManagementCalculationModel.MaximumWaitTime) * 0.01f;
+				flag = num2 > 0.75f - num3;
 			}
+			return !flag;
 		}
-		else
-		{
-			flag = true;
-		}
-		if (flag)
-		{
-			AIBehavior = AIBehaviorFlags.TravellingToAssignment;
-		}
+		return true;
 	}
 
-	private bool AnyoneBesiegingTarget()
+	private bool IsAnotherEnemyBesiegingTarget()
 	{
 		Settlement settlement = (Settlement)AiBehaviorObject;
 		if (ArmyType == ArmyTypes.Besieger && settlement.IsUnderSiege)
 		{
-			return !settlement.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(LeaderParty);
+			return settlement.SiegeEvent.BesiegerCamp.MapFaction.IsAtWarWith(LeaderParty.MapFaction);
 		}
 		return false;
 	}
 
-	private void IsAtSiegeLocation()
-	{
-		if (LeaderParty.Position2D.DistanceSquared(AiBehaviorObject.Position2D) < 100f && AIBehavior != AIBehaviorFlags.Besieging)
-		{
-			if (LeaderParty.Army.Parties.ContainsQ(MobileParty.MainParty))
-			{
-				Debug.Print(string.Concat(LeaderParty.LeaderHero.StringId, ": ", LeaderParty.LeaderHero.Name, " is besieging ", AiBehaviorObject.Name, " of ", AiBehaviorObject.MapFaction.StringId, ": ", AiBehaviorObject.MapFaction.Name, "\n"), 0, Debug.DebugColor.Cyan);
-			}
-			AIBehavior = AIBehaviorFlags.Besieging;
-		}
-	}
-
 	public void FinishArmyObjective()
 	{
-		AIBehavior = AIBehaviorFlags.Unassigned;
+		LeaderParty.SetMoveModeHold();
 		AiBehaviorObject = null;
 	}
 
@@ -1014,9 +777,10 @@ public class Army
 			MobileParty mobileParty = Parties[num2];
 			bool num3 = mobileParty.AttachedTo == LeaderParty;
 			mobileParty.Army = null;
-			if (num3 && mobileParty.CurrentSettlement == null && mobileParty.IsActive)
+			if (num3 && mobileParty.CurrentSettlement == null && mobileParty.IsActive && (!LeaderParty.IsCurrentlyAtSea || mobileParty.HasNavalNavigationCapability))
 			{
-				mobileParty.Position2D = MobilePartyHelper.FindReachablePointAroundPosition(LeaderParty.Position2D, 1f);
+				mobileParty.Position = NavigationHelper.FindReachablePointAroundPosition(LeaderParty.Position, mobileParty.NavigationCapability, 1f);
+				mobileParty.SetMoveModeHold();
 			}
 		}
 		_parties.Clear();
@@ -1033,7 +797,7 @@ public class Army
 	public Vec2 GetRelativePositionForParty(MobileParty mobileParty, Vec2 armyFacing)
 	{
 		float num = 0.5f;
-		float num2 = (float)TaleWorlds.Library.MathF.Ceiling(-1f + TaleWorlds.Library.MathF.Sqrt(1f + 8f * (float)(LeaderParty.AttachedParties.Count - 1))) / 4f * num * 0.5f + num;
+		float num2 = (float)MathF.Ceiling(-1f + MathF.Sqrt(1f + 8f * (float)(LeaderParty.AttachedParties.Count - 1))) / 4f * num * 0.5f + num;
 		int num3 = -1;
 		for (int i = 0; i < LeaderParty.AttachedParties.Count; i++)
 		{
@@ -1043,22 +807,24 @@ public class Army
 				break;
 			}
 		}
-		int num4 = TaleWorlds.Library.MathF.Ceiling((-1f + TaleWorlds.Library.MathF.Sqrt(1f + 8f * (float)(num3 + 2))) / 2f) - 1;
+		int num4 = MathF.Ceiling((-1f + MathF.Sqrt(1f + 8f * (float)(num3 + 2))) / 2f) - 1;
 		int num5 = num3 + 1 - num4 * (num4 + 1) / 2;
 		bool flag = (num4 & 1) != 0;
 		num5 = (((((uint)num5 & (true ? 1u : 0u)) != 0) ? (-1 - num5) : num5) >> 1) * ((!flag) ? 1 : (-1));
 		float num6 = 1.25f;
-		Vec2 vec = LeaderParty.VisualPosition2DWithoutError + -armyFacing * 0.1f * LeaderParty.AttachedParties.Count;
-		Vec2 vec2 = vec - TaleWorlds.Library.MathF.Sign((float)num5 - ((((uint)num4 & (true ? 1u : 0u)) != 0) ? 0.5f : 0f)) * armyFacing.LeftVec() * num2;
-		PathFaceRecord faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(vec);
-		if (vec != vec2)
+		CampaignVec2 campaignVec = new CampaignVec2(LeaderParty.VisualPosition2DWithoutError + -armyFacing * 0.1f * LeaderParty.AttachedParties.Count, !LeaderParty.IsCurrentlyAtSea);
+		Vec2 vec = campaignVec.ToVec2() - MathF.Sign((float)num5 - ((((uint)num4 & (true ? 1u : 0u)) != 0) ? 0.5f : 0f)) * armyFacing.LeftVec() * num2;
+		int[] invalidTerrainTypesForNavigationType = Campaign.Current.Models.PartyNavigationModel.GetInvalidTerrainTypesForNavigationType((!LeaderParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
+		Vec2 lastPointOnNavigationMeshFromPositionToDestination = Campaign.Current.MapSceneWrapper.GetLastPointOnNavigationMeshFromPositionToDestination(campaignVec.Face, campaignVec.ToVec2(), vec, invalidTerrainTypesForNavigationType);
+		if ((vec - lastPointOnNavigationMeshFromPositionToDestination).LengthSquared > 2.25E-06f)
 		{
-			Vec2 lastPointOnNavigationMeshFromPositionToDestination = Campaign.Current.MapSceneWrapper.GetLastPointOnNavigationMeshFromPositionToDestination(faceIndex, vec, vec2);
-			if ((vec2 - lastPointOnNavigationMeshFromPositionToDestination).LengthSquared > 2.25E-06f)
-			{
-				num = num * (vec - lastPointOnNavigationMeshFromPositionToDestination).Length / num2;
-				num6 = num6 * (vec - lastPointOnNavigationMeshFromPositionToDestination).Length / (num2 / 1.5f);
-			}
+			num = num * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / num2;
+			num6 = num6 * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / (num2 / 1.5f);
+		}
+		if (LeaderParty.IsCurrentlyAtSea)
+		{
+			num6 *= 3f;
+			num *= 3f;
 		}
 		return new Vec2((flag ? ((0f - num) * 0.5f) : 0f) + (float)num5 * num + mobileParty.Party.RandomFloat(-0.25f, 0.25f) * 0.6f * num, ((float)(-num4) + mobileParty.Party.RandomFloatWithSeed(1u, -0.25f, 0.25f)) * num6 * 0.3f);
 	}
@@ -1082,7 +848,7 @@ public class Army
 		mobileParty.Ai.SetInitiative(1f, 1f, 24f);
 		_parties.Remove(mobileParty);
 		CampaignEventDispatcher.Instance.OnPartyRemovedFromArmy(mobileParty);
-		if (this == MobileParty.MainParty.Army)
+		if (this == MobileParty.MainParty.Army && !_armyIsDispersing)
 		{
 			CampaignEventDispatcher.Instance.OnArmyOverlaySetDirty();
 		}
@@ -1091,7 +857,6 @@ public class Army
 		{
 			DisbandArmyAction.ApplyByLeaderPartyRemoved(this);
 		}
-		mobileParty.OnRemovedFromArmyInternal();
 		if (mobileParty == MobileParty.MainParty)
 		{
 			Campaign.Current.CameraFollowParty = MobileParty.MainParty.Party;
@@ -1124,17 +889,22 @@ public class Army
 			}
 		}
 		mobileParty.Party.SetVisualAsDirty();
-		mobileParty.Party.UpdateVisibilityAndInspected();
+		mobileParty.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 	}
 
 	internal void OnAddPartyInternal(MobileParty mobileParty)
 	{
 		_parties.Add(mobileParty);
+		mobileParty.Ai.RethinkAtNextHourlyTick = true;
 		CampaignEventDispatcher.Instance.OnPartyJoinedArmy(mobileParty);
 		if (this == MobileParty.MainParty.Army && LeaderParty != MobileParty.MainParty)
 		{
 			StartTrackingTargetSettlement(AiBehaviorObject);
 			CampaignEventDispatcher.Instance.OnArmyOverlaySetDirty();
+		}
+		if (!mobileParty.IsMainParty)
+		{
+			mobileParty.Ai.RethinkAtNextHourlyTick = true;
 		}
 		if (mobileParty != MobileParty.MainParty && LeaderParty != MobileParty.MainParty && LeaderParty.LeaderHero != null)
 		{
@@ -1143,20 +913,63 @@ public class Army
 		}
 	}
 
+	private void SendLeaderPartyToReachablePointAroundPosition(CampaignVec2 centerPosition, float distanceLimit, float innerCenterMinimumDistanceLimit = 0f)
+	{
+		LeaderParty.SetMoveGoToPoint(NavigationHelper.FindReachablePointAroundPosition(centerPosition, MobileParty.NavigationType.Default, distanceLimit, innerCenterMinimumDistanceLimit), LeaderParty.NavigationCapability);
+	}
+
 	private void StartTrackingTargetSettlement(IMapPoint targetObject)
 	{
-		if (targetObject is Settlement obj)
+		if (targetObject is Settlement trackableObject)
 		{
-			Campaign.Current.VisualTrackerManager.RegisterObject(obj);
+			Campaign.Current.VisualTrackerManager.RegisterObject(trackableObject);
 		}
 	}
 
 	private void StopTrackingTargetSettlement()
 	{
-		if (AiBehaviorObject is Settlement obj)
+		if (AiBehaviorObject is Settlement trackableObject)
 		{
-			Campaign.Current.VisualTrackerManager.RemoveTrackedObject(obj);
+			Campaign.Current.VisualTrackerManager.RemoveTrackedObject(trackableObject);
 		}
+	}
+
+	public void SetPositionAfterMapChange(CampaignVec2 newPosition)
+	{
+		LeaderParty.SetPositionAfterMapChange(newPosition);
+		foreach (MobileParty attachedParty in LeaderParty.AttachedParties)
+		{
+			attachedParty.SetPositionAfterMapChange(newPosition);
+		}
+	}
+
+	public void CheckPositionsForMapChangeAndUpdateIfNeeded()
+	{
+		if (NavigationHelper.IsPositionValidForNavigationType(LeaderParty.Position, LeaderParty.NavigationCapability))
+		{
+			return;
+		}
+		CampaignVec2 closestNavMeshFaceCenterPositionForPosition = NavigationHelper.GetClosestNavMeshFaceCenterPositionForPosition(LeaderParty.Position, Campaign.Current.Models.PartyNavigationModel.GetInvalidTerrainTypesForNavigationType(LeaderParty.NavigationCapability));
+		LeaderParty.Position = NavigationHelper.FindReachablePointAroundPosition(closestNavMeshFaceCenterPositionForPosition, LeaderParty.NavigationCapability, 8f, 1f);
+		foreach (MobileParty attachedParty in LeaderParty.AttachedParties)
+		{
+			attachedParty.SetPositionAfterMapChange(LeaderParty.Position);
+		}
+	}
+
+	Banner ITrackableCampaignObject.GetBanner()
+	{
+		return LeaderParty.Banner;
+	}
+
+	TextObject ITrackableBase.GetName()
+	{
+		return Name;
+	}
+
+	Vec3 ITrackableBase.GetPosition()
+	{
+		return LeaderParty.GetPositionAsVec3();
 	}
 
 	internal static void AutoGeneratedStaticCollectObjectsArmy(object o, List<object> collectedObjects)
@@ -1173,11 +986,6 @@ public class Army
 		collectedObjects.Add(ArmyOwner);
 		collectedObjects.Add(LeaderParty);
 		collectedObjects.Add(Name);
-	}
-
-	internal static object AutoGeneratedGetMemberValueAIBehavior(object o)
-	{
-		return ((Army)o).AIBehavior;
 	}
 
 	internal static object AutoGeneratedGetMemberValueArmyType(object o)
@@ -1220,14 +1028,9 @@ public class Army
 		return ((Army)o)._creationTime;
 	}
 
-	internal static object AutoGeneratedGetMemberValue_armyGatheringTime(object o)
+	internal static object AutoGeneratedGetMemberValue_armyGatheringStartTime(object o)
 	{
-		return ((Army)o)._armyGatheringTime;
-	}
-
-	internal static object AutoGeneratedGetMemberValue_waitTimeStart(object o)
-	{
-		return ((Army)o)._waitTimeStart;
+		return ((Army)o)._armyGatheringStartTime;
 	}
 
 	internal static object AutoGeneratedGetMemberValue_armyIsDispersing(object o)
@@ -1248,5 +1051,10 @@ public class Army
 	internal static object AutoGeneratedGetMemberValue_aiBehaviorObject(object o)
 	{
 		return ((Army)o)._aiBehaviorObject;
+	}
+
+	internal static object AutoGeneratedGetMemberValue_inactivityCounter(object o)
+	{
+		return ((Army)o)._inactivityCounter;
 	}
 }

@@ -134,6 +134,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 		CampaignEvents.OnHeroTeleportationRequestedEvent.AddNonSerializedListener(this, OnHeroTeleportationRequested);
 		CampaignEvents.OnPartyDisbandedEvent.AddNonSerializedListener(this, OnPartyDisbanded);
 		CampaignEvents.OnClanLeaderChangedEvent.AddNonSerializedListener(this, OnClanLeaderChanged);
+		CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, HeroPrisonerTaken);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -178,7 +179,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 		for (int num = _teleportationList.Count - 1; num >= 0; num--)
 		{
 			TeleportationData teleportationData = _teleportationList[num];
-			if (teleportationData.TeleportationTime.IsPast && CanApplyImmediateTeleportation(teleportationData))
+			if (teleportationData.TeleportationTime.IsPast && Campaign.Current.Models.DelayedTeleportationModel.CanPerformImmediateTeleport(teleportationData.TeleportingHero, teleportationData.TargetParty, teleportationData.TargetSettlement))
 			{
 				TeleportationData data = teleportationData;
 				RemoveTeleportationData(teleportationData, isCanceled: false);
@@ -189,7 +190,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 
 	private void DailyTickParty(MobileParty mobileParty)
 	{
-		if (mobileParty.IsActive && mobileParty.Army == null && mobileParty.MapEvent == null && mobileParty.LeaderHero != null && mobileParty.LeaderHero.IsNoncombatant && mobileParty.ActualClan != null && mobileParty.ActualClan != Clan.PlayerClan && mobileParty.ActualClan.Leader != mobileParty.LeaderHero)
+		if (mobileParty.IsActive && mobileParty.Army == null && mobileParty.MapEvent == null && mobileParty.LeaderHero != null && mobileParty.LeaderHero.IsNoncombatant && mobileParty.LeaderHero.DeathMark == KillCharacterAction.KillCharacterActionDetail.None && mobileParty.ActualClan != null && mobileParty.ActualClan != Clan.PlayerClan && mobileParty.ActualClan.Leader != mobileParty.LeaderHero && !mobileParty.IsInRaftState && (!mobileParty.IsCurrentlyAtSea || mobileParty.CurrentSettlement != null))
 		{
 			MBList<Hero> mBList = mobileParty.ActualClan.Heroes.WhereQ((Hero h) => h.IsActive && h.IsCommander && h.PartyBelongedTo == null).ToMBList();
 			if (!mBList.IsEmpty())
@@ -211,7 +212,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 		foreach (WarPartyComponent warPartyComponent in hero.Clan.WarPartyComponents)
 		{
 			MobileParty mobileParty = warPartyComponent.MobileParty;
-			if (mobileParty != null && mobileParty.Army == null && mobileParty.MapEvent == null && mobileParty.LeaderHero != null && mobileParty.LeaderHero.IsNoncombatant)
+			if (mobileParty != null && mobileParty.Army == null && mobileParty.MapEvent == null && mobileParty.LeaderHero != null && mobileParty.LeaderHero.IsNoncombatant && (!mobileParty.IsCurrentlyAtSea || mobileParty.CurrentSettlement != null))
 			{
 				Hero leaderHero = mobileParty.LeaderHero;
 				mobileParty.RemovePartyLeader();
@@ -229,7 +230,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 			TeleportationData teleportationData = _teleportationList[num];
 			if (teleportationData.TargetParty != null && teleportationData.TargetParty == mobileParty)
 			{
-				RemoveTeleportationData(teleportationData, isCanceled: true);
+				RemoveTeleportationData(teleportationData, isCanceled: true, disbandTargetParty: false);
 			}
 		}
 	}
@@ -260,7 +261,7 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 
 	private void OnPartyDisbandStarted(MobileParty disbandParty)
 	{
-		if (disbandParty.ActualClan == Clan.PlayerClan && disbandParty.LeaderHero == null && (disbandParty.IsLordParty || disbandParty.IsCaravan))
+		if (disbandParty.ActualClan == Clan.PlayerClan && disbandParty.LeaderHero == null && (disbandParty.IsLordParty || disbandParty.IsCaravan) && !disbandParty.IsCurrentlyAtSea)
 		{
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new PartyLeaderChangeNotification(disbandParty, _partyLeaderChangeNotificationText));
 		}
@@ -348,6 +349,18 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 		}
 	}
 
+	private void HeroPrisonerTaken(PartyBase capturer, Hero prisoner)
+	{
+		for (int num = _teleportationList.Count - 1; num >= 0; num--)
+		{
+			TeleportationData teleportationData = _teleportationList[num];
+			if (teleportationData.TeleportingHero == prisoner)
+			{
+				RemoveTeleportationData(teleportationData, isCanceled: true);
+			}
+		}
+	}
+
 	private void RemoveTeleportationData(TeleportationData data, bool isCanceled, bool disbandTargetParty = true)
 	{
 		_teleportationList.Remove(data);
@@ -375,15 +388,6 @@ public class TeleportationCampaignBehavior : CampaignBehaviorBase, ITeleportatio
 				DisbandPartyAction.StartDisband(data.TargetParty);
 			}
 		}
-	}
-
-	private bool CanApplyImmediateTeleportation(TeleportationData data)
-	{
-		if ((data.TargetSettlement != null && !data.TargetSettlement.IsUnderSiege && !data.TargetSettlement.IsUnderRaid) || (data.TargetParty != null && data.TargetParty.MapEvent == null && !data.TargetParty.IsCurrentlyEngagingParty))
-		{
-			return true;
-		}
-		return false;
 	}
 
 	private void ApplyImmediateTeleport(TeleportationData data)

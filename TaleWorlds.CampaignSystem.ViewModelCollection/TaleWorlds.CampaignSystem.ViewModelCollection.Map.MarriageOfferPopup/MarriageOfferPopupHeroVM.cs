@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Map.MarriageOfferPopup;
@@ -20,13 +23,17 @@ public class MarriageOfferPopupHeroVM : ViewModel
 
 	private string _clanName;
 
-	private ImageIdentifierVM _clanBanner;
+	private BannerImageIdentifierVM _clanBanner;
 
 	private HeroViewModel _model;
 
 	private MBBindingList<EncyclopediaTraitItemVM> _traits;
 
-	private MBBindingList<MarriageOfferPopupHeroAttributeVM> _skills;
+	private MBBindingList<MarriageOfferPopupHeroAttributeVM> _attributes;
+
+	private MBBindingList<EncyclopediaSkillVM> _otherSkills;
+
+	private bool _hasOtherSkills;
 
 	public Hero Hero { get; }
 
@@ -116,7 +123,7 @@ public class MarriageOfferPopupHeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ClanBanner
+	public BannerImageIdentifierVM ClanBanner
 	{
 		get
 		{
@@ -167,18 +174,52 @@ public class MarriageOfferPopupHeroVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public MBBindingList<MarriageOfferPopupHeroAttributeVM> Skills
+	public MBBindingList<MarriageOfferPopupHeroAttributeVM> Attributes
 	{
 		get
 		{
-			return _skills;
+			return _attributes;
 		}
 		set
 		{
-			if (value != _skills)
+			if (value != _attributes)
 			{
-				_skills = value;
-				OnPropertyChangedWithValue(value, "Skills");
+				_attributes = value;
+				OnPropertyChangedWithValue(value, "Attributes");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<EncyclopediaSkillVM> OtherSkills
+	{
+		get
+		{
+			return _otherSkills;
+		}
+		set
+		{
+			if (value != _otherSkills)
+			{
+				_otherSkills = value;
+				OnPropertyChangedWithValue(value, "OtherSkills");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasOtherSkills
+	{
+		get
+		{
+			return _hasOtherSkills;
+		}
+		set
+		{
+			if (value != _hasOtherSkills)
+			{
+				_hasOtherSkills = value;
+				OnPropertyChangedWithValue(value, "HasOtherSkills");
 			}
 		}
 	}
@@ -212,9 +253,23 @@ public class MarriageOfferPopupHeroVM : ViewModel
 
 	public override void OnFinalize()
 	{
+		ClanBanner?.OnFinalize();
 		Model?.OnFinalize();
+		Traits?.ApplyActionOnAllItems(delegate(EncyclopediaTraitItemVM x)
+		{
+			x.OnFinalize();
+		});
 		Traits?.Clear();
-		Skills?.Clear();
+		Attributes?.ApplyActionOnAllItems(delegate(MarriageOfferPopupHeroAttributeVM x)
+		{
+			x.OnFinalize();
+		});
+		Attributes?.Clear();
+		OtherSkills?.ApplyActionOnAllItems(delegate(EncyclopediaSkillVM x)
+		{
+			x.OnFinalize();
+		});
+		OtherSkills?.Clear();
 		base.OnFinalize();
 	}
 
@@ -231,23 +286,38 @@ public class MarriageOfferPopupHeroVM : ViewModel
 	private void CreateClanBanner()
 	{
 		ClanName = Hero.Clan.Name.ToString();
-		ClanBanner = new ImageIdentifierVM(BannerCode.CreateFrom(Hero.ClanBanner), nineGrid: true);
+		ClanBanner = new BannerImageIdentifierVM(Hero.ClanBanner, nineGrid: true);
 	}
 
 	private void CreateHeroModel()
 	{
 		Model.FillFrom(Hero, -1, useCivilian: true, useCharacteristicIdleAction: true);
 		Model.SetEquipment(EquipmentIndex.ArmorItemEndSlot, default(EquipmentElement));
+		Model.SetEquipment(EquipmentIndex.HorseHarness, default(EquipmentElement));
+		Model.SetEquipment(EquipmentIndex.NumAllWeaponSlots, default(EquipmentElement));
 	}
 
 	private void FillHeroInformation()
 	{
 		Traits = new MBBindingList<EncyclopediaTraitItemVM>();
-		Skills = new MBBindingList<MarriageOfferPopupHeroAttributeVM>();
-		foreach (CharacterAttribute item in Attributes.All)
+		Attributes = new MBBindingList<MarriageOfferPopupHeroAttributeVM>();
+		OtherSkills = new MBBindingList<EncyclopediaSkillVM>();
+		List<CharacterAttribute> list = TaleWorlds.CampaignSystem.Extensions.Attributes.All.ToList();
+		list.Sort(CampaignUIHelper.CharacterAttributeComparerInstance);
+		foreach (CharacterAttribute item in list)
 		{
-			Skills.Add(new MarriageOfferPopupHeroAttributeVM(Hero, item));
+			Attributes.Add(new MarriageOfferPopupHeroAttributeVM(Hero, item));
 		}
+		List<SkillObject> list2 = Skills.All.ToList();
+		list2.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list2)
+		{
+			if (!Attributes.Any((MarriageOfferPopupHeroAttributeVM attribute) => attribute.AttributeSkills.Any((EncyclopediaSkillVM attributeSkill) => attributeSkill.SkillId == skill.StringId)))
+			{
+				OtherSkills.Add(new EncyclopediaSkillVM(skill, Hero.GetSkillValue(skill)));
+			}
+		}
+		HasOtherSkills = OtherSkills.Count > 0;
 		foreach (TraitObject heroTrait in CampaignUIHelper.GetHeroTraits())
 		{
 			if (Hero.GetTraitLevel(heroTrait) != 0)

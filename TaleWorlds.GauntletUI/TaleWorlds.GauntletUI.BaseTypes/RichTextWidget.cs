@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using TaleWorlds.GauntletUI.Layout;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.GauntletUI.BaseTypes;
@@ -19,6 +21,8 @@ public class RichTextWidget : BrushWidget
 
 	protected readonly RichText _richText;
 
+	private bool _autoHideIfEmpty;
+
 	private Brush _lastFontBrush;
 
 	private string _lastLanguageCode;
@@ -35,21 +39,38 @@ public class RichTextWidget : BrushWidget
 
 	private int _textHeight;
 
-	protected float _renderXOffset;
+	protected Vec2 _renderOffset;
 
 	private string _linkHoverCursorState;
 
-	private bool _canBreakWords;
+	private bool _canBreakWords = true;
+
+	public bool AutoHideIfEmpty
+	{
+		get
+		{
+			return _autoHideIfEmpty;
+		}
+		set
+		{
+			if (value != _autoHideIfEmpty)
+			{
+				_autoHideIfEmpty = value;
+				if (_autoHideIfEmpty)
+				{
+					base.IsVisible = !string.IsNullOrEmpty(Text);
+				}
+			}
+		}
+	}
 
 	private Vector2 LocalMousePosition
 	{
 		get
 		{
-			Vector2 mousePosition = base.EventManager.MousePosition;
-			Vector2 globalPosition = base.GlobalPosition;
-			float x = mousePosition.X - globalPosition.X;
-			float y = mousePosition.Y - globalPosition.Y;
-			return new Vector2(x, y);
+			ref Rectangle2D areaRect = ref AreaRect;
+			Vector2 screenPosition = base.EventManager.MousePosition;
+			return areaRect.TransformScreenPositionToLocal(in screenPosition);
 		}
 	}
 
@@ -80,7 +101,7 @@ public class RichTextWidget : BrushWidget
 		{
 			if (_richText.Value != value)
 			{
-				_richText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+				_richText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 				_richText.Value = value;
 				OnPropertyChanged(value, "Text");
 				SetMeasureAndLayoutDirty();
@@ -130,12 +151,16 @@ public class RichTextWidget : BrushWidget
 
 	protected virtual void SetText(string value)
 	{
+		if (AutoHideIfEmpty)
+		{
+			base.IsVisible = !string.IsNullOrEmpty(Text);
+		}
 	}
 
 	private void SetRichTextParameters()
 	{
 		bool flag = false;
-		_richText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_richText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 		UpdateFontData();
 		if (_richText.HorizontalAlignment != base.ReadOnlyBrush.TextHorizontalAlignment)
 		{
@@ -191,7 +216,7 @@ public class RichTextWidget : BrushWidget
 
 	private void UpdateFontData()
 	{
-		if (_lastFontBrush == base.ReadOnlyBrush && _lastContextScale == base._scaleToUse && _lastLanguageCode == base.Context.FontFactory.CurrentLangageID)
+		if (_lastFontBrush == base.ReadOnlyBrush && _lastContextScale == base._scaleToUse && _lastLanguageCode == base.Context.FontFactory.CurrentLanguage.LanguageID)
 		{
 			return;
 		}
@@ -204,9 +229,9 @@ public class RichTextWidget : BrushWidget
 			_richText.StyleFontContainer.Add(style.Name, mappedFontForLocalization, (float)style.FontSize * base._scaleToUse);
 		}
 		_lastFontBrush = base.ReadOnlyBrush;
-		_lastLanguageCode = base.Context.FontFactory.CurrentLangageID;
+		_lastLanguageCode = base.Context.FontFactory.CurrentLanguage.LanguageID;
 		_lastContextScale = base._scaleToUse;
-		_richText.CurrentLanguage = base.Context.FontFactory.GetCurrentLanguage();
+		_richText.CurrentLanguage = base.Context.FontFactory.CurrentLanguage;
 	}
 
 	private Font GetFont(Style style = null)
@@ -245,30 +270,30 @@ public class RichTextWidget : BrushWidget
 		}
 		bool isFixedWidth = base.WidthSizePolicy != SizePolicy.CoverChildren || base.MaxWidth != 0f;
 		bool isFixedHeight = base.HeightSizePolicy != SizePolicy.CoverChildren || base.MaxHeight != 0f;
-		_richText.Update(base.Context.SpriteData, focusPosition, flag, isFixedWidth, isFixedHeight, base._scaleToUse);
-		if (!num)
+		_richText.Update(dt, base.Context.SpriteData, focusPosition, flag, isFixedWidth, isFixedHeight, base._scaleToUse);
+		if (num)
 		{
-			return;
+			RichTextLinkGroup focusedLinkGroup2 = _richText.FocusedLinkGroup;
+			if (focusedLinkGroup != null && focusedLinkGroup == focusedLinkGroup2)
+			{
+				string text = focusedLinkGroup.Href;
+				string[] array = text.Split(new char[1] { ':' });
+				if (array.Length == 2)
+				{
+					text = array[1];
+				}
+				if (_mouseState == MouseState.Up)
+				{
+					EventFired("LinkClick", text);
+				}
+				else if (_mouseState == MouseState.AlternateUp)
+				{
+					EventFired("LinkAlternateClick", text);
+				}
+			}
+			_mouseState = MouseState.None;
 		}
-		RichTextLinkGroup focusedLinkGroup2 = _richText.FocusedLinkGroup;
-		if (focusedLinkGroup != null && focusedLinkGroup == focusedLinkGroup2)
-		{
-			string text = focusedLinkGroup.Href;
-			string[] array = text.Split(new char[1] { ':' });
-			if (array.Length == 2)
-			{
-				text = array[1];
-			}
-			if (_mouseState == MouseState.Up)
-			{
-				EventFired("LinkClick", text);
-			}
-			else if (_mouseState == MouseState.AlternateUp)
-			{
-				EventFired("LinkAlternateClick", text);
-			}
-		}
-		_mouseState = MouseState.None;
+		_renderOffset = Vec2.Zero;
 	}
 
 	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
@@ -278,68 +303,87 @@ public class RichTextWidget : BrushWidget
 		{
 			return;
 		}
-		foreach (RichTextPart part in _richText.GetParts())
+		List<RichTextPart> parts = _richText.GetParts();
+		for (int i = 0; i < parts.Count; i++)
 		{
-			DrawObject2D drawObject2D = part.DrawObject2D;
-			if (drawObject2D == null)
+			RichTextPart richTextPart = parts[i];
+			if (richTextPart.Type == RichTextPartType.Text)
 			{
-				continue;
+				RenderText(richTextPart, drawContext);
 			}
-			Material material = null;
-			Vector2 cachedGlobalPosition = _cachedGlobalPosition;
-			if (part.Type == RichTextPartType.Text)
+			else if (richTextPart.Type == RichTextPartType.Sprite)
 			{
-				Style styleOrDefault = base.ReadOnlyBrush.GetStyleOrDefault(part.Style);
-				Font defaultFont = part.DefaultFont;
-				float scaleFactor = (float)styleOrDefault.FontSize * base._scaleToUse;
-				TextMaterial textMaterial = styleOrDefault.CreateTextMaterial(drawContext);
-				textMaterial.ColorFactor *= base.ReadOnlyBrush.GlobalColorFactor;
-				textMaterial.AlphaFactor *= base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha;
-				textMaterial.Color *= base.ReadOnlyBrush.GlobalColor;
-				textMaterial.Texture = defaultFont.FontSprite.Texture;
-				textMaterial.ScaleFactor = scaleFactor;
-				textMaterial.SmoothingConstant = defaultFont.SmoothingConstant;
-				textMaterial.Smooth = defaultFont.Smooth;
-				if (textMaterial.GlowRadius > 0f || textMaterial.Blur > 0f || textMaterial.OutlineAmount > 0f)
-				{
-					TextMaterial textMaterial2 = styleOrDefault.CreateTextMaterial(drawContext);
-					textMaterial2.CopyFrom(textMaterial);
-					drawContext.Draw(cachedGlobalPosition.X + _renderXOffset, cachedGlobalPosition.Y, textMaterial2, drawObject2D, base.Size.X, base.Size.Y);
-				}
-				textMaterial.GlowRadius = 0f;
-				textMaterial.Blur = 0f;
-				textMaterial.OutlineAmount = 0f;
-				material = textMaterial;
+				RenderImage(richTextPart, drawContext);
 			}
-			else if (part.Type == RichTextPartType.Sprite)
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void RenderText(RichTextPart richTextPart, TwoDimensionDrawContext drawContext)
+	{
+		if (richTextPart.TextDrawObject.IsValid)
+		{
+			TextDrawObject drawObject = richTextPart.TextDrawObject;
+			Rectangle2D rectangle = drawObject.Rectangle;
+			rectangle.LocalPosition = new Vector2(base.LocalPosition.X + _renderOffset.X, base.LocalPosition.Y + _renderOffset.Y);
+			rectangle.LocalScale = new Vector2(drawObject.Text_MeshWidth, drawObject.Text_MeshHeight);
+			Style styleOrDefault = base.ReadOnlyBrush.GetStyleOrDefault(richTextPart.Style);
+			Font defaultFont = richTextPart.DefaultFont;
+			float scaleFactor = (float)styleOrDefault.FontSize * base._scaleToUse;
+			TextMaterial textMaterial = styleOrDefault.CreateTextMaterial(drawContext);
+			textMaterial.ColorFactor *= base.ReadOnlyBrush.GlobalColorFactor;
+			textMaterial.AlphaFactor *= base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha;
+			textMaterial.Color *= base.ReadOnlyBrush.GlobalColor;
+			textMaterial.Texture = defaultFont.FontSprite.Texture;
+			textMaterial.ScaleFactor = scaleFactor;
+			textMaterial.SmoothingConstant = defaultFont.SmoothingConstant;
+			textMaterial.Smooth = defaultFont.Smooth;
+			rectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
+			drawObject.Rectangle = rectangle;
+			richTextPart.TextDrawObject = drawObject;
+			if (textMaterial.GlowRadius > 0f || textMaterial.Blur > 0f || textMaterial.OutlineAmount > 0f)
 			{
-				Sprite sprite = part.Sprite;
-				if (sprite?.Texture != null)
-				{
-					if (!_textureMaterialDict.ContainsKey(sprite.Texture))
-					{
-						_textureMaterialDict[sprite.Texture] = new SimpleMaterial(sprite.Texture);
-					}
-					SimpleMaterial simpleMaterial = _textureMaterialDict[sprite.Texture];
-					if (simpleMaterial.ColorFactor != base.ReadOnlyBrush.GlobalColorFactor)
-					{
-						simpleMaterial.ColorFactor = base.ReadOnlyBrush.GlobalColorFactor;
-					}
-					if (simpleMaterial.AlphaFactor != base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha)
-					{
-						simpleMaterial.AlphaFactor = base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha;
-					}
-					if (simpleMaterial.Color != base.ReadOnlyBrush.GlobalColor)
-					{
-						simpleMaterial.Color = base.ReadOnlyBrush.GlobalColor;
-					}
-					material = simpleMaterial;
-				}
+				TextMaterial textMaterial2 = styleOrDefault.CreateTextMaterial(drawContext);
+				textMaterial2.CopyFrom(textMaterial);
+				drawContext.Draw(textMaterial2, in drawObject);
 			}
-			if (material != null)
+			textMaterial.GlowRadius = 0f;
+			textMaterial.Blur = 0f;
+			textMaterial.OutlineAmount = 0f;
+			drawContext.Draw(textMaterial, in drawObject);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void RenderImage(RichTextPart richTextPart, TwoDimensionDrawContext drawContext)
+	{
+		Sprite sprite = richTextPart.Sprite;
+		if (sprite?.Texture != null && richTextPart.ImageDrawObject.IsValid)
+		{
+			ImageDrawObject drawObject = richTextPart.ImageDrawObject;
+			Rectangle2D rectangle = drawObject.Rectangle;
+			rectangle.LocalPosition = new Vector2(base.LocalPosition.X + richTextPart.SpritePosition.X, base.LocalPosition.Y + richTextPart.SpritePosition.Y);
+			if (!_textureMaterialDict.ContainsKey(sprite.Texture))
 			{
-				drawContext.Draw(cachedGlobalPosition.X + _renderXOffset, cachedGlobalPosition.Y, material, drawObject2D, base.Size.X, base.Size.Y);
+				_textureMaterialDict[sprite.Texture] = new SimpleMaterial(sprite.Texture);
 			}
+			SimpleMaterial simpleMaterial = _textureMaterialDict[sprite.Texture];
+			if (simpleMaterial.ColorFactor != base.ReadOnlyBrush.GlobalColorFactor)
+			{
+				simpleMaterial.ColorFactor = base.ReadOnlyBrush.GlobalColorFactor;
+			}
+			if (simpleMaterial.AlphaFactor != base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha)
+			{
+				simpleMaterial.AlphaFactor = base.ReadOnlyBrush.GlobalAlphaFactor * base.Context.ContextAlpha;
+			}
+			if (simpleMaterial.Color != base.ReadOnlyBrush.GlobalColor)
+			{
+				simpleMaterial.Color = base.ReadOnlyBrush.GlobalColor;
+			}
+			rectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
+			drawObject.Rectangle = rectangle;
+			richTextPart.ImageDrawObject = drawObject;
+			drawContext.Draw(simpleMaterial, in drawObject);
 		}
 	}
 

@@ -1,6 +1,7 @@
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.Actions;
 
@@ -10,12 +11,18 @@ public static class DestroyPartyAction
 	{
 		if (destroyedParty != MobileParty.MainParty)
 		{
+			if (!destroyedParty.IsActive)
+			{
+				Debug.Print("Trying to destroy an inactive party with id: " + destroyedParty.StringId);
+				Debug.FailedAssert("destroyedParty.IsActive", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\DestroyPartyAction.cs", "ApplyInternal", 17);
+			}
 			if (destroyedParty.IsCaravan && destroyedParty.Party.Owner != null && destroyedParty.Party.Owner.GetPerkValue(DefaultPerks.Trade.InsurancePlans))
 			{
 				GiveGoldAction.ApplyBetweenCharacters(null, destroyedParty.Party.Owner, (int)DefaultPerks.Trade.InsurancePlans.PrimaryBonus);
 			}
-			destroyedParty.RemoveParty();
 			CampaignEventDispatcher.Instance.OnMobilePartyDestroyed(destroyedParty, destroyerParty);
+			CampaignEventDispatcher.Instance.OnMapInteractableDestroyed(destroyedParty.Party);
+			destroyedParty.RemoveParty();
 		}
 	}
 

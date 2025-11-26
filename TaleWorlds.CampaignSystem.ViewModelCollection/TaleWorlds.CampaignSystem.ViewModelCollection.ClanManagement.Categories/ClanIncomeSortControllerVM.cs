@@ -84,11 +84,17 @@ public class ClanIncomeSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanFinanceWorkshopItemVM x, ClanFinanceWorkshopItemVM y)
 		{
+			int num = GetDistanceToMainParty(y).CompareTo(GetDistanceToMainParty(x));
 			if (_isAcending)
 			{
-				return y.Workshop.Settlement.GetTrackDistanceToMainAgent().CompareTo(x.Workshop.Settlement.GetTrackDistanceToMainAgent()) * -1;
+				return num * -1;
 			}
-			return y.Workshop.Settlement.GetTrackDistanceToMainAgent().CompareTo(x.Workshop.Settlement.GetTrackDistanceToMainAgent());
+			return num;
+		}
+
+		private float GetDistanceToMainParty(ClanFinanceWorkshopItemVM item)
+		{
+			return item.Workshop.Settlement.Position.Distance(Hero.MainHero.GetCampaignPosition());
 		}
 	}
 
@@ -96,11 +102,17 @@ public class ClanIncomeSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanFinanceAlleyItemVM x, ClanFinanceAlleyItemVM y)
 		{
+			int num = GetDistanceToMainParty(y).CompareTo(GetDistanceToMainParty(x));
 			if (_isAcending)
 			{
-				return y.Alley.Settlement.GetTrackDistanceToMainAgent().CompareTo(x.Alley.Settlement.GetTrackDistanceToMainAgent()) * -1;
+				return num * -1;
 			}
-			return y.Alley.Settlement.GetTrackDistanceToMainAgent().CompareTo(x.Alley.Settlement.GetTrackDistanceToMainAgent());
+			return num;
+		}
+
+		private float GetDistanceToMainParty(ClanFinanceAlleyItemVM item)
+		{
+			return item.Alley.Settlement.Position.Distance(Hero.MainHero.GetCampaignPosition());
 		}
 	}
 

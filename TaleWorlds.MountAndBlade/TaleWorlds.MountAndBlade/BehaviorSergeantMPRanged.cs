@@ -46,7 +46,7 @@ public class BehaviorSergeantMPRanged : BehaviorComponent
 				flag = true;
 				if (formation2.QuerySystem.IsCavalryFormation || formation2.QuerySystem.IsRangedCavalryFormation)
 				{
-					float num2 = formation2.QuerySystem.MedianPosition.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition);
+					float num2 = formation2.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition);
 					if (num2 < num)
 					{
 						num = num2;
@@ -57,11 +57,11 @@ public class BehaviorSergeantMPRanged : BehaviorComponent
 		}
 		if (base.Formation.Team.FormationsIncludingEmpty.AnyQ((Formation f) => f.CountOfUnits > 0 && f != base.Formation && f.QuerySystem.IsInfantryFormation))
 		{
-			_attachedInfantry = base.Formation.Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f != base.Formation && f.QuerySystem.IsInfantryFormation).MinBy((Formation f) => f.QuerySystem.MedianPosition.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition));
+			_attachedInfantry = TaleWorlds.Core.Extensions.MinBy(base.Formation.Team.FormationsIncludingEmpty.Where((Formation f) => f.CountOfUnits > 0 && f != base.Formation && f.QuerySystem.IsInfantryFormation), (Formation f) => f.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition));
 			Formation formation3 = null;
 			if (flag)
 			{
-				if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition) <= 4900f)
+				if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition) <= 4900f)
 				{
 					formation3 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation;
 				}
@@ -70,38 +70,38 @@ public class BehaviorSergeantMPRanged : BehaviorComponent
 					formation3 = formation;
 				}
 			}
-			Vec2 vec = ((formation3 == null) ? _attachedInfantry.Direction : (formation3.QuerySystem.MedianPosition.AsVec2 - _attachedInfantry.QuerySystem.MedianPosition.AsVec2).Normalized());
-			WorldPosition medianPosition = _attachedInfantry.QuerySystem.MedianPosition;
-			medianPosition.SetVec2(medianPosition.AsVec2 - vec * ((_attachedInfantry.Depth + base.Formation.Depth) / 2f));
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+			Vec2 vec = ((formation3 == null) ? _attachedInfantry.Direction : (formation3.CachedMedianPosition.AsVec2 - _attachedInfantry.CachedMedianPosition.AsVec2).Normalized());
+			WorldPosition cachedMedianPosition = _attachedInfantry.CachedMedianPosition;
+			cachedMedianPosition.SetVec2(cachedMedianPosition.AsVec2 - vec * ((_attachedInfantry.Depth + base.Formation.Depth) / 2f));
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(vec);
 		}
-		else if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition) <= 4900f)
+		else if (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition) <= 4900f)
 		{
-			Vec2 vec2 = (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized();
-			float num3 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2.Distance(base.Formation.QuerySystem.AveragePosition);
-			WorldPosition medianPosition2 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition;
+			Vec2 vec2 = (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized();
+			float num3 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2.Distance(base.Formation.CachedAveragePosition);
+			WorldPosition cachedMedianPosition2 = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition;
 			if (num3 > base.Formation.QuerySystem.MissileRangeAdjusted)
 			{
-				medianPosition2.SetVec2(medianPosition2.AsVec2 - vec2 * (base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Depth * 0.5f));
+				cachedMedianPosition2.SetVec2(cachedMedianPosition2.AsVec2 - vec2 * (base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Depth * 0.5f));
 			}
 			else if (num3 < base.Formation.QuerySystem.MissileRangeAdjusted * 0.4f)
 			{
-				medianPosition2.SetVec2(medianPosition2.AsVec2 - vec2 * (base.Formation.QuerySystem.MissileRangeAdjusted * 0.4f));
+				cachedMedianPosition2.SetVec2(cachedMedianPosition2.AsVec2 - vec2 * (base.Formation.QuerySystem.MissileRangeAdjusted * 0.4f));
 			}
 			else
 			{
-				medianPosition2.SetVec2(base.Formation.QuerySystem.AveragePosition);
+				cachedMedianPosition2.SetVec2(base.Formation.CachedAveragePosition);
 			}
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition2);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition2);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(vec2);
 		}
 		else if (_flagpositions.Any((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team))
 		{
-			Vec3 position = _flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team).MinBy((FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition)).Position;
+			Vec3 position = TaleWorlds.Core.Extensions.MinBy(_flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) != base.Formation.Team), (FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition)).Position;
 			if (base.CurrentOrder.OrderEnum == MovementOrder.MovementOrderEnum.Invalid || base.CurrentOrder.GetPosition(base.Formation) != position.AsVec2)
 			{
-				Vec2 direction = ((base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null) ? (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized() : base.Formation.Direction);
+				Vec2 direction = ((base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null) ? (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized() : base.Formation.Direction);
 				WorldPosition position2 = new WorldPosition(base.Formation.Team.Mission.Scene, UIntPtr.Zero, position, hasValidZ: false);
 				base.CurrentOrder = MovementOrder.MovementOrderMove(position2);
 				CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
@@ -109,15 +109,15 @@ public class BehaviorSergeantMPRanged : BehaviorComponent
 		}
 		else if (_flagpositions.Any((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team))
 		{
-			Vec3 position3 = _flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team).MinBy((FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.QuerySystem.AveragePosition)).Position;
+			Vec3 position3 = TaleWorlds.Core.Extensions.MinBy(_flagpositions.Where((FlagCapturePoint fp) => _flagDominationGameMode.GetFlagOwnerTeam(fp) == base.Formation.Team), (FlagCapturePoint fp) => fp.Position.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition)).Position;
 			base.CurrentOrder = MovementOrder.MovementOrderMove(new WorldPosition(base.Formation.Team.Mission.Scene, UIntPtr.Zero, position3, hasValidZ: false));
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 		else
 		{
-			WorldPosition medianPosition3 = base.Formation.QuerySystem.MedianPosition;
-			medianPosition3.SetVec2(base.Formation.QuerySystem.AveragePosition);
-			base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition3);
+			WorldPosition cachedMedianPosition3 = base.Formation.CachedMedianPosition;
+			cachedMedianPosition3.SetVec2(base.Formation.CachedAveragePosition);
+			base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition3);
 			CurrentFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 	}
@@ -127,17 +127,17 @@ public class BehaviorSergeantMPRanged : BehaviorComponent
 		_flagpositions.RemoveAll((FlagCapturePoint fp) => fp.IsDeactivated);
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLoose;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

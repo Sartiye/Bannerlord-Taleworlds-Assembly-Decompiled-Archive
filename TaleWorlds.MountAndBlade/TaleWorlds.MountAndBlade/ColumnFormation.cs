@@ -55,7 +55,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public int RankCount => _units2D.Count2;
 
-	private int VanguardFileIndex
+	public int VanguardFileIndex
 	{
 		get
 		{
@@ -71,9 +71,13 @@ public class ColumnFormation : IFormationArrangement
 		}
 	}
 
-	protected float Distance => owner.Distance * 1f + 0.5f;
+	protected float Distance => owner.Distance;
 
-	protected float Interval => owner.Interval * 1.5f;
+	public float DistanceMultiplier => 1.5f;
+
+	protected float Interval => owner.Interval;
+
+	public float IntervalMultiplier => 1.5f;
 
 	public float Width
 	{
@@ -101,6 +105,8 @@ public class ColumnFormation : IFormationArrangement
 			this.OnWidthChanged?.Invoke();
 		}
 	}
+
+	public List<Vec2> UnitPositionsOnVanguardFileIndex { get; private set; }
 
 	public float Depth => RankDepth;
 
@@ -146,6 +152,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public void DeepCopyFrom(IFormationArrangement arrangement)
 	{
+		UnitPositionsOnVanguardFileIndex = (arrangement as ColumnFormation).GetUnitPositionsOnVanguardFileIndex();
 	}
 
 	public IFormationUnit GetPlayerUnit()
@@ -156,6 +163,12 @@ public class ColumnFormation : IFormationArrangement
 	public MBReadOnlyList<IFormationUnit> GetAllUnits()
 	{
 		return _allUnits;
+	}
+
+	public void GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn)
+	{
+		allUnitsListToBeFilledIn.Clear();
+		allUnitsListToBeFilledIn.AddRange(_allUnits);
 	}
 
 	public MBList<IFormationUnit> GetUnpositionedUnits()
@@ -285,7 +298,7 @@ public class ColumnFormation : IFormationArrangement
 			num++;
 			if (num > 10)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "AddUnit", 371);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "AddUnit", 382);
 			}
 			if (GetNextVacancy(out var fileIndex, out var rankIndex))
 			{
@@ -592,19 +605,54 @@ public class ColumnFormation : IFormationArrangement
 			for (int columnIndex = 0; columnIndex < ColumnCount; columnIndex++)
 			{
 				int columnOffsetFromColumnIndex = GetColumnOffsetFromColumnIndex(columnIndex, isExpandingFromRightSide);
-				int num = VanguardFileIndex + columnOffsetFromColumnIndex;
-				if (IsUnitPositionAvailable(num, rankIndex))
-				{
-					yield return (num, rankIndex);
-				}
+				int item = VanguardFileIndex + columnOffsetFromColumnIndex;
+				yield return (item, rankIndex);
 			}
 		}
 	}
 
 	private Vec2 GetLocalPositionOfUnit(int fileIndex, int rankIndex)
 	{
-		float num = (float)(FileCount - 1) * (owner.Interval + owner.UnitDiameter);
-		return new Vec2((float)fileIndex * (owner.Interval + owner.UnitDiameter) - num / 2f, (float)(-rankIndex) * (owner.Distance + owner.UnitDiameter));
+		if (UnitPositionsOnVanguardFileIndex == null)
+		{
+			UnitPositionsOnVanguardFileIndex = GetUnitPositionsOnVanguardFileIndex();
+		}
+		Vec2 orderPosition = (owner as Formation).OrderPosition;
+		List<Vec2> unitPositionsOnVanguardFileIndex = UnitPositionsOnVanguardFileIndex;
+		unitPositionsOnVanguardFileIndex.Insert(0, orderPosition);
+		float num = Distance + owner.UnitDiameter;
+		int num2 = rankIndex;
+		int num3 = 1;
+		Vec2 vec = unitPositionsOnVanguardFileIndex[0];
+		Vec2 vec2 = vec - unitPositionsOnVanguardFileIndex[num3];
+		float num4 = vec2.Normalize();
+		while (num2 > 0)
+		{
+			if (num4 >= num)
+			{
+				vec += -vec2 * num;
+				num4 -= num;
+			}
+			else
+			{
+				float num5 = num - num4;
+				vec += -vec2 * num4;
+				if (++num3 < unitPositionsOnVanguardFileIndex.Count)
+				{
+					vec2 = vec - unitPositionsOnVanguardFileIndex[num3];
+				}
+				num4 = vec2.Normalize();
+				vec += -vec2 * num5;
+				num4 -= num5;
+			}
+			num2--;
+		}
+		float num6 = (float)(FileCount - 1) * (Interval + owner.UnitDiameter);
+		Vec2 vec3 = -vec2.TransformToParentUnitF(new Vec2((float)fileIndex * (Interval + owner.UnitDiameter) - num6 / 2f, 0f));
+		vec += vec3;
+		Vec2 result = (owner as Formation).Direction.TransformToLocalUnitF(vec - unitPositionsOnVanguardFileIndex[0]);
+		unitPositionsOnVanguardFileIndex.RemoveAt(0);
+		return result;
 	}
 
 	private Vec2 GetLocalDirectionOfUnit(int fileIndex, int rankIndex)
@@ -619,9 +667,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public Vec2? GetLocalPositionOfUnitOrDefault(int unitIndex)
 	{
-		(int, int) tuple = (from i in GetOrderedUnitPositionIndices()
-			where IsUnitPositionAvailable(i.Item1, i.Item2)
-			select i).ElementAtOrValue(unitIndex, (-1, -1));
+		(int, int) tuple = GetOrderedUnitPositionIndices().ElementAtOrValue(unitIndex, (-1, -1));
 		Vec2? result;
 		if (tuple.Item1 != -1 && tuple.Item2 != -1)
 		{
@@ -764,7 +810,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public void SwitchUnitLocationsWithUnpositionedUnit(IFormationUnit firstUnit, IFormationUnit secondUnit)
 	{
-		TaleWorlds.Library.Debug.FailedAssert("Column formation should NOT have an unpositioned unit", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "SwitchUnitLocationsWithUnpositionedUnit", 1169);
+		TaleWorlds.Library.Debug.FailedAssert("Column formation should NOT have an unpositioned unit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "SwitchUnitLocationsWithUnpositionedUnit", 1215);
 	}
 
 	public void SwitchUnitLocationsWithBackMostUnit(IFormationUnit unit)
@@ -806,7 +852,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public Vec2? CreateNewPosition(int unitIndex)
 	{
-		int num = TaleWorlds.Library.MathF.Ceiling((float)unitIndex * 1f / (float)ColumnCount);
+		int num = TaleWorlds.Library.MathF.Ceiling((float)unitIndex * 1f / (float)ColumnCount) + ((unitIndex % ColumnCount == 0) ? 1 : 0);
 		if (num > RankCount)
 		{
 			_units2D.ResetWithNewCount(ColumnCount, num);
@@ -830,7 +876,7 @@ public class ColumnFormation : IFormationArrangement
 	{
 	}
 
-	public void OnFormationFrameChanged()
+	public void OnFormationFrameChanged(bool updateCachedOrderedLocalPositions = false)
 	{
 	}
 
@@ -839,9 +885,9 @@ public class ColumnFormation : IFormationArrangement
 		IFormationUnit formationUnit = Vanguard ?? _units2D[GetMiddleFrontUnitPosition().Item1, GetMiddleFrontUnitPosition().Item2];
 		if (formationUnit is Agent && owner is Formation)
 		{
-			return ((formationUnit as Agent).Position.AsVec2 - (owner as Formation).QuerySystem.MedianPosition.AsVec2).Normalized();
+			return ((formationUnit as Agent).Position.AsVec2 - ((Formation)owner).CachedMedianPosition.AsVec2).Normalized();
 		}
-		TaleWorlds.Library.Debug.FailedAssert("Unexpected case", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "CalculateArrangementOrientation", 1254);
+		TaleWorlds.Library.Debug.FailedAssert("Unexpected case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "CalculateArrangementOrientation", 1300);
 		return GetLocalDirectionOfUnit(formationUnit.FormationFileIndex, formationUnit.FormationRankIndex);
 	}
 
@@ -855,7 +901,7 @@ public class ColumnFormation : IFormationArrangement
 	{
 		if (newPosition.HasValue && UnitCount > 0 && RankCount > 0 && (newPosition.Value.AsVec2 - previousPosition).LengthSquared >= RankDepth * RankDepth)
 		{
-			return TaleWorlds.Library.MathF.Abs(MBMath.GetSmallestDifferenceBetweenTwoAngles(CalculateArrangementOrientation().RotationInRadians, (newPosition.Value.AsVec2 - previousPosition).Normalized().RotationInRadians)) >= System.MathF.PI * 3f / 4f;
+			return TaleWorlds.Library.MathF.Abs(MBMath.GetSmallestDifferenceBetweenTwoAngles(CalculateArrangementOrientation().RotationInRadians, (newPosition.Value.AsVec2 - (owner as Formation).CachedMedianPosition.AsVec2).Normalized().RotationInRadians)) >= System.MathF.PI * 3f / 4f;
 		}
 		return false;
 	}
@@ -944,9 +990,13 @@ public class ColumnFormation : IFormationArrangement
 
 	public virtual void RearrangeFrom(IFormationArrangement arrangement)
 	{
-		if (arrangement is LineFormation)
+		if (arrangement is TransposedLineFormation)
 		{
-			FlankWidth = (float)TaleWorlds.Library.MathF.Max(0, TaleWorlds.Library.MathF.Ceiling(TaleWorlds.Library.MathF.Sqrt(arrangement.UnitCount / 5)) - 1) * (owner.UnitDiameter + owner.Interval) + owner.UnitDiameter;
+			FlankWidth = arrangement.FlankWidth;
+		}
+		else if (arrangement is LineFormation)
+		{
+			FlankWidth = (float)TaleWorlds.Library.MathF.Max(0, TaleWorlds.Library.MathF.Ceiling(TaleWorlds.Library.MathF.Sqrt(arrangement.UnitCount / ArrangementAspectRatio)) - 1) * (owner.UnitDiameter + Interval) + owner.UnitDiameter;
 		}
 	}
 
@@ -1126,38 +1176,12 @@ public class ColumnFormation : IFormationArrangement
 
 	public void OnTickOccasionallyOfUnit(IFormationUnit unit, bool arrangementChangeAllowed)
 	{
-		if (!arrangementChangeAllowed || unit.FollowedUnit == _vanguard || !(unit.FollowedUnit is Agent) || ((Agent)unit.FollowedUnit).IsAIControlled || unit.FollowedUnit.FormationFileIndex < 0 || unit.FollowedUnit.FormationRankIndex < 0)
+		if (arrangementChangeAllowed && unit.FollowedUnit != _vanguard && unit.FollowedUnit is Agent && !((Agent)unit.FollowedUnit).IsAIControlled && unit.FollowedUnit.FormationFileIndex >= 0 && unit.FollowedUnit.FormationRankIndex >= 0)
 		{
-			return;
+			IFormationUnit followedUnit = unit.FollowedUnit;
+			RemoveUnit(unit.FollowedUnit);
+			AddUnit(followedUnit);
 		}
-		if (unit.FollowedUnit.FormationFileIndex * _units2D.Count2 + unit.FollowedUnit.FormationRankIndex >= _units2D.RawArray.Length || unit.FollowedUnit.FormationFileIndex * _units2D.Count2 + unit.FollowedUnit.FormationRankIndex < 0)
-		{
-			TaleWorlds.Library.Debug.Print("Followed unit has illegal formation indices!");
-			TaleWorlds.Library.Debug.Print("RankIndex: " + unit.FormationRankIndex + " FileIndex: " + unit.FormationFileIndex);
-			TaleWorlds.Library.Debug.Print("_units2D.Capacity: " + _units2D.RawArray.Length + " _units2D.Count1: " + _units2D.Count1 + " _units2D.Count2: " + _units2D.Count2);
-			TaleWorlds.Library.Debug.Print("FollowedUnit.RankIndex: " + unit.FollowedUnit.FormationRankIndex + " FollowedUnit.FileIndex: " + unit.FollowedUnit.FormationFileIndex);
-			if (!(unit.FollowedUnit.Formation is ColumnFormation))
-			{
-				TaleWorlds.Library.Debug.Print("Followed unit is not in column formation");
-			}
-			if (((Agent)unit.FollowedUnit).IsPlayerControlled)
-			{
-				TaleWorlds.Library.Debug.Print("Followed unit is player");
-			}
-			if (((Agent)unit).Formation.Captain == (Agent)unit.FollowedUnit)
-			{
-				TaleWorlds.Library.Debug.Print("Followed unit is the captain");
-			}
-			TaleWorlds.Library.Debug.Print("-------------------------------------");
-			foreach (IFormationUnit allUnit in unit.FollowedUnit.Formation.GetAllUnits())
-			{
-				TaleWorlds.Library.Debug.Print("R: " + allUnit.FormationRankIndex + " F: " + allUnit.FormationFileIndex + " AI: " + (((Agent)allUnit).IsAIControlled ? "1" : "0"));
-			}
-			TaleWorlds.Library.Debug.Print("-------------------------------------");
-		}
-		IFormationUnit followedUnit = unit.FollowedUnit;
-		RemoveUnit(unit.FollowedUnit);
-		AddUnit(followedUnit);
 	}
 
 	private MBList<IFormationUnit> GetUnitsBehind(IFormationUnit unit)
@@ -1280,5 +1304,25 @@ public class ColumnFormation : IFormationArrangement
 				yield return (T)_units2D[fileIndex, rankIndex];
 			}
 		}
+	}
+
+	public void UpdateLocalPositionErrors(bool recalculateErrors)
+	{
+	}
+
+	public List<Vec2> GetUnitPositionsOnVanguardFileIndex()
+	{
+		IEnumerable<Agent> unitsAtVanguardFile = GetUnitsAtVanguardFile<Agent>();
+		List<Vec2> list = new List<Vec2>(unitsAtVanguardFile.Count());
+		foreach (Agent item in unitsAtVanguardFile)
+		{
+			list.Add(item.Position.AsVec2);
+		}
+		return list;
+	}
+
+	void IFormationArrangement.GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn)
+	{
+		GetAllUnits(in allUnitsListToBeFilledIn);
 	}
 }

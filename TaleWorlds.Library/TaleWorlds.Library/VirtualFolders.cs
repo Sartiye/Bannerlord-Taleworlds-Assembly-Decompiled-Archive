@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace TaleWorlds.Library;
 
@@ -18,21 +20,21 @@ public class VirtualFolders
 				[VirtualDirectory("ClientProfiles")]
 				public class ClientProfiles
 				{
-					[VirtualDirectory("DigitalOcean.Discovery")]
-					public class DigitalOceanDiscovery
+					[VirtualDirectory("Azure.Discovery")]
+					public class AzureDiscovery
 					{
 						[VirtualFile("LobbyClient.xml", "<Configuration>\t<SessionProvider Type=\"ThreadedRest\" />\t<Clients>\t\t<Client Type=\"LobbyClient\" />\t</Clients>\t<Parameters>\t\t<Parameter Name=\"LobbyClient.ServiceDiscovery.Address\" Value=\"https://bannerlord-service-discovery.bannerlord-services-3.net/\" />\t\t<Parameter Name=\"LobbyClient.Address\" Value=\"service://bannerlord.lobby/\" />\t</Parameters></Configuration>")]
 						public string LobbyClient;
 					}
 				}
 
-				[VirtualFile("Environment", "pi.YnxRn5TJgdaZMQxsjgeRuS3KMRTs_uY9PEqkN.ZdecHsLpnnAJSb62ZviTNXlmZoCpuWiYB.6_2LgG1bGL6LGPR4SGevSI3cFXduynLR1wK91Lz70zMqaSO6hXx36I.50O1BcjijTgGMu9sy57K9Cagk43L3qoLW9q0Bt27M-")]
+				[VirtualFile("Environment", "mjWwLuLlGEYCldWmOXrFv2hx56x2.8sa3wV_qh4L7.P8XfSN2hOq2SEuhJYXzbLfOhCIYtEHe3FBwFcmoKgpbAidIRXSoegP8vbxyBPIMvG9k9rhrByH4bEjA1DWymsKBAZYNiSKDAwe0IZu9.btYoTEBJ9ORQJwVKcPdL852zs-")]
 				public string Environment;
 
-				[VirtualFile("Version.xml", "<Version>\t<Singleplayer Value=\"v1.2.12\" /></Version>")]
+				[VirtualFile("Version.xml", "<Version>\t<Singleplayer Value=\"v1.3.4.102350\"/></Version>")]
 				public string Version;
 
-				[VirtualFile("ClientProfile.xml", "<ClientProfile Value=\"DigitalOcean.Discovery\"/>")]
+				[VirtualFile("ClientProfile.xml", "<ClientProfile Value=\"Azure.Discovery\"/>")]
 				public string ClientProfile;
 			}
 		}
@@ -40,36 +42,55 @@ public class VirtualFolders
 
 	private static readonly bool _useVirtualFolders = true;
 
-	public static string GetFileContent(string filePath)
+	public static Dictionary<string, string> PlatformDLCPaths = new Dictionary<string, string>();
+
+	public static string GetFileContent(string filePath, Type type = null)
 	{
 		if (!_useVirtualFolders)
 		{
+			if (filePath.Contains("__MODULE_NAME__"))
+			{
+				string text = "__MODULE_NAME__";
+				string pattern = Regex.Escape(text) + "(.*?)" + Regex.Escape(text);
+				string value = Regex.Match(filePath, pattern).Groups[1].Value;
+				filePath = filePath.Replace(text + value + text, PlatformDLCPaths[value]);
+			}
 			if (!File.Exists(filePath))
 			{
 				return "";
 			}
 			return File.ReadAllText(filePath);
 		}
-		return GetVirtualFileContent(filePath);
+		if (type == null)
+		{
+			type = typeof(VirtualFolders);
+		}
+		return GetVirtualFileContent(filePath, type);
 	}
 
-	private static string GetVirtualFileContent(string filePath)
+	private static string GetVirtualFileContent(string filePath, Type type)
 	{
 		string fileName = Path.GetFileName(filePath);
-		string[] array = Path.GetDirectoryName(filePath).Split(new char[1] { Path.DirectorySeparatorChar });
-		Type type = typeof(VirtualFolders);
-		int num = 0;
-		while (type != null && num != array.Length)
+		string directoryName = Path.GetDirectoryName(filePath);
+		Type type2 = type;
+		type2 = GetNestedDirectory(directoryName, type2);
+		if (type2 == null)
 		{
-			if (!string.IsNullOrEmpty(array[num]))
+			type2 = type;
+			string[] array = directoryName.Split(new char[1] { Path.DirectorySeparatorChar });
+			int num = 0;
+			while (type2 != null && num != array.Length)
 			{
-				type = GetNestedDirectory(array[num], type);
+				if (!string.IsNullOrEmpty(array[num]))
+				{
+					type2 = GetNestedDirectory(array[num], type2);
+				}
+				num++;
 			}
-			num++;
 		}
-		if (type != null)
+		if (type2 != null)
 		{
-			FieldInfo[] fields = type.GetFields();
+			FieldInfo[] fields = type2.GetFields();
 			for (int i = 0; i < fields.Length; i++)
 			{
 				VirtualFileAttribute[] array2 = (VirtualFileAttribute[])fields[i].GetCustomAttributesSafe(typeof(VirtualFileAttribute), inherit: false);

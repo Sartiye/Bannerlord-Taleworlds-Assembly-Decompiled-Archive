@@ -106,7 +106,7 @@ public class TacticBreachWalls : TacticComponent
 			while (idealCount - attackerFormation.CountOfUnitsWithoutDetachedOnes > num2 && attackerFormations.Any((Formation af) => af.CountOfUnitsWithoutDetachedOnes > idealCount) && num3 < attackerFormations.Count)
 			{
 				int a = idealCount - attackerFormation.CountOfUnitsWithoutDetachedOnes;
-				Formation formation = attackerFormations.MaxBy((Formation df) => df.CountOfUnitsWithoutDetachedOnes - idealCount);
+				Formation formation = TaleWorlds.Core.Extensions.MaxBy(attackerFormations, (Formation df) => df.CountOfUnitsWithoutDetachedOnes - idealCount);
 				a = MathF.Min(a, formation.CountOfUnitsWithoutDetachedOnes - idealCount);
 				formation.TransferUnits(attackerFormation, a);
 				num3++;
@@ -148,11 +148,11 @@ public class TacticBreachWalls : TacticComponent
 		}
 		while (list.Count > 0 && list2.Count > 0)
 		{
-			Formation largestFormation = list.MaxBy((Formation mf) => mf.CountOfUnitsWithoutLooseDetachedOnes);
-			SiegeLane siegeLane2 = list2.MinBy(delegate(SiegeLane l)
+			Formation largestFormation = TaleWorlds.Core.Extensions.MaxBy(list, (Formation mf) => mf.CountOfUnitsWithoutLooseDetachedOnes);
+			SiegeLane siegeLane2 = TaleWorlds.Core.Extensions.MinBy(list2, delegate(SiegeLane l)
 			{
 				WorldPosition currentAttackerPosition2 = l.GetCurrentAttackerPosition();
-				Vec3 targetPoint2 = largestFormation.QuerySystem.MedianPosition.GetNavMeshVec3();
+				Vec3 targetPoint2 = largestFormation.CachedMedianPosition.GetNavMeshVec3();
 				return currentAttackerPosition2.DistanceSquaredWithLimit(in targetPoint2, 10000f);
 			});
 			largestFormation.AI.Side = siegeLane2.LaneSide;
@@ -173,11 +173,11 @@ public class TacticBreachWalls : TacticComponent
 				list2.AddRange(currentLanes);
 				flag = false;
 			}
-			Formation nextBiggest = list.MaxBy((Formation mf) => mf.CountOfUnitsWithoutLooseDetachedOnes);
-			SiegeLane siegeLane3 = list2.MinBy(delegate(SiegeLane l)
+			Formation nextBiggest = TaleWorlds.Core.Extensions.MaxBy(list, (Formation mf) => mf.CountOfUnitsWithoutLooseDetachedOnes);
+			SiegeLane siegeLane3 = TaleWorlds.Core.Extensions.MinBy(list2, delegate(SiegeLane l)
 			{
 				WorldPosition currentAttackerPosition = l.GetCurrentAttackerPosition();
-				Vec3 targetPoint = nextBiggest.QuerySystem.MedianPosition.GetNavMeshVec3();
+				Vec3 targetPoint = nextBiggest.CachedMedianPosition.GetNavMeshVec3();
 				return currentAttackerPosition.DistanceSquaredWithLimit(in targetPoint, 10000f);
 			});
 			nextBiggest.AI.Side = siegeLane3.LaneSide;
@@ -241,7 +241,7 @@ public class TacticBreachWalls : TacticComponent
 				archerPositions.Remove(archerPosition);
 				continue;
 			}
-			ArcherPosition archerPosition2 = archerPositions.MinBy((ArcherPosition ap) => ap.Entity.GlobalPosition.AsVec2.DistanceSquared(rangedFormation.QuerySystem.AveragePosition));
+			ArcherPosition archerPosition2 = TaleWorlds.Core.Extensions.MinBy(archerPositions, (ArcherPosition ap) => ap.Entity.GlobalPosition.AsVec2.DistanceSquared(rangedFormation.CachedAveragePosition));
 			rangedFormation.AI.SetBehaviorWeight<BehaviorSparseSkirmish>(1f);
 			rangedFormation.AI.GetBehavior<BehaviorSparseSkirmish>().ArcherPosition = archerPosition2.Entity;
 			archerPosition2.SetLastAssignedFormation(base.Team.TeamIndex, rangedFormation);
@@ -574,7 +574,7 @@ public class TacticBreachWalls : TacticComponent
 				}
 				return list2;
 			}
-			List<SiegeLane> result = new List<SiegeLane> { list2.MaxBy((SiegeLane ul) => ul.CalculateLaneCapacity()) };
+			List<SiegeLane> result = new List<SiegeLane> { TaleWorlds.Core.Extensions.MaxBy(list2, (SiegeLane ul) => ul.CalculateLaneCapacity()) };
 			if (!_isShockAssault)
 			{
 				StopUsingAllMachines();
@@ -590,7 +590,7 @@ public class TacticBreachWalls : TacticComponent
 		return _teamAISiegeAttacker.ArcherPositions.Where((ArcherPosition ap) => currentLanes.Any((SiegeLane cl) => ap.IsArcherPositionRelatedToSide(cl.LaneSide))).ToList();
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

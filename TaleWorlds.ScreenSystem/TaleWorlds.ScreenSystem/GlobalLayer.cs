@@ -15,13 +15,11 @@ public class GlobalLayer : IComparable
 	internal void Tick(float dt)
 	{
 		OnTick(dt);
-		Layer.Tick(dt);
 	}
 
 	internal void LateTick(float dt)
 	{
 		OnLateTick(dt);
-		Layer.LateTick(dt);
 	}
 
 	protected virtual void OnEarlyTick(float dt)

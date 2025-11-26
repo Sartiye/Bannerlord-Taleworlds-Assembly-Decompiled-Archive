@@ -56,12 +56,28 @@ public static class MBMath
 
 	public static int ClampInt(int value, int minValue, int maxValue)
 	{
-		return Math.Max(Math.Min(value, maxValue), minValue);
+		if (value < minValue)
+		{
+			return minValue;
+		}
+		if (value > maxValue)
+		{
+			return maxValue;
+		}
+		return value;
 	}
 
 	public static float ClampFloat(float value, float minValue, float maxValue)
 	{
-		return Math.Max(Math.Min(value, maxValue), minValue);
+		if (value < minValue)
+		{
+			return minValue;
+		}
+		if (value > maxValue)
+		{
+			return maxValue;
+		}
+		return value;
 	}
 
 	public static void ClampUnit(ref float value)
@@ -154,7 +170,10 @@ public static class MBMath
 
 	public static Mat3 Lerp(ref Mat3 matFrom, ref Mat3 matTo, float amount, float minimumDifference)
 	{
-		return new Mat3(Lerp(matFrom.s, matTo.s, amount, minimumDifference), Lerp(matFrom.f, matTo.f, amount, minimumDifference), Lerp(matFrom.u, matTo.u, amount, minimumDifference));
+		Vec3 s = Lerp(matFrom.s, matTo.s, amount, minimumDifference);
+		Vec3 f = Lerp(matFrom.f, matTo.f, amount, minimumDifference);
+		Vec3 u = Lerp(matFrom.u, matTo.u, amount, minimumDifference);
+		return new Mat3(in s, in f, in u);
 	}
 
 	public static float LerpRadians(float valueFrom, float valueTo, float amount, float minChange, float maxChange)
@@ -243,6 +262,19 @@ public static class MBMath
 			angle += System.MathF.PI * 2f;
 		}
 		else if (angle > System.MathF.PI)
+		{
+			angle -= System.MathF.PI * 2f;
+		}
+		return angle;
+	}
+
+	public static float WrapAngleSafe(float angle)
+	{
+		while (angle <= -System.MathF.PI)
+		{
+			angle += System.MathF.PI * 2f;
+		}
+		while (angle > System.MathF.PI)
 		{
 			angle -= System.MathF.PI * 2f;
 		}
@@ -373,23 +405,41 @@ public static class MBMath
 		return rgb;
 	}
 
-	public static Vec3 GetClosestPointInLineSegmentToPoint(Vec3 point, Vec3 lineSegmentBegin, Vec3 lineSegmentEnd)
+	public static float GetSignedDistanceOfPointToLineSegment(in Vec2 lineSegmentBegin, in Vec2 lineSegmentEnd, in Vec2 point)
 	{
-		Vec3 vec = lineSegmentEnd - lineSegmentBegin;
-		if (!vec.IsNonZero)
-		{
-			return lineSegmentBegin;
-		}
-		float num = Vec3.DotProduct(point - lineSegmentBegin, vec) / Vec3.DotProduct(vec, vec);
+		Vec2 vec = lineSegmentBegin - point;
+		Vec2 vec2 = lineSegmentEnd - lineSegmentBegin;
+		return Vec2.Determinant(in vec, in vec2);
+	}
+
+	public static float GetDistanceSquareOfPointToLineSegment(in Vec2 lineSegmentBegin, in Vec2 lineSegmentEnd, Vec2 point)
+	{
+		float num = Vec2.DotProduct(point - lineSegmentBegin, lineSegmentEnd - lineSegmentBegin) / (lineSegmentEnd - lineSegmentBegin).LengthSquared;
 		if (num < 0f)
 		{
-			return lineSegmentBegin;
+			return (point - lineSegmentBegin).LengthSquared;
 		}
-		if (num > 1f)
+		if (!(num > 1f))
 		{
-			return lineSegmentEnd;
+			return (point - (lineSegmentBegin + num * (lineSegmentEnd - lineSegmentBegin))).LengthSquared;
 		}
-		return lineSegmentBegin + vec * num;
+		return (point - lineSegmentEnd).LengthSquared;
+	}
+
+	public static Vec2 ProjectPointOntoLine(Vec2 point, Vec2 lineStart, Vec2 lineEnd)
+	{
+		Vec2 vec = lineEnd - lineStart;
+		float num = Vec2.DotProduct(point - lineStart, vec) / Vec2.DotProduct(vec, vec);
+		return lineStart + num * vec;
+	}
+
+	public static Vec2 ClampToAxisAlignedRectangle(Vec2 point, Vec2 lineStart, Vec2 lineEnd)
+	{
+		float minValue = Math.Min(lineStart.x, lineEnd.x);
+		float maxValue = Math.Max(lineStart.x, lineEnd.x);
+		float minValue2 = Math.Min(lineStart.y, lineEnd.y);
+		float maxValue2 = Math.Max(lineStart.y, lineEnd.y);
+		return new Vec2(MathF.Clamp(point.x, minValue, maxValue), MathF.Clamp(point.y, minValue2, maxValue2));
 	}
 
 	public static bool GetRayPlaneIntersectionPoint(in Vec3 planeNormal, in Vec3 planeCenter, in Vec3 rayOrigin, in Vec3 rayDirection, out float t)
@@ -405,7 +455,12 @@ public static class MBMath
 		return false;
 	}
 
-	public static Vec2 GetClosestPointInLineSegmentToPoint(Vec2 point, Vec2 lineSegmentBegin, Vec2 lineSegmentEnd)
+	public static bool PointLiesAheadOfPlane(in Vec3 planeNormal, in Vec3 planeCenter, in Vec3 point)
+	{
+		return Vec3.DotProduct(planeNormal, point - planeCenter) >= 0f;
+	}
+
+	public static Vec2 GetClosestPointOnLineSegmentToPoint(in Vec2 lineSegmentBegin, in Vec2 lineSegmentEnd, in Vec2 point)
 	{
 		Vec2 vec = lineSegmentEnd - lineSegmentBegin;
 		if (!vec.IsNonZero())
@@ -413,6 +468,25 @@ public static class MBMath
 			return lineSegmentBegin;
 		}
 		float num = Vec2.DotProduct(point - lineSegmentBegin, vec) / Vec2.DotProduct(vec, vec);
+		if (num < 0f)
+		{
+			return lineSegmentBegin;
+		}
+		if (num > 1f)
+		{
+			return lineSegmentEnd;
+		}
+		return lineSegmentBegin + vec * num;
+	}
+
+	public static Vec3 GetClosestPointOnLineSegmentToPoint(in Vec3 lineSegmentBegin, in Vec3 lineSegmentEnd, in Vec3 point)
+	{
+		Vec3 vec = lineSegmentEnd - lineSegmentBegin;
+		if (!vec.IsNonZero)
+		{
+			return lineSegmentBegin;
+		}
+		float num = Vec3.DotProduct(point - lineSegmentBegin, vec) / Vec3.DotProduct(vec, vec);
 		if (num < 0f)
 		{
 			return lineSegmentBegin;
@@ -447,33 +521,158 @@ public static class MBMath
 		return false;
 	}
 
-	public static float GetClosestPointOnLineSegment(Vec2 point, Vec2 segmentA, Vec2 segmentB, out Vec2 closest)
+	public static bool IntersectLineSegmentWithTriangle(in Vec3 segStart, in Vec3 segEnd, in Vec3 triA, in Vec3 triB, in Vec3 triC)
 	{
-		Vec2 vec = point - segmentA;
-		Vec2 vec2 = segmentB - segmentA;
-		float num = vec.DotProduct(vec2) / Math.Max(vec2.LengthSquared, 1E-05f);
-		if (num < 0f)
+		Vec3 vec = triB - triA;
+		Vec3 vec2 = triC - triA;
+		Vec3 vec3 = segEnd - segStart;
+		Vec3 v = Vec3.CrossProduct(vec3, vec2);
+		float num = Vec3.DotProduct(vec, v);
+		if (MathF.Abs(num) < 1E-06f)
 		{
-			closest = segmentA;
+			return false;
 		}
-		else if (num > 1f)
+		float num2 = 1f / num;
+		Vec3 vec4 = segStart - triA;
+		float num3 = num2 * Vec3.DotProduct(vec4, v);
+		if (num3 < 0f || num3 > 1f)
 		{
-			closest = segmentB;
+			return false;
 		}
-		else
+		Vec3 v2 = Vec3.CrossProduct(vec4, vec);
+		float num4 = num2 * Vec3.DotProduct(vec3, v2);
+		if (num4 < 0f || num3 + num4 > 1f)
 		{
-			closest = segmentA + vec2 * num;
+			return false;
 		}
-		return point.Distance(closest);
+		float num5 = num2 * Vec3.DotProduct(vec2, v2);
+		if (num5 < 0f || num5 > 1f)
+		{
+			return false;
+		}
+		return true;
 	}
 
-	public static bool IntersectRayWithBoundaryList(Vec2 rayOrigin, Vec2 rayDir, List<Vec2> boundaries, out Vec2 intersectionPoint)
+	public static bool IntersectLineSegmentWithBoundingBox(in Vec3 start, in Vec3 end, in Vec3 min, in Vec3 max)
+	{
+		Vec3 vec = end - start;
+		float num = 0f;
+		float num2 = 1f;
+		for (int i = 0; i < 3; i++)
+		{
+			float num3 = start[i];
+			float num4 = vec[i];
+			float num5 = min[i];
+			float num6 = max[i];
+			if (MathF.Abs(num4) < 1E-08f)
+			{
+				if (num3 < num5 || num3 > num6)
+				{
+					return false;
+				}
+				continue;
+			}
+			float num7 = 1f / num4;
+			float num8 = (num5 - num3) * num7;
+			float num9 = (num6 - num3) * num7;
+			if (num8 > num9)
+			{
+				float num10 = num9;
+				float num11 = num8;
+				num8 = num10;
+				num9 = num11;
+			}
+			if (num8 > num)
+			{
+				num = num8;
+			}
+			if (num9 < num2)
+			{
+				num2 = num9;
+			}
+			if (num > num2)
+			{
+				return false;
+			}
+		}
+		if (num2 >= 0f)
+		{
+			return num <= 1f;
+		}
+		return false;
+	}
+
+	public static bool CheckLineSegmentToLineSegmentIntersection(Vec2 segment1Start, Vec2 segment1End, Vec2 segment2Start, Vec2 segment2End)
+	{
+		if (Vec2.GetWindingOrder(segment1Start, segment2Start, segment2End) != Vec2.GetWindingOrder(segment1End, segment2Start, segment2End))
+		{
+			return Vec2.GetWindingOrder(segment1Start, segment1End, segment2Start) != Vec2.GetWindingOrder(segment1Start, segment1End, segment2End);
+		}
+		return false;
+	}
+
+	public static bool CheckPointInsidePolygon(in Vec2 v0, in Vec2 v1, in Vec2 v2, in Vec2 v3, in Vec2 point)
+	{
+		int num = 0;
+		if (point.y < v0.y != point.y < v1.y && point.x < v0.x + (point.y - v0.y) / (v1.y - v0.y) * (v1.x - v0.x))
+		{
+			num++;
+		}
+		if (point.y < v1.y != point.y < v2.y && point.x < v1.x + (point.y - v1.y) / (v2.y - v1.y) * (v2.x - v1.x))
+		{
+			num++;
+		}
+		if (point.y < v2.y != point.y < v3.y && point.x < v2.x + (point.y - v2.y) / (v3.y - v2.y) * (v3.x - v2.x))
+		{
+			num++;
+		}
+		if (point.y < v3.y != point.y < v0.y && point.x < v3.x + (point.y - v3.y) / (v0.y - v3.y) * (v0.x - v3.x))
+		{
+			num++;
+		}
+		return num % 2 == 1;
+	}
+
+	public static bool CheckPolygonIntersection(Vec2[] polygon1, Vec2[] polygon2)
+	{
+		for (int i = 0; i < polygon1.Length; i++)
+		{
+			Vec2 segment1Start = polygon1[i];
+			Vec2 segment1End = polygon1[(i + 1) % polygon1.Length];
+			for (int j = 0; j < polygon2.Length; j++)
+			{
+				Vec2 segment2Start = polygon2[j];
+				Vec2 segment2End = polygon2[(j + 1) % polygon2.Length];
+				if (CheckLineSegmentToLineSegmentIntersection(segment1Start, segment1End, segment2Start, segment2End))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static bool CheckPolygonLineSegmentIntersection(MBList<Vec2> polygon, Vec2 segmentStart, Vec2 segmentEnd)
+	{
+		for (int i = 0; i < polygon.Count; i++)
+		{
+			Vec2 segment1Start = polygon[i];
+			Vec2 segment1End = polygon[(i + 1) % polygon.Count];
+			if (CheckLineSegmentToLineSegmentIntersection(segment1Start, segment1End, segmentStart, segmentEnd))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static bool IntersectRayWithPolygon(Vec2 rayOrigin, Vec2 rayDir, MBList<Vec2> polygon, out Vec2 intersectionPoint)
 	{
 		List<(float, Vec2)> list = new List<(float, Vec2)>();
-		for (int j = 0; j < boundaries.Count; j++)
+		for (int j = 0; j < polygon.Count; j++)
 		{
-			Vec2 segmentA = boundaries[j];
-			Vec2 segmentB = boundaries[(j + 1) % boundaries.Count];
+			Vec2 segmentA = polygon[j];
+			Vec2 segmentB = polygon[(j + 1) % polygon.Count];
 			if (CheckLineToLineSegmentIntersection(rayOrigin, rayDir, segmentA, segmentB, out var t, out var intersect) && t > 0f)
 			{
 				list.Add((t, intersect));
@@ -756,5 +955,18 @@ public static class MBMath
 		}
 		visited[item] = false;
 		sorted.Add(item);
+	}
+
+	public static Vec3 FindPlaneLineIntersectionPointWithNormal(Vec3 planeP1, Vec3 planeNormal, Vec3 mouseP1, Vec3 mouseP2, out bool exceptionZero)
+	{
+		float num = planeNormal.x * mouseP2.x - planeNormal.x * mouseP1.x + planeNormal.y * mouseP2.y - planeNormal.y * mouseP1.y + planeNormal.z * mouseP2.z - planeNormal.z * mouseP1.z;
+		if (num == 0f)
+		{
+			exceptionZero = true;
+			return planeNormal;
+		}
+		exceptionZero = false;
+		float num2 = ((0f - planeNormal.x) * mouseP1.x + planeNormal.x * planeP1.x - planeNormal.y * mouseP1.y + planeNormal.y * planeP1.y - planeNormal.z * mouseP1.z + planeNormal.z * planeP1.z) / num;
+		return new Vec3(mouseP1.x + (mouseP2.x - mouseP1.x) * num2, mouseP1.y + (mouseP2.y - mouseP1.y) * num2, mouseP1.z + (mouseP2.z - mouseP1.z) * num2);
 	}
 }

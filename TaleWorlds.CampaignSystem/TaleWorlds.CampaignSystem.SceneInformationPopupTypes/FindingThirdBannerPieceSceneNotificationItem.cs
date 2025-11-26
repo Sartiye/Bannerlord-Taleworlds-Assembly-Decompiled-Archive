@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -28,9 +27,9 @@ public class FindingThirdBannerPieceSceneNotificationItem : SceneNotificationDat
 
 	public override TextObject AffirmativeDescriptionText => new TextObject("{=IRLB42FY}Assemble the dragon banner!");
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { Hero.MainHero.ClanBanner };
+		return new Banner[1] { Hero.MainHero.ClanBanner };
 	}
 
 	public FindingThirdBannerPieceSceneNotificationItem()

@@ -92,7 +92,7 @@ public class SceneTableau
 		}
 		View?.SetEnable(value: false);
 		View?.AddClearTask();
-		_texture.ReleaseNextFrame();
+		_texture?.Release();
 		_texture = null;
 		_tableauScene = null;
 	}
@@ -109,7 +109,7 @@ public class SceneTableau
 		}
 		else
 		{
-			Debug.FailedAssert("Given scene object is not Scene type", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\SceneTableau.cs", "SetScene", 120);
+			Debug.FailedAssert("Given scene object is not Scene type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\SceneTableau.cs", "SetScene", 120);
 		}
 	}
 

@@ -2,10 +2,10 @@ using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
+using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Multiplayer;
@@ -23,7 +23,7 @@ public class GauntletChatLogView : GlobalLayer
 
 	private bool _isTeamChatAvailable;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private bool _isEnabled = true;
 
@@ -40,7 +40,8 @@ public class GauntletChatLogView : GlobalLayer
 		_dataSource.SetGetCycleChannelKeyTextFunc(GetCycleChannelsKeyText);
 		_dataSource.SetGetSendMessageKeyTextFunc(GetSendMessageKeyText);
 		_dataSource.SetGetCancelSendingKeyTextFunc(GetCancelSendingKeyText);
-		GauntletLayer gauntletLayer = new GauntletLayer(300);
+		_dataSource.SetChatDisabledStateChangedCallback(OnChatDisabledStateChanged);
+		GauntletLayer gauntletLayer = new GauntletLayer("ChatLog", 15300);
 		_movie = gauntletLayer.LoadMovie("SPChatLog", _dataSource);
 		gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 		gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
@@ -74,25 +75,22 @@ public class GauntletChatLogView : GlobalLayer
 
 	private void CloseChat()
 	{
-		if (_dataSource.IsInspectingMessages)
+		if (_dataSource.IsTypingText || _dataSource.IsInspectingMessages || base.Layer.IsFocusLayer)
 		{
-			_dataSource.StopInspectingMessages();
-			ScreenManager.TryLoseFocus(base.Layer);
-		}
-		else if (_dataSource.IsTypingText)
-		{
-			_dataSource.StopTyping(resetWrittenText: true);
-			ScreenManager.TryLoseFocus(base.Layer);
+			if (_dataSource.IsInspectingMessages)
+			{
+				_dataSource.StopInspectingMessages();
+			}
+			else if (_dataSource.IsTypingText)
+			{
+				_dataSource.StopTyping(resetWrittenText: true);
+			}
+			UpdateFocusLayer();
 		}
 	}
 
 	protected override void OnTick(float dt)
 	{
-		if (!_isEnabled)
-		{
-			CloseChat();
-			return;
-		}
 		base.OnTick(dt);
 		if (_dataSource.IsChatAllowedByOptions())
 		{
@@ -100,170 +98,176 @@ public class GauntletChatLogView : GlobalLayer
 		}
 		_dataSource.UpdateObjects(Game.Current, TaleWorlds.MountAndBlade.Mission.Current);
 		_dataSource.Tick(dt);
+		_dataSource.ShouldHaveOffset = GetShouldHaveOffset();
 	}
 
 	protected override void OnLateTick(float dt)
 	{
 		base.OnLateTick(dt);
-		MPChatVM dataSource = _dataSource;
-		if (dataSource != null && dataSource.IsChatAllowedByOptions())
+		bool chatOpened = false;
+		bool chatClosed = false;
+		if (!_isEnabled || _dataSource.IsChatDisabled)
 		{
-			HandleInput();
+			MPChatVM dataSource = _dataSource;
+			if (dataSource != null && dataSource.IsInspectingMessages)
+			{
+				chatClosed = true;
+				_dataSource.StopTyping(_dataSource.IsChatDisabled);
+			}
+		}
+		if (_isEnabled)
+		{
+			MPChatVM dataSource2 = _dataSource;
+			if (dataSource2 != null && dataSource2.IsChatAllowedByOptions())
+			{
+				HandleInput(ref chatOpened, ref chatClosed);
+			}
+		}
+		MPChatVM dataSource3 = _dataSource;
+		if ((dataSource3 == null || !dataSource3.IsInspectingMessages) && base.Layer.InputRestrictions.MouseVisibility)
+		{
+			base.Layer.InputRestrictions.SetMouseVisibility(isVisible: false);
+		}
+		if (chatOpened || chatClosed)
+		{
+			OnChatOpenedOrClosed(chatOpened, chatClosed);
 		}
 	}
 
-	private void HandleInput()
+	private bool GetShouldHaveOffset()
+	{
+		if (!_dataSource.IsTypingText && !_dataSource.IsInspectingMessages)
+		{
+			TaleWorlds.MountAndBlade.Mission current = TaleWorlds.MountAndBlade.Mission.Current;
+			if (current != null && current.IsOrderMenuOpen)
+			{
+				return TaleWorlds.MountAndBlade.Mission.Current.Mode != MissionMode.Deployment;
+			}
+		}
+		return false;
+	}
+
+	private void HandleInput(ref bool chatOpened, ref bool chatClosed)
 	{
 		bool inputEnabled = false;
+		bool isToggleChatHintAvailable = false;
 		bool flag = true;
-		_isTeamChatAvailable = true;
+		bool isMouseVisible = true;
 		InputContext inputContext = null;
-		if (ScreenManager.TopScreen is MissionScreen)
+		_isTeamChatAvailable = true;
+		if (ScreenManager.TopScreen is IChatLogHandlerScreen chatLogHandlerScreen)
 		{
-			MissionScreen missionScreen = (MissionScreen)ScreenManager.TopScreen;
-			if (missionScreen.SceneLayer != null)
-			{
-				inputEnabled = true;
-				inputContext = missionScreen.SceneLayer.Input;
-			}
+			chatLogHandlerScreen.TryUpdateChatLogLayerParameters(ref _isTeamChatAvailable, ref inputEnabled, ref isToggleChatHintAvailable, ref isMouseVisible, ref inputContext);
+			_dataSource.ShowHideShowHint = isToggleChatHintAvailable;
 		}
-		else if (ScreenManager.TopScreen is IGauntletChatLogHandlerScreen)
+		if (isMouseVisible != base.Layer.InputRestrictions.MouseVisibility)
 		{
-			((IGauntletChatLogHandlerScreen)ScreenManager.TopScreen).TryUpdateChatLogLayerParameters(ref _isTeamChatAvailable, ref inputEnabled, ref inputContext);
-		}
-		else if (ScreenManager.TopScreen is GauntletInitialScreen)
-		{
-			inputEnabled = false;
-		}
-		else
-		{
-			ScreenLayer screenLayer = null;
-			if (ScreenManager.TopScreen?.Layers != null)
-			{
-				for (int i = 0; i < ScreenManager.TopScreen.Layers.Count; i++)
-				{
-					if (ScreenManager.TopScreen.Layers[i]._categoryId == "SceneLayer")
-					{
-						screenLayer = ScreenManager.TopScreen.Layers[i];
-						break;
-					}
-				}
-			}
-			if (screenLayer != null)
-			{
-				inputEnabled = true;
-				flag = true;
-				inputContext = screenLayer.Input;
-			}
-			_dataSource.ShowHideShowHint = screenLayer != null;
+			base.Layer.InputRestrictions.SetMouseVisibility(isMouseVisible);
 		}
 		if (ScreenManager.FocusedLayer is GauntletLayer gauntletLayer && gauntletLayer != base.Layer && gauntletLayer.UIContext.EventManager.FocusedWidget is EditableTextWidget)
 		{
 			inputEnabled = false;
 		}
-		bool flag2 = false;
-		bool flag3 = false;
 		if (inputEnabled)
 		{
-			if (inputContext != null && !inputContext.IsCategoryRegistered(HotKeyManager.GetCategory("ChatLogHotKeyCategory")))
+			GameKeyContext category = HotKeyManager.GetCategory("ChatLogHotKeyCategory");
+			if (inputContext != null && !inputContext.IsCategoryRegistered(category))
 			{
-				inputContext.RegisterHotKeyCategory(HotKeyManager.GetCategory("ChatLogHotKeyCategory"));
+				inputContext.RegisterHotKeyCategory(category);
 			}
 			if (flag)
 			{
-				if (inputContext != null && inputContext.IsGameKeyReleased(6) && _canFocusWhileInMission)
+				if (_dataSource.IsInspectingMessages)
 				{
-					_dataSource.TypeToChannelAll(startTyping: true);
-					flag2 = true;
-				}
-				else if (inputContext != null && inputContext.IsGameKeyReleased(7) && _canFocusWhileInMission && _isTeamChatAvailable)
-				{
-					_dataSource.TypeToChannelTeam(startTyping: true);
-					flag2 = true;
-				}
-				if (base.Layer.Input.IsHotKeyReleased("ToggleEscapeMenu") || base.Layer.Input.IsHotKeyReleased("Exit"))
-				{
-					bool isGamepadActive = Input.IsGamepadActive;
-					_dataSource.StopTyping(isGamepadActive);
-					flag3 = true;
-				}
-				else if (base.Layer.Input.IsGameKeyReleased(8) || base.Layer.Input.IsHotKeyReleased("FinalizeChatAlternative") || base.Layer.Input.IsHotKeyReleased("SendMessage"))
-				{
-					if ((Input.IsGamepadActive && base.Layer.Input.IsHotKeyReleased("SendMessage")) || !Input.IsGamepadActive)
+					if (base.Layer.Input.IsHotKeyReleased("ToggleEscapeMenu") || base.Layer.Input.IsHotKeyReleased("Exit"))
 					{
-						_dataSource.SendCurrentlyTypedMessage();
+						bool isGamepadActive = Input.IsGamepadActive;
+						_dataSource.StopTyping(isGamepadActive);
+						chatClosed = true;
 					}
-					_dataSource.StopTyping();
-					flag3 = true;
+					else if (base.Layer.Input.IsGameKeyReleased(8) || base.Layer.Input.IsHotKeyReleased("FinalizeChatAlternative") || base.Layer.Input.IsHotKeyReleased("SendMessage"))
+					{
+						if ((Input.IsGamepadActive && base.Layer.Input.IsHotKeyReleased("SendMessage")) || !Input.IsGamepadActive)
+						{
+							_dataSource.SendCurrentlyTypedMessage();
+						}
+						_dataSource.StopTyping();
+						chatClosed = true;
+					}
+					if (base.Layer.Input.IsHotKeyReleased("CycleChatTypes"))
+					{
+						if (_dataSource.ActiveChannelType == ChatChannelType.Team)
+						{
+							_dataSource.TypeToChannelAll();
+						}
+						else if (_dataSource.ActiveChannelType == ChatChannelType.All && _isTeamChatAvailable)
+						{
+							_dataSource.TypeToChannelTeam();
+						}
+					}
 				}
-				if (inputContext != null && (inputContext.IsGameKeyDownAndReleased(8) || inputContext.IsHotKeyDownAndReleased("FinalizeChatAlternative")) && _canFocusWhileInMission)
+				else
 				{
-					if (_dataSource.ActiveChannelType == ChatChannelType.NaN)
+					if (inputContext == null)
+					{
+						return;
+					}
+					if (_canFocusWhileInMission && inputContext.IsGameKeyReleased(6))
 					{
 						_dataSource.TypeToChannelAll(startTyping: true);
+						chatOpened = true;
 					}
-					else
+					else if (_canFocusWhileInMission && _isTeamChatAvailable && inputContext.IsGameKeyReleased(7))
 					{
-						_dataSource.StartTyping();
+						_dataSource.TypeToChannelTeam(startTyping: true);
+						chatOpened = true;
 					}
-					flag2 = true;
-				}
-				if (base.Layer.Input.IsHotKeyReleased("CycleChatTypes"))
-				{
-					if (_dataSource.ActiveChannelType == ChatChannelType.Team)
+					if (_canFocusWhileInMission && (inputContext.IsGameKeyReleased(8) || inputContext.IsHotKeyReleased("FinalizeChatAlternative")))
 					{
-						_dataSource.TypeToChannelAll();
-					}
-					else if (_dataSource.ActiveChannelType == ChatChannelType.All && _isTeamChatAvailable)
-					{
-						_dataSource.TypeToChannelTeam();
+						if (_dataSource.ActiveChannelType == ChatChannelType.None)
+						{
+							_dataSource.TypeToChannelAll(startTyping: true);
+						}
+						else
+						{
+							_dataSource.StartTyping();
+						}
+						chatOpened = true;
 					}
 				}
 			}
-			else if (inputContext != null && (inputContext.IsGameKeyReleased(8) || inputContext.IsHotKeyReleased("FinalizeChatAlternative")) && _canFocusWhileInMission)
+			else if (_canFocusWhileInMission && inputContext != null && (inputContext.IsGameKeyReleased(8) || inputContext.IsHotKeyReleased("FinalizeChatAlternative")))
 			{
 				if (!_dataSource.IsInspectingMessages)
 				{
 					_dataSource.StartInspectingMessages();
-					flag2 = true;
+					chatOpened = true;
 				}
 				else
 				{
 					_dataSource.StopInspectingMessages();
-					flag3 = true;
+					chatClosed = true;
 				}
 			}
 		}
-		else
+		else if (_dataSource.IsTypingText)
 		{
-			bool num = _dataSource.IsTypingText || _dataSource.IsInspectingMessages;
-			if (_dataSource.IsTypingText)
-			{
-				_dataSource.StopTyping();
-			}
-			else if (_dataSource.IsInspectingMessages)
-			{
-				_dataSource.StopInspectingMessages();
-			}
-			if (num)
-			{
-				base.Layer.InputRestrictions.ResetInputRestrictions();
-				flag3 = true;
-			}
+			_dataSource.StopTyping();
+			chatClosed = true;
 		}
-		if (flag2)
+		else if (_dataSource.IsInspectingMessages)
 		{
-			UpdateFocusLayer();
-			ScreenManager.TrySetFocus(base.Layer);
+			_dataSource.StopInspectingMessages();
+			chatClosed = true;
 		}
-		else if (flag3)
+	}
+
+	private void OnChatOpenedOrClosed(bool chatOpened, bool chatClosed)
+	{
+		UpdateFocusLayer();
+		if (ScreenManager.TopScreen is MissionScreen { SceneLayer: not null } missionScreen)
 		{
-			UpdateFocusLayer();
-			ScreenManager.TryLoseFocus(base.Layer);
-		}
-		if ((flag2 || flag3) && ScreenManager.TopScreen is MissionScreen { SceneLayer: not null } missionScreen2)
-		{
-			missionScreen2.Mission.GetMissionBehavior<MissionMainAgentController>().IsChatOpen = flag2 && !flag3;
+			missionScreen.Mission.GetMissionBehavior<MissionMainAgentController>().IsChatOpen = chatOpened && !chatClosed;
 		}
 	}
 
@@ -274,12 +278,14 @@ public class GauntletChatLogView : GlobalLayer
 			if (_dataSource.IsTypingText && !base.Layer.IsFocusLayer)
 			{
 				base.Layer.IsFocusLayer = true;
+				ScreenManager.TrySetFocus(base.Layer);
 			}
 			base.Layer.InputRestrictions.SetInputRestrictions();
 		}
 		else
 		{
 			base.Layer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(base.Layer);
 			base.Layer.InputRestrictions.ResetInputRestrictions();
 		}
 	}
@@ -310,7 +316,7 @@ public class GauntletChatLogView : GlobalLayer
 		}
 		if (forMultiplayer)
 		{
-			Game.Current?.GetGameHandler<ChatBox>().InitializeForMultiplayer();
+			Game.Current?.GetGameHandler<ChatBox>()?.InitializeForMultiplayer();
 			_movie = (base.Layer as GauntletLayer)?.LoadMovie("MPChatLog", _dataSource);
 			_dataSource.SetMessageHistoryCapacity(100);
 			return;
@@ -334,16 +340,25 @@ public class GauntletChatLogView : GlobalLayer
 
 	private TextObject GetCycleChannelsKeyText()
 	{
-		return Game.Current?.GameTextManager?.GetHotKeyGameText("ChatLogHotKeyCategory", "CycleChatTypes") ?? TextObject.Empty;
+		return Game.Current?.GameTextManager?.GetHotKeyGameText("ChatLogHotKeyCategory", "CycleChatTypes") ?? TextObject.GetEmpty();
 	}
 
 	private TextObject GetSendMessageKeyText()
 	{
-		return Game.Current?.GameTextManager?.GetHotKeyGameText("ChatLogHotKeyCategory", "SendMessage") ?? TextObject.Empty;
+		return Game.Current?.GameTextManager?.GetHotKeyGameText("ChatLogHotKeyCategory", "SendMessage") ?? TextObject.GetEmpty();
 	}
 
 	private TextObject GetCancelSendingKeyText()
 	{
-		return Game.Current?.GameTextManager?.GetHotKeyGameText("GenericPanelGameKeyCategory", "Exit") ?? TextObject.Empty;
+		return Game.Current?.GameTextManager?.GetHotKeyGameText("GenericPanelGameKeyCategory", "Exit") ?? TextObject.GetEmpty();
+	}
+
+	private void OnChatDisabledStateChanged(bool chatDisabled)
+	{
+		if (!chatDisabled)
+		{
+			_dataSource.StopTyping(resetWrittenText: true);
+			OnChatOpenedOrClosed(chatOpened: false, chatClosed: true);
+		}
 	}
 }

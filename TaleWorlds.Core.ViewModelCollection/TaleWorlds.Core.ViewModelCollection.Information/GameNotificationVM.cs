@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.Core.ViewModelCollection.Information;
 
@@ -9,19 +10,21 @@ public class GameNotificationVM : ViewModel
 {
 	private readonly List<GameNotificationItemVM> _items;
 
-	private bool _gotNotification;
-
 	private const float MinimumDisplayTimeInSeconds = 1f;
 
 	private const float ExtraDisplayTimeInSeconds = 1f;
 
-	private float _timer;
+	private GameNotificationItemVM _currentNotification;
+
+	private bool _gotNotification;
 
 	private int _notificationId;
 
-	private GameNotificationItemVM _currentNotification;
-
 	private float _totalTime;
+
+	private float _timer;
+
+	private bool _isPaused;
 
 	private float CurrentNotificationOnScreenTime
 	{
@@ -34,10 +37,15 @@ public class GameNotificationVM : ViewModel
 			{
 				num += (float)(numberOfWords - 4) / 5f;
 			}
+			if (CurrentNotification.IsDialog)
+			{
+				num += 10000f;
+			}
 			return num + 1f / (float)(_items.Count + 1);
 		}
 	}
 
+	[DataSourceProperty]
 	public GameNotificationItemVM CurrentNotification
 	{
 		get
@@ -51,10 +59,7 @@ public class GameNotificationVM : ViewModel
 				_currentNotification = value;
 				NotificationId++;
 				OnPropertyChangedWithValue(value, "CurrentNotification");
-				if (value != null)
-				{
-					this.ReceiveNewNotification?.Invoke(CurrentNotification);
-				}
+				this.CurrentNotificationChanged?.Invoke(value);
 			}
 		}
 	}
@@ -110,13 +115,73 @@ public class GameNotificationVM : ViewModel
 		}
 	}
 
-	public event Action<GameNotificationItemVM> ReceiveNewNotification;
+	[DataSourceProperty]
+	public float Timer
+	{
+		get
+		{
+			return _timer;
+		}
+		set
+		{
+			if (value != _timer)
+			{
+				_timer = value;
+				OnPropertyChangedWithValue(value, "Timer");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsPaused
+	{
+		get
+		{
+			return _isPaused;
+		}
+		set
+		{
+			if (value != _isPaused)
+			{
+				_isPaused = value;
+				OnPropertyChangedWithValue(value, "IsPaused");
+			}
+		}
+	}
+
+	public event Action<GameNotificationItemVM> CurrentNotificationChanged;
+
+	public void FadeOutCurrentNotification(bool useExtraDisplayTime = false)
+	{
+		if (GotNotification)
+		{
+			Timer = TotalTime - 0.2f;
+			if (useExtraDisplayTime)
+			{
+				Timer -= (float)CurrentNotification.ExtraTimeInMs / 1000f;
+			}
+		}
+	}
+
+	public void SkipCurrentNotification()
+	{
+		Timer = 0f;
+		if (_items.Count > 0)
+		{
+			CurrentNotification = _items[0];
+			_items.RemoveAt(0);
+			TotalTime = CurrentNotificationOnScreenTime;
+		}
+		else
+		{
+			GotNotification = false;
+		}
+	}
 
 	public GameNotificationVM()
 	{
-		MBInformationManager.FiringQuickInformation += AddGameNotification;
 		_items = new List<GameNotificationItemVM>();
-		CurrentNotification = new GameNotificationItemVM("NULL", 0, null, "NULL");
+		CurrentNotification = new GameNotificationItemVM("NULL", 0, null, null, "NULL", 0, isDialog: false, null);
 		GotNotification = false;
 	}
 
@@ -124,19 +189,24 @@ public class GameNotificationVM : ViewModel
 	{
 		_items.Clear();
 		GotNotification = false;
-		_timer = CurrentNotificationOnScreenTime * 2f;
+		Timer = CurrentNotificationOnScreenTime * 2f;
 	}
 
 	public void Tick(float dt)
 	{
-		_timer += dt;
-		if (GotNotification && _timer >= CurrentNotificationOnScreenTime)
+		if (IsPaused)
 		{
-			_timer = 0f;
+			return;
+		}
+		Timer += dt;
+		if (GotNotification && Timer >= CurrentNotificationOnScreenTime)
+		{
+			Timer = 0f;
 			if (_items.Count > 0)
 			{
 				CurrentNotification = _items[0];
 				_items.RemoveAt(0);
+				TotalTime = CurrentNotificationOnScreenTime;
 			}
 			else
 			{
@@ -145,10 +215,102 @@ public class GameNotificationVM : ViewModel
 		}
 	}
 
-	public void AddGameNotification(string notificationText, int extraTimeInMs, BasicCharacterObject announcerCharacter, string soundId)
+	public MBInformationManager.DialogNotificationHandle AddDialogNotification(TextObject text, int extraTimeInMs, BasicCharacterObject announcerCharacter, Equipment equipment, MBInformationManager.NotificationPriority priority, string dialogSoundPath)
 	{
-		GameNotificationItemVM gameNotificationItemVM = new GameNotificationItemVM(notificationText, extraTimeInMs, announcerCharacter, soundId);
-		if (!_items.Any((GameNotificationItemVM i) => i.GameNotificationText == notificationText) && (!GotNotification || CurrentNotification.GameNotificationText != notificationText))
+		GameNotificationItemVM gameNotificationItemVM = new GameNotificationItemVM(text.ToString(), extraTimeInMs, announcerCharacter, equipment, null, (int)priority, isDialog: true, dialogSoundPath);
+		if (GotNotification && CurrentNotification.GameNotificationText == text.ToString())
+		{
+			return CurrentNotification.Handle;
+		}
+		if (_items.Any((GameNotificationItemVM i) => i.GameNotificationText == text.ToString()))
+		{
+			return _items.First((GameNotificationItemVM i) => i.GameNotificationText == text.ToString()).Handle;
+		}
+		if (GotNotification && CurrentNotification.Priority >= (int)priority)
+		{
+			int index = _items.FindLastIndex((GameNotificationItemVM i) => i.Priority >= (int)priority) + 1;
+			_items.Insert(index, gameNotificationItemVM);
+		}
+		else
+		{
+			CurrentNotification = gameNotificationItemVM;
+			TotalTime = CurrentNotificationOnScreenTime;
+			GotNotification = true;
+			Timer = 0f;
+		}
+		return gameNotificationItemVM.Handle;
+	}
+
+	public MBInformationManager.NotificationStatus GetStatusOfDialogNotification(MBInformationManager.DialogNotificationHandle handle)
+	{
+		if (handle == null)
+		{
+			return MBInformationManager.NotificationStatus.Inactive;
+		}
+		if (GotNotification && CurrentNotification.Handle == handle)
+		{
+			return MBInformationManager.NotificationStatus.CurrentlyActive;
+		}
+		if (_items.Any((GameNotificationItemVM i) => i.Handle == handle))
+		{
+			return MBInformationManager.NotificationStatus.InQueue;
+		}
+		return MBInformationManager.NotificationStatus.Inactive;
+	}
+
+	public void ClearDialogNotification(MBInformationManager.DialogNotificationHandle handle, bool fadeOut)
+	{
+		if (handle == null)
+		{
+			return;
+		}
+		_items.RemoveAll((GameNotificationItemVM x) => x.Handle == handle);
+		if (GotNotification && CurrentNotification.Handle == handle)
+		{
+			if (fadeOut)
+			{
+				FadeOutCurrentNotification();
+			}
+			else
+			{
+				SkipCurrentNotification();
+			}
+		}
+	}
+
+	public bool GetIsAnyDialogNotificationActiveOrQueued()
+	{
+		if (!GotNotification || !CurrentNotification.IsDialog)
+		{
+			return _items.Any((GameNotificationItemVM x) => x.IsDialog);
+		}
+		return true;
+	}
+
+	public void ClearAllDialogNotifications(bool fadeOut)
+	{
+		_items.RemoveAll((GameNotificationItemVM x) => x.IsDialog);
+		if (GotNotification && CurrentNotification.IsDialog)
+		{
+			if (fadeOut)
+			{
+				FadeOutCurrentNotification();
+			}
+			else
+			{
+				SkipCurrentNotification();
+			}
+		}
+	}
+
+	public void AddGameNotification(string notificationText, int extraTimeInMs, BasicCharacterObject announcerCharacter, Equipment equipment, string soundId)
+	{
+		if (string.IsNullOrEmpty(notificationText))
+		{
+			Debug.FailedAssert("Quick information message is empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core.ViewModelCollection\\Information\\GameNotificationVM.cs", "AddGameNotification", 216);
+		}
+		GameNotificationItemVM gameNotificationItemVM = new GameNotificationItemVM(notificationText, extraTimeInMs, announcerCharacter, equipment, soundId, 0, isDialog: false, null);
+		if ((!GotNotification || CurrentNotification.GameNotificationText != notificationText) && !_items.Any((GameNotificationItemVM i) => i.GameNotificationText == notificationText))
 		{
 			if (GotNotification)
 			{
@@ -158,7 +320,7 @@ public class GameNotificationVM : ViewModel
 			CurrentNotification = gameNotificationItemVM;
 			TotalTime = CurrentNotificationOnScreenTime;
 			GotNotification = true;
-			_timer = 0f;
+			Timer = 0f;
 		}
 	}
 

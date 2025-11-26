@@ -32,17 +32,25 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 		{
 			args.optionLeaveType = GameMenuOption.LeaveType.Leave;
 			return true;
-		}, delegate
+		}, player_encounter_finished_with_diplomatic_change_consequence, isLeave: true);
+		gameSystemInitializer.AddGameMenu("village_raid_diplomatically_ended", "{=CnNUOM9Q}The owner of this fief and your kingdom are no longer enemies.", game_menu_hostile_action_end_by_peace_on_init);
+		gameSystemInitializer.AddGameMenuOption("village_raid_diplomatically_ended", "leave", "{=3sRdGQou}Leave", delegate(MenuCallbackArgs args)
 		{
-			if (PlayerEncounter.Current != null)
-			{
-				PlayerEncounter.Finish();
-			}
-			else
-			{
-				GameMenu.ExitToLast();
-			}
-		}, isLeave: true);
+			args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+			return MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty;
+		}, player_encounter_finished_with_diplomatic_change_consequence, isLeave: true);
+	}
+
+	private static void player_encounter_finished_with_diplomatic_change_consequence(MenuCallbackArgs args)
+	{
+		if (PlayerEncounter.Current != null)
+		{
+			PlayerEncounter.Finish();
+		}
+		else
+		{
+			GameMenu.ExitToLast();
+		}
 	}
 
 	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool arg5)
@@ -64,11 +72,23 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 		CheckFactionPartiesAndSettlements(faction);
 	}
 
-	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero hero1, Hero hero2, Hero hero3, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
+	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
 	{
 		if (detail != ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege && settlement.SiegeEvent != null)
 		{
 			CheckSiegeEventContinuity(settlement.SiegeEvent);
+		}
+		if (PlayerEncounter.Current != null && PlayerEncounter.Current.EncounterSettlementAux != null)
+		{
+			foreach (Village boundVillage in settlement.BoundVillages)
+			{
+				if (boundVillage.Settlement == PlayerEncounter.Current.EncounterSettlementAux && boundVillage.Settlement.IsUnderRaid && !Clan.PlayerClan.IsAtWarWith(newOwner.MapFaction))
+				{
+					_lastFactionMadePeaceWithCausedPlayerToLeaveEvent = oldOwner.MapFaction;
+					GameMenu.ActivateGameMenu("village_raid_diplomatically_ended");
+					break;
+				}
+			}
 		}
 		CheckSettlementSuitabilityForParties(settlement.Parties);
 	}
@@ -159,18 +179,15 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 					flag2 = true;
 					_lastFactionMadePeaceWithCausedPlayerToLeaveEvent = siegeEvent.BesiegedSettlement.MapFaction;
 				}
-				else
-				{
-					partyBase.MobileParty.BesiegerCamp = null;
-				}
+				partyBase.MobileParty.BesiegerCamp = null;
 			}
 		}
 		if (!siegeEvent.ReadyToBeRemoved && siegeEvent.BesiegerCamp.GetInvolvedPartiesForEventType(siegeEvent.GetCurrentBattleType()).Any((PartyBase x) => x != PartyBase.MainParty))
 		{
-			MBReadOnlyList<MobileParty> parties = siegeEvent.BesiegedSettlement.Parties;
-			for (int j = 0; j < parties.Count; j++)
+			List<MobileParty> list2 = siegeEvent.BesiegedSettlement.Parties.ToList();
+			for (int j = 0; j < list2.Count; j++)
 			{
-				PartyBase party = parties[j].Party;
+				PartyBase party = list2[j].Party;
 				if (!siegeEvent.CanPartyJoinSide(party, BattleSideEnum.Defender))
 				{
 					if (flag && !flag2 && party == PartyBase.MainParty)
@@ -201,17 +218,20 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 			}
 			if (item != MobileParty.MainParty)
 			{
-				if (item.Army == null || item.Army.LeaderParty == item)
+				if (item.Army != null && item.Army.LeaderParty != item)
 				{
-					if (item.Army != null && item.Army.Parties.Contains(MobileParty.MainParty))
-					{
-						GameMenu.SwitchToMenu("army_left_settlement_due_to_war_declaration");
-						continue;
-					}
-					Settlement currentSettlement = item.CurrentSettlement;
-					LeaveSettlementAction.ApplyForParty(item);
-					SetPartyAiAction.GetActionForPatrollingAroundSettlement(item, currentSettlement);
+					continue;
 				}
+				if (item.Army != null && item.Army.Parties.Contains(MobileParty.MainParty))
+				{
+					GameMenu.SwitchToMenu("army_left_settlement_due_to_war_declaration");
+					continue;
+				}
+				if (item.IsTransitionInProgress)
+				{
+					item.CancelNavigationTransition();
+				}
+				LeaveSettlementAction.ApplyForParty(item);
 			}
 			else if (item.CurrentSettlement.IsFortification)
 			{
@@ -237,7 +257,7 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("no menu background to initialize!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PartyDiplomaticHandlerCampaignBehavior.cs", "hostile_action_end_by_peace_on_init", 275);
+			Debug.FailedAssert("No menu background to initialize!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PartyDiplomaticHandlerCampaignBehavior.cs", "hostile_action_end_by_peace_on_init", 297);
 		}
 	}
 
@@ -245,7 +265,11 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 	{
 		if (_lastFactionMadePeaceWithCausedPlayerToLeaveEvent == null)
 		{
-			StanceLink stanceLink = (from x in MobileParty.MainParty.MapFaction.Stances
+			IEnumerable<IFaction> source = Kingdom.All.Union<IFaction>(Clan.All);
+			IFaction mapFaction = MobileParty.MainParty.MapFaction;
+			StanceLink stanceLink = (from x in source
+				where x != mapFaction
+				select x.GetStanceWith(mapFaction) into x
 				where !x.IsAtWar
 				orderby x.PeaceDeclarationDate.ElapsedHoursUntilNow
 				select x).FirstOrDefault();

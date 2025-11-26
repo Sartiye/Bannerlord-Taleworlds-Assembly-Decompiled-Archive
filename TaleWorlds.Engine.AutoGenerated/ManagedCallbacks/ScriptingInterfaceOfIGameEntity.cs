@@ -23,6 +23,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void AddCapsuleAsBodyDelegate(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, uint bodyFlags, byte[] physicsMaterialName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void AddChildDelegate(UIntPtr parententity, UIntPtr childentity, [MarshalAs(UnmanagedType.U1)] bool autoLocalizeFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -33,7 +38,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void AddDistanceJointDelegate(UIntPtr entityId, UIntPtr otherEntityId, float minDistance, float maxDistance);
+	public delegate UIntPtr AddDistanceJointDelegate(UIntPtr entityId, UIntPtr otherEntityId, float minDistance, float maxDistance);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr AddDistanceJointWithFramesDelegate(UIntPtr entityId, UIntPtr otherEntityId, MatrixFrame globalFrameOnA, MatrixFrame globalFrameOnB, float minDistance, float maxDistance);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -79,12 +89,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void AddPhysicsDelegate(UIntPtr entityId, UIntPtr body, float mass, ref Vec3 localCenterOfMass, ref Vec3 initialVelocity, ref Vec3 initialAngularVelocity, int physicsMaterial, [MarshalAs(UnmanagedType.U1)] bool isStatic, int collisionGroupID);
+	public delegate void AddPhysicsDelegate(UIntPtr entityId, UIntPtr body, float mass, ref Vec3 localCenterOfMass, ref Vec3 initialGlobalVelocity, ref Vec3 initialAngularGlobalVelocity, int physicsMaterial, [MarshalAs(UnmanagedType.U1)] bool isStatic, int collisionGroupID);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void AddSphereAsBodyDelegate(UIntPtr entityId, Vec3 center, float radius, uint bodyFlags);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void AddSplashPositionToWaterVisualRecordDelegate(UIntPtr entityPointer, UIntPtr visualPrefab, in Vec3 position);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -99,12 +114,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ApplyForceToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 force);
+	public delegate void ApplyForceToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 force, GameEntityPhysicsExtensions.ForceMode forceMode);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ApplyLocalForceToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 force);
+	public delegate void ApplyGlobalForceAtLocalPosToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 globalForce, GameEntityPhysicsExtensions.ForceMode forceMode);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ApplyLocalForceAtLocalPosToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 localForce, GameEntityPhysicsExtensions.ForceMode forceMode);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -114,7 +134,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void AttachNavigationMeshFacesDelegate(UIntPtr entityId, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool isConnected, [MarshalAs(UnmanagedType.U1)] bool isBlocker, [MarshalAs(UnmanagedType.U1)] bool autoLocalize);
+	public delegate void ApplyTorqueToDynamicBodyDelegate(UIntPtr entityId, ref Vec3 torque, GameEntityPhysicsExtensions.ForceMode forceMode);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void AttachNavigationMeshFacesDelegate(UIntPtr entityId, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool isConnected, [MarshalAs(UnmanagedType.U1)] bool isBlocker, [MarshalAs(UnmanagedType.U1)] bool autoLocalize, [MarshalAs(UnmanagedType.U1)] bool finalizeBlockerConvexHullComputation, [MarshalAs(UnmanagedType.U1)] bool updateEntityFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -129,12 +154,23 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void CallScriptCallbacksDelegate(UIntPtr entityPointer);
+	public delegate void CallScriptCallbacksDelegate(UIntPtr entityPointer, [MarshalAs(UnmanagedType.U1)] bool registerScriptComponents);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void ChangeMetaMeshOrRemoveItIfNotExistsDelegate(UIntPtr entityId, UIntPtr entityMetaMeshPointer, UIntPtr newMetaMeshPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ChangeResolutionMultiplierOfWaterVisualDelegate(UIntPtr visualPrefab, float multiplier, in Vec3 waterEffectsBB);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool CheckIsPrefabLinkRootPrefabDelegate(UIntPtr entityPtr, int depth);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -171,6 +207,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ComputeVelocityDeltaFromImpulseDelegate(UIntPtr entityPtr, in Vec3 impulsiveForce, in Vec3 impulsiveTorque, out Vec3 deltaLinearVelocity, out Vec3 deltaAngularVelocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ConvertDynamicBodyToRayCastDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void CookTrianglePhysxMeshDelegate(UIntPtr cookingInstancePointer, UIntPtr shapePointer, UIntPtr quadPinnedPointer, int physicsMaterial, int numberOfVertices, UIntPtr indicesPinnedPointer, int numberOfIndices);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void CopyComponentsToSkeletonDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -186,12 +237,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void CreateAndAddScriptComponentDelegate(UIntPtr entityId, byte[] name);
+	public delegate void CreateAndAddScriptComponentDelegate(UIntPtr entityId, byte[] name, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateEmptyDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool isModifiableFromEditor, UIntPtr entityId);
+	public delegate NativeObjectPointer CreateEmptyDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool isModifiableFromEditor, UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool createPhysics, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr CreateEmptyPhysxShapeDelegate(UIntPtr entityPointer, [MarshalAs(UnmanagedType.U1)] bool isVariable, int physxMaterialIndex);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -201,17 +257,52 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateFromPrefabDelegate(UIntPtr scenePointer, byte[] prefabid, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks);
+	public delegate NativeObjectPointer CreateFromPrefabDelegate(UIntPtr scenePointer, byte[] prefabid, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks, [MarshalAs(UnmanagedType.U1)] bool createPhysics, uint scriptInclusionHashTag);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateFromPrefabWithInitialFrameDelegate(UIntPtr scenePointer, byte[] prefabid, ref MatrixFrame frame);
+	public delegate NativeObjectPointer CreateFromPrefabWithInitialFrameDelegate(UIntPtr scenePointer, byte[] prefabid, ref MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr CreatePhysxCookingInstanceDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void CreateVariableRatePhysicsDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool forChildren);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeleteEmptyShapeDelegate(UIntPtr entity, UIntPtr shape1, UIntPtr shape2);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeletePhysxCookingInstanceDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeRegisterWaterMeshMaterialsDelegate(UIntPtr entityPointer, UIntPtr visualPrefab);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DeRegisterWaterSDFClipDelegate(UIntPtr entityId, int slot);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void DeselectEntityOnEditorDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void DetachAllAttachedNavigationMeshFacesDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -246,12 +337,42 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetAngularVelocityDelegate(UIntPtr entityPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetAttachedNavmeshFaceCountDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetAttachedNavmeshFaceRecordsDelegate(UIntPtr entityId, IntPtr faceRecords);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetAttachedNavmeshFaceVertexIndicesDelegate(UIntPtr entityId, in PathFaceRecord faceRecord, IntPtr indices);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate uint GetBodyFlagsDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetBodyShapeDelegate(UIntPtr entity);
+	public delegate NativeObjectPointer GetBodyShapeDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetBodyVisualWorldTransformDelegate(UIntPtr entityPtr, out MatrixFrame frame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetBodyWorldTransformDelegate(UIntPtr entityPtr, out MatrixFrame frame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -301,6 +422,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetChildPointerDelegate(UIntPtr entityId, int childIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate NativeObjectPointer GetComponentAtIndexDelegate(UIntPtr entityId, GameEntity.ComponentType componentType, int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -317,12 +443,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetEntityFlagsDelegate(UIntPtr entityId);
+	public delegate EntityFlags GetEntityFlagsDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate uint GetEntityVisibilityFlagsDelegate(UIntPtr entityId);
+	public delegate EntityVisibilityFlags GetEntityVisibilityFlagsDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -332,12 +458,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetFirstEntityWithTagDelegate(UIntPtr scenePointer, byte[] tag);
+	public delegate UIntPtr GetFirstChildWithTagRecursiveDelegate(UIntPtr entityPtr, byte[] tag);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetFirstEntityWithTagExpressionDelegate(UIntPtr scenePointer, byte[] tagExpression);
+	public delegate UIntPtr GetFirstEntityWithTagDelegate(UIntPtr scenePointer, byte[] tag);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetFirstEntityWithTagExpressionDelegate(UIntPtr scenePointer, byte[] tagExpression);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -347,7 +478,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void GetFrameDelegate(UIntPtr entityId, ref MatrixFrame outFrame);
+	public delegate BoundingBox GetGlobalBoundingBoxDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -367,12 +498,37 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec3 GetGlobalScaleDelegate(UIntPtr entity);
+	public delegate void GetGlobalFrameImpreciseForFixedTickDelegate(UIntPtr entityId, out MatrixFrame outFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetGlobalScaleDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetGlobalWindStrengthVectorOfSceneDelegate(UIntPtr entityPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetGlobalWindVelocityOfSceneDelegate(UIntPtr entityPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec2 GetGlobalWindVelocityWithGustNoiseOfSceneDelegate(UIntPtr entityPtr, float globalTime);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate int GetGuidDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetLastFinalRenderCameraPositionOfSceneDelegate(UIntPtr entityPtr);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -387,6 +543,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate BoundingBox GetLocalBoundingBoxDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetLocalFrameDelegate(UIntPtr entityId, out MatrixFrame outFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void GetLocalPhysicsBoundingBoxDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool includeChildren, out BoundingBox outBoundingBox);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetLodLevelForDistanceSqDelegate(UIntPtr entityId, float distanceSquared);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -397,7 +568,22 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetMassSpaceInertiaDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate Vec3 GetMassSpaceInverseInertiaDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetMeshBendedPositionDelegate(UIntPtr entityId, ref MatrixFrame worldSpacePosition, ref MatrixFrame output);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate GameEntity.Mobility GetMobilityDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -407,12 +593,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetNextEntityWithTagDelegate(UIntPtr currententityId, byte[] tag);
+	public delegate void GetNativeScriptComponentVariableDelegate(UIntPtr entityPtr, byte[] className, byte[] fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetNextEntityWithTagExpressionDelegate(UIntPtr currententityId, byte[] tagExpression);
+	public delegate UIntPtr GetNextEntityWithTagDelegate(UIntPtr currententityId, byte[] tag);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetNextEntityWithTagExpressionDelegate(UIntPtr currententityId, byte[] tagExpression);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -432,17 +623,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec3 GetPhysicsBoundingBoxMaxDelegate(UIntPtr entityId);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
-	public delegate Vec3 GetPhysicsBoundingBoxMinDelegate(UIntPtr entityId);
+	public delegate UIntPtr GetParentPointerDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate uint GetPhysicsDescBodyFlagsDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetPhysicsMaterialIndexDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -458,6 +649,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetPhysicsTriangleCountDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetPrefabNameDelegate(UIntPtr prefab);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -468,12 +664,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void GetQuickBoneEntitialFrameDelegate(UIntPtr entityId, sbyte index, ref MatrixFrame frame);
+	public delegate void GetQuickBoneEntitialFrameDelegate(UIntPtr entityId, sbyte index, out MatrixFrame frame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate float GetRadiusDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetRootParentPointerDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -499,6 +700,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate int GetScriptComponentCountDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetScriptComponentIndexDelegate(UIntPtr entityId, uint nameHash);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -534,6 +740,23 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate float GetWaterLevelAtPositionDelegate(UIntPtr entityId, in Vec2 position, [MarshalAs(UnmanagedType.U1)] bool useWaterRenderer, [MarshalAs(UnmanagedType.U1)] bool checkWaterBodyEntities);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasBatchedKinematicPhysicsFlagDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasBatchedRayCastPhysicsFlagDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool HasBodyDelegate(UIntPtr entityId);
 
@@ -553,7 +776,25 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasDynamicRigidBodyDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasDynamicRigidBodyAndActiveSimulationDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool HasFrameChangedDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasKinematicRigidBodyDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -578,6 +819,18 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool HasScriptComponentDelegate(UIntPtr entityId, byte[] scName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasScriptComponentHashDelegate(UIntPtr entityId, uint scNameHash);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool HasStaticPhysicsBodyDelegate(UIntPtr entityId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -619,7 +872,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsGravityDisabledDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsGuidValidDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsInEditorSceneDelegate(UIntPtr pointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -635,13 +900,50 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void PopCapsuleShapeFromEntityBodyDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool PrefabExistsDelegate(byte[] prefabName);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void RecomputeBoundingBoxDelegate(UIntPtr entity);
+	public delegate void PushCapsuleShapeToEntityBodyDelegate(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, byte[] physicsMaterialName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool RayHitEntityDelegate(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref float resultLength);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool RayHitEntityWithNormalDelegate(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref Vec3 resultNormal, ref float resultLength);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void RecomputeBoundingBoxDelegate(UIntPtr pointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void RefreshMeshesToRenderToHullWaterDelegate(UIntPtr entityPointer, UIntPtr visualPrefab, byte[] tag);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int RegisterWaterSDFClipDelegate(UIntPtr entityId, UIntPtr textureID);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void RelaxLocalBoundingBoxDelegate(UIntPtr entityId, in BoundingBox boundingBox);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -693,6 +995,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void RemoveJointDelegate(UIntPtr jointId, UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool RemoveMultiMeshDelegate(UIntPtr entityId, UIntPtr multiMeshPtr);
 
@@ -724,6 +1031,16 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void ResetHullWaterDelegate(UIntPtr visualPrefab);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void ResumeParticleSystemDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool doChildren);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -735,6 +1052,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetAlphaDelegate(UIntPtr entityId, float alpha);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetAngularVelocityDelegate(UIntPtr entityPtr, in Vec3 newAngularVelocity);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -779,7 +1101,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetBoneFrameToAllMeshesDelegate(UIntPtr entityPtr, int boneIndex, in MatrixFrame frame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetBoundingboxDirtyDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetCenterOfMassDelegate(UIntPtr entityId, ref Vec3 localCenterOfMass);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -799,7 +1131,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetColorToAllMeshesWithTagRecursiveDelegate(UIntPtr gameEntity, uint color, byte[] tag);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetContourStateDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool alwaysVisible);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetCostAdderForAttachedFacesDelegate(UIntPtr entityId, float cost);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -809,7 +1151,22 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetCustomClipPlaneDelegate(UIntPtr entityId, Vec3 position, Vec3 normal, [MarshalAs(UnmanagedType.U1)] bool setForChildren);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetCustomVertexPositionEnabledDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool customVertexPositionEnabled);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetDampingDelegate(UIntPtr entityId, float linearDamping, float angularDamping);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetDoNotCheckVisibilityDelegate(UIntPtr entityPtr, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -824,12 +1181,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetEntityFlagsDelegate(UIntPtr entityId, uint entityFlags);
+	public delegate void SetEntityFlagsDelegate(UIntPtr entityId, EntityFlags entityFlags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetEntityVisibilityFlagsDelegate(UIntPtr entityId, uint entityVisibilityFlags);
+	public delegate void SetEntityVisibilityFlagsDelegate(UIntPtr entityId, EntityVisibilityFlags entityVisibilityFlags);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -849,7 +1206,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetFrameDelegate(UIntPtr entityId, ref MatrixFrame frame);
+	public delegate void SetForceDecalsToRenderDelegate(UIntPtr entityPtr, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetForceNotAffectedBySeasonDelegate(UIntPtr entityPtr, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -859,7 +1221,27 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetGlobalFrameDelegate(UIntPtr entityId, in MatrixFrame frame);
+	public delegate void SetGlobalFrameDelegate(UIntPtr entityId, in MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool isTeleportation);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetGlobalPositionDelegate(UIntPtr entityId, in Vec3 position);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetHasCustomBoundingBoxValidationSystemDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool hasCustomBoundingBox);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetLinearVelocityDelegate(UIntPtr entityPtr, Vec3 newLinearVelocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetLocalFrameDelegate(UIntPtr entityId, ref MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool isTeleportation);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -869,7 +1251,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetMassDelegate(UIntPtr entityId, float mass);
+	public delegate void SetManualGlobalBoundingBoxDelegate(UIntPtr entityId, Vec3 boundingBoxStartGlobal, Vec3 boundingBoxEndGlobal);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetManualLocalBoundingBoxDelegate(UIntPtr entityId, in BoundingBox boundingBox);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetMassAndUpdateInertiaAndCenterOfMassDelegate(UIntPtr entityId, float mass);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -884,7 +1276,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetMobilityDelegate(UIntPtr entityId, int mobility);
+	public delegate void SetMaxDepenetrationVelocityDelegate(UIntPtr entityId, float maxDepenetrationVelocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetMobilityDelegate(UIntPtr entityId, GameEntity.Mobility mobility);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -899,7 +1296,27 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetNativeScriptComponentVariableDelegate(UIntPtr entityPtr, byte[] className, byte[] fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPhysicsMoveToBatchedDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetPhysicsStateDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool isEnabled, [MarshalAs(UnmanagedType.U1)] bool setChildren);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPhysicsStateOnlyVariableDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool isEnabled, [MarshalAs(UnmanagedType.U1)] bool setChildren);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetPositionsForAttachedNavmeshVerticesDelegate(UIntPtr entityId, IntPtr indices, int indexCount, IntPtr positions);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -924,6 +1341,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetSolverIterationCountsDelegate(UIntPtr entityId, int positionIterationCount, int velocityIterationCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetupAdditionalBoneBufferForMeshesDelegate(UIntPtr entityPtr, int boneCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetUpdateValidityOnFrameChangedOfFacesWithIdDelegate(UIntPtr entityId, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool updateValidity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetUpgradeLevelMaskDelegate(UIntPtr prefab, uint mask);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -934,12 +1366,47 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetVelocityLimitsDelegate(UIntPtr entityId, float maxLinearVelocity, float maxAngularVelocity);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetVisibilityExcludeParentsDelegate(UIntPtr entityId, [MarshalAs(UnmanagedType.U1)] bool visibility);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetVisualRecordWakeParamsDelegate(UIntPtr visualRecord, in Vec3 wakeParams);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWaterSDFClipDataDelegate(UIntPtr entityId, int slotIndex, in MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool visibility);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWaterVisualRecordFrameAndDtDelegate(UIntPtr entityPointer, UIntPtr visualPrefab, in MatrixFrame frame, float dt);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SwapPhysxShapeInEntityDelegate(UIntPtr entityPtr, UIntPtr oldShape, UIntPtr newShape, [MarshalAs(UnmanagedType.U1)] bool isVariable);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void UpdateAttachedNavigationMeshFacesDelegate(UIntPtr entityId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void UpdateGlobalBoundsDelegate(UIntPtr entityPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void UpdateHullWaterEffectFramesDelegate(UIntPtr entityPointer, UIntPtr visualPrefab);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -962,11 +1429,15 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static AddAllMeshesOfGameEntityDelegate call_AddAllMeshesOfGameEntityDelegate;
 
+	public static AddCapsuleAsBodyDelegate call_AddCapsuleAsBodyDelegate;
+
 	public static AddChildDelegate call_AddChildDelegate;
 
 	public static AddComponentDelegate call_AddComponentDelegate;
 
 	public static AddDistanceJointDelegate call_AddDistanceJointDelegate;
+
+	public static AddDistanceJointWithFramesDelegate call_AddDistanceJointWithFramesDelegate;
 
 	public static AddEditDataUserToAllMeshesDelegate call_AddEditDataUserToAllMeshesDelegate;
 
@@ -988,15 +1459,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static AddSphereAsBodyDelegate call_AddSphereAsBodyDelegate;
 
+	public static AddSplashPositionToWaterVisualRecordDelegate call_AddSplashPositionToWaterVisualRecordDelegate;
+
 	public static AddTagDelegate call_AddTagDelegate;
 
 	public static ApplyAccelerationToDynamicBodyDelegate call_ApplyAccelerationToDynamicBodyDelegate;
 
 	public static ApplyForceToDynamicBodyDelegate call_ApplyForceToDynamicBodyDelegate;
 
-	public static ApplyLocalForceToDynamicBodyDelegate call_ApplyLocalForceToDynamicBodyDelegate;
+	public static ApplyGlobalForceAtLocalPosToDynamicBodyDelegate call_ApplyGlobalForceAtLocalPosToDynamicBodyDelegate;
+
+	public static ApplyLocalForceAtLocalPosToDynamicBodyDelegate call_ApplyLocalForceAtLocalPosToDynamicBodyDelegate;
 
 	public static ApplyLocalImpulseToDynamicBodyDelegate call_ApplyLocalImpulseToDynamicBodyDelegate;
+
+	public static ApplyTorqueToDynamicBodyDelegate call_ApplyTorqueToDynamicBodyDelegate;
 
 	public static AttachNavigationMeshFacesDelegate call_AttachNavigationMeshFacesDelegate;
 
@@ -1007,6 +1484,10 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public static CallScriptCallbacksDelegate call_CallScriptCallbacksDelegate;
 
 	public static ChangeMetaMeshOrRemoveItIfNotExistsDelegate call_ChangeMetaMeshOrRemoveItIfNotExistsDelegate;
+
+	public static ChangeResolutionMultiplierOfWaterVisualDelegate call_ChangeResolutionMultiplierOfWaterVisualDelegate;
+
+	public static CheckIsPrefabLinkRootPrefabDelegate call_CheckIsPrefabLinkRootPrefabDelegate;
 
 	public static CheckPointWithOrientedBoundingBoxDelegate call_CheckPointWithOrientedBoundingBoxDelegate;
 
@@ -1020,6 +1501,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static ComputeTrajectoryVolumeDelegate call_ComputeTrajectoryVolumeDelegate;
 
+	public static ComputeVelocityDeltaFromImpulseDelegate call_ComputeVelocityDeltaFromImpulseDelegate;
+
+	public static ConvertDynamicBodyToRayCastDelegate call_ConvertDynamicBodyToRayCastDelegate;
+
+	public static CookTrianglePhysxMeshDelegate call_CookTrianglePhysxMeshDelegate;
+
 	public static CopyComponentsToSkeletonDelegate call_CopyComponentsToSkeletonDelegate;
 
 	public static CopyFromPrefabDelegate call_CopyFromPrefabDelegate;
@@ -1030,13 +1517,29 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static CreateEmptyDelegate call_CreateEmptyDelegate;
 
+	public static CreateEmptyPhysxShapeDelegate call_CreateEmptyPhysxShapeDelegate;
+
 	public static CreateEmptyWithoutSceneDelegate call_CreateEmptyWithoutSceneDelegate;
 
 	public static CreateFromPrefabDelegate call_CreateFromPrefabDelegate;
 
 	public static CreateFromPrefabWithInitialFrameDelegate call_CreateFromPrefabWithInitialFrameDelegate;
 
+	public static CreatePhysxCookingInstanceDelegate call_CreatePhysxCookingInstanceDelegate;
+
+	public static CreateVariableRatePhysicsDelegate call_CreateVariableRatePhysicsDelegate;
+
+	public static DeleteEmptyShapeDelegate call_DeleteEmptyShapeDelegate;
+
+	public static DeletePhysxCookingInstanceDelegate call_DeletePhysxCookingInstanceDelegate;
+
+	public static DeRegisterWaterMeshMaterialsDelegate call_DeRegisterWaterMeshMaterialsDelegate;
+
+	public static DeRegisterWaterSDFClipDelegate call_DeRegisterWaterSDFClipDelegate;
+
 	public static DeselectEntityOnEditorDelegate call_DeselectEntityOnEditorDelegate;
+
+	public static DetachAllAttachedNavigationMeshFacesDelegate call_DetachAllAttachedNavigationMeshFacesDelegate;
 
 	public static DisableContourDelegate call_DisableContourDelegate;
 
@@ -1050,9 +1553,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static FreezeDelegate call_FreezeDelegate;
 
+	public static GetAngularVelocityDelegate call_GetAngularVelocityDelegate;
+
+	public static GetAttachedNavmeshFaceCountDelegate call_GetAttachedNavmeshFaceCountDelegate;
+
+	public static GetAttachedNavmeshFaceRecordsDelegate call_GetAttachedNavmeshFaceRecordsDelegate;
+
+	public static GetAttachedNavmeshFaceVertexIndicesDelegate call_GetAttachedNavmeshFaceVertexIndicesDelegate;
+
 	public static GetBodyFlagsDelegate call_GetBodyFlagsDelegate;
 
 	public static GetBodyShapeDelegate call_GetBodyShapeDelegate;
+
+	public static GetBodyVisualWorldTransformDelegate call_GetBodyVisualWorldTransformDelegate;
+
+	public static GetBodyWorldTransformDelegate call_GetBodyWorldTransformDelegate;
 
 	public static GetBoneCountDelegate call_GetBoneCountDelegate;
 
@@ -1072,6 +1587,8 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static GetChildCountDelegate call_GetChildCountDelegate;
 
+	public static GetChildPointerDelegate call_GetChildPointerDelegate;
+
 	public static GetComponentAtIndexDelegate call_GetComponentAtIndexDelegate;
 
 	public static GetComponentCountDelegate call_GetComponentCountDelegate;
@@ -1084,13 +1601,15 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static GetFactorColorDelegate call_GetFactorColorDelegate;
 
+	public static GetFirstChildWithTagRecursiveDelegate call_GetFirstChildWithTagRecursiveDelegate;
+
 	public static GetFirstEntityWithTagDelegate call_GetFirstEntityWithTagDelegate;
 
 	public static GetFirstEntityWithTagExpressionDelegate call_GetFirstEntityWithTagExpressionDelegate;
 
 	public static GetFirstMeshDelegate call_GetFirstMeshDelegate;
 
-	public static GetFrameDelegate call_GetFrameDelegate;
+	public static GetGlobalBoundingBoxDelegate call_GetGlobalBoundingBoxDelegate;
 
 	public static GetGlobalBoxMaxDelegate call_GetGlobalBoxMaxDelegate;
 
@@ -1098,21 +1617,45 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static GetGlobalFrameDelegate call_GetGlobalFrameDelegate;
 
+	public static GetGlobalFrameImpreciseForFixedTickDelegate call_GetGlobalFrameImpreciseForFixedTickDelegate;
+
 	public static GetGlobalScaleDelegate call_GetGlobalScaleDelegate;
 
+	public static GetGlobalWindStrengthVectorOfSceneDelegate call_GetGlobalWindStrengthVectorOfSceneDelegate;
+
+	public static GetGlobalWindVelocityOfSceneDelegate call_GetGlobalWindVelocityOfSceneDelegate;
+
+	public static GetGlobalWindVelocityWithGustNoiseOfSceneDelegate call_GetGlobalWindVelocityWithGustNoiseOfSceneDelegate;
+
 	public static GetGuidDelegate call_GetGuidDelegate;
+
+	public static GetLastFinalRenderCameraPositionOfSceneDelegate call_GetLastFinalRenderCameraPositionOfSceneDelegate;
 
 	public static GetLightDelegate call_GetLightDelegate;
 
 	public static GetLinearVelocityDelegate call_GetLinearVelocityDelegate;
 
+	public static GetLocalBoundingBoxDelegate call_GetLocalBoundingBoxDelegate;
+
+	public static GetLocalFrameDelegate call_GetLocalFrameDelegate;
+
+	public static GetLocalPhysicsBoundingBoxDelegate call_GetLocalPhysicsBoundingBoxDelegate;
+
 	public static GetLodLevelForDistanceSqDelegate call_GetLodLevelForDistanceSqDelegate;
 
 	public static GetMassDelegate call_GetMassDelegate;
 
+	public static GetMassSpaceInertiaDelegate call_GetMassSpaceInertiaDelegate;
+
+	public static GetMassSpaceInverseInertiaDelegate call_GetMassSpaceInverseInertiaDelegate;
+
 	public static GetMeshBendedPositionDelegate call_GetMeshBendedPositionDelegate;
 
+	public static GetMobilityDelegate call_GetMobilityDelegate;
+
 	public static GetNameDelegate call_GetNameDelegate;
+
+	public static GetNativeScriptComponentVariableDelegate call_GetNativeScriptComponentVariableDelegate;
 
 	public static GetNextEntityWithTagDelegate call_GetNextEntityWithTagDelegate;
 
@@ -1124,15 +1667,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static GetParentDelegate call_GetParentDelegate;
 
-	public static GetPhysicsBoundingBoxMaxDelegate call_GetPhysicsBoundingBoxMaxDelegate;
-
-	public static GetPhysicsBoundingBoxMinDelegate call_GetPhysicsBoundingBoxMinDelegate;
+	public static GetParentPointerDelegate call_GetParentPointerDelegate;
 
 	public static GetPhysicsDescBodyFlagsDelegate call_GetPhysicsDescBodyFlagsDelegate;
+
+	public static GetPhysicsMaterialIndexDelegate call_GetPhysicsMaterialIndexDelegate;
 
 	public static GetPhysicsMinMaxDelegate call_GetPhysicsMinMaxDelegate;
 
 	public static GetPhysicsStateDelegate call_GetPhysicsStateDelegate;
+
+	public static GetPhysicsTriangleCountDelegate call_GetPhysicsTriangleCountDelegate;
 
 	public static GetPrefabNameDelegate call_GetPrefabNameDelegate;
 
@@ -1141,6 +1686,8 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public static GetQuickBoneEntitialFrameDelegate call_GetQuickBoneEntitialFrameDelegate;
 
 	public static GetRadiusDelegate call_GetRadiusDelegate;
+
+	public static GetRootParentPointerDelegate call_GetRootParentPointerDelegate;
 
 	public static GetSceneDelegate call_GetSceneDelegate;
 
@@ -1151,6 +1698,8 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public static GetScriptComponentAtIndexDelegate call_GetScriptComponentAtIndexDelegate;
 
 	public static GetScriptComponentCountDelegate call_GetScriptComponentCountDelegate;
+
+	public static GetScriptComponentIndexDelegate call_GetScriptComponentIndexDelegate;
 
 	public static GetSkeletonDelegate call_GetSkeletonDelegate;
 
@@ -1164,13 +1713,25 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static GetVisibilityLevelMaskIncludingParentsDelegate call_GetVisibilityLevelMaskIncludingParentsDelegate;
 
+	public static GetWaterLevelAtPositionDelegate call_GetWaterLevelAtPositionDelegate;
+
+	public static HasBatchedKinematicPhysicsFlagDelegate call_HasBatchedKinematicPhysicsFlagDelegate;
+
+	public static HasBatchedRayCastPhysicsFlagDelegate call_HasBatchedRayCastPhysicsFlagDelegate;
+
 	public static HasBodyDelegate call_HasBodyDelegate;
 
 	public static HasComplexAnimTreeDelegate call_HasComplexAnimTreeDelegate;
 
 	public static HasComponentDelegate call_HasComponentDelegate;
 
+	public static HasDynamicRigidBodyDelegate call_HasDynamicRigidBodyDelegate;
+
+	public static HasDynamicRigidBodyAndActiveSimulationDelegate call_HasDynamicRigidBodyAndActiveSimulationDelegate;
+
 	public static HasFrameChangedDelegate call_HasFrameChangedDelegate;
+
+	public static HasKinematicRigidBodyDelegate call_HasKinematicRigidBodyDelegate;
 
 	public static HasPhysicsBodyDelegate call_HasPhysicsBodyDelegate;
 
@@ -1179,6 +1740,10 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public static HasSceneDelegate call_HasSceneDelegate;
 
 	public static HasScriptComponentDelegate call_HasScriptComponentDelegate;
+
+	public static HasScriptComponentHashDelegate call_HasScriptComponentHashDelegate;
+
+	public static HasStaticPhysicsBodyDelegate call_HasStaticPhysicsBodyDelegate;
 
 	public static HasTagDelegate call_HasTagDelegate;
 
@@ -1192,15 +1757,33 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static IsGhostObjectDelegate call_IsGhostObjectDelegate;
 
+	public static IsGravityDisabledDelegate call_IsGravityDisabledDelegate;
+
 	public static IsGuidValidDelegate call_IsGuidValidDelegate;
+
+	public static IsInEditorSceneDelegate call_IsInEditorSceneDelegate;
 
 	public static IsVisibleIncludeParentsDelegate call_IsVisibleIncludeParentsDelegate;
 
 	public static PauseParticleSystemDelegate call_PauseParticleSystemDelegate;
 
+	public static PopCapsuleShapeFromEntityBodyDelegate call_PopCapsuleShapeFromEntityBodyDelegate;
+
 	public static PrefabExistsDelegate call_PrefabExistsDelegate;
 
+	public static PushCapsuleShapeToEntityBodyDelegate call_PushCapsuleShapeToEntityBodyDelegate;
+
+	public static RayHitEntityDelegate call_RayHitEntityDelegate;
+
+	public static RayHitEntityWithNormalDelegate call_RayHitEntityWithNormalDelegate;
+
 	public static RecomputeBoundingBoxDelegate call_RecomputeBoundingBoxDelegate;
+
+	public static RefreshMeshesToRenderToHullWaterDelegate call_RefreshMeshesToRenderToHullWaterDelegate;
+
+	public static RegisterWaterSDFClipDelegate call_RegisterWaterSDFClipDelegate;
+
+	public static RelaxLocalBoundingBoxDelegate call_RelaxLocalBoundingBoxDelegate;
 
 	public static ReleaseEditDataUserToAllMeshesDelegate call_ReleaseEditDataUserToAllMeshesDelegate;
 
@@ -1220,6 +1803,8 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static RemoveFromPredisplayEntityDelegate call_RemoveFromPredisplayEntityDelegate;
 
+	public static RemoveJointDelegate call_RemoveJointDelegate;
+
 	public static RemoveMultiMeshDelegate call_RemoveMultiMeshDelegate;
 
 	public static RemoveMultiMeshFromSkeletonDelegate call_RemoveMultiMeshFromSkeletonDelegate;
@@ -1232,11 +1817,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static RemoveTagDelegate call_RemoveTagDelegate;
 
+	public static ReplacePhysicsBodyWithQuadPhysicsBodyDelegate call_ReplacePhysicsBodyWithQuadPhysicsBodyDelegate;
+
+	public static ResetHullWaterDelegate call_ResetHullWaterDelegate;
+
 	public static ResumeParticleSystemDelegate call_ResumeParticleSystemDelegate;
 
 	public static SelectEntityOnEditorDelegate call_SelectEntityOnEditorDelegate;
 
 	public static SetAlphaDelegate call_SetAlphaDelegate;
+
+	public static SetAngularVelocityDelegate call_SetAngularVelocityDelegate;
 
 	public static SetAnimationSoundActivationDelegate call_SetAnimationSoundActivationDelegate;
 
@@ -1254,7 +1845,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static SetBodyShapeDelegate call_SetBodyShapeDelegate;
 
+	public static SetBoneFrameToAllMeshesDelegate call_SetBoneFrameToAllMeshesDelegate;
+
 	public static SetBoundingboxDirtyDelegate call_SetBoundingboxDirtyDelegate;
+
+	public static SetCenterOfMassDelegate call_SetCenterOfMassDelegate;
 
 	public static SetClothComponentKeepStateDelegate call_SetClothComponentKeepStateDelegate;
 
@@ -1262,11 +1857,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static SetClothMaxDistanceMultiplierDelegate call_SetClothMaxDistanceMultiplierDelegate;
 
+	public static SetColorToAllMeshesWithTagRecursiveDelegate call_SetColorToAllMeshesWithTagRecursiveDelegate;
+
 	public static SetContourStateDelegate call_SetContourStateDelegate;
+
+	public static SetCostAdderForAttachedFacesDelegate call_SetCostAdderForAttachedFacesDelegate;
 
 	public static SetCullModeDelegate call_SetCullModeDelegate;
 
+	public static SetCustomClipPlaneDelegate call_SetCustomClipPlaneDelegate;
+
+	public static SetCustomVertexPositionEnabledDelegate call_SetCustomVertexPositionEnabledDelegate;
+
 	public static SetDampingDelegate call_SetDampingDelegate;
+
+	public static SetDoNotCheckVisibilityDelegate call_SetDoNotCheckVisibilityDelegate;
 
 	public static SetEnforcedMaximumLodLevelDelegate call_SetEnforcedMaximumLodLevelDelegate;
 
@@ -1282,19 +1887,35 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static SetFactorColorDelegate call_SetFactorColorDelegate;
 
-	public static SetFrameDelegate call_SetFrameDelegate;
+	public static SetForceDecalsToRenderDelegate call_SetForceDecalsToRenderDelegate;
+
+	public static SetForceNotAffectedBySeasonDelegate call_SetForceNotAffectedBySeasonDelegate;
 
 	public static SetFrameChangedDelegate call_SetFrameChangedDelegate;
 
 	public static SetGlobalFrameDelegate call_SetGlobalFrameDelegate;
 
+	public static SetGlobalPositionDelegate call_SetGlobalPositionDelegate;
+
+	public static SetHasCustomBoundingBoxValidationSystemDelegate call_SetHasCustomBoundingBoxValidationSystemDelegate;
+
+	public static SetLinearVelocityDelegate call_SetLinearVelocityDelegate;
+
+	public static SetLocalFrameDelegate call_SetLocalFrameDelegate;
+
 	public static SetLocalPositionDelegate call_SetLocalPositionDelegate;
 
-	public static SetMassDelegate call_SetMassDelegate;
+	public static SetManualGlobalBoundingBoxDelegate call_SetManualGlobalBoundingBoxDelegate;
+
+	public static SetManualLocalBoundingBoxDelegate call_SetManualLocalBoundingBoxDelegate;
+
+	public static SetMassAndUpdateInertiaAndCenterOfMassDelegate call_SetMassAndUpdateInertiaAndCenterOfMassDelegate;
 
 	public static SetMassSpaceInertiaDelegate call_SetMassSpaceInertiaDelegate;
 
 	public static SetMaterialForAllMeshesDelegate call_SetMaterialForAllMeshesDelegate;
+
+	public static SetMaxDepenetrationVelocityDelegate call_SetMaxDepenetrationVelocityDelegate;
 
 	public static SetMobilityDelegate call_SetMobilityDelegate;
 
@@ -1302,7 +1923,15 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static SetNameDelegate call_SetNameDelegate;
 
+	public static SetNativeScriptComponentVariableDelegate call_SetNativeScriptComponentVariableDelegate;
+
+	public static SetPhysicsMoveToBatchedDelegate call_SetPhysicsMoveToBatchedDelegate;
+
 	public static SetPhysicsStateDelegate call_SetPhysicsStateDelegate;
+
+	public static SetPhysicsStateOnlyVariableDelegate call_SetPhysicsStateOnlyVariableDelegate;
+
+	public static SetPositionsForAttachedNavmeshVerticesDelegate call_SetPositionsForAttachedNavmeshVerticesDelegate;
 
 	public static SetPreviousFrameInvalidDelegate call_SetPreviousFrameInvalidDelegate;
 
@@ -1312,13 +1941,33 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static SetSkeletonDelegate call_SetSkeletonDelegate;
 
+	public static SetSolverIterationCountsDelegate call_SetSolverIterationCountsDelegate;
+
+	public static SetupAdditionalBoneBufferForMeshesDelegate call_SetupAdditionalBoneBufferForMeshesDelegate;
+
+	public static SetUpdateValidityOnFrameChangedOfFacesWithIdDelegate call_SetUpdateValidityOnFrameChangedOfFacesWithIdDelegate;
+
 	public static SetUpgradeLevelMaskDelegate call_SetUpgradeLevelMaskDelegate;
 
 	public static SetVectorArgumentDelegate call_SetVectorArgumentDelegate;
 
+	public static SetVelocityLimitsDelegate call_SetVelocityLimitsDelegate;
+
 	public static SetVisibilityExcludeParentsDelegate call_SetVisibilityExcludeParentsDelegate;
 
+	public static SetVisualRecordWakeParamsDelegate call_SetVisualRecordWakeParamsDelegate;
+
+	public static SetWaterSDFClipDataDelegate call_SetWaterSDFClipDataDelegate;
+
+	public static SetWaterVisualRecordFrameAndDtDelegate call_SetWaterVisualRecordFrameAndDtDelegate;
+
+	public static SwapPhysxShapeInEntityDelegate call_SwapPhysxShapeInEntityDelegate;
+
+	public static UpdateAttachedNavigationMeshFacesDelegate call_UpdateAttachedNavigationMeshFacesDelegate;
+
 	public static UpdateGlobalBoundsDelegate call_UpdateGlobalBoundsDelegate;
+
+	public static UpdateHullWaterEffectFramesDelegate call_UpdateHullWaterEffectFramesDelegate;
 
 	public static UpdateTriadFrameForEditorDelegate call_UpdateTriadFrameForEditorDelegate;
 
@@ -1336,6 +1985,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_AddAllMeshesOfGameEntityDelegate(entityId, copiedEntityId);
 	}
 
+	public void AddCapsuleAsBody(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, uint bodyFlags, string physicsMaterialName)
+	{
+		byte[] array = null;
+		if (physicsMaterialName != null)
+		{
+			int byteCount = _utf8.GetByteCount(physicsMaterialName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(physicsMaterialName, 0, physicsMaterialName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_AddCapsuleAsBodyDelegate(entityId, p1, p2, radius, bodyFlags, array);
+	}
+
 	public void AddChild(UIntPtr parententity, UIntPtr childentity, bool autoLocalizeFrame)
 	{
 		call_AddChildDelegate(parententity, childentity, autoLocalizeFrame);
@@ -1346,9 +2008,14 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_AddComponentDelegate(pointer, componentPointer);
 	}
 
-	public void AddDistanceJoint(UIntPtr entityId, UIntPtr otherEntityId, float minDistance, float maxDistance)
+	public UIntPtr AddDistanceJoint(UIntPtr entityId, UIntPtr otherEntityId, float minDistance, float maxDistance)
 	{
-		call_AddDistanceJointDelegate(entityId, otherEntityId, minDistance, maxDistance);
+		return call_AddDistanceJointDelegate(entityId, otherEntityId, minDistance, maxDistance);
+	}
+
+	public UIntPtr AddDistanceJointWithFrames(UIntPtr entityId, UIntPtr otherEntityId, MatrixFrame globalFrameOnA, MatrixFrame globalFrameOnB, float minDistance, float maxDistance)
+	{
+		return call_AddDistanceJointWithFramesDelegate(entityId, otherEntityId, globalFrameOnA, globalFrameOnB, minDistance, maxDistance);
 	}
 
 	public void AddEditDataUserToAllMeshes(UIntPtr entityId, bool entity_components, bool skeleton_components)
@@ -1399,14 +2066,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_AddParticleSystemComponentDelegate(entityId, array);
 	}
 
-	public void AddPhysics(UIntPtr entityId, UIntPtr body, float mass, ref Vec3 localCenterOfMass, ref Vec3 initialVelocity, ref Vec3 initialAngularVelocity, int physicsMaterial, bool isStatic, int collisionGroupID)
+	public void AddPhysics(UIntPtr entityId, UIntPtr body, float mass, ref Vec3 localCenterOfMass, ref Vec3 initialGlobalVelocity, ref Vec3 initialAngularGlobalVelocity, int physicsMaterial, bool isStatic, int collisionGroupID)
 	{
-		call_AddPhysicsDelegate(entityId, body, mass, ref localCenterOfMass, ref initialVelocity, ref initialAngularVelocity, physicsMaterial, isStatic, collisionGroupID);
+		call_AddPhysicsDelegate(entityId, body, mass, ref localCenterOfMass, ref initialGlobalVelocity, ref initialAngularGlobalVelocity, physicsMaterial, isStatic, collisionGroupID);
 	}
 
 	public void AddSphereAsBody(UIntPtr entityId, Vec3 center, float radius, uint bodyFlags)
 	{
 		call_AddSphereAsBodyDelegate(entityId, center, radius, bodyFlags);
+	}
+
+	public void AddSplashPositionToWaterVisualRecord(UIntPtr entityPointer, UIntPtr visualPrefab, in Vec3 position)
+	{
+		call_AddSplashPositionToWaterVisualRecordDelegate(entityPointer, visualPrefab, in position);
 	}
 
 	public void AddTag(UIntPtr entityId, string tag)
@@ -1427,14 +2099,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_ApplyAccelerationToDynamicBodyDelegate(entityId, ref acceleration);
 	}
 
-	public void ApplyForceToDynamicBody(UIntPtr entityId, ref Vec3 force)
+	public void ApplyForceToDynamicBody(UIntPtr entityId, ref Vec3 force, GameEntityPhysicsExtensions.ForceMode forceMode)
 	{
-		call_ApplyForceToDynamicBodyDelegate(entityId, ref force);
+		call_ApplyForceToDynamicBodyDelegate(entityId, ref force, forceMode);
 	}
 
-	public void ApplyLocalForceToDynamicBody(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 force)
+	public void ApplyGlobalForceAtLocalPosToDynamicBody(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 globalForce, GameEntityPhysicsExtensions.ForceMode forceMode)
 	{
-		call_ApplyLocalForceToDynamicBodyDelegate(entityId, ref localPosition, ref force);
+		call_ApplyGlobalForceAtLocalPosToDynamicBodyDelegate(entityId, ref localPosition, ref globalForce, forceMode);
+	}
+
+	public void ApplyLocalForceAtLocalPosToDynamicBody(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 localForce, GameEntityPhysicsExtensions.ForceMode forceMode)
+	{
+		call_ApplyLocalForceAtLocalPosToDynamicBodyDelegate(entityId, ref localPosition, ref localForce, forceMode);
 	}
 
 	public void ApplyLocalImpulseToDynamicBody(UIntPtr entityId, ref Vec3 localPosition, ref Vec3 impulse)
@@ -1442,9 +2119,14 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_ApplyLocalImpulseToDynamicBodyDelegate(entityId, ref localPosition, ref impulse);
 	}
 
-	public void AttachNavigationMeshFaces(UIntPtr entityId, int faceGroupId, bool isConnected, bool isBlocker, bool autoLocalize)
+	public void ApplyTorqueToDynamicBody(UIntPtr entityId, ref Vec3 torque, GameEntityPhysicsExtensions.ForceMode forceMode)
 	{
-		call_AttachNavigationMeshFacesDelegate(entityId, faceGroupId, isConnected, isBlocker, autoLocalize);
+		call_ApplyTorqueToDynamicBodyDelegate(entityId, ref torque, forceMode);
+	}
+
+	public void AttachNavigationMeshFaces(UIntPtr entityId, int faceGroupId, bool isConnected, bool isBlocker, bool autoLocalize, bool finalizeBlockerConvexHullComputation, bool updateEntityFrame)
+	{
+		call_AttachNavigationMeshFacesDelegate(entityId, faceGroupId, isConnected, isBlocker, autoLocalize, finalizeBlockerConvexHullComputation, updateEntityFrame);
 	}
 
 	public void BreakPrefab(UIntPtr entityId)
@@ -1457,14 +2139,24 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_BurstEntityParticleDelegate(entityId, doChildren);
 	}
 
-	public void CallScriptCallbacks(UIntPtr entityPointer)
+	public void CallScriptCallbacks(UIntPtr entityPointer, bool registerScriptComponents)
 	{
-		call_CallScriptCallbacksDelegate(entityPointer);
+		call_CallScriptCallbacksDelegate(entityPointer, registerScriptComponents);
 	}
 
 	public void ChangeMetaMeshOrRemoveItIfNotExists(UIntPtr entityId, UIntPtr entityMetaMeshPointer, UIntPtr newMetaMeshPointer)
 	{
 		call_ChangeMetaMeshOrRemoveItIfNotExistsDelegate(entityId, entityMetaMeshPointer, newMetaMeshPointer);
+	}
+
+	public void ChangeResolutionMultiplierOfWaterVisual(UIntPtr visualPrefab, float multiplier, in Vec3 waterEffectsBB)
+	{
+		call_ChangeResolutionMultiplierOfWaterVisualDelegate(visualPrefab, multiplier, in waterEffectsBB);
+	}
+
+	public bool CheckIsPrefabLinkRootPrefab(UIntPtr entityPtr, int depth)
+	{
+		return call_CheckIsPrefabLinkRootPrefabDelegate(entityPtr, depth);
 	}
 
 	public bool CheckPointWithOrientedBoundingBox(UIntPtr entityId, Vec3 point)
@@ -1497,6 +2189,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_ComputeTrajectoryVolumeDelegate(gameEntity, missileSpeed, verticalAngleMaxInDegrees, verticalAngleMinInDegrees, horizontalAngleRangeInDegrees, airFrictionConstant);
 	}
 
+	public void ComputeVelocityDeltaFromImpulse(UIntPtr entityPtr, in Vec3 impulsiveForce, in Vec3 impulsiveTorque, out Vec3 deltaLinearVelocity, out Vec3 deltaAngularVelocity)
+	{
+		call_ComputeVelocityDeltaFromImpulseDelegate(entityPtr, in impulsiveForce, in impulsiveTorque, out deltaLinearVelocity, out deltaAngularVelocity);
+	}
+
+	public void ConvertDynamicBodyToRayCast(UIntPtr entityId)
+	{
+		call_ConvertDynamicBodyToRayCastDelegate(entityId);
+	}
+
+	public void CookTrianglePhysxMesh(UIntPtr cookingInstancePointer, UIntPtr shapePointer, UIntPtr quadPinnedPointer, int physicsMaterial, int numberOfVertices, UIntPtr indicesPinnedPointer, int numberOfIndices)
+	{
+		call_CookTrianglePhysxMeshDelegate(cookingInstancePointer, shapePointer, quadPinnedPointer, physicsMaterial, numberOfVertices, indicesPinnedPointer, numberOfIndices);
+	}
+
 	public void CopyComponentsToSkeleton(UIntPtr entityId)
 	{
 		call_CopyComponentsToSkeletonDelegate(entityId);
@@ -1527,7 +2234,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_CopyScriptComponentFromAnotherEntityDelegate(prefab, other_prefab, array);
 	}
 
-	public void CreateAndAddScriptComponent(UIntPtr entityId, string name)
+	public void CreateAndAddScriptComponent(UIntPtr entityId, string name, bool callScriptCallbacks)
 	{
 		byte[] array = null;
 		if (name != null)
@@ -1537,12 +2244,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(name, 0, name.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		call_CreateAndAddScriptComponentDelegate(entityId, array);
+		call_CreateAndAddScriptComponentDelegate(entityId, array, callScriptCallbacks);
 	}
 
-	public GameEntity CreateEmpty(UIntPtr scenePointer, bool isModifiableFromEditor, UIntPtr entityId)
+	public GameEntity CreateEmpty(UIntPtr scenePointer, bool isModifiableFromEditor, UIntPtr entityId, bool createPhysics, bool callScriptCallbacks)
 	{
-		NativeObjectPointer nativeObjectPointer = call_CreateEmptyDelegate(scenePointer, isModifiableFromEditor, entityId);
+		NativeObjectPointer nativeObjectPointer = call_CreateEmptyDelegate(scenePointer, isModifiableFromEditor, entityId, createPhysics, callScriptCallbacks);
 		GameEntity result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -1550,6 +2257,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public UIntPtr CreateEmptyPhysxShape(UIntPtr entityPointer, bool isVariable, int physxMaterialIndex)
+	{
+		return call_CreateEmptyPhysxShapeDelegate(entityPointer, isVariable, physxMaterialIndex);
 	}
 
 	public GameEntity CreateEmptyWithoutScene()
@@ -1564,7 +2276,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return result;
 	}
 
-	public GameEntity CreateFromPrefab(UIntPtr scenePointer, string prefabid, bool callScriptCallbacks)
+	public GameEntity CreateFromPrefab(UIntPtr scenePointer, string prefabid, bool callScriptCallbacks, bool createPhysics, uint scriptInclusionHashTag)
 	{
 		byte[] array = null;
 		if (prefabid != null)
@@ -1574,7 +2286,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(prefabid, 0, prefabid.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabDelegate(scenePointer, array, callScriptCallbacks);
+		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabDelegate(scenePointer, array, callScriptCallbacks, createPhysics, scriptInclusionHashTag);
 		GameEntity result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -1584,7 +2296,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return result;
 	}
 
-	public GameEntity CreateFromPrefabWithInitialFrame(UIntPtr scenePointer, string prefabid, ref MatrixFrame frame)
+	public GameEntity CreateFromPrefabWithInitialFrame(UIntPtr scenePointer, string prefabid, ref MatrixFrame frame, bool callScriptCallbacks)
 	{
 		byte[] array = null;
 		if (prefabid != null)
@@ -1594,7 +2306,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(prefabid, 0, prefabid.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabWithInitialFrameDelegate(scenePointer, array, ref frame);
+		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabWithInitialFrameDelegate(scenePointer, array, ref frame, callScriptCallbacks);
 		GameEntity result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -1602,11 +2314,46 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public UIntPtr CreatePhysxCookingInstance()
+	{
+		return call_CreatePhysxCookingInstanceDelegate();
+	}
+
+	public void CreateVariableRatePhysics(UIntPtr entityId, bool forChildren)
+	{
+		call_CreateVariableRatePhysicsDelegate(entityId, forChildren);
+	}
+
+	public void DeleteEmptyShape(UIntPtr entity, UIntPtr shape1, UIntPtr shape2)
+	{
+		call_DeleteEmptyShapeDelegate(entity, shape1, shape2);
+	}
+
+	public void DeletePhysxCookingInstance(UIntPtr pointer)
+	{
+		call_DeletePhysxCookingInstanceDelegate(pointer);
+	}
+
+	public void DeRegisterWaterMeshMaterials(UIntPtr entityPointer, UIntPtr visualPrefab)
+	{
+		call_DeRegisterWaterMeshMaterialsDelegate(entityPointer, visualPrefab);
+	}
+
+	public void DeRegisterWaterSDFClip(UIntPtr entityId, int slot)
+	{
+		call_DeRegisterWaterSDFClipDelegate(entityId, slot);
 	}
 
 	public void DeselectEntityOnEditor(UIntPtr entityId)
 	{
 		call_DeselectEntityOnEditorDelegate(entityId);
+	}
+
+	public void DetachAllAttachedNavigationMeshFaces(UIntPtr entityId)
+	{
+		call_DetachAllAttachedNavigationMeshFacesDelegate(entityId);
 	}
 
 	public void DisableContour(UIntPtr entityId)
@@ -1654,15 +2401,40 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_FreezeDelegate(entityId, isFrozen);
 	}
 
+	public Vec3 GetAngularVelocity(UIntPtr entityPtr)
+	{
+		return call_GetAngularVelocityDelegate(entityPtr);
+	}
+
+	public int GetAttachedNavmeshFaceCount(UIntPtr entityId)
+	{
+		return call_GetAttachedNavmeshFaceCountDelegate(entityId);
+	}
+
+	public void GetAttachedNavmeshFaceRecords(UIntPtr entityId, PathFaceRecord[] faceRecords)
+	{
+		PinnedArrayData<PathFaceRecord> pinnedArrayData = new PinnedArrayData<PathFaceRecord>(faceRecords);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_GetAttachedNavmeshFaceRecordsDelegate(entityId, pointer);
+		pinnedArrayData.Dispose();
+	}
+
+	public void GetAttachedNavmeshFaceVertexIndices(UIntPtr entityId, in PathFaceRecord faceRecord, int[] indices)
+	{
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(indices);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		call_GetAttachedNavmeshFaceVertexIndicesDelegate(entityId, in faceRecord, pointer);
+		pinnedArrayData.Dispose();
+	}
+
 	public uint GetBodyFlags(UIntPtr entityId)
 	{
 		return call_GetBodyFlagsDelegate(entityId);
 	}
 
-	public PhysicsShape GetBodyShape(GameEntity entity)
+	public PhysicsShape GetBodyShape(UIntPtr entityId)
 	{
-		UIntPtr entity2 = ((entity != null) ? entity.Pointer : UIntPtr.Zero);
-		NativeObjectPointer nativeObjectPointer = call_GetBodyShapeDelegate(entity2);
+		NativeObjectPointer nativeObjectPointer = call_GetBodyShapeDelegate(entityId);
 		PhysicsShape result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -1670,6 +2442,16 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public void GetBodyVisualWorldTransform(UIntPtr entityPtr, out MatrixFrame frame)
+	{
+		call_GetBodyVisualWorldTransformDelegate(entityPtr, out frame);
+	}
+
+	public void GetBodyWorldTransform(UIntPtr entityPtr, out MatrixFrame frame)
+	{
+		call_GetBodyWorldTransformDelegate(entityPtr, out frame);
 	}
 
 	public sbyte GetBoneCount(UIntPtr entityId)
@@ -1732,6 +2514,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetChildCountDelegate(entityId);
 	}
 
+	public UIntPtr GetChildPointer(UIntPtr entityId, int childIndex)
+	{
+		return call_GetChildPointerDelegate(entityId, childIndex);
+	}
+
 	public GameEntityComponent GetComponentAtIndex(UIntPtr entityId, GameEntity.ComponentType componentType, int index)
 	{
 		NativeObjectPointer nativeObjectPointer = call_GetComponentAtIndexDelegate(entityId, componentType, index);
@@ -1753,12 +2540,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetEditModeLevelVisibilityDelegate(entityId);
 	}
 
-	public uint GetEntityFlags(UIntPtr entityId)
+	public EntityFlags GetEntityFlags(UIntPtr entityId)
 	{
 		return call_GetEntityFlagsDelegate(entityId);
 	}
 
-	public uint GetEntityVisibilityFlags(UIntPtr entityId)
+	public EntityVisibilityFlags GetEntityVisibilityFlags(UIntPtr entityId)
 	{
 		return call_GetEntityVisibilityFlagsDelegate(entityId);
 	}
@@ -1768,7 +2555,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetFactorColorDelegate(entityId);
 	}
 
-	public GameEntity GetFirstEntityWithTag(UIntPtr scenePointer, string tag)
+	public UIntPtr GetFirstChildWithTagRecursive(UIntPtr entityPtr, string tag)
 	{
 		byte[] array = null;
 		if (tag != null)
@@ -1778,17 +2565,23 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_GetFirstEntityWithTagDelegate(scenePointer, array);
-		GameEntity result = null;
-		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
-		{
-			result = new GameEntity(nativeObjectPointer.Pointer);
-			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
-		}
-		return result;
+		return call_GetFirstChildWithTagRecursiveDelegate(entityPtr, array);
 	}
 
-	public GameEntity GetFirstEntityWithTagExpression(UIntPtr scenePointer, string tagExpression)
+	public UIntPtr GetFirstEntityWithTag(UIntPtr scenePointer, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		return call_GetFirstEntityWithTagDelegate(scenePointer, array);
+	}
+
+	public UIntPtr GetFirstEntityWithTagExpression(UIntPtr scenePointer, string tagExpression)
 	{
 		byte[] array = null;
 		if (tagExpression != null)
@@ -1798,14 +2591,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(tagExpression, 0, tagExpression.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_GetFirstEntityWithTagExpressionDelegate(scenePointer, array);
-		GameEntity result = null;
-		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
-		{
-			result = new GameEntity(nativeObjectPointer.Pointer);
-			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
-		}
-		return result;
+		return call_GetFirstEntityWithTagExpressionDelegate(scenePointer, array);
 	}
 
 	public Mesh GetFirstMesh(UIntPtr entityId)
@@ -1820,9 +2606,9 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return result;
 	}
 
-	public void GetFrame(UIntPtr entityId, ref MatrixFrame outFrame)
+	public BoundingBox GetGlobalBoundingBox(UIntPtr entityId)
 	{
-		call_GetFrameDelegate(entityId, ref outFrame);
+		return call_GetGlobalBoundingBoxDelegate(entityId);
 	}
 
 	public Vec3 GetGlobalBoxMax(UIntPtr entityId)
@@ -1840,10 +2626,29 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_GetGlobalFrameDelegate(meshPointer, out outFrame);
 	}
 
-	public Vec3 GetGlobalScale(GameEntity entity)
+	public void GetGlobalFrameImpreciseForFixedTick(UIntPtr entityId, out MatrixFrame outFrame)
 	{
-		UIntPtr entity2 = ((entity != null) ? entity.Pointer : UIntPtr.Zero);
-		return call_GetGlobalScaleDelegate(entity2);
+		call_GetGlobalFrameImpreciseForFixedTickDelegate(entityId, out outFrame);
+	}
+
+	public Vec3 GetGlobalScale(UIntPtr pointer)
+	{
+		return call_GetGlobalScaleDelegate(pointer);
+	}
+
+	public Vec2 GetGlobalWindStrengthVectorOfScene(UIntPtr entityPtr)
+	{
+		return call_GetGlobalWindStrengthVectorOfSceneDelegate(entityPtr);
+	}
+
+	public Vec2 GetGlobalWindVelocityOfScene(UIntPtr entityPtr)
+	{
+		return call_GetGlobalWindVelocityOfSceneDelegate(entityPtr);
+	}
+
+	public Vec2 GetGlobalWindVelocityWithGustNoiseOfScene(UIntPtr entityPtr, float globalTime)
+	{
+		return call_GetGlobalWindVelocityWithGustNoiseOfSceneDelegate(entityPtr, globalTime);
 	}
 
 	public string GetGuid(UIntPtr entityId)
@@ -1853,6 +2658,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			return null;
 		}
 		return Managed.ReturnValueFromEngine;
+	}
+
+	public Vec3 GetLastFinalRenderCameraPositionOfScene(UIntPtr entityPtr)
+	{
+		return call_GetLastFinalRenderCameraPositionOfSceneDelegate(entityPtr);
 	}
 
 	public Light GetLight(UIntPtr entityId)
@@ -1872,6 +2682,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetLinearVelocityDelegate(entityPtr);
 	}
 
+	public BoundingBox GetLocalBoundingBox(UIntPtr entityId)
+	{
+		return call_GetLocalBoundingBoxDelegate(entityId);
+	}
+
+	public void GetLocalFrame(UIntPtr entityId, out MatrixFrame outFrame)
+	{
+		call_GetLocalFrameDelegate(entityId, out outFrame);
+	}
+
+	public void GetLocalPhysicsBoundingBox(UIntPtr entityId, bool includeChildren, out BoundingBox outBoundingBox)
+	{
+		call_GetLocalPhysicsBoundingBoxDelegate(entityId, includeChildren, out outBoundingBox);
+	}
+
 	public float GetLodLevelForDistanceSq(UIntPtr entityId, float distanceSquared)
 	{
 		return call_GetLodLevelForDistanceSqDelegate(entityId, distanceSquared);
@@ -1882,9 +2707,24 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetMassDelegate(entityId);
 	}
 
+	public Vec3 GetMassSpaceInertia(UIntPtr entityId)
+	{
+		return call_GetMassSpaceInertiaDelegate(entityId);
+	}
+
+	public Vec3 GetMassSpaceInverseInertia(UIntPtr entityId)
+	{
+		return call_GetMassSpaceInverseInertiaDelegate(entityId);
+	}
+
 	public void GetMeshBendedPosition(UIntPtr entityId, ref MatrixFrame worldSpacePosition, ref MatrixFrame output)
 	{
 		call_GetMeshBendedPositionDelegate(entityId, ref worldSpacePosition, ref output);
+	}
+
+	public GameEntity.Mobility GetMobility(UIntPtr entityId)
+	{
+		return call_GetMobilityDelegate(entityId);
 	}
 
 	public string GetName(UIntPtr entityId)
@@ -1896,7 +2736,28 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return Managed.ReturnValueFromEngine;
 	}
 
-	public GameEntity GetNextEntityWithTag(UIntPtr currententityId, string tag)
+	public void GetNativeScriptComponentVariable(UIntPtr entityPtr, string className, string fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType)
+	{
+		byte[] array = null;
+		if (className != null)
+		{
+			int byteCount = _utf8.GetByteCount(className);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(className, 0, className.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (fieldName != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(fieldName);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(fieldName, 0, fieldName.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		call_GetNativeScriptComponentVariableDelegate(entityPtr, array, array2, ref data, variableType);
+	}
+
+	public UIntPtr GetNextEntityWithTag(UIntPtr currententityId, string tag)
 	{
 		byte[] array = null;
 		if (tag != null)
@@ -1906,17 +2767,10 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_GetNextEntityWithTagDelegate(currententityId, array);
-		GameEntity result = null;
-		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
-		{
-			result = new GameEntity(nativeObjectPointer.Pointer);
-			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
-		}
-		return result;
+		return call_GetNextEntityWithTagDelegate(currententityId, array);
 	}
 
-	public GameEntity GetNextEntityWithTagExpression(UIntPtr currententityId, string tagExpression)
+	public UIntPtr GetNextEntityWithTagExpression(UIntPtr currententityId, string tagExpression)
 	{
 		byte[] array = null;
 		if (tagExpression != null)
@@ -1926,14 +2780,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			_utf8.GetBytes(tagExpression, 0, tagExpression.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_GetNextEntityWithTagExpressionDelegate(currententityId, array);
-		GameEntity result = null;
-		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
-		{
-			result = new GameEntity(nativeObjectPointer.Pointer);
-			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
-		}
-		return result;
+		return call_GetNextEntityWithTagExpressionDelegate(currententityId, array);
 	}
 
 	public GameEntity GetNextPrefab(UIntPtr currentPrefab)
@@ -1969,19 +2816,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return result;
 	}
 
-	public Vec3 GetPhysicsBoundingBoxMax(UIntPtr entityId)
+	public UIntPtr GetParentPointer(UIntPtr entityId)
 	{
-		return call_GetPhysicsBoundingBoxMaxDelegate(entityId);
-	}
-
-	public Vec3 GetPhysicsBoundingBoxMin(UIntPtr entityId)
-	{
-		return call_GetPhysicsBoundingBoxMinDelegate(entityId);
+		return call_GetParentPointerDelegate(entityId);
 	}
 
 	public uint GetPhysicsDescBodyFlags(UIntPtr entityId)
 	{
 		return call_GetPhysicsDescBodyFlagsDelegate(entityId);
+	}
+
+	public int GetPhysicsMaterialIndex(UIntPtr entityId)
+	{
+		return call_GetPhysicsMaterialIndexDelegate(entityId);
 	}
 
 	public void GetPhysicsMinMax(UIntPtr entityId, bool includeChildren, ref Vec3 bbmin, ref Vec3 bbmax, bool returnLocal)
@@ -1992,6 +2839,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public bool GetPhysicsState(UIntPtr entityId)
 	{
 		return call_GetPhysicsStateDelegate(entityId);
+	}
+
+	public int GetPhysicsTriangleCount(UIntPtr entityId)
+	{
+		return call_GetPhysicsTriangleCountDelegate(entityId);
 	}
 
 	public string GetPrefabName(UIntPtr prefab)
@@ -2008,14 +2860,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_GetPreviousGlobalFrameDelegate(entityPtr, out frame);
 	}
 
-	public void GetQuickBoneEntitialFrame(UIntPtr entityId, sbyte index, ref MatrixFrame frame)
+	public void GetQuickBoneEntitialFrame(UIntPtr entityId, sbyte index, out MatrixFrame frame)
 	{
-		call_GetQuickBoneEntitialFrameDelegate(entityId, index, ref frame);
+		call_GetQuickBoneEntitialFrameDelegate(entityId, index, out frame);
 	}
 
 	public float GetRadius(UIntPtr entityId)
 	{
 		return call_GetRadiusDelegate(entityId);
+	}
+
+	public UIntPtr GetRootParentPointer(UIntPtr entityId)
+	{
+		return call_GetRootParentPointerDelegate(entityId);
 	}
 
 	public Scene GetScene(UIntPtr entityId)
@@ -2048,6 +2905,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public int GetScriptComponentCount(UIntPtr entityId)
 	{
 		return call_GetScriptComponentCountDelegate(entityId);
+	}
+
+	public int GetScriptComponentIndex(UIntPtr entityId, uint nameHash)
+	{
+		return call_GetScriptComponentIndexDelegate(entityId, nameHash);
 	}
 
 	public Skeleton GetSkeleton(UIntPtr entityId)
@@ -2091,6 +2953,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_GetVisibilityLevelMaskIncludingParentsDelegate(entityId);
 	}
 
+	public float GetWaterLevelAtPosition(UIntPtr entityId, in Vec2 position, bool useWaterRenderer, bool checkWaterBodyEntities)
+	{
+		return call_GetWaterLevelAtPositionDelegate(entityId, in position, useWaterRenderer, checkWaterBodyEntities);
+	}
+
+	public bool HasBatchedKinematicPhysicsFlag(UIntPtr entityId)
+	{
+		return call_HasBatchedKinematicPhysicsFlagDelegate(entityId);
+	}
+
+	public bool HasBatchedRayCastPhysicsFlag(UIntPtr entityId)
+	{
+		return call_HasBatchedRayCastPhysicsFlagDelegate(entityId);
+	}
+
 	public bool HasBody(UIntPtr entityId)
 	{
 		return call_HasBodyDelegate(entityId);
@@ -2106,9 +2983,24 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_HasComponentDelegate(pointer, componentPointer);
 	}
 
+	public bool HasDynamicRigidBody(UIntPtr entityId)
+	{
+		return call_HasDynamicRigidBodyDelegate(entityId);
+	}
+
+	public bool HasDynamicRigidBodyAndActiveSimulation(UIntPtr entityId)
+	{
+		return call_HasDynamicRigidBodyAndActiveSimulationDelegate(entityId);
+	}
+
 	public bool HasFrameChanged(UIntPtr entityId)
 	{
 		return call_HasFrameChangedDelegate(entityId);
+	}
+
+	public bool HasKinematicRigidBody(UIntPtr entityId)
+	{
+		return call_HasKinematicRigidBodyDelegate(entityId);
 	}
 
 	public bool HasPhysicsBody(UIntPtr entityId)
@@ -2137,6 +3029,16 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 			array[byteCount] = 0;
 		}
 		return call_HasScriptComponentDelegate(entityId, array);
+	}
+
+	public bool HasScriptComponentHash(UIntPtr entityId, uint scNameHash)
+	{
+		return call_HasScriptComponentHashDelegate(entityId, scNameHash);
+	}
+
+	public bool HasStaticPhysicsBody(UIntPtr entityId)
+	{
+		return call_HasStaticPhysicsBodyDelegate(entityId);
 	}
 
 	public bool HasTag(UIntPtr entityId, string tag)
@@ -2177,9 +3079,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_IsGhostObjectDelegate(entityId);
 	}
 
+	public bool IsGravityDisabled(UIntPtr entityId)
+	{
+		return call_IsGravityDisabledDelegate(entityId);
+	}
+
 	public bool IsGuidValid(UIntPtr entityId)
 	{
 		return call_IsGuidValidDelegate(entityId);
+	}
+
+	public bool IsInEditorScene(UIntPtr pointer)
+	{
+		return call_IsInEditorSceneDelegate(pointer);
 	}
 
 	public bool IsVisibleIncludeParents(UIntPtr entityId)
@@ -2190,6 +3102,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public void PauseParticleSystem(UIntPtr entityId, bool doChildren)
 	{
 		call_PauseParticleSystemDelegate(entityId, doChildren);
+	}
+
+	public void PopCapsuleShapeFromEntityBody(UIntPtr entityId)
+	{
+		call_PopCapsuleShapeFromEntityBodyDelegate(entityId);
 	}
 
 	public bool PrefabExists(string prefabName)
@@ -2205,10 +3122,55 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return call_PrefabExistsDelegate(array);
 	}
 
-	public void RecomputeBoundingBox(GameEntity entity)
+	public void PushCapsuleShapeToEntityBody(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, string physicsMaterialName)
 	{
-		UIntPtr entity2 = ((entity != null) ? entity.Pointer : UIntPtr.Zero);
-		call_RecomputeBoundingBoxDelegate(entity2);
+		byte[] array = null;
+		if (physicsMaterialName != null)
+		{
+			int byteCount = _utf8.GetByteCount(physicsMaterialName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(physicsMaterialName, 0, physicsMaterialName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_PushCapsuleShapeToEntityBodyDelegate(entityId, p1, p2, radius, array);
+	}
+
+	public bool RayHitEntity(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref float resultLength)
+	{
+		return call_RayHitEntityDelegate(entityId, in rayOrigin, in rayDirection, maxLength, ref resultLength);
+	}
+
+	public bool RayHitEntityWithNormal(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref Vec3 resultNormal, ref float resultLength)
+	{
+		return call_RayHitEntityWithNormalDelegate(entityId, in rayOrigin, in rayDirection, maxLength, ref resultNormal, ref resultLength);
+	}
+
+	public void RecomputeBoundingBox(UIntPtr pointer)
+	{
+		call_RecomputeBoundingBoxDelegate(pointer);
+	}
+
+	public void RefreshMeshesToRenderToHullWater(UIntPtr entityPointer, UIntPtr visualPrefab, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_RefreshMeshesToRenderToHullWaterDelegate(entityPointer, visualPrefab, array);
+	}
+
+	public int RegisterWaterSDFClip(UIntPtr entityId, UIntPtr textureID)
+	{
+		return call_RegisterWaterSDFClipDelegate(entityId, textureID);
+	}
+
+	public void RelaxLocalBoundingBox(UIntPtr entityId, in BoundingBox boundingBox)
+	{
+		call_RelaxLocalBoundingBoxDelegate(entityId, in boundingBox);
 	}
 
 	public void ReleaseEditDataUserToAllMeshes(UIntPtr entityId, bool entity_components, bool skeleton_components)
@@ -2256,6 +3218,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_RemoveFromPredisplayEntityDelegate(entityId);
 	}
 
+	public void RemoveJoint(UIntPtr jointId, UIntPtr entityId)
+	{
+		call_RemoveJointDelegate(jointId, entityId);
+	}
+
 	public bool RemoveMultiMesh(UIntPtr entityId, UIntPtr multiMeshPtr)
 	{
 		return call_RemoveMultiMeshDelegate(entityId, multiMeshPtr);
@@ -2294,6 +3261,16 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_RemoveTagDelegate(entityId, array);
 	}
 
+	public void ReplacePhysicsBodyWithQuadPhysicsBody(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices)
+	{
+		call_ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(pointer, quad, physicsMaterial, bodyFlags, numberOfVertices, indices, numberOfIndices);
+	}
+
+	public void ResetHullWater(UIntPtr visualPrefab)
+	{
+		call_ResetHullWaterDelegate(visualPrefab);
+	}
+
 	public void ResumeParticleSystem(UIntPtr entityId, bool doChildren)
 	{
 		call_ResumeParticleSystemDelegate(entityId, doChildren);
@@ -2307,6 +3284,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public void SetAlpha(UIntPtr entityId, float alpha)
 	{
 		call_SetAlphaDelegate(entityId, alpha);
+	}
+
+	public void SetAngularVelocity(UIntPtr entityPtr, in Vec3 newAngularVelocity)
+	{
+		call_SetAngularVelocityDelegate(entityPtr, in newAngularVelocity);
 	}
 
 	public void SetAnimationSoundActivation(UIntPtr entityId, bool activate)
@@ -2349,9 +3331,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetBodyShapeDelegate(entityId, shape);
 	}
 
+	public void SetBoneFrameToAllMeshes(UIntPtr entityPtr, int boneIndex, in MatrixFrame frame)
+	{
+		call_SetBoneFrameToAllMeshesDelegate(entityPtr, boneIndex, in frame);
+	}
+
 	public void SetBoundingboxDirty(UIntPtr entityId)
 	{
 		call_SetBoundingboxDirtyDelegate(entityId);
+	}
+
+	public void SetCenterOfMass(UIntPtr entityId, ref Vec3 localCenterOfMass)
+	{
+		call_SetCenterOfMassDelegate(entityId, ref localCenterOfMass);
 	}
 
 	public void SetClothComponentKeepState(UIntPtr entityId, UIntPtr metaMesh, bool keepState)
@@ -2369,9 +3361,27 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetClothMaxDistanceMultiplierDelegate(gameEntity, multiplier);
 	}
 
+	public void SetColorToAllMeshesWithTagRecursive(UIntPtr gameEntity, uint color, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_SetColorToAllMeshesWithTagRecursiveDelegate(gameEntity, color, array);
+	}
+
 	public void SetContourState(UIntPtr entityId, bool alwaysVisible)
 	{
 		call_SetContourStateDelegate(entityId, alwaysVisible);
+	}
+
+	public void SetCostAdderForAttachedFaces(UIntPtr entityId, float cost)
+	{
+		call_SetCostAdderForAttachedFacesDelegate(entityId, cost);
 	}
 
 	public void SetCullMode(UIntPtr entityPtr, MBMeshCullingMode cullMode)
@@ -2379,9 +3389,24 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetCullModeDelegate(entityPtr, cullMode);
 	}
 
+	public void SetCustomClipPlane(UIntPtr entityId, Vec3 position, Vec3 normal, bool setForChildren)
+	{
+		call_SetCustomClipPlaneDelegate(entityId, position, normal, setForChildren);
+	}
+
+	public void SetCustomVertexPositionEnabled(UIntPtr entityId, bool customVertexPositionEnabled)
+	{
+		call_SetCustomVertexPositionEnabledDelegate(entityId, customVertexPositionEnabled);
+	}
+
 	public void SetDamping(UIntPtr entityId, float linearDamping, float angularDamping)
 	{
 		call_SetDampingDelegate(entityId, linearDamping, angularDamping);
+	}
+
+	public void SetDoNotCheckVisibility(UIntPtr entityPtr, bool value)
+	{
+		call_SetDoNotCheckVisibilityDelegate(entityPtr, value);
 	}
 
 	public void SetEnforcedMaximumLodLevel(UIntPtr entityId, int lodLevel)
@@ -2394,12 +3419,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetEntityEnvMapVisibilityDelegate(entityId, value);
 	}
 
-	public void SetEntityFlags(UIntPtr entityId, uint entityFlags)
+	public void SetEntityFlags(UIntPtr entityId, EntityFlags entityFlags)
 	{
 		call_SetEntityFlagsDelegate(entityId, entityFlags);
 	}
 
-	public void SetEntityVisibilityFlags(UIntPtr entityId, uint entityVisibilityFlags)
+	public void SetEntityVisibilityFlags(UIntPtr entityId, EntityVisibilityFlags entityVisibilityFlags)
 	{
 		call_SetEntityVisibilityFlagsDelegate(entityId, entityVisibilityFlags);
 	}
@@ -2419,9 +3444,14 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetFactorColorDelegate(entityId, factorColor);
 	}
 
-	public void SetFrame(UIntPtr entityId, ref MatrixFrame frame)
+	public void SetForceDecalsToRender(UIntPtr entityPtr, bool value)
 	{
-		call_SetFrameDelegate(entityId, ref frame);
+		call_SetForceDecalsToRenderDelegate(entityPtr, value);
+	}
+
+	public void SetForceNotAffectedBySeason(UIntPtr entityPtr, bool value)
+	{
+		call_SetForceNotAffectedBySeasonDelegate(entityPtr, value);
 	}
 
 	public void SetFrameChanged(UIntPtr entityId)
@@ -2429,9 +3459,29 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetFrameChangedDelegate(entityId);
 	}
 
-	public void SetGlobalFrame(UIntPtr entityId, in MatrixFrame frame)
+	public void SetGlobalFrame(UIntPtr entityId, in MatrixFrame frame, bool isTeleportation)
 	{
-		call_SetGlobalFrameDelegate(entityId, in frame);
+		call_SetGlobalFrameDelegate(entityId, in frame, isTeleportation);
+	}
+
+	public void SetGlobalPosition(UIntPtr entityId, in Vec3 position)
+	{
+		call_SetGlobalPositionDelegate(entityId, in position);
+	}
+
+	public void SetHasCustomBoundingBoxValidationSystem(UIntPtr entityId, bool hasCustomBoundingBox)
+	{
+		call_SetHasCustomBoundingBoxValidationSystemDelegate(entityId, hasCustomBoundingBox);
+	}
+
+	public void SetLinearVelocity(UIntPtr entityPtr, Vec3 newLinearVelocity)
+	{
+		call_SetLinearVelocityDelegate(entityPtr, newLinearVelocity);
+	}
+
+	public void SetLocalFrame(UIntPtr entityId, ref MatrixFrame frame, bool isTeleportation)
+	{
+		call_SetLocalFrameDelegate(entityId, ref frame, isTeleportation);
 	}
 
 	public void SetLocalPosition(UIntPtr entityId, Vec3 position)
@@ -2439,9 +3489,19 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetLocalPositionDelegate(entityId, position);
 	}
 
-	public void SetMass(UIntPtr entityId, float mass)
+	public void SetManualGlobalBoundingBox(UIntPtr entityId, Vec3 boundingBoxStartGlobal, Vec3 boundingBoxEndGlobal)
 	{
-		call_SetMassDelegate(entityId, mass);
+		call_SetManualGlobalBoundingBoxDelegate(entityId, boundingBoxStartGlobal, boundingBoxEndGlobal);
+	}
+
+	public void SetManualLocalBoundingBox(UIntPtr entityId, in BoundingBox boundingBox)
+	{
+		call_SetManualLocalBoundingBoxDelegate(entityId, in boundingBox);
+	}
+
+	public void SetMassAndUpdateInertiaAndCenterOfMass(UIntPtr entityId, float mass)
+	{
+		call_SetMassAndUpdateInertiaAndCenterOfMassDelegate(entityId, mass);
 	}
 
 	public void SetMassSpaceInertia(UIntPtr entityId, ref Vec3 inertia)
@@ -2454,7 +3514,12 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetMaterialForAllMeshesDelegate(entityId, materialPointer);
 	}
 
-	public void SetMobility(UIntPtr entityId, int mobility)
+	public void SetMaxDepenetrationVelocity(UIntPtr entityId, float maxDepenetrationVelocity)
+	{
+		call_SetMaxDepenetrationVelocityDelegate(entityId, maxDepenetrationVelocity);
+	}
+
+	public void SetMobility(UIntPtr entityId, GameEntity.Mobility mobility)
 	{
 		call_SetMobilityDelegate(entityId, mobility);
 	}
@@ -2477,9 +3542,51 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetNameDelegate(entityId, array);
 	}
 
+	public void SetNativeScriptComponentVariable(UIntPtr entityPtr, string className, string fieldName, ref ScriptComponentFieldHolder data, RglScriptFieldType variableType)
+	{
+		byte[] array = null;
+		if (className != null)
+		{
+			int byteCount = _utf8.GetByteCount(className);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(className, 0, className.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		byte[] array2 = null;
+		if (fieldName != null)
+		{
+			int byteCount2 = _utf8.GetByteCount(fieldName);
+			array2 = ((byteCount2 < 1024) ? CallbackStringBufferManager.StringBuffer1 : new byte[byteCount2 + 1]);
+			_utf8.GetBytes(fieldName, 0, fieldName.Length, array2, 0);
+			array2[byteCount2] = 0;
+		}
+		call_SetNativeScriptComponentVariableDelegate(entityPtr, array, array2, ref data, variableType);
+	}
+
+	public void SetPhysicsMoveToBatched(UIntPtr entityId, bool value)
+	{
+		call_SetPhysicsMoveToBatchedDelegate(entityId, value);
+	}
+
 	public void SetPhysicsState(UIntPtr entityId, bool isEnabled, bool setChildren)
 	{
 		call_SetPhysicsStateDelegate(entityId, isEnabled, setChildren);
+	}
+
+	public void SetPhysicsStateOnlyVariable(UIntPtr entityId, bool isEnabled, bool setChildren)
+	{
+		call_SetPhysicsStateOnlyVariableDelegate(entityId, isEnabled, setChildren);
+	}
+
+	public void SetPositionsForAttachedNavmeshVertices(UIntPtr entityId, int[] indices, int indexCount, Vec3[] positions)
+	{
+		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(indices);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		PinnedArrayData<Vec3> pinnedArrayData2 = new PinnedArrayData<Vec3>(positions);
+		IntPtr pointer2 = pinnedArrayData2.Pointer;
+		call_SetPositionsForAttachedNavmeshVerticesDelegate(entityId, pointer, indexCount, pointer2);
+		pinnedArrayData.Dispose();
+		pinnedArrayData2.Dispose();
 	}
 
 	public void SetPreviousFrameInvalid(UIntPtr gameEntity)
@@ -2502,6 +3609,21 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetSkeletonDelegate(entityId, skeletonPointer);
 	}
 
+	public void SetSolverIterationCounts(UIntPtr entityId, int positionIterationCount, int velocityIterationCount)
+	{
+		call_SetSolverIterationCountsDelegate(entityId, positionIterationCount, velocityIterationCount);
+	}
+
+	public void SetupAdditionalBoneBufferForMeshes(UIntPtr entityPtr, int boneCount)
+	{
+		call_SetupAdditionalBoneBufferForMeshesDelegate(entityPtr, boneCount);
+	}
+
+	public void SetUpdateValidityOnFrameChangedOfFacesWithId(UIntPtr entityId, int faceGroupId, bool updateValidity)
+	{
+		call_SetUpdateValidityOnFrameChangedOfFacesWithIdDelegate(entityId, faceGroupId, updateValidity);
+	}
+
 	public void SetUpgradeLevelMask(UIntPtr prefab, uint mask)
 	{
 		call_SetUpgradeLevelMaskDelegate(prefab, mask);
@@ -2512,14 +3634,49 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_SetVectorArgumentDelegate(entityId, vectorArgument0, vectorArgument1, vectorArgument2, vectorArgument3);
 	}
 
+	public void SetVelocityLimits(UIntPtr entityId, float maxLinearVelocity, float maxAngularVelocity)
+	{
+		call_SetVelocityLimitsDelegate(entityId, maxLinearVelocity, maxAngularVelocity);
+	}
+
 	public void SetVisibilityExcludeParents(UIntPtr entityId, bool visibility)
 	{
 		call_SetVisibilityExcludeParentsDelegate(entityId, visibility);
 	}
 
+	public void SetVisualRecordWakeParams(UIntPtr visualRecord, in Vec3 wakeParams)
+	{
+		call_SetVisualRecordWakeParamsDelegate(visualRecord, in wakeParams);
+	}
+
+	public void SetWaterSDFClipData(UIntPtr entityId, int slotIndex, in MatrixFrame frame, bool visibility)
+	{
+		call_SetWaterSDFClipDataDelegate(entityId, slotIndex, in frame, visibility);
+	}
+
+	public void SetWaterVisualRecordFrameAndDt(UIntPtr entityPointer, UIntPtr visualPrefab, in MatrixFrame frame, float dt)
+	{
+		call_SetWaterVisualRecordFrameAndDtDelegate(entityPointer, visualPrefab, in frame, dt);
+	}
+
+	public void SwapPhysxShapeInEntity(UIntPtr entityPtr, UIntPtr oldShape, UIntPtr newShape, bool isVariable)
+	{
+		call_SwapPhysxShapeInEntityDelegate(entityPtr, oldShape, newShape, isVariable);
+	}
+
+	public void UpdateAttachedNavigationMeshFaces(UIntPtr entityId)
+	{
+		call_UpdateAttachedNavigationMeshFacesDelegate(entityId);
+	}
+
 	public void UpdateGlobalBounds(UIntPtr entityPointer)
 	{
 		call_UpdateGlobalBoundsDelegate(entityPointer);
+	}
+
+	public void UpdateHullWaterEffectFrames(UIntPtr entityPointer, UIntPtr visualPrefab)
+	{
+		call_UpdateHullWaterEffectFramesDelegate(entityPointer, visualPrefab);
 	}
 
 	public void UpdateTriadFrameForEditor(UIntPtr meshPointer)
@@ -2537,8 +3694,83 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_ValidateBoundingBoxDelegate(entityPointer);
 	}
 
-	void IGameEntity.SetGlobalFrame(UIntPtr entityId, in MatrixFrame frame)
+	void IGameEntity.SetWaterSDFClipData(UIntPtr entityId, int slotIndex, in MatrixFrame frame, bool visibility)
 	{
-		SetGlobalFrame(entityId, in frame);
+		SetWaterSDFClipData(entityId, slotIndex, in frame, visibility);
+	}
+
+	void IGameEntity.SetGlobalFrame(UIntPtr entityId, in MatrixFrame frame, bool isTeleportation)
+	{
+		SetGlobalFrame(entityId, in frame, isTeleportation);
+	}
+
+	void IGameEntity.ComputeVelocityDeltaFromImpulse(UIntPtr entityPtr, in Vec3 impulsiveForce, in Vec3 impulsiveTorque, out Vec3 deltaLinearVelocity, out Vec3 deltaAngularVelocity)
+	{
+		ComputeVelocityDeltaFromImpulse(entityPtr, in impulsiveForce, in impulsiveTorque, out deltaLinearVelocity, out deltaAngularVelocity);
+	}
+
+	void IGameEntity.SetGlobalPosition(UIntPtr entityId, in Vec3 position)
+	{
+		SetGlobalPosition(entityId, in position);
+	}
+
+	void IGameEntity.SetVisualRecordWakeParams(UIntPtr visualRecord, in Vec3 wakeParams)
+	{
+		SetVisualRecordWakeParams(visualRecord, in wakeParams);
+	}
+
+	void IGameEntity.ChangeResolutionMultiplierOfWaterVisual(UIntPtr visualPrefab, float multiplier, in Vec3 waterEffectsBB)
+	{
+		ChangeResolutionMultiplierOfWaterVisual(visualPrefab, multiplier, in waterEffectsBB);
+	}
+
+	void IGameEntity.SetWaterVisualRecordFrameAndDt(UIntPtr entityPointer, UIntPtr visualPrefab, in MatrixFrame frame, float dt)
+	{
+		SetWaterVisualRecordFrameAndDt(entityPointer, visualPrefab, in frame, dt);
+	}
+
+	void IGameEntity.AddSplashPositionToWaterVisualRecord(UIntPtr entityPointer, UIntPtr visualPrefab, in Vec3 position)
+	{
+		AddSplashPositionToWaterVisualRecord(entityPointer, visualPrefab, in position);
+	}
+
+	void IGameEntity.GetAttachedNavmeshFaceVertexIndices(UIntPtr entityId, in PathFaceRecord faceRecord, int[] indices)
+	{
+		GetAttachedNavmeshFaceVertexIndices(entityId, in faceRecord, indices);
+	}
+
+	float IGameEntity.GetWaterLevelAtPosition(UIntPtr entityId, in Vec2 position, bool useWaterRenderer, bool checkWaterBodyEntities)
+	{
+		return GetWaterLevelAtPosition(entityId, in position, useWaterRenderer, checkWaterBodyEntities);
+	}
+
+	bool IGameEntity.RayHitEntity(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref float resultLength)
+	{
+		return RayHitEntity(entityId, in rayOrigin, in rayDirection, maxLength, ref resultLength);
+	}
+
+	bool IGameEntity.RayHitEntityWithNormal(UIntPtr entityId, in Vec3 rayOrigin, in Vec3 rayDirection, float maxLength, ref Vec3 resultNormal, ref float resultLength)
+	{
+		return RayHitEntityWithNormal(entityId, in rayOrigin, in rayDirection, maxLength, ref resultNormal, ref resultLength);
+	}
+
+	void IGameEntity.SetManualLocalBoundingBox(UIntPtr entityId, in BoundingBox boundingBox)
+	{
+		SetManualLocalBoundingBox(entityId, in boundingBox);
+	}
+
+	void IGameEntity.RelaxLocalBoundingBox(UIntPtr entityId, in BoundingBox boundingBox)
+	{
+		RelaxLocalBoundingBox(entityId, in boundingBox);
+	}
+
+	void IGameEntity.SetAngularVelocity(UIntPtr entityPtr, in Vec3 newAngularVelocity)
+	{
+		SetAngularVelocity(entityPtr, in newAngularVelocity);
+	}
+
+	void IGameEntity.SetBoneFrameToAllMeshes(UIntPtr entityPtr, int boneIndex, in MatrixFrame frame)
+	{
+		SetBoneFrameToAllMeshes(entityPtr, boneIndex, in frame);
 	}
 }

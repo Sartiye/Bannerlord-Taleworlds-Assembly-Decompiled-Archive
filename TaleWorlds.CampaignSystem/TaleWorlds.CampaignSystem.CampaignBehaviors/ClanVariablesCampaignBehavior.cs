@@ -24,9 +24,30 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 		CampaignEvents.OnHeroChangedClanEvent.AddNonSerializedListener(this, OnHeroChangedClan);
 		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedEnd);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+		CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, WeeklyTickClan);
+	}
+
+	private void OnNewGameCreatedEnd(CampaignGameStarter starter)
+	{
+		foreach (Clan item in Clan.All)
+		{
+			if (item != Clan.PlayerClan)
+			{
+				UpdateClanSettlementsPaymentLimit(item);
+			}
+		}
+	}
+
+	private void WeeklyTickClan()
+	{
+		foreach (Clan nonBanditFaction in Clan.NonBanditFactions)
+		{
+			nonBanditFaction.ConsiderAndUpdateHomeSettlement();
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -35,29 +56,52 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 
 	public void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
 	{
-		if (settlement.IsHideout)
+		if (!settlement.IsFortification)
 		{
 			return;
 		}
-		newOwner.Clan.UpdateHomeSettlement(settlement);
+		newOwner.Clan.ConsiderAndUpdateHomeSettlement();
 		foreach (Hero hero in newOwner.Clan.Heroes)
 		{
 			hero.UpdateHomeSettlement();
 		}
-		oldOwner.Clan.UpdateHomeSettlement(settlement);
+		oldOwner.Clan.ConsiderAndUpdateHomeSettlement();
 		foreach (Hero hero2 in oldOwner.Clan.Heroes)
 		{
 			hero2.UpdateHomeSettlement();
 		}
-		if (settlement.IsFortification)
+		settlement.SetGarrisonWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
+		if (!oldOwner.Clan.MapFaction.IsKingdomFaction)
 		{
-			settlement.SetGarrisonWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWage);
+			return;
+		}
+		foreach (Clan clan in oldOwner.Clan.Kingdom.Clans)
+		{
+			if (clan == oldOwner.Clan || clan == newOwner.Clan || clan.HomeSettlement != settlement)
+			{
+				continue;
+			}
+			clan.ConsiderAndUpdateHomeSettlement();
+			foreach (Hero hero3 in clan.Heroes)
+			{
+				hero3.UpdateHomeSettlement();
+			}
 		}
 	}
 
 	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
 	{
-		clan.UpdateHomeSettlement(null);
+		clan.ConsiderAndUpdateHomeSettlement();
+		foreach (Settlement settlement in clan.Settlements)
+		{
+			foreach (Clan item in Clan.All)
+			{
+				if (clan != item && item.HomeSettlement == settlement)
+				{
+					item.ConsiderAndUpdateHomeSettlement();
+				}
+			}
+		}
 	}
 
 	private void OnHeroChangedClan(Hero hero, Clan oldClan)
@@ -78,8 +122,8 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 			num += TaleWorlds.Library.MathF.Sqrt(fief.Prosperity / 1000f);
 			num += (float)fief.Settlement.BoundVillages.Count;
 			num *= ((clan.Culture == fief.Settlement.Culture) ? 1f : 0.5f);
-			float num2 = (clan.Leader.MapFaction.IsKingdomFaction ? Campaign.Current.Models.MapDistanceModel.GetDistance(fief.Settlement, clan.Leader.MapFaction.FactionMidSettlement) : 100f);
-			num *= 1f - TaleWorlds.Library.MathF.Sqrt(num2 / Campaign.MaximumDistanceBetweenTwoSettlements);
+			float num2 = (clan.Leader.MapFaction.IsKingdomFaction ? Campaign.Current.Models.MapDistanceModel.GetDistance(fief.Settlement, clan.Leader.MapFaction.FactionMidSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All) : 100f);
+			num *= 1f - TaleWorlds.Library.MathF.Sqrt(num2 / Campaign.Current.Models.MapDistanceModel.GetMaximumDistanceBetweenTwoConnectedSettlements(MobileParty.NavigationType.Default));
 			list.Add(new Tuple<Town, float>(fief, num));
 		}
 		List<Hero> list2 = new List<Hero>();
@@ -102,15 +146,15 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 			list.Remove(tuple);
 			float num4 = 0f;
 			Hero hero = null;
-			foreach (Hero lord in clan.Lords)
+			foreach (Hero aliveLord in clan.AliveLords)
 			{
-				if (Campaign.Current.Models.ClanPoliticsModel.CanHeroBeGovernor(lord) && lord.PartyBelongedTo == null && lord.Clan != Clan.PlayerClan && !list2.Contains(lord))
+				if (Campaign.Current.Models.ClanPoliticsModel.CanHeroBeGovernor(aliveLord) && aliveLord.PartyBelongedTo == null && aliveLord.Clan != Clan.PlayerClan && !list2.Contains(aliveLord))
 				{
-					float num5 = ((tuple.Item1.Governor == lord) ? 1f : 0.75f) * Campaign.Current.Models.DiplomacyModel.GetHeroGoverningStrengthForClan(lord);
+					float num5 = ((tuple.Item1.Governor == aliveLord) ? 1f : 0.75f) * Campaign.Current.Models.DiplomacyModel.GetHeroGoverningStrengthForClan(aliveLord);
 					if (num5 > num4)
 					{
 						num4 = num5;
-						hero = lord;
+						hero = aliveLord;
 					}
 				}
 			}
@@ -132,17 +176,19 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 
 	public void OnNewGameCreated(CampaignGameStarter starter)
 	{
-		foreach (Clan item in Clan.All)
+		foreach (Kingdom item in Kingdom.All)
 		{
-			if (item.Leader != null && item.Leader.IsLord)
+			item.CalculateMidSettlement();
+		}
+		foreach (Clan item2 in Clan.All)
+		{
+			item2.ConsiderAndUpdateHomeSettlement();
+			if (item2 != Clan.PlayerClan && item2.Leader != null && item2.Leader.MapFaction != null && item2.Leader.MapFaction.IsKingdomFaction && item2.Renown > 0f)
 			{
-				item.UpdateHomeSettlement(null);
+				ChangeClanInfluenceAction.Apply(item2, Campaign.Current.Models.ClanTierModel.CalculateInitialInfluence(item2));
 			}
-			if (item != Clan.PlayerClan && item.Leader != null && item.Leader.MapFaction != null && item.Leader.MapFaction.IsKingdomFaction && item.Renown > 0f)
-			{
-				ChangeClanInfluenceAction.Apply(item, Campaign.Current.Models.ClanTierModel.CalculateInitialInfluence(item));
-			}
-			item.LastFactionChangeTime = CampaignTime.Now;
+			item2.LastFactionChangeTime = CampaignTime.Now;
+			item2.CalculateMidSettlement();
 		}
 		DetermineBasicTroopsForMinorFactions();
 		foreach (Clan nonBanditFaction in Clan.NonBanditFactions)
@@ -186,7 +232,7 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 				{
 					if (item2.IsTown || item2.IsCastle)
 					{
-						Hero randomElementWithPredicate = clan.Lords.GetRandomElementWithPredicate((Hero x) => !x.IsChild);
+						Hero randomElementWithPredicate = clan.AliveLords.GetRandomElementWithPredicate((Hero x) => !x.IsChild);
 						ChangeOwnerOfSettlementAction.ApplyByDestroyClan(item2, randomElementWithPredicate);
 					}
 				}
@@ -259,11 +305,19 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (Kingdom item in Kingdom.All)
 		{
-			for (int num = item.Clans.Count - 1; num >= 0; num--)
+			item.CalculateMidSettlement();
+		}
+		foreach (Clan item2 in Clan.All)
+		{
+			item2.CalculateMidSettlement();
+		}
+		foreach (Kingdom item3 in Kingdom.All)
+		{
+			for (int num = item3.Clans.Count - 1; num >= 0; num--)
 			{
-				if (item.Clans[num].GetStanceWith(item).IsAtConstantWar)
+				if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(item3.Clans[num], item3))
 				{
-					ChangeKingdomAction.ApplyByLeaveWithRebellionAgainstKingdom(item.Clans[num], showNotification: false);
+					ChangeKingdomAction.ApplyByLeaveWithRebellionAgainstKingdom(item3.Clans[num], showNotification: false);
 				}
 			}
 		}
@@ -277,7 +331,7 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 		{
 			foreach (WarPartyComponent warPartyComponent in clan.WarPartyComponents)
 			{
-				warPartyComponent.MobileParty.SetWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWage);
+				warPartyComponent.MobileParty.SetWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
 			}
 			return;
 		}
@@ -307,7 +361,7 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 
 	private void DailyTickClan(Clan clan)
 	{
-		if (!Clan.BanditFactions.Contains(clan))
+		if (!clan.IsBanditFaction)
 		{
 			if (clan.Kingdom != null)
 			{
@@ -315,12 +369,12 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 				{
 					clan.MercenaryAwardMultiplier = Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(clan, clan.Kingdom);
 				}
-				if (clan == Clan.PlayerClan && clan.IsUnderMercenaryService && clan.Kingdom != null && Campaign.CurrentTime > Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewDay)
+				if (clan == Clan.PlayerClan && clan.IsUnderMercenaryService && clan.Kingdom != null && Campaign.CurrentTime > Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewalDay)
 				{
 					clan.MercenaryAwardMultiplier = Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(clan, clan.Kingdom);
-					Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewDay = Campaign.CurrentTime + 720f;
+					Campaign.Current.KingdomManager.PlayerMercenaryServiceNextRenewalDay = Campaign.CurrentTime + 30f * (float)CampaignTime.HoursInDay;
 				}
-				if (clan != Clan.PlayerClan && clan.IsUnderMercenaryService && clan.Kingdom != null && clan.Kingdom.RulingClan.DebtToKingdom > 10000 && MBRandom.RandomFloat < 0.25f)
+				if (clan != Clan.PlayerClan && clan.IsUnderMercenaryService && clan.Kingdom != null && clan.Kingdom.RulingClan.DebtToKingdom > 10000 && MBRandom.RandomFloat < 0.25f && clan.ShouldStayInKingdomUntil.IsPast)
 				{
 					ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(clan);
 				}
@@ -388,7 +442,7 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 			float num3 = FactionHelper.SettlementProsperityEffectOnGarrisonSizeConstant(fief);
 			float num4 = FactionHelper.SettlementFoodPotentialEffectOnGarrisonSizeConstant(fief.Settlement);
 			float value = num * (((clan.IsRebelClan && !clan.MapFaction.IsKingdomFaction) ? 2f : 1.5f) * num2 * num3 * num4) * averageWage;
-			value = TaleWorlds.Library.MathF.Clamp(value, 0f, Campaign.Current.Models.PartyWageModel.MaxWage);
+			value = TaleWorlds.Library.MathF.Clamp(value, 0f, Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
 			fief.Settlement.SetGarrisonWagePaymentLimit((int)value);
 		}
 	}
@@ -397,7 +451,11 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 	{
 		if (hero.IsActive && hero.IsNotable)
 		{
-			GiveGoldAction.ApplyBetweenCharacters(null, hero, Campaign.Current.Models.ClanFinanceModel.CalculateNotableDailyGoldChange(hero, applyWithdrawals: true), disableNotification: true);
+			int num = Campaign.Current.Models.ClanFinanceModel.CalculateNotableDailyGoldChange(hero, applyWithdrawals: true);
+			if (num > 0)
+			{
+				GiveGoldAction.ApplyBetweenCharacters(null, hero, num, disableNotification: true);
+			}
 		}
 	}
 

@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem;
 
@@ -10,13 +14,15 @@ public interface IViewDataTracker
 
 	bool IsQuestNotificationActive { get; }
 
-	List<JournalLog> UnExaminedQuestLogs { get; }
+	IReadOnlyList<JournalLog> UnExaminedQuestLogs { get; }
 
 	List<Army> UnExaminedArmies { get; }
 
 	int NumOfKingdomArmyNotifications { get; }
 
 	bool IsCharacterNotificationActive { get; }
+
+	IReadOnlyList<Figurehead> UnexaminedFigureheads { get; }
 
 	void SetInventoryLocks(IEnumerable<string> locks);
 
@@ -90,13 +96,13 @@ public interface IViewDataTracker
 
 	Tuple<int, int> InventoryGetSortPreference(int inventoryMode);
 
-	string GetPartyNotificationText();
+	TextObject GetPartyNotificationText();
 
 	void ClearPartyNotification();
 
 	void UpdatePartyNotification();
 
-	string GetQuestNotificationText();
+	TextObject GetQuestNotificationText();
 
 	void OnQuestLogExamined(JournalLog log);
 
@@ -104,5 +110,9 @@ public interface IViewDataTracker
 
 	void ClearCharacterNotification();
 
-	string GetCharacterNotificationText();
+	TextObject GetCharacterNotificationText();
+
+	MBReadOnlyList<ItemRosterElement> GetPlunderItems();
+
+	void OnFigureheadExamined(Figurehead figurehead);
 }

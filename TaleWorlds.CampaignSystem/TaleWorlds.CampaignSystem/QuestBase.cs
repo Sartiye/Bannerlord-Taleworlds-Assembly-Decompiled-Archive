@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Overlay;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -179,7 +179,7 @@ public abstract class QuestBase : MBObjectBase
 		}
 		if (!completeWithSuccess)
 		{
-			if (timeOutLog != null)
+			if (!TextObject.IsNullOrEmpty(timeOutLog))
 			{
 				AddLog(timeOutLog);
 			}
@@ -251,6 +251,7 @@ public abstract class QuestBase : MBObjectBase
 	private void AfterFinalize()
 	{
 		RemoveAllTrackedObjects();
+		RemoveAllMapMarkers();
 	}
 
 	protected void InitializeQuestOnCreation()
@@ -265,9 +266,24 @@ public abstract class QuestBase : MBObjectBase
 		AddDialogs();
 	}
 
+	internal void HourlyTickPartyWithQuestManager(MobileParty mobileParty)
+	{
+		HourlyTickParty(mobileParty);
+	}
+
 	internal void HourlyTickWithQuestManager()
 	{
 		HourlyTick();
+	}
+
+	internal void DailyTickWithQuestManager()
+	{
+		DailyTick();
+	}
+
+	internal void WeeklyTickWithQuestManager()
+	{
+		WeeklyTick();
 	}
 
 	protected void AddTask(QuestTaskBase task)
@@ -308,7 +324,7 @@ public abstract class QuestBase : MBObjectBase
 		}
 		else
 		{
-			Debug.FailedAssert("Quest log requested to be removed cant be found.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestBase.cs", "RemoveLog", 276);
+			Debug.FailedAssert("Quest log requested to be removed cant be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestBase.cs", "RemoveLog", 293);
 		}
 	}
 
@@ -381,6 +397,11 @@ public abstract class QuestBase : MBObjectBase
 		Campaign.Current.QuestManager.RemoveAllTrackedObjectsForQuest(this);
 	}
 
+	private void RemoveAllMapMarkers()
+	{
+		Campaign.Current.MapMarkerManager.RemoveAllMapMarkersByQuestId(base.StringId);
+	}
+
 	public void AddTrackedObject(ITrackableCampaignObject trackedObject)
 	{
 		Campaign.Current.QuestManager.AddTrackedObjectForQuest(trackedObject, this);
@@ -422,7 +443,7 @@ public abstract class QuestBase : MBObjectBase
 		}
 	}
 
-	public void AddGameMenu(string menuId, TextObject menuText, OnInitDelegate initDelegate, GameOverlays.MenuOverlayType overlay = GameOverlays.MenuOverlayType.None, GameMenu.MenuFlags menuFlags = GameMenu.MenuFlags.None)
+	public void AddGameMenu(string menuId, TextObject menuText, OnInitDelegate initDelegate, GameMenu.MenuOverlayType overlay = GameMenu.MenuOverlayType.None, GameMenu.MenuFlags menuFlags = GameMenu.MenuFlags.None)
 	{
 		GameMenu gameMenu = new GameMenu(menuId);
 		gameMenu.Initialize(menuText, initDelegate, overlay, menuFlags, this);
@@ -441,7 +462,21 @@ public abstract class QuestBase : MBObjectBase
 
 	protected abstract void InitializeQuestOnGameLoad();
 
-	protected abstract void HourlyTick();
+	protected virtual void HourlyTick()
+	{
+	}
+
+	protected virtual void HourlyTickParty(MobileParty mobileParty)
+	{
+	}
+
+	protected virtual void DailyTick()
+	{
+	}
+
+	protected virtual void WeeklyTick()
+	{
+	}
 
 	protected virtual void RegisterEvents()
 	{
@@ -484,7 +519,7 @@ public abstract class QuestBase : MBObjectBase
 		return false;
 	}
 
-	public virtual void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+	public virtual void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 	{
 	}
 

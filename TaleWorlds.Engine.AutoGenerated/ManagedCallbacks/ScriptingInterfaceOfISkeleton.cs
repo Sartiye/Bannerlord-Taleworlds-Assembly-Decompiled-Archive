@@ -68,6 +68,11 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void EnableScriptDrivenPostIntegrateCallbackDelegate(UIntPtr skeletonPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void ForceUpdateBoneFramesDelegate(UIntPtr skeletonPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -178,6 +183,11 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate Transformation GetEntitialOutTransformDelegate(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetNameDelegate(UIntPtr skeleton);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -246,6 +256,16 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetOutBoneDisplacementDelegate(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex, Vec3 displacement);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetOutQuatDelegate(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex, Mat3 rotation);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetSkeletonAnimationParameterAtChannelDelegate(UIntPtr skeletonPointer, int channelNo, float parameter);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -308,6 +328,8 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 
 	public static CreateFromModelWithNullAnimTreeDelegate call_CreateFromModelWithNullAnimTreeDelegate;
 
+	public static EnableScriptDrivenPostIntegrateCallbackDelegate call_EnableScriptDrivenPostIntegrateCallbackDelegate;
+
 	public static ForceUpdateBoneFramesDelegate call_ForceUpdateBoneFramesDelegate;
 
 	public static FreezeDelegate call_FreezeDelegate;
@@ -352,6 +374,8 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 
 	public static GetCurrentRagdollStateDelegate call_GetCurrentRagdollStateDelegate;
 
+	public static GetEntitialOutTransformDelegate call_GetEntitialOutTransformDelegate;
+
 	public static GetNameDelegate call_GetNameDelegate;
 
 	public static GetParentBoneIndexDelegate call_GetParentBoneIndexDelegate;
@@ -377,6 +401,10 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 	public static ResetFramesDelegate call_ResetFramesDelegate;
 
 	public static SetBoneLocalFrameDelegate call_SetBoneLocalFrameDelegate;
+
+	public static SetOutBoneDisplacementDelegate call_SetOutBoneDisplacementDelegate;
+
+	public static SetOutQuatDelegate call_SetOutQuatDelegate;
 
 	public static SetSkeletonAnimationParameterAtChannelDelegate call_SetSkeletonAnimationParameterAtChannelDelegate;
 
@@ -486,6 +514,11 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public void EnableScriptDrivenPostIntegrateCallback(UIntPtr skeletonPointer)
+	{
+		call_EnableScriptDrivenPostIntegrateCallbackDelegate(skeletonPointer);
 	}
 
 	public void ForceUpdateBoneFrames(UIntPtr skeletonPointer)
@@ -647,6 +680,11 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 		return call_GetCurrentRagdollStateDelegate(skeletonPointer);
 	}
 
+	public Transformation GetEntitialOutTransform(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex)
+	{
+		return call_GetEntitialOutTransformDelegate(skeletonPointer, animResultPointer, boneIndex);
+	}
+
 	public string GetName(Skeleton skeleton)
 	{
 		UIntPtr skeleton2 = ((skeleton != null) ? skeleton.Pointer : UIntPtr.Zero);
@@ -718,6 +756,16 @@ internal class ScriptingInterfaceOfISkeleton : ISkeleton
 	public void SetBoneLocalFrame(UIntPtr skeletonPointer, sbyte boneIndex, ref MatrixFrame localFrame)
 	{
 		call_SetBoneLocalFrameDelegate(skeletonPointer, boneIndex, ref localFrame);
+	}
+
+	public void SetOutBoneDisplacement(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex, Vec3 displacement)
+	{
+		call_SetOutBoneDisplacementDelegate(skeletonPointer, animResultPointer, boneIndex, displacement);
+	}
+
+	public void SetOutQuat(UIntPtr skeletonPointer, UIntPtr animResultPointer, sbyte boneIndex, Mat3 rotation)
+	{
+		call_SetOutQuatDelegate(skeletonPointer, animResultPointer, boneIndex, rotation);
 	}
 
 	public void SetSkeletonAnimationParameterAtChannel(UIntPtr skeletonPointer, int channelNo, float parameter)

@@ -29,14 +29,14 @@ public class GoldGainOnKillEffect : MPPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !int.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\GoldGainOnKillEffect.cs", "Deserialize", 31);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\GoldGainOnKillEffect.cs", "Deserialize", 31);
 		}
 		string text2 = node?.Attributes?["enemy_value"]?.Value;
 		_enemyValue = EnemyValue.Any;
 		if (text2 != null && !Enum.TryParse<EnemyValue>(text2, ignoreCase: true, out _enemyValue))
 		{
 			_enemyValue = EnemyValue.Any;
-			Debug.FailedAssert("provided 'enemy_value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\GoldGainOnKillEffect.cs", "Deserialize", 39);
+			Debug.FailedAssert("provided 'enemy_value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\GoldGainOnKillEffect.cs", "Deserialize", 39);
 		}
 	}
 

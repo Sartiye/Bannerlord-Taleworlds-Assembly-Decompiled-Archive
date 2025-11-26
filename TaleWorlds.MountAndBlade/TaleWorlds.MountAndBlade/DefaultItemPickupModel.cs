@@ -23,8 +23,8 @@ public class DefaultItemPickupModel : ItemPickupModel
 				case WeaponClass.LargeShield:
 					return 100f;
 				case WeaponClass.Arrow:
-					return 80f;
 				case WeaponClass.Bolt:
+				case WeaponClass.SlingStone:
 					return 80f;
 				case WeaponClass.Javelin:
 					return 70f;
@@ -33,8 +33,10 @@ public class DefaultItemPickupModel : ItemPickupModel
 				case WeaponClass.ThrowingKnife:
 					return 50f;
 				case WeaponClass.Stone:
+				case WeaponClass.BallistaStone:
 					return 20f;
 				case WeaponClass.Boulder:
+				case WeaponClass.BallistaBoulder:
 					return -1f;
 				default:
 					throw new MBException("This pickable item not scored: " + weaponClass);
@@ -55,6 +57,7 @@ public class DefaultItemPickupModel : ItemPickupModel
 		{
 		case WeaponClass.Arrow:
 		case WeaponClass.Bolt:
+		case WeaponClass.SlingStone:
 		case WeaponClass.ThrowingAxe:
 		case WeaponClass.ThrowingKnife:
 		case WeaponClass.Javelin:

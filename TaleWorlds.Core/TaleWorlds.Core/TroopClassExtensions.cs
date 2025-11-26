@@ -112,4 +112,31 @@ public static class TroopClassExtensions
 		}
 		return false;
 	}
+
+	public static FormationClass GetNextSpawnPrioritizedClass(this FormationClass troopClass)
+	{
+		if (troopClass.IsRegularTroopClass())
+		{
+			switch (troopClass)
+			{
+			case FormationClass.Infantry:
+				return FormationClass.HeavyInfantry;
+			case FormationClass.Ranged:
+				return FormationClass.LightCavalry;
+			case FormationClass.Cavalry:
+				return FormationClass.HeavyCavalry;
+			case FormationClass.HorseArcher:
+				return FormationClass.HorseArcher;
+			case FormationClass.NumberOfDefaultFormations:
+				return FormationClass.Ranged;
+			case FormationClass.HeavyInfantry:
+				return FormationClass.Cavalry;
+			case FormationClass.LightCavalry:
+				return FormationClass.HorseArcher;
+			case FormationClass.HeavyCavalry:
+				return FormationClass.HeavyCavalry;
+			}
+		}
+		return troopClass;
+	}
 }

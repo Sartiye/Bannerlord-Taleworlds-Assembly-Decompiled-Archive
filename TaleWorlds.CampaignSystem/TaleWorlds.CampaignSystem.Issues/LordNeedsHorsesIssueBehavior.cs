@@ -238,8 +238,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2, mountedRequired: true);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2, mountedRequired: true);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -253,10 +252,9 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2, mountedRequired: true))
+			if (QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2, mountedRequired: true))
 			{
-				return QuestHelper.CheckGoldForAlternativeSolution(AlternativeSolutionGoldRequirement, ref explanation);
+				return QuestHelper.CheckGoldForAlternativeSolution(AlternativeSolutionGoldRequirement, out explanation);
 			}
 			return false;
 		}
@@ -399,7 +397,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _journalTaskName
+		private TextObject JournalTaskName
 		{
 			get
 			{
@@ -409,7 +407,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestStartedLogText
+		private TextObject OnQuestStartedLogText
 		{
 			get
 			{
@@ -424,7 +422,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestSucceededLogText
+		private TextObject OnQuestSucceededLogText
 		{
 			get
 			{
@@ -438,7 +436,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestFailedLogText
+		private TextObject OnQuestFailedLogText
 		{
 			get
 			{
@@ -450,7 +448,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestTimedOutLogText
+		private TextObject OnQuestTimedOutLogText
 		{
 			get
 			{
@@ -462,7 +460,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestCancelled2LogText
+		private TextObject OnQuestCancelled2LogText
 		{
 			get
 			{
@@ -473,7 +471,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -483,7 +481,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestCancelled3LogText
+		private TextObject OnQuestCancelled3LogText
 		{
 			get
 			{
@@ -494,7 +492,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestMountRequirementSatisfiedQuickText
+		private TextObject OnQuestMountRequirementSatisfiedQuickText
 		{
 			get
 			{
@@ -505,7 +503,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _onQuestMountRequirementNotSatisfiedQuickText
+		private TextObject OnQuestMountRequirementNotSatisfiedQuickText
 		{
 			get
 			{
@@ -576,11 +574,11 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 								RemoveLog(base.JournalEntries[i]);
 							}
 						}
-						_questJournalEntry = AddDiscreteLog(_onQuestStartedLogText, _journalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
+						_questJournalEntry = AddDiscreteLog(OnQuestStartedLogText, JournalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
 					}
 					else
 					{
-						_questJournalEntry = AddDiscreteLog(_onQuestStartedLogText, _journalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
+						_questJournalEntry = AddDiscreteLog(OnQuestStartedLogText, JournalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
 					}
 				}
 			}
@@ -655,12 +653,12 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 		{
 			StartQuest();
 			_numMountsInInventory = GetNumQuestMountsInInventory();
-			_questJournalEntry = AddDiscreteLog(_onQuestStartedLogText, _journalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
+			_questJournalEntry = AddDiscreteLog(OnQuestStartedLogText, JournalTaskName, MBMath.ClampInt(_numMountsInInventory, 0, _numMountsToBeDelivered), _numMountsToBeDelivered);
 		}
 
 		private void OnQuestDeclined()
 		{
-			AddLog(_onQuestFailedLogText);
+			AddLog(OnQuestFailedLogText);
 			CompleteQuestWithFail();
 		}
 
@@ -680,7 +678,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			{
 				CharacterObject characterObject = null;
 				MBList<TroopRosterElement> mBList = Settlement.CurrentSettlement.Town.GarrisonParty?.MemberRoster?.GetTroopRoster();
-				characterObject = ((mBList != null && mBList.Count != 0) ? mBList.MaxBy((TroopRosterElement troop) => troop.Character.Tier).Character : base.QuestGiver.Culture.Guard);
+				characterObject = ((mBList != null && mBList.Count != 0) ? TaleWorlds.Core.Extensions.MaxBy(mBList, (TroopRosterElement troop) => troop.Character.Tier).Character : base.QuestGiver.Culture.Guard);
 				_questGiversAgentCharacterObject = characterObject;
 				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, PartyBase.MainParty), new ConversationCharacterData(_questGiversAgentCharacterObject));
 			}
@@ -710,11 +708,11 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			{
 				if (_numMountsInInventory < _numMountsToBeDelivered && numQuestMountsInInventory >= _numMountsToBeDelivered)
 				{
-					MBInformationManager.AddQuickInformation(_onQuestMountRequirementSatisfiedQuickText);
+					MBInformationManager.AddQuickInformation(OnQuestMountRequirementSatisfiedQuickText);
 				}
 				else if (_numMountsInInventory >= _numMountsToBeDelivered && numQuestMountsInInventory < _numMountsToBeDelivered)
 				{
-					MBInformationManager.AddQuickInformation(_onQuestMountRequirementNotSatisfiedQuickText);
+					MBInformationManager.AddQuickInformation(OnQuestMountRequirementNotSatisfiedQuickText);
 				}
 				_numMountsInInventory = numQuestMountsInInventory;
 				UpdateQuestJournalEntry();
@@ -762,7 +760,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 		{
 			if (prisoner == base.QuestGiver)
 			{
-				CompleteQuestWithCancel(_onQuestCancelled3LogText);
+				CompleteQuestWithCancel(OnQuestCancelled3LogText);
 			}
 		}
 
@@ -770,18 +768,18 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_onQuestCancelled2LogText);
+				CompleteQuestWithCancel(OnQuestCancelled2LogText);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _onQuestCancelled2LogText);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, OnQuestCancelled2LogText);
 		}
 
 		protected override void OnCompleteWithSuccess()
 		{
-			AddLog(_onQuestSucceededLogText);
+			AddLog(OnQuestSucceededLogText);
 			int num = _numMountsToBeDelivered;
 			foreach (ItemRosterElement item in MobileParty.MainParty.ItemRoster)
 			{
@@ -798,7 +796,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				}
 			}
 			GainRenownAction.Apply(Hero.MainHero, 1f);
-			GiveGoldAction.ApplyForQuestBetweenCharacters(base.QuestGiver, Hero.MainHero, RewardGold);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
 			RelationshipChangeWithQuestGiver = 2;
 		}
 
@@ -826,7 +824,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnTimedOut()
 		{
-			AddLog(_onQuestTimedOutLogText);
+			AddLog(OnQuestTimedOutLogText);
 			RelationshipChangeWithQuestGiver = -5;
 		}
 
@@ -883,7 +881,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 
 	private bool ConditionsHold(Hero issueGiver)
 	{
-		if ((issueGiver.IsKingdomLeader || issueGiver.Clan?.Leader == issueGiver) && !issueGiver.IsMinorFactionHero && issueGiver.Clan != Clan.PlayerClan)
+		if ((issueGiver.IsKingdomLeader || issueGiver.Clan?.Leader == issueGiver) && issueGiver.Culture.StringId != "nord" && !issueGiver.IsMinorFactionHero && issueGiver.Clan != Clan.PlayerClan)
 		{
 			MobileParty partyBelongedTo = issueGiver.PartyBelongedTo;
 			if (partyBelongedTo != null && partyBelongedTo.Party.MemberRoster.TotalManCount > 50)
@@ -904,7 +902,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 	{
 		if (issueParty == null)
 		{
-			Debug.FailedAssert("Cannot compute mounts over infantry ratio as related party is null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\LordNeedsHorsesIssueBehavior.cs", "ComputeMountsOverInfantryCountRatio", 919);
+			Debug.FailedAssert("Cannot compute mounts over infantry ratio as related party is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\LordNeedsHorsesIssueBehavior.cs", "ComputeMountsOverInfantryCountRatio", 916);
 			numInfantry = 0;
 			return float.MaxValue;
 		}

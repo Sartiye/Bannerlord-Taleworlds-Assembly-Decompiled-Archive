@@ -1,4 +1,5 @@
 using System;
+using Helpers;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
@@ -6,28 +7,15 @@ namespace TaleWorlds.CampaignSystem.GameState;
 
 public class PartyState : PlayerGameState
 {
-	private IPartyScreenLogicHandler _handler;
-
 	public override bool IsMenuState => true;
 
-	public PartyScreenLogic PartyScreenLogic { get; private set; }
+	public PartyScreenLogic PartyScreenLogic { get; set; }
 
-	public IPartyScreenLogicHandler Handler
-	{
-		get
-		{
-			return _handler;
-		}
-		set
-		{
-			_handler = value;
-		}
-	}
+	public PartyScreenHelper.PartyScreenMode PartyScreenMode { get; set; }
 
-	public void InitializeLogic(PartyScreenLogic partyScreenLogic)
-	{
-		PartyScreenLogic = partyScreenLogic;
-	}
+	public bool IsDonating { get; set; }
+
+	public IPartyScreenLogicHandler Handler { get; set; }
 
 	public void RequestUserInput(string text, Action accept, Action cancel)
 	{

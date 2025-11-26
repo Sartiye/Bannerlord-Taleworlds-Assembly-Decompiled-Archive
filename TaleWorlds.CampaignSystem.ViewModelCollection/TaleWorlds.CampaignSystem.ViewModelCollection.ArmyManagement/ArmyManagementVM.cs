@@ -97,6 +97,8 @@ public class ArmyManagementVM : ViewModel
 
 	private string _strengthText;
 
+	private string _shipCountText;
+
 	private string _lordsText;
 
 	private string _distanceText;
@@ -292,6 +294,23 @@ public class ArmyManagementVM : ViewModel
 			{
 				_strengthText = value;
 				OnPropertyChangedWithValue(value, "StrengthText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ShipCountText
+	{
+		get
+		{
+			return _shipCountText;
+		}
+		set
+		{
+			if (value != _shipCountText)
+			{
+				_shipCountText = value;
+				OnPropertyChangedWithValue(value, "ShipCountText");
 			}
 		}
 	}
@@ -972,8 +991,6 @@ public class ArmyManagementVM : ViewModel
 				PartiesInCart.Add(party);
 			}
 		}
-		CalculateCohesion();
-		CanBoostCohesion = PlayerHasArmy && NewCohesion < 100;
 		if (MobileParty.MainParty.Army != null)
 		{
 			CohesionBoostCost = Campaign.Current.Models.ArmyManagementCalculationModel.GetCohesionBoostInfluenceCost(MobileParty.MainParty.Army, 10);
@@ -995,12 +1012,13 @@ public class ArmyManagementVM : ViewModel
 		DoneText = GameTexts.FindText("str_done").ToString();
 		DistanceText = GameTexts.FindText("str_distance").ToString();
 		CostText = GameTexts.FindText("str_cost").ToString();
-		StrengthText = GameTexts.FindText("str_men_numbersign").ToString();
+		StrengthText = GameTexts.FindText("str_men").ToString();
 		LordsText = GameTexts.FindText("str_leader").ToString();
-		ClanText = GameTexts.FindText("str_clans").ToString();
+		ClanText = GameTexts.FindText("str_clan").ToString();
 		NameText = GameTexts.FindText("str_sort_by_name_label").ToString();
 		OwnerText = GameTexts.FindText("str_party").ToString();
 		DisbandArmyText = GameTexts.FindText("str_disband_army").ToString();
+		ShipCountText = new TextObject("{=7Q8ufo5X}Ships").ToString();
 		_playerDoesntHaveEnoughInfluenceStr = GameTexts.FindText("str_warning_you_dont_have_enough_influence").ToString();
 		GameTexts.SetVariable("TOTAL_INFLUENCE", TaleWorlds.Library.MathF.Round(Hero.MainHero.Clan.Influence));
 		TotalInfluence = GameTexts.FindText("str_total_influence").ToString();
@@ -1062,7 +1080,6 @@ public class ArmyManagementVM : ViewModel
 			}
 			TotalCost += armyItem.Cost;
 		}
-		CalculateCohesion();
 		OnRefresh();
 	}
 
@@ -1079,7 +1096,6 @@ public class ArmyManagementVM : ViewModel
 			}
 			TotalCost -= armyItem.Cost;
 		}
-		CalculateCohesion();
 		OnRefresh();
 	}
 
@@ -1094,21 +1110,12 @@ public class ArmyManagementVM : ViewModel
 
 	private void OnBoostCohesion()
 	{
-		Army army = MobileParty.MainParty.Army;
-		if (army != null && army.Cohesion < 100f)
+		if (CanBoostCohesion)
 		{
-			if (Hero.MainHero.Clan.Influence >= (float)(CohesionBoostCost + TotalCost))
-			{
-				NewCohesion += 10;
-				TotalCost += CohesionBoostCost;
-				_boostedCohesion += 10;
-				_influenceSpentForCohesionBoosting += CohesionBoostCost;
-				OnRefresh();
-			}
-			else
-			{
-				MBInformationManager.AddQuickInformation(new TextObject("{=Xmw93W6a}Not Enough Influence"));
-			}
+			TotalCost += CohesionBoostCost;
+			_boostedCohesion += 10;
+			_influenceSpentForCohesionBoosting += CohesionBoostCost;
+			OnRefresh();
 		}
 	}
 
@@ -1121,7 +1128,7 @@ public class ArmyManagementVM : ViewModel
 		foreach (ArmyManagementItemVM item in PartiesInCart)
 		{
 			num2++;
-			num += Campaign.Current.Models.ArmyManagementCalculationModel.GetPartyStrength(item.Party.Party);
+			num += (int)item.Party.Party.EstimatedStrength;
 			if (item.IsAlreadyWithPlayer)
 			{
 				num4 += item.Party.Food;
@@ -1140,18 +1147,19 @@ public class ArmyManagementVM : ViewModel
 		TotalStrengthText = GameTexts.FindText("str_LEFT_colon").ToString();
 		CanCreateArmy = (float)TotalCost <= Hero.MainHero.Clan.Influence && num2 > 1;
 		PlayerHasArmy = MobileParty.MainParty.Army != null && (_partiesToRemove.Count <= 0 || PartiesInCart.Count((ArmyManagementItemVM p) => p.IsAlreadyWithPlayer) >= 1);
-		CanBoostCohesion = PlayerHasArmy && 100 - NewCohesion >= 10;
+		CalculateCohesion();
+		CanBoostCohesion = PlayerHasArmy && NewCohesion + 10 <= 100;
 		if (CanBoostCohesion)
 		{
-			TextObject textObject = new TextObject("{=s5b77f0H}Add +{BOOSTAMOUNT} cohesion to your army");
+			TextObject textObject = new TextObject("{=nNZ1ZtTE}Add {BOOSTAMOUNT} cohesion to your army");
 			textObject.SetTextVariable("BOOSTAMOUNT", 10);
-			BoostCohesionHint.HintText = new TextObject("{=!}" + textObject.ToString());
+			BoostCohesionHint.HintText = textObject;
 		}
-		else if (100 - NewCohesion >= 10)
+		else if (NewCohesion + 10 > 100)
 		{
 			TextObject textObject2 = new TextObject("{=rsHPaaYZ}Cohesion needs to be lower than {MINAMOUNT} to boost");
 			textObject2.SetTextVariable("MINAMOUNT", 90);
-			BoostCohesionHint.HintText = new TextObject("{=!}" + textObject2.ToString());
+			BoostCohesionHint.HintText = textObject2;
 		}
 		else
 		{
@@ -1193,7 +1201,7 @@ public class ArmyManagementVM : ViewModel
 			disabledReason = disabledReason2;
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -1243,14 +1251,13 @@ public class ArmyManagementVM : ViewModel
 		{
 			if (MobileParty.MainParty.Army == null)
 			{
-				((Kingdom)MobileParty.MainParty.MapFaction).CreateArmy(Hero.MainHero, Hero.MainHero.HomeSettlement, Army.ArmyTypes.Patrolling);
+				((Kingdom)MobileParty.MainParty.MapFaction).CreateArmy(Hero.MainHero, Hero.MainHero.HomeSettlement, Army.ArmyTypes.Defender);
 			}
 			foreach (ArmyManagementItemVM item in PartiesInCart)
 			{
 				if (item.Party != MobileParty.MainParty)
 				{
 					item.Party.Army = MobileParty.MainParty.Army;
-					SetPartyAiAction.GetActionForEscortingParty(item.Party, MobileParty.MainParty);
 				}
 			}
 			ChangeClanInfluenceAction.Apply(Clan.PlayerClan, -(TotalCost - _influenceSpentForCohesionBoosting));

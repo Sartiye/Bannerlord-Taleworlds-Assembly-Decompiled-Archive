@@ -18,8 +18,6 @@ public class MissionFormationMarkerTargetVM : ViewModel
 
 	private bool _isEnabled;
 
-	private bool _isInsideScreenBoundaries;
-
 	private bool _isCenterOfFocus;
 
 	private bool _isFormationTargetRelevant;
@@ -139,23 +137,6 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsInsideScreenBoundaries
-	{
-		get
-		{
-			return _isInsideScreenBoundaries;
-		}
-		set
-		{
-			if (_isInsideScreenBoundaries != value)
-			{
-				_isInsideScreenBoundaries = value;
-				OnPropertyChangedWithValue(value, "IsInsideScreenBoundaries");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public Vec2 ScreenPosition
 	{
 		get
@@ -226,8 +207,19 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	public MissionFormationMarkerTargetVM(Formation formation)
 	{
 		Formation = formation;
-		TeamType = ((!Formation.Team.IsPlayerTeam) ? (Formation.Team.IsPlayerAlly ? 1 : 2) : 0);
 		FormationType = GetFormationType(Formation.RepresentativeClass);
+		if (Formation.Team.IsPlayerTeam)
+		{
+			TeamType = 0;
+		}
+		else if (Formation.Team.IsPlayerAlly)
+		{
+			TeamType = 1;
+		}
+		else
+		{
+			TeamType = 2;
+		}
 	}
 
 	public void Refresh()

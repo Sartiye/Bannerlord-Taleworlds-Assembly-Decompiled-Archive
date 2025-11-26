@@ -57,15 +57,12 @@ public class ItemBarterBehavior : CampaignBehaviorBase
 			if (!position.NearlyEquals(_latestHeroPosition))
 			{
 				_latestHeroPosition = position;
-				MBReadOnlyList<Settlement> all = Settlement.All;
-				int count = all.Count;
+				MBReadOnlyList<Town> allTowns = Campaign.Current.AllTowns;
+				int count = allTowns.Count;
 				for (int i = 0; i < count; i++)
 				{
-					Settlement settlement = all[i];
-					if (settlement.IsTown)
-					{
-						_sortedSettlements.Add(new SettlementDistancePair(position.DistanceSquared(settlement.GatePosition), settlement));
-					}
+					Settlement settlement = allTowns[i].Settlement;
+					_sortedSettlements.Add(new SettlementDistancePair(position.DistanceSquared(settlement.Position.ToVec2()), settlement));
 				}
 				_sortedSettlements.Sort();
 				_closestSettlements.Clear();
@@ -93,8 +90,12 @@ public class ItemBarterBehavior : CampaignBehaviorBase
 
 	public void CheckForBarters(BarterData args)
 	{
-		Vec2 position = ((args.OffererHero != null) ? args.OffererHero.GetPosition().AsVec2 : ((args.OffererParty == null) ? args.OtherHero.GetPosition().AsVec2 : args.OffererParty.MobileParty.GetPosition().AsVec2));
-		List<Settlement> closestSettlements = _distanceCache.GetClosestSettlements(position);
+		CampaignVec2 campaignVec = ((args.OffererHero != null) ? args.OffererHero.GetCampaignPosition() : ((args.OffererParty == null) ? args.OtherHero.GetCampaignPosition() : args.OffererParty.MobileParty.Position));
+		if (!campaignVec.IsValid())
+		{
+			return;
+		}
+		List<Settlement> closestSettlements = _distanceCache.GetClosestSettlements(campaignVec.ToVec2());
 		if (args.OffererParty == null || args.OtherParty == null)
 		{
 			return;

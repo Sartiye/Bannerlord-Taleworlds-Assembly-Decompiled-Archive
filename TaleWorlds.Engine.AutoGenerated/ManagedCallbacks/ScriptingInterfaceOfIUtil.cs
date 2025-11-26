@@ -408,6 +408,16 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetPlatformModulePathsDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetPossibleCommandLineStartingWithDelegate(byte[] command, int index);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetRendererFpsDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -449,6 +459,12 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsAsyncPhysicsThreadDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsBenchmarkQuitedDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -460,7 +476,19 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsDevkitDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsEditModeEnabledDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsLockhartPlatformDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -491,12 +519,22 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ManagedParallelForWithoutRenderThreadDelegate(int fromInclusive, int toExclusive, long curKey, int grainSize);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void OnLoadingWindowDisabledDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void OnLoadingWindowEnabledDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void OpenNavalDlcPurchasePageDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -571,6 +609,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetCanLoadModulesDelegate([MarshalAs(UnmanagedType.U1)] bool canLoadModules);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetCoreGameStateDelegate(int state);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -592,6 +635,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetCrashReportCustomStringDelegate(byte[] customString);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetCreateDumpOnWarningsDelegate([MarshalAs(UnmanagedType.U1)] bool val);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -662,6 +710,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetScreenTextRenderingStateDelegate([MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetWatchdogAutoreportDelegate([MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -856,6 +909,10 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 
 	public static GetPCInfoDelegate call_GetPCInfoDelegate;
 
+	public static GetPlatformModulePathsDelegate call_GetPlatformModulePathsDelegate;
+
+	public static GetPossibleCommandLineStartingWithDelegate call_GetPossibleCommandLineStartingWithDelegate;
+
 	public static GetRendererFpsDelegate call_GetRendererFpsDelegate;
 
 	public static GetReturnCodeDelegate call_GetReturnCodeDelegate;
@@ -872,11 +929,17 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 
 	public static GetVisualTestsValidatePathDelegate call_GetVisualTestsValidatePathDelegate;
 
+	public static IsAsyncPhysicsThreadDelegate call_IsAsyncPhysicsThreadDelegate;
+
 	public static IsBenchmarkQuitedDelegate call_IsBenchmarkQuitedDelegate;
 
 	public static IsDetailedSoundLogOnDelegate call_IsDetailedSoundLogOnDelegate;
 
+	public static IsDevkitDelegate call_IsDevkitDelegate;
+
 	public static IsEditModeEnabledDelegate call_IsEditModeEnabledDelegate;
+
+	public static IsLockhartPlatformDelegate call_IsLockhartPlatformDelegate;
 
 	public static IsSceneReportFinishedDelegate call_IsSceneReportFinishedDelegate;
 
@@ -888,9 +951,13 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 
 	public static ManagedParallelForWithDtDelegate call_ManagedParallelForWithDtDelegate;
 
+	public static ManagedParallelForWithoutRenderThreadDelegate call_ManagedParallelForWithoutRenderThreadDelegate;
+
 	public static OnLoadingWindowDisabledDelegate call_OnLoadingWindowDisabledDelegate;
 
 	public static OnLoadingWindowEnabledDelegate call_OnLoadingWindowEnabledDelegate;
+
+	public static OpenNavalDlcPurchasePageDelegate call_OpenNavalDlcPurchasePageDelegate;
 
 	public static OpenOnscreenKeyboardDelegate call_OpenOnscreenKeyboardDelegate;
 
@@ -920,6 +987,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 
 	public static SetBenchmarkStatusDelegate call_SetBenchmarkStatusDelegate;
 
+	public static SetCanLoadModulesDelegate call_SetCanLoadModulesDelegate;
+
 	public static SetCoreGameStateDelegate call_SetCoreGameStateDelegate;
 
 	public static SetCrashOnAssertsDelegate call_SetCrashOnAssertsDelegate;
@@ -929,6 +998,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static SetCrashReportCustomStackDelegate call_SetCrashReportCustomStackDelegate;
 
 	public static SetCrashReportCustomStringDelegate call_SetCrashReportCustomStringDelegate;
+
+	public static SetCreateDumpOnWarningsDelegate call_SetCreateDumpOnWarningsDelegate;
 
 	public static SetDisableDumpGenerationDelegate call_SetDisableDumpGenerationDelegate;
 
@@ -957,6 +1028,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static SetReportModeDelegate call_SetReportModeDelegate;
 
 	public static SetScreenTextRenderingStateDelegate call_SetScreenTextRenderingStateDelegate;
+
+	public static SetWatchdogAutoreportDelegate call_SetWatchdogAutoreportDelegate;
 
 	public static SetWatchdogValueDelegate call_SetWatchdogValueDelegate;
 
@@ -1722,6 +1795,32 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public string GetPlatformModulePaths()
+	{
+		if (call_GetPlatformModulePathsDelegate() != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
+	}
+
+	public string GetPossibleCommandLineStartingWith(string command, int index)
+	{
+		byte[] array = null;
+		if (command != null)
+		{
+			int byteCount = _utf8.GetByteCount(command);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(command, 0, command.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		if (call_GetPossibleCommandLineStartingWithDelegate(array, index) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
+	}
+
 	public float GetRendererFps()
 	{
 		return call_GetRendererFpsDelegate();
@@ -1786,6 +1885,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public bool IsAsyncPhysicsThread()
+	{
+		return call_IsAsyncPhysicsThreadDelegate();
+	}
+
 	public bool IsBenchmarkQuited()
 	{
 		return call_IsBenchmarkQuitedDelegate();
@@ -1796,9 +1900,19 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		return call_IsDetailedSoundLogOnDelegate();
 	}
 
+	public bool IsDevkit()
+	{
+		return call_IsDevkitDelegate();
+	}
+
 	public bool IsEditModeEnabled()
 	{
 		return call_IsEditModeEnabledDelegate();
+	}
+
+	public bool IsLockhartPlatform()
+	{
+		return call_IsLockhartPlatformDelegate();
 	}
 
 	public bool IsSceneReportFinished()
@@ -1834,6 +1948,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		call_ManagedParallelForWithDtDelegate(fromInclusive, toExclusive, curKey, grainSize);
 	}
 
+	public void ManagedParallelForWithoutRenderThread(int fromInclusive, int toExclusive, long curKey, int grainSize)
+	{
+		call_ManagedParallelForWithoutRenderThreadDelegate(fromInclusive, toExclusive, curKey, grainSize);
+	}
+
 	public void OnLoadingWindowDisabled()
 	{
 		call_OnLoadingWindowDisabledDelegate();
@@ -1842,6 +1961,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public void OnLoadingWindowEnabled()
 	{
 		call_OnLoadingWindowEnabledDelegate();
+	}
+
+	public void OpenNavalDlcPurchasePage()
+	{
+		call_OpenNavalDlcPurchasePageDelegate();
 	}
 
 	public void OpenOnscreenKeyboard(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
@@ -1997,6 +2121,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		call_SetBenchmarkStatusDelegate(status, array);
 	}
 
+	public void SetCanLoadModules(bool canLoadModules)
+	{
+		call_SetCanLoadModulesDelegate(canLoadModules);
+	}
+
 	public void SetCoreGameState(int state)
 	{
 		call_SetCoreGameStateDelegate(state);
@@ -2036,6 +2165,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 			array[byteCount] = 0;
 		}
 		call_SetCrashReportCustomStringDelegate(array);
+	}
+
+	public void SetCreateDumpOnWarnings(bool val)
+	{
+		call_SetCreateDumpOnWarningsDelegate(val);
 	}
 
 	public void SetDisableDumpGeneration(bool value)
@@ -2114,6 +2248,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public void SetScreenTextRenderingState(bool value)
 	{
 		call_SetScreenTextRenderingStateDelegate(value);
+	}
+
+	public void SetWatchdogAutoreport(bool value)
+	{
+		call_SetWatchdogAutoreportDelegate(value);
 	}
 
 	public void SetWatchdogValue(string fileName, string groupName, string key, string value)

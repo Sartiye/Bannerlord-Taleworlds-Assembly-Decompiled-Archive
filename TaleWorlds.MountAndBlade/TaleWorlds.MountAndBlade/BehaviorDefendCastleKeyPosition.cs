@@ -58,7 +58,7 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 	{
 		base.CalculateCurrentOrder();
 		base.CurrentOrder = ((_behaviorState == BehaviorState.Ready) ? _readyOrder : _waitOrder);
-		CurrentFacingOrder = ((base.Formation.QuerySystem.ClosestEnemyFormation != null && TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.QuerySystem.ClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true)) ? FacingOrder.FacingOrderLookAtEnemy : ((_behaviorState == BehaviorState.Ready) ? _readyFacingOrder : _waitFacingOrder));
+		CurrentFacingOrder = ((base.Formation.CachedClosestEnemyFormation != null && TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.CachedClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true)) ? FacingOrder.FacingOrderLookAtEnemy : ((_behaviorState == BehaviorState.Ready) ? _readyFacingOrder : _waitFacingOrder));
 	}
 
 	public override TextObject GetBehaviorString()
@@ -155,7 +155,7 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 			_waitFacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		}
 		base.CurrentOrder = ((_behaviorState == BehaviorState.Ready) ? _readyOrder : _waitOrder);
-		CurrentFacingOrder = ((base.Formation.QuerySystem.ClosestEnemyFormation != null && TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.QuerySystem.ClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true)) ? FacingOrder.FacingOrderLookAtEnemy : ((_behaviorState == BehaviorState.Ready) ? _readyFacingOrder : _waitFacingOrder));
+		CurrentFacingOrder = ((base.Formation.CachedClosestEnemyFormation != null && TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.CachedClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true)) ? FacingOrder.FacingOrderLookAtEnemy : ((_behaviorState == BehaviorState.Ready) ? _readyFacingOrder : _waitFacingOrder));
 	}
 
 	public override void OnValidBehaviorSideChanged()
@@ -233,14 +233,14 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 		}
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 		if (_behaviorState == BehaviorState.Ready && _tacticalMiddlePos != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_tacticalMiddlePos.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_tacticalMiddlePos.Width));
 		}
 		else if (_behaviorState == BehaviorState.Waiting && _tacticalWaitPos != null)
 		{
-			base.Formation.FormOrder = FormOrder.FormOrderCustom(_tacticalWaitPos.Width);
+			base.Formation.SetFormOrder(FormOrder.FormOrderCustom(_tacticalWaitPos.Width));
 		}
 		if (flag2 || !_hasFormedShieldWall)
 		{
@@ -248,7 +248,7 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 			if (_behaviorState == BehaviorState.Ready && _readyOrderPosition.IsValid)
 			{
 				ref WorldPosition readyOrderPosition = ref _readyOrderPosition;
-				Vec3 targetPoint = base.Formation.QuerySystem.MedianPosition.GetNavMeshVec3();
+				Vec3 targetPoint = base.Formation.CachedMedianPosition.GetNavMeshVec3();
 				num = ((readyOrderPosition.DistanceSquaredWithLimit(in targetPoint, MathF.Min(base.Formation.Depth, base.Formation.Width) * 1.2f) <= (_hasFormedShieldWall ? (MathF.Min(base.Formation.Depth, base.Formation.Width) * MathF.Min(base.Formation.Depth, base.Formation.Width)) : (MathF.Min(base.Formation.Depth, base.Formation.Width) * MathF.Min(base.Formation.Depth, base.Formation.Width) * 0.25f))) ? 1 : 0);
 			}
 			else
@@ -259,7 +259,7 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 			if (flag3 != _hasFormedShieldWall)
 			{
 				_hasFormedShieldWall = flag3;
-				base.Formation.ArrangementOrder = (_hasFormedShieldWall ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
+				base.Formation.SetArrangementOrder(_hasFormedShieldWall ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
 			}
 		}
 	}
@@ -270,15 +270,21 @@ public class BehaviorDefendCastleKeyPosition : BehaviorComponent
 		ResetOrderPositions();
 	}
 
+	public override void ResetBehavior()
+	{
+		base.ResetBehavior();
+		ResetOrderPositions();
+	}
+
 	protected override void OnBehaviorActivatedAux()
 	{
 		ResetOrderPositions();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 		_hasFormedShieldWall = true;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWide;
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}
 
 	protected override float GetAiWeight()

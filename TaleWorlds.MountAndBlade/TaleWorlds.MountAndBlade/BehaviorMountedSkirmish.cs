@@ -113,24 +113,22 @@ public class BehaviorMountedSkirmish : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		WorldPosition position = base.Formation.QuerySystem.MedianPosition;
+		WorldPosition position = base.Formation.CachedMedianPosition;
 		_isEnemyReachable = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation != null && (!(base.Formation.Team.TeamAI is TeamAISiegeComponent) || !TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation, includeOnlyPositionedUnits: false));
 		if (!_isEnemyReachable)
 		{
-			position.SetVec2(base.Formation.QuerySystem.AveragePosition);
+			position.SetVec2(base.Formation.CachedAveragePosition);
 		}
 		else
 		{
-			bool num = (base.Formation.QuerySystem.AverageAllyPosition - base.Formation.Team.QuerySystem.AverageEnemyPosition).LengthSquared <= 3600f;
-			bool engaging = _engaging;
-			engaging = num || ((!_engaging) ? ((base.Formation.QuerySystem.AveragePosition - base.Formation.QuerySystem.AverageAllyPosition).LengthSquared <= 3600f) : (!(base.Formation.QuerySystem.UnderRangedAttackRatio > base.Formation.QuerySystem.MakingRangedAttackRatio) && ((!base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.IsCavalryFormation && !base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.IsRangedCavalryFormation) || (base.Formation.QuerySystem.AveragePosition - base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.MedianPosition.AsVec2).LengthSquared / (base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.MovementSpeed * base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.MovementSpeed) >= 16f)));
+			bool engaging = (base.Formation.QuerySystem.AverageAllyPosition - base.Formation.Team.QuerySystem.AverageEnemyPosition).LengthSquared <= 3600f || ((!_engaging) ? ((base.Formation.CachedAveragePosition - base.Formation.QuerySystem.AverageAllyPosition).LengthSquared <= 3600f) : (!(base.Formation.QuerySystem.UnderRangedAttackRatio > base.Formation.QuerySystem.MakingRangedAttackRatio) && ((!base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.IsCavalryFormation && !base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.IsRangedCavalryFormation) || (base.Formation.CachedAveragePosition - base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.Formation.CachedMedianPosition.AsVec2).LengthSquared / (base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.Formation.CachedMovementSpeed * base.Formation.QuerySystem.FastestSignificantlyLargeEnemyFormation.Formation.CachedMovementSpeed) >= 16f)));
 			_engaging = engaging;
 			if (_engaging)
 			{
-				Vec2 vec = (base.Formation.QuerySystem.AveragePosition - base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.AveragePosition).Normalized().LeftVec();
+				Vec2 vec = (base.Formation.CachedAveragePosition - base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition).Normalized().LeftVec();
 				FormationQuerySystem closestSignificantlyLargeEnemyFormation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation;
-				float num2 = 50f + (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.Width + base.Formation.Depth) * 0.5f;
-				float num3 = 0f;
+				float num = 50f + (base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation.Width + base.Formation.Depth) * 0.5f;
+				float num2 = 0f;
 				Formation formation = base.Formation.QuerySystem.ClosestSignificantlyLargeEnemyFormation.Formation;
 				foreach (Team team in Mission.Current.Teams)
 				{
@@ -142,11 +140,11 @@ public class BehaviorMountedSkirmish : BehaviorComponent
 					{
 						if (item.CountOfUnits > 0 && item.QuerySystem != closestSignificantlyLargeEnemyFormation)
 						{
-							Vec2 v = item.QuerySystem.AveragePosition - closestSignificantlyLargeEnemyFormation.AveragePosition;
-							float num4 = v.Normalize();
-							if (vec.DotProduct(v) > 0.8f && num4 < num2 && num4 > num3)
+							Vec2 v = item.CachedAveragePosition - closestSignificantlyLargeEnemyFormation.Formation.CachedAveragePosition;
+							float num3 = v.Normalize();
+							if (vec.DotProduct(v) > 0.8f && num3 < num && num3 > num2)
 							{
-								num3 = num4;
+								num2 = num3;
 								formation = item;
 							}
 						}
@@ -158,11 +156,11 @@ public class BehaviorMountedSkirmish : BehaviorComponent
 					return;
 				}
 				bool flag = formation.QuerySystem.IsCavalryFormation || formation.QuerySystem.IsRangedCavalryFormation;
-				float num5 = (flag ? 35f : 20f);
-				num5 += (formation.Depth + base.Formation.Width) * 0.5f;
-				num5 = TaleWorlds.Library.MathF.Min(num5, base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Width * 0.5f);
-				Ellipse ellipse = new Ellipse(formation.QuerySystem.MedianPosition.AsVec2, num5, formation.Width * 0.5f * (flag ? 1.5f : 1f), formation.Direction);
-				position.SetVec2(ellipse.GetTargetPos(base.Formation.QuerySystem.AveragePosition, 20f));
+				float num4 = (flag ? 35f : 20f);
+				num4 += (formation.Depth + base.Formation.Width) * 0.5f;
+				num4 = TaleWorlds.Library.MathF.Min(num4, base.Formation.QuerySystem.MissileRangeAdjusted - base.Formation.Width * 0.5f);
+				Ellipse ellipse = new Ellipse(formation.CachedMedianPosition.AsVec2, num4, formation.Width * 0.5f * (flag ? 1.5f : 1f), formation.Direction);
+				position.SetVec2(ellipse.GetTargetPos(base.Formation.CachedAveragePosition, 20f));
 			}
 			else
 			{
@@ -182,10 +180,10 @@ public class BehaviorMountedSkirmish : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderDeep;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderDeep);
 	}
 
 	protected override float GetAiWeight()

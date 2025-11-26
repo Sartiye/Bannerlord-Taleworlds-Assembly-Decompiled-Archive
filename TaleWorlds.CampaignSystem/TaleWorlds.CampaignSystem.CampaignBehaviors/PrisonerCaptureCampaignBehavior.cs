@@ -1,4 +1,3 @@
-using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -20,21 +19,33 @@ public class PrisonerCaptureCampaignBehavior : CampaignBehaviorBase
 
 	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification)
 	{
-		foreach (Settlement item in clan.Settlements.Where((Settlement x) => x.IsFortification))
+		for (int i = 0; i < clan.Settlements.Count; i++)
 		{
-			HandleSettlementHeroes(item);
+			Settlement settlement = clan.Settlements[i];
+			if (settlement.IsFortification)
+			{
+				HandleSettlementHeroes(settlement);
+			}
 		}
 	}
 
 	private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 	{
-		foreach (Settlement item in faction1.Settlements.Where((Settlement x) => x.IsFortification))
+		for (int i = 0; i < faction1.Settlements.Count; i++)
 		{
-			HandleSettlementHeroes(item);
+			Settlement settlement = faction1.Settlements[i];
+			if (settlement.IsFortification)
+			{
+				HandleSettlementHeroes(settlement);
+			}
 		}
-		foreach (Settlement item2 in faction2.Settlements.Where((Settlement x) => x.IsFortification))
+		for (int j = 0; j < faction2.Settlements.Count; j++)
 		{
-			HandleSettlementHeroes(item2);
+			Settlement settlement2 = faction2.Settlements[j];
+			if (settlement2.IsFortification)
+			{
+				HandleSettlementHeroes(settlement2);
+			}
 		}
 	}
 
@@ -48,14 +59,21 @@ public class PrisonerCaptureCampaignBehavior : CampaignBehaviorBase
 
 	private void HandleSettlementHeroes(Settlement settlement)
 	{
-		foreach (Hero item in settlement.HeroesWithoutParty.Where(SettlementHeroCaptureCommonCondition).ToList())
+		for (int num = settlement.HeroesWithoutParty.Count - 1; num >= 0; num--)
 		{
-			TakePrisonerAction.Apply(item.CurrentSettlement.Party, item);
+			Hero hero = settlement.HeroesWithoutParty[num];
+			if (SettlementHeroCaptureCommonCondition(hero))
+			{
+				TakePrisonerAction.Apply(hero.CurrentSettlement.Party, hero);
+			}
 		}
-		foreach (MobileParty item2 in settlement.Parties.Where((MobileParty x) => x.IsLordParty && (x.Army == null || (x.Army != null && x.Army.LeaderParty == x && !x.Army.Parties.Contains(MobileParty.MainParty))) && x.MapEvent == null && SettlementHeroCaptureCommonCondition(x.LeaderHero)).ToList())
+		for (int num2 = settlement.Parties.Count - 1; num2 >= 0; num2--)
 		{
-			LeaveSettlementAction.ApplyForParty(item2);
-			SetPartyAiAction.GetActionForPatrollingAroundSettlement(item2, settlement);
+			MobileParty mobileParty = settlement.Parties[num2];
+			if (mobileParty.IsLordParty && (mobileParty.Army == null || (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && !mobileParty.Army.Parties.Contains(MobileParty.MainParty))) && mobileParty.MapEvent == null && SettlementHeroCaptureCommonCondition(mobileParty.LeaderHero))
+			{
+				LeaveSettlementAction.ApplyForParty(mobileParty);
+			}
 		}
 	}
 

@@ -1,5 +1,6 @@
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.ScreenSystem;
@@ -36,12 +37,13 @@ public class GauntletBodyGeneratorScreen : ScreenBase, IFaceGeneratorScreen
 		base.OnInitialize();
 		Game.Current.GameStateManager.RegisterActiveStateDisableRequest(this);
 		AddLayer(_facegenLayer.GauntletLayer);
+		InformationManager.HideAllMessages();
 	}
 
 	protected override void OnFinalize()
 	{
 		base.OnFinalize();
-		if (LoadingWindow.GetGlobalLoadingWindowState())
+		if (LoadingWindow.IsLoadingWindowActive)
 		{
 			LoadingWindow.DisableGlobalLoadingWindow();
 		}
@@ -67,7 +69,7 @@ public class GauntletBodyGeneratorScreen : ScreenBase, IFaceGeneratorScreen
 		}
 		foreach (Agent agent in current.Agents)
 		{
-			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: false);
+			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false);
 			agent.UpdateAgentProperties();
 		}
 	}

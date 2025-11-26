@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Generic;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -24,9 +25,9 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 
 	private string _titleText;
 
-	private ImageIdentifierVM _defenderPartyBanner;
+	private BannerImageIdentifierVM _defenderPartyBanner;
 
-	private ImageIdentifierVM _attackerPartyBanner;
+	private BannerImageIdentifierVM _attackerPartyBanner;
 
 	private MBBindingList<GameMenuPartyItemVM> _attackerPartyList;
 
@@ -40,6 +41,10 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 
 	private int _defenderPartyCount;
 
+	private int _defenderShipCount;
+
+	private int _attackerShipCount;
+
 	private string _attackerPartyFood;
 
 	private string _defenderPartyFood;
@@ -49,6 +54,8 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	private string _defenderPartyCountLbl;
 
 	private string _attackerPartyCountLbl;
+
+	private bool _isNaval;
 
 	private bool _isSiege;
 
@@ -61,6 +68,10 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	private HintViewModel _attackerTroopNumHint;
 
 	private HintViewModel _defenderTroopNumHint;
+
+	private HintViewModel _attackerShipNumHint;
+
+	private HintViewModel _defenderShipNumHint;
 
 	private BasicTooltipViewModel _defenderWallHint;
 
@@ -90,7 +101,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM DefenderPartyBanner
+	public BannerImageIdentifierVM DefenderPartyBanner
 	{
 		get
 		{
@@ -107,7 +118,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM AttackerPartyBanner
+	public BannerImageIdentifierVM AttackerPartyBanner
 	{
 		get
 		{
@@ -243,6 +254,40 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
+	public int DefenderShipCount
+	{
+		get
+		{
+			return _defenderShipCount;
+		}
+		set
+		{
+			if (value != _defenderShipCount)
+			{
+				_defenderShipCount = value;
+				OnPropertyChangedWithValue(value, "DefenderShipCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int AttackerShipCount
+	{
+		get
+		{
+			return _attackerShipCount;
+		}
+		set
+		{
+			if (value != _attackerShipCount)
+			{
+				_attackerShipCount = value;
+				OnPropertyChangedWithValue(value, "AttackerShipCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string DefenderPartyFood
 	{
 		get
@@ -288,6 +333,23 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			{
 				_defenderWallHitPoints = value;
 				OnPropertyChangedWithValue(value, "DefenderWallHitPoints");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsNaval
+	{
+		get
+		{
+			return _isNaval;
+		}
+		set
+		{
+			if (value != _isNaval)
+			{
+				_isNaval = value;
+				OnPropertyChangedWithValue(value, "IsNaval");
 			}
 		}
 	}
@@ -407,6 +469,40 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			{
 				_defenderTroopNumHint = value;
 				OnPropertyChangedWithValue(value, "DefenderTroopNumHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel AttackerShipNumHint
+	{
+		get
+		{
+			return _attackerShipNumHint;
+		}
+		set
+		{
+			if (value != _attackerShipNumHint)
+			{
+				_attackerShipNumHint = value;
+				OnPropertyChangedWithValue(value, "AttackerShipNumHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel DefenderShipNumHint
+	{
+		get
+		{
+			return _defenderShipNumHint;
+		}
+		set
+		{
+			if (value != _defenderShipNumHint)
+			{
+				_defenderShipNumHint = value;
+				OnPropertyChangedWithValue(value, "DefenderShipNumHint");
 			}
 		}
 	}
@@ -564,11 +660,10 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 				_attackerLeadingParty = new GameMenuPartyItemVM(ExecuteOnSetAsActiveContextMenuItem, siegeEvent.BesiegerCamp.LeaderParty.Party, canShowQuest: false);
 			}
 			DefenderWallHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetSiegeWallTooltip(settlement.Town.GetWallLevel(), TaleWorlds.Library.MathF.Ceiling(settlement.SettlementTotalWallHitPoints)));
-			IsSiege = true;
 		}
 		else
 		{
-			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 113);
+			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 113);
 		}
 	}
 
@@ -579,6 +674,8 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		DefenderBannerHint = new HintViewModel(GameTexts.FindText("str_defender_banner"));
 		AttackerTroopNumHint = new HintViewModel(GameTexts.FindText("str_number_of_healthy_attacker_soldiers"));
 		DefenderTroopNumHint = new HintViewModel(GameTexts.FindText("str_number_of_healthy_defender_soldiers"));
+		AttackerShipNumHint = new HintViewModel(new TextObject("{=sZu7CCsh}Number of Attacker Ships"));
+		DefenderShipNumHint = new HintViewModel(new TextObject("{=RjBSR9iO}Number of Defender Ships"));
 		base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", MenuOverlayContextList.Encyclopedia.ToString()).ToString(), enabled: true, MenuOverlayContextList.Encyclopedia));
 		AttackerPartyList.ApplyActionOnAllItems(delegate(GameMenuPartyItemVM x)
 		{
@@ -597,6 +694,14 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		{
 			UpdateLists();
 		}
+		AttackerPartyList.ApplyActionOnAllItems(delegate(GameMenuPartyItemVM ap)
+		{
+			ap.RefreshCounts();
+		});
+		DefenderPartyList.ApplyActionOnAllItems(delegate(GameMenuPartyItemVM dp)
+		{
+			dp.RefreshCounts();
+		});
 	}
 
 	public override void Refresh()
@@ -632,7 +737,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		num /= (float)DefenderPartyList.Count;
 		if (!flag)
 		{
-			num2 /= (float)AttackerPartyList.Count;
+			num2 /= (float)DefenderPartyList.Count;
 		}
 		num2 = Math.Max((int)Math.Ceiling(num2), 0);
 		MBTextManager.SetTextVariable("DAY_NUM", num2.ToString());
@@ -657,7 +762,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			}
 			else
 			{
-				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 207);
+				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 212);
 			}
 		}
 		else if (Settlement.CurrentSettlement?.SiegeEvent != null)
@@ -698,10 +803,20 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		SetAttackerAndDefenderParties(out var attackerChanged, out var defenderChanged);
 		if (_defenderLeadingParty != null && defenderChanged)
 		{
+			int num = DefenderPartyList.FindIndex((GameMenuPartyItemVM x) => x.Party == _defenderLeadingParty.Party);
+			if (num != -1)
+			{
+				DefenderPartyList.RemoveAt(num);
+			}
 			DefenderPartyList.Insert(0, _defenderLeadingParty);
 		}
 		if (_attackerLeadingParty != null && attackerChanged)
 		{
+			int num2 = AttackerPartyList.FindIndex((GameMenuPartyItemVM x) => x.Party == _attackerLeadingParty.Party);
+			if (num2 != -1)
+			{
+				AttackerPartyList.RemoveAt(num2);
+			}
 			AttackerPartyList.Insert(0, _attackerLeadingParty);
 		}
 		List<PartyBase> list = new List<PartyBase>();
@@ -713,6 +828,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		{
 			list5.AddRange(MobileParty.MainParty.MapEvent.InvolvedParties);
 			IsSiege = false;
+			IsNaval = MobileParty.MainParty.MapEvent.IsNavalMapEvent;
 		}
 		else
 		{
@@ -725,6 +841,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			SiegeEvent siegeEvent = settlement.SiegeEvent;
 			list5.AddRange(siegeEvent.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege));
 			IsSiege = true;
+			IsNaval = false;
 		}
 		foreach (PartyBase item in list5)
 		{
@@ -744,13 +861,13 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		}
 		if (PowerComparer == null)
 		{
-			PowerComparer = new PowerLevelComparer(list2.Sum((PartyBase party) => party.TotalStrength), list.Sum((PartyBase party) => party.TotalStrength));
+			PowerComparer = new PowerLevelComparer(list2.Sum((PartyBase party) => party.CalculateCurrentStrength()), list.Sum((PartyBase party) => party.CalculateCurrentStrength()));
 		}
 		else
 		{
-			float num = list2.Sum((PartyBase party) => party.TotalStrength);
-			float num2 = list.Sum((PartyBase party) => party.TotalStrength);
-			PowerComparer.Update(num, num2, num, num2);
+			float num3 = list2.Sum((PartyBase party) => party.CalculateCurrentStrength());
+			float num4 = list.Sum((PartyBase party) => party.CalculateCurrentStrength());
+			PowerComparer.Update(num3, num4, num3, num4);
 		}
 		List<PartyBase> list8 = list.OrderByDescending((PartyBase p) => p.NumberOfAllMembers).ToList();
 		List<PartyBase> list9 = AttackerPartyList.Select((GameMenuPartyItemVM enemy) => enemy.Party).ToList();
@@ -758,11 +875,11 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		list10.Remove(_attackerLeadingParty.Party);
 		foreach (PartyBase item2 in list9.Except(list8).ToList())
 		{
-			for (int num3 = AttackerPartyList.Count - 1; num3 >= 0; num3--)
+			for (int num5 = AttackerPartyList.Count - 1; num5 >= 0; num5--)
 			{
-				if (AttackerPartyList[num3].Party == item2)
+				if (AttackerPartyList[num5].Party == item2)
 				{
-					AttackerPartyList.RemoveAt(num3);
+					AttackerPartyList.RemoveAt(num5);
 				}
 			}
 		}
@@ -780,11 +897,11 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		list13.Remove(_defenderLeadingParty.Party);
 		foreach (PartyBase item4 in list12.Except(list11).ToList())
 		{
-			for (int num4 = DefenderPartyList.Count - 1; num4 >= 0; num4--)
+			for (int num6 = DefenderPartyList.Count - 1; num6 >= 0; num6--)
 			{
-				if (DefenderPartyList[num4].Party == item4)
+				if (DefenderPartyList[num6].Party == item4)
 				{
-					DefenderPartyList.RemoveAt(num4);
+					DefenderPartyList.RemoveAt(num6);
 				}
 			}
 		}
@@ -804,24 +921,12 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		{
 			attackerParty.RefreshProperties();
 		}
-		DefenderPartyCount = 0;
-		foreach (GameMenuPartyItemVM defenderParty2 in DefenderPartyList)
-		{
-			if (defenderParty2.Party != null)
-			{
-				DefenderPartyCount += defenderParty2.Party.NumberOfHealthyMembers;
-			}
-		}
-		AttackerPartyCount = 0;
-		foreach (GameMenuPartyItemVM attackerParty2 in AttackerPartyList)
-		{
-			if (attackerParty2.Party != null)
-			{
-				AttackerPartyCount += attackerParty2.Party.NumberOfHealthyMembers;
-			}
-		}
+		DefenderPartyCount = DefenderPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.NumberOfHealthyMembers ?? 0);
 		DefenderPartyCountLbl = DefenderPartyCount.ToString();
+		DefenderShipCount = DefenderPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.Ships.Count ?? 0);
+		AttackerPartyCount = AttackerPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.NumberOfHealthyMembers ?? 0);
 		AttackerPartyCountLbl = AttackerPartyCount.ToString();
+		AttackerShipCount = AttackerPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.Ships.Count ?? 0);
 		if (MobileParty.MainParty.MapEvent != null)
 		{
 			PartyBase leaderParty = MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker);
@@ -848,8 +953,8 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		IFaction faction2 = ((_attackerLeadingParty.Party == null) ? _attackerLeadingParty.Settlement.MapFaction : _attackerLeadingParty.Party.MapFaction);
 		Banner banner = ((_defenderLeadingParty.Party == null) ? _defenderLeadingParty.Settlement.OwnerClan.Banner : _defenderLeadingParty.Party.Banner);
 		Banner banner2 = ((_attackerLeadingParty.Party == null) ? _attackerLeadingParty.Settlement.OwnerClan.Banner : _attackerLeadingParty.Party.Banner);
-		DefenderPartyBanner = new ImageIdentifierVM(BannerCode.CreateFrom(banner), nineGrid: true);
-		AttackerPartyBanner = new ImageIdentifierVM(BannerCode.CreateFrom(banner2), nineGrid: true);
+		DefenderPartyBanner = new BannerImageIdentifierVM(banner, nineGrid: true);
+		AttackerPartyBanner = new BannerImageIdentifierVM(banner2, nineGrid: true);
 		string defenderColor = ((faction == null || !(faction is Kingdom)) ? Color.FromUint(faction?.Banner?.GetPrimaryColor() ?? Color.White.ToUnsignedInteger()).ToString() : Color.FromUint(((Kingdom)faction).PrimaryBannerColor).ToString());
 		string attackerColor = ((faction2 == null || !(faction2 is Kingdom)) ? Color.FromUint(faction2?.Banner?.GetPrimaryColor() ?? Color.White.ToUnsignedInteger()).ToString() : Color.FromUint(((Kingdom)faction2).PrimaryBannerColor).ToString());
 		PowerComparer.SetColors(defenderColor, attackerColor);

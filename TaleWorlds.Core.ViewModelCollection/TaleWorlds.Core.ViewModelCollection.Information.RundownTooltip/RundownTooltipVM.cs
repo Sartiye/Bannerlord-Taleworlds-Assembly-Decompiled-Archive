@@ -134,7 +134,7 @@ public class RundownTooltipVM : TooltipBaseVM
 		}
 		else
 		{
-			Debug.FailedAssert("Unexpected number of arguments for rundown tooltip", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.Core.ViewModelCollection\\Information\\RundownTooltip\\RundownTooltipVM.cs", ".ctor", 46);
+			Debug.FailedAssert("Unexpected number of arguments for rundown tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core.ViewModelCollection\\Information\\RundownTooltip\\RundownTooltipVM.cs", ".ctor", 46);
 		}
 		ValueCategorizationAsInt = (int)_valueCategorization;
 		_isPeriodicRefreshEnabled = true;

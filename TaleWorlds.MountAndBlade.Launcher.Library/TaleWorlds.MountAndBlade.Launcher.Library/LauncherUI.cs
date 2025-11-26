@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -77,17 +76,38 @@ public class LauncherUI
 		_widgetFactory.Initialize();
 		_viewModel = new LauncherVM(_userDataManager, _onClose, _onMinimize);
 		_movie = GauntletMovie.Load(_context, _widgetFactory, "UILauncher", _viewModel, doNotUseGeneratedPrefabs: false, hotReloadEnabled: true);
+		GauntletGamepadNavigationContext context = new GauntletGamepadNavigationContext(GetIsBlockedOnPosition, GetLastScreenOrder, GetIsAvailableForGamepadNavigation);
+		_context.InitializeGamepadNavigation(context);
+		_context.EventManager.OnGetIsHitThisFrame = GetIsHitThisFrame;
+	}
+
+	public void OnFinalize()
+	{
+		_context.EventManager.OnGetIsHitThisFrame = null;
+	}
+
+	private int GetLastScreenOrder()
+	{
+		return 0;
+	}
+
+	private bool GetIsHitThisFrame()
+	{
+		return true;
+	}
+
+	private bool GetIsBlockedOnPosition(Vector2 pos)
+	{
+		return false;
+	}
+
+	private bool GetIsAvailableForGamepadNavigation()
+	{
+		return false;
 	}
 
 	public void Update()
 	{
-		DrawObject2D.CreateTriangleTopologyMeshWithPolygonCoordinates(new List<Vector2>
-		{
-			new Vector2(0f, 0f),
-			new Vector2(0f, _twoDimensionContext.Height),
-			new Vector2(_twoDimensionContext.Width, _twoDimensionContext.Height),
-			new Vector2(_twoDimensionContext.Width, 0f)
-		});
 		_movie.Update();
 		if (_stopwatch.IsRunning)
 		{

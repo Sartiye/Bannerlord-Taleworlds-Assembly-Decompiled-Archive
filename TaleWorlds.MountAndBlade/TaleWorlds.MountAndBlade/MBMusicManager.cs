@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using System.Threading;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
+using TaleWorlds.ObjectSystem;
 using psai.net;
 
 namespace TaleWorlds.MountAndBlade;
@@ -26,13 +29,13 @@ public class MBMusicManager
 			_factionSpecificCampaignDramaticThemeSelectionFactor = 0.35f;
 		}
 
-		public MusicTheme GetCampaignTheme(CultureCode cultureCode, bool isDark)
+		public MusicTheme GetCampaignTheme(BasicCultureObject culture, bool isDark)
 		{
 			if (isDark)
 			{
 				return MusicTheme.CampaignDark;
 			}
-			MusicTheme campaignThemeWithCulture = GetCampaignThemeWithCulture(cultureCode);
+			MusicTheme campaignThemeWithCulture = GetCampaignThemeWithCulture(culture);
 			MusicTheme result;
 			if (campaignThemeWithCulture == MusicTheme.None)
 			{
@@ -49,59 +52,98 @@ public class MBMusicManager
 			return result;
 		}
 
-		private MusicTheme GetCampaignThemeWithCulture(CultureCode cultureCode)
+		private MusicTheme GetCampaignThemeWithCulture(BasicCultureObject culture)
 		{
 			if (MBRandom.NondeterministicRandomFloat <= _factionSpecificCampaignThemeSelectionFactor)
 			{
 				_factionSpecificCampaignThemeSelectionFactor -= 0.1f;
 				MBMath.ClampUnit(ref _factionSpecificCampaignThemeSelectionFactor);
-				switch (cultureCode)
+				if (culture.StringId == "empire")
 				{
-				case CultureCode.Empire:
 					if (!(MBRandom.NondeterministicRandomFloat < 0.5f))
 					{
 						return MusicTheme.EmpireCampaignB;
 					}
 					return MusicTheme.EmpireCampaignA;
-				case CultureCode.Sturgia:
+				}
+				if (culture.StringId == "sturgia")
+				{
 					return MusicTheme.SturgiaCampaignA;
-				case CultureCode.Aserai:
+				}
+				if (culture.StringId == "aserai")
+				{
 					return MusicTheme.AseraiCampaignA;
-				case CultureCode.Vlandia:
+				}
+				if (culture.StringId == "vlandia")
+				{
 					return MusicTheme.VlandiaCampaignA;
-				case CultureCode.Khuzait:
+				}
+				if (culture.StringId == "khuzait")
+				{
 					return MusicTheme.KhuzaitCampaignA;
-				case CultureCode.Battania:
+				}
+				if (culture.StringId == "battania")
+				{
 					return MusicTheme.BattaniaCampaignA;
+				}
+				if (culture.StringId == "nord")
+				{
+					return MusicTheme.NordCampaign;
 				}
 			}
 			return MusicTheme.None;
 		}
 
-		public MusicTheme GetCampaignDramaticThemeWithCulture(CultureCode cultureCode)
+		public MusicTheme GetCampaignDramaticThemeWithCulture(BasicCultureObject culture)
 		{
 			if (MBRandom.NondeterministicRandomFloat <= _factionSpecificCampaignDramaticThemeSelectionFactor)
 			{
 				_factionSpecificCampaignDramaticThemeSelectionFactor -= 0.1f;
 				MBMath.ClampUnit(ref _factionSpecificCampaignDramaticThemeSelectionFactor);
-				switch (cultureCode)
+				if (culture.StringId == "empire")
 				{
-				case CultureCode.Empire:
 					return MusicTheme.EmpireCampaignDramatic;
-				case CultureCode.Sturgia:
+				}
+				if (culture.StringId == "sturgia")
+				{
 					return MusicTheme.SturgiaCampaignDramatic;
-				case CultureCode.Aserai:
+				}
+				if (culture.StringId == "aserai")
+				{
 					return MusicTheme.AseraiCampaignDramatic;
-				case CultureCode.Vlandia:
+				}
+				if (culture.StringId == "vlandia")
+				{
 					return MusicTheme.VlandiaCampaignDramatic;
-				case CultureCode.Khuzait:
+				}
+				if (culture.StringId == "khuzait")
+				{
 					return MusicTheme.KhuzaitCampaignDramatic;
-				case CultureCode.Battania:
+				}
+				if (culture.StringId == "battania")
+				{
 					return MusicTheme.BattaniaCampaignDramatic;
+				}
+				if (culture.StringId == "nord")
+				{
+					return MusicTheme.NordCampaign;
 				}
 			}
 			_factionSpecificCampaignDramaticThemeSelectionFactor += 0.1f;
 			MBMath.ClampUnit(ref _factionSpecificCampaignDramaticThemeSelectionFactor);
+			return MusicTheme.None;
+		}
+
+		public MusicTheme GetSeaCampignMusic(BasicCultureObject culture)
+		{
+			if (culture.StringId == "sturgia" || culture.StringId == "battania" || culture.StringId == "nord")
+			{
+				return MusicTheme.SeaCampaignNorthern;
+			}
+			if (culture.StringId == "aserai" || culture.StringId == "vlandia" || culture.StringId == "khuzait" || culture.StringId == "empire")
+			{
+				return MusicTheme.SeaCampaignSouthern;
+			}
 			return MusicTheme.None;
 		}
 	}
@@ -126,7 +168,7 @@ public class MBMusicManager
 			_factionSpecificSiegeThemeSelectionFactor = 0.35f;
 		}
 
-		private MusicTheme GetBattleThemeWithCulture(CultureCode cultureCode, out bool isPaganBattle)
+		private MusicTheme GetBattleThemeWithCulture(BasicCultureObject culture, out bool isPaganBattle)
 		{
 			isPaganBattle = false;
 			MusicTheme result = MusicTheme.None;
@@ -134,27 +176,27 @@ public class MBMusicManager
 			{
 				_factionSpecificBattleThemeSelectionFactor -= 0.1f;
 				MBMath.ClampUnit(ref _factionSpecificBattleThemeSelectionFactor);
-				if ((uint)(cultureCode - 1) <= 1u || (uint)(cultureCode - 4) <= 1u)
+				if (!(culture.StringId == "sturgia") && !(culture.StringId == "aserai") && !(culture.StringId == "khuzait") && !(culture.StringId == "battania"))
 				{
-					isPaganBattle = true;
-					result = ((MBRandom.NondeterministicRandomFloat < 0.5f) ? MusicTheme.BattlePaganA : MusicTheme.BattlePaganB);
+					result = ((!(culture.StringId == "nord")) ? ((MBRandom.NondeterministicRandomFloat < 0.5f) ? MusicTheme.CombatA : MusicTheme.CombatB) : MusicTheme.BattleNord);
 				}
 				else
 				{
-					result = ((MBRandom.NondeterministicRandomFloat < 0.5f) ? MusicTheme.CombatA : MusicTheme.CombatB);
+					isPaganBattle = true;
+					result = ((MBRandom.NondeterministicRandomFloat < 0.5f) ? MusicTheme.BattlePaganA : MusicTheme.BattlePaganB);
 				}
 			}
 			return result;
 		}
 
-		private MusicTheme GetSiegeThemeWithCulture(CultureCode cultureCode)
+		private MusicTheme GetSiegeThemeWithCulture(BasicCultureObject culture)
 		{
 			MusicTheme result = MusicTheme.None;
 			if (MBRandom.NondeterministicRandomFloat <= _factionSpecificSiegeThemeSelectionFactor)
 			{
 				_factionSpecificSiegeThemeSelectionFactor -= 0.1f;
 				MBMath.ClampUnit(ref _factionSpecificSiegeThemeSelectionFactor);
-				if ((uint)(cultureCode - 1) <= 1u || (uint)(cultureCode - 4) <= 1u)
+				if (culture.StringId == "sturgia" || culture.StringId == "aserai" || culture.StringId == "khuzait" || culture.StringId == "battania")
 				{
 					result = MusicTheme.PaganSiege;
 				}
@@ -162,30 +204,39 @@ public class MBMusicManager
 			return result;
 		}
 
-		private MusicTheme GetVictoryThemeForCulture(CultureCode cultureCode)
+		private MusicTheme GetVictoryThemeForCulture(BasicCultureObject culture)
 		{
 			if (MBRandom.NondeterministicRandomFloat <= 0.65f)
 			{
-				switch (cultureCode)
+				if (culture.StringId == "empire")
 				{
-				case CultureCode.Aserai:
-					return MusicTheme.AseraiVictory;
-				case CultureCode.Battania:
-					return MusicTheme.BattaniaVictory;
-				case CultureCode.Sturgia:
-					return MusicTheme.SturgiaVictory;
-				case CultureCode.Khuzait:
-					return MusicTheme.KhuzaitVictory;
-				case CultureCode.Empire:
 					return MusicTheme.EmpireVictory;
-				case CultureCode.Vlandia:
+				}
+				if (culture.StringId == "sturgia" || culture.StringId == "nord")
+				{
+					return MusicTheme.SturgiaVictory;
+				}
+				if (culture.StringId == "aserai")
+				{
+					return MusicTheme.AseraiVictory;
+				}
+				if (culture.StringId == "vlandia")
+				{
 					return MusicTheme.VlandiaVictory;
+				}
+				if (culture.StringId == "khuzait")
+				{
+					return MusicTheme.KhuzaitVictory;
+				}
+				if (culture.StringId == "battania")
+				{
+					return MusicTheme.BattaniaVictory;
 				}
 			}
 			return MusicTheme.None;
 		}
 
-		public MusicTheme GetBattleTheme(CultureCode culture, int battleSize, out bool isPaganBattle)
+		public MusicTheme GetBattleTheme(BasicCultureObject culture, int battleSize, out bool isPaganBattle)
 		{
 			MusicTheme battleThemeWithCulture = GetBattleThemeWithCulture(culture, out isPaganBattle);
 			MusicTheme result;
@@ -204,7 +255,7 @@ public class MBMusicManager
 			return result;
 		}
 
-		public MusicTheme GetSiegeTheme(CultureCode culture)
+		public MusicTheme GetSiegeTheme(BasicCultureObject culture)
 		{
 			MusicTheme siegeThemeWithCulture = GetSiegeThemeWithCulture(culture);
 			MusicTheme result;
@@ -223,7 +274,7 @@ public class MBMusicManager
 			return result;
 		}
 
-		public MusicTheme GetBattleEndTheme(CultureCode culture, bool isVictorious)
+		public MusicTheme GetBattleEndTheme(BasicCultureObject culture, bool isVictorious)
 		{
 			if (isVictorious)
 			{
@@ -237,6 +288,20 @@ public class MBMusicManager
 			return MusicTheme.BattleDefeat;
 		}
 	}
+
+	private const string CultureEmpire = "empire";
+
+	private const string CultureSturgia = "sturgia";
+
+	private const string CultureAserai = "aserai";
+
+	private const string CultureVlandia = "vlandia";
+
+	private const string CultureBattania = "battania";
+
+	private const string CultureKhuzait = "khuzait";
+
+	private const string CultureNord = "nord";
 
 	private const float DefaultFadeOutDurationInSeconds = 3f;
 
@@ -270,10 +335,20 @@ public class MBMusicManager
 
 	private MBMusicManager()
 	{
-		if (!NativeConfig.DisableSound)
+		if (NativeConfig.DisableSound)
 		{
-			PsaiCore.Instance.LoadSoundtrackFromProjectFile(BasePath.Name + "music/soundtrack.xml");
+			return;
 		}
+		List<string> list = new List<string>();
+		foreach (MbObjectXmlInformation mbprojXml in XmlResource.MbprojXmls)
+		{
+			if (mbprojXml.Id == "soln_soundtrack")
+			{
+				string moduleName = mbprojXml.ModuleName;
+				list.Add(moduleName);
+			}
+		}
+		PsaiCore.Instance.LoadSoundtrackFromProjectFile(list);
 	}
 
 	public static bool IsCreationCompleted()
@@ -352,7 +427,8 @@ public class MBMusicManager
 		if (!_systemPaused)
 		{
 			CurrentMode = MusicMode.Menu;
-			PsaiCore.Instance.MenuModeEnter(5, 0.5f);
+			MusicTheme menuThemeId = (ModuleHelper.IsModuleActive("NavalDLC") ? MusicTheme.NavalMainTheme : MusicTheme.MainTheme);
+			PsaiCore.Instance.MenuModeEnter((int)menuThemeId, 0.5f);
 		}
 	}
 
@@ -496,22 +572,22 @@ public class MBMusicManager
 		PsaiCore.Instance.Update();
 	}
 
-	public MusicTheme GetSiegeTheme(CultureCode cultureCode)
+	public MusicTheme GetSiegeTheme(BasicCultureObject culture)
 	{
-		return _battleMode.GetSiegeTheme(cultureCode);
+		return _battleMode.GetSiegeTheme(culture);
 	}
 
-	public MusicTheme GetBattleTheme(CultureCode cultureCode, int battleSize, out bool isPaganBattle)
+	public MusicTheme GetBattleTheme(BasicCultureObject culture, int battleSize, out bool isPaganBattle)
 	{
-		return _battleMode.GetBattleTheme(cultureCode, battleSize, out isPaganBattle);
+		return _battleMode.GetBattleTheme(culture, battleSize, out isPaganBattle);
 	}
 
-	public MusicTheme GetBattleEndTheme(CultureCode cultureCode, bool isVictory)
+	public MusicTheme GetBattleEndTheme(BasicCultureObject culture, bool isVictory)
 	{
-		return _battleMode.GetBattleEndTheme(cultureCode, isVictory);
+		return _battleMode.GetBattleEndTheme(culture, isVictory);
 	}
 
-	public MusicTheme GetBattleTurnsOneSideTheme(CultureCode cultureCode, bool isPositive, bool isPaganBattle)
+	public MusicTheme GetBattleTurnsOneSideTheme(BasicCultureObject culture, bool isPositive, bool isPaganBattle)
 	{
 		if (isPaganBattle)
 		{
@@ -528,17 +604,21 @@ public class MBMusicManager
 		return MusicTheme.BattleTurnsPositive;
 	}
 
-	public MusicTheme GetCampaignMusicTheme(CultureCode cultureCode, bool isDark, bool isWarMode)
+	public MusicTheme GetCampaignMusicTheme(BasicCultureObject culture, bool isDark, bool isWarMode, bool isAtSea)
 	{
 		MusicTheme musicTheme = MusicTheme.None;
 		if (!isDark && isWarMode)
 		{
-			musicTheme = _campaignMode.GetCampaignDramaticThemeWithCulture(cultureCode);
+			musicTheme = _campaignMode.GetCampaignDramaticThemeWithCulture(culture);
+		}
+		if (isAtSea)
+		{
+			musicTheme = _campaignMode.GetSeaCampignMusic(culture);
 		}
 		if (musicTheme != MusicTheme.None)
 		{
 			return musicTheme;
 		}
-		return _campaignMode.GetCampaignTheme(cultureCode, isDark);
+		return _campaignMode.GetCampaignTheme(culture, isDark);
 	}
 }

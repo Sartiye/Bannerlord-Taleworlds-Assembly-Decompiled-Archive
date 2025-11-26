@@ -1,8 +1,6 @@
-using System;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
-using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Nameplate;
 
@@ -16,19 +14,17 @@ public class PartyNameplateWidget : Widget
 		Playing
 	}
 
-	private bool _isFirstFrame = true;
+	protected bool _isFirstFrame = true;
 
-	private float _screenWidth;
+	protected float _screenWidth;
 
-	private float _screenHeight;
+	protected float _screenHeight;
 
-	private bool _latestIsOutside;
+	protected float _initialDelayAmount = 2f;
 
-	private float _initialDelayAmount = 2f;
+	protected int _defaultNameplateFontSize;
 
-	private int _defaultNameplateFontSize;
-
-	private TutorialAnimState _tutorialAnimState;
+	protected TutorialAnimState _tutorialAnimState;
 
 	private Vec2 _position;
 
@@ -42,19 +38,19 @@ public class PartyNameplateWidget : Widget
 
 	private Widget _speedIconWidget;
 
+	private Widget _parleyIconWidget;
+
 	private TextWidget _nameplateExtraInfoTextWidget;
 
 	private Widget _trackerFrame;
 
-	private Widget _mainPartyArrowWidget;
+	private Widget _disorganizedWidget;
 
 	private ListPanel _nameplateLayoutListPanel;
 
 	private MaskedTextureWidget _partyBannerWidget;
 
 	private bool _isVisibleOnMap;
-
-	private bool _isMainParty;
 
 	private bool _isInside;
 
@@ -72,11 +68,13 @@ public class PartyNameplateWidget : Widget
 
 	private bool _shouldShowFullName;
 
-	private bool _isPrisoner;
+	private bool _canParley;
 
-	private float _animSpeedModifier => 8f;
+	private bool _isDisorganized;
 
-	private int _armyFontSizeOffset => 10;
+	protected float _animSpeedModifier => 8f;
+
+	protected int _armyFontSizeOffset => 10;
 
 	public Widget HeadGroupWidget { get; set; }
 
@@ -176,6 +174,22 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
+	public bool CanParley
+	{
+		get
+		{
+			return _canParley;
+		}
+		set
+		{
+			if (_canParley != value)
+			{
+				_canParley = value;
+				OnPropertyChanged(value, "CanParley");
+			}
+		}
+	}
+
 	public bool IsTargetedByTutorial
 	{
 		get
@@ -257,22 +271,6 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
-	public bool IsMainParty
-	{
-		get
-		{
-			return _isMainParty;
-		}
-		set
-		{
-			if (_isMainParty != value)
-			{
-				_isMainParty = value;
-				OnPropertyChanged(value, "IsMainParty");
-			}
-		}
-	}
-
 	public bool IsInside
 	{
 		get
@@ -321,18 +319,18 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
-	public bool IsPrisoner
+	public bool IsDisorganized
 	{
 		get
 		{
-			return _isPrisoner;
+			return _isDisorganized;
 		}
 		set
 		{
-			if (_isPrisoner != value)
+			if (_isDisorganized != value)
 			{
-				_isPrisoner = value;
-				OnPropertyChanged(value, "IsPrisoner");
+				_isDisorganized = value;
+				OnPropertyChanged(value, "IsDisorganized");
 			}
 		}
 	}
@@ -417,18 +415,34 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
-	public Widget MainPartyArrowWidget
+	public Widget ParleyIconWidget
 	{
 		get
 		{
-			return _mainPartyArrowWidget;
+			return _parleyIconWidget;
 		}
 		set
 		{
-			if (_mainPartyArrowWidget != value)
+			if (value != _parleyIconWidget)
 			{
-				_mainPartyArrowWidget = value;
-				OnPropertyChanged(value, "MainPartyArrowWidget");
+				_parleyIconWidget = value;
+				OnPropertyChanged(value, "ParleyIconWidget");
+			}
+		}
+	}
+
+	public Widget DisorganizedWidget
+	{
+		get
+		{
+			return _disorganizedWidget;
+		}
+		set
+		{
+			if (_disorganizedWidget != value)
+			{
+				_disorganizedWidget = value;
+				OnPropertyChanged(value, "DisorganizedWidget");
 			}
 		}
 	}
@@ -447,7 +461,8 @@ public class PartyNameplateWidget : Widget
 			NameplateTextWidget.Brush.GlobalAlphaFactor = 0f;
 			NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = 0f;
 			PartyBannerWidget.Brush.GlobalAlphaFactor = 0f;
-			SpeedTextWidget.AlphaFactor = 0f;
+			SpeedTextWidget.Brush.GlobalAlphaFactor = 0f;
+			ParleyIconWidget.AlphaFactor = 0f;
 			_defaultNameplateFontSize = NameplateTextWidget.ReadOnlyBrush.FontSize;
 			_isFirstFrame = false;
 		}
@@ -461,120 +476,54 @@ public class PartyNameplateWidget : Widget
 		UpdateTutorialStatus();
 	}
 
-	private void UpdateNameplatesVisibility(float dt)
+	protected virtual void UpdateNameplatesVisibility(float dt)
 	{
 		float num = 0f;
-		float end = 0f;
-		if (IsMainParty)
+		float valueTo = 0f;
+		PartyBannerWidget.IsVisible = true;
+		NameplateTextWidget.IsVisible = IsVisibleOnMap;
+		NameplateFullNameTextWidget.IsVisible = IsVisibleOnMap;
+		SpeedTextWidget.IsVisible = IsVisibleOnMap;
+		SpeedIconWidget.IsVisible = IsVisibleOnMap;
+		DisorganizedWidget.IsVisible = IsVisibleOnMap && IsDisorganized;
+		num = (IsVisibleOnMap ? 1 : 0);
+		TrackerFrame.IsVisible = false;
+		base.IsEnabled = false;
+		if (IsVisibleOnMap)
 		{
-			_latestIsOutside = IsNameplateOutsideScreen();
-			MainPartyArrowWidget.IsVisible = _latestIsOutside;
-			NameplateTextWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			NameplateFullNameTextWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			SpeedTextWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			SpeedIconWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			TrackerFrame.IsVisible = _latestIsOutside;
-			num = ((!_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement) ? 1 : 0);
-			PartyBannerWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			NameplateExtraInfoTextWidget.IsVisible = !_latestIsOutside && !IsInArmy && !IsPrisoner && !IsInSettlement;
-			base.IsEnabled = _latestIsOutside;
-		}
-		else
-		{
-			MainPartyArrowWidget.IsVisible = false;
-			NameplateTextWidget.IsVisible = true;
-			NameplateFullNameTextWidget.IsVisible = true;
-			SpeedTextWidget.IsVisible = true;
-			SpeedIconWidget.IsVisible = true;
-			TrackerFrame.IsVisible = false;
-			PartyBannerWidget.IsVisible = true;
-			num = 1f;
-			base.IsEnabled = false;
-		}
-		if (!IsVisibleOnMap && !IsMainParty)
-		{
-			NameplateTextWidget.IsVisible = false;
-			NameplateFullNameTextWidget.IsVisible = false;
-			SpeedTextWidget.IsVisible = false;
-			SpeedIconWidget.IsVisible = false;
-			num = 0f;
-		}
-		else
-		{
-			_initialDelayAmount -= dt;
-			end = ((!(_initialDelayAmount <= 0f)) ? 1f : ((float)(ShouldShowFullName ? 1 : 0)));
-		}
-		NameplateTextWidget.Brush.GlobalAlphaFactor = LocalLerp(NameplateTextWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
-		NameplateFullNameTextWidget.Brush.GlobalAlphaFactor = LocalLerp(NameplateFullNameTextWidget.ReadOnlyBrush.GlobalAlphaFactor, end, dt * _animSpeedModifier);
-		SpeedTextWidget.Brush.GlobalAlphaFactor = LocalLerp(SpeedTextWidget.ReadOnlyBrush.GlobalAlphaFactor, end, dt * _animSpeedModifier);
-		SpeedIconWidget.AlphaFactor = LocalLerp(SpeedIconWidget.AlphaFactor, end, dt * _animSpeedModifier);
-		NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = LocalLerp(NameplateExtraInfoTextWidget.ReadOnlyBrush.GlobalAlphaFactor, ShouldShowFullName ? 1 : 0, dt * _animSpeedModifier);
-		PartyBannerWidget.Brush.GlobalAlphaFactor = LocalLerp(PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
-	}
-
-	private void UpdateNameplatesScreenPosition()
-	{
-		_screenWidth = base.Context.EventManager.PageSize.X;
-		_screenHeight = base.Context.EventManager.PageSize.Y;
-		if (!IsVisibleOnMap && !IsMainParty)
-		{
-			base.IsHidden = true;
-			return;
-		}
-		if (IsMainParty)
-		{
-			if (!IsBehind && !(Position.x + base.Size.X > _screenWidth) && !(Position.y - base.Size.Y > _screenHeight) && !(Position.x < 0f) && !(Position.y < 0f))
+			if (_initialDelayAmount <= 0f)
 			{
-				float num = HeadGroupWidget?.Size.Y ?? 0f;
-				NameplateLayoutListPanel.ScaledPositionYOffset = Position.y - HeadPosition.y + num;
-				if (IsHigh)
-				{
-					base.ScaledPositionXOffset = TaleWorlds.Library.MathF.Clamp(HeadPosition.x - base.Size.X / 2f, 0f, _screenWidth - base.Size.X);
-				}
-				else
-				{
-					base.ScaledPositionXOffset = TaleWorlds.Library.MathF.Clamp(HeadPosition.x - base.Size.X / 2f, 0f, _screenWidth - base.Size.X);
-				}
-				base.ScaledPositionYOffset = HeadPosition.y - num;
+				valueTo = (ShouldShowFullName ? 1 : 0);
 			}
 			else
 			{
-				Vec2 vec = new Vec2(base.Context.EventManager.PageSize.X / 2f, base.Context.EventManager.PageSize.Y / 2f);
-				Vec2 headPosition = HeadPosition;
-				headPosition -= vec;
-				if (IsBehind)
-				{
-					headPosition *= -1f;
-				}
-				float radian = Mathf.Atan2(headPosition.y, headPosition.x) - System.MathF.PI / 2f;
-				float num2 = Mathf.Cos(radian);
-				float num3 = Mathf.Sin(radian);
-				headPosition = vec + new Vec2(num3 * 150f, num2 * 150f);
-				float num4 = num2 / num3;
-				Vec2 vec2 = vec * 1f;
-				headPosition = ((num2 > 0f) ? new Vec2((0f - vec2.y) / num4, vec.y) : new Vec2(vec2.y / num4, 0f - vec.y));
-				if (headPosition.x > vec2.x)
-				{
-					headPosition = new Vec2(vec2.x, (0f - vec2.x) * num4);
-				}
-				else if (headPosition.x < 0f - vec2.x)
-				{
-					headPosition = new Vec2(0f - vec2.x, vec2.x * num4);
-				}
-				headPosition += vec;
-				base.ScaledPositionXOffset = TaleWorlds.Library.MathF.Clamp(headPosition.x - base.Size.X / 2f, 0f, _screenWidth - base.Size.X);
-				base.ScaledPositionYOffset = TaleWorlds.Library.MathF.Clamp(headPosition.y - base.Size.Y / 2f, 0f, _screenHeight - base.Size.Y);
+				_initialDelayAmount -= dt;
+				valueTo = 1f;
 			}
 		}
-		else
+		NameplateTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateTextWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
+		NameplateFullNameTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateFullNameTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
+		SpeedTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(SpeedTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
+		float alphaFactor = MathF.Lerp(SpeedIconWidget.AlphaFactor, valueTo, dt * _animSpeedModifier);
+		SpeedIconWidget.SetGlobalAlphaRecursively(alphaFactor);
+		NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateExtraInfoTextWidget.ReadOnlyBrush.GlobalAlphaFactor, ShouldShowFullName ? 1 : 0, dt * _animSpeedModifier);
+		PartyBannerWidget.Brush.GlobalAlphaFactor = MathF.Lerp(PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
+		ParleyIconWidget.AlphaFactor = MathF.Lerp(ParleyIconWidget.AlphaFactor, CanParley ? 1 : 0, dt * _animSpeedModifier);
+	}
+
+	protected virtual void UpdateNameplatesScreenPosition()
+	{
+		_screenWidth = base.Context.EventManager.PageSize.X;
+		_screenHeight = base.Context.EventManager.PageSize.Y;
+		base.IsVisible = IsVisibleOnMap && !IsPositionOutsideScreen();
+		if (base.IsVisible)
 		{
-			float num5 = HeadGroupWidget?.Size.Y ?? 0f;
-			NameplateLayoutListPanel.ScaledPositionYOffset = Position.y - HeadPosition.y + num5;
+			float num = HeadGroupWidget?.Size.Y ?? 0f;
+			NameplateLayoutListPanel.ScaledPositionXOffset = base.Size.X / 2f - PartyBannerWidget.Size.X;
+			NameplateLayoutListPanel.ScaledPositionYOffset = Position.y - HeadPosition.y + num;
 			base.ScaledPositionXOffset = HeadPosition.x - base.Size.X / 2f;
-			base.ScaledPositionYOffset = HeadPosition.y - num5;
-			base.IsHidden = base.ScaledPositionXOffset > base.Context.TwoDimensionContext.Width || base.ScaledPositionYOffset > base.Context.TwoDimensionContext.Height || base.ScaledPositionXOffset + base.Size.X < 0f || base.ScaledPositionYOffset + base.Size.Y < 0f;
+			base.ScaledPositionYOffset = HeadPosition.y - num;
 		}
-		NameplateLayoutListPanel.PositionXOffset = (base.Size.X / 2f - PartyBannerWidget.Size.X) * base._inverseScaleToUse;
 	}
 
 	private void UpdateTutorialStatus()
@@ -598,21 +547,12 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
-	private bool IsNameplateOutsideScreen()
+	protected bool IsPositionOutsideScreen()
 	{
-		if (!(Position.x + base.Size.X > _screenWidth) && !(Position.y - base.Size.Y > _screenHeight) && !(Position.x < 0f) && !(Position.y < 0f) && !IsBehind)
+		if (!(Position.X > _screenWidth) && !(HeadPosition.X > _screenWidth) && !(Position.X < 0f) && !(HeadPosition.X < 0f) && !(Position.Y > _screenHeight) && !(HeadPosition.Y > _screenHeight) && !(Position.Y < 0f))
 		{
-			return IsHigh;
+			return HeadPosition.Y < 0f;
 		}
 		return true;
-	}
-
-	private float LocalLerp(float start, float end, float delta)
-	{
-		if (Math.Abs(start - end) > float.Epsilon)
-		{
-			return (end - start) * delta + start;
-		}
-		return end;
 	}
 }

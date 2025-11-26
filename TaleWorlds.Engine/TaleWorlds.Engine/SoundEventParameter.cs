@@ -3,7 +3,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("Managed_sound_event_parameter", false)]
+[EngineStruct("Managed_sound_event_parameter", false, null)]
 public struct SoundEventParameter
 {
 	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]

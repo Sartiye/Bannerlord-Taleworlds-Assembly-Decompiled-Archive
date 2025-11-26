@@ -62,8 +62,7 @@ public class FleePosition : ScriptComponentBehavior
 		int childCount = base.GameEntity.ChildCount;
 		for (int i = 0; i < childCount; i++)
 		{
-			GameEntity child = base.GameEntity.GetChild(i);
-			_nodes.Add(child.GlobalPosition);
+			_nodes.Add(base.GameEntity.GetChild(i).GlobalPosition);
 		}
 		if (_nodes.IsEmpty())
 		{

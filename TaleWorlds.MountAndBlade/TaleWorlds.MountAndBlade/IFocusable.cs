@@ -7,11 +7,13 @@ public interface IFocusable
 {
 	FocusableObjectType FocusableObjectType { get; }
 
+	bool IsFocusable { get; }
+
 	void OnFocusGain(Agent userAgent);
 
 	void OnFocusLose(Agent userAgent);
 
 	TextObject GetInfoTextForBeingNotInteractable(Agent userAgent);
 
-	string GetDescriptionText(GameEntity gameEntity = null);
+	TextObject GetDescriptionText(WeakGameEntity gameEntity);
 }

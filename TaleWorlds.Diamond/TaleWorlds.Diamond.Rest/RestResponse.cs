@@ -46,6 +46,13 @@ public sealed class RestResponse : RestData
 		SuccessfulReason = successfulReason;
 	}
 
+	public static RestResponse Create(bool successful, string successfulReason)
+	{
+		RestResponse restResponse = new RestResponse();
+		restResponse.SetSuccessful(successful, successfulReason);
+		return restResponse;
+	}
+
 	public RestResponseMessage TryDequeueMessage()
 	{
 		if (_responseMessages != null && _responseMessages.Count > 0)

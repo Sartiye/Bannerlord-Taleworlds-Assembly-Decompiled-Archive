@@ -19,11 +19,7 @@ public class MissionBasedMultiplayerGameMode : MultiplayerGameMode
 
 	public override void StartMultiplayerGame(string scene)
 	{
-		if (base.Name == "FreeForAll")
-		{
-			MultiplayerMissions.OpenFreeForAllMission(scene);
-		}
-		else if (base.Name == "TeamDeathmatch")
+		if (base.Name == "TeamDeathmatch")
 		{
 			MultiplayerMissions.OpenTeamDeathmatchMission(scene);
 		}

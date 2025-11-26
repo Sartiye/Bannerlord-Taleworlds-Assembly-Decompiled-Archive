@@ -120,4 +120,9 @@ public class QuestStageTaskVM : ViewModel
 		base.RefreshValues();
 		TaskName = _taskNameObj.ToString();
 	}
+
+	public void ExecuteLink(string link)
+	{
+		Campaign.Current.EncyclopediaManager.GoToLink(link);
+	}
 }

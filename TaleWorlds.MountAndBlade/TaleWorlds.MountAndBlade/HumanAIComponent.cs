@@ -9,7 +9,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class HumanAIComponent : AgentComponent
 {
-	[EngineStruct("behavior_values_struct", false)]
+	[EngineStruct("behavior_values_struct", false, null)]
 	public struct BehaviorValues
 	{
 		public float y1;
@@ -56,7 +56,7 @@ public class HumanAIComponent : AgentComponent
 		DefaultMove,
 		Charge,
 		DefaultDetached,
-		Count
+		Overriden
 	}
 
 	public enum UsableObjectInterestKind
@@ -79,7 +79,7 @@ public class HumanAIComponent : AgentComponent
 
 	private bool _hasNewBehaviorValues;
 
-	private readonly GameEntity[] _tempPickableEntities = new GameEntity[16];
+	private readonly WeakGameEntity[] _tempPickableEntities = new WeakGameEntity[16];
 
 	private readonly UIntPtr[] _pickableItemsId = new UIntPtr[16];
 
@@ -95,7 +95,13 @@ public class HumanAIComponent : AgentComponent
 
 	private UsableObjectInterestKind _objectInterestKind;
 
+	private BehaviorValueSet _lastBehaviorValueSet;
+
 	private bool _shouldCatchUpWithFormation;
+
+	private bool _forceDisableItemPickup;
+
+	private float _scriptedFrameTimer = -1f;
 
 	public Agent FollowedAgent { get; private set; }
 
@@ -117,10 +123,13 @@ public class HumanAIComponent : AgentComponent
 
 	public bool IsDefending => _objectInterestKind == UsableObjectInterestKind.Defending;
 
+	public bool HasTimedScriptedFrame => _scriptedFrameTimer > 0f;
+
 	public HumanAIComponent(Agent agent)
 		: base(agent)
 	{
 		_behaviorValues = new BehaviorValues[7];
+		_lastBehaviorValueSet = BehaviorValueSet.Overriden;
 		SetBehaviorValueSet(BehaviorValueSet.Default);
 		Agent.SetAllBehaviorParams(_behaviorValues);
 		_hasNewBehaviorValues = false;
@@ -132,7 +141,18 @@ public class HumanAIComponent : AgentComponent
 		_mountSearchTimer = new MissionTimer(2f + MBRandom.RandomFloat);
 	}
 
-	public void SetBehaviorParams(AISimpleBehaviorKind behavior, float y1, float x2, float y2, float x3, float y3)
+	public void OverrideBehaviorParams(AISimpleBehaviorKind behavior, float y1, float x2, float y2, float x3, float y3)
+	{
+		_lastBehaviorValueSet = BehaviorValueSet.Overriden;
+		_behaviorValues[(int)behavior].y1 = y1;
+		_behaviorValues[(int)behavior].x2 = x2;
+		_behaviorValues[(int)behavior].y2 = y2;
+		_behaviorValues[(int)behavior].x3 = x3;
+		_behaviorValues[(int)behavior].y3 = y3;
+		_hasNewBehaviorValues = true;
+	}
+
+	private void SetBehaviorParams(AISimpleBehaviorKind behavior, float y1, float x2, float y2, float x3, float y3)
 	{
 		_behaviorValues[(int)behavior].y1 = y1;
 		_behaviorValues[(int)behavior].x2 = x2;
@@ -179,44 +199,62 @@ public class HumanAIComponent : AgentComponent
 		}
 	}
 
-	public override void OnTickAsAI(float dt)
+	public override void OnTickParallel(float dt)
 	{
-		SyncBehaviorParamsIfNecessary();
+		if (Agent.Mission.AllowAiTicking && Agent.IsAIControlled)
+		{
+			SyncBehaviorParamsIfNecessary();
+		}
+	}
+
+	private void ItemPickupTick()
+	{
 		if (_itemToPickUp != null)
 		{
 			if (!_itemToPickUp.IsAIMovingTo(Agent) || Agent.Mission.MissionEnded)
 			{
 				_itemToPickUp = null;
 			}
-			else if (_itemToPickUp.GameEntity == null)
+			else if (!_itemToPickUp.GameEntity.IsValid)
 			{
 				Agent.StopUsingGameObject(isSuccessful: false);
 			}
 		}
-		if (_itemPickUpTickTimer.Check(reset: true) && !Agent.Mission.MissionEnded)
+		if (!_itemPickUpTickTimer.Check(reset: true) || Agent.Mission.MissionEnded)
 		{
-			EquipmentIndex wieldedItemIndex = Agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			bool flag = ((wieldedItemIndex == EquipmentIndex.None) ? null : Agent.Equipment[wieldedItemIndex].CurrentUsageItem)?.IsRangedWeapon ?? false;
-			if (!_disablePickUpForAgent && MissionGameModels.Current.ItemPickupModel.IsAgentEquipmentSuitableForPickUpAvailability(Agent) && Agent.CanBeAssignedForScriptedMovement() && Agent.CurrentWatchState == Agent.WatchState.Alarmed && (Agent.GetAgentFlags() & AgentFlag.CanAttack) != 0 && !IsInImportantCombatAction())
+			return;
+		}
+		EquipmentIndex primaryWieldedItemIndex = Agent.GetPrimaryWieldedItemIndex();
+		bool flag = ((primaryWieldedItemIndex == EquipmentIndex.None) ? null : Agent.Equipment[primaryWieldedItemIndex].CurrentUsageItem)?.IsRangedWeapon ?? false;
+		if (_disablePickUpForAgent || !MissionGameModels.Current.ItemPickupModel.IsAgentEquipmentSuitableForPickUpAvailability(Agent) || !Agent.CanBeAssignedForScriptedMovement() || !Agent.IsAlarmed() || (Agent.GetAgentFlags() & AgentFlag.CanAttack) == 0 || IsInImportantCombatAction() || Agent.IsInWater())
+		{
+			return;
+		}
+		Agent targetAgent = Agent.GetTargetAgent();
+		if ((targetAgent == null || (targetAgent.Position.DistanceSquared(Agent.Position) > 400f && (!flag || IsAnyConsumableDepleted() || targetAgent.Position.DistanceSquared(Agent.Position) >= Agent.GetMissileRange() * 1.2f || Agent.GetLastTargetVisibilityState() != AITargetVisibilityState.TargetIsClear))) && _itemToPickUp == null)
+		{
+			float maximumForwardUnlimitedSpeed = Agent.GetMaximumForwardUnlimitedSpeed();
+			Vec3 bMin = Agent.Position - new Vec3(maximumForwardUnlimitedSpeed, maximumForwardUnlimitedSpeed, 1f);
+			Vec3 bMax = Agent.Position + new Vec3(maximumForwardUnlimitedSpeed, maximumForwardUnlimitedSpeed, 1.8f);
+			_itemToPickUp = SelectPickableItem(bMin, bMax);
+			if (_itemToPickUp != null)
 			{
-				Agent targetAgent = Agent.GetTargetAgent();
-				if (targetAgent == null || (targetAgent.Position.DistanceSquared(Agent.Position) > 400f && (!flag || IsAnyConsumableDepleted() || targetAgent.Position.DistanceSquared(Agent.Position) >= Agent.GetMissileRange() * 1.2f || Agent.GetLastTargetVisibilityState() != AITargetVisibilityState.TargetIsClear)))
-				{
-					float maximumForwardUnlimitedSpeed = Agent.MaximumForwardUnlimitedSpeed;
-					if (_itemToPickUp == null)
-					{
-						Vec3 bMin = Agent.Position - new Vec3(maximumForwardUnlimitedSpeed, maximumForwardUnlimitedSpeed, 1f);
-						Vec3 bMax = Agent.Position + new Vec3(maximumForwardUnlimitedSpeed, maximumForwardUnlimitedSpeed, 1.8f);
-						_itemToPickUp = SelectPickableItem(bMin, bMax);
-						if (_itemToPickUp != null)
-						{
-							RequestMoveToItem(_itemToPickUp);
-						}
-					}
-				}
+				RequestMoveToItem(_itemToPickUp);
 			}
 		}
-		if (_itemToPickUp != null && !Agent.IsRunningAway && Agent.AIMoveToGameObjectIsEnabled())
+	}
+
+	public override void OnTick(float dt)
+	{
+		if (!Agent.Mission.AllowAiTicking || !Agent.IsAIControlled)
+		{
+			return;
+		}
+		if (!_forceDisableItemPickup)
+		{
+			ItemPickupTick();
+		}
+		if (!_forceDisableItemPickup && _itemToPickUp != null && !Agent.IsRunningAway && Agent.AIMoveToGameObjectIsEnabled())
 		{
 			float num = (_itemToPickUp.IsBanner() ? MissionGameModels.Current.BattleBannerBearersModel.GetBannerInteractionDistance(Agent) : MissionGameModels.Current.AgentStatCalculateModel.GetInteractionDistance(Agent));
 			num *= 3f;
@@ -229,21 +267,28 @@ public class HumanAIComponent : AgentComponent
 				Agent.UseGameObject(_itemToPickUp);
 			}
 		}
-		if (Agent.CommonAIComponent == null || Agent.MountAgent != null || Agent.CommonAIComponent.IsRetreating || !_mountSearchTimer.Check(reset: true) || Agent.GetRidingOrder() != 1)
+		if (Agent.CommonAIComponent != null && Agent.MountAgent == null && !Agent.CommonAIComponent.IsRetreating && _mountSearchTimer.Check(reset: true) && Agent.GetRidingOrder() == 1)
 		{
-			return;
-		}
-		Agent agent = FindReservedMount();
-		if (agent == null || agent.State != AgentState.Active || agent.RiderAgent != null || !(Agent.Position.DistanceSquared(agent.Position) < 256f))
-		{
-			if (agent != null)
+			Agent agent = FindReservedMount();
+			if (agent == null || agent.State != AgentState.Active || agent.RiderAgent != null || !(Agent.Position.DistanceSquared(agent.Position) < 256f))
 			{
-				UnreserveMount(agent);
+				if (agent != null)
+				{
+					UnreserveMount(agent);
+				}
+				Agent agent2 = FindClosestMountAvailable();
+				if (agent2 != null)
+				{
+					ReserveMount(agent2);
+				}
 			}
-			Agent agent2 = FindClosestMountAvailable();
-			if (agent2 != null)
+		}
+		if (_scriptedFrameTimer > 0f)
+		{
+			_scriptedFrameTimer -= dt;
+			if (_scriptedFrameTimer < 0f)
 			{
-				ReserveMount(agent2);
+				Agent.DisableScriptedMovement();
 			}
 		}
 	}
@@ -251,21 +296,54 @@ public class HumanAIComponent : AgentComponent
 	private Agent FindClosestMountAvailable()
 	{
 		float num = 6400f;
-		Agent result = null;
+		Agent agent = null;
+		float num2 = 6400f;
+		Agent agent2 = null;
 		foreach (KeyValuePair<Agent, MissionTime> mountsWithoutRider in Mission.Current.MountsWithoutRiders)
 		{
 			Agent key = mountsWithoutRider.Key;
-			if (key.IsActive() && key.CommonAIComponent.ReservedRiderAgentIndex < 0 && key.RiderAgent == null && !key.IsRunningAway && MissionGameModels.Current.AgentStatCalculateModel.CanAgentRideMount(Agent, key))
+			if (!key.IsActive() || key.RiderAgent != null || key.IsRunningAway || !MissionGameModels.Current.AgentStatCalculateModel.CanAgentRideMount(Agent, key))
 			{
-				float num2 = Agent.Position.DistanceSquared(key.Position);
-				if (num > num2)
+				continue;
+			}
+			float num3 = Agent.Position.DistanceSquared(key.Position);
+			if (num2 > num3)
+			{
+				agent2 = key;
+				num2 = num3;
+				if (agent2.CommonAIComponent.ReservedRiderAgentIndex < 0)
 				{
-					result = key;
-					num = num2;
+					num = num3;
+					agent = key;
+				}
+			}
+			else if (num > num3 && agent2.CommonAIComponent.ReservedRiderAgentIndex < 0)
+			{
+				num = num3;
+				agent = key;
+			}
+		}
+		if (agent2 != agent)
+		{
+			if (agent != null && num > 0.01f && num2 / num >= 0.4f)
+			{
+				agent2 = agent;
+			}
+			else
+			{
+				Agent agent3 = Mission.Current.FindAgentWithIndex(agent2.CommonAIComponent.ReservedRiderAgentIndex);
+				float num4 = agent3.Position.DistanceSquared(agent2.Position);
+				if (num4 > 0.01f && num2 / num4 < ((agent != null) ? 0.4f : 0.7f))
+				{
+					agent3.HumanAIComponent.UnreserveMount(agent2);
+				}
+				else
+				{
+					agent2 = agent;
 				}
 			}
 		}
-		return result;
+		return agent2;
 	}
 
 	private Agent FindReservedMount()
@@ -349,33 +427,33 @@ public class HumanAIComponent : AgentComponent
 		SpawnedItemEntity result = null;
 		for (int i = 0; i < num; i++)
 		{
-			SpawnedItemEntity firstScriptOfType = _tempPickableEntities[i].GetFirstScriptOfType<SpawnedItemEntity>();
+			WeakGameEntity weakGameEntity = _tempPickableEntities[i];
+			SpawnedItemEntity firstScriptOfType = weakGameEntity.GetFirstScriptOfType<SpawnedItemEntity>();
 			bool flag = false;
 			if (firstScriptOfType != null)
 			{
 				MissionWeapon weaponCopy = firstScriptOfType.WeaponCopy;
 				flag = !weaponCopy.IsEmpty && (weaponCopy.IsShield() || weaponCopy.IsBanner() || firstScriptOfType.IsStuckMissile() || firstScriptOfType.IsQuiverAndNotEmpty());
 			}
-			if (!flag || firstScriptOfType.HasUser || (firstScriptOfType.HasAIMovingTo && !firstScriptOfType.IsAIMovingTo(Agent)) || !(firstScriptOfType.GameEntityWithWorldPosition.WorldPosition.GetNavMesh() != UIntPtr.Zero))
+			if (!flag || firstScriptOfType.HasUser || (firstScriptOfType.HasAIMovingTo && !firstScriptOfType.IsAIMovingTo(Agent)) || !(firstScriptOfType.GameEntityWithWorldPosition.GetNavMesh() != UIntPtr.Zero))
 			{
 				continue;
 			}
 			Vec3 v2 = firstScriptOfType.GetUserFrameForAgent(Agent).Origin.GetGroundVec3() - Agent.Position;
 			float z = v2.z;
 			v2.Normalize();
-			if (targetAgent != null && !(v.Length - Vec3.DotProduct(v, v2) > targetAgent.MaximumForwardUnlimitedSpeed * 3f))
+			if (targetAgent != null && !(v.Length - Vec3.DotProduct(v, v2) > targetAgent.GetMaximumForwardUnlimitedSpeed() * 3f))
 			{
 				continue;
 			}
 			EquipmentIndex equipmentIndex = MissionEquipment.SelectWeaponPickUpSlot(Agent, firstScriptOfType.WeaponCopy, firstScriptOfType.IsStuckMissile());
-			WorldPosition worldPosition = firstScriptOfType.GameEntityWithWorldPosition.WorldPosition;
-			if (equipmentIndex == EquipmentIndex.None || !(worldPosition.GetNavMesh() != UIntPtr.Zero) || !MissionGameModels.Current.ItemPickupModel.IsItemAvailableForAgent(firstScriptOfType, Agent, equipmentIndex))
+			if (equipmentIndex == EquipmentIndex.None || !(firstScriptOfType.GameEntityWithWorldPosition.GetNavMesh() != UIntPtr.Zero) || !Agent.CanReachObjectFromPosition(firstScriptOfType, firstScriptOfType.GetUserFrameForAgent(Agent).Origin.GetGroundVec3().DistanceSquared(firstScriptOfType.GameEntityWithWorldPosition.GetNavMeshVec3()), firstScriptOfType.GameEntityWithWorldPosition.GetNavMeshVec3()) || !MissionGameModels.Current.ItemPickupModel.IsItemAvailableForAgent(firstScriptOfType, Agent, equipmentIndex))
 			{
 				continue;
 			}
 			Agent agent = Agent;
-			Vec2 position = worldPosition.AsVec2;
-			if (agent.CanMoveDirectlyToPosition(in position) && (!Agent.Mission.IsPositionInsideAnyBlockerNavMeshFace2D(worldPosition.AsVec2) || !(TaleWorlds.Library.MathF.Abs(z) < 1.5f)))
+			Vec2 position = firstScriptOfType.GameEntityWithWorldPosition.AsVec2;
+			if (agent.CanMoveDirectlyToPosition(in position) && (!Agent.Mission.IsPositionInsideAnyBlockerNavMeshFace2D(firstScriptOfType.GameEntityWithWorldPosition.AsVec2) || !(TaleWorlds.Library.MathF.Abs(z) < 1.5f)))
 			{
 				float itemScoreForAgent = MissionGameModels.Current.ItemPickupModel.GetItemScoreForAgent(firstScriptOfType, Agent);
 				if (itemScoreForAgent > num2)
@@ -466,7 +544,7 @@ public class HumanAIComponent : AgentComponent
 			result = usableMissionObject == GetCurrentlyDefendingGameObject();
 			break;
 		default:
-			Debug.FailedAssert("Unexpected object interest kind: " + _objectInterestKind, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "IsInterestedInGameObject", 580);
+			Debug.FailedAssert("Unexpected object interest kind: " + _objectInterestKind, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "IsInterestedInGameObject", 686);
 			break;
 		case UsableObjectInterestKind.None:
 			break;
@@ -481,23 +559,23 @@ public class HumanAIComponent : AgentComponent
 
 	public float GetDesiredSpeedInFormation(bool isCharging)
 	{
-		if (ShouldCatchUpWithFormation && (!isCharging || !Mission.Current.IsMissionEnding))
+		if (!(Agent.Formation.Arrangement is ColumnFormation) && ShouldCatchUpWithFormation && (!isCharging || !Mission.Current.IsMissionEnding))
 		{
-			float num = Agent.MountAgent?.MaximumForwardUnlimitedSpeed ?? Agent.MaximumForwardUnlimitedSpeed;
+			float num = Agent.MountAgent?.GetMaximumForwardUnlimitedSpeed() ?? Agent.GetMaximumForwardUnlimitedSpeed();
 			bool flag = !isCharging;
 			if (isCharging)
 			{
-				FormationQuerySystem closestEnemyFormation = Agent.Formation.QuerySystem.ClosestEnemyFormation;
+				FormationQuerySystem cachedClosestEnemyFormation = Agent.Formation.CachedClosestEnemyFormation;
 				float num2 = float.MaxValue;
 				float num3 = 4f * num * num;
-				if (closestEnemyFormation != null)
+				if (cachedClosestEnemyFormation != null)
 				{
-					WorldPosition medianPosition = Agent.Formation.QuerySystem.MedianPosition;
-					WorldPosition medianPosition2 = closestEnemyFormation.MedianPosition;
-					num2 = medianPosition.AsVec2.DistanceSquared(medianPosition2.AsVec2);
+					WorldPosition cachedMedianPosition = Agent.Formation.CachedMedianPosition;
+					WorldPosition cachedMedianPosition2 = cachedClosestEnemyFormation.Formation.CachedMedianPosition;
+					num2 = cachedMedianPosition.AsVec2.DistanceSquared(cachedMedianPosition2.AsVec2);
 					if (num2 <= num3)
 					{
-						num2 = Agent.Formation.QuerySystem.MedianPosition.GetNavMeshVec3().DistanceSquared(closestEnemyFormation.MedianPosition.GetNavMeshVec3());
+						num2 = Agent.Formation.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(cachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshVec3());
 					}
 				}
 				flag = num2 > num3;
@@ -508,20 +586,19 @@ public class HumanAIComponent : AgentComponent
 				float value = 0f - Agent.GetMovementDirection().DotProduct(v);
 				value = TaleWorlds.Library.MathF.Clamp(value, 0f, 100f);
 				float num4 = ((Agent.MountAgent != null) ? 4f : 2f);
-				float num5 = (isCharging ? Agent.Formation.QuerySystem.FormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents : Agent.Formation.QuerySystem.MovementSpeed) / num;
-				return TaleWorlds.Library.MathF.Clamp((0.7f + 0.4f * ((num - value * num4) / (num + value * num4))) * num5, 0.3f, 1f);
+				float num5 = (isCharging ? Agent.Formation.CachedFormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents : Agent.Formation.CachedMovementSpeed) / num;
+				return TaleWorlds.Library.MathF.Clamp((0.7f + 0.4f * ((num - value * num4) / (num + value * num4))) * num5, 0.2f, 1f);
 			}
 		}
 		return 1f;
 	}
 
-	private bool GetFormationFrame(out WorldPosition formationPosition, out Vec2 formationDirection, out float speedLimit, out bool isSettingDestinationSpeed, out bool limitIsMultiplier, bool finalDestination = false)
+	private bool GetFormationFrame(out WorldPosition formationPosition, out Vec2 formationDirection, out float speedLimit, out bool limitIsMultiplier)
 	{
 		Formation formation = Agent.Formation;
-		isSettingDestinationSpeed = false;
 		limitIsMultiplier = false;
 		bool result = false;
-		if (formation != null)
+		if (formation != null && (!Agent.IsInWater() || Agent.Mission.IsTeleportingAgents))
 		{
 			formationPosition = formation.GetOrderPositionOfUnit(Agent);
 			formationDirection = formation.GetDirectionOfUnit(Agent);
@@ -530,6 +607,18 @@ public class HumanAIComponent : AgentComponent
 		{
 			formationPosition = WorldPosition.Invalid;
 			formationDirection = Vec2.Invalid;
+		}
+		if (formationPosition.IsValid && formationPosition.GetNavMeshMT() == UIntPtr.Zero)
+		{
+			UIntPtr nearestNavMesh = formationPosition.GetNearestNavMesh();
+			if (nearestNavMesh != UIntPtr.Zero)
+			{
+				Vec2 vec = Mission.Current.Scene.FindClosestExitPositionForPositionOnABoundaryFace(formationPosition.GetVec3WithoutValidity(), nearestNavMesh);
+				if (vec.IsValid)
+				{
+					formationPosition.SetVec2(vec);
+				}
+			}
 		}
 		if (FormationSpeedAdjustmentEnabled && Agent.IsMount)
 		{
@@ -572,7 +661,6 @@ public class HumanAIComponent : AgentComponent
 			switch (formation.GetReadonlyMovementOrderReference().MovementState)
 			{
 			case MovementOrder.MovementStateEnum.Hold:
-				isSettingDestinationSpeed = true;
 				if (FormationSpeedAdjustmentEnabled && ShouldCatchUpWithFormation)
 				{
 					limitIsMultiplier = true;
@@ -585,7 +673,6 @@ public class HumanAIComponent : AgentComponent
 				result = true;
 				break;
 			case MovementOrder.MovementStateEnum.StandGround:
-				formationDirection = Agent.Frame.rotation.f.AsVec2;
 				speedLimit = -1f;
 				result = true;
 				break;
@@ -598,7 +685,7 @@ public class HumanAIComponent : AgentComponent
 				speedLimit = -1f;
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "GetFormationFrame", 767);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "GetFormationFrame", 878);
 				speedLimit = -1f;
 				break;
 			}
@@ -616,30 +703,30 @@ public class HumanAIComponent : AgentComponent
 		agent.MountAgent?.SetMaximumSpeedLimit(desiredSpeed, limitIsMultiplier);
 	}
 
-	public void UpdateFormationMovement()
+	public void ParallelUpdateFormationMovement()
 	{
 		WorldPosition formationPosition;
 		Vec2 formationDirection;
 		float speedLimit;
-		bool isSettingDestinationSpeed;
 		bool limitIsMultiplier;
-		bool formationFrame = GetFormationFrame(out formationPosition, out formationDirection, out speedLimit, out isSettingDestinationSpeed, out limitIsMultiplier);
+		bool formationFrame = GetFormationFrame(out formationPosition, out formationDirection, out speedLimit, out limitIsMultiplier);
 		AdjustSpeedLimit(Agent, speedLimit, limitIsMultiplier);
-		if (Agent.Controller == Agent.ControllerType.AI && Agent.Formation != null && Agent.Formation.GetReadonlyMovementOrderReference().OrderEnum != MovementOrder.MovementOrderEnum.Stop && Agent.Formation.GetReadonlyMovementOrderReference().OrderEnum != MovementOrder.MovementOrderEnum.Retreat && !Agent.IsRetreating())
+		if (Agent.Controller == AgentControllerType.AI && Agent.Formation != null && !(Agent.Formation.Arrangement is ColumnFormation) && Agent.Formation.GetReadonlyMovementOrderReference().OrderEnum != MovementOrder.MovementOrderEnum.Stop && Agent.Formation.GetReadonlyMovementOrderReference().OrderEnum != MovementOrder.MovementOrderEnum.Retreat && !Agent.IsRetreating())
 		{
-			FormationQuerySystem.FormationIntegrityDataGroup formationIntegrityData = Agent.Formation.QuerySystem.FormationIntegrityData;
-			float num = formationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents * 3f;
-			if (formationIntegrityData.DeviationOfPositionsExcludeFarAgents > num * 100f)
+			Formation.FormationIntegrityDataGroup cachedFormationIntegrityData = Agent.Formation.CachedFormationIntegrityData;
+			float num = cachedFormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents * 3f;
+			if (cachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents > num)
 			{
 				ShouldCatchUpWithFormation = false;
-				Agent.SetFormationIntegrityData(Vec2.Zero, Vec2.Zero, Vec2.Zero, 0f, 0f);
+				Agent.SetFormationIntegrityData(Vec2.Zero, Vec2.Zero, Vec2.Zero, 0f, 0f, shouldKeepWithFormationInsteadOfMovingToAgent: false);
 			}
 			else
 			{
 				Vec2 currentGlobalPositionOfUnit = Agent.Formation.GetCurrentGlobalPositionOfUnit(Agent, blendWithOrderDirection: true);
 				float num2 = Agent.Position.AsVec2.Distance(currentGlobalPositionOfUnit);
 				ShouldCatchUpWithFormation = num2 < num * 2f;
-				Agent.SetFormationIntegrityData(ShouldCatchUpWithFormation ? currentGlobalPositionOfUnit : Vec2.Zero, Agent.Formation.CurrentDirection, formationIntegrityData.AverageVelocityExcludeFarAgents, formationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents, formationIntegrityData.DeviationOfPositionsExcludeFarAgents);
+				bool num3 = ShouldCatchUpWithFormation && Agent.GetOffhandWieldedItemIndex() == EquipmentIndex.ExtraWeaponSlot && Agent.Formation.QuerySystem.RangedUnitRatioReadOnly + Agent.Formation.QuerySystem.RangedCavalryUnitRatioReadOnly >= 0.5f;
+				Agent.SetFormationIntegrityData(shouldKeepWithFormationInsteadOfMovingToAgent: num3, position: ShouldCatchUpWithFormation ? currentGlobalPositionOfUnit : Vec2.Zero, currentFormationDirection: Agent.Formation.CurrentDirection, averageVelocityOfCloseAgents: cachedFormationIntegrityData.AverageVelocityExcludeFarAgents, averageMaxUnlimitedSpeedOfCloseAgents: cachedFormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents, deviationOfPositions: cachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents);
 			}
 		}
 		else
@@ -652,9 +739,13 @@ public class HumanAIComponent : AgentComponent
 			Agent.SetFormationFrameDisabled();
 			return;
 		}
-		if (!GameNetwork.IsMultiplayer && Agent.Mission.Mode == MissionMode.Deployment)
+		if (!GameNetwork.IsMultiplayer && Agent.Mission.Mode == MissionMode.Deployment && !Agent.Mission.IsNavalBattle)
 		{
-			MBSceneUtilities.ProjectPositionToDeploymentBoundaries(Agent.Formation.Team.Side, ref formationPosition);
+			IMissionDeploymentPlan deploymentPlan = Agent.Mission.DeploymentPlan;
+			if (deploymentPlan.SupportsNavmesh())
+			{
+				deploymentPlan.ProjectPositionToDeploymentBoundaries(Agent.Formation.Team, ref formationPosition);
+			}
 			flag = Agent.Mission.IsFormationUnitPositionAvailable(ref formationPosition, Agent.Team);
 		}
 		if (flag)
@@ -685,95 +776,78 @@ public class HumanAIComponent : AgentComponent
 		mount.SetMaximumSpeedLimit(-1f, isMultiplier: false);
 	}
 
-	public override void OnMount(Agent mount)
-	{
-		base.OnMount(mount);
-		int selectedMountIndex = Agent.GetSelectedMountIndex();
-		if (selectedMountIndex >= 0 && selectedMountIndex != mount.Index)
-		{
-			Agent agent = Mission.Current.FindAgentWithIndex(selectedMountIndex);
-			if (agent != null)
-			{
-				UnreserveMount(agent);
-			}
-		}
-		int reservedRiderAgentIndex = mount.CommonAIComponent.ReservedRiderAgentIndex;
-		if (reservedRiderAgentIndex >= 0)
-		{
-			if (reservedRiderAgentIndex == Agent.Index)
-			{
-				UnreserveMount(mount);
-			}
-			else
-			{
-				Mission.Current.FindAgentWithIndex(reservedRiderAgentIndex)?.HumanAIComponent.UnreserveMount(mount);
-			}
-		}
-	}
-
 	public void SetBehaviorValueSet(BehaviorValueSet behaviorValueSet)
 	{
-		switch (behaviorValueSet)
+		if (_lastBehaviorValueSet != behaviorValueSet)
 		{
-		case BehaviorValueSet.Default:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 2f, 7f, 4f, 20f, 5f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 2f, 15f, 6.5f, 30f, 5.5f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 4f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 5.5f, 12f, 8f, 30f, 4.5f);
-			break;
-		case BehaviorValueSet.DefensiveArrangementMove:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 8f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 4f, 5f, 0f, 20f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0f, 7f, 0f, 20f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 0f, 7f, 0f, 30f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 15f, 0f, 30f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
-			break;
-		case BehaviorValueSet.Follow:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 6f, 7f, 4f, 20f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0f, 7f, 0f, 20f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 0f, 7f, 0f, 30f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 15f, 0f, 30f, 0f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
-			break;
-		case BehaviorValueSet.DefaultMove:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 5f, 20f, 0.01f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0.02f, 7f, 0.04f, 20f, 0.03f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 10f, 7f, 5f, 30f, 0.05f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0.02f, 15f, 0.065f, 30f, 0.055f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
-			break;
-		case BehaviorValueSet.Charge:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 2f, 7f, 4f, 20f, 5f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 10f, 3f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
-			break;
-		case BehaviorValueSet.DefaultDetached:
-			SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
-			SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
-			SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0.2f, 7f, 0.4f, 20f, 0.5f);
-			SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
-			SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0.2f, 15f, 0.65f, 30f, 0.55f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 4f);
-			SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 5.5f, 12f, 8f, 30f, 4.5f);
-			break;
+			_lastBehaviorValueSet = behaviorValueSet;
+			switch (behaviorValueSet)
+			{
+			case BehaviorValueSet.Default:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 2f, 7f, 4f, 20f, 5f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 2f, 15f, 6.5f, 30f, 5.5f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 4f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 5.5f, 12f, 8f, 30f, 4.5f);
+				break;
+			case BehaviorValueSet.DefensiveArrangementMove:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 8f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 4f, 5f, 0f, 20f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0f, 7f, 0f, 20f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 0f, 7f, 0f, 30f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 15f, 0f, 30f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
+				break;
+			case BehaviorValueSet.Follow:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 6f, 7f, 4f, 20f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0f, 7f, 0f, 20f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 0f, 7f, 0f, 30f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 15f, 0f, 30f, 0f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
+				break;
+			case BehaviorValueSet.DefaultMove:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 5f, 20f, 0.01f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0.02f, 7f, 0.04f, 20f, 0.03f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 100f, 3f, 10f, 15f, 0.1f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0.02f, 15f, 0.065f, 30f, 0.055f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
+				break;
+			case BehaviorValueSet.Charge:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 2f, 7f, 4f, 20f, 5f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0f, 10f, 3f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 5f, 12f, 7.5f, 30f, 9f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.55f, 12f, 0.8f, 30f, 0.45f);
+				break;
+			case BehaviorValueSet.DefaultDetached:
+				SetBehaviorParams(AISimpleBehaviorKind.GoToPos, 3f, 7f, 5f, 20f, 6f);
+				SetBehaviorParams(AISimpleBehaviorKind.Melee, 8f, 7f, 4f, 20f, 1f);
+				SetBehaviorParams(AISimpleBehaviorKind.Ranged, 0.02f, 7f, 0.04f, 20f, 0.03f);
+				SetBehaviorParams(AISimpleBehaviorKind.ChargeHorseback, 2f, 25f, 5f, 30f, 5f);
+				SetBehaviorParams(AISimpleBehaviorKind.RangedHorseback, 0.02f, 15f, 0.065f, 30f, 0.055f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityMelee, 3.5f, 7f, 5.5f, 20f, 6.5f);
+				SetBehaviorParams(AISimpleBehaviorKind.AttackEntityRanged, 0.25f, 7f, 0.45f, 20f, 0.55f);
+				break;
+			}
 		}
 	}
 
 	public void RefreshBehaviorValues(MovementOrder.MovementOrderEnum movementOrder, ArrangementOrder.ArrangementOrderEnum arrangementOrder)
 	{
+		if (Agent.IsDetachedFromFormation)
+		{
+			SetBehaviorValueSet(BehaviorValueSet.DefaultDetached);
+			return;
+		}
 		switch (movementOrder)
 		{
 		case MovementOrder.MovementOrderEnum.Charge:
@@ -799,5 +873,24 @@ public class HumanAIComponent : AgentComponent
 			break;
 		}
 		SetBehaviorValueSet(BehaviorValueSet.Follow);
+	}
+
+	public void ForceDisablePickUpForAgent()
+	{
+		_forceDisableItemPickup = true;
+	}
+
+	public void SetScriptedPositionAndDirectionTimed(Vec2 position, float directionAsRotationInRadians, float duration)
+	{
+		_scriptedFrameTimer = duration;
+		WorldPosition scriptedPosition = Agent.GetWorldPosition();
+		scriptedPosition.SetVec2(position);
+		Agent.SetScriptedPositionAndDirection(ref scriptedPosition, directionAsRotationInRadians, addHumanLikeDelay: false);
+	}
+
+	public void DisableTimedScriptedMovement()
+	{
+		_scriptedFrameTimer = -1f;
+		Agent.DisableScriptedMovement();
 	}
 }

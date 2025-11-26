@@ -134,8 +134,17 @@ public class EncyclopediaManager
 
 	public void GoToLink(string link)
 	{
-		string[] array = link.ToString().Split(new char[1] { '-' });
-		GoToLink(array[0], array[1]);
+		int num = link.IndexOf('-');
+		if (num > 0)
+		{
+			string pageType = link.Substring(0, num);
+			string stringID = link.Substring(num + 1);
+			GoToLink(pageType, stringID);
+		}
+		else
+		{
+			Debug.FailedAssert("Failed to resolve encyclopedia link: " + link, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\EncyclopediaManager.cs", "GoToLink", 166);
+		}
 	}
 
 	public void SetLinkCallback(Action<string, object> ExecuteLink)

@@ -31,7 +31,7 @@ public class TextQueryParentWidget : Widget
 
 	private void FocusOnTextQuery()
 	{
-		base.EventManager.SetWidgetFocused(TextInputWidget, fromClick: true);
+		base.EventManager.FocusedWidget = TextInputWidget;
 	}
 
 	protected override void OnConnectedToRoot()

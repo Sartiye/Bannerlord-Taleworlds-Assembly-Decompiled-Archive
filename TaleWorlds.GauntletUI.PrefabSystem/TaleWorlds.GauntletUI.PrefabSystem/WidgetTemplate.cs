@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.GauntletUI.PrefabSystem;
@@ -303,7 +304,13 @@ public class WidgetTemplate
 			}
 			else if (valueType is WidgetAttributeValueTypeConstant)
 			{
-				string value3 = prefab.GetConstantValue(value2).GetValue(brushFactory, spriteData, prefab.Constants, parameters, Prefab.Parameters);
+				ConstantDefinition constantValue = prefab.GetConstantValue(value2);
+				if (constantValue == null)
+				{
+					Debug.FailedAssert("Unable to find definition of constant: " + value2, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI.PrefabSystem\\WidgetTemplate.cs", "SetAttributes", 383);
+					return;
+				}
+				string value3 = constantValue.GetValue(brushFactory, spriteData, prefab.Constants, parameters, Prefab.Parameters);
 				if (!string.IsNullOrEmpty(value3))
 				{
 					WidgetExtensions.SetWidgetAttributeFromString(widget, key2, value3, brushFactory, spriteData, prefab.VisualDefinitionTemplates, prefab.Constants, parameters, prefab.CustomElements, Prefab.Parameters);

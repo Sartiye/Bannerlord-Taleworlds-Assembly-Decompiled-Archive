@@ -15,13 +15,13 @@ public static class LocalizedTextManager
 
 	public const string DefaultEnglishLanguageId = "English";
 
-	private static readonly Dictionary<string, LocalizedText> _gameTextDictionary = new Dictionary<string, LocalizedText>();
+	private static readonly Dictionary<string, string> _gameTextDictionary = new Dictionary<string, string>();
 
 	public static string GetTranslatedText(string languageId, string id)
 	{
 		if (_gameTextDictionary.TryGetValue(id, out var value))
 		{
-			return value.GetTranslatedText(languageId);
+			return value;
 		}
 		return null;
 	}
@@ -58,7 +58,7 @@ public static class LocalizedTextManager
 			Type type = Type.GetType(languageData.TextProcessor);
 			if (type == null)
 			{
-				Debug.FailedAssert("Can't find the type: " + languageData.TextProcessor, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "CreateTextProcessorForLanguage", 71);
+				Debug.FailedAssert("Can't find the type: " + languageData.TextProcessor, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "CreateTextProcessorForLanguage", 71);
 				return new DefaultTextProcessor();
 			}
 			return (LanguageSpecificTextProcessor)Activator.CreateInstance(type);
@@ -93,14 +93,52 @@ public static class LocalizedTextManager
 			{
 				continue;
 			}
-			string[] files = Directory.GetFiles(text, "language_data.xml", SearchOption.AllDirectories);
-			for (int j = 0; j < files.Length; j++)
+			string[] array;
+			try
 			{
-				XmlDocument xmlDocument = LoadXmlFile(files[j]);
+				array = Directory.GetFiles(text, "language_data.xml", SearchOption.AllDirectories);
+			}
+			catch (Exception ex)
+			{
+				Debug.FailedAssert("Exception occurred in LoadLocalizationXmls: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "LoadLocalizationXmls", 119);
+				array = new string[0];
+			}
+			string[] array2 = array;
+			for (int j = 0; j < array2.Length; j++)
+			{
+				XmlDocument xmlDocument = LoadXmlFile(array2[j]);
 				if (xmlDocument != null)
 				{
 					LanguageData.LoadFromXml(xmlDocument, text);
 				}
+			}
+		}
+	}
+
+	public static void AddLocalizationXml(string newModule)
+	{
+		string text = newModule + "/ModuleData/Languages";
+		if (!Directory.Exists(text))
+		{
+			return;
+		}
+		string[] array;
+		try
+		{
+			array = Directory.GetFiles(text, "language_data.xml", SearchOption.AllDirectories);
+		}
+		catch (Exception ex)
+		{
+			Debug.FailedAssert("Exception occurred in LoadLocalizationXmls: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "AddLocalizationXml", 147);
+			array = new string[0];
+		}
+		string[] array2 = array;
+		for (int i = 0; i < array2.Length; i++)
+		{
+			XmlDocument xmlDocument = LoadXmlFile(array2[i]);
+			if (xmlDocument != null)
+			{
+				LanguageData.LoadFromXml(xmlDocument, text);
 			}
 		}
 	}
@@ -135,7 +173,7 @@ public static class LocalizedTextManager
 				}
 			}
 		}
-		Debug.FailedAssert("Undefined language code " + isoLanguageCode, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "GetLocalizationCodeOfISOLanguageCode", 166);
+		Debug.FailedAssert("Undefined language code " + isoLanguageCode, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "GetLocalizationCodeOfISOLanguageCode", 202);
 		return "English";
 	}
 
@@ -156,7 +194,7 @@ public static class LocalizedTextManager
 		if (languageData == null || !languageData.IsValid)
 		{
 			languageData = LanguageData.GetLanguageData("English");
-			Debug.FailedAssert("Undefined language code: " + languageId, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "GetLanguageData", 189);
+			Debug.FailedAssert("Undefined language code: " + languageId, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "GetLanguageData", 225);
 		}
 		return languageData;
 	}
@@ -175,7 +213,7 @@ public static class LocalizedTextManager
 		}
 		catch
 		{
-			Debug.FailedAssert("Could not parse: " + path, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "LoadXmlFile", 209);
+			Debug.FailedAssert("Could not parse: " + path, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Localization\\LocalizedTextManager.cs", "LoadXmlFile", 245);
 		}
 		return null;
 	}
@@ -242,12 +280,7 @@ public static class LocalizedTextManager
 		}
 		string value = node.Attributes["id"].Value;
 		string value2 = node.Attributes["text"].Value;
-		if (!_gameTextDictionary.ContainsKey(value))
-		{
-			LocalizedText value3 = new LocalizedText();
-			_gameTextDictionary.Add(value, value3);
-		}
-		_gameTextDictionary[value].AddTranslation(languageId, value2);
+		_gameTextDictionary[value] = value2;
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("change_language", "localization")]
@@ -299,11 +332,12 @@ public static class LocalizedTextManager
 		{
 			MBTextManager.ChangeLanguage(languageId);
 			Write("Testing Language: " + MBTextManager.ActiveTextLanguage + "\n\n");
-			foreach (KeyValuePair<string, LocalizedText> item in _gameTextDictionary)
+			foreach (KeyValuePair<string, string> item in _gameTextDictionary)
 			{
 				string key = item.Key;
+				string value = item.Value;
 				string errorLine;
-				bool num = item.Value.CheckValidity(key, out errorLine);
+				bool num = CheckValidity(key, value, out errorLine);
 				if (num)
 				{
 					Write(errorLine);
@@ -321,5 +355,76 @@ public static class LocalizedTextManager
 		{
 			File.AppendAllText("faulty_translation_lines.txt", s, Encoding.Unicode);
 		}
+	}
+
+	public static bool CheckValidity(string id, string text, out string errorLine)
+	{
+		errorLine = null;
+		bool flag = false;
+		int num = 0;
+		int num2 = 0;
+		for (int i = 0; i < text.Length; i++)
+		{
+			switch (text[i])
+			{
+			case '{':
+				num++;
+				break;
+			case '}':
+				num2++;
+				break;
+			}
+		}
+		int num3 = 0;
+		int num4 = 0;
+		string text2 = text;
+		while (true)
+		{
+			int num5 = text2.IndexOf("{?");
+			if (num5 == -1)
+			{
+				break;
+			}
+			num5 = TaleWorlds.Library.MathF.Min(num5 + 1, text2.Length - 1);
+			text2 = text2.Substring(num5);
+			if (text2.Length > 2 && text2[1] != '}')
+			{
+				num3++;
+			}
+		}
+		string text3 = text;
+		while (true)
+		{
+			int num6 = text3.IndexOf("{\\?}");
+			if (num6 == -1)
+			{
+				break;
+			}
+			num4++;
+			num6 = TaleWorlds.Library.MathF.Min(num6 + 1, text.Length - 1);
+			text3 = text3.Substring(num6);
+		}
+		if (num != num2)
+		{
+			errorLine = $"{id} | {text}\n";
+			flag = true;
+		}
+		else if (num3 != num4)
+		{
+			errorLine = $"{id} | {text}\n";
+			flag = true;
+		}
+		else if (!flag)
+		{
+			try
+			{
+				MBTextManager.ProcessTextToString(new TextObject("{=" + id + "}" + GetTranslatedText(MBTextManager.ActiveTextLanguage, id)), shouldClear: true);
+			}
+			catch
+			{
+				errorLine = $"{id} | {text}\n";
+			}
+		}
+		return flag;
 	}
 }

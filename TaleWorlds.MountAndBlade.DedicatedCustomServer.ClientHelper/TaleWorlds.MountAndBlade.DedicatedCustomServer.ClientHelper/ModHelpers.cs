@@ -31,26 +31,29 @@ internal static class ModHelpers
 
 	public static string GetTempFilePath(string anyIdentifier)
 	{
-		return Path.Combine(Path.GetTempPath(), "BL_" + anyIdentifier + "_" + Guid.NewGuid().ToString());
+		return Path.Combine(Path.GetTempPath(), "BL_" + anyIdentifier + "_" + Guid.NewGuid());
 	}
 
 	public static string ReadSceneNameOfDirectory(string sceneDirectoryPath)
 	{
 		string text = null;
-		using (XmlReader xmlReader = XmlReader.Create(Path.Combine(sceneDirectoryPath, "scene.xscene")))
+		using (StreamReader input = new StreamReader(Path.Combine(sceneDirectoryPath, "scene.xscene")))
 		{
-			if (xmlReader.MoveToContent() == XmlNodeType.Element && xmlReader.Name == "scene")
+			using (XmlReader xmlReader = XmlReader.Create(input))
 			{
-				text = xmlReader.GetAttribute("name");
+				if (xmlReader.MoveToContent() == XmlNodeType.Element && xmlReader.Name == "scene")
+				{
+					text = xmlReader.GetAttribute("name");
+				}
 			}
-		}
-		if (text == null)
-		{
-			throw new Exception("Couldn't retrieve name from 'scene.xscene'");
-		}
-		if (DedicatedCustomServerClientHelperSubModule.DebugMode)
-		{
-			text = text + "__" + Guid.NewGuid().ToString();
+			if (text == null)
+			{
+				throw new Exception("Couldn't retrieve name from 'scene.xscene'");
+			}
+			if (DedicatedCustomServerClientHelperSubModule.DebugMode)
+			{
+				text = text + "__" + Guid.NewGuid();
+			}
 		}
 		return text;
 	}
@@ -71,8 +74,11 @@ internal static class ModHelpers
 
 	public static string ExtractZipToTempDirectory(string sourceZipFilePath)
 	{
-		DirectoryInfo directoryInfo = Directory.CreateDirectory(Path.Combine(GetSceneObjRootPath(), "temp_" + Guid.NewGuid().ToString()));
-		ZipFile.ExtractToDirectory(sourceZipFilePath, directoryInfo.FullName);
+		DirectoryInfo directoryInfo = Directory.CreateDirectory(Path.Combine(GetSceneObjRootPath(), "temp_" + Guid.NewGuid()));
+		using (ZipArchive source = ZipFile.OpenRead(sourceZipFilePath))
+		{
+			source.ExtractToDirectory(directoryInfo.FullName);
+		}
 		ModLogger.Log("Extracted zip to directory '" + directoryInfo.FullName + "'");
 		return directoryInfo.FullName;
 	}

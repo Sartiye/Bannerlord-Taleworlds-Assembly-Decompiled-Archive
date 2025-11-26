@@ -81,7 +81,7 @@ public class SaveOutput
 		{
 			SaveError saveError = Errors[i];
 			Debug.Print("[" + i + "]" + saveError.Message);
-			Debug.FailedAssert("SAVE FAILED: [" + i + "]" + saveError.Message + "\n", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveOutput.cs", "PrintStatus", 74);
+			Debug.FailedAssert("SAVE FAILED: [" + i + "]" + saveError.Message + "\n", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveOutput.cs", "PrintStatus", 74);
 		}
 		Debug.Print("--------------------");
 	}

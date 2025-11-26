@@ -30,12 +30,22 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetFacialIndicesByTagDelegate(int race, int curGender, float age, byte[] tag);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetHairColorCountDelegate(int race, int curGender, float age);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void GetHairColorGradientPointsDelegate(int race, int curGender, float age, IntPtr colors);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetHairIndicesByTagDelegate(int race, int curGender, float age, byte[] tag);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -65,7 +75,7 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void GetRandomBodyPropertiesDelegate(int race, int gender, ref BodyProperties bodyPropertiesMin, ref BodyProperties bodyPropertiesMax, int hairCoverType, int seed, byte[] hairTags, byte[] beardTags, byte[] tatooTags, ref BodyProperties outBodyProperties);
+	public delegate void GetRandomBodyPropertiesDelegate(int race, int gender, ref BodyProperties bodyPropertiesMin, ref BodyProperties bodyPropertiesMax, int hairCoverType, int seed, byte[] hairTags, byte[] beardTags, byte[] tatooTags, float variationAmount, ref BodyProperties outBodyProperties);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -91,6 +101,11 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void GetTatooColorGradientPointsDelegate(int race, int curGender, float age, IntPtr colors);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetTattooIndicesByTagDelegate(int race, int curGender, float age, byte[] tag);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -130,9 +145,13 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 
 	public static GetFaceGenInstancesLengthDelegate call_GetFaceGenInstancesLengthDelegate;
 
+	public static GetFacialIndicesByTagDelegate call_GetFacialIndicesByTagDelegate;
+
 	public static GetHairColorCountDelegate call_GetHairColorCountDelegate;
 
 	public static GetHairColorGradientPointsDelegate call_GetHairColorGradientPointsDelegate;
+
+	public static GetHairIndicesByTagDelegate call_GetHairIndicesByTagDelegate;
 
 	public static GetMaturityTypeDelegate call_GetMaturityTypeDelegate;
 
@@ -155,6 +174,8 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	public static GetTatooColorCountDelegate call_GetTatooColorCountDelegate;
 
 	public static GetTatooColorGradientPointsDelegate call_GetTatooColorGradientPointsDelegate;
+
+	public static GetTattooIndicesByTagDelegate call_GetTattooIndicesByTagDelegate;
 
 	public static GetVoiceRecordsCountDelegate call_GetVoiceRecordsCountDelegate;
 
@@ -183,6 +204,23 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 		return call_GetFaceGenInstancesLengthDelegate(race, gender, age);
 	}
 
+	public string GetFacialIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		if (call_GetFacialIndicesByTagDelegate(race, curGender, age, array) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
+	}
+
 	public int GetHairColorCount(int race, int curGender, float age)
 	{
 		return call_GetHairColorCountDelegate(race, curGender, age);
@@ -194,6 +232,23 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 		IntPtr pointer = pinnedArrayData.Pointer;
 		call_GetHairColorGradientPointsDelegate(race, curGender, age, pointer);
 		pinnedArrayData.Dispose();
+	}
+
+	public string GetHairIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		if (call_GetHairIndicesByTagDelegate(race, curGender, age, array) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
 	}
 
 	public int GetMaturityType(float age)
@@ -225,7 +280,7 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 		return Managed.ReturnValueFromEngine;
 	}
 
-	public void GetRandomBodyProperties(int race, int gender, ref BodyProperties bodyPropertiesMin, ref BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags, ref BodyProperties outBodyProperties)
+	public void GetRandomBodyProperties(int race, int gender, ref BodyProperties bodyPropertiesMin, ref BodyProperties bodyPropertiesMax, int hairCoverType, int seed, string hairTags, string beardTags, string tatooTags, float variationAmount, ref BodyProperties outBodyProperties)
 	{
 		byte[] array = null;
 		if (hairTags != null)
@@ -251,7 +306,7 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 			_utf8.GetBytes(tatooTags, 0, tatooTags.Length, array3, 0);
 			array3[byteCount3] = 0;
 		}
-		call_GetRandomBodyPropertiesDelegate(race, gender, ref bodyPropertiesMin, ref bodyPropertiesMax, hairCoverType, seed, array, array2, array3, ref outBodyProperties);
+		call_GetRandomBodyPropertiesDelegate(race, gender, ref bodyPropertiesMin, ref bodyPropertiesMax, hairCoverType, seed, array, array2, array3, variationAmount, ref outBodyProperties);
 	}
 
 	public float GetScaleFromKey(int race, int gender, ref BodyProperties initialBodyProperties)
@@ -283,6 +338,23 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 		IntPtr pointer = pinnedArrayData.Pointer;
 		call_GetTatooColorGradientPointsDelegate(race, curGender, age, pointer);
 		pinnedArrayData.Dispose();
+	}
+
+	public string GetTattooIndicesByTag(int race, int curGender, float age, string tag)
+	{
+		byte[] array = null;
+		if (tag != null)
+		{
+			int byteCount = _utf8.GetByteCount(tag);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(tag, 0, tag.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		if (call_GetTattooIndicesByTagDelegate(race, curGender, age, array) != 1)
+		{
+			return null;
+		}
+		return Managed.ReturnValueFromEngine;
 	}
 
 	public int GetVoiceRecordsCount(int race, int curGender, float age)

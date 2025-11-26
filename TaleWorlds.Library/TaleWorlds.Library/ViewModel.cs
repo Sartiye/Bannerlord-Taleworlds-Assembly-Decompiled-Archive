@@ -484,15 +484,27 @@ public abstract class ViewModel : IViewModel, INotifyPropertyChanged
 	public void ExecuteCommand(string commandName, object[] parameters)
 	{
 		MethodInfo methodInfo = null;
-		methodInfo = ((_propertiesAndMethods == null || !_propertiesAndMethods.Methods.TryGetValue(commandName, out var value)) ? _type.GetMethod(commandName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) : value);
+		if (_propertiesAndMethods != null && _propertiesAndMethods.Methods.TryGetValue(commandName, out var value))
+		{
+			methodInfo = value;
+		}
+		else
+		{
+			Type type = _type;
+			while (type != null && methodInfo == null)
+			{
+				methodInfo = type.GetMethod(commandName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+				type = type.BaseType;
+			}
+		}
 		if (!(methodInfo != null))
 		{
 			return;
 		}
-		if (methodInfo.GetParameters().Length == parameters.Length)
+		ParameterInfo[] parameters2 = methodInfo.GetParameters();
+		if (parameters2.Length == parameters.Length)
 		{
 			object[] array = new object[parameters.Length];
-			ParameterInfo[] parameters2 = methodInfo.GetParameters();
 			for (int i = 0; i < parameters.Length; i++)
 			{
 				object obj = parameters[i];
@@ -504,12 +516,33 @@ public abstract class ViewModel : IViewModel, INotifyPropertyChanged
 					array[i] = obj2;
 				}
 			}
-			methodInfo.InvokeWithLog(this, array);
+			if (AreParametersCompatibleWithMethod(array, parameters2))
+			{
+				methodInfo.InvokeWithLog(this, array);
+			}
 		}
-		else if (methodInfo.GetParameters().Length == 0)
+		else if (parameters2.Length == 0)
 		{
 			methodInfo.InvokeWithLog(this, null);
 		}
+	}
+
+	private bool AreParametersCompatibleWithMethod(object[] parameters, ParameterInfo[] methodParameters)
+	{
+		if (parameters.Length != methodParameters.Length)
+		{
+			return false;
+		}
+		for (int i = 0; i < parameters.Length; i++)
+		{
+			object obj = parameters[i];
+			ParameterInfo parameterInfo = methodParameters[i];
+			if (obj != null && !parameterInfo.ParameterType.IsAssignableFrom(obj.GetType()))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static object ConvertValueTo(string value, Type parameterType)
@@ -534,8 +567,9 @@ public abstract class ViewModel : IViewModel, INotifyPropertyChanged
 	{
 	}
 
-	public static void CollectPropertiesAndMethods()
+	public static void RefreshPropertyAndMethodInfos()
 	{
+		_cachedViewModelProperties.Clear();
 		Assembly[] viewModelAssemblies = GetViewModelAssemblies();
 		for (int i = 0; i < viewModelAssemblies.Length; i++)
 		{

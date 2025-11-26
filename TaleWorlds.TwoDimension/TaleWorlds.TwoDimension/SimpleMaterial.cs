@@ -27,6 +27,8 @@ public class SimpleMaterial : Material
 
 	public float CircularMaskingSmoothingRadius { get; set; }
 
+	public SpriteNinePatchParameters NinePatchParameters { get; set; }
+
 	public bool OverlayEnabled { get; set; }
 
 	public Vector2 StartCoordinate { get; set; }
@@ -71,6 +73,7 @@ public class SimpleMaterial : Material
 	public void Reset(Texture texture = null)
 	{
 		Texture = texture;
+		NinePatchParameters = SpriteNinePatchParameters.Empty;
 		ColorFactor = 1f;
 		AlphaFactor = 1f;
 		HueFactor = 0f;

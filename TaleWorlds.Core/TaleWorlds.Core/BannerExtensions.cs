@@ -12,15 +12,15 @@ public static class BannerExtensions
 		{
 			return false;
 		}
-		if (banner.BannerDataList.Count != otherBanner.BannerDataList.Count)
+		if (banner.GetBannerDataListCount() != otherBanner.GetBannerDataListCount())
 		{
 			return false;
 		}
-		for (int i = 0; i < banner.BannerDataList.Count; i++)
+		for (int i = 0; i < banner.GetBannerDataListCount(); i++)
 		{
-			BannerData bannerData = banner.BannerDataList[i];
-			BannerData obj = otherBanner.BannerDataList[i];
-			if (!bannerData.Equals(obj))
+			BannerData bannerDataAtIndex = banner.GetBannerDataAtIndex(i);
+			BannerData bannerDataAtIndex2 = otherBanner.GetBannerDataAtIndex(i);
+			if (!bannerDataAtIndex.Equals(bannerDataAtIndex2))
 			{
 				return false;
 			}

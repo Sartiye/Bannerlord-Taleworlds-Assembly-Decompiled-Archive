@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
 
@@ -20,7 +21,7 @@ public class LauncherDebugManager : IDebugManager
 		PlatformFilePath[] array = new PlatformFilePath[0];
 		try
 		{
-			array = FileHelper.GetFiles(directoryPath, "launcher_log_*.txt");
+			array = FileHelper.GetFiles(directoryPath, "launcher_log_*.txt", SearchOption.AllDirectories);
 		}
 		catch (Exception)
 		{
@@ -142,6 +143,10 @@ public class LauncherDebugManager : IDebugManager
 	Vec3 IDebugManager.GetDebugVector()
 	{
 		return Vec3.Zero;
+	}
+
+	void IDebugManager.SetDebugVector(Vec3 value)
+	{
 	}
 
 	void IDebugManager.SetTestModeEnabled(bool testModeEnabled)

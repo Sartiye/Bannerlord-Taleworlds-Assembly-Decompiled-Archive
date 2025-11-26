@@ -15,7 +15,11 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 
 	private InputKeyItemVM _doneInputKey;
 
+	private MBBindingList<InputKeyItemVM> _cameraControlKeys;
+
 	private CampaignOptionsControllerVM _optionsController;
+
+	private bool _characterGamepadControlsEnabled;
 
 	[DataSourceProperty]
 	public InputKeyItemVM CancelInputKey
@@ -52,6 +56,23 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 	}
 
 	[DataSourceProperty]
+	public MBBindingList<InputKeyItemVM> CameraControlKeys
+	{
+		get
+		{
+			return _cameraControlKeys;
+		}
+		set
+		{
+			if (value != _cameraControlKeys)
+			{
+				_cameraControlKeys = value;
+				OnPropertyChangedWithValue(value, "CameraControlKeys");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public CampaignOptionsControllerVM OptionsController
 	{
 		get
@@ -68,8 +89,25 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 		}
 	}
 
-	public CharacterCreationOptionsStageVM(TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText, int currentStageIndex, int totalStagesCount, int furthestIndex, Action<int> goToIndex)
-		: base(characterCreation, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText, currentStageIndex, totalStagesCount, furthestIndex, goToIndex)
+	[DataSourceProperty]
+	public bool CharacterGamepadControlsEnabled
+	{
+		get
+		{
+			return _characterGamepadControlsEnabled;
+		}
+		set
+		{
+			if (value != _characterGamepadControlsEnabled)
+			{
+				_characterGamepadControlsEnabled = value;
+				OnPropertyChangedWithValue(value, "CharacterGamepadControlsEnabled");
+			}
+		}
+	}
+
+	public CharacterCreationOptionsStageVM(CharacterCreationManager characterCreationManager, Action affirmativeAction, TextObject affirmativeActionText, Action negativeAction, TextObject negativeActionText)
+		: base(characterCreationManager, affirmativeAction, affirmativeActionText, negativeAction, negativeActionText)
 	{
 		base.Title = GameTexts.FindText("str_difficulty").ToString();
 		base.Description = GameTexts.FindText("str_determine_difficulty").ToString();
@@ -80,6 +118,8 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 			mBBindingList.Add(new CampaignOptionItemVM(characterCreationCampaignOptions[i]));
 		}
 		OptionsController = new CampaignOptionsControllerVM(mBBindingList);
+		base.CanAdvance = CanAdvanceToNextStage();
+		CameraControlKeys = new MBBindingList<InputKeyItemVM>();
 	}
 
 	public override void RefreshValues()
@@ -112,6 +152,10 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 		base.OnFinalize();
 		CancelInputKey?.OnFinalize();
 		DoneInputKey?.OnFinalize();
+		foreach (InputKeyItemVM cameraControlKey in CameraControlKeys)
+		{
+			cameraControlKey.OnFinalize();
+		}
 	}
 
 	public void SetCancelInputKey(HotKey hotKey)
@@ -122,5 +166,23 @@ public class CharacterCreationOptionsStageVM : CharacterCreationStageBaseVM
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void AddCameraControlInputKey(HotKey hotKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameKey gameKey)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
+	}
+
+	public void AddCameraControlInputKey(GameAxisKey gameAxisKey, TextObject keyName)
+	{
+		InputKeyItemVM item = InputKeyItemVM.CreateFromForcedID(gameAxisKey.AxisKey.ToString(), keyName, isConsoleOnly: true);
+		CameraControlKeys.Add(item);
 	}
 }

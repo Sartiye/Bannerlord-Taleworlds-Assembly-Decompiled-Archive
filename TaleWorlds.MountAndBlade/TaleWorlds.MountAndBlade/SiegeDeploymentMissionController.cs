@@ -9,6 +9,8 @@ namespace TaleWorlds.MountAndBlade;
 
 public class SiegeDeploymentMissionController : DeploymentMissionController
 {
+	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
+
 	private SiegeDeploymentHandler _siegeDeploymentHandler;
 
 	public SiegeDeploymentMissionController(bool isPlayerAttacker)
@@ -20,51 +22,105 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 	{
 		base.OnBehaviorInitialize();
 		_siegeDeploymentHandler = base.Mission.GetMissionBehavior<SiegeDeploymentHandler>();
+		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
 	}
 
-	public override void AfterStart()
+	public List<ItemObject> GetSiegeMissiles()
 	{
-		base.Mission.GetMissionBehavior<DeploymentHandler>().InitializeDeploymentPoints();
-		base.AfterStart();
+		List<ItemObject> list = new List<ItemObject>();
+		foreach (WeakGameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<RangedSiegeWeapon>())
+		{
+			RangedSiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<RangedSiegeWeapon>();
+			if (!string.IsNullOrEmpty(firstScriptOfType.MissileItemID))
+			{
+				ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MissileItemID);
+				if (!list.Contains(@object))
+				{
+					list.Add(@object);
+				}
+			}
+			foreach (ItemObject item2 in new List<ItemObject>
+			{
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleFireProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MultipleFireProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleProjectileFlyingId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleFireProjectileId),
+				MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.SingleFireProjectileFlyingId)
+			})
+			{
+				if (!list.Contains(item2))
+				{
+					list.Add(item2);
+				}
+			}
+		}
+		foreach (WeakGameEntity item3 in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<StonePile>())
+		{
+			StonePile firstScriptOfType2 = item3.GetFirstScriptOfType<StonePile>();
+			if (!string.IsNullOrEmpty(firstScriptOfType2.GivenItemID))
+			{
+				ItemObject object2 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType2.GivenItemID);
+				if (!list.Contains(object2))
+				{
+					list.Add(object2);
+				}
+			}
+		}
+		return list;
 	}
 
-	protected override void SetupTeamsOfSide(BattleSideEnum side)
+	protected override void OnAfterStart()
 	{
-		Team team = ((side == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
+		_siegeDeploymentHandler.InitializeDeploymentPoints();
+		for (int i = 0; i < 2; i++)
+		{
+			MissionAgentSpawnLogic.SetSpawnTroops((BattleSideEnum)i, spawnTroops: false);
+		}
+		MissionAgentSpawnLogic.SetReinforcementsSpawnEnabled(value: false);
+	}
+
+	protected override void OnSetupTeamsOfSide(BattleSideEnum battleSide)
+	{
+		Team team = ((battleSide == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
 		if (team == base.Mission.PlayerTeam)
 		{
-			_siegeDeploymentHandler.RemoveUnavailableDeploymentPoints(side);
-			_siegeDeploymentHandler.UnHideDeploymentPoints(side);
+			_siegeDeploymentHandler.RemoveUnavailableDeploymentPoints(battleSide);
+			_siegeDeploymentHandler.UnHideDeploymentPoints(battleSide);
 			_siegeDeploymentHandler.DeployAllSiegeWeaponsOfPlayer();
 		}
 		else
 		{
 			_siegeDeploymentHandler.DeployAllSiegeWeaponsOfAi();
 		}
-		MissionAgentSpawnLogic.SetSpawnTroops(side, spawnTroops: true, enforceSpawning: true);
-		foreach (GameEntity item in base.Mission.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
+		MissionAgentSpawnLogic.SetSpawnTroops(battleSide, spawnTroops: true, enforceSpawning: true);
+		foreach (WeakGameEntity item in base.Mission.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
 		{
 			SiegeWeapon siegeWeapon = item.GetScriptComponents<SiegeWeapon>().FirstOrDefault();
-			if (siegeWeapon != null && siegeWeapon.GetSide() == side)
+			if (siegeWeapon != null && siegeWeapon.GetSide() == battleSide)
 			{
 				siegeWeapon.TickAuxForInit();
 			}
 		}
-		SetupTeamsOfSideAux(side);
-		if (team != base.Mission.PlayerTeam)
+		SetupAgentAIStatesForSide(battleSide);
+		if (team == base.Mission.PlayerTeam)
 		{
-			return;
-		}
-		foreach (Formation item2 in team.FormationsIncludingEmpty)
-		{
-			if (item2.CountOfUnits > 0)
+			foreach (Formation item2 in team.FormationsIncludingEmpty)
 			{
 				item2.SetControlledByAI(isControlledByAI: true);
 			}
 		}
+		MissionAgentSpawnLogic.OnSideDeploymentOver(team.Side);
 	}
 
-	public override void OnBeforeDeploymentFinished()
+	protected override void OnSetupTeamsFinished()
+	{
+		base.Mission.IsTeleportingAgents = true;
+	}
+
+	protected override void BeforeDeploymentFinished()
 	{
 		BattleSideEnum side = base.Mission.PlayerTeam.Side;
 		_siegeDeploymentHandler.RemoveDeploymentPoints(side);
@@ -74,43 +130,12 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 		{
 			item.SetDisabledSynched();
 		}
-		OnSideDeploymentFinished(side);
+		base.Mission.IsTeleportingAgents = false;
 	}
 
-	public override void OnAfterDeploymentFinished()
+	protected override void AfterDeploymentFinished()
 	{
+		MissionAgentSpawnLogic.SetReinforcementsSpawnEnabled(value: true);
 		base.Mission.RemoveMissionBehavior(_siegeDeploymentHandler);
-	}
-
-	public List<ItemObject> GetSiegeMissiles()
-	{
-		List<ItemObject> list = new List<ItemObject>();
-		ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>("grapeshot_fire_projectile");
-		list.Add(@object);
-		foreach (GameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<RangedSiegeWeapon>())
-		{
-			RangedSiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<RangedSiegeWeapon>();
-			if (!string.IsNullOrEmpty(firstScriptOfType.MissileItemID))
-			{
-				ItemObject object2 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType.MissileItemID);
-				if (!list.Contains(object2))
-				{
-					list.Add(object2);
-				}
-			}
-		}
-		foreach (GameEntity item2 in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<StonePile>())
-		{
-			StonePile firstScriptOfType2 = item2.GetFirstScriptOfType<StonePile>();
-			if (!string.IsNullOrEmpty(firstScriptOfType2.GivenItemID))
-			{
-				ItemObject object3 = MBObjectManager.Instance.GetObject<ItemObject>(firstScriptOfType2.GivenItemID);
-				if (!list.Contains(object3))
-				{
-					list.Add(object3);
-				}
-			}
-		}
-		return list;
 	}
 }

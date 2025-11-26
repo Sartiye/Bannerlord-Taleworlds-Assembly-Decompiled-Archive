@@ -17,4 +17,9 @@ internal class Vec2iBasicTypeSerializer : IBasicTypeSerializer
 		int y = reader.ReadInt();
 		return new Vec2i(x, y);
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 8;
+	}
 }

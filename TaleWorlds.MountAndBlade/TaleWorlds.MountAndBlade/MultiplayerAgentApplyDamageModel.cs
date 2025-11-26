@@ -6,7 +6,27 @@ namespace TaleWorlds.MountAndBlade;
 
 public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 {
-	public override float CalculateDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float baseDamage)
+	public override bool IsDamageIgnored(in AttackInformation attackInformation, in AttackCollisionData collisionData)
+	{
+		return false;
+	}
+
+	public override float ApplyDamageAmplifications(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
+	{
+		return baseDamage;
+	}
+
+	public override float ApplyDamageScaling(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
+	{
+		return baseDamage;
+	}
+
+	public override float ApplyDamageReductions(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
+	{
+		return baseDamage;
+	}
+
+	public override float ApplyGeneralDamageModifiers(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
 	{
 		float num = baseDamage;
 		Agent attackerAgent = attackInformation.AttackerAgent;
@@ -20,9 +40,10 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 				num = MathF.Max(0f, num * num2);
 			}
 			bool flag = MissionCombatMechanicsHelper.IsCollisionBoneDifferentThanWeaponAttachBone(in collisionData, attackInformation.WeaponAttachBoneIndex);
-			DamageTypes damageType = ((weapon.IsEmpty || flag || collisionData.IsAlternativeAttack || collisionData.IsFallDamage || collisionData.IsHorseCharge) ? DamageTypes.Blunt : ((DamageTypes)collisionData.DamageType));
-			float num3 = MathF.Max(0f, 1f + combatPerkHandler.GetDamage(weapon.CurrentUsageItem, damageType, collisionData.IsAlternativeAttack) + combatPerkHandler.GetDamageTaken(weapon.CurrentUsageItem, damageType));
-			if (attackInformation.IsHeadShot && weapon.CurrentUsageItem != null && (weapon.CurrentUsageItem.IsConsumable || weapon.CurrentUsageItem.IsRangedWeapon))
+			MissionWeapon attackerWeapon = attackInformation.AttackerWeapon;
+			DamageTypes damageType = ((attackerWeapon.IsEmpty || flag || collisionData.IsAlternativeAttack || collisionData.IsFallDamage || collisionData.IsHorseCharge) ? DamageTypes.Blunt : ((DamageTypes)collisionData.DamageType));
+			float num3 = MathF.Max(0f, 1f + combatPerkHandler.GetDamage(attackerWeapon.CurrentUsageItem, damageType, collisionData.IsAlternativeAttack) + combatPerkHandler.GetDamageTaken(attackerWeapon.CurrentUsageItem, damageType));
+			if (attackInformation.IsHeadShot && attackerWeapon.CurrentUsageItem != null && (attackerWeapon.CurrentUsageItem.IsConsumable || attackerWeapon.CurrentUsageItem.IsRangedWeapon))
 			{
 				num3 += combatPerkHandler.GetRangedHeadShotDamage();
 			}
@@ -31,18 +52,18 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return num;
 	}
 
-	public override void DecideMissileWeaponFlags(Agent attackerAgent, MissionWeapon missileWeapon, ref WeaponFlags missileWeaponFlags)
+	public override void DecideMissileWeaponFlags(Agent attackerAgent, in MissionWeapon missileWeapon, ref WeaponFlags missileWeaponFlags)
 	{
 	}
 
 	public override bool DecideCrushedThrough(Agent attackerAgent, Agent defenderAgent, float totalAttackEnergy, Agent.UsageDirection attackDirection, StrikeType strikeType, WeaponComponentData defendItem, bool isPassiveUsage)
 	{
-		EquipmentIndex wieldedItemIndex = attackerAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-		if (wieldedItemIndex == EquipmentIndex.None)
+		EquipmentIndex equipmentIndex = attackerAgent.GetOffhandWieldedItemIndex();
+		if (equipmentIndex == EquipmentIndex.None)
 		{
-			wieldedItemIndex = attackerAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+			equipmentIndex = attackerAgent.GetPrimaryWieldedItemIndex();
 		}
-		WeaponComponentData weaponComponentData = ((wieldedItemIndex != EquipmentIndex.None) ? attackerAgent.Equipment[wieldedItemIndex].CurrentUsageItem : null);
+		WeaponComponentData weaponComponentData = ((equipmentIndex != EquipmentIndex.None) ? attackerAgent.Equipment[equipmentIndex].CurrentUsageItem : null);
 		if (weaponComponentData == null || isPassiveUsage || !weaponComponentData.WeaponFlags.HasAnyFlag(WeaponFlags.CanCrushThrough) || strikeType != 0 || attackDirection != 0)
 		{
 			return false;
@@ -53,6 +74,11 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 			num *= 1.2f;
 		}
 		return totalAttackEnergy > num;
+	}
+
+	public override bool CanWeaponDealSneakAttack(in AttackInformation attackInformation, WeaponComponentData weapon)
+	{
+		return false;
 	}
 
 	public override bool CanWeaponDismount(Agent attackerAgent, WeaponComponentData attackerWeapon, in Blow blow, in AttackCollisionData collisionData)
@@ -72,10 +98,8 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return false;
 	}
 
-	public override void CalculateDefendedBlowStunMultipliers(Agent attackerAgent, Agent defenderAgent, CombatCollisionResult collisionResult, WeaponComponentData attackerWeapon, WeaponComponentData defenderWeapon, out float attackerStunMultiplier, out float defenderStunMultiplier)
+	public override void CalculateDefendedBlowStunMultipliers(Agent attackerAgent, Agent defenderAgent, CombatCollisionResult collisionResult, WeaponComponentData attackerWeapon, WeaponComponentData defenderWeapon, ref float attackerStunPeriod, ref float defenderStunPeriod)
 	{
-		attackerStunMultiplier = 1f;
-		defenderStunMultiplier = 1f;
 	}
 
 	public override bool CanWeaponKnockback(Agent attackerAgent, WeaponComponentData attackerWeapon, in Blow blow, in AttackCollisionData collisionData)
@@ -97,7 +121,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 
 	public override bool CanWeaponKnockDown(Agent attackerAgent, Agent victimAgent, WeaponComponentData attackerWeapon, in Blow blow, in AttackCollisionData collisionData)
 	{
-		if (attackerWeapon.WeaponClass == WeaponClass.Boulder)
+		if (attackerWeapon.WeaponClass == WeaponClass.Boulder || attackerWeapon.WeaponClass == WeaponClass.BallistaBoulder)
 		{
 			return true;
 		}
@@ -135,7 +159,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 	public override float GetKnockDownPenetration(Agent attackerAgent, WeaponComponentData attackerWeapon, in Blow blow, in AttackCollisionData attackCollisionData)
 	{
 		float num = 0f;
-		if (attackerWeapon.WeaponClass == WeaponClass.Boulder)
+		if (attackerWeapon.WeaponClass == WeaponClass.Boulder || attackerWeapon.WeaponClass == WeaponClass.BallistaBoulder)
 		{
 			num += 0.25f;
 		}
@@ -169,7 +193,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return ManagedParameters.Instance.GetManagedParameter(managedParameterEnum);
 	}
 
-	public override float CalculateAlternativeAttackDamage(BasicCharacterObject attackerCharacter, WeaponComponentData weapon)
+	public override float CalculateAlternativeAttackDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, WeaponComponentData weapon)
 	{
 		if (weapon == null)
 		{
@@ -209,6 +233,16 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 			return baseDamage * 0.75f;
 		}
 		return baseDamage;
+	}
+
+	public override float CalculateSailFireDamage(Agent attackerAgent, IShipOrigin shipOrigin, float baseDamage, bool damageFromShipMachine)
+	{
+		return 0f;
+	}
+
+	public override float CalculateHullFireDamage(float baseFireDamage, IShipOrigin shipOrigin)
+	{
+		return 0f;
 	}
 
 	public override float GetDamageMultiplierForBodyPart(BoneBodyPartType bodyPart, DamageTypes type, bool isHuman, bool isMissile)
@@ -277,9 +311,9 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return false;
 	}
 
-	public override bool DecideAgentShrugOffBlow(Agent victimAgent, AttackCollisionData collisionData, in Blow blow)
+	public override bool DecideAgentShrugOffBlow(Agent victimAgent, in AttackCollisionData collisionData, in Blow blow)
 	{
-		return MissionCombatMechanicsHelper.DecideAgentShrugOffBlow(victimAgent, collisionData, in blow);
+		return MissionCombatMechanicsHelper.DecideAgentShrugOffBlow(victimAgent, in collisionData, in blow);
 	}
 
 	public override bool DecideAgentDismountedByBlow(Agent attackerAgent, Agent victimAgent, in AttackCollisionData collisionData, WeaponComponentData attackerWeapon, in Blow blow)
@@ -300,5 +334,20 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 	public override bool DecideMountRearedByBlow(Agent attackerAgent, Agent victimAgent, in AttackCollisionData collisionData, WeaponComponentData attackerWeapon, in Blow blow)
 	{
 		return MissionCombatMechanicsHelper.DecideMountRearedByBlow(attackerAgent, victimAgent, in collisionData, attackerWeapon, in blow);
+	}
+
+	public override void DecideWeaponCollisionReaction(in Blow registeredBlow, in AttackCollisionData collisionData, Agent attacker, Agent defender, in MissionWeapon attackerWeapon, bool isFatalHit, bool isShruggedOff, float momentumRemaining, out MeleeCollisionReaction colReaction)
+	{
+		MissionCombatMechanicsHelper.DecideWeaponCollisionReaction(in registeredBlow, in collisionData, attacker, defender, in attackerWeapon, isFatalHit, isShruggedOff, momentumRemaining, out colReaction);
+	}
+
+	public override bool ShouldMissilePassThroughAfterShieldBreak(Agent attackerAgent, WeaponComponentData attackerWeapon)
+	{
+		return false;
+	}
+
+	public override float CalculateRemainingMomentum(float originalMomentum, in Blow b, in AttackCollisionData collisionData, Agent attacker, Agent victim, in MissionWeapon attackerWeapon, bool isCrushThrough)
+	{
+		return CalculateDefaultRemainingMomentum(originalMomentum, in b, in collisionData, attacker, victim, in attackerWeapon, isCrushThrough);
 	}
 }

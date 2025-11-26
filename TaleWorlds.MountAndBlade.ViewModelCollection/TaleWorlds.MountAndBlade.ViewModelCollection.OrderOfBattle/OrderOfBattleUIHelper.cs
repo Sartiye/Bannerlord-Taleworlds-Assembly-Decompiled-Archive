@@ -8,83 +8,12 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
 
 internal static class OrderOfBattleUIHelper
 {
-	internal static Team.TroopFilter GetTroopFilterForClass(params FormationClass[] formationClasses)
-	{
-		Team.TroopFilter result = Team.TroopFilter.Melee;
-		if (formationClasses.Length == 1)
-		{
-			FormationClass num = formationClasses[0];
-			if (num == FormationClass.Infantry)
-			{
-				result = Team.TroopFilter.Melee;
-			}
-			if (num == FormationClass.Ranged)
-			{
-				result = Team.TroopFilter.Ranged;
-			}
-			if (num == FormationClass.Cavalry)
-			{
-				result = Team.TroopFilter.Mount | Team.TroopFilter.Melee;
-			}
-			if (num == FormationClass.HorseArcher)
-			{
-				result = Team.TroopFilter.Mount | Team.TroopFilter.Ranged;
-			}
-		}
-		else if (formationClasses.Length == 2)
-		{
-			if (formationClasses[0] == FormationClass.Infantry && formationClasses[1] == FormationClass.Ranged)
-			{
-				result = Team.TroopFilter.Ranged | Team.TroopFilter.Melee;
-			}
-			if (formationClasses[0] == FormationClass.Cavalry && formationClasses[1] == FormationClass.HorseArcher)
-			{
-				result = Team.TroopFilter.Mount | Team.TroopFilter.Ranged | Team.TroopFilter.Melee;
-			}
-		}
-		return result;
-	}
-
-	internal static Team.TroopFilter GetTroopFilterForFormationFilter(params FormationFilterType[] filterTypes)
-	{
-		if (filterTypes.Length == 0)
-		{
-			return (Team.TroopFilter)0;
-		}
-		Team.TroopFilter troopFilter = (Team.TroopFilter)0;
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.Heavy))
-		{
-			troopFilter |= Team.TroopFilter.Armor;
-		}
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.Shield))
-		{
-			troopFilter |= Team.TroopFilter.Shield;
-		}
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.Thrown))
-		{
-			troopFilter |= Team.TroopFilter.Thrown;
-		}
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.Spear))
-		{
-			troopFilter |= Team.TroopFilter.Spear;
-		}
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.HighTier))
-		{
-			troopFilter |= Team.TroopFilter.HighTier;
-		}
-		if (filterTypes.Any((FormationFilterType f) => f == FormationFilterType.LowTier))
-		{
-			troopFilter |= Team.TroopFilter.LowTier;
-		}
-		return troopFilter;
-	}
-
 	internal static List<Agent> GetExcludedAgentsForTransfer(OrderOfBattleFormationItemVM formationVM, FormationClass formationClass)
 	{
 		List<Agent> list = new List<Agent>();
-		if (formationVM.HasCommander)
+		if (formationVM.HasCaptain)
 		{
-			list.Add(formationVM.Commander.Agent);
+			list.Add(formationVM.Captain.Agent);
 		}
 		if (formationVM.HeroTroops.Count > 0)
 		{
@@ -100,16 +29,16 @@ internal static class OrderOfBattleUIHelper
 		return list.Distinct().ToList();
 	}
 
-	internal static Tuple<Formation, int, Team.TroopFilter, List<Agent>> CreateMassTransferData(OrderOfBattleFormationClassVM affectedClass, FormationClass formationClass, Team.TroopFilter filter, int unitCount)
+	internal static (Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents) CreateMassTransferData(OrderOfBattleFormationClassVM affectedClass, FormationClass formationClass, TroopTraitsMask filter, int unitCount)
 	{
 		List<Agent> excludedAgentsForTransfer = GetExcludedAgentsForTransfer(affectedClass.BelongedFormationItem, formationClass);
-		return new Tuple<Formation, int, Team.TroopFilter, List<Agent>>(affectedClass.BelongedFormationItem.Formation, unitCount, filter, excludedAgentsForTransfer);
+		return (formation: affectedClass.BelongedFormationItem.Formation, troopCount: unitCount, troopFilter: filter, excludedAgents: excludedAgentsForTransfer);
 	}
 
-	internal static Tuple<Formation, int, Team.TroopFilter, List<Agent>> CreateMassTransferData(OrderOfBattleFormationItemVM affectedFormation, FormationClass formationClass, Team.TroopFilter filter, int unitCount)
+	internal static (Formation formation, int troopCount, TroopTraitsMask troopFilter, List<Agent> excludedAgents) CreateMassTransferData(OrderOfBattleFormationItemVM affectedFormation, FormationClass formationClass, TroopTraitsMask filter, int unitCount)
 	{
 		List<Agent> excludedAgentsForTransfer = GetExcludedAgentsForTransfer(affectedFormation, formationClass);
-		return new Tuple<Formation, int, Team.TroopFilter, List<Agent>>(affectedFormation.Formation, unitCount, filter, excludedAgentsForTransfer);
+		return (formation: affectedFormation.Formation, troopCount: unitCount, troopFilter: filter, excludedAgents: excludedAgentsForTransfer);
 	}
 
 	internal static (int, bool, bool) GetRelevantTroopTransferParameters(OrderOfBattleFormationClassVM classVM)
@@ -219,16 +148,11 @@ internal static class OrderOfBattleUIHelper
 	internal static int GetVisibleCountOfUnitsInClass(OrderOfBattleFormationClassVM classVM)
 	{
 		OrderOfBattleFormationItemVM belongedFormationItem = classVM.BelongedFormationItem;
-		Formation formation = classVM.BelongedFormationItem.Formation;
+		_ = classVM.BelongedFormationItem.Formation;
 		if (belongedFormationItem.Classes.Where((OrderOfBattleFormationClassVM c) => !c.IsUnset).ToList().Count == 1)
 		{
 			return classVM.BelongedFormationItem.Formation.CountOfUnits;
 		}
-		int num = GetCountOfUnitsInClass(classVM, includeHeroes: true, includeBannerBearers: false);
-		if (classVM.Class == FormationClass.Infantry || classVM.Class == FormationClass.Cavalry)
-		{
-			num += GetBannerBearersOfFormation(formation).Count;
-		}
-		return num;
+		return GetCountOfUnitsInClass(classVM, includeHeroes: true, includeBannerBearers: true);
 	}
 }

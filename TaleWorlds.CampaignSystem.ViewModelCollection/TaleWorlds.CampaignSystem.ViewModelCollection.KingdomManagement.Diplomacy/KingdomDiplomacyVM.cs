@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
-using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
+using Helpers;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -12,13 +13,9 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplom
 
 public class KingdomDiplomacyVM : KingdomCategoryVM
 {
-	private KingdomDecision _currentItemsUnresolvedDecision;
-
 	private readonly Action<KingdomDecision> _forceDecision;
 
 	private readonly Kingdom _playerKingdom;
-
-	private int _dailyPeaceTributeToPay;
 
 	private bool _isChangingDiplomacyItem;
 
@@ -36,8 +33,6 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private HintViewModel _showWarLogsHint;
 
-	private HintViewModel _actionHint;
-
 	private string _playerWarsText;
 
 	private string _numOfPlayerWarsText;
@@ -48,21 +43,15 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private string _warsText;
 
-	private string _actionName;
-
-	private string _proposeActionExplanationText;
-
 	private string _behaviorSelectionTitle;
-
-	private int _actionInfluenceCost;
-
-	private bool _isActionEnabled;
 
 	private bool _isDisplayingWarLogs;
 
 	private bool _isDisplayingStatComparisons;
 
 	private bool _isWar;
+
+	private MBBindingList<KingdomDiplomacyProposalActionItemVM> _actions;
 
 	[DataSourceProperty]
 	public MBBindingList<KingdomWarItemVM> PlayerWars
@@ -77,40 +66,6 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 			{
 				_playerWars = value;
 				OnPropertyChangedWithValue(value, "PlayerWars");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int ActionInfluenceCost
-	{
-		get
-		{
-			return _actionInfluenceCost;
-		}
-		set
-		{
-			if (value != _actionInfluenceCost)
-			{
-				_actionInfluenceCost = value;
-				OnPropertyChangedWithValue(value, "ActionInfluenceCost");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsActionEnabled
-	{
-		get
-		{
-			return _isActionEnabled;
-		}
-		set
-		{
-			if (value != _isActionEnabled)
-			{
-				_isActionEnabled = value;
-				OnPropertyChangedWithValue(value, "IsActionEnabled");
 			}
 		}
 	}
@@ -166,40 +121,6 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 					ExecuteShowStatComparisons();
 				}
 				OnPropertyChangedWithValue(value, "IsWar");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string ActionName
-	{
-		get
-		{
-			return _actionName;
-		}
-		set
-		{
-			if (value != _actionName)
-			{
-				_actionName = value;
-				OnPropertyChangedWithValue(value, "ActionName");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string ProposeActionExplanationText
-	{
-		get
-		{
-			return _proposeActionExplanationText;
-		}
-		set
-		{
-			if (value != _proposeActionExplanationText)
-			{
-				_proposeActionExplanationText = value;
-				OnPropertyChangedWithValue(value, "ProposeActionExplanationText");
 			}
 		}
 	}
@@ -412,18 +333,18 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 	}
 
 	[DataSourceProperty]
-	public HintViewModel ActionHint
+	public MBBindingList<KingdomDiplomacyProposalActionItemVM> Actions
 	{
 		get
 		{
-			return _actionHint;
+			return _actions;
 		}
 		set
 		{
-			if (value != _actionHint)
+			if (value != _actions)
 			{
-				_actionHint = value;
-				OnPropertyChangedWithValue(value, "ActionHint");
+				_actions = value;
+				OnPropertyChangedWithValue(value, "Actions");
 			}
 		}
 	}
@@ -435,7 +356,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		PlayerWars = new MBBindingList<KingdomWarItemVM>();
 		PlayerTruces = new MBBindingList<KingdomTruceItemVM>();
 		WarsSortController = new KingdomWarSortControllerVM(ref _playerWars);
-		ActionHint = new HintViewModel();
+		Actions = new MBBindingList<KingdomDiplomacyProposalActionItemVM>();
 		ExecuteShowStatComparisons();
 		RefreshValues();
 		SetDefaultSelectedItem();
@@ -449,7 +370,6 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		BehaviorSelection.AddItem(new SelectorItemVM(GameTexts.FindText("str_kingdom_war_strategy_defensive"), GameTexts.FindText("str_kingdom_war_strategy_defensive_desc")));
 		BehaviorSelection.AddItem(new SelectorItemVM(GameTexts.FindText("str_kingdom_war_strategy_offensive"), GameTexts.FindText("str_kingdom_war_strategy_offensive_desc")));
 		RefreshDiplomacyList();
-		base.NotificationCount = Clan.PlayerClan.Kingdom?.UnresolvedDecisions.Count((KingdomDecision d) => !d.ShouldBeCancelled()) ?? 0;
 		BehaviorSelectionTitle = GameTexts.FindText("str_kingdom_war_strategy").ToString();
 		base.NoItemSelectedText = GameTexts.FindText("str_kingdom_no_war_selected").ToString();
 		PlayerWarsText = GameTexts.FindText("str_kingdom_at_war").ToString();
@@ -466,28 +386,32 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 			x.RefreshValues();
 		});
 		CurrentSelectedDiplomacyItem?.RefreshValues();
+		Actions.ApplyActionOnAllItems(delegate(KingdomDiplomacyProposalActionItemVM x)
+		{
+			x.RefreshValues();
+		});
 	}
 
 	public void RefreshDiplomacyList()
 	{
+		base.NotificationCount = Clan.PlayerClan.Kingdom?.UnresolvedDecisions.Count((KingdomDecision d) => !d.ShouldBeCancelled()) ?? 0;
 		PlayerWars.Clear();
 		PlayerTruces.Clear();
-		foreach (StanceLink item in from x in _playerKingdom.Stances
-			where x.IsAtWar
-			select x into w
+		foreach (StanceLink item in from x in _playerKingdom.FactionsAtWarWith
+			select _playerKingdom.GetStanceWith(x) into w
 			orderby w.Faction1.Name.ToString() + w.Faction2.Name.ToString()
 			select w)
 		{
 			if (item.Faction1.IsKingdomFaction && item.Faction2.IsKingdomFaction)
 			{
-				PlayerWars.Add(new KingdomWarItemVM(item, OnDiplomacyItemSelection, OnDeclarePeace));
+				PlayerWars.Add(new KingdomWarItemVM(item, OnDiplomacyItemSelection));
 			}
 		}
 		foreach (Kingdom item2 in Kingdom.All)
 		{
-			if (item2 != _playerKingdom && !item2.IsEliminated && (FactionManager.IsAlliedWithFaction(item2, _playerKingdom) || FactionManager.IsNeutralWithFaction(item2, _playerKingdom)))
+			if (item2 != _playerKingdom && !item2.IsEliminated && (DiplomacyHelper.IsSameFactionAndNotEliminated(item2, _playerKingdom) || FactionManager.IsNeutralWithFaction(item2, _playerKingdom)))
 			{
-				PlayerTruces.Add(new KingdomTruceItemVM(_playerKingdom, item2, OnDiplomacyItemSelection, OnDeclareWar));
+				PlayerTruces.Add(new KingdomTruceItemVM(_playerKingdom, item2, OnDiplomacyItemSelection));
 			}
 		}
 		GameTexts.SetVariable("STR", PlayerWars.Count);
@@ -526,6 +450,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private void OnSetCurrentDiplomacyItem(KingdomDiplomacyItemVM item)
 	{
+		Actions.Clear();
 		if (item is KingdomWarItemVM)
 		{
 			OnSetWarItem(item as KingdomWarItemVM);
@@ -540,75 +465,151 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private void OnSetWarItem(KingdomWarItemVM item)
 	{
-		_currentItemsUnresolvedDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is MakePeaceKingdomDecision makePeaceKingdomDecision && makePeaceKingdomDecision.FactionToMakePeaceWith == item.Faction2 && !d.ShouldBeCancelled());
-		if (_currentItemsUnresolvedDecision != null)
+		KingdomDecision unresolvedPeaceDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is MakePeaceKingdomDecision makePeaceKingdomDecision && makePeaceKingdomDecision.FactionToMakePeaceWith == item.Faction2 && !d.ShouldBeCancelled());
+		if (unresolvedPeaceDecision != null)
 		{
-			_dailyPeaceTributeToPay = (_currentItemsUnresolvedDecision as MakePeaceKingdomDecision)?.DailyTributeToBePaid ?? 0;
-			ActionName = GameTexts.FindText("str_resolve").ToString();
-			ActionInfluenceCost = 0;
-			IsActionEnabled = GetActionStatusForDiplomacyItemWithReason(item, isResolve: true, out var disabledReason);
-			ActionHint.HintText = disabledReason;
-			ProposeActionExplanationText = GameTexts.FindText("str_resolve_explanation").ToString();
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason), disabledReason, delegate
+			{
+				_forceDecision(unresolvedPeaceDecision);
+			}));
 			return;
 		}
-		ActionName = ((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose").ToString() : GameTexts.FindText("str_policy_enact").ToString());
-		ActionInfluenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Clan.PlayerClan);
-		PeaceBarterable peaceBarterable = new PeaceBarterable(_playerKingdom.Leader, _playerKingdom, item.Faction2, CampaignTime.Years(1f));
-		int num = -peaceBarterable.GetValueForFaction(item.Faction2);
-		if (item.Faction2 is Kingdom)
+		int durationInDays;
+		int dailyPeaceTributeToPay = Campaign.Current.Models.DiplomacyModel.GetDailyTributeToPay(Clan.PlayerClan, item.Faction2.Leader.Clan, out durationInDays);
+		dailyPeaceTributeToPay = 10 * (dailyPeaceTributeToPay / 10);
+		TextObject textObject = ((dailyPeaceTributeToPay == 0) ? GameTexts.FindText("str_propose_peace_explanation") : ((dailyPeaceTributeToPay > 0) ? GameTexts.FindText("str_propose_peace_explanation_pay_tribute") : GameTexts.FindText("str_propose_peace_explanation_get_tribute")));
+		textObject.SetTextVariable("SUPPORT", CalculatePeaceSupport(item.Faction2, dailyPeaceTributeToPay, durationInDays)).SetTextVariable("TRIBUTE_AMOUNT", TaleWorlds.Library.MathF.Abs(dailyPeaceTributeToPay)).SetTextVariable("TRIBUTE_DURATION", durationInDays);
+		int influenceCostOfProposingPeace = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Clan.PlayerClan);
+		Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), textObject, influenceCostOfProposingPeace, GetIsProposingPeaceEnabledWithReason(item, influenceCostOfProposingPeace, out var disabledReason2), disabledReason2, delegate
 		{
-			foreach (Clan clan in ((Kingdom)item.Faction2).Clans)
-			{
-				int num2 = -peaceBarterable.GetValueForFaction(clan);
-				if (num2 > num)
-				{
-					num = num2;
-				}
-			}
-		}
-		int num3 = num;
-		if (num3 > -5000 && num3 < 5000)
-		{
-			num3 = 0;
-		}
-		_dailyPeaceTributeToPay = Campaign.Current.Models.DiplomacyModel.GetDailyTributeForValue(num3);
-		_dailyPeaceTributeToPay = 10 * (_dailyPeaceTributeToPay / 10);
-		IsActionEnabled = GetActionStatusForDiplomacyItemWithReason(item, isResolve: false, out var disabledReason2);
-		ActionHint.HintText = disabledReason2;
-		TextObject textObject = ((_dailyPeaceTributeToPay == 0) ? GameTexts.FindText("str_propose_peace_explanation") : ((_dailyPeaceTributeToPay > 0) ? GameTexts.FindText("str_propose_peace_explanation_pay_tribute") : GameTexts.FindText("str_propose_peace_explanation_get_tribute")));
-		ProposeActionExplanationText = textObject.SetTextVariable("SUPPORT", CalculatePeaceSupport(item, _dailyPeaceTributeToPay)).SetTextVariable("TRIBUTE", TaleWorlds.Library.MathF.Abs(_dailyPeaceTributeToPay)).ToString();
-		base.NotificationCount = Clan.PlayerClan.Kingdom?.UnresolvedDecisions.Count ?? 0;
+			OnDeclarePeace(item, dailyPeaceTributeToPay, durationInDays);
+		}));
 	}
 
 	private void OnSetPeaceItem(KingdomTruceItemVM item)
 	{
-		_currentItemsUnresolvedDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is DeclareWarDecision declareWarDecision && declareWarDecision.FactionToDeclareWarOn == item.Faction2 && !d.ShouldBeCancelled());
-		if (_currentItemsUnresolvedDecision != null)
+		KingdomDecision unresolvedAllianceDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is StartAllianceDecision startAllianceDecision && startAllianceDecision.KingdomToStartAllianceWith == item.Faction2 && !d.ShouldBeCancelled());
+		if (unresolvedAllianceDecision != null)
 		{
-			ActionName = GameTexts.FindText("str_resolve").ToString();
-			ActionInfluenceCost = 0;
-			IsActionEnabled = GetActionStatusForDiplomacyItemWithReason(item, isResolve: true, out var disabledReason);
-			ActionHint.HintText = disabledReason;
-			ProposeActionExplanationText = GameTexts.FindText("str_resolve_explanation").ToString();
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason), disabledReason, delegate
+			{
+				_forceDecision(unresolvedAllianceDecision);
+			}));
+		}
+		else if (!Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().IsAllyWithKingdom(item.Faction1 as Kingdom, item.Faction2 as Kingdom))
+		{
+			int influenceCostOfProposingStartingAlliance = Campaign.Current.Models.AllianceModel.GetInfluenceCostOfProposingStartingAlliance(Clan.PlayerClan);
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), GameTexts.FindText("str_propose_alliance_explanation").SetTextVariable("SUPPORT", CalculateAllianceSupport(item.Faction2)), influenceCostOfProposingStartingAlliance, GetIsProposingAllianceEnabledWithReason(item, influenceCostOfProposingStartingAlliance, out var disabledReason2), disabledReason2, delegate
+			{
+				OnStartAlliance(item);
+			}));
+		}
+		KingdomDecision unresolvedWarDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is DeclareWarDecision declareWarDecision && declareWarDecision.FactionToDeclareWarOn == item.Faction2 && !d.ShouldBeCancelled());
+		if (unresolvedWarDecision != null)
+		{
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason3), disabledReason3, delegate
+			{
+				_forceDecision(unresolvedWarDecision);
+			}));
 		}
 		else
 		{
-			ActionName = ((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose").ToString() : GameTexts.FindText("str_policy_enact").ToString());
-			ActionInfluenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Clan.PlayerClan);
-			IsActionEnabled = GetActionStatusForDiplomacyItemWithReason(item, isResolve: false, out var disabledReason2);
-			ActionHint.HintText = disabledReason2;
-			ProposeActionExplanationText = GameTexts.FindText("str_propose_war_explanation").SetTextVariable("SUPPORT", CalculateWarSupport(item.Faction2)).ToString();
+			int influenceCostOfProposingWar = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Clan.PlayerClan);
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), GameTexts.FindText("str_propose_war_explanation").SetTextVariable("SUPPORT", CalculateWarSupport(item.Faction2)), influenceCostOfProposingWar, GetIsProposingWarEnabledWithReason(item, influenceCostOfProposingWar, out var disabledReason4), disabledReason4, delegate
+			{
+				OnDeclareWar(item);
+			}));
+		}
+		KingdomDecision unresolvedTradeAgreementDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is TradeAgreementDecision tradeAgreementDecision && tradeAgreementDecision.TargetKingdom == item.Faction2 && !d.ShouldBeCancelled());
+		if (unresolvedTradeAgreementDecision != null)
+		{
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason5), disabledReason5, delegate
+			{
+				_forceDecision(unresolvedTradeAgreementDecision);
+			}));
+		}
+		else if (!Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().HasTradeAgreement(item.Faction1 as Kingdom, item.Faction2 as Kingdom))
+		{
+			int influenceCostOfProposingTradeAgreement = Campaign.Current.Models.TradeAgreementModel.GetInfluenceCostOfProposingTradeAgreement(Clan.PlayerClan);
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), GameTexts.FindText("str_propose_trade_agreement_explanation").SetTextVariable("SUPPORT", CalculateTradeAgreementSupport(item.Faction2)), influenceCostOfProposingTradeAgreement, GetIsProposingTradeAgreementEnabledWithReason(item, influenceCostOfProposingTradeAgreement, out var disabledReason6), disabledReason6, delegate
+			{
+				OnStartTradeAgreement(item);
+			}));
 		}
 	}
 
-	private bool GetActionStatusForDiplomacyItemWithReason(KingdomDiplomacyItemVM item, bool isResolve, out TextObject disabledReason)
+	private bool GetIsProposingWarEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
+	{
+		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		{
+			disabledReason = disabledReason2;
+			return false;
+		}
+		if (!Campaign.Current.Models.KingdomDecisionPermissionModel.IsWarDecisionAllowedBetweenKingdoms(item.Faction1 as Kingdom, item.Faction2 as Kingdom, out var reason))
+		{
+			disabledReason = reason;
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
+		return true;
+	}
+
+	private bool GetIsProposingPeaceEnabledWithReason(KingdomWarItemVM item, float actionInfluenceCost, out TextObject disabledReason)
+	{
+		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		{
+			disabledReason = disabledReason2;
+			return false;
+		}
+		if (!Campaign.Current.Models.KingdomDecisionPermissionModel.IsPeaceDecisionAllowedBetweenKingdoms(item.Faction1 as Kingdom, item.Faction2 as Kingdom, out var reason))
+		{
+			disabledReason = reason;
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
+		return true;
+	}
+
+	private bool GetIsProposingAllianceEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
+	{
+		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		{
+			disabledReason = disabledReason2;
+			return false;
+		}
+		if (!new StartAllianceDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason))
+		{
+			disabledReason = reason;
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
+		return true;
+	}
+
+	private bool GetIsProposingTradeAgreementEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
+	{
+		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		{
+			disabledReason = disabledReason2;
+			return false;
+		}
+		if (!new TradeAgreementDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason))
+		{
+			disabledReason = reason;
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
+		return true;
+	}
+
+	private bool GetAreProposalActionsEnabledWithReason(float actionInfluenceCost, out TextObject disabledReason)
 	{
 		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
 		}
-		if (!isResolve && Clan.PlayerClan.Influence < (float)ActionInfluenceCost)
+		if (actionInfluenceCost > 0f && Clan.PlayerClan.Influence < actionInfluenceCost)
 		{
 			disabledReason = GameTexts.FindText("str_warning_you_dont_have_enough_influence");
 			return false;
@@ -618,21 +619,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 			disabledReason = GameTexts.FindText("str_cannot_propose_war_truce_while_mercenary");
 			return false;
 		}
-		TextObject reason2;
-		if (item is KingdomTruceItemVM kingdomTruceItemVM)
-		{
-			if (!Campaign.Current.Models.KingdomDecisionPermissionModel.IsWarDecisionAllowedBetweenKingdoms(kingdomTruceItemVM.Faction1 as Kingdom, kingdomTruceItemVM.Faction2 as Kingdom, out var reason))
-			{
-				disabledReason = reason;
-				return false;
-			}
-		}
-		else if (item is KingdomWarItemVM && !Campaign.Current.Models.KingdomDecisionPermissionModel.IsPeaceDecisionAllowedBetweenKingdoms(item.Faction1 as Kingdom, item.Faction2 as Kingdom, out reason2))
-		{
-			disabledReason = reason2;
-			return false;
-		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -668,40 +655,35 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private void OnDeclareWar(KingdomTruceItemVM item)
 	{
-		if (_currentItemsUnresolvedDecision != null)
-		{
-			_forceDecision(_currentItemsUnresolvedDecision);
-			return;
-		}
 		DeclareWarDecision declareWarDecision = new DeclareWarDecision(Clan.PlayerClan, item.Faction2);
 		Clan.PlayerClan.Kingdom.AddDecision(declareWarDecision);
 		_forceDecision(declareWarDecision);
 	}
 
-	private void OnDeclarePeace(KingdomWarItemVM item)
+	private void OnDeclarePeace(KingdomWarItemVM item, int tributeToPay, int tributeDurationInDays)
 	{
-		if (_currentItemsUnresolvedDecision != null)
-		{
-			_forceDecision(_currentItemsUnresolvedDecision);
-			return;
-		}
-		MakePeaceKingdomDecision makePeaceKingdomDecision = new MakePeaceKingdomDecision(Clan.PlayerClan, item.Faction2 as Kingdom, _dailyPeaceTributeToPay);
+		MakePeaceKingdomDecision makePeaceKingdomDecision = new MakePeaceKingdomDecision(Clan.PlayerClan, item.Faction2 as Kingdom, tributeToPay, tributeDurationInDays);
 		Clan.PlayerClan.Kingdom.AddDecision(makePeaceKingdomDecision);
 		_forceDecision(makePeaceKingdomDecision);
 	}
 
-	private void ExecuteAction()
+	private void OnStartAlliance(KingdomTruceItemVM item)
 	{
-		if (CurrentSelectedDiplomacyItem != null)
+		if (item.Faction2.IsKingdomFaction)
 		{
-			if (CurrentSelectedDiplomacyItem is KingdomWarItemVM)
-			{
-				OnDeclarePeace(CurrentSelectedDiplomacyItem as KingdomWarItemVM);
-			}
-			else if (CurrentSelectedDiplomacyItem is KingdomTruceItemVM)
-			{
-				OnDeclareWar(CurrentSelectedDiplomacyItem as KingdomTruceItemVM);
-			}
+			StartAllianceDecision startAllianceDecision = new StartAllianceDecision(Clan.PlayerClan, (Kingdom)item.Faction2);
+			Clan.PlayerClan.Kingdom.AddDecision(startAllianceDecision);
+			_forceDecision(startAllianceDecision);
+		}
+	}
+
+	private void OnStartTradeAgreement(KingdomTruceItemVM item)
+	{
+		if (item.Faction2.IsKingdomFaction)
+		{
+			TradeAgreementDecision tradeAgreementDecision = new TradeAgreementDecision(Clan.PlayerClan, (Kingdom)item.Faction2);
+			Clan.PlayerClan.Kingdom.AddDecision(tradeAgreementDecision);
+			_forceDecision(tradeAgreementDecision);
 		}
 	}
 
@@ -741,13 +723,23 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		}
 	}
 
-	private static int CalculateWarSupport(IFaction faction)
+	private int CalculateWarSupport(IFaction faction)
 	{
 		return TaleWorlds.Library.MathF.Round(new KingdomElection(new DeclareWarDecision(Clan.PlayerClan, faction)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
 	}
 
-	private int CalculatePeaceSupport(KingdomWarItemVM policy, int dailyTributeToBePaid)
+	private int CalculateAllianceSupport(IFaction faction)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new MakePeaceKingdomDecision(Clan.PlayerClan, policy.Faction2, dailyTributeToBePaid)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		return TaleWorlds.Library.MathF.Round(new KingdomElection(new StartAllianceDecision(Clan.PlayerClan, faction as Kingdom)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+	}
+
+	private int CalculatePeaceSupport(IFaction faction, int dailyTributeToBePaid, int durationInDays)
+	{
+		return TaleWorlds.Library.MathF.Round(new KingdomElection(new MakePeaceKingdomDecision(Clan.PlayerClan, faction, dailyTributeToBePaid, durationInDays)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+	}
+
+	private int CalculateTradeAgreementSupport(IFaction faction)
+	{
+		return TaleWorlds.Library.MathF.Round(new KingdomElection(new TradeAgreementDecision(Clan.PlayerClan, faction as Kingdom)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
 	}
 }

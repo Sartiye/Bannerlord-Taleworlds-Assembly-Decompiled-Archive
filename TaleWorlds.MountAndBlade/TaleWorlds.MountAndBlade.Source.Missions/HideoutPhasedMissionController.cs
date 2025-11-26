@@ -37,7 +37,7 @@ public class HideoutPhasedMissionController : MissionLogic
 			{
 				if (item.CountOfUnits > 0)
 				{
-					item.SetMovementOrder(MovementOrder.MovementOrderMove(item.QuerySystem.MedianPosition));
+					item.SetMovementOrder(MovementOrder.MovementOrderMove(item.CachedMedianPosition));
 					_isNewlyPopulatedFormationGivenOrder = true;
 				}
 			}
@@ -67,13 +67,13 @@ public class HideoutPhasedMissionController : MissionLogic
 
 	private void ReadySpawnPointLogic()
 	{
-		List<GameEntity> list = Mission.Current.GetActiveEntitiesWithScriptComponentOfType<HideoutSpawnPointGroup>().ToList();
+		List<WeakGameEntity> list = Mission.Current.GetActiveEntitiesWithScriptComponentOfType<HideoutSpawnPointGroup>().ToList();
 		if (list.Count == 0)
 		{
 			return;
 		}
 		HideoutSpawnPointGroup[] array = new HideoutSpawnPointGroup[list.Count];
-		foreach (GameEntity item in list)
+		foreach (WeakGameEntity item in list)
 		{
 			HideoutSpawnPointGroup firstScriptOfType = item.GetFirstScriptOfType<HideoutSpawnPointGroup>();
 			array[firstScriptOfType.PhaseNumber - 1] = firstScriptOfType;
@@ -116,7 +116,7 @@ public class HideoutPhasedMissionController : MissionLogic
 	{
 		if (_spawnPointFrames.Count == 0)
 		{
-			Debug.FailedAssert("No position left.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\HideoutPhasedMissionController.cs", "OnPhaseChanged", 142);
+			Debug.FailedAssert("No position left.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\HideoutPhasedMissionController.cs", "OnPhaseChanged", 142);
 			return;
 		}
 		for (int i = 0; i < _spawnPoints.Length; i++)

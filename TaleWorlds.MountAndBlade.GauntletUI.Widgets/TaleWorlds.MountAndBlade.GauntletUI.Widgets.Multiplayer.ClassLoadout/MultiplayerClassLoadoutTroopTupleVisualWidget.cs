@@ -11,8 +11,6 @@ public class MultiplayerClassLoadoutTroopTupleVisualWidget : Widget
 
 	private string _troopTypeCode;
 
-	private bool _useSecondary;
-
 	public string FactionCode
 	{
 		get
@@ -41,22 +39,6 @@ public class MultiplayerClassLoadoutTroopTupleVisualWidget : Widget
 			{
 				_troopTypeCode = value;
 				OnPropertyChanged(value, "TroopTypeCode");
-			}
-		}
-	}
-
-	public bool UseSecondary
-	{
-		get
-		{
-			return _useSecondary;
-		}
-		set
-		{
-			if (value != _useSecondary)
-			{
-				_useSecondary = value;
-				OnPropertyChanged(value, "UseSecondary");
 			}
 		}
 	}

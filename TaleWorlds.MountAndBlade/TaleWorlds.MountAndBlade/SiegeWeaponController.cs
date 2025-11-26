@@ -70,7 +70,7 @@ public class SiegeWeaponController
 		}
 		else
 		{
-			Debug.FailedAssert("Weapon already selected or is not selectable", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "Select", 82);
+			Debug.FailedAssert("Weapon already selected or is not selectable", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "Select", 82);
 		}
 	}
 
@@ -96,7 +96,7 @@ public class SiegeWeaponController
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to deselect an unselected weapon", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "Deselect", 113);
+			Debug.FailedAssert("Trying to deselect an unselected weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "Deselect", 113);
 		}
 	}
 
@@ -111,14 +111,21 @@ public class SiegeWeaponController
 		_selectedWeapons.Clear();
 		foreach (SiegeWeapon availableWeapon in _availableWeapons)
 		{
-			_selectedWeapons.Add(availableWeapon);
+			if (IsWeaponSelectable(availableWeapon))
+			{
+				_selectedWeapons.Add(availableWeapon);
+			}
 		}
 		this.OnSelectedSiegeWeaponsChanged?.Invoke();
 	}
 
 	public static bool IsWeaponSelectable(SiegeWeapon weapon)
 	{
-		return !weapon.IsDeactivated;
+		if (!weapon.IsDestroyed)
+		{
+			return !weapon.IsDeactivated;
+		}
+		return false;
 	}
 
 	public static SiegeWeaponOrderType GetActiveOrderOf(SiegeWeapon weapon)
@@ -140,7 +147,7 @@ public class SiegeWeaponController
 			case RangedSiegeWeapon.FiringFocus.PrimarySiegeWeapons:
 				return SiegeWeaponOrderType.FireAtPrimarySiegeWeapons;
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetActiveOrderOf", 166);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetActiveOrderOf", 169);
 				return SiegeWeaponOrderType.FireAtTroops;
 			}
 		}
@@ -171,7 +178,7 @@ public class SiegeWeaponController
 			case RangedSiegeWeapon.FiringFocus.PrimarySiegeWeapons:
 				return SiegeWeaponOrderType.FireAtPrimarySiegeWeapons;
 			default:
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetActiveFacingOrderOf", 204);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetActiveFacingOrderOf", 207);
 				return SiegeWeaponOrderType.FireAtTroops;
 			}
 		}
@@ -237,7 +244,7 @@ public class SiegeWeaponController
 			}
 			break;
 		default:
-			Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "SetOrderAux", 294);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "SetOrderAux", 297);
 			break;
 		}
 	}
@@ -282,7 +289,7 @@ public class SiegeWeaponController
 		{
 			return FormationAI.BehaviorSide.Middle;
 		}
-		Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetSideOf", 346);
+		Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\SiegeWeaponController.cs", "GetSideOf", 349);
 		return FormationAI.BehaviorSide.Middle;
 	}
 }

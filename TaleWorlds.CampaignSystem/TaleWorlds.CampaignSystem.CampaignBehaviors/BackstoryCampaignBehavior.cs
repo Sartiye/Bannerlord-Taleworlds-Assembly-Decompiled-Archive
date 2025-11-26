@@ -42,14 +42,14 @@ public class BackstoryCampaignBehavior : CampaignBehaviorBase
 		LogEntry.AddLogEntry(new CharacterKilledLogEntry(nimr, heroObject7, KillCharacterAction.KillCharacterActionDetail.Murdered), CampaignTime.Years(1080f) + CampaignTime.Weeks(4f) + CampaignTime.Days(2f));
 		foreach (Hero hero in nimr.Clan.Heroes)
 		{
-			if (hero.IsLord && hero.Age < 35f && !hero.IsFemale && hero.GetTraitLevel(DefaultTraits.Mercy) < 1)
+			if (hero.IsLord && hero.Age < (float)Campaign.Current.Models.AgeModel.MiddleAdultHoodAge && !hero.IsFemale && hero.GetTraitLevel(DefaultTraits.Mercy) < 1)
 			{
 				LogEntry.AddLogEntry(new CharacterInsultedLogEntry(hero, heroObject7, nimr.CharacterObject, ActionNotes.VengeanceQuarrel), CampaignTime.Years(1080f) + CampaignTime.Weeks(4f) + CampaignTime.Days(2f));
 			}
 		}
 		foreach (Hero item in Hero.DeadOrDisabledHeroes.Where((Hero x) => x.Clan == nimr.Clan))
 		{
-			if (item.IsLord && item.Age < 35f && !item.IsFemale && item.GetTraitLevel(DefaultTraits.Mercy) < 1)
+			if (item.IsLord && item.Age < (float)Campaign.Current.Models.AgeModel.MiddleAdultHoodAge && !item.IsFemale && item.GetTraitLevel(DefaultTraits.Mercy) < 1)
 			{
 				LogEntry.AddLogEntry(new CharacterInsultedLogEntry(item, heroObject7, nimr.CharacterObject, ActionNotes.VengeanceQuarrel), CampaignTime.Years(1080f) + CampaignTime.Weeks(4f) + CampaignTime.Days(2f));
 			}

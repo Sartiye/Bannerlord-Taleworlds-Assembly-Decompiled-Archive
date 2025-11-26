@@ -8,6 +8,14 @@ namespace TaleWorlds.MountAndBlade.View;
 
 public class CraftedDataView
 {
+	public delegate void OnMeshBuiltDelegate(WeaponDesign weaponDesign, ref MetaMesh builtMesh);
+
+	public static OnMeshBuiltDelegate OnWeaponMeshBuilt;
+
+	public static OnMeshBuiltDelegate OnHolsterMeshBuilt;
+
+	public static OnMeshBuiltDelegate OnHolsterMeshWithWeaponBuilt;
+
 	private MetaMesh _weaponMesh;
 
 	private MetaMesh _holsterMesh;
@@ -99,7 +107,7 @@ public class CraftedDataView
 	public static MetaMesh BuildWeaponMesh(WeaponDesign craftedData, float pivotDiff, bool pieceTypeHidingEnabledForHolster, bool batchAllMeshes)
 	{
 		CraftingTemplate template = craftedData.Template;
-		MetaMesh metaMesh = MetaMesh.CreateMetaMesh();
+		MetaMesh builtMesh = MetaMesh.CreateMetaMesh();
 		List<MetaMesh> list = new List<MetaMesh>();
 		List<MetaMesh> list2 = new List<MetaMesh>();
 		List<MetaMesh> list3 = new List<MetaMesh>();
@@ -120,11 +128,13 @@ public class CraftedDataView
 				{
 					copy.ClearMeshesForOtherLods(0);
 				}
-				MatrixFrame frame = new MatrixFrame(Mat3.Identity, num * Vec3.Up);
+				Mat3 rot = Mat3.Identity;
+				Vec3 o = num * Vec3.Up;
+				MatrixFrame frame = new MatrixFrame(in rot, in o);
 				if (weaponDesignElement.IsPieceScaled)
 				{
 					Vec3 scalingVector = (weaponDesignElement.CraftingPiece.FullScale ? (Vec3.One * weaponDesignElement.ScaleFactor) : new Vec3(1f, 1f, weaponDesignElement.ScaleFactor));
-					frame.Scale(scalingVector);
+					frame.Scale(in scalingVector);
 				}
 				copy.Frame = frame;
 				if (copy.HasClothData())
@@ -145,27 +155,31 @@ public class CraftedDataView
 			}
 			else
 			{
-				metaMesh.MergeMultiMeshes(item);
+				builtMesh.MergeMultiMeshes(item);
 			}
 		}
 		if (batchAllMeshes)
 		{
-			metaMesh.BatchMultiMeshesMultiple(list);
+			builtMesh.BatchMultiMeshesMultiple(list);
 		}
 		foreach (MetaMesh item2 in list3)
 		{
-			metaMesh.MergeMultiMeshes(item2);
-			metaMesh.AssignClothBodyFrom(item2);
+			builtMesh.MergeMultiMeshes(item2);
+			builtMesh.AssignClothBodyFrom(item2);
 		}
-		metaMesh.SetEditDataPolicy(EditDataPolicy.Keep_until_first_render);
+		builtMesh.SetEditDataPolicy(EditDataPolicy.KeepUntilFirstRender);
 		if (batchAllMeshes)
 		{
-			metaMesh.SetLodBias(1);
+			builtMesh.SetLodBias(1);
 		}
-		MatrixFrame frame2 = metaMesh.Frame;
+		MatrixFrame frame2 = builtMesh.Frame;
 		frame2.Elevate(pivotDiff);
-		metaMesh.Frame = frame2;
-		return metaMesh;
+		builtMesh.Frame = frame2;
+		if (OnWeaponMeshBuilt != null)
+		{
+			OnWeaponMeshBuilt(craftedData, ref builtMesh);
+		}
+		return builtMesh;
 	}
 
 	public static MetaMesh BuildHolsterMesh(WeaponDesign craftedData)
@@ -187,12 +201,16 @@ public class CraftedDataView
 		if (TaleWorlds.Library.MathF.Abs(weaponDesignElement.ScaledLength - weaponDesignElement.CraftingPiece.Length) > 1E-05f)
 		{
 			Vec3 scalingVector = (weaponDesignElement.CraftingPiece.FullScale ? (Vec3.One * weaponDesignElement.ScaleFactor) : new Vec3(1f, 1f, weaponDesignElement.ScaleFactor));
-			frame.Scale(scalingVector);
+			frame.Scale(in scalingVector);
 		}
 		copy.Frame = frame;
-		MetaMesh metaMesh = MetaMesh.CreateMetaMesh(bladeData.HolsterMeshName);
-		metaMesh.MergeMultiMeshes(copy);
-		return metaMesh;
+		MetaMesh builtMesh = MetaMesh.CreateMetaMesh(bladeData.HolsterMeshName);
+		builtMesh.MergeMultiMeshes(copy);
+		if (OnHolsterMeshBuilt != null)
+		{
+			OnHolsterMeshBuilt(craftedData, ref builtMesh);
+		}
+		return builtMesh;
 	}
 
 	public static MetaMesh BuildHolsterMeshWithWeapon(WeaponDesign craftedData, float pivotDiff, bool batchAllMeshes)
@@ -207,12 +225,12 @@ public class CraftedDataView
 		{
 			return null;
 		}
-		MetaMesh metaMesh = MetaMesh.CreateMetaMesh();
+		MetaMesh builtMesh = MetaMesh.CreateMetaMesh();
 		MetaMesh copy = MetaMesh.GetCopy(bladeData.HolsterMeshName, showErrors: false, mayReturnNull: true);
 		string text = bladeData.HolsterMeshName + "_skeleton";
 		if (Skeleton.SkeletonModelExist(text))
 		{
-			MetaMesh metaMesh2 = BuildWeaponMesh(craftedData, 0f, pieceTypeHidingEnabledForHolster: true, batchAllMeshes);
+			MetaMesh metaMesh = BuildWeaponMesh(craftedData, 0f, pieceTypeHidingEnabledForHolster: true, batchAllMeshes);
 			float num = craftedData.PiecePivotDistances[0];
 			float scaledDistanceToPreviousPiece = craftedData.UsedPieces[0].ScaledDistanceToPreviousPiece;
 			float num2 = num - scaledDistanceToPreviousPiece;
@@ -225,25 +243,25 @@ public class CraftedDataView
 				{
 					boneEntitialRestFrame.rotation.RotateAboutForward(System.MathF.PI);
 				}
-				MetaMesh metaMesh3 = metaMesh2.CreateCopy();
-				MatrixFrame frame = new MatrixFrame(boneEntitialRestFrame.rotation, boneEntitialRestFrame.origin);
+				MetaMesh metaMesh2 = metaMesh.CreateCopy();
+				MatrixFrame frame = new MatrixFrame(in boneEntitialRestFrame.rotation, in boneEntitialRestFrame.origin);
 				frame.Elevate(0f - num2);
-				metaMesh3.Frame = frame;
+				metaMesh2.Frame = frame;
 				if (batchAllMeshes)
 				{
 					int num3 = 8 - (b - 1);
-					metaMesh3.SetMaterial(Material.GetFromResource("weapon_crafting_quiver_deformer"));
-					metaMesh3.SetFactor1Linear((uint)(419430400uL * (ulong)num3));
-					list.Add(metaMesh3);
+					metaMesh2.SetMaterial(Material.GetFromResource("weapon_crafting_quiver_deformer"));
+					metaMesh2.SetFactor1Linear((uint)(419430400uL * (ulong)num3));
+					list.Add(metaMesh2);
 				}
 				else
 				{
-					metaMesh.MergeMultiMeshes(metaMesh3);
+					builtMesh.MergeMultiMeshes(metaMesh2);
 				}
 			}
 			if (list.Count > 0)
 			{
-				metaMesh.BatchMultiMeshesMultiple(list);
+				builtMesh.BatchMultiMeshesMultiple(list);
 			}
 			if (craftedData.Template.PieceTypeToScaleHolsterWith != CraftingPiece.PieceTypes.Invalid)
 			{
@@ -255,7 +273,7 @@ public class CraftedDataView
 				if (weaponDesignElement3.IsPieceScaled)
 				{
 					Vec3 scalingVector = (weaponDesignElement3.CraftingPiece.FullScale ? (Vec3.One * weaponDesignElement3.ScaleFactor) : new Vec3(1f, 1f, weaponDesignElement3.ScaleFactor));
-					frame2.Scale(scalingVector);
+					frame2.Scale(in scalingVector);
 				}
 				frame2.origin += new Vec3(0f, 0f, 0f - num5);
 				copy.Frame = frame2;
@@ -271,16 +289,20 @@ public class CraftedDataView
 				if (weaponDesignElement4.IsPieceScaled)
 				{
 					Vec3 scalingVector2 = (weaponDesignElement4.CraftingPiece.FullScale ? (Vec3.One * weaponDesignElement4.ScaleFactor) : new Vec3(1f, 1f, weaponDesignElement4.ScaleFactor));
-					frame3.Scale(scalingVector2);
+					frame3.Scale(in scalingVector2);
 				}
 				copy.Frame = frame3;
 			}
-			metaMesh.MergeMultiMeshes(BuildWeaponMesh(craftedData, 0f, pieceTypeHidingEnabledForHolster: true, batchAllMeshes));
+			builtMesh.MergeMultiMeshes(BuildWeaponMesh(craftedData, 0f, pieceTypeHidingEnabledForHolster: true, batchAllMeshes));
 		}
-		metaMesh.MergeMultiMeshes(copy);
-		MatrixFrame frame4 = metaMesh.Frame;
+		builtMesh.MergeMultiMeshes(copy);
+		MatrixFrame frame4 = builtMesh.Frame;
 		frame4.origin += new Vec3(0f, 0f, pivotDiff);
-		metaMesh.Frame = frame4;
-		return metaMesh;
+		builtMesh.Frame = frame4;
+		if (OnHolsterMeshWithWeaponBuilt != null)
+		{
+			OnHolsterMeshWithWeaponBuilt(craftedData, ref builtMesh);
+		}
+		return builtMesh;
 	}
 }

@@ -1,17 +1,14 @@
-using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade.View.MissionViews.Order;
 
 namespace TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 
 public class DeploymentMissionView : MissionView
 {
-	private OrderTroopPlacer _orderTroopPlacer;
+	protected OrderTroopPlacer _orderTroopPlacer;
 
-	private MissionDeploymentBoundaryMarker _deploymentBoundaryMarkerHandler;
+	protected MissionDeploymentBoundaryMarker _deploymentBoundaryMarkerHandler;
 
-	private MissionEntitySelectionUIHandler _entitySelectionHandler;
-
-	public OnPlayerDeploymentFinishDelegate OnDeploymentFinish;
+	protected MissionEntitySelectionUIHandler _entitySelectionHandler;
 
 	public override void AfterStart()
 	{
@@ -20,9 +17,9 @@ public class DeploymentMissionView : MissionView
 		_deploymentBoundaryMarkerHandler = base.Mission.GetMissionBehavior<MissionDeploymentBoundaryMarker>();
 	}
 
-	public override void OnInitialDeploymentPlanMadeForSide(BattleSideEnum side, bool isFirstPlan)
+	public override void OnDeploymentPlanMade(Team team, bool isFirstPlan)
 	{
-		if (side == base.Mission.PlayerTeam.Side && base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam.Side))
+		if (team == base.Mission.PlayerTeam && base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam))
 		{
 			_orderTroopPlacer?.RestrictOrdersToDeploymentBoundaries(enabled: true);
 		}
@@ -30,14 +27,13 @@ public class DeploymentMissionView : MissionView
 
 	public override void OnDeploymentFinished()
 	{
-		OnDeploymentFinish();
 		if (_entitySelectionHandler != null)
 		{
 			base.Mission.RemoveMissionBehavior(_entitySelectionHandler);
 		}
 		if (_deploymentBoundaryMarkerHandler != null)
 		{
-			if (base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam.Side))
+			if (base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam))
 			{
 				_orderTroopPlacer?.RestrictOrdersToDeploymentBoundaries(enabled: false);
 			}

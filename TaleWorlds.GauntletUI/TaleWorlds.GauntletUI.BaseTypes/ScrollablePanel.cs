@@ -9,7 +9,7 @@ namespace TaleWorlds.GauntletUI.BaseTypes;
 
 public class ScrollablePanel : Widget
 {
-	private class ScrollbarInterpolationController
+	protected class ScrollbarInterpolationController
 	{
 		private ScrollbarWidget _scrollbar;
 
@@ -19,7 +19,11 @@ public class ScrollablePanel : Widget
 
 		private bool _isInterpolating;
 
+		private float _interpolationInitialValue;
+
 		private float _timer;
+
+		public bool IsInterpolating => _isInterpolating;
 
 		public void SetControlledScrollbar(ScrollbarWidget scrollbar)
 		{
@@ -28,6 +32,7 @@ public class ScrollablePanel : Widget
 
 		public void StartInterpolation(float targetValue, float duration)
 		{
+			_interpolationInitialValue = _scrollbar?.ValueFloat ?? 0f;
 			_targetValue = targetValue;
 			_duration = duration;
 			_timer = 0f;
@@ -40,25 +45,60 @@ public class ScrollablePanel : Widget
 			_targetValue = 0f;
 			_duration = 0f;
 			_timer = 0f;
-			_isInterpolating = false;
+		}
+
+		public float GetValue()
+		{
+			return _scrollbar?.ValueFloat ?? 0f;
 		}
 
 		public void Tick(float dt)
 		{
-			if (_isInterpolating && _scrollbar != null)
+			if (!_isInterpolating || _scrollbar == null)
 			{
-				if (_duration == 0f || _timer > _duration)
-				{
-					_scrollbar.ValueFloat = _targetValue;
-					StopInterpolation();
-				}
-				else
-				{
-					float amount = TaleWorlds.Library.MathF.Clamp(_timer / _duration, 0f, 1f);
-					_scrollbar.ValueFloat = TaleWorlds.Library.MathF.Lerp(_scrollbar.ValueFloat, _targetValue, amount);
-					_timer += dt;
-				}
+				return;
 			}
+			_timer += dt;
+			if (_duration == 0f || _timer > _duration || float.IsNaN(_timer) || float.IsNaN(_duration))
+			{
+				_scrollbar.ValueFloat = _targetValue;
+				StopInterpolation();
+				return;
+			}
+			float ratio = TaleWorlds.Library.MathF.Clamp(_timer / _duration, 0f, 1f);
+			_scrollbar.ValueFloat = TaleWorlds.Library.MathF.Lerp(_interpolationInitialValue, _targetValue, AnimationInterpolation.Ease(AnimationInterpolation.Type.EaseInOut, AnimationInterpolation.Function.Sine, ratio));
+			if (_scrollbar.ValueFloat == _scrollbar.MinValue || _scrollbar.ValueFloat == _scrollbar.MaxValue)
+			{
+				StopInterpolation();
+			}
+		}
+	}
+
+	public class AutoScrollParameters
+	{
+		public float TopOffset;
+
+		public float BottomOffset;
+
+		public float LeftOffset;
+
+		public float RightOffset;
+
+		public float HorizontalScrollTarget;
+
+		public float VerticalScrollTarget;
+
+		public float InterpolationTime;
+
+		public AutoScrollParameters(float topOffset = 0f, float bottomOffset = 0f, float leftOffset = 0f, float rightOffset = 0f, float horizontalScrollTarget = -1f, float verticalScrollTarget = -1f, float interpolationTime = 0f)
+		{
+			TopOffset = topOffset;
+			BottomOffset = bottomOffset;
+			LeftOffset = leftOffset;
+			RightOffset = rightOffset;
+			HorizontalScrollTarget = horizontalScrollTarget;
+			VerticalScrollTarget = verticalScrollTarget;
+			InterpolationTime = interpolationTime;
 		}
 	}
 
@@ -78,11 +118,15 @@ public class ScrollablePanel : Widget
 
 	private float _horizontalScrollVelocity;
 
-	private ScrollbarInterpolationController _verticalScrollbarInterpolationController;
+	private bool _horizontalScrollbarChangedThisFrame;
 
-	private float _scrollOffset;
+	private bool _verticalScrollbarChangedThisFrame;
 
-	private ScrollbarInterpolationController _horizontalScrollbarInterpolationController;
+	protected float _scrollOffset;
+
+	protected ScrollbarInterpolationController _verticalScrollbarInterpolationController;
+
+	protected ScrollbarInterpolationController _horizontalScrollbarInterpolationController;
 
 	private List<ScrollablePanelFixedHeaderWidget> _fixedHeaders = new List<ScrollablePanelFixedHeaderWidget>();
 
@@ -97,6 +141,8 @@ public class ScrollablePanel : Widget
 	private bool _autoAdjustScrollbarHandleSize = true;
 
 	private bool _onlyAcceptScrollEventIfCanScroll;
+
+	private bool _reverseInitialScrollBarAlignment;
 
 	public Widget ClipRect { get; set; }
 
@@ -193,6 +239,23 @@ public class ScrollablePanel : Widget
 		}
 	}
 
+	[Editor(false)]
+	public bool ReverseInitialScrollBarAlignment
+	{
+		get
+		{
+			return _reverseInitialScrollBarAlignment;
+		}
+		set
+		{
+			if (_reverseInitialScrollBarAlignment != value)
+			{
+				_reverseInitialScrollBarAlignment = value;
+				OnPropertyChanged(value, "ReverseInitialScrollBarAlignment");
+			}
+		}
+	}
+
 	public ScrollbarWidget HorizontalScrollbar
 	{
 		get
@@ -206,6 +269,7 @@ public class ScrollablePanel : Widget
 				_horizontalScrollbar = value;
 				_horizontalScrollbarInterpolationController.SetControlledScrollbar(value);
 				OnPropertyChanged(value, "HorizontalScrollbar");
+				_horizontalScrollbarChangedThisFrame = true;
 			}
 		}
 	}
@@ -223,6 +287,7 @@ public class ScrollablePanel : Widget
 				_verticalScrollbar = value;
 				_verticalScrollbarInterpolationController.SetControlledScrollbar(value);
 				OnPropertyChanged(value, "VerticalScrollbar");
+				_verticalScrollbarChangedThisFrame = true;
 			}
 		}
 	}
@@ -253,9 +318,17 @@ public class ScrollablePanel : Widget
 
 	protected override bool OnPreviewRightStickMovement()
 	{
-		if ((!OnlyAcceptScrollEventIfCanScroll || _canScrollHorizontal || _canScrollVertical) && !GauntletGamepadNavigationManager.Instance.IsCursorMovingForNavigation)
+		if ((!OnlyAcceptScrollEventIfCanScroll || _canScrollHorizontal || _canScrollVertical) && !GauntletGamepadNavigationManager.Instance.IsCursorMovingForNavigation && !GauntletGamepadNavigationManager.Instance.AnyWidgetUsingNavigation && base.EventManager.HoveredView != null)
 		{
-			return !GauntletGamepadNavigationManager.Instance.AnyWidgetUsingNavigation;
+			if (!CheckIsMyChildRecursive(base.EventManager.HoveredView))
+			{
+				if (ActiveScrollbar != null)
+				{
+					return ActiveScrollbar.CheckIsMyChildRecursive(base.EventManager.HoveredView);
+				}
+				return false;
+			}
+			return true;
 		}
 		return false;
 	}
@@ -365,7 +438,14 @@ public class ScrollablePanel : Widget
 	{
 		if (HorizontalScrollbar != null)
 		{
-			HorizontalScrollbar.ValueFloat = 0f - InnerPanel.ScaledPositionOffset.X;
+			if (InnerPanel.HorizontalAlignment == HorizontalAlignment.Right)
+			{
+				HorizontalScrollbar.ValueFloat = HorizontalScrollbar.MaxValue - InnerPanel.ScaledPositionOffset.X;
+			}
+			else
+			{
+				HorizontalScrollbar.ValueFloat = 0f - InnerPanel.ScaledPositionOffset.X;
+			}
 		}
 	}
 
@@ -389,163 +469,178 @@ public class ScrollablePanel : Widget
 
 	private void UpdateScrollablePanel(float dt)
 	{
-		if (InnerPanel == null || ClipRect == null)
+		if (InnerPanel != null && ClipRect != null)
 		{
-			return;
-		}
-		_canScrollHorizontal = false;
-		_canScrollVertical = false;
-		if (HorizontalScrollbar != null)
-		{
-			bool flag = base.IsVisible;
-			bool flag2 = base.IsVisible;
-			float num = InnerPanel.ScaledPositionXOffset - InnerPanel.Left;
-			float valueFloat = HorizontalScrollbar.ValueFloat;
-			InnerPanel.ScaledPositionXOffset = 0f - valueFloat;
-			_scrollOffset = InnerPanel.ScaledPositionOffset.X;
-			HorizontalScrollbar.ReverseDirection = false;
-			HorizontalScrollbar.MinValue = 0f;
-			if (FixedHeader != null && ScrolledHeader != null)
+			_canScrollHorizontal = false;
+			_canScrollVertical = false;
+			if (HorizontalScrollbar != null)
 			{
-				if (FixedHeader.GlobalPosition.Y > ScrolledHeader.GlobalPosition.Y)
+				bool flag = base.IsVisible;
+				bool flag2 = base.IsVisible;
+				float num = InnerPanel.ScaledPositionXOffset - InnerPanel.Left;
+				float num2 = HorizontalScrollbar.ValueFloat;
+				InnerPanel.ScaledPositionXOffset = 0f - num2;
+				_scrollOffset = InnerPanel.ScaledPositionOffset.X;
+				HorizontalScrollbar.ReverseDirection = false;
+				HorizontalScrollbar.MinValue = 0f;
+				if (FixedHeader != null && ScrolledHeader != null)
 				{
-					FixedHeader.IsVisible = true;
+					if (FixedHeader.GlobalPosition.Y > ScrolledHeader.GlobalPosition.Y)
+					{
+						FixedHeader.IsVisible = true;
+					}
+					else
+					{
+						FixedHeader.IsVisible = false;
+					}
+				}
+				float num3 = InnerPanel.Size.X + InnerPanel.ScaledMarginLeft + InnerPanel.ScaledMarginRight;
+				if (TaleWorlds.Library.MathF.Floor(num3) > TaleWorlds.Library.MathF.Ceiling(ClipRect.Size.X))
+				{
+					_canScrollHorizontal = true;
+					HorizontalScrollbar.MaxValue = TaleWorlds.Library.MathF.Max(1f, num3 - ClipRect.Size.X);
+					if (_horizontalScrollbarChangedThisFrame && ReverseInitialScrollBarAlignment)
+					{
+						num2 = HorizontalScrollbar.MaxValue;
+					}
+					if (InnerPanel.HorizontalAlignment == HorizontalAlignment.Right)
+					{
+						_scrollOffset = HorizontalScrollbar.MaxValue - num2;
+					}
+					if (AutoAdjustScrollbarHandleSize && HorizontalScrollbar.Handle != null)
+					{
+						HorizontalScrollbar.Handle.ScaledSuggestedWidth = HorizontalScrollbar.Size.X * (ClipRect.Size.X / num3);
+					}
+					if (TaleWorlds.Library.MathF.Abs(_horizontalScrollVelocity) > 0.01f)
+					{
+						_scrollOffset += _horizontalScrollVelocity * (dt / 0.016f) * (Input.Resolution.X / 1920f);
+						_horizontalScrollVelocity = TaleWorlds.Library.MathF.Lerp(_horizontalScrollVelocity, 0f, 1f - TaleWorlds.Library.MathF.Pow(0.001f, dt));
+					}
+					else
+					{
+						_horizontalScrollVelocity = 0f;
+					}
+					InnerPanel.ScaledPositionXOffset = _scrollOffset;
+					AdjustHorizontalScrollBar();
+					if (InnerPanel.HorizontalAlignment == HorizontalAlignment.Center)
+					{
+						InnerPanel.ScaledPositionXOffset += num;
+					}
 				}
 				else
 				{
-					FixedHeader.IsVisible = false;
-				}
-			}
-			if (InnerPanel.Size.X > ClipRect.Size.X)
-			{
-				_canScrollHorizontal = true;
-				HorizontalScrollbar.MaxValue = TaleWorlds.Library.MathF.Max(1f, InnerPanel.Size.X - ClipRect.Size.X);
-				if (AutoAdjustScrollbarHandleSize && HorizontalScrollbar.Handle != null)
-				{
-					HorizontalScrollbar.Handle.ScaledSuggestedWidth = HorizontalScrollbar.Size.X * (ClipRect.Size.X / InnerPanel.Size.X);
-				}
-				if (TaleWorlds.Library.MathF.Abs(_horizontalScrollVelocity) > 0.001f)
-				{
-					_scrollOffset += _horizontalScrollVelocity * (dt / 0.016f) * (Input.Resolution.X / 1920f);
-					_horizontalScrollVelocity = TaleWorlds.Library.MathF.Lerp(_horizontalScrollVelocity, 0f, 1f - TaleWorlds.Library.MathF.Pow(0.001f, dt));
-				}
-				else
-				{
+					HorizontalScrollbar.Handle.ScaledSuggestedWidth = HorizontalScrollbar.Size.X;
+					InnerPanel.ScaledPositionXOffset = 0f;
+					HorizontalScrollbar.ValueFloat = 0f;
 					_horizontalScrollVelocity = 0f;
+					_scrollOffset = 0f;
+					if (AutoHideScrollBars)
+					{
+						flag = false;
+					}
+					if (AutoHideScrollBarHandle)
+					{
+						flag2 = false;
+					}
 				}
-				InnerPanel.ScaledPositionXOffset = _scrollOffset;
-				AdjustHorizontalScrollBar();
-				if (InnerPanel.HorizontalAlignment == HorizontalAlignment.Center)
+				if (UpdateScrollbarVisibility)
 				{
-					InnerPanel.ScaledPositionXOffset += num;
+					HorizontalScrollbar.IsVisible = flag;
+					HorizontalScrollbar.Handle.IsVisible = flag2 && flag;
 				}
 			}
-			else
+			if (VerticalScrollbar != null)
 			{
-				HorizontalScrollbar.Handle.ScaledSuggestedWidth = HorizontalScrollbar.Size.X;
-				InnerPanel.ScaledPositionXOffset = 0f;
-				HorizontalScrollbar.ValueFloat = 0f;
-				_horizontalScrollVelocity = 0f;
-				_scrollOffset = 0f;
-				if (AutoHideScrollBars)
+				float num4 = VerticalScrollbar.ValueFloat;
+				bool flag3 = base.IsVisible;
+				bool flag4 = base.IsVisible;
+				InnerPanel.ScaledPositionYOffset = 0f - num4;
+				_scrollOffset = InnerPanel.ScaledPositionOffset.Y;
+				VerticalScrollbar.ReverseDirection = false;
+				VerticalScrollbar.MinValue = 0f;
+				if (FixedHeader != null && ScrolledHeader != null)
 				{
-					flag = false;
+					if (FixedHeader.GlobalPosition.Y >= ScrolledHeader.GlobalPosition.Y)
+					{
+						FixedHeader.IsVisible = true;
+					}
+					else
+					{
+						FixedHeader.IsVisible = false;
+					}
 				}
-				if (AutoHideScrollBarHandle)
+				float num5 = InnerPanel.Size.Y + InnerPanel.ScaledMarginTop + InnerPanel.ScaledMarginBottom;
+				if (TaleWorlds.Library.MathF.Floor(num5) > TaleWorlds.Library.MathF.Ceiling(ClipRect.Size.Y))
 				{
-					flag2 = false;
+					_canScrollVertical = true;
+					VerticalScrollbar.MaxValue = TaleWorlds.Library.MathF.Max(1f, num5 - ClipRect.Size.Y);
+					if (_verticalScrollbarChangedThisFrame && ReverseInitialScrollBarAlignment)
+					{
+						num4 = VerticalScrollbar.MaxValue;
+					}
+					if (InnerPanel.VerticalAlignment == VerticalAlignment.Bottom)
+					{
+						_scrollOffset = VerticalScrollbar.MaxValue - num4;
+					}
+					if (AutoAdjustScrollbarHandleSize && VerticalScrollbar.Handle != null)
+					{
+						VerticalScrollbar.Handle.ScaledSuggestedHeight = VerticalScrollbar.Size.Y * (ClipRect.Size.Y / num5);
+					}
+					if (TaleWorlds.Library.MathF.Abs(_verticalScrollVelocity) > 0.01f)
+					{
+						_scrollOffset += _verticalScrollVelocity * (dt / 0.016f) * (Input.Resolution.Y / 1080f);
+						_verticalScrollVelocity = TaleWorlds.Library.MathF.Lerp(_verticalScrollVelocity, 0f, 1f - TaleWorlds.Library.MathF.Pow(0.001f, dt));
+					}
+					else
+					{
+						_verticalScrollVelocity = 0f;
+					}
+					InnerPanel.ScaledPositionYOffset = _scrollOffset;
+					AdjustVerticalScrollBar();
+				}
+				else
+				{
+					if (AutoAdjustScrollbarHandleSize && VerticalScrollbar.Handle != null)
+					{
+						VerticalScrollbar.Handle.ScaledSuggestedHeight = VerticalScrollbar.Size.Y;
+					}
+					InnerPanel.ScaledPositionYOffset = 0f;
+					VerticalScrollbar.ValueFloat = 0f;
+					_verticalScrollVelocity = 0f;
+					_scrollOffset = 0f;
+					if (AutoHideScrollBars)
+					{
+						flag3 = false;
+					}
+					if (AutoHideScrollBarHandle)
+					{
+						flag4 = false;
+					}
+				}
+				foreach (ScrollablePanelFixedHeaderWidget fixedHeader in _fixedHeaders)
+				{
+					if (fixedHeader != null && fixedHeader.FixedHeader != null && base.MeasuredSize != Vec2.Zero)
+					{
+						fixedHeader.FixedHeader.ScaledPositionYOffset = TaleWorlds.Library.MathF.Clamp(fixedHeader.LocalPosition.Y + _scrollOffset, fixedHeader.TopOffset * base._scaleToUse, base.MeasuredSize.Y - fixedHeader.BottomOffset * base._scaleToUse);
+					}
+				}
+				if (UpdateScrollbarVisibility)
+				{
+					VerticalScrollbar.IsVisible = flag3;
+					VerticalScrollbar.Handle.IsVisible = flag4 && flag3;
 				}
 			}
-			if (UpdateScrollbarVisibility)
-			{
-				HorizontalScrollbar.IsVisible = flag;
-				HorizontalScrollbar.Handle.IsVisible = flag2 && flag;
-			}
 		}
-		if (VerticalScrollbar == null)
-		{
-			return;
-		}
-		float valueFloat2 = VerticalScrollbar.ValueFloat;
-		bool flag3 = base.IsVisible;
-		bool flag4 = base.IsVisible;
-		InnerPanel.ScaledPositionYOffset = 0f - valueFloat2;
-		_scrollOffset = InnerPanel.ScaledPositionOffset.Y;
-		VerticalScrollbar.ReverseDirection = false;
-		VerticalScrollbar.MinValue = 0f;
-		if (FixedHeader != null && ScrolledHeader != null)
-		{
-			if (FixedHeader.GlobalPosition.Y >= ScrolledHeader.GlobalPosition.Y)
-			{
-				FixedHeader.IsVisible = true;
-			}
-			else
-			{
-				FixedHeader.IsVisible = false;
-			}
-		}
-		if (InnerPanel.Size.Y > ClipRect.Size.Y)
-		{
-			_canScrollVertical = true;
-			VerticalScrollbar.MaxValue = TaleWorlds.Library.MathF.Max(1f, InnerPanel.Size.Y - ClipRect.Size.Y);
-			if (InnerPanel.VerticalAlignment == VerticalAlignment.Bottom)
-			{
-				_scrollOffset = VerticalScrollbar.MaxValue - valueFloat2;
-			}
-			if (AutoAdjustScrollbarHandleSize && VerticalScrollbar.Handle != null)
-			{
-				VerticalScrollbar.Handle.ScaledSuggestedHeight = VerticalScrollbar.Size.Y * (ClipRect.Size.Y / InnerPanel.Size.Y);
-			}
-			if (TaleWorlds.Library.MathF.Abs(_verticalScrollVelocity) > 0.001f)
-			{
-				_scrollOffset += _verticalScrollVelocity * (dt / 0.016f) * (Input.Resolution.Y / 1080f);
-				_verticalScrollVelocity = TaleWorlds.Library.MathF.Lerp(_verticalScrollVelocity, 0f, 1f - TaleWorlds.Library.MathF.Pow(0.001f, dt));
-			}
-			else
-			{
-				_verticalScrollVelocity = 0f;
-			}
-			InnerPanel.ScaledPositionYOffset = _scrollOffset;
-			AdjustVerticalScrollBar();
-		}
-		else
-		{
-			if (AutoAdjustScrollbarHandleSize && VerticalScrollbar.Handle != null)
-			{
-				VerticalScrollbar.Handle.ScaledSuggestedHeight = VerticalScrollbar.Size.Y;
-			}
-			InnerPanel.ScaledPositionYOffset = 0f;
-			VerticalScrollbar.ValueFloat = 0f;
-			_verticalScrollVelocity = 0f;
-			_scrollOffset = 0f;
-			if (AutoHideScrollBars)
-			{
-				flag3 = false;
-			}
-			if (AutoHideScrollBarHandle)
-			{
-				flag4 = false;
-			}
-		}
-		foreach (ScrollablePanelFixedHeaderWidget fixedHeader in _fixedHeaders)
-		{
-			if (fixedHeader != null && fixedHeader.FixedHeader != null && base.MeasuredSize != Vec2.Zero)
-			{
-				fixedHeader.FixedHeader.ScaledPositionYOffset = TaleWorlds.Library.MathF.Clamp(fixedHeader.LocalPosition.Y + _scrollOffset, fixedHeader.TopOffset * base._scaleToUse, base.MeasuredSize.Y - fixedHeader.BottomOffset * base._scaleToUse);
-			}
-		}
-		if (UpdateScrollbarVisibility)
-		{
-			VerticalScrollbar.IsVisible = flag3;
-			VerticalScrollbar.Handle.IsVisible = flag4 && flag3;
-		}
+		_horizontalScrollbarChangedThisFrame = false;
+		_verticalScrollbarChangedThisFrame = false;
 	}
 
 	protected float GetScrollYValueForWidget(Widget widget, float widgetTargetYValue, float offset)
 	{
 		float amount = MBMath.ClampFloat(widgetTargetYValue, 0f, 1f);
 		float value = Mathf.Lerp(widget.GlobalPosition.Y + offset, widget.GlobalPosition.Y - ClipRect.Size.Y + widget.Size.Y + offset, amount);
-		float value2 = InverseLerp(InnerPanel.GlobalPosition.Y, InnerPanel.GlobalPosition.Y + InnerPanel.Size.Y - ClipRect.Size.Y, value);
+		float num = InnerPanel.Size.Y + InnerPanel.ScaledMarginTop + InnerPanel.ScaledMarginBottom;
+		float value2 = InverseLerp(InnerPanel.GlobalPosition.Y, InnerPanel.GlobalPosition.Y + num - ClipRect.Size.Y, value);
 		value2 = TaleWorlds.Library.MathF.Clamp(value2, 0f, 1f);
 		return TaleWorlds.Library.MathF.Lerp(VerticalScrollbar.MinValue, VerticalScrollbar.MaxValue, value2);
 	}
@@ -554,7 +649,8 @@ public class ScrollablePanel : Widget
 	{
 		float amount = MBMath.ClampFloat(widgetTargetXValue, 0f, 1f);
 		float value = Mathf.Lerp(widget.GlobalPosition.X + offset, widget.GlobalPosition.X - ClipRect.Size.X + widget.Size.X + offset, amount);
-		float value2 = InverseLerp(InnerPanel.GlobalPosition.X, InnerPanel.GlobalPosition.X + InnerPanel.Size.X - ClipRect.Size.X, value);
+		float num = InnerPanel.Size.X + InnerPanel.ScaledMarginLeft + InnerPanel.ScaledMarginRight;
+		float value2 = InverseLerp(InnerPanel.GlobalPosition.X, InnerPanel.GlobalPosition.X + num - ClipRect.Size.X, value);
 		value2 = TaleWorlds.Library.MathF.Clamp(value2, 0f, 1f);
 		return TaleWorlds.Library.MathF.Lerp(HorizontalScrollbar.MinValue, HorizontalScrollbar.MaxValue, value2);
 	}
@@ -568,30 +664,34 @@ public class ScrollablePanel : Widget
 		return (value - fromValue) / (toValue - fromValue);
 	}
 
-	public void ScrollToChild(Widget targetWidget, float horizontalTargetValue = -1f, float verticalTargetValue = -1f, int horizontalOffsetInPixels = 0, int verticalOffsetInPixels = 0, float verticalInterpolationTime = 0f, float horizontalInterpolationTime = 0f)
+	public void ScrollToChild(Widget targetWidget, AutoScrollParameters scrollParameters = null)
 	{
+		if (scrollParameters == null)
+		{
+			scrollParameters = new AutoScrollParameters();
+		}
 		if (ClipRect == null || InnerPanel == null || !CheckIsMyChildRecursive(targetWidget))
 		{
 			return;
 		}
 		if (VerticalScrollbar != null)
 		{
-			bool flag = targetWidget.GlobalPosition.Y - (float)verticalOffsetInPixels < ClipRect.GlobalPosition.Y;
-			bool flag2 = targetWidget.GlobalPosition.Y + targetWidget.Size.Y + (float)verticalOffsetInPixels > ClipRect.GlobalPosition.Y + ClipRect.Size.Y;
+			bool flag = targetWidget.GlobalPosition.Y - scrollParameters.TopOffset - base.ExtendCursorAreaTop < ClipRect.GlobalPosition.Y;
+			bool flag2 = targetWidget.GlobalPosition.Y + targetWidget.Size.Y + scrollParameters.BottomOffset + base.ExtendCursorAreaBottom > ClipRect.GlobalPosition.Y + ClipRect.Size.Y;
 			if (flag || flag2)
 			{
-				if (verticalTargetValue == -1f)
+				if (scrollParameters.VerticalScrollTarget == -1f)
 				{
-					verticalTargetValue = (flag ? 0f : 1f);
+					scrollParameters.VerticalScrollTarget = (flag ? 0f : 1f);
 				}
-				float scrollYValueForWidget = GetScrollYValueForWidget(targetWidget, verticalTargetValue, flag ? (-verticalOffsetInPixels) : verticalOffsetInPixels);
-				if (verticalInterpolationTime <= float.Epsilon)
+				float scrollYValueForWidget = GetScrollYValueForWidget(targetWidget, scrollParameters.VerticalScrollTarget, flag ? (0f - scrollParameters.TopOffset) : scrollParameters.BottomOffset);
+				if (scrollParameters.InterpolationTime <= float.Epsilon)
 				{
 					VerticalScrollbar.ValueFloat = scrollYValueForWidget;
 				}
 				else
 				{
-					_verticalScrollbarInterpolationController.StartInterpolation(scrollYValueForWidget, verticalInterpolationTime);
+					_verticalScrollbarInterpolationController.StartInterpolation(scrollYValueForWidget, scrollParameters.InterpolationTime);
 				}
 			}
 		}
@@ -599,22 +699,22 @@ public class ScrollablePanel : Widget
 		{
 			return;
 		}
-		bool flag3 = targetWidget.GlobalPosition.X - (float)horizontalOffsetInPixels < ClipRect.GlobalPosition.X;
-		bool flag4 = targetWidget.GlobalPosition.X + targetWidget.Size.X + (float)horizontalOffsetInPixels > ClipRect.GlobalPosition.X + ClipRect.Size.X;
+		bool flag3 = targetWidget.GlobalPosition.X - scrollParameters.LeftOffset - base.ExtendCursorAreaLeft < ClipRect.GlobalPosition.X;
+		bool flag4 = targetWidget.GlobalPosition.X + targetWidget.Size.X + scrollParameters.RightOffset + base.ExtendCursorAreaRight > ClipRect.GlobalPosition.X + ClipRect.Size.X;
 		if (flag3 || flag4)
 		{
-			if (horizontalTargetValue == -1f)
+			if (scrollParameters.HorizontalScrollTarget == -1f)
 			{
-				horizontalTargetValue = (flag3 ? 0f : 1f);
+				scrollParameters.HorizontalScrollTarget = (flag3 ? 0f : 1f);
 			}
-			float scrollXValueForWidget = GetScrollXValueForWidget(targetWidget, horizontalTargetValue, flag3 ? (-horizontalOffsetInPixels) : horizontalOffsetInPixels);
-			if (horizontalInterpolationTime <= float.Epsilon)
+			float scrollXValueForWidget = GetScrollXValueForWidget(targetWidget, scrollParameters.HorizontalScrollTarget, flag3 ? (0f - scrollParameters.LeftOffset) : scrollParameters.RightOffset);
+			if (scrollParameters.InterpolationTime <= float.Epsilon)
 			{
 				HorizontalScrollbar.ValueFloat = scrollXValueForWidget;
 			}
 			else
 			{
-				_horizontalScrollbarInterpolationController.StartInterpolation(scrollXValueForWidget, horizontalInterpolationTime);
+				_horizontalScrollbarInterpolationController.StartInterpolation(scrollXValueForWidget, scrollParameters.InterpolationTime);
 			}
 		}
 	}

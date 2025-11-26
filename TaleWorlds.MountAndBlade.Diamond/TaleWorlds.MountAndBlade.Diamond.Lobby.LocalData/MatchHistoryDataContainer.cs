@@ -84,7 +84,7 @@ public class MatchHistoryDataContainer : MultiplayerLocalDataContainer<MatchHist
 		}
 		catch
 		{
-			Debug.FailedAssert("Failed to resolve match history in compatibility mode. Resetting the file.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\MatchHistoryDataContainer.cs", "DeserializeInCompatibilityMode", 228);
+			Debug.FailedAssert("Failed to resolve match history in compatibility mode. Resetting the file.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\MatchHistoryDataContainer.cs", "DeserializeInCompatibilityMode", 228);
 		}
 		return list;
 	}
@@ -115,7 +115,7 @@ public class MatchHistoryDataContainer : MultiplayerLocalDataContainer<MatchHist
 		{
 			if (item == null)
 			{
-				Debug.FailedAssert("Trying to remove null match history data", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\MatchHistoryDataContainer.cs", "GetOldestMatches", 267);
+				Debug.FailedAssert("Trying to remove null match history data", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\LocalData\\MatchHistoryDataContainer.cs", "GetOldestMatches", 267);
 				continue;
 			}
 			if (item.MatchType == matchType)

@@ -1,7 +1,7 @@
+using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.GauntletUI.SceneNotification;
 using TaleWorlds.ScreenSystem;
@@ -10,29 +10,29 @@ namespace TaleWorlds.MountAndBlade.GauntletUI;
 
 public class GauntletGameNotification : GlobalLayer
 {
-	private GameNotificationVM _dataSource;
+	protected GameNotificationVM _dataSource;
 
-	private GauntletLayer _layer;
-
-	private IGauntletMovie _movie;
+	private readonly GauntletLayer _layer;
 
 	private bool _isSuspended;
 
-	public static GauntletGameNotification Current { get; private set; }
+	protected static GauntletGameNotification Current { get; set; }
 
-	private GauntletGameNotification()
+	protected virtual string MovieName => "GameNotificationUI";
+
+	protected GauntletGameNotification()
 	{
 		_dataSource = new GameNotificationVM();
-		_dataSource.ReceiveNewNotification += OnReceiveNewNotification;
-		_layer = new GauntletLayer(4007);
-		LoadMovie(forMultiplayer: false);
+		_dataSource.CurrentNotificationChanged += OnReceiveNewNotification;
+		_layer = new GauntletLayer("GameNotification", 19007);
+		_layer.LoadMovie(MovieName, _dataSource);
 		base.Layer = _layer;
 		_layer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Mouse);
 	}
 
-	private void OnReceiveNewNotification(GameNotificationItemVM notification)
+	protected virtual void OnReceiveNewNotification(GameNotificationItemVM notification)
 	{
-		if (!string.IsNullOrEmpty(notification.NotificationSoundId))
+		if (!string.IsNullOrEmpty(notification?.NotificationSoundId))
 		{
 			SoundEvent.PlaySound2D(notification.NotificationSoundId);
 		}
@@ -40,51 +40,49 @@ public class GauntletGameNotification : GlobalLayer
 
 	public static void Initialize()
 	{
-		if (Current == null)
-		{
-			Current = new GauntletGameNotification();
-			ScreenManager.AddGlobalLayer(Current, isFocusable: false);
-		}
+		Current?.OnFinalize();
+		Current = new GauntletGameNotification();
+		ScreenManager.AddGlobalLayer(Current, isFocusable: false);
+		Current.RegisterEvents();
 	}
 
-	public static void OnFinalize()
+	public virtual void OnFinalize()
 	{
-		Current?._dataSource?.ClearNotifications();
+		_dataSource?.ClearNotifications();
+		UnregisterEvents();
+		ScreenManager.RemoveGlobalLayer(this);
+		_dataSource = null;
 	}
 
-	public void LoadMovie(bool forMultiplayer)
+	public virtual void RegisterEvents()
 	{
-		if (_movie != null)
-		{
-			_layer.ReleaseMovie(_movie);
-		}
-		if (forMultiplayer)
-		{
-			_movie = _layer.LoadMovie("MultiplayerGameNotificationUI", _dataSource);
-		}
-		else
-		{
-			_movie = _layer.LoadMovie("GameNotificationUI", _dataSource);
-		}
+		MBInformationManager.FiringQuickInformation += _dataSource.AddGameNotification;
+	}
+
+	public virtual void UnregisterEvents()
+	{
+		MBInformationManager.FiringQuickInformation -= _dataSource.AddGameNotification;
 	}
 
 	protected override void OnTick(float dt)
 	{
 		base.OnTick(dt);
-		bool isLoadingWindowActive = LoadingWindow.IsLoadingWindowActive;
-		bool isActive = GauntletSceneNotification.Current.IsActive;
-		if (isActive != _isSuspended)
+		bool shouldBeSuspended = GetShouldBeSuspended();
+		if (shouldBeSuspended != _isSuspended)
 		{
-			ScreenManager.SetSuspendLayer(Current._layer, isActive);
-			_isSuspended = isActive;
+			ScreenManager.SetSuspendLayer(Current._layer, shouldBeSuspended);
+			_isSuspended = shouldBeSuspended;
 		}
-		if (isLoadingWindowActive)
+		_dataSource.IsPaused = _isSuspended;
+		_dataSource.Tick(dt);
+	}
+
+	protected virtual bool GetShouldBeSuspended()
+	{
+		if (!GauntletSceneNotification.Current.IsActive)
 		{
-			dt = 0f;
+			return LoadingWindow.IsLoadingWindowActive;
 		}
-		if (!_isSuspended)
-		{
-			_dataSource.Tick(dt);
-		}
+		return true;
 	}
 }

@@ -1,5 +1,7 @@
-using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
@@ -8,45 +10,9 @@ namespace TaleWorlds.Engine.GauntletUI;
 
 public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 {
-	public struct MaterialTuple : IEquatable<MaterialTuple>
-	{
-		public Texture Texture;
-
-		public Texture OverlayTexture;
-
-		public bool UseCustomMesh;
-
-		public MaterialTuple(Texture texture, Texture overlayTexture, bool customMesh)
-		{
-			Texture = texture;
-			OverlayTexture = overlayTexture;
-			UseCustomMesh = customMesh;
-		}
-
-		public bool Equals(MaterialTuple other)
-		{
-			if (other.Texture == Texture && other.OverlayTexture == OverlayTexture)
-			{
-				return other.UseCustomMesh == UseCustomMesh;
-			}
-			return false;
-		}
-
-		public override int GetHashCode()
-		{
-			int hashCode = Texture.GetHashCode();
-			hashCode = ((OverlayTexture != null) ? ((hashCode * 397) ^ OverlayTexture.GetHashCode()) : hashCode);
-			return (hashCode * 397) ^ UseCustomMesh.GetHashCode();
-		}
-	}
-
 	private TwoDimensionView _view;
 
-	private ScissorTestInfo _currentScissorTestInfo;
-
-	private bool _scissorSet;
-
-	private Dictionary<MaterialTuple, Material> _materials;
+	private ScissorTestInfo _activeScissor;
 
 	private Dictionary<Texture, Material> _textMaterials;
 
@@ -65,36 +31,29 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 	public TwoDimensionEnginePlatform(TwoDimensionView view)
 	{
 		_view = view;
-		_scissorSet = false;
-		_materials = new Dictionary<MaterialTuple, Material>();
 		_textMaterials = new Dictionary<Texture, Material>();
 		_soundEvents = new Dictionary<string, SoundEvent>();
+		((ITwoDimensionPlatform)this).ResetScissors();
 	}
 
-	private Material GetOrCreateMaterial(Texture texture, Texture overlayTexture, bool useCustomMesh, bool useOverlayTextureAlphaAsMask)
+	private Material GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture, bool useCustomMesh, bool useOverlayTextureAlphaAsMask)
 	{
-		MaterialTuple key = new MaterialTuple(texture, overlayTexture, useCustomMesh);
-		if (_materials.TryGetValue(key, out var value))
-		{
-			return value;
-		}
-		Material material = Material.GetFromResource("two_dimension_simple_material").CreateCopy();
-		material.SetTexture(Material.MBTextureType.DiffuseMap, texture);
+		Material orCreateMaterial = _view.GetOrCreateMaterial(mainTexture, overlayTexture);
+		orCreateMaterial.SetTexture(Material.MBTextureType.DiffuseMap, mainTexture);
 		if (overlayTexture != null)
 		{
-			material.AddMaterialShaderFlag("use_overlay_texture", showErrors: true);
+			orCreateMaterial.AddMaterialShaderFlag("use_overlay_texture", showErrors: true);
 			if (useOverlayTextureAlphaAsMask)
 			{
-				material.AddMaterialShaderFlag("use_overlay_texture_alpha_as_mask", showErrors: true);
+				orCreateMaterial.AddMaterialShaderFlag("use_overlay_texture_alpha_as_mask", showErrors: true);
 			}
-			material.SetTexture(Material.MBTextureType.DiffuseMap2, overlayTexture);
+			orCreateMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, overlayTexture);
 		}
 		if (useCustomMesh)
 		{
-			material.AddMaterialShaderFlag("use_custom_mesh", showErrors: true);
+			orCreateMaterial.AddMaterialShaderFlag("use_custom_mesh", showErrors: true);
 		}
-		_materials.Add(key, material);
-		return material;
+		return orCreateMaterial;
 	}
 
 	private Material GetOrCreateTextMaterial(Texture texture)
@@ -109,170 +68,159 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 		return material;
 	}
 
-	void ITwoDimensionPlatform.Draw(float x, float y, TaleWorlds.TwoDimension.Material material, DrawObject2D mesh, int layer)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.DrawImage(SimpleMaterial material, in ImageDrawObject imageDrawObject, int layer)
 	{
-		Vec2 clipRectPosition = new Vec2(0f, 0f);
-		Vec2 clipRectSize = new Vec2(Screen.RealScreenResolutionWidth, Screen.RealScreenResolutionHeight);
-		if (_scissorSet)
+		TaleWorlds.TwoDimension.Texture texture = material.Texture;
+		if (texture == null)
 		{
-			clipRectPosition = new Vec2(_currentScissorTestInfo.X, _currentScissorTestInfo.Y);
-			clipRectSize = new Vec2(_currentScissorTestInfo.Width, _currentScissorTestInfo.Height);
+			return;
 		}
-		if (material is SimpleMaterial)
+		Texture texture2 = ((EngineTexture)texture.PlatformTexture).Texture;
+		if (texture2 == null)
 		{
-			SimpleMaterial simpleMaterial = (SimpleMaterial)material;
-			TaleWorlds.TwoDimension.Texture texture = simpleMaterial.Texture;
-			if (texture == null)
+			return;
+		}
+		if (texture2.IsReleased)
+		{
+			Debug.FailedAssert("Trying to render a released texture", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\TwoDimensionEnginePlatform.cs", "DrawImage", 100);
+			return;
+		}
+		Material material2 = null;
+		MatrixFrame cachedVisualMatrixFrame = imageDrawObject.Rectangle.GetCachedVisualMatrixFrame();
+		Vec2 zero = Vec2.Zero;
+		Vec2 zero2 = Vec2.Zero;
+		if (material.OverlayEnabled)
+		{
+			Texture texture3 = ((EngineTexture)material.OverlayTexture.PlatformTexture).Texture;
+			if (texture3.IsReleased)
 			{
+				Debug.FailedAssert("Trying to render a released texture", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\TwoDimensionEnginePlatform.cs", "DrawImage", 117);
 				return;
 			}
-			Texture texture2 = ((EngineTexture)texture.PlatformTexture).Texture;
-			if (!(texture2 != null))
-			{
-				return;
-			}
-			Material material2 = null;
-			Vec2 startCoordinate = Vec2.Zero;
-			Vec2 size = Vec2.Zero;
-			float overlayTextureWidth = 512f;
-			float overlayTextureHeight = 512f;
-			float overlayXOffset = 0f;
-			float overlayYOffset = 0f;
-			if (simpleMaterial.OverlayEnabled)
-			{
-				Texture texture3 = ((EngineTexture)simpleMaterial.OverlayTexture.PlatformTexture).Texture;
-				material2 = GetOrCreateMaterial(texture2, texture3, mesh.DrawObjectType == DrawObjectType.Mesh, simpleMaterial.UseOverlayAlphaAsMask);
-				startCoordinate = simpleMaterial.StartCoordinate;
-				size = simpleMaterial.Size;
-				overlayTextureWidth = simpleMaterial.OverlayTextureWidth;
-				overlayTextureHeight = simpleMaterial.OverlayTextureHeight;
-				overlayXOffset = simpleMaterial.OverlayXOffset;
-				overlayYOffset = simpleMaterial.OverlayYOffset;
-			}
-			if (material2 == null)
-			{
-				material2 = GetOrCreateMaterial(texture2, null, mesh.DrawObjectType == DrawObjectType.Mesh, useOverlayTextureAlphaAsMask: false);
-			}
-			uint color = simpleMaterial.Color.ToUnsignedInteger();
-			float colorFactor = simpleMaterial.ColorFactor;
-			float alphaFactor = simpleMaterial.AlphaFactor;
-			float hueFactor = simpleMaterial.HueFactor;
-			float saturationFactor = simpleMaterial.SaturationFactor;
-			float valueFactor = simpleMaterial.ValueFactor;
-			Vec2 clipCircleCenter = Vec2.Zero;
-			float clipCircleRadius = 0f;
-			float clipCircleSmoothingRadius = 0f;
-			if (simpleMaterial.CircularMaskingEnabled)
-			{
-				clipCircleCenter = simpleMaterial.CircularMaskingCenter;
-				clipCircleRadius = simpleMaterial.CircularMaskingRadius;
-				clipCircleSmoothingRadius = simpleMaterial.CircularMaskingSmoothingRadius;
-			}
-			float[] vertices = mesh.Vertices;
-			float[] textureCoordinates = mesh.TextureCoordinates;
-			uint[] indices = mesh.Indices;
-			int vertexCount = mesh.VertexCount;
-			TwoDimensionMeshDrawData meshDrawData = default(TwoDimensionMeshDrawData);
+			material2 = GetOrCreateMaterial(texture2, texture3, useCustomMesh: true, material.UseOverlayAlphaAsMask);
+			Vector2 visualScale = imageDrawObject.Rectangle.GetVisualScale();
+			float num = 1f / Mathf.Abs(visualScale.X);
+			float num2 = 1f / Mathf.Abs(visualScale.Y);
+			zero.x = material.OverlayTextureWidth * num;
+			zero.y = material.OverlayTextureHeight * num2;
+			zero2.x = material.OverlayXOffset * num;
+			zero2.y = material.OverlayYOffset * num2;
+		}
+		if (material2 == null)
+		{
+			material2 = GetOrCreateMaterial(texture2, null, useCustomMesh: true, useOverlayTextureAlphaAsMask: false);
+		}
+		uint color = material.Color.ToUnsignedInteger();
+		float colorFactor = material.ColorFactor;
+		float alphaFactor = material.AlphaFactor;
+		float hueFactor = material.HueFactor;
+		float saturationFactor = material.SaturationFactor;
+		float valueFactor = material.ValueFactor;
+		Vec2 clipCircleCenter = Vec2.Zero;
+		float clipCircleRadius = 0f;
+		float clipCircleSmoothingRadius = 0f;
+		if (material.CircularMaskingEnabled)
+		{
+			clipCircleCenter = new Vec2(material.CircularMaskingCenter.X, material.CircularMaskingCenter.Y);
+			clipCircleRadius = material.CircularMaskingRadius;
+			clipCircleSmoothingRadius = material.CircularMaskingSmoothingRadius;
+		}
+		TwoDimensionMeshDrawData meshDrawData = default(TwoDimensionMeshDrawData);
+		meshDrawData.MatrixFrame = cachedVisualMatrixFrame;
+		meshDrawData.ClipRectInfo = new Vec3(_activeScissor.X, _activeScissor.Y, _activeScissor.X2, _activeScissor.Y2);
+		meshDrawData.Uvs = imageDrawObject.Uvs;
+		meshDrawData.SpriteSize = new Vec2(material.Texture.Width, material.Texture.Height);
+		meshDrawData.ScreenSize = Screen.RealScreenResolution;
+		meshDrawData.ScreenScale = new Vec2(imageDrawObject.Scale, imageDrawObject.Scale);
+		SpriteNinePatchParameters ninePatchParameters = material.NinePatchParameters;
+		if (ninePatchParameters.IsValid)
+		{
+			meshDrawData.NinePatchBorders = new Vec3(ninePatchParameters.LeftWidth, ninePatchParameters.TopHeight, ninePatchParameters.RightWidth, ninePatchParameters.BottomHeight);
+		}
+		meshDrawData.Layer = layer;
+		meshDrawData.ClipCircleCenter = clipCircleCenter;
+		meshDrawData.ClipCircleRadius = clipCircleRadius;
+		meshDrawData.ClipCircleSmoothingRadius = clipCircleSmoothingRadius;
+		meshDrawData.Color = color;
+		meshDrawData.ColorFactor = colorFactor;
+		meshDrawData.AlphaFactor = alphaFactor;
+		meshDrawData.HueFactor = hueFactor;
+		meshDrawData.SaturationFactor = saturationFactor;
+		meshDrawData.ValueFactor = valueFactor;
+		meshDrawData.OverlayScale = zero;
+		meshDrawData.OverlayOffset = zero2;
+		if (!MBDebug.DisableAllUI)
+		{
+			_view.CreateMeshFromDescription(material2, meshDrawData);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	void ITwoDimensionPlatform.DrawText(TextMaterial material, in TextDrawObject textDrawObject, int layer)
+	{
+		uint color = material.Color.ToUnsignedInteger();
+		TaleWorlds.TwoDimension.Texture texture = material.Texture;
+		if (texture == null)
+		{
+			return;
+		}
+		Texture texture2 = ((EngineTexture)texture.PlatformTexture).Texture;
+		if (texture2 != null)
+		{
+			Material orCreateTextMaterial = GetOrCreateTextMaterial(texture2);
+			TwoDimensionTextMeshDrawData meshDrawData = default(TwoDimensionTextMeshDrawData);
+			meshDrawData.MatrixFrame = textDrawObject.Rectangle.GetCachedVisualMatrixFrame();
+			meshDrawData.ClipRectInfo = new Vec3(_activeScissor.X, _activeScissor.Y, _activeScissor.X2, _activeScissor.Y2);
 			meshDrawData.ScreenWidth = Screen.RealScreenResolutionWidth;
 			meshDrawData.ScreenHeight = Screen.RealScreenResolutionHeight;
-			meshDrawData.DrawX = x;
-			meshDrawData.DrawY = y;
-			meshDrawData.ClipRectPosition = clipRectPosition;
-			meshDrawData.ClipRectSize = clipRectSize;
-			meshDrawData.Layer = layer;
-			meshDrawData.Width = mesh.Width;
-			meshDrawData.Height = mesh.Height;
-			meshDrawData.MinU = mesh.MinU;
-			meshDrawData.MinV = mesh.MinV;
-			meshDrawData.MaxU = mesh.MaxU;
-			meshDrawData.MaxV = mesh.MaxV;
-			meshDrawData.ClipCircleCenter = clipCircleCenter;
-			meshDrawData.ClipCircleRadius = clipCircleRadius;
-			meshDrawData.ClipCircleSmoothingRadius = clipCircleSmoothingRadius;
 			meshDrawData.Color = color;
-			meshDrawData.ColorFactor = colorFactor;
-			meshDrawData.AlphaFactor = alphaFactor;
-			meshDrawData.HueFactor = hueFactor;
-			meshDrawData.SaturationFactor = saturationFactor;
-			meshDrawData.ValueFactor = valueFactor;
-			meshDrawData.OverlayTextureWidth = overlayTextureWidth;
-			meshDrawData.OverlayTextureHeight = overlayTextureHeight;
-			meshDrawData.OverlayXOffset = overlayXOffset;
-			meshDrawData.OverlayYOffset = overlayYOffset;
-			meshDrawData.StartCoordinate = startCoordinate;
-			meshDrawData.Size = size;
-			meshDrawData.Type = (uint)mesh.DrawObjectType;
-			if (!MBDebug.DisableAllUI)
+			meshDrawData.ScaleFactor = 1.5f / material.ScaleFactor;
+			meshDrawData.SmoothingConstant = material.SmoothingConstant;
+			meshDrawData.GlowColor = material.GlowColor.ToUnsignedInteger();
+			meshDrawData.OutlineColor = material.OutlineColor.ToVec3();
+			meshDrawData.OutlineAmount = material.OutlineAmount;
+			meshDrawData.GlowRadius = material.GlowRadius;
+			meshDrawData.Blur = material.Blur;
+			meshDrawData.ShadowOffset = material.ShadowOffset;
+			meshDrawData.ShadowAngle = material.ShadowAngle;
+			meshDrawData.ColorFactor = material.ColorFactor;
+			meshDrawData.AlphaFactor = material.AlphaFactor;
+			meshDrawData.HueFactor = material.HueFactor;
+			meshDrawData.SaturationFactor = material.SaturationFactor;
+			meshDrawData.ValueFactor = material.ValueFactor;
+			meshDrawData.Layer = layer;
+			meshDrawData.HashCode1 = textDrawObject.HashCode1;
+			meshDrawData.HashCode2 = textDrawObject.HashCode2;
+			if (!MBDebug.DisableAllUI && !_view.CreateTextMeshFromCache(orCreateTextMaterial, meshDrawData))
 			{
-				if (mesh.DrawObjectType == DrawObjectType.Quad)
-				{
-					_view.CreateMeshFromDescription(material2, meshDrawData);
-				}
-				else
-				{
-					_view.CreateMeshFromDescription(vertices, textureCoordinates, indices, vertexCount, material2, meshDrawData);
-				}
+				_view.CreateTextMeshFromDescription(textDrawObject.Text_Vertices, textDrawObject.Text_TextureCoordinates, textDrawObject.Text_Indices, textDrawObject.Text_Indices.Length, orCreateTextMaterial, meshDrawData);
 			}
 		}
-		else
-		{
-			if (!(material is TextMaterial))
-			{
-				return;
-			}
-			TextMaterial textMaterial = (TextMaterial)material;
-			uint color2 = textMaterial.Color.ToUnsignedInteger();
-			TaleWorlds.TwoDimension.Texture texture4 = textMaterial.Texture;
-			if (texture4 == null)
-			{
-				return;
-			}
-			Texture texture5 = ((EngineTexture)texture4.PlatformTexture).Texture;
-			if (texture5 != null)
-			{
-				Material orCreateTextMaterial = GetOrCreateTextMaterial(texture5);
-				TwoDimensionTextMeshDrawData meshDrawData2 = default(TwoDimensionTextMeshDrawData);
-				meshDrawData2.DrawX = x;
-				meshDrawData2.DrawY = y;
-				meshDrawData2.ScreenWidth = Screen.RealScreenResolutionWidth;
-				meshDrawData2.ScreenHeight = Screen.RealScreenResolutionHeight;
-				meshDrawData2.Color = color2;
-				meshDrawData2.ScaleFactor = 1.5f / textMaterial.ScaleFactor;
-				meshDrawData2.SmoothingConstant = textMaterial.SmoothingConstant;
-				meshDrawData2.GlowColor = textMaterial.GlowColor.ToUnsignedInteger();
-				meshDrawData2.OutlineColor = textMaterial.OutlineColor.ToVec3();
-				meshDrawData2.OutlineAmount = textMaterial.OutlineAmount;
-				meshDrawData2.GlowRadius = textMaterial.GlowRadius;
-				meshDrawData2.Blur = textMaterial.Blur;
-				meshDrawData2.ShadowOffset = textMaterial.ShadowOffset;
-				meshDrawData2.ShadowAngle = textMaterial.ShadowAngle;
-				meshDrawData2.ColorFactor = textMaterial.ColorFactor;
-				meshDrawData2.AlphaFactor = textMaterial.AlphaFactor;
-				meshDrawData2.HueFactor = textMaterial.HueFactor;
-				meshDrawData2.SaturationFactor = textMaterial.SaturationFactor;
-				meshDrawData2.ValueFactor = textMaterial.ValueFactor;
-				meshDrawData2.Layer = layer;
-				meshDrawData2.ClipRectPosition = clipRectPosition;
-				meshDrawData2.ClipRectSize = clipRectSize;
-				meshDrawData2.HashCode1 = mesh.HashCode1;
-				meshDrawData2.HashCode2 = mesh.HashCode2;
-				if (!MBDebug.DisableAllUI && !_view.CreateTextMeshFromCache(orCreateTextMaterial, meshDrawData2))
-				{
-					_view.CreateTextMeshFromDescription(mesh.Vertices, mesh.TextureCoordinates, mesh.Indices, mesh.VertexCount, orCreateTextMaterial, meshDrawData2);
-				}
-			}
-		}
+	}
+
+	void ITwoDimensionPlatform.OnFrameBegin()
+	{
+		Reset();
+	}
+
+	void ITwoDimensionPlatform.OnFrameEnd()
+	{
+		Reset();
+	}
+
+	void ITwoDimensionPlatform.Clear()
+	{
 	}
 
 	void ITwoDimensionPlatform.SetScissor(ScissorTestInfo scissorTestInfo)
 	{
-		_currentScissorTestInfo = scissorTestInfo;
-		_scissorSet = true;
+		_activeScissor = scissorTestInfo;
 	}
 
-	void ITwoDimensionPlatform.ResetScissor()
+	void ITwoDimensionPlatform.ResetScissors()
 	{
-		_scissorSet = false;
+		_activeScissor = new ScissorTestInfo(0f, 0f, Screen.RealScreenResolutionWidth, Screen.RealScreenResolutionHeight);
 	}
 
 	void ITwoDimensionPlatform.PlaySound(string soundName)
@@ -308,7 +256,7 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 
 	void ITwoDimensionPlatform.OpenOnScreenKeyboard(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)
 	{
-		ScreenManager.OnPlatformScreenKeyboardRequested(initialText, descriptionText, maxLength, keyboardTypeEnum);
+		Input.IsOnScreenKeyboardActive = ScreenManager.OnPlatformScreenKeyboardRequested(initialText, descriptionText, maxLength, keyboardTypeEnum);
 	}
 
 	void ITwoDimensionPlatform.BeginDebugPanel(string panelTitle)
@@ -353,7 +301,7 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 		return UIConfig.DebugModeEnabled;
 	}
 
-	public void Reset()
+	private void Reset()
 	{
 	}
 }

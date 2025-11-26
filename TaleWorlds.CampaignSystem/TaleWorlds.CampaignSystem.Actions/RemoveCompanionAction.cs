@@ -14,18 +14,16 @@ public static class RemoveCompanionAction
 
 	private static void ApplyInternal(Clan clan, Hero companion, RemoveCompanionDetail detail)
 	{
-		PartyBase partyBase = ((companion.PartyBelongedTo != null) ? companion.PartyBelongedTo.Party : companion.CurrentSettlement?.Party);
+		PartyBase partyBase = companion.PartyBelongedTo?.Party;
 		companion.CompanionOf = null;
-		if (partyBase != null && detail != RemoveCompanionDetail.ByTurningToLord)
+		if (partyBase != null && partyBase.IsMobile && detail != RemoveCompanionDetail.ByTurningToLord)
 		{
-			if (partyBase.LeaderHero != companion)
+			bool num = partyBase.LeaderHero == companion;
+			partyBase.MemberRoster.AddToCounts(companion.CharacterObject, -1);
+			if (num)
 			{
-				partyBase.MemberRoster.AddToCounts(companion.CharacterObject, -1);
-			}
-			else
-			{
-				partyBase.MemberRoster.AddToCounts(companion.CharacterObject, -1);
-				partyBase.MobileParty.RemovePartyLeader();
+				partyBase.MobileParty.SetMoveModeHold();
+				partyBase.MobileParty.Ai.RethinkAtNextHourlyTick = true;
 				if (partyBase.MemberRoster.Count == 0)
 				{
 					DestroyPartyAction.Apply(null, partyBase.MobileParty);
@@ -38,7 +36,6 @@ public static class RemoveCompanionAction
 		}
 		if (detail == RemoveCompanionDetail.Fire)
 		{
-			companion.CompanionOf = null;
 			if (companion.PartyBelongedToAsPrisoner != null)
 			{
 				EndCaptivityAction.ApplyByEscape(companion);

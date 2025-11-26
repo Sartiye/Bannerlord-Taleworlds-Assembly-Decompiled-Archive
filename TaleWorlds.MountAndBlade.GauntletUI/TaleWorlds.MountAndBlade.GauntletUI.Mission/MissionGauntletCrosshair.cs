@@ -1,7 +1,6 @@
 using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View;
@@ -12,13 +11,13 @@ using TaleWorlds.ScreenSystem;
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission;
 
 [OverrideView(typeof(MissionCrosshair))]
-public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
+public class MissionGauntletCrosshair : MissionBattleUIBaseView
 {
 	private GauntletLayer _layer;
 
 	private CrosshairVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private double[] _targetGadgetOpacities = new double[4];
 
@@ -26,7 +25,7 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 	{
 		CombatLogManager.OnGenerateCombatLog += OnCombatLogGenerated;
 		_dataSource = new CrosshairVM();
-		_layer = new GauntletLayer(1);
+		_layer = new GauntletLayer("MissionCrosshair", 1);
 		_movie = _layer.LoadMovie("Crosshair", _dataSource);
 		if (base.Mission.Mode != MissionMode.Conversation && base.Mission.Mode != MissionMode.CutScene)
 		{
@@ -46,15 +45,31 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 		_layer = null;
 	}
 
+	protected override void OnSuspendView()
+	{
+		if (_layer != null)
+		{
+			ScreenManager.SetSuspendLayer(_layer, isSuspended: true);
+		}
+	}
+
+	protected override void OnResumeView()
+	{
+		if (_layer != null)
+		{
+			ScreenManager.SetSuspendLayer(_layer, isSuspended: false);
+		}
+	}
+
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (base.DebugInput.IsKeyReleased(InputKey.F5) && base.IsViewActive)
+		if (base.DebugInput.IsKeyReleased(InputKey.F5) && base.IsViewCreated)
 		{
 			OnDestroyView();
 			OnCreateView();
 		}
-		if (!base.IsViewActive)
+		if (!base.IsViewCreated)
 		{
 			return;
 		}
@@ -65,7 +80,7 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 		{
 			_targetGadgetOpacities[i] = 0.0;
 		}
-		if (base.Mission.Mode != MissionMode.Conversation && base.Mission.Mode != MissionMode.CutScene && base.Mission.Mode != MissionMode.Deployment && base.Mission.MainAgent != null && !base.MissionScreen.IsViewingCharacter() && !IsMissionScreenUsingCustomCamera())
+		if (GetShouldArrowsBeVisible())
 		{
 			_dataSource.CrosshairType = BannerlordConfig.CrosshairType;
 			Agent mainAgent = base.Mission.MainAgent;
@@ -81,13 +96,13 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 				if (wieldedWeapon.ReloadPhaseCount > 1 && wieldedWeapon.IsReloading && currentActionType == Agent.ActionCodeType.Reload)
 				{
 					StackArray.StackArray10FloatFloatTuple reloadPhases = default(StackArray.StackArray10FloatFloatTuple);
-					ActionIndexValueCache itemUsageReloadActionCode = MBItem.GetItemUsageReloadActionCode(wieldedWeapon.CurrentUsageItem.ItemUsage, 9, mainAgent.HasMount, -1, mainAgent.GetIsLeftStance());
+					ActionIndexCache itemUsageReloadActionCode = MBItem.GetItemUsageReloadActionCode(wieldedWeapon.CurrentUsageItem.ItemUsage, 9, mainAgent.HasMount, -1, mainAgent.GetIsLeftStance(), mainAgent.IsLookDirectionLow);
 					FillReloadDurationsFromActions(ref reloadPhases, wieldedWeapon.ReloadPhaseCount, mainAgent, itemUsageReloadActionCode);
 					float num2 = mainAgent.GetCurrentActionProgress(1);
-					ActionIndexValueCache currentActionValue = mainAgent.GetCurrentActionValue(1);
-					if (currentActionValue != ActionIndexValueCache.act_none)
+					ActionIndexCache actionIndexCache = mainAgent.GetCurrentAction(1);
+					if (actionIndexCache != ActionIndexCache.act_none)
 					{
-						float num3 = 1f - MBActionSet.GetActionBlendOutStartProgress(mainAgent.ActionSet, currentActionValue);
+						float num3 = 1f - MBActionSet.GetActionBlendOutStartProgress(mainAgent.ActionSet, in actionIndexCache);
 						num2 += num3;
 					}
 					float animationParameter = MBAnimation.GetAnimationParameter2(mainAgent.AgentVisuals.GetSkeleton().GetAnimationAtChannel(1));
@@ -188,19 +203,24 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 		_dataSource.IsTargetInvalid = isTargetInvalid;
 	}
 
-	private bool GetShouldCrosshairBeVisible()
+	protected virtual bool GetShouldArrowsBeVisible()
 	{
-		if (base.Mission.MainAgent != null)
+		if (!base.IsViewSuspended && base.Mission.MainAgent != null && base.Mission.Mode != MissionMode.Conversation && base.Mission.Mode != MissionMode.CutScene && base.Mission.Mode != MissionMode.Deployment && !base.MissionScreen.IsViewingCharacter() && !IsMissionScreenUsingCustomCamera())
 		{
-			MissionWeapon wieldedWeapon = base.Mission.MainAgent.WieldedWeapon;
-			if (BannerlordConfig.DisplayTargetingReticule && base.Mission.Mode != MissionMode.Conversation && base.Mission.Mode != MissionMode.CutScene && !ScreenManager.GetMouseVisibility() && !wieldedWeapon.IsEmpty && wieldedWeapon.CurrentUsageItem.IsRangedWeapon && !base.MissionScreen.IsViewingCharacter() && !IsMissionScreenUsingCustomCamera())
+			return !ScreenManager.GetMouseVisibility();
+		}
+		return false;
+	}
+
+	protected virtual bool GetShouldCrosshairBeVisible()
+	{
+		if (GetShouldArrowsBeVisible() && BannerlordConfig.DisplayTargetingReticule && !base.Mission.MainAgent.WieldedWeapon.IsEmpty && base.Mission.MainAgent.WieldedWeapon.CurrentUsageItem.IsRangedWeapon)
+		{
+			if (base.Mission.MainAgent.WieldedWeapon.CurrentUsageItem.WeaponClass == WeaponClass.Crossbow)
 			{
-				if (wieldedWeapon.CurrentUsageItem.WeaponClass == WeaponClass.Crossbow)
-				{
-					return !wieldedWeapon.IsReloading;
-				}
-				return true;
+				return !base.Mission.MainAgent.WieldedWeapon.IsReloading;
 			}
+			return true;
 		}
 		return false;
 	}
@@ -221,20 +241,20 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 		}
 	}
 
-	private void FillReloadDurationsFromActions(ref StackArray.StackArray10FloatFloatTuple reloadPhases, int reloadPhaseCount, Agent mainAgent, ActionIndexValueCache reloadAction)
+	private void FillReloadDurationsFromActions(ref StackArray.StackArray10FloatFloatTuple reloadPhases, int reloadPhaseCount, Agent mainAgent, ActionIndexCache reloadAction)
 	{
 		float num = 0f;
 		for (int i = 0; i < reloadPhaseCount; i++)
 		{
-			if (reloadAction != ActionIndexValueCache.act_none)
+			if (reloadAction != ActionIndexCache.act_none)
 			{
-				float num2 = MBAnimation.GetAnimationParameter2(MBActionSet.GetAnimationIndexOfAction(mainAgent.ActionSet, reloadAction)) * MBActionSet.GetActionAnimationDuration(mainAgent.ActionSet, reloadAction);
+				float num2 = MBAnimation.GetAnimationParameter2(MBActionSet.GetAnimationIndexOfAction(mainAgent.ActionSet, in reloadAction)) * MBActionSet.GetActionAnimationDuration(mainAgent.ActionSet, in reloadAction);
 				reloadPhases[i] = (reloadPhases[i].Item1, num2);
 				if (num2 > num)
 				{
 					num = num2;
 				}
-				reloadAction = MBActionSet.GetActionAnimationContinueToAction(mainAgent.ActionSet, reloadAction);
+				reloadAction = MBActionSet.GetActionAnimationContinueToAction(mainAgent.ActionSet, in reloadAction);
 			}
 		}
 		if (num > 1E-05f)
@@ -249,7 +269,7 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_layer.UIContext.ContextAlpha = 0f;
 		}
@@ -258,7 +278,7 @@ public class MissionGauntletCrosshair : MissionGauntletBattleUIBase
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		if (base.IsViewActive)
+		if (base.IsViewCreated)
 		{
 			_layer.UIContext.ContextAlpha = 1f;
 		}

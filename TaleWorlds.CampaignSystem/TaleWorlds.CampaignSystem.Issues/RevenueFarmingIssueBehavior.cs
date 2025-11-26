@@ -8,7 +8,6 @@ using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.MapEvents;
-using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -141,6 +140,10 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < 40)
 			{
 				flags |= PreconditionFlags.NotEnoughTroops;
+			}
+			if (issueGiver.MapFaction.Leader == Hero.MainHero)
+			{
+				flags |= PreconditionFlags.MainHeroIsKingdomLeader;
 			}
 			return flags == PreconditionFlags.None;
 		}
@@ -349,7 +352,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 				.CloseDialog();
 			DiscussDialogFlow = DialogFlow.CreateDialogFlow("quest_discuss").NpcLine(new TextObject("{=tthBNejU}Have you collected the revenues?[if:convo_undecided_open]")).Condition(() => Hero.OneToOneConversationHero == base.QuestGiver)
 				.BeginPlayerOptions()
-				.PlayerOption(new TextObject("{=jQsr4vDO}I'm still working on it."))
+				.PlayerOption(new TextObject("{=wErSpkjy}I'm still working on it."))
 				.NpcLine(new TextObject("{=BI1UnHaB}Good, good. This takes time, I know, but don't keep me waiting too long.[if:convo_mocking_aristocratic]"))
 				.Consequence(MapEventHelper.OnConversationEnd)
 				.CloseDialog()
@@ -381,12 +384,12 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 
 		private bool TurnQuestInClickableCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
 			if (Hero.MainHero.Gold < Instance._totalRequestedDenars)
 			{
 				explanation = new TextObject("{=QOWyEJrm}You don't have enough denars.");
 				return false;
 			}
+			explanation = null;
 			return true;
 		}
 
@@ -415,7 +418,22 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.VillageBeingRaided.AddNonSerializedListener(this, OnVillageRaid);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 			CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
+			CampaignEvents.PlayerDesertedBattleEvent.AddNonSerializedListener(this, OnPlayerDeserted);
+		}
+
+		private void OnPlayerDeserted(int count)
+		{
+			Instance.CollectingRevenues = false;
+		}
+
+		private void OnMapEventEnded(MapEvent mapEvent)
+		{
+			if (mapEvent.IsPlayerMapEvent && mapEvent.HasWinner && mapEvent.IsFieldBattle)
+			{
+				Instance.CollectingRevenues = false;
+			}
 		}
 
 		private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
@@ -517,7 +535,6 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 
 		private void QuestCompletedWithBetray()
 		{
-			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 45f);
 			TraitLevelingHelper.OnIssueSolvedThroughQuest(base.QuestGiver, new Tuple<TraitObject, int>[1]
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -100)
@@ -525,6 +542,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			RelationshipChangeWithQuestGiver = -15;
 			AddLog(QuestBetrayedLog);
 			CompleteQuestWithBetrayal();
+			ChangeCrimeRatingAction.Apply(base.QuestGiver.MapFaction, 45f);
 		}
 
 		private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
@@ -846,7 +864,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 	private void OnSessionLaunched(CampaignGameStarter gameStarter)
 	{
 		gameStarter.AddGameMenuOption("village", "revenue_farming_quest_collect_tax_menu_button", "{=mcrjFxDQ}Collect revenue", collect_revenue_menu_condition, collect_revenue_menu_consequence, isLeave: false, 5);
-		gameStarter.AddWaitGameMenu("village_collect_revenue", "{=p6swAFWn}Your men started collecting the revenues...", collecting_menu_on_init, null, null, collection_menu_on_tick, GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption, GameOverlays.MenuOverlayType.None, 10f);
+		gameStarter.AddWaitGameMenu("village_collect_revenue", "{=p6swAFWn}Your men started collecting the revenues...", collecting_menu_on_init, null, null, collection_menu_on_tick, GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption, GameMenu.MenuOverlayType.None, 10f);
 		gameStarter.AddGameMenuOption("village_collect_revenue", "village_collect_revenue_back", "{=3sRdGQou}Leave", leave_on_condition, leave_consequence, isLeave: true);
 		AddVillageEvents(gameStarter);
 	}
@@ -912,7 +930,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			Instance.AddLog(textObject11);
 			ChangeRelationWithNotables(-5);
 			int num7 = MBRandom.RandomInt(2, 4);
-			MobileParty.MainParty.MemberRoster.WoundNumberOfTroopsRandomly(num7);
+			MobileParty.MainParty.MemberRoster.WoundNumberOfNonHeroTroopsRandomly(num7);
 			TextObject textObject12 = new TextObject("{=o27lTMD4}Some villagers tried to resist. In the brawl, {WOUNDED_NUMBER} of your men got wounded.");
 			textObject12.SetTextVariable("WOUNDED_NUMBER", num7);
 			MBInformationManager.AddQuickInformation(textObject12);
@@ -986,7 +1004,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			TextObject textObject8 = new TextObject("{=00Qvwelb}{WOUNDED_NUMBER} of your men got wounded while they were trying to separate the two sides.");
 			textObject8.SetTextVariable("WOUNDED_NUMBER", num6);
 			MBInformationManager.AddQuickInformation(textObject8);
-			MobileParty.MainParty.MemberRoster.WoundNumberOfTroopsRandomly(num6);
+			MobileParty.MainParty.MemberRoster.WoundNumberOfNonHeroTroopsRandomly(num6);
 			ChangeRelationWithNotables(2);
 			collect_revenue_menu_consequence(args);
 		}));
@@ -1018,7 +1036,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			ChangeRelationWithNotables(-5);
 			if (MBRandom.RandomFloat < IncidentChance)
 			{
-				Instance.AddLog(new TextObject("{=bS7IAgJS}You told the notable that this was not your affair. A few hours later, the mutineers ambushed and killed some of your men on the outskirts of the village, and the revenues stolen."));
+				Instance.AddLog(new TextObject("{=bS7IAgJS}You told the notable that this was not your affair. A few hours later, the mutineers ambushed and killed some of your men on the outskirts of the village, and the revenues stolen. Your men completed collecting revenues from the village, but lost it all to an ambush."));
 				GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, Instance.FindCurrentRevenueVillage().CollectedAmount, disableNotification: true);
 				TextObject textObject5 = GameTexts.FindText("str_quest_collect_debt_quest_gold_removed");
 				textObject5.SetTextVariable("GOLD_AMOUNT", Instance.FindCurrentRevenueVillage().CollectedAmount);
@@ -1028,7 +1046,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 				TextObject textObject6 = new TextObject("{=mosHZG3b}The mutineers ambushed and killed {KILLED_NUMBER} of your men.");
 				textObject6.SetTextVariable("KILLED_NUMBER", num5);
 				MBInformationManager.AddQuickInformation(textObject6);
-				MobileParty.MainParty.MemberRoster.KillNumberOfNonHeroTroopsRandomly(num5);
+				MobileParty.MainParty.MemberRoster.RemoveNumberOfNonHeroTroopsRandomly(num5);
 			}
 			else
 			{
@@ -1091,7 +1109,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 				TextObject textObject3 = new TextObject("{=rmmZayCT}{WOUNDED_COUNT} of your men got wounded because of illness.");
 				textObject3.SetTextVariable("WOUNDED_COUNT", num3);
 				MBInformationManager.AddQuickInformation(textObject3);
-				MobileParty.MainParty.MemberRoster.WoundNumberOfTroopsRandomly(num3);
+				MobileParty.MainParty.MemberRoster.WoundNumberOfNonHeroTroopsRandomly(num3);
 			}
 			else
 			{
@@ -1109,7 +1127,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			RevenueVillage revenueVillage = Instance.FindCurrentRevenueVillage();
 			Instance.AddLog(new TextObject("{=b3GrvocA}You told your men to go carefully, but still collect the revenues. The village notables seemed upset with your decision."));
 			revenueVillage.SetAdditionalProgress(0.35f);
-			ChangeRelationWithNotables(2);
+			ChangeRelationWithNotables(-2);
 			collect_revenue_menu_consequence(args);
 		}));
 		list.Add(new VillageEventOptionData("{=YZZ4zjxU}Tell the villagers that, in light of their hardship, they are forgiven what they owe.", delegate(MenuCallbackArgs args)
@@ -1144,7 +1162,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 				TextObject textObject2 = new TextObject("{=xJwo7eBh}{WOUNDED_NUMBER} of your men got wounded while they were breaking up the crowd.");
 				textObject2.SetTextVariable("WOUNDED_NUMBER", num2);
 				MBInformationManager.AddQuickInformation(textObject2);
-				MobileParty.MainParty.MemberRoster.WoundNumberOfTroopsRandomly(num2);
+				MobileParty.MainParty.MemberRoster.WoundNumberOfNonHeroTroopsRandomly(num2);
 			}
 			else
 			{
@@ -1196,7 +1214,7 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=MGD8Ka2o}The residents attacked and killed {KILLED_NUMBER} of your troops who were separated from the rest.");
 				textObject.SetTextVariable("KILLED_NUMBER", num);
 				MBInformationManager.AddQuickInformation(textObject);
-				MobileParty.MainParty.MemberRoster.KillNumberOfNonHeroTroopsRandomly(num);
+				MobileParty.MainParty.MemberRoster.RemoveNumberOfNonHeroTroopsRandomly(num);
 			}
 			else
 			{
@@ -1261,18 +1279,6 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private void collecting_menu_on_init(MenuCallbackArgs args)
-	{
-		if (Instance.FindCurrentRevenueVillage().CollectedAmount == 0)
-		{
-			TextObject textObject = new TextObject("{=VktwHCN6}Your men have started to collect the tax of {VILLAGE}");
-			textObject.SetTextVariable("VILLAGE", Settlement.CurrentSettlement.Name);
-			MBInformationManager.AddQuickInformation(textObject);
-		}
-		Instance.CollectingRevenues = true;
-		args.MenuContext.GameMenu.StartWait();
-	}
-
 	private bool leave_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
@@ -1285,7 +1291,25 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 		GameMenu.SwitchToMenu("village");
 	}
 
+	private void collecting_menu_on_init(MenuCallbackArgs args)
+	{
+		if (Instance.FindCurrentRevenueVillage().CollectedAmount == 0)
+		{
+			TextObject textObject = new TextObject("{=VktwHCN6}Your men have started to collect the tax of {VILLAGE}");
+			textObject.SetTextVariable("VILLAGE", Settlement.CurrentSettlement.Name);
+			MBInformationManager.AddQuickInformation(textObject);
+		}
+		Instance.CollectingRevenues = true;
+		args.MenuContext.GameMenu.StartWait();
+		UpdateCollectionMenuProgress(args);
+	}
+
 	private void collection_menu_on_tick(MenuCallbackArgs args, CampaignTime dt)
+	{
+		UpdateCollectionMenuProgress(args);
+	}
+
+	private static void UpdateCollectionMenuProgress(MenuCallbackArgs args)
 	{
 		RevenueVillage revenueVillage = Instance.FindCurrentRevenueVillage();
 		args.MenuContext.GameMenu.SetProgressOfWaitingInMenu(revenueVillage.CollectProgress);
@@ -1322,10 +1346,9 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			notable.SetHasMet();
 			ChangeRelationAction.ApplyPlayerRelation(notable, relation, affectRelatives: false, showQuickNotification: false);
 		}
-		TextObject empty = TextObject.Empty;
-		empty = ((relation <= 0) ? new TextObject("{=r5Netxy0}Your relation is decreased by {MAGNITUDE} with village notables.") : new TextObject("{=IwS1qeq9}Your relation is increased by {MAGNITUDE} with village notables."));
-		empty.SetTextVariable("MAGNITUDE", relation);
-		MBInformationManager.AddQuickInformation(empty);
+		TextObject textObject = ((relation <= 0) ? new TextObject("{=r5Netxy0}Your relation is decreased by {MAGNITUDE} with village notables.") : new TextObject("{=IwS1qeq9}Your relation is increased by {MAGNITUDE} with village notables."));
+		textObject.SetTextVariable("MAGNITUDE", relation);
+		MBInformationManager.AddQuickInformation(textObject);
 	}
 
 	private void CompleteCurrentRevenueCollection(bool addLog = true)

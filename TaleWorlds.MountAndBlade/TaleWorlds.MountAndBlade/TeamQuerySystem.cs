@@ -65,7 +65,7 @@ public class TeamQuerySystem
 
 	private readonly QueryData<float> _insideWallsRatio;
 
-	private BattlePowerCalculationLogic _battlePowerLogic;
+	private IBattlePowerCalculationLogic _battlePowerLogic;
 
 	private CasualtyHandler _casualtyHandler;
 
@@ -123,13 +123,13 @@ public class TeamQuerySystem
 
 	public float InsideWallsRatio => _insideWallsRatio.Value;
 
-	public BattlePowerCalculationLogic BattlePowerLogic
+	public IBattlePowerCalculationLogic BattlePowerLogic
 	{
 		get
 		{
 			if (_battlePowerLogic == null)
 			{
-				_battlePowerLogic = _mission.GetMissionBehavior<BattlePowerCalculationLogic>();
+				_battlePowerLogic = _mission.GetMissionBehavior<IBattlePowerCalculationLogic>();
 			}
 			return _battlePowerLogic;
 		}
@@ -292,7 +292,7 @@ public class TeamQuerySystem
 					{
 						if (item2.CountOfUnits > 0)
 						{
-							float num25 = item2.QuerySystem.MedianPosition.AsVec2.DistanceSquared(teamQuerySystem.AverageEnemyPosition);
+							float num25 = item2.CachedMedianPosition.AsVec2.DistanceSquared(teamQuerySystem.AverageEnemyPosition);
 							if (num24 > num25)
 							{
 								num24 = num25;
@@ -304,7 +304,7 @@ public class TeamQuerySystem
 			}
 			return formation2?.QuerySystem;
 		}, 1f);
-		_medianTargetFormationPosition = new QueryData<WorldPosition>(() => (teamQuerySystem.MedianTargetFormation != null) ? teamQuerySystem.MedianTargetFormation.MedianPosition : teamQuerySystem.MedianPosition, 1f);
+		_medianTargetFormationPosition = new QueryData<WorldPosition>(() => (teamQuerySystem.MedianTargetFormation != null) ? teamQuerySystem.MedianTargetFormation.Formation.CachedMedianPosition : teamQuerySystem.MedianPosition, 1f);
 		QueryData<WorldPosition>.SetupSyncGroup(_averageEnemyPosition, _medianTargetFormationPosition);
 		_leftFlankEdgePosition = new QueryData<WorldPosition>(delegate
 		{
@@ -451,7 +451,7 @@ public class TeamQuerySystem
 		_teamPower = new QueryData<float>(() => team.FormationsIncludingSpecialAndEmpty.Sum((Formation f) => (f.CountOfUnits <= 0) ? 0f : f.GetFormationPower()), 5f);
 		_remainingPowerRatio = new QueryData<float>(delegate
 		{
-			BattlePowerCalculationLogic battlePowerLogic2 = teamQuerySystem.BattlePowerLogic;
+			IBattlePowerCalculationLogic battlePowerLogic2 = teamQuerySystem.BattlePowerLogic;
 			CasualtyHandler casualtyHandler = teamQuerySystem.CasualtyHandler;
 			float num6 = 0f;
 			float num7 = 0f;
@@ -480,7 +480,7 @@ public class TeamQuerySystem
 		}, 5f);
 		_totalPowerRatio = new QueryData<float>(delegate
 		{
-			BattlePowerCalculationLogic battlePowerLogic = teamQuerySystem.BattlePowerLogic;
+			IBattlePowerCalculationLogic battlePowerLogic = teamQuerySystem.BattlePowerLogic;
 			float num4 = 0f;
 			float num5 = 0f;
 			foreach (Team team14 in teamQuerySystem.Team.Mission.Teams)
@@ -568,7 +568,7 @@ public class TeamQuerySystem
 
 	public float GetLocalAllyPower(Vec2 target)
 	{
-		return Team.FormationsIncludingSpecialAndEmpty.Sum((Formation f) => (f.CountOfUnits <= 0) ? 0f : (f.QuerySystem.FormationPower / f.QuerySystem.AveragePosition.Distance(target)));
+		return Team.FormationsIncludingSpecialAndEmpty.Sum((Formation f) => (f.CountOfUnits <= 0) ? 0f : (f.QuerySystem.FormationPower / f.CachedAveragePosition.Distance(target)));
 	}
 
 	public float GetLocalEnemyPower(Vec2 target)
@@ -584,7 +584,7 @@ public class TeamQuerySystem
 			{
 				if (item.CountOfUnits > 0)
 				{
-					num += item.QuerySystem.FormationPower / item.QuerySystem.AveragePosition.Distance(target);
+					num += item.QuerySystem.FormationPower / item.CachedAveragePosition.Distance(target);
 				}
 			}
 		}

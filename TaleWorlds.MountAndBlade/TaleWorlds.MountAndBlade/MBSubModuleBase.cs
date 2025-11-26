@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.Core;
 
 namespace TaleWorlds.MountAndBlade;
@@ -16,7 +17,19 @@ public abstract class MBSubModuleBase
 	{
 	}
 
+	protected internal virtual void RegisterSubModuleTypes()
+	{
+	}
+
+	protected internal virtual void OnNewModuleLoad()
+	{
+	}
+
 	public virtual void OnConfigChanged()
+	{
+	}
+
+	protected internal virtual void OnBeforeGameStart(MBGameManager mbGameManager, List<string> disabledModules)
 	{
 	}
 
@@ -37,6 +50,10 @@ public abstract class MBSubModuleBase
 	}
 
 	public virtual void OnGameLoaded(Game game, object initializerObject)
+	{
+	}
+
+	public virtual void OnAfterGameLoaded(Game game)
 	{
 	}
 
@@ -94,6 +111,18 @@ public abstract class MBSubModuleBase
 	}
 
 	protected internal virtual void OnNetworkTick(float dt)
+	{
+	}
+
+	public virtual void OnSubModuleActivated()
+	{
+	}
+
+	public virtual void OnSubModuleDeactivated()
+	{
+	}
+
+	public virtual void InitializeSubModuleGameObjects(Game game)
 	{
 	}
 }

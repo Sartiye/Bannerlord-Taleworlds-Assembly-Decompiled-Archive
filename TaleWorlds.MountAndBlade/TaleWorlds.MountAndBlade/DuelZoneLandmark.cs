@@ -10,6 +10,8 @@ public class DuelZoneLandmark : ScriptComponentBehavior, IFocusable
 
 	public FocusableObjectType FocusableObjectType => FocusableObjectType.None;
 
+	public virtual bool IsFocusable => true;
+
 	public void OnFocusGain(Agent userAgent)
 	{
 	}
@@ -20,11 +22,11 @@ public class DuelZoneLandmark : ScriptComponentBehavior, IFocusable
 
 	public TextObject GetInfoTextForBeingNotInteractable(Agent userAgent)
 	{
-		return TextObject.Empty;
+		return null;
 	}
 
-	public string GetDescriptionText(GameEntity gameEntity = null)
+	public TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return string.Empty;
+		return null;
 	}
 }

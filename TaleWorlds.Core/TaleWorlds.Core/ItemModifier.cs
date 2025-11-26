@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Xml;
 using TaleWorlds.Library;
@@ -51,7 +52,7 @@ public sealed class ItemModifier : MBObjectBase
 
 	public ItemModifier()
 	{
-		Name = TextObject.Empty;
+		Name = TextObject.GetEmpty();
 	}
 
 	public override void Deserialize(MBObjectManager objectManager, XmlNode node)
@@ -119,68 +120,58 @@ public sealed class ItemModifier : MBObjectBase
 		}
 		if (!MBMath.ApproximatelyEquals(factor, 0f))
 		{
-			baseValue = ((factor < 1f) ? MathF.Ceiling(factor * (float)baseValue) : MathF.Floor(factor * (float)baseValue));
+			baseValue = ((factor < 1f) ? TaleWorlds.Library.MathF.Ceiling(factor * (float)baseValue) : TaleWorlds.Library.MathF.Floor(factor * (float)baseValue));
 		}
 		return baseValue;
 	}
 
 	public int ModifyDamage(int baseDamage)
 	{
-		int num = baseDamage + Damage;
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(baseDamage + Damage, 1);
 	}
 
 	public int ModifySpeed(int baseSpeed)
 	{
-		int num = baseSpeed + Speed;
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(baseSpeed + Speed, 1);
 	}
 
 	public int ModifyMountSpeed(int baseSpeed)
 	{
-		int num = ModifyFactor(baseSpeed, MountSpeed);
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(ModifyFactor(baseSpeed, MountSpeed), 1);
 	}
 
 	public int ModifyMountManeuver(int baseManeuver)
 	{
-		int num = ModifyFactor(baseManeuver, Maneuver);
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(ModifyFactor(baseManeuver, Maneuver), 1);
 	}
 
 	public int ModifyMountCharge(int baseCharge)
 	{
-		int num = ModifyFactor(baseCharge, ChargeDamage);
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(ModifyFactor(baseCharge, ChargeDamage), 1);
 	}
 
 	public int ModifyMountHitPoints(int baseCharge)
 	{
-		int num = ModifyFactor(baseCharge, MountHitPoints);
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(ModifyFactor(baseCharge, MountHitPoints), 1);
 	}
 
 	public int ModifyMissileSpeed(int baseSpeed)
 	{
-		int num = baseSpeed + MissileSpeed;
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(baseSpeed + MissileSpeed, 1);
 	}
 
 	public int ModifyArmor(int armorValue)
 	{
-		int num = armorValue + Armor;
-		return MBMath.ClampInt(num, 1, num);
+		return Math.Max(armorValue + Armor, 1);
 	}
 
 	public short ModifyHitPoints(short baseHitPoints)
 	{
-		short num = (short)(baseHitPoints + HitPoints);
-		return (short)MBMath.ClampInt(num, 1, num);
+		return Math.Max((short)(baseHitPoints + HitPoints), (short)1);
 	}
 
 	public short ModifyStackCount(short baseStackCount)
 	{
-		short num = (short)(baseStackCount + StackCount);
-		return (short)MBMath.ClampInt(num, 1, num);
+		return Math.Max((short)(baseStackCount + StackCount), (short)1);
 	}
 }

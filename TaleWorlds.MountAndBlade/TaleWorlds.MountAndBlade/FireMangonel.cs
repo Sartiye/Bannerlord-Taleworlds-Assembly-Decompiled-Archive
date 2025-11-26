@@ -7,7 +7,7 @@ public class FireMangonel : Mangonel
 {
 	public override SiegeEngineType GetSiegeEngineType()
 	{
-		if (_defaultSide != BattleSideEnum.Attacker)
+		if (DefaultSide != BattleSideEnum.Attacker)
 		{
 			return DefaultSiegeEngineTypes.FireCatapult;
 		}
@@ -20,7 +20,7 @@ public class FireMangonel : Mangonel
 		{
 			return -1000f;
 		}
-		if (flags.HasAnyFlag(TargetFlags.None))
+		if (flags.HasAllFlags(TargetFlags.IsFlammable | TargetFlags.IsSiegeEngine))
 		{
 			baseValue *= 1.5f;
 		}

@@ -1,15 +1,14 @@
 using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.CampaignSystem.AgentOrigins;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -35,7 +34,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	internal class TownMercenaryData
+	public class TownMercenaryData
 	{
 		[SaveableField(204)]
 		private readonly Town _currentTown;
@@ -133,14 +132,11 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 
 	public override void RegisterEvents()
 	{
-		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
-		CampaignEvents.LocationCharactersAreReadyToSpawnEvent.AddNonSerializedListener(this, LocationCharactersAreReadyToSpawn);
+		CampaignEvents.BeforeSettlementEnteredEvent.AddNonSerializedListener(this, OnBeforeSettlementEntered);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.DailyTickTownEvent.AddNonSerializedListener(this, DailyTickTown);
 		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, DailyTickSettlement);
 		CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
-		CampaignEvents.MercenaryNumberChangedInTown.AddNonSerializedListener(this, OnMercenaryNumberChanged);
-		CampaignEvents.MercenaryTroopChangedInTown.AddNonSerializedListener(this, OnMercenaryTroopChanged);
 		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
 		CampaignEvents.OnUnitRecruitedEvent.AddNonSerializedListener(this, OnUnitRecruited);
 		CampaignEvents.OnTroopRecruitedEvent.AddNonSerializedListener(this, OnTroopRecruited);
@@ -157,7 +153,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_townMercenaryData", ref _townMercenaryData);
 	}
 
-	private TownMercenaryData GetMercenaryData(Town town)
+	public TownMercenaryData GetMercenaryData(Town town)
 	{
 		if (!_townMercenaryData.TryGetValue(town, out var value))
 		{
@@ -183,7 +179,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	{
 		if (recruiter != null && recruiter.PartyBelongedTo != null && recruiter.GetPerkValue(DefaultPerks.Leadership.FamousCommander))
 		{
-			recruiter.PartyBelongedTo.MemberRoster.AddXpToTroop((int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count, troop);
+			recruiter.PartyBelongedTo.MemberRoster.AddXpToTroop(troop, (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count);
 		}
 		SkillLevelingManager.OnTroopRecruited(recruiter, count, troop.Tier);
 		if (recruiter != null && recruiter.PartyBelongedTo != null && troop.Occupation == Occupation.Bandit)
@@ -196,7 +192,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.MainHero.GetPerkValue(DefaultPerks.Leadership.FamousCommander))
 		{
-			MobileParty.MainParty.MemberRoster.AddXpToTroop((int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count, troop);
+			MobileParty.MainParty.MemberRoster.AddXpToTroop(troop, (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count);
 		}
 		SkillLevelingManager.OnTroopRecruited(Hero.MainHero, count, troop.Tier);
 		if (troop.Occupation == Occupation.Bandit)
@@ -214,16 +210,6 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	{
 		AddGameMenus(campaignGameStarter);
 		AddDialogs(campaignGameStarter);
-	}
-
-	private void OnMercenaryNumberChanged(Town town, int oldNumber, int newNumber)
-	{
-		CheckIfMercenaryCharacterNeedsToRefresh(town.Owner.Settlement, GetMercenaryData(town).TroopType);
-	}
-
-	private void OnMercenaryTroopChanged(Town town, CharacterObject oldTroopType, CharacterObject newTroopType)
-	{
-		CheckIfMercenaryCharacterNeedsToRefresh(town.Owner.Settlement, oldTroopType);
 	}
 
 	private void UpdateVolunteersOfNotablesInSettlement(Settlement settlement)
@@ -323,14 +309,14 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 				return;
 			}
 			IFaction mapFaction = mobileParty.MapFaction;
-			if (mapFaction == null || !mapFaction.IsMinorFaction || !(MobileParty.MainParty.Position2D.DistanceSquared(mobileParty.Position2D) > (MobileParty.MainParty.SeeingRange + 5f) * (MobileParty.MainParty.SeeingRange + 5f)))
+			if (mapFaction == null || !mapFaction.IsMinorFaction || !(MobileParty.MainParty.Position.DistanceSquared(mobileParty.Position) > (MobileParty.MainParty.SeeingRange + 5f) * (MobileParty.MainParty.SeeingRange + 5f)))
 			{
 				return;
 			}
 			int partySizeLimit = mobileParty.Party.PartySizeLimit;
 			float num = (float)mobileParty.Party.NumberOfAllMembers / (float)partySizeLimit;
 			float num2 = (((double)num < 0.2) ? 1000f : (((double)num < 0.3) ? 2000f : (((double)num < 0.4) ? 3000f : (((double)num < 0.55) ? 4000f : (((double)num < 0.7) ? 5000f : 7000f)))));
-			float num3 = (((float)mobileParty.LeaderHero.Gold > num2) ? 1f : MathF.Sqrt((float)mobileParty.LeaderHero.Gold / num2));
+			float num3 = (((float)mobileParty.PartyTradeGold > num2) ? 1f : MathF.Sqrt((float)mobileParty.PartyTradeGold / num2));
 			if (MBRandom.RandomFloat < (1f - num) * num3)
 			{
 				CharacterObject basicTroop = mobileParty.ActualClan.BasicTroop;
@@ -339,10 +325,10 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 				{
 					num4 = partySizeLimit - mobileParty.Party.NumberOfAllMembers;
 				}
-				int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(basicTroop, mobileParty.LeaderHero);
-				if (num4 * troopRecruitmentCost > mobileParty.LeaderHero.Gold)
+				int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(basicTroop, mobileParty.LeaderHero).RoundedResultNumber;
+				if (num4 * roundedResultNumber > mobileParty.PartyTradeGold)
 				{
-					num4 = mobileParty.LeaderHero.Gold / troopRecruitmentCost;
+					num4 = mobileParty.PartyTradeGold / roundedResultNumber;
 				}
 				if (num4 > 0)
 				{
@@ -425,27 +411,6 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		return MBRandom.RoundRandomized(MBMath.ClampFloat((randomFloat * randomFloat2 * (float)(num2 - num) + (float)num) * (dailyUpdate ? 0.1f : 1f), 1f, num2));
 	}
 
-	private void CheckIfMercenaryCharacterNeedsToRefresh(Settlement settlement, CharacterObject oldTroopType)
-	{
-		if (!settlement.IsTown || settlement != Settlement.CurrentSettlement || PlayerEncounter.LocationEncounter == null || settlement.LocationComplex == null || (CampaignMission.Current != null && GameStateManager.Current.ActiveState == CampaignMission.Current.State))
-		{
-			return;
-		}
-		if (oldTroopType != null)
-		{
-			Settlement.CurrentSettlement.LocationComplex.GetLocationWithId("tavern").RemoveAllCharacters((LocationCharacter x) => x.Character.Occupation == oldTroopType.Occupation);
-		}
-		AddMercenaryCharacterToTavern(settlement);
-	}
-
-	private void AddMercenaryCharacterToTavern(Settlement settlement)
-	{
-		if (settlement.LocationComplex != null && settlement.IsTown && GetMercenaryData(settlement.Town).HasAvailableMercenary())
-		{
-			Settlement.CurrentSettlement.LocationComplex.GetLocationWithId("tavern")?.AddLocationCharacters(CreateMercenary, settlement.Culture, LocationCharacter.CharacterRelations.Neutral, 1);
-		}
-	}
-
 	private void CheckRecruiting(MobileParty mobileParty, Settlement settlement)
 	{
 		if (settlement.IsTown && mobileParty.IsCaravan)
@@ -461,9 +426,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 				return;
 			}
 			CharacterObject troopType = mercenaryData.TroopType;
-			int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troopType, mobileParty.LeaderHero);
+			int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troopType, mobileParty.LeaderHero).RoundedResultNumber;
 			int num = (mobileParty.IsCaravan ? 2000 : 0);
-			if (mobileParty.PartyTradeGold <= troopRecruitmentCost + num)
+			if (mobileParty.PartyTradeGold <= roundedResultNumber + num)
 			{
 				return;
 			}
@@ -473,8 +438,8 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			{
 				if (flag)
 				{
-					int num3 = mobileParty.PartyTradeGold - (troopRecruitmentCost + num);
-					float num4 = MathF.Min(1f, MathF.Sqrt((float)num3 / (100f * (float)troopRecruitmentCost)));
+					int num3 = mobileParty.PartyTradeGold - (roundedResultNumber + num);
+					float num4 = MathF.Min(1f, MathF.Sqrt((float)num3 / (100f * (float)roundedResultNumber)));
 					float num5 = (float)mobileParty.Party.NumberOfAllMembers / (float)partySizeLimit;
 					float num6 = (MathF.Min(10f, 1f / num5) * MathF.Min(10f, 1f / num5) - 1f) * ((mobileParty.IsCaravan && mobileParty.Party.Owner == Hero.MainHero) ? 0.4f : 0.1f);
 					num2 = num4 * num6;
@@ -492,25 +457,26 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			if (!mobileParty.IsLordParty || mobileParty.IsDisbanding || mobileParty.LeaderHero == null || mobileParty.Party.IsStarving || !((float)mobileParty.LeaderHero.Gold > HeroHelper.StartRecruitingMoneyLimit(mobileParty.LeaderHero)) || (mobileParty.LeaderHero != mobileParty.LeaderHero.Clan.Leader && !((float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero))) || !(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.LimitedPartySize <= 1f))
+			if (!mobileParty.IsLordParty || mobileParty.IsDisbanding || mobileParty.LeaderHero == null || mobileParty.Party.IsStarving || !mobileParty.Party.LeaderHero.IsAlive || !((float)mobileParty.PartyTradeGold > HeroHelper.StartRecruitingMoneyLimit(mobileParty.LeaderHero)) || (mobileParty.LeaderHero != mobileParty.LeaderHero.Clan.Leader && !((float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero))) || !(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f))
 			{
 				return;
 			}
 			if (settlement.IsTown && GetMercenaryData(settlement.Town).HasAvailableMercenary(Occupation.Mercenary))
 			{
-				float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.LimitedPartySize;
+				float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.Party.PartySizeLimit;
 				CharacterObject troopType2 = GetMercenaryData(settlement.Town).TroopType;
 				if (troopType2 != null)
 				{
-					int troopRecruitmentCost2 = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troopType2, mobileParty.LeaderHero);
-					if (troopRecruitmentCost2 < 5000)
+					int roundedResultNumber2 = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troopType2, mobileParty.LeaderHero).RoundedResultNumber;
+					if (roundedResultNumber2 < 5000)
 					{
-						float num8 = MathF.Min(1f, (float)mobileParty.LeaderHero.Gold / ((troopRecruitmentCost2 <= 100) ? 100000f : ((float)((troopRecruitmentCost2 <= 200) ? 125000 : ((troopRecruitmentCost2 <= 400) ? 150000 : ((troopRecruitmentCost2 <= 700) ? 175000 : ((troopRecruitmentCost2 <= 1100) ? 200000 : ((troopRecruitmentCost2 <= 1600) ? 250000 : ((troopRecruitmentCost2 <= 2200) ? 300000 : 400000)))))))));
+						float num8 = MathF.Min(1f, (float)mobileParty.PartyTradeGold / ((roundedResultNumber2 <= 100) ? 100000f : ((float)((roundedResultNumber2 <= 200) ? 125000 : ((roundedResultNumber2 <= 400) ? 150000 : ((roundedResultNumber2 <= 700) ? 175000 : ((roundedResultNumber2 <= 1100) ? 200000 : ((roundedResultNumber2 <= 1600) ? 250000 : ((roundedResultNumber2 <= 2200) ? 300000 : 400000)))))))));
 						float num9 = num8 * num8;
 						float num10 = MathF.Max(1f, MathF.Min(10f, 1f / num7)) - 1f;
 						float num11 = num9 * num10 * 0.25f;
 						int number = GetMercenaryData(settlement.Town).Number;
 						int num12 = 0;
+						int characterWage = Campaign.Current.Models.PartyWageModel.GetCharacterWage(troopType2);
 						for (int j = 0; j < number; j++)
 						{
 							if (MBRandom.RandomFloat < num11)
@@ -518,8 +484,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 								num12++;
 							}
 						}
-						num12 = MathF.Min(num12, mobileParty.LimitedPartySize - mobileParty.Party.NumberOfAllMembers);
-						num12 = (((double)troopRecruitmentCost2 <= 0.1) ? num12 : MathF.Min(mobileParty.LeaderHero.Gold / troopRecruitmentCost2, num12));
+						num12 = MathF.Min(num12, mobileParty.Party.PartySizeLimit - mobileParty.Party.NumberOfAllMembers);
+						num12 = (((double)roundedResultNumber2 <= 0.1) ? num12 : MathF.Min(mobileParty.PartyTradeGold / roundedResultNumber2, num12));
+						num12 = MathF.Min(num12, mobileParty.GetAvailableWageBudget() / characterWage);
 						if (num12 > 0)
 						{
 							ApplyRecruitMercenary(mobileParty, settlement, troopType2, num12);
@@ -527,7 +494,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 					}
 				}
 			}
-			if (mobileParty.Party.NumberOfAllMembers < mobileParty.LimitedPartySize && mobileParty.CanPayMoreWage())
+			if (mobileParty.Party.NumberOfAllMembers < mobileParty.Party.PartySizeLimit && !mobileParty.IsWageLimitExceeded())
 			{
 				RecruitVolunteersFromNotable(mobileParty, settlement);
 			}
@@ -536,7 +503,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 
 	private void RecruitVolunteersFromNotable(MobileParty mobileParty, Settlement settlement)
 	{
-		if (!(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.LimitedPartySize <= 1f))
+		if (!(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f))
 		{
 			return;
 		}
@@ -546,41 +513,46 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			{
 				continue;
 			}
-			if (mobileParty.IsWageLimitExceeded())
+			int num = notable.VolunteerTypes.FindIndexQ((CharacterObject x) => x != null);
+			if (num < 0)
 			{
-				break;
+				continue;
 			}
-			int num = MBRandom.RandomInt(6);
-			int num2 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(mobileParty.IsGarrison ? mobileParty.Party.Owner : mobileParty.LeaderHero, notable);
-			for (int i = num; i < num + 6; i++)
+			int num2 = MBRandom.RandomInt(6);
+			int num3 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(mobileParty.IsGarrison ? mobileParty.Party.Owner : mobileParty.LeaderHero, notable);
+			if (num > num3)
 			{
-				int num3 = i % 6;
-				if (num3 >= num2)
+				continue;
+			}
+			for (int i = num2; i < num2 + 6; i++)
+			{
+				int num4 = i % 6;
+				if (num4 >= num3)
 				{
 					break;
 				}
-				int num4 = ((mobileParty.LeaderHero != null) ? ((int)MathF.Sqrt((float)mobileParty.LeaderHero.Gold / 10000f)) : 0);
-				float num5 = MBRandom.RandomFloat;
-				for (int j = 0; j < num4; j++)
+				int num5 = ((mobileParty.LeaderHero != null) ? ((int)MathF.Sqrt((float)mobileParty.PartyTradeGold / 10000f)) : 0);
+				float num6 = MBRandom.RandomFloat;
+				for (int j = 0; j < num5; j++)
 				{
 					float randomFloat = MBRandom.RandomFloat;
-					if (randomFloat > num5)
+					if (randomFloat > num6)
 					{
-						num5 = randomFloat;
+						num6 = randomFloat;
 					}
 				}
 				if (mobileParty.Army != null)
 				{
 					float y = ((mobileParty.Army.LeaderParty == mobileParty) ? 0.5f : 0.67f);
-					num5 = MathF.Pow(num5, y);
+					num6 = MathF.Pow(num6, y);
 				}
-				float num6 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.LimitedPartySize;
-				if (num5 > num6 - 0.1f)
+				float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.Party.PartySizeLimit;
+				if (num6 > num7 - 0.1f)
 				{
-					CharacterObject characterObject = notable.VolunteerTypes[num3];
-					if (characterObject != null && mobileParty.LeaderHero.Gold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero) && mobileParty.PaymentLimit >= mobileParty.TotalWage + Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
+					CharacterObject characterObject = notable.VolunteerTypes[num4];
+					if (characterObject != null && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero).RoundedResultNumber && mobileParty.GetAvailableWageBudget() >= Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
 					{
-						GetRecruitVolunteerFromIndividual(mobileParty, characterObject, notable, num3);
+						GetRecruitVolunteerFromIndividual(mobileParty, characterObject, notable, num4);
 						break;
 					}
 				}
@@ -588,7 +560,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	public void OnSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
+	public void OnBeforeSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
 	{
 		if (mobileParty == null || mobileParty.MapEvent != null)
 		{
@@ -596,8 +568,8 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		}
 		if (!settlement.IsVillage)
 		{
-			Clan ownerClan = settlement.OwnerClan;
-			if (ownerClan == null || ownerClan.IsAtWarWith(mobileParty.MapFaction))
+			IFaction mapFaction = settlement.MapFaction;
+			if (mapFaction == null || mapFaction.IsAtWarWith(mobileParty.MapFaction))
 			{
 				return;
 			}
@@ -633,29 +605,29 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 
 	private void ApplyInternal(MobileParty side1Party, Settlement settlement, Hero individual, CharacterObject troop, int number, int bitCode, RecruitingDetail detail)
 	{
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troop, side1Party.LeaderHero);
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troop, side1Party.LeaderHero).RoundedResultNumber;
 		switch (detail)
 		{
 		case RecruitingDetail.MercenaryFromTavern:
 			if (side1Party.IsCaravan)
 			{
-				side1Party.PartyTradeGold -= number * troopRecruitmentCost;
+				side1Party.PartyTradeGold -= number * roundedResultNumber;
 				GetMercenaryData(settlement.Town).ChangeMercenaryCount(-number);
 			}
 			else
 			{
-				GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * troopRecruitmentCost, disableNotification: true);
+				GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * roundedResultNumber, disableNotification: true);
 				GetMercenaryData(settlement.Town).ChangeMercenaryCount(-number);
 			}
 			side1Party.AddElementToMemberRoster(troop, number);
 			break;
 		case RecruitingDetail.VolunteerFromIndividual:
-			GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, troopRecruitmentCost, disableNotification: true);
+			GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, roundedResultNumber, disableNotification: true);
 			individual.VolunteerTypes[bitCode] = null;
 			side1Party.AddElementToMemberRoster(troop, 1);
 			break;
 		case RecruitingDetail.VolunteerFromMap:
-			GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * troopRecruitmentCost, disableNotification: true);
+			GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * roundedResultNumber, disableNotification: true);
 			side1Party.AddElementToMemberRoster(troop, number);
 			break;
 		case RecruitingDetail.VolunteerFromIndividualToGarrison:
@@ -681,23 +653,6 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		ApplyInternal(side1Party, individual.CurrentSettlement, individual, subject, 1, bitCode, RecruitingDetail.VolunteerFromIndividual);
 	}
 
-	private void LocationCharactersAreReadyToSpawn(Dictionary<string, int> unusedUsablePointCount)
-	{
-		Settlement settlement = PlayerEncounter.LocationEncounter.Settlement;
-		Location locationWithId = settlement.LocationComplex.GetLocationWithId("tavern");
-		if (CampaignMission.Current.Location == locationWithId)
-		{
-			AddMercenaryCharacterToTavern(settlement);
-		}
-	}
-
-	private LocationCharacter CreateMercenary(CultureObject culture, LocationCharacter.CharacterRelations relation)
-	{
-		CharacterObject troopType = GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType;
-		Monster monsterWithSuffix = FaceGen.GetMonsterWithSuffix(troopType.Race, "_settlement");
-		return new LocationCharacter(new AgentData(new SimpleAgentOrigin(troopType)).Monster(monsterWithSuffix).NoHorses(noHorses: true), SandBoxManager.Instance.AgentBehaviorManager.AddOutdoorWandererBehaviors, "spawnpoint_mercenary", fixedLocation: true, relation, null, useCivilianEquipment: false);
-	}
-
 	protected void AddGameMenus(CampaignGameStarter campaignGameSystemStarter)
 	{
 		campaignGameSystemStarter.AddGameMenuOption("town_backstreet", "recruit_mercenaries", "{=NwO0CVzn}Recruit {MEN_COUNT} {MERCENARY_NAME} ({TOTAL_AMOUNT}{GOLD_ICON})", buy_mercenaries_condition, delegate
@@ -713,7 +668,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddPlayerLine("mercenary_recruit_accept", "mercenary_tavern_talk", "mercenary_tavern_talk_hire", "{=PDLDvUfH}All right. I will hire {?PLURAL}all of you{?}you{\\?}. Here is {GOLD_AMOUNT}{GOLD_ICON}", conversation_mercenary_recruit_accept_on_condition, conversation_mercenary_recruit_accept_on_consequence);
 		campaignGameStarter.AddPlayerLine("mercenary_recruit_accept_some", "mercenary_tavern_talk", "mercenary_tavern_talk_hire", "{=aTPc7AkY}All right. But I can only hire {MERCENARY_COUNT} of you. Here is {GOLD_AMOUNT}{GOLD_ICON}", conversation_mercenary_recruit_accept_some_on_condition, conversation_mercenary_recruit_accept_some_on_consequence);
 		campaignGameStarter.AddPlayerLine("mercenary_recruit_reject_gold", "mercenary_tavern_talk", "close_window", "{=n5BGNLrc}That sounds good. But I can't afford any more men right now.", conversation_mercenary_recruit_reject_gold_on_condition, null);
-		campaignGameStarter.AddPlayerLine("mercenary_recruit_reject", "mercenary_tavern_talk", "close_window", "{=I2thb8VU}Sorry. I don't need any other men right now.", conversation_mercenary_recruit_dont_need_men_on_condition, null);
+		campaignGameStarter.AddPlayerLine("mercenary_recruit_reject", "mercenary_tavern_talk", "close_window", "{=ZSWrAC7V}Sorry, I can't take on any more troops right now.", conversation_mercenary_recruit_dont_need_men_on_condition, null);
 		campaignGameStarter.AddDialogLine("mercenary_recruit_end", "mercenary_tavern_talk_hire", "close_window", "{=vbxQoyN3}{RANDOM_HIRE_SENTENCE}", conversation_mercenary_recruit_end_on_condition, null);
 		campaignGameStarter.AddDialogLine("mercenary_recruit_start_2", "start", "close_window", "{=Jhj437BV}Don't worry, I'll be ready. Just having a last drink for the road.", conversation_mercenary_recruited_on_condition, null);
 	}
@@ -723,13 +678,13 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		if (MobileParty.MainParty.CurrentSettlement != null && MobileParty.MainParty.CurrentSettlement.IsTown && GetMercenaryData(MobileParty.MainParty.CurrentSettlement.Town).Number > 0)
 		{
 			TownMercenaryData mercenaryData = GetMercenaryData(MobileParty.MainParty.CurrentSettlement.Town);
-			int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero);
-			if (Hero.MainHero.Gold >= troopRecruitmentCost)
+			int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
+			if (Hero.MainHero.Gold >= roundedResultNumber)
 			{
-				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / troopRecruitmentCost);
+				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / roundedResultNumber);
 				MBTextManager.SetTextVariable("MEN_COUNT", num);
 				MBTextManager.SetTextVariable("MERCENARY_NAME", mercenaryData.TroopType.Name);
-				MBTextManager.SetTextVariable("TOTAL_AMOUNT", num * troopRecruitmentCost);
+				MBTextManager.SetTextVariable("TOTAL_AMOUNT", num * roundedResultNumber);
 			}
 			else
 			{
@@ -738,7 +693,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 				int number = mercenaryData.Number;
 				MBTextManager.SetTextVariable("MEN_COUNT", number);
 				MBTextManager.SetTextVariable("MERCENARY_NAME", mercenaryData.TroopType.Name);
-				MBTextManager.SetTextVariable("TOTAL_AMOUNT", number * troopRecruitmentCost);
+				MBTextManager.SetTextVariable("TOTAL_AMOUNT", number * roundedResultNumber);
 			}
 			args.optionLeaveType = GameMenuOption.LeaveType.Bribe;
 			return true;
@@ -751,12 +706,12 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		if (MobileParty.MainParty.CurrentSettlement != null && MobileParty.MainParty.CurrentSettlement.IsTown && GetMercenaryData(MobileParty.MainParty.CurrentSettlement.Town).Number > 0)
 		{
 			TownMercenaryData mercenaryData = GetMercenaryData(MobileParty.MainParty.CurrentSettlement.Town);
-			int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero);
-			if (Hero.MainHero.Gold >= troopRecruitmentCost)
+			int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
+			if (Hero.MainHero.Gold >= roundedResultNumber)
 			{
-				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / troopRecruitmentCost);
+				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / roundedResultNumber);
 				MobileParty.MainParty.MemberRoster.AddToCounts(mercenaryData.TroopType, num);
-				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, -(num * troopRecruitmentCost));
+				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, -(num * roundedResultNumber));
 				mercenaryData.ChangeMercenaryCount(-num);
 				GameMenu.SwitchToMenu("town_backstreet");
 			}
@@ -776,10 +731,10 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			num = ((mercenaryData.Number > 1) ? 1 : 0);
 			if (num != 0)
 			{
-				int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero);
+				int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
 				MBTextManager.SetTextVariable("PLURAL", (mercenaryData.Number - 1 > 1) ? 1 : 0);
 				MBTextManager.SetTextVariable("MERCENARY_COUNT", mercenaryData.Number - 1);
-				MBTextManager.SetTextVariable("GOLD_AMOUNT", troopRecruitmentCost * mercenaryData.Number);
+				MBTextManager.SetTextVariable("GOLD_AMOUNT", roundedResultNumber * mercenaryData.Number);
 			}
 		}
 		else
@@ -802,8 +757,8 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			num = ((mercenaryData.Number == 1) ? 1 : 0);
 			if (num != 0)
 			{
-				int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero);
-				MBTextManager.SetTextVariable("GOLD_AMOUNT", mercenaryData.Number * troopRecruitmentCost);
+				int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
+				MBTextManager.SetTextVariable("GOLD_AMOUNT", mercenaryData.Number * roundedResultNumber);
 			}
 		}
 		else
@@ -816,9 +771,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	private bool conversation_mercenary_recruit_accept_on_condition()
 	{
 		TownMercenaryData mercenaryData = GetMercenaryData(PlayerEncounter.EncounterSettlement.Town);
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero);
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
 		MBTextManager.SetTextVariable("PLURAL", (mercenaryData.Number > 1) ? 1 : 0);
-		return Hero.MainHero.Gold >= mercenaryData.Number * troopRecruitmentCost;
+		return Hero.MainHero.Gold >= mercenaryData.Number * roundedResultNumber;
 	}
 
 	private bool conversation_mercenary_recruited_on_condition()
@@ -833,9 +788,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	private void BuyMercenaries()
 	{
 		GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).ChangeMercenaryCount(-_selectedMercenaryCount);
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero);
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero).RoundedResultNumber;
 		MobileParty.MainParty.AddElementToMemberRoster(CharacterObject.OneToOneConversationCharacter, _selectedMercenaryCount);
-		int amount = _selectedMercenaryCount * troopRecruitmentCost;
+		int amount = _selectedMercenaryCount * roundedResultNumber;
 		GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, amount);
 		CampaignEventDispatcher.Instance.OnUnitRecruited(CharacterObject.OneToOneConversationCharacter, _selectedMercenaryCount);
 	}
@@ -848,16 +803,16 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_mercenary_recruit_accept_some_on_condition()
 	{
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero);
-		if (Hero.MainHero.Gold >= troopRecruitmentCost && Hero.MainHero.Gold < GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).Number * troopRecruitmentCost)
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero).RoundedResultNumber;
+		if (Hero.MainHero.Gold >= roundedResultNumber && Hero.MainHero.Gold < GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).Number * roundedResultNumber)
 		{
 			_selectedMercenaryCount = 0;
-			while (Hero.MainHero.Gold >= troopRecruitmentCost * (_selectedMercenaryCount + 1))
+			while (Hero.MainHero.Gold >= roundedResultNumber * (_selectedMercenaryCount + 1))
 			{
 				_selectedMercenaryCount++;
 			}
 			MBTextManager.SetTextVariable("MERCENARY_COUNT", _selectedMercenaryCount);
-			MBTextManager.SetTextVariable("GOLD_AMOUNT", troopRecruitmentCost * _selectedMercenaryCount);
+			MBTextManager.SetTextVariable("GOLD_AMOUNT", roundedResultNumber * _selectedMercenaryCount);
 			return true;
 		}
 		return false;
@@ -870,14 +825,14 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_mercenary_recruit_reject_gold_on_condition()
 	{
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero);
-		return Hero.MainHero.Gold < troopRecruitmentCost;
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero).RoundedResultNumber;
+		return Hero.MainHero.Gold < roundedResultNumber;
 	}
 
 	private bool conversation_mercenary_recruit_dont_need_men_on_condition()
 	{
-		int troopRecruitmentCost = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero);
-		return Hero.MainHero.Gold >= troopRecruitmentCost;
+		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero).RoundedResultNumber;
+		return Hero.MainHero.Gold >= roundedResultNumber;
 	}
 
 	private bool conversation_mercenary_recruit_end_on_condition()

@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 using TaleWorlds.ObjectSystem;
@@ -18,7 +19,7 @@ public class MPArmoryCosmeticClothingItemVM : MPArmoryCosmeticItemBaseVM
 	{
 		ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>(cosmetic.Id);
 		EquipmentElement = new EquipmentElement(@object);
-		base.Icon = new ImageIdentifierVM(@object);
+		base.Icon = new ItemImageIdentifierVM(@object);
 		ClothingCategory = GetCosmeticCategory();
 		ClothingCosmeticElement = cosmetic as ClothingCosmeticElement;
 		base.ItemType = (int)EquipmentElement.Item.ItemType;

@@ -12,7 +12,9 @@ public class VisualDefinitionTemplate
 
 	public float DelayOnBegin { get; set; }
 
-	public bool EaseIn { get; set; }
+	public AnimationInterpolation.Type EaseType { get; set; }
+
+	public AnimationInterpolation.Function EaseFunction { get; set; }
 
 	public Dictionary<string, VisualStateTemplate> VisualStates { get; private set; }
 
@@ -29,7 +31,7 @@ public class VisualDefinitionTemplate
 
 	public VisualDefinition CreateVisualDefinition(BrushFactory brushFactory, SpriteData spriteData, Dictionary<string, VisualDefinitionTemplate> visualDefinitionTemplates, Dictionary<string, ConstantDefinition> constants, Dictionary<string, WidgetAttributeTemplate> parameters, Dictionary<string, string> defaultParameters)
 	{
-		VisualDefinition visualDefinition = new VisualDefinition(Name, TransitionDuration, DelayOnBegin, EaseIn);
+		VisualDefinition visualDefinition = new VisualDefinition(Name, TransitionDuration, DelayOnBegin, EaseType, EaseFunction);
 		foreach (VisualStateTemplate value in VisualStates.Values)
 		{
 			VisualState visualState = value.CreateVisualState(brushFactory, spriteData, visualDefinitionTemplates, constants, parameters, defaultParameters);
@@ -51,20 +53,23 @@ public class VisualDefinitionTemplate
 		XmlAttribute xmlAttribute3 = ownerDocument.CreateAttribute("DelayOnBegin");
 		xmlAttribute3.InnerText = DelayOnBegin.ToString();
 		xmlNode.Attributes.Append(xmlAttribute3);
-		XmlAttribute xmlAttribute4 = ownerDocument.CreateAttribute("EaseIn");
-		xmlAttribute4.InnerText = EaseIn.ToString();
+		XmlAttribute xmlAttribute4 = ownerDocument.CreateAttribute("EaseType");
+		xmlAttribute4.InnerText = EaseType.ToString();
 		xmlNode.Attributes.Append(xmlAttribute4);
+		XmlAttribute xmlAttribute5 = ownerDocument.CreateAttribute("EaseFunction");
+		xmlAttribute5.InnerText = EaseFunction.ToString();
+		xmlNode.Attributes.Append(xmlAttribute5);
 		foreach (VisualStateTemplate value in VisualStates.Values)
 		{
 			XmlNode xmlNode2 = ownerDocument.CreateElement("VisualState");
-			XmlAttribute xmlAttribute5 = ownerDocument.CreateAttribute("State");
-			xmlAttribute5.InnerText = value.State;
-			xmlNode2.Attributes.Append(xmlAttribute5);
+			XmlAttribute xmlAttribute6 = ownerDocument.CreateAttribute("State");
+			xmlAttribute6.InnerText = value.State;
+			xmlNode2.Attributes.Append(xmlAttribute6);
 			foreach (KeyValuePair<string, string> attribute in value.GetAttributes())
 			{
-				XmlAttribute xmlAttribute6 = ownerDocument.CreateAttribute(attribute.Key);
-				xmlAttribute6.InnerText = attribute.Value;
-				xmlNode2.Attributes.Append(xmlAttribute6);
+				XmlAttribute xmlAttribute7 = ownerDocument.CreateAttribute(attribute.Key);
+				xmlAttribute7.InnerText = attribute.Value;
+				xmlNode2.Attributes.Append(xmlAttribute7);
 			}
 			xmlNode.AppendChild(xmlNode2);
 		}

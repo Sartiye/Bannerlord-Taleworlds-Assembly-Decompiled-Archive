@@ -4,6 +4,8 @@ namespace TaleWorlds.Core;
 
 public class DefaultItemValueModel : ItemValueModel
 {
+	private const string StoneItemStringId = "stealth_throwing_stone";
+
 	private float CalculateArmorTier(ArmorComponent armorComponent)
 	{
 		float num = 1.2f * (float)armorComponent.HeadArmor + 1f * (float)armorComponent.BodyArmor + 1f * (float)armorComponent.LegArmor + 1f * (float)armorComponent.ArmArmor;
@@ -113,11 +115,13 @@ public class DefaultItemValueModel : ItemValueModel
 		{
 		case ItemObject.ItemTypeEnum.Bow:
 		case ItemObject.ItemTypeEnum.Crossbow:
+		case ItemObject.ItemTypeEnum.Sling:
 		case ItemObject.ItemTypeEnum.Pistol:
 		case ItemObject.ItemTypeEnum.Musket:
 			return CalculateRangedWeaponTier(weaponComponent);
 		case ItemObject.ItemTypeEnum.Arrows:
 		case ItemObject.ItemTypeEnum.Bolts:
+		case ItemObject.ItemTypeEnum.SlingStones:
 		case ItemObject.ItemTypeEnum.Bullets:
 			return CalculateAmmoTier(weaponComponent);
 		case ItemObject.ItemTypeEnum.Shield:
@@ -245,6 +249,11 @@ public class DefaultItemValueModel : ItemValueModel
 			num2 = 100f;
 		}
 		return (int)(num2 * num * (1f + 0.2f * (item.Appearance - 1f)) + 100f * MathF.Max(0f, item.Appearance - 1f));
+	}
+
+	public override bool GetIsTransferable(ItemObject item)
+	{
+		return item.StringId != "stealth_throwing_stone";
 	}
 
 	private float GetWeaponPriceFactor(ItemObject item)

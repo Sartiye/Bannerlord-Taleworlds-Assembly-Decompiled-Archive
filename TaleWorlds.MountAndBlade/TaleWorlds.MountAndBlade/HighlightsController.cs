@@ -198,7 +198,7 @@ public class HighlightsController : MissionLogic
 			highlight.HighlightType = GetHighlightTypeWithId("hlid_headshot_kill");
 			flag2 = true;
 		}
-		if (isMainAgent && killingBlow.IsMissile && affectedAgent.HasMount && affectedAgent.IsDoingPassiveAttack && (killingBlow.WeaponClass == 19 || killingBlow.WeaponClass == 20))
+		if (isMainAgent && killingBlow.IsMissile && affectedAgent.HasMount && affectedAgent.IsDoingPassiveAttack && (killingBlow.WeaponClass == 21 || killingBlow.WeaponClass == 22))
 		{
 			highlight.HighlightType = GetHighlightTypeWithId("hlid_throwing_weapon_kill_against_charging_enemy");
 			flag2 = true;

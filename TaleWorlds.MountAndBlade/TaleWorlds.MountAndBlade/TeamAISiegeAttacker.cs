@@ -23,6 +23,7 @@ public class TeamAISiegeAttacker : TeamAISiegeComponent
 	{
 		if (formation.AI.GetBehavior<BehaviorCharge>() == null)
 		{
+			formation.ForceCalculateCaches();
 			if (formation.FormationIndex == FormationClass.NumberOfRegularFormations)
 			{
 				formation.AI.AddAiBehavior(new BehaviorGeneral(formation));
@@ -58,6 +59,25 @@ public class TeamAISiegeAttacker : TeamAISiegeComponent
 		foreach (ArcherPosition archerPosition in _archerPositions)
 		{
 			archerPosition.OnDeploymentFinished(TeamAISiegeComponent.QuerySystem, BattleSideEnum.Attacker);
+		}
+	}
+
+	public override void OnFormationFrameChanged(Agent agent, bool isFrameEnabled, WorldPosition frame)
+	{
+		base.OnFormationFrameChanged(agent, isFrameEnabled, frame);
+		foreach (SiegeTower siegeTower in SiegeTowers)
+		{
+			if (agent.IsInLadderQueue || siegeTower.HasCompletedAction())
+			{
+				siegeTower.OnFormationFrameChanged(agent, isFrameEnabled, frame);
+			}
+		}
+		foreach (SiegeLadder ladder in base.Ladders)
+		{
+			if (agent.IsInLadderQueue || ladder.State == SiegeLadder.LadderState.OnWall)
+			{
+				ladder.OnFormationFrameChanged(agent, isFrameEnabled, frame);
+			}
 		}
 	}
 }

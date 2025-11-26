@@ -50,9 +50,9 @@ public class TabControl : Widget
 	{
 	}
 
-	protected override void OnChildRemoved(Widget child)
+	protected override void OnBeforeChildRemoved(Widget child)
 	{
-		base.OnChildRemoved(child);
+		base.OnBeforeChildRemoved(child);
 		if (child == ActiveTab)
 		{
 			ActiveTab = null;

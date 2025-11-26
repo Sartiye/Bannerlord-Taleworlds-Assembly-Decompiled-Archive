@@ -1,10 +1,13 @@
 using TaleWorlds.Avatar.PlayerServices;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.MissionRepresentatives;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Armory;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
 
@@ -50,7 +53,7 @@ public class MPPlayerVM : ViewModel
 
 	private MPTeammateCompassTargetVM _compassElement;
 
-	private ImageIdentifierVM _avatar = new ImageIdentifierVM();
+	private PlayerAvatarImageIdentifierVM _avatar;
 
 	private MPArmoryHeroPreviewVM _preview;
 
@@ -246,7 +249,7 @@ public class MPPlayerVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Avatar
+	public PlayerAvatarImageIdentifierVM Avatar
 	{
 		get
 		{
@@ -303,12 +306,12 @@ public class MPPlayerVM : ViewModel
 			TargetIconType iconType = MultiplayerClassDivisions.GetMPHeroClassForCharacter(agent.Character)?.IconType ?? TargetIconType.None;
 			uint num = agent.Team?.Color ?? 0;
 			uint color = agent.Team?.Color2 ?? 0;
-			BannerCode bannercode = BannerCode.CreateFrom(new Banner(agent.Team.Banner.Serialize(), num, color));
-			CompassElement = new MPTeammateCompassTargetVM(iconType, num, color, bannercode, isAlly: false);
+			Banner banner = new Banner(agent.Team.Banner, num, color);
+			CompassElement = new MPTeammateCompassTargetVM(iconType, num, color, banner, isAlly: false);
 		}
 		else
 		{
-			CompassElement = new MPTeammateCompassTargetVM(TargetIconType.Monster, 0u, 0u, BannerCode.CreateFrom(Banner.CreateOneColoredEmptyBanner(0)), isAlly: false);
+			CompassElement = new MPTeammateCompassTargetVM(TargetIconType.Monster, 0u, 0u, Banner.CreateOneColoredEmptyBanner(0), isAlly: false);
 		}
 	}
 
@@ -317,11 +320,6 @@ public class MPPlayerVM : ViewModel
 		Peer = peer;
 		_gameMode = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 		_missionRepresentative = peer.GetComponent<MissionRepresentativeBase>();
-		if (Peer == null)
-		{
-			CompassElement = new MPTeammateCompassTargetVM(TargetIconType.None, 0u, 0u, null, isAlly: false);
-			return;
-		}
 		_isInParty = NetworkMain.GameClient.IsInParty;
 		_isKnownPlayer = NetworkMain.GameClient.IsKnownPlayer(Peer.Peer.Id);
 		RefreshAvatar();
@@ -351,11 +349,14 @@ public class MPPlayerVM : ViewModel
 			uint color = Peer.Team?.Color2 ?? 0;
 			if (useCultureColors)
 			{
-				num = Peer.Culture?.ForegroundColor1 ?? 0;
-				color = Peer.Culture?.BackgroundColor1 ?? 0;
+				BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
+				BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
+				MultiplayerBattleColors.MultiplayerCultureColorInfo peerColors = MultiplayerBattleColors.CreateWith(@object, object2).GetPeerColors(Peer);
+				num = peerColors.Color1Uint;
+				color = peerColors.Color2Uint;
 			}
-			BannerCode bannercode = BannerCode.CreateFrom(new Banner(Peer.Peer.BannerCode, num, color));
-			CompassElement = new MPTeammateCompassTargetVM(targetIconType, num, color, bannercode, Peer.Team?.IsPlayerAlly ?? false);
+			Banner banner = new Banner(Peer.Peer.BannerCode, num, color);
+			CompassElement = new MPTeammateCompassTargetVM(targetIconType, num, color, banner, Peer.Team?.IsPlayerAlly ?? false);
 			HasSetCompassElement = true;
 			Name = Peer.DisplayedName;
 			RefreshActivePerks();
@@ -384,8 +385,8 @@ public class MPPlayerVM : ViewModel
 	{
 		if (Peer != null)
 		{
-			BannerCode bannerCode = BannerCode.CreateFrom(new Banner(Peer.Peer.BannerCode, Peer.Team?.Color ?? 0, Peer.Team?.Color2 ?? 0));
-			CompassElement.RefreshTeam(bannerCode, Peer.Team?.IsPlayerAlly ?? false);
+			Banner banner = new Banner(Peer.Peer.BannerCode, Peer.Team?.Color ?? 0, Peer.Team?.Color2 ?? 0);
+			CompassElement.RefreshTeam(banner, Peer.Team?.IsPlayerAlly ?? false);
 			CompassElement.RefreshColor(Peer.Team?.Color ?? 0, Peer.Team?.Color2 ?? 0);
 		}
 	}
@@ -429,8 +430,18 @@ public class MPPlayerVM : ViewModel
 
 	public void RefreshAvatar()
 	{
-		int num = -1;
-		Avatar = new ImageIdentifierVM(forcedAvatarIndex: NetworkMain.GameClient.HasUserGeneratedContentPrivilege ? ((!BannerlordConfig.EnableGenericAvatars || _isKnownPlayer) ? (-1) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id)) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id), id: Peer.Peer.Id);
+		if (NetworkMain.GameClient == null)
+		{
+			Debug.FailedAssert("Network is not enabled when trying to refresh avatars", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 205);
+		}
+		else if (Peer == null)
+		{
+			Debug.FailedAssert("Trying to refresh avatar of a player without peer!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 211);
+		}
+		else
+		{
+			Avatar = new PlayerAvatarImageIdentifierVM(forcedAvatarIndex: NetworkMain.GameClient.HasUserGeneratedContentPrivilege ? ((!BannerlordConfig.EnableGenericAvatars || _isKnownPlayer) ? (-1) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id)) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id), playerId: Peer.Peer.Id);
+		}
 	}
 
 	public void ExecuteFocusBegin()

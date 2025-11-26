@@ -452,11 +452,12 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		Port = port;
 		CustomGameType = gameType;
 		CustomGameScene = scene;
-		if (!base.Application.Parameters.TryGetParameter("CustomBattleServer.Host.Address", out var outValue))
-		{
-			outValue = null;
-		}
+		string outValue = null;
 		bool isOverridingIP = false;
+		if (base.Application.Parameters.TryGetParameter("CustomBattleServer.Host.Address", out outValue))
+		{
+			isOverridingIP = true;
+		}
 		if (overriddenIP != string.Empty)
 		{
 			isOverridingIP = true;

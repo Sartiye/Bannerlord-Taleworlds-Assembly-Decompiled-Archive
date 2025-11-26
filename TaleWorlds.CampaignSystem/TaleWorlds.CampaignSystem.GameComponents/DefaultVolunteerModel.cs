@@ -12,19 +12,51 @@ public class DefaultVolunteerModel : VolunteerModel
 
 	public override int MaximumIndexHeroCanRecruitFromHero(Hero buyerHero, Hero sellerHero, int useValueAsRelation = -101)
 	{
+		int num = MaximumIndexCanPartyRecruitFromHeroInternal(buyerHero, sellerHero);
+		int num2 = ((useValueAsRelation < -100) ? buyerHero.GetRelation(sellerHero) : useValueAsRelation);
+		int num3 = ((num2 >= 100) ? 7 : ((num2 >= 80) ? 6 : ((num2 >= 60) ? 5 : ((num2 >= 40) ? 4 : ((num2 >= 20) ? 3 : ((num2 >= 10) ? 2 : ((num2 >= 5) ? 1 : ((num2 < 0) ? (-1) : 0))))))));
+		int num4 = ((sellerHero.CurrentSettlement != null && buyerHero.MapFaction == sellerHero.CurrentSettlement.MapFaction) ? 1 : 0);
+		int num5 = ((buyerHero != Hero.MainHero) ? 1 : 0);
+		int num6 = ((sellerHero.CurrentSettlement != null && buyerHero.MapFaction.IsAtWarWith(sellerHero.CurrentSettlement.MapFaction)) ? (-(1 + num5)) : 0);
+		if (buyerHero.IsMinorFactionHero && sellerHero.CurrentSettlement != null && sellerHero.CurrentSettlement.IsVillage)
+		{
+			num6 = 0;
+		}
+		int num7 = 0;
+		if (sellerHero.IsMerchant && buyerHero.GetPerkValue(DefaultPerks.Trade.ArtisanCommunity))
+		{
+			num7 += (int)DefaultPerks.Trade.ArtisanCommunity.SecondaryBonus;
+		}
+		if (sellerHero.Culture == buyerHero.Culture && buyerHero.GetPerkValue(DefaultPerks.Leadership.CombatTips))
+		{
+			num7 += (int)DefaultPerks.Leadership.CombatTips.SecondaryBonus;
+		}
+		if (sellerHero.IsRuralNotable && buyerHero.GetPerkValue(DefaultPerks.Charm.Firebrand))
+		{
+			num7 += (int)DefaultPerks.Charm.Firebrand.SecondaryBonus;
+		}
+		if (sellerHero.IsUrbanNotable && buyerHero.GetPerkValue(DefaultPerks.Charm.FlexibleEthics))
+		{
+			num7 += (int)DefaultPerks.Charm.FlexibleEthics.SecondaryBonus;
+		}
+		if (sellerHero.IsArtisan && buyerHero.PartyBelongedTo != null && buyerHero.PartyBelongedTo.EffectiveEngineer != null && buyerHero.PartyBelongedTo.EffectiveEngineer.GetPerkValue(DefaultPerks.Engineering.EngineeringGuilds))
+		{
+			num7 += (int)DefaultPerks.Engineering.EngineeringGuilds.PrimaryBonus;
+		}
+		return MathF.Min(6, num + num3 + num4 + num5 + num6 + num7);
+	}
+
+	public override int MaximumIndexGarrisonCanRecruitFromHero(Settlement settlement, Hero sellerHero)
+	{
+		return MaximumIndexCanPartyRecruitFromHeroInternal(settlement.Owner, sellerHero);
+	}
+
+	private int MaximumIndexCanPartyRecruitFromHeroInternal(Hero buyerHero, Hero sellerHero)
+	{
 		Settlement currentSettlement = sellerHero.CurrentSettlement;
 		int num = 1;
 		int num2 = ((buyerHero == Hero.MainHero) ? Campaign.Current.Models.DifficultyModel.GetPlayerRecruitSlotBonus() : 0);
-		int num3 = ((buyerHero != Hero.MainHero) ? 1 : 0);
-		int num4 = ((currentSettlement != null && buyerHero.MapFaction == currentSettlement.MapFaction) ? 1 : 0);
-		int num5 = ((currentSettlement != null && buyerHero.MapFaction.IsAtWarWith(currentSettlement.MapFaction)) ? (-(1 + num3)) : 0);
-		if (buyerHero.IsMinorFactionHero && currentSettlement != null && currentSettlement.IsVillage)
-		{
-			num5 = 0;
-		}
-		int num6 = ((useValueAsRelation < -100) ? buyerHero.GetRelation(sellerHero) : useValueAsRelation);
-		int num7 = ((num6 >= 100) ? 7 : ((num6 >= 80) ? 6 : ((num6 >= 60) ? 5 : ((num6 >= 40) ? 4 : ((num6 >= 20) ? 3 : ((num6 >= 10) ? 2 : ((num6 >= 5) ? 1 : ((num6 < 0) ? (-1) : 0))))))));
-		int num8 = 0;
+		int num3 = 0;
 		if (sellerHero.IsGangLeader && currentSettlement != null && currentSettlement.OwnerClan == buyerHero.Clan)
 		{
 			if (currentSettlement.IsTown)
@@ -32,7 +64,7 @@ public class DefaultVolunteerModel : VolunteerModel
 				Hero governor = currentSettlement.Town.Governor;
 				if (governor != null && governor.GetPerkValue(DefaultPerks.Roguery.OneOfTheFamily))
 				{
-					goto IL_014e;
+					goto IL_009a;
 				}
 			}
 			if (currentSettlement.IsVillage)
@@ -40,36 +72,16 @@ public class DefaultVolunteerModel : VolunteerModel
 				Hero governor2 = currentSettlement.Village.Bound.Town.Governor;
 				if (governor2 != null && governor2.GetPerkValue(DefaultPerks.Roguery.OneOfTheFamily))
 				{
-					goto IL_014e;
+					goto IL_009a;
 				}
 			}
 		}
-		goto IL_015e;
-		IL_014e:
-		num8 += (int)DefaultPerks.Roguery.OneOfTheFamily.SecondaryBonus;
-		goto IL_015e;
-		IL_015e:
-		if (sellerHero.IsMerchant && buyerHero.GetPerkValue(DefaultPerks.Trade.ArtisanCommunity))
-		{
-			num8 += (int)DefaultPerks.Trade.ArtisanCommunity.SecondaryBonus;
-		}
-		if (sellerHero.Culture == buyerHero.Culture && buyerHero.GetPerkValue(DefaultPerks.Leadership.CombatTips))
-		{
-			num8 += (int)DefaultPerks.Leadership.CombatTips.SecondaryBonus;
-		}
-		if (sellerHero.IsRuralNotable && buyerHero.GetPerkValue(DefaultPerks.Charm.Firebrand))
-		{
-			num8 += (int)DefaultPerks.Charm.Firebrand.SecondaryBonus;
-		}
-		if (sellerHero.IsUrbanNotable && buyerHero.GetPerkValue(DefaultPerks.Charm.FlexibleEthics))
-		{
-			num8 += (int)DefaultPerks.Charm.FlexibleEthics.SecondaryBonus;
-		}
-		if (sellerHero.IsArtisan && buyerHero.PartyBelongedTo != null && buyerHero.PartyBelongedTo.EffectiveEngineer != null && buyerHero.PartyBelongedTo.EffectiveEngineer.GetPerkValue(DefaultPerks.Engineering.EngineeringGuilds))
-		{
-			num8 += (int)DefaultPerks.Engineering.EngineeringGuilds.PrimaryBonus;
-		}
-		return MathF.Min(6, MathF.Max(0, num + num3 + num7 + num2 + num4 + num5 + num8));
+		goto IL_00a8;
+		IL_009a:
+		num3 += (int)DefaultPerks.Roguery.OneOfTheFamily.SecondaryBonus;
+		goto IL_00a8;
+		IL_00a8:
+		return MathF.Min(6, MathF.Max(0, num + num2 + num3));
 	}
 
 	public override float GetDailyVolunteerProductionProbability(Hero hero, int index, Settlement settlement)

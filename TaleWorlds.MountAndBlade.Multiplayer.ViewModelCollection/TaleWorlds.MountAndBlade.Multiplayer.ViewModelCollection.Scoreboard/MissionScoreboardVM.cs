@@ -6,6 +6,7 @@ using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 using TaleWorlds.PlatformService;
 using TaleWorlds.PlayerServices;
@@ -104,7 +105,7 @@ public class MissionScoreboardVM : ViewModel
 			case BattleSideEnum.Defender:
 				return BattleSideEnum.Attacker;
 			default:
-				Debug.FailedAssert("Ally side must be either Attacker or Defender", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardVM.cs", "EnemySide", 540);
+				Debug.FailedAssert("Ally side must be either Attacker or Defender", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardVM.cs", "EnemySide", 559);
 				return BattleSideEnum.None;
 			}
 		}
@@ -477,7 +478,7 @@ public class MissionScoreboardVM : ViewModel
 		{
 			foreach (MissionScoreboardPlayerVM player in side.Players)
 			{
-				if (player.Peer.Peer.Id.Equals(playerId))
+				if (!player.IsBot && player.Peer.Peer.Id.Equals(playerId))
 				{
 					player.UpdateIsMuted();
 					return;
@@ -492,7 +493,7 @@ public class MissionScoreboardVM : ViewModel
 		{
 			foreach (MissionScoreboardPlayerVM player in side.Players)
 			{
-				if (player.Peer.Peer.Id.Equals(playerId))
+				if (!player.IsBot && player.Peer.Peer.Id.Equals(playerId))
 				{
 					player.UpdateIsMuted();
 					return;
@@ -762,36 +763,31 @@ public class MissionScoreboardVM : ViewModel
 		if (IsSingleSide)
 		{
 			MissionScoreboardComponent.MissionScoreboardSide sideSafe = _missionScoreboardComponent.GetSideSafe(BattleSideEnum.Defender);
-			MissionScoreboardSideVM missionScoreboardSideVM = new MissionScoreboardSideVM(sideSafe, ExecutePopulateActionList, IsSingleSide, isSecondSide: false);
+			MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(sideSafe.GetCulture(), null);
+			MissionScoreboardSideVM missionScoreboardSideVM = new MissionScoreboardSideVM(sideSafe, ExecutePopulateActionList, IsSingleSide, isSecondSide: false, multiplayerBattleColors.AttackerColors);
 			Sides.Add(missionScoreboardSideVM);
 			_missionSides.Add(sideSafe.Side, missionScoreboardSideVM);
 			return;
 		}
 		MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
-		BattleSideEnum firstSideToAdd = BattleSideEnum.Attacker;
-		BattleSideEnum secondSideToAdd = BattleSideEnum.Defender;
-		if (missionPeer != null)
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Attacker);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide2 = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Defender);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide3 = ((missionPeer != null && missionPeer.Team?.Side == BattleSideEnum.Attacker) ? missionScoreboardSide : missionScoreboardSide2);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide4 = ((missionPeer != null && missionPeer.Team?.Side == BattleSideEnum.Attacker) ? missionScoreboardSide2 : missionScoreboardSide);
+		BasicCultureObject basicCultureObject = missionScoreboardSide3?.GetCulture();
+		BasicCultureObject basicCultureObject2 = missionScoreboardSide4?.GetCulture();
+		MultiplayerBattleColors multiplayerBattleColors2 = MultiplayerBattleColors.CreateWith(basicCultureObject, basicCultureObject2);
+		if (missionScoreboardSide3 != null)
 		{
-			Team team = missionPeer.Team;
-			if (team != null && team.Side == BattleSideEnum.Defender)
-			{
-				firstSideToAdd = BattleSideEnum.Defender;
-				secondSideToAdd = BattleSideEnum.Attacker;
-			}
-		}
-		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == firstSideToAdd);
-		if (missionScoreboardSide != null)
-		{
-			MissionScoreboardSideVM missionScoreboardSideVM2 = new MissionScoreboardSideVM(missionScoreboardSide, ExecutePopulateActionList, IsSingleSide, isSecondSide: false);
+			MissionScoreboardSideVM missionScoreboardSideVM2 = new MissionScoreboardSideVM(cultureColorInfo: (!(basicCultureObject.StringId == basicCultureObject2.StringId)) ? multiplayerBattleColors2.AttackerColors : ((missionPeer != null && missionPeer.Team?.Side == BattleSideEnum.Attacker) ? multiplayerBattleColors2.AttackerColors : multiplayerBattleColors2.DefenderColors), missionScoreboardSide: missionScoreboardSide3, executeActivate: ExecutePopulateActionList, isSingleSide: IsSingleSide, isSecondSide: false);
 			Sides.Add(missionScoreboardSideVM2);
-			_missionSides.Add(missionScoreboardSide.Side, missionScoreboardSideVM2);
+			_missionSides.Add(missionScoreboardSide3.Side, missionScoreboardSideVM2);
 		}
-		missionScoreboardSide = _missionScoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == secondSideToAdd);
-		if (missionScoreboardSide != null)
+		if (missionScoreboardSide4 != null)
 		{
-			MissionScoreboardSideVM missionScoreboardSideVM3 = new MissionScoreboardSideVM(missionScoreboardSide, ExecutePopulateActionList, IsSingleSide, isSecondSide: true);
+			MissionScoreboardSideVM missionScoreboardSideVM3 = new MissionScoreboardSideVM(cultureColorInfo: (!(basicCultureObject.StringId == basicCultureObject2.StringId)) ? multiplayerBattleColors2.DefenderColors : ((missionPeer != null && missionPeer.Team?.Side == BattleSideEnum.Attacker) ? multiplayerBattleColors2.DefenderColors : multiplayerBattleColors2.AttackerColors), missionScoreboardSide: missionScoreboardSide4, executeActivate: ExecutePopulateActionList, isSingleSide: IsSingleSide, isSecondSide: true);
 			Sides.Add(missionScoreboardSideVM3);
-			_missionSides.Add(missionScoreboardSide.Side, missionScoreboardSideVM3);
+			_missionSides.Add(missionScoreboardSide4.Side, missionScoreboardSideVM3);
 		}
 	}
 

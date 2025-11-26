@@ -5,19 +5,37 @@ namespace TaleWorlds.Library;
 
 public static class InformationManager
 {
-	public static Func<bool> IsAnyInquiryActive;
+	public struct TooltipRegistry
+	{
+		public Type TooltipType;
 
-	private static Dictionary<Type, (Type tooltipType, object onRefreshData, string movieName)> _registeredTypes = new Dictionary<Type, (Type, object, string)>();
+		public object OnRefreshData;
 
-	private static List<Func<bool>> _isAnyTooltipActiveCallbacks = new List<Func<bool>>();
+		public string MovieName;
 
-	private static List<Func<bool>> _isAnyTooltipExtendedCallbacks = new List<Func<bool>>();
+		public TooltipRegistry(Type tooltipType, object onRefreshData, string movieName)
+		{
+			TooltipType = tooltipType;
+			OnRefreshData = onRefreshData;
+			MovieName = movieName;
+		}
+	}
 
-	public static IReadOnlyDictionary<Type, (Type tooltipType, object onRefreshData, string movieName)> RegisteredTypes => _registeredTypes;
+	public delegate void IsAnyTooltipActiveDelegate(out bool isAnyTooltipActive, out bool isAnyTooltipExtended);
+
+	public static Func<bool> IsAnyInquiryActiveInternal;
+
+	public static IsAnyTooltipActiveDelegate IsAnyTooltipActiveInternal;
+
+	private static Dictionary<Type, TooltipRegistry> _registeredTypes = new Dictionary<Type, TooltipRegistry>();
+
+	public static IReadOnlyDictionary<Type, TooltipRegistry> RegisteredTypes => _registeredTypes;
 
 	public static event Action<InformationMessage> DisplayMessageInternal;
 
 	public static event Action ClearAllMessagesInternal;
+
+	public static event Action HideAllMessagesInternal;
 
 	public static event Action<string> OnAddSystemNotification;
 
@@ -31,9 +49,23 @@ public static class InformationManager
 
 	public static event Action OnHideInquiry;
 
+	public static bool IsAnyInquiryActive()
+	{
+		if (IsAnyInquiryActiveInternal != null)
+		{
+			return IsAnyInquiryActiveInternal();
+		}
+		return false;
+	}
+
 	public static void DisplayMessage(InformationMessage message)
 	{
 		InformationManager.DisplayMessageInternal?.Invoke(message);
+	}
+
+	public static void HideAllMessages()
+	{
+		InformationManager.HideAllMessagesInternal?.Invoke();
 	}
 
 	public static void ClearAllMessages()
@@ -71,55 +103,22 @@ public static class InformationManager
 		InformationManager.OnHideInquiry?.Invoke();
 	}
 
-	public static void RegisterIsAnyTooltipActiveCallback(Func<bool> callback)
-	{
-		_isAnyTooltipActiveCallbacks.Add(callback);
-	}
-
-	public static void UnregisterIsAnyTooltipActiveCallback(Func<bool> callback)
-	{
-		_isAnyTooltipActiveCallbacks.Remove(callback);
-	}
-
-	public static void RegisterIsAnyTooltipExtendedCallback(Func<bool> callback)
-	{
-		_isAnyTooltipExtendedCallbacks.Add(callback);
-	}
-
-	public static void UnregisterIsAnyTooltipExtendedCallback(Func<bool> callback)
-	{
-		_isAnyTooltipExtendedCallbacks.Remove(callback);
-	}
-
 	public static bool GetIsAnyTooltipActive()
 	{
-		for (int i = 0; i < _isAnyTooltipActiveCallbacks.Count; i++)
+		if (IsAnyTooltipActiveInternal != null)
 		{
-			if (_isAnyTooltipActiveCallbacks[i]())
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static bool GetIsAnyTooltipExtended()
-	{
-		for (int i = 0; i < _isAnyTooltipExtendedCallbacks.Count; i++)
-		{
-			if (_isAnyTooltipExtendedCallbacks[i]())
-			{
-				return true;
-			}
+			IsAnyTooltipActiveInternal(out var isAnyTooltipActive, out var _);
+			return isAnyTooltipActive;
 		}
 		return false;
 	}
 
 	public static bool GetIsAnyTooltipActiveAndExtended()
 	{
-		if (GetIsAnyTooltipActive())
+		if (IsAnyTooltipActiveInternal != null)
 		{
-			return GetIsAnyTooltipExtended();
+			IsAnyTooltipActiveInternal(out var isAnyTooltipActive, out var isAnyTooltipExtended);
+			return isAnyTooltipActive && isAnyTooltipExtended;
 		}
 		return false;
 	}
@@ -128,7 +127,7 @@ public static class InformationManager
 	{
 		Type typeFromHandle = typeof(TRegistered);
 		Type typeFromHandle2 = typeof(TTooltip);
-		_registeredTypes[typeFromHandle] = (typeFromHandle2, onRefreshData, movieName);
+		_registeredTypes[typeFromHandle] = new TooltipRegistry(typeFromHandle2, onRefreshData, movieName);
 	}
 
 	public static void UnregisterTooltip<TRegistered>()
@@ -137,16 +136,23 @@ public static class InformationManager
 		if (_registeredTypes.ContainsKey(typeFromHandle))
 		{
 			_registeredTypes.Remove(typeFromHandle);
+			Debug.Print("Unregister tooltip for type: " + typeof(TRegistered).Name);
+		}
+		else
+		{
+			Debug.Print("Unable to unregister tooltip because it was not found: " + typeof(TRegistered).Name);
 		}
 	}
 
 	public static void Clear()
 	{
 		InformationManager.DisplayMessageInternal = null;
+		InformationManager.HideAllMessagesInternal = null;
+		InformationManager.ClearAllMessagesInternal = null;
 		InformationManager.OnShowInquiry = null;
 		InformationManager.OnShowTextInquiry = null;
 		InformationManager.OnHideInquiry = null;
-		IsAnyInquiryActive = null;
+		IsAnyInquiryActiveInternal = null;
 		InformationManager.OnShowTooltip = null;
 		InformationManager.OnHideTooltip = null;
 	}

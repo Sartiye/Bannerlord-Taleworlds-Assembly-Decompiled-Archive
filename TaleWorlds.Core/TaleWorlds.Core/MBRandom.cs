@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Library;
@@ -8,9 +9,25 @@ public static class MBRandom
 {
 	public const int MaxSeed = 2000;
 
+	private static MBFastRandom _internalRandom = null;
+
 	private static readonly MBFastRandom NondeterministicRandom = new MBFastRandom();
 
-	private static MBFastRandom Random => Game.Current.RandomGenerator;
+	private static MBFastRandom Random
+	{
+		get
+		{
+			if (Game.Current != null)
+			{
+				return Game.Current.RandomGenerator;
+			}
+			if (_internalRandom == null)
+			{
+				_internalRandom = new MBFastRandom();
+			}
+			return _internalRandom;
+		}
+	}
 
 	public static float RandomFloat => Random.NextFloat();
 
@@ -64,7 +81,7 @@ public static class MBRandom
 
 	public static int RoundRandomized(float f)
 	{
-		int num = MathF.Floor(f);
+		int num = TaleWorlds.Library.MathF.Floor(f);
 		float num2 = f - (float)num;
 		if (RandomFloat < num2)
 		{
@@ -100,6 +117,14 @@ public static class MBRandom
 		}
 		chosenIndex = -1;
 		return default(T);
+	}
+
+	public static float RandomFloatGaussian(float center, float spread, float min, float max)
+	{
+		float a = 1f - RandomFloat;
+		float num = 1f - RandomFloat;
+		float num2 = TaleWorlds.Library.MathF.Sqrt(-2f * TaleWorlds.Library.MathF.Log(a)) * TaleWorlds.Library.MathF.Sin(System.MathF.PI * 2f * num);
+		return TaleWorlds.Library.MathF.Clamp(center + spread * num2, min, max);
 	}
 
 	public static void SetSeed(uint seed, uint seed2)

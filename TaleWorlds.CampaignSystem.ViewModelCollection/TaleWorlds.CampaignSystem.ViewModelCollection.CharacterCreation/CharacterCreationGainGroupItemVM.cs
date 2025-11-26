@@ -1,4 +1,6 @@
-using TaleWorlds.CampaignSystem.CharacterCreationContent;
+using System.Collections.Generic;
+using System.Linq;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -6,10 +8,6 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterCreation;
 
 public class CharacterCreationGainGroupItemVM : ViewModel
 {
-	private readonly TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation _characterCreation;
-
-	private readonly int _currentIndex;
-
 	private MBBindingList<CharacterCreationGainedSkillItemVM> _skills;
 
 	private CharacterCreationGainedAttributeItemVM _attribute;
@@ -50,16 +48,19 @@ public class CharacterCreationGainGroupItemVM : ViewModel
 		}
 	}
 
-	public CharacterCreationGainGroupItemVM(CharacterAttribute attributeObj, TaleWorlds.CampaignSystem.CharacterCreationContent.CharacterCreation characterCreation, int currentIndex)
+	public CharacterCreationGainGroupItemVM(CharacterAttribute attributeObj)
 	{
 		AttributeObj = attributeObj;
-		_characterCreation = characterCreation;
-		_currentIndex = currentIndex;
 		Skills = new MBBindingList<CharacterCreationGainedSkillItemVM>();
 		Attribute = new CharacterCreationGainedAttributeItemVM(AttributeObj);
-		foreach (SkillObject skill in AttributeObj.Skills)
+		List<SkillObject> list = TaleWorlds.CampaignSystem.Extensions.Skills.All.ToList();
+		list.Sort(CampaignUIHelper.SkillObjectComparerInstance);
+		foreach (SkillObject skill in list)
 		{
-			Skills.Add(new CharacterCreationGainedSkillItemVM(skill));
+			if (!CampaignUIHelper.GetIsNavalSkill(skill) && skill.Attributes.FirstOrDefault() == attributeObj && !Skills.Any((CharacterCreationGainedSkillItemVM s) => s.SkillObj == skill))
+			{
+				Skills.Add(new CharacterCreationGainedSkillItemVM(skill));
+			}
 		}
 	}
 

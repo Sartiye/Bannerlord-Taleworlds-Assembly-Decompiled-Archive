@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -6,7 +7,7 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 
 public class EncyclopediaFactionVM : ViewModel
 {
-	private ImageIdentifierVM _imageIdentifier;
+	private BannerImageIdentifierVM _imageIdentifier;
 
 	private string _nameText;
 
@@ -15,7 +16,7 @@ public class EncyclopediaFactionVM : ViewModel
 	public IFaction Faction { get; private set; }
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public BannerImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -70,12 +71,12 @@ public class EncyclopediaFactionVM : ViewModel
 		Faction = faction;
 		if (faction != null)
 		{
-			ImageIdentifier = new ImageIdentifierVM(BannerCode.CreateFrom(faction.Banner), nineGrid: true);
+			ImageIdentifier = new BannerImageIdentifierVM(faction.Banner, nineGrid: true);
 			IsDestroyed = faction.IsEliminated;
 		}
 		else
 		{
-			ImageIdentifier = new ImageIdentifierVM();
+			ImageIdentifier = new BannerImageIdentifierVM(null);
 			IsDestroyed = false;
 		}
 		RefreshValues();
@@ -100,5 +101,22 @@ public class EncyclopediaFactionVM : ViewModel
 		{
 			Campaign.Current.EncyclopediaManager.GoToLink(Faction.EncyclopediaLink);
 		}
+	}
+
+	public void ExecuteBeginHint()
+	{
+		if (Faction is Clan)
+		{
+			InformationManager.ShowTooltip(typeof(Clan), Faction);
+		}
+		else if (Faction is Kingdom)
+		{
+			InformationManager.ShowTooltip(typeof(Kingdom), Faction);
+		}
+	}
+
+	public void ExecuteEndHint()
+	{
+		MBInformationManager.HideInformations();
 	}
 }

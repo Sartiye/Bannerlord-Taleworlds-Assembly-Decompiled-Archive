@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -9,7 +10,7 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class FactionDiscontinuationCampaignBehavior : CampaignBehaviorBase
 {
-	private const float SurvivalDurationForIndependentClanInWeeks = 4f;
+	private const float SurvivalDurationForIndependentClanInDays = 28f;
 
 	private Dictionary<Clan, CampaignTime> _independentClans = new Dictionary<Clan, CampaignTime>();
 
@@ -88,15 +89,18 @@ public class FactionDiscontinuationCampaignBehavior : CampaignBehaviorBase
 
 	private void FinalizeMapEvents(Clan clan)
 	{
-		foreach (WarPartyComponent warPartyComponent in clan.WarPartyComponents)
+		foreach (WarPartyComponent item in clan.WarPartyComponents.ToList())
 		{
-			if (warPartyComponent.MobileParty.MapEvent != null)
+			if (item?.Party.IsActive ?? false)
 			{
-				warPartyComponent.MobileParty.MapEvent.FinalizeEvent();
-			}
-			if (warPartyComponent.MobileParty.SiegeEvent != null)
-			{
-				warPartyComponent.MobileParty.SiegeEvent.FinalizeSiegeEvent();
+				if (item.MobileParty.MapEvent != null)
+				{
+					item.MobileParty.MapEvent.FinalizeEvent();
+				}
+				if (item.MobileParty.SiegeEvent != null)
+				{
+					item.MobileParty.SiegeEvent.FinalizeSiegeEvent();
+				}
 			}
 		}
 		foreach (Settlement settlement in clan.Settlements)
@@ -131,7 +135,7 @@ public class FactionDiscontinuationCampaignBehavior : CampaignBehaviorBase
 	{
 		if (!_independentClans.ContainsKey(clan))
 		{
-			_independentClans.Add(clan, CampaignTime.WeeksFromNow(4f));
+			_independentClans.Add(clan, CampaignTime.DaysFromNow(28f));
 		}
 	}
 

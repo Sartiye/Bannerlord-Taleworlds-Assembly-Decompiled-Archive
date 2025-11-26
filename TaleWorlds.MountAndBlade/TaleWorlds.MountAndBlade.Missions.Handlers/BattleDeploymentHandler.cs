@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -6,38 +8,103 @@ namespace TaleWorlds.MountAndBlade.Missions.Handlers;
 
 public class BattleDeploymentHandler : DeploymentHandler
 {
-	public event Action OnDeploymentReady;
-
-	public event Action OnAIDeploymentReady;
-
 	public BattleDeploymentHandler(bool isPlayerAttacker)
 		: base(isPlayerAttacker)
 	{
 	}
 
-	public override void OnTeamDeployed(Team team)
+	public override void OnRemoveBehavior()
 	{
-		if (team.IsPlayerTeam)
+		base.OnRemoveBehavior();
+		if (base.PlayerTeam != null)
 		{
-			this.OnDeploymentReady?.Invoke();
+			base.PlayerTeam.OnOrderIssued -= OrderController_OnOrderIssued;
+		}
+	}
+
+	public override void AfterStart()
+	{
+		base.AfterStart();
+		base.PlayerTeam.OnOrderIssued += OrderController_OnOrderIssued;
+	}
+
+	public override void AutoDeployTeamUsingDeploymentPlan(Team team)
+	{
+		List<Formation> list = team.FormationsIncludingEmpty.ToList();
+		if (list.Count <= 0)
+		{
+			return;
+		}
+		bool isTeleportingAgents = base.Mission.IsTeleportingAgents;
+		base.Mission.IsTeleportingAgents = true;
+		OrderController orderController = (team.IsPlayerTeam ? team.PlayerOrderController : team.MasterOrderController);
+		orderController.SelectAllFormations();
+		SetDefaultFormationOrders(orderController);
+		orderController.ClearSelectedFormations();
+		IMissionDeploymentPlan deploymentPlan = base.Mission.DeploymentPlan;
+		if (deploymentPlan.IsPlanMade(team))
+		{
+			foreach (Formation item in list)
+			{
+				IFormationDeploymentPlan formationPlan = deploymentPlan.GetFormationPlan(team, item.FormationIndex);
+				base.Mission.GetFormationSpawnFrame(item.Team, item.FormationIndex, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+				if (formationPlan.HasDimensions)
+				{
+					item.SetFormOrder(FormOrder.FormOrderCustom(formationPlan.PlannedWidth));
+				}
+				item.SetMovementOrder(MovementOrder.MovementOrderMove(spawnPosition));
+				item.SetFacingOrder(FacingOrder.FacingOrderLookAtDirection(spawnDirection));
+				item.SetPositioning(spawnPosition, spawnDirection, item.ArrangementOrder.GetUnitSpacing());
+				item.ApplyActionOnEachUnit(delegate(Agent agent)
+				{
+					agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
+				});
+				item.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
+				item.SetMovementOrder(MovementOrder.MovementOrderStop);
+			}
 		}
 		else
 		{
-			this.OnAIDeploymentReady?.Invoke();
+			Debug.FailedAssert("Failed to deploy team. Initial deployment plan is not made yet.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\BattleDeploymentHandler.cs", "AutoDeployTeamUsingDeploymentPlan", 84);
 		}
+		foreach (Formation item2 in list)
+		{
+			item2.ApplyActionOnEachUnit(delegate(Agent agent)
+			{
+				agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
+			});
+			item2.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
+		}
+		if (team.GeneralAgent != null)
+		{
+			base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition2, out var spawnDirection2);
+			if (spawnPosition2.GetNavMesh() != UIntPtr.Zero && spawnPosition2.IsValid)
+			{
+				team.GeneralAgent.SetFormationFrameEnabled(spawnPosition2, spawnDirection2, Vec2.Zero, 0f);
+			}
+		}
+		base.Mission.IsTeleportingAgents = isTeleportingAgents;
 	}
 
-	public override void FinishDeployment()
+	public override void ForceUpdateAllUnits()
 	{
-		base.FinishDeployment();
-		Mission obj = base.Mission ?? Mission.Current;
-		obj.GetMissionBehavior<DeploymentMissionController>().FinishDeployment();
-		obj.IsTeleportingAgents = false;
+		DeploymentHandler.OrderController_OnOrderIssued_Aux(OrderType.Move, base.PlayerTeam.FormationsIncludingSpecialAndEmpty, null);
 	}
 
-	public Vec2 GetEstimatedAverageDefenderPosition()
+	public void SetDefaultFormationOrders(OrderController orderController)
 	{
-		base.Mission.GetFormationSpawnFrame(BattleSideEnum.Defender, FormationClass.Infantry, isReinforcement: false, out var spawnPosition, out var _);
-		return spawnPosition.AsVec2;
+		orderController.SetOrder(OrderType.AIControlOff);
+		orderController.SetFormationUpdateEnabledAfterSetOrder(value: false);
+		orderController.SetOrder(OrderType.Mount);
+		orderController.SetOrder(OrderType.FireAtWill);
+		orderController.SetOrder(OrderType.ArrangementLine);
+		orderController.SetOrder(OrderType.StandYourGround);
+		orderController.SetOrder((base.Mission.IsSiegeBattle || base.Mission.IsSallyOutBattle) ? OrderType.AIControlOn : OrderType.AIControlOff);
+		orderController.SetFormationUpdateEnabledAfterSetOrder(value: true);
+	}
+
+	private void OrderController_OnOrderIssued(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController, params object[] delegateParams)
+	{
+		DeploymentHandler.OrderController_OnOrderIssued_Aux(orderType, appliedFormations, orderController, delegateParams);
 	}
 }

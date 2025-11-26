@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
-using TaleWorlds.GauntletUI.PrefabSystem;
 using TaleWorlds.Library;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
@@ -14,113 +12,190 @@ namespace TaleWorlds.Engine.GauntletUI;
 
 public class GauntletLayer : ScreenLayer
 {
+	private readonly MBList<GauntletMovieIdentifier> _movieIdentifiers;
+
+	private readonly TwoDimensionContext _twoDimensionContext;
+
 	public readonly TwoDimensionView TwoDimensionView;
 
-	public readonly UIContext UIContext;
+	public readonly ITwoDimensionPlatform TwoDimensionPlatform;
 
-	public readonly IGamepadNavigationContext GamepadNavigationContext;
+	public IGamepadNavigationContext GamepadNavigationContext { get; private set; }
 
-	public readonly List<Tuple<IGauntletMovie, ViewModel>> MoviesAndDataSources;
+	public UIContext UIContext { get; private set; }
 
-	public readonly TwoDimensionEnginePlatform TwoDimensionEnginePlatform;
-
-	public readonly EngineInputService EngineInputService;
-
-	public readonly WidgetFactory WidgetFactory;
-
-	public GauntletLayer(int localOrder, string categoryId = "GauntletLayer", bool shouldClear = false)
-		: base(localOrder, categoryId)
+	private void InitializeContext()
 	{
-		MoviesAndDataSources = new List<Tuple<IGauntletMovie, ViewModel>>();
-		WidgetFactory = UIResourceManager.WidgetFactory;
-		ResourceDepot uIResourceDepot = UIResourceManager.UIResourceDepot;
-		TwoDimensionView = TwoDimensionView.CreateTwoDimension();
+		UIContext = new UIContext(_twoDimensionContext, base.Input, UIResourceManager.SpriteData, UIResourceManager.FontFactory, UIResourceManager.BrushFactory);
+		UIContext.ScaleModifier = base.Scale;
+		UIContext.Initialize();
+		GamepadNavigationContext = new GauntletGamepadNavigationContext(GetIsBlockedAtPosition, GetLastScreenOrder, GetIsAvailableForGamepadNavigation);
+		UIContext.InitializeGamepadNavigation(GamepadNavigationContext);
+		UIContext.EventManager.OnFocusedWidgetChanged += EventManagerOnFocusedWidgetChanged;
+		UIContext.EventManager.OnGetIsHitThisFrame = GetIsHitThisFrame;
+		UIContext.EventManager.UsableArea = base.UsableArea;
+		RefreshContextName();
+	}
+
+	private void RefreshContextName()
+	{
+		if (UIContext != null)
+		{
+			UIContext.Name = base.Name;
+		}
+	}
+
+	private void ClearContext()
+	{
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
+		{
+			movieIdentifier.Movie.Release();
+		}
+		UIContext.EventManager.OnGetIsHitThisFrame = null;
+		UIContext.EventManager.OnFocusedWidgetChanged -= EventManagerOnFocusedWidgetChanged;
+		UIContext.OnFinalize();
+		UIContext = null;
+	}
+
+	public void OnResourceRefreshBegin(out List<GauntletMovieIdentifier> previouslyLoadedMovies)
+	{
+		previouslyLoadedMovies = _movieIdentifiers.ToList();
+		for (int i = 0; i < _movieIdentifiers.Count; i++)
+		{
+			ReleaseMovie(_movieIdentifiers[i]);
+		}
+		ClearContext();
+	}
+
+	public void OnResourceRefreshEnd(List<GauntletMovieIdentifier> previouslyLoadedMovies)
+	{
+		InitializeContext();
+		for (int i = 0; i < previouslyLoadedMovies.Count; i++)
+		{
+			LoadMovie(previouslyLoadedMovies[i]);
+		}
+	}
+
+	public GauntletLayer(string name, int localOrder, bool shouldClear = false)
+		: base(name, localOrder)
+	{
+		_movieIdentifiers = new MBList<GauntletMovieIdentifier>();
+		ResourceDepot resourceDepot = UIResourceManager.ResourceDepot;
+		TwoDimensionView = TwoDimensionView.CreateTwoDimension(name);
 		if (shouldClear)
 		{
 			TwoDimensionView.SetClearColor(255u);
 			TwoDimensionView.SetRenderOption(View.ViewRenderOptions.ClearColor, value: true);
 		}
-		TwoDimensionEnginePlatform = new TwoDimensionEnginePlatform(TwoDimensionView);
-		TwoDimensionContext twoDimensionContext = new TwoDimensionContext(TwoDimensionEnginePlatform, UIResourceManager.ResourceContext, uIResourceDepot);
-		EngineInputService = new EngineInputService(base.Input);
-		UIContext = new UIContext(twoDimensionContext, base.Input, EngineInputService, UIResourceManager.SpriteData, UIResourceManager.FontFactory, UIResourceManager.BrushFactory);
-		UIContext.ScaleModifier = base.Scale;
-		UIContext.Initialize();
-		GamepadNavigationContext = new GauntletGamepadNavigationContext(GetIsBlockedAtPosition, GetLastScreenOrder, GetIsAvailableForGamepadNavigation);
-		UIContext.InitializeGamepadNavigation(GamepadNavigationContext);
-		base.MouseEnabled = true;
-		UIContext.EventManager.LoseFocus += EventManagerOnLoseFocus;
-		UIContext.EventManager.GainFocus += EventManagerOnGainFocus;
-		UIContext.EventManager.OnGetIsHitThisFrame = GetIsHitThisFrame;
-		UIContext.EventManager.UsableArea = base.UsableArea;
+		TwoDimensionPlatform = new TwoDimensionEnginePlatform(TwoDimensionView);
+		_twoDimensionContext = new TwoDimensionContext(TwoDimensionPlatform, UIResourceManager.ResourceContext, resourceDepot);
+		InitializeContext();
 	}
 
-	private void EventManagerOnLoseFocus()
+	private void EventManagerOnFocusedWidgetChanged()
 	{
-		if (!base.IsFocusLayer)
+		if (UIContext.EventManager.FocusedWidget != null)
+		{
+			ScreenManager.TrySetFocus(this);
+		}
+		else if (!base.IsFocusLayer)
 		{
 			ScreenManager.TryLoseFocus(this);
 		}
 	}
 
-	private void EventManagerOnGainFocus()
+	public GauntletMovieIdentifier GetMovieIdentifier(string movieName)
 	{
-		ScreenManager.TrySetFocus(this);
+		for (int i = 0; i < _movieIdentifiers.Count; i++)
+		{
+			if (_movieIdentifiers[i].MovieName == movieName)
+			{
+				return _movieIdentifiers[i];
+			}
+		}
+		return null;
 	}
 
-	public IGauntletMovie LoadMovie(string movieName, ViewModel dataSource)
+	public GauntletMovieIdentifier LoadMovie(string movieName, ViewModel dataSource)
+	{
+		GauntletMovieIdentifier gauntletMovieIdentifier = new GauntletMovieIdentifier(movieName, dataSource);
+		LoadMovie(gauntletMovieIdentifier);
+		return gauntletMovieIdentifier;
+	}
+
+	private void LoadMovie(GauntletMovieIdentifier identifier)
+	{
+		identifier.Movie = LoadMovieAux(identifier.MovieName, identifier.DataSource);
+		_movieIdentifiers.Add(identifier);
+		RefreshContextName();
+	}
+
+	private IGauntletMovie LoadMovieAux(string movieName, ViewModel dataSource)
 	{
 		bool isUsingGeneratedPrefabs = UIConfig.GetIsUsingGeneratedPrefabs();
 		bool isHotReloadEnabled = UIConfig.GetIsHotReloadEnabled();
-		IGauntletMovie gauntletMovie = GauntletMovie.Load(UIContext, WidgetFactory, movieName, dataSource, !isUsingGeneratedPrefabs, isHotReloadEnabled);
-		MoviesAndDataSources.Add(new Tuple<IGauntletMovie, ViewModel>(gauntletMovie, dataSource));
-		return gauntletMovie;
+		return GauntletMovie.Load(UIContext, UIResourceManager.WidgetFactory, movieName, dataSource, !isUsingGeneratedPrefabs, isHotReloadEnabled);
 	}
 
-	public void ReleaseMovie(IGauntletMovie movie)
+	public void ReleaseMovie(GauntletMovieIdentifier identifier)
 	{
-		Tuple<IGauntletMovie, ViewModel> item = MoviesAndDataSources.SingleOrDefault((Tuple<IGauntletMovie, ViewModel> t) => t.Item1 == movie);
-		MoviesAndDataSources.Remove(item);
-		movie.Release();
+		if (_movieIdentifiers.Contains(identifier))
+		{
+			if (!identifier.Movie.IsReleased)
+			{
+				identifier.Movie.Release();
+			}
+			_movieIdentifiers.Remove(identifier);
+			RefreshContextName();
+		}
+		else
+		{
+			Debug.FailedAssert("Failed to release movie from gauntlet layer: " + identifier.MovieName, "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\GauntletLayer.cs", "ReleaseMovie", 208);
+		}
 	}
 
 	protected override void OnActivate()
 	{
 		base.OnActivate();
 		TwoDimensionView.SetEnable(value: true);
+		UIContext.Activate();
 	}
 
 	protected override void OnDeactivate()
 	{
+		TwoDimensionPlatform.Clear();
 		TwoDimensionView.Clear();
 		TwoDimensionView.SetEnable(value: false);
+		UIContext.Deactivate();
 		base.OnDeactivate();
 	}
 
 	protected override void Tick(float dt)
 	{
 		base.Tick(dt);
-		TwoDimensionEnginePlatform.Reset();
 		UIContext.Update(dt);
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
 		{
-			moviesAndDataSource.Item1.Update();
+			movieIdentifier.Movie.Update();
 		}
+	}
+
+	protected override void LateUpdate(float dt)
+	{
+		base.LateUpdate(dt);
+		UIContext.SetIsMouseEnabled(base.IsHitThisFrame);
+		UIContext.LateUpdate(dt);
 		base.ActiveCursor = (CursorType)UIContext.ActiveCursorOfContext;
 	}
 
-	protected override void LateTick(float dt)
+	protected override void RenderTick(float dt)
 	{
-		base.LateTick(dt);
+		base.RenderTick(dt);
 		TwoDimensionView.BeginFrame();
-		UIContext.LateUpdate(dt);
+		TwoDimensionPlatform.OnFrameBegin();
+		UIContext.RenderTick(dt);
 		TwoDimensionView.EndFrame();
-	}
-
-	protected override void OnLateUpdate(float dt)
-	{
-		base.OnLateUpdate(dt);
-		EngineInputService.UpdateInputDevices(base.KeyboardEnabled, base.MouseEnabled, base.GamepadEnabled);
+		TwoDimensionPlatform.OnFrameEnd();
 	}
 
 	protected override void Update(IReadOnlyList<int> lastKeysPressed)
@@ -130,14 +205,15 @@ public class GauntletLayer : ScreenLayer
 
 	protected override void OnFinalize()
 	{
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		ClearContext();
+		for (int i = 0; i < _movieIdentifiers.Count; i++)
 		{
-			moviesAndDataSource.Item1.Release();
+			if (_movieIdentifiers[i].Movie.IsLoaded)
+			{
+				Debug.FailedAssert("Movie was not released before finalizing layer: " + _movieIdentifiers[i].MovieName, "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\GauntletLayer.cs", "OnFinalize", 288);
+			}
 		}
-		UIContext.EventManager.LoseFocus -= EventManagerOnLoseFocus;
-		UIContext.EventManager.GainFocus -= EventManagerOnGainFocus;
-		UIContext.EventManager.OnGetIsHitThisFrame = null;
-		UIContext.OnFinalize();
+		TwoDimensionView.ManualInvalidate();
 		base.OnFinalize();
 	}
 
@@ -155,9 +231,9 @@ public class GauntletLayer : ScreenLayer
 
 	public override bool HitTest(Vector2 position)
 	{
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
 		{
-			if (UIContext.HitTest(moviesAndDataSource.Item1.RootWidget, position))
+			if (UIContext.HitTest(movieIdentifier.Movie.RootWidget, position))
 			{
 				return true;
 			}
@@ -172,9 +248,9 @@ public class GauntletLayer : ScreenLayer
 
 	public override bool HitTest()
 	{
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
 		{
-			if (UIContext.HitTest(moviesAndDataSource.Item1.RootWidget))
+			if (UIContext.HitTest(movieIdentifier.Movie.RootWidget))
 			{
 				return true;
 			}
@@ -185,9 +261,9 @@ public class GauntletLayer : ScreenLayer
 
 	public override bool FocusTest()
 	{
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
 		{
-			if (UIContext.FocusTest(moviesAndDataSource.Item1.RootWidget))
+			if (UIContext.FocusTest(movieIdentifier.Movie.RootWidget))
 			{
 				return true;
 			}
@@ -202,11 +278,17 @@ public class GauntletLayer : ScreenLayer
 
 	protected override void OnLoseFocus()
 	{
+		base.OnLoseFocus();
 		UIContext.EventManager.ClearFocus();
 	}
 
 	public override void OnOnScreenKeyboardDone(string inputText)
 	{
+		if (inputText == null)
+		{
+			Debug.FailedAssert("OnScreenKeyboardDone returned null!", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\GauntletLayer.cs", "OnOnScreenKeyboardDone", 381);
+			inputText = string.Empty;
+		}
 		base.OnOnScreenKeyboardDone(inputText);
 		UIContext.OnOnScreenkeyboardTextInputDone(inputText);
 	}
@@ -222,20 +304,20 @@ public class GauntletLayer : ScreenLayer
 		base.UpdateLayout();
 		UIContext.ScaleModifier = base.Scale;
 		UIContext.EventManager.UsableArea = base.UsableArea;
-		MoviesAndDataSources.ForEach(delegate(Tuple<IGauntletMovie, ViewModel> m)
+		_movieIdentifiers.ForEach(delegate(GauntletMovieIdentifier m)
 		{
-			m.Item2.RefreshValues();
+			m.DataSource.RefreshValues();
 		});
-		MoviesAndDataSources.ForEach(delegate(Tuple<IGauntletMovie, ViewModel> m)
+		_movieIdentifiers.ForEach(delegate(GauntletMovieIdentifier m)
 		{
-			m.Item1.RefreshBindingWithChildren();
+			m.Movie.RefreshBindingWithChildren();
 		});
 		UIContext.EventManager.UpdateLayout();
 	}
 
 	public bool GetIsAvailableForGamepadNavigation()
 	{
-		if (base.LastActiveState && base.IsActive && (base.MouseEnabled || base.GamepadEnabled))
+		if (base.LastActiveState && base.IsActive)
 		{
 			if (!base.IsFocusLayer)
 			{
@@ -258,12 +340,10 @@ public class GauntletLayer : ScreenLayer
 
 	public override void DrawDebugInfo()
 	{
-		foreach (Tuple<IGauntletMovie, ViewModel> moviesAndDataSource in MoviesAndDataSources)
+		foreach (GauntletMovieIdentifier movieIdentifier in _movieIdentifiers)
 		{
-			IGauntletMovie item = moviesAndDataSource.Item1;
-			ViewModel item2 = moviesAndDataSource.Item2;
-			Imgui.Text("Movie: " + item.MovieName);
-			Imgui.Text("Data Source: " + (item2?.GetType().Name ?? "No Datasource"));
+			Imgui.Text("Movie: " + movieIdentifier.MovieName);
+			Imgui.Text("Data Source: " + (movieIdentifier.DataSource?.GetType().Name ?? "No Datasource"));
 		}
 		base.DrawDebugInfo();
 		Imgui.Text("Press 'Shift+F' to take widget hierarchy snapshot.");

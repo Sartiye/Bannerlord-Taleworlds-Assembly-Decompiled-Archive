@@ -1,9 +1,9 @@
-using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
@@ -49,14 +49,6 @@ public class GamepadCursorWidget : BrushWidget
 
 	private bool _targetHasAction;
 
-	private float _targetX;
-
-	private float _targetY;
-
-	private float _targetWidth;
-
-	private float _targetHeight;
-
 	private float _defaultOffset;
 
 	private float _hoverOffset;
@@ -64,6 +56,10 @@ public class GamepadCursorWidget : BrushWidget
 	private float _defaultTargetlessOffset;
 
 	private float _pressOffset;
+
+	private float _defaultSizeX;
+
+	private float _defaultSizeY;
 
 	private float _actionAnimationTime;
 
@@ -184,76 +180,6 @@ public class GamepadCursorWidget : BrushWidget
 		}
 	}
 
-	public float TargetX
-	{
-		get
-		{
-			return _targetX;
-		}
-		set
-		{
-			if (value != _targetX)
-			{
-				_targetX = value;
-				OnPropertyChanged(value, "TargetX");
-				ResetAnimations();
-				_targetPositionChangedThisFrame = true;
-			}
-		}
-	}
-
-	public float TargetY
-	{
-		get
-		{
-			return _targetY;
-		}
-		set
-		{
-			if (value != _targetY)
-			{
-				_targetY = value;
-				OnPropertyChanged(value, "TargetY");
-				ResetAnimations();
-				_targetPositionChangedThisFrame = true;
-			}
-		}
-	}
-
-	public float TargetWidth
-	{
-		get
-		{
-			return _targetWidth;
-		}
-		set
-		{
-			if (value != _targetWidth)
-			{
-				_targetWidth = value;
-				OnPropertyChanged(value, "TargetWidth");
-				ResetAnimations();
-			}
-		}
-	}
-
-	public float TargetHeight
-	{
-		get
-		{
-			return _targetHeight;
-		}
-		set
-		{
-			if (value != _targetHeight)
-			{
-				_targetHeight = value;
-				OnPropertyChanged(value, "TargetHeight");
-				ResetAnimations();
-			}
-		}
-	}
-
 	public float DefaultOffset
 	{
 		get
@@ -322,6 +248,40 @@ public class GamepadCursorWidget : BrushWidget
 		}
 	}
 
+	public float DefaultSizeX
+	{
+		get
+		{
+			return _defaultSizeX;
+		}
+		set
+		{
+			if (value != _defaultSizeX)
+			{
+				_defaultSizeX = value;
+				OnPropertyChanged(value, "DefaultSizeX");
+				ResetAnimations();
+			}
+		}
+	}
+
+	public float DefaultSizeY
+	{
+		get
+		{
+			return _defaultSizeY;
+		}
+		set
+		{
+			if (value != _defaultSizeY)
+			{
+				_defaultSizeY = value;
+				OnPropertyChanged(value, "DefaultSizeY");
+				ResetAnimations();
+			}
+		}
+	}
+
 	public float ActionAnimationTime
 	{
 		get
@@ -361,17 +321,52 @@ public class GamepadCursorWidget : BrushWidget
 			{
 				_animationRatioTimer = MathF.Min(_animationRatioTimer + dt, 1.4f);
 			}
-			bool flag2 = !_targetChangedThisFrame && _targetPositionChangedThisFrame;
+			bool num = !_targetChangedThisFrame && _targetPositionChangedThisFrame;
 			_animationRatio = ((HasTarget && !_isPressing) ? MathF.Clamp(17f * dt, 0f, 1f) : MathF.Lerp(_animationRatio, 1f, _animationRatioTimer / 1.4f));
 			UpdateAdditionalOffsets();
-			UpdateTargetOffsets(flag2 ? 1f : _animationRatio);
-			if (!flag2)
+			AnimateToTarget(_animationRatio);
+			if (!num)
 			{
 				TransitionTimer += dt;
 			}
 		}
 		_targetChangedThisFrame = false;
 		_targetPositionChangedThisFrame = false;
+	}
+
+	private void AnimateToTarget(float ratio)
+	{
+		float end;
+		float num3;
+		float num4;
+		float num;
+		float num2;
+		if (HasTarget)
+		{
+			Rectangle2D gamepadCursorAreaRect = _targetWidget.GamepadCursorAreaRect;
+			num = gamepadCursorAreaRect.LocalScale.X;
+			num2 = gamepadCursorAreaRect.LocalScale.Y;
+			num3 = gamepadCursorAreaRect.GetCachedOrigin().X - base.EventManager.LeftUsableAreaStart;
+			num4 = gamepadCursorAreaRect.GetCachedOrigin().Y - base.EventManager.TopUsableAreaStart;
+			end = _targetWidget.GlobalRotation;
+		}
+		else
+		{
+			num = DefaultSizeX * base._scaleToUse;
+			num2 = DefaultSizeY * base._scaleToUse;
+			num3 = CursorParentWidget.XOffset - num * 0.5f;
+			num4 = CursorParentWidget.YOffset - num2 * 0.5f;
+			end = 0f;
+		}
+		num3 -= _additionalOffset;
+		num4 -= _additionalOffset;
+		num += _additionalOffset * 2f;
+		num2 += _additionalOffset * 2f;
+		base.ScaledPositionXOffset = Mathf.Lerp(base.ScaledPositionXOffset, num3, ratio);
+		base.ScaledPositionYOffset = Mathf.Lerp(base.ScaledPositionYOffset, num4, ratio);
+		base.ScaledSuggestedWidth = Mathf.Lerp(base.ScaledSuggestedWidth, num, ratio);
+		base.ScaledSuggestedHeight = Mathf.Lerp(base.ScaledSuggestedHeight, num2, ratio);
+		base.Rotation = Mathf.Lerp(base.Rotation, end, ratio);
 	}
 
 	private void RefreshTarget()
@@ -382,77 +377,6 @@ public class GamepadCursorWidget : BrushWidget
 		TargetHasAction = GauntletGamepadNavigationManager.Instance.TargetedWidgetHasAction;
 		HasTarget = _targetWidget != null;
 		CursorParentWidget.HasTarget = HasTarget;
-		if (HasTarget)
-		{
-			Vector2 globalPosition = _targetWidget.GlobalPosition;
-			Vector2 size = _targetWidget.Size;
-			float num = (_targetWidget.DoNotUseCustomScale ? _targetWidget.EventManager.Context.Scale : _targetWidget.EventManager.Context.CustomScale);
-			float num2 = _targetWidget.ExtendCursorAreaLeft * num;
-			float num3 = _targetWidget.ExtendCursorAreaTop * num;
-			float num4 = _targetWidget.ExtendCursorAreaRight * num;
-			float num5 = _targetWidget.ExtendCursorAreaBottom * num;
-			TargetX = globalPosition.X - num2;
-			TargetY = globalPosition.Y - num3;
-			TargetWidth = size.X + num2 + num4;
-			TargetHeight = size.Y + num3 + num5;
-		}
-	}
-
-	private void UpdateTargetOffsets(float ratio)
-	{
-		Vector2 vector = new Vector2(base.EventManager.LeftUsableAreaStart, base.EventManager.TopUsableAreaStart);
-		float num;
-		float num2;
-		float num3;
-		float num4;
-		if (HasTarget)
-		{
-			num = TargetX - vector.X;
-			num2 = TargetY - vector.Y;
-			num3 = TargetWidth;
-			num4 = TargetHeight;
-		}
-		else
-		{
-			num = CursorParentWidget.XOffset - (float)MathF.Floor(DefaultTargetlessOffset / 2f);
-			num2 = CursorParentWidget.YOffset - (float)MathF.Floor(DefaultTargetlessOffset / 2f);
-			num3 = DefaultTargetlessOffset;
-			num4 = DefaultTargetlessOffset;
-		}
-		num -= _additionalOffset;
-		num2 -= _additionalOffset;
-		float num5 = 45f * base._scaleToUse;
-		if (num3 < num5)
-		{
-			float num6 = num5;
-			num += (num3 - num6) / 2f;
-			num3 = num6;
-		}
-		if (num4 < num5)
-		{
-			float num7 = num5;
-			num2 += (num4 - num7) / 2f;
-			num4 = num7;
-		}
-		num3 += _additionalOffset * 2f;
-		num4 += _additionalOffset * 2f;
-		base.ScaledSuggestedWidth = MathF.Lerp(base.ScaledSuggestedWidth, num3, ratio);
-		base.ScaledSuggestedHeight = MathF.Lerp(base.ScaledSuggestedHeight, num4, ratio);
-		if (GauntletGamepadNavigationManager.Instance.IsCursorMovingForNavigation)
-		{
-			Vector2 vector2 = CursorParentWidget.CenterWidget.GlobalPosition + CursorParentWidget.CenterWidget.Size / 2f;
-			base.ScaledPositionXOffset = vector2.X - base.ScaledSuggestedWidth / 2f - vector.X;
-			base.ScaledPositionYOffset = vector2.Y - base.ScaledSuggestedHeight / 2f - vector.Y;
-		}
-		else
-		{
-			base.ScaledPositionXOffset = MathF.Lerp(base.ScaledPositionXOffset, num, ratio);
-			base.ScaledPositionYOffset = MathF.Lerp(base.ScaledPositionYOffset, num2, ratio);
-		}
-		base.ScaledPositionXOffset = MathF.Clamp(base.ScaledPositionXOffset, 0f, Input.Resolution.X - num3 - vector.X * 2f);
-		base.ScaledPositionYOffset = MathF.Clamp(base.ScaledPositionYOffset, 0f, Input.Resolution.Y - num4 - vector.Y * 2f);
-		base.ScaledSuggestedWidth = MathF.Min(base.ScaledSuggestedWidth, Input.Resolution.X - base.ScaledPositionXOffset - vector.X * 2f);
-		base.ScaledSuggestedHeight = MathF.Min(base.ScaledSuggestedHeight, Input.Resolution.Y - base.ScaledPositionYOffset - vector.Y * 2f);
 	}
 
 	private void UpdateAdditionalOffsets()

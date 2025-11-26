@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
@@ -21,12 +22,12 @@ public class PartiesBuyFoodCampaignBehavior : CampaignBehaviorBase
 
 	private void TryBuyingFood(MobileParty mobileParty, Settlement settlement)
 	{
-		if (Campaign.Current.GameStarted && mobileParty.LeaderHero != null && (settlement.IsTown || settlement.IsVillage) && Campaign.Current.Models.MobilePartyFoodConsumptionModel.DoesPartyConsumeFood(mobileParty) && (mobileParty.Army == null || mobileParty.Army.LeaderParty == mobileParty) && (settlement.IsVillage || (mobileParty.MapFaction != null && !mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction))) && settlement.ItemRoster.TotalFood > 0)
+		if (Campaign.Current.GameStarted && mobileParty.LeaderHero != null && (settlement.IsTown || settlement.IsVillage) && Campaign.Current.Models.MobilePartyFoodConsumptionModel.DoesPartyConsumeFood(mobileParty) && (mobileParty.Army == null || mobileParty.AttachedTo == null || mobileParty.Army.LeaderParty == mobileParty) && (settlement.IsVillage || (mobileParty.MapFaction != null && !mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction))) && settlement.ItemRoster.TotalFood > 0)
 		{
 			float num = 0f;
 			PartyFoodBuyingModel partyFoodBuyingModel = Campaign.Current.Models.PartyFoodBuyingModel;
 			num = (settlement.IsVillage ? partyFoodBuyingModel.MinimumDaysFoodToLastWhileBuyingFoodFromVillage : partyFoodBuyingModel.MinimumDaysFoodToLastWhileBuyingFoodFromTown);
-			if (mobileParty.Army == null)
+			if (mobileParty.Army == null || (mobileParty.AttachedTo == null && mobileParty.Army.LeaderParty != mobileParty))
 			{
 				BuyFoodInternal(mobileParty, settlement, CalculateFoodCountToBuy(mobileParty, num));
 			}
@@ -39,6 +40,10 @@ public class PartiesBuyFoodCampaignBehavior : CampaignBehaviorBase
 
 	private int CalculateFoodCountToBuy(MobileParty mobileParty, float minimumDaysToLast)
 	{
+		if (mobileParty.FoodChange.ApproximatelyEqualsTo(0f))
+		{
+			return 0;
+		}
 		float num = (float)mobileParty.TotalFoodAtInventory / (0f - mobileParty.FoodChange);
 		float num2 = minimumDaysToLast - num;
 		if (num2 > 0f)
@@ -59,7 +64,7 @@ public class PartiesBuyFoodCampaignBehavior : CampaignBehaviorBase
 			Campaign.Current.Models.PartyFoodBuyingModel.FindItemToBuy(mobileParty, settlement, out var itemRosterElement, out var itemElementsPrice);
 			if (itemRosterElement.EquipmentElement.Item != null)
 			{
-				if (itemElementsPrice <= (float)mobileParty.LeaderHero.Gold)
+				if (itemElementsPrice <= (float)mobileParty.PartyTradeGold)
 				{
 					SellItemsAction.Apply(settlement.Party, mobileParty.Party, itemRosterElement, 1);
 				}

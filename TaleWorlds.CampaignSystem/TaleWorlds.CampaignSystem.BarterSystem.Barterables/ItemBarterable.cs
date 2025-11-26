@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -47,7 +48,7 @@ public class ItemBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(_itemElement.EquipmentElement.Item);
+		return new ItemImageIdentifier(_itemElement.EquipmentElement.Item);
 	}
 
 	public override string GetEncyclopediaLink()

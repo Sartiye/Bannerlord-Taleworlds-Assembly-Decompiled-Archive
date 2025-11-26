@@ -3,16 +3,18 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglTwo_dimension_text_mesh_draw_data", false)]
+[EngineStruct("rglTwo_dimension_text_mesh_draw_data", false, null)]
 public struct TwoDimensionTextMeshDrawData
 {
-	public float DrawX;
+	public MatrixFrame MatrixFrame;
 
-	public float DrawY;
+	public Vec3 ClipRectInfo;
 
 	public float ScreenWidth;
 
 	public float ScreenHeight;
+
+	public Vec2 ScreenScale;
 
 	public uint Color;
 
@@ -29,10 +31,6 @@ public struct TwoDimensionTextMeshDrawData
 	public float SaturationFactor;
 
 	public float ValueFactor;
-
-	public Vec2 ClipRectPosition;
-
-	public Vec2 ClipRectSize;
 
 	public uint GlowColor;
 

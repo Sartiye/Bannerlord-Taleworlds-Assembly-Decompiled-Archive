@@ -98,6 +98,13 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 		}
 	}
 
+	public OrderSiegeMachineVM(DeploymentPoint deploymentPoint, Action<OrderSiegeMachineVM> setSelected, int keyIndex)
+	{
+		DeploymentPoint = deploymentPoint;
+		SetSelected = setSelected;
+		base.ShortcutText = keyIndex.ToString();
+	}
+
 	private void ExecuteAction()
 	{
 		if (SiegeWeapon != null)
@@ -106,11 +113,8 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 		}
 	}
 
-	public OrderSiegeMachineVM(DeploymentPoint deploymentPoint, Action<OrderSiegeMachineVM> setSelected, int keyIndex)
+	protected override void OnSelectionStateChanged(bool isSelected)
 	{
-		DeploymentPoint = deploymentPoint;
-		SetSelected = setSelected;
-		base.ShortcutText = keyIndex.ToString();
 	}
 
 	public void RefreshSiegeWeapon()
@@ -124,8 +128,8 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 			base.IsSelected = false;
 			return;
 		}
-		base.IsSelectable = !SiegeWeapon.IsDestroyed && !SiegeWeapon.IsDeactivated;
-		MachineType = SiegeWeapon.GetType();
+		base.IsSelectable = SiegeWeaponController.IsWeaponSelectable(SiegeWeapon);
+		MachineType = ((object)SiegeWeapon).GetType();
 		MachineClass = SiegeWeapon.GetSiegeEngineType().StringId;
 		if (SiegeWeapon.DestructionComponent != null)
 		{
@@ -179,7 +183,7 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 		{
 			return DefaultSiegeEngineTypes.FireTrebuchet;
 		}
-		Debug.FailedAssert("Invalid siege weapon", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSiegeMachineVM.cs", "GetSiegeType", 163);
+		Debug.FailedAssert("Invalid siege weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSiegeMachineVM.cs", "GetSiegeType", 106);
 		return DefaultSiegeEngineTypes.Ladder;
 	}
 }

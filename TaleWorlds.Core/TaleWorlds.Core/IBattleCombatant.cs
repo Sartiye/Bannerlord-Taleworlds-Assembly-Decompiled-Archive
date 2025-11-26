@@ -15,8 +15,6 @@ public interface IBattleCombatant
 
 	Tuple<uint, uint> PrimaryColorPair { get; }
 
-	Tuple<uint, uint> AlternativeColorPair { get; }
-
 	Banner Banner { get; }
 
 	int GetTacticsSkillAmount();

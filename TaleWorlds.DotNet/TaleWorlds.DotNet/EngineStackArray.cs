@@ -2,7 +2,7 @@ namespace TaleWorlds.DotNet;
 
 internal class EngineStackArray
 {
-	[EngineStruct("Stack_array_40_int", true)]
+	[EngineStruct("Stack_array_40_int", true, null)]
 	public struct StackArray40Int
 	{
 		private int _element0;

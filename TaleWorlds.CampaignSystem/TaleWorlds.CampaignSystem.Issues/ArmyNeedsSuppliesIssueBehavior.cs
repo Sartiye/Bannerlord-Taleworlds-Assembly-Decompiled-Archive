@@ -199,7 +199,7 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 
 		public override TextObject Title => new TextObject("{=wVyqTlpS}Army Needs Supply");
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -213,11 +213,11 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _successQuestLogText => new TextObject("{=z9pbB0K5}You have successfully delivered the supplies as requested.");
+		private TextObject SuccessQuestLogText => new TextObject("{=z9pbB0K5}You have successfully delivered the supplies as requested.");
 
-		private TextObject _failQuestLogText => new TextObject("{=k5HJ3Ld6}You have failed to deliver the supplies in time.");
+		private TextObject FailQuestLogText => new TextObject("{=k5HJ3Ld6}You have failed to deliver the supplies in time.");
 
-		private TextObject _questCanceledWarDeclaredLog
+		private TextObject QuestCanceledWarDeclaredLog
 		{
 			get
 			{
@@ -227,7 +227,7 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -481,11 +481,11 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			AddLog(_playerStartsQuestLogText);
+			AddLog(PlayerStartsQuestLogText);
 			CalculateAndUpdateRequestedItemsCountInPlayer();
-			_grainLog = AddDiscreteLog(TextObject.Empty, new TextObject("{=yGxjOnYb}Collected Grain Amount"), _currentGrainAmount, _requestedGrainAmount);
-			_liveStockLog = AddDiscreteLog(TextObject.Empty, new TextObject("{=aIxX2s8n}Collected Livestock Amount (Optional)"), _currentLiveStockAmount, _requestedLiveStockAmount);
-			_wineLog = AddDiscreteLog(TextObject.Empty, new TextObject("{=ENS8Ig1o}Collected Wine Amount (Optional)"), _currentWineAmount, _requestedWineAmount);
+			_grainLog = AddDiscreteLog(TextObject.GetEmpty(), new TextObject("{=yGxjOnYb}Collected Grain Amount"), _currentGrainAmount, _requestedGrainAmount);
+			_liveStockLog = AddDiscreteLog(TextObject.GetEmpty(), new TextObject("{=aIxX2s8n}Collected Livestock Amount (Optional)"), _currentLiveStockAmount, _requestedLiveStockAmount);
+			_wineLog = AddDiscreteLog(TextObject.GetEmpty(), new TextObject("{=ENS8Ig1o}Collected Wine Amount (Optional)"), _currentWineAmount, _requestedWineAmount);
 		}
 
 		protected override void RegisterEvents()
@@ -507,7 +507,7 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 			}
 			else if (base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_questCanceledWarDeclaredLog);
+				CompleteQuestWithCancel(QuestCanceledWarDeclaredLog);
 			}
 		}
 
@@ -553,7 +553,7 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _questCanceledWarDeclaredLog);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, QuestCanceledWarDeclaredLog);
 		}
 
 		public override void OnFailed()
@@ -563,13 +563,13 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnCompleteWithSuccess()
 		{
-			AddLog(_successQuestLogText);
+			AddLog(SuccessQuestLogText);
 		}
 
 		protected override void OnTimedOut()
 		{
 			OnFailed();
-			AddLog(_failQuestLogText);
+			AddLog(FailQuestLogText);
 		}
 
 		public override void OnCanceled()
@@ -598,6 +598,15 @@ public class ArmyNeedsSuppliesIssueBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnCheckForIssueEvent.AddNonSerializedListener(this, OnCheckForIssue);
+		CampaignEvents.ArmyDispersed.AddNonSerializedListener(this, OnArmyDispersed);
+	}
+
+	private void OnArmyDispersed(Army army, Army.ArmyDispersionReason reason, bool arg3)
+	{
+		if (army.ArmyOwner?.Issue is ArmyNeedsSuppliesIssue)
+		{
+			army.ArmyOwner.Issue.CompleteIssueWithStayAliveConditionsFailed();
+		}
 	}
 
 	public void OnCheckForIssue(Hero hero)

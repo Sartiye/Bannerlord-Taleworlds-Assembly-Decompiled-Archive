@@ -1,6 +1,5 @@
 using System;
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -540,7 +539,7 @@ public class KingdomArmyVM : KingdomCategoryVM
 		base.RefreshValues();
 		ArmyNameText = GameTexts.FindText("str_sort_by_army_name_label").ToString();
 		LeaderText = GameTexts.FindText("str_sort_by_leader_name_label").ToString();
-		StrengthText = GameTexts.FindText("str_men_numbersign").ToString();
+		StrengthText = GameTexts.FindText("str_men").ToString();
 		LocationText = GameTexts.FindText("str_tooltip_label_location").ToString();
 		base.NoItemSelectedText = GameTexts.FindText("str_kingdom_no_army_selected").ToString();
 		DisbandActionExplanationText = GameTexts.FindText("str_kingdom_disband_army_explanation").ToString();
@@ -574,7 +573,7 @@ public class KingdomArmyVM : KingdomCategoryVM
 		}
 		else
 		{
-			Debug.FailedAssert("Kingdom screen can't open if you're not in kingdom", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Armies\\KingdomArmyVM.cs", "RefreshArmyList", 81);
+			Debug.FailedAssert("Kingdom screen can't open if you're not in kingdom", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Armies\\KingdomArmyVM.cs", "RefreshArmyList", 81);
 		}
 		RefreshCanManageArmy();
 		if (Armies.Count == 0 && CurrentSelectedArmy != null)
@@ -628,42 +627,17 @@ public class KingdomArmyVM : KingdomCategoryVM
 
 	private bool GetCanManageCurrentArmyWithReason(out TextObject disabledReason)
 	{
-		if (Hero.MainHero.IsPrisoner)
-		{
-			disabledReason = GameTexts.FindText("str_action_disabled_reason_prisoner");
-			return false;
-		}
-		if (PlayerEncounter.Current != null)
-		{
-			if (PlayerEncounter.EncounterSettlement == null)
-			{
-				disabledReason = GameTexts.FindText("str_action_disabled_reason_encounter");
-				return false;
-			}
-			Village village = PlayerEncounter.EncounterSettlement.Village;
-			if (village != null && village.VillageState == Village.VillageStates.BeingRaided && MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid)
-			{
-				disabledReason = GameTexts.FindText("str_action_disabled_reason_raid");
-				return false;
-			}
-		}
 		KingdomArmyItemVM currentSelectedArmy = CurrentSelectedArmy;
 		if (currentSelectedArmy == null || !currentSelectedArmy.IsMainArmy)
 		{
-			disabledReason = TextObject.Empty;
+			disabledReason = TextObject.GetEmpty();
 			return false;
 		}
-		disabledReason = TextObject.Empty;
-		return true;
+		return CampaignUIHelper.GetCanManageCurrentArmyWithReason(out disabledReason);
 	}
 
 	private bool GetCanDisbandCurrentArmyWithReason(KingdomArmyItemVM armyItem, int disbandCost, out TextObject disabledReason)
 	{
-		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
-		{
-			disabledReason = disabledReason2;
-			return false;
-		}
 		if (Clan.PlayerClan.IsUnderMercenaryService)
 		{
 			disabledReason = GameTexts.FindText("str_cannot_disband_army_while_mercenary");
@@ -684,7 +658,12 @@ public class KingdomArmyVM : KingdomCategoryVM
 			disabledReason = GameTexts.FindText("str_cannot_disband_army_while_in_that_army");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
+		{
+			disabledReason = disabledReason2;
+			return false;
+		}
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 
@@ -729,32 +708,8 @@ public class KingdomArmyVM : KingdomCategoryVM
 
 	private void RefreshCanManageArmy()
 	{
-		TextObject disabledReason;
-		bool mapScreenActionIsEnabledWithReason = CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out disabledReason);
 		PlayerHasArmy = MobileParty.MainParty.Army != null;
-		bool flag = _kingdom != null;
-		bool isUnderMercenaryService = Clan.PlayerClan.IsUnderMercenaryService;
-		bool flag2 = PlayerHasArmy && MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty;
-		CanCreateArmy = mapScreenActionIsEnabledWithReason && flag && !isUnderMercenaryService && !PlayerHasArmy;
-		if (!flag)
-		{
-			CreateArmyHint.HintText = new TextObject("{=XSQ0Y9gy}You need to be a part of a kingdom to create an army.");
-		}
-		else if (isUnderMercenaryService)
-		{
-			CreateArmyHint.HintText = new TextObject("{=aRhQzJca}Mercenaries cannot create or manage armies.");
-		}
-		else if (PlayerHasArmy && !flag2)
-		{
-			CreateArmyHint.HintText = new TextObject("{=NAA4pajB}You need to leave your current army to create a new one.");
-		}
-		else if (!mapScreenActionIsEnabledWithReason)
-		{
-			CreateArmyHint.HintText = disabledReason;
-		}
-		else
-		{
-			CreateArmyHint.HintText = TextObject.Empty;
-		}
+		CanCreateArmy = Campaign.Current.Models.ArmyManagementCalculationModel.CanPlayerCreateArmy(out var disabledReason);
+		CreateArmyHint.HintText = disabledReason;
 	}
 }

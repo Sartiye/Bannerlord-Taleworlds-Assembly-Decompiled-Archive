@@ -70,7 +70,7 @@ public static class RandomOwnerExtensions
 		int num = max - min;
 		if (num == 0)
 		{
-			Debug.FailedAssert("invalid Random parameters", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\IRandomOwner.cs", "Random", 78);
+			Debug.FailedAssert("invalid Random parameters", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\IRandomOwner.cs", "Random", 79);
 			return 0;
 		}
 		return min + randomValue % num;
@@ -81,7 +81,7 @@ public static class RandomOwnerExtensions
 		float num = max - min;
 		if (num <= float.Epsilon)
 		{
-			Debug.FailedAssert("invalid Random parameters", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\IRandomOwner.cs", "Random", 90);
+			Debug.FailedAssert("invalid Random parameters", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\IRandomOwner.cs", "Random", 91);
 			return min;
 		}
 		return min + randomValue * num;

@@ -67,7 +67,7 @@ public static class SellItemsAction
 		}
 		else if (sellerParty != null && sellerParty.IsSettlement)
 		{
-			int num2 = MBRandom.RoundRandomized((float)num * (sellerParty.Settlement.IsTown ? Campaign.Current.Models.SettlementTaxModel.GetTownTaxRatio(sellerParty.Settlement.Town) : Campaign.Current.Models.SettlementTaxModel.GetVillageTaxRatio()));
+			int num2 = MBRandom.RoundRandomized((float)num * (sellerParty.Settlement.IsTown ? Campaign.Current.Models.SettlementTaxModel.GetTownTaxRatio(sellerParty.Settlement.Town) : Campaign.Current.Models.SettlementTaxModel.GetVillageTaxRatio(sellerParty.Settlement.Village)));
 			if (mobileParty.IsCaravan)
 			{
 				if (Campaign.Current.GameStarted)

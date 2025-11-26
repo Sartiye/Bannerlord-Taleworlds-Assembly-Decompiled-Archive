@@ -83,7 +83,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public BattleSideEnum BattleSide = BattleSideEnum.None;
 
-	[EditableScriptComponentVariable(false)]
+	[EditableScriptComponentVariable(false, "")]
 	public Func<int, int, int, int> OnCalculateDestructionStateIndex;
 
 	private float _hitPoint;
@@ -100,7 +100,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	private int _currentStateIndex;
 
-	private IEnumerable<GameEntity> _heavyHitParticles;
+	private List<GameEntity> _heavyHitParticles;
 
 	public float HitPoint
 	{
@@ -125,6 +125,8 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public FocusableObjectType FocusableObjectType => FocusableObjectType.None;
 
+	public virtual bool IsFocusable => true;
+
 	public bool IsDestroyed => HitPoint <= 0f;
 
 	public GameEntity CurrentState { get; private set; }
@@ -147,7 +149,16 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public event OnHitTakenAndDestroyedDelegate OnHitTaken;
 
-	private DestructableComponent()
+	protected override void OnRemoved(int removeReason)
+	{
+		base.OnRemoved(removeReason);
+		_referenceEntity = null;
+		_previousState = null;
+		_originalState = null;
+		CurrentState = null;
+	}
+
+	protected DestructableComponent()
 	{
 	}
 
@@ -155,7 +166,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 	{
 		base.OnInit();
 		_hitPoint = MaxHitPoint;
-		_referenceEntity = (string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag(ReferenceEntityTag)));
+		_referenceEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetFirstChildEntityWithTag(ReferenceEntityTag));
 		if (!string.IsNullOrEmpty(DestructionStates))
 		{
 			_destructionStates = DestructionStates.Replace(" ", string.Empty).Split(new char[1] { ',' });
@@ -167,8 +178,8 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 				{
 					continue;
 				}
-				GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.Name == item);
-				if (gameEntity != null)
+				WeakGameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity x) => x.Name == item);
+				if (gameEntity.IsValid)
 				{
 					PhysicsShape physicsShape = null;
 					gameEntity.AddBodyFlags(BodyFlags.Moveable);
@@ -180,7 +191,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 					}
 					continue;
 				}
-				GameEntity gameEntity2 = GameEntity.Instantiate(null, item, callScriptCallbacks: false);
+				GameEntity gameEntity2 = TaleWorlds.Engine.GameEntity.Instantiate(null, item, callScriptCallbacks: false);
 				List<GameEntity> children = new List<GameEntity>();
 				gameEntity2.GetChildrenRecursive(ref children);
 				children.Add(gameEntity2);
@@ -202,50 +213,47 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 				PhysicsShape.ProcessPreloadQueue();
 			}
 		}
-		_originalState = GetOriginalState(base.GameEntity);
-		if (_originalState == null)
-		{
-			_originalState = base.GameEntity;
-		}
+		WeakGameEntity originalState = GetOriginalState(base.GameEntity);
+		_originalState = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(originalState.IsValid ? originalState : base.GameEntity);
 		CurrentState = _originalState;
 		_originalState.AddBodyFlags(BodyFlags.Moveable);
-		List<GameEntity> children2 = new List<GameEntity>();
+		List<WeakGameEntity> children2 = new List<WeakGameEntity>();
 		base.GameEntity.GetChildrenRecursive(ref children2);
-		foreach (GameEntity item3 in children2.Where((GameEntity child) => child.BodyFlag.HasAnyFlag(BodyFlags.Dynamic)))
+		foreach (WeakGameEntity item3 in children2.Where((WeakGameEntity child) => child.BodyFlag.HasAnyFlag(BodyFlags.Dynamic)))
 		{
 			item3.SetPhysicsState(isEnabled: false, setChildren: true);
 			item3.SetFrameChanged();
 		}
-		_heavyHitParticles = base.GameEntity.CollectChildrenEntitiesWithTag(HeavyHitParticlesTag);
+		_heavyHitParticles = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity).CollectChildrenEntitiesWithTag(HeavyHitParticlesTag);
 		base.GameEntity.SetAnimationSoundActivation(activate: true);
 	}
 
-	public GameEntity GetOriginalState(GameEntity parent)
+	public WeakGameEntity GetOriginalState(WeakGameEntity parent)
 	{
 		int childCount = parent.ChildCount;
 		for (int i = 0; i < childCount; i++)
 		{
-			GameEntity child = parent.GetChild(i);
+			WeakGameEntity child = parent.GetChild(i);
 			if (!child.HasScriptOfType<DestructableComponent>())
 			{
 				if (child.HasTag(OriginalStateTag))
 				{
 					return child;
 				}
-				GameEntity originalState = GetOriginalState(child);
-				if (originalState != null)
+				WeakGameEntity originalState = GetOriginalState(child);
+				if (originalState.IsValid)
 				{
 					return originalState;
 				}
 			}
 		}
-		return null;
+		return WeakGameEntity.Invalid;
 	}
 
 	protected internal override void OnEditorInit()
 	{
 		base.OnEditorInit();
-		_referenceEntity = (string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag(ReferenceEntityTag)));
+		_referenceEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetFirstChildEntityWithTag(ReferenceEntityTag));
 	}
 
 	protected internal override void OnEditorVariableChanged(string variableName)
@@ -253,7 +261,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		base.OnEditorVariableChanged(variableName);
 		if (variableName.Equals(ReferenceEntityTag))
 		{
-			_referenceEntity = (string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetChildren().SingleOrDefault((GameEntity x) => x.HasTag(ReferenceEntityTag)));
+			_referenceEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetFirstChildEntityWithTag(ReferenceEntityTag));
 		}
 	}
 
@@ -277,12 +285,17 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 			int i;
 			for (i = 0; i < _destructionStates.Length; i++)
 			{
-				base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.Name == _destructionStates[i].ToString())?.Skeleton?.SetAnimationAtChannel(-1, 0);
+				WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity x) => x.Name == _destructionStates[i].ToString());
+				if (weakGameEntity.IsValid)
+				{
+					weakGameEntity.Skeleton?.SetAnimationAtChannel(-1, 0);
+				}
 			}
 		}
 		if (CurrentState != _originalState)
 		{
 			CurrentState.SetVisibilityExcludeParents(visible: false);
+			CurrentState.SetPhysicsState(isEnabled: false, setChildren: true);
 			CurrentState = _originalState;
 		}
 		CurrentState.SetVisibilityExcludeParents(visible: true);
@@ -298,23 +311,19 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 			new Vec3(-2f, -0.5f, -1f);
 			new Vec3(2f, 0.5f, 1f);
 			MatrixFrame output = MatrixFrame.Identity;
-			GameEntity gameEntity = _referenceEntity;
-			while (gameEntity.Parent != null)
-			{
-				gameEntity = gameEntity.Parent;
-			}
-			gameEntity.GetMeshBendedFrame(_referenceEntity.GetGlobalFrame(), ref output);
+			_referenceEntity.Root.GetMeshBendedFrame(_referenceEntity.GetGlobalFrame(), ref output);
 		}
 	}
 
-	public void TriggerOnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior)
+	public void TriggerOnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior)
 	{
-		OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, in weapon, attackerScriptComponentBehavior, out var _);
+		OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, in weapon, affectorWeaponSlotOrMissileIndex, attackerScriptComponentBehavior, out var _, out var _);
 	}
 
-	protected internal override bool OnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+	protected internal override bool OnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float modifiedDamage)
 	{
 		reportDamage = false;
+		modifiedDamage = inflictedDamage;
 		if (base.IsDisabled)
 		{
 			return true;
@@ -326,7 +335,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		else if (DestroyedByStoneOnly)
 		{
 			WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
-			if ((currentUsageItem.WeaponClass != WeaponClass.Stone && currentUsageItem.WeaponClass != WeaponClass.Boulder) || !currentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
+			if ((currentUsageItem.WeaponClass != WeaponClass.Sling && currentUsageItem.WeaponClass != WeaponClass.Stone && currentUsageItem.WeaponClass != WeaponClass.Boulder && currentUsageItem.WeaponClass != WeaponClass.BallistaBoulder && currentUsageItem.WeaponClass != WeaponClass.BallistaStone) || !currentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
 			{
 				inflictedDamage = 0;
 			}
@@ -418,12 +427,20 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		ReplaceEntityWithBrokenEntity(forcedId);
 		if (CurrentState != null)
 		{
-			foreach (GameEntity item in from child in CurrentState.GetChildren()
-				where child.BodyFlag.HasAnyFlag(BodyFlags.Dynamic)
-				select child)
+			List<GameEntity> children = new List<GameEntity>();
+			if (CurrentState.Parent != null)
 			{
-				item.SetPhysicsState(isEnabled: true, setChildren: true);
-				item.SetFrameChanged();
+				children.Add(CurrentState);
+			}
+			CurrentState.GetChildrenRecursive(ref children);
+			foreach (GameEntity item in children)
+			{
+				if (item.BodyFlag.HasAnyFlag(BodyFlags.Dynamic))
+				{
+					item.Parent.RemoveChild(item, keepPhysics: true, keepScenePointer: true, callScriptCallbacks: false, 178);
+					item.SetPhysicsState(isEnabled: true, setChildren: true);
+					item.SetFrameChanged();
+				}
 			}
 			if (!GameNetwork.IsDedicatedServer && !noEffects)
 			{
@@ -471,44 +488,41 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 	{
 		_previousState = CurrentState;
 		_previousState.SetVisibilityExcludeParents(visible: false);
+		_previousState.SetPhysicsState(isEnabled: false, setChildren: true);
 		if (!HasDestructionState)
 		{
 			return;
 		}
 		CurrentState = AddBrokenEntity(_destructionStates[_currentStateIndex - 1], out var newCreated);
-		if (newCreated)
+		if (!newCreated)
 		{
-			if (_originalState != base.GameEntity)
+			return;
+		}
+		if (_originalState != base.GameEntity)
+		{
+			base.GameEntity.AddChild(CurrentState.WeakEntity, autoLocalizeFrame: true);
+		}
+		if (forcedId == -1)
+		{
+			return;
+		}
+		MissionObject firstScriptOfType = CurrentState.GetFirstScriptOfType<MissionObject>();
+		if (firstScriptOfType != null)
+		{
+			firstScriptOfType.Id = new MissionObjectId(forcedId, createdAtRuntime: true);
 			{
-				base.GameEntity.AddChild(CurrentState, autoLocalizeFrame: true);
-			}
-			if (forcedId == -1)
-			{
+				foreach (GameEntity child in CurrentState.GetChildren())
+				{
+					MissionObject firstScriptOfType2 = child.GetFirstScriptOfType<MissionObject>();
+					if (firstScriptOfType2 != null && firstScriptOfType2.Id.CreatedAtRuntime)
+					{
+						firstScriptOfType2.Id = new MissionObjectId(++forcedId, createdAtRuntime: true);
+					}
+				}
 				return;
 			}
-			MissionObject firstScriptOfType = CurrentState.GetFirstScriptOfType<MissionObject>();
-			if (firstScriptOfType != null)
-			{
-				firstScriptOfType.Id = new MissionObjectId(forcedId, createdAtRuntime: true);
-				{
-					foreach (GameEntity child in CurrentState.GetChildren())
-					{
-						MissionObject firstScriptOfType2 = child.GetFirstScriptOfType<MissionObject>();
-						if (firstScriptOfType2 != null && firstScriptOfType2.Id.CreatedAtRuntime)
-						{
-							firstScriptOfType2.Id = new MissionObjectId(++forcedId, createdAtRuntime: true);
-						}
-					}
-					return;
-				}
-			}
-			MBDebug.ShowWarning("Current destruction state doesn't have mission object script component.");
 		}
-		else
-		{
-			MatrixFrame frame = _previousState.GetFrame();
-			CurrentState.SetFrame(ref frame);
-		}
+		MBDebug.ShowWarning("Current destruction state doesn't have mission object script component.");
 	}
 
 	protected internal override bool MovesEntity()
@@ -526,26 +540,43 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 	{
 		if (!string.IsNullOrEmpty(prefab))
 		{
-			GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.Name == prefab);
-			if (gameEntity != null)
+			int childCount = base.GameEntity.ChildCount;
+			int num = 0;
+			WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
+			for (int i = 0; i < childCount; i++)
 			{
-				gameEntity.SetVisibilityExcludeParents(visible: true);
+				WeakGameEntity child = base.GameEntity.GetChild(i);
+				if (child.Name == prefab)
+				{
+					num++;
+					if (MBRandom.RandomInt(num) == 0)
+					{
+						weakGameEntity = child;
+					}
+				}
+			}
+			GameEntity gameEntity;
+			if (weakGameEntity.IsValid)
+			{
+				gameEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(weakGameEntity);
+				weakGameEntity.SetVisibilityExcludeParents(visible: true);
+				weakGameEntity.SetPhysicsState(isEnabled: true, setChildren: true);
 				if (!GameNetwork.IsClientOrReplay)
 				{
-					gameEntity.GetScriptComponents<MissionObject>().FirstOrDefault()?.SetAbilityOfFaces(enabled: true);
+					weakGameEntity.GetScriptComponents<MissionObject>().FirstOrDefault()?.SetAbilityOfFaces(enabled: true);
 				}
 				newCreated = false;
 			}
 			else
 			{
-				gameEntity = GameEntity.Instantiate(Mission.Current.Scene, prefab, _referenceEntity.GetGlobalFrame());
+				gameEntity = TaleWorlds.Engine.GameEntity.Instantiate(Mission.Current.Scene, prefab, _referenceEntity.GetGlobalFrame());
 				if (gameEntity != null)
 				{
-					gameEntity.SetMobility(GameEntity.Mobility.stationary);
+					gameEntity.SetMobility(TaleWorlds.Engine.GameEntity.Mobility.Stationary);
 				}
-				if (base.GameEntity.Parent != null)
+				if (base.GameEntity.Parent.IsValid)
 				{
-					base.GameEntity.Parent.AddChild(gameEntity, autoLocalizeFrame: true);
+					base.GameEntity.Parent.AddChild(gameEntity.WeakEntity, autoLocalizeFrame: true);
 				}
 				newCreated = true;
 			}
@@ -559,6 +590,17 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 					gameEntity.Skeleton.SetAnimationAtChannel(animationIndexAtChannel, 0, 1f, -1f, animationParameterAtChannel);
 					gameEntity.ResumeSkeletonAnimation();
 				}
+			}
+			WeakGameEntity weakGameEntity2 = base.GameEntity;
+			while (weakGameEntity2 != null)
+			{
+				ColorAssigner firstScriptOfType = weakGameEntity2.GetFirstScriptOfType<ColorAssigner>();
+				if (firstScriptOfType != null)
+				{
+					firstScriptOfType.SetColor(gameEntity.WeakEntity);
+					break;
+				}
+				weakGameEntity2 = weakGameEntity2.Parent;
 			}
 			return gameEntity;
 		}
@@ -590,14 +632,14 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		}
 		else
 		{
-			base.GameEntity.AddChild(missileEntity);
+			base.GameEntity.AddChild(missileEntity.WeakEntity);
 		}
 	}
 
 	protected internal override bool OnCheckForProblems()
 	{
 		bool result = base.OnCheckForProblems();
-		if ((string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag(ReferenceEntityTag))) == null)
+		if (!(string.IsNullOrEmpty(ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetFirstChildEntityWithTag(ReferenceEntityTag)).IsValid)
 		{
 			MBEditor.AddEntityWarning(base.GameEntity, "Reference entity must be assigned. Root entity is " + base.GameEntity.Root.Name + ", child is " + base.GameEntity.Name);
 			result = true;
@@ -605,7 +647,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		string[] array = DestructionStates.Replace(" ", string.Empty).Split(new char[1] { ',' });
 		foreach (string destructionState in array)
 		{
-			if (!string.IsNullOrEmpty(destructionState) && !(base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.Name == destructionState) != null) && GameEntity.Instantiate(null, destructionState, callScriptCallbacks: false) == null)
+			if (!string.IsNullOrEmpty(destructionState) && !base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity x) => x.Name == destructionState).IsValid && TaleWorlds.Engine.GameEntity.Instantiate(null, destructionState, callScriptCallbacks: false) == null)
 			{
 				MBEditor.AddEntityWarning(base.GameEntity, "Destruction state '" + destructionState + "' is not valid.");
 				result = true;
@@ -624,27 +666,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public TextObject GetInfoTextForBeingNotInteractable(Agent userAgent)
 	{
-		return new TextObject();
-	}
-
-	public string GetDescriptionText(GameEntity gameEntity = null)
-	{
-		if (int.TryParse(gameEntity.Name.Split(new char[1] { '_' }).Last(), out var result))
-		{
-			string name = gameEntity.Name;
-			name = name.Remove(name.Length - result.ToString().Length);
-			name += "x";
-			if (GameTexts.TryGetText("str_destructible_component", out var textObject, name))
-			{
-				return textObject.ToString();
-			}
-			return "";
-		}
-		if (GameTexts.TryGetText("str_destructible_component", out var textObject2, gameEntity.Name))
-		{
-			return textObject2.ToString();
-		}
-		return "";
+		return null;
 	}
 
 	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
@@ -660,5 +682,25 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 			}
 			SetDestructionLevel(destructableComponentRecord.DestructionState, destructableComponentRecord.ForceIndex, 0f, Vec3.Zero, Vec3.Zero, noEffects: true);
 		}
+	}
+
+	public TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	{
+		TextObject textObject;
+		if (int.TryParse(gameEntity.Name.Split(new char[1] { '_' }).Last(), out var result))
+		{
+			string name = gameEntity.Name;
+			name = name.Remove(name.Length - result.ToString().Length);
+			name += "x";
+			if (GameTexts.TryGetText("str_destructible_component", out textObject, name))
+			{
+				return textObject;
+			}
+		}
+		if (GameTexts.TryGetText("str_destructible_component", out textObject, gameEntity.Name))
+		{
+			return textObject;
+		}
+		return null;
 	}
 }

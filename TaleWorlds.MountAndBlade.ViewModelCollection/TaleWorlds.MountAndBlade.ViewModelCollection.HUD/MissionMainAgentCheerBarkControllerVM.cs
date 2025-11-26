@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 using TaleWorlds.MountAndBlade.Diamond.Lobby;
@@ -36,10 +36,6 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 
 	private string _selectedNodeText;
 
-	private string _selectText;
-
-	private string _focusedCheerText;
-
 	private MBBindingList<CheerBarkNodeItemVM> _nodes;
 
 	[DataSourceProperty]
@@ -59,40 +55,6 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 				{
 					PopulateList();
 				}
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string SelectText
-	{
-		get
-		{
-			return _selectText;
-		}
-		set
-		{
-			if (value != _selectText)
-			{
-				_selectText = value;
-				OnPropertyChangedWithValue(value, "SelectText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string FocusedCheerText
-	{
-		get
-		{
-			return _focusedCheerText;
-		}
-		set
-		{
-			if (value != _focusedCheerText)
-			{
-				_focusedCheerText = value;
-				OnPropertyChangedWithValue(value, "FocusedCheerText");
 			}
 		}
 	}
@@ -210,7 +172,7 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 				TauntCosmeticElement tauntCosmeticElement = CosmeticsManager.GetCosmeticElement(tauntId) as TauntCosmeticElement;
 				if (!tauntCosmeticElement.IsFree && !_ownedTauntCosmetics.Contains(tauntId))
 				{
-					Debug.FailedAssert("Taunt list have invalid taunt: " + tauntId, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentCheerBarkControllerVM.cs", "PopulateList", 85);
+					Debug.FailedAssert("Taunt list have invalid taunt: " + tauntId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\HUD\\MissionMainAgentCheerBarkControllerVM.cs", "PopulateList", 86);
 				}
 				else if (tauntIndex >= 0 && tauntIndex < TauntCosmeticElement.MaxNumberOfTaunts)
 				{
@@ -222,13 +184,13 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 				TauntCosmeticElement tauntCosmeticElement2 = array[i];
 				if (tauntCosmeticElement2 != null)
 				{
-					int indexOfAction = TauntUsageManager.GetIndexOfAction(tauntCosmeticElement2.Id);
+					int indexOfAction = TauntUsageManager.Instance.GetIndexOfAction(tauntCosmeticElement2.Id);
 					TauntUsageManager.TauntUsage.TauntUsageFlag actionNotUsableReason = CosmeticsManagerHelper.GetActionNotUsableReason(Agent.Main, indexOfAction);
 					cheerBarkNodeItemVM.AddSubNode(new CheerBarkNodeItemVM(tauntCosmeticElement2.Id, new TextObject("{=!}" + tauntCosmeticElement2.Name), tauntCosmeticElement2.Id, GetCheerShortcut(i), consoleOnlyShortcut: true, actionNotUsableReason));
 				}
 				else
 				{
-					cheerBarkNodeItemVM.AddSubNode(new CheerBarkNodeItemVM(string.Empty, TextObject.Empty, string.Empty, null, consoleOnlyShortcut: true));
+					cheerBarkNodeItemVM.AddSubNode(new CheerBarkNodeItemVM(string.Empty, TextObject.GetEmpty(), string.Empty, null, consoleOnlyShortcut: true));
 				}
 			}
 			HotKey hotKey3 = category.GetHotKey("CheerBarkSelectSecondCategory");
@@ -246,7 +208,7 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 			Nodes.Add(new CheerBarkNodeItemVM(new TextObject("{=koX9okuG}None"), "none", hotKey, consoleOnlyShortcut: true));
 			for (int k = 0; k < array2.Length; k++)
 			{
-				Nodes.Add(new CheerBarkNodeItemVM(new TextObject("{=!}" + (k + 1)), array2[k].Name, GetCheerShortcut(k), consoleOnlyShortcut: true));
+				Nodes.Add(new CheerBarkNodeItemVM(new TextObject("{=!}" + (k + 1)), array2[k].GetName(), GetCheerShortcut(k), consoleOnlyShortcut: true));
 			}
 		}
 		DisabledReasonText = string.Empty;
@@ -292,20 +254,14 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 		}
 	}
 
-	public void OnCancelHoldController()
+	public void ExecuteActivate()
 	{
-		IsActive = false;
-		Nodes.ApplyActionOnAllItems(delegate(CheerBarkNodeItemVM c)
-		{
-			c.IsSelected = false;
-		});
+		IsActive = true;
 	}
 
-	public void OnSelectControllerToggle(bool isActive)
+	public void ExecuteDeactivate(bool applySelection)
 	{
-		FocusedCheerText = "";
-		SelectedNodeText = "";
-		if (!isActive)
+		if (applySelection)
 		{
 			CheerBarkNodeItemVM cheerBarkNodeItemVM = Nodes.FirstOrDefault((CheerBarkNodeItemVM c) => c.IsSelected);
 			if (cheerBarkNodeItemVM != null)
@@ -322,20 +278,20 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 						}
 						else
 						{
-							int indexOfAction = TauntUsageManager.GetIndexOfAction(cheerBarkNodeItemVM2.TypeAsString);
+							int indexOfAction = TauntUsageManager.Instance.GetIndexOfAction(cheerBarkNodeItemVM2.TypeAsString);
 							_onSelectCheer?.Invoke(indexOfAction);
 						}
 					}
 				}
 				else if (cheerBarkNodeItemVM.TypeAsString != "none")
 				{
-					int num = TauntUsageManager.GetIndexOfAction(cheerBarkNodeItemVM.TypeAsString);
+					int num = TauntUsageManager.Instance.GetIndexOfAction(cheerBarkNodeItemVM.TypeAsString);
 					if (num == -1)
 					{
 						ActionIndexCache[] defaultTauntActions = Agent.DefaultTauntActions;
 						for (int i = 0; i < defaultTauntActions.Length; i++)
 						{
-							string name = defaultTauntActions[i].Name;
+							string name = defaultTauntActions[i].GetName();
 							if (cheerBarkNodeItemVM.TypeAsString == name)
 							{
 								num = i;
@@ -346,12 +302,12 @@ public class MissionMainAgentCheerBarkControllerVM : ViewModel
 					_onSelectCheer?.Invoke(num);
 				}
 			}
-			Nodes.ApplyActionOnAllItems(delegate(CheerBarkNodeItemVM n)
-			{
-				n.IsSelected = false;
-			});
 		}
-		IsActive = isActive;
+		Nodes.ApplyActionOnAllItems(delegate(CheerBarkNodeItemVM n)
+		{
+			n.IsSelected = false;
+		});
+		IsActive = false;
 	}
 
 	public void OnNodeFocused(CheerBarkNodeItemVM focusedNode)

@@ -20,7 +20,7 @@ public class EncyclopediaSettlementPageVM : EncyclopediaContentPageVM
 		VillageWithCastle
 	}
 
-	private readonly Settlement _settlement;
+	protected readonly Settlement _settlement;
 
 	private int _settlementType;
 
@@ -36,37 +36,13 @@ public class EncyclopediaSettlementPageVM : EncyclopediaContentPageVM
 
 	private HintViewModel _showInMapHint;
 
-	private BasicTooltipViewModel _militasHint;
+	private MBBindingList<EncyclopediaSettlementPageStatItemVM> _leftSideProperties;
 
-	private BasicTooltipViewModel _prosperityHint;
-
-	private BasicTooltipViewModel _loyaltyHint;
-
-	private BasicTooltipViewModel _securityHint;
-
-	private BasicTooltipViewModel _wallsHint;
-
-	private BasicTooltipViewModel _garrisonHint;
-
-	private BasicTooltipViewModel _foodHint;
+	private MBBindingList<EncyclopediaSettlementPageStatItemVM> _rightSideProperties;
 
 	private HeroVM _owner;
 
 	private string _ownerText;
-
-	private string _militasText;
-
-	private string _garrisonText;
-
-	private string _prosperityText;
-
-	private string _loyaltyText;
-
-	private string _securityText;
-
-	private string _wallsText;
-
-	private string _foodText;
 
 	private string _nameText;
 
@@ -439,239 +415,35 @@ public class EncyclopediaSettlementPageVM : EncyclopediaContentPageVM
 	}
 
 	[DataSourceProperty]
-	public BasicTooltipViewModel MilitasHint
+	public MBBindingList<EncyclopediaSettlementPageStatItemVM> LeftSideProperties
 	{
 		get
 		{
-			return _militasHint;
+			return _leftSideProperties;
 		}
 		set
 		{
-			if (value != _militasHint)
+			if (value != _leftSideProperties)
 			{
-				_militasHint = value;
-				OnPropertyChangedWithValue(value, "MilitasHint");
+				_leftSideProperties = value;
+				OnPropertyChangedWithValue(value, "LeftSideProperties");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public BasicTooltipViewModel FoodHint
+	public MBBindingList<EncyclopediaSettlementPageStatItemVM> RightSideProperties
 	{
 		get
 		{
-			return _foodHint;
+			return _rightSideProperties;
 		}
 		set
 		{
-			if (value != _foodHint)
+			if (value != _rightSideProperties)
 			{
-				_foodHint = value;
-				OnPropertyChangedWithValue(value, "FoodHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public BasicTooltipViewModel GarrisonHint
-	{
-		get
-		{
-			return _garrisonHint;
-		}
-		set
-		{
-			if (value != _garrisonHint)
-			{
-				_garrisonHint = value;
-				OnPropertyChangedWithValue(value, "GarrisonHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public BasicTooltipViewModel ProsperityHint
-	{
-		get
-		{
-			return _prosperityHint;
-		}
-		set
-		{
-			if (value != _prosperityHint)
-			{
-				_prosperityHint = value;
-				OnPropertyChangedWithValue(value, "ProsperityHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public BasicTooltipViewModel LoyaltyHint
-	{
-		get
-		{
-			return _loyaltyHint;
-		}
-		set
-		{
-			if (value != _loyaltyHint)
-			{
-				_loyaltyHint = value;
-				OnPropertyChangedWithValue(value, "LoyaltyHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public BasicTooltipViewModel SecurityHint
-	{
-		get
-		{
-			return _securityHint;
-		}
-		set
-		{
-			if (value != _securityHint)
-			{
-				_securityHint = value;
-				OnPropertyChangedWithValue(value, "SecurityHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public BasicTooltipViewModel WallsHint
-	{
-		get
-		{
-			return _wallsHint;
-		}
-		set
-		{
-			if (value != _wallsHint)
-			{
-				_wallsHint = value;
-				OnPropertyChangedWithValue(value, "WallsHint");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string MilitasText
-	{
-		get
-		{
-			return _militasText;
-		}
-		set
-		{
-			if (value != _militasText)
-			{
-				_militasText = value;
-				OnPropertyChangedWithValue(value, "MilitasText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string ProsperityText
-	{
-		get
-		{
-			return _prosperityText;
-		}
-		set
-		{
-			if (value != _prosperityText)
-			{
-				_prosperityText = value;
-				OnPropertyChangedWithValue(value, "ProsperityText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string LoyaltyText
-	{
-		get
-		{
-			return _loyaltyText;
-		}
-		set
-		{
-			if (value != _loyaltyText)
-			{
-				_loyaltyText = value;
-				OnPropertyChangedWithValue(value, "LoyaltyText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string SecurityText
-	{
-		get
-		{
-			return _securityText;
-		}
-		set
-		{
-			if (value != _securityText)
-			{
-				_securityText = value;
-				OnPropertyChangedWithValue(value, "SecurityText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string WallsText
-	{
-		get
-		{
-			return _wallsText;
-		}
-		set
-		{
-			if (value != _wallsText)
-			{
-				_wallsText = value;
-				OnPropertyChangedWithValue(value, "WallsText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string FoodText
-	{
-		get
-		{
-			return _foodText;
-		}
-		set
-		{
-			if (value != _foodText)
-			{
-				_foodText = value;
-				OnPropertyChangedWithValue(value, "FoodText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string GarrisonText
-	{
-		get
-		{
-			return _garrisonText;
-		}
-		set
-		{
-			if (value != _garrisonText)
-			{
-				_garrisonText = value;
-				OnPropertyChangedWithValue(value, "GarrisonText");
+				_rightSideProperties = value;
+				OnPropertyChangedWithValue(value, "RightSideProperties");
 			}
 		}
 	}
@@ -828,44 +600,41 @@ public class EncyclopediaSettlementPageVM : EncyclopediaContentPageVM
 			GameTexts.SetVariable("SETTLEMENT_LINK", _settlement.Village.Bound.EncyclopediaLinkWithName);
 			BoundSettlementText = GameTexts.FindText("str_bound_settlement_encyclopedia").ToString();
 		}
-		int num = (int)_settlement.Militia;
 		TextObject disableReason;
 		bool flag = CampaignUIHelper.IsSettlementInformationHidden(_settlement, out disableReason);
 		string text = GameTexts.FindText("str_missing_info_indicator").ToString();
-		MilitasText = (flag ? text : num.ToString());
+		string statText = (flag ? text : ((int)_settlement.Militia).ToString());
 		if (_settlement.IsFortification)
 		{
-			FoodHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(_settlement.Town));
-			LoyaltyHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownLoyaltyTooltip(_settlement.Town));
-			MilitasHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownMilitiaTooltip(_settlement.Town));
-			ProsperityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(_settlement.Town));
-			WallsHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownWallsTooltip(_settlement.Town));
-			GarrisonHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownGarrisonTooltip(_settlement.Town));
-			SecurityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(_settlement.Town));
-			ProsperityText = (flag ? text : ((int)_settlement.Town.Prosperity).ToString());
-			LoyaltyText = (flag ? text : ((int)_settlement.Town.Loyalty).ToString());
-			SecurityText = (flag ? text : ((int)_settlement.Town.Security).ToString());
-			GarrisonText = (flag ? text : (_settlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString() ?? "0"));
-			FoodText = (flag ? text : ((int)_settlement.Town.FoodStocks).ToString());
-			WallsText = (flag ? text : _settlement.Town.GetWallLevel().ToString());
+			LeftSideProperties = new MBBindingList<EncyclopediaSettlementPageStatItemVM>
+			{
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownWallsTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Wall, flag ? text : _settlement.Town.GetWallLevel().ToString()),
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownGarrisonTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Garrison, flag ? text : _settlement.Town.GarrisonParty?.Party.NumberOfAllMembers.ToString()),
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownMilitiaTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Militia, statText),
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownFoodTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Food, flag ? text : ((int)_settlement.Town.FoodStocks).ToString())
+			};
+			RightSideProperties = new MBBindingList<EncyclopediaSettlementPageStatItemVM>
+			{
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownProsperityTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Prosperity, flag ? text : ((int)_settlement.Town.Prosperity).ToString()),
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownLoyaltyTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Loyalty, flag ? text : ((int)_settlement.Town.Loyalty).ToString()),
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetTownSecurityTooltip(_settlement.Town)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Security, flag ? text : ((int)_settlement.Town.Security).ToString())
+			};
 		}
 		else
 		{
-			MilitasHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageMilitiaTooltip(_settlement.Village));
-			ProsperityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageProsperityTooltip(_settlement.Village));
-			LoyaltyHint = new BasicTooltipViewModel();
-			WallsHint = new BasicTooltipViewModel();
-			ProsperityText = (flag ? text : ((int)_settlement.Village.Hearth).ToString());
-			LoyaltyText = "-";
-			SecurityText = "-";
-			FoodText = "-";
-			GarrisonText = "-";
-			WallsText = "-";
+			LeftSideProperties = new MBBindingList<EncyclopediaSettlementPageStatItemVM>
+			{
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageMilitiaTooltip(_settlement.Village)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Militia, statText)
+			};
+			RightSideProperties = new MBBindingList<EncyclopediaSettlementPageStatItemVM>
+			{
+				new EncyclopediaSettlementPageStatItemVM(new BasicTooltipViewModel(() => CampaignUIHelper.GetVillageProsperityTooltip(_settlement.Village)), EncyclopediaSettlementPageStatItemVM.DescriptionType.Prosperity, flag ? text : ((int)_settlement.Village.Hearth).ToString())
+			};
 		}
 		NameText = _settlement.Name.ToString();
-		for (int num2 = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num2 >= 0; num2--)
+		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num2] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_settlement))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_settlement))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}

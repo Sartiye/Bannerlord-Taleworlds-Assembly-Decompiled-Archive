@@ -10,11 +10,27 @@ public class SimpleAgentOrigin : IAgentOriginBase
 {
 	private CharacterObject _troop;
 
+	private bool _hasThrownWeapon;
+
+	private bool _hasHeavyArmor;
+
+	private bool _hasShield;
+
+	private bool _hasSpear;
+
 	private Banner _banner;
 
 	private UniqueTroopDescriptor _descriptor;
 
 	public BasicCharacterObject Troop => _troop;
+
+	bool IAgentOriginBase.HasThrownWeapon => _hasThrownWeapon;
+
+	bool IAgentOriginBase.HasHeavyArmor => _hasHeavyArmor;
+
+	bool IAgentOriginBase.HasShield => _hasShield;
+
+	bool IAgentOriginBase.HasSpear => _hasSpear;
 
 	public bool IsUnderPlayersCommand
 	{
@@ -103,6 +119,7 @@ public class SimpleAgentOrigin : IAgentOriginBase
 		_descriptor = descriptor;
 		Rank = ((rank == -1) ? MBRandom.RandomInt(10000) : rank);
 		_banner = banner;
+		AgentOriginUtilities.GetDefaultTroopTraits(_troop, out _hasThrownWeapon, out _hasSpear, out _hasShield, out _hasHeavyArmor);
 	}
 
 	public void SetWounded()
@@ -117,7 +134,7 @@ public class SimpleAgentOrigin : IAgentOriginBase
 		}
 	}
 
-	public void SetRouted()
+	public void SetRouted(bool isOrderRetreat)
 	{
 	}
 
@@ -125,16 +142,16 @@ public class SimpleAgentOrigin : IAgentOriginBase
 	{
 	}
 
-	void IAgentOriginBase.OnScoreHit(BasicCharacterObject victim, BasicCharacterObject captain, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon)
+	void IAgentOriginBase.OnScoreHit(BasicCharacterObject victim, BasicCharacterObject formationCaptain, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon)
 	{
 		if (isTeamKill)
 		{
 			CharacterObject troop = _troop;
-			Campaign.Current.Models.CombatXpModel.GetXpFromHit(troop, (CharacterObject)captain, (CharacterObject)victim, Party, damage, isFatal, CombatXpModel.MissionTypeEnum.Battle, out var xpAmount);
+			ExplainedNumber xpFromHit = Campaign.Current.Models.CombatXpModel.GetXpFromHit(troop, (CharacterObject)formationCaptain, (CharacterObject)victim, Party, damage, isFatal, CombatXpModel.MissionTypeEnum.Battle);
 			if (troop.IsHero && attackerWeapon != null)
 			{
 				SkillObject skillForWeapon = Campaign.Current.Models.CombatXpModel.GetSkillForWeapon(attackerWeapon, isSiegeEngineHit: false);
-				troop.HeroObject.AddSkillXp(skillForWeapon, xpAmount);
+				troop.HeroObject.AddSkillXp(skillForWeapon, xpFromHit.RoundedResultNumber);
 			}
 		}
 	}
@@ -142,5 +159,10 @@ public class SimpleAgentOrigin : IAgentOriginBase
 	public void SetBanner(Banner banner)
 	{
 		_banner = banner;
+	}
+
+	TroopTraitsMask IAgentOriginBase.GetTraitsMask()
+	{
+		return AgentOriginUtilities.GetDefaultTraitsMask(this);
 	}
 }

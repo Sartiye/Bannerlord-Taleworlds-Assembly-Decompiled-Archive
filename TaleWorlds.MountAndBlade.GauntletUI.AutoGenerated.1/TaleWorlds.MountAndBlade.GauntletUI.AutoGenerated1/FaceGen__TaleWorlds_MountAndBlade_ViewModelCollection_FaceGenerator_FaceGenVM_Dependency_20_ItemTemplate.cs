@@ -18,7 +18,9 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 
 	private ScrollingRichTextWidget _widget_1;
 
-	private HintWidget _widget_2;
+	private ScrollingRichTextWidget _widget_2;
+
+	private HintWidget _widget_3;
 
 	private SelectorItemVM _datasource_Root;
 
@@ -36,8 +38,10 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget.AddChild(_widget_0);
 		_widget_1 = new ScrollingRichTextWidget(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_2 = new HintWidget(base.Context);
+		_widget_2 = new ScrollingRichTextWidget(base.Context);
 		_widget.AddChild(_widget_2);
+		_widget_3 = new HintWidget(base.Context);
+		_widget.AddChild(_widget_3);
 	}
 
 	public void SetIds()
@@ -73,9 +77,20 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.Brush = base.Context.GetBrush("SPOptions.Dropdown.Item.Text");
 		_widget_1.IsAutoScrolling = false;
 		_widget_1.ScrollOnHoverWidget = _widget.FindChild(new BindingPath("..\\DropdownItemButton"));
-		_widget_2.DoNotAcceptEvents = true;
+		_widget_1.IsEnabled = true;
 		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_2.MarginLeft = 7f;
+		_widget_2.MarginRight = 7f;
+		_widget_2.VerticalAlignment = VerticalAlignment.Center;
+		_widget_2.Brush = base.Context.GetBrush("SPOptions.Dropdown.Item.Text");
+		_widget_2.IsAutoScrolling = false;
+		_widget_2.ScrollOnHoverWidget = _widget.FindChild(new BindingPath("..\\DropdownItemButton"));
+		_widget_2.IsEnabled = false;
+		_widget_3.DoNotAcceptEvents = true;
+		_widget_3.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3.HeightSizePolicy = SizePolicy.StretchToParent;
 	}
 
 	public void DestroyDataSource()
@@ -109,6 +124,15 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 			if (_datasource_Root_Hint != null)
 			{
 				_datasource_Root_Hint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Hint;
@@ -120,7 +144,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_2.EventFire -= EventListenerOf_widget_2;
+				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -132,7 +156,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
-	private void EventListenerOf_widget_2(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -248,6 +272,67 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		{
 			_datasource_Root.StringItem = _widget_1.Text;
 		}
+		else if (propertyName == "IsVisible")
+		{
+			_datasource_Root.CanBeSelected = _widget_1.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_2(string propertyName)
+	{
+		if (propertyName == "Text")
+		{
+			_datasource_Root.StringItem = _widget_2.Text;
+		}
+		else if (propertyName == "IsHidden")
+		{
+			_datasource_Root.CanBeSelected = _widget_2.IsHidden;
+		}
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
@@ -304,9 +389,12 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			break;
 		case "CanBeSelected":
 			_widget.IsEnabled = _datasource_Root.CanBeSelected;
+			_widget_1.IsVisible = _datasource_Root.CanBeSelected;
+			_widget_2.IsHidden = _datasource_Root.CanBeSelected;
 			break;
 		case "StringItem":
 			_widget_1.Text = _datasource_Root.StringItem;
+			_widget_2.Text = _datasource_Root.StringItem;
 			break;
 		}
 	}
@@ -391,6 +479,15 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 			if (_datasource_Root_Hint != null)
 			{
 				_datasource_Root_Hint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Hint;
@@ -402,7 +499,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_2.EventFire -= EventListenerOf_widget_2;
+				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -430,6 +527,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
 			_widget_1.Text = _datasource_Root.StringItem;
+			_widget_1.IsVisible = _datasource_Root.CanBeSelected;
 			_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1;
@@ -439,6 +537,17 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.Text = _datasource_Root.StringItem;
+			_widget_2.IsHidden = _datasource_Root.CanBeSelected;
+			_widget_2.PropertyChanged += PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
 			_datasource_Root_Hint = _datasource_Root.Hint;
 			if (_datasource_Root_Hint != null)
 			{
@@ -451,7 +560,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 				_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_2.EventFire += EventListenerOf_widget_2;
+				_widget_3.EventFire += EventListenerOf_widget_3;
 			}
 		}
 	}
@@ -469,7 +578,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_2.EventFire -= EventListenerOf_widget_2;
+			_widget_3.EventFire -= EventListenerOf_widget_3;
 			_datasource_Root_Hint = null;
 		}
 		_datasource_Root_Hint = newDataSource;
@@ -485,7 +594,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_2.EventFire += EventListenerOf_widget_2;
+			_widget_3.EventFire += EventListenerOf_widget_3;
 		}
 	}
 }

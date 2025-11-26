@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.Core;
@@ -31,7 +30,7 @@ public class EntitySystem<T> where T : class, IEntityComponent
 
 	public T AddComponent(Type componentType)
 	{
-		T val = componentType.GetConstructor(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null).Invoke(new object[0]) as T;
+		T val = componentType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]) as T;
 		_components.Add(val);
 		Type type = val.GetType();
 		while (type != null && type != typeof(object))
@@ -74,7 +73,7 @@ public class EntitySystem<T> where T : class, IEntityComponent
 		return null;
 	}
 
-	public List<TComponent> GetComponents<TComponent>() where TComponent : class, T
+	public List<TComponent> GetComponents<TComponent>() where TComponent : T
 	{
 		if (_componentsOfTypes.ContainsKey(typeof(TComponent)))
 		{
@@ -84,12 +83,17 @@ public class EntitySystem<T> where T : class, IEntityComponent
 				return list as List<TComponent>;
 			}
 		}
-		return null;
+		return new List<TComponent>();
 	}
 
 	public MBList<T> GetComponents()
 	{
 		return _components;
+	}
+
+	public void Finalize(T component)
+	{
+		component.OnFinalize();
 	}
 
 	public void RemoveComponent(T component)
@@ -111,5 +115,10 @@ public class EntitySystem<T> where T : class, IEntityComponent
 		{
 			RemoveComponent((T)component);
 		}
+	}
+
+	public void SortComponents<TComponent>(Comparison<T> comparison) where TComponent : class, T
+	{
+		_components.Sort(comparison);
 	}
 }

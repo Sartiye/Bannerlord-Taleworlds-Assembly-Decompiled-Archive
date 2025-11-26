@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
@@ -73,12 +74,14 @@ public class MarriageBarterable : Barterable
 					num9 = Campaign.Current.Models.DiplomacyModel.GetValueOfHeroForFaction(HeroBeingProposedTo, clanAfterMarriage.Kingdom, forMarriage: true);
 				}
 			}
-			float num10 = 2f * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f));
-			return (int)(-50000f + num + num2 + num3 + num8 + (float)num7 + num9 + num6 + num10);
+			float num10 = Campaign.Current.Models.AgeModel.HeroComesOfAge;
+			float num11 = 2f * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num10, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num10, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num10, 0f));
+			return (int)(-50000f + num + num2 + num3 + num8 + (float)num7 + num9 + num6 + num11);
 		}
-		float num11 = 0f - HeroBeingProposedTo.Clan.Renown;
-		float num12 = 0f - 2f * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - 18f, 0f));
-		return (int)(num11 + num12);
+		float num12 = 0f - HeroBeingProposedTo.Clan.Renown;
+		float num13 = Campaign.Current.Models.AgeModel.HeroComesOfAge;
+		float num14 = 0f - 2f * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num13, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num13, 0f)) * MathF.Min(0f, 20f - MathF.Max(HeroBeingProposedTo.Age - num13, 0f));
+		return (int)(num12 + num14);
 	}
 
 	public override void CheckBarterLink(Barterable linkedBarterable)
@@ -104,7 +107,7 @@ public class MarriageBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(CharacterCode.CreateFrom(HeroBeingProposedTo.CharacterObject));
+		return new CharacterImageIdentifier(CharacterCode.CreateFrom(HeroBeingProposedTo.CharacterObject));
 	}
 
 	public override string GetEncyclopediaLink()

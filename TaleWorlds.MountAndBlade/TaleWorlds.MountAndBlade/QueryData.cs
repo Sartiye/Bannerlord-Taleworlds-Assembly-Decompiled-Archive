@@ -70,6 +70,11 @@ public class QueryData<T> : IQueryData
 		return _cachedValue;
 	}
 
+	public T GetCachedValueUnlessTooOld()
+	{
+		return _cachedValue;
+	}
+
 	public T GetCachedValueWithMaxAge(float age)
 	{
 		if (Mission.Current.CurrentTime > _expireTime - _lifetime + TaleWorlds.Library.MathF.Min(_lifetime, age))

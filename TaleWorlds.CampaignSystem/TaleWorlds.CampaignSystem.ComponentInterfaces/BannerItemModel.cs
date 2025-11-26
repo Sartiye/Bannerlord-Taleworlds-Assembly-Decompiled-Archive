@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BannerItemModel : GameModel
+public abstract class BannerItemModel : MBGameModel<BannerItemModel>
 {
 	public abstract IEnumerable<ItemObject> GetPossibleRewardBannerItems();
 

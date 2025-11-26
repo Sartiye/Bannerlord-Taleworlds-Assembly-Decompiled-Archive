@@ -2,7 +2,7 @@ namespace TaleWorlds.Library;
 
 public interface ITelemetryManager
 {
-	uint GetTelemetryLevelMask();
+	TelemetryLevelMask GetTelemetryLevelMask();
 
 	void StartTelemetryConnection(bool showErrors);
 

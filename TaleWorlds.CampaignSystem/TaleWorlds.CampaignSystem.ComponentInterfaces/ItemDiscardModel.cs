@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ItemDiscardModel : GameModel
+public abstract class ItemDiscardModel : MBGameModel<ItemDiscardModel>
 {
 	public abstract int GetXpBonusForDiscardingItems(ItemRoster itemRoster);
 

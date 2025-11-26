@@ -374,7 +374,7 @@ public class WeaponDesignResultPopupVM : ViewModel
 		}
 	}
 
-	public WeaponDesignResultPopupVM(ItemObject craftedItem, string itemName, Action onFinalize, Crafting crafting, CraftingOrder completedOrder, ItemCollectionElementViewModel itemVisualModel, MBBindingList<ItemFlagVM> weaponFlagIconsList, Func<CraftingSecondaryUsageItemVM, MBBindingList<WeaponDesignResultPropertyItemVM>> onGetPropertyList, Action<CraftingSecondaryUsageItemVM> onUsageSelected)
+	public WeaponDesignResultPopupVM(ItemObject craftedItem, TextObject itemName, Action onFinalize, Crafting crafting, CraftingOrder completedOrder, ItemCollectionElementViewModel itemVisualModel, MBBindingList<ItemFlagVM> weaponFlagIconsList, Func<CraftingSecondaryUsageItemVM, MBBindingList<WeaponDesignResultPropertyItemVM>> onGetPropertyList, Action<CraftingSecondaryUsageItemVM> onUsageSelected)
 	{
 		_craftedItem = craftedItem;
 		_onFinalize = onFinalize;
@@ -389,12 +389,12 @@ public class WeaponDesignResultPopupVM : ViewModel
 		if (currentItemModifier != null)
 		{
 			TextObject textObject = currentItemModifier.Name.CopyTextObject();
-			textObject.SetTextVariable("ITEMNAME", itemName);
+			textObject.SetTextVariable("ITEMNAME", itemName.ToString());
 			ItemName = textObject.ToString();
 		}
 		else
 		{
-			ItemName = itemName;
+			ItemName = itemName.ToString();
 		}
 		ItemName = ItemName.Trim();
 		ItemVisualModel = itemVisualModel;
@@ -463,9 +463,17 @@ public class WeaponDesignResultPopupVM : ViewModel
 
 	private void UpdateConfirmAvailability()
 	{
-		Tuple<bool, TextObject> tuple = CampaignUIHelper.IsStringApplicableForItemName(ItemName);
-		CanConfirm = tuple.Item1;
-		ConfirmDisabledReasonHint = new HintViewModel(tuple.Item2);
+		if (IsInOrderMode)
+		{
+			CanConfirm = true;
+			ConfirmDisabledReasonHint = new HintViewModel();
+		}
+		else
+		{
+			Tuple<bool, TextObject> tuple = CampaignUIHelper.IsStringApplicableForItemName(ItemName);
+			CanConfirm = tuple.Item1;
+			ConfirmDisabledReasonHint = new HintViewModel(tuple.Item2);
+		}
 	}
 
 	public void ExecuteFinalizeCrafting()
@@ -475,10 +483,13 @@ public class WeaponDesignResultPopupVM : ViewModel
 		_craftingBehavior.SetCraftedWeaponName(_craftedItem, textObject);
 		_onFinalize?.Invoke();
 		Game.Current?.EventManager.TriggerEvent(new CraftingWeaponResultPopupToggledEvent(isOpen: false));
-		TextObject textObject2 = GameTexts.FindText("crafting_added_to_inventory");
-		textObject2.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
-		textObject2.SetTextVariable("ITEM_NAME", ItemName);
-		MBInformationManager.AddQuickInformation(textObject2);
+		if (!_isInOrderMode)
+		{
+			TextObject textObject2 = GameTexts.FindText("crafting_added_to_inventory");
+			textObject2.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
+			textObject2.SetTextVariable("ITEM_NAME", ItemName);
+			MBInformationManager.AddQuickInformation(textObject2);
+		}
 	}
 
 	public void ExecuteRandomCraftName()

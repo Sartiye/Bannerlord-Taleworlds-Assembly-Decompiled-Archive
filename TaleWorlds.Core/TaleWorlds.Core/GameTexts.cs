@@ -31,7 +31,7 @@ public static class GameTexts
 			switch (textObjects.Count)
 			{
 			case 0:
-				textObject = TextObject.Empty;
+				textObject = TextObject.GetEmpty();
 				break;
 			case 1:
 				textObject = textObjects[0];
@@ -63,6 +63,7 @@ public static class GameTexts
 	public static void Initialize(GameTextManager gameTextManager)
 	{
 		_gameTextManager = gameTextManager;
+		InitializeGlobalTags();
 	}
 
 	public static TextObject FindText(string id, string variation = null)
@@ -108,5 +109,10 @@ public static class GameTexts
 	public static GameTextHelper AddGameTextWithVariation(string id)
 	{
 		return new GameTextHelper(id);
+	}
+
+	private static void InitializeGlobalTags()
+	{
+		SetVariable("newline", "\n");
 	}
 }

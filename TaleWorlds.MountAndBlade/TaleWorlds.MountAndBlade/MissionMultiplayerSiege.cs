@@ -6,6 +6,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.MissionRepresentatives;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.MountAndBlade.Objects;
 using TaleWorlds.ObjectSystem;
 
@@ -197,13 +198,13 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 		{
 			if (item2.BattleSide != BattleSideEnum.None)
 			{
-				GameEntity root = item2.GameEntity.Root;
-				if (_objectiveSystem.RegisterObjective(root))
+				GameEntity gameEntity = GameEntity.CreateFromWeakEntity(item2.GameEntity.Root);
+				if (_objectiveSystem.RegisterObjective(gameEntity))
 				{
-					_childDestructableComponents.Add(root, new List<DestructableComponent>());
-					GetDestructableCompoenentClosestToTheRoot(root).OnDestroyed += DestructableComponentOnDestroyed;
+					_childDestructableComponents.Add(gameEntity, new List<DestructableComponent>());
+					GetDestructableCompoenentClosestToTheRoot(gameEntity).OnDestroyed += DestructableComponentOnDestroyed;
 				}
-				_childDestructableComponents[root].Add(item2);
+				_childDestructableComponents[gameEntity].Add(item2);
 				item2.OnHitTaken += DestructableComponentOnHitTaken;
 			}
 		}
@@ -219,7 +220,7 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 			else if (item3 is IMoveableSiegeWeapon item)
 			{
 				list2.Add(item);
-				_objectiveSystem.RegisterObjective(item3.GameEntity.Root);
+				_objectiveSystem.RegisterObjective(GameEntity.CreateFromWeakEntity(item3.GameEntity.Root));
 			}
 		}
 		_lastReloadingAgentPerRangedSiegeMachine = new(RangedSiegeWeapon, Agent)[list.Count];
@@ -269,7 +270,7 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 		{
 			return;
 		}
-		GameEntity root = destructableComponent.GameEntity.Root;
+		GameEntity gameEntity = GameEntity.CreateFromWeakEntity(destructableComponent.GameEntity.Root);
 		if (attackerScriptComponentBehavior is BatteringRam { UserCountNotInStruckAction: var userCountNotInStruckAction } batteringRam)
 		{
 			if (userCountNotInStruckAction > 0)
@@ -280,45 +281,45 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 					Agent userAgent = standingPoint2.UserAgent;
 					if (userAgent?.MissionPeer != null && !userAgent.IsInBeingStruckAction && userAgent.MissionPeer.Team.Side == destructableComponent.BattleSide.GetOppositeSide())
 					{
-						_objectiveSystem.AddContributionForObjective(root, userAgent.MissionPeer, contribution);
+						_objectiveSystem.AddContributionForObjective(gameEntity, userAgent.MissionPeer, contribution);
 					}
 				}
 			}
 		}
 		else if (attackerAgent?.MissionPeer?.Team != null && attackerAgent.MissionPeer.Team.Side == destructableComponent.BattleSide.GetOppositeSide())
 		{
-			if (attackerAgent.CurrentlyUsedGameObject != null && attackerAgent.CurrentlyUsedGameObject is StandingPoint standingPoint)
+			if (attackerAgent.CurrentlyUsedGameObject != null && attackerAgent.CurrentlyUsedGameObject is StandingPoint { GameEntity: var gameEntity2 })
 			{
-				RangedSiegeWeapon firstScriptOfTypeInFamily = standingPoint.GameEntity.GetFirstScriptOfTypeInFamily<RangedSiegeWeapon>();
+				RangedSiegeWeapon firstScriptOfTypeInFamily = gameEntity2.GetFirstScriptOfTypeInFamily<RangedSiegeWeapon>();
 				if (firstScriptOfTypeInFamily != null)
 				{
 					for (int i = 0; i < _lastReloadingAgentPerRangedSiegeMachine.Length; i++)
 					{
 						if (_lastReloadingAgentPerRangedSiegeMachine[i].Item1 == firstScriptOfTypeInFamily && _lastReloadingAgentPerRangedSiegeMachine[i].Item2?.MissionPeer != null && _lastReloadingAgentPerRangedSiegeMachine[i].Item2?.MissionPeer.Team.Side == destructableComponent.BattleSide.GetOppositeSide())
 						{
-							_objectiveSystem.AddContributionForObjective(root, _lastReloadingAgentPerRangedSiegeMachine[i].Item2.MissionPeer, (float)inflictedDamage * 0.33f);
+							_objectiveSystem.AddContributionForObjective(gameEntity, _lastReloadingAgentPerRangedSiegeMachine[i].Item2.MissionPeer, (float)inflictedDamage * 0.33f);
 						}
 					}
 				}
 			}
-			_objectiveSystem.AddContributionForObjective(root, attackerAgent.MissionPeer, inflictedDamage);
+			_objectiveSystem.AddContributionForObjective(gameEntity, attackerAgent.MissionPeer, inflictedDamage);
 		}
 		if (destructableComponent.IsDestroyed)
 		{
 			destructableComponent.OnHitTaken -= DestructableComponentOnHitTaken;
-			_childDestructableComponents[root].Remove(destructableComponent);
+			_childDestructableComponents[gameEntity].Remove(destructableComponent);
 		}
 	}
 
 	private void DestructableComponentOnDestroyed(DestructableComponent destructableComponent, Agent attackerAgent, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, int inflictedDamage)
 	{
-		GameEntity root = destructableComponent.GameEntity.Root;
-		List<KeyValuePair<MissionPeer, float>> allContributorsForSideAndClear = _objectiveSystem.GetAllContributorsForSideAndClear(root, destructableComponent.BattleSide.GetOppositeSide());
+		GameEntity gameEntity = GameEntity.CreateFromWeakEntity(destructableComponent.GameEntity.Root);
+		List<KeyValuePair<MissionPeer, float>> allContributorsForSideAndClear = _objectiveSystem.GetAllContributorsForSideAndClear(gameEntity, destructableComponent.BattleSide.GetOppositeSide());
 		float num = allContributorsForSideAndClear.Sum((KeyValuePair<MissionPeer, float> ac) => ac.Value);
 		List<MissionPeer> list = new List<MissionPeer>();
 		foreach (KeyValuePair<MissionPeer, float> item in allContributorsForSideAndClear)
 		{
-			int goldGainsFromObjectiveAssist = (item.Key.Representative as SiegeMissionRepresentative).GetGoldGainsFromObjectiveAssist(root, item.Value / num, isCompleted: false);
+			int goldGainsFromObjectiveAssist = (item.Key.Representative as SiegeMissionRepresentative).GetGoldGainsFromObjectiveAssist(gameEntity, item.Value / num, isCompleted: false);
 			if (goldGainsFromObjectiveAssist > 0)
 			{
 				ChangeCurrentGoldForPeer(item.Key, item.Key.Representative.Gold + goldGainsFromObjectiveAssist);
@@ -327,11 +328,11 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 			}
 		}
 		destructableComponent.OnDestroyed -= DestructableComponentOnDestroyed;
-		foreach (DestructableComponent item2 in _childDestructableComponents[root])
+		foreach (DestructableComponent item2 in _childDestructableComponents[gameEntity])
 		{
 			item2.OnHitTaken -= DestructableComponentOnHitTaken;
 		}
-		_childDestructableComponents.Remove(root);
+		_childDestructableComponents.Remove(gameEntity);
 		this.OnDestructableComponentDestroyed?.Invoke(destructableComponent, attackerScriptComponentBehavior, list.ToArray());
 	}
 
@@ -349,10 +350,11 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 	{
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
-		Banner banner = new Banner(@object.BannerKey, @object.BackgroundColor1, @object.ForegroundColor1);
-		Banner banner2 = new Banner(object2.BannerKey, object2.BackgroundColor2, object2.ForegroundColor2);
-		base.Mission.Teams.Add(BattleSideEnum.Attacker, @object.BackgroundColor1, @object.ForegroundColor1, banner);
-		base.Mission.Teams.Add(BattleSideEnum.Defender, object2.BackgroundColor2, object2.ForegroundColor2, banner2);
+		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
+		Banner banner = new Banner(@object.Banner, multiplayerBattleColors.AttackerColors.BannerBackgroundColorUint, multiplayerBattleColors.AttackerColors.BannerForegroundColorUint);
+		Banner banner2 = new Banner(object2.Banner, multiplayerBattleColors.DefenderColors.BannerBackgroundColorUint, multiplayerBattleColors.DefenderColors.BannerForegroundColorUint);
+		base.Mission.Teams.Add(BattleSideEnum.Attacker, multiplayerBattleColors.AttackerColors.BannerBackgroundColorUint, multiplayerBattleColors.AttackerColors.BannerForegroundColorUint, banner);
+		base.Mission.Teams.Add(BattleSideEnum.Defender, multiplayerBattleColors.DefenderColors.BannerBackgroundColorUint, multiplayerBattleColors.DefenderColors.BannerForegroundColorUint, banner2);
 		foreach (FlagCapturePoint allCapturePoint in AllCapturePoints)
 		{
 			_capturePointOwners[allCapturePoint.FlagIndex] = base.Mission.Teams.Defender;
@@ -600,12 +602,12 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 				else if (item.MovementComponent.HasArrivedAtTarget)
 				{
 					_movingObjectives[num].Item1 = null;
-					GameEntity root = siegeWeapon.GameEntity.Root;
-					List<KeyValuePair<MissionPeer, float>> allContributorsForSideAndClear = _objectiveSystem.GetAllContributorsForSideAndClear(root, BattleSideEnum.Attacker);
+					GameEntity gameEntity = GameEntity.CreateFromWeakEntity(siegeWeapon.GameEntity.Root);
+					List<KeyValuePair<MissionPeer, float>> allContributorsForSideAndClear = _objectiveSystem.GetAllContributorsForSideAndClear(gameEntity, BattleSideEnum.Attacker);
 					float num2 = allContributorsForSideAndClear.Sum((KeyValuePair<MissionPeer, float> ac) => ac.Value);
 					foreach (KeyValuePair<MissionPeer, float> item3 in allContributorsForSideAndClear)
 					{
-						int goldGainsFromObjectiveAssist = (item3.Key.Representative as SiegeMissionRepresentative).GetGoldGainsFromObjectiveAssist(root, item3.Value / num2, isCompleted: true);
+						int goldGainsFromObjectiveAssist = (item3.Key.Representative as SiegeMissionRepresentative).GetGoldGainsFromObjectiveAssist(gameEntity, item3.Value / num2, isCompleted: true);
 						if (goldGainsFromObjectiveAssist > 0)
 						{
 							ChangeCurrentGoldForPeer(item3.Key, item3.Key.Representative.Gold + goldGainsFromObjectiveAssist);
@@ -615,9 +617,9 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 				}
 				else
 				{
-					GameEntity gameEntity = siegeWeapon.GameEntity;
+					WeakGameEntity gameEntity2 = siegeWeapon.GameEntity;
 					Vec3 item2 = _movingObjectives[num].Item2;
-					Vec3 globalPosition = gameEntity.GlobalPosition;
+					Vec3 globalPosition = gameEntity2.GlobalPosition;
 					float lengthSquared = (globalPosition - item2).LengthSquared;
 					if (lengthSquared > 1f)
 					{
@@ -627,7 +629,7 @@ public class MissionMultiplayerSiege : MissionMultiplayerGameModeBase, IAnalytic
 							Agent userAgent = standingPoint.UserAgent;
 							if (userAgent?.MissionPeer != null && userAgent.MissionPeer.Team.Side == siegeWeapon.Side)
 							{
-								_objectiveSystem.AddContributionForObjective(gameEntity.Root, userAgent.MissionPeer, lengthSquared);
+								_objectiveSystem.AddContributionForObjective(GameEntity.CreateFromWeakEntity(gameEntity2.Root), userAgent.MissionPeer, lengthSquared);
 							}
 						}
 					}

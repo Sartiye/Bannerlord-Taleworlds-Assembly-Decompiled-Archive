@@ -1,5 +1,4 @@
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
@@ -39,7 +38,9 @@ public class DefaultAgeModel : AgeModel
 
 	public override int HeroComesOfAge => 18;
 
-	public override int BecomeOldAge => 47;
+	public override int MiddleAdultHoodAge => 35;
+
+	public override int BecomeOldAge => 55;
 
 	public override int MaxAge => 128;
 
@@ -176,28 +177,5 @@ public class DefaultAgeModel : AgeModel
 			minimumAge = HeroComesOfAge;
 			maximumAge = MaxAge;
 		}
-	}
-
-	public override float GetSkillScalingModifierForAge(Hero hero, SkillObject skill, bool isByNaturalGrowth)
-	{
-		if (!isByNaturalGrowth)
-		{
-			return 1f;
-		}
-		float age = hero.Age;
-		float result = 0f;
-		if (age >= (float)BecomeChildAge && age < (float)BecomeTeenagerAge)
-		{
-			result = 0.2f;
-		}
-		else if (age >= (float)BecomeTeenagerAge && age < (float)HeroComesOfAge)
-		{
-			result = 0.5f;
-		}
-		else if (age >= (float)HeroComesOfAge)
-		{
-			result = ((skill != DefaultSkills.Riding) ? 0.8f : 1f);
-		}
-		return result;
 	}
 }

@@ -14,7 +14,7 @@ public static class BeHostileAction
 
 	private static void ApplyInternal(PartyBase attackerParty, PartyBase defenderParty, float value)
 	{
-		if (defenderParty.IsMobile && defenderParty.MobileParty.ActualClan == null)
+		if (defenderParty.IsMobile && defenderParty.MobileParty.MapFaction == null)
 		{
 			return;
 		}
@@ -130,7 +130,7 @@ public static class BeHostileAction
 			{
 				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(leaderHero, leaderHero.MapFaction.Leader, num3);
 			}
-			if (value == 6f)
+			if (value.ApproximatelyEqualsTo(6f))
 			{
 				ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(leaderHero.Clan);
 			}
@@ -150,9 +150,9 @@ public static class BeHostileAction
 
 	public static void ApplyHostileAction(PartyBase attackerParty, PartyBase defenderParty, float value)
 	{
-		if (attackerParty == null || defenderParty == null || value == 0f)
+		if (attackerParty == null || defenderParty == null || value.ApproximatelyEqualsTo(0f))
 		{
-			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null or value is 0.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyHostileAction", 199);
+			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null or value is 0.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyHostileAction", 197);
 		}
 		else
 		{
@@ -164,7 +164,7 @@ public static class BeHostileAction
 	{
 		if (attackerParty == null || defenderParty == null)
 		{
-			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyMinorCoercionHostileAction", 211);
+			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyMinorCoercionHostileAction", 209);
 		}
 		else
 		{
@@ -176,7 +176,7 @@ public static class BeHostileAction
 	{
 		if (attackerParty == null || defenderParty == null)
 		{
-			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyMajorCoercionHostileAction", 223);
+			Debug.FailedAssert("BeHostileAction, attackerParty and/or defenderParty is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\BeHostileAction.cs", "ApplyMajorCoercionHostileAction", 221);
 		}
 		else
 		{

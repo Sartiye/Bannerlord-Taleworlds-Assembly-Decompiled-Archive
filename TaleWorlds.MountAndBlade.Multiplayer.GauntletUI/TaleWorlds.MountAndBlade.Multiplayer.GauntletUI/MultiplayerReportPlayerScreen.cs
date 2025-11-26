@@ -1,6 +1,4 @@
-using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
-using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.InputSystem;
 using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
@@ -14,7 +12,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 {
 	private MultiplayerReportPlayerVM _dataSource;
 
-	private IGauntletMovie _movie;
+	private GauntletMovieIdentifier _movie;
 
 	private bool _isActive;
 
@@ -25,7 +23,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		_dataSource = new MultiplayerReportPlayerVM(OnReportDone, OnClose);
 		_dataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
-		GauntletLayer gauntletLayer = new GauntletLayer(350);
+		GauntletLayer gauntletLayer = new GauntletLayer("MultiplayerReportPlayer", 15350);
 		_movie = gauntletLayer.LoadMovie("MultiplayerReportPlayer", _dataSource);
 		gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		base.Layer = gauntletLayer;
@@ -77,7 +75,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		if (Current != null)
 		{
 			ScreenManager.RemoveGlobalLayer(Current);
-			Current._movie.Release();
+			(Current.Layer as GauntletLayer).ReleaseMovie(Current._movie);
 			MultiplayerReportPlayerManager.ReportHandlers -= Current.OnReportRequest;
 			Current._dataSource.OnFinalize();
 			Current._dataSource = null;
@@ -104,7 +102,6 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		{
 			OnClose();
 			NetworkMain.GameClient.ReportPlayer(gameId, playerId, playerName, reportReason, reasonText);
-			Game.Current.GetGameHandler<ChatBox>().SetPlayerMuted(playerId, isMuted: true);
 			MultiplayerReportPlayerManager.OnPlayerReported(playerId);
 		}
 	}

@@ -35,9 +35,7 @@ public class StrategicArea : MissionObject, IDetachment
 
 	private List<Agent> _agents;
 
-	private WorldFrame _frame;
-
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _width;
 
 	private int _unitSpacing;
@@ -48,17 +46,20 @@ public class StrategicArea : MissionObject, IDetachment
 
 	private Dictionary<Formation, Formation> _simulationFormations;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private BattleSideEnum _side;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _depth = 1f;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private float _distanceToCheck = 10f;
 
-	[EditableScriptComponentVariable(true)]
+	[EditableScriptComponentVariable(true, "")]
 	private bool _ignoreHeight = true;
+
+	[EditableScriptComponentVariable(true, "")]
+	private bool _disableShimmy;
 
 	private List<DestructableComponent> _nearbyDestructibleObjects = new List<DestructableComponent>();
 
@@ -74,9 +75,11 @@ public class StrategicArea : MissionObject, IDetachment
 
 	private readonly StrategicAreaMutableTuple[] _strategicAreaSidesScoreTally = new StrategicAreaMutableTuple[5];
 
-	private WorldPosition? _centerPosition;
+	private Mat3 _cachedGlobalScaledRotation;
 
-	private WorldFrame _cachedWorldFrame;
+	private WorldFrame _cachedGlobalWorldFrame;
+
+	private Vec3 _shimmyLocalPosition;
 
 	private bool _isEvaluated;
 
@@ -126,9 +129,6 @@ public class StrategicArea : MissionObject, IDetachment
 		base.OnInit();
 		_agents = new List<Agent>();
 		_userFormations = new MBList<Formation>();
-		MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
-		_frame = new WorldFrame(globalFrame.rotation, new WorldPosition(base.Scene, UIntPtr.Zero, globalFrame.origin, hasValidZ: false));
-		_frame.Rotation.Orthonormalize();
 		_unitSpacing = ArrangementOrder.GetUnitSpacingOf(ArrangementOrder.ArrangementOrderEnum.Line);
 		_capacity = CalculateCapacity();
 		_simulationFormations = new Dictionary<Formation, Formation>();
@@ -146,7 +146,8 @@ public class StrategicArea : MissionObject, IDetachment
 
 	public Vec3 GetGroundPosition()
 	{
-		return _frame.Origin.GetGroundVec3();
+		CacheGlobalWorldFrame();
+		return _cachedGlobalWorldFrame.Origin.GetGroundVec3();
 	}
 
 	public void DetermineAssociatedDestructibleComponents(IEnumerable<DestructableComponent> destructibleComponents)
@@ -193,26 +194,22 @@ public class StrategicArea : MissionObject, IDetachment
 		_side = side;
 	}
 
-	public void AddAgent(Agent agent, int slotIndex)
+	public void AddAgent(Agent agent, int slotIndex = -1, Agent.AIScriptedFrameFlags customFlags = Agent.AIScriptedFrameFlags.None)
 	{
 		_agents.Add(agent);
-		if (_capacity == 1 && !_centerPosition.HasValue)
+		if (_capacity == 1)
 		{
-			_centerPosition = _frame.Origin;
-			Mat3 identity = Mat3.Identity;
-			identity.f = base.GameEntity.GetGlobalFrame().rotation.f;
-			identity.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-			_cachedWorldFrame = new WorldFrame(identity, _centerPosition.Value);
+			CacheGlobalWorldFrame();
 		}
 		agent.SetPreciseRangedAimingEnabled(set: true);
 	}
 
-	public void AddAgentAtSlotIndex(Agent agent, int slotIndex)
+	public void AddAgentAtSlotIndex(Agent agent, int slotIndex = -1)
 	{
 		AddAgent(agent, slotIndex);
 		agent.Formation?.DetachUnit(agent, isLoose: true);
 		agent.Detachment = this;
-		agent.DetachmentWeight = 1f;
+		agent.SetDetachmentWeight(1f);
 	}
 
 	void IDetachment.FormationStartUsing(Formation formation)
@@ -296,7 +293,7 @@ public class StrategicArea : MissionObject, IDetachment
 
 	void IDetachment.MarkSlotAtIndex(int slotIndex)
 	{
-		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\StrategicArea.cs", "MarkSlotAtIndex", 323);
+		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\StrategicArea.cs", "MarkSlotAtIndex", 330);
 	}
 
 	bool IDetachment.IsAgentUsingOrInterested(Agent agent)
@@ -322,10 +319,35 @@ public class StrategicArea : MissionObject, IDetachment
 		return _agents.Count < _capacity;
 	}
 
+	private void CacheGlobalWorldFrame()
+	{
+		WeakGameEntity gameEntity = base.GameEntity;
+		MatrixFrame globalFrame = gameEntity.GetGlobalFrame();
+		if (!globalFrame.rotation.NearlyEquals(in _cachedGlobalScaledRotation) || !globalFrame.origin.AsVec2.NearlyEquals(_cachedGlobalWorldFrame.Origin.AsVec2))
+		{
+			_cachedGlobalScaledRotation = globalFrame.rotation;
+			_cachedGlobalWorldFrame = new WorldFrame(globalFrame.rotation, new WorldPosition(gameEntity.Scene, globalFrame.origin));
+			_cachedGlobalWorldFrame.Rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
+		}
+	}
+
+	private WorldFrame GetShimmiedGlobalWorldFrame()
+	{
+		CacheGlobalWorldFrame();
+		if (_shimmyLocalPosition.IsNonZero)
+		{
+			WorldPosition origin = _cachedGlobalWorldFrame.Origin;
+			origin.SetVec2(_cachedGlobalWorldFrame.ToGroundMatrixFrame().TransformToParent(in _shimmyLocalPosition).AsVec2);
+			return new WorldFrame(_cachedGlobalWorldFrame.Rotation, origin);
+		}
+		return _cachedGlobalWorldFrame;
+	}
+
 	public List<float> GetTemplateCostsOfAgent(Agent candidate, List<float> oldValue)
 	{
 		WorldPosition worldPosition = candidate.GetWorldPosition();
-		float num = (candidate.Mission.Scene.DoesPathExistBetweenPositions(worldPosition, _frame.Origin) ? worldPosition.GetNavMeshVec3().DistanceSquared(_frame.Origin.GetNavMeshVec3()) : float.MaxValue);
+		CacheGlobalWorldFrame();
+		float num = (candidate.Mission.Scene.DoesPathExistBetweenPositions(worldPosition, _cachedGlobalWorldFrame.Origin) ? worldPosition.GetNavMeshVec3().DistanceSquared(_cachedGlobalWorldFrame.Origin.GetNavMeshVec3()) : float.MaxValue);
 		num *= MissionGameModels.Current.AgentStatCalculateModel.GetDetachmentCostMultiplierOfAgent(candidate, this);
 		List<float> list = oldValue ?? new List<float>(_capacity);
 		list.Clear();
@@ -338,14 +360,15 @@ public class StrategicArea : MissionObject, IDetachment
 
 	float IDetachment.GetExactCostOfAgentAtSlot(Agent candidate, int slotIndex)
 	{
-		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\StrategicArea.cs", "GetExactCostOfAgentAtSlot", 373);
+		Debug.FailedAssert("This should never have been called because this detachment does not seek to replace moving agents.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\StrategicArea.cs", "GetExactCostOfAgentAtSlot", 408);
 		return 0f;
 	}
 
 	public float GetTemplateWeightOfAgent(Agent candidate)
 	{
 		WorldPosition worldPosition = candidate.GetWorldPosition();
-		WorldPosition origin = _frame.Origin;
+		CacheGlobalWorldFrame();
+		WorldPosition origin = _cachedGlobalWorldFrame.Origin;
 		if (!candidate.Mission.Scene.DoesPathExistBetweenPositions(worldPosition, origin))
 		{
 			return float.MaxValue;
@@ -359,7 +382,7 @@ public class StrategicArea : MissionObject, IDetachment
 		if (_agents.Count < _capacity)
 		{
 			Vec3 position = base.GameEntity.GlobalPosition;
-			match = newAgents.MinBy((Agent a) => a.Position.DistanceSquared(position));
+			match = TaleWorlds.Core.Extensions.MinBy(newAgents, (Agent a) => a.Position.DistanceSquared(position));
 			return weightOfNextSlot;
 		}
 		match = null;
@@ -378,7 +401,7 @@ public class StrategicArea : MissionObject, IDetachment
 			});
 			if (source.Any())
 			{
-				match = source.MinBy(((Agent, float) a) => a.Item2).Item1;
+				match = TaleWorlds.Core.Extensions.MinBy(source, ((Agent, float) a) => a.Item2).Item1;
 				return weight;
 			}
 		}
@@ -390,7 +413,7 @@ public class StrategicArea : MissionObject, IDetachment
 	{
 		float weightOfOccupiedSlot = GetWeightOfOccupiedSlot(detachedAgent);
 		Vec3 position = base.GameEntity.GlobalPosition;
-		match = newAgents.MinBy((Agent a) => a.Position.DistanceSquared(position));
+		match = TaleWorlds.Core.Extensions.MinBy(newAgents, (Agent a) => a.Position.DistanceSquared(position));
 		return weightOfOccupiedSlot * 0.5f;
 	}
 
@@ -446,16 +469,13 @@ public class StrategicArea : MissionObject, IDetachment
 			int unitIndex = _agents.IndexOf(agent);
 			Formation formation = agent.Formation;
 			Formation simulationFormation = GetSimulationFormation(formation);
-			ref WorldPosition origin = ref _frame.Origin;
-			Vec2 formationDirection = _frame.Rotation.f.AsVec2.Normalized();
+			CacheGlobalWorldFrame();
+			ref WorldPosition origin = ref _cachedGlobalWorldFrame.Origin;
+			Vec2 formationDirection = _cachedGlobalWorldFrame.Rotation.f.AsVec2.Normalized();
 			formation.GetUnitPositionWithIndexAccordingToNewOrder(simulationFormation, unitIndex, in origin, in formationDirection, _width, _unitSpacing, _agents.Count, out var unitPosition, out var _);
 			if (unitPosition.HasValue)
 			{
-				return new WorldFrame(_frame.Rotation, unitPosition.Value);
-			}
-			if (!_centerPosition.HasValue)
-			{
-				MBDebug.ShowWarning("Strategic archer position at position at X=" + _frame.Origin.GetGroundVec3().x + " Y=" + _frame.Origin.GetGroundVec3().y + " Z=" + _frame.Origin.GetGroundVec3().z + "doesn't yield a viable frame. It may be in the air, underground or off the navmesh, please check. Scene: " + base.Scene.GetName());
+				return new WorldFrame(_cachedGlobalWorldFrame.Rotation, unitPosition.Value);
 			}
 			return agent.GetWorldFrame();
 		}
@@ -542,14 +562,10 @@ public class StrategicArea : MissionObject, IDetachment
 			}
 			_doesFrameNeedUpdate = true;
 		}
-		if (!_doesFrameNeedUpdate)
+		if (!_disableShimmy && _doesFrameNeedUpdate)
 		{
-			return _cachedWorldFrame;
-		}
-		if (_centerPosition.HasValue)
-		{
-			WorldPosition value = _centerPosition.Value;
-			Vec2 vec = _frame.Rotation.f.AsVec2.Normalized();
+			CacheGlobalWorldFrame();
+			Vec2 vec = _cachedGlobalWorldFrame.Rotation.f.AsVec2.Normalized();
 			Vec2 vec2 = shimmyDirection switch
 			{
 				ShimmyDirection.Center => Vec2.Zero, 
@@ -559,17 +575,19 @@ public class StrategicArea : MissionObject, IDetachment
 				ShimmyDirection.Back => -vec, 
 				_ => Vec2.Zero, 
 			};
-			WorldPosition worldPosition = value;
 			int num7 = 8;
 			bool flag3 = false;
+			_cachedGlobalWorldFrame.Origin.GetGroundZMT();
+			WorldPosition origin2 = _cachedGlobalWorldFrame.Origin;
 			while (num7-- > 0)
 			{
-				value.SetVec2(worldPosition.AsVec2 + (0.6f + 0.05f * (float)num7) * vec2);
-				if (value.GetNavMesh() != UIntPtr.Zero)
+				origin2.SetVec2(origin2.AsVec2 + (0.6f + 0.05f * (float)num7) * vec2);
+				if (origin2.GetNavMeshMT() != UIntPtr.Zero && TaleWorlds.Library.MathF.Abs(_cachedGlobalWorldFrame.Origin.GetGroundZMT() - origin2.GetGroundZMT()) <= agent.Monster.BodyCapsuleRadius * 1.2f && !Mission.Current.IsPositionOnAnyBlockerNavMeshFace(origin2.GetGroundVec3MT()))
 				{
 					flag3 = true;
 					break;
 				}
+				origin2 = _cachedGlobalWorldFrame.Origin;
 			}
 			_doesFrameNeedUpdate = false;
 			if (!flag3)
@@ -580,15 +598,12 @@ public class StrategicArea : MissionObject, IDetachment
 			{
 				_shimmyDirection = shimmyDirection;
 				_lastShimmyTime = totalMissionTime;
-				Mat3 identity = Mat3.Identity;
-				identity.f = new Vec3(vec);
-				identity.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-				_cachedWorldFrame = new WorldFrame(identity, value);
+				MatrixFrame matrixFrame = _cachedGlobalWorldFrame.ToGroundMatrixFrame();
+				Vec3 v = origin2.GetGroundVec3MT();
+				_shimmyLocalPosition = matrixFrame.TransformToLocal(in v);
 			}
-			return _cachedWorldFrame;
 		}
-		MBDebug.ShowWarning("Strategic archer position at position at X=" + _frame.Origin.GetGroundVec3().x + " Y=" + _frame.Origin.GetGroundVec3().y + " Z=" + _frame.Origin.GetGroundVec3().z + "doesn't yield a viable frame. It may be in the air, underground or off the navmesh, please check. Scene: " + base.Scene.GetName());
-		return agent.GetWorldFrame();
+		return GetShimmiedGlobalWorldFrame();
 	}
 
 	private static float CalculateWeight(int capacity, int index)

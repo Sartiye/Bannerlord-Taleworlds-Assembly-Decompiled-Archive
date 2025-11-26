@@ -6,9 +6,9 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Library;
@@ -42,7 +42,7 @@ public class ClanPartyItemVM : ViewModel
 
 	private readonly CharacterObject _leader;
 
-	private SelectorVM<SelectorItemVM> _partyBehaviorSelector;
+	private ClanPartyBehaviorSelectorVM _partyBehaviorSelector;
 
 	private ClanFinanceExpenseItemVM _expenseItem;
 
@@ -50,7 +50,7 @@ public class ClanPartyItemVM : ViewModel
 
 	private ClanPartyMemberItemVM _leaderMember;
 
-	private ImageIdentifierVM _leaderVisual;
+	private CharacterImageIdentifierVM _leaderVisual;
 
 	private bool _isMainHeroParty;
 
@@ -61,6 +61,8 @@ public class ClanPartyItemVM : ViewModel
 	private string _partyLocationText;
 
 	private string _partySizeText;
+
+	private string _shipCountText;
 
 	private string _membersText;
 
@@ -85,6 +87,8 @@ public class ClanPartyItemVM : ViewModel
 	private int _cavalryCount;
 
 	private int _horseArcherCount;
+
+	private int _shipCount;
 
 	private string _inArmyText;
 
@@ -117,6 +121,8 @@ public class ClanPartyItemVM : ViewModel
 	private bool _isChangeLeaderEnabled;
 
 	private bool _isClanRoleSelectionHighlightEnabled;
+
+	private bool _isRoleSelectionPopupVisible;
 
 	private HintViewModel _actionsDisabledHint;
 
@@ -164,7 +170,7 @@ public class ClanPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public SelectorVM<SelectorItemVM> PartyBehaviorSelector
+	public ClanPartyBehaviorSelectorVM PartyBehaviorSelector
 	{
 		get
 		{
@@ -181,7 +187,7 @@ public class ClanPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM LeaderVisual
+	public CharacterImageIdentifierVM LeaderVisual
 	{
 		get
 		{
@@ -244,6 +250,23 @@ public class ClanPartyItemVM : ViewModel
 			{
 				_isClanRoleSelectionHighlightEnabled = value;
 				OnPropertyChangedWithValue(value, "IsClanRoleSelectionHighlightEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsRoleSelectionPopupVisible
+	{
+		get
+		{
+			return _isRoleSelectionPopupVisible;
+		}
+		set
+		{
+			if (value != _isRoleSelectionPopupVisible)
+			{
+				_isRoleSelectionPopupVisible = value;
+				OnPropertyChangedWithValue(value, "IsRoleSelectionPopupVisible");
 			}
 		}
 	}
@@ -556,6 +579,23 @@ public class ClanPartyItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string ShipCountText
+	{
+		get
+		{
+			return _shipCountText;
+		}
+		set
+		{
+			if (value != _shipCountText)
+			{
+				_shipCountText = value;
+				OnPropertyChangedWithValue(value, "ShipCountText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string MembersText
 	{
 		get
@@ -772,6 +812,23 @@ public class ClanPartyItemVM : ViewModel
 			{
 				_horseArcherCount = value;
 				OnPropertyChangedWithValue(value, "HorseArcherCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int ShipCount
+	{
+		get
+		{
+			return _shipCount;
+		}
+		set
+		{
+			if (value != _shipCount)
+			{
+				_shipCount = value;
+				OnPropertyChangedWithValue(value, "ShipCount");
 			}
 		}
 	}
@@ -1008,15 +1065,15 @@ public class ClanPartyItemVM : ViewModel
 		if (_leader != null)
 		{
 			CharacterCode characterCode = GetCharacterCode(_leader);
-			LeaderVisual = new ImageIdentifierVM(characterCode);
+			LeaderVisual = new CharacterImageIdentifierVM(characterCode);
 			CharacterModel = new CharacterViewModel(CharacterViewModel.StanceTypes.None);
-			CharacterModel.FillFrom(_leader);
+			CharacterModel.FillFrom(_leader, -1, Party.Banner?.BannerCode);
 			CharacterModel.ArmorColor1 = Party.MapFaction?.Color ?? 0;
 			CharacterModel.ArmorColor2 = Party.MapFaction?.Color2 ?? 0;
 		}
 		else
 		{
-			LeaderVisual = new ImageIdentifierVM();
+			LeaderVisual = new CharacterImageIdentifierVM(null);
 			CharacterModel = new CharacterViewModel();
 		}
 		_onAssignment = onAssignment;
@@ -1025,7 +1082,7 @@ public class ClanPartyItemVM : ViewModel
 		IsDisbanding = Party.MobileParty.IsDisbanding || (_disbandBehavior?.IsPartyWaitingForDisband(party.MobileParty) ?? false);
 		ShouldPartyHaveExpense = !party.MobileParty.IsMilitia && !party.MobileParty.IsVillager && party.MobileParty.IsActive && !IsDisbanding && (type == ClanPartyType.Garrison || type == ClanPartyType.Member);
 		IsCaravan = type == ClanPartyType.Caravan;
-		TextObject disabledReason = TextObject.Empty;
+		TextObject disabledReason = TextObject.GetEmpty();
 		IsChangeLeaderVisible = type == ClanPartyType.Caravan || type == ClanPartyType.Member;
 		IsChangeLeaderEnabled = IsChangeLeaderVisible && CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out disabledReason);
 		ChangeLeaderHint = new HintViewModel(IsChangeLeaderEnabled ? _changeLeaderHintText : disabledReason);
@@ -1038,7 +1095,7 @@ public class ClanPartyItemVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("This party should have expense info but it doesn't", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanPartyItemVM.cs", ".ctor", 115);
+				Debug.FailedAssert("This party should have expense info but it doesn't", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanPartyItemVM.cs", ".ctor", 116);
 			}
 		}
 		if (IsCaravan)
@@ -1090,17 +1147,7 @@ public class ClanPartyItemVM : ViewModel
 			Name = Party.Name.ToString();
 		}
 		IsMainHeroParty = _type == ClanPartyType.Main;
-		if (Party.MobileParty.CurrentSettlement != null)
-		{
-			PartyLocationText = Party.MobileParty.CurrentSettlement.Name.ToString();
-		}
-		else
-		{
-			Settlement settlement = SettlementHelper.FindNearestSettlement(null, Party.MobileParty);
-			GameTexts.SetVariable("SETTLEMENT_NAME", settlement.Name);
-			string partyLocationText = GameTexts.FindText("str_near_settlement").ToString();
-			PartyLocationText = partyLocationText;
-		}
+		PartyLocationText = CampaignUIHelper.GetPartyLocationText(Party.MobileParty);
 		GameTexts.SetVariable("LEFT", Party.MobileParty.MemberRoster.TotalManCount);
 		GameTexts.SetVariable("RIGHT", Party.MobileParty.Party.PartySizeLimit);
 		string text = GameTexts.FindText("str_LEFT_over_RIGHT").ToString();
@@ -1130,7 +1177,7 @@ public class ClanPartyItemVM : ViewModel
 		PartyBehaviorText = "";
 		if (IsPartyBehaviorEnabled)
 		{
-			PartyBehaviorSelector = new SelectorVM<SelectorItemVM>(0, UpdatePartyBehaviorSelectionUpdate);
+			PartyBehaviorSelector = new ClanPartyBehaviorSelectorVM(0, UpdatePartyBehaviorSelectionUpdate);
 			for (int i = 0; i < 3; i++)
 			{
 				string s = GameTexts.FindText("str_clan_party_objective", i.ToString()).ToString();
@@ -1142,7 +1189,7 @@ public class ClanPartyItemVM : ViewModel
 		}
 		if (_leader != null)
 		{
-			CharacterModel.FillFrom(_leader);
+			CharacterModel.FillFrom(_leader, -1, Party.Banner?.BannerCode);
 			CharacterModel.ArmorColor1 = Party.MapFaction?.Color ?? 0;
 			CharacterModel.ArmorColor2 = Party.MapFaction?.Color2 ?? 0;
 		}
@@ -1193,7 +1240,7 @@ public class ClanPartyItemVM : ViewModel
 				x.OnFinalize();
 			});
 			Roles.Clear();
-			foreach (SkillEffect.PerkRole assignablePartyRole in GetAssignablePartyRoles())
+			foreach (PartyRole assignablePartyRole in GetAssignablePartyRoles())
 			{
 				Roles.Add(new ClanRoleItemVM(Party.MobileParty, assignablePartyRole, HeroMembers, OnRoleSelectionToggled, OnRoleAssigned));
 			}
@@ -1202,32 +1249,29 @@ public class ClanPartyItemVM : ViewModel
 		RangedCount = num2;
 		CavalryCount = num3;
 		HorseArcherCount = num4;
-		(bool, TextObject) canUseActions = GetCanUseActions();
-		(CanUseActions, _) = canUseActions;
-		ActionsDisabledHint.HintText = (CanUseActions ? TextObject.Empty : canUseActions.Item2);
-		if (CanUseActions)
+		CanUseActions = CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason);
+		ActionsDisabledHint.HintText = (CanUseActions ? TextObject.GetEmpty() : disabledReason);
+		if (!CanUseActions)
 		{
-			return;
+			AutoRecruitmentHint.HintText = ActionsDisabledHint.HintText;
+			if (ExpenseItem != null)
+			{
+				ExpenseItem.IsEnabled = CanUseActions;
+				ExpenseItem.WageLimitHint.HintText = ActionsDisabledHint.HintText;
+			}
+			foreach (ClanRoleItemVM role in Roles)
+			{
+				role.SetEnabled(enabled: false, ActionsDisabledHint.HintText);
+			}
 		}
-		AutoRecruitmentHint.HintText = canUseActions.Item2;
-		if (ExpenseItem != null)
+		if (PartyBehaviorSelector != null)
 		{
-			ExpenseItem.IsEnabled = CanUseActions;
-			ExpenseItem.WageLimitHint.HintText = canUseActions.Item2;
+			PartyBehaviorSelector.CanUseActions = CanUseActions;
+			PartyBehaviorSelector.ActionsDisabledHint.HintText = ActionsDisabledHint.HintText;
 		}
-		foreach (ClanRoleItemVM role in Roles)
-		{
-			role.SetEnabled(enabled: false, canUseActions.Item2);
-		}
-	}
-
-	private (bool, TextObject) GetCanUseActions()
-	{
-		if (Hero.MainHero.IsPrisoner)
-		{
-			return (false, GameTexts.FindText("str_action_disabled_reason_prisoner"));
-		}
-		return (true, TextObject.Empty);
+		ShipCount = Party.Ships.Count;
+		ShipCountText = GameTexts.FindText("str_LEFT_colon_RIGHT").SetTextVariable("LEFT", new TextObject("{=URbKirPS}Ship Count").ToString()).SetTextVariable("RIGHT", ShipCount)
+			.ToString();
 	}
 
 	private void OnExpenseChange()
@@ -1279,12 +1323,12 @@ public class ClanPartyItemVM : ViewModel
 		}
 	}
 
-	private IEnumerable<SkillEffect.PerkRole> GetAssignablePartyRoles()
+	private IEnumerable<PartyRole> GetAssignablePartyRoles()
 	{
-		yield return SkillEffect.PerkRole.Quartermaster;
-		yield return SkillEffect.PerkRole.Scout;
-		yield return SkillEffect.PerkRole.Surgeon;
-		yield return SkillEffect.PerkRole.Engineer;
+		yield return PartyRole.Quartermaster;
+		yield return PartyRole.Scout;
+		yield return PartyRole.Surgeon;
+		yield return PartyRole.Engineer;
 	}
 
 	private void OnRoleSelectionToggled(ClanRoleItemVM role)

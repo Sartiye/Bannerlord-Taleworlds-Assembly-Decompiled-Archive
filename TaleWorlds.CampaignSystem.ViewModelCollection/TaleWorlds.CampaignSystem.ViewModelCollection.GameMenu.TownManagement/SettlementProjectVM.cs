@@ -69,7 +69,7 @@ public abstract class SettlementProjectVM : ViewModel
 			}
 			else
 			{
-				textObject = TextObject.Empty;
+				textObject = TextObject.GetEmpty();
 			}
 			ProductionCostText = ((value != null) ? textObject.ToString() : "");
 			CurrentPositiveEffectText = ((value != null) ? value.GetBonusExplanation().ToString() : "");
@@ -243,7 +243,7 @@ public abstract class SettlementProjectVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		if (Building.BuildingType.IsDefaultProject)
+		if (Building.BuildingType.IsDailyProject)
 		{
 			CurrentPositiveEffectText = Building.BuildingType.GetExplanationAtLevel(Building.CurrentLevel).ToString();
 			NextPositiveEffectText = "";
@@ -294,7 +294,7 @@ public abstract class SettlementProjectVM : ViewModel
 		{
 			return Building.BuildingType.GetExplanationAtLevel(level);
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public virtual void RefreshProductionText()
@@ -308,4 +308,6 @@ public abstract class SettlementProjectVM : ViewModel
 	public abstract void ExecuteSetAsCurrent();
 
 	public abstract void ExecuteResetCurrent();
+
+	public abstract void ExecuteToggleSelected();
 }

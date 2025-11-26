@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Blow_weapon_record", false)]
+[EngineStruct("Blow_weapon_record", false, null)]
 public struct BlowWeaponRecord
 {
 	public Vec3 StartingPosition;
@@ -110,15 +110,30 @@ public struct BlowWeaponRecord
 		}
 		else if (IsRanged || IsAmmo)
 		{
-			result = WeaponClass switch
+			switch (WeaponClass)
 			{
-				WeaponClass.ThrowingAxe => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingAxeMed : CombatSoundContainer.SoundCodeMissionCombatThrowingAxeLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingAxeHigh, 
-				WeaponClass.ThrowingKnife => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerMed : CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerHigh, 
-				WeaponClass.Javelin => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatMissileMed : CombatSoundContainer.SoundCodeMissionCombatMissileLow) : CombatSoundContainer.SoundCodeMissionCombatMissileHigh, 
-				WeaponClass.Stone => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingStoneMed : CombatSoundContainer.SoundCodeMissionCombatThrowingStoneLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingStoneHigh, 
-				WeaponClass.Boulder => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatBoulderMed : CombatSoundContainer.SoundCodeMissionCombatBoulderLow) : CombatSoundContainer.SoundCodeMissionCombatBoulderHigh, 
-				_ => (!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatMissileMed : CombatSoundContainer.SoundCodeMissionCombatMissileLow) : CombatSoundContainer.SoundCodeMissionCombatMissileHigh, 
-			};
+			case WeaponClass.ThrowingAxe:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingAxeMed : CombatSoundContainer.SoundCodeMissionCombatThrowingAxeLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingAxeHigh);
+				break;
+			case WeaponClass.ThrowingKnife:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerMed : CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingDaggerHigh);
+				break;
+			case WeaponClass.Javelin:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatMissileMed : CombatSoundContainer.SoundCodeMissionCombatMissileLow) : CombatSoundContainer.SoundCodeMissionCombatMissileHigh);
+				break;
+			case WeaponClass.Sling:
+			case WeaponClass.Stone:
+			case WeaponClass.BallistaStone:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatThrowingStoneMed : CombatSoundContainer.SoundCodeMissionCombatThrowingStoneLow) : CombatSoundContainer.SoundCodeMissionCombatThrowingStoneHigh);
+				break;
+			case WeaponClass.Boulder:
+			case WeaponClass.BallistaBoulder:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatBoulderMed : CombatSoundContainer.SoundCodeMissionCombatBoulderLow) : CombatSoundContainer.SoundCodeMissionCombatBoulderHigh);
+				break;
+			default:
+				result = ((!isCriticalBlow) ? ((!isLowBlow) ? CombatSoundContainer.SoundCodeMissionCombatMissileMed : CombatSoundContainer.SoundCodeMissionCombatMissileLow) : CombatSoundContainer.SoundCodeMissionCombatMissileHigh);
+				break;
+			}
 		}
 		else if (IsShield)
 		{
@@ -147,7 +162,7 @@ public struct BlowWeaponRecord
 				break;
 			default:
 				result = CombatSoundContainer.SoundCodeMissionCombatBluntMed;
-				Debug.FailedAssert("false", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BlowWeaponRecord.cs", "GetHitSound", 247);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BlowWeaponRecord.cs", "GetHitSound", 250);
 				break;
 			}
 		}

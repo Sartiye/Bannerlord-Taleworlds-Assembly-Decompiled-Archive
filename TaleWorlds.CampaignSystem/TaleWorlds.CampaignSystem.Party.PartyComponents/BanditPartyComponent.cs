@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -9,6 +10,36 @@ namespace TaleWorlds.CampaignSystem.Party.PartyComponents;
 
 public class BanditPartyComponent : WarPartyComponent
 {
+	protected class InitializationArgs
+	{
+		public readonly Clan Clan;
+
+		public readonly CampaignVec2 InitialPosition;
+
+		public readonly PartyTemplateObject PartyTemplate;
+
+		public InitializationArgs(Clan clan, PartyTemplateObject pt, CampaignVec2 position)
+		{
+			Clan = clan;
+			InitialPosition = position;
+			PartyTemplate = pt;
+		}
+
+		public void InitializeBanditOnCreation(MobileParty mobileParty)
+		{
+			if (PartyTemplate != null)
+			{
+				mobileParty.InitializeMobilePartyAtPosition(PartyTemplate, InitialPosition);
+				return;
+			}
+			TroopRoster memberRoster = new TroopRoster(mobileParty.Party);
+			TroopRoster prisonerRoster = new TroopRoster(mobileParty.Party);
+			mobileParty.InitializeMobilePartyAtPosition(memberRoster, prisonerRoster, InitialPosition);
+		}
+	}
+
+	private InitializationArgs _initializationArgs;
+
 	[CachedData]
 	private TextObject _cachedName;
 
@@ -39,7 +70,7 @@ public class BanditPartyComponent : WarPartyComponent
 	{
 		get
 		{
-			TextObject obj = (Game.Current.IsDevelopmentMode ? new TextObject(base.MobileParty.StringId) : (_cachedName ?? (_cachedName = ((Hideout != null) ? Hideout.MapFaction.Name : base.MobileParty.MapFaction.Name))));
+			TextObject obj = (Game.Current.IsDevelopmentMode ? new TextObject(base.MobileParty.StringId) : (_cachedName ?? (_cachedName = base.MobileParty.MapFaction.Name)));
 			obj.SetTextVariable("IS_BANDIT", 1);
 			return obj;
 		}
@@ -72,40 +103,63 @@ public class BanditPartyComponent : WarPartyComponent
 		return ((BanditPartyComponent)o)._relatedSettlement;
 	}
 
-	public static MobileParty CreateBanditParty(string stringId, Clan clan, Hideout hideout, bool isBossParty)
+	public static MobileParty CreateBanditParty(string stringId, Clan clan, Hideout hideout, bool isBossParty, PartyTemplateObject pt, CampaignVec2 initialPosition)
 	{
-		return MobileParty.CreateParty(stringId, new BanditPartyComponent(hideout, isBossParty), delegate(MobileParty mobileParty)
-		{
-			mobileParty.ActualClan = clan;
-		});
+		InitializationArgs args = new InitializationArgs(clan, pt, initialPosition);
+		return MobileParty.CreateParty(stringId, new BanditPartyComponent(hideout, isBossParty, args));
 	}
 
-	public static MobileParty CreateLooterParty(string stringId, Clan clan, Settlement relatedSettlement, bool isBossParty)
+	public static void ConvertPartyToBanditParty(MobileParty mobileParty, Clan clan, Hideout hideout, bool isBossParty)
 	{
-		return MobileParty.CreateParty(stringId, new BanditPartyComponent(relatedSettlement), delegate(MobileParty mobileParty)
-		{
-			mobileParty.ActualClan = clan;
-		});
+		mobileParty.SetPartyComponent(new BanditPartyComponent(hideout, isBossParty, null));
 	}
 
-	protected internal BanditPartyComponent(Hideout hideout, bool isBossParty)
+	public static MobileParty CreateLooterParty(string stringId, Clan clan, Settlement relatedSettlement, bool isBossParty, PartyTemplateObject pt, CampaignVec2 initialPosition)
+	{
+		InitializationArgs args = new InitializationArgs(clan, pt, initialPosition);
+		return MobileParty.CreateParty(stringId, new BanditPartyComponent(relatedSettlement, args));
+	}
+
+	public static void ConvertPartyToLooterParty(MobileParty mobileParty, Clan clan, Settlement relatedSettlement)
+	{
+		mobileParty.SetPartyComponent(new BanditPartyComponent(relatedSettlement, null));
+	}
+
+	protected BanditPartyComponent(Hideout hideout, bool isBossParty, InitializationArgs args)
 	{
 		Hideout = hideout;
 		IsBossParty = isBossParty;
+		_initializationArgs = args;
 	}
 
-	protected internal BanditPartyComponent(Settlement relatedSettlement)
+	protected BanditPartyComponent(Settlement relatedSettlement, InitializationArgs args)
 	{
 		_relatedSettlement = relatedSettlement;
+		_initializationArgs = args;
 	}
 
 	public void SetHomeHideout(Hideout hideout)
 	{
+		Hideout hideout2 = Hideout;
 		Hideout = hideout;
+		if (hideout2 != Hideout)
+		{
+			CampaignEventDispatcher.Instance.OnHomeHideoutChanged(this, hideout2);
+		}
 	}
 
 	public override void ClearCachedName()
 	{
 		_cachedName = null;
+	}
+
+	protected override void OnMobilePartySetOnCreation()
+	{
+		if (_initializationArgs != null)
+		{
+			base.MobileParty.ActualClan = _initializationArgs.Clan;
+			_initializationArgs.InitializeBanditOnCreation(base.MobileParty);
+			_initializationArgs = null;
+		}
 	}
 }

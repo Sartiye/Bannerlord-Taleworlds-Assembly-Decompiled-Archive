@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -9,9 +10,9 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
 
 public class OrderOfBattleHeroItemVM : ViewModel
 {
-	private readonly TextObject _mismatchMountedText = new TextObject("{=jR237DSU}Commander is mounted!");
+	private readonly TextObject _mismatchMountedText = new TextObject("{=J9V9YhkY}Captain is mounted!");
 
-	private readonly TextObject _mismatchDismountedText = new TextObject("{=i0esOr2l}Commander is not mounted!");
+	private readonly TextObject _mismatchDismountedText = new TextObject("{=ufjypmaX}Captain is not mounted!");
 
 	public static Action<OrderOfBattleHeroItemVM> OnHeroSelection;
 
@@ -45,7 +46,7 @@ public class OrderOfBattleHeroItemVM : ViewModel
 
 	private bool _isMainHero;
 
-	private ImageIdentifierVM _imageIdentifier;
+	private CharacterImageIdentifierVM _imageIdentifier;
 
 	private BasicTooltipViewModel _tooltip;
 
@@ -215,7 +216,7 @@ public class OrderOfBattleHeroItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM ImageIdentifier
+	public CharacterImageIdentifierVM ImageIdentifier
 	{
 		get
 		{
@@ -278,8 +279,8 @@ public class OrderOfBattleHeroItemVM : ViewModel
 		IsDisabled = !Mission.Current.PlayerTeam.IsPlayerGeneral && !agent.IsMainAgent;
 		IsShown = true;
 		IsMainHero = Agent.IsMainAgent;
-		ImageIdentifier = new ImageIdentifierVM(CharacterCode.CreateFrom(Agent.Character));
-		Tooltip = new BasicTooltipViewModel(() => GetCommanderTooltip());
+		ImageIdentifier = new CharacterImageIdentifierVM(CharacterCode.CreateFrom(Agent.Character));
+		Tooltip = new BasicTooltipViewModel(() => GetCaptainTooltip());
 		RefreshValues();
 	}
 
@@ -287,7 +288,7 @@ public class OrderOfBattleHeroItemVM : ViewModel
 	{
 		if (InitialFormationItem != null)
 		{
-			Debug.FailedAssert("Initial formation for hero is already set", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleHeroItemVM.cs", "SetInitialFormation", 76);
+			Debug.FailedAssert("Initial formation for hero is already set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleHeroItemVM.cs", "SetInitialFormation", 77);
 		}
 		if (formation != null)
 		{
@@ -301,7 +302,7 @@ public class OrderOfBattleHeroItemVM : ViewModel
 		_cachedTooltipProperties = GetAgentTooltip?.Invoke(Agent);
 	}
 
-	private List<TooltipProperty> GetCommanderTooltip()
+	private List<TooltipProperty> GetCaptainTooltip()
 	{
 		return _cachedTooltipProperties;
 	}
@@ -324,11 +325,11 @@ public class OrderOfBattleHeroItemVM : ViewModel
 	{
 		if (Agent != null)
 		{
-			ImageIdentifier = new ImageIdentifierVM(CharacterCode.CreateFrom(Agent.Character));
+			ImageIdentifier = new CharacterImageIdentifierVM(CharacterCode.CreateFrom(Agent.Character));
 		}
 		else
 		{
-			ImageIdentifier = new ImageIdentifierVM(CharacterCode.CreateEmpty());
+			ImageIdentifier = new CharacterImageIdentifierVM(CharacterCode.CreateEmpty());
 		}
 	}
 

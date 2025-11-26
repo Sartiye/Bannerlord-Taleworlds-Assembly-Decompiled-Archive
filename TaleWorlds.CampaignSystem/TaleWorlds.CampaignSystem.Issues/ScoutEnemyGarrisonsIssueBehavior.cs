@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -102,7 +103,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		}
 
 		public ScoutEnemyGarrisonsIssue(Hero issueOwner, List<Settlement> settlements)
-			: base(issueOwner, CampaignTime.DaysFromNow(15f))
+			: base(issueOwner, CampaignTime.DaysFromNow(30f))
 		{
 			_settlement1 = settlements[0];
 			_settlement2 = settlements[1];
@@ -187,15 +188,53 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		private bool TryToUpdateSettlements()
 		{
 			Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate((Kingdom x) => x.IsAtWarWith(base.IssueOwner.MapFaction));
-			if (randomElementWithPredicate != null)
+			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+			IMapPoint mapPoint = base.IssueOwner.GetMapPoint();
+			float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 5f;
+			if (randomElementWithPredicate != null && mapPoint != null)
 			{
-				List<Settlement> list = randomElementWithPredicate.Settlements.Where((Settlement x) => SuitableSettlementCondition(x, base.IssueOwner)).ToList();
-				if (list.Count >= 5)
+				(Settlement, float)[] array = new(Settlement, float)[3];
+				foreach (Settlement settlement in randomElementWithPredicate.Settlements)
 				{
-					list = list.Take(3).ToList();
-					_settlement1 = list[0];
-					_settlement2 = list[1];
-					_settlement3 = list[2];
+					if (!SuitableSettlementCondition(settlement, base.IssueOwner))
+					{
+						continue;
+					}
+					float num2 = float.MaxValue;
+					float estimatedLandRatio;
+					if (base.IssueOwner.CurrentSettlement != null)
+					{
+						num2 = mapDistanceModel.GetDistance(base.IssueOwner.CurrentSettlement, settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
+					}
+					else if (base.IssueOwner.PartyBelongedTo != null)
+					{
+						num2 = mapDistanceModel.GetDistance(base.IssueOwner.PartyBelongedTo, settlement, isTargetingPort: false, MobileParty.NavigationType.All, out estimatedLandRatio);
+					}
+					else if (base.IssueOwner.PartyBelongedToAsPrisoner != null)
+					{
+						num2 = mapDistanceModel.GetDistance(base.IssueOwner.PartyBelongedToAsPrisoner.MobileParty, settlement, isTargetingPort: false, MobileParty.NavigationType.All, out estimatedLandRatio);
+					}
+					if (num2 <= num)
+					{
+						if (array[2].Item1 == null || array[2].Item2 > num2)
+						{
+							array[2] = (settlement, num2);
+						}
+						int num3 = array.Length - 1;
+						while (num3 > 0 && (array[num3 - 1].Item1 == null || array[num3].Item2 < array[num3 - 1].Item2))
+						{
+							(Settlement, float) tuple = array[num3 - 1];
+							array[num3 - 1] = array[num3];
+							array[num3] = tuple;
+							num3--;
+						}
+					}
+				}
+				if (array[2].Item1 != null)
+				{
+					_settlement1 = array[2].Item1;
+					_settlement2 = array[1].Item1;
+					_settlement3 = array[0].Item1;
 					return true;
 				}
 			}
@@ -228,7 +267,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 
 		public override TextObject Title => new TextObject("{=G79IzJsZ}Scout Enemy Garrisons");
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -242,11 +281,11 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _settlementBecomeNeutralLogText => new TextObject("{=wgX2nL5Z}{SETTLEMENT} is no longer in control of enemy. There is no need to scout that settlement.");
+		private TextObject SettlementBecomeNeutralLogText => new TextObject("{=wgX2nL5Z}{SETTLEMENT} is no longer in control of enemy. There is no need to scout that settlement.");
 
-		private TextObject _armyDisbandedQuestCancelLogText => new TextObject("{=JiHaL6IV}Army has disbanded and your mission has been canceled.");
+		private TextObject ArmyDisbandedQuestCancelLogText => new TextObject("{=JiHaL6IV}Army has disbanded and your mission has been canceled.");
 
-		private TextObject _noLongerAllyQuestCancelLogText
+		private TextObject NoLongerAllyQuestCancelLogText
 		{
 			get
 			{
@@ -256,17 +295,25 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _allTargetsAreNeutral => new TextObject("{=LC2F84GR}None of the target settlements are in control of the enemy. Army Commander has canceled the mission.");
+		private TextObject AllTargetsAreNeutral => new TextObject("{=LC2F84GR}None of the target settlements are in control of the enemy. Army Commander has canceled the mission.");
 
-		private TextObject _scoutFinishedForSettlementWallLevel1LogText => new TextObject("{=5kxDhBWk}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are not high enough but can be useful with sufficient garrison support.");
+		private TextObject ScoutFinishedForSettlementWallLevel1LogText => new TextObject("{=5kxDhBWk}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are not high enough but can be useful with sufficient garrison support.");
 
-		private TextObject _scoutFinishedForSettlementWallLevel2LogText => new TextObject("{=GUqjL6xk}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are high enough to defend against invaders.");
+		private TextObject ScoutFinishedForSettlementWallLevel2LogText => new TextObject("{=GUqjL6xk}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are high enough to defend against invaders.");
 
-		private TextObject _scoutFinishedForSettlementWallLevel3LogText => new TextObject("{=YErURO5l}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are too high and hard to breach.");
+		private TextObject ScoutFinishedForSettlementWallLevel3LogText => new TextObject("{=YErURO5l}Your scouts have returned from {SETTLEMENT}. According to their report {SETTLEMENT}'s garrison has {GARRISON_SIZE} men and walls are too high and hard to breach.");
 
-		private TextObject _questSuccess => new TextObject("{=Qy7Zmmvk}You have successfully scouted the target settlements.");
+		private TextObject QuestSuccess
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=Qy7Zmmvk}You have successfully scouted the target settlements and sent the report to {QUEST_GIVER.LINK}.");
+				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
+				return textObject;
+			}
+		}
 
-		private TextObject _questTimedOut => new TextObject("{=GzodT3vS}You have failed to scout the enemy settlements in time.");
+		private TextObject QuestTimedOut => new TextObject("{=GzodT3vS}You have failed to scout the enemy settlements in time.");
 
 		internal static void AutoGeneratedStaticCollectObjectsScoutEnemyGarrisonsQuest(object o, List<object> collectedObjects)
 		{
@@ -308,7 +355,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		}
 
 		public ScoutEnemyGarrisonsQuest(string questId, Hero questGiver, Settlement settlement1, Settlement settlement2, Settlement settlement3)
-			: base(questId, questGiver, CampaignTime.DaysFromNow(15f), 0)
+			: base(questId, questGiver, CampaignTime.DaysFromNow(30f), 0)
 		{
 			_questSettlement1 = new QuestSettlement(settlement1, 0);
 			_questSettlement2 = new QuestSettlement(settlement2, 0);
@@ -350,7 +397,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 			AddTrackedObject(_questSettlement2.Settlement);
 			AddTrackedObject(_questSettlement3.Settlement);
 			_scoutedSettlementCount = 0;
-			_startQuestLog = AddDiscreteLog(_playerStartsQuestLogText, new TextObject("{=jpBpwgAs}Settlements"), _scoutedSettlementCount, 3);
+			_startQuestLog = AddDiscreteLog(PlayerStartsQuestLogText, new TextObject("{=jpBpwgAs}Settlements"), _scoutedSettlementCount, 3);
 		}
 
 		protected override void RegisterEvents()
@@ -369,7 +416,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 			List<QuestSettlement> list = new List<QuestSettlement> { _questSettlement1, _questSettlement2, _questSettlement3 };
 			if (list.TrueForAll((QuestSettlement x) => !x.Settlement.MapFaction.IsAtWarWith(base.QuestGiver.MapFaction)))
 			{
-				AddLog(_allTargetsAreNeutral);
+				AddLog(AllTargetsAreNeutral);
 				CompleteQuestWithCancel();
 				return;
 			}
@@ -379,7 +426,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 				{
 					continue;
 				}
-				if (Campaign.Current.Models.MapDistanceModel.GetDistance(MobileParty.MainParty, item.Settlement) <= MobileParty.MainParty.SeeingRange)
+				if (DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(MobileParty.MainParty, item.Settlement, MobileParty.NavigationType.Default) <= MobileParty.MainParty.SeeingRange)
 				{
 					item.CurrentScoutProgress++;
 					if (item.CurrentScoutProgress == 1)
@@ -392,13 +439,12 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 					{
 						_startQuestLog.UpdateCurrentProgress(++_scoutedSettlementCount);
 						RemoveTrackedObject(item.Settlement);
-						TextObject empty = TextObject.Empty;
-						empty = ((item.Settlement.Town.GetWallLevel() == 1) ? _scoutFinishedForSettlementWallLevel1LogText : ((item.Settlement.Town.GetWallLevel() != 2) ? _scoutFinishedForSettlementWallLevel3LogText : _scoutFinishedForSettlementWallLevel2LogText));
-						empty.SetTextVariable("SETTLEMENT", item.Settlement.EncyclopediaLinkWithName);
+						TextObject textObject2 = ((item.Settlement.Town.GetWallLevel() == 1) ? ScoutFinishedForSettlementWallLevel1LogText : ((item.Settlement.Town.GetWallLevel() != 2) ? ScoutFinishedForSettlementWallLevel3LogText : ScoutFinishedForSettlementWallLevel2LogText));
+						textObject2.SetTextVariable("SETTLEMENT", item.Settlement.EncyclopediaLinkWithName);
 						int num = item.Settlement.Town.GarrisonParty?.MemberRoster.TotalHealthyCount ?? 0;
 						int num2 = (int)item.Settlement.Militia;
-						empty.SetTextVariable("GARRISON_SIZE", num + num2);
-						AddLog(empty);
+						textObject2.SetTextVariable("GARRISON_SIZE", num + num2);
+						AddLog(textObject2);
 					}
 				}
 				else
@@ -417,7 +463,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 			List<QuestSettlement> list = new List<QuestSettlement> { _questSettlement1, _questSettlement2, _questSettlement3 };
 			foreach (QuestSettlement item in list)
 			{
-				if (settlement == item.Settlement && (newOwner.MapFaction == base.QuestGiver.MapFaction || !newOwner.MapFaction.IsAtWarWith(base.QuestGiver.MapFaction)))
+				if (settlement == item.Settlement && !item.IsScoutingCompleted() && (newOwner.MapFaction == base.QuestGiver.MapFaction || !newOwner.MapFaction.IsAtWarWith(base.QuestGiver.MapFaction)))
 				{
 					item.IsCompletedThroughBeingNeutral = true;
 					item.SetScoutingCompleted();
@@ -426,12 +472,12 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 					{
 						RemoveTrackedObject(item.Settlement);
 					}
-					TextObject settlementBecomeNeutralLogText = _settlementBecomeNeutralLogText;
+					TextObject settlementBecomeNeutralLogText = SettlementBecomeNeutralLogText;
 					settlementBecomeNeutralLogText.SetTextVariable("SETTLEMENT", item.Settlement.EncyclopediaLinkWithName);
 					AddLog(settlementBecomeNeutralLogText);
 					if (list.TrueForAll((QuestSettlement x) => x.IsCompletedThroughBeingNeutral))
 					{
-						AddLog(_allTargetsAreNeutral);
+						AddLog(AllTargetsAreNeutral);
 						CompleteQuestWithCancel();
 					}
 					break;
@@ -443,7 +489,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		{
 			if (army.ArmyOwner == base.QuestGiver)
 			{
-				AddLog(_armyDisbandedQuestCancelLogText);
+				AddLog(ArmyDisbandedQuestCancelLogText);
 				CompleteQuestWithCancel();
 			}
 		}
@@ -452,14 +498,14 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		{
 			if (clan == Clan.PlayerClan && oldKingdom == base.QuestGiver.MapFaction)
 			{
-				AddLog(_noLongerAllyQuestCancelLogText);
+				AddLog(NoLongerAllyQuestCancelLogText);
 				CompleteQuestWithCancel();
 			}
 		}
 
 		private void AllScoutingDone()
 		{
-			AddLog(_questSuccess);
+			AddLog(QuestSuccess);
 			GainRenownAction.Apply(Hero.MainHero, 3f);
 			GainKingdomInfluenceAction.ApplyForDefault(Hero.MainHero, 10f);
 			RelationshipChangeWithQuestGiver = 3;
@@ -468,7 +514,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnTimedOut()
 		{
-			AddLog(_questTimedOut);
+			AddLog(QuestTimedOut);
 			RelationshipChangeWithQuestGiver = -2;
 		}
 	}
@@ -545,7 +591,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 
 	private const IssueBase.IssueFrequency ScoutEnemyGarrisonsIssueFrequency = IssueBase.IssueFrequency.VeryCommon;
 
-	private const int QuestDurationInDays = 15;
+	private const int QuestDurationInDays = 30;
 
 	public override void RegisterEvents()
 	{
@@ -569,21 +615,57 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		settlements = new List<Settlement>();
 		if (issueGiver.MapFaction.IsKingdomFaction && issueGiver.IsFactionLeader && !issueGiver.IsMinorFactionHero && !issueGiver.IsPrisoner && !issueGiver.IsFugitive)
 		{
-			if (issueGiver.GetMapPoint() != null)
+			Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate((Kingdom x) => x.IsAtWarWith(issueGiver.MapFaction));
+			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+			IMapPoint mapPoint = issueGiver.GetMapPoint();
+			float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 5f;
+			if (randomElementWithPredicate != null && mapPoint != null)
 			{
-				Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate((Kingdom x) => x.IsAtWarWith(issueGiver.MapFaction));
-				if (randomElementWithPredicate != null)
+				(Settlement, float)[] array = new(Settlement, float)[3];
+				foreach (Settlement settlement in randomElementWithPredicate.Settlements)
 				{
-					List<Settlement> list = randomElementWithPredicate.Settlements.Where((Settlement x) => SuitableSettlementCondition(x, issueGiver)).ToList();
-					if (list.Count >= 5)
+					if (!SuitableSettlementCondition(settlement, issueGiver))
 					{
-						list = list.OrderBy((Settlement y) => issueGiver.GetMapPoint().Position2D.Distance(y.Position2D)).ToList();
-						settlements = list.Take(3).ToList();
-						return true;
+						continue;
+					}
+					float num2 = float.MaxValue;
+					float estimatedLandRatio;
+					if (issueGiver.CurrentSettlement != null)
+					{
+						num2 = mapDistanceModel.GetDistance(issueGiver.CurrentSettlement, settlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All);
+					}
+					else if (issueGiver.PartyBelongedTo != null)
+					{
+						num2 = mapDistanceModel.GetDistance(issueGiver.PartyBelongedTo, settlement, isTargetingPort: false, MobileParty.NavigationType.All, out estimatedLandRatio);
+					}
+					else if (issueGiver.PartyBelongedToAsPrisoner != null)
+					{
+						num2 = mapDistanceModel.GetDistance(issueGiver.PartyBelongedToAsPrisoner.MobileParty, settlement, isTargetingPort: false, MobileParty.NavigationType.All, out estimatedLandRatio);
+					}
+					if (num2 <= num)
+					{
+						if (array[2].Item1 == null || array[2].Item2 > num2)
+						{
+							array[2] = (settlement, num2);
+						}
+						int num3 = array.Length - 1;
+						while (num3 > 0 && (array[num3 - 1].Item1 == null || array[num3].Item2 < array[num3 - 1].Item2))
+						{
+							(Settlement, float) tuple = array[num3 - 1];
+							array[num3 - 1] = array[num3];
+							array[num3] = tuple;
+							num3--;
+						}
 					}
 				}
+				if (array[2].Item1 != null)
+				{
+					settlements.Add(array[2].Item1);
+					settlements.Add(array[1].Item1);
+					settlements.Add(array[0].Item1);
+					return true;
+				}
 			}
-			return false;
 		}
 		return false;
 	}
@@ -603,7 +685,7 @@ public class ScoutEnemyGarrisonsIssueBehavior : CampaignBehaviorBase
 		{
 			if (settlement.IsUnderSiege)
 			{
-				return settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapFaction != Hero.MainHero.MapFaction;
+				return settlement.SiegeEvent.BesiegerCamp.MapFaction != Hero.MainHero.MapFaction;
 			}
 			return true;
 		}

@@ -1,3 +1,5 @@
+using TaleWorlds.Engine;
+
 namespace TaleWorlds.MountAndBlade;
 
 public sealed class BatteringRamAI : UsableMachineAIBase
@@ -12,7 +14,7 @@ public sealed class BatteringRamAI : UsableMachineAIBase
 		{
 			if (Mission.Current.Teams[0].TeamAI is TeamAISiegeComponent { InnerGate: not null } teamAISiegeComponent && !teamAISiegeComponent.InnerGate.IsDestroyed)
 			{
-				return MovementOrder.MovementOrderAttackEntity(teamAISiegeComponent.InnerGate.GameEntity, surroundEntity: false);
+				return MovementOrder.MovementOrderAttackEntity(GameEntity.CreateFromWeakEntity(teamAISiegeComponent.InnerGate.GameEntity), surroundEntity: false);
 			}
 			return MovementOrder.MovementOrderCharge;
 		}

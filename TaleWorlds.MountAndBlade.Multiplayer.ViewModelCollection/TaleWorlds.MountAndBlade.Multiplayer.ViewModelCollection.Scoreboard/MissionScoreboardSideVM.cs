@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Multiplayer;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Scoreboard;
@@ -32,8 +33,6 @@ public class MissionScoreboardSideVM : ViewModel
 	private bool _isSingleSide;
 
 	private bool _isSecondSide;
-
-	private bool _useSecondary;
 
 	private bool _showAttackerOrDefenderIcons;
 
@@ -173,23 +172,6 @@ public class MissionScoreboardSideVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool UseSecondary
-	{
-		get
-		{
-			return _useSecondary;
-		}
-		set
-		{
-			if (value != _useSecondary)
-			{
-				_useSecondary = value;
-				OnPropertyChangedWithValue(value, "UseSecondary");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public bool ShowAttackerOrDefenderIcons
 	{
 		get
@@ -308,7 +290,7 @@ public class MissionScoreboardSideVM : ViewModel
 		}
 	}
 
-	public MissionScoreboardSideVM(MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide, Action<MissionScoreboardPlayerVM> executeActivate, bool isSingleSide, bool isSecondSide)
+	public MissionScoreboardSideVM(MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide, Action<MissionScoreboardPlayerVM> executeActivate, bool isSingleSide, bool isSecondSide, MultiplayerBattleColors.MultiplayerCultureColorInfo cultureColorInfo)
 	{
 		_executeActivate = executeActivate;
 		_missionScoreboardSide = missionScoreboardSide;
@@ -326,15 +308,12 @@ public class MissionScoreboardSideVM : ViewModel
 		}
 		UpdateBotAttributes();
 		UpdateRoundAttributes();
-		string text = ((_missionScoreboardSide.Side == BattleSideEnum.Attacker) ? MultiplayerOptions.OptionType.CultureTeam1.GetStrValue() : MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
-		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(text);
-		UseSecondary = _missionScoreboardSide.Side == BattleSideEnum.Defender;
 		IsSingleSide = isSingleSide;
 		IsSecondSide = isSecondSide;
-		CultureId = text;
-		CultureColor1 = Color.FromUint(UseSecondary ? @object.Color2 : @object.Color);
-		CultureColor2 = Color.FromUint(UseSecondary ? @object.Color : @object.Color2);
-		TeamColor = "0x" + @object.Color2.ToString("X");
+		CultureId = cultureColorInfo.Culture?.StringId ?? string.Empty;
+		CultureColor1 = cultureColorInfo.Color1;
+		CultureColor2 = cultureColorInfo.Color2;
+		TeamColor = "0x" + cultureColorInfo.Culture?.Color2.ToString("X");
 		ShowAttackerOrDefenderIcons = Mission.Current.HasMissionBehavior<MissionMultiplayerSiegeClient>();
 		IsAttacker = missionScoreboardSide.Side == BattleSideEnum.Attacker;
 		RefreshValues();
@@ -426,7 +405,7 @@ public class MissionScoreboardSideVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to remove a player that is not registered", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardSideVM.cs", "RemovePlayer", 175);
+			Debug.FailedAssert("Trying to remove a player that is not registered", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardSideVM.cs", "RemovePlayer", 167);
 		}
 		SortPlayers();
 		UpdatePlayersText();
@@ -476,7 +455,10 @@ public class MissionScoreboardSideVM : ViewModel
 		}
 		foreach (MissionScoreboardPlayerVM player in Players)
 		{
-			player.RefreshAvatar();
+			if (!player.IsBot)
+			{
+				player.RefreshAvatar();
+			}
 		}
 	}
 }

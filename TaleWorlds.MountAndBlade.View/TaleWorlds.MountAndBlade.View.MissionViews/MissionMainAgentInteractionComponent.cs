@@ -16,6 +16,8 @@ public class MissionMainAgentInteractionComponent
 
 	private IFocusable _currentInteractableObject;
 
+	private sbyte _currentInteractableObjectBoneIndex;
+
 	private readonly MissionMainAgentController _mainAgentController;
 
 	public IFocusable CurrentFocusedObject { get; private set; }
@@ -34,12 +36,13 @@ public class MissionMainAgentInteractionComponent
 
 	public event MissionFocusHealthChangeDelegate OnFocusHealthChanged;
 
-	public void SetCurrentFocusedObject(IFocusable focusedObject, IFocusable focusedMachine, bool isInteractable)
+	public void SetCurrentFocusedObject(IFocusable focusedObject, IFocusable focusedMachine, sbyte focusedObjectBoneIndex, bool isInteractable)
 	{
 		if (CurrentFocusedObject != null && (CurrentFocusedObject != focusedObject || (_currentInteractableObject != null && !isInteractable) || (_currentInteractableObject == null && isInteractable)))
 		{
 			FocusLost(CurrentFocusedObject, CurrentFocusedMachine);
 			_currentInteractableObject = null;
+			_currentInteractableObjectBoneIndex = -1;
 			CurrentFocusedObject = null;
 			CurrentFocusedMachine = null;
 		}
@@ -56,6 +59,10 @@ public class MissionMainAgentInteractionComponent
 			CurrentFocusedObject = focusedObject;
 			CurrentFocusedMachine = focusedMachine;
 		}
+		if (_currentInteractableObject != null && _currentInteractableObject == focusedObject)
+		{
+			_currentInteractableObjectBoneIndex = focusedObjectBoneIndex;
+		}
 	}
 
 	public void ClearFocus()
@@ -65,6 +72,7 @@ public class MissionMainAgentInteractionComponent
 			FocusLost(CurrentFocusedObject, CurrentFocusedMachine);
 		}
 		_currentInteractableObject = null;
+		_currentInteractableObjectBoneIndex = -1;
 		CurrentFocusedObject = null;
 		CurrentFocusedMachine = null;
 	}
@@ -121,60 +129,129 @@ public class MissionMainAgentInteractionComponent
 	public void FocusTick()
 	{
 		IFocusable focusable = null;
+		sbyte focusedObjectBoneIndex = -1;
 		UsableMachine usableMachine = null;
-		bool flag = true;
-		bool flag2 = true;
+		bool flag = false;
+		bool flag2 = false;
 		if (Mission.Current.Mode != MissionMode.Conversation && Mission.Current.Mode != MissionMode.CutScene)
 		{
 			Agent main = Agent.Main;
-			if (!CurrentMissionScreen.SceneLayer.Input.IsGameKeyDown(25) && main != null && main.IsOnLand())
+			if (main != null && (CurrentMission.IsMainAgentItemInteractionEnabled || IsFocusMountable()) && !CurrentMission.IsOrderMenuOpen && !CurrentMissionScreen.SceneLayer.Input.IsGameKeyDown(25) && main.IsAbleToUseMachine())
 			{
 				float num = 10f;
 				Vec3 direction = CurrentMissionScreen.CombatCamera.Direction;
 				Vec3 vec = direction;
 				Vec3 position = CurrentMissionScreen.CombatCamera.Position;
 				Vec3 position2 = main.Position;
-				float num2 = new Vec3(position.x, position.y).Distance(new Vec3(position2.x, position2.y));
+				Vec3 closestPoint = new Vec3(position.x, position.y);
+				float num2 = closestPoint.Distance(new Vec3(position2.x, position2.y));
 				Vec3 vec2 = position * (1f - num2) + (position + direction) * num2;
-				if (CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2, vec2 + vec * num, out var collisionDistance, 0.01f, BodyFlags.CommonFlagsThatDoNotBlocksRay))
+				if (CurrentMissionScene.FocusRayCastForFixedPhysics(vec2, vec2 + vec * num, out var collisionDistance, out closestPoint, out var _, 0.01f, BodyFlags.CommonFlagsThatDoNotBlockRay))
+				{
+					num = collisionDistance;
+				}
+				if (CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2, vec2 + vec * num, out collisionDistance, 0.01f, BodyFlags.CommonFlagsThatDoNotBlockRay) && collisionDistance < num)
 				{
 					num = collisionDistance;
 				}
 				float num3 = float.MaxValue;
-				Agent agent = CurrentMission.RayCastForClosestAgent(vec2, vec2 + vec * (num + 0.01f), out collisionDistance, main.Index, 0.3f);
-				if (agent != null && (!agent.IsMount || (agent.RiderAgent == null && main.MountAgent == null && main.CanReachAgent(agent))))
+				Agent agent = null;
+				float collisionDistance2;
+				Agent agent2 = CurrentMission.RayCastForClosestAgent(vec2, vec2 + vec * (num + 0.01f), main.Index, 0.3f, out collisionDistance2);
+				if (agent2 != null && agent2.State != AgentState.Killed && agent2.State != AgentState.Unconscious && (!agent2.IsMount || (agent2.RiderAgent == null && main.MountAgent == null && main.CanReachAgent(agent2))))
 				{
-					num3 = collisionDistance;
-					focusable = agent;
-					if (!main.CanInteractWithAgent(agent, CurrentMissionScreen.CameraElevation))
+					flag2 = main.CanInteractWithAgent(agent2, CurrentMissionScreen.CameraElevation);
+					if (flag2 || agent2.IsEnemyOf(main))
 					{
-						flag2 = false;
+						num3 = collisionDistance2;
+						focusable = agent2;
+						focusedObjectBoneIndex = -1;
+					}
+					else
+					{
+						agent = agent2;
 					}
 				}
-				float num4 = 3f;
-				num += 0.1f;
-				if ((CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2, vec2 + vec * num, out collisionDistance, out GameEntity collidedEntity, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) && collidedEntity != null && collisionDistance < num3) || (CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2, vec2 + vec * num, out collisionDistance, out collidedEntity, 0.2f * num4, BodyFlags.CommonFocusRayCastExcludeFlags) && collidedEntity != null && collisionDistance < num3))
+				float collisionDistance3;
+				sbyte boneIndex;
+				Agent agent3 = CurrentMission.RayCastForClosestAgentsLimbs(vec2, vec2 + vec * (num + 0.01f), main.Index, 0.3f, out collisionDistance3, out boneIndex);
+				if (agent3 != null && (agent3.State == AgentState.Killed || agent3.State == AgentState.Unconscious) && (!agent3.IsMount || (agent3.RiderAgent == null && main.MountAgent == null && main.CanReachAgent(agent3))) && num3 > collisionDistance3)
 				{
-					while (!collidedEntity.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IFocusable) && collidedEntity.Parent != null)
+					flag2 = main.CanInteractWithAgent(agent3, CurrentMissionScreen.CameraElevation);
+					if (flag2 || agent3.IsEnemyOf(main))
 					{
-						collidedEntity = collidedEntity.Parent;
+						num3 = collisionDistance3;
+						focusable = agent3;
+						focusedObjectBoneIndex = boneIndex;
 					}
-					usableMachine = collidedEntity.GetFirstScriptOfType<UsableMachine>();
-					if (usableMachine != null && !usableMachine.IsDisabled)
+				}
+				float valueTo = 3f;
+				num += 0.1f;
+				WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
+				float rayLength = 0f;
+				bool flag3 = false;
+				if (CurrentMissionScene.FocusRayCastForFixedPhysics(vec2, vec2 + vec * num, out var collisionDistance4, out closestPoint, out var collidedEntity2, 0.2f) && collisionDistance4 < num && collisionDistance4 < num3)
+				{
+					num = collisionDistance4;
+					rayLength = collisionDistance4;
+					weakGameEntity = collidedEntity2;
+					flag3 = weakGameEntity.IsValid;
+				}
+				bool flag4 = false;
+				for (int i = 0; i < 2; i++)
+				{
+					float num4 = MathF.Lerp(1f, valueTo, i / 1);
+					float num5 = 0.2f * (num4 - 1f);
+					if (!CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2 + vec * num5, vec2 + vec * num, out collisionDistance4, out collidedEntity2, 0.2f * num4, BodyFlags.CommonFocusRayCastExcludeFlags) || !(collisionDistance4 + num5 < num) || !(collisionDistance4 + num5 < num3))
 					{
-						GameEntity validStandingPointForAgent = usableMachine.GetValidStandingPointForAgent(main);
-						if (validStandingPointForAgent != null)
+						continue;
+					}
+					bool flag5 = false;
+					WeakGameEntity weakGameEntity2 = collidedEntity2;
+					while (weakGameEntity2.IsValid)
+					{
+						if (weakGameEntity2.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IFocusable))
 						{
-							collidedEntity = validStandingPointForAgent;
+							flag5 = true;
+							break;
+						}
+						weakGameEntity2 = weakGameEntity2.Parent;
+					}
+					if (!flag4 || flag5)
+					{
+						num = collisionDistance4 + num5;
+						rayLength = collisionDistance4 + num5;
+						weakGameEntity = collidedEntity2;
+						flag3 = weakGameEntity.IsValid;
+						flag4 = true;
+						if (flag5)
+						{
+							break;
 						}
 					}
-					flag = false;
-					UsableMissionObject firstScriptOfType = collidedEntity.GetFirstScriptOfType<UsableMissionObject>();
+				}
+				if (flag3)
+				{
+					while (!weakGameEntity.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IFocusable) && weakGameEntity.Parent.IsValid)
+					{
+						weakGameEntity = weakGameEntity.Parent;
+					}
+					usableMachine = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
+					if (usableMachine != null && !usableMachine.IsDisabled)
+					{
+						WeakGameEntity validStandingPointForAgent = usableMachine.GetValidStandingPointForAgent(main);
+						if (validStandingPointForAgent.IsValid)
+						{
+							weakGameEntity = validStandingPointForAgent;
+						}
+					}
+					UsableMissionObject firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMissionObject>();
 					if (firstScriptOfType is SpawnedItemEntity)
 					{
-						if (CurrentMission.IsMainAgentItemInteractionEnabled && main.CanReachObject(firstScriptOfType, GetCollisionDistanceSquaredOfIntersectionFromMainAgentEye(vec2, vec, collisionDistance)))
+						if (CurrentMission.IsMainAgentItemInteractionEnabled && firstScriptOfType.IsFocusable && !main.IsInWater() && main.CanReachObject(firstScriptOfType, GetCollisionDistanceSquaredOfIntersectionFromMainAgentEye(vec2, vec, rayLength)))
 						{
 							focusable = firstScriptOfType;
+							focusedObjectBoneIndex = -1;
 							if (main.CanUseObject(firstScriptOfType))
 							{
 								flag = true;
@@ -183,25 +260,41 @@ public class MissionMainAgentInteractionComponent
 					}
 					else if (firstScriptOfType != null)
 					{
-						focusable = firstScriptOfType;
-						if (CurrentMission.IsMainAgentObjectInteractionEnabled && !main.IsUsingGameObject && main.IsOnLand() && main.ObjectHasVacantPosition(firstScriptOfType))
+						if (firstScriptOfType.IsFocusable)
 						{
-							flag = true;
+							focusable = firstScriptOfType;
+							focusedObjectBoneIndex = -1;
+							if (CurrentMission.IsMainAgentObjectInteractionEnabled && !main.IsUsingGameObject && main.IsAbleToUseMachine() && main.ObjectHasVacantPosition(firstScriptOfType) && main.CanUseObject(firstScriptOfType))
+							{
+								flag = true;
+							}
 						}
 					}
 					else if (usableMachine != null)
 					{
-						focusable = usableMachine;
+						if (usableMachine.IsFocusable)
+						{
+							focusable = usableMachine;
+							focusedObjectBoneIndex = -1;
+							flag = !usableMachine.IsDeactivated;
+						}
 					}
-					else if (collidedEntity.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable focusable2)
+					else if (weakGameEntity.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable { IsFocusable: not false } focusable2)
 					{
 						focusable = focusable2;
+						focusedObjectBoneIndex = -1;
 					}
 				}
 				if ((focusable == null || !flag) && main.MountAgent != null && main.CanInteractWithAgent(main.MountAgent, CurrentMissionScreen.CameraElevation))
 				{
 					focusable = main.MountAgent;
-					flag = true;
+					focusedObjectBoneIndex = -1;
+					flag2 = true;
+				}
+				if (focusable == null && agent != null)
+				{
+					focusable = agent;
+					flag2 = true;
 				}
 			}
 			if (focusable == null)
@@ -210,7 +303,7 @@ public class MissionMainAgentInteractionComponent
 				return;
 			}
 			bool isInteractable = ((focusable is Agent) ? flag2 : flag);
-			SetCurrentFocusedObject(focusable, usableMachine, isInteractable);
+			SetCurrentFocusedObject(focusable, usableMachine, focusedObjectBoneIndex, isInteractable);
 		}
 		else if (CurrentFocusedObject != null && Mission.Current.Mode != MissionMode.Conversation)
 		{
@@ -220,23 +313,23 @@ public class MissionMainAgentInteractionComponent
 
 	public void FocusStateCheckTick()
 	{
-		if (!CurrentMissionScreen.SceneLayer.Input.IsGameKeyPressed(13) || (!CurrentMission.IsMainAgentObjectInteractionEnabled && !IsFocusMountable()) || CurrentMission.IsOrderMenuOpen)
+		if (!CurrentMissionScreen.SceneLayer.Input.IsGameKeyPressed(13) || (!CurrentMission.IsMainAgentItemInteractionEnabled && !IsFocusMountable()) || CurrentMissionScreen.IsRadialMenuActive || CurrentMission.IsOrderMenuOpen)
 		{
 			return;
 		}
 		Agent main = Agent.Main;
 		if (_currentInteractableObject is UsableMissionObject usableMissionObject)
 		{
-			if (!main.IsUsingGameObject && main.IsOnLand() && !(usableMissionObject is SpawnedItemEntity) && main.ObjectHasVacantPosition(usableMissionObject))
+			if (!main.IsUsingGameObject && main.IsAbleToUseMachine() && !(usableMissionObject is SpawnedItemEntity) && main.ObjectHasVacantPosition(usableMissionObject))
 			{
 				main.HandleStartUsingAction(usableMissionObject, -1);
 			}
 			return;
 		}
 		Agent agent = _currentInteractableObject as Agent;
-		if (main.IsOnLand() && agent != null)
+		if (main.IsAbleToUseMachine() && agent != null)
 		{
-			agent.OnUse(main);
+			agent.OnUse(main, _currentInteractableObjectBoneIndex);
 		}
 		else if (main.IsUsingGameObject && !(main.CurrentlyUsedGameObject is SpawnedItemEntity) && (agent == null || !(main.CurrentlyUsedGameObject is StandingPoint { PlayerStopsUsingWhenInteractsWithOther: not false })))
 		{
@@ -256,15 +349,15 @@ public class MissionMainAgentInteractionComponent
 
 	public void FocusedItemHealthTick()
 	{
-		if (CurrentFocusedObject is UsableMissionObject { GameEntity: var gameEntity })
+		if (CurrentFocusedObject is UsableMissionObject { GameEntity: var weakGameEntity })
 		{
-			while (gameEntity != null && !gameEntity.HasScriptOfType<UsableMachine>())
+			while (weakGameEntity.IsValid && !weakGameEntity.HasScriptOfType<UsableMachine>())
 			{
-				gameEntity = gameEntity.Parent;
+				weakGameEntity = weakGameEntity.Parent;
 			}
-			if (gameEntity != null)
+			if (weakGameEntity.IsValid)
 			{
-				UsableMachine firstScriptOfType = gameEntity.GetFirstScriptOfType<UsableMachine>();
+				UsableMachine firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 				if (firstScriptOfType?.DestructionComponent != null)
 				{
 					this.OnFocusHealthChanged?.Invoke(CurrentFocusedObject, firstScriptOfType.DestructionComponent.HitPoint / firstScriptOfType.DestructionComponent.MaxHitPoint, hideHealthbarWhenFull: true);

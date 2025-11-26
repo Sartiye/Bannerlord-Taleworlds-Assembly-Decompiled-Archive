@@ -14,6 +14,11 @@ public sealed class DefaultParallelDriver : IParallelDriver
 		});
 	}
 
+	public void ForWithoutRenderThread(int fromInclusive, int toExclusive, TWParallel.ParallelForAuxPredicate body, int grainSize)
+	{
+		For(fromInclusive, toExclusive, body, grainSize);
+	}
+
 	public void For(int fromInclusive, int toExclusive, float deltaTime, TWParallel.ParallelForWithDtAuxPredicate body, int grainSize)
 	{
 		Parallel.ForEach(Partitioner.Create(fromInclusive, toExclusive, grainSize), Common.ParallelOptions, delegate(Tuple<int, int> range, ParallelLoopState loopState)

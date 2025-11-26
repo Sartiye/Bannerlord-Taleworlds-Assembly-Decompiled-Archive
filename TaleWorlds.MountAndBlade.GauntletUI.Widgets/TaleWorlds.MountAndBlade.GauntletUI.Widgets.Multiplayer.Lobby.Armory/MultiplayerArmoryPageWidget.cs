@@ -1,4 +1,3 @@
-using System.Linq;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.GamepadNavigation;
@@ -57,7 +56,6 @@ public class MultiplayerArmoryPageWidget : Widget
 			{
 				_isTauntAssignmentActive = value;
 				OnPropertyChanged(value, "IsTauntAssignmentActive");
-				_tauntAssignmentStateTimer = 0f;
 				OnTauntAssignmentStateChanged(value);
 			}
 		}
@@ -288,11 +286,11 @@ public class MultiplayerArmoryPageWidget : Widget
 	public MultiplayerArmoryPageWidget(UIContext context)
 		: base(context)
 	{
-		base.EventManager.AddLateUpdateAction(this, Update, 1);
 	}
 
-	private void Update(float dt)
+	protected override void OnLateUpdate(float dt)
 	{
+		base.OnLateUpdate(dt);
 		if (IsTauntAssignmentActive && !Input.IsGamepadActive)
 		{
 			Widget latestMouseUpWidget = base.EventManager.LatestMouseUpWidget;
@@ -308,10 +306,12 @@ public class MultiplayerArmoryPageWidget : Widget
 		}
 		if (_cosmeticPanelScrollTarget != null && _cosmeticsScrollablePanel != null)
 		{
-			_cosmeticsScrollablePanel.ScrollToChild(_cosmeticPanelScrollTarget, -1f, 0.5f, 0, 0, 0.3f);
+			ScrollablePanel.AutoScrollParameters scrollParameters = new ScrollablePanel.AutoScrollParameters(0f, 0f, 0f, 0f, -1f, 0.5f, 0.3f);
+			_cosmeticsScrollablePanel.ScrollToChild(_cosmeticPanelScrollTarget, scrollParameters);
 			_cosmeticPanelScrollTarget = null;
 		}
-		base.EventManager.AddLateUpdateAction(this, Update, 1);
+		UpdateTauntControlStates(dt);
+		AnimateTauntAssignmentStates(dt);
 	}
 
 	private bool IsWidgetUsedForTauntSelection(Widget widget)
@@ -330,48 +330,48 @@ public class MultiplayerArmoryPageWidget : Widget
 
 	private void RegisterForStateUpdate()
 	{
-		if (!_isTauntStateDirty)
-		{
-			_isTauntStateDirty = true;
-			base.EventManager.AddLateUpdateAction(this, UpdateTauntControlStates, 1);
-		}
+		_isTauntStateDirty = true;
 	}
 
 	private void UpdateTauntControlStates(float dt)
 	{
-		string state = (IsTauntControlsOpen ? "TauntEnabled" : "Default");
-		if (TauntCircleActionSelector != null)
+		if (_isTauntStateDirty)
 		{
-			TauntCircleActionSelector.AnimateDistanceFromCenterTo(IsTauntControlsOpen ? TauntEnabledRadialDistance : TauntDisabledRadialDistance, TauntStateAnimationDuration);
-			TauntCircleActionSelector.IsEnabled = IsTauntControlsOpen;
-			TauntCircleActionSelector.SetGlobalAlphaRecursively(IsTauntControlsOpen ? 1f : 0.6f);
+			string state = (IsTauntControlsOpen ? "TauntEnabled" : "Default");
+			if (TauntCircleActionSelector != null)
+			{
+				TauntCircleActionSelector.AnimateDistanceFromCenterTo(IsTauntControlsOpen ? TauntEnabledRadialDistance : TauntDisabledRadialDistance, TauntStateAnimationDuration);
+				TauntCircleActionSelector.IsEnabled = IsTauntControlsOpen;
+				TauntCircleActionSelector.SetGlobalAlphaRecursively(IsTauntControlsOpen ? 1f : 0.6f);
+			}
+			TauntSlotsContainer?.SetState(state);
+			ManageTauntsButton?.SetState(state);
+			LeftSideParent?.SetState(state);
+			GameModesDropdownParent?.SetState(state);
+			HeroPreviewParent?.SetState(state);
+			if (RightPanelTabControl != null && IsTauntControlsOpen)
+			{
+				RightPanelTabControl.SelectedIndex = 1;
+			}
+			_isTauntStateDirty = false;
 		}
-		TauntSlotsContainer?.SetState(state);
-		ManageTauntsButton?.SetState(state);
-		LeftSideParent?.SetState(state);
-		GameModesDropdownParent?.SetState(state);
-		HeroPreviewParent?.SetState(state);
-		if (RightPanelTabControl != null && IsTauntControlsOpen)
-		{
-			RightPanelTabControl.SelectedIndex = 1;
-		}
-		_isTauntStateDirty = false;
 	}
 
 	private void OnTauntAssignmentStateChanged(bool isTauntAssignmentActive)
 	{
-		if (isTauntAssignmentActive && TauntCircleActionSelector != null && TauntCircleActionSelector.AllChildren.FirstOrDefault((Widget c) => (c as ButtonWidget)?.IsSelected ?? false) != null)
+		_tauntAssignmentStateTimer = 0f;
+		if (isTauntAssignmentActive && TauntCircleActionSelector != null && TauntCircleActionSelector.GetFirstInChildrenRecursive((Widget c) => (c as ButtonWidget)?.IsSelected ?? false) != null)
 		{
 			if (_cosmeticsScrollablePanel == null)
 			{
-				_cosmeticsScrollablePanel = RightPanelTabControl.AllChildren.FirstOrDefault((Widget c) => c is ScrollablePanel) as ScrollablePanel;
+				_cosmeticsScrollablePanel = RightPanelTabControl.GetFirstInChildrenRecursive((Widget c) => c is ScrollablePanel) as ScrollablePanel;
 			}
 			if (_cosmeticsScrollablePanel != null)
 			{
-				Widget widget = _cosmeticsScrollablePanel.AllChildren.FirstOrDefault((Widget c) => c is MultiplayerLobbyArmoryCosmeticItemButtonWidget multiplayerLobbyArmoryCosmeticItemButtonWidget && multiplayerLobbyArmoryCosmeticItemButtonWidget.IsSelectable);
-				if (widget != null)
+				Widget firstInChildrenRecursive = _cosmeticsScrollablePanel.GetFirstInChildrenRecursive((Widget c) => c is MultiplayerLobbyArmoryCosmeticItemButtonWidget multiplayerLobbyArmoryCosmeticItemButtonWidget && multiplayerLobbyArmoryCosmeticItemButtonWidget.IsSelectable);
+				if (firstInChildrenRecursive != null)
 				{
-					_cosmeticPanelScrollTarget = widget;
+					_cosmeticPanelScrollTarget = firstInChildrenRecursive;
 				}
 			}
 		}
@@ -379,25 +379,23 @@ public class MultiplayerArmoryPageWidget : Widget
 		{
 			GauntletGamepadNavigationManager.Instance.TryNavigateTo(ManageTauntsButton);
 		}
-		base.EventManager.AddLateUpdateAction(this, AnimateTauntAssignmentStates, 1);
 	}
 
 	private void AnimateTauntAssignmentStates(float dt)
 	{
-		_tauntAssignmentStateTimer += dt;
-		float amount;
+		float num;
 		if (_tauntAssignmentStateTimer < TauntStateAnimationDuration)
 		{
-			amount = _tauntAssignmentStateTimer / TauntStateAnimationDuration;
-			base.EventManager.AddLateUpdateAction(this, AnimateTauntAssignmentStates, 1);
+			float amount = _tauntAssignmentStateTimer / TauntStateAnimationDuration;
+			float valueFrom = (IsTauntAssignmentActive ? 0f : TauntAssignmentOverlayAlpha);
+			float valueTo = (IsTauntAssignmentActive ? TauntAssignmentOverlayAlpha : 0f);
+			num = MathF.Lerp(valueFrom, valueTo, amount);
+			_tauntAssignmentStateTimer += dt;
 		}
 		else
 		{
-			amount = 1f;
+			num = (IsTauntAssignmentActive ? TauntAssignmentOverlayAlpha : 0f);
 		}
-		float valueFrom = (IsTauntAssignmentActive ? 0f : TauntAssignmentOverlayAlpha);
-		float valueTo = (IsTauntAssignmentActive ? TauntAssignmentOverlayAlpha : 0f);
-		float num = MathF.Lerp(valueFrom, valueTo, amount);
 		if (TauntAssignmentOverlay != null)
 		{
 			TauntAssignmentOverlay.IsVisible = num != 0f;

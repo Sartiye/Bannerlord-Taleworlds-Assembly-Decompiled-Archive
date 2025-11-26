@@ -4,46 +4,55 @@ namespace TaleWorlds.Library;
 
 public class TWSharedMutex
 {
-	private ReaderWriterLockSlim _mutex;
+	private int _readerCount;
 
-	public bool IsReadLockHeld => _mutex.IsReadLockHeld;
+	private int _writerFlag;
 
-	public bool IsUpgradeableReadLockHeld => _mutex.IsUpgradeableReadLockHeld;
+	private int _writeRequests;
 
-	public bool IsWriteLockHeld => _mutex.IsWriteLockHeld;
+	public bool IsReadLockHeld => Volatile.Read(ref _readerCount) > 0;
 
-	public TWSharedMutex()
-	{
-		_mutex = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-	}
+	public bool IsWriteLockHeld => Volatile.Read(ref _writerFlag) > 0;
 
 	public void EnterReadLock()
 	{
-		_mutex.EnterReadLock();
-	}
-
-	public void EnterUpgradeableReadLock()
-	{
-		_mutex.EnterUpgradeableReadLock();
+		while (true)
+		{
+			if (Volatile.Read(ref _writerFlag) == 1 || Volatile.Read(ref _writeRequests) > 0)
+			{
+				Thread.SpinWait(4);
+				continue;
+			}
+			Interlocked.Increment(ref _readerCount);
+			if (Volatile.Read(ref _writerFlag) == 0 && Volatile.Read(ref _writeRequests) == 0)
+			{
+				break;
+			}
+			Interlocked.Decrement(ref _readerCount);
+		}
 	}
 
 	public void EnterWriteLock()
 	{
-		_mutex.EnterWriteLock();
+		Interlocked.Increment(ref _writeRequests);
+		while (Interlocked.CompareExchange(ref _writerFlag, 1, 0) != 0)
+		{
+			Thread.SpinWait(4);
+		}
+		while (Volatile.Read(ref _readerCount) > 0)
+		{
+			Thread.SpinWait(4);
+		}
+		Interlocked.Decrement(ref _writeRequests);
 	}
 
 	public void ExitReadLock()
 	{
-		_mutex.ExitReadLock();
-	}
-
-	public void ExitUpgradeableReadLock()
-	{
-		_mutex.ExitUpgradeableReadLock();
+		Interlocked.Decrement(ref _readerCount);
 	}
 
 	public void ExitWriteLock()
 	{
-		_mutex.ExitWriteLock();
+		Volatile.Write(ref _writerFlag, 0);
 	}
 }

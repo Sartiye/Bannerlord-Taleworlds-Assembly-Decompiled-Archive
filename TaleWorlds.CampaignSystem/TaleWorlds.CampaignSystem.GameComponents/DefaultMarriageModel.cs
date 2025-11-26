@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Helpers;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
@@ -39,9 +39,9 @@ public class DefaultMarriageModel : MarriageModel
 
 	public override bool IsClanSuitableForMarriage(Clan clan)
 	{
-		if (clan != null && !clan.IsBanditFaction)
+		if (clan != null && !clan.IsBanditFaction && !clan.IsRebelClan)
 		{
-			return !clan.IsRebelClan;
+			return !clan.IsEliminated;
 		}
 		return false;
 	}
@@ -51,8 +51,8 @@ public class DefaultMarriageModel : MarriageModel
 		if (IsCoupleSuitableForMarriage(firstHero, secondHero))
 		{
 			float num = 0.002f;
-			num *= 1f + (firstHero.Age - 18f) / 50f;
-			num *= 1f + (secondHero.Age - 18f) / 50f;
+			num *= 1f + (firstHero.Age - (float)Campaign.Current.Models.AgeModel.HeroComesOfAge) / 50f;
+			num *= 1f + (secondHero.Age - (float)Campaign.Current.Models.AgeModel.HeroComesOfAge) / 50f;
 			num *= 1f - MathF.Abs(secondHero.Age - firstHero.Age) / 50f;
 			if (firstHero.Clan.Kingdom != secondHero.Clan.Kingdom)
 			{
@@ -135,15 +135,20 @@ public class DefaultMarriageModel : MarriageModel
 
 	public override int GetEffectiveRelationIncrease(Hero firstHero, Hero secondHero)
 	{
-		ExplainedNumber stat = new ExplainedNumber(20f);
-		SkillHelper.AddSkillBonusForCharacter(DefaultSkills.Charm, DefaultSkillEffects.CharmRelationBonus, firstHero.IsFemale ? secondHero.CharacterObject : firstHero.CharacterObject, ref stat);
-		return MathF.Round(stat.ResultNumber);
+		ExplainedNumber explainedNumber = new ExplainedNumber(20f);
+		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.CharmRelationBonus, firstHero.IsFemale ? secondHero.CharacterObject : firstHero.CharacterObject, ref explainedNumber);
+		return MathF.Round(explainedNumber.ResultNumber);
 	}
 
 	public override bool IsSuitableForMarriage(Hero maidenOrSuitor)
 	{
 		if (maidenOrSuitor.IsActive && maidenOrSuitor.Spouse == null && maidenOrSuitor.IsLord && !maidenOrSuitor.IsMinorFactionHero && !maidenOrSuitor.IsNotable && !maidenOrSuitor.IsTemplate && maidenOrSuitor.PartyBelongedTo?.MapEvent == null && maidenOrSuitor.PartyBelongedTo?.Army == null)
 		{
+			IMarriageOfferCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IMarriageOfferCampaignBehavior>();
+			if (campaignBehavior != null && campaignBehavior.IsHeroEngaged(maidenOrSuitor))
+			{
+				return false;
+			}
 			if (maidenOrSuitor.IsFemale)
 			{
 				return maidenOrSuitor.CharacterObject.Age >= (float)MinimumMarriageAgeFemale;

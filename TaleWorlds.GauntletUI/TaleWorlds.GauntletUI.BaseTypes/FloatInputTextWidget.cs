@@ -193,31 +193,38 @@ public class FloatInputTextWidget : EditableTextWidget
 		}
 		else if (_keyboardAction == KeyboardAction.BackSpace || _keyboardAction == KeyboardAction.Delete)
 		{
-			if (flag3 || tickCount >= _nextRepeatTime)
+			if (!flag3 && tickCount < _nextRepeatTime)
 			{
-				if (_editableText.IsAnySelected())
+				return;
+			}
+			if (_editableText.IsAnySelected())
+			{
+				DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
+			}
+			else if (Input.IsKeyDown(InputKey.LeftControl))
+			{
+				if (_keyboardAction == KeyboardAction.BackSpace)
 				{
-					DeleteText(_editableText.SelectedTextBegin, _editableText.SelectedTextEnd);
-				}
-				else if (Input.IsKeyDown(InputKey.LeftControl))
-				{
-					int num2 = FindNextWordPosition(-1) - _editableText.CursorPosition;
-					DeleteText(_editableText.CursorPosition + num2, _editableText.CursorPosition);
+					DeleteText(FindNextWordPosition(-1), _editableText.CursorPosition);
 				}
 				else
 				{
-					DeleteChar(_keyboardAction == KeyboardAction.Delete);
+					DeleteText(_editableText.CursorPosition, FindNextWordPosition(1));
 				}
-				TrySetStringAsFloat(base.RealText);
-				if (tickCount >= _nextRepeatTime)
-				{
-					_nextRepeatTime = tickCount + 30;
-				}
+			}
+			else
+			{
+				DeleteChar(_keyboardAction == KeyboardAction.Delete);
+			}
+			TrySetStringAsFloat(base.RealText);
+			if (tickCount >= _nextRepeatTime)
+			{
+				_nextRepeatTime = tickCount + 30;
 			}
 		}
 		else
 		{
-			if (!Input.IsKeyDown(InputKey.LeftControl))
+			if (!Input.IsKeyDown(InputKey.LeftControl) || Input.IsKeyDown(InputKey.RightAlt))
 			{
 				return;
 			}

@@ -279,6 +279,11 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 	[MonoNativeFunctionWrapper]
 	public delegate void SetSoundDeviceDelegate(int i);
 
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetSoundPresetDelegate(int i);
+
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
 	public static ApplyDelegate call_ApplyDelegate;
@@ -382,6 +387,8 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 	public static SetSharpenAmountDelegate call_SetSharpenAmountDelegate;
 
 	public static SetSoundDeviceDelegate call_SetSoundDeviceDelegate;
+
+	public static SetSoundPresetDelegate call_SetSoundPresetDelegate;
 
 	public void Apply(int texture_budget, int sharpen_amount, int hdr, int dof_mode, int motion_blur, int ssr, int size, int texture_filtering, int trail_amount, int dynamic_resolution_target)
 	{
@@ -660,5 +667,10 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 	public void SetSoundDevice(int i)
 	{
 		call_SetSoundDeviceDelegate(i);
+	}
+
+	public void SetSoundPreset(int i)
+	{
+		call_SetSoundPresetDelegate(i);
 	}
 }

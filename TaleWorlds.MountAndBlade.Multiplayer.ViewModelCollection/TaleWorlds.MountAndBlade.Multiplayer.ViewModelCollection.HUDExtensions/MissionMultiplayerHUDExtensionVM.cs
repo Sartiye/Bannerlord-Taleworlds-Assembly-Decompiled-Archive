@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -80,9 +81,9 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 
 	private bool _isGeneralWarningCountdownActive;
 
-	private ImageIdentifierVM _defenderBanner;
+	private BannerImageIdentifierVM _defenderBanner;
 
-	private ImageIdentifierVM _attackerBanner;
+	private BannerImageIdentifierVM _attackerBanner;
 
 	private Team _playerTeam
 	{
@@ -195,7 +196,7 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM AllyBanner
+	public BannerImageIdentifierVM AllyBanner
 	{
 		get
 		{
@@ -212,7 +213,7 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM EnemyBanner
+	public BannerImageIdentifierVM EnemyBanner
 	{
 		get
 		{
@@ -556,7 +557,7 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		NetworkCommunicator.OnPeerComponentAdded += OnPeerComponentAdded;
 		Mission.Current.OnMissionReset += OnMissionReset;
 		MissionLobbyComponent missionBehavior = mission.GetMissionBehavior<MissionLobbyComponent>();
-		_isTeamsEnabled = missionBehavior.MissionType != 0 && missionBehavior.MissionType != MultiplayerGameType.Duel;
+		_isTeamsEnabled = missionBehavior.MissionType != MultiplayerGameType.Duel;
 		_missionLobbyEquipmentNetworkComponent = mission.GetMissionBehavior<MissionLobbyEquipmentNetworkComponent>();
 		IsRoundCountdownAvailable = _gameMode.IsGameModeUsingRoundCountdown;
 		IsRoundCountdownSuspended = false;
@@ -574,7 +575,7 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 	{
 		base.RefreshValues();
 		string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
-		TextObject textObject = new TextObject("{=XJTX8w8M}Warmup Phase - {GAME_MODE}\nWaiting for players to join");
+		TextObject textObject = new TextObject("{=XJTX8w8M}Warmup Phase - {GAME_MODE}{newline}Waiting for players to join");
 		textObject.SetTextVariable("GAME_MODE", GameTexts.FindText("str_multiplayer_official_game_type_name", strValue));
 		WarmupInfoText = textObject.ToString();
 		SpectatorControls.RefreshValues();
@@ -694,10 +695,10 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 
 	private void UpdateTeamBanners()
 	{
-		ImageIdentifierVM imageIdentifierVM = new ImageIdentifierVM(BannerCode.CreateFrom(Mission.Current.AttackerTeam?.Banner), nineGrid: true);
-		ImageIdentifierVM imageIdentifierVM2 = new ImageIdentifierVM(BannerCode.CreateFrom(Mission.Current.DefenderTeam?.Banner), nineGrid: true);
-		AllyBanner = (_isAttackerTeamAlly ? imageIdentifierVM : imageIdentifierVM2);
-		EnemyBanner = (_isAttackerTeamAlly ? imageIdentifierVM2 : imageIdentifierVM);
+		BannerImageIdentifierVM bannerImageIdentifierVM = new BannerImageIdentifierVM(Mission.Current.AttackerTeam?.Banner, nineGrid: true);
+		BannerImageIdentifierVM bannerImageIdentifierVM2 = new BannerImageIdentifierVM(Mission.Current.DefenderTeam?.Banner, nineGrid: true);
+		AllyBanner = (_isAttackerTeamAlly ? bannerImageIdentifierVM : bannerImageIdentifierVM2);
+		EnemyBanner = (_isAttackerTeamAlly ? bannerImageIdentifierVM2 : bannerImageIdentifierVM);
 	}
 
 	private void OnTeamChanged(NetworkCommunicator peer, Team previousTeam, Team newTeam)

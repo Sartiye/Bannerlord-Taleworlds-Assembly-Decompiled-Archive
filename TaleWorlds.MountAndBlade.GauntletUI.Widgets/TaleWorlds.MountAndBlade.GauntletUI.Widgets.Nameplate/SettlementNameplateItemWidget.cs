@@ -3,6 +3,7 @@ using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Map;
+using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Nameplate;
 
@@ -10,9 +11,9 @@ public class SettlementNameplateItemWidget : Widget
 {
 	private bool _hoverBegan;
 
-	private Widget _settlementNameplateCapsuleWidget;
+	private Widget _inspectedIconWidget;
 
-	private Widget _settlementNameplateInspectedWidget;
+	private Widget _portIconWidget;
 
 	private MapEventVisualBrushWidget _mapEventVisualWidget;
 
@@ -24,24 +25,42 @@ public class SettlementNameplateItemWidget : Widget
 
 	private Widget _widgetToShow;
 
+	private Widget _parleyIconWidget;
+
 	public bool IsOverWidget { get; private set; }
 
 	public int QuestType { get; set; }
 
 	public int IssueType { get; set; }
 
-	public Widget SettlementNameplateCapsuleWidget
+	public Widget InspectedIconWidget
 	{
 		get
 		{
-			return _settlementNameplateCapsuleWidget;
+			return _inspectedIconWidget;
 		}
 		set
 		{
-			if (_settlementNameplateCapsuleWidget != value)
+			if (_inspectedIconWidget != value)
 			{
-				_settlementNameplateCapsuleWidget = value;
-				OnPropertyChanged(value, "SettlementNameplateCapsuleWidget");
+				_inspectedIconWidget = value;
+				OnPropertyChanged(value, "InspectedIconWidget");
+			}
+		}
+	}
+
+	public Widget PortIconWidget
+	{
+		get
+		{
+			return _portIconWidget;
+		}
+		set
+		{
+			if (_portIconWidget != value)
+			{
+				_portIconWidget = value;
+				OnPropertyChanged(value, "PortIconWidget");
 			}
 		}
 	}
@@ -95,22 +114,6 @@ public class SettlementNameplateItemWidget : Widget
 		}
 	}
 
-	public Widget SettlementNameplateInspectedWidget
-	{
-		get
-		{
-			return _settlementNameplateInspectedWidget;
-		}
-		set
-		{
-			if (_settlementNameplateInspectedWidget != value)
-			{
-				_settlementNameplateInspectedWidget = value;
-				OnPropertyChanged(value, "SettlementNameplateInspectedWidget");
-			}
-		}
-	}
-
 	public MaskedTextureWidget SettlementBannerWidget
 	{
 		get
@@ -143,6 +146,22 @@ public class SettlementNameplateItemWidget : Widget
 		}
 	}
 
+	public Widget ParleyIconWidget
+	{
+		get
+		{
+			return _parleyIconWidget;
+		}
+		set
+		{
+			if (_parleyIconWidget != value)
+			{
+				_parleyIconWidget = value;
+				OnPropertyChanged(value, "ParleyIconWidget");
+			}
+		}
+	}
+
 	public SettlementNameplateItemWidget(UIContext context)
 		: base(context)
 	{
@@ -154,7 +173,7 @@ public class SettlementNameplateItemWidget : Widget
 		Widget parentWidget = base.ParentWidget;
 		if (widgetToShow == null)
 		{
-			Debug.FailedAssert("widgetToShow is null during ParallelUpdate!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateItemWidget.cs", "ParallelUpdate", 24);
+			Debug.FailedAssert("widgetToShow is null during ParallelUpdate!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateItemWidget.cs", "ParallelUpdate", 24);
 		}
 		else if (parentWidget != null && parentWidget.IsEnabled)
 		{
@@ -182,20 +201,12 @@ public class SettlementNameplateItemWidget : Widget
 
 	private bool IsMouseOverWidget()
 	{
-		Vector2 globalPosition = base.GlobalPosition;
-		if (IsBetween(base.EventManager.MousePosition.X, globalPosition.X, globalPosition.X + base.Size.X))
+		if (!base.EventManager.GetIsHitThisFrame() || !base.EventManager.IsPointInsideUsableArea(base.EventManager.MousePosition))
 		{
-			return IsBetween(base.EventManager.MousePosition.Y, globalPosition.Y, globalPosition.Y + base.Size.Y);
+			return false;
 		}
-		return false;
-	}
-
-	private bool IsBetween(float number, float min, float max)
-	{
-		if (number >= min)
-		{
-			return number <= max;
-		}
-		return false;
+		ref Rectangle2D areaRect = ref AreaRect;
+		Vector2 point = base.EventManager.MousePosition;
+		return areaRect.IsPointInside(in point);
 	}
 }

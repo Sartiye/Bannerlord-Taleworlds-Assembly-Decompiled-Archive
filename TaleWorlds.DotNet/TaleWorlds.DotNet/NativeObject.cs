@@ -1,19 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.DotNet;
 
 public abstract class NativeObject
 {
+	private class NativeObjectKeeper
+	{
+		internal int TimerToReleaseStrongRef;
+
+		internal GCHandle gcHandle;
+	}
+
+	private const int NativeObjectFirstReferencesTickCount = 10;
+
 	private static List<EngineClassTypeDefinition> _typeDefinitions;
 
 	private static List<ConstructorInfo> _constructors;
 
-	private const int NativeObjectFirstReferencesTickCount = 10;
-
-	private static List<List<NativeObject>> _nativeObjectFirstReferences;
+	private static List<NativeObjectKeeper> _nativeObjectKeepReferences;
 
 	private static volatile int _numberOfAliveNativeObjects;
 
@@ -25,9 +33,12 @@ public abstract class NativeObject
 	{
 		Pointer = pointer;
 		LibraryApplicationInterface.IManaged.IncreaseReferenceCount(Pointer);
-		lock (_nativeObjectFirstReferences)
+		lock (_nativeObjectKeepReferences)
 		{
-			_nativeObjectFirstReferences[0].Add(this);
+			NativeObjectKeeper nativeObjectKeeper = new NativeObjectKeeper();
+			nativeObjectKeeper.TimerToReleaseStrongRef = 10;
+			nativeObjectKeeper.gcHandle = GCHandle.Alloc(this);
+			_nativeObjectKeepReferences.Add(nativeObjectKeeper);
 		}
 	}
 
@@ -96,34 +107,40 @@ public abstract class NativeObject
 				}
 			}
 		}
-		_nativeObjectFirstReferences = new List<List<NativeObject>>();
-		for (int l = 0; l < 10; l++)
-		{
-			_nativeObjectFirstReferences.Add(new List<NativeObject>());
-		}
+		_nativeObjectKeepReferences = new List<NativeObjectKeeper>();
 	}
 
 	internal static void HandleNativeObjects()
 	{
-		lock (_nativeObjectFirstReferences)
+		lock (_nativeObjectKeepReferences)
 		{
-			List<NativeObject> list = _nativeObjectFirstReferences[9];
-			for (int num = 9; num > 0; num--)
+			List<int> list = new List<int>();
+			for (int i = 0; i < _nativeObjectKeepReferences.Count; i++)
 			{
-				_nativeObjectFirstReferences[num] = _nativeObjectFirstReferences[num - 1];
+				NativeObjectKeeper nativeObjectKeeper = _nativeObjectKeepReferences[i];
+				nativeObjectKeeper.TimerToReleaseStrongRef--;
+				if (nativeObjectKeeper.TimerToReleaseStrongRef == 0)
+				{
+					nativeObjectKeeper.gcHandle.Free();
+					list.Add(i);
+				}
 			}
-			list.Clear();
-			_nativeObjectFirstReferences[0] = list;
+			for (int num = list.Count - 1; num >= 0; num--)
+			{
+				int index = list[num];
+				_nativeObjectKeepReferences[index] = _nativeObjectKeepReferences[_nativeObjectKeepReferences.Count - 1];
+				_nativeObjectKeepReferences.RemoveAt(_nativeObjectKeepReferences.Count - 1);
+			}
 		}
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static int GetAliveNativeObjectCount()
 	{
 		return _numberOfAliveNativeObjects;
 	}
 
-	[LibraryCallback]
+	[LibraryCallback(null, false)]
 	internal static string GetAliveNativeObjectNames()
 	{
 		return "";

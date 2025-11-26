@@ -33,6 +33,7 @@ public class BrushAnimationProperty
 		IsHidden,
 		XOffset,
 		YOffset,
+		Rotation,
 		OverridenWidth,
 		OverridenHeight,
 		WidthPolicy,
@@ -99,6 +100,7 @@ public class BrushAnimationProperty
 	private void FillFrom(BrushAnimationProperty collection)
 	{
 		PropertyType = collection.PropertyType;
+		LayerName = collection.LayerName;
 		_keyFrames = new List<BrushAnimationKeyFrame>(collection._keyFrames.Count);
 		for (int i = 0; i < collection._keyFrames.Count; i++)
 		{

@@ -10,7 +10,7 @@ public class EndCaptivityDetailEnumResolver : IEnumResolver
 	{
 		if (string.IsNullOrEmpty(originalObject))
 		{
-			Debug.FailedAssert("EndCaptivityDetail data is null or empty", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SaveCompability\\EndCaptivityDetailEnumResolver.cs", "ResolveObject", 15);
+			Debug.FailedAssert("EndCaptivityDetail data is null or empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SaveCompability\\EndCaptivityDetailEnumResolver.cs", "ResolveObject", 15);
 			return EndCaptivityDetail.ReleasedByChoice.ToString();
 		}
 		if (originalObject.Equals("EscapeFromLootedParty"))

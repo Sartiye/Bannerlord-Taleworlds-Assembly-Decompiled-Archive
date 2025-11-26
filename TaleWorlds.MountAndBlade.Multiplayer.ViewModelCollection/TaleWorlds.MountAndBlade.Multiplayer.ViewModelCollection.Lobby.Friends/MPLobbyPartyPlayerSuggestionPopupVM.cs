@@ -161,7 +161,7 @@ public class MPLobbyPartyPlayerSuggestionPopupVM : ViewModel
 				{
 					if (permissionResult)
 					{
-						if (PlatformServices.InvitationServices != null)
+						if (PlatformServices.Instance.UsePlatformInvitationService(_suggestedPlayerId))
 						{
 							await NetworkMain.GameClient.InviteToPlatformSession(_suggestedPlayerId);
 						}

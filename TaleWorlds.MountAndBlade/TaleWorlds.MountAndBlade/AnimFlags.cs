@@ -3,7 +3,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Anim_flags", false)]
+[EngineStruct("Anim_flags", false, null, FirstCharacterUppercase = false)]
 [Flags]
 public enum AnimFlags : ulong
 {
@@ -19,7 +19,6 @@ public enum AnimFlags : ulong
 	amf_priority_blocked = 0xFuL,
 	amf_priority_parried = 0xFuL,
 	amf_priority_kick = 0x21uL,
-	amf_priority_jump_end = 0x21uL,
 	amf_priority_reload = 0x3CuL,
 	amf_priority_mount = 0x40uL,
 	amf_priority_equip = 0x46uL,
@@ -27,6 +26,8 @@ public enum AnimFlags : ulong
 	amf_priority_upperbody_while_kick = 0x4BuL,
 	amf_priority_striked = 0x50uL,
 	amf_priority_fall_from_horse = 0x51uL,
+	amf_priority_jump_loop = 0x51uL,
+	amf_priority_jump_end = 0x52uL,
 	amf_priority_die = 0x5FuL,
 	amf_priority_mask = 0xFFuL,
 	anf_disable_agent_agent_collisions = 0x100uL,
@@ -55,6 +56,8 @@ public enum AnimFlags : ulong
 	anf_disable_alternative_randomization = 0x80000000uL,
 	anf_disable_auto_increment_progress = 0x100000000uL,
 	anf_switch_item_between_hands = 0x200000000uL,
+	anf_attach_sound_to_agent = 0x400000000uL,
+	anf_spawn_particle = 0x800000000uL,
 	anf_enforce_lowerbody = 0x1000000000uL,
 	anf_enforce_all = 0x2000000000uL,
 	anf_cyclic = 0x4000000000uL,
@@ -69,6 +72,8 @@ public enum AnimFlags : ulong
 	anf_enable_left_hand_ik = 0x800000000000uL,
 	anf_ignore_scale_on_root_position = 0x1000000000000uL,
 	anf_blend_main_item_bone_entitially = 0x2000000000000uL,
+	anf_enforce_weapon_tip_with_rope_stretched = 0x4000000000000uL,
+	anf_enforce_weapon_tip_with_rope_relaxed = 0x8000000000000uL,
 	anf_animation_layer_flags_mask = 0xFFFF000000000uL,
 	anf_animation_layer_flags_bits = 0x24uL,
 	anf_randomization_weight_1 = 0x1000000000000000uL,

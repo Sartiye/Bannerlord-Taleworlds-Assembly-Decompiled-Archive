@@ -13,16 +13,19 @@ public class InitialStateOption
 
 	public string Id { get; private set; }
 
+	public Func<bool> IsHidden { get; private set; }
+
 	public Func<(bool, TextObject)> IsDisabledAndReason { get; private set; }
 
 	public TextObject EnabledHint { get; private set; }
 
-	public InitialStateOption(string id, TextObject name, int orderIndex, Action action, Func<(bool, TextObject)> isDisabledAndReason, TextObject enabledHint = null)
+	public InitialStateOption(string id, TextObject name, int orderIndex, Action action, Func<(bool, TextObject)> isDisabledAndReason, TextObject enabledHint = null, Func<bool> isHidden = null)
 	{
 		Name = name;
 		Id = id;
 		OrderIndex = orderIndex;
 		_action = action;
+		IsHidden = isHidden;
 		IsDisabledAndReason = isDisabledAndReason;
 		EnabledHint = enabledHint;
 		string.IsNullOrEmpty(IsDisabledAndReason().Item2?.ToString());

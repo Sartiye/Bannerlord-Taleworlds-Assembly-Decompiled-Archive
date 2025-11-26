@@ -84,9 +84,9 @@ public static class Debug
 
 	public static event Action<string, ulong> OnPrint;
 
-	public static uint GetTelemetryLevelMask()
+	public static TelemetryLevelMask GetTelemetryLevelMask()
 	{
-		return TelemetryManager?.GetTelemetryLevelMask() ?? 4096;
+		return TelemetryManager?.GetTelemetryLevelMask() ?? TelemetryLevelMask.Mono_0;
 	}
 
 	public static void SetCrashReportCustomString(string customString)
@@ -269,6 +269,19 @@ public static class Debug
 	}
 
 	[Conditional("_RGL_KEEP_ASSERTS")]
+	public static void RenderDebugLineWithThickness(Vec3 position, Vec3 direction, uint color = uint.MaxValue, bool depthCheck = false, float time = 0f, int thickness = 0)
+	{
+		Vec3 vec = direction.AsVec2.RightVec().ToVec3();
+		vec.Normalize();
+		vec *= 0.005f;
+		for (int i = 0; i < thickness; i++)
+		{
+			DebugManager?.RenderDebugLine(position + vec * i, direction, color, depthCheck, time);
+			DebugManager?.RenderDebugLine(position + vec * -i, direction, color, depthCheck, time);
+		}
+	}
+
+	[Conditional("_RGL_KEEP_ASSERTS")]
 	public static void RenderDebugSphere(Vec3 position, float radius, uint color = uint.MaxValue, bool depthCheck = false, float time = 0f)
 	{
 		DebugManager?.RenderDebugSphere(position, radius, color, depthCheck, time);
@@ -301,6 +314,11 @@ public static class Debug
 	public static Vec3 GetDebugVector()
 	{
 		return DebugManager?.GetDebugVector() ?? Vec3.Zero;
+	}
+
+	public static void SetDebugVector(Vec3 value)
+	{
+		DebugManager?.SetDebugVector(value);
 	}
 
 	public static void SetTestModeEnabled(bool testModeEnabled)

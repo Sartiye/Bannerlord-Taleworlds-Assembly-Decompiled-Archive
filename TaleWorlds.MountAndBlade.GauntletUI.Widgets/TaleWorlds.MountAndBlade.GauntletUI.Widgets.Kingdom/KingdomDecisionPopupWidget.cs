@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -51,9 +52,10 @@ public class KingdomDecisionPopupWidget : Widget
 	{
 		EventFired("FinalDone");
 		_kingDecisionDoneTime = -1f;
-		foreach (Widget allChild in base.AllChildren)
+		List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			if (allChild is KingdomDecisionOptionWidget kingdomDecisionOptionWidget)
+			if (allChildrenRecursive[i] is KingdomDecisionOptionWidget kingdomDecisionOptionWidget)
 			{
 				kingdomDecisionOptionWidget.OnFinalDone();
 			}
@@ -63,9 +65,10 @@ public class KingdomDecisionPopupWidget : Widget
 	private void OnKingsDecisionDone()
 	{
 		_kingDecisionDoneTime = base.EventManager.Time;
-		foreach (Widget allChild in base.AllChildren)
+		List<Widget> allChildrenRecursive = GetAllChildrenRecursive();
+		for (int i = 0; i < allChildrenRecursive.Count; i++)
 		{
-			if (allChild is KingdomDecisionOptionWidget kingdomDecisionOptionWidget)
+			if (allChildrenRecursive[i] is KingdomDecisionOptionWidget kingdomDecisionOptionWidget)
 			{
 				kingdomDecisionOptionWidget.OnKingsDecisionDone();
 			}

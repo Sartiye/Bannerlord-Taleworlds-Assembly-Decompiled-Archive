@@ -29,7 +29,7 @@ public class MPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 
 	private EditableTextWidget _widget_0_1_0_0_0_0;
 
-	private RichTextWidget _widget_0_1_0_0_0_1;
+	private TextWidget _widget_0_1_0_0_0_1;
 
 	private ButtonWidget _widget_0_1_1;
 
@@ -89,7 +89,7 @@ public class MPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_0_1_0_0.AddChild(_widget_0_1_0_0_0);
 		_widget_0_1_0_0_0_0 = new EditableTextWidget(base.Context);
 		_widget_0_1_0_0_0.AddChild(_widget_0_1_0_0_0_0);
-		_widget_0_1_0_0_0_1 = new RichTextWidget(base.Context);
+		_widget_0_1_0_0_0_1 = new TextWidget(base.Context);
 		_widget_0_1_0_0_0.AddChild(_widget_0_1_0_0_0_1);
 		_widget_0_1_1 = new ButtonWidget(base.Context);
 		_widget_0_1.AddChild(_widget_0_1_1);

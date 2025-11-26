@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.LogEntries;
+using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -21,13 +22,14 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.AlleyOwnerChanged.AddNonSerializedListener(this, OnAlleyOwnerChanged);
 		CampaignEvents.ArmyGathered.AddNonSerializedListener(this, OnArmyGathered);
 		CampaignEvents.BattleStarted.AddNonSerializedListener(this, OnBattleStarted);
-		CampaignEvents.CharacterBecameFugitive.AddNonSerializedListener(this, OnCharacterBecameFugitive);
+		CampaignEvents.CharacterBecameFugitiveEvent.AddNonSerializedListener(this, OnCharacterBecameFugitive);
 		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, ClanChangedKingdom);
 		CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnPrisonerTaken);
 		CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
-		CampaignEvents.HeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
+		CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
 		CampaignEvents.ArmyDispersed.AddNonSerializedListener(this, OnArmyDispersed);
 		CampaignEvents.ArmyCreated.AddNonSerializedListener(this, OnArmyCreated);
+		CampaignEvents.OnTradeAgreementSignedEvent.AddNonSerializedListener(this, OnTradeAgreementSigned);
 		CampaignEvents.RebellionFinished.AddNonSerializedListener(this, OnRebellionFinished);
 		CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, OnKingdomDecisionAdded);
 		CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, OnKingdomDecisionConcluded);
@@ -36,6 +38,10 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.PlayerTraitChangedEvent.AddNonSerializedListener(this, OnPlayerTraitChanged);
 		CampaignEvents.OnPlayerCharacterChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChanged);
 		CampaignEvents.OnSiegeAftermathAppliedEvent.AddNonSerializedListener(this, OnSiegeAftermathApplied);
+		CampaignEvents.OnAllianceStartedEvent.AddNonSerializedListener(this, OnAllianceStartedEvent);
+		CampaignEvents.OnAllianceEndedEvent.AddNonSerializedListener(this, OnAllianceEndedEvent);
+		CampaignEvents.OnCallToWarAgreementStartedEvent.AddNonSerializedListener(this, OnCallToWarAgreementStarted);
+		CampaignEvents.OnCallToWarAgreementEndedEvent.AddNonSerializedListener(this, OnCallToWarAgreementEnded);
 	}
 
 	private void OnSiegeAftermathApplied(MobileParty attackerParty, Settlement settlement, SiegeAftermathAction.SiegeAftermath aftermathType, Clan previousSettlementOwner, Dictionary<MobileParty, float> partyContributions)
@@ -57,9 +63,12 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		LogEntry.AddLogEntry(new TakePrisonerLogEntry(party, hero));
 	}
 
-	private void OnHeroPrisonerReleased(Hero hero, PartyBase party, IFaction captuererFaction, EndCaptivityDetail detail)
+	private void OnHeroPrisonerReleased(Hero hero, PartyBase party, IFaction captuererFaction, EndCaptivityDetail detail, bool showNotification)
 	{
-		LogEntry.AddLogEntry(new EndCaptivityLogEntry(hero, captuererFaction, detail));
+		if (showNotification)
+		{
+			LogEntry.AddLogEntry(new EndCaptivityLogEntry(hero, captuererFaction, detail));
+		}
 	}
 
 	private void OnCommonAreaFightOccured(MobileParty attackerParty, MobileParty defenderParty, Hero attackerHero, Settlement settlement)
@@ -75,7 +84,7 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnCharacterBecameFugitive(Hero hero)
+	private void OnCharacterBecameFugitive(Hero hero, bool showNotification)
 	{
 		LogEntry.AddLogEntry(new CharacterBecameFugitiveLogEntry(hero));
 	}
@@ -101,9 +110,9 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnArmyGathered(Army army, Settlement targetSettlement)
+	private void OnArmyGathered(Army army, IMapPoint gatheringPoint)
 	{
-		LogEntry.AddLogEntry(new GatherArmyLogEntry(army, targetSettlement));
+		LogEntry.AddLogEntry(new GatherArmyLogEntry(army, gatheringPoint));
 	}
 
 	private void OnArmyCreated(Army army)
@@ -114,6 +123,11 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		{
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new ArmyCreationMapNotification(army, armyCreationLogEntry.GetEncyclopediaText()));
 		}
+	}
+
+	private void OnTradeAgreementSigned(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		LogEntry.AddLogEntry(new TradeAgreementLogEntry(kingdom1, kingdom2));
 	}
 
 	private void OnRebellionFinished(Settlement settlement, Clan oldOwnerClan)
@@ -142,7 +156,7 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		LogEntry.AddLogEntry(kingdomDecisionConcludedLogEntry);
 		if (decision.Kingdom == Hero.MainHero.MapFaction && decision.NotifyPlayer && !decision.IsEnforced && !isPlayerInvolved)
 		{
-			MBInformationManager.AddQuickInformation(kingdomDecisionConcludedLogEntry.GetNotificationText(), 0, null, "event:/ui/notification/kingdom_decision");
+			MBInformationManager.AddQuickInformation(kingdomDecisionConcludedLogEntry.GetNotificationText(), 0, null, null, "event:/ui/notification/kingdom_decision");
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new KingdomDecisionMapNotification(decision.Kingdom, decision, kingdomDecisionConcludedLogEntry.GetNotificationText()));
 		}
 	}
@@ -185,6 +199,26 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 		int traitLevel = Hero.MainHero.GetTraitLevel(trait);
 		TextObject traitChangedText = GetTraitChangedText(trait, traitLevel, previousLevel);
 		Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new TraitChangedMapNotification(trait, traitLevel != 0, previousLevel, traitChangedText));
+	}
+
+	private void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		LogEntry.AddLogEntry(new EndCallToWarAgreementLogEntry(callingKingdom, calledKingdom, kingdomToCallToWarAgainst));
+	}
+
+	private void OnCallToWarAgreementStarted(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+		LogEntry.AddLogEntry(new StartCallToWarAgreementLogEntry(callingKingdom, calledKingdom, kingdomToCallToWarAgainst));
+	}
+
+	private void OnAllianceEndedEvent(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		LogEntry.AddLogEntry(new EndAllianceLogEntry(kingdom1, kingdom2));
+	}
+
+	private void OnAllianceStartedEvent(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		LogEntry.AddLogEntry(new StartAllianceLogEntry(kingdom1, kingdom2));
 	}
 
 	private static TextObject GetTraitChangedText(TraitObject traitObject, int level, int previousLevel)

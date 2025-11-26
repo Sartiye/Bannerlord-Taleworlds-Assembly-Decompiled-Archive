@@ -18,8 +18,8 @@ public class BehaviorStop : BehaviorComponent
 
 	protected override void OnBehaviorActivatedAux()
 	{
-		base.Formation.ArrangementOrder = (base.Formation.QuerySystem.HasShield ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
+		base.Formation.SetArrangementOrder(base.Formation.QuerySystem.HasShield ? ArrangementOrder.ArrangementOrderShieldWall : ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		_lastPlayerInformTime = Mission.Current.CurrentTime;
 	}
 

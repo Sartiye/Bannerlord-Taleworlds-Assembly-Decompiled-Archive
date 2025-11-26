@@ -26,7 +26,7 @@ public class HeirComingOfAgeSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = MentorHero.CivilianEquipment.Clone();
@@ -39,7 +39,7 @@ public class HeirComingOfAgeSceneNotificationItem : SceneNotificationData
 		Equipment equipment2 = HeroCameOfAge.BattleEquipment.Clone();
 		CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref equipment2, removeHelmet: true);
 		list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(HeroCameOfAge, equipment2));
-		return list;
+		return list.ToArray();
 	}
 
 	public HeirComingOfAgeSceneNotificationItem(Hero mentorHero, Hero heroCameOfAge, CampaignTime creationTime)

@@ -267,6 +267,22 @@ public class MultiplayerLobbyScreenWidget : Widget
 	{
 	}
 
+	protected override void OnUpdate(float dt)
+	{
+		base.OnUpdate(dt);
+		if (IsLoggedIn)
+		{
+			return;
+		}
+		foreach (TextureWidget item in GetAllChildrenOfTypeRecursive<TextureWidget>())
+		{
+			if (item?.TextureProvider != null && !item.SetForClearNextFrame)
+			{
+				item.OnClearTextureProvider();
+			}
+		}
+	}
+
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);

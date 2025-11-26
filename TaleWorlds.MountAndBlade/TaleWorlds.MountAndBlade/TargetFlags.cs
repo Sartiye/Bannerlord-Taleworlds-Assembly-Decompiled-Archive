@@ -14,5 +14,6 @@ public enum TargetFlags
 	IsSmall = 0x20,
 	NotAThreat = 0x40,
 	DebugThreat = 0x80,
-	IsSiegeTower = 0x100
+	IsSiegeTower = 0x100,
+	IsShip = 0x200
 }

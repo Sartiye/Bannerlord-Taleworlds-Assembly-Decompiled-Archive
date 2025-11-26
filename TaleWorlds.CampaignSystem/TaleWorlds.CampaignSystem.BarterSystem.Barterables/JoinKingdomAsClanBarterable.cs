@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.BarterSystem.Barterables;
@@ -77,7 +78,7 @@ public class JoinKingdomAsClanBarterable : Barterable
 
 	public override ImageIdentifier GetVisualIdentifier()
 	{
-		return new ImageIdentifier(BannerCode.CreateFrom(TargetKingdom.Banner));
+		return new BannerImageIdentifier(TargetKingdom.Banner);
 	}
 
 	public override string GetEncyclopediaLink()
@@ -101,9 +102,15 @@ public class JoinKingdomAsClanBarterable : Barterable
 		{
 			PlayerEncounter.Current.SetPlayerSiegeInterruptedByEnemyDefection();
 		}
+		bool flag = base.OriginalOwner.Clan.IsMinorFaction && base.OriginalOwner.Clan != Clan.PlayerClan;
+		Kingdom kingdom = base.OriginalOwner.Clan.Kingdom;
 		if (base.OriginalOwner.Clan.Kingdom != null)
 		{
-			if (base.OriginalOwner.Clan.Kingdom != null && TargetKingdom != null && base.OriginalOwner.Clan.Kingdom.IsAtWarWith(TargetKingdom))
+			if (flag)
+			{
+				ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(base.OriginalOwner.Clan);
+			}
+			else if (base.OriginalOwner.Clan.Kingdom != null && TargetKingdom != null && base.OriginalOwner.Clan.Kingdom.IsAtWarWith(TargetKingdom))
 			{
 				ChangeKingdomAction.ApplyByLeaveWithRebellionAgainstKingdom(base.OriginalOwner.Clan);
 			}
@@ -112,9 +119,13 @@ public class JoinKingdomAsClanBarterable : Barterable
 				ChangeKingdomAction.ApplyByLeaveKingdom(base.OriginalOwner.Clan);
 			}
 		}
-		if (IsDefecting)
+		if (flag)
 		{
-			ChangeKingdomAction.ApplyByJoinToKingdomByDefection(base.OriginalOwner.Clan, TargetKingdom);
+			ChangeKingdomAction.ApplyByJoinFactionAsMercenary(base.OriginalOwner.Clan, TargetKingdom, default(CampaignTime), Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(base.OriginalOwner.Clan, TargetKingdom));
+		}
+		else if (IsDefecting)
+		{
+			ChangeKingdomAction.ApplyByJoinToKingdomByDefection(base.OriginalOwner.Clan, kingdom, TargetKingdom);
 		}
 		else
 		{

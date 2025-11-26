@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ExecutionRelationModel : GameModel
+public abstract class ExecutionRelationModel : MBGameModel<ExecutionRelationModel>
 {
 	public abstract int HeroKillingHeroClanRelationPenalty { get; }
 

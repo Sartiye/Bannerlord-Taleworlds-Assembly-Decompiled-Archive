@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
-using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -21,8 +21,15 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Inventory;
 
-public class SPInventoryVM : ViewModel, IInventoryStateHandler
+public class SPInventoryVM : ViewModel
 {
+	public enum EquipmentModes
+	{
+		Civilian,
+		Battle,
+		Stealth
+	}
+
 	public enum Filters
 	{
 		All,
@@ -33,37 +40,71 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		Miscellaneous
 	}
 
+	private class RosterElementComparer : IComparer<SPItemVM>
+	{
+		private readonly MobileParty _currentParty;
+
+		private readonly InventoryCapacityModel _inventoryCapacityModel;
+
+		private readonly bool _basedOnGoldAmount;
+
+		public RosterElementComparer(InventoryCapacityModel inventoryCapacityModel, MobileParty currentParty, bool basedOnGoldAmount)
+		{
+			_inventoryCapacityModel = inventoryCapacityModel;
+			_currentParty = currentParty;
+			_basedOnGoldAmount = basedOnGoldAmount;
+		}
+
+		public int Compare(SPItemVM x, SPItemVM y)
+		{
+			EquipmentElement equipmentElement = x.ItemRosterElement.EquipmentElement;
+			EquipmentElement equipmentElement2 = y.ItemRosterElement.EquipmentElement;
+			if (_currentParty != null)
+			{
+				TextObject description;
+				TextObject description2;
+				int num = _inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement, _currentParty, out description).CompareTo(_inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement2, _currentParty, out description2));
+				if (num != 0)
+				{
+					return num;
+				}
+				return x.ItemCost.CompareTo(y.ItemCost);
+			}
+			if (_basedOnGoldAmount)
+			{
+				return x.ItemCost.CompareTo(y.ItemCost);
+			}
+			return 0;
+		}
+	}
+
 	public bool DoNotSync;
 
 	private readonly Func<WeaponComponentData, ItemObject.ItemUsageSetFlags> _getItemUsageSetFlags;
 
-	private readonly IViewDataTracker _viewDataTracker;
-
 	public bool IsFiveStackModifierActive;
+
+	private readonly IViewDataTracker _viewDataTracker;
 
 	public bool IsEntireStackModifierActive;
 
 	private readonly int _donationMaxShareableXp;
 
+	private readonly Stack<SPItemVM> _equipAfterTransferStack;
+
 	private readonly TroopRoster _rightTroopRoster;
 
-	private InventoryMode _usageType = InventoryMode.Trade;
+	private InventoryScreenHelper.InventoryMode _usageType = InventoryScreenHelper.InventoryMode.Trade;
+
+	private bool _isTrading;
 
 	private readonly TroopRoster _leftTroopRoster;
 
 	private int _lastComparedItemIndex;
 
-	private readonly Stack<SPItemVM> _equipAfterTransferStack;
-
-	private int _currentInventoryCharacterIndex;
-
-	private bool _isTrading;
-
-	private bool _isFinalized;
-
 	private bool _isCharacterEquipmentDirty;
 
-	private float _equipmentCount;
+	private int _currentInventoryCharacterIndex;
 
 	private string _selectedTooltipItemStringID = "";
 
@@ -75,32 +116,32 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private SPItemVM _selectedItem;
 
-	private string _fiveStackShortcutkeyText;
-
-	private string _entireStackShortcutkeyText;
-
 	private List<ItemVM> _comparedItemList;
 
-	private List<string> _lockedItemIDs;
-
 	private Func<string, TextObject> _getKeyTextFromKeyId;
+
+	private List<string> _lockedItemIDs;
 
 	private readonly List<int> _everyItemType = new List<int>
 	{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 		11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-		21, 22, 23, 24
+		21, 22, 23, 24, 25, 26
 	};
 
 	private readonly List<int> _weaponItemTypes = new List<int> { 2, 3, 4 };
 
-	private readonly List<int> _armorItemTypes = new List<int> { 12, 13, 14, 15, 21, 22 };
+	private readonly List<int> _armorItemTypes = new List<int> { 14, 15, 16, 17, 23, 24 };
 
-	private readonly List<int> _mountItemTypes = new List<int> { 1, 23 };
+	private readonly List<int> _mountItemTypes = new List<int> { 1, 25 };
 
-	private readonly List<int> _shieldAndRangedItemTypes = new List<int> { 7, 5, 6, 8, 9, 10, 16, 17, 18 };
+	private readonly List<int> _shieldAndRangedItemTypes = new List<int>
+	{
+		8, 5, 6, 7, 9, 10, 11, 12, 18, 19,
+		20
+	};
 
-	private readonly List<int> _miscellaneousItemTypes = new List<int> { 11, 19, 20, 24 };
+	private readonly List<int> _miscellaneousItemTypes = new List<int> { 13, 21, 22, 26 };
 
 	private readonly Dictionary<Filters, List<int>> _filters;
 
@@ -154,6 +195,8 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private HintViewModel _filterMiscHint;
 
+	private HintViewModel _stealthOutfitHint;
+
 	private HintViewModel _civilianOutfitHint;
 
 	private HintViewModel _battleOutfitHint;
@@ -206,13 +249,27 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private HintViewModel _playerSideCapacityExceededHint;
 
+	private HintViewModel _mainPartyLandCapacityExceededHint;
+
+	private HintViewModel _mainPartySeaCapacityExceededHint;
+
 	private HintViewModel _noSaddleHint;
 
 	private HintViewModel _donationLblHint;
 
 	private HintViewModel _otherSideCapacityExceededHint;
 
-	private BasicTooltipViewModel _equipmentMaxCountHint;
+	private BasicTooltipViewModel _totalWeightCarriedHint;
+
+	private BasicTooltipViewModel _landWeightHint;
+
+	private BasicTooltipViewModel _seaWeightHint;
+
+	private BasicTooltipViewModel _inventoryCapacityHint;
+
+	private BasicTooltipViewModel _landCapacityHint;
+
+	private BasicTooltipViewModel _seaCapacityHint;
 
 	private BasicTooltipViewModel _currentCharacterSkillsTooltip;
 
@@ -274,27 +331,59 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private bool _noSaddleWarned;
 
+	private bool _isTradingWithSettlement;
+
+	private bool _showMainPartyLandCapacityTexts;
+
+	private bool _showMainPartySeaCapacityTexts;
+
+	private string _otherEquipmentCountText;
+
+	private string _mainPartyTotalWeightCarriedText;
+
+	private string _mainPartyLandWeightText;
+
+	private string _mainPartySeaWeightText;
+
+	private string _mainPartyInventoryCapacityText;
+
+	private bool _otherEquipmentCapacityExceededWarning;
+
 	private bool _otherEquipmentCountWarned;
 
 	private bool _playerEquipmentCountWarned;
 
-	private bool _isTradingWithSettlement;
+	private string _mainPartyLandCapacityText;
 
-	private string _otherEquipmentCountText;
-
-	private string _playerEquipmentCountText;
+	private string _mainPartySeaCapacityText;
 
 	private string _noSaddleText;
 
 	private string _leftSearchText = "";
 
+	private bool _isMainPartyLandCapacityWarned;
+
+	private bool _isMainPartySeaCapacityWarned;
+
+	private bool _showMainPartyLandCapacityWarning;
+
+	private bool _showMainPartySeaCapacityWarning;
+
 	private string _playerSideCapacityExceededText;
+
+	private string _mainPartyLandCapacityExceededText;
+
+	private string _mainPartySeaCapacityExceededText;
+
+	private string _separatorText;
 
 	private string _otherSideCapacityExceededText;
 
 	private string _rightSearchText = "";
 
-	private bool _isInWarSet = true;
+	private string _bannerTypeName;
+
+	private EquipmentModes _equipmentMode = EquipmentModes.Battle;
 
 	private bool _companionExists;
 
@@ -312,7 +401,15 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private SPInventorySortControllerVM _playerInventorySortController;
 
-	private int _bannerTypeCode;
+	private bool _scrollToItem;
+
+	private string _scrollItemId;
+
+	private bool _isBattleMode = true;
+
+	private bool _isStealthMode;
+
+	private bool _isCivilianMode;
 
 	private string _leftInventoryOwnerName;
 
@@ -356,11 +453,18 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		get
 		{
-			if (!IsInWarSet)
+			switch (EquipmentMode)
 			{
+			case 0:
 				return _currentCharacter.FirstCivilianEquipment;
+			case 1:
+				return _currentCharacter.FirstBattleEquipment;
+			case 2:
+				return _currentCharacter.FirstStealthEquipment;
+			default:
+				Debug.FailedAssert("Invalid active equipment type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ActiveEquipment", 519);
+				return null;
 			}
-			return _currentCharacter.FirstBattleEquipment;
 		}
 	}
 
@@ -642,18 +746,103 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
-	public BasicTooltipViewModel EquipmentMaxCountHint
+	public BasicTooltipViewModel InventoryCapacityHint
 	{
 		get
 		{
-			return _equipmentMaxCountHint;
+			return _inventoryCapacityHint;
 		}
 		set
 		{
-			if (value != _equipmentMaxCountHint)
+			if (value != _inventoryCapacityHint)
 			{
-				_equipmentMaxCountHint = value;
-				OnPropertyChangedWithValue(value, "EquipmentMaxCountHint");
+				_inventoryCapacityHint = value;
+				OnPropertyChangedWithValue(value, "InventoryCapacityHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel LandCapacityHint
+	{
+		get
+		{
+			return _landCapacityHint;
+		}
+		set
+		{
+			if (value != _landCapacityHint)
+			{
+				_landCapacityHint = value;
+				OnPropertyChangedWithValue(value, "LandCapacityHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel SeaCapacityHint
+	{
+		get
+		{
+			return _seaCapacityHint;
+		}
+		set
+		{
+			if (value != _seaCapacityHint)
+			{
+				_seaCapacityHint = value;
+				OnPropertyChangedWithValue(value, "SeaCapacityHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel TotalWeightCarriedHint
+	{
+		get
+		{
+			return _totalWeightCarriedHint;
+		}
+		set
+		{
+			if (value != _totalWeightCarriedHint)
+			{
+				_totalWeightCarriedHint = value;
+				OnPropertyChangedWithValue(value, "TotalWeightCarriedHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel LandWeightHint
+	{
+		get
+		{
+			return _landWeightHint;
+		}
+		set
+		{
+			if (value != _landWeightHint)
+			{
+				_landWeightHint = value;
+				OnPropertyChangedWithValue(value, "LandWeightHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public BasicTooltipViewModel SeaWeightHint
+	{
+		get
+		{
+			return _seaWeightHint;
+		}
+		set
+		{
+			if (value != _seaWeightHint)
+			{
+				_seaWeightHint = value;
+				OnPropertyChangedWithValue(value, "SeaWeightHint");
 			}
 		}
 	}
@@ -892,6 +1081,23 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				_filterMiscHint = value;
 				OnPropertyChangedWithValue(value, "FilterMiscHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel StealthOutfitHint
+	{
+		get
+		{
+			return _stealthOutfitHint;
+		}
+		set
+		{
+			if (value != _stealthOutfitHint)
+			{
+				_stealthOutfitHint = value;
+				OnPropertyChangedWithValue(value, "StealthOutfitHint");
 			}
 		}
 	}
@@ -1254,6 +1460,40 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
+	public HintViewModel MainPartyLandCapacityExceededHint
+	{
+		get
+		{
+			return _mainPartyLandCapacityExceededHint;
+		}
+		set
+		{
+			if (value != _mainPartyLandCapacityExceededHint)
+			{
+				_mainPartyLandCapacityExceededHint = value;
+				OnPropertyChangedWithValue(value, "MainPartyLandCapacityExceededHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel MainPartySeaCapacityExceededHint
+	{
+		get
+		{
+			return _mainPartySeaCapacityExceededHint;
+		}
+		set
+		{
+			if (value != _mainPartySeaCapacityExceededHint)
+			{
+				_mainPartySeaCapacityExceededHint = value;
+				OnPropertyChangedWithValue(value, "MainPartySeaCapacityExceededHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public HintViewModel OtherSideCapacityExceededHint
 	{
 		get
@@ -1390,20 +1630,22 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
-	public bool IsInWarSet
+	public int EquipmentMode
 	{
 		get
 		{
-			return _isInWarSet;
+			return (int)_equipmentMode;
 		}
 		set
 		{
-			if (value != _isInWarSet)
+			if (value != (int)_equipmentMode)
 			{
-				_isInWarSet = value;
-				OnPropertyChangedWithValue(value, "IsInWarSet");
+				_equipmentMode = (EquipmentModes)value;
+				OnPropertyChangedWithValue(value, "EquipmentMode");
 				UpdateRightCharacter();
-				Game.Current.EventManager.TriggerEvent(new InventoryEquipmentTypeChangedEvent(value));
+				OnEquipmentModeChanged();
+				RefreshInformationValues();
+				Game.Current.EventManager.TriggerEvent(new InventoryEquipmentTypeChangedEvent(_equipmentMode == EquipmentModes.Battle));
 			}
 		}
 	}
@@ -1426,7 +1668,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
-	public bool IsCivilianFilterHighlightEnabled
+	public bool IsEquipmentSetFiltersHighlighted
 	{
 		get
 		{
@@ -1437,7 +1679,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			if (value != _isCivilianFilterHighlightEnabled)
 			{
 				_isCivilianFilterHighlightEnabled = value;
-				OnPropertyChangedWithValue(value, "IsCivilianFilterHighlightEnabled");
+				OnPropertyChangedWithValue(value, "IsEquipmentSetFiltersHighlighted");
 			}
 		}
 	}
@@ -1472,6 +1714,57 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				_playerSideCapacityExceededText = value;
 				OnPropertyChangedWithValue(value, "PlayerSideCapacityExceededText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartyLandCapacityExceededText
+	{
+		get
+		{
+			return _mainPartyLandCapacityExceededText;
+		}
+		set
+		{
+			if (value != _mainPartyLandCapacityExceededText)
+			{
+				_mainPartyLandCapacityExceededText = value;
+				OnPropertyChangedWithValue(value, "MainPartyLandCapacityExceededText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartySeaCapacityExceededText
+	{
+		get
+		{
+			return _mainPartySeaCapacityExceededText;
+		}
+		set
+		{
+			if (value != _mainPartySeaCapacityExceededText)
+			{
+				_mainPartySeaCapacityExceededText = value;
+				OnPropertyChangedWithValue(value, "MainPartySeaCapacityExceededText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string SeparatorText
+	{
+		get
+		{
+			return _separatorText;
+		}
+		set
+		{
+			if (value != _separatorText)
+			{
+				_separatorText = value;
+				OnPropertyChangedWithValue(value, "SeparatorText");
 			}
 		}
 	}
@@ -1581,6 +1874,40 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
+	public bool ShowMainPartyLandCapacityTexts
+	{
+		get
+		{
+			return _showMainPartyLandCapacityTexts;
+		}
+		set
+		{
+			if (value != _showMainPartyLandCapacityTexts)
+			{
+				_showMainPartyLandCapacityTexts = value;
+				OnPropertyChangedWithValue(value, "ShowMainPartyLandCapacityTexts");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowMainPartySeaCapacityTexts
+	{
+		get
+		{
+			return _showMainPartySeaCapacityTexts;
+		}
+		set
+		{
+			if (value != _showMainPartySeaCapacityTexts)
+			{
+				_showMainPartySeaCapacityTexts = value;
+				OnPropertyChangedWithValue(value, "ShowMainPartySeaCapacityTexts");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool PlayerEquipmentCountWarned
 	{
 		get
@@ -1593,6 +1920,74 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				_playerEquipmentCountWarned = value;
 				OnPropertyChangedWithValue(value, "PlayerEquipmentCountWarned");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsMainPartyLandCapacityWarned
+	{
+		get
+		{
+			return _isMainPartyLandCapacityWarned;
+		}
+		set
+		{
+			if (value != _isMainPartyLandCapacityWarned)
+			{
+				_isMainPartyLandCapacityWarned = value;
+				OnPropertyChangedWithValue(value, "IsMainPartyLandCapacityWarned");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsMainPartySeaCapacityWarned
+	{
+		get
+		{
+			return _isMainPartySeaCapacityWarned;
+		}
+		set
+		{
+			if (value != _isMainPartySeaCapacityWarned)
+			{
+				_isMainPartySeaCapacityWarned = value;
+				OnPropertyChangedWithValue(value, "IsMainPartySeaCapacityWarned");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowMainPartyLandCapacityWarning
+	{
+		get
+		{
+			return _showMainPartyLandCapacityWarning;
+		}
+		set
+		{
+			if (value != _showMainPartyLandCapacityWarning)
+			{
+				_showMainPartyLandCapacityWarning = value;
+				OnPropertyChangedWithValue(value, "ShowMainPartyLandCapacityWarning");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowMainPartySeaCapacityWarning
+	{
+		get
+		{
+			return _showMainPartySeaCapacityWarning;
+		}
+		set
+		{
+			if (value != _showMainPartySeaCapacityWarning)
+			{
+				_showMainPartySeaCapacityWarning = value;
+				OnPropertyChangedWithValue(value, "ShowMainPartySeaCapacityWarning");
 			}
 		}
 	}
@@ -1615,6 +2010,23 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
+	public bool OtherEquipmentCapacityExceededWarning
+	{
+		get
+		{
+			return _otherEquipmentCapacityExceededWarning;
+		}
+		set
+		{
+			if (value != _otherEquipmentCapacityExceededWarning)
+			{
+				_otherEquipmentCapacityExceededWarning = value;
+				OnPropertyChangedWithValue(value, "OtherEquipmentCapacityExceededWarning");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string OtherEquipmentCountText
 	{
 		get
@@ -1632,18 +2044,103 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
-	public string PlayerEquipmentCountText
+	public string MainPartyTotalWeightCarriedText
 	{
 		get
 		{
-			return _playerEquipmentCountText;
+			return _mainPartyTotalWeightCarriedText;
 		}
 		set
 		{
-			if (value != _playerEquipmentCountText)
+			if (value != _mainPartyTotalWeightCarriedText)
 			{
-				_playerEquipmentCountText = value;
-				OnPropertyChangedWithValue(value, "PlayerEquipmentCountText");
+				_mainPartyTotalWeightCarriedText = value;
+				OnPropertyChangedWithValue(value, "MainPartyTotalWeightCarriedText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartyLandWeightText
+	{
+		get
+		{
+			return _mainPartyLandWeightText;
+		}
+		set
+		{
+			if (value != _mainPartyLandWeightText)
+			{
+				_mainPartyLandWeightText = value;
+				OnPropertyChangedWithValue(value, "MainPartyLandWeightText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartySeaWeightText
+	{
+		get
+		{
+			return _mainPartySeaWeightText;
+		}
+		set
+		{
+			if (value != _mainPartySeaWeightText)
+			{
+				_mainPartySeaWeightText = value;
+				OnPropertyChangedWithValue(value, "MainPartySeaWeightText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartyInventoryCapacityText
+	{
+		get
+		{
+			return _mainPartyInventoryCapacityText;
+		}
+		set
+		{
+			if (value != _mainPartyInventoryCapacityText)
+			{
+				_mainPartyInventoryCapacityText = value;
+				OnPropertyChangedWithValue(value, "MainPartyInventoryCapacityText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartyLandCapacityText
+	{
+		get
+		{
+			return _mainPartyLandCapacityText;
+		}
+		set
+		{
+			if (value != _mainPartyLandCapacityText)
+			{
+				_mainPartyLandCapacityText = value;
+				OnPropertyChangedWithValue(value, "MainPartyLandCapacityText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MainPartySeaCapacityText
+	{
+		get
+		{
+			return _mainPartySeaCapacityText;
+		}
+		set
+		{
+			if (value != _mainPartySeaCapacityText)
+			{
+				_mainPartySeaCapacityText = value;
+				OnPropertyChangedWithValue(value, "MainPartySeaCapacityText");
 			}
 		}
 	}
@@ -2329,18 +2826,103 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	}
 
 	[DataSourceProperty]
-	public int BannerTypeCode
+	public string BannerTypeName
 	{
 		get
 		{
-			return _bannerTypeCode;
+			return _bannerTypeName;
 		}
 		set
 		{
-			if (value != _bannerTypeCode)
+			if (value != _bannerTypeName)
 			{
-				_bannerTypeCode = value;
-				OnPropertyChangedWithValue(value, "BannerTypeCode");
+				_bannerTypeName = value;
+				OnPropertyChangedWithValue(value, "BannerTypeName");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ScrollToItem
+	{
+		get
+		{
+			return _scrollToItem;
+		}
+		set
+		{
+			if (value != _scrollToItem)
+			{
+				_scrollToItem = value;
+				OnPropertyChangedWithValue(value, "ScrollToItem");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ScrollItemId
+	{
+		get
+		{
+			return _scrollItemId;
+		}
+		set
+		{
+			if (value != _scrollItemId)
+			{
+				_scrollItemId = value;
+				OnPropertyChangedWithValue(value, "ScrollItemId");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsCivilianMode
+	{
+		get
+		{
+			return _isCivilianMode;
+		}
+		set
+		{
+			if (value != _isCivilianMode)
+			{
+				_isCivilianMode = value;
+				OnPropertyChangedWithValue(value, "IsCivilianMode");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsBattleMode
+	{
+		get
+		{
+			return _isBattleMode;
+		}
+		set
+		{
+			if (value != _isBattleMode)
+			{
+				_isBattleMode = value;
+				OnPropertyChangedWithValue(value, "IsBattleMode");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsStealthMode
+	{
+		get
+		{
+			return _isStealthMode;
+		}
+		set
+		{
+			if (value != _isStealthMode)
+			{
+				_isStealthMode = value;
+				OnPropertyChangedWithValue(value, "IsStealthMode");
 			}
 		}
 	}
@@ -2464,14 +3046,23 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		}
 	}
 
-	public SPInventoryVM(InventoryLogic inventoryLogic, bool isInCivilianModeByDefault, Func<WeaponComponentData, ItemObject.ItemUsageSetFlags> getItemUsageSetFlags, string fiveStackShortcutkeyText, string entireStackShortcutkeyText)
+	private InventoryLogic.InventorySide GetEquipmentToInventorySide(EquipmentModes equipmentMode)
 	{
-		_usageType = InventoryManager.Instance.CurrentMode;
+		return equipmentMode switch
+		{
+			EquipmentModes.Civilian => InventoryLogic.InventorySide.CivilianEquipment, 
+			EquipmentModes.Stealth => InventoryLogic.InventorySide.StealthEquipment, 
+			EquipmentModes.Battle => InventoryLogic.InventorySide.BattleEquipment, 
+			_ => InventoryLogic.InventorySide.None, 
+		};
+	}
+
+	public SPInventoryVM(InventoryLogic inventoryLogic, bool isInCivilianModeByDefault, Func<WeaponComponentData, ItemObject.ItemUsageSetFlags> getItemUsageSetFlags)
+	{
+		_usageType = InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default;
 		_inventoryLogic = inventoryLogic;
 		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
 		_getItemUsageSetFlags = getItemUsageSetFlags;
-		_fiveStackShortcutkeyText = fiveStackShortcutkeyText;
-		_entireStackShortcutkeyText = entireStackShortcutkeyText;
 		_filters = new Dictionary<Filters, List<int>>();
 		_filters.Add(Filters.All, _everyItemType);
 		_filters.Add(Filters.Weapons, _weaponItemTypes);
@@ -2521,8 +3112,10 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		CurrentCharacterSkillsTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetInventoryCharacterTooltip(_currentCharacter.HeroObject));
 		RefreshCallbacks();
 		_selectedEquipmentIndex = 0;
-		EquipmentMaxCountHint = new BasicTooltipViewModel();
-		IsInWarSet = !isInCivilianModeByDefault;
+		if (isInCivilianModeByDefault)
+		{
+			EquipmentMode = 0;
+		}
 		if (_inventoryLogic != null)
 		{
 			UpdateRightCharacter();
@@ -2534,11 +3127,11 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			OtherSideHasCapacity = _inventoryLogic.OtherSideCapacityData.GetCapacity() != -1;
 		}
-		IsOtherInventoryGoldRelevant = _usageType != InventoryMode.Loot;
+		IsOtherInventoryGoldRelevant = _usageType != InventoryScreenHelper.InventoryMode.Loot;
 		PlayerInventorySortController = new SPInventorySortControllerVM(ref _rightItemListVM);
 		OtherInventorySortController = new SPInventorySortControllerVM(ref _leftItemListVM);
 		PlayerInventorySortController.SortByDefaultState();
-		if (_usageType == InventoryMode.Loot)
+		if (_usageType == InventoryScreenHelper.InventoryMode.Loot)
 		{
 			OtherInventorySortController.CostState = 1;
 			OtherInventorySortController.ExecuteSortByCost();
@@ -2563,7 +3156,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			_characterList.SelectedIndex = 0;
 		}
-		BannerTypeCode = 24;
+		BannerTypeName = ItemObject.ItemTypeEnum.Banner.ToString();
 		InventoryTradeVM.RemoveZeroCounts += ExecuteRemoveZeroCounts;
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 		RefreshValues();
@@ -2576,7 +3169,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			CharacterObject character = roster[i].Character;
 			if (character.IsHero && CanSelectHero(character.HeroObject))
 			{
-				_characterList.AddItem(new InventoryCharacterSelectorItemVM(character.HeroObject.StringId, character.HeroObject, character.HeroObject.Name));
+				_characterList.AddItem(new InventoryCharacterSelectorItemVM(character.StringId, character.HeroObject, character.HeroObject.Name));
 				if (character == _currentCharacter)
 				{
 					_characterList.SelectedIndex = _characterList.ItemList.Count - 1;
@@ -2589,6 +3182,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		base.RefreshValues();
 		RightInventoryOwnerName = PartyBase.MainParty.Name.ToString();
+		SeparatorText = new TextObject("{=dB6cFDmz}/").ToString();
 		DoneLbl = GameTexts.FindText("str_done").ToString();
 		CancelLbl = GameTexts.FindText("str_cancel").ToString();
 		ResetLbl = GameTexts.FindText("str_reset").ToString();
@@ -2605,6 +3199,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		FilterMiscHint = new HintViewModel(GameTexts.FindText("str_inventory_filter_other"));
 		CivilianOutfitHint = new HintViewModel(GameTexts.FindText("str_inventory_civilian_outfit"));
 		BattleOutfitHint = new HintViewModel(GameTexts.FindText("str_inventory_battle_outfit"));
+		StealthOutfitHint = new HintViewModel(GameTexts.FindText("str_inventory_stealth_outfit"));
 		EquipmentHelmSlotHint = new HintViewModel(GameTexts.FindText("str_inventory_helm_slot"));
 		EquipmentArmorSlotHint = new HintViewModel(GameTexts.FindText("str_inventory_armor_slot"));
 		EquipmentBootSlotHint = new HintViewModel(GameTexts.FindText("str_inventory_boot_slot"));
@@ -2629,6 +3224,10 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		ResetHint = new HintViewModel(GameTexts.FindText("str_reset"));
 		PlayerSideCapacityExceededText = GameTexts.FindText("str_capacity_exceeded").ToString();
 		PlayerSideCapacityExceededHint = new HintViewModel(GameTexts.FindText("str_capacity_exceeded_hint"));
+		MainPartyLandCapacityExceededText = new TextObject("{=fgyvzyB5}Land Capacity Exceeded").ToString();
+		MainPartySeaCapacityExceededText = new TextObject("{=7dXs9c2b}Sea Capacity Exceeded").ToString();
+		MainPartyLandCapacityExceededHint = new HintViewModel(new TextObject("{=knayk28P}You will slow down on land. Be careful."));
+		MainPartySeaCapacityExceededHint = new HintViewModel(new TextObject("{=zoX9akov}You will slow down at sea. Be careful."));
 		if (_inventoryLogic.OtherSideCapacityData != null)
 		{
 			OtherSideCapacityExceededText = _inventoryLogic.OtherSideCapacityData.GetCapacityExceededWarningText()?.ToString();
@@ -2636,11 +3235,11 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		}
 		SetBuyAllHint();
 		SetSellAllHint();
-		if (_usageType == InventoryMode.Loot || _usageType == InventoryMode.Stash)
+		if (_usageType == InventoryScreenHelper.InventoryMode.Loot || _usageType == InventoryScreenHelper.InventoryMode.Stash)
 		{
 			SellHint = new HintViewModel(GameTexts.FindText("str_inventory_give"));
 		}
-		else if (_usageType == InventoryMode.Default)
+		else if (_usageType == InventoryScreenHelper.InventoryMode.Default)
 		{
 			SellHint = new HintViewModel(GameTexts.FindText("str_inventory_discard"));
 		}
@@ -2699,7 +3298,6 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		SPItemVM.ProcessItemDonate = null;
 		SPItemVM.OnFocus = null;
 		MainCharacter.OnFinalize();
-		_isFinalized = true;
 		_inventoryLogic = null;
 		base.OnFinalize();
 	}
@@ -2728,6 +3326,13 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		return false;
 	}
 
+	private void OnEquipmentModeChanged()
+	{
+		IsCivilianMode = EquipmentMode == 0;
+		IsBattleMode = EquipmentMode == 1;
+		IsStealthMode = EquipmentMode == 2;
+	}
+
 	private void SetPreviousCharacterHint()
 	{
 		PreviousCharacterHint = new BasicTooltipViewModel(delegate
@@ -2751,7 +3356,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void SetBuyAllHint()
 	{
 		TextObject buyAllHintText;
-		if (_usageType == InventoryMode.Trade)
+		if (_usageType == InventoryScreenHelper.InventoryMode.Trade)
 		{
 			buyAllHintText = GameTexts.FindText("str_inventory_buy_all");
 		}
@@ -2770,11 +3375,11 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void SetSellAllHint()
 	{
 		TextObject sellAllHintText;
-		if (_usageType == InventoryMode.Loot || _usageType == InventoryMode.Stash)
+		if (_usageType == InventoryScreenHelper.InventoryMode.Loot || _usageType == InventoryScreenHelper.InventoryMode.Stash)
 		{
 			sellAllHintText = GameTexts.FindText("str_inventory_give_all");
 		}
-		else if (_usageType == InventoryMode.Default)
+		else if (_usageType == InventoryScreenHelper.InventoryMode.Default)
 		{
 			sellAllHintText = GameTexts.FindText("str_inventory_discard_all");
 		}
@@ -2804,7 +3409,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 				return;
 			}
 		}
-		if (!(_leftTroopRoster != null))
+		if (_leftTroopRoster == null)
 		{
 			return;
 		}
@@ -2835,6 +3440,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			if (list[num].ItemCount == 0 && num >= 0 && num < LeftItemListVM.Count)
 			{
+				list[num].IsSelected = false;
 				LeftItemListVM.RemoveAt(num);
 			}
 		}
@@ -2843,6 +3449,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			if (list2[num2].ItemCount == 0 && num2 >= 0 && num2 < RightItemListVM.Count)
 			{
+				list2[num2].IsSelected = false;
 				RightItemListVM.RemoveAt(num2);
 			}
 		}
@@ -2867,7 +3474,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void ProcessEquipItem(ItemVM draggedItem)
 	{
 		SPItemVM sPItemVM = draggedItem as SPItemVM;
-		if (sPItemVM.IsCivilianItem || IsInWarSet)
+		if ((sPItemVM.IsCivilianItem || _equipmentMode != 0) && (sPItemVM.IsStealthItem || _equipmentMode != EquipmentModes.Stealth) && (sPItemVM.IsTransferable || _currentCharacter.IsPlayerCharacter))
 		{
 			IsRefreshed = false;
 			EquipEquipment(sPItemVM);
@@ -2879,15 +3486,21 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private void ProcessUnequipItem(ItemVM draggedItem)
 	{
-		IsRefreshed = false;
-		UnequipEquipment(draggedItem as SPItemVM);
-		RefreshInformationValues();
-		IsRefreshed = true;
+		if ((draggedItem as SPItemVM).IsTransferable || _currentCharacter.IsPlayerCharacter)
+		{
+			IsRefreshed = false;
+			UnequipEquipment(draggedItem as SPItemVM);
+			RefreshInformationValues();
+			IsRefreshed = true;
+		}
 	}
 
 	private void ProcessBuyItem(ItemVM itemBase, bool cameFromTradeData)
 	{
-		SPItemVM sPItemVM = itemBase as SPItemVM;
+		if (!(itemBase is SPItemVM { IsTransferable: not false } sPItemVM))
+		{
+			return;
+		}
 		if (IsEntireStackModifierActive && !cameFromTradeData)
 		{
 			TransactionCount = _inventoryLogic.FindItemFromSide(InventoryLogic.InventorySide.OtherInventory, sPItemVM?.ItemRosterElement.EquipmentElement ?? EquipmentElement.Invalid)?.Amount ?? 0;
@@ -2902,7 +3515,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 577);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 642);
 			return;
 		}
 		IsRefreshed = false;
@@ -2919,7 +3532,11 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private void ProcessSellItem(SPItemVM item, bool cameFromTradeData)
 	{
-		if (item.InventorySide == InventoryLogic.InventorySide.Equipment)
+		if (!item.IsTransferable)
+		{
+			return;
+		}
+		if (InventoryLogic.IsEquipmentSide(item.InventorySide))
 		{
 			TransactionCount = 1;
 		}
@@ -2937,7 +3554,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 622);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 692);
 			return;
 		}
 		IsRefreshed = false;
@@ -2973,7 +3590,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		EquipmentIndex equipmentIndex = EquipmentIndex.None;
 		SPItemVM sPItemVM = null;
 		bool flag2 = item.ItemType >= EquipmentIndex.WeaponItemBeginSlot && item.ItemType < EquipmentIndex.ExtraWeaponSlot;
-		if (((SPItemVM)item).InventorySide != InventoryLogic.InventorySide.Equipment)
+		if (!InventoryLogic.IsEquipmentSide(((SPItemVM)item).InventorySide))
 		{
 			if (flag2)
 			{
@@ -3026,7 +3643,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void ResetComparedItems(ItemVM item, int alternativeUsageIndex)
 	{
 		ItemVM comparedItem = ProcessCompareItem(item, alternativeUsageIndex);
-		ItemMenu.SetItem(_selectedItem, comparedItem, _currentCharacter, alternativeUsageIndex);
+		ItemMenu.SetItem(_selectedItem, GetEquipmentToInventorySide((EquipmentModes)EquipmentMode), comparedItem, _currentCharacter, alternativeUsageIndex);
 	}
 
 	private void SortComparedItems(ItemVM selectedItem)
@@ -3074,7 +3691,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			_selectedItem = item as SPItemVM;
 			ItemVM comparedItem = ProcessCompareItem(item);
-			ItemMenu.SetItem(_selectedItem, comparedItem, _currentCharacter);
+			ItemMenu.SetItem(_selectedItem, GetEquipmentToInventorySide((EquipmentModes)EquipmentMode), comparedItem, _currentCharacter);
 			RefreshTransactionCost();
 			_selectedItem.UpdateCanBeSlaughtered();
 		}
@@ -3123,6 +3740,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void ProcessItemSelect(ItemVM item)
 	{
 		ExecuteRemoveZeroCounts();
+		ExecuteSelectItem(item);
 	}
 
 	private void RefreshTransactionCost(int transactionCount = 1)
@@ -3144,7 +3762,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		}
 		if (!_comparedItemList.IsEmpty() && _selectedItem != null && _comparedItemList[_lastComparedItemIndex] != null)
 		{
-			ItemMenu.SetItem(_selectedItem, _comparedItemList[_lastComparedItemIndex], _currentCharacter);
+			ItemMenu.SetItem(_selectedItem, GetEquipmentToInventorySide((EquipmentModes)EquipmentMode), _comparedItemList[_lastComparedItemIndex], _currentCharacter);
 		}
 	}
 
@@ -3156,22 +3774,22 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			switch ((Filters)ActiveFilterIndex)
 			{
 			case Filters.Armors:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.Armors;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.Armors;
 				break;
 			case Filters.Weapons:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.Weapon;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.Weapon;
 				break;
 			case Filters.ShieldsAndRanged:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.Shield;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.Shield;
 				break;
 			case Filters.Mounts:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.HorseCategory;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.HorseCategory;
 				break;
 			case Filters.Miscellaneous:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.Goods;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.Goods;
 				break;
 			default:
-				_inventoryLogic.MerchantItemType = InventoryManager.InventoryCategoryType.All;
+				_inventoryLogic.MerchantItemType = InventoryScreenHelper.InventoryCategoryType.All;
 				break;
 			}
 			InitializeInventory();
@@ -3226,10 +3844,6 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			TransferCommandResult transferCommandResult = results[i];
 			if (transferCommandResult.ResultSide == InventoryLogic.InventorySide.OtherInventory || transferCommandResult.ResultSide == InventoryLogic.InventorySide.PlayerInventory)
 			{
-				if (transferCommandResult.ResultSide == InventoryLogic.InventorySide.PlayerInventory && transferCommandResult.EffectedItemRosterElement.EquipmentElement.Item != null && !transferCommandResult.EffectedItemRosterElement.EquipmentElement.Item.IsMountable && !transferCommandResult.EffectedItemRosterElement.EquipmentElement.Item.IsAnimal)
-				{
-					_equipmentCount += (float)transferCommandResult.EffectedNumber * transferCommandResult.EffectedItemRosterElement.EquipmentElement.GetEquipmentElementWeight();
-				}
 				bool flag = false;
 				MBBindingList<SPItemVM> mBBindingList = ((transferCommandResult.ResultSide == InventoryLogic.InventorySide.OtherInventory) ? LeftItemListVM : RightItemListVM);
 				for (int j = 0; j < mBBindingList.Count; j++)
@@ -3245,30 +3859,52 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 						{
 							hashSet.Add(sPItemVM.ItemRosterElement.EquipmentElement.Item.GetItemCategory());
 						}
+						if (sPItemVM.IsSelected)
+						{
+							ScrollItemId = sPItemVM.ItemRosterElement.EquipmentElement.Item.StringId;
+							ScrollToItem = true;
+						}
 						flag = true;
 						break;
 					}
 				}
-				if (!flag && transferCommandResult.EffectedNumber > 0 && _inventoryLogic != null)
+				if (flag || transferCommandResult.EffectedNumber <= 0 || _inventoryLogic == null)
 				{
-					SPItemVM sPItemVM2 = null;
-					sPItemVM2 = ((transferCommandResult.ResultSide != 0) ? new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null) : new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.OtherInventory, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null));
-					UpdateFilteredStatusOfItem(sPItemVM2);
-					sPItemVM2.ItemCount = transferCommandResult.FinalNumber;
-					sPItemVM2.IsLocked = sPItemVM2.InventorySide == InventoryLogic.InventorySide.PlayerInventory && _lockedItemIDs.Contains(sPItemVM2.StringId);
-					sPItemVM2.IsNew = true;
-					mBBindingList.Add(sPItemVM2);
+					continue;
+				}
+				SPItemVM newItem = null;
+				SPItemVM sPItemVM2 = null;
+				if (transferCommandResult.ResultSide == InventoryLogic.InventorySide.OtherInventory)
+				{
+					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
+					sPItemVM2 = RightItemListVM.FirstOrDefault((SPItemVM x) => x.ItemRosterElement.EquipmentElement.IsEqualTo(newItem.ItemRosterElement.EquipmentElement));
+				}
+				else
+				{
+					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
+					sPItemVM2 = LeftItemListVM.FirstOrDefault((SPItemVM x) => x.ItemRosterElement.EquipmentElement.IsEqualTo(newItem.ItemRosterElement.EquipmentElement));
+				}
+				UpdateFilteredStatusOfItem(newItem);
+				newItem.ItemCount = transferCommandResult.FinalNumber;
+				newItem.IsLocked = newItem.InventorySide == InventoryLogic.InventorySide.PlayerInventory && _lockedItemIDs.Contains(newItem.StringId);
+				newItem.IsNew = true;
+				newItem.IsSelected = sPItemVM2?.IsSelected ?? false;
+				mBBindingList.Add(newItem);
+				if (newItem.IsSelected)
+				{
+					ScrollItemId = transferCommandResult.EffectedItemRosterElement.EquipmentElement.Item.StringId;
+					ScrollToItem = true;
 				}
 			}
-			else if (transferCommandResult.ResultSide == InventoryLogic.InventorySide.Equipment)
+			else if (InventoryLogic.IsEquipmentSide(transferCommandResult.ResultSide))
 			{
 				SPItemVM sPItemVM3 = null;
 				if (transferCommandResult.FinalNumber > 0)
 				{
-					sPItemVM3 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.Equipment, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), transferCommandResult.EffectedEquipmentIndex);
+					sPItemVM3 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), transferCommandResult.EffectedEquipmentIndex);
 					sPItemVM3.IsNew = true;
 				}
-				UpdateEquipment(transferCommandResult.TransferEquipment, sPItemVM3, transferCommandResult.EffectedEquipmentIndex);
+				UpdateEquipment(transferCommandResult.ResultSideEquipment, sPItemVM3, transferCommandResult.EffectedEquipmentIndex);
 				_isCharacterEquipmentDirty = true;
 			}
 		}
@@ -3331,20 +3967,40 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	private void RefreshInformationValues()
 	{
 		TextObject textObject = GameTexts.FindText("str_LEFT_over_RIGHT");
-		int inventoryCapacity = PartyBase.MainParty.InventoryCapacity;
-		int num = TaleWorlds.Library.MathF.Ceiling(_equipmentCount);
-		textObject.SetTextVariable("LEFT", num.ToString());
-		textObject.SetTextVariable("RIGHT", inventoryCapacity.ToString());
-		PlayerEquipmentCountText = textObject.ToString();
-		PlayerEquipmentCountWarned = num > inventoryCapacity;
+		int inventoryCapacity = MobileParty.MainParty.InventoryCapacity;
+		float totalWeightCarried = MobileParty.MainParty.TotalWeightCarried;
+		MainPartyTotalWeightCarriedText = totalWeightCarried.ToString("#0");
+		MainPartyInventoryCapacityText = inventoryCapacity.ToString();
+		PlayerEquipmentCountWarned = totalWeightCarried > (float)inventoryCapacity;
+		ShowMainPartyLandCapacityTexts = MobileParty.MainParty.IsCurrentlyAtSea;
+		ShowMainPartySeaCapacityTexts = !ShowMainPartyLandCapacityTexts && MobileParty.MainParty.HasNavalNavigationCapability;
+		if (ShowMainPartyLandCapacityTexts)
+		{
+			int num = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(MobileParty.MainParty, isCurrentlyAtSea: false).ResultNumber;
+			int num2 = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(MobileParty.MainParty, isCurrentlyAtSea: false).ResultNumber;
+			MainPartyLandWeightText = num.ToString();
+			MainPartyLandCapacityText = num2.ToString();
+			IsMainPartyLandCapacityWarned = num > num2;
+		}
+		else if (ShowMainPartySeaCapacityTexts)
+		{
+			int num3 = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateTotalWeightCarried(MobileParty.MainParty, isCurrentlyAtSea: true).ResultNumber;
+			int num4 = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(MobileParty.MainParty, isCurrentlyAtSea: true).ResultNumber;
+			MainPartySeaWeightText = num3.ToString();
+			MainPartySeaCapacityText = num4.ToString();
+			IsMainPartySeaCapacityWarned = num3 > num4;
+		}
+		ShowMainPartyLandCapacityWarning = ShowMainPartyLandCapacityTexts && IsMainPartyLandCapacityWarned && !PlayerEquipmentCountWarned;
+		ShowMainPartySeaCapacityWarning = ShowMainPartySeaCapacityTexts && IsMainPartySeaCapacityWarned && !PlayerEquipmentCountWarned;
 		if (OtherSideHasCapacity)
 		{
-			int num2 = TaleWorlds.Library.MathF.Ceiling(LeftItemListVM.Sum((SPItemVM x) => x.ItemRosterElement.GetRosterElementWeight()));
+			int otherSideCurrentWeight = _inventoryLogic.OtherSideCurrentWeight;
 			int capacity = _inventoryLogic.OtherSideCapacityData.GetCapacity();
-			textObject.SetTextVariable("LEFT", num2);
+			textObject.SetTextVariable("LEFT", otherSideCurrentWeight);
 			textObject.SetTextVariable("RIGHT", capacity);
 			OtherEquipmentCountText = textObject.ToString();
-			OtherEquipmentCountWarned = num2 > capacity;
+			OtherEquipmentCountWarned = otherSideCurrentWeight > capacity;
+			OtherEquipmentCapacityExceededWarning = OtherEquipmentCountWarned && !PlayerEquipmentCountWarned && !IsMainPartyLandCapacityWarned && !IsMainPartySeaCapacityWarned;
 		}
 		NoSaddleText = new TextObject("{=QSPrSsHv}No Saddle!").ToString();
 		NoSaddleHint = new HintViewModel(new TextObject("{=VzCoqt8D}No sadle equipped. -10% penalty to mounted speed and maneuver."));
@@ -3352,7 +4008,12 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		NoSaddleWarned = characterMountSlot != null && !characterMountSlot.ItemRosterElement.IsEmpty && (CharacterMountArmorSlot?.ItemRosterElement.IsEmpty ?? false);
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign)
 		{
-			EquipmentMaxCountHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryCapacityTooltip(MobileParty.MainParty));
+			InventoryCapacityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryCapacityTooltip(MobileParty.MainParty));
+			LandCapacityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryCapacityTooltip(MobileParty.MainParty, forceLand: true));
+			SeaCapacityHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryCapacityTooltip(MobileParty.MainParty, forceLand: false, forceSea: true));
+			TotalWeightCarriedHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryWeightTooltip(MobileParty.MainParty));
+			LandWeightHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryWeightTooltip(MobileParty.MainParty, forceLand: true));
+			SeaWeightHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetPartyInventoryWeightTooltip(MobileParty.MainParty, forceLand: false, forceSea: true));
 		}
 		if (_isCharacterEquipmentDirty)
 		{
@@ -3367,6 +4028,10 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	public bool IsItemEquipmentPossible(SPItemVM itemVM)
 	{
 		if (itemVM == null)
+		{
+			return false;
+		}
+		if (!_currentCharacter.IsPlayerCharacter && (itemVM == null || !itemVM.IsTransferable))
 		{
 			return false;
 		}
@@ -3391,11 +4056,10 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 						targetEquipmentType = (EquipmentIndex)(0 + i);
 						break;
 					}
-					if (array[i].ItemRosterElement.EquipmentElement.Item.Type == itemVM.ItemRosterElement.EquipmentElement.Item.Type)
+					if (!flag2 && array[i].ItemRosterElement.EquipmentElement.Item.Type == itemVM.ItemRosterElement.EquipmentElement.Item.Type)
 					{
 						flag2 = true;
 						targetEquipmentType = (EquipmentIndex)(0 + i);
-						break;
 					}
 				}
 				if (flag || flag2)
@@ -3468,21 +4132,21 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			return;
 		}
 		SPItemVM sPItemVM = new SPItemVM();
-		sPItemVM.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+		sPItemVM.RefreshWith(itemVM, GetEquipmentToInventorySide(_equipmentMode));
 		if (!IsItemEquipmentPossible(sPItemVM))
 		{
 			return;
 		}
 		SPItemVM itemFromIndex = GetItemFromIndex(TargetEquipmentType);
-		if (itemFromIndex != null && itemFromIndex.ItemRosterElement.EquipmentElement.Item == sPItemVM.ItemRosterElement.EquipmentElement.Item && itemFromIndex.ItemRosterElement.EquipmentElement.ItemModifier == sPItemVM.ItemRosterElement.EquipmentElement.ItemModifier)
+		if (itemFromIndex != null && itemFromIndex.ItemRosterElement.EquipmentElement.IsEqualTo(sPItemVM.ItemRosterElement.EquipmentElement))
 		{
 			return;
 		}
-		bool flag = itemFromIndex != null && itemFromIndex.ItemType != EquipmentIndex.None && itemVM.InventorySide == InventoryLogic.InventorySide.Equipment;
+		bool flag = itemFromIndex != null && itemFromIndex.ItemType != EquipmentIndex.None && InventoryLogic.IsEquipmentSide(itemVM.InventorySide);
 		if (!flag)
 		{
 			EquipmentIndex equipmentIndex = EquipmentIndex.None;
-			if (itemVM.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Shield && itemVM.InventorySide != InventoryLogic.InventorySide.Equipment)
+			if (itemVM.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Shield && !InventoryLogic.IsEquipmentSide(itemVM.InventorySide))
 			{
 				for (EquipmentIndex equipmentIndex2 = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex2 <= EquipmentIndex.NumAllWeaponSlots; equipmentIndex2++)
 				{
@@ -3500,11 +4164,11 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			}
 		}
 		List<TransferCommand> list = new List<TransferCommand>();
-		TransferCommand item = TransferCommand.Transfer(1, itemVM.InventorySide, InventoryLogic.InventorySide.Equipment, sPItemVM.ItemRosterElement, sPItemVM.ItemType, TargetEquipmentType, _currentCharacter, !IsInWarSet);
+		TransferCommand item = TransferCommand.Transfer(1, itemVM.InventorySide, GetEquipmentToInventorySide(_equipmentMode), sPItemVM.ItemRosterElement, sPItemVM.ItemType, TargetEquipmentType, _currentCharacter);
 		list.Add(item);
 		if (flag)
 		{
-			TransferCommand item2 = TransferCommand.Transfer(1, InventoryLogic.InventorySide.PlayerInventory, InventoryLogic.InventorySide.Equipment, itemFromIndex.ItemRosterElement, EquipmentIndex.None, sPItemVM.ItemType, _currentCharacter, !IsInWarSet);
+			TransferCommand item2 = TransferCommand.Transfer(1, InventoryLogic.InventorySide.PlayerInventory, GetEquipmentToInventorySide(_equipmentMode), itemFromIndex.ItemRosterElement, EquipmentIndex.None, sPItemVM.ItemType, _currentCharacter);
 			list.Add(item2);
 		}
 		_inventoryLogic.AddTransferCommands(list);
@@ -3514,8 +4178,9 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (itemVM != null && !string.IsNullOrEmpty(itemVM.StringId))
 		{
-			TransferCommand command = TransferCommand.Transfer(1, InventoryLogic.InventorySide.Equipment, InventoryLogic.InventorySide.PlayerInventory, itemVM.ItemRosterElement, itemVM.ItemType, itemVM.ItemType, _currentCharacter, !IsInWarSet);
+			TransferCommand command = TransferCommand.Transfer(1, GetEquipmentToInventorySide(_equipmentMode), InventoryLogic.InventorySide.PlayerInventory, itemVM.ItemRosterElement, itemVM.ItemType, itemVM.ItemType, _currentCharacter);
 			_inventoryLogic.AddTransferCommand(command);
+			itemVM.IsSelected = false;
 		}
 	}
 
@@ -3579,43 +4244,44 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	protected void RefreshEquipment(SPItemVM itemVM, EquipmentIndex itemType)
 	{
+		InventoryLogic.InventorySide equipmentToInventorySide = GetEquipmentToInventorySide(_equipmentMode);
 		switch (itemType)
 		{
 		case EquipmentIndex.WeaponItemBeginSlot:
-			CharacterWeapon1Slot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterWeapon1Slot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Weapon1:
-			CharacterWeapon2Slot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterWeapon2Slot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Weapon2:
-			CharacterWeapon3Slot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterWeapon3Slot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Weapon3:
-			CharacterWeapon4Slot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterWeapon4Slot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.ExtraWeaponSlot:
-			CharacterBannerSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterBannerSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Body:
-			CharacterTorsoSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterTorsoSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Leg:
-			CharacterBootSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterBootSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Cape:
-			CharacterCloakSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterCloakSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.Gloves:
-			CharacterGloveSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterGloveSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.NumAllWeaponSlots:
-			CharacterHelmSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterHelmSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.HorseHarness:
-			CharacterMountArmorSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterMountArmorSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.ArmorItemEndSlot:
-			CharacterMountSlot.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+			CharacterMountSlot.RefreshWith(itemVM, equipmentToInventorySide);
 			break;
 		case EquipmentIndex.None:
 			break;
@@ -3630,7 +4296,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			if (!character.HeroObject.CanHeroEquipmentBeChanged())
 			{
 				Hero mainHero = Hero.MainHero;
-				if (mainHero == null || mainHero.Clan?.Lords.Contains(character.HeroObject) != true)
+				if (mainHero == null || mainHero.Clan?.AliveLords.Contains(character.HeroObject) != true)
 				{
 					goto IL_0114;
 				}
@@ -3672,7 +4338,8 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		{
 			LeftInventoryOwnerName = _inventoryLogic.LeftRosterName.ToString();
 			Settlement settlement2 = _currentCharacter.HeroObject.CurrentSettlement;
-			if (settlement2 != null && InventoryManager.Instance.CurrentMode == InventoryMode.Warehouse)
+			InventoryScreenHelper.InventoryMode inventoryMode = InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default;
+			if (settlement2 != null && inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse)
 			{
 				IsTradingWithSettlement = true;
 				ProductionTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetSettlementProductionTooltip(settlement2));
@@ -3717,15 +4384,16 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private SPItemVM InitializeCharacterEquipmentSlot(ItemRosterElement itemRosterElement, EquipmentIndex equipmentIndex)
 	{
+		InventoryLogic.InventorySide equipmentToInventorySide = GetEquipmentToInventorySide(_equipmentMode);
 		SPItemVM sPItemVM = null;
 		if (!itemRosterElement.IsEmpty)
 		{
-			sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, InventoryLogic.InventorySide.Equipment, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, InventoryLogic.InventorySide.Equipment), equipmentIndex);
+			sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, equipmentToInventorySide, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, equipmentToInventorySide), equipmentIndex);
 		}
 		else
 		{
 			sPItemVM = new SPItemVM();
-			sPItemVM.RefreshWith(null, InventoryLogic.InventorySide.Equipment);
+			sPItemVM.RefreshWith(null, equipmentToInventorySide);
 		}
 		return sPItemVM;
 	}
@@ -3749,11 +4417,28 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private void UpdateCharacterArmorValues()
 	{
-		CurrentCharacterArmArmor = _currentCharacter.GetArmArmorSum(!IsInWarSet);
-		CurrentCharacterBodyArmor = _currentCharacter.GetBodyArmorSum(!IsInWarSet);
-		CurrentCharacterHeadArmor = _currentCharacter.GetHeadArmorSum(!IsInWarSet);
-		CurrentCharacterLegArmor = _currentCharacter.GetLegArmorSum(!IsInWarSet);
-		CurrentCharacterHorseArmor = _currentCharacter.GetHorseArmorSum(!IsInWarSet);
+		Equipment.EquipmentType equipmentType = ChangeIntoEquipmentType(GetEquipmentToInventorySide(_equipmentMode));
+		CurrentCharacterArmArmor = _currentCharacter.GetArmArmorSum(equipmentType);
+		CurrentCharacterBodyArmor = _currentCharacter.GetBodyArmorSum(equipmentType);
+		CurrentCharacterHeadArmor = _currentCharacter.GetHeadArmorSum(equipmentType);
+		CurrentCharacterLegArmor = _currentCharacter.GetLegArmorSum(equipmentType);
+		CurrentCharacterHorseArmor = _currentCharacter.GetHorseArmorSum(equipmentType);
+	}
+
+	private Equipment.EquipmentType ChangeIntoEquipmentType(InventoryLogic.InventorySide equipmentMode)
+	{
+		switch (equipmentMode)
+		{
+		case InventoryLogic.InventorySide.CivilianEquipment:
+			return Equipment.EquipmentType.Civilian;
+		case InventoryLogic.InventorySide.BattleEquipment:
+			return Equipment.EquipmentType.Battle;
+		case InventoryLogic.InventorySide.StealthEquipment:
+			return Equipment.EquipmentType.Stealth;
+		default:
+			Debug.FailedAssert("Cannot change InventoryLogic EquipmentMode to EquiptmentType", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ChangeIntoEquipmentType", 1893);
+			return Equipment.EquipmentType.Invalid;
+		}
 	}
 
 	private void RefreshCharacterTotalWeight()
@@ -3780,26 +4465,25 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		IsRefreshed = false;
 		switch (_inventoryLogic.MerchantItemType)
 		{
-		case InventoryManager.InventoryCategoryType.Armors:
+		case InventoryScreenHelper.InventoryCategoryType.Armors:
 			ActiveFilterIndex = 3;
 			break;
-		case InventoryManager.InventoryCategoryType.Weapon:
+		case InventoryScreenHelper.InventoryCategoryType.Weapon:
 			ActiveFilterIndex = 1;
 			break;
-		case InventoryManager.InventoryCategoryType.Shield:
+		case InventoryScreenHelper.InventoryCategoryType.Shield:
 			ActiveFilterIndex = 2;
 			break;
-		case InventoryManager.InventoryCategoryType.HorseCategory:
+		case InventoryScreenHelper.InventoryCategoryType.HorseCategory:
 			ActiveFilterIndex = 4;
 			break;
-		case InventoryManager.InventoryCategoryType.Goods:
+		case InventoryScreenHelper.InventoryCategoryType.Goods:
 			ActiveFilterIndex = 5;
 			break;
 		default:
 			ActiveFilterIndex = 0;
 			break;
 		}
-		_equipmentCount = 0f;
 		RightItemListVM.Clear();
 		LeftItemListVM.Clear();
 		int num = TaleWorlds.Library.MathF.Max(_inventoryLogic.GetElementCountOnSide(InventoryLogic.InventorySide.PlayerInventory), _inventoryLogic.GetElementCountOnSide(InventoryLogic.InventorySide.OtherInventory));
@@ -3815,19 +4499,15 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			if (j < array.Length)
 			{
 				ItemRosterElement itemRosterElement = array[j];
-				SPItemVM sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, InventoryLogic.InventorySide.PlayerInventory), null);
+				SPItemVM sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, InventoryLogic.InventorySide.PlayerInventory), null);
 				UpdateFilteredStatusOfItem(sPItemVM);
 				sPItemVM.IsLocked = sPItemVM.InventorySide == InventoryLogic.InventorySide.PlayerInventory && IsItemLocked(itemRosterElement);
 				RightItemListVM.Add(sPItemVM);
-				if (!itemRosterElement.EquipmentElement.Item.IsMountable && !itemRosterElement.EquipmentElement.Item.IsAnimal)
-				{
-					_equipmentCount += itemRosterElement.GetRosterElementWeight();
-				}
 			}
 			if (j < array2.Length)
 			{
 				ItemRosterElement itemRosterElement2 = array2[j];
-				SPItemVM sPItemVM2 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement2), _usageType, itemRosterElement2, InventoryLogic.InventorySide.OtherInventory, _fiveStackShortcutkeyText, _entireStackShortcutkeyText, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement2, InventoryLogic.InventorySide.OtherInventory), null);
+				SPItemVM sPItemVM2 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement2), _usageType, itemRosterElement2, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement2, InventoryLogic.InventorySide.OtherInventory), null);
 				UpdateFilteredStatusOfItem(sPItemVM2);
 				sPItemVM2.IsLocked = sPItemVM2.InventorySide == InventoryLogic.InventorySide.PlayerInventory && IsItemLocked(itemRosterElement2);
 				LeftItemListVM.Add(sPItemVM2);
@@ -3853,6 +4533,104 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 		RefreshComparedItem();
 	}
 
+	public void ExecuteSelectItem(ItemVM item)
+	{
+		if (item != null)
+		{
+			SPItemVM obj = item as SPItemVM;
+			if (obj == null || !obj.IsSelected)
+			{
+				if (GetEquippedItems().Contains(item))
+				{
+					foreach (SPItemVM allItem in GetAllItems(includeEquipped: false))
+					{
+						allItem.IsSelected = false;
+					}
+					{
+						foreach (SPItemVM equippedItem in GetEquippedItems())
+						{
+							equippedItem.IsSelected = equippedItem == item;
+						}
+						return;
+					}
+				}
+				foreach (SPItemVM equippedItem2 in GetEquippedItems())
+				{
+					equippedItem2.IsSelected = false;
+				}
+				{
+					foreach (SPItemVM allItem2 in GetAllItems(includeEquipped: false))
+					{
+						allItem2.IsSelected = allItem2.ItemRosterElement.EquipmentElement.IsEqualTo(item.ItemRosterElement.EquipmentElement);
+						if (allItem2.IsSelected)
+						{
+							ScrollItemId = allItem2.ItemRosterElement.EquipmentElement.Item.StringId;
+							ScrollToItem = true;
+						}
+					}
+					return;
+				}
+			}
+		}
+		foreach (SPItemVM allItem3 in GetAllItems(includeEquipped: true))
+		{
+			allItem3.IsSelected = false;
+		}
+	}
+
+	public void ExecuteClearSelectedItem()
+	{
+		ExecuteSelectItem(null);
+	}
+
+	private IEnumerable<SPItemVM> GetAllItems(bool includeEquipped)
+	{
+		foreach (SPItemVM item in LeftItemListVM)
+		{
+			yield return item;
+		}
+		foreach (SPItemVM item2 in RightItemListVM)
+		{
+			yield return item2;
+		}
+		if (!includeEquipped)
+		{
+			yield break;
+		}
+		foreach (SPItemVM equippedItem in GetEquippedItems())
+		{
+			yield return equippedItem;
+		}
+	}
+
+	private IEnumerable<SPItemVM> GetEquippedItems()
+	{
+		yield return CharacterHelmSlot;
+		yield return CharacterCloakSlot;
+		yield return CharacterTorsoSlot;
+		yield return CharacterGloveSlot;
+		yield return CharacterBootSlot;
+		yield return CharacterMountSlot;
+		yield return CharacterMountArmorSlot;
+		yield return CharacterWeapon1Slot;
+		yield return CharacterWeapon2Slot;
+		yield return CharacterWeapon3Slot;
+		yield return CharacterWeapon4Slot;
+		yield return CharacterBannerSlot;
+	}
+
+	public bool IsAnyEquippedItemSelected()
+	{
+		foreach (SPItemVM equippedItem in GetEquippedItems())
+		{
+			if (equippedItem.IsSelected)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void BuyItem(SPItemVM item)
 	{
 		if (TargetEquipmentType != EquipmentIndex.None && item.ItemType != TargetEquipmentType && (TargetEquipmentType < EquipmentIndex.WeaponItemBeginSlot || TargetEquipmentType > EquipmentIndex.ExtraWeaponSlot || item.ItemType < EquipmentIndex.WeaponItemBeginSlot || item.ItemType > EquipmentIndex.ExtraWeaponSlot))
@@ -3876,7 +4654,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 				b = itemRosterElement.Value.Amount;
 			}
 		}
-		TransferCommand command = TransferCommand.Transfer(TaleWorlds.Library.MathF.Min(TransactionCount, b), InventoryLogic.InventorySide.OtherInventory, InventoryLogic.InventorySide.PlayerInventory, item.ItemRosterElement, item.ItemType, TargetEquipmentType, _currentCharacter, !IsInWarSet);
+		TransferCommand command = TransferCommand.Transfer(TaleWorlds.Library.MathF.Min(TransactionCount, b), InventoryLogic.InventorySide.OtherInventory, InventoryLogic.InventorySide.PlayerInventory, item.ItemRosterElement, item.ItemType, TargetEquipmentType, _currentCharacter);
 		_inventoryLogic.AddTransferCommand(command);
 		if (EquipAfterBuy)
 		{
@@ -3897,7 +4675,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 				b = itemRosterElement.Value.Amount;
 			}
 		}
-		TransferCommand command = TransferCommand.Transfer(TaleWorlds.Library.MathF.Min(TransactionCount, b), inventorySide, InventoryLogic.InventorySide.OtherInventory, item.ItemRosterElement, item.ItemType, TargetEquipmentType, _currentCharacter, !IsInWarSet);
+		TransferCommand command = TransferCommand.Transfer(TaleWorlds.Library.MathF.Min(TransactionCount, b), inventorySide, InventoryLogic.InventorySide.OtherInventory, item.ItemRosterElement, item.ItemType, TargetEquipmentType, _currentCharacter);
 		_inventoryLogic.AddTransferCommand(command);
 	}
 
@@ -3938,88 +4716,169 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (isBuy)
 		{
-			return ((float?)party?.InventoryCapacity - _equipmentCount) ?? 0f;
+			if (party != null)
+			{
+				return (float)party.InventoryCapacity - party.TotalWeightCarried;
+			}
+			return 0f;
 		}
 		if (_inventoryLogic.OtherSideCapacityData != null)
 		{
-			return (float)_inventoryLogic.OtherSideCapacityData.GetCapacity() - LeftItemListVM.Sum((SPItemVM x) => x.ItemRosterElement.GetRosterElementWeight());
+			return _inventoryLogic.OtherSideCapacityData.GetCapacity() - _inventoryLogic.OtherSideCurrentWeight;
 		}
-		return 0f;
+		return -1f;
 	}
 
 	private void TransferAll(bool isBuy)
 	{
 		IsRefreshed = false;
 		List<TransferCommand> list = new List<TransferCommand>(LeftItemListVM.Count);
-		MBBindingList<SPItemVM> mBBindingList = (isBuy ? LeftItemListVM : RightItemListVM);
-		MobileParty party = (isBuy ? MobileParty.MainParty : _inventoryLogic.OppositePartyFromListener?.MobileParty);
-		float num = 0f;
-		float capacityBudget = GetCapacityBudget(party, isBuy);
-		float num2 = mBBindingList.FirstOrDefault((SPItemVM x) => !x.IsFiltered && !x.IsLocked)?.ItemRosterElement.EquipmentElement.GetEquipmentElementWeight() ?? 0f;
-		bool flag = capacityBudget <= num2;
-		InventoryLogic.InventorySide fromSide = ((!isBuy) ? InventoryLogic.InventorySide.PlayerInventory : InventoryLogic.InventorySide.OtherInventory);
-		InventoryLogic.InventorySide inventorySide = (isBuy ? InventoryLogic.InventorySide.PlayerInventory : InventoryLogic.InventorySide.OtherInventory);
-		List<SPItemVM> list2 = new List<SPItemVM>();
-		bool flag2 = _inventoryLogic.CanInventoryCapacityIncrease(inventorySide);
-		for (int i = 0; i < mBBindingList.Count; i++)
+		MBBindingList<SPItemVM> mBBindingList = new MBBindingList<SPItemVM>();
+		foreach (SPItemVM item3 in isBuy ? LeftItemListVM : RightItemListVM)
 		{
-			SPItemVM sPItemVM = mBBindingList[i];
-			if (sPItemVM == null || sPItemVM.IsFiltered || sPItemVM == null || sPItemVM.IsLocked || sPItemVM == null || !sPItemVM.IsTransferable)
+			if (item3 != null && !item3.IsFiltered && item3 != null && !item3.IsLocked && item3 != null && item3.IsTransferable)
 			{
-				continue;
-			}
-			int num3 = sPItemVM.ItemRosterElement.Amount;
-			if (!flag)
-			{
-				float equipmentElementWeight = sPItemVM.ItemRosterElement.EquipmentElement.GetEquipmentElementWeight();
-				float num4 = num + equipmentElementWeight * (float)num3;
-				if (flag2)
-				{
-					if (_inventoryLogic.GetCanItemIncreaseInventoryCapacity(mBBindingList[i].ItemRosterElement.EquipmentElement.Item))
-					{
-						list2.Add(mBBindingList[i]);
-						continue;
-					}
-					if (num4 >= capacityBudget && list2.Count > 0)
-					{
-						List<TransferCommand> list3 = new List<TransferCommand>(list2.Count);
-						for (int j = 0; j < list2.Count; j++)
-						{
-							SPItemVM sPItemVM2 = list2[j];
-							TransferCommand item = TransferCommand.Transfer(sPItemVM2.ItemRosterElement.Amount, fromSide, inventorySide, sPItemVM2.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter, !IsInWarSet);
-							list3.Add(item);
-						}
-						_inventoryLogic.AddTransferCommands(list3);
-						list3.Clear();
-						list2.Clear();
-						capacityBudget = GetCapacityBudget(party, isBuy);
-					}
-				}
-				if (num3 > 0 && num4 > capacityBudget)
-				{
-					num3 = MBMath.ClampInt(num3, 0, TaleWorlds.Library.MathF.Floor((capacityBudget - num) / equipmentElementWeight));
-					i = mBBindingList.Count;
-				}
-				num += (float)num3 * equipmentElementWeight;
-			}
-			if (num3 > 0)
-			{
-				TransferCommand item2 = TransferCommand.Transfer(num3, fromSide, inventorySide, sPItemVM.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter, !IsInWarSet);
-				list.Add(item2);
+				mBBindingList.Add(item3);
 			}
 		}
-		if (num <= capacityBudget)
+		MobileParty mobileParty = (isBuy ? MobileParty.MainParty : _inventoryLogic.OtherParty?.MobileParty);
+		bool flag = _inventoryLogic.OtherParty?.IsSettlement ?? false;
+		InventoryCapacityModel inventoryCapacityModel = Campaign.Current.Models.InventoryCapacityModel;
+		mBBindingList.Sort(new RosterElementComparer(inventoryCapacityModel, mobileParty, flag));
+		InventoryLogic.InventorySide fromSide = ((!isBuy) ? InventoryLogic.InventorySide.PlayerInventory : InventoryLogic.InventorySide.OtherInventory);
+		InventoryLogic.InventorySide inventorySide = (isBuy ? InventoryLogic.InventorySide.PlayerInventory : InventoryLogic.InventorySide.OtherInventory);
+		if (flag && !isBuy)
 		{
-			foreach (SPItemVM item4 in list2)
+			TransferAllForSettlement(mBBindingList, fromSide, inventorySide, list);
+		}
+		else
+		{
+			bool flag2 = (InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Warehouse;
+			float num = 0f;
+			float num2 = 0f;
+			if (mBBindingList.Count > 0)
 			{
-				TransferCommand item3 = TransferCommand.Transfer(item4.ItemRosterElement.Amount, fromSide, inventorySide, item4.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter, !IsInWarSet);
-				list.Add(item3);
+				if (mobileParty != null)
+				{
+					num2 = inventoryCapacityModel.GetItemEffectiveWeight(mBBindingList[0].ItemRosterElement.EquipmentElement, mobileParty, out var _);
+				}
+				else if (flag2)
+				{
+					num2 = mBBindingList[0].ItemRosterElement.EquipmentElement.GetEquipmentElementWeight();
+				}
+			}
+			float capacityBudget = GetCapacityBudget(mobileParty, isBuy);
+			bool flag3 = capacityBudget < num2;
+			bool flag4 = _inventoryLogic.CanInventoryCapacityIncrease(inventorySide);
+			if (!flag3 && flag4)
+			{
+				List<TransferCommand> list2 = new List<TransferCommand>(0);
+				int num3;
+				for (num3 = 0; num3 < mBBindingList.Count; num3++)
+				{
+					SPItemVM sPItemVM = mBBindingList[num3];
+					if (!_inventoryLogic.GetCanItemIncreaseInventoryCapacity(sPItemVM.ItemRosterElement.EquipmentElement.Item))
+					{
+						break;
+					}
+					TransferCommand item = TransferCommand.Transfer(sPItemVM.ItemRosterElement.Amount, fromSide, inventorySide, sPItemVM.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter);
+					list2.Add(item);
+					mBBindingList.Remove(sPItemVM);
+					num3--;
+				}
+				if (list2.Count > 0)
+				{
+					_inventoryLogic.AddTransferCommands(list2);
+					list2.Clear();
+					capacityBudget = GetCapacityBudget(mobileParty, isBuy);
+				}
+			}
+			int num4 = mBBindingList.Count - 1;
+			while (0 <= num4)
+			{
+				SPItemVM sPItemVM2 = mBBindingList[num4];
+				int num5 = sPItemVM2.ItemRosterElement.Amount;
+				if (!flag3)
+				{
+					TextObject description2;
+					float num6 = (flag2 ? sPItemVM2.ItemRosterElement.EquipmentElement.GetEquipmentElementWeight() : inventoryCapacityModel.GetItemEffectiveWeight(sPItemVM2.ItemRosterElement.EquipmentElement, mobileParty, out description2));
+					float num7 = num + num6 * (float)num5;
+					if (num5 > 0 && num7 > capacityBudget)
+					{
+						num5 = MBMath.ClampInt(num5, 0, TaleWorlds.Library.MathF.Floor((capacityBudget - num) / num6));
+					}
+					num += (float)num5 * num6;
+				}
+				if (num5 > 0)
+				{
+					TransferCommand item2 = TransferCommand.Transfer(num5, fromSide, inventorySide, sPItemVM2.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter);
+					list.Add(item2);
+				}
+				num4--;
 			}
 		}
 		_inventoryLogic.AddTransferCommands(list);
 		RefreshInformationValues();
 		ExecuteRemoveZeroCounts();
 		IsRefreshed = true;
+	}
+
+	private void TransferAllForSettlement(MBBindingList<SPItemVM> list, InventoryLogic.InventorySide fromSide, InventoryLogic.InventorySide toSide, List<TransferCommand> commands)
+	{
+		float num = LeftInventoryOwnerGold;
+		float num2 = float.MaxValue;
+		float num3 = 0f;
+		foreach (SPItemVM item2 in list)
+		{
+			int itemCost = item2.ItemCost;
+			if ((float)itemCost < num2)
+			{
+				num2 = itemCost;
+			}
+		}
+		bool flag = num < num2;
+		int num4 = list.Count - 1;
+		while (0 <= num4)
+		{
+			SPItemVM sPItemVM = list[num4];
+			int amount = sPItemVM.ItemRosterElement.Amount;
+			if (!flag)
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					float num5 = sPItemVM.ItemCost;
+					num3 += num5;
+					if (num3 < num)
+					{
+						_inventoryLogic.AddTransferCommands(new List<TransferCommand> { TransferCommand.Transfer(1, fromSide, toSide, sPItemVM.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter) });
+						continue;
+					}
+					num3 -= num5;
+					break;
+				}
+			}
+			else
+			{
+				TransferCommand item = TransferCommand.Transfer(amount, fromSide, toSide, sPItemVM.ItemRosterElement, EquipmentIndex.None, EquipmentIndex.None, _currentCharacter);
+				commands.Add(item);
+			}
+			num4--;
+		}
+	}
+
+	public void ExecuteSelectStealthOutfit()
+	{
+		EquipmentMode = 2;
+	}
+
+	public void ExecuteSelectBattleOutfit()
+	{
+		EquipmentMode = 1;
+	}
+
+	public void ExecuteSelectCivilianOutfit()
+	{
+		EquipmentMode = 0;
 	}
 
 	public void ExecuteBuyAllItems()
@@ -4060,27 +4919,24 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	public void ExecuteResetAndCompleteTranstactions()
 	{
-		if (InventoryManager.Instance.CurrentMode == InventoryMode.Loot)
+		ExecuteRemoveZeroCounts();
+		if ((InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Loot)
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_loot_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
 			{
-				if (!_isFinalized)
-				{
-					_inventoryLogic.Reset(fromCancel: true);
-					InventoryManager.Instance.CloseInventoryPresentation(fromCancel: true);
-				}
+				InventoryScreenHelper.CloseScreen(fromCancel: true);
 			}, null));
 		}
 		else
 		{
-			_inventoryLogic.Reset(fromCancel: true);
-			InventoryManager.Instance.CloseInventoryPresentation(fromCancel: true);
+			InventoryScreenHelper.CloseScreen(fromCancel: true);
 		}
 	}
 
 	public void ExecuteCompleteTranstactions()
 	{
-		if (InventoryManager.Instance.CurrentMode == InventoryMode.Loot && !_inventoryLogic.IsThereAnyChanges() && _inventoryLogic.GetElementsInInitialRoster(InventoryLogic.InventorySide.OtherInventory).Any())
+		ExecuteRemoveZeroCounts();
+		if ((InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Loot && !_inventoryLogic.IsThereAnyChanges() && _inventoryLogic.GetElementsInInitialRoster(InventoryLogic.InventorySide.OtherInventory).Any())
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_loot_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), HandleDone, null));
 		}
@@ -4092,32 +4948,28 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	private void HandleDone()
 	{
-		if (_isFinalized)
-		{
-			return;
-		}
 		MBInformationManager.HideInformations();
 		bool num = _inventoryLogic.TotalAmount < 0;
 		bool flag = (_inventoryLogic.InventoryListener?.GetGold() ?? 0) >= TaleWorlds.Library.MathF.Abs(_inventoryLogic.TotalAmount);
 		int num2 = (int)_inventoryLogic.XpGainFromDonations;
-		int num3 = ((_usageType == InventoryMode.Default && num2 == 0 && !Game.Current.CheatMode) ? _inventoryLogic.GetElementCountOnSide(InventoryLogic.InventorySide.OtherInventory) : 0);
+		int num3 = ((_usageType == InventoryScreenHelper.InventoryMode.Default && num2 == 0 && !Game.Current.CheatMode) ? _inventoryLogic.GetElementCountOnSide(InventoryLogic.InventorySide.OtherInventory) : 0);
 		if (num && !flag)
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_trader_doesnt_have_enough_money").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
 			{
-				InventoryManager.Instance.CloseInventoryPresentation(fromCancel: false);
+				InventoryScreenHelper.CloseScreen(fromCancel: false);
 			}, null));
 		}
 		else if (num3 > 0)
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_discarding_items").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
 			{
-				InventoryManager.Instance.CloseInventoryPresentation(fromCancel: false);
+				InventoryScreenHelper.CloseScreen(fromCancel: false);
 			}, null));
 		}
 		else
 		{
-			InventoryManager.Instance.CloseInventoryPresentation(fromCancel: false);
+			InventoryScreenHelper.CloseScreen(fromCancel: false);
 		}
 		SaveItemLockStates();
 		SaveItemSortStates();
@@ -4135,6 +4987,13 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 
 	public void ExecuteTransferWithParameters(SPItemVM item, int index, string targetTag)
 	{
+		bool isTransferable = item.IsTransferable;
+		bool flag = targetTag == "PlayerInventory" || targetTag.StartsWith("Equipment");
+		bool isPlayerCharacter = _currentCharacter.IsPlayerCharacter;
+		if (!isTransferable && (!flag || !isPlayerCharacter))
+		{
+			return;
+		}
 		switch (targetTag)
 		{
 		case "OverCharacter":
@@ -4152,7 +5011,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			return;
 		case "PlayerInventory":
 			TargetEquipmentIndex = -1;
-			if (item.InventorySide == InventoryLogic.InventorySide.Equipment)
+			if (item.InventorySide == GetEquipmentToInventorySide(_equipmentMode))
 			{
 				ProcessUnequipItem(item);
 			}
@@ -4181,7 +5040,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 				TransactionCount = 1;
 				ProcessEquipItem(item);
 			}
-			else if (item.InventorySide == InventoryLogic.InventorySide.PlayerInventory || item.InventorySide == InventoryLogic.InventorySide.Equipment)
+			else if (item.InventorySide == InventoryLogic.InventorySide.PlayerInventory || item.InventorySide == GetEquipmentToInventorySide(_equipmentMode))
 			{
 				ProcessEquipItem(item);
 			}
@@ -4335,14 +5194,14 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				IsMicsFilterHighlightEnabled = false;
 			}
-			if (obj.NewNotificationElementID != "CivilianFilter" && IsCivilianFilterHighlightEnabled)
+			if (obj.NewNotificationElementID != "EquipmentSetFilters" && IsEquipmentSetFiltersHighlighted)
 			{
-				IsCivilianFilterHighlightEnabled = false;
+				IsEquipmentSetFiltersHighlighted = false;
 			}
 			if (obj.NewNotificationElementID != "InventoryOtherBannerItems" && IsBannerItemsHighlightApplied)
 			{
 				SetBannerItemsHighlightState(state: false);
-				IsCivilianFilterHighlightEnabled = false;
+				IsEquipmentSetFiltersHighlighted = false;
 			}
 		}
 		_latestTutorialElementID = obj.NewNotificationElementID;
@@ -4357,9 +5216,9 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				IsMicsFilterHighlightEnabled = true;
 			}
-			if (!IsCivilianFilterHighlightEnabled && _latestTutorialElementID == "CivilianFilter")
+			if (!IsEquipmentSetFiltersHighlighted && _latestTutorialElementID == "EquipmentSetFilters")
 			{
-				IsCivilianFilterHighlightEnabled = true;
+				IsEquipmentSetFiltersHighlighted = true;
 			}
 			if (!IsBannerItemsHighlightApplied && _latestTutorialElementID == "InventoryOtherBannerItems")
 			{
@@ -4379,9 +5238,9 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 			{
 				IsMicsFilterHighlightEnabled = false;
 			}
-			if (IsCivilianFilterHighlightEnabled)
+			if (IsEquipmentSetFiltersHighlighted)
 			{
-				IsCivilianFilterHighlightEnabled = false;
+				IsEquipmentSetFiltersHighlighted = false;
 			}
 			if (IsBannerItemsHighlightApplied)
 			{
@@ -4419,7 +5278,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (PreviousCharacterInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(PreviousCharacterInputKey.KeyID);
 	}
@@ -4428,7 +5287,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (NextCharacterInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(NextCharacterInputKey.KeyID);
 	}
@@ -4437,7 +5296,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (BuyAllInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(BuyAllInputKey.KeyID);
 	}
@@ -4446,7 +5305,7 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	{
 		if (SellAllInputKey == null || _getKeyTextFromKeyId == null)
 		{
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 		return _getKeyTextFromKeyId(SellAllInputKey.KeyID);
 	}
@@ -4493,53 +5352,5 @@ public class SPInventoryVM : ViewModel, IInventoryStateHandler
 	public void SetGetKeyTextFromKeyIDFunc(Func<string, TextObject> getKeyTextFromKeyId)
 	{
 		_getKeyTextFromKeyId = getKeyTextFromKeyId;
-	}
-
-	void IInventoryStateHandler.ExecuteLootingScript()
-	{
-		ExecuteBuyAllItems();
-	}
-
-	void IInventoryStateHandler.ExecuteBuyConsumableItem()
-	{
-		ExecuteBuyItemTest();
-	}
-
-	void IInventoryStateHandler.ExecuteSellAllLoot()
-	{
-		for (int num = RightItemListVM.Count - 1; num >= 0; num--)
-		{
-			SPItemVM sPItemVM = RightItemListVM[num];
-			if (sPItemVM.GetItemTypeWithItemObject() != EquipmentIndex.None)
-			{
-				SellItem(sPItemVM);
-			}
-		}
-	}
-
-	void IInventoryStateHandler.FilterInventoryAtOpening(InventoryManager.InventoryCategoryType inventoryCategoryType)
-	{
-		if (Game.Current == null)
-		{
-			Debug.FailedAssert("Game is not initialized when filtering inventory", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "FilterInventoryAtOpening", 4700);
-			return;
-		}
-		switch (inventoryCategoryType)
-		{
-		case InventoryManager.InventoryCategoryType.Weapon:
-			ExecuteFilterWeapons();
-			break;
-		case InventoryManager.InventoryCategoryType.Armors:
-			ExecuteFilterArmors();
-			break;
-		case InventoryManager.InventoryCategoryType.HorseCategory:
-			ExecuteFilterMounts();
-			break;
-		case InventoryManager.InventoryCategoryType.Goods:
-			ExecuteFilterMisc();
-			break;
-		case InventoryManager.InventoryCategoryType.Shield:
-			break;
-		}
 	}
 }

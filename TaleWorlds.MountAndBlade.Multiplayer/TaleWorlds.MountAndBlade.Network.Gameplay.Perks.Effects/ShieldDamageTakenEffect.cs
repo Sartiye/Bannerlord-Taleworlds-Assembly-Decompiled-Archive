@@ -29,14 +29,14 @@ public class ShieldDamageTakenEffect : MPPerkEffect
 		string text = node?.Attributes?["value"]?.Value;
 		if (text == null || !float.TryParse(text, out _value))
 		{
-			Debug.FailedAssert("provided 'value' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\ShieldDamageTakenEffect.cs", "Deserialize", 31);
+			Debug.FailedAssert("provided 'value' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\ShieldDamageTakenEffect.cs", "Deserialize", 31);
 		}
 		string text2 = node?.Attributes?["block_type"]?.Value;
 		_blockType = BlockType.Any;
 		if (text2 != null && !Enum.TryParse<BlockType>(text2, ignoreCase: true, out _blockType))
 		{
 			_blockType = BlockType.Any;
-			Debug.FailedAssert("provided 'block_type' is invalid", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\ShieldDamageTakenEffect.cs", "Deserialize", 39);
+			Debug.FailedAssert("provided 'block_type' is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Perks\\Effects\\ShieldDamageTakenEffect.cs", "Deserialize", 39);
 		}
 	}
 

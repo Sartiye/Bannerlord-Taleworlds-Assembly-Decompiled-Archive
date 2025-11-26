@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.MountAndBlade.View;
@@ -21,8 +22,6 @@ public class AgentVisuals : IAgentVisual
 	public const float RandomClothingColor2SaturationRange = 0.5f;
 
 	public const float RandomClothingColor2BrightnessRange = 0.3f;
-
-	private static readonly ActionIndexCache act_command_leftstance_cached = ActionIndexCache.Create("act_command_leftstance");
 
 	private AgentVisualsData _data;
 
@@ -147,20 +146,20 @@ public class AgentVisuals : IAgentVisual
 		return _scale;
 	}
 
-	public void SetAction(ActionIndexCache actionIndex, float startProgress = 0f, bool forceFaceMorphRestart = true)
+	public void SetAction(in ActionIndexCache actionIndex, float startProgress = 0f, bool forceFaceMorphRestart = true)
 	{
 		if (_data.AgentVisuals != null)
 		{
 			Skeleton skeleton = _data.AgentVisuals.GetSkeleton();
 			if (skeleton != null)
 			{
-				skeleton.SetAgentActionChannel(0, actionIndex, startProgress, -0.2f, forceFaceMorphRestart);
+				skeleton.SetAgentActionChannel(0, in actionIndex, startProgress, -0.2f, forceFaceMorphRestart);
 				skeleton.ManualInvalidate();
 			}
 		}
 	}
 
-	public bool DoesActionContinueWithCurrentAction(ActionIndexCache actionIndex)
+	public bool DoesActionContinueWithCurrentAction(in ActionIndexCache actionIndex)
 	{
 		bool result = false;
 		if (_data.AgentVisuals != null)
@@ -168,7 +167,7 @@ public class AgentVisuals : IAgentVisual
 			Skeleton skeleton = _data.AgentVisuals.GetSkeleton();
 			if (skeleton != null)
 			{
-				result = skeleton.DoesActionContinueWithCurrentActionAtChannel(0, actionIndex);
+				result = skeleton.DoesActionContinueWithCurrentActionAtChannel(0, in actionIndex);
 			}
 		}
 		return result;
@@ -193,9 +192,9 @@ public class AgentVisuals : IAgentVisual
 		Refresh(needBatchedVersionForWeaponMeshes, removeSkeleton, equipmentData, isRandomProgress: false, forceUseFaceCache);
 	}
 
-	public void SetClothWindToWeaponAtIndex(Vec3 localWindDirection, bool isLocal, EquipmentIndex weaponIndex)
+	public void SetClothWindToWeaponAtIndex(Vec3 localWindVector, bool isLocal, EquipmentIndex weaponIndex)
 	{
-		_data.AgentVisuals.SetClothWindToWeaponAtIndex(localWindDirection, isLocal, weaponIndex);
+		_data.AgentVisuals.SetClothWindToWeaponAtIndex(localWindVector, isLocal, weaponIndex);
 	}
 
 	private void Refresh(bool needBatchedVersionForWeaponMeshes, bool removeSkeleton = false, Equipment oldEquipment = null, bool isRandomProgress = false, bool forceUseFaceCache = false)
@@ -206,11 +205,11 @@ public class AgentVisuals : IAgentVisual
 		bool flag = _data.MonsterData.Flags.HasAnyFlag(AgentFlag.IsHumanoid);
 		Skeleton skeleton = _data.AgentVisuals.GetSkeleton();
 		float blendPeriodOverride = -0.2f;
-		ActionIndexCache actionIndexCache;
+		ActionIndexCache actionIndex;
 		if (skeleton != null && _data.ActionSetData.IsValid)
 		{
 			channelParameter = skeleton.GetAnimationParameterAtChannel(0);
-			actionIndexCache = skeleton.GetActionAtChannel(0);
+			actionIndex = skeleton.GetActionAtChannel(0);
 			blendPeriodOverride = 0f;
 			if (flag)
 			{
@@ -220,7 +219,7 @@ public class AgentVisuals : IAgentVisual
 		}
 		else
 		{
-			actionIndexCache = _data.ActionCodeData;
+			actionIndex = _data.ActionCodeData;
 		}
 		if (skeleton != null)
 		{
@@ -262,7 +261,7 @@ public class AgentVisuals : IAgentVisual
 				AddSkinArmorWeaponMultiMeshesToEntity(_data.ClothColor1Data, _data.ClothColor2Data, needBatchedVersionForWeaponMeshes, forceUseFaceCache);
 			}
 		}
-		if (!_data.ActionSetData.IsValid || !(actionIndexCache != ActionIndexCache.act_none))
+		if (!_data.ActionSetData.IsValid || !(actionIndex != ActionIndexCache.act_none))
 		{
 			return;
 		}
@@ -273,7 +272,7 @@ public class AgentVisuals : IAgentVisual
 		skeleton = _data.AgentVisuals.GetSkeleton();
 		if (skeleton != null)
 		{
-			skeleton.SetAgentActionChannel(0, actionIndexCache, channelParameter, blendPeriodOverride);
+			skeleton.SetAgentActionChannel(0, in actionIndex, channelParameter, blendPeriodOverride);
 			if (num > 0f)
 			{
 				MBSkeletonExtensions.SetSkeletonFaceAnimationTime(skeleton, num);
@@ -446,7 +445,9 @@ public class AgentVisuals : IAgentVisual
 									Mesh mesh2 = currentMesh;
 									if ((object)mesh2 != null && mesh2.HasTag("banner_replacement_mesh"))
 									{
-										((BannerVisual)_data.BannerData.BannerVisual).GetTableauTextureLarge(delegate(Texture t)
+										BannerVisual obj = (BannerVisual)_data.BannerData.BannerVisual;
+										BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
+										obj.GetTableauTextureLarge(in debugInfo, delegate(Texture t)
 										{
 											ApplyBannerTextureToMesh(currentMesh, t);
 										});
@@ -503,9 +504,9 @@ public class AgentVisuals : IAgentVisual
 	public void MakeRandomVoiceForFacegen()
 	{
 		GameEntity entity = _data.AgentVisuals.GetEntity();
-		Vec3 origin = entity.Skeleton.GetBoneEntitialFrame(_data.MonsterData.HeadLookDirectionBoneIndex).origin;
-		Vec3 position = entity.GetFrame().TransformToParent(origin);
-		entity.Skeleton.SetAgentActionChannel(1, act_command_leftstance_cached);
+		Vec3 v = entity.Skeleton.GetBoneEntitialFrame(_data.MonsterData.HeadLookDirectionBoneIndex).origin;
+		Vec3 position = entity.GetFrame().TransformToParent(in v);
+		entity.Skeleton.SetAgentActionChannel(1, in ActionIndexCache.act_command_leftstance);
 		SkinVoiceManager.SkinVoiceType[] obj = new SkinVoiceManager.SkinVoiceType[12]
 		{
 			SkinVoiceManager.VoiceType.Yell,
@@ -605,5 +606,10 @@ public class AgentVisuals : IAgentVisual
 	public void SetEntity(GameEntity entity)
 	{
 		_data.AgentVisuals.SetEntity(entity);
+	}
+
+	void IAgentVisual.SetAction(in ActionIndexCache actionName, float startProgress, bool forceFaceMorphRestart)
+	{
+		SetAction(in actionName, startProgress, forceFaceMorphRestart);
 	}
 }

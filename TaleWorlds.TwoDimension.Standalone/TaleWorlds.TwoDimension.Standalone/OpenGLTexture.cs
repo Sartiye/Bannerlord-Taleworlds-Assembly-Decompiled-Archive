@@ -11,21 +11,35 @@ public class OpenGLTexture : ITexture
 
 	private int _height;
 
+	private string _name;
+
 	private GraphicsContext _context;
 
 	private int _id;
 
 	private bool _clampToEdge;
 
+	public bool IsValid => true;
+
 	public int Width => _width;
 
 	public int Height => _height;
 
+	public string Name
+	{
+		get
+		{
+			return _name;
+		}
+		set
+		{
+			_name = value;
+		}
+	}
+
 	internal static OpenGLTexture ActiveTexture { get; private set; }
 
 	internal int Id => _id;
-
-	public string Name { get; private set; }
 
 	public bool ClampToEdge
 	{

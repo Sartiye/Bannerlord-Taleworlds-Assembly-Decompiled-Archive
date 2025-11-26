@@ -4,16 +4,16 @@ namespace TaleWorlds.DotNet;
 
 public class NativeTelemetryManager : ITelemetryManager
 {
-	public static uint TelemetryLevelMask { get; private set; }
+	public static TelemetryLevelMask TelemetryLevelMask { get; private set; }
 
-	public uint GetTelemetryLevelMask()
+	public TelemetryLevelMask GetTelemetryLevelMask()
 	{
 		return TelemetryLevelMask;
 	}
 
 	public NativeTelemetryManager()
 	{
-		TelemetryLevelMask = 4096u;
+		TelemetryLevelMask = TelemetryLevelMask.Mono_0;
 	}
 
 	internal void Update()
@@ -33,7 +33,7 @@ public class NativeTelemetryManager : ITelemetryManager
 
 	public void BeginTelemetryScopeInternal(TelemetryLevelMask levelMask, string scopeName)
 	{
-		if ((TelemetryLevelMask & (uint)levelMask) != 0)
+		if (TelemetryLevelMask.HasAnyFlag(levelMask))
 		{
 			LibraryApplicationInterface.ITelemetry.BeginTelemetryScope(levelMask, scopeName);
 		}
@@ -46,7 +46,7 @@ public class NativeTelemetryManager : ITelemetryManager
 
 	public void BeginTelemetryScopeBaseLevelInternal(TelemetryLevelMask levelMask, string scopeName)
 	{
-		if ((TelemetryLevelMask & (uint)levelMask) != 0)
+		if (TelemetryLevelMask.HasAnyFlag(levelMask))
 		{
 			LibraryApplicationInterface.ITelemetry.BeginTelemetryScope(levelMask, scopeName);
 		}

@@ -90,8 +90,8 @@ public class UICodeGenerationContext
 			NamespaceCode namespaceCode = dictionary[key].FindOrCreateNamespace(_nameSpace);
 			widgetTemplateGenerateContext.GenerateInto(namespaceCode);
 		}
-		string fullPath = Path.GetFullPath(string.Concat(Directory.GetCurrentDirectory() + "\\..\\..\\..\\Source\\", _outputFolder));
-		ClearFolder(fullPath);
+		string text = string.Concat(Directory.GetCurrentDirectory() + "\\..\\..\\..\\Source\\", _outputFolder);
+		ClearFolder(text);
 		List<string> usingDefinitions = new List<string> { "System.Numerics", "TaleWorlds.Library" };
 		foreach (KeyValuePair<string, CodeGenerationContext> item in dictionary)
 		{
@@ -100,7 +100,7 @@ public class UICodeGenerationContext
 			CodeGenerationFile codeGenerationFile = new CodeGenerationFile(usingDefinitions);
 			codeGenerationContext.GenerateInto(codeGenerationFile);
 			string contents = codeGenerationFile.GenerateText();
-			File.WriteAllText(fullPath + "\\" + key2, contents, Encoding.UTF8);
+			File.WriteAllText(text + "\\" + key2, contents, Encoding.UTF8);
 		}
 		CodeGenerationContext codeGenerationContext2 = new CodeGenerationContext();
 		NamespaceCode namespaceCode2 = codeGenerationContext2.FindOrCreateNamespace(_nameSpace);
@@ -122,6 +122,6 @@ public class UICodeGenerationContext
 		CodeGenerationFile codeGenerationFile2 = new CodeGenerationFile();
 		codeGenerationContext2.GenerateInto(codeGenerationFile2);
 		string contents2 = codeGenerationFile2.GenerateText();
-		File.WriteAllText(fullPath + "\\PrefabCodes.gen.cs", contents2, Encoding.UTF8);
+		File.WriteAllText(text + "\\PrefabCodes.gen.cs", contents2, Encoding.UTF8);
 	}
 }

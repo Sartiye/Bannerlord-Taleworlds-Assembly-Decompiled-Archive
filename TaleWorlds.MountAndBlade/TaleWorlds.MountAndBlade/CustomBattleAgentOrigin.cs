@@ -13,11 +13,27 @@ public class CustomBattleAgentOrigin : IAgentOriginBase
 
 	private bool _isRemoved;
 
+	private bool _hasThrownWeapon;
+
+	private bool _hasHeavyArmor;
+
+	private bool _hasShield;
+
+	private bool _hasSpear;
+
 	public CustomBattleCombatant CustomBattleCombatant { get; private set; }
 
 	IBattleCombatant IAgentOriginBase.BattleCombatant => CustomBattleCombatant;
 
 	public BasicCharacterObject Troop { get; private set; }
+
+	bool IAgentOriginBase.HasThrownWeapon => _hasThrownWeapon;
+
+	bool IAgentOriginBase.HasHeavyArmor => _hasHeavyArmor;
+
+	bool IAgentOriginBase.HasShield => _hasShield;
+
+	bool IAgentOriginBase.HasSpear => _hasSpear;
 
 	public int Rank { get; private set; }
 
@@ -41,6 +57,7 @@ public class CustomBattleAgentOrigin : IAgentOriginBase
 		Rank = ((rank == -1) ? MBRandom.RandomInt(10000) : rank);
 		_troopSupplier = troopSupplier;
 		_isPlayerSide = isPlayerSide;
+		AgentOriginUtilities.GetDefaultTroopTraits(Troop, out _hasThrownWeapon, out _hasSpear, out _hasShield, out _hasHeavyArmor);
 	}
 
 	public void SetWounded()
@@ -61,7 +78,7 @@ public class CustomBattleAgentOrigin : IAgentOriginBase
 		}
 	}
 
-	public void SetRouted()
+	public void SetRouted(bool isOrderRetreat)
 	{
 		if (!_isRemoved)
 		{
@@ -81,5 +98,10 @@ public class CustomBattleAgentOrigin : IAgentOriginBase
 	public void SetBanner(Banner banner)
 	{
 		throw new NotImplementedException();
+	}
+
+	TroopTraitsMask IAgentOriginBase.GetTraitsMask()
+	{
+		return AgentOriginUtilities.GetDefaultTraitsMask(this);
 	}
 }

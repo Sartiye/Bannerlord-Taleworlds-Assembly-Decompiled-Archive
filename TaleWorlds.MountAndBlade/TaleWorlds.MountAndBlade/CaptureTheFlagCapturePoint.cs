@@ -35,8 +35,8 @@ public class CaptureTheFlagCapturePoint
 		BattleSide = battleSide;
 		Index = index;
 		FlagHolder = flagPole.CollectChildrenEntitiesWithTag("score_stand").SingleOrDefault().GetFirstScriptOfType<SynchedMissionObject>();
-		FlagEntity = FlagHolder.GameEntity.GetChildren().Single((GameEntity q) => q.HasTag("flag"));
-		FlagHolder.GameEntity.EntityFlags |= EntityFlags.NoOcclusionCulling;
+		FlagEntity = GameEntity.CreateFromWeakEntity(FlagHolder.GameEntity.GetChildren().Single((WeakGameEntity q) => q.HasTag("flag")));
+		FlagHolder.GameEntity.SetEntityFlags(FlagHolder.GameEntity.EntityFlags | EntityFlags.NoOcclusionCulling);
 		FlagEntity.EntityFlags |= EntityFlags.NoOcclusionCulling;
 		FlagBottomBoundary = flagPole.GetChildren().Single((GameEntity q) => q.HasTag("flag_raising_bottom"));
 		FlagTopBoundary = flagPole.GetChildren().Single((GameEntity q) => q.HasTag("flag_raising_top"));

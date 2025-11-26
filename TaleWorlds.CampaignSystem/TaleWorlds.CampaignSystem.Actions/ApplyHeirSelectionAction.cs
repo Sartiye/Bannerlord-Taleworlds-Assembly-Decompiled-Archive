@@ -15,10 +15,10 @@ public static class ApplyHeirSelectionAction
 	{
 		if (heir.PartyBelongedTo != null && heir.PartyBelongedTo.IsCaravan)
 		{
-			Settlement settlement = SettlementHelper.FindNearestSettlement((Settlement s) => (s.IsTown || s.IsCastle) && !FactionManager.IsAtWarAgainstFaction(s.MapFaction, heir.MapFaction));
+			Settlement settlement = SettlementHelper.FindNearestSettlementToMobileParty(heir.PartyBelongedTo, MobileParty.NavigationType.All, (Settlement s) => (s.IsTown || s.IsCastle) && !FactionManager.IsAtWarAgainstFaction(s.MapFaction, heir.MapFaction));
 			if (settlement == null)
 			{
-				settlement = SettlementHelper.FindNearestSettlement((Settlement s) => s.IsVillage || (!s.IsHideout && !s.IsFortification));
+				settlement = SettlementHelper.FindNearestSettlementToMobileParty(heir.PartyBelongedTo, MobileParty.NavigationType.All, (Settlement s) => s.IsVillage || (!s.IsHideout && !s.IsFortification));
 			}
 			DestroyPartyAction.Apply(null, heir.PartyBelongedTo);
 			TeleportHeroAction.ApplyImmediateTeleportToSettlement(heir, settlement);

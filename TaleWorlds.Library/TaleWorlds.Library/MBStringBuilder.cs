@@ -115,7 +115,7 @@ public struct MBStringBuilder
 
 	public override string ToString()
 	{
-		Debug.FailedAssert("Don't use this. Use ToStringAndRelease instead!", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\CachedStringBuilder.cs", "ToString", 190);
+		Debug.FailedAssert("Don't use this. Use ToStringAndRelease instead!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\CachedStringBuilder.cs", "ToString", 190);
 		return null;
 	}
 }

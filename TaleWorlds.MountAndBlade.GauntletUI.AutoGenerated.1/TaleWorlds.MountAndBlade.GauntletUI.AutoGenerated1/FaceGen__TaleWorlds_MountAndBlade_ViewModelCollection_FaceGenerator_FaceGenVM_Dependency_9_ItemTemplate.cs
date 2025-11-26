@@ -169,6 +169,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0;
 			_widget_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0;
 			_widget_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0;
+			_widget_1_1.EventFire -= EventListenerOf_widget_1_1;
 			_widget_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_1;
@@ -185,6 +186,14 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 	public void SetDataSource(FaceGenPropertyVM dataSource)
 	{
 		RefreshDataSource_datasource_Root(dataSource);
+	}
+
+	private void EventListenerOf_widget_1_1(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "MousePressed")
+		{
+			_datasource_Root.AddCommand();
+		}
 	}
 
 	private void PropertyChangedListenerOf_widget_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -458,6 +467,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0;
 			_widget_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0;
 			_widget_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0;
+			_widget_1_1.EventFire -= EventListenerOf_widget_1_1;
 			_widget_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_1;
@@ -505,6 +515,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_1_1.MinValueFloat = _datasource_Root.Min;
 			_widget_1_1.ValueFloat = _datasource_Root.Value;
 			_widget_1_1.IsDiscrete = _datasource_Root.IsDiscrete;
+			_widget_1_1.EventFire += EventListenerOf_widget_1_1;
 			_widget_1_1.PropertyChanged += PropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_1;
 			_widget_1_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_1;

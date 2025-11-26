@@ -72,7 +72,7 @@ public class BrightnessDemoTextureProvider : TextureProvider
 		_sceneTableau.SetTargetSize(width, height);
 	}
 
-	public override TaleWorlds.TwoDimension.Texture GetTexture(TwoDimensionContext twoDimensionContext, string name)
+	protected override TaleWorlds.TwoDimension.Texture OnGetTextureForRender(TwoDimensionContext twoDimensionContext, string name)
 	{
 		CheckTexture();
 		return _providedTexture;

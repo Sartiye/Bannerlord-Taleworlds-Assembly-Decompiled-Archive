@@ -30,16 +30,16 @@ public class PledgeAllegianceSceneNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner>
+		return new Banner[2]
 		{
 			Hero.MainHero.ClanBanner,
 			PlayerHero.Clan.Kingdom.Leader.Clan?.Kingdom.Banner ?? PlayerHero.Clan.Kingdom.Leader.ClanBanner
 		};
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		ItemObject itemObject = null;
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
@@ -71,7 +71,7 @@ public class PledgeAllegianceSceneNotificationItem : SceneNotificationData
 			BodyProperties bodyProperties = randomTroopForCulture.GetBodyProperties(equipment3, MBRandom.RandomInt(100));
 			list.Add(new SceneNotificationCharacter(randomTroopForCulture, equipment3, bodyProperties));
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public PledgeAllegianceSceneNotificationItem(Hero playerHero, bool playerWantsToRestore)

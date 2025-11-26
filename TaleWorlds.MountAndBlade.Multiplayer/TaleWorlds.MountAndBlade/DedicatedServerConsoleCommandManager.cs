@@ -75,7 +75,7 @@ public static class DedicatedServerConsoleCommandManager
 				}
 				else
 				{
-					Debug.FailedAssert("No valid type found for multiplayer option.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\DedicatedServerConsoleCommandManager.cs", "HandleConsoleCommand", 81);
+					Debug.FailedAssert("No valid type found for multiplayer option.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\DedicatedServerConsoleCommandManager.cs", "HandleConsoleCommand", 81);
 				}
 				Debug.Print(string.Concat("--Changed: ", optionType, ", to: ", optionType.GetValueText()), 0, Debug.DebugColor.White, 17179869184uL);
 			}

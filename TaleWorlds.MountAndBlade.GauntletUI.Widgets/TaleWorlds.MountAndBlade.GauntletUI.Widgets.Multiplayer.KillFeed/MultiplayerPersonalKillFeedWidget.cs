@@ -13,9 +13,9 @@ public class MultiplayerPersonalKillFeedWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		for (int i = 0; i < base.ChildCount; i++)
 		{
 			Widget child = GetChild(i);

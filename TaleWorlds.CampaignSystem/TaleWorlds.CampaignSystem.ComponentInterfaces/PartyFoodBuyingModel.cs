@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PartyFoodBuyingModel : GameModel
+public abstract class PartyFoodBuyingModel : MBGameModel<PartyFoodBuyingModel>
 {
 	public abstract float MinimumDaysFoodToLastWhileBuyingFoodFromTown { get; }
 

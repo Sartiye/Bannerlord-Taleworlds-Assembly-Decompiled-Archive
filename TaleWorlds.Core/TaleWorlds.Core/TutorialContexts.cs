@@ -17,5 +17,6 @@ public enum TutorialContexts
 	EducationScreen,
 	OptionsScreen,
 	CraftingScreen,
-	GameOverScreen
+	GameOverScreen,
+	EscapeMenu
 }

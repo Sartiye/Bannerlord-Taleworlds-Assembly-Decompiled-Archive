@@ -14,4 +14,6 @@ public interface IMarriageOfferCampaignBehavior : ICampaignBehavior
 	void OnMarriageOfferAcceptedOnPopUp();
 
 	void OnMarriageOfferDeclinedOnPopUp();
+
+	bool IsHeroEngaged(Hero hero);
 }

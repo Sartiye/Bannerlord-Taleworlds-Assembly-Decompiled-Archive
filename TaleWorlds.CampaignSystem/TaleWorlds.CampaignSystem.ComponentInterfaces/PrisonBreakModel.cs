@@ -3,8 +3,10 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class PrisonBreakModel : GameModel
+public abstract class PrisonBreakModel : MBGameModel<PrisonBreakModel>
 {
+	public abstract int GetNumberOfGuardsToSpawn(Settlement settlement);
+
 	public abstract bool CanPlayerStagePrisonBreak(Settlement settlement);
 
 	public abstract int GetPrisonBreakStartCost(Hero prisonerHero);

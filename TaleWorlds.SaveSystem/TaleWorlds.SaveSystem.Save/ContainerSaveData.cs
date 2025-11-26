@@ -138,6 +138,132 @@ internal class ContainerSaveData
 		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
 	}
 
+	public void SaveHeaderDataTo(BinaryWriter headerWriter, int folderId)
+	{
+		headerWriter.Write3ByteInt(folderId);
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.WriteByte(9);
+		headerWriter.WriteShort((short)GetHeaderDataSize());
+		_typeDefinition.SaveId.WriteTo(headerWriter);
+		headerWriter.WriteByte((byte)_containerType);
+		headerWriter.WriteInt(GetElementCount());
+	}
+
+	public void SaveHeaderFolderTo(BinaryWriter headerWriter, int folderId)
+	{
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.Write3ByteInt(folderId);
+		headerWriter.Write3ByteInt(ObjectId);
+		headerWriter.WriteByte(3);
+	}
+
+	private int GetHeaderDataSize()
+	{
+		return 5 + _typeDefinition.SaveId.GetSizeInBytes();
+	}
+
+	public int GetHeaderSize()
+	{
+		return GetHeaderDataSize() + 19;
+	}
+
+	public int GetDataSize()
+	{
+		int num = 18;
+		for (int i = 0; i < _elementCount; i++)
+		{
+			num += _values[i].GetDataSize();
+			num += GetMemberEntrySize();
+			if (_containerType == ContainerType.Dictionary)
+			{
+				num += _keys[i].GetDataSize();
+				num += GetMemberEntrySize();
+			}
+		}
+		foreach (ObjectSaveData childStruct in _childStructs)
+		{
+			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
+			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			{
+				num += childStruct.GetDataSize() - 8;
+			}
+		}
+		return num;
+	}
+
+	private int GetMemberEntrySize()
+	{
+		return 9;
+	}
+
+	public int GetEntryCount()
+	{
+		int num = ((_containerType == ContainerType.Dictionary) ? (_elementCount * 2) : _elementCount);
+		foreach (ObjectSaveData childStruct in _childStructs)
+		{
+			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
+			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			{
+				num += childStruct.GetEntryCount();
+			}
+		}
+		return num;
+	}
+
+	public int GetFolderCount()
+	{
+		int num = 1;
+		foreach (ObjectSaveData childStruct in _childStructs)
+		{
+			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
+			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			{
+				num += childStruct.GetFolderCount();
+			}
+		}
+		return num;
+	}
+
+	public void SaveDataFolder(BinaryWriter writer, ref int folderId)
+	{
+		writer.Write3ByteInt(-1);
+		writer.Write3ByteInt(0);
+		writer.Write3ByteInt(ObjectId);
+		writer.WriteByte(3);
+		folderId++;
+		foreach (ObjectSaveData childStruct in _childStructs)
+		{
+			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
+			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			{
+				childStruct.SaveDataFolder(writer, 0, ref folderId);
+			}
+		}
+	}
+
+	public void SaveTo(BinaryWriter writer, ref int folderId)
+	{
+		for (int i = 0; i < _elementCount; i++)
+		{
+			WriteElementEntry(writer, _values[i], folderId, i, SaveEntryExtension.Value);
+			_values[i].SaveTo(writer);
+			if (_containerType == ContainerType.Dictionary)
+			{
+				WriteElementEntry(writer, _keys[i], folderId, i, SaveEntryExtension.Key);
+				_keys[i].SaveTo(writer);
+			}
+		}
+		folderId++;
+		foreach (ObjectSaveData childStruct in _childStructs)
+		{
+			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
+			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			{
+				childStruct.SaveTo(writer, ref folderId);
+			}
+		}
+	}
+
 	public void SaveTo(SaveEntryFolder parentFolder, IArchiveContext archiveContext)
 	{
 		int entryCount = ((_containerType == ContainerType.Dictionary) ? (_elementCount * 2) : _elementCount);
@@ -166,6 +292,14 @@ internal class ContainerSaveData
 				childStruct.SaveTo(saveEntryFolder, archiveContext);
 			}
 		}
+	}
+
+	private void WriteElementEntry(BinaryWriter writer, ElementSaveData data, int parentFolderId, int id, SaveEntryExtension extension)
+	{
+		writer.Write3ByteInt(parentFolderId);
+		writer.Write3ByteInt(id);
+		writer.WriteByte((byte)extension);
+		writer.WriteShort((short)data.GetDataSize());
 	}
 
 	internal int GetElementCount()

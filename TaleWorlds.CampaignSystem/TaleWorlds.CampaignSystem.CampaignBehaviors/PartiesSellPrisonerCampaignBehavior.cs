@@ -23,29 +23,19 @@ public class PartiesSellPrisonerCampaignBehavior : CampaignBehaviorBase
 
 	private void OnSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
 	{
-		if (!settlement.IsFortification || mobileParty == null || mobileParty.PrisonRoster.Count <= 0 || mobileParty.MapFaction == null || mobileParty.IsMainParty || mobileParty.IsDisbanding || mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction))
+		if (mobileParty == null || mobileParty.IsMainParty || !settlement.IsFortification || mobileParty.MapFaction == null || mobileParty.IsDisbanding || mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction) || (mobileParty.PrisonRoster.TotalRegulars <= 0 && (mobileParty.PrisonRoster.TotalHeroes <= 0 || !mobileParty.PrisonRoster.GetTroopRoster().Exists((TroopRosterElement x) => x.Character != CharacterObject.PlayerCharacter && x.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction)))))
 		{
 			return;
 		}
-		if (mobileParty.MapFaction.IsKingdomFaction && mobileParty.ActualClan != null)
+		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+		foreach (TroopRosterElement item in mobileParty.PrisonRoster.GetTroopRoster())
 		{
-			TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
-			foreach (TroopRosterElement item in mobileParty.PrisonRoster.GetTroopRoster())
+			if (!item.Character.IsHero || (!item.Character.IsPlayerCharacter && item.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction)))
 			{
-				if (!item.Character.IsHero || item.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction))
-				{
-					troopRoster.Add(item);
-				}
-			}
-			if (troopRoster.Count > 0)
-			{
-				SellPrisonersAction.ApplyForSelectedPrisoners(mobileParty.Party, settlement.Party, troopRoster);
+				troopRoster.Add(item);
 			}
 		}
-		else
-		{
-			SellPrisonersAction.ApplyForAllPrisoners(mobileParty.Party, settlement.Party);
-		}
+		SellPrisonersAction.ApplyForSelectedPrisoners(mobileParty.Party, settlement.Party, troopRoster);
 	}
 
 	private void DailyTickSettlement(Settlement settlement)

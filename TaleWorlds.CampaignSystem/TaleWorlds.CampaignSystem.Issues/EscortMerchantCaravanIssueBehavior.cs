@@ -6,7 +6,6 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
-using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -174,14 +173,12 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -262,11 +259,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 	public class EscortMerchantCaravanIssueQuest : QuestBase
 	{
-		private const int BanditPartyAttackRadiusMin = 8;
-
 		private const int BattleFakeSimulationDuration = 3;
-
-		private const int QuestBanditPartySpawnDistance = 80;
 
 		private const string CustomPartyComponentTalkId = "escort_caravan_talk";
 
@@ -310,13 +303,17 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		[SaveableField(1)]
 		private JournalLog _playerStartsQuestLog;
 
+		private float BanditPartyAttackRadiusMin => Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 2.5f;
+
+		private float QuestBanditPartySpawnDistance => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default) * 1.25f;
+
 		public override TextObject Title => new TextObject("{=VpLzd69e}Escort Merchant Caravan");
 
 		public override bool IsRemainingTimeHidden => false;
 
 		private int BanditPartyTroopCount => (int)TaleWorlds.Library.MathF.Min(40f, (float)(MobileParty.MainParty.MemberRoster.TotalHealthyCount + _questCaravanMobileParty.MemberRoster.TotalHealthyCount) * 0.7f);
 
-		private int CaravanPartyTroopCount => MBRandom.RandomInt(10, 14);
+		private int CaravanPartyTroopCount => (int)(5f * _difficultyMultiplier) + 10;
 
 		private bool CaravanIsInsideSettlement => _questCaravanMobileParty.CurrentSettlement != null;
 
@@ -334,7 +331,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -348,9 +345,9 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _caravanDestroyedQuestLogText => new TextObject("{=zk9QyKIz}The caravan was destroyed. Quest failed.");
+		private TextObject CaravanDestroyedQuestLogText => new TextObject("{=zk9QyKIz}The caravan was destroyed. Quest failed.");
 
-		private TextObject _caravanLostTheTrackLogText
+		private TextObject CaravanLostTheTrackLogText
 		{
 			get
 			{
@@ -360,7 +357,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _caravanDestroyedByBanditsLogText
+		private TextObject CaravanDestroyedByBanditsLogText
 		{
 			get
 			{
@@ -370,9 +367,9 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _caravanDestroyedByPlayerQuestLogText => new TextObject("{=Rd3m5kyk}You have attacked the caravan.");
+		private TextObject CaravanDestroyedByPlayerQuestLogText => new TextObject("{=Rd3m5kyk}You have attacked the caravan.");
 
-		private TextObject _successQuestLogText
+		private TextObject SuccessQuestLogText
 		{
 			get
 			{
@@ -383,7 +380,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _cancelByWarQuestLogText
+		private TextObject CancelByWarQuestLogText
 		{
 			get
 			{
@@ -393,7 +390,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private TextObject _caravanNoTargetLogText
+		private TextObject CaravanNoTargetLogText
 		{
 			get
 			{
@@ -571,7 +568,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		private void conversation_caravan_fight_on_consequence()
 		{
-			PlayerEncounter.Current.IsEnemy = true;
+			BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, MobileParty.ConversationParty.Party);
 		}
 
 		private void caravan_talk_leave_on_consequence()
@@ -613,7 +610,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		{
 			if (MobileParty.ConversationParty != null && MobileParty.ConversationParty == _questCaravanMobileParty && !MobileParty.ConversationParty.IsCaravan)
 			{
-				InventoryManager.OpenTradeWithCaravanOrAlleyParty(MobileParty.ConversationParty);
+				InventoryScreenHelper.OpenTradeWithCaravanOrAlleyParty(MobileParty.ConversationParty);
 			}
 			return true;
 		}
@@ -621,6 +618,10 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		private DialogFlow GetCaravanGreetingDialogFlow()
 		{
 			TextObject npcText = new TextObject("{=FpUybbSk}Greetings. This caravan is owned by {MERCHANT.LINK}. We trade under the protection of {PROTECTOR.LINK}, master of {HOMETOWN}. How may we help you?[if:convo_normal]");
+			if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsCurrentlyAtSea)
+			{
+				npcText = new TextObject("{=yGttYe7g}Greetings. This ship is owned by {MERCHANT.LINK}. We sail under the protection of {PROTECTOR.LINK}, master of {HOMETOWN}. How may we help you?[if:convo_normal]");
+			}
 			return DialogFlow.CreateDialogFlow("start", 125).NpcLine(npcText).Condition(caravan_talk_on_condition)
 				.GotoDialogState("escort_caravan_talk");
 		}
@@ -629,7 +630,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		{
 			StartQuest();
 			SpawnCaravan();
-			_playerStartsQuestLog = AddDiscreteLog(_playerStartsQuestLogText, new TextObject("{=r2y3n7dR}Visited Settlements"), _visitedSettlements.Count, _requiredSettlementNumber);
+			_playerStartsQuestLog = AddDiscreteLog(PlayerStartsQuestLogText, new TextObject("{=r2y3n7dR}Visited Settlements"), _visitedSettlements.Count, _requiredSettlementNumber);
 		}
 
 		private bool caravan_loot_on_condition()
@@ -662,8 +663,8 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			GetAdditionalVisualsForParty(base.QuestGiver.Culture, out var mountStringId, out var harnessStringId);
 			TextObject textObject = GameTexts.FindText("str_caravan_party_name");
 			textObject.SetCharacterProperties("OWNER", base.QuestGiver.CharacterObject);
-			_questCaravanMobileParty = CustomPartyComponent.CreateQuestParty(base.QuestGiver.CurrentSettlement.GatePosition, 0f, base.QuestGiver.CurrentSettlement, textObject, base.QuestGiver.Clan, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), base.QuestGiver, mountStringId, harnessStringId, 4f);
-			InitializeCaravanOnCreation(_questCaravanMobileParty, base.QuestGiver, base.QuestGiver.CurrentSettlement, itemRoster, CaravanPartyTroopCount, isElite: false);
+			_questCaravanMobileParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(base.QuestGiver.CurrentSettlement.GatePosition, 0f, base.QuestGiver.CurrentSettlement, textObject, base.QuestGiver.Clan, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), base.QuestGiver, mountStringId, harnessStringId, 4f);
+			InitializeCaravanOnCreation(_questCaravanMobileParty, base.QuestGiver, base.QuestGiver.CurrentSettlement, itemRoster);
 			AddTrackedObject(_questCaravanMobileParty);
 			_questCaravanMobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			_questCaravanMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
@@ -680,39 +681,29 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		private void InitializeCaravanOnCreation(MobileParty mobileParty, Hero owner, Settlement settlement, ItemRoster caravanItems, int troopToBeGiven, bool isElite)
+		private void InitializeCaravanOnCreation(MobileParty mobileParty, Hero owner, Settlement settlement, ItemRoster caravanItems)
 		{
 			mobileParty.Aggressiveness = 0f;
-			if (troopToBeGiven == 0)
-			{
-				float num = 1f;
-				num = ((!(MBRandom.RandomFloat < 0.67f)) ? 1f : ((1f - MBRandom.RandomFloat * MBRandom.RandomFloat) * 0.5f + 0.5f));
-				int num2 = (int)((float)mobileParty.Party.PartySizeLimit * num);
-				if (num2 >= 10)
-				{
-					num2--;
-				}
-				troopToBeGiven = num2;
-			}
-			PartyTemplateObject pt = (isElite ? settlement.Culture.EliteCaravanPartyTemplate : settlement.Culture.CaravanPartyTemplate);
-			mobileParty.InitializeMobilePartyAtPosition(pt, settlement.GatePosition, troopToBeGiven);
+			PartyTemplateObject randomCaravanTemplate = CaravanHelper.GetRandomCaravanTemplate(owner.Culture, isElite: false, isLand: true);
+			mobileParty.InitializeMobilePartyAtPosition(TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), settlement.GatePosition);
+			MobilePartyHelper.FillPartyManuallyAfterCreation(mobileParty, randomCaravanTemplate, CaravanPartyTroopCount);
 			CharacterObject character2 = CharacterObject.All.First((CharacterObject character) => character.Occupation == Occupation.CaravanGuard && character.IsInfantry && character.Level == 26 && character.Culture == mobileParty.Party.Owner.Culture);
 			mobileParty.MemberRoster.AddToCounts(character2, 1, insertAtFront: true);
 			mobileParty.Party.SetVisualAsDirty();
-			mobileParty.InitializePartyTrade(10000 + ((owner.Clan == Clan.PlayerClan) ? 5000 : 0));
+			mobileParty.InitializePartyTrade(Campaign.Current.Models.CaravanModel.GetInitialTradeGold(owner, isNavalCaravan: false, eliteCaravan: false));
 			if (caravanItems != null)
 			{
 				mobileParty.ItemRoster.Add(caravanItems);
 				return;
 			}
-			float num3 = 10000f;
+			float num = 10000f;
 			ItemObject itemObject = null;
 			foreach (ItemObject item in Items.All)
 			{
-				if (item.ItemCategory == DefaultItemCategories.PackAnimal && !item.NotMerchandise && (float)item.Value < num3)
+				if (item.ItemCategory == DefaultItemCategories.PackAnimal && !item.NotMerchandise && (float)item.Value < num)
 				{
 					itemObject = item;
-					num3 = item.Value;
+					num = item.Value;
 				}
 			}
 			if (itemObject != null)
@@ -740,7 +731,6 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 			CampaignEvents.OnSettlementLeftEvent.AddNonSerializedListener(this, OnSettlementLeft);
 			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
-			CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, OnPartyHourlyTick);
@@ -767,7 +757,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				{
 					RemoveTrackedObject(_otherBanditParty);
 				}
-				_otherBanditParty.Ai.SetMoveModeHold();
+				_otherBanditParty.SetMoveModeHold();
 				_otherBanditParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 				_otherBanditParty = null;
 			}
@@ -777,14 +767,14 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				{
 					RemoveTrackedObject(_questBanditMobileParty);
 				}
-				_questBanditMobileParty.Ai.SetMoveModeHold();
+				_questBanditMobileParty.SetMoveModeHold();
 				_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 			}
 		}
 
 		private void CheckEncounterForBanditParty(MobileParty mobileParty)
 		{
-			if (base.IsOngoing && mobileParty != null && mobileParty.IsActive && mobileParty.MapEvent == null && _questCaravanMobileParty.IsActive && _questCaravanMobileParty.MapEvent == null && _questCaravanMobileParty.CurrentSettlement == null && mobileParty.Position2D.DistanceSquared(_questCaravanMobileParty.Position2D) <= 1f)
+			if (base.IsOngoing && mobileParty != null && mobileParty.IsActive && mobileParty.MapEvent == null && _questCaravanMobileParty.IsActive && _questCaravanMobileParty.MapEvent == null && _questCaravanMobileParty.CurrentSettlement == null && mobileParty.Position.DistanceSquared(_questCaravanMobileParty.Position) <= 1f)
 			{
 				EncounterManager.StartPartyEncounter(mobileParty.Party, _questCaravanMobileParty.Party);
 				MBInformationManager.AddQuickInformation(new TextObject("{=o8uAzFaJ}The caravan you are protecting is ambushed by raiders!"));
@@ -794,7 +784,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		private void CheckPartyAndMakeItAttackTheCaravan(MobileParty mobileParty)
 		{
-			if (_otherBanditParty != null || mobileParty.MapEvent != null || !mobileParty.IsBandit || mobileParty.IsCurrentlyUsedByAQuest || mobileParty == _questBanditMobileParty || mobileParty.Party.NumberOfHealthyMembers <= _questCaravanMobileParty.Party.NumberOfHealthyMembers || (!(mobileParty.Speed > _questCaravanMobileParty.Speed) && !(mobileParty.Position2D.DistanceSquared(_questCaravanMobileParty.Position2D) < 9f)))
+			if (_otherBanditParty != null || mobileParty == _questBanditMobileParty || !mobileParty.IsBandit || mobileParty.IsCurrentlyUsedByAQuest || mobileParty.MapEvent != null || mobileParty.NavigationCapability != MobileParty.NavigationType.Default || mobileParty.Party.NumberOfHealthyMembers <= _questCaravanMobileParty.Party.NumberOfHealthyMembers || (!(mobileParty.Speed > _questCaravanMobileParty.Speed) && !(mobileParty.Position.DistanceSquared(_questCaravanMobileParty.Position) < 9f)))
 			{
 				return;
 			}
@@ -805,12 +795,22 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				TryToFindAndSetTargetToNextSettlement();
 				return;
 			}
-			float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, targetSettlement);
-			float distance2 = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, toSettlement);
-			float num = mobileParty.Position2D.DistanceSquared(_questCaravanMobileParty.Position2D);
-			if (distance > 5f && distance2 > 5f && num < 64f)
+			float distance;
+			float distance2;
+			if (_questCaravanMobileParty.CurrentSettlement != null)
 			{
-				SetPartyAiAction.GetActionForEngagingParty(mobileParty, _questCaravanMobileParty);
+				distance = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty.CurrentSettlement, targetSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+				distance2 = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty.CurrentSettlement, toSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+			}
+			else
+			{
+				distance = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, targetSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out var estimatedLandRatio);
+				distance2 = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, toSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out estimatedLandRatio);
+			}
+			float num = mobileParty.Position.DistanceSquared(_questCaravanMobileParty.Position);
+			if (distance > 5f && distance2 > 5f && num < BanditPartyAttackRadiusMin * BanditPartyAttackRadiusMin)
+			{
+				SetPartyAiAction.GetActionForEngagingParty(mobileParty, _questCaravanMobileParty, MobileParty.NavigationType.Default, isFromPort: false);
 				mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 				if (!IsTracked(mobileParty))
 				{
@@ -824,7 +824,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		private void OnSettlementEntered(MobileParty party, Settlement settlement, Hero hero)
 		{
-			if (party != _questCaravanMobileParty || settlement == _questCaravanMobileParty.HomeSettlement || !settlement.GatePosition.NearlyEquals(MobileParty.MainParty.Position2D, MobileParty.MainParty.SeeingRange + 2f) || settlement != _questCaravanMobileParty.TargetSettlement)
+			if (party != _questCaravanMobileParty || settlement == _questCaravanMobileParty.HomeSettlement || !settlement.Position.NearlyEquals(MobileParty.MainParty.Position.ToVec2(), MobileParty.MainParty.SeeingRange + 2f) || settlement != _questCaravanMobileParty.TargetSettlement)
 			{
 				return;
 			}
@@ -843,7 +843,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				_questBanditMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now);
 				if (_questBanditMobileParty.MapEvent == null)
 				{
-					SetPartyAiAction.GetActionForPatrollingAroundSettlement(_questBanditMobileParty, settlement);
+					SetPartyAiAction.GetActionForPatrollingAroundSettlement(_questBanditMobileParty, settlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 			}
 			if (_otherBanditParty != null)
@@ -852,17 +852,23 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				{
 					RemoveTrackedObject(_otherBanditParty);
 				}
-				_otherBanditParty.Ai.SetMoveModeHold();
+				_otherBanditParty.SetMoveModeHold();
 				_otherBanditParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 				_otherBanditParty = null;
 			}
 			if (_visitedSettlements.Count == _requiredSettlementNumber)
 			{
 				SuccessConsequences(isNoTargetLeftSuccess: false);
+				return;
+			}
+			int num = CaravanPartyTroopCount - _questCaravanMobileParty.MemberRoster.TotalManCount;
+			if (num > 0)
+			{
+				_questCaravanMobileParty.AddElementToMemberRoster(_questCaravanMobileParty.TargetSettlement.Culture.CaravanGuard, MBRandom.RandomInt(Math.Min(15, num)));
 			}
 		}
 
-		private void OnDailyTick()
+		protected override void DailyTick()
 		{
 			_daysSpentForEscorting++;
 		}
@@ -881,13 +887,13 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_cancelByWarQuestLogText);
+				CompleteQuestWithCancel(CancelByWarQuestLogText);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			if (detail == DeclareWarAction.DeclareWarDetail.CausedByPlayerHostility && (faction1 == _questCaravanMobileParty.MapFaction || faction2 == _questCaravanMobileParty.MapFaction) && PlayerEncounter.Battle != null && _questCaravanMobileParty.MapEvent == PlayerEncounter.Battle)
+			if (detail == DeclareWarAction.DeclareWarDetail.CausedByPlayerHostility && (faction1 == _questCaravanMobileParty.MapFaction || faction2 == _questCaravanMobileParty.MapFaction) && PlayerEncounter.Current != null && PlayerEncounter.PlayerIsAttacker)
 			{
 				FailByPlayerHostileConsequences();
 			}
@@ -964,12 +970,13 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			Settlement targetSettlement = _questCaravanMobileParty.TargetSettlement;
 			if (targetSettlement != null)
 			{
-				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, targetSettlement);
-				if (distance > 10f && distance < 80f)
+				float estimatedLandRatio;
+				float num = ((_questCaravanMobileParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty.CurrentSettlement, targetSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) : Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, targetSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out estimatedLandRatio));
+				if (num > 10f && num < QuestBanditPartySpawnDistance)
 				{
 					ActivateBanditParty();
-					float num = _questBanditMobileParty.Speed + _questCaravanMobileParty.Speed;
-					_questBanditPartyFollowDuration = (int)(80f / num) + 5;
+					float num2 = _questBanditMobileParty.Speed + _questCaravanMobileParty.Speed;
+					_questBanditPartyFollowDuration = (int)(QuestBanditPartySpawnDistance / num2) + 5;
 					_questBanditPartyAlreadyAttacked = true;
 				}
 			}
@@ -989,7 +996,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		{
 			if (_questCaravanMobileParty.IsActive && !_questCaravanMobileParty.IsVisible)
 			{
-				float num = _questCaravanMobileParty.Position2D.Distance(MobileParty.MainParty.Position2D);
+				float num = _questCaravanMobileParty.Position.Distance(MobileParty.MainParty.Position);
 				if (!_isPlayerNotifiedForDanger && num >= MobileParty.MainParty.SeeingRange + 3f)
 				{
 					MBInformationManager.AddQuickInformation(new TextObject("{=2y9DhzCR}You are about to lose sight of the caravan. Find the caravan before they are in danger!"));
@@ -997,7 +1004,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				}
 				else if (num >= MobileParty.MainParty.SeeingRange + 20f)
 				{
-					AddLog(_caravanLostTheTrackLogText);
+					AddLog(CaravanLostTheTrackLogText);
 					FailConsequences();
 				}
 			}
@@ -1028,7 +1035,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			int num2 = -1;
 			do
 			{
-				num2 = SettlementHelper.FindNextSettlementAroundMapPoint(_questCaravanMobileParty, 150f, num2);
+				num2 = SettlementHelper.FindNextSettlementAroundMobileParty(_questCaravanMobileParty, MobileParty.NavigationType.Default, 150f, num2);
 				if (num2 >= 0)
 				{
 					Settlement settlement = Settlement.All[num2];
@@ -1045,7 +1052,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				num2 = -1;
 				do
 				{
-					num2 = SettlementHelper.FindNextSettlementAroundMapPoint(_questCaravanMobileParty, 150f, num2);
+					num2 = SettlementHelper.FindNextSettlementAroundMobileParty(_questCaravanMobileParty, MobileParty.NavigationType.Default, 150f, num2);
 					if (num2 < 0)
 					{
 						continue;
@@ -1061,7 +1068,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 						continue;
 					}
 					Settlement settlement3 = settlement2;
-					SetPartyAiAction.GetActionForVisitingSettlement(_questCaravanMobileParty, settlement3);
+					SetPartyAiAction.GetActionForVisitingSettlement(_questCaravanMobileParty, settlement3, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 					_questCaravanMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 					TextObject textObject = new TextObject("{=OjI8uGFa}We are traveling to {SETTLEMENT_NAME}.");
 					textObject.SetTextVariable("SETTLEMENT_NAME", settlement3.Name);
@@ -1073,8 +1080,14 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 					{
 						AddTrackedObject(settlement3);
 					}
-					if (_questBanditMobileParty != null && (_questBanditMobileParty.Speed < _questCaravanMobileParty.Speed || Campaign.Current.Models.MapDistanceModel.GetDistance(_questCaravanMobileParty, _questBanditMobileParty) > 10f))
+					if (_questBanditMobileParty == null || !_questBanditMobileParty.IsActive)
 					{
+						break;
+					}
+					float num4 = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(_questCaravanMobileParty, _questBanditMobileParty, MobileParty.NavigationType.Default);
+					if (_questBanditMobileParty.Speed < _questCaravanMobileParty.Speed || num4 > 10f)
+					{
+						_questBanditMobileParty.SetMoveModeHold();
 						_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 						_questBanditMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now);
 						if (IsTracked(_questBanditMobileParty))
@@ -1115,7 +1128,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 					{
 						if (flag)
 						{
-							AddLog(_caravanDestroyedQuestLogText);
+							AddLog(CaravanDestroyedQuestLogText);
 							FailConsequences(banditsWon: true);
 						}
 						else
@@ -1125,7 +1138,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 					}
 					else
 					{
-						AddLog(_caravanDestroyedByBanditsLogText);
+						AddLog(CaravanDestroyedByBanditsLogText);
 						FailConsequences(banditsWon: true);
 					}
 					return;
@@ -1165,11 +1178,11 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			base.QuestGiver.CurrentSettlement.Town.Prosperity += 10f;
 			if (isNoTargetLeftSuccess)
 			{
-				AddLog(_caravanNoTargetLogText);
+				AddLog(CaravanNoTargetLogText);
 			}
 			else
 			{
-				AddLog(_successQuestLogText, hideInformation: true);
+				AddLog(SuccessQuestLogText, hideInformation: true);
 			}
 			_questBanditMobileParty?.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 			CompleteQuestWithSuccess();
@@ -1223,7 +1236,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -80)
 			});
 			base.QuestGiver.CurrentSettlement.Town.Prosperity -= 20f;
-			AddLog(_caravanDestroyedByPlayerQuestLogText, hideInformation: true);
+			AddLog(CaravanDestroyedByPlayerQuestLogText, hideInformation: true);
 			_questBanditMobileParty?.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 			CompleteQuestWithFail();
 		}
@@ -1240,12 +1253,11 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		private void ActivateBanditParty()
 		{
-			Settlement closestHideout = SettlementHelper.FindNearestHideout((Settlement x) => x.IsActive);
-			Clan clan = Clan.BanditFactions.FirstOrDefault((Clan t) => t.Culture == closestHideout.Culture);
-			_questBanditMobileParty = BanditPartyComponent.CreateBanditParty("escort_caravan_quest_" + base.StringId, clan, closestHideout.Hideout, isBossParty: false);
+			Hideout closestHideout = SettlementHelper.FindNearestHideoutToMobileParty(_questCaravanMobileParty, _questCaravanMobileParty.NavigationCapability, (Settlement x) => x.IsActive);
+			Clan clan = Clan.BanditFactions.FirstOrDefault((Clan t) => t.Culture == closestHideout.Settlement.Culture);
 			PartyTemplateObject partyTemplateObject = Campaign.Current.ObjectManager.GetObject<PartyTemplateObject>("kingdom_hero_party_caravan_ambushers") ?? clan.DefaultPartyTemplate;
-			_questBanditMobileParty.InitializeMobilePartyAroundPosition(partyTemplateObject, _questCaravanMobileParty.TargetSettlement.GatePosition, 1f, 0.5f);
-			_questBanditMobileParty.SetCustomName(new TextObject("{=u1Pkt4HC}Raiders"));
+			_questBanditMobileParty = BanditPartyComponent.CreateBanditParty("escort_caravan_quest_" + base.StringId, clan, closestHideout.Settlement.Hideout, isBossParty: false, partyTemplateObject, _questCaravanMobileParty.TargetSettlement.GatePosition);
+			_questBanditMobileParty.Party.SetCustomName(new TextObject("{=u1Pkt4HC}Raiders"));
 			Campaign.Current.MobilePartyLocator.UpdateLocator(_questBanditMobileParty);
 			_questBanditMobileParty.ActualClan = clan;
 			_questBanditMobileParty.MemberRoster.Clear();
@@ -1262,7 +1274,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			_questBanditMobileParty.ItemRoster.AddToCounts(DefaultItems.Grain, BanditPartyTroopCount);
 			_questBanditMobileParty.ItemRoster.AddToCounts(MBObjectManager.Instance.GetObject<ItemObject>("sumpter_horse"), BanditPartyTroopCount);
 			_questBanditMobileParty.IgnoreByOtherPartiesTill(base.QuestDueTime);
-			SetPartyAiAction.GetActionForEngagingParty(_questBanditMobileParty, _questCaravanMobileParty);
+			SetPartyAiAction.GetActionForEngagingParty(_questBanditMobileParty, _questCaravanMobileParty, MobileParty.NavigationType.Default, isFromPort: false);
 			_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			AddTrackedObject(_questBanditMobileParty);
 		}
@@ -1271,7 +1283,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 		{
 			if (_questCaravanMobileParty != null && _questCaravanMobileParty.IsActive && _questCaravanMobileParty.IsCustomParty)
 			{
-				_questCaravanMobileParty.PartyComponent = new CaravanPartyComponent(base.QuestGiver.CurrentSettlement, base.QuestGiver, null);
+				CaravanPartyComponent.ConvertPartyToCaravanParty(_questCaravanMobileParty, base.QuestGiver, base.QuestGiver.CurrentSettlement);
 				_questCaravanMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
 				_questCaravanMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now);
 			}
@@ -1383,7 +1395,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 	private bool ConditionsHold(Hero issueGiver)
 	{
-		if (issueGiver.IsMerchant && issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.IsTown && issueGiver.CurrentSettlement.Town.Security <= 50f)
+		if (issueGiver.IsMerchant && issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.IsTown && !issueGiver.CurrentSettlement.HasPort && issueGiver.CurrentSettlement.Town.Security <= 50f)
 		{
 			return issueGiver.OwnedCaravans.Count < 2;
 		}

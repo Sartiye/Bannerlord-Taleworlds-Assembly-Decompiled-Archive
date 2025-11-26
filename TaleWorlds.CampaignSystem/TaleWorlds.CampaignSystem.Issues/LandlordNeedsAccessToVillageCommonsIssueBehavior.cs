@@ -63,7 +63,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=jYHKGhnc}Landlord needs access to the {TARGET_SETTLEMENT} commons");
+				TextObject textObject = new TextObject("{=jYHKGhnc}Landlord Needs Access to the {TARGET_SETTLEMENT} Commons");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
 			}
@@ -222,8 +222,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -275,8 +274,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -344,8 +342,6 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 
 	public class LandlordNeedsAccessToVillageCommonsIssueQuest : QuestBase
 	{
-		private const int PastureRadius = 8;
-
 		private const int BattleFakeSimulationDuration = 5;
 
 		[SaveableField(11)]
@@ -378,11 +374,13 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 		[SaveableField(120)]
 		private int _spawnRivalPartyAfterHours;
 
+		private float PastureRadius => Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 2.5f;
+
 		public sealed override TextObject Title
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=oT8DUcHf}Landowner needs {TARGET_SETTLEMENT}'s pasture");
+				TextObject textObject = new TextObject("{=oT8DUcHf}Landowner Needs {TARGET_SETTLEMENT}'s Pasture");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
 			}
@@ -390,7 +388,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 
 		public override bool IsRemainingTimeHidden => false;
 
-		private TextObject _playerStartsQuestLogText
+		private TextObject PlayerStartsQuestLogText
 		{
 			get
 			{
@@ -402,7 +400,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _successWitHVillagerSurrenderQuestLogText
+		private TextObject SuccessWitHVillagerSurrenderQuestLogText
 		{
 			get
 			{
@@ -414,7 +412,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _successWitHWinningTheFightQuestLogText
+		private TextObject SuccessWitHWinningTheFightQuestLogText
 		{
 			get
 			{
@@ -427,7 +425,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _failWithLosingTheFightQuestLogText
+		private TextObject FailWithLosingTheFightQuestLogText
 		{
 			get
 			{
@@ -438,7 +436,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _failWithCounterOfferLogText
+		private TextObject FailWithCounterOfferLogText
 		{
 			get
 			{
@@ -449,7 +447,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _failByTimeoutLogText
+		private TextObject FailByTimeoutLogText
 		{
 			get
 			{
@@ -459,7 +457,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _targetVillageRaided
+		private TextObject TargetVillageRaided
 		{
 			get
 			{
@@ -470,7 +468,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _playerDeclaredWarQuestLogText
+		private TextObject PlayerDeclaredWarQuestLogText
 		{
 			get
 			{
@@ -480,7 +478,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private TextObject _warDeclaredCancelLog => new TextObject("{=wQH1N109}War broke out between your clan and the quest giver's realm. Quest canceled.");
+		private TextObject WarDeclaredCancelLog => new TextObject("{=wQH1N109}War broke out between your clan and the quest giver's realm. Quest canceled.");
 
 		internal static void AutoGeneratedStaticCollectObjectsLandlordNeedsAccessToVillageCommonsIssueQuest(object o, List<object> collectedObjects)
 		{
@@ -633,7 +631,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			TextObject textObject = new TextObject("{=crg2DrbZ}We are worried that the herders of {TARGET_SETTLEMENT} will harm our animals. Fortunately we have you on our side {?PLAYER.GENDER}madam{?}sir{\\?}.");
 			StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter, textObject);
 			textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
-			return DialogFlow.CreateDialogFlow("start", 125).NpcLine(textObject).Condition(() => HerdersTalkOnCondition() && Campaign.Current.Models.MapDistanceModel.GetDistance(MobileParty.ConversationParty, _targetSettlement) < 10f)
+			return DialogFlow.CreateDialogFlow("start", 125).NpcLine(textObject).Condition(() => HerdersTalkOnCondition() && DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(MobileParty.ConversationParty, _targetSettlement, MobileParty.NavigationType.Default) < PastureRadius + 2f)
 				.Consequence(delegate
 				{
 					PlayerEncounter.LeaveEncounter = true;
@@ -673,7 +671,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				new Tuple<TraitObject, int>(DefaultTraits.Mercy, 20)
 			});
 			CompleteQuestWithFail();
-			AddLog(_failWithCounterOfferLogText);
+			AddLog(FailWithCounterOfferLogText);
 			PlayerEncounter.LeaveEncounter = true;
 		}
 
@@ -682,10 +680,10 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			Clan clan = Clan.BanditFactions.FirstOrDefault((Clan x) => !x.Culture.CanHaveSettlement);
 			if (clan == null)
 			{
-				Settlement settlement = SettlementHelper.FindNearestHideout();
-				if (settlement != null)
+				Hideout hideout = SettlementHelper.FindNearestHideoutToSettlement(_targetSettlement, MobileParty.NavigationType.Default);
+				if (hideout != null)
 				{
-					CultureObject banditCulture = settlement.Culture;
+					CultureObject banditCulture = hideout.Settlement.Culture;
 					clan = Clan.BanditFactions.FirstOrDefault((Clan x) => x.Culture == banditCulture);
 				}
 				if (clan == null)
@@ -693,20 +691,17 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 					clan = Clan.BanditFactions.GetRandomElementInefficiently();
 				}
 			}
-			_rivalMobileParty = BanditPartyComponent.CreateLooterParty("villagers_of_landlord_needs_access_to_village_common_quest" + _questId, clan, _targetSettlement, isBossParty: false);
-			CharacterObject villager = base.QuestGiver.Culture.Villager;
-			TroopRoster troopRoster = new TroopRoster(_rivalMobileParty.Party);
+			_rivalMobileParty = BanditPartyComponent.CreateLooterParty("villagers_of_landlord_needs_access_to_village_common_quest" + _questId, clan, _targetSettlement, isBossParty: false, null, _targetSettlement.GatePosition);
+			_rivalMobileParty.MemberRoster.AddToCounts(base.QuestGiver.Culture.Villager, TaleWorlds.Library.MathF.Ceiling(10f + 20f * _issueDifficultyMultiplier));
 			TextObject textObject = new TextObject("{=QLLeHRWw}Herders of {QUEST_SETTLEMENT}");
 			textObject.SetTextVariable("QUEST_SETTLEMENT", _targetSettlement.Name);
-			troopRoster.AddToCounts(villager, TaleWorlds.Library.MathF.Ceiling(10f + 20f * _issueDifficultyMultiplier));
-			_rivalMobileParty.InitializeMobilePartyAtPosition(troopRoster, new TroopRoster(_rivalMobileParty.Party), _targetSettlement.Position2D);
 			_rivalMobileParty.InitializePartyTrade(200);
 			_rivalMobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
-			_rivalMobileParty.SetCustomName(textObject);
-			_rivalMobileParty.IgnoreForHours(720f);
+			_rivalMobileParty.Party.SetCustomName(textObject);
+			_rivalMobileParty.IgnoreForHours(CampaignTime.HoursInDay * 30);
 			_rivalMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
-			SetPartyAiAction.GetActionForEngagingParty(_rivalMobileParty, _herdersMobileParty);
-			_rivalMobileParty.TargetPosition = _herdersMobileParty.Position2D;
+			SetPartyAiAction.GetActionForEngagingParty(_rivalMobileParty, _herdersMobileParty, MobileParty.NavigationType.Default, isFromPort: false);
+			_rivalMobileParty.TargetPosition = _herdersMobileParty.Position;
 			_rivalMobileParty.Party.SetVisualAsDirty();
 			AddTrackedObject(_rivalMobileParty);
 			_rivalMobileParty.Aggressiveness = 0f;
@@ -715,47 +710,43 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 		private void SuccessWithVillagersSurrender()
 		{
 			CompleteQuestWithSuccess();
-			AddLog(_successWitHVillagerSurrenderQuestLogText);
+			AddLog(SuccessWitHVillagerSurrenderQuestLogText);
 			PlayerEncounter.LeaveEncounter = true;
 		}
 
 		private void SpawnHerdersParty()
 		{
-			_herdersMobileParty = MobileParty.CreateParty("rival_party_of_landlord_needs_access_to_village_common_quest" + _questId, null);
-			CharacterObject villager = base.QuestGiver.Culture.Villager;
-			TroopRoster troopRoster = new TroopRoster(_herdersMobileParty.Party);
 			TextObject textObject = new TextObject("{=tLakpr0a}Herdsmen of {QUEST_GIVER}");
 			textObject.SetTextVariable("QUEST_GIVER", base.QuestGiver.Name);
-			troopRoster.AddToCounts(villager, TaleWorlds.Library.MathF.Ceiling(2f + 5f * _issueDifficultyMultiplier));
-			_herdersMobileParty.InitializeMobilePartyAtPosition(troopRoster, new TroopRoster(_herdersMobileParty.Party), base.QuestGiver.CurrentSettlement.Position2D);
+			_herdersMobileParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(base.QuestGiver.CurrentSettlement.GatePosition, 1f, base.QuestGiver.CurrentSettlement, textObject, null, TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), null);
+			_herdersMobileParty.MemberRoster.AddToCounts(base.QuestGiver.Culture.Villager, TaleWorlds.Library.MathF.Ceiling(2f + 5f * _issueDifficultyMultiplier));
 			_herdersMobileParty.InitializePartyTrade(200);
-			_herdersMobileParty.SetCustomName(textObject);
-			_herdersMobileParty.SetCustomHomeSettlement(base.QuestGiver.CurrentSettlement);
 			_herdersMobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			_herdersMobileParty.ItemRoster.AddToCounts(MBObjectManager.Instance.GetObject<ItemObject>("sumpter_horse"), TaleWorlds.Library.MathF.Ceiling(2f + 5f * _issueDifficultyMultiplier));
-			_herdersMobileParty.IgnoreForHours(720f);
+			_herdersMobileParty.IgnoreForHours(CampaignTime.HoursInDay * 30);
 			_herdersMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			_herdersMobileParty.Party.SetVisualAsDirty();
 			AddTrackedObject(_herdersMobileParty);
 			_herdersMobileParty.Aggressiveness = 0f;
-			Vec2 toPoint = _targetSettlement.GetPosition2D;
+			CampaignVec2 point = _targetSettlement.GatePosition;
+			int[] invalidTerrainTypesForNavigationType = Campaign.Current.Models.PartyNavigationModel.GetInvalidTerrainTypesForNavigationType(MobileParty.NavigationType.Default);
 			for (int i = 0; i < 15; i++)
 			{
-				toPoint = MobilePartyHelper.FindReachablePointAroundPosition(_targetSettlement.GetPosition2D, 6f, 5f);
-				if (Campaign.Current.Models.MapDistanceModel.GetDistance(_targetSettlement, in toPoint, 8f, out var _))
+				point = NavigationHelper.FindReachablePointAroundPosition(_targetSettlement.GatePosition, MobileParty.NavigationType.Default, PastureRadius - 2f, PastureRadius - 3f);
+				if (Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(_targetSettlement.GatePosition.Face, point.Face, _targetSettlement.GatePosition.ToVec2(), point.ToVec2(), 0.3f, PastureRadius, out var _, invalidTerrainTypesForNavigationType, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromLandToSea, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromSeaToLand))
 				{
 					break;
 				}
 			}
-			_herdersMobileParty.Ai.SetMoveGoToPoint(toPoint);
-			Campaign.Current.Models.MapDistanceModel.GetDistance(_herdersMobileParty, in toPoint, 8f, out var distance2);
+			_herdersMobileParty.SetMoveGoToPoint(point, MobileParty.NavigationType.Default);
+			Campaign.Current.MapSceneWrapper.GetPathDistanceBetweenAIFaces(_herdersMobileParty.CurrentNavigationFace, point.Face, _herdersMobileParty.GetPosition2D, point.ToVec2(), 0.3f, float.MaxValue, out var distance2, invalidTerrainTypesForNavigationType, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromLandToSea, Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromSeaToLand);
 			_spawnRivalPartyAfterHours = (int)(distance2 / _herdersMobileParty.Speed) + 3;
 		}
 
 		private void QuestAcceptedConsequences()
 		{
 			StartQuest();
-			AddLog(_playerStartsQuestLogText);
+			AddLog(PlayerStartsQuestLogText);
 			AddTrackedObject(_targetSettlement);
 			SpawnHerdersParty();
 		}
@@ -771,7 +762,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, 30),
 				new Tuple<TraitObject, int>(DefaultTraits.Mercy, -20)
 			});
-			GiveGoldAction.ApplyForQuestBetweenCharacters(null, Hero.MainHero, _rewardGold);
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, _rewardGold);
 		}
 
 		public override void OnFailed()
@@ -793,18 +784,20 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			{
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -20)
 			});
-			AddLog(_failByTimeoutLogText);
+			AddLog(FailByTimeoutLogText);
 		}
 
 		protected override void OnFinalize()
 		{
-			if (_herdersMobileParty != null && _herdersMobileParty.IsVisible && _herdersMobileParty.IsActive)
+			if (_herdersMobileParty != null && _herdersMobileParty.IsActive)
 			{
 				DestroyPartyAction.Apply(null, _herdersMobileParty);
+				_herdersMobileParty = null;
 			}
-			if (_rivalMobileParty != null && _rivalMobileParty.IsVisible && _rivalMobileParty.IsActive)
+			if (_rivalMobileParty != null && _rivalMobileParty.IsActive)
 			{
 				DestroyPartyAction.Apply(null, _rivalMobileParty);
+				_rivalMobileParty = null;
 			}
 		}
 
@@ -827,12 +820,12 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				if (mapEvent.WinningSide == mapEvent.PlayerSide)
 				{
 					CompleteQuestWithSuccess();
-					AddLog(_successWitHWinningTheFightQuestLogText);
+					AddLog(SuccessWitHWinningTheFightQuestLogText);
 				}
 				else
 				{
 					CompleteQuestWithFail();
-					AddLog(_failWithLosingTheFightQuestLogText);
+					AddLog(FailWithLosingTheFightQuestLogText);
 				}
 			}
 		}
@@ -844,9 +837,9 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				return;
 			}
 			CheckAnSpawnRivalParty();
-			if (_rivalMobileParty != null)
+			if (_rivalMobileParty != null && _rivalMobileParty.IsActive)
 			{
-				if (_herdersMobileParty?.MapEvent == null && _rivalMobileParty?.MapEvent == null && !_battleStarted && Campaign.Current.Models.MapDistanceModel.GetDistance(_rivalMobileParty, _herdersMobileParty) < 0.25f)
+				if (_herdersMobileParty?.MapEvent == null && _rivalMobileParty?.MapEvent == null && !_battleStarted && DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(_rivalMobileParty, _herdersMobileParty, MobileParty.NavigationType.Default) < Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius / 6f)
 				{
 					EncounterManager.StartPartyEncounter(_rivalMobileParty.Party, _herdersMobileParty.Party);
 					_rivalMobileParty.MapEvent.IsInvulnerable = true;
@@ -878,12 +871,14 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			{
 				if (mobileParty == _rivalMobileParty && (destroyerParty == PartyBase.MainParty || destroyerParty == _herdersMobileParty.Party))
 				{
-					AddLog(_successWitHWinningTheFightQuestLogText);
+					_rivalMobileParty = null;
+					AddLog(SuccessWitHWinningTheFightQuestLogText);
 					CompleteQuestWithSuccess();
 				}
 				if (mobileParty == _herdersMobileParty)
 				{
-					AddLog(_failWithLosingTheFightQuestLogText);
+					_herdersMobileParty = null;
+					AddLog(FailWithLosingTheFightQuestLogText);
 					CompleteQuestWithFail();
 				}
 			}
@@ -893,13 +888,13 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 		{
 			if (base.QuestGiver.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				CompleteQuestWithCancel(_warDeclaredCancelLog);
+				CompleteQuestWithCancel(WarDeclaredCancelLog);
 			}
 		}
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, _playerDeclaredWarQuestLogText, _warDeclaredCancelLog);
+			QuestHelper.CheckWarDeclarationAndFailOrCancelTheQuest(this, faction1, faction2, detail, PlayerDeclaredWarQuestLogText, WarDeclaredCancelLog);
 		}
 
 		protected override void InitializeQuestOnGameLoad()
@@ -909,9 +904,9 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 
 		private void OnVillageRaided(Village village)
 		{
-			if (village == _targetSettlement.Village)
+			if (village == _targetSettlement.Village || village == base.QuestGiver.CurrentSettlement.Village)
 			{
-				AddLog(_targetVillageRaided);
+				AddLog(TargetVillageRaided);
 				CompleteQuestWithCancel();
 			}
 		}
@@ -928,7 +923,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
 		}
 
-		public override void OnHeroCanHaveQuestOrIssueInfoIsRequested(Hero hero, ref bool result)
+		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
 		{
 			if (hero == _headmanNotable)
 			{
@@ -998,7 +993,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 	{
 		if (issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.IsVillage && !issueGiver.CurrentSettlement.IsUnderRaid && issueGiver.CurrentSettlement.Village.VillageType == DefaultVillageTypes.WheatFarm && issueGiver.IsRuralNotable && !Clan.BanditFactions.IsEmpty() && issueGiver.GetTraitLevel(DefaultTraits.Mercy) <= 0 && issueGiver.GetTraitLevel(DefaultTraits.Generosity) <= 0 && issueGiver.CurrentSettlement.Village.Bound.Town.Security <= 70f)
 		{
-			return issueGiver.CurrentSettlement.Village.Bound.BoundVillages.Any((Village x) => x.Settlement != issueGiver.CurrentSettlement && !x.Settlement.IsUnderRaid && x.Settlement.Notables.Any((Hero notable) => notable.IsHeadman && notable.CanHaveQuestsOrIssues()));
+			return issueGiver.CurrentSettlement.Village.Bound.BoundVillages.Any((Village x) => x.Settlement != issueGiver.CurrentSettlement && !x.Settlement.IsUnderRaid && x.Settlement.Notables.Any((Hero notable) => notable.IsHeadman && notable.CanHaveCampaignIssues()));
 		}
 		return false;
 	}

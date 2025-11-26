@@ -13,7 +13,6 @@ public class MultiplayerSubModule : MBSubModuleBase
 	protected internal override void OnSubModuleLoad()
 	{
 		base.OnSubModuleLoad();
-		Module.CurrentModule.AddMultiplayerGameMode(new MissionBasedMultiplayerGameMode("FreeForAll"));
 		Module.CurrentModule.AddMultiplayerGameMode(new MissionBasedMultiplayerGameMode("TeamDeathmatch"));
 		Module.CurrentModule.AddMultiplayerGameMode(new MissionBasedMultiplayerGameMode("Duel"));
 		Module.CurrentModule.AddMultiplayerGameMode(new MissionBasedMultiplayerGameMode("Siege"));
@@ -25,6 +24,7 @@ public class MultiplayerSubModule : MBSubModuleBase
 		{
 			Module.CurrentModule.AddInitialStateOption(new InitialStateOption("Multiplayer", new TextObject("{=YDYnuBmC}Multiplayer"), 9997, StartMultiplayer, () => (Module.CurrentModule.IsOnlyCoreContentEnabled, coreContentDisabledReason)));
 		}
+		TauntUsageManager.Initialize();
 	}
 
 	public override void OnGameLoaded(Game game, object initializerObject)

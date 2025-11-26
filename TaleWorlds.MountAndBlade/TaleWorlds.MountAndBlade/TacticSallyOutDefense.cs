@@ -99,9 +99,9 @@ public class TacticSallyOutDefense : TacticComponent
 
 	private bool CalculateHasBattleBeenJoined()
 	{
-		if (_mainInfantry?.QuerySystem.ClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
+		if (_mainInfantry?.CachedClosestEnemyFormation != null && !(_mainInfantry.AI.ActiveBehavior is BehaviorCharge) && !(_mainInfantry.AI.ActiveBehavior is BehaviorTacticalCharge))
 		{
-			return _mainInfantry.QuerySystem.MedianPosition.AsVec2.Distance(_mainInfantry.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / _mainInfantry.QuerySystem.ClosestEnemyFormation.MovementSpeedMaximum <= 3f + (_hasBattleBeenJoined ? 2f : 0f);
+			return _mainInfantry.CachedMedianPosition.AsVec2.Distance(_mainInfantry.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / _mainInfantry.CachedClosestEnemyFormation.MovementSpeedMaximum <= 3f + (_hasBattleBeenJoined ? 2f : 0f);
 		}
 		return true;
 	}
@@ -203,7 +203,7 @@ public class TacticSallyOutDefense : TacticComponent
 			}
 			else
 			{
-				siegeWeapon = _destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_mainInfantry.QuerySystem.AveragePosition));
+				siegeWeapon = Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_mainInfantry.CachedAveragePosition));
 				infantrySide = (siegeWeapon as IPrimarySiegeWeapon).WeaponSide;
 			}
 			behavior.SetDefensePositionFromTactic(_teamAISallyOutDefender.CalculateSallyOutReferencePosition(infantrySide).ToWorldPosition());
@@ -229,7 +229,7 @@ public class TacticSallyOutDefense : TacticComponent
 				BehaviorDefendSiegeWeapon behavior2 = _cavalryFormation.AI.GetBehavior<BehaviorDefendSiegeWeapon>();
 				FormationAI.BehaviorSide behaviorSide = FormationAI.BehaviorSide.BehaviorSideNotSet;
 				SiegeWeapon siegeWeapon2 = _destructableSiegeWeapons.FirstOrDefault((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && (dsw as IPrimarySiegeWeapon).WeaponSide != infantrySide);
-				behaviorSide = ((siegeWeapon2 == null) ? (_destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_cavalryFormation.QuerySystem.AveragePosition)) as IPrimarySiegeWeapon).WeaponSide : (siegeWeapon2 as IPrimarySiegeWeapon).WeaponSide);
+				behaviorSide = ((siegeWeapon2 == null) ? (Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_cavalryFormation.CachedAveragePosition)) as IPrimarySiegeWeapon).WeaponSide : (siegeWeapon2 as IPrimarySiegeWeapon).WeaponSide);
 				behavior2.SetDefensePositionFromTactic(_teamAISallyOutDefender.CalculateSallyOutReferencePosition(behaviorSide).ToWorldPosition());
 				behavior2.SetDefendedSiegeWeaponFromTactic(siegeWeapon2);
 				_cavalryFormation.AI.Side = behaviorSide;
@@ -248,7 +248,7 @@ public class TacticSallyOutDefense : TacticComponent
 				}
 				else
 				{
-					siegeWeapon3 = _destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_cavalryFormation.QuerySystem.AveragePosition));
+					siegeWeapon3 = Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => dsw is IPrimarySiegeWeapon && dsw is IMoveableSiegeWeapon), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_cavalryFormation.CachedAveragePosition));
 					behaviorSide2 = (siegeWeapon3 as IPrimarySiegeWeapon).WeaponSide;
 				}
 				behavior3.SetDefensePositionFromTactic(_teamAISallyOutDefender.CalculateSallyOutReferencePosition(behaviorSide2).ToWorldPosition());
@@ -280,7 +280,7 @@ public class TacticSallyOutDefense : TacticComponent
 			}
 			else if (_destructableSiegeWeapons.Any((SiegeWeapon dsw) => !dsw.IsDisabled))
 			{
-				SiegeWeapon siegeWeapon = _destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_mainInfantry.QuerySystem.AveragePosition));
+				SiegeWeapon siegeWeapon = Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_mainInfantry.CachedAveragePosition));
 				_mainInfantry.AI.ResetBehaviorWeights();
 				TacticComponent.SetDefaultBehaviorWeights(_mainInfantry);
 				_mainInfantry.AI.SetBehaviorWeight<BehaviorDefendSiegeWeapon>(1f);
@@ -321,7 +321,7 @@ public class TacticSallyOutDefense : TacticComponent
 				}
 				else if (_destructableSiegeWeapons.Any((SiegeWeapon dsw) => !dsw.IsDisabled))
 				{
-					SiegeWeapon siegeWeapon2 = _destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_leftCavalry.QuerySystem.AveragePosition));
+					SiegeWeapon siegeWeapon2 = Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_leftCavalry.CachedAveragePosition));
 					_leftCavalry.AI.ResetBehaviorWeights();
 					TacticComponent.SetDefaultBehaviorWeights(_leftCavalry);
 					_leftCavalry.AI.SetBehaviorWeight<BehaviorDefendSiegeWeapon>(1f);
@@ -355,7 +355,7 @@ public class TacticSallyOutDefense : TacticComponent
 				}
 				else if (_destructableSiegeWeapons.Any((SiegeWeapon dsw) => !dsw.IsDisabled))
 				{
-					SiegeWeapon siegeWeapon3 = _destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled).MinBy((SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_rightCavalry.QuerySystem.AveragePosition));
+					SiegeWeapon siegeWeapon3 = Extensions.MinBy(_destructableSiegeWeapons.Where((SiegeWeapon dsw) => !dsw.IsDisabled), (SiegeWeapon dsw) => dsw.GameEntity.GlobalPosition.AsVec2.DistanceSquared(_rightCavalry.CachedAveragePosition));
 					_rightCavalry.AI.ResetBehaviorWeights();
 					TacticComponent.SetDefaultBehaviorWeights(_rightCavalry);
 					_rightCavalry.AI.SetBehaviorWeight<BehaviorDefendSiegeWeapon>(1f);
@@ -399,7 +399,7 @@ public class TacticSallyOutDefense : TacticComponent
 		}
 	}
 
-	protected internal override void TickOccasionally()
+	public override void TickOccasionally()
 	{
 		if (!base.AreFormationsCreated)
 		{

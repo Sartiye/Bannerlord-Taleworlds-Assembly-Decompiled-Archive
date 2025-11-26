@@ -117,7 +117,7 @@ public class ChatLogItemWidget : Widget
 	protected override void OnParallelUpdate(float dt)
 	{
 		base.OnParallelUpdate(dt);
-		ApplyActionOnAllChildren(_fullyInsideAction);
+		ApplyActionToAllChildrenRecursive(_fullyInsideAction);
 	}
 
 	private void PostMessage(string message)
@@ -169,7 +169,7 @@ public class ChatLogItemWidget : Widget
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Couldn't parse chat log message: " + ex.Message, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Chat\\ChatLogItemWidget.cs", "GetFormattedLinesFromMessage", 111);
+			Debug.FailedAssert("Couldn't parse chat log message: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Chat\\ChatLogItemWidget.cs", "GetFormattedLinesFromMessage", 111);
 		}
 		return lineList;
 	}

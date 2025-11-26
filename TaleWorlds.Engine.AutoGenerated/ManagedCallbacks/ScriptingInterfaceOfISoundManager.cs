@@ -119,6 +119,11 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void PauseBusDelegate(byte[] busName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void ProcessDataToBeReceivedDelegate(ulong senderDeviceID, ManagedArray data, uint dataSize);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -161,6 +166,12 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool StartOneShotEventWithIndexDelegate(int index, Vec3 position);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool StartOneShotEventWithParamDelegate(byte[] eventFullName, Vec3 position, byte[] paramName, float paramValue);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -172,6 +183,11 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void StopVoiceRecordDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void UnpauseBusDelegate(byte[] busName);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -232,6 +248,8 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 
 	public static LoadEventFileAuxDelegate call_LoadEventFileAuxDelegate;
 
+	public static PauseBusDelegate call_PauseBusDelegate;
+
 	public static ProcessDataToBeReceivedDelegate call_ProcessDataToBeReceivedDelegate;
 
 	public static ProcessDataToBeSentDelegate call_ProcessDataToBeSentDelegate;
@@ -248,11 +266,15 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 
 	public static StartOneShotEventDelegate call_StartOneShotEventDelegate;
 
+	public static StartOneShotEventWithIndexDelegate call_StartOneShotEventWithIndexDelegate;
+
 	public static StartOneShotEventWithParamDelegate call_StartOneShotEventWithParamDelegate;
 
 	public static StartVoiceRecordDelegate call_StartVoiceRecordDelegate;
 
 	public static StopVoiceRecordDelegate call_StopVoiceRecordDelegate;
+
+	public static UnpauseBusDelegate call_UnpauseBusDelegate;
 
 	public static UpdateVoiceToPlayDelegate call_UpdateVoiceToPlayDelegate;
 
@@ -409,6 +431,19 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 		call_LoadEventFileAuxDelegate(array, decompressSamples);
 	}
 
+	public void PauseBus(string busName)
+	{
+		byte[] array = null;
+		if (busName != null)
+		{
+			int byteCount = _utf8.GetByteCount(busName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(busName, 0, busName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_PauseBusDelegate(array);
+	}
+
 	public void ProcessDataToBeReceived(ulong senderDeviceID, byte[] data, uint dataSize)
 	{
 		PinnedArrayData<byte> pinnedArrayData = new PinnedArrayData<byte>(data);
@@ -485,6 +520,11 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 		return call_StartOneShotEventDelegate(array, position);
 	}
 
+	public bool StartOneShotEventWithIndex(int index, Vec3 position)
+	{
+		return call_StartOneShotEventWithIndexDelegate(index, position);
+	}
+
 	public bool StartOneShotEventWithParam(string eventFullName, Vec3 position, string paramName, float paramValue)
 	{
 		byte[] array = null;
@@ -514,6 +554,19 @@ internal class ScriptingInterfaceOfISoundManager : ISoundManager
 	public void StopVoiceRecord()
 	{
 		call_StopVoiceRecordDelegate();
+	}
+
+	public void UnpauseBus(string busName)
+	{
+		byte[] array = null;
+		if (busName != null)
+		{
+			int byteCount = _utf8.GetByteCount(busName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(busName, 0, busName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_UnpauseBusDelegate(array);
 	}
 
 	public void UpdateVoiceToPlay(byte[] voiceBuffer, int length, int index)

@@ -330,7 +330,7 @@ public class MissionDuelPeerMarkerVM : ViewModel
 		Bounty = (peer.Representative as DuelMissionRepresentative).Bounty;
 		IsEnabled = true;
 		TargetIconType iconType = MultiplayerClassDivisions.GetMPHeroClassForPeer(TargetPeer).IconType;
-		CompassElement = new MPTeammateCompassTargetVM(iconType, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), BannerCode.CreateFrom(new Banner()), isAlly: true);
+		CompassElement = new MPTeammateCompassTargetVM(iconType, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), new Banner(), isAlly: true);
 		SelectedPerks = new MBBindingList<MPPerkVM>();
 		RefreshPerkSelection();
 		RefreshValues();

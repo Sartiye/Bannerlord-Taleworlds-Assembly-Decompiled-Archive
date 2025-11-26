@@ -334,7 +334,7 @@ public static class ServerInfoMessageExtensions
 		case ServerInfoMessage.CustomizationBadgeNotAvailable:
 			return new TextObject("{=HTFNfODt}You cannot pick a badge you have not earned.");
 		default:
-			return TextObject.Empty;
+			return TextObject.GetEmpty();
 		}
 	}
 }

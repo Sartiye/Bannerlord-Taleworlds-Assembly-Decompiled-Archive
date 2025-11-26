@@ -14,10 +14,10 @@ public class BehaviorRegroup : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		Vec2 direction = ((base.Formation.QuerySystem.ClosestEnemyFormation == null) ? base.Formation.Direction : (base.Formation.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2 - base.Formation.QuerySystem.AveragePosition).Normalized());
-		WorldPosition medianPosition = base.Formation.QuerySystem.MedianPosition;
-		medianPosition.SetVec2(base.Formation.QuerySystem.AveragePosition);
-		base.CurrentOrder = MovementOrder.MovementOrderMove(medianPosition);
+		Vec2 direction = ((base.Formation.CachedClosestEnemyFormation != null) ? (base.Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2 - base.Formation.CachedAveragePosition).Normalized() : base.Formation.Direction);
+		WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+		cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
+		base.CurrentOrder = MovementOrder.MovementOrderMove(cachedMedianPosition);
 		CurrentFacingOrder = FacingOrder.FacingOrderLookAtDirection(direction);
 	}
 
@@ -25,7 +25,7 @@ public class BehaviorRegroup : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.FacingOrder = CurrentFacingOrder;
+		base.Formation.SetFacingOrder(CurrentFacingOrder);
 	}
 
 	protected override float GetAiWeight()
@@ -36,6 +36,6 @@ public class BehaviorRegroup : BehaviorComponent
 			return 0f;
 		}
 		float behaviorCoherence = base.Formation.AI.ActiveBehavior.BehaviorCoherence;
-		return MBMath.Lerp(0.1f, 1.2f, MBMath.ClampFloat(behaviorCoherence * (querySystem.FormationIntegrityData.DeviationOfPositionsExcludeFarAgents + 1f) / (querySystem.IdealAverageDisplacement + 1f), 0f, 3f) / 3f);
+		return MBMath.Lerp(0.1f, 1.2f, MBMath.ClampFloat(behaviorCoherence * (base.Formation.CachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents + 1f) / (querySystem.IdealAverageDisplacement + 1f), 0f, 3f) / 3f);
 	}
 }

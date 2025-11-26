@@ -11,6 +11,6 @@ public class InventoryImageIdentifierWidget : ImageIdentifierWidget
 
 	public void SetRenderRequestedPreviousFrame(bool isRequested)
 	{
-		_isRenderRequestedPreviousFrame = isRequested;
+		_isRenderRequestedPreviousFrame = isRequested && IsRecursivelyVisible() && base.EventManager.AreaRectangle.IsCollide(in AreaRect);
 	}
 }

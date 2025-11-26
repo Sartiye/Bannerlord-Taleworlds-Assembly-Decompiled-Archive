@@ -66,6 +66,16 @@ public class EngineInputManager : IInputManager
 		return EngineApplicationInterface.IInput.GetMouseMoveY();
 	}
 
+	float IInputManager.GetNormalizedMouseMoveX()
+	{
+		return EngineApplicationInterface.IInput.GetMouseMoveX() / Screen.RealScreenResolutionWidth;
+	}
+
+	float IInputManager.GetNormalizedMouseMoveY()
+	{
+		return EngineApplicationInterface.IInput.GetMouseMoveY() / Screen.RealScreenResolutionHeight;
+	}
+
 	float IInputManager.GetGyroX()
 	{
 		return EngineApplicationInterface.IInput.GetGyroX();

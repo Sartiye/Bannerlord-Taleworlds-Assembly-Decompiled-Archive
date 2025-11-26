@@ -127,9 +127,11 @@ public class CompanionGrievanceBehavior : CampaignBehaviorBase
 
 	private Grievance _currentGrievance;
 
-	private const float _baseGrievanceFrequencyInHours = 100f;
+	private const int BaseGrievanceFrequencyInDays = 4;
 
-	private const float _grievanceObsolescenceDurationInWeeks = 8f;
+	private const int GrievanceObsolescenceDurationInDays = 56;
+
+	private const int GrievanceCooldownForSameTypeInDays = 1;
 
 	public override void RegisterEvents()
 	{
@@ -312,15 +314,29 @@ public class CompanionGrievanceBehavior : CampaignBehaviorBase
 
 	private void OnHourlyTick()
 	{
+		if (MobileParty.MainParty.IsCurrentlyAtSea || !(GameStateManager.Current.ActiveState is MapState) || MobileParty.MainParty.MapEvent != null || PlayerEncounter.Current != null)
+		{
+			return;
+		}
 		foreach (KeyValuePair<Hero, Grievance> heroGrievance in _heroGrievances)
 		{
 			Grievance value = heroGrievance.Value;
-			if (value.GrievingHero.PartyBelongedTo == MobileParty.MainParty && value.HaveGrievance && GameStateManager.Current.ActiveState is MapState && MobileParty.MainParty.MapEvent == null && PlayerEncounter.Current == null)
+			if (value.GrievingHero.PartyBelongedTo == MobileParty.MainParty && value.HaveGrievance)
 			{
 				_currentGrievance = value;
-				CampaignMapConversation.OpenConversation(new ConversationCharacterData(Hero.MainHero.CharacterObject), new ConversationCharacterData(value.GrievingHero.CharacterObject));
+				ConversationCharacterData playerCharacterData = new ConversationCharacterData(Hero.MainHero.CharacterObject, MobileParty.MainParty.Party);
+				ConversationCharacterData conversationPartnerData = new ConversationCharacterData(value.GrievingHero.CharacterObject);
+				if (PartyBase.MainParty.MobileParty.IsCurrentlyAtSea)
+				{
+					conversationPartnerData.Party = MobileParty.MainParty.Party;
+					CampaignMission.OpenConversationMission(playerCharacterData, conversationPartnerData);
+				}
+				else
+				{
+					CampaignMapConversation.OpenConversation(playerCharacterData, conversationPartnerData);
+				}
 				value.HaveGrievance = false;
-				value.NextGrievanceTime = CampaignTime.HoursFromNow(100f + (float)MBRandom.RandomInt(100));
+				value.NextGrievanceTime = CampaignTime.DaysFromNow(4 + MBRandom.RandomInt(4));
 				break;
 			}
 		}
@@ -328,7 +344,7 @@ public class CompanionGrievanceBehavior : CampaignBehaviorBase
 
 	private void DecideCompanionGrievances(GrievanceType eventType)
 	{
-		if (_nextGrievableTimeForComplaintType[(int)eventType].IsFuture)
+		if (_nextGrievableTimeForComplaintType[(int)eventType].IsFuture || MobileParty.MainParty.IsCurrentlyAtSea)
 		{
 			return;
 		}
@@ -342,14 +358,14 @@ public class CompanionGrievanceBehavior : CampaignBehaviorBase
 				{
 					value = new Grievance(item, CampaignTime.Now, grievanceTypeForCompanion);
 					_heroGrievances.Add(item, value);
-					_nextGrievableTimeForComplaintType[(int)eventType] = CampaignTime.HoursFromNow(100f);
+					_nextGrievableTimeForComplaintType[(int)eventType] = CampaignTime.DaysFromNow(4f);
 					break;
 				}
 			}
 			if (value != null && value.TypeOfGrievance == eventType && !value.HaveGrievance && value.NextGrievanceTime.IsPast)
 			{
 				value.HaveGrievance = true;
-				_nextGrievableTimeForComplaintType[(int)eventType] = CampaignTime.HoursFromNow(100f);
+				_nextGrievableTimeForComplaintType[(int)eventType] = CampaignTime.DaysFromNow(4f);
 				value.Count++;
 				break;
 			}
@@ -399,7 +415,7 @@ public class CompanionGrievanceBehavior : CampaignBehaviorBase
 		foreach (KeyValuePair<Hero, Grievance> heroGrievance in _heroGrievances)
 		{
 			Grievance value = heroGrievance.Value;
-			if (value.NextGrievanceTime.ElapsedWeeksUntilNow >= 8f)
+			if (value.NextGrievanceTime.ElapsedDaysUntilNow >= 56f)
 			{
 				value.HasBeenSettled = false;
 				value.Count = 0;

@@ -167,9 +167,9 @@ public class MultiplayerLobbyArmoryCosmeticItemButtonWidget : ButtonWidget
 		this.SetGlobalAlphaRecursively(num);
 	}
 
-	protected override void OnClick()
+	protected override void HandleClick()
 	{
-		base.OnClick();
+		base.HandleClick();
 		if (IsUnlocked)
 		{
 			HandleSoundEvent();
@@ -180,9 +180,9 @@ public class MultiplayerLobbyArmoryCosmeticItemButtonWidget : ButtonWidget
 		}
 	}
 
-	protected override void OnAlternateClick()
+	protected override void HandleAlternateClick()
 	{
-		base.OnAlternateClick();
+		base.HandleAlternateClick();
 		HandleSoundEvent();
 	}
 

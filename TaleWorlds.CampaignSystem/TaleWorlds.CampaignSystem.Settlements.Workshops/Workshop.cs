@@ -118,7 +118,8 @@ public class Workshop : SettlementArea
 
 	public override int GetHashCode()
 	{
-		return Settlement.GetHashCode() + _tag.GetHashCode();
+		int num = Settlement?.GetHashCode() ?? 0;
+		return (_tag != null) ? ((num * 397) ^ _tag.GetHashCode()) : num;
 	}
 
 	public void InitializeWorkshop(Hero owner, WorkshopType type)

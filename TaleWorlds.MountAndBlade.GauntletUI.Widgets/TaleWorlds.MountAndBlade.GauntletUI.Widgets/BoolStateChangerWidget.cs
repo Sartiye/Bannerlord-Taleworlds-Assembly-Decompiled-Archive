@@ -1,10 +1,13 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
-public class BoolStateChangerWidget : Widget
+public class BoolStateChangerWidget : BrushWidget
 {
+	private bool _isStateDirty;
+
 	private bool _booleanCheck;
 
 	private string _trueState;
@@ -28,7 +31,7 @@ public class BoolStateChangerWidget : Widget
 			{
 				_booleanCheck = value;
 				OnPropertyChanged(value, "BooleanCheck");
-				TriggerUpdated();
+				SetStateDirty();
 			}
 		}
 	}
@@ -46,6 +49,7 @@ public class BoolStateChangerWidget : Widget
 			{
 				_trueState = value;
 				OnPropertyChanged(value, "TrueState");
+				SetStateDirty();
 			}
 		}
 	}
@@ -63,6 +67,7 @@ public class BoolStateChangerWidget : Widget
 			{
 				_falseState = value;
 				OnPropertyChanged(value, "FalseState");
+				SetStateDirty();
 			}
 		}
 	}
@@ -80,6 +85,7 @@ public class BoolStateChangerWidget : Widget
 			{
 				_targetWidget = value;
 				OnPropertyChanged(value, "TargetWidget");
+				SetStateDirty();
 			}
 		}
 	}
@@ -97,6 +103,7 @@ public class BoolStateChangerWidget : Widget
 			{
 				_includeChildren = value;
 				OnPropertyChanged(value, "IncludeChildren");
+				SetStateDirty();
 			}
 		}
 	}
@@ -104,6 +111,16 @@ public class BoolStateChangerWidget : Widget
 	public BoolStateChangerWidget(UIContext context)
 		: base(context)
 	{
+	}
+
+	protected override void OnUpdate(float dt)
+	{
+		base.OnUpdate(dt);
+		if (_isStateDirty)
+		{
+			_isStateDirty = false;
+			UpdateState();
+		}
 	}
 
 	private void AddState(Widget widget, string state, bool includeChildren)
@@ -130,11 +147,21 @@ public class BoolStateChangerWidget : Widget
 		}
 	}
 
-	private void TriggerUpdated()
+	private void UpdateState()
 	{
-		string state = (BooleanCheck ? TrueState : FalseState);
+		string text = (BooleanCheck ? TrueState : FalseState);
+		if (text == null)
+		{
+			Debug.FailedAssert("State is null for BoolStateChangerWidget", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\BoolStateChangerWidget.cs", "UpdateState", 59);
+			return;
+		}
 		Widget widget = TargetWidget ?? this;
-		AddState(widget, state, IncludeChildren);
-		SetState(widget, state, IncludeChildren);
+		AddState(widget, text, IncludeChildren);
+		SetState(widget, text, IncludeChildren);
+	}
+
+	private void SetStateDirty()
+	{
+		_isStateDirty = true;
 	}
 }

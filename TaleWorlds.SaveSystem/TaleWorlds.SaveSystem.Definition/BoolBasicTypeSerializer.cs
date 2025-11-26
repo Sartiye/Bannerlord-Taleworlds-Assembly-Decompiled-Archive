@@ -13,4 +13,9 @@ internal class BoolBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadBool();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 1;
+	}
 }

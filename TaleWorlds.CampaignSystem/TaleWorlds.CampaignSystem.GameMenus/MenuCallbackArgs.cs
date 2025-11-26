@@ -11,13 +11,13 @@ public class MenuCallbackArgs
 
 	public TextObject Text;
 
-	public TextObject Tooltip = TextObject.Empty;
+	public TextObject Tooltip;
 
 	public GameMenuOption.IssueQuestFlags OptionQuestData;
 
 	public GameMenuOption.LeaveType optionLeaveType;
 
-	public TextObject MenuTitle = TextObject.Empty;
+	public TextObject MenuTitle;
 
 	public MenuContext MenuContext { get; private set; }
 

@@ -18,10 +18,11 @@ public class BattleSideSpawnPathSelector
 
 	public MBReadOnlyList<SpawnPathData> ReinforcementPaths => _reinforcementSpawnPaths;
 
-	public BattleSideSpawnPathSelector(Mission mission, Path initialPath, float initialPathCenterRatio, bool initialPathIsInverted)
+	public BattleSideSpawnPathSelector(Mission mission, Path initialPath, float initialPivotRatio, bool initialPathIsInverted)
 	{
 		_mission = mission;
-		_initialSpawnPath = new SpawnPathData(initialPath, SpawnPathOrientation.PathCenter, initialPathCenterRatio, initialPathIsInverted);
+		SpawnPathData.SnapMethod snapType = (mission.IsNavalBattle ? SpawnPathData.SnapMethod.SnapToWaterLevel : (mission.IsFieldBattle ? SpawnPathData.SnapMethod.SnapToTerrain : SpawnPathData.SnapMethod.DontSnap));
+		_initialSpawnPath = SpawnPathData.Create(_mission.Scene, initialPath, initialPivotRatio, initialPathIsInverted, snapType);
 		_reinforcementSpawnPaths = new MBList<SpawnPathData>();
 		FindReinforcementPaths();
 	}
@@ -38,7 +39,7 @@ public class BattleSideSpawnPathSelector
 	private void FindReinforcementPaths()
 	{
 		_reinforcementSpawnPaths.Clear();
-		SpawnPathData item = new SpawnPathData(_initialSpawnPath.Path, SpawnPathOrientation.Local, 0f, _initialSpawnPath.IsInverted);
+		SpawnPathData item = SpawnPathData.Create(_initialSpawnPath.Scene, _initialSpawnPath.Path, 0f, _initialSpawnPath.IsInverted);
 		_reinforcementSpawnPaths.Add(item);
 		MBList<Path> allSpawnPaths = MBSceneUtilities.GetAllSpawnPaths(_mission.Scene);
 		if (allSpawnPaths.Count == 0)
@@ -61,8 +62,8 @@ public class BattleSideSpawnPathSelector
 					MatrixFrame matrixFrame3 = array[item2.NumberOfPoints - 1];
 					float key = matrixFrame2.origin.DistanceSquared(matrixFrame.origin);
 					float key2 = matrixFrame3.origin.DistanceSquared(matrixFrame.origin);
-					sortedList.Add(key, new SpawnPathData(item2, SpawnPathOrientation.Local));
-					sortedList.Add(key2, new SpawnPathData(item2, SpawnPathOrientation.Local, 0f, isInverted: true));
+					sortedList.Add(key, SpawnPathData.Create(_initialSpawnPath.Scene, item2));
+					sortedList.Add(key2, SpawnPathData.Create(_initialSpawnPath.Scene, item2, 0f, isInverted: true));
 				}
 				else
 				{

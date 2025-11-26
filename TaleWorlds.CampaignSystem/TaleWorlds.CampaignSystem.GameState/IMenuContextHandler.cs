@@ -19,6 +19,8 @@ public interface IMenuContextHandler
 
 	void OnMenuActivate();
 
+	void OnMenuRefresh();
+
 	void OnHourlyTick();
 
 	void OnPanelSoundIDSet(string panelSoundID);

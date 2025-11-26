@@ -41,10 +41,10 @@ public class ClanPartyRoleSelectionPopupWidget : AutoClosePopupWidget
 		{
 			base.IsVisible = base.EventManager.LatestMouseUpWidget == this || CheckIsMyChildRecursive(base.EventManager.LatestMouseUpWidget);
 			CheckClosingWidgetsAndUpdateVisibility();
-			if (!base.IsVisible)
-			{
-				ActiveToggleWidget = null;
-			}
+		}
+		if (!base.IsVisible)
+		{
+			ActiveToggleWidget = null;
 		}
 		_lastCheckedMouseUpWidget = base.EventManager.LatestMouseUpWidget;
 	}

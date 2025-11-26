@@ -20,7 +20,12 @@ public class VillageMarketData : IMarketData
 		{
 			if (_closestTown == null)
 			{
-				_closestTown = SettlementHelper.FindNearestTown(null, _village.Settlement);
+				MobileParty.NavigationType navCapabilities = MobileParty.NavigationType.All;
+				if (_village.VillagerPartyComponent != null)
+				{
+					navCapabilities = _village.VillagerPartyComponent.MobileParty.NavigationCapability;
+				}
+				_closestTown = SettlementHelper.FindNearestTownToSettlement(_village.Settlement, navCapabilities).Settlement;
 			}
 			return _closestTown;
 		}

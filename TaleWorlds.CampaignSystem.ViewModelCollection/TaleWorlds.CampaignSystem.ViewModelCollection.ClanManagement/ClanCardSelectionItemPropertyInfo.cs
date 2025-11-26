@@ -40,6 +40,6 @@ public readonly struct ClanCardSelectionItemPropertyInfo
 			obj.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
 			return obj;
 		}
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 }

@@ -69,7 +69,7 @@ internal class CampaignBehaviorDataStore
 		campaignBehavior.SyncData(behaviorSaveData);
 		if (_behaviorDict.ContainsKey(stringId))
 		{
-			Debug.FailedAssert("trying to save multiple behaviors with the same stringid: " + stringId, "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviorDataStore.cs", "SaveBehaviorData", 75);
+			Debug.FailedAssert("trying to save multiple behaviors with the same stringid: " + stringId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviorDataStore.cs", "SaveBehaviorData", 83);
 			_behaviorDict[stringId] = behaviorSaveData;
 		}
 		else

@@ -1,3 +1,4 @@
+using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -21,6 +22,12 @@ public class SceneWidget : TextureWidget
 
 	private float _titleChangeTotalTimeInSeconds = 2f;
 
+	private float _fadeInTimer;
+
+	private bool _isFadingIn;
+
+	private Sprite _cachedOverlaySprite;
+
 	private object _scene;
 
 	private ButtonWidget _cancelButton;
@@ -34,6 +41,8 @@ public class SceneWidget : TextureWidget
 	private TextWidget _titleTextWidget;
 
 	private float _endProgress;
+
+	private float _fadeInDuration;
 
 	private string _affirmativeTitleText;
 
@@ -78,6 +87,7 @@ public class SceneWidget : TextureWidget
 				if (value != null)
 				{
 					_isTargetSizeDirty = true;
+					_clickToContinueStartTime = base.EventManager.Time;
 					ResetStates();
 				}
 			}
@@ -206,6 +216,23 @@ public class SceneWidget : TextureWidget
 	}
 
 	[Editor(false)]
+	public float FadeInDuration
+	{
+		get
+		{
+			return _fadeInDuration;
+		}
+		set
+		{
+			if (value != _fadeInDuration)
+			{
+				_fadeInDuration = value;
+				OnPropertyChanged(value, "FadeInDuration");
+			}
+		}
+	}
+
+	[Editor(false)]
 	public bool IsOkShown
 	{
 		get
@@ -310,6 +337,11 @@ public class SceneWidget : TextureWidget
 		if (Scene != null && !IsReady)
 		{
 			IsReady = (bool?)GetTextureProviderProperty("IsReady") == true;
+			if (IsReady)
+			{
+				_fadeInTimer = FadeInDuration;
+				_isFadingIn = true;
+			}
 		}
 		if (_isInClickToContinueState)
 		{
@@ -337,6 +369,48 @@ public class SceneWidget : TextureWidget
 		FadeImageWidget.AlphaFactor = (IsReady ? EndProgress : 1f);
 		PreparingVisualWidget.IsVisible = !IsReady;
 		_prevIsClickToContinueActive = _isClickToContinueActive;
+		if (FadeInDuration == 0f || _fadeInTimer < 0f)
+		{
+			_isFadingIn = false;
+		}
+		else
+		{
+			_fadeInTimer -= dt;
+		}
+	}
+
+	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
+	{
+		base.OnRender(twoDimensionContext, drawContext);
+		if (_isFadingIn)
+		{
+			float ratio = Mathf.Clamp(_fadeInTimer / FadeInDuration, 0f, 1f);
+			ratio = AnimationInterpolation.Ease(AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint, ratio);
+			RenderFadeOverlay(twoDimensionContext, drawContext, ratio);
+		}
+	}
+
+	private void RenderFadeOverlay(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext, float ratio)
+	{
+		if (_cachedOverlaySprite == null)
+		{
+			_cachedOverlaySprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		}
+		if (_cachedOverlaySprite == null)
+		{
+			Debug.FailedAssert("Failed to find overlay sprite for scene fade", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\SceneWidget.cs", "RenderFadeOverlay", 118);
+			return;
+		}
+		Texture texture = _cachedOverlaySprite.Texture;
+		SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
+		simpleMaterial.Texture = texture;
+		simpleMaterial.Color = Color.FromUint(4278190080u);
+		simpleMaterial.ColorFactor = 1f;
+		simpleMaterial.AlphaFactor = ratio;
+		simpleMaterial.HueFactor = 0f;
+		simpleMaterial.SaturationFactor = 0f;
+		simpleMaterial.ValueFactor = 0f;
+		drawContext.DrawSprite(_cachedOverlaySprite, simpleMaterial, in AreaRect, base._scaleToUse);
 	}
 
 	private void UpdateVisibilityOfWidgetBasedOnAlpha(BrushWidget widget)
@@ -344,10 +418,12 @@ public class SceneWidget : TextureWidget
 		widget.IsVisible = !widget.ReadOnlyBrush.GlobalAlphaFactor.ApproximatelyEqualsTo(0f, 0.01f);
 	}
 
-	protected override void OnMousePressed()
+	protected override void OnMouseReleased()
 	{
-		base.OnMousePressed();
-		if (_isClickToContinueActive)
+		base.OnMouseReleased();
+		ref Rectangle2D areaRectangle = ref base.EventManager.AreaRectangle;
+		Vector2 point = base.EventManager.MousePosition;
+		if (areaRectangle.IsPointInside(in point) && _isClickToContinueActive)
 		{
 			EventFired("Close");
 			ResetStates();
@@ -373,6 +449,7 @@ public class SceneWidget : TextureWidget
 		_titleChangeStartTime = -1f;
 		_currentTitleTextToUpdateTo = string.Empty;
 		TitleTextWidget.SetAlpha(1f);
+		_clickToContinueStartTime = base.EventManager.Time;
 	}
 
 	private void OnAffirmativeButtonClick(Widget obj)

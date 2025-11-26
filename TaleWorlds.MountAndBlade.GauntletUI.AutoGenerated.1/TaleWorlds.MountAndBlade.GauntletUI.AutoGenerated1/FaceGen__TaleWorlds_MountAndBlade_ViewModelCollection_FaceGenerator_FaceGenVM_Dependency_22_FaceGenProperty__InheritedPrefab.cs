@@ -89,7 +89,8 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.ToTarget = _widget_3_0_3;
 		_widget_2.TrackedWidget = _widget_3_0_3;
 		_widget_2.ScrollTarget = _widget;
-		_widget_2.ScrollYOffset = 50;
+		_widget_2.AutoScrollTopOffset = 50;
+		_widget_2.AutoScrollBottomOffset = 50;
 		_widget_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_3.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_3.SuggestedWidth = 367f;
@@ -175,6 +176,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_3_0.EventFire -= EventListenerOf_widget_3_0;
 			_widget_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0;
@@ -191,6 +193,14 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 	public virtual void SetDataSource(FaceGenPropertyVM dataSource)
 	{
 		RefreshDataSource_datasource_Root(dataSource);
+	}
+
+	private void EventListenerOf_widget_3_0(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "MousePressed")
+		{
+			_datasource_Root.AddCommand();
+		}
 	}
 
 	private void PropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -464,6 +474,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_3_0.EventFire -= EventListenerOf_widget_3_0;
 			_widget_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0;
@@ -511,6 +522,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 			_widget_3_0.MinValueFloat = _datasource_Root.Min;
 			_widget_3_0.ValueFloat = _datasource_Root.Value;
 			_widget_3_0.IsDiscrete = _datasource_Root.IsDiscrete;
+			_widget_3_0.EventFire += EventListenerOf_widget_3_0;
 			_widget_3_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0;

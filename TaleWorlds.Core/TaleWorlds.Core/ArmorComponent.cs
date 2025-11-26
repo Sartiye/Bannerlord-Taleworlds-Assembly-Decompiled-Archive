@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Xml;
 using TaleWorlds.ObjectSystem;
 
@@ -103,6 +104,8 @@ public class ArmorComponent : ItemComponent
 
 	public HorseTailCoverTypes TailCoverType { get; private set; }
 
+	public int StealthFactor { get; private set; }
+
 	public string ReinsMesh { get; private set; }
 
 	public string ReinsRopeMesh => ReinsMesh + "_rope";
@@ -133,7 +136,8 @@ public class ArmorComponent : ItemComponent
 			SpeedBonus = SpeedBonus,
 			ChargeBonus = ChargeBonus,
 			FamilyType = FamilyType,
-			ReinsMesh = ReinsMesh
+			ReinsMesh = ReinsMesh,
+			StealthFactor = StealthFactor
 		};
 	}
 
@@ -185,6 +189,7 @@ public class ArmorComponent : ItemComponent
 		BeardCoverType = ((node.Attributes["beard_cover_type"] != null) ? ((BeardCoverTypes)Enum.Parse(typeof(BeardCoverTypes), node.Attributes["beard_cover_type"].Value, ignoreCase: true)) : BeardCoverTypes.None);
 		ManeCoverType = ((node.Attributes["mane_cover_type"] != null) ? ((HorseHarnessCoverTypes)Enum.Parse(typeof(HorseHarnessCoverTypes), node.Attributes["mane_cover_type"].Value, ignoreCase: true)) : HorseHarnessCoverTypes.None);
 		TailCoverType = ((node.Attributes["tail_cover_type"] != null) ? ((HorseTailCoverTypes)Enum.Parse(typeof(HorseTailCoverTypes), node.Attributes["tail_cover_type"].Value, ignoreCase: true)) : HorseTailCoverTypes.None);
+		StealthFactor = ((node.Attributes["stealth_factor"] != null) ? int.Parse(node.Attributes["stealth_factor"].InnerText, CultureInfo.InvariantCulture.NumberFormat) : 0);
 		ReinsMesh = ((node.Attributes["reins_mesh"] != null) ? node.Attributes["reins_mesh"].Value : "");
 		bool num = node.Attributes["covers_head"] != null && Convert.ToBoolean(node.Attributes["covers_head"].Value);
 		bool flag = node.Attributes["covers_body"] != null && Convert.ToBoolean(node.Attributes["covers_body"].Value);

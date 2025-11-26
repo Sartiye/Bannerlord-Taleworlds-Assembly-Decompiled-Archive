@@ -39,7 +39,7 @@ public class Markable : ScriptComponentBehavior
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		_marker = GameEntity.Instantiate(Mission.Current.Scene, "highlight_beam", base.GameEntity.GetGlobalFrame());
+		_marker = TaleWorlds.Engine.GameEntity.Instantiate(Mission.Current.Scene, "highlight_beam", base.GameEntity.GetGlobalFrame());
 		DeactivateMarker();
 		_destructibleComponent = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
 		SetScriptComponentToTick(GetTickRequirement());

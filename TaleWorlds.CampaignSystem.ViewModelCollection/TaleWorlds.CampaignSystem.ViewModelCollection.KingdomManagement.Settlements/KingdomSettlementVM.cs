@@ -412,8 +412,13 @@ public class KingdomSettlementVM : KingdomCategoryVM
 		Settlements = new MBBindingList<KingdomSettlementItemVM>();
 		RefreshSettlementList();
 		base.NotificationCount = 0;
-		SettlementSortController = new KingdomSettlementSortControllerVM(ref _settlements);
+		SettlementSortController = new KingdomSettlementSortControllerVM(Settlements);
 		RefreshValues();
+	}
+
+	protected virtual KingdomSettlementItemVM CreateSettlementItemVM(Settlement settlement, Action<KingdomSettlementItemVM> onSelect)
+	{
+		return new KingdomSettlementItemVM(settlement, onSelect);
 	}
 
 	public override void RefreshValues()
@@ -444,9 +449,10 @@ public class KingdomSettlementVM : KingdomCategoryVM
 		Settlements.Clear();
 		if (_kingdom != null)
 		{
-			foreach (Settlement item in _kingdom.Settlements.Where((Settlement S) => S.IsCastle || S.IsTown))
+			foreach (Settlement item2 in _kingdom.Settlements.Where((Settlement S) => S.IsCastle || S.IsTown))
 			{
-				_settlements.Add(new KingdomSettlementItemVM(item, OnSettlementSelection));
+				KingdomSettlementItemVM item = CreateSettlementItemVM(item2, OnSettlementSelection);
+				Settlements.Add(item);
 			}
 		}
 		if (Settlements.Count > 0)
@@ -476,7 +482,7 @@ public class KingdomSettlementVM : KingdomCategoryVM
 				AnnexCost = 0;
 				AnnexText = GameTexts.FindText("str_resolve").ToString();
 				AnnexActionExplanationText = GameTexts.FindText("str_resolve_explanation").ToString();
-				AnnexHint.HintText = TextObject.Empty;
+				AnnexHint.HintText = TextObject.GetEmpty();
 			}
 			else if (settlementItem.Owner.Hero == Hero.MainHero)
 			{
@@ -518,17 +524,14 @@ public class KingdomSettlementVM : KingdomCategoryVM
 				{
 					CanAnnexCurrentSettlement = true;
 					HasCost = false;
-					AnnexHint.HintText = TextObject.Empty;
+					AnnexHint.HintText = TextObject.GetEmpty();
 				}
 			}
 			else
 			{
 				AnnexText = GameTexts.FindText("str_policy_propose").ToString();
 				AnnexCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfAnnexation(Clan.PlayerClan);
-				string arg = GameTexts.FindText("str_annex_fief_action_explanation").ToString();
-				int num = CalculateLikelihood(settlementItem.Settlement);
-				arg = $"{arg} ({num}%)";
-				AnnexActionExplanationText = arg;
+				AnnexActionExplanationText = GameTexts.FindText("str_annex_fief_action_explanation").SetTextVariable("SUPPORT", CalculateLikelihood(settlementItem.Settlement)).ToString();
 				CanAnnexCurrentSettlement = GetCanAnnexSettlementWithReason(AnnexCost, out var disabledReason);
 				AnnexHint.HintText = disabledReason;
 				HasCost = true;
@@ -559,7 +562,7 @@ public class KingdomSettlementVM : KingdomCategoryVM
 			disabledReason = GameTexts.FindText("str_cannot_annex_while_mercenary");
 			return false;
 		}
-		disabledReason = TextObject.Empty;
+		disabledReason = TextObject.GetEmpty();
 		return true;
 	}
 

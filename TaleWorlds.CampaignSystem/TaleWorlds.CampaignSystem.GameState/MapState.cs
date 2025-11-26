@@ -1,5 +1,7 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -9,6 +11,8 @@ namespace TaleWorlds.CampaignSystem.GameState;
 
 public class MapState : TaleWorlds.Core.GameState
 {
+	private Incident _nextIncident;
+
 	private MenuContext _menuContext;
 
 	private bool _mapConversationActive;
@@ -18,6 +22,18 @@ public class MapState : TaleWorlds.Core.GameState
 	private IMapStateHandler _handler;
 
 	private BattleSimulation _battleSimulation;
+
+	public Incident NextIncident
+	{
+		get
+		{
+			return _nextIncident;
+		}
+		set
+		{
+			_nextIncident = value;
+		}
+	}
 
 	public MenuContext MenuContext
 	{
@@ -82,6 +98,11 @@ public class MapState : TaleWorlds.Core.GameState
 		RefreshHandler();
 	}
 
+	public void OnFadeInAndOut(float fadeOutTime, float blackTime, float fadeInTime)
+	{
+		Handler?.OnFadeInAndOut(fadeOutTime, blackTime, fadeInTime);
+	}
+
 	public void OnDispersePlayerLeadedArmy()
 	{
 		RefreshHandler();
@@ -92,29 +113,37 @@ public class MapState : TaleWorlds.Core.GameState
 		RefreshHandler();
 	}
 
+	public void StartIncident(Incident incident)
+	{
+		Handler?.OnIncidentStarted(incident);
+	}
+
 	public void OnMainPartyEncounter()
 	{
 		Handler?.OnMainPartyEncounter();
 	}
 
-	public void ProcessTravel(Vec2 point)
+	public void ProcessTravel(CampaignVec2 moveTargetPoint)
 	{
-		MobileParty.MainParty.Ai.ForceAiNoPathMode = false;
-		MobileParty.MainParty.Ai.SetMoveGoToPoint(point);
-	}
-
-	public void ProcessTravel(PartyBase party)
-	{
-		if (party.IsMobile)
+		MobileParty.MainParty.ForceAiNoPathMode = false;
+		NavigationHelper.EmbarkDisembarkData embarkDisembarkData = NavigationHelper.EmbarkDisembarkData.Invalid;
+		if (MobileParty.MainParty.HasNavalNavigationCapability)
 		{
-			MobileParty.MainParty.Ai.SetMoveEngageParty(party.MobileParty);
+			Vec2 direction = (moveTargetPoint.ToVec2() - MobileParty.MainParty.Position.ToVec2()).Normalized();
+			embarkDisembarkData = NavigationHelper.GetEmbarkAndDisembarkDataForPlayer(MobileParty.MainParty.Position, direction, moveTargetPoint, moveTargetPoint.IsOnLand);
+			if (embarkDisembarkData.IsTargetingTheDeadZone)
+			{
+				moveTargetPoint = (MobileParty.MainParty.IsTransitionInProgress ? embarkDisembarkData.TransitionEndPosition : embarkDisembarkData.TransitionStartPosition);
+			}
 		}
-		else
+		if (NavigationHelper.CanPlayerNavigateToPosition(moveTargetPoint, out var navigationType))
 		{
-			MobileParty.MainParty.Ai.SetMoveGoToSettlement(party.Settlement);
+			MobileParty.MainParty.SetMoveGoToPoint(moveTargetPoint, navigationType);
 		}
-		Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppablePlay;
-		MobileParty.MainParty.Ai.ForceAiNoPathMode = false;
+		if (MobileParty.MainParty.HasNavalNavigationCapability && !embarkDisembarkData.IsTargetingTheDeadZone && navigationType == MobileParty.NavigationType.Naval && MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.IsTransitionInProgress)
+		{
+			MobileParty.MainParty.CancelNavigationTransition();
+		}
 	}
 
 	protected override void OnTick(float dt)
@@ -179,6 +208,7 @@ public class MapState : TaleWorlds.Core.GameState
 			Campaign.Current.CurrentMenuContext.GameMenu.StartWait();
 		}
 		Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;
+		_handler?.OnGameLoadFinished();
 	}
 
 	public void OnMapConversationStarts(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData)
@@ -212,7 +242,10 @@ public class MapState : TaleWorlds.Core.GameState
 	protected override void OnActivate()
 	{
 		base.OnActivate();
-		MenuContext?.Refresh();
+		if (!Campaign.Current.ConversationManager.IsConversationFlowActive)
+		{
+			MenuContext?.Refresh();
+		}
 		RefreshHandler();
 	}
 

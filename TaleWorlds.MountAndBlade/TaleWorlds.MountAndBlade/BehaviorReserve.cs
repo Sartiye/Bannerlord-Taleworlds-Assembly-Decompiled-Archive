@@ -19,8 +19,8 @@ public class BehaviorReserve : BehaviorComponent
 		WorldPosition position;
 		if (formation != null)
 		{
-			position = formation.QuerySystem.MedianPosition;
-			Vec2 vec = (base.Formation.QuerySystem.Team.AverageEnemyPosition - formation.QuerySystem.MedianPosition.AsVec2).Normalized();
+			position = formation.CachedMedianPosition;
+			Vec2 vec = (base.Formation.QuerySystem.Team.AverageEnemyPosition - formation.CachedMedianPosition.AsVec2).Normalized();
 			position.SetVec2(position.AsVec2 - vec * (40f + base.Formation.Depth));
 		}
 		else
@@ -31,7 +31,7 @@ public class BehaviorReserve : BehaviorComponent
 			{
 				if (item.CountOfUnits > 0 && item != base.Formation)
 				{
-					zero += item.QuerySystem.MedianPosition.AsVec2;
+					zero += item.CachedMedianPosition.AsVec2;
 					num++;
 				}
 			}
@@ -47,11 +47,11 @@ public class BehaviorReserve : BehaviorComponent
 			{
 				if (item2.CountOfUnits > 0 && item2 != base.Formation)
 				{
-					float num3 = zero.DistanceSquared(item2.QuerySystem.MedianPosition.AsVec2);
+					float num3 = zero.DistanceSquared(item2.CachedMedianPosition.AsVec2);
 					if (num3 < num2)
 					{
 						num2 = num3;
-						worldPosition = item2.QuerySystem.MedianPosition;
+						worldPosition = item2.CachedMedianPosition;
 					}
 				}
 			}
@@ -72,10 +72,10 @@ public class BehaviorReserve : BehaviorComponent
 	{
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
-		base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
-		base.Formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
-		base.Formation.FormOrder = FormOrder.FormOrderWider;
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetFacingOrder(FacingOrder.FacingOrderLookAtEnemy);
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
+		base.Formation.SetFormOrder(FormOrder.FormOrderWider);
 	}
 
 	protected override float GetAiWeight()

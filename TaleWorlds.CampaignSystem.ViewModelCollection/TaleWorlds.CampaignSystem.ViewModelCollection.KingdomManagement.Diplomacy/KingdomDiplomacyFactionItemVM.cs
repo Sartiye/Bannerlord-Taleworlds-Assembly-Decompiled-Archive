@@ -1,4 +1,4 @@
-using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
@@ -8,7 +8,7 @@ public class KingdomDiplomacyFactionItemVM : ViewModel
 {
 	private HintViewModel _hint;
 
-	private ImageIdentifierVM _visual;
+	private BannerImageIdentifierVM _visual;
 
 	[DataSourceProperty]
 	public HintViewModel Hint
@@ -28,7 +28,7 @@ public class KingdomDiplomacyFactionItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Visual
+	public BannerImageIdentifierVM Visual
 	{
 		get
 		{
@@ -47,6 +47,6 @@ public class KingdomDiplomacyFactionItemVM : ViewModel
 	public KingdomDiplomacyFactionItemVM(IFaction faction)
 	{
 		Hint = new HintViewModel(faction.Name);
-		Visual = new ImageIdentifierVM(BannerCode.CreateFrom(faction.Banner), nineGrid: true);
+		Visual = new BannerImageIdentifierVM(faction.Banner, nineGrid: true);
 	}
 }

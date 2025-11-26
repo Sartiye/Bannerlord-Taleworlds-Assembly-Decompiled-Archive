@@ -20,8 +20,6 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 
 	private float _positionTimer;
 
-	private SettlementNameplateItemWidget _currentNameplate;
-
 	private bool _updatePositionNextFrame;
 
 	private TutorialAnimState _tutorialAnimState;
@@ -44,8 +42,6 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 
 	private bool _isTargetedByTutorial;
 
-	private int _nameplateType = -1;
-
 	private int _relationType = -1;
 
 	private int _wSign;
@@ -56,11 +52,11 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 
 	private bool _isInRange;
 
-	private SettlementNameplateItemWidget _smallNameplateWidget;
+	private bool _canParley;
 
-	private SettlementNameplateItemWidget _normalNameplateWidget;
+	private bool _hasPort;
 
-	private SettlementNameplateItemWidget _bigNameplateWidget;
+	private SettlementNameplateItemWidget _nameplateItem;
 
 	private ListPanel _notificationListPanel;
 
@@ -183,19 +179,34 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 		}
 	}
 
-	public int NameplateType
+	public bool CanParley
 	{
 		get
 		{
-			return _nameplateType;
+			return _canParley;
 		}
 		set
 		{
-			if (_nameplateType != value)
+			if (_canParley != value)
 			{
-				_nameplateType = value;
-				OnPropertyChanged(value, "NameplateType");
-				SetNameplateTypeVisual(value);
+				_canParley = value;
+				OnPropertyChanged(value, "CanParley");
+			}
+		}
+	}
+
+	public bool HasPort
+	{
+		get
+		{
+			return _hasPort;
+		}
+		set
+		{
+			if (value != _hasPort)
+			{
+				_hasPort = value;
+				OnPropertyChanged(value, "HasPort");
 			}
 		}
 	}
@@ -265,6 +276,22 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 		}
 	}
 
+	public SettlementNameplateItemWidget NameplateItem
+	{
+		get
+		{
+			return _nameplateItem;
+		}
+		set
+		{
+			if (_nameplateItem != value)
+			{
+				_nameplateItem = value;
+				OnPropertyChanged(value, "NameplateItem");
+			}
+		}
+	}
+
 	public ListPanel NotificationListPanel
 	{
 		get
@@ -299,54 +326,6 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 		}
 	}
 
-	public SettlementNameplateItemWidget SmallNameplateWidget
-	{
-		get
-		{
-			return _smallNameplateWidget;
-		}
-		set
-		{
-			if (_smallNameplateWidget != value)
-			{
-				_smallNameplateWidget = value;
-				OnPropertyChanged(value, "SmallNameplateWidget");
-			}
-		}
-	}
-
-	public SettlementNameplateItemWidget NormalNameplateWidget
-	{
-		get
-		{
-			return _normalNameplateWidget;
-		}
-		set
-		{
-			if (_normalNameplateWidget != value)
-			{
-				_normalNameplateWidget = value;
-				OnPropertyChanged(value, "NormalNameplateWidget");
-			}
-		}
-	}
-
-	public SettlementNameplateItemWidget BigNameplateWidget
-	{
-		get
-		{
-			return _bigNameplateWidget;
-		}
-		set
-		{
-			if (_bigNameplateWidget != value)
-			{
-				_bigNameplateWidget = value;
-				OnPropertyChanged(value, "BigNameplateWidget");
-			}
-		}
-	}
-
 	public SettlementNameplateWidget(UIContext context)
 		: base(context)
 	{
@@ -355,11 +334,11 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 	protected override void OnParallelUpdate(float dt)
 	{
 		base.OnParallelUpdate(dt);
-		SettlementNameplateItemWidget currentNameplate = _currentNameplate;
-		currentNameplate?.ParallelUpdate(dt);
-		if (currentNameplate != null && _cachedItemSize != currentNameplate.Size)
+		SettlementNameplateItemWidget nameplateItem = NameplateItem;
+		nameplateItem?.ParallelUpdate(dt);
+		if (nameplateItem != null && _cachedItemSize != nameplateItem.Size)
 		{
-			_cachedItemSize = currentNameplate.Size;
+			_cachedItemSize = nameplateItem.Size;
 			ListPanel eventsListPanel = _eventsListPanel;
 			ListPanel notificationListPanel = _notificationListPanel;
 			if (eventsListPanel != null)
@@ -383,60 +362,58 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 
 	private void UpdatePosition(float dt)
 	{
-		SettlementNameplateItemWidget currentNameplate = _currentNameplate;
-		MapEventVisualBrushWidget mapEventVisualBrushWidget = currentNameplate?.MapEventVisualWidget;
-		if (currentNameplate == null || mapEventVisualBrushWidget == null)
+		SettlementNameplateItemWidget nameplateItem = NameplateItem;
+		MapEventVisualBrushWidget mapEventVisualBrushWidget = nameplateItem?.MapEventVisualWidget;
+		if (nameplateItem == null || mapEventVisualBrushWidget == null)
 		{
-			Debug.FailedAssert("Related widget null on UpdatePosition!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdatePosition", 105);
+			Debug.FailedAssert("Related widget null on UpdatePosition!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdatePosition", 104);
 			return;
 		}
 		bool flag = false;
 		_positionTimer += dt;
 		if (IsVisibleOnMap || _positionTimer < 2f)
 		{
-			float x = base.Context.EventManager.PageSize.X;
-			float y = base.Context.EventManager.PageSize.Y;
-			Vec2 position = Position;
-			if (IsTracked)
+			float num = Position.X - base.Size.X / 2f - base.ScaledMarginLeft;
+			float num2 = Position.X + base.Size.X / 2f + base.ScaledMarginRight;
+			float num3 = Position.Y - base.Size.Y - base.ScaledMarginTop;
+			float num4 = Position.Y + base.ScaledMarginBottom;
+			bool flag2 = WSign > 0 && num > 0f && num2 < base.Context.EventManager.PageSize.X && num3 > 0f && num4 < base.Context.EventManager.PageSize.Y;
+			if (IsTracked && !flag2)
 			{
-				if (WSign > 0 && position.x - base.Size.X / 2f > 0f && position.x + base.Size.X / 2f < x && position.y > 0f && position.y + base.Size.Y < y)
+				Vec2 vec = new Vec2(num, num3);
+				Vector2 vector = base.Context.EventManager.PageSize - base.Size;
+				vector.X -= base.ScaledMarginLeft + base.ScaledMarginRight;
+				vector.Y -= base.ScaledMarginTop + base.ScaledMarginBottom;
+				Vec2 vec2 = vector / 2f;
+				vec -= vec2;
+				if (WSign < 0)
 				{
-					base.ScaledPositionXOffset = position.x - base.Size.X / 2f;
-					base.ScaledPositionYOffset = position.y - base.Size.Y;
+					vec *= -1f;
 				}
-				else
+				float radian = Mathf.Atan2(vec.y, vec.x) - System.MathF.PI / 2f;
+				float num5 = Mathf.Cos(radian);
+				float num6 = Mathf.Sin(radian);
+				float num7 = num5 / num6;
+				Vec2 vec3 = vec2 * 1f;
+				vec = ((num5 > 0f) ? new Vec2((0f - vec3.y) / num7, vec2.y) : new Vec2(vec3.y / num7, 0f - vec2.y));
+				if (vec.x > vec3.x)
 				{
-					Vec2 vec = new Vec2(x / 2f, y / 2f);
-					position -= vec;
-					if (WSign < 0)
-					{
-						position *= -1f;
-					}
-					float radian = Mathf.Atan2(position.y, position.x) - System.MathF.PI / 2f;
-					float num = Mathf.Cos(radian);
-					float num2 = Mathf.Sin(radian);
-					float num3 = num / num2;
-					Vec2 vec2 = vec * 1f;
-					position = ((num > 0f) ? new Vec2((0f - vec2.y) / num3, vec.y) : new Vec2(vec2.y / num3, 0f - vec.y));
-					if (position.x > vec2.x)
-					{
-						position = new Vec2(vec2.x, (0f - vec2.x) * num3);
-					}
-					else if (position.x < 0f - vec2.x)
-					{
-						position = new Vec2(0f - vec2.x, vec2.x * num3);
-					}
-					position += vec;
-					flag = position.y - base.Size.Y - mapEventVisualBrushWidget.Size.Y <= 0f;
-					base.ScaledPositionXOffset = Mathf.Clamp(position.x - base.Size.X / 2f, 0f, x - currentNameplate.Size.X);
-					base.ScaledPositionYOffset = Mathf.Clamp(position.y - base.Size.Y, 0f, y - (currentNameplate.Size.Y + 55f));
+					vec = new Vec2(vec3.x, (0f - vec3.x) * num7);
 				}
+				else if (vec.x < 0f - vec3.x)
+				{
+					vec = new Vec2(0f - vec3.x, vec3.x * num7);
+				}
+				vec += vec2;
+				base.ScaledPositionXOffset = Mathf.Clamp(vec.x, 0f, vector.X);
+				base.ScaledPositionYOffset = Mathf.Clamp(vec.y, 0f, vector.Y);
 			}
 			else
 			{
-				base.ScaledPositionXOffset = position.x - base.Size.X / 2f;
-				base.ScaledPositionYOffset = position.y - base.Size.Y;
+				base.ScaledPositionXOffset = num;
+				base.ScaledPositionYOffset = num3;
 			}
+			flag = base.ScaledPositionYOffset - mapEventVisualBrushWidget.Size.Y < 0f;
 		}
 		if (flag)
 		{
@@ -502,45 +479,20 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 		}
 	}
 
-	private void SetNameplateTypeVisual(int type)
-	{
-		if (_currentNameplate == null)
-		{
-			SmallNameplateWidget.IsVisible = false;
-			NormalNameplateWidget.IsVisible = false;
-			BigNameplateWidget.IsVisible = false;
-			switch (type)
-			{
-			case 0:
-				_currentNameplate = SmallNameplateWidget;
-				SmallNameplateWidget.IsVisible = true;
-				break;
-			case 1:
-				_currentNameplate = NormalNameplateWidget;
-				NormalNameplateWidget.IsVisible = true;
-				break;
-			case 2:
-				_currentNameplate = BigNameplateWidget;
-				BigNameplateWidget.IsVisible = true;
-				break;
-			}
-		}
-	}
-
 	private void SetNameplateRelationType(int type)
 	{
-		if (_currentNameplate != null)
+		if (NameplateItem != null)
 		{
 			switch (type)
 			{
 			case 0:
-				_currentNameplate.Color = Color.Black;
+				NameplateItem.Color = Color.Black;
 				break;
 			case 1:
-				_currentNameplate.Color = Color.ConvertStringToColor("#245E05FF");
+				NameplateItem.Color = Color.ConvertStringToColor("#245E05FF");
 				break;
 			case 2:
-				_currentNameplate.Color = Color.ConvertStringToColor("#870707FF");
+				NameplateItem.Color = Color.ConvertStringToColor("#870707FF");
 				break;
 			}
 		}
@@ -548,39 +500,44 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 
 	private void UpdateNameplateTransparencyAndBrightness(float dt)
 	{
-		SettlementNameplateItemWidget currentNameplate = _currentNameplate;
-		TextWidget textWidget = currentNameplate?.SettlementNameTextWidget;
-		MaskedTextureWidget maskedTextureWidget = currentNameplate?.SettlementBannerWidget;
-		GridWidget gridWidget = currentNameplate?.SettlementPartiesGridWidget;
-		Widget widget = currentNameplate?.SettlementNameplateInspectedWidget;
+		SettlementNameplateItemWidget nameplateItem = NameplateItem;
+		TextWidget textWidget = nameplateItem?.SettlementNameTextWidget;
+		MaskedTextureWidget maskedTextureWidget = nameplateItem?.SettlementBannerWidget;
+		GridWidget gridWidget = nameplateItem?.SettlementPartiesGridWidget;
+		Widget widget = nameplateItem?.InspectedIconWidget;
+		Widget widget2 = nameplateItem?.PortIconWidget;
+		Widget widget3 = nameplateItem?.ParleyIconWidget;
 		ListPanel eventsListPanel = _eventsListPanel;
-		if (currentNameplate == null || textWidget == null || maskedTextureWidget == null || gridWidget == null || widget == null || eventsListPanel == null)
+		if (nameplateItem == null || textWidget == null || maskedTextureWidget == null || gridWidget == null || widget == null || widget2 == null || widget3 == null || eventsListPanel == null)
 		{
-			Debug.FailedAssert("Related widget null on UpdateNameplateTransparencyAndBrightness!", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdateNameplateTransparencyAndBrightness", 342);
+			Debug.FailedAssert("Related widget null on UpdateNameplateTransparencyAndBrightness!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdateNameplateTransparencyAndBrightness", 299);
 			return;
 		}
+		widget2.IsVisible = HasPort;
 		float amount = dt * _lerpModifier;
 		if (IsVisibleOnMap)
 		{
 			base.IsVisible = true;
 			float valueTo = DetermineTargetAlphaValue();
 			float valueTo2 = DetermineTargetColorFactor();
-			float alphaFactor = TaleWorlds.Library.MathF.Lerp(currentNameplate.AlphaFactor, valueTo, amount);
-			float colorFactor = TaleWorlds.Library.MathF.Lerp(currentNameplate.ColorFactor, valueTo2, amount);
+			float alphaFactor = TaleWorlds.Library.MathF.Lerp(nameplateItem.AlphaFactor, valueTo, amount);
+			float colorFactor = TaleWorlds.Library.MathF.Lerp(nameplateItem.ColorFactor, valueTo2, amount);
 			float num = TaleWorlds.Library.MathF.Lerp(textWidget.ReadOnlyBrush.GlobalAlphaFactor, 1f, amount);
-			currentNameplate.AlphaFactor = alphaFactor;
-			currentNameplate.ColorFactor = colorFactor;
+			nameplateItem.AlphaFactor = alphaFactor;
+			nameplateItem.ColorFactor = colorFactor;
 			textWidget.Brush.GlobalAlphaFactor = num;
 			maskedTextureWidget.Brush.GlobalAlphaFactor = num;
 			gridWidget.SetGlobalAlphaRecursively(num);
+			widget3.AlphaFactor = TaleWorlds.Library.MathF.Lerp(widget3.AlphaFactor, CanParley ? 1 : 0, amount);
 			eventsListPanel.SetGlobalAlphaRecursively(num);
 		}
-		else if (currentNameplate.AlphaFactor > _lerpThreshold)
+		else if (nameplateItem.AlphaFactor > _lerpThreshold)
 		{
-			float num3 = (currentNameplate.AlphaFactor = TaleWorlds.Library.MathF.Lerp(currentNameplate.AlphaFactor, 0f, amount));
+			float num3 = (nameplateItem.AlphaFactor = TaleWorlds.Library.MathF.Lerp(nameplateItem.AlphaFactor, 0f, amount));
 			textWidget.Brush.GlobalAlphaFactor = num3;
 			maskedTextureWidget.Brush.GlobalAlphaFactor = num3;
 			gridWidget.SetGlobalAlphaRecursively(num3);
+			widget3.AlphaFactor = num3;
 			eventsListPanel.SetGlobalAlphaRecursively(num3);
 		}
 		else
@@ -594,7 +551,7 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 				widget.AlphaFactor = TaleWorlds.Library.MathF.Lerp(widget.AlphaFactor, 1f, amount);
 			}
 		}
-		else if (currentNameplate.AlphaFactor - 0f > _lerpThreshold)
+		else if (nameplateItem.AlphaFactor - 0f > _lerpThreshold)
 		{
 			widget.AlphaFactor = TaleWorlds.Library.MathF.Lerp(widget.AlphaFactor, 0f, amount);
 		}

@@ -262,5 +262,13 @@ public abstract class GameManagerBase
 
 	public abstract void OnGameLoaded(Game game, object initializerObject);
 
+	public abstract void OnAfterGameLoaded(Game game);
+
 	public abstract void OnAfterGameInitializationFinished(Game game, object initializerObject);
+
+	public abstract void RegisterSubModuleTypes();
+
+	public virtual void InitializeSubModuleGameObjects(Game game)
+	{
+	}
 }

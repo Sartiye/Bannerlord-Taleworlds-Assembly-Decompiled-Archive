@@ -37,7 +37,7 @@ internal struct WeaponDataAsNative
 
 	internal float BaseWeight;
 
-	internal float Inertia;
+	internal float TotalInertia;
 
 	internal short ReloadPhase;
 
@@ -62,6 +62,12 @@ internal struct WeaponDataAsNative
 
 	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
 	internal string TrailParticleName;
+
+	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+	internal string SkeletonName;
+
+	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+	public string StaticAnimationName;
 
 	internal Vec3 CenterOfMassShift;
 
@@ -92,7 +98,7 @@ internal struct WeaponDataAsNative
 		ItemHolsterIndices = weaponData.ItemHolsterIndices;
 		Difficulty = weaponData.Difficulty;
 		BaseWeight = weaponData.BaseWeight;
-		Inertia = weaponData.Inertia;
+		TotalInertia = weaponData.TotalInertia;
 		ReloadPhase = weaponData.ReloadPhase;
 		HasFlagAnimation = weaponData.HasFlagAnimation;
 		AmmoOffset = weaponData.AmmoOffset;
@@ -104,6 +110,8 @@ internal struct WeaponDataAsNative
 		FlyingSoundCode = weaponData.FlyingSoundCode;
 		PassbySoundCode = weaponData.PassbySoundCode;
 		TrailParticleName = weaponData.TrailParticleName;
+		SkeletonName = weaponData.SkeletonName;
+		StaticAnimationName = weaponData.StaticAnimationName;
 		CenterOfMassShift = weaponData.CenterOfMassShift;
 		DataValue = weaponData.DataValue;
 		CurrentUsageIndex = weaponData.CurrentUsageIndex;
@@ -129,7 +137,7 @@ internal struct WeaponDataAsNative
 		result.ItemHolsterIndices = agentEntityDataAsNative.ItemHolsterIndices;
 		result.Difficulty = agentEntityDataAsNative.Difficulty;
 		result.BaseWeight = agentEntityDataAsNative.BaseWeight;
-		result.Inertia = agentEntityDataAsNative.Inertia;
+		result.TotalInertia = agentEntityDataAsNative.TotalInertia;
 		result.ReloadPhase = agentEntityDataAsNative.ReloadPhase;
 		result.HasFlagAnimation = agentEntityDataAsNative.HasFlagAnimation;
 		result.AmmoOffset = agentEntityDataAsNative.AmmoOffset;
@@ -141,6 +149,8 @@ internal struct WeaponDataAsNative
 		result.FlyingSoundCode = agentEntityDataAsNative.FlyingSoundCode;
 		result.PassbySoundCode = agentEntityDataAsNative.PassbySoundCode;
 		result.TrailParticleName = agentEntityDataAsNative.TrailParticleName;
+		result.SkeletonName = agentEntityDataAsNative.SkeletonName;
+		result.StaticAnimationName = agentEntityDataAsNative.StaticAnimationName;
 		result.CenterOfMassShift = agentEntityDataAsNative.CenterOfMassShift;
 		result.DataValue = agentEntityDataAsNative.DataValue;
 		result.CurrentUsageIndex = agentEntityDataAsNative.CurrentUsageIndex;

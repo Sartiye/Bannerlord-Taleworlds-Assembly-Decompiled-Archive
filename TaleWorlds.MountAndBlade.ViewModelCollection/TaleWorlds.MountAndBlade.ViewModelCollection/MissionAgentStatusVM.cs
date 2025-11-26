@@ -1,10 +1,11 @@
 using System;
-using System.ComponentModel;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.DamageFeed;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Missions.Interaction;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection;
 
@@ -17,10 +18,6 @@ public class MissionAgentStatusVM : ViewModel
 		Possible,
 		Active
 	}
-
-	private const string _couchLanceUsageString = "couch";
-
-	private const string _spearBraceUsageString = "spear";
 
 	private readonly Mission _mission;
 
@@ -62,6 +59,8 @@ public class MissionAgentStatusVM : ViewModel
 
 	private bool _isInteractionAvailable;
 
+	private bool _isAgentStatusPrioritized;
+
 	private float _troopsAmmoPercentage;
 
 	private int _troopCount;
@@ -74,9 +73,9 @@ public class MissionAgentStatusVM : ViewModel
 
 	private AgentInteractionInterfaceVM _interactionInterface;
 
-	private ImageIdentifierVM _offhandWeapon;
+	private ItemImageIdentifierVM _offhandWeapon;
 
-	private ImageIdentifierVM _primaryWeapon;
+	private ItemImageIdentifierVM _primaryWeapon;
 
 	private MissionAgentTakenDamageVM _takenDamageController;
 
@@ -162,8 +161,8 @@ public class MissionAgentStatusVM : ViewModel
 				if (value <= 0)
 				{
 					_agentHealth = 0;
-					OffhandWeapon = new ImageIdentifierVM();
-					PrimaryWeapon = new ImageIdentifierVM();
+					OffhandWeapon = new ItemImageIdentifierVM(null);
+					PrimaryWeapon = new ItemImageIdentifierVM(null);
 					AmmoCount = -1;
 					ShieldHealth = 100;
 					IsPlayerActive = false;
@@ -360,6 +359,23 @@ public class MissionAgentStatusVM : ViewModel
 			{
 				_isInteractionAvailable = value;
 				OnPropertyChangedWithValue(value, "IsInteractionAvailable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsAgentStatusPrioritized
+	{
+		get
+		{
+			return _isAgentStatusPrioritized;
+		}
+		set
+		{
+			if (value != _isAgentStatusPrioritized)
+			{
+				_isAgentStatusPrioritized = value;
+				OnPropertyChangedWithValue(value, "IsAgentStatusPrioritized");
 			}
 		}
 	}
@@ -604,7 +620,7 @@ public class MissionAgentStatusVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM OffhandWeapon
+	public ItemImageIdentifierVM OffhandWeapon
 	{
 		get
 		{
@@ -621,7 +637,7 @@ public class MissionAgentStatusVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ImageIdentifierVM PrimaryWeapon
+	public ItemImageIdentifierVM PrimaryWeapon
 	{
 		get
 		{
@@ -660,18 +676,19 @@ public class MissionAgentStatusVM : ViewModel
 		_mission = mission;
 		_missionCamera = missionCamera;
 		_getCameraToggleProgress = getCameraToggleProgress;
-		PrimaryWeapon = new ImageIdentifierVM(ImageIdentifierType.Item);
-		OffhandWeapon = new ImageIdentifierVM(ImageIdentifierType.Item);
+		PrimaryWeapon = new ItemImageIdentifierVM(null);
+		OffhandWeapon = new ItemImageIdentifierVM(null);
 		TakenDamageFeed = new MissionAgentDamageFeedVM();
 		TakenDamageController = new MissionAgentTakenDamageVM(_missionCamera);
 		IsInteractionAvailable = true;
+		IsAgentStatusPrioritized = true;
 		RefreshValues();
 	}
 
 	public void InitializeMainAgentPropterties()
 	{
 		Mission.Current.OnMainAgentChanged += OnMainAgentChanged;
-		OnMainAgentChanged(_mission, null);
+		OnMainAgentChanged(null);
 		OnMainAgentWeaponChange();
 		_mpGameMode = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 	}
@@ -682,8 +699,12 @@ public class MissionAgentStatusVM : ViewModel
 		CameraToggleText = GameTexts.FindText("str_toggle_camera").ToString();
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
+		if (oldAgent != null)
+		{
+			oldAgent.OnMainAgentWieldedItemChange = (Agent.OnMainAgentWieldedItemChangeDelegate)Delegate.Remove(oldAgent.OnMainAgentWieldedItemChange, new Agent.OnMainAgentWieldedItemChangeDelegate(OnMainAgentWeaponChange));
+		}
 		if (Agent.Main != null)
 		{
 			Agent main = Agent.Main;
@@ -695,6 +716,11 @@ public class MissionAgentStatusVM : ViewModel
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
+		if (Agent.Main != null)
+		{
+			Agent main = Agent.Main;
+			main.OnMainAgentWieldedItemChange = (Agent.OnMainAgentWieldedItemChangeDelegate)Delegate.Remove(main.OnMainAgentWieldedItemChange, new Agent.OnMainAgentWieldedItemChangeDelegate(OnMainAgentWeaponChange));
+		}
 		Mission.Current.OnMainAgentChanged -= OnMainAgentChanged;
 		TakenDamageFeed.OnFinalize();
 	}
@@ -711,7 +737,7 @@ public class MissionAgentStatusVM : ViewModel
 		if (_mission.MainAgent != null && !IsInDeployement)
 		{
 			ShowAgentHealthBar = true;
-			InteractionInterface.Tick();
+			InteractionInterface.Tick(dt);
 			if (_mission.Mode == MissionMode.Battle && !_mission.IsFriendlyMission && _myMissionPeer != null)
 			{
 				IsTroopsActive = _myMissionPeer?.ControlledFormation != null;
@@ -770,33 +796,33 @@ public class MissionAgentStatusVM : ViewModel
 		if (_mission.MainAgent != null)
 		{
 			int ammoCount = -1;
-			EquipmentIndex wieldedItemIndex = _mission.MainAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			EquipmentIndex wieldedItemIndex2 = _mission.MainAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-			if (wieldedItemIndex != EquipmentIndex.None && _mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem != null)
+			EquipmentIndex primaryWieldedItemIndex = _mission.MainAgent.GetPrimaryWieldedItemIndex();
+			EquipmentIndex offhandWieldedItemIndex = _mission.MainAgent.GetOffhandWieldedItemIndex();
+			if (primaryWieldedItemIndex != EquipmentIndex.None && _mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem != null)
 			{
-				if (_mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsRangedWeapon && _mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsConsumable)
+				if (_mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsRangedWeapon && _mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsConsumable)
 				{
-					int num = ((!_mission.MainAgent.Equipment[wieldedItemIndex].Item.PrimaryWeapon.IsConsumable && _mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsConsumable) ? 1 : _mission.MainAgent.Equipment.GetAmmoAmount(wieldedItemIndex));
-					if (_mission.MainAgent.Equipment[wieldedItemIndex].ModifiedMaxAmount == 1 || num > 0)
+					int num = ((!_mission.MainAgent.Equipment[primaryWieldedItemIndex].Item.PrimaryWeapon.IsConsumable && _mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsConsumable) ? 1 : _mission.MainAgent.Equipment.GetAmmoAmount(primaryWieldedItemIndex));
+					if (_mission.MainAgent.Equipment[primaryWieldedItemIndex].ModifiedMaxAmount == 1 || num > 0)
 					{
 						ammoCount = num;
 					}
 				}
-				else if (_mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
+				else if (_mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsRangedWeapon)
 				{
-					bool flag = _mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.WeaponClass == WeaponClass.Crossbow;
-					ammoCount = _mission.MainAgent.Equipment.GetAmmoAmount(wieldedItemIndex) + (flag ? _mission.MainAgent.Equipment[wieldedItemIndex].Ammo : 0);
+					bool flag = _mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.WeaponClass == WeaponClass.Crossbow;
+					ammoCount = _mission.MainAgent.Equipment.GetAmmoAmount(primaryWieldedItemIndex) + (flag ? _mission.MainAgent.Equipment[primaryWieldedItemIndex].Ammo : 0);
 				}
-				if (!_mission.MainAgent.Equipment[wieldedItemIndex].IsEmpty)
+				if (!_mission.MainAgent.Equipment[primaryWieldedItemIndex].IsEmpty)
 				{
-					int num2 = ((!_mission.MainAgent.Equipment[wieldedItemIndex].Item.PrimaryWeapon.IsConsumable && _mission.MainAgent.Equipment[wieldedItemIndex].CurrentUsageItem.IsConsumable) ? 1 : _mission.MainAgent.Equipment.GetMaxAmmo(wieldedItemIndex));
+					int num2 = ((!_mission.MainAgent.Equipment[primaryWieldedItemIndex].Item.PrimaryWeapon.IsConsumable && _mission.MainAgent.Equipment[primaryWieldedItemIndex].CurrentUsageItem.IsConsumable) ? 1 : _mission.MainAgent.Equipment.GetMaxAmmo(primaryWieldedItemIndex));
 					float f = (float)num2 * 0.2f;
 					isAmmoCountAlertEnabled = num2 != AmmoCount && AmmoCount <= TaleWorlds.Library.MathF.Ceiling(f);
 				}
 			}
-			if (wieldedItemIndex2 != EquipmentIndex.None && _mission.MainAgent.Equipment[wieldedItemIndex2].CurrentUsageItem != null)
+			if (offhandWieldedItemIndex != EquipmentIndex.None && _mission.MainAgent.Equipment[offhandWieldedItemIndex].CurrentUsageItem != null)
 			{
-				MissionWeapon missionWeapon = _mission.MainAgent.Equipment[wieldedItemIndex2];
+				MissionWeapon missionWeapon = _mission.MainAgent.Equipment[offhandWieldedItemIndex];
 				ShowShieldHealthBar = missionWeapon.CurrentUsageItem.IsShield;
 				if (ShowShieldHealthBar)
 				{
@@ -853,19 +879,19 @@ public class MissionAgentStatusVM : ViewModel
 		{
 			MissionWeapon missionWeapon = MissionWeapon.Invalid;
 			MissionWeapon missionWeapon2 = MissionWeapon.Invalid;
-			EquipmentIndex wieldedItemIndex = _mission.MainAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
-			if (wieldedItemIndex > EquipmentIndex.None && wieldedItemIndex < EquipmentIndex.NumAllWeaponSlots)
+			EquipmentIndex offhandWieldedItemIndex = _mission.MainAgent.GetOffhandWieldedItemIndex();
+			if (offhandWieldedItemIndex > EquipmentIndex.None && offhandWieldedItemIndex < EquipmentIndex.NumAllWeaponSlots)
 			{
-				missionWeapon = _mission.MainAgent.Equipment[wieldedItemIndex];
+				missionWeapon = _mission.MainAgent.Equipment[offhandWieldedItemIndex];
 			}
-			wieldedItemIndex = _mission.MainAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-			if (wieldedItemIndex > EquipmentIndex.None && wieldedItemIndex < EquipmentIndex.NumAllWeaponSlots)
+			offhandWieldedItemIndex = _mission.MainAgent.GetPrimaryWieldedItemIndex();
+			if (offhandWieldedItemIndex > EquipmentIndex.None && offhandWieldedItemIndex < EquipmentIndex.NumAllWeaponSlots)
 			{
-				missionWeapon2 = _mission.MainAgent.Equipment[wieldedItemIndex];
+				missionWeapon2 = _mission.MainAgent.Equipment[offhandWieldedItemIndex];
 			}
 			ShowShieldHealthBar = missionWeapon.CurrentUsageItem?.IsShield ?? false;
-			PrimaryWeapon = (missionWeapon2.IsEmpty ? new ImageIdentifierVM() : new ImageIdentifierVM(missionWeapon2.Item));
-			OffhandWeapon = (missionWeapon.IsEmpty ? new ImageIdentifierVM() : new ImageIdentifierVM(missionWeapon.Item));
+			PrimaryWeapon = (missionWeapon2.IsEmpty ? new ItemImageIdentifierVM(null) : new ItemImageIdentifierVM(missionWeapon2.Item));
+			OffhandWeapon = (missionWeapon.IsEmpty ? new ItemImageIdentifierVM(null) : new ItemImageIdentifierVM(missionWeapon.Item));
 		}
 	}
 
@@ -902,9 +928,9 @@ public class MissionAgentStatusVM : ViewModel
 	{
 	}
 
-	public void OnAgentInteraction(Agent userAgent, Agent agent)
+	public void OnAgentInteraction(Agent userAgent, Agent agent, sbyte agentBoneIndex)
 	{
-		InteractionInterface.OnAgentInteraction(userAgent, agent);
+		InteractionInterface.OnAgentInteraction(userAgent, agent, agentBoneIndex);
 	}
 
 	private void GetMaxAndCurrentAmmoOfAgent(Agent agent, out int currentAmmo, out int maxAmmo)
@@ -975,7 +1001,7 @@ public class MissionAgentStatusVM : ViewModel
 		if (Agent.Main != null)
 		{
 			MissionWeapon wieldedWeapon = Agent.Main.WieldedWeapon;
-			if (!Agent.Main.HasMount && Agent.Main.GetWieldedItemIndex(Agent.HandIndex.OffHand) == EquipmentIndex.None && IsWeaponBracable(wieldedWeapon))
+			if (!Agent.Main.HasMount && Agent.Main.GetOffhandWieldedItemIndex() == EquipmentIndex.None && IsWeaponBracable(wieldedWeapon))
 			{
 				if (IsPassiveUsageActiveWithCurrentWeapon(wieldedWeapon))
 				{

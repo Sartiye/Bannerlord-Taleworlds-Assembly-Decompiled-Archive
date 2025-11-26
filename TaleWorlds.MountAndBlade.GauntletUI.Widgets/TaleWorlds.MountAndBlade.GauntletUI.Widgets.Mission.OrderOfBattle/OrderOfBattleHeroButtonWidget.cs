@@ -9,6 +9,8 @@ public class OrderOfBattleHeroButtonWidget : ButtonWidget
 
 	private int _mainHeroHueFactor;
 
+	private bool _canMainHeroAcceptEvents = true;
+
 	public bool IsMainHero
 	{
 		get
@@ -21,7 +23,8 @@ public class OrderOfBattleHeroButtonWidget : ButtonWidget
 			{
 				_isMainHero = value;
 				OnPropertyChanged(value, "IsMainHero");
-				OnHeroTypeChanged();
+				UpdateMainHeroHueFactor();
+				UpdateMainHeroAcceptEvents();
 			}
 		}
 	}
@@ -38,6 +41,24 @@ public class OrderOfBattleHeroButtonWidget : ButtonWidget
 			{
 				_mainHeroHueFactor = value;
 				OnPropertyChanged(value, "MainHeroHueFactor");
+				UpdateMainHeroHueFactor();
+			}
+		}
+	}
+
+	public bool CanMainHeroAcceptEvents
+	{
+		get
+		{
+			return _canMainHeroAcceptEvents;
+		}
+		set
+		{
+			if (value != _canMainHeroAcceptEvents)
+			{
+				_canMainHeroAcceptEvents = value;
+				OnPropertyChanged(value, "CanMainHeroAcceptEvents");
+				UpdateMainHeroAcceptEvents();
 			}
 		}
 	}
@@ -47,11 +68,16 @@ public class OrderOfBattleHeroButtonWidget : ButtonWidget
 	{
 	}
 
-	private void OnHeroTypeChanged()
+	private void UpdateMainHeroHueFactor()
 	{
 		foreach (BrushLayer layer in base.Brush.Layers)
 		{
 			layer.HueFactor = (IsMainHero ? MainHeroHueFactor : 0);
 		}
+	}
+
+	private void UpdateMainHeroAcceptEvents()
+	{
+		base.DoNotAcceptEvents = IsMainHero && !CanMainHeroAcceptEvents;
 	}
 }

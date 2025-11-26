@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -22,9 +21,9 @@ public class FindingSecondBannerPieceSceneNotificationItem : SceneNotificationDa
 		}
 	}
 
-	public override IEnumerable<Banner> GetBanners()
+	public override Banner[] GetBanners()
 	{
-		return new List<Banner> { PlayerHero.ClanBanner };
+		return new Banner[1] { PlayerHero.ClanBanner };
 	}
 
 	public FindingSecondBannerPieceSceneNotificationItem(Hero playerHero)

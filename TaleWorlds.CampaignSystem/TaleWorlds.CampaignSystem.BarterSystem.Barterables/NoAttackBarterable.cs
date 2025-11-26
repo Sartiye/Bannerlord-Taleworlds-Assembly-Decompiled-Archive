@@ -1,5 +1,5 @@
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.BarterSystem.Barterables;
@@ -20,7 +20,7 @@ public class NoAttackBarterable : Barterable
 	{
 		get
 		{
-			TextObject textObject = new TextObject("{=Y3lGJT8H}{PARTY} Won't attack {FACTION} for {DURATION} {?DURATION>1}days{?}day{\\?}.");
+			TextObject textObject = new TextObject("{=Y3lGJT8H}{PARTY} won't attack {FACTION} for {DURATION} {?DURATION>1}days{?}day{\\?}.");
 			textObject.SetTextVariable("PARTY", base.OriginalParty.Name);
 			textObject.SetTextVariable("FACTION", _otherFaction.Name);
 			textObject.SetTextVariable("DURATION", _duration.ToDays.ToString());

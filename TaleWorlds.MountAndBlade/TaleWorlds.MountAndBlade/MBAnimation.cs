@@ -1,3 +1,5 @@
+using TaleWorlds.Library;
+
 namespace TaleWorlds.MountAndBlade;
 
 public struct MBAnimation
@@ -36,15 +38,6 @@ public struct MBAnimation
 	public static Agent.ActionCodeType GetActionType(ActionIndexCache actionIndex)
 	{
 		if (!(actionIndex == ActionIndexCache.act_none))
-		{
-			return MBAPI.IMBAnimation.GetActionType(actionIndex.Index);
-		}
-		return Agent.ActionCodeType.Other;
-	}
-
-	public static Agent.ActionCodeType GetActionType(ActionIndexValueCache actionIndex)
-	{
-		if (!(actionIndex == ActionIndexValueCache.act_none))
 		{
 			return MBAPI.IMBAnimation.GetActionType(actionIndex.Index);
 		}
@@ -106,22 +99,35 @@ public struct MBAnimation
 		return MBAPI.IMBAnimation.GetAnimationBlendInPeriod(animationIndex);
 	}
 
-	public static int GetActionCodeWithName(string name)
+	public static int GetAnimationBlendsWithActionIndex(string animationName)
 	{
-		if (string.IsNullOrEmpty(name))
-		{
-			return ActionIndexValueCache.act_none.Index;
-		}
-		return MBAPI.IMBAnimation.GetActionCodeWithName(name);
+		int indexWithID = MBAPI.IMBAnimation.GetIndexWithID(animationName);
+		return MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(indexWithID);
 	}
 
-	public static string GetActionNameWithCode(int actionIndex)
+	public static float GetAnimationBlendsWithActionIndex(int animationIndex)
 	{
-		if (actionIndex == -1)
+		return MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(animationIndex);
+	}
+
+	public static Vec3 GetAnimationDisplacementAtProgress(string animationName, float progress)
+	{
+		int indexWithID = MBAPI.IMBAnimation.GetIndexWithID(animationName);
+		return MBAPI.IMBAnimation.GetAnimationDisplacementAtProgress(indexWithID, progress);
+	}
+
+	public static Vec3 GetAnimationDisplacementAtProgress(int animationIndex, float progress)
+	{
+		return MBAPI.IMBAnimation.GetAnimationDisplacementAtProgress(animationIndex, progress);
+	}
+
+	public static int GetActionCodeWithName(string name)
+	{
+		if (!string.IsNullOrEmpty(name))
 		{
-			return "act_none";
+			return MBAPI.IMBAnimation.GetActionCodeWithName(name);
 		}
-		return MBAPI.IMBAnimation.GetActionNameWithCode(actionIndex);
+		return ActionIndexCache.act_none.Index;
 	}
 
 	public static int GetNumActionCodes()

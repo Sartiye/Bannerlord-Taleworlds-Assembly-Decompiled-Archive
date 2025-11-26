@@ -1,3 +1,5 @@
+using Helpers;
+
 namespace TaleWorlds.CampaignSystem.Conversation.Tags;
 
 public class AlliedLordTag : ConversationTag
@@ -10,7 +12,7 @@ public class AlliedLordTag : ConversationTag
 	{
 		if (character.IsHero)
 		{
-			return FactionManager.IsAlliedWithFaction(character.HeroObject.MapFaction, Hero.MainHero.MapFaction);
+			return DiplomacyHelper.IsSameFactionAndNotEliminated(character.HeroObject.MapFaction, Hero.MainHero.MapFaction);
 		}
 		return false;
 	}

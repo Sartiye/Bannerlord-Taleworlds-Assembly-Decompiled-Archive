@@ -110,17 +110,22 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 			num = 10f;
 			break;
 		}
-		if (num < 0f && party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Steward.WarriorsDiet))
+		if (num < 0f && party.LeaderHero != null && !party.IsCurrentlyAtSea && party.LeaderHero.GetPerkValue(DefaultPerks.Steward.WarriorsDiet))
 		{
 			num = 0f;
 		}
-		if (num != 0f)
+		if (num == 0f)
 		{
-			result.Add(num, _foodBonusMoraleText);
-			if (num > 0f && party.HasPerk(DefaultPerks.Steward.Gourmet))
+			return;
+		}
+		result.Add(num, _foodBonusMoraleText);
+		if (num > 0f && party.HasPerk(DefaultPerks.Steward.Gourmet))
+		{
+			if (party.IsCurrentlyAtSea)
 			{
-				result.Add(num, DefaultPerks.Steward.Gourmet.Name);
+				num *= 0.5f;
 			}
+			result.Add(num, DefaultPerks.Steward.Gourmet.Name);
 		}
 	}
 
@@ -165,7 +170,7 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 		{
 			bonus.Add(DefaultPerks.Charm.SelfPromoter.SecondaryBonus, DefaultPerks.Charm.SelfPromoter.Name);
 		}
-		if (!party.HasPerk(DefaultPerks.Steward.Logistician))
+		if (party.IsCurrentlyAtSea || !party.HasPerk(DefaultPerks.Steward.Logistician))
 		{
 			return;
 		}
@@ -203,7 +208,7 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 		CharacterObject effectivePartyLeaderForSkill = SkillHelper.GetEffectivePartyLeaderForSkill(party.Party);
 		if (effectivePartyLeaderForSkill != null && effectivePartyLeaderForSkill.GetSkillValue(DefaultSkills.Leadership) > 0)
 		{
-			SkillHelper.AddSkillBonusForCharacter(DefaultSkills.Leadership, DefaultSkillEffects.LeadershipMoraleBonus, effectivePartyLeaderForSkill, ref bonus);
+			SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.LeadershipMoraleBonus, effectivePartyLeaderForSkill, ref bonus);
 		}
 	}
 

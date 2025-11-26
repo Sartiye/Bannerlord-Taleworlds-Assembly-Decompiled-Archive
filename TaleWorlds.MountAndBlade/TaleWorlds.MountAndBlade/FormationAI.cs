@@ -95,6 +95,8 @@ public class FormationAI
 
 	public bool IsMainFormation { get; set; }
 
+	public int BehaviorCount => _behaviors.Count;
+
 	public event Action<Formation> OnActiveBehaviorChanged;
 
 	public FormationAI(Formation formation)
@@ -268,7 +270,7 @@ public class FormationAI
 			IEnumerable<BehaviorData> source = _specialBehaviorData.Where((BehaviorData sbd) => sbd.Weight > 0f);
 			if (source.Any())
 			{
-				behaviorComponent = source.MaxBy((BehaviorData abd) => abd.Weight).Behavior;
+				behaviorComponent = TaleWorlds.Core.Extensions.MaxBy(source, (BehaviorData abd) => abd.Weight).Behavior;
 			}
 		}
 		_ = _formation.IsAIControlled;
@@ -303,6 +305,15 @@ public class FormationAI
 		{
 			behavior.OnAgentRemoved(agent);
 		}
+	}
+
+	public BehaviorComponent GetBehaviorAtIndex(int index)
+	{
+		if (index >= 0 && index < _behaviors.Count)
+		{
+			return _behaviors[index];
+		}
+		return null;
 	}
 
 	[Conditional("DEBUG")]

@@ -233,7 +233,7 @@ public class MissionGauntletMultiplayerScoreboard : MissionView
 	private void InitializeLayer()
 	{
 		_dataSource = new MissionScoreboardVM(_isSingleTeam, base.Mission);
-		_gauntletLayer = new GauntletLayer(ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MultiplayerScoreboard", ViewOrderPriority);
 		_gauntletLayer.LoadMovie("MultiplayerScoreboard", _dataSource);
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("ScoreboardHotKeyCategory"));

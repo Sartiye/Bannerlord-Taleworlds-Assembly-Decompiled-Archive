@@ -30,7 +30,7 @@ public class MainHeroBattleVictoryDeathNotificationItem : SceneNotificationData
 		}
 	}
 
-	public override IEnumerable<SceneNotificationCharacter> GetSceneNotificationCharacters()
+	public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
 	{
 		List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
 		Equipment equipment = DeadHero.BattleEquipment.Clone();
@@ -59,7 +59,7 @@ public class MainHeroBattleVictoryDeathNotificationItem : SceneNotificationData
 				list.Add(new SceneNotificationCharacter(item, equipment4));
 			}
 		}
-		return list;
+		return list.ToArray();
 	}
 
 	public MainHeroBattleVictoryDeathNotificationItem(Hero deadHero, List<CharacterObject> encounterAllyCharacters)

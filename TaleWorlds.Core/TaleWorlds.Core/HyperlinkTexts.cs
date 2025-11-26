@@ -52,6 +52,8 @@ public static class HyperlinkTexts
 
 	public const string UpgradeAvailableIcon = "{=!}<img src=\"PartyScreen\\upgrade_icon\" extend=\"5\">";
 
+	public const string FocusIcon = "{=!}<img src=\"CharacterDeveloper\\cp_icon\">";
+
 	public static Func<bool> IsPlayStationGamepadActive;
 
 	public static TextObject GetSettlementHyperlinkText(string link, TextObject settlementName)
@@ -112,7 +114,7 @@ public static class HyperlinkTexts
 		return $"<img src=\"{meshId}\" extend=\"{extend}\">";
 	}
 
-	public static string GetKeyHyperlinkText(string keyID)
+	public static string GetKeyHyperlinkText(string keyID, float overrideExtendScale = 1f)
 	{
 		string text = "None";
 		int num = 16;
@@ -304,6 +306,7 @@ public static class HyperlinkTexts
 		{
 			text += "_ps";
 		}
+		num = (int)((float)num * overrideExtendScale);
 		return $"<img src=\"General\\InputKeys\\{text}\" extend=\"{num}\">";
 	}
 }

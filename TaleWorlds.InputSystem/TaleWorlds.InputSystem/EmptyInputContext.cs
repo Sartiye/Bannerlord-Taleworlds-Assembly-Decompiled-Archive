@@ -150,16 +150,6 @@ public sealed class EmptyInputContext : IInputContext
 		return default(Vec2);
 	}
 
-	public bool IsGameKeyDownAndReleased(int gameKey)
-	{
-		return false;
-	}
-
-	public bool IsHotKeyDownAndReleased(string gameKey)
-	{
-		return false;
-	}
-
 	public InputKey[] GetClickKeys()
 	{
 		return new InputKey[2]

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using TaleWorlds.Library;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.Core;
 
@@ -29,6 +30,8 @@ public class BannerManager
 
 	public MBReadOnlyDictionary<int, BannerColor> ReadOnlyColorPalette;
 
+	private Dictionary<BasicCultureObject, List<BannerColor>> _cultureColorPalette;
+
 	private Dictionary<int, BannerColor> _colorPalette;
 
 	private MBList<BannerIconGroup> _bannerIconGroups;
@@ -43,12 +46,13 @@ public class BannerManager
 
 	public int BaseBackgroundId { get; private set; }
 
-	public static MBReadOnlyDictionary<int, BannerColor> ColorPalette => Instance.ReadOnlyColorPalette;
+	private static MBReadOnlyDictionary<int, BannerColor> ColorPalette => Instance.ReadOnlyColorPalette;
 
 	private BannerManager()
 	{
 		_bannerIconGroups = new MBList<BannerIconGroup>();
 		_colorPalette = new Dictionary<int, BannerColor>();
+		_cultureColorPalette = new Dictionary<BasicCultureObject, List<BannerColor>>();
 		ReadOnlyColorPalette = _colorPalette.GetReadOnlyDictionary();
 	}
 
@@ -60,11 +64,19 @@ public class BannerManager
 		}
 	}
 
+	public static void ResetAndLoad()
+	{
+		Instance._bannerIconGroups = new MBList<BannerIconGroup>();
+		Instance._colorPalette = new Dictionary<int, BannerColor>();
+		Instance._cultureColorPalette = new Dictionary<BasicCultureObject, List<BannerColor>>();
+		Instance.LoadBannerIcons();
+	}
+
 	public static uint GetColor(int id)
 	{
-		if (ColorPalette.ContainsKey(id))
+		if (ColorPalette.TryGetValue(id, out var value))
 		{
-			return ColorPalette[id].Color;
+			return value.Color;
 		}
 		return 3735928559u;
 	}
@@ -79,6 +91,11 @@ public class BannerManager
 			}
 		}
 		return -1;
+	}
+
+	public int GetRandomColorId(MBFastRandom random)
+	{
+		return ColorPalette.ElementAt(random.Next(ColorPalette.Count())).Key;
 	}
 
 	public BannerIconData GetIconDataFromIconId(int id)
@@ -156,10 +173,36 @@ public class BannerManager
 		BaseBackgroundId = id;
 	}
 
+	public void SetCultureColors(BasicCultureObject culture, List<BannerColor> color)
+	{
+		if (!_cultureColorPalette.ContainsKey(culture))
+		{
+			_cultureColorPalette[culture] = color;
+		}
+		else
+		{
+			Debug.FailedAssert("Culture colors already set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BannerManager.cs", "SetCultureColors", 200);
+		}
+	}
+
+	public void LoadBannerIcons()
+	{
+		Game current = Game.Current;
+		bool ignoreGameTypeInclusionCheck = false;
+		string gameType = "";
+		if (current != null)
+		{
+			ignoreGameTypeInclusionCheck = current.GameType.IsDevelopment;
+			gameType = current.GameType.GetType().Name;
+		}
+		XmlDocument mergedXmlForManaged = MBObjectManager.GetMergedXmlForManaged("BannerIcons", skipValidation: false, ignoreGameTypeInclusionCheck, gameType);
+		LoadBannerIconsFromXml(mergedXmlForManaged);
+	}
+
 	public void LoadBannerIcons(string xmlPath)
 	{
 		XmlDocument doc = LoadXmlFile(xmlPath);
-		LoadFromXml(doc);
+		LoadBannerIconsFromXml(doc);
 	}
 
 	private XmlDocument LoadXmlFile(string path)
@@ -173,18 +216,15 @@ public class BannerManager
 		return xmlDocument;
 	}
 
-	private void LoadFromXml(XmlDocument doc)
+	private void LoadBannerIconsFromXml(XmlDocument doc)
 	{
 		Debug.Print("loading banner_icons.xml:");
-		if (doc.ChildNodes.Count <= 1)
+		XmlNodeList elementsByTagName = doc.GetElementsByTagName("base");
+		if (elementsByTagName.Count != 1)
 		{
 			throw new TWXmlLoadException("Incorrect XML document format.");
 		}
-		if (doc.ChildNodes[1].Name != "base")
-		{
-			throw new TWXmlLoadException("Incorrect XML document format.");
-		}
-		XmlNode xmlNode = doc.ChildNodes[1].ChildNodes[0];
+		XmlNode xmlNode = elementsByTagName[0].ChildNodes[0];
 		if (xmlNode.Name != "BannerIconData")
 		{
 			throw new TWXmlLoadException("Incorrect XML document format.");

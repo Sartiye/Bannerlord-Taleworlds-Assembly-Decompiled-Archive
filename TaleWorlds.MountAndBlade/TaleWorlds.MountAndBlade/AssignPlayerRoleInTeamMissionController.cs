@@ -2,165 +2,45 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.LinQuick;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
 
 public class AssignPlayerRoleInTeamMissionController : MissionLogic
 {
-	private bool _isPlayerSergeant;
+	protected readonly List<string> CharactersInPlayerSideByPriority;
 
-	private FormationClass _preassignedFormationClass;
+	protected Queue<string> CharacterNamesInPlayerSideByPriorityQueue;
 
-	private List<string> _charactersInPlayerSideByPriority = new List<string>();
+	protected List<Formation> RemainingFormationsToAssignSergeantsTo;
 
-	private Queue<string> _characterNamesInPlayerSideByPriorityQueue;
+	protected Dictionary<int, Agent> FormationsLockedWithSergeants;
 
-	private List<Formation> _remainingFormationsToAssignSergeantsTo;
-
-	private Dictionary<int, Agent> _formationsLockedWithSergeants;
-
-	private Dictionary<int, Agent> _formationsWithLooselyChosenSergeants;
-
-	private int _playerChosenIndex = -1;
+	protected Dictionary<int, Agent> FormationsWithLooselyChosenSergeants;
 
 	public bool IsPlayerInArmy { get; }
 
 	public bool IsPlayerGeneral { get; }
 
+	public bool IsPlayerSergeant { get; }
+
+	public int PlayerChosenIndex { get; protected set; }
+
 	public event PlayerTurnToChooseFormationToLeadEvent OnPlayerTurnToChooseFormationToLead;
 
 	public event AllFormationsAssignedSergeantsEvent OnAllFormationsAssignedSergeants;
 
-	public AssignPlayerRoleInTeamMissionController(bool isPlayerGeneral, bool isPlayerSergeant, bool isPlayerInArmy, List<string> charactersInPlayerSideByPriority = null, FormationClass preassignedFormationClass = FormationClass.NumberOfRegularFormations)
+	public AssignPlayerRoleInTeamMissionController(bool isPlayerGeneral, bool isPlayerSergeant, bool isPlayerInArmy, List<string> charactersInPlayerSideByPriority = null)
 	{
 		IsPlayerGeneral = isPlayerGeneral;
-		_isPlayerSergeant = isPlayerSergeant;
+		IsPlayerSergeant = isPlayerSergeant;
 		IsPlayerInArmy = isPlayerInArmy;
-		_charactersInPlayerSideByPriority = charactersInPlayerSideByPriority;
-		_preassignedFormationClass = preassignedFormationClass;
+		PlayerChosenIndex = -1;
+		CharactersInPlayerSideByPriority = charactersInPlayerSideByPriority;
 	}
 
 	public override void AfterStart()
 	{
-		Mission.Current.PlayerTeam.SetPlayerRole(IsPlayerGeneral, _isPlayerSergeant);
-	}
-
-	private Formation ChooseFormationToLead(IEnumerable<Formation> formationsToChooseFrom, Agent agent)
-	{
-		bool hasMount = agent.HasMount;
-		bool flag = agent.HasRangedWeapon();
-		List<Formation> list = formationsToChooseFrom.ToList();
-		while (list.Count > 0)
-		{
-			Formation formation = list.MaxBy((Formation ftcf) => ftcf.QuerySystem.FormationPower);
-			list.Remove(formation);
-			if ((flag || (!formation.QuerySystem.IsRangedFormation && !formation.QuerySystem.IsRangedCavalryFormation)) && (hasMount || (!formation.QuerySystem.IsCavalryFormation && !formation.QuerySystem.IsRangedCavalryFormation)))
-			{
-				return formation;
-			}
-		}
-		return null;
-	}
-
-	private void AssignSergeant(Formation formationToLead, Agent sergeant)
-	{
-		sergeant.Formation = formationToLead;
-		if (!sergeant.IsAIControlled || sergeant == Agent.Main)
-		{
-			formationToLead.PlayerOwner = sergeant;
-		}
-		formationToLead.Captain = sergeant;
-	}
-
-	public void OnPlayerChoiceMade(int chosenIndex, bool isFinal)
-	{
-		if (_playerChosenIndex != chosenIndex)
-		{
-			_playerChosenIndex = chosenIndex;
-			_formationsWithLooselyChosenSergeants.Clear();
-			List<Formation> list = base.Mission.PlayerTeam.FormationsIncludingEmpty.WhereQ((Formation f) => f.CountOfUnits > 0 && !_formationsLockedWithSergeants.ContainsKey(f.Index)).ToList();
-			if (chosenIndex != -1)
-			{
-				Formation item = list.FirstOrDefault((Formation fr) => fr.Index == chosenIndex);
-				_formationsWithLooselyChosenSergeants.Add(chosenIndex, base.Mission.PlayerTeam.PlayerOrderController.Owner);
-				list.Remove(item);
-			}
-			Queue<string> queue = new Queue<string>(_characterNamesInPlayerSideByPriorityQueue);
-			while (list.Count > 0 && queue.Count > 0)
-			{
-				string nextAgentNameToProcess = queue.Dequeue();
-				Agent agent = base.Mission.PlayerTeam.ActiveAgents.FirstOrDefault((Agent aa) => aa.Character.StringId.Equals(nextAgentNameToProcess));
-				if (agent != null)
-				{
-					Formation formation = ChooseFormationToLead(list, agent);
-					if (formation != null)
-					{
-						_formationsWithLooselyChosenSergeants.Add(formation.Index, agent);
-						list.Remove(formation);
-					}
-				}
-			}
-			if (this.OnAllFormationsAssignedSergeants != null)
-			{
-				this.OnAllFormationsAssignedSergeants(_formationsWithLooselyChosenSergeants);
-			}
-		}
-		else
-		{
-			if (!isFinal)
-			{
-				return;
-			}
-			foreach (KeyValuePair<int, Agent> formationsLockedWithSergeant in _formationsLockedWithSergeants)
-			{
-				AssignSergeant(formationsLockedWithSergeant.Value.Team.GetFormation((FormationClass)formationsLockedWithSergeant.Key), formationsLockedWithSergeant.Value);
-			}
-			foreach (KeyValuePair<int, Agent> formationsWithLooselyChosenSergeant in _formationsWithLooselyChosenSergeants)
-			{
-				AssignSergeant(formationsWithLooselyChosenSergeant.Value.Team.GetFormation((FormationClass)formationsWithLooselyChosenSergeant.Key), formationsWithLooselyChosenSergeant.Value);
-			}
-		}
-	}
-
-	public void OnPlayerTeamDeployed()
-	{
-		if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
-		{
-			return;
-		}
-		Team playerTeam = Mission.Current.PlayerTeam;
-		_formationsLockedWithSergeants = new Dictionary<int, Agent>();
-		_formationsWithLooselyChosenSergeants = new Dictionary<int, Agent>();
-		if (playerTeam.IsPlayerGeneral)
-		{
-			_characterNamesInPlayerSideByPriorityQueue = new Queue<string>();
-			_remainingFormationsToAssignSergeantsTo = new List<Formation>();
-		}
-		else
-		{
-			_characterNamesInPlayerSideByPriorityQueue = ((_charactersInPlayerSideByPriority != null) ? new Queue<string>(_charactersInPlayerSideByPriority) : new Queue<string>());
-			_remainingFormationsToAssignSergeantsTo = playerTeam.FormationsIncludingSpecialAndEmpty.WhereQ((Formation f) => f.CountOfUnits > 0).ToList();
-			while (_remainingFormationsToAssignSergeantsTo.Count > 0 && _characterNamesInPlayerSideByPriorityQueue.Count > 0)
-			{
-				string nextAgentNameToProcess = _characterNamesInPlayerSideByPriorityQueue.Dequeue();
-				Agent agent = playerTeam.ActiveAgents.FirstOrDefault((Agent aa) => aa.Character.StringId.Equals(nextAgentNameToProcess));
-				if (agent != null)
-				{
-					if (agent == Agent.Main)
-					{
-						break;
-					}
-					Formation formation = ChooseFormationToLead(_remainingFormationsToAssignSergeantsTo, agent);
-					if (formation != null)
-					{
-						_formationsLockedWithSergeants.Add(formation.Index, agent);
-						_remainingFormationsToAssignSergeantsTo.Remove(formation);
-					}
-				}
-			}
-		}
-		this.OnPlayerTurnToChooseFormationToLead?.Invoke(_formationsLockedWithSergeants, _remainingFormationsToAssignSergeantsTo.Select((Formation ftcsf) => ftcsf.Index).ToList());
+		Mission.Current.PlayerTeam.SetPlayerRole(IsPlayerGeneral, IsPlayerSergeant);
 	}
 
 	public override void OnTeamDeployed(Team team)
@@ -181,22 +61,118 @@ public class AssignPlayerRoleInTeamMissionController : MissionLogic
 		team.PlayerOrderController.SelectAllFormations();
 	}
 
-	public void OnPlayerChoiceMade(FormationClass chosenFormationClass, FormationAI.BehaviorSide formationBehaviorSide = FormationAI.BehaviorSide.Middle)
+	public virtual void OnPlayerTeamDeployed()
 	{
-		Team playerTeam = base.Mission.PlayerTeam;
-		Formation formation = playerTeam.FormationsIncludingEmpty.WhereQ((Formation f) => f.CountOfUnits > 0 && f.PhysicalClass == chosenFormationClass && f.AI.Side == formationBehaviorSide).MaxBy((Formation f) => f.QuerySystem.FormationPower);
-		if (playerTeam.IsPlayerSergeant)
+		if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
 		{
-			formation.PlayerOwner = Agent.Main;
-			formation.SetControlledByAI(isControlledByAI: false);
+			return;
 		}
-		if (formation != null && formation != Agent.Main.Formation)
+		Team playerTeam = Mission.Current.PlayerTeam;
+		FormationsLockedWithSergeants = new Dictionary<int, Agent>();
+		FormationsWithLooselyChosenSergeants = new Dictionary<int, Agent>();
+		if (playerTeam.IsPlayerGeneral)
 		{
-			MBTextManager.SetTextVariable("SIDE_STRING", formation.AI.Side.ToString());
-			MBTextManager.SetTextVariable("CLASS_NAME", formation.PhysicalClass.GetName());
-			MBInformationManager.AddQuickInformation(GameTexts.FindText("str_formation_soldier_join_text"));
+			CharacterNamesInPlayerSideByPriorityQueue = new Queue<string>();
+			RemainingFormationsToAssignSergeantsTo = new List<Formation>();
 		}
-		Agent.Main.Formation = formation;
-		playerTeam.TriggerOnFormationsChanged(formation);
+		else
+		{
+			CharacterNamesInPlayerSideByPriorityQueue = ((CharactersInPlayerSideByPriority != null) ? new Queue<string>(CharactersInPlayerSideByPriority) : new Queue<string>());
+			RemainingFormationsToAssignSergeantsTo = playerTeam.FormationsIncludingSpecialAndEmpty.WhereQ((Formation f) => f.CountOfUnits > 0).ToList();
+			while (RemainingFormationsToAssignSergeantsTo.Count > 0 && CharacterNamesInPlayerSideByPriorityQueue.Count > 0)
+			{
+				string nextAgentNameToProcess = CharacterNamesInPlayerSideByPriorityQueue.Dequeue();
+				Agent agent = playerTeam.ActiveAgents.FirstOrDefault((Agent aa) => aa.Character.StringId.Equals(nextAgentNameToProcess));
+				if (agent != null)
+				{
+					if (agent == Agent.Main)
+					{
+						break;
+					}
+					Formation formation = ChooseFormationToLead(RemainingFormationsToAssignSergeantsTo, agent);
+					if (formation != null)
+					{
+						FormationsLockedWithSergeants.Add(formation.Index, agent);
+						RemainingFormationsToAssignSergeantsTo.Remove(formation);
+					}
+				}
+			}
+		}
+		this.OnPlayerTurnToChooseFormationToLead?.Invoke(FormationsLockedWithSergeants, RemainingFormationsToAssignSergeantsTo.Select((Formation ftcsf) => ftcsf.Index).ToList());
+	}
+
+	public virtual void OnPlayerChoiceMade(int chosenIndex)
+	{
+		if (PlayerChosenIndex == chosenIndex)
+		{
+			return;
+		}
+		PlayerChosenIndex = chosenIndex;
+		FormationsWithLooselyChosenSergeants.Clear();
+		List<Formation> list = base.Mission.PlayerTeam.FormationsIncludingEmpty.WhereQ((Formation f) => f.CountOfUnits > 0 && !FormationsLockedWithSergeants.ContainsKey(f.Index)).ToList();
+		if (chosenIndex != -1)
+		{
+			Formation item = list.FirstOrDefault((Formation fr) => fr.Index == chosenIndex);
+			FormationsWithLooselyChosenSergeants.Add(chosenIndex, base.Mission.PlayerTeam.PlayerOrderController.Owner);
+			list.Remove(item);
+		}
+		Queue<string> queue = new Queue<string>(CharacterNamesInPlayerSideByPriorityQueue);
+		while (list.Count > 0 && queue.Count > 0)
+		{
+			string nextAgentNameToProcess = queue.Dequeue();
+			Agent agent = base.Mission.PlayerTeam.ActiveAgents.FirstOrDefault((Agent aa) => aa.Character.StringId.Equals(nextAgentNameToProcess));
+			if (agent != null)
+			{
+				Formation formation = ChooseFormationToLead(list, agent);
+				if (formation != null)
+				{
+					FormationsWithLooselyChosenSergeants.Add(formation.Index, agent);
+					list.Remove(formation);
+				}
+			}
+		}
+		if (this.OnAllFormationsAssignedSergeants != null)
+		{
+			this.OnAllFormationsAssignedSergeants(FormationsWithLooselyChosenSergeants);
+		}
+	}
+
+	public void OnPlayerChoiceFinalized()
+	{
+		foreach (KeyValuePair<int, Agent> formationsLockedWithSergeant in FormationsLockedWithSergeants)
+		{
+			AssignSergeant(formationsLockedWithSergeant.Value.Team.GetFormation((FormationClass)formationsLockedWithSergeant.Key), formationsLockedWithSergeant.Value);
+		}
+		foreach (KeyValuePair<int, Agent> formationsWithLooselyChosenSergeant in FormationsWithLooselyChosenSergeants)
+		{
+			AssignSergeant(formationsWithLooselyChosenSergeant.Value.Team.GetFormation((FormationClass)formationsWithLooselyChosenSergeant.Key), formationsWithLooselyChosenSergeant.Value);
+		}
+	}
+
+	protected virtual void AssignSergeant(Formation formationToLead, Agent sergeant)
+	{
+		sergeant.Formation = formationToLead;
+		if (!sergeant.IsAIControlled || sergeant == Agent.Main)
+		{
+			formationToLead.PlayerOwner = sergeant;
+		}
+		formationToLead.Captain = sergeant;
+	}
+
+	private Formation ChooseFormationToLead(IEnumerable<Formation> formationsToChooseFrom, Agent agent)
+	{
+		bool hasMount = agent.HasMount;
+		bool flag = agent.HasRangedWeapon();
+		List<Formation> list = formationsToChooseFrom.ToList();
+		while (list.Count > 0)
+		{
+			Formation formation = Extensions.MaxBy(list, (Formation ftcf) => ftcf.QuerySystem.FormationPower);
+			list.Remove(formation);
+			if ((flag || (!formation.QuerySystem.IsRangedFormation && !formation.QuerySystem.IsRangedCavalryFormation)) && (hasMount || (!formation.QuerySystem.IsCavalryFormation && !formation.QuerySystem.IsRangedCavalryFormation)))
+			{
+				return formation;
+			}
+		}
+		return null;
 	}
 }

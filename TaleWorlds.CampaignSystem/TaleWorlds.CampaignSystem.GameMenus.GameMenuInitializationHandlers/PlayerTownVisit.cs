@@ -1,4 +1,4 @@
-using TaleWorlds.CampaignSystem.Inventory;
+using Helpers;
 using TaleWorlds.CampaignSystem.Settlements;
 
 namespace TaleWorlds.CampaignSystem.GameMenus.GameMenuInitializationHandlers;
@@ -49,7 +49,7 @@ public class PlayerTownVisit
 	[GameMenuEventHandler("village", "buy_goods", GameMenuEventHandler.EventType.OnConsequence)]
 	private static void game_menu_village_buy_good_on_consequence(MenuCallbackArgs args)
 	{
-		InventoryManager.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Village);
+		InventoryScreenHelper.OpenScreenAsTrade(Settlement.CurrentSettlement.ItemRoster, Settlement.CurrentSettlement.Village);
 	}
 
 	[GameMenuEventHandler("village", "manage_production", GameMenuEventHandler.EventType.OnConsequence)]

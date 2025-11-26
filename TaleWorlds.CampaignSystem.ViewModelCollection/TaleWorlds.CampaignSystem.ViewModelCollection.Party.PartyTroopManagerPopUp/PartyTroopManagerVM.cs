@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -14,13 +15,13 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	protected bool _hasMadeChanges;
 
-	protected TextObject _openButtonEnabledHint = TextObject.Empty;
+	protected TextObject _openButtonEnabledHint = TextObject.GetEmpty();
 
-	protected TextObject _openButtonNoTroopsHint = TextObject.Empty;
+	protected TextObject _openButtonNoTroopsHint = TextObject.GetEmpty();
 
-	protected TextObject _openButtonIrrelevantScreenHint = TextObject.Empty;
+	protected TextObject _openButtonIrrelevantScreenHint = TextObject.GetEmpty();
 
-	protected TextObject _openButtonUpgradesDisabledHint = TextObject.Empty;
+	protected TextObject _openButtonUpgradesDisabledHint = TextObject.GetEmpty();
 
 	private int _initialGoldChange;
 
@@ -28,7 +29,11 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	private int _initialMoraleChange;
 
+	protected List<Tuple<EquipmentElement, int>> _initialUsedUpgradeHorsesHistory = new List<Tuple<EquipmentElement, int>>();
+
 	private InputKeyItemVM _doneInputKey;
+
+	private InputKeyItemVM _cancelInputKey;
 
 	private InputKeyItemVM _primaryActionInputKey;
 
@@ -50,6 +55,8 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	private HintViewModel _openButtonHint;
 
+	private BasicTooltipViewModel _usedHorsesHint;
+
 	private string _titleText;
 
 	private string _avatarText;
@@ -66,6 +73,8 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	private string _doneLbl;
 
+	private string _cancelLbl;
+
 	[DataSourceProperty]
 	public InputKeyItemVM DoneInputKey
 	{
@@ -79,6 +88,23 @@ public abstract class PartyTroopManagerVM : ViewModel
 			{
 				_doneInputKey = value;
 				OnPropertyChangedWithValue(value, "DoneInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM CancelInputKey
+	{
+		get
+		{
+			return _cancelInputKey;
+		}
+		set
+		{
+			if (value != _cancelInputKey)
+			{
+				_cancelInputKey = value;
+				OnPropertyChangedWithValue(value, "CancelInputKey");
 			}
 		}
 	}
@@ -254,6 +280,23 @@ public abstract class PartyTroopManagerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public BasicTooltipViewModel UsedHorsesHint
+	{
+		get
+		{
+			return _usedHorsesHint;
+		}
+		set
+		{
+			if (value != _usedHorsesHint)
+			{
+				_usedHorsesHint = value;
+				OnPropertyChangedWithValue(value, "UsedHorsesHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string TitleText
 	{
 		get
@@ -389,15 +432,29 @@ public abstract class PartyTroopManagerVM : ViewModel
 		}
 	}
 
-	public abstract void ExecuteItemPrimaryAction();
-
-	public abstract void ExecuteItemSecondaryAction();
+	[DataSourceProperty]
+	public string CancelLbl
+	{
+		get
+		{
+			return _cancelLbl;
+		}
+		set
+		{
+			if (value != _cancelLbl)
+			{
+				_cancelLbl = value;
+				OnPropertyChangedWithValue(value, "CancelLbl");
+			}
+		}
+	}
 
 	public PartyTroopManagerVM(PartyVM partyVM)
 	{
 		_partyVM = partyVM;
 		Troops = new MBBindingList<PartyTroopManagerItemVM>();
 		OpenButtonHint = new HintViewModel();
+		UsedHorsesHint = new BasicTooltipViewModel();
 		RefreshValues();
 	}
 
@@ -408,12 +465,14 @@ public abstract class PartyTroopManagerVM : ViewModel
 		NameText = new TextObject("{=PDdh1sBj}Name").ToString();
 		CountText = new TextObject("{=zFDoDbNj}Count").ToString();
 		DoneLbl = GameTexts.FindText("str_done").ToString();
+		CancelLbl = GameTexts.FindText("str_cancel").ToString();
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
 		DoneInputKey.OnFinalize();
+		CancelInputKey.OnFinalize();
 		PrimaryActionInputKey?.OnFinalize();
 		SecondaryActionInputKey?.OnFinalize();
 	}
@@ -424,6 +483,11 @@ public abstract class PartyTroopManagerVM : ViewModel
 		_initialGoldChange = _partyVM.PartyScreenLogic.CurrentData.PartyGoldChangeAmount;
 		_initialHorseChange = _partyVM.PartyScreenLogic.CurrentData.PartyHorseChangeAmount;
 		_initialMoraleChange = _partyVM.PartyScreenLogic.CurrentData.PartyMoraleChangeAmount;
+		_initialUsedUpgradeHorsesHistory.Clear();
+		foreach (Tuple<EquipmentElement, int> item in _partyVM.PartyScreenLogic.CurrentData.UsedUpgradeHorsesHistory)
+		{
+			_initialUsedUpgradeHorsesHistory.Add(item);
+		}
 		UpdateLabels();
 		_hasMadeChanges = false;
 		IsOpen = true;
@@ -494,8 +558,8 @@ public abstract class PartyTroopManagerVM : ViewModel
 		else if (IsUpgradePopUp)
 		{
 			MBBindingList<UpgradeTargetVM> upgrades = FocusedTroop.PartyCharacter.Upgrades;
-			IsPrimaryActionAvailable = upgrades.Count > 0 && upgrades[0].IsAvailable;
-			IsSecondaryActionAvailable = upgrades.Count > 1 && upgrades[1].IsAvailable;
+			IsPrimaryActionAvailable = upgrades.Count > 0 && upgrades[0].IsAvailable && !upgrades[0].IsInsufficient;
+			IsSecondaryActionAvailable = upgrades.Count > 1 && upgrades[1].IsAvailable && !upgrades[1].IsInsufficient;
 		}
 		else
 		{
@@ -507,6 +571,11 @@ public abstract class PartyTroopManagerVM : ViewModel
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void SetCancelInputKey(HotKey hotKey)
+	{
+		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 
 	public void SetPrimaryActionInputKey(HotKey hotKey)

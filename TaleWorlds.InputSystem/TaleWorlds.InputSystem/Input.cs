@@ -17,6 +17,8 @@ public static class Input
 
 	private static byte[] keyData;
 
+	private static IInputManager _emptyInputManager;
+
 	private static IInputManager _inputManager;
 
 	public static Action OnGamepadActiveStateChanged;
@@ -33,15 +35,27 @@ public static class Input
 
 	public static IInputContext DebugInput { get; private set; }
 
-	public static IInputManager InputManager => _inputManager;
+	public static IInputManager InputManager
+	{
+		get
+		{
+			if (IsOnScreenKeyboardActive)
+			{
+				return _emptyInputManager;
+			}
+			return _inputManager;
+		}
+	}
 
 	public static Vec2 Resolution => _inputManager.GetResolution();
 
 	public static Vec2 DesktopResolution => _inputManager.GetDesktopResolution();
 
-	public static bool IsMouseActive => _inputManager.IsMouseActive();
+	public static bool IsOnScreenKeyboardActive { get; set; }
 
-	public static bool IsControllerConnected => _inputManager.IsControllerConnected();
+	public static bool IsMouseActive => InputManager.IsMouseActive();
+
+	public static bool IsControllerConnected => InputManager.IsControllerConnected();
 
 	public static bool IsGamepadActive
 	{
@@ -90,19 +104,19 @@ public static class Input
 		}
 	}
 
-	public static float MouseMoveX => _inputManager.GetMouseMoveX();
+	public static float MouseMoveX => InputManager.GetMouseMoveX();
 
-	public static float MouseMoveY => _inputManager.GetMouseMoveY();
+	public static float MouseMoveY => InputManager.GetMouseMoveY();
 
-	public static float GyroX => _inputManager.GetGyroX();
+	public static float GyroX => InputManager.GetGyroX();
 
-	public static float GyroY => _inputManager.GetGyroY();
+	public static float GyroY => InputManager.GetGyroY();
 
-	public static float GyroZ => _inputManager.GetGyroZ();
+	public static float GyroZ => InputManager.GetGyroZ();
 
-	public static float MouseSensitivity => _inputManager.GetMouseSensitivity();
+	public static float MouseSensitivity => InputManager.GetMouseSensitivity();
 
-	public static float DeltaMouseScroll => _inputManager.GetMouseDeltaZ();
+	public static float DeltaMouseScroll => InputManager.GetMouseDeltaZ();
 
 	public static Vec2 MousePositionRanged => InputState.MousePositionRanged;
 
@@ -119,6 +133,7 @@ public static class Input
 
 	public static void Initialize(IInputManager inputManager, IInputContext debugInput)
 	{
+		_emptyInputManager = new EmptyInputManager();
 		_inputManager = inputManager;
 		InputState = new InputState();
 		keyData = new byte[256];
@@ -127,57 +142,67 @@ public static class Input
 
 	public static void UpdateKeyData(byte[] keyData)
 	{
-		_inputManager.UpdateKeyData(keyData);
+		InputManager.UpdateKeyData(keyData);
 	}
 
 	public static float GetMouseMoveX()
 	{
-		return _inputManager.GetMouseMoveX();
+		return InputManager.GetMouseMoveX();
 	}
 
 	public static float GetMouseMoveY()
 	{
-		return _inputManager.GetMouseMoveY();
+		return InputManager.GetMouseMoveY();
+	}
+
+	public static float GetNormalizedMouseMoveX()
+	{
+		return InputManager.GetNormalizedMouseMoveX();
+	}
+
+	public static float GetNormalizedMouseMoveY()
+	{
+		return InputManager.GetNormalizedMouseMoveY();
 	}
 
 	public static float GetGyroX()
 	{
-		return _inputManager.GetGyroX();
+		return InputManager.GetGyroX();
 	}
 
 	public static float GetGyroY()
 	{
-		return _inputManager.GetGyroY();
+		return InputManager.GetGyroY();
 	}
 
 	public static float GetGyroZ()
 	{
-		return _inputManager.GetGyroZ();
+		return InputManager.GetGyroZ();
 	}
 
 	public static Vec2 GetKeyState(InputKey key)
 	{
-		return _inputManager.GetKeyState(key);
+		return InputManager.GetKeyState(key);
 	}
 
 	public static bool IsKeyPressed(InputKey key)
 	{
-		return _inputManager.IsKeyPressed(key);
+		return InputManager.IsKeyPressed(key);
 	}
 
 	public static bool IsKeyDown(InputKey key)
 	{
-		return _inputManager.IsKeyDown(key);
+		return InputManager.IsKeyDown(key);
 	}
 
 	public static bool IsKeyDownImmediate(InputKey key)
 	{
-		return _inputManager.IsKeyDownImmediate(key);
+		return InputManager.IsKeyDownImmediate(key);
 	}
 
 	public static bool IsKeyReleased(InputKey key)
 	{
-		return _inputManager.IsKeyReleased(key);
+		return InputManager.IsKeyReleased(key);
 	}
 
 	public static bool IsControlOrShiftNotDown()
@@ -187,6 +212,11 @@ public static class Input
 			return !InputKey.RightShift.IsDown();
 		}
 		return false;
+	}
+
+	public static ControllerTypes GetPrimaryControllerType()
+	{
+		return ControllerTypes.Xbox;
 	}
 
 	public static int GetFirstKeyPressedInRange(int startKeyNo)
@@ -233,17 +263,17 @@ public static class Input
 
 	public static void PressKey(InputKey key)
 	{
-		_inputManager.PressKey(key);
+		InputManager.PressKey(key);
 	}
 
 	public static void ClearKeys()
 	{
-		_inputManager.ClearKeys();
+		InputManager.ClearKeys();
 	}
 
 	public static int GetVirtualKeyCode(InputKey key)
 	{
-		return _inputManager.GetVirtualKeyCode(key);
+		return InputManager.GetVirtualKeyCode(key);
 	}
 
 	public static bool IsDown(this InputKey key)
@@ -263,25 +293,28 @@ public static class Input
 
 	public static void SetClipboardText(string text)
 	{
-		_inputManager.SetClipboardText(text);
+		InputManager.SetClipboardText(text);
 	}
 
 	public static string GetClipboardText()
 	{
-		return _inputManager.GetClipboardText();
+		return InputManager.GetClipboardText();
 	}
 
 	public static void Update()
 	{
-		float mousePositionX = _inputManager.GetMousePositionX();
-		float mousePositionY = _inputManager.GetMousePositionY();
-		float mouseScrollValue = _inputManager.GetMouseScrollValue();
-		IsMousePositionUpdated = InputState.UpdateMousePosition(mousePositionX, mousePositionY);
-		IsMouseScrollChanged = InputState.UpdateMouseScroll(mouseScrollValue);
-		IsGamepadActive = IsControllerConnected && !IsMouseActive;
-		IsAnyTouchActive = _inputManager.IsAnyTouchActive();
-		ControllerType = _inputManager.GetControllerType();
-		UpdateKeyData(keyData);
+		if (!IsOnScreenKeyboardActive)
+		{
+			float mousePositionX = InputManager.GetMousePositionX();
+			float mousePositionY = InputManager.GetMousePositionY();
+			float mouseScrollValue = InputManager.GetMouseScrollValue();
+			IsMousePositionUpdated = InputState.UpdateMousePosition(mousePositionX, mousePositionY);
+			IsMouseScrollChanged = InputState.UpdateMouseScroll(mouseScrollValue);
+			IsGamepadActive = IsControllerConnected && !IsMouseActive;
+			IsAnyTouchActive = InputManager.IsAnyTouchActive();
+			ControllerType = InputManager.GetControllerType();
+			UpdateKeyData(keyData);
+		}
 	}
 
 	public static bool IsControllerKey(InputKey key)
@@ -402,41 +435,41 @@ public static class Input
 
 	public static void SetMousePosition(int x, int y)
 	{
-		_inputManager.SetCursorPosition(x, y);
+		InputManager.SetCursorPosition(x, y);
 	}
 
 	public static void SetCursorFriction(float frictionValue)
 	{
-		_inputManager.SetCursorFriction(frictionValue);
+		InputManager.SetCursorFriction(frictionValue);
 	}
 
 	public static InputKey[] GetClickKeys()
 	{
-		return _inputManager.GetClickKeys();
+		return InputManager.GetClickKeys();
 	}
 
 	public static void SetRumbleEffect(float[] lowFrequencyLevels, float[] lowFrequencyDurations, int numLowFrequencyElements, float[] highFrequencyLevels, float[] highFrequencyDurations, int numHighFrequencyElements)
 	{
-		_inputManager.SetRumbleEffect(lowFrequencyLevels, lowFrequencyDurations, numLowFrequencyElements, highFrequencyLevels, highFrequencyDurations, numHighFrequencyElements);
+		InputManager.SetRumbleEffect(lowFrequencyLevels, lowFrequencyDurations, numLowFrequencyElements, highFrequencyLevels, highFrequencyDurations, numHighFrequencyElements);
 	}
 
 	public static void SetTriggerFeedback(byte leftTriggerPosition, byte leftTriggerStrength, byte rightTriggerPosition, byte rightTriggerStrength)
 	{
-		_inputManager.SetTriggerFeedback(leftTriggerPosition, leftTriggerStrength, rightTriggerPosition, rightTriggerStrength);
+		InputManager.SetTriggerFeedback(leftTriggerPosition, leftTriggerStrength, rightTriggerPosition, rightTriggerStrength);
 	}
 
 	public static void SetTriggerWeaponEffect(byte leftStartPosition, byte leftEnd_position, byte leftStrength, byte rightStartPosition, byte rightEndPosition, byte rightStrength)
 	{
-		_inputManager.SetTriggerWeaponEffect(leftStartPosition, leftEnd_position, leftStrength, rightStartPosition, rightEndPosition, rightStrength);
+		InputManager.SetTriggerWeaponEffect(leftStartPosition, leftEnd_position, leftStrength, rightStartPosition, rightEndPosition, rightStrength);
 	}
 
 	public static void SetTriggerVibration(float[] leftTriggerAmplitudes, float[] leftTriggerFrequencies, float[] leftTriggerDurations, int numLeftTriggerElements, float[] rightTriggerAmplitudes, float[] rightTriggerFrequencies, float[] rightTriggerDurations, int numRightTriggerElements)
 	{
-		_inputManager.SetTriggerVibration(leftTriggerAmplitudes, leftTriggerFrequencies, leftTriggerDurations, numLeftTriggerElements, rightTriggerAmplitudes, rightTriggerFrequencies, rightTriggerDurations, numRightTriggerElements);
+		InputManager.SetTriggerVibration(leftTriggerAmplitudes, leftTriggerFrequencies, leftTriggerDurations, numLeftTriggerElements, rightTriggerAmplitudes, rightTriggerFrequencies, rightTriggerDurations, numRightTriggerElements);
 	}
 
 	public static void SetLightbarColor(float red, float green, float blue)
 	{
-		_inputManager.SetLightbarColor(red, green, blue);
+		InputManager.SetLightbarColor(red, green, blue);
 	}
 }

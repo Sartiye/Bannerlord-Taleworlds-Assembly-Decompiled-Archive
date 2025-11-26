@@ -2,7 +2,7 @@ using TaleWorlds.DotNet;
 
 namespace TaleWorlds.MountAndBlade;
 
-[EngineStruct("Bone_body_type_data", false)]
+[EngineStruct("Bone_body_type_data", false, null)]
 public struct BoneBodyTypeData
 {
 	[CustomEngineStructMemberData(true)]

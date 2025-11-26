@@ -19,6 +19,8 @@ public class MPLobbyGameSearchVM : ViewModel
 
 	private bool _canCancelSearch;
 
+	private bool _canEnterPracticeBattle;
+
 	private bool _showStats;
 
 	private string _titleText;
@@ -26,6 +28,8 @@ public class MPLobbyGameSearchVM : ViewModel
 	private string _gameTypesText;
 
 	private string _cancelText;
+
+	private string _practiceText;
 
 	private string _averageWaitingTime;
 
@@ -50,6 +54,23 @@ public class MPLobbyGameSearchVM : ViewModel
 			{
 				_isEnabled = value;
 				OnPropertyChangedWithValue(value, "IsEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanEnterPracticeBattle
+	{
+		get
+		{
+			return _canEnterPracticeBattle;
+		}
+		set
+		{
+			if (value != _canEnterPracticeBattle)
+			{
+				_canEnterPracticeBattle = value;
+				OnPropertyChangedWithValue(value, "CanEnterPracticeBattle");
 			}
 		}
 	}
@@ -135,6 +156,23 @@ public class MPLobbyGameSearchVM : ViewModel
 			{
 				_cancelText = value;
 				OnPropertyChangedWithValue(value, "CancelText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string PracticeText
+	{
+		get
+		{
+			return _practiceText;
+		}
+		set
+		{
+			if (value != _practiceText)
+			{
+				_practiceText = value;
+				OnPropertyChangedWithValue(value, "PracticeText");
 			}
 		}
 	}
@@ -233,6 +271,7 @@ public class MPLobbyGameSearchVM : ViewModel
 		GameTexts.SetVariable("STR2", new TextObject("{=18yFEEIL}Estimated wait time"));
 		AverageWaitingTimeDescription = GameTexts.FindText("str_STR1_space_STR2").ToString();
 		CancelText = new TextObject("{=3CpNUnVl}Cancel").ToString();
+		PracticeText = new TextObject("{=cjBboOaH}Practice while waiting").ToString();
 	}
 
 	public void OnTick(float dt)
@@ -250,6 +289,7 @@ public class MPLobbyGameSearchVM : ViewModel
 		if (enabled)
 		{
 			CanCancelSearch = true;
+			CanEnterPracticeBattle = false;
 			_waitingTimeElapsed = 0f;
 		}
 		RefreshValues();
@@ -303,11 +343,13 @@ public class MPLobbyGameSearchVM : ViewModel
 	public void OnRequestedToCancelSearchBattle()
 	{
 		CanCancelSearch = false;
+		CanEnterPracticeBattle = false;
 	}
 
 	public void UpdateCanCancel()
 	{
 		CanCancelSearch = !NetworkMain.GameClient.IsInParty || NetworkMain.GameClient.IsPartyLeader;
+		CanEnterPracticeBattle = false;
 	}
 
 	private void ExecuteCancel()

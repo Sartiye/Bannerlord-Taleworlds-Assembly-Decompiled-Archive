@@ -59,7 +59,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=ji5kkqXy}They need to be criminals, bandits, for me to do this legally. I need at least {WANTED_PRISONER_AMOUNT} of them. But if you can bring more I will gladly accept. I'm willing to pay ten times more than their market price for each. What do you say?[if:convo_nonchalant]");
+				TextObject textObject = new TextObject("{=ji5kkqXy}They need to be criminals, bandits, for me to do this legally. I need at least {WANTED_PRISONER_AMOUNT} of them. But if you can bring more I will gladly accept. I'm willing to pay five times more than their market price for each. What do you say?[if:convo_nonchalant]");
 				textObject.SetTextVariable("WANTED_PRISONER_AMOUNT", RequestedPrisonerCount);
 				return textObject;
 			}
@@ -158,14 +158,12 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
@@ -259,6 +257,8 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		[SaveableField(9)]
 		private bool _playerReachedMaximumAmount;
 
+		private float questPrisonerValueMultiplier = 5f;
+
 		[SaveableField(7)]
 		private JournalLog _questProgressLogTest;
 
@@ -282,7 +282,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=7XR4MJci}{QUEST_GIVER.LINK}, a landowner in {SETTLEMENT}, told you that {?QUEST_GIVER.GENDER}she{?}he{\\?} needs prisoners to use in {?QUEST_GIVER.GENDER}her{?}his{\\?} mines as manual laborers. {?QUEST_GIVER.GENDER}She{?}He{\\?} asked you to bring at least {NEEDED_PRISONER_AMOUNT} bandit prisoners, but {?QUEST_GIVER.GENDER}she{?}he{\\?} will pay extra if you bring more. You have agreed to bring {?QUEST_GIVER.GENDER}her{?}him{\\?} at least {NEEDED_PRISONER_AMOUNT} bandit prisoner and you will be paid ten times more than their market price for each prisoner you bring.");
+				TextObject textObject = new TextObject("{=7XR4MJci}{QUEST_GIVER.LINK}, a landowner in {SETTLEMENT}, told you that {?QUEST_GIVER.GENDER}she{?}he{\\?} needs prisoners to use in {?QUEST_GIVER.GENDER}her{?}his{\\?} mines as manual laborers. {?QUEST_GIVER.GENDER}She{?}He{\\?} asked you to bring at least {NEEDED_PRISONER_AMOUNT} bandit prisoners, but {?QUEST_GIVER.GENDER}she{?}he{\\?} will pay extra if you bring more. You have agreed to bring {?QUEST_GIVER.GENDER}her{?}him{\\?} at least {NEEDED_PRISONER_AMOUNT} bandit prisoner and you will be paid five times more than their market price for each prisoner you bring.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("SETTLEMENT", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("NEEDED_PRISONER_AMOUNT", _requestedPrisonerCount);
@@ -358,6 +358,16 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 			get
 			{
 				TextObject textObject = new TextObject("{=b1lsZNxE}You failed to deliver enough prisoners in time. {QUEST_GIVER.LINK} must be disappointed.");
+				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
+				return textObject;
+			}
+		}
+
+		private TextObject QuestDeliveredRequestedPrisonersLogText
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=YiPUbIII}You have delivered the requested number of prisoners to {QUEST_GIVER.LINK}. You may settle your accounts with {?QUEST_GIVER.GENDER}her{?}him{\\?} at any point to receive your pay, or continue to bring more captives.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				return textObject;
 			}
@@ -525,7 +535,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 					}
 					else
 					{
-						TextObject textObject = new TextObject("{=CBBPWMZd}Thanks to you, my mines are full {?PLAYER.GENDER}madam{?}sir{\\?}. I will only buy {X} more then we're done.");
+						TextObject textObject = new TextObject("{=CBBPWMZd}Thanks to you, my mines are full {?PLAYER.GENDER}madam{?}sir{\\?}. I will only buy {X} more, then we're done.");
 						textObject.SetTextVariable("X", _maximumPrisonerCount - _deliveredPrisonerCount);
 						npcResponseLine.SetTextVariable("MANUAL_LABORERS_QUEST_NOTABLE_RESPONSE", textObject);
 						changeDialogAfterTransfer = false;
@@ -561,7 +571,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 
 		private void OpenPrisonerDeliveryScreen()
 		{
-			PartyScreenManager.OpenScreenWithCondition(IsTroopTransferable, DoneButtonCondition, OnDoneClicked, OnCancelClicked, PartyScreenLogic.TransferState.NotTransferable, PartyScreenLogic.TransferState.Transferable, base.QuestGiver.Name, 150, showProgressBar: false, isDonating: false, PartyScreenMode.PrisonerManage);
+			PartyScreenHelper.OpenScreenWithCondition(IsTroopTransferable, DoneButtonCondition, OnDoneClicked, OnCancelClicked, PartyScreenLogic.TransferState.NotTransferable, PartyScreenLogic.TransferState.Transferable, base.QuestGiver.Name, _maximumPrisonerCount - _deliveredPrisonerCount, showProgressBar: true, isDonating: false, PartyScreenHelper.PartyScreenMode.PrisonerManage);
 		}
 
 		private void OnCancelClicked()
@@ -586,8 +596,15 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		{
 			foreach (TroopRosterElement item in leftPrisonRoster.GetTroopRoster())
 			{
-				_rewardGold += Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(item.Character, Hero.MainHero) * item.Number * 5;
-				_deliveredPrisonerCount += item.Number;
+				_rewardGold += (int)((float)(Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(item.Character, Hero.MainHero) * item.Number) * questPrisonerValueMultiplier);
+			}
+			int deliveredPrisonerCount = _deliveredPrisonerCount;
+			_deliveredPrisonerCount += releasedPrisonerRoster.Count();
+			int deliveredPrisonerCount2 = _deliveredPrisonerCount;
+			bool flag = deliveredPrisonerCount < _requestedPrisonerCount && deliveredPrisonerCount2 >= _requestedPrisonerCount;
+			if (deliveredPrisonerCount2 != _maximumPrisonerCount && flag)
+			{
+				AddLog(QuestDeliveredRequestedPrisonersLogText);
 			}
 			_questProgressLogTest.UpdateCurrentProgress(_deliveredPrisonerCount);
 			_questProgressLogTest.TaskName.SetTextVariable("TOTAL_REWARD", _rewardGold);

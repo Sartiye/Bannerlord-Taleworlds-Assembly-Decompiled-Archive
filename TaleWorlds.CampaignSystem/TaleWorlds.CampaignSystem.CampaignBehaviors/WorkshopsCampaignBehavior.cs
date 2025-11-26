@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.GameMenus;
@@ -11,6 +12,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Workshops;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -167,8 +169,43 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 				AddNewWarehouseDataIfNeeded(ownedWorkshop.Settlement);
 			}
 		}
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.9.35637")))
+		{
+			for (int i = 0; i < _workshopData.Length; i++)
+			{
+				if (_workshopData[i] != null && _workshopData[i].Workshop.Owner != Hero.MainHero)
+				{
+					_workshopData[i] = null;
+				}
+			}
+		}
 		EnsureBehaviorDataSize();
 		FillItemsInAllCategories();
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0"))
+		{
+			RemoveDeadOwnersFromWorkshops();
+		}
+	}
+
+	private void RemoveDeadOwnersFromWorkshops()
+	{
+		foreach (Settlement item in Settlement.All)
+		{
+			if (!item.IsTown)
+			{
+				continue;
+			}
+			Workshop[] workshops = item.Town.Workshops;
+			foreach (Workshop workshop in workshops)
+			{
+				if (workshop.Owner.IsDead)
+				{
+					Debug.FailedAssert("Workshop owner is dead", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\WorkshopsCampaignBehavior.cs", "RemoveDeadOwnersFromWorkshops", 176);
+					Hero notableOwnerForWorkshop = Campaign.Current.Models.WorkshopModel.GetNotableOwnerForWorkshop(workshop);
+					ChangeOwnerOfWorkshopAction.ApplyByDeath(workshop, notableOwnerForWorkshop);
+				}
+			}
+		}
 	}
 
 	private void EnsureBehaviorDataSize()
@@ -241,14 +278,14 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 
 	private void DailyTickTown(Town town)
 	{
-		if (!town.InRebelliousState)
+		Workshop[] workshops = town.Workshops;
+		foreach (Workshop workshop in workshops)
 		{
-			Workshop[] workshops = town.Workshops;
-			foreach (Workshop workshop in workshops)
+			if (!town.InRebelliousState)
 			{
 				RunTownWorkshop(town, workshop);
-				HandleDailyExpense(workshop);
 			}
+			HandleDailyExpense(workshop);
 		}
 	}
 
@@ -307,7 +344,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 	private void warehouse_manage_on_consequence()
 	{
 		InventoryLogic.CapacityData otherSideCapacity = new InventoryLogic.CapacityData(CapacityDelegate, CapacityExceededWarningDelegate, CapacityExceededHintDelegate);
-		InventoryManager.OpenScreenAsWarehouse(GetWarehouseRoster(Settlement.CurrentSettlement), otherSideCapacity);
+		InventoryScreenHelper.OpenScreenAsWarehouse(GetWarehouseRoster(Settlement.CurrentSettlement), otherSideCapacity);
 		Campaign.Current.ConversationManager.ContinueConversation();
 		static int CapacityDelegate()
 		{
@@ -326,7 +363,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 	private void warehouse_manage_on_consequence(MenuCallbackArgs args)
 	{
 		InventoryLogic.CapacityData otherSideCapacity = new InventoryLogic.CapacityData(CapacityDelegate, CapacityExceededWarningDelegate, CapacityExceededHintDelegate);
-		InventoryManager.OpenScreenAsWarehouse(GetWarehouseRoster(Settlement.CurrentSettlement), otherSideCapacity);
+		InventoryScreenHelper.OpenScreenAsWarehouse(GetWarehouseRoster(Settlement.CurrentSettlement), otherSideCapacity);
 		static int CapacityDelegate()
 		{
 			return Campaign.Current.Models.WorkshopModel.WarehouseCapacity;
@@ -597,7 +634,6 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 						if (dataOfWorkshop2.ProductionProgressForWarehouse >= 1f)
 						{
 							ProduceAnOutputToWarehouse(item, workshop);
-							SkillLevelingManager.OnProductionProducedToWarehouse(item);
 							AddOutputProgressForWarehouse(workshop, -1f);
 							if (dictionary.ContainsKey(item.Item))
 							{
@@ -617,6 +653,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 					if (dataOfWorkshop2.ProductionProgressForTown >= 1f)
 					{
 						ProduceAnOutputToTown(item, workshop, effectCapital);
+						SkillLevelingManager.OnProductionProducedToWarehouse(item);
 						AddOutputProgressForTown(workshop, -1f);
 						if (dictionary.ContainsKey(item.Item))
 						{
@@ -792,8 +829,15 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 			for (int j = 0; j < item; j++)
 			{
 				EquipmentElement randomItem = GetRandomItem(production.Outputs[i].Item1, workshop.Settlement.Town);
-				list.Add(randomItem);
-				income += workshop.Settlement.Town.GetItemPrice(randomItem, null, isSelling: true);
+				if (!randomItem.IsEmpty)
+				{
+					list.Add(randomItem);
+					income += workshop.Settlement.Town.GetItemPrice(randomItem, null, isSelling: true);
+				}
+				else
+				{
+					Debug.FailedAssert("Workshop produces empty items", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\WorkshopsCampaignBehavior.cs", "GetItemsToProduce", 918);
+				}
 			}
 		}
 		return list;
@@ -1071,19 +1115,29 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 		}
 	}
 
-	private float FindTotalInputDensityScore(Settlement settlement, WorkshopType workshop, IDictionary<ItemCategory, float> productionDict, bool atGameStart)
+	private float FindTotalInputDensityScore(Settlement settlement, WorkshopType workshopType, IDictionary<ItemCategory, float> productionDict, bool atGameStart)
 	{
-		int num = 0;
+		float num = 0f;
 		for (int i = 0; i < settlement.Town.Workshops.Length; i++)
 		{
-			if (settlement.Town.Workshops[i].WorkshopType == workshop)
+			Workshop workshop = settlement.Town.Workshops[i];
+			if (workshop.WorkshopType != null && !workshop.WorkshopType.IsHidden)
 			{
-				num++;
+				if (workshop.WorkshopType == workshopType)
+				{
+					num += 1f;
+					continue;
+				}
+				(float, float) inputOutputSimilarityForWorkshopTypes = GetInputOutputSimilarityForWorkshopTypes(workshopType, workshop.WorkshopType);
+				float item = inputOutputSimilarityForWorkshopTypes.Item1;
+				float item2 = inputOutputSimilarityForWorkshopTypes.Item2;
+				num += item;
+				num += item2;
 			}
 		}
 		float num2 = 0.01f;
 		float num3 = 0f;
-		foreach (WorkshopType.Production production in workshop.Productions)
+		foreach (WorkshopType.Production production in workshopType.Productions)
 		{
 			bool flag = false;
 			foreach (var output in production.Outputs)
@@ -1111,10 +1165,93 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 				}
 			}
 		}
-		float num5 = 1f + (float)(num * 6);
-		num2 *= (float)workshop.Frequency * (1f / (float)Math.Pow(num5, 3.0));
+		float num5 = 1f + num * 6f;
+		num2 *= (float)workshopType.Frequency * (1f / (float)Math.Pow(num5, 3.0));
 		num2 += num3;
 		return TaleWorlds.Library.MathF.Pow(num2, 0.6f);
+	}
+
+	private (float, float) GetInputOutputSimilarityForWorkshopTypes(WorkshopType workshop, WorkshopType otherWorkshop)
+	{
+		List<ItemCategory> allOutputItems = new List<ItemCategory>();
+		List<ItemCategory> allInputItems = new List<ItemCategory>();
+		(Dictionary<ItemCategory, float>, Dictionary<ItemCategory, float>) inputOutputProductionForWorkshop = GetInputOutputProductionForWorkshop(workshop, ref allInputItems, ref allOutputItems);
+		Dictionary<ItemCategory, float> item = inputOutputProductionForWorkshop.Item1;
+		Dictionary<ItemCategory, float> item2 = inputOutputProductionForWorkshop.Item2;
+		(Dictionary<ItemCategory, float>, Dictionary<ItemCategory, float>) inputOutputProductionForWorkshop2 = GetInputOutputProductionForWorkshop(otherWorkshop, ref allInputItems, ref allOutputItems);
+		Dictionary<ItemCategory, float> item3 = inputOutputProductionForWorkshop2.Item1;
+		Dictionary<ItemCategory, float> item4 = inputOutputProductionForWorkshop2.Item2;
+		float num = item.SumQ((KeyValuePair<ItemCategory, float> x) => x.Value);
+		float num2 = item3.SumQ((KeyValuePair<ItemCategory, float> x) => x.Value);
+		float num3 = 0f;
+		foreach (ItemCategory item5 in allInputItems)
+		{
+			if (item.ContainsKey(item5) && item3.ContainsKey(item5))
+			{
+				float val = item[item5] / num;
+				float val2 = item3[item5] / num2;
+				num3 += Math.Min(val, val2);
+			}
+		}
+		float num4 = item2.SumQ((KeyValuePair<ItemCategory, float> x) => x.Value);
+		float num5 = item4.SumQ((KeyValuePair<ItemCategory, float> x) => x.Value);
+		float num6 = 0f;
+		foreach (ItemCategory item6 in allOutputItems)
+		{
+			if (item2.ContainsKey(item6) && item4.ContainsKey(item6))
+			{
+				float val3 = item2[item6] / num4;
+				float val4 = item4[item6] / num5;
+				num6 += Math.Min(val3, val4);
+			}
+		}
+		return (num3, num6);
+	}
+
+	private (Dictionary<ItemCategory, float>, Dictionary<ItemCategory, float>) GetInputOutputProductionForWorkshop(WorkshopType workshop, ref List<ItemCategory> allInputItems, ref List<ItemCategory> allOutputItems)
+	{
+		Dictionary<ItemCategory, float> dictionary = new Dictionary<ItemCategory, float>();
+		Dictionary<ItemCategory, float> dictionary2 = new Dictionary<ItemCategory, float>();
+		foreach (WorkshopType.Production production in workshop.Productions)
+		{
+			foreach (var input in production.Inputs)
+			{
+				if (input.Item1.IsTradeGood)
+				{
+					if (dictionary.ContainsKey(input.Item1))
+					{
+						dictionary[input.Item1] += (float)input.Item2 * production.ConversionSpeed;
+					}
+					else
+					{
+						dictionary.Add(input.Item1, (float)input.Item2 * production.ConversionSpeed);
+					}
+					if (!allInputItems.Contains(input.Item1))
+					{
+						allInputItems.Add(input.Item1);
+					}
+				}
+			}
+			foreach (var output in production.Outputs)
+			{
+				if (output.Item1.IsTradeGood)
+				{
+					if (dictionary2.ContainsKey(output.Item1))
+					{
+						dictionary2[output.Item1] += (float)output.Item2 * production.ConversionSpeed;
+					}
+					else
+					{
+						dictionary2.Add(output.Item1, (float)output.Item2 * production.ConversionSpeed);
+					}
+					if (!allOutputItems.Contains(output.Item1))
+					{
+						allOutputItems.Add(output.Item1);
+					}
+				}
+			}
+		}
+		return (dictionary, dictionary2);
 	}
 
 	private void BuildWorkshopForHeroAtGameStart(Hero ownerHero)
@@ -1151,7 +1288,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 				if (itemCategory != DefaultItemCategories.Grain || item2.VillageType.PrimaryProduction == DefaultItems.Grain)
 				{
 					float item = production.Item2;
-					if (itemCategory == DefaultItemCategories.Cow || itemCategory == DefaultItemCategories.Hog)
+					if (itemCategory == DefaultItemCategories.Cow)
 					{
 						itemCategory = DefaultItemCategories.Hides;
 					}

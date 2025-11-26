@@ -16,8 +16,6 @@ public static class CampaignData
 
 	public const string PlayerPrisonBreakTag = "sp_prison_break";
 
-	public const string PlayerAmbushTag = "ambush_spot";
-
 	public const string TournamentMasterTag = "spawnpoint_tournamentmaster";
 
 	public const string PlayerNearArenaMasterTag = "sp_player_near_arena_master";
@@ -122,10 +120,6 @@ public static class CampaignData
 
 	public const string SpawnPointCleanerTag = "spawnpoint_cleaner";
 
-	public const string NpcAmbushTag = "spawnpoint_thug";
-
-	public const string NpcSneakTag = "spawnpoint_npc_sneak";
-
 	public const string NavigationMeshDeactivatorTag = "navigation_mesh_deactivator";
 
 	public const string BattleSetTag = "battle_set";
@@ -171,6 +165,38 @@ public static class CampaignData
 	public const string PrisonBreakPrisonerTag = "sp_prison_break_prisoner";
 
 	public const string HermitTag = "sp_hermit";
+
+	public const string SpShipWright = "sp_shipwright";
+
+	public const string CarpenterTag = "merchant_carpenter";
+
+	public const string ShipyardWorkerTag = "shipyard_worker";
+
+	public const string MarketWorkerTag = "market_worker";
+
+	public const string StaticNpcTag = "static_npc";
+
+	public const string StealthCharacterStringId = "stealth_character";
+
+	public const string DisguiseDefaultCharacterStringId = "disguise_default_character";
+
+	public const string DisguiseDefaultContractorCharacterStringId = "disguise_contractor_character";
+
+	public const string DisguiseOfficerCharacterStringId = "disguise_officer_character";
+
+	public const string DisguiseShadowTargetCharacterStringId = "disguise_shadow_target";
+
+	public const string StealthCharacterSpawnTag = "stealth_agent";
+
+	public const string ForcedStealthCharacterSpawnTag = "stealth_agent_forced";
+
+	public const string DisguiseDefaultCharacterSpawnTag = "disguise_default_agent";
+
+	public const string DisguiseOfficerCharacterSpawnTag = "disguise_officer_agent";
+
+	public const string DisguiseShadowTargetCharacterSpawnTag = "disguise_shadow_agent";
+
+	public const string PrisonBreakStealthReinforcementSpawnTag = "prison_break_reinforcement_point";
 
 	public const string Level1Tag = "level_1";
 
@@ -228,6 +254,8 @@ public static class CampaignData
 
 	public const string CultureSteppeHideout = "steppe_bandits";
 
+	public const string Deserters = "deserters";
+
 	public const string Looters = "looters";
 
 	public const string LocationCenter = "center";
@@ -252,13 +280,15 @@ public static class CampaignData
 
 	public const string RetreatSettlement = "retirement_retreat";
 
+	public const string LocationHideout = "hideout_center";
+
+	public const string LocationPort = "port";
+
 	public const string LameHorseModifier = "lame_horse";
 
 	public const int MinFactionNameLength = 1;
 
 	public const int MaxFactionNameLength = 50;
-
-	public const int CampaignStartYear = 1084;
 
 	public const uint NeutralColor1 = 4291609515u;
 
@@ -267,6 +297,10 @@ public static class CampaignData
 	public const uint NeutralAlternativeColor1 = 4291609515u;
 
 	public const uint NeutralAlternativeColor2 = 4291609515u;
+
+	public const uint StealthColor1 = 4281281067u;
+
+	public const uint StealthColor2 = 4281281067u;
 
 	public static readonly uint[] EmpireHeroClothColors = new uint[13]
 	{
@@ -304,7 +338,21 @@ public static class CampaignData
 		4290227326u, 4291016062u
 	};
 
-	public static readonly CampaignTime CampaignStartTime = CampaignTime.Years(1084f) + CampaignTime.Weeks(3f) + CampaignTime.Hours(9f);
+	public const char EventParameterSplitCharacter = ' ';
+
+	public const string BattleEquipmentUpdateTag = "battle";
+
+	public const string CivilianEquipmentUpdateTag = "civilian";
+
+	public const string StealthEquipmentUpdateTag = "stealth";
+
+	public const string NoEquipmentUpdateTag = "none";
+
+	public const string NavalDLCStringId = "NavalDLC";
+
+	public const string DisguiseShadowTargetCharacter = "disguise_shadow_target";
+
+	public const string StealthCharacter = "stealth_character";
 
 	public static TextObject NeutralFactionName => new TextObject("{=JQNKrAI3}Neutral Faction");
 }

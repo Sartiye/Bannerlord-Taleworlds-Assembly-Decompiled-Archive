@@ -11,6 +11,11 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate float GetAngularDampingAtIndexDelegate(int index);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetDynamicFrictionAtIndexDelegate(int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -22,6 +27,11 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate PhysicsMaterial GetIndexWithNameDelegate(byte[] materialName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate float GetLinearDampingAtIndexDelegate(int index);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -41,14 +51,11 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate float GetSoftnessAtIndexDelegate(int index);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	public delegate float GetStaticFrictionAtIndexDelegate(int index);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
+
+	public static GetAngularDampingAtIndexDelegate call_GetAngularDampingAtIndexDelegate;
 
 	public static GetDynamicFrictionAtIndexDelegate call_GetDynamicFrictionAtIndexDelegate;
 
@@ -56,15 +63,20 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 
 	public static GetIndexWithNameDelegate call_GetIndexWithNameDelegate;
 
+	public static GetLinearDampingAtIndexDelegate call_GetLinearDampingAtIndexDelegate;
+
 	public static GetMaterialCountDelegate call_GetMaterialCountDelegate;
 
 	public static GetMaterialNameAtIndexDelegate call_GetMaterialNameAtIndexDelegate;
 
 	public static GetRestitutionAtIndexDelegate call_GetRestitutionAtIndexDelegate;
 
-	public static GetSoftnessAtIndexDelegate call_GetSoftnessAtIndexDelegate;
-
 	public static GetStaticFrictionAtIndexDelegate call_GetStaticFrictionAtIndexDelegate;
+
+	public float GetAngularDampingAtIndex(int index)
+	{
+		return call_GetAngularDampingAtIndexDelegate(index);
+	}
 
 	public float GetDynamicFrictionAtIndex(int index)
 	{
@@ -89,6 +101,11 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 		return call_GetIndexWithNameDelegate(array);
 	}
 
+	public float GetLinearDampingAtIndex(int index)
+	{
+		return call_GetLinearDampingAtIndexDelegate(index);
+	}
+
 	public int GetMaterialCount()
 	{
 		return call_GetMaterialCountDelegate();
@@ -106,11 +123,6 @@ internal class ScriptingInterfaceOfIPhysicsMaterial : IPhysicsMaterial
 	public float GetRestitutionAtIndex(int index)
 	{
 		return call_GetRestitutionAtIndexDelegate(index);
-	}
-
-	public float GetSoftnessAtIndex(int index)
-	{
-		return call_GetSoftnessAtIndexDelegate(index);
 	}
 
 	public float GetStaticFrictionAtIndex(int index)

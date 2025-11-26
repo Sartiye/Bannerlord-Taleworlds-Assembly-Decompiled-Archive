@@ -5,7 +5,7 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public interface IAlleyCampaignBehavior : ICampaignBehavior
 {
-	bool GetIsAlleyUnderAttack(Alley alley);
+	bool GetIsPlayerAlleyUnderAttack(Alley alley);
 
 	int GetPlayerOwnedAlleyTroopCount(Alley alley);
 

@@ -176,10 +176,10 @@ public class MPDuelKillNotificationItemVM : ViewModel
 	{
 		TargetIconType peerIconType = GetPeerIconType(firstPlayerPeer);
 		FirstPlayerName = firstPlayerPeer.DisplayedName;
-		FirstPlayerCompassElement = new MPTeammateCompassTargetVM(peerIconType, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), BannerCode.CreateFrom(Banner.CreateOneColoredEmptyBanner(0)), isAlly: false);
+		FirstPlayerCompassElement = new MPTeammateCompassTargetVM(peerIconType, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), Banner.CreateOneColoredEmptyBanner(0), isAlly: false);
 		TargetIconType peerIconType2 = GetPeerIconType(secondPlayerPeer);
 		SecondPlayerName = secondPlayerPeer.DisplayedName;
-		SecondPlayerCompassElement = new MPTeammateCompassTargetVM(peerIconType2, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), BannerCode.CreateFrom(Banner.CreateOneColoredEmptyBanner(0)), isAlly: false);
+		SecondPlayerCompassElement = new MPTeammateCompassTargetVM(peerIconType2, Color.White.ToUnsignedInteger(), Color.White.ToUnsignedInteger(), Banner.CreateOneColoredEmptyBanner(0), isAlly: false);
 	}
 
 	private TargetIconType GetPeerIconType(MissionPeer peer)

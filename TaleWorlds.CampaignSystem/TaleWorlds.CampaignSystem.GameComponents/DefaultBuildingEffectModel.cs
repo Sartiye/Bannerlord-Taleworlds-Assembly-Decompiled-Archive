@@ -1,32 +1,36 @@
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultBuildingEffectModel : BuildingEffectModel
 {
-	public override float GetBuildingEffectAmount(Building building, BuildingEffectEnum effect)
+	public override ExplainedNumber GetBuildingEffect(Building building, BuildingEffectEnum effect)
 	{
-		ExplainedNumber bonuses = new ExplainedNumber(building.BuildingType.GetBaseBuildingEffectAmount(effect, building.CurrentLevel));
-		if (effect == BuildingEffectEnum.Foodstock && building.Town.Governor != null && building.Town.Governor.GetPerkValue(DefaultPerks.Engineering.Battlements) && (building.BuildingType == DefaultBuildingTypes.CastleGranary || building.BuildingType == DefaultBuildingTypes.SettlementGranary))
+		float baseBuildingEffectAmount = building.BuildingType.GetBaseBuildingEffectAmount(effect, building.CurrentLevel);
+		ExplainedNumber bonuses = new ExplainedNumber(baseBuildingEffectAmount);
+		if (effect == BuildingEffectEnum.DenarByBoundVillageHeartPerDay)
 		{
-			bonuses.Add(DefaultPerks.Engineering.Battlements.SecondaryBonus, DefaultPerks.Engineering.Battlements.Name);
+			float num = 0f;
+			foreach (Village village in building.Town.Villages)
+			{
+				num += village.Hearth;
+			}
+			bonuses = new ExplainedNumber(num * baseBuildingEffectAmount);
 		}
-		if (building.Town.IsTown)
+		if (effect == BuildingEffectEnum.FoodStock && building.BuildingType == DefaultBuildingTypes.CastleGranary)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Contractors, building.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.Battlements, building.Town, ref bonuses);
 		}
-		if (building.Town.Governor != null && building.Town.Governor.GetPerkValue(DefaultPerks.Steward.MasterOfPlanning))
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Contractors, building.Town, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfPlanning, building.Town, ref bonuses);
+		if (building.BuildingType == DefaultBuildingTypes.SettlementMarketplace || building.BuildingType == DefaultBuildingTypes.SettlementDailyFestivalAndGames)
 		{
-			bonuses.AddFactor(DefaultPerks.Steward.MasterOfPlanning.SecondaryBonus, DefaultPerks.Steward.MasterOfPlanning.Name);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Charm.PublicSpeaker, building.Town, ref bonuses);
 		}
-		Hero governor = building.Town.Governor;
-		if (governor != null && governor.GetPerkValue(DefaultPerks.Charm.PublicSpeaker) && (building.BuildingType == DefaultBuildingTypes.SettlementMarketplace || building.BuildingType == DefaultBuildingTypes.FestivalsAndGamesDaily || building.BuildingType == DefaultBuildingTypes.SettlementForum))
-		{
-			bonuses.AddFactor(DefaultPerks.Charm.PublicSpeaker.SecondaryBonus, DefaultPerks.Charm.PublicSpeaker.Name);
-		}
-		return bonuses.ResultNumber;
+		return bonuses;
 	}
 }

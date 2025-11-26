@@ -16,29 +16,38 @@ public class BehaviorCharge : BehaviorComponent
 
 	protected override void CalculateCurrentOrder()
 	{
-		base.CurrentOrder = ((base.Formation.QuerySystem.ClosestEnemyFormation == null) ? MovementOrder.MovementOrderCharge : MovementOrder.MovementOrderChargeToTarget(base.Formation.QuerySystem.ClosestEnemyFormation.Formation));
+		base.CurrentOrder = ((base.Formation.CachedClosestEnemyFormation == null) ? MovementOrder.MovementOrderCharge : MovementOrder.MovementOrderChargeToTarget(base.Formation.CachedClosestEnemyFormation.Formation));
 	}
 
 	public override void TickOccasionally()
 	{
 		base.TickOccasionally();
+		if (base.Formation.Team.TeamAI is TeamAISiegeComponent { OuterGate: not null } teamAISiegeComponent && !teamAISiegeComponent.OuterGate.IsGateOpen && teamAISiegeComponent.InnerGate != null && !teamAISiegeComponent.InnerGate.IsGateOpen)
+		{
+			CastleGate castleGate = teamAISiegeComponent.InnerGate ?? teamAISiegeComponent.OuterGate;
+			if (castleGate != null && !castleGate.IsUsedByFormation(base.Formation))
+			{
+				base.Formation.StartUsingMachine(castleGate);
+			}
+		}
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
 	}
 
 	protected override void OnBehaviorActivatedAux()
 	{
-		base.Formation.FiringOrder = FiringOrder.FiringOrderFireAtWill;
+		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		if (base.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.ShieldWall)
 		{
-			base.Formation.ArrangementOrder = ArrangementOrder.ArrangementOrderLine;
+			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 		}
 	}
 
 	private float CalculateAIWeight(bool isSiege, bool isInsideCastle)
 	{
 		FormationQuerySystem querySystem = base.Formation.QuerySystem;
-		float num = querySystem.AveragePosition.Distance(querySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / querySystem.MovementSpeedMaximum;
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+		float num = base.Formation.CachedAveragePosition.Distance(cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / querySystem.MovementSpeedMaximum;
 		float num3;
 		if (!querySystem.IsCavalryFormation && !querySystem.IsRangedCavalryFormation)
 		{
@@ -64,12 +73,12 @@ public class BehaviorCharge : BehaviorComponent
 			}
 			foreach (Formation item in team.FormationsIncludingSpecialAndEmpty)
 			{
-				if (item.CountOfUnits <= 0 || querySystem.ClosestEnemyFormation.Formation == item || (isSiege && TeamAISiegeComponent.IsFormationInsideCastle(item, includeOnlyPositionedUnits: true) != isInsideCastle))
+				if (item.CountOfUnits <= 0 || cachedClosestEnemyFormation.Formation == item || (isSiege && TeamAISiegeComponent.IsFormationInsideCastle(item, includeOnlyPositionedUnits: true) != isInsideCastle))
 				{
 					continue;
 				}
-				float num7 = item.QuerySystem.MedianPosition.AsVec2.Distance(querySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / item.QuerySystem.MovementSpeedMaximum;
-				if (num7 > num + 4f || (num <= 8f && item.QuerySystem.ClosestEnemyFormation != base.Formation.QuerySystem))
+				float num7 = item.CachedMedianPosition.AsVec2.Distance(cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / item.QuerySystem.MovementSpeedMaximum;
+				if (num7 > num + 4f || (num <= 8f && item.CachedClosestEnemyFormation != base.Formation.QuerySystem))
 				{
 					continue;
 				}
@@ -84,7 +93,7 @@ public class BehaviorCharge : BehaviorComponent
 						}
 						foreach (Formation item2 in team2.FormationsIncludingSpecialAndEmpty)
 						{
-							if (item2.CountOfUnits > 0 && item2 != base.Formation && item2.QuerySystem.ClosestEnemyFormation == item.QuerySystem && item2.QuerySystem.MedianPosition.AsVec2.DistanceSquared(querySystem.AveragePosition) / item2.QuerySystem.MovementSpeedMaximum < num7 + 4f)
+							if (item2.CountOfUnits > 0 && item2 != base.Formation && item2.CachedClosestEnemyFormation == item.QuerySystem && item2.CachedMedianPosition.AsVec2.DistanceSquared(base.Formation.CachedAveragePosition) / item2.QuerySystem.MovementSpeedMaximum < num7 + 4f)
 							{
 								flag = true;
 								break;
@@ -111,13 +120,13 @@ public class BehaviorCharge : BehaviorComponent
 			}
 			foreach (Formation item3 in team3.FormationsIncludingSpecialAndEmpty)
 			{
-				if (item3 != base.Formation && item3.CountOfUnits > 0 && querySystem.ClosestEnemyFormation == item3.QuerySystem.ClosestEnemyFormation && (!isSiege || TeamAISiegeComponent.IsFormationInsideCastle(item3, includeOnlyPositionedUnits: true) == isInsideCastle) && item3.QuerySystem.MedianPosition.AsVec2.Distance(item3.QuerySystem.ClosestEnemyFormation.MedianPosition.AsVec2) / item3.QuerySystem.MovementSpeedMaximum < 4f)
+				if (item3 != base.Formation && item3.CountOfUnits > 0 && cachedClosestEnemyFormation == item3.CachedClosestEnemyFormation && (!isSiege || TeamAISiegeComponent.IsFormationInsideCastle(item3, includeOnlyPositionedUnits: true) == isInsideCastle) && item3.CachedMedianPosition.AsVec2.Distance(item3.CachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2) / item3.QuerySystem.MovementSpeedMaximum < 4f)
 				{
 					num8 += item3.QuerySystem.FormationMeleeFightingPower * item3.QuerySystem.GetClassWeightedFactor(1f, 1f, 1f, 1f);
 				}
 			}
 		}
-		float num9 = (base.Formation.QuerySystem.FormationMeleeFightingPower * querySystem.GetClassWeightedFactor(1f, 1f, 1f, 1f) + num8 + 1f) / (1f + num6 + querySystem.ClosestEnemyFormation.Formation.QuerySystem.FormationMeleeFightingPower * querySystem.ClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 1f, 1f));
+		float num9 = (base.Formation.QuerySystem.FormationMeleeFightingPower * querySystem.GetClassWeightedFactor(1f, 1f, 1f, 1f) + num8 + 1f) / (1f + num6 + cachedClosestEnemyFormation.Formation.QuerySystem.FormationMeleeFightingPower * cachedClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 1f, 1f));
 		num9 /= ((!isSiege) ? MBMath.ClampFloat(querySystem.Team.RemainingPowerRatio, 0.2f, 3f) : MBMath.ClampFloat(querySystem.Team.RemainingPowerRatio, 0.5f, 3f));
 		if (num9 > 1f)
 		{
@@ -128,15 +137,15 @@ public class BehaviorCharge : BehaviorComponent
 		float num10 = 1f;
 		if (num <= 4f)
 		{
-			float length = (querySystem.AveragePosition - querySystem.ClosestEnemyFormation.MedianPosition.AsVec2).Length;
+			float length = (base.Formation.CachedAveragePosition - cachedClosestEnemyFormation.Formation.CachedMedianPosition.AsVec2).Length;
 			if (length > float.Epsilon)
 			{
-				WorldPosition medianPosition = querySystem.MedianPosition;
-				medianPosition.SetVec2(querySystem.AveragePosition);
-				float navMeshZ = medianPosition.GetNavMeshZ();
+				WorldPosition cachedMedianPosition = base.Formation.CachedMedianPosition;
+				cachedMedianPosition.SetVec2(base.Formation.CachedAveragePosition);
+				float navMeshZ = cachedMedianPosition.GetNavMeshZ();
 				if (!float.IsNaN(navMeshZ))
 				{
-					float value = (navMeshZ - querySystem.ClosestEnemyFormation.MedianPosition.GetNavMeshZ()) / length;
+					float value = (navMeshZ - cachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshZ()) / length;
 					num10 = MBMath.Lerp(0.9f, 1.1f, (MBMath.ClampFloat(value, -0.58f, 0.58f) + 0.58f) / 1.16f);
 				}
 			}
@@ -147,11 +156,11 @@ public class BehaviorCharge : BehaviorComponent
 			num11 = 1.2f;
 		}
 		float num12 = 1f;
-		if (num <= 4f && querySystem.ClosestEnemyFormation.ClosestEnemyFormation != querySystem)
+		if (num <= 4f && cachedClosestEnemyFormation.Formation.CachedClosestEnemyFormation != querySystem)
 		{
 			num12 = 1.2f;
 		}
-		float num13 = ((!isSiege) ? (querySystem.GetClassWeightedFactor(1f, 1f, 1.5f, 1.5f) * querySystem.ClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 0.5f, 0.5f)) : (querySystem.GetClassWeightedFactor(1f, 1f, 1.2f, 1.2f) * querySystem.ClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 0.3f, 0.3f)));
+		float num13 = ((!isSiege) ? (querySystem.GetClassWeightedFactor(1f, 1f, 1.5f, 1.5f) * cachedClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 0.5f, 0.5f)) : (querySystem.GetClassWeightedFactor(1f, 1f, 1.2f, 1.2f) * cachedClosestEnemyFormation.GetClassWeightedFactor(1f, 1f, 0.3f, 0.3f)));
 		return num3 * num9 * num10 * num11 * num12 * num13;
 	}
 
@@ -159,7 +168,8 @@ public class BehaviorCharge : BehaviorComponent
 	{
 		bool flag = base.Formation.Team.TeamAI is TeamAISiegeComponent;
 		float result = 0f;
-		if (base.Formation.QuerySystem.ClosestEnemyFormation == null)
+		FormationQuerySystem cachedClosestEnemyFormation = base.Formation.CachedClosestEnemyFormation;
+		if (cachedClosestEnemyFormation == null)
 		{
 			if (base.Formation.Team.HasAnyEnemyTeamsWithAgents(ignoreMountedAgents: false))
 			{
@@ -169,23 +179,23 @@ public class BehaviorCharge : BehaviorComponent
 		else
 		{
 			bool flag2 = false;
-			bool flag3 = false;
+			bool flag3;
 			if (!flag)
 			{
-				flag2 = true;
+				flag3 = true;
 			}
 			else if ((base.Formation.Team.TeamAI as TeamAISiegeComponent).CalculateIsChargePastWallsApplicable(base.Formation.AI.Side))
 			{
-				flag2 = true;
+				flag3 = true;
 			}
 			else
 			{
-				flag3 = TeamAISiegeComponent.IsFormationInsideCastle(base.Formation.QuerySystem.ClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true, 0.51f);
-				flag2 = flag3 == TeamAISiegeComponent.IsFormationInsideCastle(base.Formation, includeOnlyPositionedUnits: true, flag3 ? 0.9f : 0.1f);
+				flag2 = TeamAISiegeComponent.IsFormationInsideCastle(cachedClosestEnemyFormation.Formation, includeOnlyPositionedUnits: true, 0.51f);
+				flag3 = flag2 == TeamAISiegeComponent.IsFormationInsideCastle(base.Formation, includeOnlyPositionedUnits: true, flag2 ? 0.9f : 0.1f);
 			}
-			if (flag2)
+			if (flag3)
 			{
-				result = CalculateAIWeight(flag, flag3);
+				result = CalculateAIWeight(flag, flag2);
 			}
 		}
 		return result;

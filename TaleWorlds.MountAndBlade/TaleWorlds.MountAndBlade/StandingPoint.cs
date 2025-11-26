@@ -4,6 +4,7 @@ using TaleWorlds.Core;
 using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade;
 
@@ -88,23 +89,39 @@ public class StandingPoint : UsableMissionObject
 		public float PathDistance;
 	}
 
-	public bool AutoSheathWeapons;
+	private enum ValidControllerType
+	{
+		None,
+		PlayerOnly,
+		AIOnly,
+		PlayerOrAI
+	}
+
+	public bool AutoSheathWeapons = true;
 
 	public bool AutoEquipWeaponsOnUseStopped;
 
-	private bool _autoAttachOnUsingStopped;
+	private bool _autoAttachOnUsingStopped = true;
 
 	private Action<Agent, bool> _onUsingStoppedAction;
 
 	public bool AutoWieldWeapons;
 
-	public readonly bool TranslateUser;
+	public readonly bool TranslateUser = true;
 
 	public bool HasRecentlyBeenRechecked;
 
 	private Dictionary<Agent, AgentDistanceCache> _cachedAgentDistances;
 
+	[EditableScriptComponentVariable(true, "")]
+	private bool _useOwnPositionInsteadOfWorldPosition;
+
+	[EditableScriptComponentVariable(true, "")]
+	private float _customPlayerInteractionDistance;
+
 	private bool _needsSingleThreadTickOnce;
+
+	private ValidControllerType _validControllerType = ValidControllerType.PlayerOrAI;
 
 	protected BattleSideEnum StandingPointSide = BattleSideEnum.None;
 
@@ -112,18 +129,14 @@ public class StandingPoint : UsableMissionObject
 
 	public override bool DisableCombatActionsOnUse => false;
 
-	[EditableScriptComponentVariable(false)]
+	[EditableScriptComponentVariable(false, "")]
 	public Agent FavoredUser { get; set; }
 
 	public virtual bool PlayerStopsUsingWhenInteractsWithOther => true;
 
-	public StandingPoint()
-	{
-		AutoSheathWeapons = true;
-		TranslateUser = true;
-		_autoAttachOnUsingStopped = true;
-		_needsSingleThreadTickOnce = false;
-	}
+	public bool UseOwnPositionInsteadOfWorldPosition => _useOwnPositionInsteadOfWorldPosition;
+
+	public float CustomPlayerInteractionDistance => _customPlayerInteractionDistance;
 
 	protected internal override void OnInit()
 	{
@@ -164,7 +177,7 @@ public class StandingPoint : UsableMissionObject
 	{
 		if (!GameNetwork.IsClientOrReplay && base.HasUser)
 		{
-			return base.GetTickRequirement() | TickRequirement.Tick | TickRequirement.TickParallel2;
+			return base.GetTickRequirement() | TickRequirement.Tick | TickRequirement.TickParallel3;
 		}
 		return base.GetTickRequirement();
 	}
@@ -193,7 +206,7 @@ public class StandingPoint : UsableMissionObject
 		}
 		else if (AutoSheathWeapons)
 		{
-			if (base.UserAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand) != EquipmentIndex.None)
+			if (base.UserAgent.GetPrimaryWieldedItemIndex() != EquipmentIndex.None)
 			{
 				if (isParallel)
 				{
@@ -204,7 +217,7 @@ public class StandingPoint : UsableMissionObject
 					base.UserAgent.TryToSheathWeaponInHand(Agent.HandIndex.MainHand, Agent.WeaponWieldActionType.Instant);
 				}
 			}
-			if (base.UserAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand) != EquipmentIndex.None)
+			if (base.UserAgent.GetOffhandWieldedItemIndex() != EquipmentIndex.None)
 			{
 				if (isParallel)
 				{
@@ -216,7 +229,7 @@ public class StandingPoint : UsableMissionObject
 				}
 			}
 		}
-		else if (AutoWieldWeapons && base.UserAgent.Equipment.HasAnyWeapon() && base.UserAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand) == EquipmentIndex.None && base.UserAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand) == EquipmentIndex.None)
+		else if (AutoWieldWeapons && base.UserAgent.Equipment.HasAnyWeapon() && base.UserAgent.GetPrimaryWieldedItemIndex() == EquipmentIndex.None && base.UserAgent.GetOffhandWieldedItemIndex() == EquipmentIndex.None)
 		{
 			if (isParallel)
 			{
@@ -229,9 +242,8 @@ public class StandingPoint : UsableMissionObject
 		}
 	}
 
-	protected internal override void OnTickParallel2(float dt)
+	protected internal override void OnTickParallel3(float dt)
 	{
-		base.OnTickParallel2(dt);
 		TickAux(isParallel: true);
 	}
 
@@ -254,7 +266,7 @@ public class StandingPoint : UsableMissionObject
 		return true;
 	}
 
-	public override void OnUse(Agent userAgent)
+	public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
 	{
 		if (!_autoAttachOnUsingStopped && MovingAgent != null)
 		{
@@ -262,11 +274,12 @@ public class StandingPoint : UsableMissionObject
 			movingAgent.StopUsingGameObject(isSuccessful: true, Agent.StopUsingGameObjectFlags.None);
 			_onUsingStoppedAction?.Invoke(movingAgent, arg2: false);
 		}
-		base.OnUse(userAgent);
+		base.OnUse(userAgent, agentBoneIndex);
 		if (LockUserFrames)
 		{
 			WorldFrame userFrameForAgent = GetUserFrameForAgent(userAgent);
-			userAgent.SetTargetPositionAndDirection(userFrameForAgent.Origin.AsVec2, userFrameForAgent.Rotation.f);
+			Vec2 targetPosition = userFrameForAgent.Origin.AsVec2;
+			userAgent.SetTargetPositionAndDirection(in targetPosition, in userFrameForAgent.Rotation.f);
 		}
 		else if (LockUserPositions)
 		{
@@ -396,8 +409,35 @@ public class StandingPoint : UsableMissionObject
 		return false;
 	}
 
-	public override string GetDescriptionText(GameEntity gameEntity = null)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
 	{
-		return string.Empty;
+		return null;
+	}
+
+	public override bool IsUsableByAgent(Agent userAgent)
+	{
+		return _validControllerType switch
+		{
+			ValidControllerType.None => false, 
+			ValidControllerType.PlayerOnly => userAgent.IsPlayerControlled, 
+			ValidControllerType.AIOnly => userAgent.IsAIControlled, 
+			ValidControllerType.PlayerOrAI => true, 
+			_ => true, 
+		};
+	}
+
+	public void SetUsableByAIOnly()
+	{
+		_validControllerType = ValidControllerType.AIOnly;
+	}
+
+	public void SetUsableByPlayerOnly()
+	{
+		_validControllerType = ValidControllerType.PlayerOnly;
+	}
+
+	public void SetUsableByPlayerOrAI()
+	{
+		_validControllerType = ValidControllerType.PlayerOrAI;
 	}
 }

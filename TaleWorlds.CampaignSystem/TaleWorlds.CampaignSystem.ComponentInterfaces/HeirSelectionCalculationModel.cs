@@ -2,7 +2,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class HeirSelectionCalculationModel : GameModel
+public abstract class HeirSelectionCalculationModel : MBGameModel<HeirSelectionCalculationModel>
 {
 	public abstract int HighestSkillPoint { get; }
 

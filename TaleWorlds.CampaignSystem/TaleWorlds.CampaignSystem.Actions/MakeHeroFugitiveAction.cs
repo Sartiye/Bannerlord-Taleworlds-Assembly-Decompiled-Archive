@@ -2,7 +2,7 @@ namespace TaleWorlds.CampaignSystem.Actions;
 
 public static class MakeHeroFugitiveAction
 {
-	private static void ApplyInternal(Hero fugitive)
+	private static void ApplyInternal(Hero fugitive, bool showNotification)
 	{
 		if (!fugitive.IsAlive)
 		{
@@ -24,11 +24,11 @@ public static class MakeHeroFugitiveAction
 			LeaveSettlementAction.ApplyForCharacterOnly(fugitive);
 		}
 		fugitive.ChangeState(Hero.CharacterStates.Fugitive);
-		CampaignEventDispatcher.Instance.OnCharacterBecameFugitive(fugitive);
+		CampaignEventDispatcher.Instance.OnCharacterBecameFugitive(fugitive, showNotification);
 	}
 
-	public static void Apply(Hero fugitive)
+	public static void Apply(Hero fugitive, bool showNotification = false)
 	{
-		ApplyInternal(fugitive);
+		ApplyInternal(fugitive, showNotification);
 	}
 }

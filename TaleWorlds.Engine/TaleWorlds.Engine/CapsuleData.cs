@@ -3,7 +3,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
 
-[EngineStruct("rglCapsule_data", false)]
+[EngineStruct("rglCapsule_data", false, null)]
 public struct CapsuleData
 {
 	private FtlCapsuleData _globalData;
@@ -88,13 +88,19 @@ public struct CapsuleData
 		_localData = new FtlCapsuleData(radius, p1, p2);
 	}
 
-	public Vec3 GetBoxMin()
+	public (Vec3, Vec3) GetBoxMinMax()
 	{
-		return new Vec3(MathF.Min(P1.x, P2.x) - Radius, MathF.Min(P1.y, P2.y) - Radius, MathF.Min(P1.z, P2.z) - Radius);
-	}
-
-	public Vec3 GetBoxMax()
-	{
-		return new Vec3(MathF.Max(P1.x, P2.x) + Radius, MathF.Max(P1.y, P2.y) + Radius, MathF.Max(P1.z, P2.z) + Radius);
+		(float, float) tuple = MathF.MinMax(P1.x, P2.x);
+		float item = tuple.Item1;
+		float item2 = tuple.Item2;
+		(float, float) tuple2 = MathF.MinMax(P1.y, P2.y);
+		float item3 = tuple2.Item1;
+		float item4 = tuple2.Item2;
+		(float, float) tuple3 = MathF.MinMax(P1.z, P2.z);
+		float item5 = tuple3.Item1;
+		float item6 = tuple3.Item2;
+		Vec3 item7 = new Vec3(item - Radius, item3 - Radius, item5 - Radius);
+		Vec3 item8 = new Vec3(item2 + Radius, item4 + Radius, item6 + Radius);
+		return (item7, item8);
 	}
 }

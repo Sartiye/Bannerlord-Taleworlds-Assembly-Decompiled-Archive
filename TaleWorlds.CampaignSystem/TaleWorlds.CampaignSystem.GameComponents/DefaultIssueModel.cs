@@ -1,5 +1,6 @@
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -62,11 +63,11 @@ public class DefaultIssueModel : IssueModel
 	public override void GetIssueEffectOfClan(IssueEffect issueEffect, Clan clan, ref ExplainedNumber explainedNumber)
 	{
 		float num = 0f;
-		foreach (Hero lord in clan.Lords)
+		foreach (Hero aliveLord in clan.AliveLords)
 		{
-			if (lord.Issue != null)
+			if (aliveLord.Issue != null)
 			{
-				IssueBase issue = lord.Issue;
+				IssueBase issue = aliveLord.Issue;
 				num += issue.GetActiveIssueEffectAmount(issueEffect);
 			}
 		}
@@ -126,9 +127,18 @@ public class DefaultIssueModel : IssueModel
 	private void GetIssueEffectOfHeroInternal(IssueEffect issueEffect, Hero hero, ref ExplainedNumber explainedNumber, TextObject customText)
 	{
 		float activeIssueEffectAmount = hero.Issue.GetActiveIssueEffectAmount(issueEffect);
-		if (activeIssueEffectAmount != 0f)
+		if (!activeIssueEffectAmount.ApproximatelyEqualsTo(0f))
 		{
 			explainedNumber.Add(activeIssueEffectAmount, customText);
 		}
+	}
+
+	public override bool CanTroopsReturnFromAlternativeSolution()
+	{
+		if (!Hero.MainHero.IsPrisoner && (!MobileParty.MainParty.IsCurrentlyAtSea || Settlement.CurrentSettlement != null))
+		{
+			return MobileParty.MainParty.MapEvent == null;
+		}
+		return false;
 	}
 }

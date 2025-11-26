@@ -131,13 +131,13 @@ public class BoundaryCrossingVM : ViewModel
 		switch (_mission.Mode)
 		{
 		case MissionMode.CutScene:
-			text = TextObject.Empty;
+			text = TextObject.GetEmpty();
 			break;
 		case MissionMode.Conversation:
-			text = TextObject.Empty;
+			text = TextObject.GetEmpty();
 			break;
 		case MissionMode.Barter:
-			text = TextObject.Empty;
+			text = TextObject.GetEmpty();
 			break;
 		default:
 			throw new ArgumentOutOfRangeException();

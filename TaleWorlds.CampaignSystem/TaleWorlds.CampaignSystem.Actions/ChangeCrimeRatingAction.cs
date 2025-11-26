@@ -20,7 +20,7 @@ public static class ChangeCrimeRatingAction
 			MBInformationManager.AddQuickInformation(textObject);
 		}
 		faction.MainHeroCrimeRating = num;
-		if (num > (float)Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold && Hero.MainHero.MapFaction.Leader == Hero.MainHero && !faction.IsAtWarWith(Hero.MainHero.MapFaction) && Hero.MainHero.MapFaction != faction)
+		if (num > Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold && Hero.MainHero.MapFaction.Leader == Hero.MainHero && !faction.IsAtWarWith(Hero.MainHero.MapFaction) && Hero.MainHero.MapFaction != faction)
 		{
 			ChangeRelationAction.ApplyPlayerRelation(faction.Leader, -10);
 			DeclareWarAction.ApplyByCrimeRatingChange(faction, Hero.MainHero.MapFaction);

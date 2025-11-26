@@ -6,7 +6,7 @@ using TaleWorlds.Diamond;
 namespace Messages.FromClient.ToLobbyServer;
 
 [Serializable]
-[MessageDescription("Client", "LobbyServer")]
+[MessageDescription("Client", "LobbyServer", true)]
 public class UpdateCharacterMessage : Message
 {
 	[JsonProperty]

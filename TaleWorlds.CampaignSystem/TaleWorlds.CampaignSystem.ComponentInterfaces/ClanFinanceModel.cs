@@ -5,7 +5,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class ClanFinanceModel : GameModel
+public abstract class ClanFinanceModel : MBGameModel<ClanFinanceModel>
 {
 	public abstract int PartyGoldLowerThreshold { get; }
 
@@ -19,9 +19,9 @@ public abstract class ClanFinanceModel : GameModel
 
 	public abstract int CalculateTownIncomeFromProjects(Town town);
 
-	public abstract int CalculateVillageIncome(Clan clan, Village village, bool applyWithdrawals = false);
-
 	public abstract int CalculateNotableDailyGoldChange(Hero hero, bool applyWithdrawals);
+
+	public abstract int CalculateVillageIncome(Clan clan, Village village, bool applyWithdrawals = false);
 
 	public abstract int CalculateOwnerIncomeFromCaravan(MobileParty caravan);
 

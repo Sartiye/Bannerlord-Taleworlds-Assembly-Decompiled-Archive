@@ -42,6 +42,8 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 
 		private const int SuccessRelationBonus = 10;
 
+		private const int FailureRelationPenalty = -10;
+
 		private const int SuccessSecurityBonus = 10;
 
 		private const int TroopsRequiredForQuest = 10;
@@ -183,25 +185,23 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			return ((SmugglersIssue)o)._originSettlement;
 		}
 
-		public SmugglersIssue(Hero issueOwner)
+		public SmugglersIssue(Hero issueOwner, KeyValuePair<Settlement, Settlement> questSettlementPair)
 			: base(issueOwner, CampaignTime.DaysFromNow(30f))
 		{
-			SmugglersIssue smugglersIssue = this;
-			_targetSettlement = issueOwner.Clan.Settlements.FirstOrDefaultQ((Settlement settlement) => settlement.Owner == issueOwner && settlement.IsTown);
-			_originSettlement = SettlementHelper.FindNearestTown((Settlement town) => town != smugglersIssue._targetSettlement, _targetSettlement);
+			_targetSettlement = questSettlementPair.Key;
+			_originSettlement = questSettlementPair.Value;
 		}
 
 		public override (SkillObject, int) GetAlternativeSolutionSkill(Hero hero)
 		{
 			List<SkillObject> alternativeSolutionMeleeSkills = QuestHelper.GetAlternativeSolutionMeleeSkills();
 			alternativeSolutionMeleeSkills.Add(DefaultSkills.Scouting);
-			return (alternativeSolutionMeleeSkills.MaxBy((SkillObject skill) => hero.GetSkillValue(skill)), 150);
+			return (TaleWorlds.Core.Extensions.MaxBy(alternativeSolutionMeleeSkills, (SkillObject skill) => hero.GetSkillValue(skill)), 150);
 		}
 
 		public override bool AlternativeSolutionCondition(out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(MobileParty.MainParty.MemberRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
 		}
 
 		protected override void AlternativeSolutionEndWithSuccessConsequence()
@@ -211,10 +211,19 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			_targetSettlement.Town.Security += 10f;
 		}
 
+		protected override void AlternativeSolutionEndWithFailureConsequence()
+		{
+			RelationshipChangeWithIssueOwner = -10;
+		}
+
 		public override bool DoTroopsSatisfyAlternativeSolution(TroopRoster troopRoster, out TextObject explanation)
 		{
-			explanation = TextObject.Empty;
-			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), ref explanation, 2);
+			return QuestHelper.CheckRosterForAlternativeSolution(troopRoster, GetTotalAlternativeSolutionNeededMenCount(), out explanation, 2);
+		}
+
+		public override bool IsTroopTypeNeededByAlternativeSolution(CharacterObject character)
+		{
+			return character.Tier >= 2;
 		}
 
 		public override IssueFrequency GetFrequency()
@@ -320,8 +329,6 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 		private const PersuasionDifficulty Difficulty = PersuasionDifficulty.MediumHard;
 
 		private int BribeAmount => (int)((float)RewardGold * 0.75f);
-
-		private int SmugglerPartySize => (int)((float)MobileParty.MainParty.MemberRoster.TotalManCount * 0.8f * _issueDifficulty);
 
 		public override bool IsRemainingTimeHidden => false;
 
@@ -524,7 +531,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			PersuasionTask obj = new PersuasionTask(0)
 			{
 				FinalFailLine = new TextObject("{=iRarm6f7}We are not going anywhere friend. You're going to have to fight for your silver today."),
-				TryLaterLine = TextObject.Empty,
+				TryLaterLine = TextObject.GetEmpty(),
 				SpokenLine = new TextObject("{=xnT03Yv0}I'm listening.")
 			};
 			TextObject textObject = new TextObject("{=gtY7QuX0}{QUEST_GIVER.LINK} is on to you. I can guarantee you the time of easy pickings and low risk is over.");
@@ -691,7 +698,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 0)
 			{
-				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(0).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(0).IsBlocked;
 			}
 			return false;
@@ -702,7 +709,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 1)
 			{
-				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(1).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(1).IsBlocked;
 			}
 			return false;
@@ -713,7 +720,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			hintText = new TextObject("{=9ACJsI6S}Blocked");
 			if (_task.Options.Count > 2)
 			{
-				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : TextObject.Empty);
+				hintText = (_task.Options.ElementAt(2).IsBlocked ? hintText : null);
 				return !_task.Options.ElementAt(2).IsBlocked;
 			}
 			return false;
@@ -761,13 +768,13 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 		{
 			TextObject textObject = new TextObject("{=3dhAfC4k}Smugglers of {ORIGIN_SETTLEMENT}");
 			textObject.SetTextVariable("ORIGIN_SETTLEMENT", _originSettlement.Name);
-			TroopRoster.CreateDummyTroopRoster();
-			TroopRoster.CreateDummyTroopRoster();
 			GetAdditionalVisualsForParty(_originSettlement.Culture, out var mountStringId, out var harnessStringId);
-			Settlement nearestHideoutSettlement = SettlementHelper.FindNearestHideout();
-			int troopLimit = (int)TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Ceiling((float)MobileParty.MainParty.MemberRoster.TotalManCount * 0.8f), 15f, 35f);
+			Hideout nearestHideoutSettlement = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.Default);
+			int desiredMenCount = (int)TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Ceiling((float)MobileParty.MainParty.MemberRoster.TotalManCount * 0.8f), 15f, 35f);
 			float customPartyBaseSpeed = MobileParty.MainParty.Speed * 1.1f;
-			MobileParty mobileParty = CustomPartyComponent.CreateQuestParty(_originSettlement.GatePosition, 0.1f, _originSettlement, textObject, Clan.BanditFactions.FirstOrDefault((Clan faction) => faction.Culture == nearestHideoutSettlement.Culture), _originSettlement.Culture.CaravanPartyTemplate, null, troopLimit, mountStringId, harnessStringId, customPartyBaseSpeed, avoidHostileActions: true);
+			PartyTemplateObject randomCaravanTemplate = CaravanHelper.GetRandomCaravanTemplate(_originSettlement.Culture, isElite: false, isLand: true);
+			MobileParty mobileParty = CustomPartyComponent.CreateCustomPartyWithTroopRoster(_originSettlement.GatePosition, 0.1f, _originSettlement, textObject, Clan.BanditFactions.FirstOrDefault((Clan faction) => faction.Culture == nearestHideoutSettlement.Settlement.Culture), TroopRoster.CreateDummyTroopRoster(), TroopRoster.CreateDummyTroopRoster(), null, mountStringId, harnessStringId, customPartyBaseSpeed, avoidHostileActions: true);
+			MobilePartyHelper.FillPartyManuallyAfterCreation(mobileParty, randomCaravanTemplate, desiredMenCount);
 			CharacterObject @object = MBObjectManager.Instance.GetObject<CharacterObject>("nervous_caravanmaster_" + MBRandom.RandomInt(1, 4));
 			mobileParty.MemberRoster.AddToCounts(@object, 1, insertAtFront: true);
 			GiveGoodsToParty(mobileParty);
@@ -803,11 +810,11 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 		{
 			TextObject customName = new TextObject("{=GTnVcUz9}Smugglers' Party");
 			mobileParty.InitializeMobilePartyAtPosition(new TroopRoster(mobileParty.Party), new TroopRoster(mobileParty.Party), _originSettlement.GatePosition);
-			mobileParty.SetCustomName(customName);
+			mobileParty.Party.SetCustomName(customName);
 			mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			mobileParty.IgnoreByOtherPartiesTill(CampaignTime.Never);
 			mobileParty.SetCustomHomeSettlement(_originSettlement);
-			SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, _targetSettlement);
+			SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, _targetSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 		}
 
 		protected override void OnTimedOut()
@@ -818,7 +825,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 		private void SucceedQuestWithBribe()
 		{
 			PlayerEncounter.LeaveEncounter = true;
-			GiveGoldAction.ApplyForQuestBetweenCharacters(Hero.MainHero, null, BribeAmount);
+			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, BribeAmount);
 			SucceedQuest(QuestSuccessWithBribeLog);
 		}
 
@@ -829,8 +836,8 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			RemoveTrackedObject(_originSettlement);
 			RelationshipChangeWithQuestGiver = 10;
 			_targetSettlement.Town.Security += 10f;
-			GiveGoldAction.ApplyForQuestBetweenCharacters(base.QuestGiver, Hero.MainHero, RewardGold);
-			if (_smugglerParty != null)
+			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, RewardGold);
+			if (_smugglerParty != null && _smugglerParty.IsActive)
 			{
 				DestroyPartyAction.Apply(null, _smugglerParty);
 			}
@@ -848,7 +855,10 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			RemoveTrackedObject(_targetSettlement);
 			RemoveTrackedObject(_originSettlement);
 			CompleteQuestWithFail(QuestFailedLog);
-			DestroyPartyAction.Apply(null, _smugglerParty);
+			if (_smugglerParty != null && _smugglerParty.IsActive)
+			{
+				DestroyPartyAction.Apply(null, _smugglerParty);
+			}
 		}
 
 		protected override void RegisterEvents()
@@ -883,7 +893,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 				{
 					_smugglerSettlementWaitCounter = 0;
 					Settlement settlement = ((mobileParty.CurrentSettlement == _targetSettlement) ? _originSettlement : _targetSettlement);
-					SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, settlement);
+					SetPartyAiAction.GetActionForVisitingSettlement(mobileParty, settlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				else
 				{
@@ -894,7 +904,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 
 		private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
 		{
-			if (clan == base.QuestGiver.Clan && newKingdom.IsAtWarWith(Clan.PlayerClan))
+			if ((clan == base.QuestGiver.Clan && newKingdom.IsAtWarWith(Clan.PlayerClan.MapFaction)) || (clan == Clan.PlayerClan && newKingdom.IsAtWarWith(base.QuestGiver.Clan.MapFaction)))
 			{
 				CompleteQuestWithCancel(QuestCanceledWarDeclaredLog);
 			}
@@ -921,6 +931,14 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 		protected override void HourlyTick()
 		{
 		}
+
+		protected override void OnFinalize()
+		{
+			if (_smugglerParty != null && _smugglerParty.IsActive)
+			{
+				DestroyPartyAction.Apply(null, _smugglerParty);
+			}
+		}
 	}
 
 	public class SmugglersIssueTypeDefiner : SaveableTypeDefiner
@@ -946,21 +964,29 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 
 	private void OnCheckForIssue(Hero hero)
 	{
-		Campaign.Current.IssueManager.AddPotentialIssueData(hero, ConditionsHold(hero) ? new PotentialIssueData(OnStartIssue, typeof(SmugglersIssue), IssueBase.IssueFrequency.Rare) : new PotentialIssueData(typeof(SmugglersIssue), IssueBase.IssueFrequency.Rare));
+		Campaign.Current.IssueManager.AddPotentialIssueData(hero, ConditionsHold(hero, out var questSettlementPair) ? new PotentialIssueData(OnStartIssue, typeof(SmugglersIssue), IssueBase.IssueFrequency.Rare, questSettlementPair) : new PotentialIssueData(typeof(SmugglersIssue), IssueBase.IssueFrequency.Rare));
 	}
 
-	private bool ConditionsHold(Hero issueGiver)
+	private bool ConditionsHold(Hero issueGiver, out KeyValuePair<Settlement, Settlement> questSettlementPair)
 	{
+		questSettlementPair = default(KeyValuePair<Settlement, Settlement>);
 		if (issueGiver.IsLord && issueGiver.Clan != Clan.PlayerClan && issueGiver.GetRelationWithPlayer() >= -10f)
 		{
-			return issueGiver.Clan.Settlements.AnyQ((Settlement settlement) => settlement.Owner == issueGiver && settlement.IsTown);
+			IEnumerable<Settlement> enumerable = issueGiver.Clan.Settlements.WhereQ((Settlement settlement) => settlement.Owner == issueGiver && settlement.IsTown && SettlementHelper.FindNearestTownToSettlement(settlement, MobileParty.NavigationType.Default, (Settlement town) => town != settlement) != null);
+			if (enumerable.Any())
+			{
+				Settlement targetSettlement = enumerable.GetRandomElementInefficiently();
+				Settlement settlement2 = SettlementHelper.FindNearestTownToSettlement(targetSettlement, MobileParty.NavigationType.Default, (Settlement town) => town != targetSettlement).Settlement;
+				questSettlementPair = new KeyValuePair<Settlement, Settlement>(targetSettlement, settlement2);
+				return true;
+			}
 		}
 		return false;
 	}
 
 	private IssueBase OnStartIssue(in PotentialIssueData pid, Hero issueOwner)
 	{
-		return new SmugglersIssue(issueOwner);
+		return new SmugglersIssue(issueOwner, (KeyValuePair<Settlement, Settlement>)pid.RelatedObject);
 	}
 
 	public override void SyncData(IDataStore dataStore)

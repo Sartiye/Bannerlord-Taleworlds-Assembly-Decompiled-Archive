@@ -68,7 +68,7 @@ public class CustomBattleBannerBearersModel : BattleBannerBearersModel
 			if (team != null)
 			{
 				BasicCharacterObject generalCharacterOfSide = _missionSpawnLogic.GetGeneralCharacterOfSide(team.Side);
-				if (agent.IsHuman && !agent.IsMainAgent && agent.IsAIControlled)
+				if (agent.IsHuman && !agent.IsMainAgent && !agent.IsHero && agent.IsAIControlled)
 				{
 					return agent.Character != generalCharacterOfSide;
 				}
@@ -91,6 +91,10 @@ public class CustomBattleBannerBearersModel : BattleBannerBearersModel
 			{
 				return 0;
 			}
+		}
+		if (agent.Banner != null)
+		{
+			return int.MaxValue;
 		}
 		int num = Math.Min(agent.Character.Level / 4 + 1, BannerBearerPriorityPerTier.Length - 1);
 		return BannerBearerPriorityPerTier[num];
@@ -133,7 +137,7 @@ public class CustomBattleBannerBearersModel : BattleBannerBearersModel
 		{
 			return null;
 		}
-		IEnumerable<ItemObject> enumerable = ReplacementWeapons.Where((ItemObject item) => item.Culture != null && item.Culture.GetCultureCode() == agentCharacter.Culture.GetCultureCode());
+		IEnumerable<ItemObject> enumerable = ReplacementWeapons.Where((ItemObject item) => item.Culture != null && item.Culture == agentCharacter.Culture);
 		List<(int, ItemObject)> list = new List<(int, ItemObject)>();
 		int minTierDifference = int.MaxValue;
 		foreach (ItemObject item in enumerable)

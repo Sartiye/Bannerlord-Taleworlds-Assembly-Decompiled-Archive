@@ -42,6 +42,8 @@ public class NameMarkerListPanel : ListPanel
 
 	private bool _isMarkerEnabled;
 
+	private bool _isMarkerPersistent;
+
 	private bool _hasIssue;
 
 	private bool _hasMainQuest;
@@ -299,6 +301,23 @@ public class NameMarkerListPanel : ListPanel
 	}
 
 	[DataSourceProperty]
+	public bool IsMarkerPersistent
+	{
+		get
+		{
+			return _isMarkerPersistent;
+		}
+		set
+		{
+			if (_isMarkerPersistent != value)
+			{
+				_isMarkerPersistent = value;
+				OnPropertyChanged(value, "IsMarkerPersistent");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool HasIssue
 	{
 		get
@@ -383,13 +402,13 @@ public class NameMarkerListPanel : ListPanel
 			{
 				_isFocused = value;
 				OnPropertyChanged(value, "IsFocused");
-				if (!value && IsMarkerEnabled)
+				if (!value && (IsMarkerEnabled || IsMarkerPersistent))
 				{
 					NameTextWidget?.SetAlpha(0f);
 					DistanceTextWidget?.SetAlpha(0f);
 					DistanceIconWidget?.SetAlpha(0f);
 				}
-				else if (value && IsMarkerEnabled)
+				else if (value && (IsMarkerEnabled || IsMarkerPersistent))
 				{
 					NameTextWidget?.SetAlpha(1f);
 					DistanceTextWidget?.SetAlpha(1f);
@@ -410,7 +429,7 @@ public class NameMarkerListPanel : ListPanel
 	public void Update(float dt)
 	{
 		_transitionDT = TaleWorlds.Library.MathF.Clamp(dt * 12f, 0f, 1f);
-		_targetAlpha = (IsMarkerEnabled ? GetDistanceRelatedAlphaTarget(Distance) : 0f);
+		_targetAlpha = ((IsMarkerEnabled || IsMarkerPersistent) ? GetDistanceRelatedAlphaTarget(Distance) : 0f);
 		this.ApplyActionForThisAndAllChildren(UpdateAlpha);
 		TextWidget nameTextWidget = NameTextWidget;
 		if ((nameTextWidget != null && nameTextWidget.IsVisible) || TypeVisualWidget.IsVisible)
@@ -467,8 +486,14 @@ public class NameMarkerListPanel : ListPanel
 
 	private void OnStateChanged()
 	{
-		NameTextWidget?.SetState(NameType);
-		TypeVisualWidget?.SetState(IconType);
+		if (NameTextWidget != null)
+		{
+			NameTextWidget.SetState(NameType);
+		}
+		if (TypeVisualWidget != null)
+		{
+			TypeVisualWidget.SetState(IconType);
+		}
 		HasTypeMarker = IconType != string.Empty;
 		if (HasTypeMarker && IsFocused)
 		{

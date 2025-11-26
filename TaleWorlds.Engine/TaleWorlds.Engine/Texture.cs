@@ -5,6 +5,8 @@ namespace TaleWorlds.Engine;
 
 public sealed class Texture : Resource
 {
+	public bool IsReleased { get; private set; }
+
 	public int Width => EngineApplicationInterface.ITexture.GetWidth(base.Pointer);
 
 	public int Height => EngineApplicationInterface.ITexture.GetHeight(base.Pointer);
@@ -45,6 +47,11 @@ public sealed class Texture : Resource
 		return EngineApplicationInterface.ITexture.CreateTextureFromPath(filePath);
 	}
 
+	public void GetPixelData(byte[] bytes)
+	{
+		EngineApplicationInterface.ITexture.GetPixelData(base.Pointer, bytes);
+	}
+
 	public void TransformRenderTargetToResource(string name)
 	{
 		EngineApplicationInterface.ITexture.TransformRenderTargetToResourceTexture(base.Pointer, name);
@@ -58,6 +65,11 @@ public sealed class Texture : Resource
 	public bool IsLoaded()
 	{
 		return EngineApplicationInterface.ITexture.IsLoaded(base.Pointer);
+	}
+
+	public void GetSDFBoundingBoxData(ref Vec3 min, ref Vec3 max)
+	{
+		EngineApplicationInterface.ITexture.GetSDFBoundingBoxData(base.Pointer, ref min, ref max);
 	}
 
 	public static Texture CheckAndGetFromResource(string resourceName)
@@ -82,14 +94,22 @@ public sealed class Texture : Resource
 
 	public void Release()
 	{
+		IsReleased = true;
+		RenderTargetComponent.OnTargetReleased();
+		ManualInvalidate();
+	}
+
+	public void ReleaseImmediately()
+	{
+		IsReleased = true;
 		RenderTargetComponent.OnTargetReleased();
 		EngineApplicationInterface.ITexture.Release(base.Pointer);
 	}
 
-	public void ReleaseNextFrame()
+	public void ReleaseAfterNumberOfFrames(int frameCount)
 	{
 		RenderTargetComponent.OnTargetReleased();
-		EngineApplicationInterface.ITexture.ReleaseNextFrame(base.Pointer);
+		EngineApplicationInterface.ITexture.ReleaseAfterNumberOfFrames(base.Pointer, frameCount);
 	}
 
 	public static Texture LoadTextureFromPath(string fileName, string folder)
@@ -134,11 +154,11 @@ public sealed class Texture : Resource
 
 	public static Texture CreateTableauTexture(string name, RenderTargetComponent.TextureUpdateEventHandler eventHandler, object objectRef, int tableauSizeX, int tableauSizeY)
 	{
-		Texture texture = CreateRenderTarget(name, tableauSizeX, tableauSizeY, autoMipmaps: true, isTableau: false);
+		Texture texture = CreateRenderTarget(name, tableauSizeX, tableauSizeY, autoMipmaps: true, isTableau: true);
 		RenderTargetComponent renderTargetComponent = texture.RenderTargetComponent;
 		renderTargetComponent.PaintNeeded += eventHandler;
 		renderTargetComponent.UserData = objectRef;
-		TableauView tableauView = TableauView.CreateTableauView();
+		TableauView tableauView = TableauView.CreateTableauView(name);
 		tableauView.SetRenderTarget(texture);
 		tableauView.SetAutoDepthTargetCreation(value: true);
 		tableauView.SetSceneUsesSkybox(value: false);

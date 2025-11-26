@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using NetworkMessages.FromClient;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
@@ -9,6 +8,7 @@ using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.ViewModelCollection;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission;
 
@@ -67,7 +67,6 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 		set
 		{
 			_holdHandled = value;
-			base.MissionScreen?.SetRadialMenuActiveState(value);
 		}
 	}
 
@@ -80,7 +79,7 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 	public override void EarlyStart()
 	{
 		base.EarlyStart();
-		_gauntletLayer = new GauntletLayer(3);
+		_gauntletLayer = new GauntletLayer("MissionEquipDrop", ViewOrderPriority);
 		_dataSource = new MissionMainAgentControllerEquipDropVM(OnToggleItem);
 		_missionMainAgentController = base.Mission.GetMissionBehavior<MissionMainAgentController>();
 		_missionControllerLeaveLogic = base.Mission.GetMissionBehavior<EquipmentControllerLeaveLogic>();
@@ -124,7 +123,7 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 		}
 	}
 
-	private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+	private void OnMainAgentChanged(Agent oldAgent)
 	{
 		if (base.Mission.MainAgent == null)
 		{
@@ -147,7 +146,7 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 
 	private void TickControls(float dt)
 	{
-		if (base.MissionScreen.SceneLayer.Input.IsGameKeyDown(34) && !IsDisplayingADialog && IsMainAgentAvailable() && base.Mission.Mode != MissionMode.Deployment && base.Mission.Mode != MissionMode.CutScene && !base.MissionScreen.IsRadialMenuActive)
+		if ((base.MissionScreen.SceneLayer.Input.IsGameKeyDown(34) || _gauntletLayer.Input.IsGameKeyDown(34)) && !IsDisplayingADialog && !base.MissionScreen.IsPhotoModeEnabled && base.Mission.Mode != MissionMode.Deployment && base.Mission.Mode != MissionMode.CutScene && !base.MissionScreen.IsRadialMenuActive)
 		{
 			if (_toggleHoldTime > 0.3f && !HoldHandled)
 			{
@@ -157,7 +156,7 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 			_toggleHoldTime += dt;
 			_prevKeyDown = true;
 		}
-		else if (_prevKeyDown && !base.MissionScreen.SceneLayer.Input.IsGameKeyDown(34))
+		else if (_prevKeyDown && !base.MissionScreen.SceneLayer.Input.IsGameKeyDown(34) && !_gauntletLayer.Input.IsGameKeyDown(34))
 		{
 			if (_toggleHoldTime < 0.3f)
 			{
@@ -173,41 +172,45 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 			_prevKeyDown = false;
 			_weaponDropHandled = false;
 		}
-		if (!HoldHandled)
+		if (HoldHandled)
 		{
-			return;
-		}
-		int keyWeaponIndex = GetKeyWeaponIndex(isReleased: false);
-		int keyWeaponIndex2 = GetKeyWeaponIndex(isReleased: true);
-		_dataSource.SetDropProgressForIndex(EquipmentIndex.None, _weaponDropHoldTime / 0.5f);
-		if (keyWeaponIndex != -1)
-		{
-			if (!_weaponDropHandled)
+			int keyWeaponIndex = GetKeyWeaponIndex(isReleased: false);
+			int keyWeaponIndex2 = GetKeyWeaponIndex(isReleased: true);
+			_dataSource.SetDropProgressForIndex(EquipmentIndex.None, _weaponDropHoldTime / 0.5f);
+			if (keyWeaponIndex != -1)
 			{
-				int num = keyWeaponIndex;
-				if (_weaponDropHoldTime > 0.5f && !Agent.Main.Equipment[num].IsEmpty)
+				if (!_weaponDropHandled)
 				{
-					OnDropEquipment((EquipmentIndex)num);
-					_dataSource.OnWeaponDroppedAtIndex(keyWeaponIndex);
-					_weaponDropHandled = true;
+					int num = keyWeaponIndex;
+					if (_weaponDropHoldTime > 0.5f && !Agent.Main.Equipment[num].IsEmpty)
+					{
+						OnDropEquipment((EquipmentIndex)num);
+						_dataSource.OnWeaponDroppedAtIndex(keyWeaponIndex);
+						_weaponDropHandled = true;
+					}
+					_dataSource.SetDropProgressForIndex((EquipmentIndex)num, _weaponDropHoldTime / 0.5f);
 				}
-				_dataSource.SetDropProgressForIndex((EquipmentIndex)num, _weaponDropHoldTime / 0.5f);
+				_weaponDropHoldTime += dt;
 			}
-			_weaponDropHoldTime += dt;
-		}
-		else if (keyWeaponIndex2 != -1)
-		{
-			if (!_weaponDropHandled)
+			else if (keyWeaponIndex2 != -1)
 			{
-				int num2 = keyWeaponIndex2;
-				if (!Agent.Main.Equipment[num2].IsEmpty)
+				if (!_weaponDropHandled)
 				{
-					OnToggleItem((EquipmentIndex)num2);
-					_dataSource.OnWeaponEquippedAtIndex(keyWeaponIndex2);
-					_weaponDropHandled = true;
+					int num2 = keyWeaponIndex2;
+					if (!Agent.Main.Equipment[num2].IsEmpty && num2 != 4)
+					{
+						OnToggleItem((EquipmentIndex)num2);
+						_dataSource.OnWeaponEquippedAtIndex(keyWeaponIndex2);
+						_weaponDropHandled = true;
+					}
 				}
+				_weaponDropHoldTime = 0f;
 			}
-			_weaponDropHoldTime = 0f;
+			else
+			{
+				_weaponDropHoldTime = 0f;
+				_weaponDropHandled = false;
+			}
 		}
 		else
 		{
@@ -219,39 +222,43 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 	private void HandleOpeningHold()
 	{
 		_dataSource?.OnToggle(isEnabled: true);
-		base.MissionScreen.SetRadialMenuActiveState(isActive: true);
+		base.MissionScreen.RegisterRadialMenuObject(this);
 		_missionControllerLeaveLogic?.SetIsEquipmentSelectionActive(isActive: true);
 		if (!GameNetwork.IsMultiplayer && !_isSlowDownApplied)
 		{
 			base.Mission.AddTimeSpeedRequest(new TaleWorlds.MountAndBlade.Mission.TimeSpeedRequest(0.25f, 624));
 			_isSlowDownApplied = true;
 		}
+		_gauntletLayer.IsFocusLayer = true;
+		ScreenManager.TrySetFocus(_gauntletLayer);
 	}
 
 	private void HandleClosingHold()
 	{
 		_dataSource?.OnToggle(isEnabled: false);
-		base.MissionScreen.SetRadialMenuActiveState(isActive: false);
+		base.MissionScreen.UnregisterRadialMenuObject(this);
 		_missionControllerLeaveLogic?.SetIsEquipmentSelectionActive(isActive: false);
 		if (!GameNetwork.IsMultiplayer && _isSlowDownApplied)
 		{
 			base.Mission.RemoveTimeSpeedRequest(624);
 			_isSlowDownApplied = false;
 		}
+		_gauntletLayer.IsFocusLayer = false;
+		ScreenManager.TryLoseFocus(_gauntletLayer);
 	}
 
 	private void HandleQuickRelease()
 	{
 		_missionMainAgentController.OnWeaponUsageToggleRequested();
 		_dataSource?.OnToggle(isEnabled: false);
-		base.MissionScreen.SetRadialMenuActiveState(isActive: false);
+		base.MissionScreen.UnregisterRadialMenuObject(this);
 		_missionControllerLeaveLogic?.SetIsEquipmentSelectionActive(isActive: false);
 	}
 
 	private void OnToggleItem(EquipmentIndex indexToToggle)
 	{
-		bool flag = indexToToggle == Agent.Main.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-		bool flag2 = indexToToggle == Agent.Main.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+		bool flag = indexToToggle == Agent.Main.GetPrimaryWieldedItemIndex();
+		bool flag2 = indexToToggle == Agent.Main.GetOffhandWieldedItemIndex();
 		if (flag || flag2)
 		{
 			Agent.Main.TryToSheathWeaponInHand((!flag) ? Agent.HandIndex.OffHand : Agent.HandIndex.MainHand, Agent.WeaponWieldActionType.WithAnimation);
@@ -278,19 +285,35 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 
 	private bool IsMainAgentAvailable()
 	{
-		return Agent.Main?.IsActive() ?? false;
+		Agent main = Agent.Main;
+		if (main != null && main.IsActive())
+		{
+			Agent main2 = Agent.Main;
+			if (main2 == null || main2.Mission.IsNavalBattle)
+			{
+				return !Agent.Main.IsUsingGameObject;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public override void OnPhotoModeActivated()
 	{
 		base.OnPhotoModeActivated();
-		_gauntletLayer.UIContext.ContextAlpha = 0f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 0f;
+		}
 	}
 
 	public override void OnPhotoModeDeactivated()
 	{
 		base.OnPhotoModeDeactivated();
-		_gauntletLayer.UIContext.ContextAlpha = 1f;
+		if (_gauntletLayer != null)
+		{
+			_gauntletLayer.UIContext.ContextAlpha = 1f;
+		}
 	}
 
 	private void OnGamepadActiveChanged()
@@ -300,34 +323,27 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 
 	private int GetKeyWeaponIndex(bool isReleased)
 	{
-		Func<string, bool> func = null;
-		Func<string, bool> func2 = null;
-		if (isReleased)
-		{
-			func = base.MissionScreen.SceneLayer.Input.IsHotKeyReleased;
-			func2 = _gauntletLayer.Input.IsHotKeyReleased;
-		}
-		else
-		{
-			func = base.MissionScreen.SceneLayer.Input.IsHotKeyDown;
-			func2 = _gauntletLayer.Input.IsHotKeyDown;
-		}
+		Func<string, bool> func = ((!isReleased) ? new Func<string, bool>(_gauntletLayer.Input.IsHotKeyDown) : new Func<string, bool>(_gauntletLayer.Input.IsHotKeyReleased));
 		string text = string.Empty;
-		if (func("ControllerEquipDropWeapon1") || func2("ControllerEquipDropWeapon1"))
+		if (func("ControllerEquipDropWeapon1"))
 		{
 			text = "ControllerEquipDropWeapon1";
 		}
-		else if (func("ControllerEquipDropWeapon2") || func2("ControllerEquipDropWeapon2"))
+		else if (func("ControllerEquipDropWeapon2"))
 		{
 			text = "ControllerEquipDropWeapon2";
 		}
-		else if (func("ControllerEquipDropWeapon3") || func2("ControllerEquipDropWeapon3"))
+		else if (func("ControllerEquipDropWeapon3"))
 		{
 			text = "ControllerEquipDropWeapon3";
 		}
-		else if (func("ControllerEquipDropWeapon4") || func2("ControllerEquipDropWeapon4"))
+		else if (func("ControllerEquipDropWeapon4"))
 		{
 			text = "ControllerEquipDropWeapon4";
+		}
+		else if (func("ControllerEquipDropExtraWeapon"))
+		{
+			text = "ControllerEquipDropExtraWeapon";
 		}
 		if (!string.IsNullOrEmpty(text))
 		{
@@ -337,6 +353,10 @@ public class MissionGauntletMainAgentEquipDropView : MissionView
 				{
 					return (int)_dataSource.EquippedWeapons[i].Identifier;
 				}
+			}
+			if (_dataSource.EquippedExtraWeapon?.ShortcutKey?.HotKey.Id == text)
+			{
+				return (int)_dataSource.EquippedExtraWeapon.Identifier;
 			}
 		}
 		return -1;

@@ -4,7 +4,7 @@ namespace TaleWorlds.Localization.Expressions;
 
 internal class TextIdExpression : TextExpression
 {
-	internal override TokenType TokenType => TokenType.textId;
+	internal override TokenType TokenType => TokenType.TextId;
 
 	public TextIdExpression(string innerText)
 	{

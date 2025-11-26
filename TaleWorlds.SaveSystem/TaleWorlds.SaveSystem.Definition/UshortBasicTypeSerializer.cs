@@ -13,4 +13,9 @@ internal class UshortBasicTypeSerializer : IBasicTypeSerializer
 	{
 		return reader.ReadUShort();
 	}
+
+	int IBasicTypeSerializer.GetSizeInBytes()
+	{
+		return 2;
+	}
 }

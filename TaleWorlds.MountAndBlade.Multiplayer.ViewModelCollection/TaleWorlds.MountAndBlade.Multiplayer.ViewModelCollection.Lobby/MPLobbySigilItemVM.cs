@@ -65,9 +65,14 @@ public class MPLobbySigilItemVM : ViewModel
 		IconID = iconID;
 	}
 
+	public void RefreshWith(Banner banner)
+	{
+		RefreshWith(banner.GetIconMeshId());
+	}
+
 	public void RefreshWith(string bannerCode)
 	{
-		RefreshWith(BannerCode.CreateFrom(bannerCode).CalculateBanner().BannerDataList[1].MeshId);
+		RefreshWith(new Banner(bannerCode));
 	}
 
 	private void ExecuteSelectIcon()

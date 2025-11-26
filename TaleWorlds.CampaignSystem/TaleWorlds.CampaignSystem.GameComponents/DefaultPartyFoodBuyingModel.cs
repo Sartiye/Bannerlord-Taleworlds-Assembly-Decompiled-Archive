@@ -9,7 +9,7 @@ public class DefaultPartyFoodBuyingModel : PartyFoodBuyingModel
 {
 	public override float MinimumDaysFoodToLastWhileBuyingFoodFromTown => 30f;
 
-	public override float MinimumDaysFoodToLastWhileBuyingFoodFromVillage => 8f;
+	public override float MinimumDaysFoodToLastWhileBuyingFoodFromVillage => 12f;
 
 	public override float LowCostFoodPriceAverage => 30f;
 
@@ -34,7 +34,7 @@ public class DefaultPartyFoodBuyingModel : PartyFoodBuyingModel
 			}
 			int itemPrice = settlementComponent.GetItemPrice(elementCopyAtIndex.EquipmentElement, mobileParty);
 			int itemValue = elementCopyAtIndex.EquipmentElement.ItemValue;
-			if (!(itemPrice < 120 || flag) || mobileParty.LeaderHero.Gold < itemPrice)
+			if (!(itemPrice < 120 || flag) || mobileParty.PartyTradeGold < itemPrice)
 			{
 				continue;
 			}

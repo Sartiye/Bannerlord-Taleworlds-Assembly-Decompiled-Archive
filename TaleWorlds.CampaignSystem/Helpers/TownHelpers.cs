@@ -117,4 +117,24 @@ public static class TownHelpers
 		}
 		return false;
 	}
+
+	public static float CalculatePriceDeviationRatio(Town town, EquipmentElement equipmentElement)
+	{
+		int itemPrice = town.GetItemPrice(equipmentElement);
+		float num = 0f;
+		float result = 1f;
+		if (Town.AllTowns != null)
+		{
+			foreach (Town allTown in Town.AllTowns)
+			{
+				num += (float)allTown.GetItemPrice(equipmentElement);
+			}
+			if (num != 0f)
+			{
+				float num2 = num / (float)Town.AllTowns.Count;
+				result = ((float)itemPrice - num2) / num2;
+			}
+		}
+		return result;
+	}
 }

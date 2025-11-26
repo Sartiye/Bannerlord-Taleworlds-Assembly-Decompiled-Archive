@@ -9,9 +9,15 @@ namespace TaleWorlds.Engine;
 [EngineClass("rglScene")]
 public sealed class Scene : NativeObject
 {
+	public static float MaximumWindSpeed = 30f;
+
 	public const float AutoClimbHeight = 1.5f;
 
 	public const float NavMeshHeightLimit = 1.5f;
+
+	public const int SunRise = 2;
+
+	public const int SunSet = 22;
 
 	public static readonly TWSharedMutex PhysicsAndRayCastLock = new TWSharedMutex();
 
@@ -30,6 +36,19 @@ public sealed class Scene : NativeObject
 		set
 		{
 			EngineApplicationInterface.IScene.SetTimeOfDay(base.Pointer, value);
+		}
+	}
+
+	public bool IsDayTime
+	{
+		get
+		{
+			int num = TaleWorlds.Library.MathF.Floor(TimeOfDay);
+			if (num >= 2)
+			{
+				return num < 22;
+			}
+			return false;
 		}
 	}
 
@@ -123,6 +142,11 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.GetSceneFilterIndex(this);
 	}
 
+	public void EnableFixedTick()
+	{
+		EngineApplicationInterface.IScene.EnableFixedTick(this);
+	}
+
 	public string GetLoadingStateName()
 	{
 		return EngineApplicationInterface.IScene.GetLoadingStateName(this);
@@ -143,6 +167,11 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.SetPhotoModeOrbit(this, orbit);
 	}
 
+	public float GetFallDensity()
+	{
+		return EngineApplicationInterface.IScene.GetFallDensity(base.Pointer);
+	}
+
 	public void SetPhotoModeOn(bool on)
 	{
 		EngineApplicationInterface.IScene.SetPhotoModeOn(this, on);
@@ -161,6 +190,11 @@ public sealed class Scene : NativeObject
 	public float GetPhotoModeFov()
 	{
 		return EngineApplicationInterface.IScene.GetPhotoModeFov(this);
+	}
+
+	public bool HasDecalRenderer()
+	{
+		return EngineApplicationInterface.IScene.HasDecalRenderer(base.Pointer);
 	}
 
 	public void SetPhotoModeVignette(bool vignetteOn)
@@ -233,12 +267,62 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.GetWaterLevel(this);
 	}
 
-	public float GetWaterLevelAtPosition(Vec2 position, bool checkWaterBodyEntities)
+	public float GetWaterLevelAtPosition(Vec2 position, bool useWaterRenderer, bool checkWaterBodyEntities)
 	{
-		return EngineApplicationInterface.IScene.GetWaterLevelAtPosition(this, position, checkWaterBodyEntities);
+		return EngineApplicationInterface.IScene.GetWaterLevelAtPosition(this, position, useWaterRenderer, checkWaterBodyEntities);
 	}
 
-	public bool GetPathBetweenAIFaces(UIntPtr startingFace, UIntPtr endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds = null)
+	public Vec3 GetWaterSpeedAtPosition(Vec2 position, bool doChoppinessCorrection)
+	{
+		return EngineApplicationInterface.IScene.GetWaterSpeedAtPosition(base.Pointer, in position, doChoppinessCorrection);
+	}
+
+	public void GetBulkWaterLevelAtPositions(Vec2[] waterHeightQueryArray, ref float[] waterHeightsAtVolumes, ref Vec3[] waterSurfaceNormals)
+	{
+		EngineApplicationInterface.IScene.GetBulkWaterLevelAtPositions(this, waterHeightQueryArray, waterHeightQueryArray.Length, waterHeightsAtVolumes, waterSurfaceNormals);
+	}
+
+	public void GetInterpolationFactorForBodyWorldTransformSmoothing(out float interpolationFactor, out float fixedDt)
+	{
+		EngineApplicationInterface.IScene.GetInterpolationFactorForBodyWorldTransformSmoothing(this, out interpolationFactor, out fixedDt);
+	}
+
+	public void GetBulkWaterLevelAtVolumes(UIntPtr waterHeightQueryArray, int waterHeightQueryArrayCount, in MatrixFrame globalFrame)
+	{
+		EngineApplicationInterface.IScene.GetBulkWaterLevelAtVolumes(base.Pointer, waterHeightQueryArray, waterHeightQueryArrayCount, in globalFrame);
+	}
+
+	public float GetWaterStrength()
+	{
+		return EngineApplicationInterface.IScene.GetWaterStrength(this);
+	}
+
+	public void DeRegisterShipVisual(UIntPtr visualPointer)
+	{
+		EngineApplicationInterface.IScene.DeRegisterShipVisual(base.Pointer, visualPointer);
+	}
+
+	public UIntPtr RegisterShipVisualToWaterRenderer(WeakGameEntity entity, in Vec3 waterEffectBB)
+	{
+		return EngineApplicationInterface.IScene.RegisterShipVisualToWaterRenderer(base.Pointer, entity.Pointer, in waterEffectBB);
+	}
+
+	public void SetWaterStrength(float newWaterStrength)
+	{
+		EngineApplicationInterface.IScene.SetWaterStrength(this, newWaterStrength);
+	}
+
+	public void AddWaterWakeWithSphere(Vec3 position, float radius, float wakeVisibility, float foamVisibility)
+	{
+		AddWaterWakeWithCapsule(position, radius, position, radius, wakeVisibility, foamVisibility);
+	}
+
+	public void AddWaterWakeWithCapsule(Vec3 positionA, float radiusA, Vec3 positionB, float radiusB, float wakeVisibility, float foamVisibility)
+	{
+		EngineApplicationInterface.IScene.AddWaterWakeWithCapsule(this, positionA, radiusA, positionB, radiusB, wakeVisibility, foamVisibility);
+	}
+
+	public bool GetPathBetweenAIFaces(UIntPtr startingFace, UIntPtr endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds)
 	{
 		int pathSize = path.PathPoints.Length;
 		if (EngineApplicationInterface.IScene.GetPathBetweenAIFacePointers(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0))
@@ -250,7 +334,44 @@ public sealed class Scene : NativeObject
 		return false;
 	}
 
-	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds = null, float extraCostMultiplier = 1f)
+	public bool HasNavmeshFaceUnsharedEdges(in PathFaceRecord faceRecord)
+	{
+		return EngineApplicationInterface.IScene.HasNavmeshFaceUnsharedEdges(base.Pointer, in faceRecord);
+	}
+
+	public int GetNavmeshFaceCountBetweenTwoIds(int firstId, int secondId)
+	{
+		return EngineApplicationInterface.IScene.GetNavmeshFaceCountBetweenTwoIds(base.Pointer, firstId, secondId);
+	}
+
+	public void GetNavmeshFaceRecordsBetweenTwoIds(int firstId, int secondId, PathFaceRecord[] faceRecords)
+	{
+		EngineApplicationInterface.IScene.GetNavmeshFaceRecordsBetweenTwoIds(base.Pointer, firstId, secondId, faceRecords);
+	}
+
+	public void SetFixedTickCallbackActive(bool isActive)
+	{
+		EngineApplicationInterface.IScene.SetFixedTickCallbackActive(this, isActive);
+	}
+
+	public void SetOnCollisionFilterCallbackActive(bool isActive)
+	{
+		EngineApplicationInterface.IScene.SetOnCollisionFilterCallbackActive(this, isActive);
+	}
+
+	public bool GetPathBetweenAIFaces(UIntPtr startingFace, UIntPtr endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, int regionSwitchCostTo0, int regionSwitchCostTo1)
+	{
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFacePointersWithRegionSwitchCost(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, regionSwitchCostTo0, regionSwitchCostTo1))
+		{
+			path.Size = pathSize;
+			return true;
+		}
+		path.Size = 0;
+		return false;
+	}
+
+	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier)
 	{
 		int pathSize = path.PathPoints.Length;
 		if (EngineApplicationInterface.IScene.GetPathBetweenAIFaceIndices(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, extraCostMultiplier))
@@ -262,14 +383,26 @@ public sealed class Scene : NativeObject
 		return false;
 	}
 
-	public bool GetPathDistanceBetweenAIFaces(int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance)
+	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int regionSwitchCostTo0, int regionSwitchCostTo1)
 	{
-		return EngineApplicationInterface.IScene.GetPathDistanceBetweenAIFaces(base.Pointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, distanceLimit, out distance);
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFaceIndicesWithRegionSwitchCost(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, extraCostMultiplier, regionSwitchCostTo0, regionSwitchCostTo1))
+		{
+			path.Size = pathSize;
+			return true;
+		}
+		path.Size = 0;
+		return false;
 	}
 
-	public void GetNavMeshFaceIndex(ref PathFaceRecord record, Vec2 position, bool checkIfDisabled, bool ignoreHeight = false)
+	public bool GetPathDistanceBetweenAIFaces(int startingAiFace, int endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance, int[] excludedFaceIds, int regionSwitchCostTo0, int regionSwitchCostTo1)
 	{
-		EngineApplicationInterface.IScene.GetNavMeshFaceIndex(base.Pointer, ref record, position, checkIfDisabled, ignoreHeight);
+		return EngineApplicationInterface.IScene.GetPathDistanceBetweenAIFaces(base.Pointer, startingAiFace, endingAiFace, startingPosition, endingPosition, agentRadius, distanceLimit, out distance, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, regionSwitchCostTo0, regionSwitchCostTo1);
+	}
+
+	public void GetNavMeshFaceIndex(ref PathFaceRecord record, Vec2 position, bool isRegion1, bool checkIfDisabled, bool ignoreHeight = false)
+	{
+		EngineApplicationInterface.IScene.GetNavMeshFaceIndex(base.Pointer, ref record, position, isRegion1, checkIfDisabled, ignoreHeight);
 	}
 
 	public void GetNavMeshFaceIndex(ref PathFaceRecord record, Vec3 position, bool checkIfDisabled)
@@ -280,6 +413,16 @@ public sealed class Scene : NativeObject
 	public static Scene CreateNewScene(bool initialize_physics = true, bool enable_decals = true, DecalAtlasGroup atlasGroup = DecalAtlasGroup.All, string sceneName = "mono_renderscene")
 	{
 		return EngineApplicationInterface.IScene.CreateNewScene(initialize_physics, enable_decals, (int)atlasGroup, sceneName);
+	}
+
+	public void AddAlwaysRenderedSkeleton(Skeleton skeleton)
+	{
+		EngineApplicationInterface.IScene.AddAlwaysRenderedSkeleton(base.Pointer, skeleton.Pointer);
+	}
+
+	public void RemoveAlwaysRenderedSkeleton(Skeleton skeleton)
+	{
+		EngineApplicationInterface.IScene.RemoveAlwaysRenderedSkeleton(base.Pointer, skeleton.Pointer);
 	}
 
 	public MetaMesh CreatePathMesh(string baseEntityName, bool isWaterPath)
@@ -309,9 +452,19 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.SetDoNotWaitForLoadingStatesToRender(base.Pointer, value);
 	}
 
-	public void GetSnowAmountData(byte[] snowData)
+	public void SetDynamicSnowTexture(Texture texture)
 	{
-		EngineApplicationInterface.IScene.GetSnowAmountData(base.Pointer, snowData);
+		EngineApplicationInterface.IScene.SetDynamicSnowTexture(base.Pointer, (texture != null) ? texture.Pointer : UIntPtr.Zero);
+	}
+
+	public void GetWindFlowMapData(float[] flowMapData)
+	{
+		EngineApplicationInterface.IScene.GetWindFlowMapData(base.Pointer, flowMapData);
+	}
+
+	public void CreateDynamicRainTexture(int w, int h)
+	{
+		EngineApplicationInterface.IScene.CreateDynamicRainTexture(base.Pointer, w, h);
 	}
 
 	public MetaMesh CreatePathMesh(IList<GameEntity> pathNodes, bool isWaterPath = false)
@@ -347,6 +500,51 @@ public sealed class Scene : NativeObject
 	public int GetTerrainMemoryUsage()
 	{
 		return EngineApplicationInterface.IScene.GetTerrainMemoryUsage(base.Pointer);
+	}
+
+	public void SetFetchCrcInfoOfScene(bool value)
+	{
+		EngineApplicationInterface.IScene.SetFetchCrcInfoOfScene(base.Pointer, value);
+	}
+
+	public uint GetSceneXMLCRC()
+	{
+		return EngineApplicationInterface.IScene.GetSceneXMLCRC(base.Pointer);
+	}
+
+	public uint GetNavigationMeshCRC()
+	{
+		return EngineApplicationInterface.IScene.GetNavigationMeshCRC(base.Pointer);
+	}
+
+	public void SetGlobalWindStrengthVector(in Vec2 windVector)
+	{
+		EngineApplicationInterface.IScene.SetGlobalWindStrengthVector(base.Pointer, in windVector);
+	}
+
+	public Vec2 GetGlobalWindStrengthVector()
+	{
+		return EngineApplicationInterface.IScene.GetGlobalWindStrengthVector(base.Pointer);
+	}
+
+	public Vec2 GetGlobalWindVelocity()
+	{
+		return EngineApplicationInterface.IScene.GetGlobalWindVelocity(base.Pointer);
+	}
+
+	public void SetGlobalWindVelocity(in Vec2 windVector)
+	{
+		EngineApplicationInterface.IScene.SetGlobalWindVelocity(base.Pointer, in windVector);
+	}
+
+	public bool GetEnginePhysicsEnabled()
+	{
+		return EngineApplicationInterface.IScene.GetEnginePhysicsEnabled(base.Pointer);
+	}
+
+	public void ClearNavMesh()
+	{
+		EngineApplicationInterface.IScene.ClearNavMesh(base.Pointer);
 	}
 
 	public void StallLoadingRenderingsUntilFurtherNotice()
@@ -400,6 +598,21 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.GetNavMeshFaceCenterPosition(base.Pointer, faceIndex, ref centerPosition);
 	}
 
+	public PathFaceRecord GetNavMeshPathFaceRecord(int faceIndex)
+	{
+		return EngineApplicationInterface.IScene.GetNavMeshPathFaceRecord(base.Pointer, faceIndex);
+	}
+
+	public PathFaceRecord GetPathFaceRecordFromNavMeshFacePointer(UIntPtr navMeshFacePointer)
+	{
+		return EngineApplicationInterface.IScene.GetPathFaceRecordFromNavMeshFacePointer(base.Pointer, navMeshFacePointer);
+	}
+
+	public void GetAllNavmeshFaceRecords(PathFaceRecord[] faceRecords)
+	{
+		EngineApplicationInterface.IScene.GetAllNavmeshFaceRecords(base.Pointer, faceRecords);
+	}
+
 	public GameEntity GetFirstEntityWithName(string name)
 	{
 		return EngineApplicationInterface.IScene.GetFirstEntityWithName(base.Pointer, name);
@@ -425,6 +638,11 @@ public sealed class Scene : NativeObject
 	{
 		string name = typeof(T).Name;
 		return EngineApplicationInterface.IScene.GetFirstEntityWithScriptComponent(base.Pointer, name);
+	}
+
+	public GameEntity GetFirstEntityWithScriptComponent(string scriptName)
+	{
+		return EngineApplicationInterface.IScene.GetFirstEntityWithScriptComponent(base.Pointer, scriptName);
 	}
 
 	public uint GetUpgradeLevelMaskOfLevelName(string levelName)
@@ -572,6 +790,11 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.AddDecalInstance(base.Pointer, decal.Pointer, decalSetID, deletable);
 	}
 
+	public void RemoveDecalInstance(Decal decal, string decalSetID)
+	{
+		EngineApplicationInterface.IScene.RemoveDecalInstance(base.Pointer, decal.Pointer, decalSetID);
+	}
+
 	public void SetShadow(bool shadowEnabled)
 	{
 		EngineApplicationInterface.IScene.SetShadow(base.Pointer, shadowEnabled);
@@ -672,7 +895,17 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.RemoveEntity(base.Pointer, entity.Pointer, removeReason);
 	}
 
+	public void RemoveEntity(WeakGameEntity entity, int removeReason)
+	{
+		EngineApplicationInterface.IScene.RemoveEntity(base.Pointer, entity.Pointer, removeReason);
+	}
+
 	public bool AttachEntity(GameEntity entity, bool showWarnings = false)
+	{
+		return EngineApplicationInterface.IScene.AttachEntity(base.Pointer, entity.Pointer, showWarnings);
+	}
+
+	public bool AttachEntity(WeakGameEntity entity, bool showWarnings = false)
 	{
 		return EngineApplicationInterface.IScene.AttachEntity(base.Pointer, entity.Pointer, showWarnings);
 	}
@@ -722,14 +955,24 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.IsLineToPointClear2(base.Pointer, position.GetNavMesh(), position.AsVec2, destination.AsVec2, agentRadius);
 	}
 
+	public bool IsLineToPointClear(UIntPtr startingFace, Vec2 position, Vec2 destination, float agentRadius)
+	{
+		return EngineApplicationInterface.IScene.IsLineToPointClear2(base.Pointer, startingFace, position, destination, agentRadius);
+	}
+
 	public bool IsLineToPointClear(int startingFace, Vec2 position, Vec2 destination, float agentRadius)
 	{
 		return EngineApplicationInterface.IScene.IsLineToPointClear(base.Pointer, startingFace, position, destination, agentRadius);
 	}
 
-	public Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(int startingFace, Vec2 position, Vec2 destination)
+	public Vec2 GetLastPointOnNavigationMeshFromPositionToDestination(int startingFace, Vec2 position, Vec2 destination, int[] excludedFaceIds)
 	{
-		return EngineApplicationInterface.IScene.GetLastPointOnNavigationMeshFromPositionToDestination(base.Pointer, startingFace, position, destination);
+		return EngineApplicationInterface.IScene.GetLastPointOnNavigationMeshFromPositionToDestination(base.Pointer, startingFace, position, destination, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0);
+	}
+
+	public Vec2 GetLastPositionOnNavMeshFaceForPointAndDirection(PathFaceRecord record, Vec2 position, Vec2 destination)
+	{
+		return EngineApplicationInterface.IScene.GetLastPositionOnNavMeshFaceForPointAndDirection(base.Pointer, in record, position, destination);
 	}
 
 	public Vec3 GetLastPointOnNavigationMeshFromWorldPositionToDestination(ref WorldPosition position, Vec2 destination)
@@ -767,13 +1010,13 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.GetRootEntities(this, entities);
 	}
 
-	public int SelectEntitiesInBoxWithScriptComponent<T>(ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, GameEntity[] entitiesOutput, UIntPtr[] entityIds) where T : ScriptComponentBehavior
+	public int SelectEntitiesInBoxWithScriptComponent<T>(ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, WeakGameEntity[] entitiesOutput, UIntPtr[] entityIds) where T : ScriptComponentBehavior
 	{
 		string name = typeof(T).Name;
 		int num = EngineApplicationInterface.IScene.SelectEntitiesInBoxWithScriptComponent(base.Pointer, ref boundingBoxMin, ref boundingBoxMax, entityIds, entitiesOutput.Length, name);
 		for (int i = 0; i < num; i++)
 		{
-			entitiesOutput[i] = new GameEntity(entityIds[i]);
+			entitiesOutput[i] = new WeakGameEntity(entityIds[i]);
 		}
 		return num;
 	}
@@ -783,9 +1026,31 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.SelectEntitiesCollidedWith(base.Pointer, ref ray, entityIds, intersectionsOutput);
 	}
 
-	public int GenerateContactsWithCapsule(ref CapsuleData capsule, BodyFlags exclude_flags, Intersection[] intersectionsOutput)
+	public bool RayCastExcludingTwoEntities(BodyFlags flags, in Ray ray, WeakGameEntity entity1, WeakGameEntity entity2)
 	{
-		return EngineApplicationInterface.IScene.GenerateContactsWithCapsule(base.Pointer, ref capsule, exclude_flags, intersectionsOutput);
+		return EngineApplicationInterface.IScene.RayCastExcludingTwoEntities(flags, base.Pointer, in ray, entity1.Pointer, entity2.Pointer);
+	}
+
+	public int GenerateContactsWithCapsule(ref CapsuleData capsule, BodyFlags exclude_flags, bool isFixedTick, Intersection[] intersectionsOutput, WeakGameEntity[] gameEntities, UIntPtr[] entityPointers)
+	{
+		int num = EngineApplicationInterface.IScene.GenerateContactsWithCapsule(base.Pointer, ref capsule, exclude_flags, isFixedTick, intersectionsOutput, entityPointers);
+		for (int i = 0; i < num; i++)
+		{
+			if (entityPointers[i] != UIntPtr.Zero)
+			{
+				gameEntities[i] = new WeakGameEntity(entityPointers[i]);
+			}
+			else
+			{
+				gameEntities[i] = WeakGameEntity.Invalid;
+			}
+		}
+		return num;
+	}
+
+	public int GenerateContactsWithCapsuleAgainstEntity(ref CapsuleData capsule, BodyFlags excludeFlags, WeakGameEntity entity, Intersection[] intersectionsOutput)
+	{
+		return EngineApplicationInterface.IScene.GenerateContactsWithCapsuleAgainstEntity(base.Pointer, ref capsule, excludeFlags, entity.Pointer, intersectionsOutput);
 	}
 
 	public void InvalidateTerrainPhysicsMaterials()
@@ -797,6 +1062,11 @@ public sealed class Scene : NativeObject
 	{
 		SceneInitializationData initData = new SceneInitializationData(initializeWithDefaults: true);
 		EngineApplicationInterface.IScene.Read(base.Pointer, sceneName, ref initData, "");
+	}
+
+	public void Read(string sceneName, string moduleId, ref SceneInitializationData initData, string forcedAtmoName = "")
+	{
+		EngineApplicationInterface.IScene.ReadInModule(base.Pointer, sceneName, moduleId, ref initData, forcedAtmoName);
 	}
 
 	public void Read(string sceneName, ref SceneInitializationData initData, string forcedAtmoName = "")
@@ -821,14 +1091,14 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.GetTerrainHeight(base.Pointer, position, checkHoles);
 	}
 
-	public void CheckResources()
+	public void CheckResources(bool checkInvisibleEntities)
 	{
-		EngineApplicationInterface.IScene.CheckResources(base.Pointer);
+		EngineApplicationInterface.IScene.CheckResources(base.Pointer, checkInvisibleEntities);
 	}
 
-	public void ForceLoadResources()
+	public void ForceLoadResources(bool checkInvisibleEntities)
 	{
-		EngineApplicationInterface.IScene.ForceLoadResources(base.Pointer);
+		EngineApplicationInterface.IScene.ForceLoadResources(base.Pointer, checkInvisibleEntities);
 	}
 
 	public void SetDepthOfFieldParameters(float depthOfFieldFocusStart, float depthOfFieldFocusEnd, bool isVignetteOn)
@@ -862,21 +1132,15 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.GetGroundHeightAtPosition(base.Pointer, position, (uint)excludeFlags);
 	}
 
-	public float GetGroundHeightAtPositionMT(Vec3 position, BodyFlags excludeFlags = BodyFlags.CommonCollisionExcludeFlags)
+	public float GetGroundHeightAndBodyFlagsAtPosition(Vec3 position, out BodyFlags contactPointFlags, BodyFlags excludeFlags = BodyFlags.CommonCollisionExcludeFlags)
 	{
-		return EngineApplicationInterface.IScene.GetGroundHeightAtPosition(base.Pointer, position, (uint)excludeFlags);
+		return EngineApplicationInterface.IScene.GetGroundHeightAndBodyFlagsAtPosition(base.Pointer, position, out contactPointFlags, excludeFlags);
 	}
 
 	public float GetGroundHeightAtPosition(Vec3 position, out Vec3 normal, BodyFlags excludeFlags = BodyFlags.CommonCollisionExcludeFlags)
 	{
 		normal = Vec3.Invalid;
 		return EngineApplicationInterface.IScene.GetGroundHeightAtPosition(base.Pointer, position, (uint)excludeFlags);
-	}
-
-	public float GetGroundHeightAtPositionMT(Vec3 position, out Vec3 normal, BodyFlags excludeFlags = BodyFlags.CommonCollisionExcludeFlags)
-	{
-		normal = Vec3.Invalid;
-		return EngineApplicationInterface.IScene.GetGroundHeightAndNormalAtPosition(base.Pointer, position, ref normal, (uint)excludeFlags);
 	}
 
 	public void PauseSceneSounds()
@@ -894,89 +1158,134 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.FinishSceneSounds(base.Pointer);
 	}
 
-	public bool BoxCastOnlyForCamera(Vec3[] boxPoints, Vec3 centerPoint, bool castSupportRay, Vec3 supportRaycastPoint, Vec3 dir, float distance, out float collisionDistance, out Vec3 closestPoint, out GameEntity collidedEntity, bool preFilter = true, bool postFilter = true, BodyFlags excludedBodyFlags = BodyFlags.CameraCollisionRayCastExludeFlags | BodyFlags.DontCollideWithCamera)
+	public bool BoxCastOnlyForCamera(Vec3[] boxPoints, in Vec3 centerPoint, bool castSupportRay, in Vec3 supportRaycastPoint, in Vec3 dir, float distance, WeakGameEntity ignoredEntity, out float collisionDistance, out Vec3 closestPoint, out WeakGameEntity collidedEntity, BodyFlags excludedBodyFlags = BodyFlags.CameraCollisionRayCastExludeFlags | BodyFlags.DontCollideWithCamera)
 	{
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
-		bool flag = castSupportRay && EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref supportRaycastPoint, ref centerPoint, 0f, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags);
+		bool flag = castSupportRay && EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrainIgnoreEntity(base.Pointer, in supportRaycastPoint, in centerPoint, 0f, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags, ignoredEntity.Pointer);
 		if (!flag)
 		{
-			flag = EngineApplicationInterface.IScene.BoxCastOnlyForCamera(base.Pointer, boxPoints, ref centerPoint, ref dir, distance, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags, preFilter, postFilter);
+			flag = EngineApplicationInterface.IScene.BoxCastOnlyForCamera(base.Pointer, boxPoints, in centerPoint, in dir, distance, ignoredEntity.Pointer, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags);
 		}
 		if (flag && entityIndex != UIntPtr.Zero)
 		{
-			collidedEntity = new GameEntity(entityIndex);
+			collidedEntity = new WeakGameEntity(entityIndex);
 		}
 		else
 		{
-			collidedEntity = null;
+			collidedEntity = WeakGameEntity.Invalid;
 		}
 		return flag;
 	}
 
-	public bool BoxCast(Vec3 boxMin, Vec3 boxMax, bool castSupportRay, Vec3 supportRaycastPoint, Vec3 dir, float distance, out float collisionDistance, out Vec3 closestPoint, out GameEntity collidedEntity, BodyFlags excludedBodyFlags = BodyFlags.CameraCollisionRayCastExludeFlags)
+	public bool BoxCast(Vec3 boxMin, Vec3 boxMax, bool castSupportRay, Vec3 supportRaycastPoint, Vec3 dir, float distance, out float collisionDistance, out Vec3 closestPoint, out WeakGameEntity collidedEntity, BodyFlags excludedBodyFlags = BodyFlags.CameraCollisionRayCastExludeFlags)
 	{
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
 		Vec3 targetPoint = (boxMin + boxMax) * 0.5f;
-		bool flag = castSupportRay && EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref supportRaycastPoint, ref targetPoint, 0f, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags);
+		bool flag = castSupportRay && EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, in supportRaycastPoint, in targetPoint, 0f, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags, isFixedWorld: false);
 		if (!flag)
 		{
 			flag = EngineApplicationInterface.IScene.BoxCast(base.Pointer, ref boxMin, ref boxMax, ref dir, distance, ref collisionDistance, ref closestPoint, ref entityIndex, excludedBodyFlags);
 		}
 		if (flag && entityIndex != UIntPtr.Zero)
 		{
-			collidedEntity = new GameEntity(entityIndex);
+			collidedEntity = new WeakGameEntity(entityIndex);
 		}
 		else
 		{
-			collidedEntity = null;
+			collidedEntity = WeakGameEntity.Invalid;
 		}
 		return flag;
 	}
 
-	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, out GameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, out WeakGameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
 	{
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
-		bool num = EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags);
+		bool num = EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, isFixedWorld: false);
 		if (num && entityIndex != UIntPtr.Zero)
 		{
-			collidedEntity = new GameEntity(entityIndex);
+			collidedEntity = new WeakGameEntity(entityIndex);
 			return num;
 		}
-		collidedEntity = null;
+		collidedEntity = WeakGameEntity.Invalid;
 		return num;
 	}
 
-	public bool RayCastForClosestEntityOrTerrainMT(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, out GameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	public bool RayCastForClosestEntityOrTerrainFixedPhysics(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, out WeakGameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
 	{
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
-		bool num = EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags);
+		bool num = EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, isFixedWorld: true);
 		if (num && entityIndex != UIntPtr.Zero)
 		{
-			collidedEntity = new GameEntity(entityIndex);
+			collidedEntity = new WeakGameEntity(entityIndex);
 			return num;
 		}
-		collidedEntity = null;
+		collidedEntity = WeakGameEntity.Invalid;
 		return num;
 	}
 
-	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out GameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	public bool FocusRayCastForFixedPhysics(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, out WeakGameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	{
+		collisionDistance = float.NaN;
+		closestPoint = Vec3.Invalid;
+		UIntPtr entityIndex = UIntPtr.Zero;
+		bool num = EngineApplicationInterface.IScene.FocusRayCastForFixedPhysics(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, isFixedWorld: true);
+		if (num && entityIndex != UIntPtr.Zero)
+		{
+			collidedEntity = new WeakGameEntity(entityIndex);
+			return num;
+		}
+		collidedEntity = WeakGameEntity.Invalid;
+		return num;
+	}
+
+	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out WeakGameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
 	{
 		Vec3 closestPoint;
 		return RayCastForClosestEntityOrTerrain(sourcePoint, targetPoint, out collisionDistance, out closestPoint, out collidedEntity, rayThickness, excludeBodyFlags);
 	}
 
-	public bool RayCastForClosestEntityOrTerrainMT(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out GameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	public bool RayCastForClosestEntityOrTerrainFixedPhysics(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out WeakGameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
 	{
 		Vec3 closestPoint;
-		return RayCastForClosestEntityOrTerrainMT(sourcePoint, targetPoint, out collisionDistance, out closestPoint, out collidedEntity, rayThickness, excludeBodyFlags);
+		return RayCastForClosestEntityOrTerrainFixedPhysics(sourcePoint, targetPoint, out collisionDistance, out closestPoint, out collidedEntity, rayThickness, excludeBodyFlags);
+	}
+
+	public bool RayCastForRamming(in Vec3 sourcePoint, in Vec3 targetPoint, WeakGameEntity ignoredEntity, float rayThickness, out float collisionDistance, out Vec3 intersectionPoint, out WeakGameEntity collidedEntity, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags, BodyFlags includeBodyFlags = BodyFlags.None)
+	{
+		collisionDistance = float.NaN;
+		intersectionPoint = Vec3.Invalid;
+		UIntPtr intersectedEntityIndex = UIntPtr.Zero;
+		bool num = EngineApplicationInterface.IScene.RayCastForRamming(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref intersectionPoint, ref intersectedEntityIndex, excludeBodyFlags, includeBodyFlags, ignoredEntity.Pointer);
+		if (num && intersectedEntityIndex != UIntPtr.Zero)
+		{
+			collidedEntity = new WeakGameEntity(intersectedEntityIndex);
+			return num;
+		}
+		collidedEntity = WeakGameEntity.Invalid;
+		return num;
+	}
+
+	public bool RayCastForClosestEntityOrTerrainIgnoreEntity(in Vec3 sourcePoint, in Vec3 targetPoint, WeakGameEntity ignoredEntity, out float collisionDistance, out GameEntity collidedEntity, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	{
+		Vec3 closestPoint = Vec3.Invalid;
+		UIntPtr entityIndex = UIntPtr.Zero;
+		collisionDistance = float.NaN;
+		bool num = EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrainIgnoreEntity(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, ignoredEntity.Pointer);
+		if (num && entityIndex != UIntPtr.Zero)
+		{
+			collidedEntity = new GameEntity(entityIndex);
+			return num;
+		}
+		collidedEntity = null;
+		return num;
 	}
 
 	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
@@ -984,15 +1293,21 @@ public sealed class Scene : NativeObject
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
-		return EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags);
+		return EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, isFixedWorld: false);
 	}
 
-	public bool RayCastForClosestEntityOrTerrainMT(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	public bool RayCastForClosestEntityOrTerrainFixedPhysics(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, out Vec3 closestPoint, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
 	{
 		collisionDistance = float.NaN;
 		closestPoint = Vec3.Invalid;
 		UIntPtr entityIndex = UIntPtr.Zero;
-		return EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, ref sourcePoint, ref targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags);
+		return EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrain(base.Pointer, in sourcePoint, in targetPoint, rayThickness, ref collisionDistance, ref closestPoint, ref entityIndex, excludeBodyFlags, isFixedWorld: true);
+	}
+
+	public bool RayCastForClosestEntityOrTerrainFixedPhysics(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
+	{
+		Vec3 closestPoint;
+		return RayCastForClosestEntityOrTerrainFixedPhysics(sourcePoint, targetPoint, out collisionDistance, out closestPoint, rayThickness, excludeBodyFlags);
 	}
 
 	public bool RayCastForClosestEntityOrTerrain(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
@@ -1001,15 +1316,24 @@ public sealed class Scene : NativeObject
 		return RayCastForClosestEntityOrTerrain(sourcePoint, targetPoint, out collisionDistance, out closestPoint, rayThickness, excludeBodyFlags);
 	}
 
-	public bool RayCastForClosestEntityOrTerrainMT(Vec3 sourcePoint, Vec3 targetPoint, out float collisionDistance, float rayThickness = 0.01f, BodyFlags excludeBodyFlags = BodyFlags.CommonFocusRayCastExcludeFlags)
-	{
-		Vec3 closestPoint;
-		return RayCastForClosestEntityOrTerrainMT(sourcePoint, targetPoint, out collisionDistance, out closestPoint, rayThickness, excludeBodyFlags);
-	}
-
 	public void ImportNavigationMeshPrefab(string navMeshPrefabName, int navMeshGroupShift)
 	{
 		EngineApplicationInterface.IScene.LoadNavMeshPrefab(base.Pointer, navMeshPrefabName, navMeshGroupShift);
+	}
+
+	public void ImportNavigationMeshPrefabWithFrame(string navMeshPrefabName, MatrixFrame frame)
+	{
+		EngineApplicationInterface.IScene.LoadNavMeshPrefabWithFrame(base.Pointer, navMeshPrefabName, frame);
+	}
+
+	public void SaveNavMeshPrefabWithFrame(string navMeshPrefabName, MatrixFrame frame)
+	{
+		EngineApplicationInterface.IScene.SaveNavMeshPrefabWithFrame(base.Pointer, navMeshPrefabName, frame);
+	}
+
+	public void SetNavMeshRegionMap(bool[] regionMap)
+	{
+		EngineApplicationInterface.IScene.SetNavMeshRegionMap(base.Pointer, regionMap, regionMap.Length);
 	}
 
 	public void MarkFacesWithIdAsLadder(int faceGroupId, bool isLadder)
@@ -1017,14 +1341,14 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.MarkFacesWithIdAsLadder(base.Pointer, faceGroupId, isLadder);
 	}
 
-	public void SetAbilityOfFacesWithId(int faceGroupId, bool isEnabled)
+	public int SetAbilityOfFacesWithId(int faceGroupId, bool isEnabled)
 	{
-		EngineApplicationInterface.IScene.SetAbilityOfFacesWithId(base.Pointer, faceGroupId, isEnabled);
+		return EngineApplicationInterface.IScene.SetAbilityOfFacesWithId(base.Pointer, faceGroupId, isEnabled);
 	}
 
-	public void SwapFaceConnectionsWithID(int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId)
+	public bool SwapFaceConnectionsWithID(int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail)
 	{
-		EngineApplicationInterface.IScene.SwapFaceConnectionsWithId(base.Pointer, hubFaceGroupID, toBeSeparatedFaceGroupId, toBeMergedFaceGroupId);
+		return EngineApplicationInterface.IScene.SwapFaceConnectionsWithId(base.Pointer, hubFaceGroupID, toBeSeparatedFaceGroupId, toBeMergedFaceGroupId, canFail);
 	}
 
 	public void MergeFacesWithId(int faceGroupId0, int faceGroupId1, int newFaceGroupId)
@@ -1042,16 +1366,21 @@ public sealed class Scene : NativeObject
 		return EngineApplicationInterface.IScene.IsAnyFaceWithId(base.Pointer, faceGroupId);
 	}
 
-	public bool GetNavigationMeshForPosition(ref Vec3 position)
+	public UIntPtr GetNavigationMeshForPosition(in Vec3 position)
 	{
 		int faceGroupId;
-		return GetNavigationMeshForPosition(ref position, out faceGroupId);
+		return GetNavigationMeshForPosition(in position, out faceGroupId, 1.5f, excludeDynamicNavigationMeshes: false);
 	}
 
-	public bool GetNavigationMeshForPosition(ref Vec3 position, out int faceGroupId, float heightDifferenceLimit = 1.5f)
+	public UIntPtr GetNearestNavigationMeshForPosition(in Vec3 position, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
+	{
+		return EngineApplicationInterface.IScene.GetNearestNavigationMeshForPosition(base.Pointer, in position, heightDifferenceLimit, excludeDynamicNavigationMeshes);
+	}
+
+	public UIntPtr GetNavigationMeshForPosition(in Vec3 position, out int faceGroupId, float heightDifferenceLimit, bool excludeDynamicNavigationMeshes)
 	{
 		faceGroupId = int.MinValue;
-		return EngineApplicationInterface.IScene.GetNavigationMeshFaceForPosition(base.Pointer, ref position, ref faceGroupId, heightDifferenceLimit);
+		return EngineApplicationInterface.IScene.GetNavigationMeshForPosition(base.Pointer, in position, ref faceGroupId, heightDifferenceLimit, excludeDynamicNavigationMeshes);
 	}
 
 	public bool DoesPathExistBetweenPositions(WorldPosition position, WorldPosition destination)
@@ -1142,6 +1471,16 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.SetDLSSMode(base.Pointer, mode);
 	}
 
+	public IEnumerable<WeakGameEntity> FindWeakEntitiesWithTag(string tag)
+	{
+		return WeakGameEntity.GetEntitiesWithTag(this, tag);
+	}
+
+	public WeakGameEntity FindWeakEntityWithTag(string tag)
+	{
+		return WeakGameEntity.GetFirstEntityWithTag(this, tag);
+	}
+
 	public IEnumerable<GameEntity> FindEntitiesWithTag(string tag)
 	{
 		return GameEntity.GetEntitiesWithTag(this, tag);
@@ -1155,6 +1494,11 @@ public sealed class Scene : NativeObject
 	public GameEntity FindEntityWithName(string name)
 	{
 		return GameEntity.GetFirstEntityWithName(this, name);
+	}
+
+	public IEnumerable<WeakGameEntity> FindWeakEntitiesWithTagExpression(string expression)
+	{
+		return WeakGameEntity.GetEntitiesWithTagExpression(this, expression);
 	}
 
 	public IEnumerable<GameEntity> FindEntitiesWithTagExpression(string expression)
@@ -1207,6 +1551,13 @@ public sealed class Scene : NativeObject
 		min = Vec3.Invalid;
 		max = Vec3.Invalid;
 		EngineApplicationInterface.IScene.GetBoundingBox(base.Pointer, ref min, ref max);
+	}
+
+	public void GetSceneLimits(out Vec3 min, out Vec3 max)
+	{
+		min = Vec3.Invalid;
+		max = Vec3.Invalid;
+		EngineApplicationInterface.IScene.GetSceneLimits(base.Pointer, ref min, ref max);
 	}
 
 	public void SetName(string name)
@@ -1285,5 +1636,75 @@ public sealed class Scene : NativeObject
 	public void ClearDecals()
 	{
 		EngineApplicationInterface.IScene.ClearDecals(base.Pointer);
+	}
+
+	public void SetPhotoAtmosphereViaTod(float tod, bool withStorm)
+	{
+		EngineApplicationInterface.IScene.SetPhotoAtmosphereViaTod(base.Pointer, tod, withStorm);
+	}
+
+	public bool IsPositionOnADynamicNavMesh(Vec3 position)
+	{
+		return EngineApplicationInterface.IScene.IsPositionOnADynamicNavMesh(base.Pointer, position);
+	}
+
+	public void WaitWaterRendererCPUSimulation()
+	{
+		EngineApplicationInterface.IScene.WaitWaterRendererCPUSimulation(base.Pointer);
+	}
+
+	public void EnableInclusiveAsyncPhysx()
+	{
+		EngineApplicationInterface.IScene.EnableInclusiveAsyncPhysx(base.Pointer);
+	}
+
+	public void EnsureWaterWakeRenderer()
+	{
+		EngineApplicationInterface.IScene.EnsureWaterWakeRenderer(base.Pointer);
+	}
+
+	public void DeleteWaterWakeRenderer()
+	{
+		EngineApplicationInterface.IScene.DeleteWaterWakeRenderer(base.Pointer);
+	}
+
+	public bool SceneHadWaterWakeRenderer()
+	{
+		return EngineApplicationInterface.IScene.SceneHadWaterWakeRenderer(base.Pointer);
+	}
+
+	public void SetWaterWakeWorldSize(float worldSize, float eraseFactor)
+	{
+		EngineApplicationInterface.IScene.SetWaterWakeWorldSize(base.Pointer, worldSize, eraseFactor);
+	}
+
+	public void SetWaterWakeCameraOffset(float cameraOffset)
+	{
+		EngineApplicationInterface.IScene.SetWaterWakeCameraOffset(base.Pointer, cameraOffset);
+	}
+
+	public void TickWake(float dt)
+	{
+		EngineApplicationInterface.IScene.TickWake(base.Pointer, dt);
+	}
+
+	public void SetDoNotAddEntitiesToTickList(bool value)
+	{
+		EngineApplicationInterface.IScene.SetDoNotAddEntitiesToTickList(base.Pointer, value);
+	}
+
+	public void SetDontLoadInvisibleEntities(bool value)
+	{
+		EngineApplicationInterface.IScene.SetDontLoadInvisibleEntities(base.Pointer, value);
+	}
+
+	public void SetUsesDeleteLaterSystem(bool value)
+	{
+		EngineApplicationInterface.IScene.SetUsesDeleteLaterSystem(base.Pointer, value);
+	}
+
+	public Vec2 FindClosestExitPositionForPositionOnABoundaryFace(Vec3 position, UIntPtr boundaryFacePointer)
+	{
+		return EngineApplicationInterface.IScene.FindClosestExitPositionForPositionOnABoundaryFace(base.Pointer, position, boundaryFacePointer);
 	}
 }

@@ -4,7 +4,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SiegeLordsHallFightModel : GameModel
+public abstract class SiegeLordsHallFightModel : MBGameModel<SiegeLordsHallFightModel>
 {
 	public abstract float AreaLostRatio { get; }
 

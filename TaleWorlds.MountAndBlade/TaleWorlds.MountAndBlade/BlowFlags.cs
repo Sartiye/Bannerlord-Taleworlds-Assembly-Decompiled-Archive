@@ -4,7 +4,7 @@ using TaleWorlds.DotNet;
 namespace TaleWorlds.MountAndBlade;
 
 [Flags]
-[EngineStruct("Blow_flags", false)]
+[EngineStruct("Blow_flags", true, "bf", false)]
 public enum BlowFlags
 {
 	None = 0,

@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class SettlementTaxModel : GameModel
+public abstract class SettlementTaxModel : MBGameModel<SettlementTaxModel>
 {
 	public abstract float SettlementCommissionRateTown { get; }
 
@@ -15,7 +15,7 @@ public abstract class SettlementTaxModel : GameModel
 
 	public abstract float GetTownTaxRatio(Town town);
 
-	public abstract float GetVillageTaxRatio();
+	public abstract float GetVillageTaxRatio(Village village);
 
 	public abstract float GetTownCommissionChangeBasedOnSecurity(Town town, float commission);
 

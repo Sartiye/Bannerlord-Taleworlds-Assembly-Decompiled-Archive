@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.HUD.Compass;
@@ -11,7 +12,7 @@ public class CompassTargetVM : ViewModel
 
 	private string _color2;
 
-	private ImageIdentifierVM _banner;
+	private BannerImageIdentifierVM _banner;
 
 	private string _iconType;
 
@@ -30,7 +31,7 @@ public class CompassTargetVM : ViewModel
 	private bool _isFlag;
 
 	[DataSourceProperty]
-	public ImageIdentifierVM Banner
+	public BannerImageIdentifierVM Banner
 	{
 		get
 		{
@@ -234,7 +235,7 @@ public class CompassTargetVM : ViewModel
 		}
 	}
 
-	public CompassTargetVM(TargetIconType iconType, uint color, uint color2, BannerCode bannercode, bool isAttacker, bool isAlly)
+	public CompassTargetVM(TargetIconType iconType, uint color, uint color2, Banner banner, bool isAttacker, bool isAlly)
 	{
 		IconType = iconType.ToString();
 		LetterCode = GetLetterCode(iconType);
@@ -242,13 +243,13 @@ public class CompassTargetVM : ViewModel
 		IsFlag = iconType >= TargetIconType.Flag_A && iconType <= TargetIconType.Flag_I;
 		IsAttacker = isAttacker;
 		IsEnemy = !isAlly;
-		if (bannercode == null)
+		if (banner == null)
 		{
-			Banner = new ImageIdentifierVM();
+			Banner = new BannerImageIdentifierVM(null);
 		}
 		else
 		{
-			Banner = new ImageIdentifierVM(bannercode);
+			Banner = new BannerImageIdentifierVM(banner);
 		}
 	}
 

@@ -1,4 +1,5 @@
 using Helpers;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.Actions;
@@ -16,18 +17,24 @@ public static class MarriageAction
 		secondHero.Spouse = firstHero;
 		ChangeRelationAction.ApplyRelationChangeBetweenHeroes(firstHero, secondHero, Campaign.Current.Models.MarriageModel.GetEffectiveRelationIncrease(firstHero, secondHero), showQuickNotification: false);
 		Clan clanAfterMarriage = Campaign.Current.Models.MarriageModel.GetClanAfterMarriage(firstHero, secondHero);
+		if (clanAfterMarriage != firstHero.Clan)
+		{
+			Hero hero = firstHero;
+			firstHero = secondHero;
+			secondHero = hero;
+		}
+		CampaignEventDispatcher.Instance.OnBeforeHeroesMarried(firstHero, secondHero, showNotification);
 		if (firstHero.Clan != clanAfterMarriage)
 		{
 			HandleClanChangeAfterMarriageForHero(firstHero, clanAfterMarriage);
 		}
-		else
+		if (secondHero.Clan != clanAfterMarriage)
 		{
 			HandleClanChangeAfterMarriageForHero(secondHero, clanAfterMarriage);
 		}
 		Romance.EndAllCourtships(firstHero);
 		Romance.EndAllCourtships(secondHero);
 		ChangeRomanticStateAction.Apply(firstHero, secondHero, Romance.RomanceLevelEnum.Marriage);
-		CampaignEventDispatcher.Instance.OnHeroesMarried(firstHero, secondHero, showNotification);
 	}
 
 	private static void HandleClanChangeAfterMarriageForHero(Hero hero, Clan clanAfterMarriage)
@@ -55,7 +62,14 @@ public static class MarriageAction
 				IFaction kingdom = clanAfterMarriage.Kingdom;
 				FactionHelper.FinishAllRelatedHostileActionsOfNobleToFaction(hero, kingdom ?? clanAfterMarriage);
 			}
+			MobileParty partyBelongedTo = hero.PartyBelongedTo;
+			bool num = hero.PartyBelongedTo.LeaderHero == hero;
+			partyBelongedTo.MemberRoster.RemoveTroop(hero.CharacterObject);
 			MakeHeroFugitiveAction.Apply(hero);
+			if (num && partyBelongedTo.IsLordParty)
+			{
+				DisbandPartyAction.StartDisband(partyBelongedTo);
+			}
 		}
 		hero.Clan = clanAfterMarriage;
 		foreach (Hero hero2 in clan.Heroes)

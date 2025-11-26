@@ -4,13 +4,12 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
 
 namespace TaleWorlds.MountAndBlade;
 
 public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMissionBehavior
 {
-	private struct FormationSpawnData
+	internal struct FormationSpawnData
 	{
 		public int FootTroopCount;
 
@@ -132,32 +131,38 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			return num;
 		}
 
-		public void GetFormationSpawnData(FormationSpawnData[] formationSpawnData)
+		public void GetTeamFormationsSpawnData(out List<(Team team, FormationSpawnData[] formationSpawnData)> teamFormationsSpawnData)
 		{
-			if (formationSpawnData != null && formationSpawnData.Length == 11)
+			teamFormationsSpawnData = new List<(Team, FormationSpawnData[])>();
+			Mission mission = _spawnLogic.Mission;
+			foreach (Team item2 in mission.Teams.Where((Team t) => t.Side == _side && t == mission.PlayerTeam).Concat(mission.Teams.Where((Team t) => t.Side == _side && t != mission.PlayerTeam)))
 			{
-				for (int i = 0; i < formationSpawnData.Length; i++)
+				if (item2.Side == _side)
 				{
-					formationSpawnData[i].FootTroopCount = 0;
-					formationSpawnData[i].MountedTroopCount = 0;
-				}
-				{
-					foreach (IAgentOriginBase reservedTroop in _reservedTroops)
+					FormationSpawnData[] array = new FormationSpawnData[11];
+					for (int i = 0; i < array.Length; i++)
 					{
-						FormationClass agentTroopClass = Mission.Current.GetAgentTroopClass(_side, reservedTroop.Troop);
-						if (reservedTroop.Troop.HasMount())
-						{
-							formationSpawnData[(int)agentTroopClass].MountedTroopCount++;
-						}
-						else
-						{
-							formationSpawnData[(int)agentTroopClass].FootTroopCount++;
-						}
+						array[i].FootTroopCount = 0;
+						array[i].MountedTroopCount = 0;
 					}
-					return;
+					teamFormationsSpawnData.Add((item2, array));
 				}
 			}
-			Debug.FailedAssert("Formation troop counts parameter is not set correctly.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\MissionAgentSpawnLogic.cs", "GetFormationSpawnData", 155);
+			foreach (IAgentOriginBase reservedTroop in _reservedTroops)
+			{
+				FormationClass agentTroopClass = Mission.Current.GetAgentTroopClass(_side, reservedTroop.Troop);
+				bool isPlayerSide = _side == Mission.Current.PlayerTeam.Side;
+				Team troopTeam = Mission.GetAgentTeam(reservedTroop, isPlayerSide);
+				FormationSpawnData[] item = teamFormationsSpawnData.FirstOrDefault(((Team team, FormationSpawnData[] formationSpawnData) tf) => tf.team == troopTeam).formationSpawnData;
+				if (reservedTroop.Troop.HasMount())
+				{
+					item[(int)agentTroopClass].MountedTroopCount++;
+				}
+				else
+				{
+					item[(int)agentTroopClass].FootTroopCount++;
+				}
+			}
 		}
 
 		public void ReserveTroops(int number)
@@ -214,7 +219,13 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			if (ReinforcementSpawnActive)
 			{
 				ResetReinforcementSpawnedUnitCountsPerFormation();
-				Mission.Current.UpdateReinforcementPlan(_side);
+				foreach (Team team in _spawnLogic.Mission.Teams)
+				{
+					if (team.Side == _side)
+					{
+						_spawnLogic.DeploymentPlan.UpdateReinforcementPlan(team);
+					}
+				}
 			}
 			return ReinforcementSpawnActive;
 		}
@@ -343,7 +354,7 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 					{
 						continue;
 					}
-					bool isMounted = _spawnWithHorses && MissionDeploymentPlan.HasSignificantMountedTroops(num6, num5);
+					bool isMounted = _spawnWithHorses && DefaultMissionDeploymentPlan.HasSignificantMountedTroops(num6, num5);
 					int num8 = 0;
 					int num9 = count;
 					if (ReinforcementSpawnActive)
@@ -552,8 +563,6 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 
 	private readonly int[] _numberOfTroopsInTotal;
 
-	private readonly FormationSpawnData[] _formationSpawnData;
-
 	private readonly int _battleSize;
 
 	private bool _reinforcementSpawnEnabled = true;
@@ -571,6 +580,8 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 	private readonly MissionSide[] _missionSides;
 
 	private BannerBearerLogic _bannerBearerLogic;
+
+	private DefaultMissionDeploymentPlan _deploymentPlan;
 
 	private List<BattleSideEnum> _sidesWhereSpawnOccured = new List<BattleSideEnum>();
 
@@ -610,7 +621,7 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 	{
 		get
 		{
-			if (base.Mission.GetMissionBehavior<BattleDeploymentHandler>() == null)
+			if (base.Mission.Mode != MissionMode.Deployment)
 			{
 				return IsInitialSpawnOver;
 			}
@@ -619,6 +630,8 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 	}
 
 	public ref readonly MissionSpawnSettings ReinforcementSpawnSettings => ref _spawnSettings;
+
+	internal DefaultMissionDeploymentPlan DeploymentPlan => _deploymentPlan;
 
 	private int TotalSpawnNumber => (DefenderActivePhase?.TotalSpawnNumber ?? 0) + (AttackerActivePhase?.TotalSpawnNumber ?? 0);
 
@@ -715,7 +728,6 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			_missionSides[i] = missionSide;
 		}
 		_numberOfTroopsInTotal = new int[2];
-		_formationSpawnData = new FormationSpawnData[11];
 		_phases = new List<SpawnPhase>[2];
 		for (int j = 0; j < 2; j++)
 		{
@@ -753,7 +765,6 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 	public void SetSpawnHorses(BattleSideEnum side, bool spawnHorses)
 	{
 		_missionSides[(int)side].SetSpawnWithHorses(spawnHorses);
-		base.Mission.SetDeploymentPlanSpawnWithHorses(side, spawnHorses);
 	}
 
 	public void StartSpawner(BattleSideEnum side)
@@ -771,18 +782,19 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 		return _missionSides[(int)side].TroopSpawnActive;
 	}
 
-	public void OnBattleSideDeployed(BattleSideEnum side)
+	public void OnSideDeploymentOver(BattleSideEnum battleSide)
 	{
 		foreach (Team team in base.Mission.Teams)
 		{
-			if (team.Side == side)
+			if (team.Side == battleSide)
 			{
-				team.OnDeployed();
+				base.Mission.OnTeamDeployed(team);
 			}
 		}
+		base.Mission.OnBattleSideDeployed(battleSide);
 		foreach (Team team2 in base.Mission.Teams)
 		{
-			if (team2.Side != side)
+			if (team2.Side != battleSide)
 			{
 				continue;
 			}
@@ -926,6 +938,7 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 
 	private void Init(bool spawnDefenders, bool spawnAttackers, in MissionSpawnSettings reinforcementSpawnSettings)
 	{
+		base.Mission.GetDeploymentPlan<DefaultMissionDeploymentPlan>(out _deploymentPlan);
 		List<SpawnPhase>[] phases = _phases;
 		for (int i = 0; i < phases.Length; i++)
 		{
@@ -933,6 +946,12 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			{
 				return;
 			}
+		}
+		foreach (Team team in base.Mission.Teams)
+		{
+			BattleSideEnum side = team.Side;
+			bool spawnWithHorses = _missionSides[(int)side].SpawnWithHorses;
+			_deploymentPlan.SetSpawnWithHorses(team, spawnWithHorses);
 		}
 		_spawnSettings = reinforcementSpawnSettings;
 		int num = 0;
@@ -1034,25 +1053,31 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			}
 			_phases[i].Remove(activePhaseForSide);
 			BattleSideEnum battleSideEnum = (BattleSideEnum)i;
-			if (GetActivePhaseForSide(battleSideEnum) != null)
+			if (GetActivePhaseForSide(battleSideEnum) == null)
 			{
-				if (_onPhaseChanged[i] != null)
-				{
-					_onPhaseChanged[i]();
-				}
-				IMissionDeploymentPlan deploymentPlan = base.Mission.DeploymentPlan;
-				if (deploymentPlan.IsPlanMadeForBattleSide(battleSideEnum, DeploymentPlanType.Initial))
-				{
-					base.Mission.ClearAddedTroopsInDeploymentPlan(battleSideEnum, DeploymentPlanType.Initial);
-					base.Mission.ClearDeploymentPlanForSide(battleSideEnum, DeploymentPlanType.Initial);
-				}
-				if (deploymentPlan.IsPlanMadeForBattleSide(battleSideEnum, DeploymentPlanType.Reinforcement))
-				{
-					base.Mission.ClearAddedTroopsInDeploymentPlan(battleSideEnum, DeploymentPlanType.Reinforcement);
-					base.Mission.ClearDeploymentPlanForSide(battleSideEnum, DeploymentPlanType.Reinforcement);
-				}
-				Debug.Print("New spawn phase!", 0, Debug.DebugColor.Green, 64uL);
+				continue;
 			}
+			if (_onPhaseChanged[i] != null)
+			{
+				_onPhaseChanged[i]();
+			}
+			foreach (Team team in base.Mission.Teams)
+			{
+				if (team.Side == battleSideEnum)
+				{
+					if (_deploymentPlan.IsPlanMade(team))
+					{
+						_deploymentPlan.ClearAddedTroops(team);
+						_deploymentPlan.ClearDeploymentPlan(team);
+					}
+					if (_deploymentPlan.IsReinforcementPlanMade(team))
+					{
+						_deploymentPlan.ClearAddedTroops(team, isReinforcement: true);
+						_deploymentPlan.ClearReinforcementPlan(team);
+					}
+				}
+			}
+			Debug.Print("New spawn phase!", 0, Debug.DebugColor.Green, 64uL);
 		}
 	}
 
@@ -1061,61 +1086,98 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 		bool isDeploymentOver = IsDeploymentOver;
 		if (!isDeploymentOver)
 		{
+			int battleSizeForActivePhase = GetBattleSizeForActivePhase();
 			for (int i = 0; i < 2; i++)
 			{
 				BattleSideEnum battleSideEnum = (BattleSideEnum)i;
 				SpawnPhase activePhaseForSide = GetActivePhaseForSide(battleSideEnum);
-				if (!base.Mission.DeploymentPlan.IsPlanMadeForBattleSide(battleSideEnum, DeploymentPlanType.Initial))
-				{
-					if (activePhaseForSide.InitialSpawnNumber > 0)
-					{
-						_missionSides[i].ReserveTroops(activePhaseForSide.InitialSpawnNumber);
-						_missionSides[i].GetFormationSpawnData(_formationSpawnData);
-						for (int j = 0; j < _formationSpawnData.Length; j++)
-						{
-							if (_formationSpawnData[j].NumTroops > 0)
-							{
-								base.Mission.AddTroopsToDeploymentPlan(battleSideEnum, DeploymentPlanType.Initial, (FormationClass)j, _formationSpawnData[j].FootTroopCount, _formationSpawnData[j].MountedTroopCount);
-							}
-						}
-					}
-					float spawnPathOffset = 0f;
-					if (base.Mission.HasSpawnPath)
-					{
-						int battleSizeForActivePhase = GetBattleSizeForActivePhase();
-						Path initialSpawnPath = base.Mission.GetInitialSpawnPath();
-						spawnPathOffset = Mission.GetBattleSizeOffset(battleSizeForActivePhase, initialSpawnPath);
-					}
-					base.Mission.MakeDeploymentPlanForSide(battleSideEnum, DeploymentPlanType.Initial, spawnPathOffset);
-				}
-				if (base.Mission.DeploymentPlan.IsPlanMadeForBattleSide(battleSideEnum, DeploymentPlanType.Reinforcement))
+				if (activePhaseForSide.InitialSpawnNumber <= 0)
 				{
 					continue;
 				}
-				int num = Math.Max(_battleSize / (2 * _formationSpawnData.Length), 1);
-				for (int k = 0; k < _formationSpawnData.Length; k++)
+				if (activePhaseForSide.InitialSpawnNumber > _missionSides[i].ReservedTroopsCount)
 				{
-					if (((FormationClass)k).IsMounted())
+					int number = activePhaseForSide.InitialSpawnNumber - _missionSides[i].ReservedTroopsCount;
+					_missionSides[i].ReserveTroops(number);
+				}
+				if (_missionSides[i].ReservedTroopsCount < activePhaseForSide.InitialSpawnNumber)
+				{
+					continue;
+				}
+				bool flag = true;
+				int num = 0;
+				foreach (Team team in base.Mission.Teams)
+				{
+					if (team.Side == battleSideEnum)
 					{
-						base.Mission.AddTroopsToDeploymentPlan(battleSideEnum, DeploymentPlanType.Reinforcement, (FormationClass)k, 0, num);
-					}
-					else
-					{
-						base.Mission.AddTroopsToDeploymentPlan(battleSideEnum, DeploymentPlanType.Reinforcement, (FormationClass)k, num, 0);
+						flag = flag && _deploymentPlan.IsPlanMade(team) && _deploymentPlan.IsReinforcementPlanMade(team);
+						num++;
 					}
 				}
-				base.Mission.MakeDeploymentPlanForSide(battleSideEnum, DeploymentPlanType.Reinforcement);
-			}
-			for (int l = 0; l < 2; l++)
-			{
-				BattleSideEnum battleSideEnum2 = (BattleSideEnum)l;
-				SpawnPhase activePhaseForSide2 = GetActivePhaseForSide(battleSideEnum2);
-				if (base.Mission.DeploymentPlan.IsPlanMadeForBattleSide(battleSideEnum2, DeploymentPlanType.Initial) && activePhaseForSide2.InitialSpawnNumber > 0 && _missionSides[l].TroopSpawnActive)
+				if (num <= 0 || flag)
 				{
-					int initialSpawnNumber = activePhaseForSide2.InitialSpawnNumber;
-					_missionSides[l].SpawnTroops(initialSpawnNumber, isReinforcement: false);
+					continue;
+				}
+				_missionSides[i].GetTeamFormationsSpawnData(out List<(Team, FormationSpawnData[])> teamFormationsSpawnData);
+				if (base.Mission.HasSpawnPath)
+				{
+					Path initialSpawnPath = base.Mission.GetInitialSpawnPath();
+					float battleSizeOffset = Mission.GetBattleSizeOffset(battleSizeForActivePhase, initialSpawnPath);
+					SpawnPathData initialSpawnPathData = base.Mission.GetInitialSpawnPathData(battleSideEnum);
+					float offsetOverflow = initialSpawnPathData.GetOffsetOverflow(battleSizeOffset);
+					float offsetOverflow2 = initialSpawnPathData.GetOffsetOverflow(0f - battleSizeOffset);
+					float pathOffsetRatio = battleSizeOffset - offsetOverflow2;
+					float pathOffsetRatio2 = 0f - (battleSizeOffset + offsetOverflow);
+					float num2 = initialSpawnPathData.ClampPathOffset(pathOffsetRatio);
+					float targetOffset = initialSpawnPathData.ClampPathOffset(pathOffsetRatio2);
+					foreach (var item2 in teamFormationsSpawnData)
+					{
+						FormationSpawnData[] item = item2.Item2;
+						if (item2.Item1 == base.Mission.PlayerTeam || item2.Item1 == base.Mission.PlayerEnemyTeam)
+						{
+							MakeTeamPlans(item2.Item1, item, num2, targetOffset);
+							continue;
+						}
+						float num3 = item.Max((FormationSpawnData data) => Formation.GetDefaultRankDepth(TaleWorlds.Library.MathF.Ceiling(TaleWorlds.Library.MathF.Sqrt(data.NumTroops)), 3, data.MountedTroopCount > 0));
+						float distance = 3f * num3 + 20f;
+						num2 += Mission.GetPathOffsetFromDistance(distance, initialSpawnPath);
+						MakeTeamPlans(item2.Item1, item, num2, targetOffset);
+					}
+					continue;
+				}
+				foreach (var item3 in teamFormationsSpawnData)
+				{
+					MakeTeamPlans(item3.Item1, item3.Item2);
+				}
+			}
+			for (int j = 0; j < 2; j++)
+			{
+				BattleSideEnum battleSideEnum2 = (BattleSideEnum)j;
+				int initialSpawnNumber = GetActivePhaseForSide(battleSideEnum2).InitialSpawnNumber;
+				if (!_missionSides[j].TroopSpawnActive)
+				{
+					continue;
+				}
+				int reservedTroopsCount = _missionSides[j].ReservedTroopsCount;
+				if (reservedTroopsCount <= 0 || reservedTroopsCount < initialSpawnNumber)
+				{
+					continue;
+				}
+				bool flag2 = true;
+				int num4 = 0;
+				foreach (Team team2 in base.Mission.Teams)
+				{
+					if (team2.Side == battleSideEnum2)
+					{
+						flag2 = flag2 && _deploymentPlan.IsPlanMade(team2);
+						num4++;
+					}
+				}
+				if (num4 > 0 && flag2)
+				{
+					_missionSides[j].SpawnTroops(initialSpawnNumber, isReinforcement: false);
 					GetActivePhaseForSide(battleSideEnum2).OnInitialTroopsSpawned();
-					_missionSides[l].OnInitialSpawnOver();
+					_missionSides[j].OnInitialSpawnOver();
 					if (!_sidesWhereSpawnOccured.Contains(battleSideEnum2))
 					{
 						_sidesWhereSpawnOccured.Add(battleSideEnum2);
@@ -1126,13 +1188,45 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 			isDeploymentOver = IsDeploymentOver;
 			if (isDeploymentOver)
 			{
-				foreach (BattleSideEnum item in _sidesWhereSpawnOccured)
+				foreach (BattleSideEnum item4 in _sidesWhereSpawnOccured)
 				{
-					OnBattleSideDeployed(item);
+					OnSideDeploymentOver(item4);
 				}
 			}
 		}
 		return isDeploymentOver;
+	}
+
+	private void MakeTeamPlans(Team team, FormationSpawnData[] formationsSpawnData, float spawnPathOffset = 0f, float targetOffset = 0f)
+	{
+		if (!_deploymentPlan.IsPlanMade(team))
+		{
+			for (int i = 0; i < formationsSpawnData.Length; i++)
+			{
+				if (formationsSpawnData[i].NumTroops > 0)
+				{
+					_deploymentPlan.AddTroops(team, (FormationClass)i, formationsSpawnData[i].FootTroopCount, formationsSpawnData[i].MountedTroopCount);
+				}
+			}
+			_deploymentPlan.MakeDeploymentPlan(team, spawnPathOffset, targetOffset);
+		}
+		if (_deploymentPlan.IsReinforcementPlanMade(team))
+		{
+			return;
+		}
+		int num = Math.Max(_battleSize / (2 * formationsSpawnData.Length), 1);
+		for (int j = 0; j < formationsSpawnData.Length; j++)
+		{
+			if (((FormationClass)j).IsMounted())
+			{
+				_deploymentPlan.AddTroops(team, (FormationClass)j, 0, num, isReinforcement: true);
+			}
+			else
+			{
+				_deploymentPlan.AddTroops(team, (FormationClass)j, num, 0, isReinforcement: true);
+			}
+		}
+		_deploymentPlan.MakeReinforcementDeploymentPlan(team);
 	}
 
 	private void CheckReinforcementSpawn()
@@ -1217,7 +1311,7 @@ public class MissionAgentSpawnLogic : MissionLogic, IMissionAgentSpawnLogic, IMi
 		case BattleSideEnum.Attacker:
 			return AttackerActivePhase;
 		default:
-			Debug.FailedAssert("Wrong Side", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\MissionAgentSpawnLogic.cs", "GetActivePhaseForSide", 1510);
+			Debug.FailedAssert("Wrong Side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\MissionAgentSpawnLogic.cs", "GetActivePhaseForSide", 1694);
 			return null;
 		}
 	}

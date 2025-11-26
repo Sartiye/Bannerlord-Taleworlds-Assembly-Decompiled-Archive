@@ -3,10 +3,8 @@ using TaleWorlds.Core;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
-public abstract class BanditDensityModel : GameModel
+public abstract class BanditDensityModel : MBGameModel<BanditDensityModel>
 {
-	public abstract int NumberOfMaximumLooterParties { get; }
-
 	public abstract int NumberOfMinimumBanditPartiesInAHideoutToInfestIt { get; }
 
 	public abstract int NumberOfMaximumBanditPartiesInEachHideout { get; }
@@ -25,5 +23,11 @@ public abstract class BanditDensityModel : GameModel
 
 	public abstract float SpawnPercentageForFirstFightInHideoutMission { get; }
 
-	public abstract int GetPlayerMaximumTroopCountForHideoutMission(MobileParty party);
+	public abstract int GetMaxSupportedNumberOfLootersForClan(Clan clan);
+
+	public abstract int GetMinimumTroopCountForHideoutMission(MobileParty party);
+
+	public abstract int GetMaximumTroopCountForHideoutMission(MobileParty party);
+
+	public abstract bool IsPositionInsideNavalSafeZone(CampaignVec2 position);
 }

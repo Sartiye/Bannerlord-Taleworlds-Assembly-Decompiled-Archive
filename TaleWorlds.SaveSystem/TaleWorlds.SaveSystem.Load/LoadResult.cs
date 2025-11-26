@@ -43,4 +43,9 @@ public class LoadResult
 	{
 		_loadCallbackInitializator.InitializeObjects();
 	}
+
+	public void AfterInitializeObjects()
+	{
+		_loadCallbackInitializator.AfterInitializeObjects();
+	}
 }

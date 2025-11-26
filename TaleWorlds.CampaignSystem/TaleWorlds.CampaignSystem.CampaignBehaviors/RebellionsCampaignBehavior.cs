@@ -189,12 +189,12 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		if (settlement.Town.Loyalty <= (float)Campaign.Current.Models.SettlementLoyaltyModel.RebellionStartLoyaltyThreshold)
 		{
 			float militia = settlement.Militia;
-			float num = settlement.Town.GarrisonParty?.Party.TotalStrength ?? 0f;
+			float num = settlement.Town.GarrisonParty?.Party.CalculateCurrentStrength() ?? 0f;
 			foreach (MobileParty party in settlement.Parties)
 			{
-				if (party.IsLordParty && FactionManager.IsAlliedWithFaction(party.MapFaction, settlement.MapFaction))
+				if (party.IsLordParty && DiplomacyHelper.IsSameFactionAndNotEliminated(party.MapFaction, settlement.MapFaction))
 				{
-					num += party.Party.TotalStrength;
+					num += party.Party.CalculateCurrentStrength();
 				}
 			}
 			return militia >= num * 1.4f;
@@ -268,43 +268,47 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 			item.Clan = clan;
 		}
 		_rebelClansAndDaysPassedAfterCreation.Add(clan, 1);
+		foreach (Hero item2 in list)
+		{
+			item2.ChangeState(Hero.CharacterStates.Active);
+		}
 		MobileParty mobileParty = MobilePartyHelper.SpawnLordParty(list[0], settlement);
 		MobilePartyHelper.SpawnLordParty(list[2], settlement);
 		MobilePartyHelper.SpawnLordParty(list[3], settlement);
 		IFaction mapFaction = settlement.MapFaction;
 		DeclareWarAction.ApplyByRebellion(clan, mapFaction);
-		foreach (Hero item2 in list)
+		foreach (Hero item3 in list)
 		{
-			ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mapFaction.Leader, item2, MBRandom.RandomInt(-85, -75));
-			foreach (Kingdom item3 in Kingdom.All)
+			ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mapFaction.Leader, item3, MBRandom.RandomInt(-85, -75));
+			foreach (Kingdom item4 in Kingdom.All)
 			{
-				if (item3.IsEliminated || item3.Culture == mapFaction.Culture)
+				if (item4.IsEliminated || item4.Culture == mapFaction.Culture)
 				{
 					continue;
 				}
 				int num = 0;
-				foreach (Town fief in item3.Fiefs)
+				foreach (Town fief in item4.Fiefs)
 				{
 					num += ((!fief.IsTown) ? 1 : 2);
 				}
 				int num2 = (int)(MBRandom.RandomFloat * MBRandom.RandomFloat * 30f - (float)num);
-				int value = ((item3.Culture == clan.Culture) ? (num2 + MBRandom.RandomInt(55, 65)) : num2);
-				item3.Leader.SetPersonalRelation(item2, value);
+				int value = ((item4.Culture == clan.Culture) ? (num2 + MBRandom.RandomInt(55, 65)) : num2);
+				item4.Leader.SetPersonalRelation(item3, value);
 			}
-			foreach (Hero item4 in list)
+			foreach (Hero item5 in list)
 			{
-				if (item2 != item4)
+				if (item3 != item5)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(item2, item4, MBRandom.RandomInt(5, 15));
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(item3, item5, MBRandom.RandomInt(5, 15));
 				}
 			}
-			item2.ChangeState(Hero.CharacterStates.Active);
 		}
 		ChangeOwnerOfSettlementAction.ApplyByRebellion(mobileParty.LeaderHero, settlement);
 		ChangeGovernorAction.Apply(settlement.Town, list[1]);
 		EnterSettlementAction.ApplyForParty(mobileParty, settlement);
 		mobileParty.Ai.DisableForHours(5);
 		list[0].ChangeHeroGold(50000);
+		CampaignEventDispatcher.Instance.OnClanCreated(clan, isCompanion: false);
 	}
 
 	private Hero CreateRebelLeader(CharacterObject templateCharacter, Settlement settlement)
@@ -391,19 +395,22 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 			value = new Dictionary<int, int>();
 			_cultureIconIdAndFrequencies.Add(culture, value);
 		}
-		MBList<int> mBList = culture.PossibleClanBannerIconsIDs.ToMBList();
-		mBList.Shuffle();
-		foreach (int item in mBList)
+		if (culture.PossibleClanBannerIconsIDs != null)
 		{
-			if (!value.TryGetValue(item, out var value2))
+			MBList<int> mBList = culture.PossibleClanBannerIconsIDs.ToMBList();
+			mBList.Shuffle();
+			foreach (int item in mBList)
 			{
-				value2 = 0;
-				value.Add(item, value2);
-			}
-			if (value2 < num3)
-			{
-				num2 = item;
-				num3 = value2;
+				if (!value.TryGetValue(item, out var value2))
+				{
+					value2 = 0;
+					value.Add(item, value2);
+				}
+				if (value2 < num3)
+				{
+					num2 = item;
+					num3 = value2;
+				}
 			}
 		}
 		if (num2 == int.MaxValue)
@@ -454,6 +461,10 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		}
 		foreach (CultureObject key in _cultureIconIdAndFrequencies.Keys)
 		{
+			if (key.PossibleClanBannerIconsIDs == null)
+			{
+				continue;
+			}
 			foreach (int possibleClanBannerIconsID in key.PossibleClanBannerIconsIDs)
 			{
 				if (!_cultureIconIdAndFrequencies[key].ContainsKey(possibleClanBannerIconsID))

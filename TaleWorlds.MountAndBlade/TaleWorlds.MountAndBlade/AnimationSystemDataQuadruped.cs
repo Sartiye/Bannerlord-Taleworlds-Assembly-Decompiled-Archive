@@ -5,7 +5,7 @@ using TaleWorlds.Library;
 namespace TaleWorlds.MountAndBlade;
 
 [Serializable]
-[EngineStruct("Animation_system_data_quadruped", false)]
+[EngineStruct("Animation_system_data_quadruped", false, null)]
 public struct AnimationSystemDataQuadruped
 {
 	public Vec3 ReinHandleLeftLocalPosition;

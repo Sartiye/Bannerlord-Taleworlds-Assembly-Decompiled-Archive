@@ -21,11 +21,15 @@ public class PreloadHelper
 		Utilities.EnableGlobalEditDataCacher();
 		foreach (BasicCharacterObject character in characters)
 		{
-			foreach (Equipment allEquipment in character.AllEquipments)
+			foreach (Equipment battleEquipment in character.BattleEquipments)
 			{
-				if (Mission.Current == null || Mission.Current.DoesMissionRequireCivilianEquipment || !allEquipment.IsCivilian)
+				AddEquipment(battleEquipment);
+			}
+			if (Mission.Current != null && Mission.Current.DoesMissionRequireCivilianEquipment)
+			{
+				foreach (Equipment civilianEquipment in character.CivilianEquipments)
 				{
-					AddEquipment(allEquipment);
+					AddEquipment(civilianEquipment);
 				}
 			}
 			if (Mission.Current == null)
@@ -151,7 +155,25 @@ public class PreloadHelper
 		RegisterPhysicsBodyUsageIfValid(_uniqueDynamicPhysicsShapeName, item.HolsterBodyName);
 	}
 
-	private void PreloadMeshesAndPhysics()
+	public void PreloadEntities(List<WeakGameEntity> entities)
+	{
+		for (int i = 0; i < entities.Count; i++)
+		{
+			WeakGameEntity gameEntity = entities[i];
+			for (int j = 0; j < gameEntity.MultiMeshComponentCount; j++)
+			{
+				MetaMesh metaMesh = gameEntity.GetMetaMesh(j);
+				RegisterMetaMeshUsageIfValid(metaMesh, useTableau: false, useTeamColor: false);
+			}
+			PhysicsShape bodyShape = gameEntity.GetBodyShape();
+			if (bodyShape != null)
+			{
+				RegisterPhysicsBodyUsageIfValid(_uniqueDynamicPhysicsShapeName, bodyShape.GetName());
+			}
+		}
+	}
+
+	public void PreloadMeshesAndPhysics()
 	{
 		foreach (var uniqueMetaMesh in _uniqueMetaMeshes)
 		{
@@ -161,6 +183,7 @@ public class PreloadHelper
 		}
 		foreach (string item in _uniqueDynamicPhysicsShapeName)
 		{
+			MBDebug.Print("Preload physics: " + item);
 			PhysicsShape.AddPreloadQueueWithName(item, new Vec3(1f, 1f, 1f));
 		}
 		PhysicsShape.ProcessPreloadQueue();

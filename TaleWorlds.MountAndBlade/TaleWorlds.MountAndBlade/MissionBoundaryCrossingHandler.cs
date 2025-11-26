@@ -10,17 +10,26 @@ namespace TaleWorlds.MountAndBlade;
 
 public class MissionBoundaryCrossingHandler : MissionLogic
 {
-	private const float LeewayTime = 10f;
+	private float _leewayTime;
+
+	private List<Agent> _agentsToPunish;
 
 	private Dictionary<Agent, MissionTimer> _agentTimers;
 
 	private MissionTimer _mainAgentLeaveTimer;
+
+	private IVehicleHandler _vehicleHandler;
 
 	public event Action<float, float> StartTime;
 
 	public event Action StopTime;
 
 	public event Action<float> TimeCount;
+
+	public MissionBoundaryCrossingHandler(float leewayTime = 10f)
+	{
+		_leewayTime = leewayTime;
+	}
 
 	public override void OnBehaviorInitialize()
 	{
@@ -32,7 +41,9 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 		if (GameNetwork.IsServer)
 		{
 			_agentTimers = new Dictionary<Agent, MissionTimer>();
+			_agentsToPunish = new List<Agent>();
 		}
+		_vehicleHandler = base.Mission.GetMissionBehavior<IVehicleHandler>();
 	}
 
 	public override void OnRemoveBehavior()
@@ -55,7 +66,7 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 
 	private void OnAgentWentOut(Agent agent, float startTimeInSeconds)
 	{
-		MissionTimer missionTimer = (GameNetwork.IsClient ? MissionTimer.CreateSynchedTimerClient(startTimeInSeconds, 10f) : new MissionTimer(10f));
+		MissionTimer missionTimer = (GameNetwork.IsClient ? MissionTimer.CreateSynchedTimerClient(startTimeInSeconds, _leewayTime) : new MissionTimer(_leewayTime));
 		if (GameNetwork.IsServer)
 		{
 			_agentTimers.Add(agent, missionTimer);
@@ -70,7 +81,7 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 		if (base.Mission.MainAgent == agent)
 		{
 			_mainAgentLeaveTimer = missionTimer;
-			this.StartTime?.Invoke(10f, 0f);
+			this.StartTime?.Invoke(_leewayTime, 0f);
 			MatrixFrame cameraFrame = Mission.Current.GetCameraFrame();
 			Vec3 position = cameraFrame.origin + cameraFrame.rotation.u;
 			if (Mission.Current.Mode == MissionMode.Battle)
@@ -103,20 +114,33 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 		}
 	}
 
-	private void HandleAgentPunishment(Agent agent)
+	private void HandleAgentPunishmentsServer()
+	{
+		foreach (Agent item in _agentsToPunish)
+		{
+			Blow b = new Blow(item.Index);
+			b.WeaponRecord.FillAsMeleeBlow(null, null, -1, 0);
+			b.DamageType = DamageTypes.Blunt;
+			b.BaseMagnitude = 10000f;
+			b.WeaponRecord.WeaponClass = WeaponClass.Undefined;
+			b.GlobalPosition = item.Position;
+			b.DamagedPercentage = 1f;
+			item.Die(b);
+		}
+		_agentsToPunish.Clear();
+	}
+
+	private void DecideOrHandleAgentPunishment(Agent agent)
 	{
 		if (GameNetwork.IsSessionActive)
 		{
 			if (GameNetwork.IsServer)
 			{
-				Blow b = new Blow(agent.Index);
-				b.WeaponRecord.FillAsMeleeBlow(null, null, -1, 0);
-				b.DamageType = DamageTypes.Blunt;
-				b.BaseMagnitude = 10000f;
-				b.WeaponRecord.WeaponClass = WeaponClass.Undefined;
-				b.GlobalPosition = agent.Position;
-				b.DamagedPercentage = 1f;
-				agent.Die(b);
+				_agentsToPunish.Add(agent);
+				if (agent.MountAgent != null)
+				{
+					_agentsToPunish.Add(agent.MountAgent);
+				}
 			}
 		}
 		else
@@ -166,6 +190,7 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 					TickForAgentAsServer(agent);
 				}
 			}
+			HandleAgentPunishmentsServer();
 		}
 		else if (!GameNetwork.IsSessionActive && Agent.Main != null)
 		{
@@ -174,14 +199,15 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 		if (_mainAgentLeaveTimer != null)
 		{
 			_mainAgentLeaveTimer.Check();
-			float obj = 1f - _mainAgentLeaveTimer.GetRemainingTimeInSeconds(synched: true) / 10f;
+			float obj = 1f - _mainAgentLeaveTimer.GetRemainingTimeInSeconds(synched: true) / _leewayTime;
 			this.TimeCount?.Invoke(obj);
 		}
 	}
 
 	private void TickForMainAgent()
 	{
-		bool isAgentOutside = !base.Mission.IsPositionInsideBoundaries(Agent.Main.Position.AsVec2);
+		WeakGameEntity vehicleEntity;
+		bool isAgentOutside = ((_vehicleHandler == null || !_vehicleHandler.IsAgentInVehicle(Agent.Main, out vehicleEntity)) ? (!base.Mission.IsPositionInsideBoundaries(Agent.Main.Position.AsVec2)) : (!base.Mission.IsPositionInsideBoundaries(vehicleEntity.GlobalPosition.AsVec2)));
 		bool isTimerActiveForAgent = _mainAgentLeaveTimer != null;
 		HandleAgentStateChange(Agent.Main, isAgentOutside, isTimerActiveForAgent, _mainAgentLeaveTimer);
 	}
@@ -205,7 +231,7 @@ public class MissionBoundaryCrossingHandler : MissionLogic
 		}
 		else if (isAgentOutside && timerInstance.Check())
 		{
-			HandleAgentPunishment(agent);
+			DecideOrHandleAgentPunishment(agent);
 		}
 	}
 

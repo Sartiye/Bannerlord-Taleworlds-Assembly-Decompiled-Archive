@@ -14,7 +14,7 @@ public class WaitMenuOption
 
 	public delegate void OnConsequenceDelegate(MenuCallbackArgs args);
 
-	private string _idstring;
+	private string _idString;
 
 	private TextObject _text;
 
@@ -34,7 +34,7 @@ public class WaitMenuOption
 
 	public TextObject Text => _text;
 
-	public string IdString => _idstring;
+	public string IdString => _idString;
 
 	public string Tooltip => _tooltip;
 
@@ -43,13 +43,13 @@ public class WaitMenuOption
 	internal WaitMenuOption()
 	{
 		Priority = 100;
-		_text = TextObject.Empty;
+		_text = null;
 		_tooltip = "";
 	}
 
 	internal WaitMenuOption(string idString, TextObject text, OnConditionDelegate condition, OnConsequenceDelegate consequence, int priority = 100, string tooltip = "")
 	{
-		_idstring = idString;
+		_idString = idString;
 		_text = text;
 		OnCondition = condition;
 		OnConsequence = consequence;
@@ -82,7 +82,7 @@ public class WaitMenuOption
 		{
 			throw new TWXmlLoadException("node.Attributes != null");
 		}
-		_idstring = node.Attributes["id"].Value;
+		_idString = node.Attributes["id"].Value;
 		XmlNode xmlNode = node.Attributes["text"];
 		if (xmlNode != null)
 		{

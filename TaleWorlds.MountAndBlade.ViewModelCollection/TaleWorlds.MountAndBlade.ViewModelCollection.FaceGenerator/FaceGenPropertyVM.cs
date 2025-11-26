@@ -21,6 +21,8 @@ public class FaceGenPropertyVM : ViewModel
 
 	private readonly Action _addCommand;
 
+	private readonly bool _addCommandOnValueChange;
+
 	private readonly bool _calledFromInit;
 
 	private readonly float _initialValue;
@@ -101,9 +103,9 @@ public class FaceGenPropertyVM : ViewModel
 		}
 		set
 		{
-			if ((double)TaleWorlds.Library.MathF.Abs(value - _value) > ((KeyNo == -16) ? 0.006000000052154064 : 0.06))
+			if (TaleWorlds.Library.MathF.Abs(value - _value) > 0.01f)
 			{
-				if (!_calledFromInit && PrevValue < 0.0 && _updateOnValueChange)
+				if (!_calledFromInit && PrevValue < 0.0 && _updateOnValueChange && _addCommandOnValueChange)
 				{
 					_addCommand();
 				}
@@ -170,7 +172,7 @@ public class FaceGenPropertyVM : ViewModel
 		}
 	}
 
-	public FaceGenPropertyVM(int keyNo, double min, double max, TextObject name, int keyTimePoint, int tabId, double value, Action<int, float, bool, bool> updateFace, Action addCommand, Action resetSliderPrevValuesCommand, bool isEnabled = true, bool isDiscrete = false)
+	public FaceGenPropertyVM(int keyNo, double min, double max, TextObject name, int keyTimePoint, int tabId, double value, float initialValue, Action<int, float, bool, bool> updateFace, Action addCommand, Action resetSliderPrevValuesCommand, bool isEnabled = true, bool isDiscrete = false, bool addCommandOnValueChange = true)
 	{
 		_calledFromInit = true;
 		_updateFace = updateFace;
@@ -182,12 +184,13 @@ public class FaceGenPropertyVM : ViewModel
 		Max = (float)max;
 		KeyTimePoint = keyTimePoint;
 		TabID = tabId;
-		_initialValue = (float)value;
+		_initialValue = initialValue;
 		Value = (float)value;
 		PrevValue = -1.0;
 		IsEnabled = isEnabled;
 		IsDiscrete = isDiscrete;
 		_calledFromInit = false;
+		_addCommandOnValueChange = addCommandOnValueChange;
 		RefreshValues();
 	}
 
@@ -210,5 +213,10 @@ public class FaceGenPropertyVM : ViewModel
 	{
 		base.RefreshValues();
 		Name = _nameObj.ToString();
+	}
+
+	public void AddCommand()
+	{
+		_addCommand();
 	}
 }

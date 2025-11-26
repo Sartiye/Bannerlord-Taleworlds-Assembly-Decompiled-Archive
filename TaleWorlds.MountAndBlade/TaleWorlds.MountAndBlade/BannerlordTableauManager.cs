@@ -40,13 +40,13 @@ public static class BannerlordTableauManager
 		return MBAPI.IMBBannerlordTableauManager.GetNumberOfPendingTableauRequests();
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void RequestCharacterTableauSetup(int characterCodeId, Scene scene, GameEntity poseEntity)
 	{
 		RequestCallback(characterCodeId, scene, poseEntity);
 	}
 
-	[MBCallback]
+	[MBCallback(null, false)]
 	internal static void RegisterCharacterTableauScene(Scene scene, int type)
 	{
 		TableauCharacterScenes[type] = scene;

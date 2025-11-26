@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using TaleWorlds.Library;
 using TaleWorlds.SaveSystem.Definition;
 
@@ -8,6 +10,17 @@ namespace TaleWorlds.SaveSystem.Save;
 
 public class SaveContext : ISaveContext
 {
+	private struct SaveDataSizeRecord
+	{
+		public int HeaderSize;
+
+		public int StringSize;
+
+		public int ObjectSize;
+
+		public int ContainerSize;
+	}
+
 	public struct SaveStatistics
 	{
 		private Dictionary<string, (int, int, int, long)> _typeStatistics;
@@ -50,6 +63,8 @@ public class SaveContext : ISaveContext
 		}
 	}
 
+	private static SaveDataSizeRecord SizeRecord;
+
 	private List<object> _childObjects;
 
 	private Dictionary<object, int> _idsOfChildObjects;
@@ -63,6 +78,10 @@ public class SaveContext : ISaveContext
 	private Dictionary<string, int> _idsOfStrings;
 
 	private List<object> _temporaryCollectedObjects;
+
+	private ObjectSaveData[] _objectSaveDataList;
+
+	private ContainerSaveData[] _containerSaveDataList;
 
 	private object _locker;
 
@@ -96,6 +115,56 @@ public class SaveContext : ISaveContext
 		_idsOfChildContainers = new Dictionary<object, int>(131072);
 		_temporaryCollectedObjects = new List<object>(4096);
 		_locker = new object();
+	}
+
+	private SaveDataSizeRecord CollectSaveDatas()
+	{
+		SaveDataSizeRecord record = default(SaveDataSizeRecord);
+		record.HeaderSize = GetConfigEntrySize();
+		record.StringSize = GetStringFolderSize();
+		record.ObjectSize = 0;
+		record.ContainerSize = 0;
+		using (new PerformanceTestBlock("SaveContext::CollectSaveDataForObject::Objects"))
+		{
+			if (!EnableSaveStatistics)
+			{
+				TWParallel.ForWithoutRenderThread(0, _childObjects.Count, delegate(int startInclusive, int endExclusive)
+				{
+					for (int l = startInclusive; l < endExclusive; l++)
+					{
+						CollectSaveDataForObject(l, ref record);
+					}
+				});
+			}
+			else
+			{
+				for (int i = 0; i < _childObjects.Count; i++)
+				{
+					CollectSaveDataForObject(i, ref record);
+				}
+			}
+		}
+		using (new PerformanceTestBlock("SaveContext::CollectSaveDataForObject::Containers"))
+		{
+			if (!EnableSaveStatistics)
+			{
+				TWParallel.ForWithoutRenderThread(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
+				{
+					for (int k = startInclusive; k < endExclusive; k++)
+					{
+						CollectSaveDataForContainer(k, ref record);
+					}
+				});
+			}
+			else
+			{
+				for (int j = 0; j < _childContainers.Count; j++)
+				{
+					CollectSaveDataForContainer(j, ref record);
+				}
+			}
+		}
+		return record;
 	}
 
 	private void CollectObjects()
@@ -134,7 +203,7 @@ public class SaveContext : ISaveContext
 		{
 			string message = "Cant find definition for " + type.FullName;
 			Debug.Print(message, 0, Debug.DebugColor.Red);
-			Debug.FailedAssert(message, "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 154);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 217);
 		}
 		ContainerSaveData.GetChildObjects(this, containerDefinition, containerType, parent, _temporaryCollectedObjects);
 		for (int i = 0; i < _temporaryCollectedObjects.Count; i++)
@@ -175,23 +244,6 @@ public class SaveContext : ISaveContext
 		_temporaryCollectedObjects.Clear();
 	}
 
-	public void AddStrings(List<string> texts)
-	{
-		lock (_locker)
-		{
-			for (int i = 0; i < texts.Count; i++)
-			{
-				string text = texts[i];
-				if (text != null && !_idsOfStrings.ContainsKey(text))
-				{
-					int count = _strings.Count;
-					_idsOfStrings.Add(text, count);
-					_strings.Add(text);
-				}
-			}
-		}
-	}
-
 	public int AddOrGetStringId(string text)
 	{
 		int num = -1;
@@ -212,6 +264,8 @@ public class SaveContext : ISaveContext
 					num = _strings.Count;
 					_idsOfStrings.Add(text, num);
 					_strings.Add(text);
+					int stringSizeWithOverhead = GetStringSizeWithOverhead(text);
+					Interlocked.Add(ref SizeRecord.StringSize, stringSizeWithOverhead);
 				}
 			}
 		}
@@ -223,7 +277,7 @@ public class SaveContext : ISaveContext
 		if (!_idsOfChildObjects.TryGetValue(target, out var value))
 		{
 			Debug.Print($"SAVE ERROR. Cant find {target} with type {target.GetType()}");
-			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\Develop\\MB3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 261);
+			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 305);
 		}
 		return value;
 	}
@@ -246,12 +300,24 @@ public class SaveContext : ISaveContext
 		}
 	}
 
-	private static void SaveStringTo(SaveEntryFolder stringsFolder, int id, string value)
+	private static void SaveStringTo(BinaryWriter stringWriter, int id, string text)
 	{
-		BinaryWriter binaryWriter = BinaryWriterFactory.GetBinaryWriter();
-		binaryWriter.WriteString(value);
-		stringsFolder.CreateEntry(new EntryId(id, SaveEntryExtension.Txt)).FillFrom(binaryWriter);
-		BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
+		stringWriter.Write3ByteInt(0);
+		stringWriter.Write3ByteInt(id);
+		stringWriter.WriteByte(10);
+		int stringSizeInBytes = GetStringSizeInBytes(text);
+		stringWriter.WriteShort((short)stringSizeInBytes);
+		stringWriter.WriteString(text);
+	}
+
+	public static int GetStringSizeInBytes(string text)
+	{
+		return 4 + Encoding.UTF8.GetByteCount(text);
+	}
+
+	private static int GetStringSizeWithOverhead(string text)
+	{
+		return GetStringSizeInBytes(text) + 9;
 	}
 
 	public bool Save(object target, MetaData metaData, out string errorMessage)
@@ -268,74 +334,16 @@ public class SaveContext : ISaveContext
 			RootObject = target;
 			using (new PerformanceTestBlock("SaveContext::Save"))
 			{
-				BinaryWriterFactory.Initialize();
 				CollectObjects();
-				ArchiveConcurrentSerializer headerSerializer = new ArchiveConcurrentSerializer();
-				byte[][] objectData = new byte[_childObjects.Count][];
-				using (new PerformanceTestBlock("SaveContext::Saving Objects"))
-				{
-					if (!EnableSaveStatistics)
-					{
-						TWParallel.For(0, _childObjects.Count, delegate(int startInclusive, int endExclusive)
-						{
-							for (int m = startInclusive; m < endExclusive; m++)
-							{
-								SaveSingleObject(headerSerializer, objectData, m);
-							}
-						});
-					}
-					else
-					{
-						for (int i = 0; i < _childObjects.Count; i++)
-						{
-							SaveSingleObject(headerSerializer, objectData, i);
-						}
-					}
-				}
-				byte[][] containerData = new byte[_childContainers.Count][];
-				using (new PerformanceTestBlock("SaveContext::Saving Containers"))
-				{
-					if (!EnableSaveStatistics)
-					{
-						TWParallel.For(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
-						{
-							for (int l = startInclusive; l < endExclusive; l++)
-							{
-								SaveSingleContainer(headerSerializer, containerData, l);
-							}
-						});
-					}
-					else
-					{
-						for (int j = 0; j < _childContainers.Count; j++)
-						{
-							SaveSingleContainer(headerSerializer, containerData, j);
-						}
-					}
-				}
-				SaveEntryFolder saveEntryFolder = SaveEntryFolder.CreateRootFolder();
-				BinaryWriter binaryWriter = BinaryWriterFactory.GetBinaryWriter();
-				binaryWriter.WriteInt(_idsOfChildObjects.Count);
-				binaryWriter.WriteInt(_strings.Count);
-				binaryWriter.WriteInt(_idsOfChildContainers.Count);
-				saveEntryFolder.CreateEntry(new EntryId(-1, SaveEntryExtension.Config)).FillFrom(binaryWriter);
-				headerSerializer.SerializeFolderConcurrent(saveEntryFolder);
-				BinaryWriterFactory.ReleaseBinaryWriter(binaryWriter);
-				ArchiveSerializer archiveSerializer = new ArchiveSerializer();
-				SaveEntryFolder saveEntryFolder2 = SaveEntryFolder.CreateRootFolder();
-				SaveEntryFolder stringsFolder = archiveSerializer.CreateFolder(saveEntryFolder2, new FolderId(-1, SaveFolderExtension.Strings), _strings.Count);
-				for (int k = 0; k < _strings.Count; k++)
-				{
-					string value = _strings[k];
-					SaveStringTo(stringsFolder, k, value);
-				}
-				archiveSerializer.SerializeFolder(saveEntryFolder2);
-				byte[] array = null;
-				byte[] array2 = null;
-				array = headerSerializer.FinalizeAndGetBinaryDataConcurrent();
-				array2 = archiveSerializer.FinalizeAndGetBinaryData();
-				SaveData = new GameData(array, array2, objectData, containerData);
-				BinaryWriterFactory.Release();
+				_objectSaveDataList = new ObjectSaveData[_childObjects.Count];
+				_containerSaveDataList = new ContainerSaveData[_childContainers.Count];
+				SizeRecord = CollectSaveDatas();
+				byte[][] objectData = WriteObjects();
+				byte[][] containerData = WriteContainers();
+				new List<int>();
+				byte[] header = WriteHeaders(_objectSaveDataList, _containerSaveDataList, SizeRecord.HeaderSize, _strings.Count);
+				byte[] strings = WriteAllStrings(_strings, SizeRecord.StringSize);
+				SaveData = new GameData(header, strings, objectData, containerData);
 			}
 			return true;
 		}
@@ -347,64 +355,204 @@ public class SaveContext : ISaveContext
 		}
 	}
 
-	private void SaveSingleObject(ArchiveConcurrentSerializer headerSerializer, byte[][] objectData, int id)
+	private byte[][] WriteObjects()
+	{
+		byte[][] objectData = new byte[_childObjects.Count][];
+		using (new PerformanceTestBlock("SaveContext::Saving Objects"))
+		{
+			if (!EnableSaveStatistics)
+			{
+				TWParallel.ForWithoutRenderThread(0, _childObjects.Count, delegate(int startInclusive, int endExclusive)
+				{
+					for (int j = startInclusive; j < endExclusive; j++)
+					{
+						SaveSingleObject(objectData, j);
+					}
+				});
+			}
+			else
+			{
+				for (int i = 0; i < _childObjects.Count; i++)
+				{
+					SaveSingleObject(objectData, i);
+				}
+			}
+		}
+		return objectData;
+	}
+
+	private byte[][] WriteContainers()
+	{
+		byte[][] containerData = new byte[_childContainers.Count][];
+		using (new PerformanceTestBlock("SaveContext::Saving Containers"))
+		{
+			if (!EnableSaveStatistics)
+			{
+				TWParallel.For(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
+				{
+					for (int j = startInclusive; j < endExclusive; j++)
+					{
+						SaveSingleContainer(containerData, j);
+					}
+				});
+			}
+			else
+			{
+				for (int i = 0; i < _childContainers.Count; i++)
+				{
+					SaveSingleContainer(containerData, i);
+				}
+			}
+		}
+		return containerData;
+	}
+
+	private static byte[] WriteHeaders(ObjectSaveData[] objects, ContainerSaveData[] containers, int headerSize, int stringCount)
+	{
+		BinaryWriter binaryWriter = new BinaryWriter(SizeRecord.HeaderSize);
+		binaryWriter.WriteInt(objects.Length + containers.Length);
+		for (int i = 0; i < objects.Length; i++)
+		{
+			objects[i].SaveHeaderFolderTo(binaryWriter, i);
+		}
+		for (int j = 0; j < containers.Length; j++)
+		{
+			containers[j].SaveHeaderFolderTo(binaryWriter, objects.Length + j);
+		}
+		binaryWriter.WriteInt(objects.Length + containers.Length + 1);
+		for (int k = 0; k < objects.Length; k++)
+		{
+			objects[k].SaveHeaderDataTo(binaryWriter, k);
+		}
+		for (int l = 0; l < containers.Length; l++)
+		{
+			containers[l].SaveHeaderDataTo(binaryWriter, objects.Length + l);
+		}
+		WriteConfigEntry(binaryWriter, objects.Length, stringCount, containers.Length);
+		return binaryWriter.Data;
+	}
+
+	private static byte[] WriteAllStrings(List<string> strings, int stringSize)
+	{
+		BinaryWriter binaryWriter = new BinaryWriter(stringSize);
+		WriteStringsEntry(binaryWriter, strings.Count);
+		for (int i = 0; i < strings.Count; i++)
+		{
+			string text = strings[i];
+			SaveStringTo(binaryWriter, i, text);
+		}
+		return binaryWriter.Data;
+	}
+
+	private static void WriteConfigEntry(BinaryWriter headerWriter, int objects, int strings, int containers)
+	{
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.WriteByte(7);
+		headerWriter.WriteShort(12);
+		headerWriter.WriteInt(objects);
+		headerWriter.WriteInt(strings);
+		headerWriter.WriteInt(containers);
+	}
+
+	private static void WriteStringsEntry(BinaryWriter headerWriter, int strings)
+	{
+		headerWriter.WriteInt(1);
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.Write3ByteInt(0);
+		headerWriter.Write3ByteInt(-1);
+		headerWriter.WriteByte(4);
+		headerWriter.WriteInt(strings);
+	}
+
+	private static int GetConfigEntrySize()
+	{
+		return 29;
+	}
+
+	private static int GetStringFolderSize()
+	{
+		return 18;
+	}
+
+	private void CollectSaveDataForObject(int id, ref SaveDataSizeRecord headerSize)
 	{
 		object target = _childObjects[id];
-		ArchiveSerializer archiveSerializer = new ArchiveSerializer();
-		SaveEntryFolder saveEntryFolder = SaveEntryFolder.CreateRootFolder();
-		SaveEntryFolder saveEntryFolder2 = SaveEntryFolder.CreateRootFolder();
 		ObjectSaveData objectSaveData = new ObjectSaveData(this, id, target, isClass: true);
 		objectSaveData.CollectStructs();
 		objectSaveData.CollectMembers();
 		objectSaveData.CollectStrings();
-		objectSaveData.SaveHeaderTo(saveEntryFolder2, headerSerializer);
-		objectSaveData.SaveTo(saveEntryFolder, archiveSerializer);
-		headerSerializer.SerializeFolderConcurrent(saveEntryFolder2);
-		archiveSerializer.SerializeFolder(saveEntryFolder);
-		byte[] array = (objectData[id] = archiveSerializer.FinalizeAndGetBinaryData());
-		if (EnableSaveStatistics)
-		{
-			string name = objectSaveData.Type.Name;
-			int num = array.Length;
-			if (_typeStatistics.TryGetValue(name, out var value))
-			{
-				_typeStatistics[name] = (value.Item1 + 1, value.Item2, value.Item3, value.Item4 + num);
-			}
-			else
-			{
-				_typeStatistics[name] = (1, objectSaveData.FieldCount, objectSaveData.PropertyCount, num);
-			}
-		}
+		_objectSaveDataList[id] = objectSaveData;
+		Interlocked.Add(ref headerSize.HeaderSize, objectSaveData.GetHeaderSize());
+		Interlocked.Add(ref headerSize.ObjectSize, objectSaveData.GetDataSize());
 	}
 
-	private void SaveSingleContainer(ArchiveConcurrentSerializer headerSerializer, byte[][] containerData, int id)
+	private void CollectSaveDataForContainer(int id, ref SaveDataSizeRecord headerSize)
 	{
 		object obj = _childContainers[id];
-		ArchiveSerializer archiveSerializer = new ArchiveSerializer();
-		SaveEntryFolder saveEntryFolder = SaveEntryFolder.CreateRootFolder();
-		SaveEntryFolder saveEntryFolder2 = SaveEntryFolder.CreateRootFolder();
 		obj.GetType().IsContainer(out var containerType);
 		ContainerSaveData containerSaveData = new ContainerSaveData(this, id, obj, containerType);
 		containerSaveData.CollectChildren();
 		containerSaveData.CollectStructs();
 		containerSaveData.CollectMembers();
 		containerSaveData.CollectStrings();
-		containerSaveData.SaveHeaderTo(saveEntryFolder2, headerSerializer);
-		containerSaveData.SaveTo(saveEntryFolder, archiveSerializer);
-		headerSerializer.SerializeFolderConcurrent(saveEntryFolder2);
-		archiveSerializer.SerializeFolder(saveEntryFolder);
-		byte[] array = (containerData[id] = archiveSerializer.FinalizeAndGetBinaryData());
+		_containerSaveDataList[id] = containerSaveData;
+		Interlocked.Add(ref headerSize.HeaderSize, containerSaveData.GetHeaderSize());
+	}
+
+	private void SaveSingleObject(byte[][] objectData, int id)
+	{
+		_ = _childObjects[id];
+		ObjectSaveData objectSaveData = _objectSaveDataList[id];
+		int dataSize = objectSaveData.GetDataSize();
+		BinaryWriter binaryWriter = new BinaryWriter(dataSize);
+		int folderCount = objectSaveData.GetFolderCount();
+		binaryWriter.WriteInt(folderCount);
+		int folderId = 0;
+		objectSaveData.SaveDataFolder(binaryWriter, -1, ref folderId);
+		int entryCount = objectSaveData.GetEntryCount();
+		binaryWriter.WriteInt(entryCount);
+		folderId = 0;
+		objectSaveData.SaveTo(binaryWriter, ref folderId);
+		objectData[id] = binaryWriter.Data;
 		if (EnableSaveStatistics)
 		{
-			string containerName = GetContainerName(containerSaveData.Type);
-			long num = array.Length;
-			if (_containerStatistics.TryGetValue(containerName, out var value))
+			string name = objectSaveData.Type.Name;
+			if (_typeStatistics.TryGetValue(name, out var value))
 			{
-				_containerStatistics[containerName] = (value.Item1 + 1, value.Item2 + containerSaveData.GetElementCount(), value.Item3, value.Item4, _containerStatistics[containerName].Item5 + num);
+				_typeStatistics[name] = (value.Item1 + 1, value.Item2, value.Item3, value.Item4 + dataSize);
 			}
 			else
 			{
-				_containerStatistics[containerName] = (1, containerSaveData.GetElementCount(), containerSaveData.ElementFieldCount, containerSaveData.ElementPropertyCount, num);
+				_typeStatistics[name] = (1, objectSaveData.FieldCount, objectSaveData.PropertyCount, dataSize);
+			}
+		}
+	}
+
+	private void SaveSingleContainer(byte[][] containerData, int id)
+	{
+		_ = _childContainers[id];
+		ContainerSaveData containerSaveData = _containerSaveDataList[id];
+		int dataSize = containerSaveData.GetDataSize();
+		BinaryWriter binaryWriter = new BinaryWriter(dataSize);
+		binaryWriter.WriteInt(containerSaveData.GetFolderCount());
+		int folderId = 0;
+		containerSaveData.SaveDataFolder(binaryWriter, ref folderId);
+		int entryCount = containerSaveData.GetEntryCount();
+		binaryWriter.WriteInt(entryCount);
+		folderId = 0;
+		containerSaveData.SaveTo(binaryWriter, ref folderId);
+		containerData[id] = binaryWriter.Data;
+		if (EnableSaveStatistics)
+		{
+			string containerName = GetContainerName(containerSaveData.Type);
+			if (_containerStatistics.TryGetValue(containerName, out var value))
+			{
+				_containerStatistics[containerName] = (value.Item1 + 1, value.Item2 + containerSaveData.GetElementCount(), value.Item3, value.Item4, _containerStatistics[containerName].Item5 + dataSize);
+			}
+			else
+			{
+				_containerStatistics[containerName] = (1, containerSaveData.GetElementCount(), containerSaveData.ElementFieldCount, containerSaveData.ElementPropertyCount, dataSize);
 			}
 		}
 	}

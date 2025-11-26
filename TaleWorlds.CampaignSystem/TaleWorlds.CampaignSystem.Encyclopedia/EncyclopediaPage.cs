@@ -114,7 +114,7 @@ public abstract class EncyclopediaPage
 
 	public virtual TextObject GetName()
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public virtual MBObjectBase GetObject(string typeName, string stringID)
@@ -129,7 +129,7 @@ public abstract class EncyclopediaPage
 
 	public virtual TextObject GetDescriptionText()
 	{
-		return TextObject.Empty;
+		return TextObject.GetEmpty();
 	}
 
 	public IEnumerable<EncyclopediaListItem> GetListItems()

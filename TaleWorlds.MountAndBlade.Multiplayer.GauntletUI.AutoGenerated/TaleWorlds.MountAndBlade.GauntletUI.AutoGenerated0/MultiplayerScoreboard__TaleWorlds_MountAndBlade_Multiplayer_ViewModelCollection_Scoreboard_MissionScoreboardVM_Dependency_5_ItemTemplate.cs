@@ -34,7 +34,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private VisualDefinition CreateVisualDefinitionEndOfBattlePanel()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("EndOfBattlePanel", 0.2f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("EndOfBattlePanel", 0.2f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			SuggestedHeight = 0f,
@@ -55,7 +55,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private VisualDefinition CreateVisualDefinitionScoresPanel()
 	{
-		VisualDefinition visualDefinition = new VisualDefinition("ScoresPanel", 0.2f, 0f, easeIn: false);
+		VisualDefinition visualDefinition = new VisualDefinition("ScoresPanel", 0.2f, 0f, AnimationInterpolation.Type.Linear, AnimationInterpolation.Function.Sine);
 		visualDefinition.AddVisualState(new VisualState("Default")
 		{
 			MarginTop = 0f,

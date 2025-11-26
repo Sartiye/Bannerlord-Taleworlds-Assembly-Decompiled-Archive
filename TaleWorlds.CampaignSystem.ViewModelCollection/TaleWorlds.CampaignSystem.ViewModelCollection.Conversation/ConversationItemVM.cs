@@ -197,7 +197,7 @@ public class ConversationItemVM : ViewModel
 	{
 		base.RefreshValues();
 		string text = _option.Text?.ToString() ?? "";
-		OptionHint = new HintViewModel((_option.HintText != null) ? _option.HintText : TextObject.Empty);
+		OptionHint = new HintViewModel((_option.HintText != null) ? _option.HintText : TextObject.GetEmpty());
 		PersuasionItem?.RefreshValues();
 		if (PersuasionItem != null)
 		{
