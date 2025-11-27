@@ -246,7 +246,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 				bool isDayTime = base.OwnerAgent.Mission.Scene.IsDayTime;
 				Vec3 position = currentAgent.Position;
 				List<GameEntity> entities = new List<GameEntity>();
-				currentAgent.AgentVisuals.GetEntity().Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
+				base.OwnerAgent.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
 				float ambientLightStrength = (isDayTime ? 0.7f : 0.2f);
 				float sunMoonLightStrength = (isDayTime ? 1f : 0.3f);
 				foreach (GameEntity item in entities)

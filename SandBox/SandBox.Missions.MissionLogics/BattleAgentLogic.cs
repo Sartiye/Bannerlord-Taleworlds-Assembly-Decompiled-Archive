@@ -96,12 +96,11 @@ public class BattleAgentLogic : MissionLogic
 			return;
 		}
 		PartyBase partyBase = (PartyBase)affectedAgent.Origin.BattleCombatant;
-		int num;
 		switch (agentState)
 		{
 		case AgentState.Unconscious:
 			affectedAgent.Origin.SetWounded();
-			return;
+			break;
 		case AgentState.Killed:
 		{
 			affectedAgent.Origin.SetKilled();
@@ -115,17 +114,15 @@ public class BattleAgentLogic : MissionLogic
 			{
 				CheckUpgrade(affectedAgent.Team.Side, partyBase, characterObject);
 			}
-			return;
+			break;
 		}
 		default:
-			num = ((affectedAgent.GetMorale() < 0.01f) ? 1 : 0);
-			break;
-		case AgentState.Routed:
-			num = 1;
+		{
+			bool flag = affectedAgent.GetMorale() < 0.01f;
+			affectedAgent.Origin.SetRouted(!flag);
 			break;
 		}
-		bool flag = (byte)num != 0;
-		affectedAgent.Origin.SetRouted(!flag);
+		}
 	}
 
 	public override void OnAgentFleeing(Agent affectedAgent)

@@ -631,7 +631,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		}
 		else if (IsSettlement)
 		{
-			flag = mobileParty.IsTargetingPort == mobileParty.IsCurrentlyAtSea;
+			flag = mobileParty.IsTargetingPort == mobileParty.IsCurrentlyAtSea && !mobileParty.IsTransitionInProgress;
 		}
 		if (flag)
 		{
