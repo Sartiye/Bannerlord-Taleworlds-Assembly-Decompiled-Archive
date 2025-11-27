@@ -1024,6 +1024,10 @@ public class DefaultDiplomacyModel : DiplomacyModel
 
 	public override bool IsPeaceSuitable(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace)
 	{
+		if (factionDeclaresPeace.IsEliminated || factionDeclaredPeace.IsEliminated)
+		{
+			return false;
+		}
 		float scoreOfDeclaringPeace = Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringPeace(factionDeclaresPeace, factionDeclaredPeace);
 		float scoreOfDeclaringPeace2 = Campaign.Current.Models.DiplomacyModel.GetScoreOfDeclaringPeace(factionDeclaredPeace, factionDeclaresPeace);
 		float valueOfSettlementsForFaction = Campaign.Current.Models.DiplomacyModel.GetValueOfSettlementsForFaction(factionDeclaresPeace);

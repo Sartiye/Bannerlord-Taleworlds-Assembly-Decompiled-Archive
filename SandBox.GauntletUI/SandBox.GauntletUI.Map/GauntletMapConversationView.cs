@@ -148,6 +148,10 @@ public class GauntletMapConversationView : MapConversationView, IConversationSta
 			UISoundsHelper.PlayUISound("event:/ui/default");
 			((IConversationStateHandler)this).ExecuteConversationContinue();
 		}
+		if (!base.IsConversationActive || _layerAsGauntletLayer == null)
+		{
+			return;
+		}
 		if (_barterView.IsCreated)
 		{
 			_barterView.TickInput();

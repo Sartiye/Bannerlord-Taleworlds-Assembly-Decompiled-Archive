@@ -36,6 +36,8 @@ public class GauntletUISubModule : MBSubModuleBase
 
 	private bool _areResourcesDirty;
 
+	private bool _loadingWindowCreated;
+
 	public static GauntletUISubModule Instance { get; private set; }
 
 	protected override void OnSubModuleLoad()
@@ -49,7 +51,6 @@ public class GauntletUISubModule : MBSubModuleBase
 		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Combine(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		NativeOptions.GetConfig(NativeOptions.NativeOptionsType.DisplayMode);
 		GauntletGamepadNavigationManager.Initialize();
-		LoadingWindow.InitializeWith<GauntletDefaultLoadingWindowManager>();
 		GauntletGameVersionView.AddModuleVersionInfo("Bannerlord", Utilities.GetApplicationVersionWithBuildNumber().ToString());
 		Instance = this;
 	}
@@ -210,6 +211,14 @@ public class GauntletUISubModule : MBSubModuleBase
 			_areResourcesDirty = false;
 		}
 		base.OnApplicationTick(dt);
+		if (!_loadingWindowCreated)
+		{
+			if (LoadingWindow.LoadingWindowManager == null)
+			{
+				LoadingWindow.InitializeWith<GauntletDefaultLoadingWindowManager>();
+			}
+			_loadingWindowCreated = true;
+		}
 		UIResourceManager.Update();
 		if (GauntletGamepadNavigationManager.Instance != null && ScreenManager.GetMouseVisibility())
 		{

@@ -175,9 +175,10 @@ public class ConversationMissionLogic : MissionLogic
 		{
 			if (_navalConversationState != NavalConversationCameraState.SameShip)
 			{
-				WeakGameEntity weakEntity = base.Mission.Scene.GetFirstEntityWithName("Ship").WeakEntity;
-				if (weakEntity != null)
+				GameEntity firstEntityWithName = base.Mission.Scene.GetFirstEntityWithName("Ship");
+				if (firstEntityWithName != null)
 				{
+					WeakGameEntity weakEntity = firstEntityWithName.WeakEntity;
 					WeakGameEntity firstChildEntityWithTag = weakEntity.GetFirstChildEntityWithTag("tall_rope");
 					if (firstChildEntityWithTag != WeakGameEntity.Invalid)
 					{

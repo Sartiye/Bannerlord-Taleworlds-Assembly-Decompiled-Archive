@@ -8,7 +8,7 @@ namespace TaleWorlds.Library;
 [JsonConverter(typeof(ApplicationVersionJsonConverter))]
 public struct ApplicationVersion
 {
-	public const int DefaultChangeSet = 102350;
+	public const int DefaultChangeSet = 102453;
 
 	[JsonIgnore]
 	public static readonly ApplicationVersion Empty = new ApplicationVersion(ApplicationVersionType.Invalid, -1, -1, -1, -1);
