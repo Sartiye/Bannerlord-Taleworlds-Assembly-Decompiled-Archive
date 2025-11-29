@@ -36,7 +36,7 @@ public class DefaultInventoryCapacityModel : InventoryCapacityModel
 		return 10;
 	}
 
-	public override float GetItemEffectiveWeight(EquipmentElement equipmentElement, MobileParty mobileParty, out TextObject description)
+	public override float GetItemEffectiveWeight(EquipmentElement equipmentElement, MobileParty mobileParty, bool isCurrentlyAtSea, out TextObject description)
 	{
 		if (equipmentElement.Item.HasHorseComponent)
 		{
@@ -106,7 +106,7 @@ public class DefaultInventoryCapacityModel : InventoryCapacityModel
 		foreach (ItemRosterElement item in mobileParty.ItemRoster)
 		{
 			TextObject description;
-			float itemEffectiveWeight = inventoryCapacityModel.GetItemEffectiveWeight(item.EquipmentElement, mobileParty, out description);
+			float itemEffectiveWeight = inventoryCapacityModel.GetItemEffectiveWeight(item.EquipmentElement, mobileParty, isCurrentlyAtSea, out description);
 			result.Add(itemEffectiveWeight * (float)item.Amount, description);
 		}
 		return result;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -104,13 +105,14 @@ public class BlockadeBattleMapEvent : MapEventComponent
 			return;
 		}
 		leaderParty2.SiegeEvent.DeactivateBlockade();
+		Settlement besiegedSettlement = leaderParty2.SiegeEvent.BesiegedSettlement;
 		List<MapEventParty> list = base.MapEvent.AttackerSide.Parties.ToList();
 		base.MapEvent.FinalizeEvent();
 		foreach (MapEventParty item in list)
 		{
-			if (item.Party != PartyBase.MainParty && item.Party.IsMobile && item.Party.MobileParty.CurrentSettlement == null && item.Party.MobileParty.AttachedTo == null)
+			if (item.Party != PartyBase.MainParty && item.Party.IsMobile && item.Party.MobileParty.CurrentSettlement == null && item.Party.MobileParty.AttachedTo == null && item.Party.MobileParty.HasNavalNavigationCapability)
 			{
-				item.Party.MobileParty.SetMoveGoToSettlement(leaderParty2.SiegeEvent.BesiegedSettlement, MobileParty.NavigationType.Naval, isTargetingThePort: true);
+				item.Party.MobileParty.SetMoveGoToSettlement(besiegedSettlement, MobileParty.NavigationType.Naval, isTargetingThePort: true);
 			}
 		}
 	}

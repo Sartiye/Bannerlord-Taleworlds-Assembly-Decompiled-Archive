@@ -282,17 +282,8 @@ public class DefaultEncounter
 				{
 					if (PlayerEncounter.Battle != null && PlayerEncounter.Battle.IsSallyOut)
 					{
-						textObject9 = new TextObject("{=zmLD6wIj}{RELIEF_PARTY} has come to support {SETTLEMENT}. {FURTHER_EXPLANATION}.");
+						textObject9 = new TextObject("{=*}{RELIEF_PARTY} has come to support the defenders and the garrison decided to sally out.");
 						textObject9.SetTextVariable("RELIEF_PARTY", PlayerEncounter.Battle.GetLeaderParty(PartyBase.MainParty.OpponentSide).Name);
-						textObject9.SetTextVariable("SETTLEMENT", MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Name);
-						if (MobileParty.MainParty.SiegeEvent.BesiegedSettlement.IsCastle)
-						{
-							textObject9.SetTextVariable("FURTHER_EXPLANATION", "{=urOywsiw}Castle garrison decided to sally out");
-						}
-						else
-						{
-							textObject9.SetTextVariable("FURTHER_EXPLANATION", "{=xdtwRyfB}Town garrison decided to sally out");
-						}
 					}
 					else
 					{

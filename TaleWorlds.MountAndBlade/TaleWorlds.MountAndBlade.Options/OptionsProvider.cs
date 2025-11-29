@@ -183,8 +183,8 @@ public static class OptionsProvider
 		if (!isMultiplayer)
 		{
 			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.VoiceLanguage);
+			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.PlayerReceivedDamageDifficulty);
 		}
-		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.PlayerReceivedDamageDifficulty);
 	}
 
 	private static IEnumerable<OptionGroup> GetGameplayOptionGroups(bool isMainMenu, bool isMultiplayer)

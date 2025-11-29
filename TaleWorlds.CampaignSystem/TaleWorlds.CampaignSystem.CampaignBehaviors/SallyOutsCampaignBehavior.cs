@@ -97,7 +97,7 @@ public class SallyOutsCampaignBehavior : CampaignBehaviorBase
 		{
 			foreach (PartyBase item in settlement.GetInvolvedPartiesForEventType(checkForNavalSallyOut ? MapEvent.BattleTypes.BlockadeSallyOutBattle : MapEvent.BattleTypes.SallyOut))
 			{
-				if (item.IsMobile && !item.MobileParty.IsMainParty && item.MapEventSide == null)
+				if (item.IsMobile && item.NumberOfHealthyMembers > 0 && !item.MobileParty.IsMainParty && item.MapEventSide == null)
 				{
 					if (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
 					{

@@ -233,15 +233,19 @@ public static class CampaignUIHelper
 
 	private static readonly TextObject _partyInventoryCapacityStr = new TextObject("{=fI7a7RoE}Inventory Capacity");
 
+	private static readonly TextObject _partyInventoryCargoCapacityStr = new TextObject("{=*}Cargo Capacity");
+
 	private static readonly TextObject _partyInventoryLandCapacityStr = new TextObject("{=cBqjZjfJ}Inventory Capacity on Land");
 
-	private static readonly TextObject _partyInventorySeaCapacityStr = new TextObject("{=aAqMSU2d}Inventory Capacity at Sea");
+	private static readonly TextObject _partyInventorySeaCapacityStr = new TextObject("{=*}Cargo Capacity at Sea");
 
 	private static readonly TextObject _partyInventoryWeightStr = new TextObject("{=4Dd2xgPm}Weight");
 
+	private static readonly TextObject _partyInventoryCargoStr = new TextObject("{=*}Cargo");
+
 	private static readonly TextObject _partyInventoryLandWeightStr = new TextObject("{=8d23bRmv}Weight on Land");
 
-	private static readonly TextObject _partyInventorySeaWeightStr = new TextObject("{=Tc5y7Tgd}Weight at Sea");
+	private static readonly TextObject _partyInventorySeaWeightStr = new TextObject("{=*}Cargo at Sea");
 
 	private static readonly TextObject _partyTroopSizeLimitStr = new TextObject("{=2Cq3tViJ}Party Troop Size Limit");
 
@@ -1328,7 +1332,7 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1382);
+			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1384);
 		}
 		return list;
 	}
@@ -2867,7 +2871,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3301);
+			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3303);
 			return "";
 		}
 		int traitLevel = hero.GetTraitLevel(traitObject);
@@ -2882,7 +2886,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3326);
+			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3328);
 			return null;
 		}
 		GameTexts.SetVariable("NEWLINE", "\n");

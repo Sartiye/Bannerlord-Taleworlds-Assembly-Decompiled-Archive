@@ -145,6 +145,7 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 		base.OnFinalize();
 		Game.Current?.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.None));
 		_craftingScene?.ManualInvalidate();
+		_craftingScene = null;
 		SceneView.ClearAll(clearScene: true, removeTerrain: true);
 		_craftingCategory.Unload();
 		_dataSource?.OnFinalize();
@@ -169,104 +170,111 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 		{
 			return;
 		}
-		_craftingScene.Tick(dt);
-		if (Input.IsGamepadActive || (!_gauntletLayer.IsFocusedOnInput() && !_sceneLayer.IsFocusedOnInput()))
-		{
-			if (IsHotKeyReleasedInAnyLayer("Exit"))
-			{
-				UISoundsHelper.PlayUISound("event:/ui/default");
-				_dataSource.ExecuteCancel();
-			}
-			else if (IsHotKeyReleasedInAnyLayer("Confirm"))
-			{
-				bool isInCraftingMode = _dataSource.IsInCraftingMode;
-				bool isInRefinementMode = _dataSource.IsInRefinementMode;
-				bool isInSmeltingMode = _dataSource.IsInSmeltingMode;
-				var (flag, flag2) = _dataSource.ExecuteConfirm();
-				if (flag)
-				{
-					if (flag2)
-					{
-						if (isInCraftingMode)
-						{
-							UISoundsHelper.PlayUISound("event:/ui/crafting/craft_success");
-						}
-						else if (isInRefinementMode)
-						{
-							UISoundsHelper.PlayUISound("event:/ui/crafting/refine_success");
-						}
-						else if (isInSmeltingMode)
-						{
-							UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_success");
-						}
-					}
-					else
-					{
-						UISoundsHelper.PlayUISound("event:/ui/default");
-					}
-				}
-			}
-			else if (_dataSource.CanSwitchTabs)
-			{
-				if (IsHotKeyReleasedInAnyLayer("SwitchToPreviousTab"))
-				{
-					if (_dataSource.IsInSmeltingMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/refine_tab");
-						_dataSource.ExecuteSwitchToRefinement();
-					}
-					else if (_dataSource.IsInCraftingMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_tab");
-						_dataSource.ExecuteSwitchToSmelting();
-					}
-					else if (_dataSource.IsInRefinementMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/craft_tab");
-						_dataSource.ExecuteSwitchToCrafting();
-					}
-				}
-				else if (IsHotKeyReleasedInAnyLayer("SwitchToNextTab"))
-				{
-					if (_dataSource.IsInSmeltingMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/craft_tab");
-						_dataSource.ExecuteSwitchToCrafting();
-					}
-					else if (_dataSource.IsInCraftingMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/refine_tab");
-						_dataSource.ExecuteSwitchToRefinement();
-					}
-					else if (_dataSource.IsInRefinementMode)
-					{
-						UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_tab");
-						_dataSource.ExecuteSwitchToSmelting();
-					}
-				}
-			}
-		}
-		bool flag3 = false;
+		_craftingScene?.Tick(dt);
+		bool flag = false;
 		if (_reloadXmlPath.Key != null && _reloadXmlPath.Value != null)
 		{
 			ReloadPieces();
-			flag3 = true;
+			flag = true;
 		}
-		if (!flag3)
+		if (flag)
 		{
-			if (base.DebugInput.IsHotKeyPressed("Reset"))
+			return;
+		}
+		if (base.DebugInput.IsHotKeyPressed("Reset"))
+		{
+			ResetEntityAndCamera();
+		}
+		_dataSource.CanSwitchTabs = !Input.IsGamepadActive || !InformationManager.GetIsAnyTooltipActiveAndExtended();
+		_dataSource.AreGamepadControlHintsEnabled = Input.IsGamepadActive && _sceneLayer.IsHitThisFrame && _dataSource.IsInCraftingMode;
+		if (_dataSource.IsInCraftingMode)
+		{
+			TickCameraInput(dt);
+		}
+		_craftingScene?.SetDepthOfFieldParameters(_dofParams.x, _dofParams.z, isVignetteOn: false);
+		_craftingScene?.SetDepthOfFieldFocus(_initialEntityFrame.origin.Distance(_camera.Frame.origin));
+		SceneView.SetCamera(_camera);
+		if (!Input.IsGamepadActive && (_gauntletLayer.IsFocusedOnInput() || _sceneLayer.IsFocusedOnInput()))
+		{
+			return;
+		}
+		if (IsHotKeyReleasedInAnyLayer("Exit"))
+		{
+			UISoundsHelper.PlayUISound("event:/ui/default");
+			_dataSource.ExecuteCancel();
+		}
+		else if (IsHotKeyReleasedInAnyLayer("Confirm"))
+		{
+			bool isInCraftingMode = _dataSource.IsInCraftingMode;
+			bool isInRefinementMode = _dataSource.IsInRefinementMode;
+			bool isInSmeltingMode = _dataSource.IsInSmeltingMode;
+			var (flag2, flag3) = _dataSource.ExecuteConfirm();
+			if (!flag2)
 			{
-				ResetEntityAndCamera();
+				return;
 			}
-			_dataSource.CanSwitchTabs = !Input.IsGamepadActive || !InformationManager.GetIsAnyTooltipActiveAndExtended();
-			_dataSource.AreGamepadControlHintsEnabled = Input.IsGamepadActive && _sceneLayer.IsHitThisFrame && _dataSource.IsInCraftingMode;
-			if (_dataSource.IsInCraftingMode)
+			if (flag3)
 			{
-				TickCameraInput(dt);
+				if (isInCraftingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/craft_success");
+				}
+				else if (isInRefinementMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/refine_success");
+				}
+				else if (isInSmeltingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_success");
+				}
 			}
-			_craftingScene.SetDepthOfFieldParameters(_dofParams.x, _dofParams.z, isVignetteOn: false);
-			_craftingScene.SetDepthOfFieldFocus(_initialEntityFrame.origin.Distance(_camera.Frame.origin));
-			SceneView.SetCamera(_camera);
+			else
+			{
+				UISoundsHelper.PlayUISound("event:/ui/default");
+			}
+		}
+		else
+		{
+			if (!_dataSource.CanSwitchTabs)
+			{
+				return;
+			}
+			if (IsHotKeyReleasedInAnyLayer("SwitchToPreviousTab"))
+			{
+				if (_dataSource.IsInSmeltingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/refine_tab");
+					_dataSource.ExecuteSwitchToRefinement();
+				}
+				else if (_dataSource.IsInCraftingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_tab");
+					_dataSource.ExecuteSwitchToSmelting();
+				}
+				else if (_dataSource.IsInRefinementMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/craft_tab");
+					_dataSource.ExecuteSwitchToCrafting();
+				}
+			}
+			else if (IsHotKeyReleasedInAnyLayer("SwitchToNextTab"))
+			{
+				if (_dataSource.IsInSmeltingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/craft_tab");
+					_dataSource.ExecuteSwitchToCrafting();
+				}
+				else if (_dataSource.IsInCraftingMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/refine_tab");
+					_dataSource.ExecuteSwitchToRefinement();
+				}
+				else if (_dataSource.IsInRefinementMode)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/crafting/smelt_tab");
+					_dataSource.ExecuteSwitchToSmelting();
+				}
+			}
 		}
 	}
 

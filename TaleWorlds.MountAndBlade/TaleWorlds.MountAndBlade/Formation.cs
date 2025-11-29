@@ -2888,7 +2888,7 @@ public sealed class Formation : IFormation
 			Vec3 v = formationPosition.GetGroundVec3();
 			if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(formationDirection, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
 			{
-				goto IL_024e;
+				goto IL_0259;
 			}
 		}
 		simulationFormation._overridenHasAnyMountedUnit = isMounted;
@@ -2902,7 +2902,7 @@ public sealed class Formation : IFormation
 		_simulationFormationUniqueIdentifier = index;
 		if (arrangement is ColumnFormation columnFormation && arrangement.RankCount > 1)
 		{
-			Vec2 asVec = (arrangement.GetUnit(columnFormation.VanguardFileIndex, 0) as Agent).Position.AsVec2;
+			Vec2 asVec = ((columnFormation.Vanguard ?? arrangement.GetUnit(columnFormation.VanguardFileIndex, 0)) as Agent).Position.AsVec2;
 			Vec2 asVec2 = (arrangement.GetUnit(columnFormation.VanguardFileIndex, 1) as Agent).Position.AsVec2;
 			Vec2 previousDirection = (asVec - asVec2).Normalized();
 			Vec2 value = (formationPosition.AsVec2 - asVec).Normalized();
@@ -2911,8 +2911,8 @@ public sealed class Formation : IFormation
 				(simulationFormation.Arrangement as ColumnFormation).UnitPositionsOnVanguardFileIndex.Reverse();
 			}
 		}
-		goto IL_024e;
-		IL_024e:
+		goto IL_0259;
+		IL_0259:
 		actualWidth = simulationFormation.Width;
 		if (width >= actualWidth)
 		{

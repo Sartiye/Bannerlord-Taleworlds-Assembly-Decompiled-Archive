@@ -304,10 +304,6 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		OnGainingRidingExperience(hero, MBRandom.RoundRandomized(0.3f * speed), item);
 	}
 
-	public void OnTravelOnWater(Hero hero, float speed)
-	{
-	}
-
 	public void OnHeroHealedWhileWaiting(Hero hero, int healingAmount)
 	{
 		if (hero.PartyBelongedTo != null && hero.PartyBelongedTo.EffectiveSurgeon != null)
@@ -500,10 +496,6 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		}
 	}
 
-	public void OnShipDamaged(Ship ship, float rawDamage, float finalDamage)
-	{
-	}
-
 	public void OnHideoutMissionEnd(bool isSucceeded)
 	{
 		float rogueryXpGainOnHideoutMissionEnd = Campaign.Current.Models.HideoutModel.GetRogueryXpGainOnHideoutMissionEnd(isSucceeded);
@@ -535,6 +527,18 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 				winnerPartyLeader.HeroDeveloper.AddSkillXp(DefaultSkills.Roguery, rawXp, isAffectedByFocusFactor: true, shouldNotify: false);
 			}
 		}
+	}
+
+	public void OnShipDamaged(Ship ship, float rawDamage, float finalDamage)
+	{
+	}
+
+	public void OnShipRepaired(Ship ship, float repairedHitPoints)
+	{
+	}
+
+	public void OnTravelOnWater(Hero hero, float speed)
+	{
 	}
 
 	private static void OnPersonalSkillExercised(Hero hero, SkillObject skill, float skillXp, bool shouldNotify = true)

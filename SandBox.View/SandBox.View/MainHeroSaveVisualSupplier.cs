@@ -56,7 +56,7 @@ public class MainHeroSaveVisualSupplier : IMainHeroVisualSupplier
 			mBStringBuilder.Append(flag3 + "|");
 			mBStringBuilder.Append(flag2 + "|");
 		}
-		if (!mainHero.BattleEquipment[EquipmentIndex.ArmorItemEndSlot].IsEmpty)
+		if (!mainHero.BattleEquipment[EquipmentIndex.ArmorItemEndSlot].IsEmpty && ActionIndexCache.act_inventory_idle.Index != -1)
 		{
 			ItemObject item2 = mainHero.BattleEquipment[EquipmentIndex.ArmorItemEndSlot].Item;
 			ItemObject item3 = mainHero.BattleEquipment[EquipmentIndex.HorseHarness].Item;

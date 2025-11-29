@@ -478,7 +478,14 @@ public abstract class GauntletOrderUIHandler : MissionView
 						{
 							VisualOrderExecutionParameters visualOrderExecutionParameters3 = GetVisualOrderExecutionParameters();
 							orderItemVM.ExecuteAction(visualOrderExecutionParameters3);
-							_dataSource.TryCloseToggleOrder();
+							if (IsDeployment)
+							{
+								_dataSource.SelectedOrderSet?.ExecuteDeSelect();
+							}
+							else
+							{
+								_dataSource.TryCloseToggleOrder();
+							}
 						}
 					}
 				}

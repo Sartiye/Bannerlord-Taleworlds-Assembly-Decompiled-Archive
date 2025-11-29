@@ -365,7 +365,7 @@ public class InventoryLogic
 				InventoryCapacityModel inventoryCapacityModel = Campaign.Current.Models.InventoryCapacityModel;
 				for (int i = 0; i < itemRoster.Count; i++)
 				{
-					num += inventoryCapacityModel.GetItemEffectiveWeight(itemRoster[i].EquipmentElement, mobileParty, out var _) * (float)itemRoster[i].Amount;
+					num += inventoryCapacityModel.GetItemEffectiveWeight(itemRoster[i].EquipmentElement, mobileParty, mobileParty.IsCurrentlyAtSea, out var _) * (float)itemRoster[i].Amount;
 				}
 			}
 			else if (_inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse && _workshopWarehouseBehavior != null)

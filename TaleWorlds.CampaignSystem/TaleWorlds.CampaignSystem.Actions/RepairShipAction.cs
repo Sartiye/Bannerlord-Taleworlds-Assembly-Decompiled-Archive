@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -8,6 +9,7 @@ public static class RepairShipAction
 {
 	private static void ApplyInternal(Ship ship, float newHitpoints, Settlement repairPort = null)
 	{
+		SkillLevelingManager.OnShipRepaired(ship, newHitpoints - ship.HitPoints);
 		ship.HitPoints = newHitpoints;
 		CampaignEventDispatcher.Instance.OnShipRepaired(ship, repairPort);
 	}

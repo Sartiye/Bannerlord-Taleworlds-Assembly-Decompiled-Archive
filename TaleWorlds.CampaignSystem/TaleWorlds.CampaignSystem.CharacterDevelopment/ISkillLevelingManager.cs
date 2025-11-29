@@ -104,5 +104,7 @@ public interface ISkillLevelingManager
 
 	void OnShipDamaged(Ship ship, float rawDamage, float finalDamage);
 
+	void OnShipRepaired(Ship ship, float repairedHitPoints);
+
 	void OnHideoutMissionEnd(bool isSucceeded);
 }

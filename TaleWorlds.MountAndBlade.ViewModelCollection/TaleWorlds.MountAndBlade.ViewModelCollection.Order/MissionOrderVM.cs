@@ -534,7 +534,6 @@ public class MissionOrderVM : ViewModel
 
 	public void OnOrderExecuted(OrderItemVM orderItem)
 	{
-		TryCloseToggleOrder();
 		if (IsToggleOrderShown)
 		{
 			OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM o)
@@ -991,7 +990,7 @@ public class MissionOrderVM : ViewModel
 		{
 			OpenToggleOrder(fromHold: false);
 		}
-		else if (IsToggleOrderShown && orderSet.OrderSet.IsSoloOrder)
+		else if (IsToggleOrderShown && orderSet.OrderSet.IsSoloOrder && !IsDeployment)
 		{
 			TryCloseToggleOrder();
 		}

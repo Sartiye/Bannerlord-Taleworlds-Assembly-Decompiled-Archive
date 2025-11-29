@@ -136,6 +136,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 	public void SetAttributes()
 	{
 		base.DoNotAcceptEvents = true;
+		base.DoNotPassEventsToChildren = true;
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.SetAttributes();

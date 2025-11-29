@@ -57,14 +57,10 @@ public static class LauncherPlatform
 
 	private static LauncherPlatformType ReadWindowsPlatformFromFile()
 	{
-		LauncherPlatformType result = LauncherPlatformType.None;
+		LauncherPlatformType result = LauncherPlatformType.Steam;
 		if (IsGdk())
 		{
 			result = LauncherPlatformType.Gdk;
-		}
-		else if (IsSteam())
-		{
-			result = LauncherPlatformType.Steam;
 		}
 		else if (IsEpic())
 		{

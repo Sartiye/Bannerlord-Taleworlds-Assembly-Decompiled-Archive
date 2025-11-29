@@ -72,7 +72,7 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 
 	private void CheckScouting(MobileParty mobileParty)
 	{
-		if (mobileParty.EffectiveScout != null)
+		if (mobileParty.EffectiveScout != null && !mobileParty.IsCurrentlyAtSea)
 		{
 			TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(mobileParty.CurrentNavigationFace);
 			if (mobileParty != MobileParty.MainParty)

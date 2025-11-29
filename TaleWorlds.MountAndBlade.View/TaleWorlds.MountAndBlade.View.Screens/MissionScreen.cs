@@ -1744,12 +1744,9 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		{
 			flag = HandleUserInputCheatMode(dt);
 		}
-		if (!flag && SceneLayer.Input.IsGameKeyDown(16))
+		if (!flag && SceneLayer.Input.IsGameKeyDown(16) && Mission.CanTakeControlOfAgent(LastFollowedAgent))
 		{
-			if (Mission.CanTakeControlOfAgent(LastFollowedAgent))
-			{
-				Mission.TakeControlOfAgent(LastFollowedAgent);
-			}
+			Mission.TakeControlOfAgent(LastFollowedAgent);
 			flag = true;
 		}
 		if (flag)
@@ -1905,6 +1902,9 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			goto IL_0752;
 		}
 		int num14 = 1;
+		goto IL_075b;
+		IL_0752:
+		num14 = (_forceCanZoom ? 1 : 0);
 		goto IL_075b;
 		IL_075b:
 		bool flag3 = (byte)num14 != 0;
@@ -2071,10 +2071,6 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			CameraElevation += _cameraElevationDelta;
 			CameraElevation = MBMath.ClampFloat(CameraElevation, -1.3659099f, System.MathF.PI * 5f / 14f);
 		}
-		return;
-		IL_0752:
-		num14 = (_forceCanZoom ? 1 : 0);
-		goto IL_075b;
 	}
 
 	public float GetCameraToggleProgress()

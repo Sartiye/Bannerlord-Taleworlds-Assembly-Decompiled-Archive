@@ -801,27 +801,30 @@ public static class TooltipRefresherCollection
 	public static void RefreshSiegeEventTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
 	{
 		SiegeEvent siegeEvent = args[0] as SiegeEvent;
-		propertyBasedTooltipVM.Mode = 4;
-		TooltipProperty.TooltipPropertyFlags tooltipPropertyFlags = TooltipProperty.TooltipPropertyFlags.None;
-		TooltipProperty.TooltipPropertyFlags tooltipPropertyFlags2 = TooltipProperty.TooltipPropertyFlags.None;
-		tooltipPropertyFlags = (FactionManager.IsAtWarAgainstFaction(siegeEvent.BesiegerCamp.MapFaction, PartyBase.MainParty.MapFaction) ? TooltipProperty.TooltipPropertyFlags.WarFirstEnemy : ((siegeEvent.BesiegerCamp.MapFaction != PartyBase.MainParty.MapFaction && !DiplomacyHelper.IsSameFactionAndNotEliminated(siegeEvent.BesiegerCamp.MapFaction, PartyBase.MainParty.MapFaction)) ? TooltipProperty.TooltipPropertyFlags.WarFirstNeutral : TooltipProperty.TooltipPropertyFlags.WarFirstAlly));
-		tooltipPropertyFlags2 = (FactionManager.IsAtWarAgainstFaction(siegeEvent.BesiegedSettlement.MapFaction, PartyBase.MainParty.MapFaction) ? TooltipProperty.TooltipPropertyFlags.WarSecondEnemy : ((siegeEvent.BesiegedSettlement.MapFaction != PartyBase.MainParty.MapFaction && !DiplomacyHelper.IsSameFactionAndNotEliminated(siegeEvent.BesiegedSettlement.MapFaction, PartyBase.MainParty.MapFaction)) ? TooltipProperty.TooltipPropertyFlags.WarSecondNeutral : TooltipProperty.TooltipPropertyFlags.WarSecondAlly));
-		propertyBasedTooltipVM.AddProperty("", "", 1, tooltipPropertyFlags | tooltipPropertyFlags2);
-		if (siegeEvent.GetCurrentBattleType() == MapEvent.BattleTypes.Siege)
+		if (!siegeEvent.ReadyToBeRemoved)
 		{
-			TextObject textObject = new TextObject("{=43HYUImy}{SETTLEMENT}'s Siege");
-			textObject.SetTextVariable("SETTLEMENT", siegeEvent.BesiegedSettlement.Name);
-			propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
-		}
-		propertyBasedTooltipVM.AddProperty("", "", -1);
-		MBList<PartyBase> parties = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegerCamp.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
-		MBList<PartyBase> parties2 = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegedSettlement.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
-		AddEncounterParties(propertyBasedTooltipVM, parties, parties2, propertyBasedTooltipVM.IsExtended);
-		if (!propertyBasedTooltipVM.IsExtended)
-		{
+			propertyBasedTooltipVM.Mode = 4;
+			TooltipProperty.TooltipPropertyFlags tooltipPropertyFlags = TooltipProperty.TooltipPropertyFlags.None;
+			TooltipProperty.TooltipPropertyFlags tooltipPropertyFlags2 = TooltipProperty.TooltipPropertyFlags.None;
+			tooltipPropertyFlags = (FactionManager.IsAtWarAgainstFaction(siegeEvent.BesiegerCamp.MapFaction, PartyBase.MainParty.MapFaction) ? TooltipProperty.TooltipPropertyFlags.WarFirstEnemy : ((siegeEvent.BesiegerCamp.MapFaction != PartyBase.MainParty.MapFaction && !DiplomacyHelper.IsSameFactionAndNotEliminated(siegeEvent.BesiegerCamp.MapFaction, PartyBase.MainParty.MapFaction)) ? TooltipProperty.TooltipPropertyFlags.WarFirstNeutral : TooltipProperty.TooltipPropertyFlags.WarFirstAlly));
+			tooltipPropertyFlags2 = (FactionManager.IsAtWarAgainstFaction(siegeEvent.BesiegedSettlement.MapFaction, PartyBase.MainParty.MapFaction) ? TooltipProperty.TooltipPropertyFlags.WarSecondEnemy : ((siegeEvent.BesiegedSettlement.MapFaction != PartyBase.MainParty.MapFaction && !DiplomacyHelper.IsSameFactionAndNotEliminated(siegeEvent.BesiegedSettlement.MapFaction, PartyBase.MainParty.MapFaction)) ? TooltipProperty.TooltipPropertyFlags.WarSecondNeutral : TooltipProperty.TooltipPropertyFlags.WarSecondAlly));
+			propertyBasedTooltipVM.AddProperty("", "", 1, tooltipPropertyFlags | tooltipPropertyFlags2);
+			if (siegeEvent.GetCurrentBattleType() == MapEvent.BattleTypes.Siege)
+			{
+				TextObject textObject = new TextObject("{=43HYUImy}{SETTLEMENT}'s Siege");
+				textObject.SetTextVariable("SETTLEMENT", siegeEvent.BesiegedSettlement.Name);
+				propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
+			}
 			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString());
+			MBList<PartyBase> parties = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegerCamp.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
+			MBList<PartyBase> parties2 = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegedSettlement.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
+			AddEncounterParties(propertyBasedTooltipVM, parties, parties2, propertyBasedTooltipVM.IsExtended);
+			if (!propertyBasedTooltipVM.IsExtended)
+			{
+				propertyBasedTooltipVM.AddProperty("", "", -1);
+				GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
+				propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString());
+			}
 		}
 	}
 

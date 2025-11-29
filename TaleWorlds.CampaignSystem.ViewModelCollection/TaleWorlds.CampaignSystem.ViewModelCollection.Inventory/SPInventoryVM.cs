@@ -63,7 +63,7 @@ public class SPInventoryVM : ViewModel
 			{
 				TextObject description;
 				TextObject description2;
-				int num = _inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement, _currentParty, out description).CompareTo(_inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement2, _currentParty, out description2));
+				int num = _inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement, _currentParty, _currentParty.IsCurrentlyAtSea, out description).CompareTo(_inventoryCapacityModel.GetItemEffectiveWeight(equipmentElement2, _currentParty, _currentParty.IsCurrentlyAtSea, out description2));
 				if (num != 0)
 				{
 					return num;
@@ -4760,7 +4760,7 @@ public class SPInventoryVM : ViewModel
 			{
 				if (mobileParty != null)
 				{
-					num2 = inventoryCapacityModel.GetItemEffectiveWeight(mBBindingList[0].ItemRosterElement.EquipmentElement, mobileParty, out var _);
+					num2 = inventoryCapacityModel.GetItemEffectiveWeight(mBBindingList[0].ItemRosterElement.EquipmentElement, mobileParty, mobileParty.IsCurrentlyAtSea, out var _);
 				}
 				else if (flag2)
 				{
@@ -4801,7 +4801,7 @@ public class SPInventoryVM : ViewModel
 				if (!flag3)
 				{
 					TextObject description2;
-					float num6 = (flag2 ? sPItemVM2.ItemRosterElement.EquipmentElement.GetEquipmentElementWeight() : inventoryCapacityModel.GetItemEffectiveWeight(sPItemVM2.ItemRosterElement.EquipmentElement, mobileParty, out description2));
+					float num6 = (flag2 ? sPItemVM2.ItemRosterElement.EquipmentElement.GetEquipmentElementWeight() : inventoryCapacityModel.GetItemEffectiveWeight(sPItemVM2.ItemRosterElement.EquipmentElement, mobileParty, mobileParty.IsCurrentlyAtSea, out description2));
 					float num7 = num + num6 * (float)num5;
 					if (num5 > 0 && num7 > capacityBudget)
 					{

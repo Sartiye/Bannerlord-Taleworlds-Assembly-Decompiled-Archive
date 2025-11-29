@@ -118,6 +118,8 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 
 	private List<Agent> _suspiciousAgentsThisFrame;
 
+	private MBList<GameEntity> _stealthIndoorLightingAreas;
+
 	private bool _isBehaviorInitialized;
 
 	private bool _firstTickPassed;
@@ -323,6 +325,9 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		Mission.Current.IsInventoryAccessible = false;
 		Mission.Current.IsPartyWindowAccessible = false;
 		SandBoxHelpers.MissionHelper.SpawnPlayer(base.Mission.Scene.FindEntityWithTag("spawnpoint_player"), civilianEquipment: false, noHorses: true);
+		List<GameEntity> entities = new List<GameEntity>();
+		base.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
+		_stealthIndoorLightingAreas = new MBList<GameEntity>(entities);
 		Mission.Current.GetMissionBehavior<MissionAgentHandler>().SpawnLocationCharacters();
 		GameEntity gameEntity = base.Mission.Scene.FindEntityWithTag("navigation_mesh_deactivator");
 		if (gameEntity != null)
@@ -873,7 +878,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		foreach (Agent officerAgent in _officerAgents)
 		{
 			StealthOffenseTypes offenseType = StealthOffenseTypes.None;
-			if (CanAgentSeeAgent(officerAgent, Agent.Main, out hasVisualOnCorpse))
+			if (CanAgentSeeAgent(officerAgent, Agent.Main, _stealthIndoorLightingAreas, out hasVisualOnCorpse))
 			{
 				num++;
 				num2++;
@@ -893,7 +898,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		foreach (Agent defaultDisguiseAgent in _defaultDisguiseAgents)
 		{
 			StealthOffenseTypes offenseType2 = StealthOffenseTypes.None;
-			if (CanAgentSeeAgent(defaultDisguiseAgent, Agent.Main, out hasVisualOnCorpse))
+			if (CanAgentSeeAgent(defaultDisguiseAgent, Agent.Main, _stealthIndoorLightingAreas, out hasVisualOnCorpse))
 			{
 				num++;
 				offenseType2 = StealthOffenseTypes.IsVisible;
@@ -1002,7 +1007,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		return Agent.Main.Position.DistanceSquared(agent.Position) < 0f;
 	}
 
-	private bool CanAgentSeeAgent(Agent agent1, Agent agent2, out bool hasVisualOnCorpse)
+	private bool CanAgentSeeAgent(Agent agent1, Agent agent2, MBReadOnlyList<GameEntity> stealthIndoorLightingAreas, out bool hasVisualOnCorpse)
 	{
 		Vec3 vec;
 		if (!agent1.IsHuman || !agent1.AgentVisuals.IsValid())
@@ -1020,7 +1025,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		vb = vb.RotateAboutAnArbitraryVector(Vec3.CrossProduct(Vec3.Up, vb).NormalizedCopy(), 0.2f);
 		bool hasVisualOnEnemy = false;
 		hasVisualOnCorpse = false;
-		_agentAlarmedBehaviorCache[agent1].GetVisualFactor(vb, agent2, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
+		_agentAlarmedBehaviorCache[agent1].GetVisualFactor(vb, agent2, stealthIndoorLightingAreas, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
 		return hasVisualOnEnemy;
 	}
 

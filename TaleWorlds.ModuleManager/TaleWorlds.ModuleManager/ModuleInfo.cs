@@ -34,6 +34,8 @@ public class ModuleInfo
 
 	public ApplicationVersion Version { get; private set; }
 
+	public ApplicationVersion RequiredBaseVersion { get; private set; }
+
 	public ModuleCategory Category { get; private set; }
 
 	public string FolderPath { get; private set; }
@@ -83,6 +85,10 @@ public class ModuleInfo
 			Id.Contains(':'.ToString());
 		}
 		Version = ApplicationVersion.FromString(xmlNode.SelectSingleNode("Version").Attributes["value"].InnerText);
+		if (xmlNode.SelectSingleNode("RequiredBaseVersion") != null)
+		{
+			RequiredBaseVersion = ApplicationVersion.FromString(xmlNode.SelectSingleNode("RequiredBaseVersion").Attributes["value"].InnerText);
+		}
 		IsDefault = xmlNode.SelectSingleNode("DefaultModule")?.Attributes["value"].InnerText.Equals("true") ?? false;
 		XmlNode xmlNode2 = xmlNode.SelectSingleNode("ModuleType");
 		if (xmlNode2 != null && Enum.TryParse<ModuleType>(xmlNode2.Attributes["value"].InnerText, out var result))
@@ -172,6 +178,6 @@ public class ModuleInfo
 
 	public void UpdateVersionChangeSet()
 	{
-		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 102656);
+		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 103102);
 	}
 }

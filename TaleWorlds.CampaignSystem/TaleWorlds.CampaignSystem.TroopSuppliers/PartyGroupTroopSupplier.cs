@@ -26,6 +26,8 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 
 	private bool _anyTroopRemainsToBeSupplied = true;
 
+	private int _nextTroopRank;
+
 	internal MapEventSide PartyGroup { get; private set; }
 
 	public int NumRemovedTroops => _numWounded + _numKilled + _numRouted;
@@ -41,6 +43,7 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 		_isPlayerSide = mapEvent.PlayerSide == side;
 		_initialTroopCount = PartyGroup.TroopCount;
 		PartyGroup.MakeReadyForMission(priorTroops);
+		_nextTroopRank = 0;
 	}
 
 	public IEnumerable<IAgentOriginBase> SupplyTroops(int numberToAllocate)
@@ -51,7 +54,7 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 		_numAllocated += troopsList.Count;
 		for (int i = 0; i < array.Length; i++)
 		{
-			array[i] = new PartyGroupAgentOrigin(this, troopsList[i], i);
+			array[i] = new PartyGroupAgentOrigin(this, troopsList[i], _nextTroopRank++);
 		}
 		if (array.Length < numberToAllocate)
 		{
@@ -64,7 +67,7 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 	{
 		if (PartyGroup.AllocateTroop(_customAllocationConditions, out var troopDescriptor))
 		{
-			PartyGroupAgentOrigin result = new PartyGroupAgentOrigin(this, troopDescriptor, 0);
+			PartyGroupAgentOrigin result = new PartyGroupAgentOrigin(this, troopDescriptor, _nextTroopRank++);
 			_anyTroopRemainsToBeSupplied = _anyTroopRemainsToBeSupplied && PartyGroup.HasReadyTroops;
 			return result;
 		}

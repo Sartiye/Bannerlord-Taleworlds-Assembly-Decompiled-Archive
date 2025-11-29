@@ -64,7 +64,7 @@ public static class ModuleHelper
 	{
 		_loadedModules = new Dictionary<string, ModuleInfo>();
 		List<ModuleInfo> list = new List<ModuleInfo>();
-		List<ModuleInfo> physicalModules = GetPhysicalModules();
+		List<ModuleInfo> physicalModules = GetPhysicalModules(isLauncher: false);
 		List<ModuleInfo> platformModules = GetPlatformModules(platformModulePaths);
 		list.AddRange(physicalModules);
 		list.AddRange(platformModules);
@@ -72,6 +72,12 @@ public static class ModuleHelper
 		{
 			if (item.Name == "NavalDLC")
 			{
+				if (item.RequiredBaseVersion != ApplicationVersion.FromParametersFile())
+				{
+					string lpCaption = "ERROR";
+					Debug.ShowMessageBox("NavalDLC version is not matched with base game! Please verify game files if the problem persists.", lpCaption, 4u);
+					Environment.Exit(0);
+				}
 				VirtualFolders.PlatformDLCPaths.Add("NavalDLC", item.FolderPath);
 			}
 		}
@@ -278,7 +284,7 @@ public static class ModuleHelper
 		if (results == null)
 		{
 			results = new List<ModuleInfo>();
-			List<ModuleInfo> physicalModules = GetPhysicalModules();
+			List<ModuleInfo> physicalModules = GetPhysicalModules(isLauncher: true);
 			List<ModuleInfo> platformModules = GetPlatformModules();
 			results.AddRange(physicalModules);
 			results.AddRange(platformModules);
@@ -310,7 +316,7 @@ public static class ModuleHelper
 		return new MBList<string> { "Native", "Multiplayer", "SandBoxCore", "Sandbox", "CustomBattle", "StoryMode", "NavalDLC", "BirthAndDeath", "FastMode" };
 	}
 
-	private static List<ModuleInfo> GetPhysicalModules()
+	private static List<ModuleInfo> GetPhysicalModules(bool isLauncher)
 	{
 		List<ModuleInfo> list = new List<ModuleInfo>();
 		string[] directories = Directory.GetDirectories(_pathPrefix);
@@ -319,22 +325,39 @@ public static class ModuleHelper
 			try
 			{
 				string path = Path.Combine(text, "SubModule.xml");
-				if (File.Exists(path))
+				if (!File.Exists(path))
 				{
-					ModuleInfo moduleInfo = new ModuleInfo();
-					string directoryName = Path.GetDirectoryName(path);
-					moduleInfo.LoadWithFullPath(directoryName);
-					if (!(moduleInfo.Name == "NavalDLC") || _platformModuleExtension == null || _platformModuleExtension.CheckEntitlement("Mount & Blade II: Bannerlord - War Sails"))
+					continue;
+				}
+				ModuleInfo moduleInfo = new ModuleInfo();
+				string directoryName = Path.GetDirectoryName(path);
+				moduleInfo.LoadWithFullPath(directoryName);
+				if (!(moduleInfo.Name == "NavalDLC") || _platformModuleExtension == null)
+				{
+					goto IL_00af;
+				}
+				if (!_platformModuleExtension.CheckEntitlement("Mount & Blade II: Bannerlord - War Sails"))
+				{
+					continue;
+				}
+				if (moduleInfo.RequiredBaseVersion != ApplicationVersion.FromParametersFile())
+				{
+					string lpCaption = "ERROR";
+					Debug.ShowMessageBox("NavalDLC version is not matched with base game! Please verify game files if the problem persists.", lpCaption, 4u);
+					if (!isLauncher)
 					{
-						list.Add(moduleInfo);
+						Environment.Exit(0);
 					}
 				}
+				goto IL_00af;
+				IL_00af:
+				list.Add(moduleInfo);
 			}
 			catch (Exception ex)
 			{
 				string lpText = "Module " + text + " can't be loaded, there are some errors." + Environment.NewLine + Environment.NewLine + ex.Message;
-				string lpCaption = "ERROR";
-				Debug.ShowMessageBox(lpText, lpCaption, 4u);
+				string lpCaption2 = "ERROR";
+				Debug.ShowMessageBox(lpText, lpCaption2, 4u);
 			}
 		}
 		return list;
@@ -352,7 +375,7 @@ public static class ModuleHelper
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.ModuleManager\\ModuleHelper.cs", "GetActiveGameAssemblies", 426);
+			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.ModuleManager\\ModuleHelper.cs", "GetActiveGameAssemblies", 443);
 			array = new Assembly[0];
 		}
 		if (IsTestMode)

@@ -243,4 +243,9 @@ public static class SkillLevelingManager
 	{
 		Instance.OnShipDamaged(ship, rawDamage, finalDamage);
 	}
+
+	public static void OnShipRepaired(Ship ship, float repairedHitPoints)
+	{
+		Instance.OnShipRepaired(ship, repairedHitPoints);
+	}
 }

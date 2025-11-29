@@ -38,6 +38,8 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 
 	private readonly List<Agent> _ignoredAgentsForAlarm;
 
+	private readonly MBList<GameEntity> _stealthIndoorLightingAreas;
+
 	private MissionTime _lastAlarmTriggerTime;
 
 	public float AlarmFactor { get; private set; }
@@ -53,6 +55,9 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		_ignoredAgentsForAlarm = new List<Agent>(0);
 		_lastAlarmTriggerTime = MissionTime.Zero;
 		base.Mission.OnAddSoundAlarmFactorToAgents += OnAddSoundAlarmFactor;
+		List<GameEntity> entities = new List<GameEntity>();
+		base.OwnerAgent.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
+		_stealthIndoorLightingAreas = new MBList<GameEntity>(entities);
 	}
 
 	public void SetCanMoveWhenCautious(bool value)
@@ -113,7 +118,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 							float sneakingNoiseMultiplier = Math.Max(0f, 1f - ((float)effectiveSkill * 0.0001f + equipmentStealthBonus * 0.002f));
 							num += GetSoundFactor(allAgent, sneakingNoiseMultiplier);
 						}
-						num2 += GetVisualFactor(vb, allAgent, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
+						num2 += GetVisualFactor(vb, allAgent, _stealthIndoorLightingAreas, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
 						float num3 = num + num2;
 						if (num3 > 0f && (!hasVisualOnEnemy || !DoNotIncreaseAlarmFactorDueToSeeingOrHearingTheEnemy))
 						{
@@ -231,7 +236,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		return 0f;
 	}
 
-	public float GetVisualFactor(Vec3 usedGlobalLookDirection, Agent currentAgent, ref bool hasVisualOnCorpse, ref bool hasVisualOnEnemy)
+	public float GetVisualFactor(Vec3 usedGlobalLookDirection, Agent currentAgent, MBReadOnlyList<GameEntity> stealthIndoorLightingAreas, ref bool hasVisualOnCorpse, ref bool hasVisualOnEnemy)
 	{
 		Vec3 vec = currentAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()) - (base.OwnerAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()));
 		float num = 0f;
@@ -245,13 +250,11 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 			{
 				bool isDayTime = base.OwnerAgent.Mission.Scene.IsDayTime;
 				Vec3 position = currentAgent.Position;
-				List<GameEntity> entities = new List<GameEntity>();
-				base.OwnerAgent.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
 				float ambientLightStrength = (isDayTime ? 0.7f : 0.2f);
 				float sunMoonLightStrength = (isDayTime ? 1f : 0.3f);
-				foreach (GameEntity item in entities)
+				foreach (GameEntity stealthIndoorLightingArea in stealthIndoorLightingAreas)
 				{
-					StealthIndoorLightingArea firstScriptOfType = item.GetFirstScriptOfType<StealthIndoorLightingArea>();
+					StealthIndoorLightingArea firstScriptOfType = stealthIndoorLightingArea.GetFirstScriptOfType<StealthIndoorLightingArea>();
 					if (firstScriptOfType.IsPointIn(position))
 					{
 						ambientLightStrength = firstScriptOfType.AmbientLightStrength;

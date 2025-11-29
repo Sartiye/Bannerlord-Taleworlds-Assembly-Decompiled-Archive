@@ -2444,14 +2444,20 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 				MobileParty garrisonParty = MobileParty.MainParty.BesiegedSettlement.Town.GarrisonParty;
 				int num5 = (int)((float)garrisonParty.MemberRoster.TotalRegulars * 0.1f);
 				List<TroopRosterElement> list10 = (from x in garrisonParty.MemberRoster.GetTroopRoster()
-					where !x.Character.IsHero
+					where !x.Character.IsHero && x.Number > 0
 					select x).ToList();
-				while (num5 > 0)
+				while (num5 > 0 && list10.Count > 0)
 				{
-					int index = garrisonParty.RandomInt(list10.Count);
-					TroopRosterElement troopRosterElement = list10[index];
-					int num6 = Math.Min(MobileParty.MainParty.RandomIntWithSeed((uint)_activeIncidentSeed, 1, troopRosterElement.Number + 1), (int)((float)garrisonParty.MemberRoster.TotalRegulars * 0.1f));
-					garrisonParty.MemberRoster.AddToCounts(list10[garrisonParty.RandomInt(list10.Count)].Character, -num6);
+					int index = MBRandom.RandomInt(list10.Count);
+					TroopRosterElement value = list10[index];
+					int num6 = MBRandom.RandomInt(1, Math.Min(num5, value.Number) + 1);
+					garrisonParty.MemberRoster.AddToCounts(value.Character, -num6);
+					value.Number -= num6;
+					list10[index] = value;
+					if (value.Number == 0)
+					{
+						list10.RemoveAt(index);
+					}
 					num5 -= num6;
 				}
 				return new List<TextObject>

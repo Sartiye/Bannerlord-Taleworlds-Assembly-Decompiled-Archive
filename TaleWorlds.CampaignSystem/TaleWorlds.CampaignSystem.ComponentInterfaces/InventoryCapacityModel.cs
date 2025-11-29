@@ -10,7 +10,7 @@ public abstract class InventoryCapacityModel : MBGameModel<InventoryCapacityMode
 
 	public abstract int GetItemAverageWeight();
 
-	public abstract float GetItemEffectiveWeight(EquipmentElement equipmentElement, MobileParty mobileParty, out TextObject description);
+	public abstract float GetItemEffectiveWeight(EquipmentElement equipmentElement, MobileParty mobileParty, bool isCurrentlyAtSea, out TextObject description);
 
 	public abstract ExplainedNumber CalculateTotalWeightCarried(MobileParty mobileParty, bool isCurrentlyAtSea, bool includeDescriptions = false);
 }

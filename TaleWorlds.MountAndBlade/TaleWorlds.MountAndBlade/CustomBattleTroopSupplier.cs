@@ -30,6 +30,8 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 
 	private readonly bool _isSallyOut;
 
+	private int _nextTroopRank;
+
 	public int NumRemovedTroops => _numWounded + _numKilled + _numRouted;
 
 	public int NumTroopsNotSupplied => _characters.Count - _numAllocated;
@@ -44,6 +46,7 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 		_isPlayerGeneral = isPlayerSide && isPlayerGeneral;
 		_isSallyOut = isSallyOut;
 		ArrangePriorities();
+		_nextTroopRank = 0;
 	}
 
 	private void ArrangePriorities()
@@ -111,7 +114,7 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 		_numAllocated += list.Count;
 		for (int i = 0; i < array.Length; i++)
 		{
-			array[i] = new CustomBattleAgentOrigin(uniqueNo: new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed), customBattleCombatant: _customBattleCombatant, characterObject: list[i], troopSupplier: this, isPlayerSide: _isPlayerSide, rank: i);
+			array[i] = new CustomBattleAgentOrigin(uniqueNo: new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed), customBattleCombatant: _customBattleCombatant, characterObject: list[i], troopSupplier: this, isPlayerSide: _isPlayerSide, rank: _nextTroopRank++);
 		}
 		if (array.Length < numberToAllocate)
 		{
@@ -125,7 +128,7 @@ public class CustomBattleTroopSupplier : IMissionTroopSupplier
 		BasicCharacterObject basicCharacterObject = AllocateTroop();
 		if (basicCharacterObject != null)
 		{
-			return new CustomBattleAgentOrigin(uniqueNo: new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed), customBattleCombatant: _customBattleCombatant, characterObject: basicCharacterObject, troopSupplier: this, isPlayerSide: _isPlayerSide, rank: 0);
+			return new CustomBattleAgentOrigin(uniqueNo: new UniqueTroopDescriptor(Game.Current.NextUniqueTroopSeed), customBattleCombatant: _customBattleCombatant, characterObject: basicCharacterObject, troopSupplier: this, isPlayerSide: _isPlayerSide, rank: _nextTroopRank++);
 		}
 		_anyTroopRemainsToBeSupplied = false;
 		return null;
