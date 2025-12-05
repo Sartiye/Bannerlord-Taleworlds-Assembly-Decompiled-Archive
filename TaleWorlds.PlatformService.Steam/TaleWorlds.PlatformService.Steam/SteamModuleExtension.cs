@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Steamworks;
-using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
 
 namespace TaleWorlds.PlatformService.Steam;
@@ -54,25 +53,18 @@ public class SteamModuleExtension : IPlatformModuleExtension
 
 	public bool CheckEntitlement(string title)
 	{
-		//IL_002e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0036: Unknown result type (might be due to invalid IL or missing references)
-		if (SteamUser.BLoggedOn())
+		//IL_0027: Unknown result type (might be due to invalid IL or missing references)
+		//IL_002f: Unknown result type (might be due to invalid IL or missing references)
+		int dLCCount = SteamApps.GetDLCCount();
+		AppId_t val = default(AppId_t);
+		bool flag = default(bool);
+		string text = default(string);
+		for (int i = 0; i < dLCCount; i++)
 		{
-			int dLCCount = SteamApps.GetDLCCount();
-			AppId_t val = default(AppId_t);
-			bool flag = default(bool);
-			string text = default(string);
-			for (int i = 0; i < dLCCount; i++)
+			if (SteamApps.BGetDLCDataByIndex(i, ref val, ref flag, ref text, 128) && text == title && SteamApps.BIsSubscribedApp(val))
 			{
-				if (SteamApps.BGetDLCDataByIndex(i, ref val, ref flag, ref text, 128) && text == title && SteamApps.BIsSubscribedApp(val))
-				{
-					return SteamApps.BIsDlcInstalled(val);
-				}
+				return SteamApps.BIsDlcInstalled(val);
 			}
-		}
-		else
-		{
-			Debug.Print("Steam user is not logged in. Please log in to Steam");
 		}
 		return false;
 	}

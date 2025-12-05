@@ -55,7 +55,7 @@ public static class MobilePartyHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Cant find a position to spawn mobile party.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CreateNewClanMobileParty", 3741);
+			Debug.FailedAssert("Cant find a position to spawn mobile party.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CreateNewClanMobileParty", 3764);
 		}
 		return SpawnLordParty(hero, position, Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 2f);
 	}
@@ -223,7 +223,7 @@ public static class MobilePartyHelper
 		gainableMaxXp = 0;
 		if (character.UpgradeTargets == null)
 		{
-			Debug.FailedAssert("Upgrade target is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CanTroopGainXp", 3914);
+			Debug.FailedAssert("Upgrade target is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CanTroopGainXp", 3937);
 			return false;
 		}
 		bool result = false;

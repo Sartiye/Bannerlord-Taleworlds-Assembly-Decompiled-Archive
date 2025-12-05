@@ -234,7 +234,7 @@ public class BesiegerCamp : ISiegeEventSide
 		else if (_leaderParty == mobileParty && (_leaderParty == null || _leaderParty.MapEvent == null || _leaderParty.MapEvent.State != MapEventState.WaitingRemoval))
 		{
 			_leaderParty = Campaign.Current.Models.EncounterModel.GetLeaderOfSiegeEvent(SiegeEvent, BattleSideEnum.Attacker)?.PartyBelongedTo;
-			_faction = _leaderParty.MapFaction;
+			_faction = _leaderParty?.MapFaction;
 			ChangeSiegeStrategyIfNeeded();
 		}
 	}
@@ -244,7 +244,7 @@ public class BesiegerCamp : ISiegeEventSide
 		MapEvent mapEvent = SiegeEvent.BesiegedSettlement.Party.MapEvent;
 		if (mapEvent != null && mapEvent.IsSiegeAssault && !mapEvent.IsFinalized)
 		{
-			Debug.FailedAssert("RemoveAllParties called before mapEvent is cleared", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\BesiegerCamp.cs", "RemoveAllSiegeParties", 212);
+			Debug.FailedAssert("RemoveAllParties called before mapEvent is cleared", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\BesiegerCamp.cs", "RemoveAllSiegeParties", 215);
 		}
 		while (_besiegerParties.Count > 0)
 		{

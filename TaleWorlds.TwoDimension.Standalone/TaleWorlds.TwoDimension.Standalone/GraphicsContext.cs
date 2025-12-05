@@ -44,6 +44,10 @@ public class GraphicsContext
 
 	private int _screenHeight;
 
+	private int _failedRenderFrames;
+
+	private bool _anyInvalidMatricesThisFrame;
+
 	private ResourceDepot _resourceDepot;
 
 	private bool _blendingMode;
@@ -152,11 +156,17 @@ public class GraphicsContext
 			TaleWorlds.Library.Debug.Print("can't set pixel format");
 		}
 		_handleRenderContext = Opengl32.wglCreateContext(_handleDeviceContext);
+		if (_handleRenderContext == IntPtr.Zero)
+		{
+			throw new OpenGlLoadException("Could not create default OpenGL context.");
+		}
 		SetActive();
-		Opengl32ARB.LoadExtensions();
+		string @string = Opengl32.GetString(7938u);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "DefaultContextVersionOpenGL", @string);
 		IntPtr handleRenderContext = _handleRenderContext;
 		_handleRenderContext = IntPtr.Zero;
 		Active = null;
+		Opengl32ARB.LoadContextExtension(_handleDeviceContext);
 		int[] array = new int[10];
 		int num = 0;
 		array[num++] = 8337;
@@ -167,7 +177,14 @@ public class GraphicsContext
 		array[num++] = 1;
 		array[num++] = 0;
 		_handleRenderContext = Opengl32ARB.wglCreateContextAttribs(_handleDeviceContext, IntPtr.Zero, array);
+		if (_handleRenderContext == IntPtr.Zero)
+		{
+			throw new OpenGlLoadException("Could not create OpenGL context.");
+		}
 		SetActive();
+		string string2 = Opengl32.GetString(7938u);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "ContextVersionOpenGL", string2);
+		Opengl32ARB.LoadExtensions(_handleDeviceContext);
 		Opengl32.wglDeleteContext(handleRenderContext);
 		Opengl32.ShadeModel(ShadingModel.Smooth);
 		Opengl32.ClearColor(0f, 0f, 0f, 0f);
@@ -198,6 +215,7 @@ public class GraphicsContext
 
 	public void BeginFrame(int width, int height)
 	{
+		_anyInvalidMatricesThisFrame = false;
 		_stopwatch.Start();
 		Resize(width, height);
 		Opengl32.Clear(AttribueMask.ColorBufferBit);
@@ -222,6 +240,15 @@ public class GraphicsContext
 		}
 		Gdi32.SwapBuffers(_handleDeviceContext);
 		_stopwatch.Restart();
+		if (_anyInvalidMatricesThisFrame)
+		{
+			_failedRenderFrames++;
+		}
+		if (_failedRenderFrames >= 100)
+		{
+			TaleWorlds.Library.Debug.ShowMessageBox("Launcher render error", "ERROR", 4u);
+			throw new Exception("[Launcher]: More than 100 frames had a render fail");
+		}
 	}
 
 	public void DestroyContext()
@@ -286,12 +313,29 @@ public class GraphicsContext
 	private Shader PrepareRender(Material material, in Rectangle2D rect)
 	{
 		Shader orLoadShader = GetOrLoadShader(material.GetType().Name);
-		MatrixFrame cachedVisualMatrixFrame = rect.GetCachedVisualMatrixFrame();
-		ModelMatrix = new Matrix4x4(cachedVisualMatrixFrame.rotation.s.x, cachedVisualMatrixFrame.rotation.s.y, cachedVisualMatrixFrame.rotation.s.z, cachedVisualMatrixFrame.rotation.s.w, cachedVisualMatrixFrame.rotation.f.x, cachedVisualMatrixFrame.rotation.f.y, cachedVisualMatrixFrame.rotation.f.z, cachedVisualMatrixFrame.rotation.f.w, cachedVisualMatrixFrame.rotation.u.x, cachedVisualMatrixFrame.rotation.u.y, cachedVisualMatrixFrame.rotation.u.z, cachedVisualMatrixFrame.rotation.u.w, cachedVisualMatrixFrame.origin.x, cachedVisualMatrixFrame.origin.y, 0f, cachedVisualMatrixFrame.origin.w);
+		MatrixFrame matrixFrame = rect.GetCachedVisualMatrixFrame();
+		if (IsValidMatrixFrame(in matrixFrame))
+		{
+			ModelMatrix = new Matrix4x4(matrixFrame.rotation.s.x, matrixFrame.rotation.s.y, matrixFrame.rotation.s.z, matrixFrame.rotation.s.w, matrixFrame.rotation.f.x, matrixFrame.rotation.f.y, matrixFrame.rotation.f.z, matrixFrame.rotation.f.w, matrixFrame.rotation.u.x, matrixFrame.rotation.u.y, matrixFrame.rotation.u.z, matrixFrame.rotation.u.w, matrixFrame.origin.x, matrixFrame.origin.y, 0f, matrixFrame.origin.w);
+		}
+		else
+		{
+			ModelMatrix = new Matrix4x4(250f, 0f, 0f, 0f, 0f, 100f, 0f, 0f, 0f, 0f, 0f, 1f, 50f, 50f, 0f, 1f);
+			_anyInvalidMatricesThisFrame = true;
+		}
 		orLoadShader.Use();
 		Matrix4x4 matrix = _modelMatrix * _viewMatrix * _projectionMatrix;
 		orLoadShader.SetMatrix("MVP", matrix);
 		return orLoadShader;
+	}
+
+	private bool IsValidMatrixFrame(in MatrixFrame matrixFrame)
+	{
+		if (!matrixFrame.IsZero && matrixFrame.origin.IsValidXYZW && matrixFrame.rotation.f.IsValidXYZW && matrixFrame.rotation.s.IsValidXYZW)
+		{
+			return matrixFrame.rotation.u.IsValidXYZW;
+		}
+		return false;
 	}
 
 	private void DrawImageAux(Shader shader, SimpleMaterial material, in ImageDrawObject drawObject)

@@ -136,11 +136,11 @@ public class OrderBar__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Missio
 	public void SetAttributes()
 	{
 		base.DoNotAcceptEvents = true;
-		base.DoNotPassEventsToChildren = true;
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.SetAttributes();
 		_widget_1.DoNotAcceptEvents = true;
+		_widget_1.DoNotPassEventsToChildren = true;
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;

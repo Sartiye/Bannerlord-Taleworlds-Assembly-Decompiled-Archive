@@ -7,6 +7,7 @@ using System.Reflection;
 using TaleWorlds.Library;
 using TaleWorlds.Starter.Library;
 using TaleWorlds.TwoDimension.Standalone;
+using TaleWorlds.TwoDimension.Standalone.Native.OpenGL;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
 
 namespace TaleWorlds.MountAndBlade.Launcher.Library;
@@ -54,18 +55,31 @@ public class Program
 		{
 			try
 			{
+				string? fileName = Process.GetCurrentProcess().MainModule.FileName;
+				string text = "";
+				text = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+				text = Path.Combine(text, "Mount and Blade II Bannerlord");
+				string name = Directory.GetParent(fileName).Name;
+				new Watchdog(use_coreclr: true, text);
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "103684");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Target", "Public");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.3.9.103684");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Product Name", "Mount and Blade II Bannerlord");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Name", name);
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Launcher", "true");
 				Common.PlatformFileHelper = new PlatformFileHelperPC("Mount and Blade II Bannerlord");
 				Common.SetInvariantCulture();
 				LauncherPlatform.Initialize(_args);
 				LauncherPlatform.SetLauncherMode(isLauncherModeActive: true);
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Platform", LauncherPlatform.PlatformType.ToString());
 				ResourceDepot resourceDepot = new ResourceDepot();
 				resourceDepot.AddLocation(BasePath.Name, "Modules/Native/LauncherGUI/");
 				resourceDepot.CollectResources();
 				resourceDepot.StartWatchingChangesInDepot();
-				string name = "M&B II: Bannerlord";
+				string name2 = "M&B II: Bannerlord";
 				User32.GetClientRect(User32.GetDesktopWindow(), out var lpRect);
 				float num = (float)lpRect.Height / 1350f;
-				_graphicsForm = new GraphicsForm((int)(num * 1154f), (int)(num * 701f), resourceDepot, borderlessWindow: true, enableWindowBlur: true, layeredWindow: true, name);
+				_graphicsForm = new GraphicsForm((int)(num * 1154f), (int)(num * 701f), resourceDepot, borderlessWindow: true, enableWindowBlur: true, layeredWindow: true, name2);
 				_windowsFramework = new WindowsFramework();
 				_windowsFramework.ThreadConfig = WindowsFrameworkThreadConfig.NoThread;
 				_standaloneUIDomain = new StandaloneUIDomain(_graphicsForm, resourceDepot);
@@ -74,11 +88,17 @@ public class Program
 				_windowsFramework.Start();
 				LauncherPlatform.SetLauncherMode(isLauncherModeActive: false);
 				LauncherPlatform.Destroy();
+				Watchdog.DetachAndClose();
 			}
-			catch (Exception ex)
+			catch (OpenGlLoadException ex)
 			{
-				TaleWorlds.Library.Debug.Print(ex.Message);
-				TaleWorlds.Library.Debug.Print(ex.StackTrace);
+				NativeMessageBox.Show(ex.Message, "Confirm", NativeMessageBox.Buttons.OK, NativeMessageBox.Icon.Information);
+				throw;
+			}
+			catch (Exception ex2)
+			{
+				TaleWorlds.Library.Debug.Print(ex2.Message);
+				TaleWorlds.Library.Debug.Print(ex2.StackTrace);
 				throw;
 			}
 		}

@@ -147,19 +147,22 @@ internal static class Opengl32ARB
 
 	public const int DynamicDraw = 35048;
 
-	public static void LoadExtensions()
+	public static void LoadContextExtension(IntPtr hdc)
+	{
+		wglCreateContextAttribs = LoadFunction<wglCreateContextAttribsDelegate>("wglCreateContextAttribsARB");
+	}
+
+	public static void LoadExtensions(IntPtr hdc)
 	{
 		if (!_extensionsLoaded)
 		{
-			_extensionsLoaded = true;
-			ActiveTexture = LoadFunction<ActiveTextureDelegate>("glActiveTexture");
-			wglCreateContextAttribs = LoadFunction<wglCreateContextAttribsDelegate>("wglCreateContextAttribsARB");
-			CreateProgramObject = LoadFunction<CreateProgramObjectDelegate>("glCreateProgramObjectARB");
-			CreateShaderObject = LoadFunction<CreateShaderObjectDelegate>("glCreateShaderObjectARB");
-			CompileShader = LoadFunction<CompileShaderDelegate>("glCompileShaderARB");
-			ShaderSourceInternal = LoadFunction<ShaderSourceDelegate>("glShaderSourceARB");
+			CreateProgramObject = LoadFunction<CreateProgramObjectDelegate>("glCreateProgram");
+			CreateShaderObject = LoadFunction<CreateShaderObjectDelegate>("glCreateShader");
+			CompileShader = LoadFunction<CompileShaderDelegate>("glCompileShader");
+			ShaderSourceInternal = LoadFunction<ShaderSourceDelegate>("glShaderSource");
 			AttachShader = LoadFunction<AttachShaderDelegate>("glAttachShader");
 			LinkProgram = LoadFunction<LinkProgramDelegate>("glLinkProgram");
+			ActiveTexture = LoadFunction<ActiveTextureDelegate>("glActiveTexture");
 			DeleteProgram = LoadFunction<DeleteProgramDelegate>("glDeleteProgram");
 			UseProgram = LoadFunction<UseProgramDelegate>("glUseProgram");
 			UniformMatrix4fvInternal = LoadFunction<UniformMatrix4fvDelegate>("glUniformMatrix4fv");
@@ -184,12 +187,18 @@ internal static class Opengl32ARB
 			GenVertexArrays = LoadFunction<GenVertexArraysDelegate>("glGenVertexArrays");
 			BindVertexArray = LoadFunction<BindVertexArrayDelegate>("glBindVertexArray");
 			BlendFuncSeparate = LoadFunction<BlendFuncSeparateDelegate>("glBlendFuncSeparate");
+			_extensionsLoaded = true;
 		}
 	}
 
 	private static T LoadFunction<T>(string name) where T : class
 	{
-		return Marshal.GetDelegateForFunctionPointer(Opengl32.wglGetProcAddress(name), typeof(T)) as T;
+		IntPtr intPtr = Opengl32.wglGetProcAddress(name);
+		if (intPtr != IntPtr.Zero)
+		{
+			return Marshal.GetDelegateForFunctionPointer(intPtr, typeof(T)) as T;
+		}
+		throw new OpenGlLoadException("Could not load OpenGL function " + name + ". Please make sure the OpenGL driver, for the gpu that game runs on, is verified and up to date.");
 	}
 
 	public static void ShaderSource(int shader, string shaderSource)

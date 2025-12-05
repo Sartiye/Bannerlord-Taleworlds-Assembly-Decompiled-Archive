@@ -324,7 +324,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 428);
+				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 432);
 			}
 		}
 	}
@@ -362,7 +362,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 		if (clan.MinorFactionCharacterTemplates == null || clan.MinorFactionCharacterTemplates.IsEmpty())
 		{
-			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 466);
+			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 470);
 			return;
 		}
 		for (int j = 0; j < num; j++)

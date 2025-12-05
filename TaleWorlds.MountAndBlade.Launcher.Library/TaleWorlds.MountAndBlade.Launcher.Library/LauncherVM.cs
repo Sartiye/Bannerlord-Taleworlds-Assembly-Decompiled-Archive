@@ -554,7 +554,18 @@ public class LauncherVM : ViewModel
 
 	private ApplicationVersion GetApplicationVersionOfModule(string id)
 	{
-		return ModsData.Modules.FirstOrDefault((LauncherModuleVM m) => m.Info.Id == id).Info.Version;
+		foreach (LauncherModuleVM module in ModsData.Modules)
+		{
+			if (module?.Info == null)
+			{
+				Debug.FailedAssert("Info for module is null: " + (module?.Name ?? "---"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\ViewModels\\LauncherVM.cs", "GetApplicationVersionOfModule", 198);
+			}
+			if (module.Info.Id == id)
+			{
+				return module.Info.Version;
+			}
+		}
+		return ApplicationVersion.Empty;
 	}
 
 	private void ExecuteConfirmUnverifiedDLLStart()

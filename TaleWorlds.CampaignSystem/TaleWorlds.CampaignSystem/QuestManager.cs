@@ -120,6 +120,10 @@ public class QuestManager : CampaignEventReceiver
 				_quests.RemoveAt(num);
 			}
 		}
+		for (int i = 0; i < Quests.Count; i++)
+		{
+			_quests[i].PreAfterLoadInternal();
+		}
 	}
 
 	public override void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -154,7 +158,7 @@ public class QuestManager : CampaignEventReceiver
 				else
 				{
 					list.Add(questBase);
-					Debug.FailedAssert(string.Concat("There is not active issue for quest: ", questBase.Title, " string id: ", questBase.StringId, ". Quest will be canceled."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "OnGameLoaded", 135);
+					Debug.FailedAssert(string.Concat("There is not active issue for quest: ", questBase.Title, " string id: ", questBase.StringId, ". Quest will be canceled."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "OnGameLoaded", 140);
 				}
 			}
 		}
@@ -398,7 +402,7 @@ public class QuestManager : CampaignEventReceiver
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " already contains quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "AddTrackedObjectForQuest", 413);
+				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " already contains quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "AddTrackedObjectForQuest", 418);
 			}
 		}
 		else
@@ -422,12 +426,12 @@ public class QuestManager : CampaignEventReceiver
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " is not tracked by quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 437);
+				Debug.FailedAssert(string.Concat(trackedObject.GetName(), " is not tracked by quest: ", relatedQuest.Title), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 442);
 			}
 		}
 		else
 		{
-			Debug.FailedAssert(string.Concat(trackedObject.GetName(), " does not track any quests."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 442);
+			Debug.FailedAssert(string.Concat(trackedObject.GetName(), " does not track any quests."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestManager.cs", "RemoveTrackedObjectForQuest", 447);
 		}
 	}
 

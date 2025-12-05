@@ -87,17 +87,26 @@ public class LauncherNewsVM : ViewModel
 		NewsItems.Clear();
 		MainNews = new LauncherNewsItemVM(default(NewsItem), isMultiplayer);
 		NewsItem.NewsTypes singleplayerMultiplayerEnum = (isMultiplayer ? NewsItem.NewsTypes.LauncherMultiplayer : NewsItem.NewsTypes.LauncherSingleplayer);
-		List<IGrouping<int, NewsItem>> list = (from i in (from i in _newsManager.NewsItems.Where((NewsItem n) => n.Feeds.Any((NewsType t) => t.Type == singleplayerMultiplayerEnum) && !string.IsNullOrEmpty(n.Title) && !string.IsNullOrEmpty(n.NewsLink) && !string.IsNullOrEmpty(n.ImageSourcePath)).ToList()
-				group i by i.Feeds.First((NewsType t) => t.Type == singleplayerMultiplayerEnum).Index).ToList()
+		List<NewsItem> list = new List<NewsItem>();
+		foreach (NewsItem newsItem2 in _newsManager.NewsItems)
+		{
+			List<NewsType> feeds = newsItem2.Feeds;
+			if (feeds != null && feeds.Any((NewsType f) => f.Type == singleplayerMultiplayerEnum) && !string.IsNullOrEmpty(newsItem2.Title) && !string.IsNullOrEmpty(newsItem2.NewsLink) && !string.IsNullOrEmpty(newsItem2.ImageSourcePath))
+			{
+				list.Add(newsItem2);
+			}
+		}
+		List<IGrouping<int, NewsItem>> list2 = (from i in (from i in list
+				group i by i.Feeds.FirstOrDefault((NewsType t) => t.Type == singleplayerMultiplayerEnum).Index).ToList()
 			orderby i.Key
 			select i).ToList();
-		for (int j = 0; j < list.Count; j++)
+		for (int j = 0; j < list2.Count; j++)
 		{
 			if (NewsItems.Count >= 3)
 			{
 				break;
 			}
-			NewsItem newsItem = list[j].First();
+			NewsItem newsItem = list2[j].First();
 			NewsItem item = (newsItem.Equals(default(NewsItem)) ? default(NewsItem) : newsItem);
 			NewsItems.Add(new LauncherNewsItemVM(item, isMultiplayer));
 		}

@@ -12,6 +12,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.ModuleManager;
 
 namespace StoryMode.GameComponents.CampaignBehaviors;
 
@@ -24,70 +25,123 @@ public class MainStorylineCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
 	}
 
-	private void OnGameLoadFinished()
+	private static void OnGameLoadFinished()
 	{
-		if (Clan.PlayerClan.Kingdom != null && !Clan.PlayerClan.IsUnderMercenaryService)
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.7.103044"))
 		{
-			Clan.PlayerClan.IsNoble = true;
-		}
-		int heroComesOfAge = Campaign.Current.Models.AgeModel.HeroComesOfAge;
-		if (StoryModeHeroes.LittleSister.Age < (float)heroComesOfAge)
-		{
-			if (!StoryModeHeroes.LittleSister.IsDisabled && !StoryModeHeroes.LittleSister.IsNotSpawned)
+			if (Clan.PlayerClan.Kingdom != null && !Clan.PlayerClan.IsUnderMercenaryService && !Clan.PlayerClan.IsNoble)
 			{
-				DisableHeroAction.Apply(StoryModeHeroes.LittleSister);
+				Clan.PlayerClan.IsNoble = true;
 			}
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.6"))
+			int heroComesOfAge = Campaign.Current.Models.AgeModel.HeroComesOfAge;
+			AgingCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<AgingCampaignBehavior>();
+			FieldInfo field = typeof(AgingCampaignBehavior).GetField("_heroesYoungerThanHeroComesOfAge", BindingFlags.Instance | BindingFlags.NonPublic);
+			Dictionary<Hero, int> dictionary = (Dictionary<Hero, int>)field.GetValue(campaignBehavior);
+			if (StoryModeHeroes.LittleSister.Age < (float)heroComesOfAge)
 			{
-				AgingCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<AgingCampaignBehavior>();
-				if (campaignBehavior != null)
+				if (!StoryModeHeroes.LittleSister.IsDisabled && !StoryModeHeroes.LittleSister.IsNotSpawned)
 				{
-					FieldInfo field = typeof(AgingCampaignBehavior).GetField("_heroesYoungerThanHeroComesOfAge", BindingFlags.Instance | BindingFlags.NonPublic);
-					Dictionary<Hero, int> dictionary = (Dictionary<Hero, int>)field.GetValue(campaignBehavior);
-					if (!dictionary.ContainsKey(StoryModeHeroes.LittleSister))
+					DisableHeroAction.Apply(StoryModeHeroes.LittleSister);
+				}
+				if (!dictionary.ContainsKey(StoryModeHeroes.LittleSister))
+				{
+					dictionary.Add(StoryModeHeroes.LittleSister, (int)StoryModeHeroes.LittleSister.Age);
+					field.SetValue(campaignBehavior, dictionary);
+				}
+			}
+			else if (!ModuleHelper.IsModuleActive("NavalDLC"))
+			{
+				if (!StoryModeHeroes.LittleSister.IsDisabled && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest))))
+				{
+					DisableHeroAction.Apply(StoryModeHeroes.LittleSister);
+					if (StoryModeHeroes.LittleSister.GovernorOf != null)
 					{
-						dictionary.Add(StoryModeHeroes.LittleSister, (int)StoryModeHeroes.LittleSister.Age);
-						field.SetValue(campaignBehavior, dictionary);
+						ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.LittleSister);
+					}
+				}
+				else if (StoryModeManager.Current.MainStoryLine.FamilyRescued && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest)) && !dictionary.ContainsKey(StoryModeHeroes.LittleSister))
+				{
+					if (StoryModeHeroes.LittleSister.IsNotSpawned)
+					{
+						HeroHelper.SpawnHeroForTheFirstTime(StoryModeHeroes.LittleSister, HeroHelper.GetSettlementForRelativeSpawn(StoryModeHeroes.LittleSister));
+					}
+					else if (StoryModeHeroes.LittleSister.IsDisabled)
+					{
+						StoryModeHeroes.LittleSister.ChangeState(Hero.CharacterStates.Active);
+						Settlement settlement = ((StoryModeHeroes.LittleSister.GovernorOf != null) ? StoryModeHeroes.LittleSister.GovernorOf.Settlement : HeroHelper.GetSettlementForRelativeSpawn(StoryModeHeroes.LittleSister));
+						EnterSettlementAction.ApplyForCharacterOnly(StoryModeHeroes.LittleSister, settlement);
+					}
+					if (StoryModeHeroes.LittleSister.Clan == null)
+					{
+						StoryModeHeroes.LittleSister.Clan = Clan.PlayerClan;
+						MakeHeroFugitiveAction.Apply(StoryModeHeroes.LittleSister);
 					}
 				}
 			}
-		}
-		else if (!StoryModeHeroes.LittleSister.IsDisabled && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest))))
-		{
-			DisableHeroAction.Apply(StoryModeHeroes.LittleSister);
-		}
-		else if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.6") && StoryModeManager.Current.MainStoryLine.FamilyRescued && StoryModeHeroes.LittleSister.IsNotSpawned)
-		{
-			HeroHelper.SpawnHeroForTheFirstTime(StoryModeHeroes.LittleSister, GetSettlementForRelativeSpawn(StoryModeHeroes.LittleSister));
-		}
-		if (StoryModeHeroes.LittleBrother.Age < (float)heroComesOfAge)
-		{
-			if (!StoryModeHeroes.LittleBrother.IsDisabled && !StoryModeHeroes.LittleBrother.IsNotSpawned)
+			if (StoryModeHeroes.LittleBrother.Age < (float)heroComesOfAge)
+			{
+				if (!StoryModeHeroes.LittleBrother.IsDisabled && !StoryModeHeroes.LittleBrother.IsNotSpawned)
+				{
+					DisableHeroAction.Apply(StoryModeHeroes.LittleBrother);
+				}
+				if (!dictionary.ContainsKey(StoryModeHeroes.LittleBrother))
+				{
+					dictionary.Add(StoryModeHeroes.LittleBrother, (int)StoryModeHeroes.LittleBrother.Age);
+					field.SetValue(campaignBehavior, dictionary);
+				}
+			}
+			else if (!StoryModeHeroes.LittleBrother.IsDisabled && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest))))
 			{
 				DisableHeroAction.Apply(StoryModeHeroes.LittleBrother);
-			}
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.6"))
-			{
-				AgingCampaignBehavior campaignBehavior2 = Campaign.Current.GetCampaignBehavior<AgingCampaignBehavior>();
-				if (campaignBehavior2 != null)
+				if (StoryModeHeroes.LittleBrother.GovernorOf != null)
 				{
-					FieldInfo field2 = typeof(AgingCampaignBehavior).GetField("_heroesYoungerThanHeroComesOfAge", BindingFlags.Instance | BindingFlags.NonPublic);
-					Dictionary<Hero, int> dictionary2 = (Dictionary<Hero, int>)field2.GetValue(campaignBehavior2);
-					if (!dictionary2.ContainsKey(StoryModeHeroes.LittleBrother))
-					{
-						dictionary2.Add(StoryModeHeroes.LittleBrother, (int)StoryModeHeroes.LittleBrother.Age);
-						field2.SetValue(campaignBehavior2, dictionary2);
-					}
+					ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.LittleBrother);
 				}
 			}
-		}
-		else if (!StoryModeHeroes.LittleBrother.IsDisabled && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest))))
-		{
-			DisableHeroAction.Apply(StoryModeHeroes.LittleBrother);
-		}
-		else if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.6") && StoryModeManager.Current.MainStoryLine.FamilyRescued && StoryModeHeroes.LittleBrother.IsNotSpawned)
-		{
-			HeroHelper.SpawnHeroForTheFirstTime(StoryModeHeroes.LittleBrother, GetSettlementForRelativeSpawn(StoryModeHeroes.LittleBrother));
+			else if (StoryModeManager.Current.MainStoryLine.FamilyRescued && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest)) && !dictionary.ContainsKey(StoryModeHeroes.LittleBrother))
+			{
+				if (StoryModeHeroes.LittleBrother.IsNotSpawned)
+				{
+					HeroHelper.SpawnHeroForTheFirstTime(StoryModeHeroes.LittleBrother, HeroHelper.GetSettlementForRelativeSpawn(StoryModeHeroes.LittleBrother));
+				}
+				else if (StoryModeHeroes.LittleBrother.IsDisabled)
+				{
+					StoryModeHeroes.LittleBrother.ChangeState(Hero.CharacterStates.Active);
+				}
+				if (StoryModeHeroes.LittleBrother.Clan == null)
+				{
+					StoryModeHeroes.LittleBrother.Clan = Clan.PlayerClan;
+					MakeHeroFugitiveAction.Apply(StoryModeHeroes.LittleBrother);
+				}
+			}
+			if (StoryModeManager.Current.MainStoryLine.FamilyRescued && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest)))
+			{
+				if (StoryModeHeroes.ElderBrother.IsNotSpawned)
+				{
+					HeroHelper.SpawnHeroForTheFirstTime(StoryModeHeroes.ElderBrother, HeroHelper.GetSettlementForRelativeSpawn(StoryModeHeroes.ElderBrother));
+				}
+				else if (StoryModeHeroes.ElderBrother.IsDisabled)
+				{
+					StoryModeHeroes.ElderBrother.ChangeState(Hero.CharacterStates.Active);
+				}
+				if (StoryModeHeroes.ElderBrother.Clan == null)
+				{
+					StoryModeHeroes.ElderBrother.Clan = Clan.PlayerClan;
+					MakeHeroFugitiveAction.Apply(StoryModeHeroes.ElderBrother);
+				}
+			}
+			if (StoryModeHeroes.LittleSister.GovernorOf != null && StoryModeHeroes.LittleSister.CurrentSettlement != StoryModeHeroes.LittleSister.GovernorOf.Settlement)
+			{
+				ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.LittleSister);
+			}
+			if (StoryModeHeroes.LittleBrother.GovernorOf != null && StoryModeHeroes.LittleBrother.CurrentSettlement != StoryModeHeroes.LittleBrother.GovernorOf.Settlement)
+			{
+				ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.LittleBrother);
+			}
+			if (StoryModeHeroes.ElderBrother.GovernorOf != null && StoryModeHeroes.ElderBrother.CurrentSettlement != StoryModeHeroes.ElderBrother.GovernorOf.Settlement)
+			{
+				ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.ElderBrother);
+			}
 		}
 		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0"))
 		{
@@ -142,27 +196,7 @@ public class MainStorylineCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private Settlement GetSettlementForRelativeSpawn(Hero hero)
-	{
-		if (!hero.HomeSettlement.OwnerClan.IsAtWarWith(Clan.PlayerClan.MapFaction))
-		{
-			return hero.HomeSettlement;
-		}
-		if (!Clan.PlayerClan.MapFaction.Settlements.IsEmpty())
-		{
-			return Clan.PlayerClan.MapFaction.Settlements.GetRandomElement();
-		}
-		foreach (Settlement item in Settlement.All)
-		{
-			if (!item.MapFaction.IsAtWarWith(Clan.PlayerClan.MapFaction))
-			{
-				return item;
-			}
-		}
-		return Village.All.GetRandomElement().Settlement;
-	}
-
-	private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
+	private static void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
 	{
 		if (clan == Clan.PlayerClan && newKingdom != null && (detail == ChangeKingdomAction.ChangeKingdomActionDetail.CreateKingdom || detail == ChangeKingdomAction.ChangeKingdomActionDetail.JoinKingdom))
 		{
@@ -174,7 +208,7 @@ public class MainStorylineCampaignBehavior : CampaignBehaviorBase
 	{
 	}
 
-	private void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
+	private static void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
 	{
 		if ((hero == StoryModeHeroes.Radagos && StoryModeManager.Current.MainStoryLine.TutorialPhase.IsCompleted && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuestBehavior.RescueFamilyQuest)) && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RebuildPlayerClanQuest)) && causeOfDeath == KillCharacterAction.KillCharacterActionDetail.Executed) || causeOfDeath == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent)
 		{

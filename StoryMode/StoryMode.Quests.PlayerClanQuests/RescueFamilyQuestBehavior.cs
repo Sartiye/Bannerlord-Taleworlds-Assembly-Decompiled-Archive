@@ -825,26 +825,8 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_rescueFamilyQuestReadyToStart", ref _rescueFamilyQuestReadyToStart);
 	}
 
-	private void OnGameLoadedEvent(CampaignGameStarter campaignGameStarter)
+	private static void OnGameLoadedEvent(CampaignGameStarter campaignGameStarter)
 	{
-		if (StoryModeManager.Current.MainStoryLine.FamilyRescued && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuest)) && (StoryModeHeroes.LittleSister.Clan == null || StoryModeHeroes.LittleBrother.Clan == null || StoryModeHeroes.ElderBrother.Clan == null))
-		{
-			if (StoryModeHeroes.LittleSister.IsAlive)
-			{
-				StoryModeHeroes.LittleSister.Clan = Clan.PlayerClan;
-				MakeHeroFugitiveAction.Apply(StoryModeHeroes.LittleSister);
-			}
-			if (StoryModeHeroes.LittleBrother.IsAlive)
-			{
-				StoryModeHeroes.LittleBrother.Clan = Clan.PlayerClan;
-				MakeHeroFugitiveAction.Apply(StoryModeHeroes.LittleBrother);
-			}
-			if (StoryModeHeroes.ElderBrother.IsAlive)
-			{
-				StoryModeHeroes.ElderBrother.Clan = Clan.PlayerClan;
-				MakeHeroFugitiveAction.Apply(StoryModeHeroes.ElderBrother);
-			}
-		}
 	}
 
 	private void OnSettlementEntered(MobileParty party, Settlement settlement, Hero hero)

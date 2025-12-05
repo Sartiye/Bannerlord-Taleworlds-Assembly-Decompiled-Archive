@@ -670,4 +670,24 @@ public static class HeroHelper
 		}
 		return num;
 	}
+
+	public static Settlement GetSettlementForRelativeSpawn(Hero hero)
+	{
+		if (!hero.HomeSettlement.OwnerClan.IsAtWarWith(Clan.PlayerClan.MapFaction))
+		{
+			return hero.HomeSettlement;
+		}
+		if (!Clan.PlayerClan.MapFaction.Settlements.IsEmpty())
+		{
+			return Clan.PlayerClan.MapFaction.Settlements.GetRandomElement();
+		}
+		foreach (Settlement item in Settlement.All)
+		{
+			if (!item.MapFaction.IsAtWarWith(Clan.PlayerClan.MapFaction))
+			{
+				return item;
+			}
+		}
+		return Village.All.GetRandomElement().Settlement;
+	}
 }
