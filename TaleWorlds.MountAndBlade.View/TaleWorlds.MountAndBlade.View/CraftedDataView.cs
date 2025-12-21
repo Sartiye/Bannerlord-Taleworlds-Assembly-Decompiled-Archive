@@ -250,7 +250,7 @@ public class CraftedDataView
 				if (batchAllMeshes)
 				{
 					int num3 = 8 - (b - 1);
-					metaMesh2.SetMaterial(Material.GetFromResource("weapon_crafting_quiver_deformer"));
+					metaMesh2.SetShaderToMaterial("quiver_deformer");
 					metaMesh2.SetFactor1Linear((uint)(419430400uL * (ulong)num3));
 					list.Add(metaMesh2);
 				}

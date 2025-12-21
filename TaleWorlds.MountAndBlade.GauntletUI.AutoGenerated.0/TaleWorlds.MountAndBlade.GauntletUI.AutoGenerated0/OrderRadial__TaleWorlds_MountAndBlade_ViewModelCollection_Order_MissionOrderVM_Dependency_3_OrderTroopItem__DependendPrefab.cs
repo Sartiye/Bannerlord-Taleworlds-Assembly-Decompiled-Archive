@@ -35,21 +35,31 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 
 	private TextWidget _widget_1_2_1;
 
-	private ValueBasedVisibilityWidget _widget_1_3;
+	private Widget _widget_1_3;
 
-	private Widget _widget_1_3_0;
+	private ValueBasedVisibilityWidget _widget_1_3_0;
 
 	private Widget _widget_1_3_0_0;
 
 	private InputKeyVisualWidget _widget_1_3_0_0_0;
 
-	private ValueBasedVisibilityWidget _widget_1_4;
+	private ValueBasedVisibilityWidget _widget_1_3_1;
 
-	private Widget _widget_1_4_0;
+	private Widget _widget_1_3_1_0;
 
-	private Widget _widget_1_4_0_0;
+	private InputKeyVisualWidget _widget_1_3_1_0_0;
 
-	private InputKeyVisualWidget _widget_1_4_0_0_0;
+	private ListPanel _widget_1_4;
+
+	private ListPanel _widget_1_4_0;
+
+	private InputKeyVisualWidget _widget_1_4_0_0;
+
+	private TextWidget _widget_1_4_0_1;
+
+	private InputKeyVisualWidget _widget_1_4_0_2;
+
+	private TextWidget _widget_1_4_0_3;
 
 	private FillBarWidget _widget_1_5;
 
@@ -79,7 +89,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 
 	private MBBindingList<OrderTroopItemFormationClassVM> _datasource_Root_ActiveFormationClasses;
 
-	private InputKeyItemVM _datasource_Root_SelectionKey;
+	private InputKeyItemVM _datasource_Root_ApplySelectionKey;
+
+	private InputKeyItemVM _datasource_Root_ToggleSelectionKey;
 
 	private CharacterImageIdentifierVM _datasource_Root_CaptainImageIdentifier;
 
@@ -109,22 +121,32 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_2.AddChild(_widget_1_2_0);
 		_widget_1_2_1 = new TextWidget(base.Context);
 		_widget_1_2.AddChild(_widget_1_2_1);
-		_widget_1_3 = new ValueBasedVisibilityWidget(base.Context);
+		_widget_1_3 = new Widget(base.Context);
 		_widget_1.AddChild(_widget_1_3);
-		_widget_1_3_0 = new Widget(base.Context);
+		_widget_1_3_0 = new ValueBasedVisibilityWidget(base.Context);
 		_widget_1_3.AddChild(_widget_1_3_0);
 		_widget_1_3_0_0 = new Widget(base.Context);
 		_widget_1_3_0.AddChild(_widget_1_3_0_0);
 		_widget_1_3_0_0_0 = new InputKeyVisualWidget(base.Context);
 		_widget_1_3_0_0.AddChild(_widget_1_3_0_0_0);
-		_widget_1_4 = new ValueBasedVisibilityWidget(base.Context);
+		_widget_1_3_1 = new ValueBasedVisibilityWidget(base.Context);
+		_widget_1_3.AddChild(_widget_1_3_1);
+		_widget_1_3_1_0 = new Widget(base.Context);
+		_widget_1_3_1.AddChild(_widget_1_3_1_0);
+		_widget_1_3_1_0_0 = new InputKeyVisualWidget(base.Context);
+		_widget_1_3_1_0.AddChild(_widget_1_3_1_0_0);
+		_widget_1_4 = new ListPanel(base.Context);
 		_widget_1.AddChild(_widget_1_4);
-		_widget_1_4_0 = new Widget(base.Context);
+		_widget_1_4_0 = new ListPanel(base.Context);
 		_widget_1_4.AddChild(_widget_1_4_0);
-		_widget_1_4_0_0 = new Widget(base.Context);
+		_widget_1_4_0_0 = new InputKeyVisualWidget(base.Context);
 		_widget_1_4_0.AddChild(_widget_1_4_0_0);
-		_widget_1_4_0_0_0 = new InputKeyVisualWidget(base.Context);
-		_widget_1_4_0_0.AddChild(_widget_1_4_0_0_0);
+		_widget_1_4_0_1 = new TextWidget(base.Context);
+		_widget_1_4_0.AddChild(_widget_1_4_0_1);
+		_widget_1_4_0_2 = new InputKeyVisualWidget(base.Context);
+		_widget_1_4_0.AddChild(_widget_1_4_0_2);
+		_widget_1_4_0_3 = new TextWidget(base.Context);
+		_widget_1_4_0.AddChild(_widget_1_4_0_3);
 		_widget_1_5 = new FillBarWidget(base.Context);
 		_widget_1.AddChild(_widget_1_5);
 		_widget_1_5_0 = new Widget(base.Context);
@@ -220,38 +242,66 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_2_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_2_1.Brush = base.Context.GetBrush("Order.Troop.CountText");
 		_widget_1_2_1.Brush.FontSize = 24;
-		_widget_1_3.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3.PositionYOffset = -5f;
-		_widget_1_3.PositionXOffset = 40f;
-		_widget_1_3.IndexToBeVisible = 3;
-		_widget_1_3.WatchType = ValueBasedVisibilityWidget.WatchTypes.LessThanEqual;
+		_widget_1_3.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_3.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_3.IsHidden = false;
 		_widget_1_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_3_0.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_1_3_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_3_0.PositionYOffset = -5f;
+		_widget_1_3_0.PositionXOffset = 115f;
+		_widget_1_3_0.IndexToBeVisible = 3;
+		_widget_1_3_0.WatchType = ValueBasedVisibilityWidget.WatchTypes.LessThanEqual;
 		_widget_1_3_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_3_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_3_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_3_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_3_0_0_0.SuggestedWidth = 60f;
 		_widget_1_3_0_0_0.SuggestedHeight = 60f;
+		_widget_1_3_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_3_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_3_1.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_1_3_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_3_1.PositionYOffset = -5f;
+		_widget_1_3_1.PositionXOffset = -115f;
+		_widget_1_3_1.IndexToBeVisible = 4;
+		_widget_1_3_1.WatchType = ValueBasedVisibilityWidget.WatchTypes.BiggerThanEqual;
+		_widget_1_3_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_3_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_3_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_1_3_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_1_3_1_0_0.SuggestedWidth = 60f;
+		_widget_1_3_1_0_0.SuggestedHeight = 60f;
 		_widget_1_4.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_4.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_4.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_4.PositionYOffset = -5f;
-		_widget_1_4.PositionXOffset = -40f;
-		_widget_1_4.IndexToBeVisible = 4;
-		_widget_1_4.WatchType = ValueBasedVisibilityWidget.WatchTypes.BiggerThanEqual;
+		_widget_1_4.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_1_4.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_1_4.PositionYOffset = -215f;
+		_widget_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_4.IsVisible = false;
 		_widget_1_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_4_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_4_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_4_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_4_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_4_0_0_0.SuggestedWidth = 60f;
-		_widget_1_4_0_0_0.SuggestedHeight = 60f;
+		_widget_1_4_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_1_4_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_1_4_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_1_4_0_0.SuggestedWidth = 35f;
+		_widget_1_4_0_0.SuggestedHeight = 35f;
+		_widget_1_4_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_4_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_4_0_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_4_0_1.Brush = base.Context.GetBrush("Order.Item.ShortcutText");
+		_widget_1_4_0_1.Brush.FontSize = 16;
+		_widget_1_4_0_1.Text = "/";
+		_widget_1_4_0_2.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_1_4_0_2.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_1_4_0_2.SuggestedWidth = 35f;
+		_widget_1_4_0_2.SuggestedHeight = 35f;
+		_widget_1_4_0_3.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_4_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_4_0_3.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_4_0_3.Brush = base.Context.GetBrush("Order.Item.ShortcutText");
+		_widget_1_4_0_3.Brush.FontSize = 16;
 		_widget_1_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_5.SuggestedWidth = 77f;
@@ -376,15 +426,6 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_1;
 		_widget_1_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_1;
 		_widget_1_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_1;
-		_widget_1_3.PropertyChanged -= PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3;
 		_widget_1_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0;
@@ -403,15 +444,24 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0_0;
-		_widget_1_4.PropertyChanged -= PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4;
+		_widget_1_3_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1_0;
 		_widget_1_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0;
@@ -421,15 +471,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0;
-		_widget_1_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0;
+		_widget_1_4_0_3.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_3;
 		_widget_1_5.PropertyChanged -= PropertyChangedListenerOf_widget_1_5;
 		_widget_1_5.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_5;
 		_widget_1_5.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_5;
@@ -481,22 +531,22 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_1_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_1_1.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)_widget_1_1.GetChild(num)).DestroyDataSource();
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)_widget_1_1.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_ActiveFormationClasses = null;
 		}
-		if (_datasource_Root_SelectionKey != null)
+		if (_datasource_Root_ApplySelectionKey != null)
 		{
-			_datasource_Root_SelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey;
 			_widget_1_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0_0_0;
@@ -506,16 +556,47 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0_0_0;
-			_widget_1_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_datasource_Root_SelectionKey = null;
+			_widget_1_3_1_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0;
+			_datasource_Root_ApplySelectionKey = null;
+		}
+		if (_datasource_Root_ToggleSelectionKey != null)
+		{
+			_datasource_Root_ToggleSelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_widget_1_4_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_2;
+			_datasource_Root_ToggleSelectionKey = null;
 		}
 		if (_datasource_Root_CaptainImageIdentifier != null)
 		{
@@ -545,8 +626,8 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num2 = _widget_1_7.ChildCount - 1; num2 >= 0; num2--)
 			{
 				Widget child2 = _widget_1_7.GetChild(num2);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).OnBeforeRemovedChild(child2);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)_widget_1_7.GetChild(num2)).DestroyDataSource();
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)_widget_1_7.GetChild(num2)).DestroyDataSource();
 			}
 			_datasource_Root_ActiveFilters = null;
 		}
@@ -795,59 +876,6 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3(string propertyName)
-	{
-		if (propertyName == "IndexToWatch")
-		{
-			_datasource_Root.FormationIndex = _widget_1_3.IndexToWatch;
-		}
-	}
-
 	private void PropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
@@ -895,9 +923,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 
 	private void HandleWidgetPropertyChangeOf_widget_1_3_0(string propertyName)
 	{
-		if (propertyName == "IsVisible")
+		if (propertyName == "IndexToWatch")
 		{
-			_datasource_Root.CanToggleSelection = _widget_1_3_0.IsVisible;
+			_datasource_Root.FormationIndex = _widget_1_3_0.IndexToWatch;
 		}
 	}
 
@@ -950,60 +978,113 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.HaveTroops = _widget_1_3_0_0.IsVisible;
+			_datasource_Root.ShowSelectionInputs = _widget_1_3_0_0.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_4(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_3_1(string propertyName)
 	{
 		if (propertyName == "IndexToWatch")
 		{
-			_datasource_Root.FormationIndex = _widget_1_4.IndexToWatch;
+			_datasource_Root.FormationIndex = _widget_1_3_1.IndexToWatch;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_1_3_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_1_3_1_0(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.ShowSelectionInputs = _widget_1_3_1_0.IsVisible;
 		}
 	}
 
@@ -1056,60 +1137,60 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.CanToggleSelection = _widget_1_4_0.IsVisible;
+			_datasource_Root.ShowSelectionInputs = _widget_1_4_0.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_4_0_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_4_0_3(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_4_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_4_0_3(string propertyName)
 	{
-		if (propertyName == "IsVisible")
+		if (propertyName == "Text")
 		{
-			_datasource_Root.HaveTroops = _widget_1_4_0_0.IsVisible;
+			_datasource_Root.SelectionText = _widget_1_4_0_3.Text;
 		}
 	}
 
@@ -1427,68 +1508,182 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 	{
 		if (propertyName == "KeyID")
 		{
-			_datasource_Root_SelectionKey.KeyID = _widget_1_3_0_0_0.KeyID;
+			_datasource_Root_ApplySelectionKey.KeyID = _widget_1_3_0_0_0.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_datasource_Root_SelectionKey.IsVisible = _widget_1_3_0_0_0.IsVisible;
+			_datasource_Root_ApplySelectionKey.IsVisible = _widget_1_3_0_0_0.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_3_1_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_4_0_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_3_1_0_0(string propertyName)
 	{
 		if (propertyName == "KeyID")
 		{
-			_datasource_Root_SelectionKey.KeyID = _widget_1_4_0_0_0.KeyID;
+			_datasource_Root_ApplySelectionKey.KeyID = _widget_1_3_1_0_0.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_datasource_Root_SelectionKey.IsVisible = _widget_1_4_0_0_0.IsVisible;
+			_datasource_Root_ApplySelectionKey.IsVisible = _widget_1_3_1_0_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_1_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_1_4_0_0(string propertyName)
+	{
+		if (propertyName == "KeyID")
+		{
+			_datasource_Root_ApplySelectionKey.KeyID = _widget_1_4_0_0.KeyID;
+		}
+		else if (propertyName == "IsVisible")
+		{
+			_datasource_Root_ApplySelectionKey.IsVisible = _widget_1_4_0_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_1_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_1_4_0_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_1_4_0_2(string propertyName)
+	{
+		if (propertyName == "KeyID")
+		{
+			_datasource_Root_ToggleSelectionKey.KeyID = _widget_1_4_0_2.KeyID;
+		}
+		else if (propertyName == "IsVisible")
+		{
+			_datasource_Root_ToggleSelectionKey.IsVisible = _widget_1_4_0_2.IsVisible;
 		}
 	}
 
@@ -1605,8 +1800,11 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		case "ActiveFormationClasses":
 			RefreshDataSource_datasource_Root_ActiveFormationClasses(_datasource_Root.ActiveFormationClasses);
 			break;
-		case "SelectionKey":
-			RefreshDataSource_datasource_Root_SelectionKey(_datasource_Root.SelectionKey);
+		case "ApplySelectionKey":
+			RefreshDataSource_datasource_Root_ApplySelectionKey(_datasource_Root.ApplySelectionKey);
+			break;
+		case "ToggleSelectionKey":
+			RefreshDataSource_datasource_Root_ToggleSelectionKey(_datasource_Root.ToggleSelectionKey);
 			break;
 		case "CaptainImageIdentifier":
 			RefreshDataSource_datasource_Root_CaptainImageIdentifier(_datasource_Root.CaptainImageIdentifier);
@@ -1643,16 +1841,18 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			break;
 		case "HaveTroops":
 			_widget_1_2_1.IsVisible = _datasource_Root.HaveTroops;
-			_widget_1_3_0_0.IsVisible = _datasource_Root.HaveTroops;
-			_widget_1_4_0_0.IsVisible = _datasource_Root.HaveTroops;
 			break;
 		case "FormationIndex":
-			_widget_1_3.IndexToWatch = _datasource_Root.FormationIndex;
-			_widget_1_4.IndexToWatch = _datasource_Root.FormationIndex;
+			_widget_1_3_0.IndexToWatch = _datasource_Root.FormationIndex;
+			_widget_1_3_1.IndexToWatch = _datasource_Root.FormationIndex;
 			break;
-		case "CanToggleSelection":
-			_widget_1_3_0.IsVisible = _datasource_Root.CanToggleSelection;
-			_widget_1_4_0.IsVisible = _datasource_Root.CanToggleSelection;
+		case "ShowSelectionInputs":
+			_widget_1_3_0_0.IsVisible = _datasource_Root.ShowSelectionInputs;
+			_widget_1_3_1_0.IsVisible = _datasource_Root.ShowSelectionInputs;
+			_widget_1_4_0.IsVisible = _datasource_Root.ShowSelectionInputs;
+			break;
+		case "SelectionText":
+			_widget_1_4_0_3.Text = _datasource_Root.SelectionText;
 			break;
 		case "AmmoPercentage":
 			_widget_1_5.InitialAmountAsFloat = _datasource_Root.AmmoPercentage;
@@ -1672,62 +1872,121 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		}
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_SelectionKey(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ApplySelectionKey(string propertyName)
 	{
 		if (propertyName == "KeyID")
 		{
-			_widget_1_3_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
-			_widget_1_4_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
+			_widget_1_3_0_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_3_1_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_4_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_widget_1_3_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
-			_widget_1_4_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
+			_widget_1_3_0_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_3_1_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_4_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ToggleSelectionKey(string propertyName)
+	{
+		if (propertyName == "KeyID")
+		{
+			_widget_1_4_0_2.KeyID = _datasource_Root_ToggleSelectionKey.KeyID;
+		}
+		else if (propertyName == "IsVisible")
+		{
+			_widget_1_4_0_2.IsVisible = _datasource_Root_ToggleSelectionKey.IsVisible;
 		}
 	}
 
@@ -1801,9 +2060,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_1_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_1_1.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_1_1.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child4).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child4).SetDataSource(null);
 				_widget_1_1.RemoveChild(child4);
 			}
 			break;
@@ -1819,27 +2078,27 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate);
+			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
 			OrderTroopItemFormationClassVM dataSource = (OrderTroopItemFormationClassVM)(generatedWidgetData.Data = _datasource_Root_ActiveFormationClasses[e.NewIndex]);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate, e.NewIndex);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.CreateWidgets();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetIds();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetAttributes();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetDataSource(dataSource);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, e.NewIndex);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_1_1.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_1_1.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child).SetDataSource(null);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).SetDataSource(null);
 			_widget_1_1.RemoveChild(child);
 			break;
 		}
@@ -1857,9 +2116,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_1_7.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_1_7.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_1_7.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child4).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child4).SetDataSource(null);
 				_widget_1_7.RemoveChild(child4);
 			}
 			break;
@@ -1875,27 +2134,27 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+			OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 			OrderTroopItemFilterVM dataSource = (OrderTroopItemFilterVM)(generatedWidgetData.Data = _datasource_Root_ActiveFilters[e.NewIndex]);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, e.NewIndex);
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, e.NewIndex);
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+			orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_1_7.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_1_7.GetChild(e.NewIndex);
-			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).SetDataSource(null);
+			((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).SetDataSource(null);
 			_widget_1_7.RemoveChild(child);
 			break;
 		}
@@ -1953,15 +2212,6 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_1;
 			_widget_1_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_1;
 			_widget_1_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_1;
-			_widget_1_3.PropertyChanged -= PropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3;
-			_widget_1_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3;
 			_widget_1_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0;
 			_widget_1_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0;
 			_widget_1_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0;
@@ -1980,15 +2230,24 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0_0;
 			_widget_1_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0_0;
 			_widget_1_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0_0;
-			_widget_1_4.PropertyChanged -= PropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4;
-			_widget_1_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4;
+			_widget_1_3_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1;
+			_widget_1_3_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1_0;
+			_widget_1_3_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1_0;
 			_widget_1_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0;
 			_widget_1_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0;
 			_widget_1_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0;
@@ -1998,15 +2257,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0;
 			_widget_1_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0;
 			_widget_1_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0;
-			_widget_1_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0;
-			_widget_1_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_3.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_3;
+			_widget_1_4_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_3;
 			_widget_1_5.PropertyChanged -= PropertyChangedListenerOf_widget_1_5;
 			_widget_1_5.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_5;
 			_widget_1_5.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_5;
@@ -2058,24 +2317,24 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 				for (int num = _widget_1_1.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_1_1.GetChild(num);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_1_1.GetChild(num);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child2).SetDataSource(null);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).SetDataSource(null);
 					_widget_1_1.RemoveChild(child2);
 				}
 				_datasource_Root_ActiveFormationClasses = null;
 			}
-			if (_datasource_Root_SelectionKey != null)
+			if (_datasource_Root_ApplySelectionKey != null)
 			{
-				_datasource_Root_SelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey;
-				_datasource_Root_SelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey;
+				_datasource_Root_ApplySelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey;
 				_widget_1_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0_0_0;
 				_widget_1_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0_0_0;
 				_widget_1_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0_0_0;
@@ -2085,16 +2344,47 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 				_widget_1_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0_0_0;
 				_widget_1_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0_0_0;
 				_widget_1_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0_0_0;
-				_widget_1_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0_0;
-				_widget_1_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0_0;
-				_datasource_Root_SelectionKey = null;
+				_widget_1_3_1_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_3_1_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1_0_0;
+				_widget_1_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0;
+				_widget_1_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0;
+				_datasource_Root_ApplySelectionKey = null;
+			}
+			if (_datasource_Root_ToggleSelectionKey != null)
+			{
+				_datasource_Root_ToggleSelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_datasource_Root_ToggleSelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey;
+				_widget_1_4_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_2;
+				_widget_1_4_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_2;
+				_datasource_Root_ToggleSelectionKey = null;
 			}
 			if (_datasource_Root_CaptainImageIdentifier != null)
 			{
@@ -2124,9 +2414,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 				for (int num2 = _widget_1_7.ChildCount - 1; num2 >= 0; num2--)
 				{
 					Widget child3 = _widget_1_7.GetChild(num2);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 					Widget child4 = _widget_1_7.GetChild(num2);
-					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child4).SetDataSource(null);
+					((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child4).SetDataSource(null);
 					_widget_1_7.RemoveChild(child4);
 				}
 				_datasource_Root_ActiveFilters = null;
@@ -2193,17 +2483,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_2_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_2_1;
 		_widget_1_2_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_2_1;
 		_widget_1_2_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_2_1;
-		_widget_1_3.IndexToWatch = _datasource_Root.FormationIndex;
-		_widget_1_3.PropertyChanged += PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3;
-		_widget_1_3_0.IsVisible = _datasource_Root.CanToggleSelection;
+		_widget_1_3_0.IndexToWatch = _datasource_Root.FormationIndex;
 		_widget_1_3_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_0;
@@ -2213,7 +2493,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_0;
 		_widget_1_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0_0.IsVisible = _datasource_Root.HaveTroops;
+		_widget_1_3_0_0.IsVisible = _datasource_Root.ShowSelectionInputs;
 		_widget_1_3_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_0_0;
@@ -2223,17 +2503,27 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_3_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_0_0;
 		_widget_1_3_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_0_0;
-		_widget_1_4.IndexToWatch = _datasource_Root.FormationIndex;
-		_widget_1_4.PropertyChanged += PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4;
-		_widget_1_4_0.IsVisible = _datasource_Root.CanToggleSelection;
+		_widget_1_3_1.IndexToWatch = _datasource_Root.FormationIndex;
+		_widget_1_3_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_1;
+		_widget_1_3_1_0.IsVisible = _datasource_Root.ShowSelectionInputs;
+		_widget_1_3_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_3_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_1_0;
+		_widget_1_4_0.IsVisible = _datasource_Root.ShowSelectionInputs;
 		_widget_1_4_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0;
@@ -2243,16 +2533,16 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0;
 		_widget_1_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0;
-		_widget_1_4_0_0.IsVisible = _datasource_Root.HaveTroops;
-		_widget_1_4_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_0;
-		_widget_1_4_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_0;
+		_widget_1_4_0_3.Text = _datasource_Root.SelectionText;
+		_widget_1_4_0_3.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_3;
+		_widget_1_4_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_3;
 		_widget_1_5.InitialAmountAsFloat = _datasource_Root.AmmoPercentage;
 		_widget_1_5.PropertyChanged += PropertyChangedListenerOf_widget_1_5;
 		_widget_1_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_5;
@@ -2309,31 +2599,31 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_ActiveFormationClasses.ListChanged += OnList_datasource_Root_ActiveFormationClassesChanged;
 			for (int i = 0; i < _datasource_Root_ActiveFormationClasses.Count; i++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
 				OrderTroopItemFormationClassVM dataSource = (OrderTroopItemFormationClassVM)(generatedWidgetData.Data = _datasource_Root_ActiveFormationClasses[i]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate, i);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetDataSource(dataSource);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, i);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
-		_datasource_Root_SelectionKey = _datasource_Root.SelectionKey;
-		if (_datasource_Root_SelectionKey != null)
+		_datasource_Root_ApplySelectionKey = _datasource_Root.ApplySelectionKey;
+		if (_datasource_Root_ApplySelectionKey != null)
 		{
-			_datasource_Root_SelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey;
-			_widget_1_3_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
-			_widget_1_3_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
+			_datasource_Root_ApplySelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey;
+			_widget_1_3_0_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_3_0_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
 			_widget_1_3_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_0_0_0;
@@ -2343,17 +2633,52 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_3_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_0_0_0;
-			_widget_1_4_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
-			_widget_1_4_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
-			_widget_1_4_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_0_0;
+			_widget_1_3_1_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_3_1_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_3_1_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_4_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_4_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_4_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_0;
+		}
+		_datasource_Root_ToggleSelectionKey = _datasource_Root.ToggleSelectionKey;
+		if (_datasource_Root_ToggleSelectionKey != null)
+		{
+			_datasource_Root_ToggleSelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_widget_1_4_0_2.KeyID = _datasource_Root_ToggleSelectionKey.KeyID;
+			_widget_1_4_0_2.IsVisible = _datasource_Root_ToggleSelectionKey.IsVisible;
+			_widget_1_4_0_2.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_2;
 		}
 		_datasource_Root_CaptainImageIdentifier = _datasource_Root.CaptainImageIdentifier;
 		if (_datasource_Root_CaptainImageIdentifier != null)
@@ -2386,15 +2711,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_ActiveFilters.ListChanged += OnList_datasource_Root_ActiveFiltersChanged;
 			for (int j = 0; j < _datasource_Root_ActiveFilters.Count; j++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 				OrderTroopItemFilterVM dataSource2 = (OrderTroopItemFilterVM)(generatedWidgetData2.Data = _datasource_Root_ActiveFilters[j]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData2);
-				_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, j);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource2);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData2);
+				_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, j);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource2);
 			}
 		}
 	}
@@ -2407,9 +2732,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_1_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_1_1.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_1_1.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate)child2).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).SetDataSource(null);
 				_widget_1_1.RemoveChild(child2);
 			}
 			_datasource_Root_ActiveFormationClasses = null;
@@ -2421,32 +2746,32 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_ActiveFormationClasses.ListChanged += OnList_datasource_Root_ActiveFormationClassesChanged;
 			for (int i = 0; i < _datasource_Root_ActiveFormationClasses.Count; i++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
 				OrderTroopItemFormationClassVM dataSource = (OrderTroopItemFormationClassVM)(generatedWidgetData.Data = _datasource_Root_ActiveFormationClasses[i]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate, i);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_8_ItemTemplate.SetDataSource(dataSource);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_1.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, i);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_SelectionKey(InputKeyItemVM newDataSource)
+	private void RefreshDataSource_datasource_Root_ApplySelectionKey(InputKeyItemVM newDataSource)
 	{
-		if (_datasource_Root_SelectionKey != null)
+		if (_datasource_Root_ApplySelectionKey != null)
 		{
-			_datasource_Root_SelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey;
 			_widget_1_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0_0_0;
@@ -2456,32 +2781,41 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0_0_0;
-			_widget_1_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_datasource_Root_SelectionKey = null;
+			_widget_1_3_1_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_0;
+			_datasource_Root_ApplySelectionKey = null;
 		}
-		_datasource_Root_SelectionKey = newDataSource;
-		_datasource_Root_SelectionKey = _datasource_Root.SelectionKey;
-		if (_datasource_Root_SelectionKey != null)
+		_datasource_Root_ApplySelectionKey = newDataSource;
+		_datasource_Root_ApplySelectionKey = _datasource_Root.ApplySelectionKey;
+		if (_datasource_Root_ApplySelectionKey != null)
 		{
-			_datasource_Root_SelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SelectionKey;
-			_datasource_Root_SelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SelectionKey;
-			_widget_1_3_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
-			_widget_1_3_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
+			_datasource_Root_ApplySelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ApplySelectionKey;
+			_datasource_Root_ApplySelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ApplySelectionKey;
+			_widget_1_3_0_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_3_0_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
 			_widget_1_3_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_0_0_0;
@@ -2491,17 +2825,79 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_widget_1_3_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_0_0_0;
 			_widget_1_3_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_0_0_0;
-			_widget_1_4_0_0_0.KeyID = _datasource_Root_SelectionKey.KeyID;
-			_widget_1_4_0_0_0.IsVisible = _datasource_Root_SelectionKey.IsVisible;
-			_widget_1_4_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_0_0;
-			_widget_1_4_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_0_0;
+			_widget_1_3_1_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_3_1_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_3_1_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_3_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_1_0_0;
+			_widget_1_4_0_0.KeyID = _datasource_Root_ApplySelectionKey.KeyID;
+			_widget_1_4_0_0.IsVisible = _datasource_Root_ApplySelectionKey.IsVisible;
+			_widget_1_4_0_0.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_0;
+			_widget_1_4_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_0;
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_ToggleSelectionKey(InputKeyItemVM newDataSource)
+	{
+		if (_datasource_Root_ToggleSelectionKey != null)
+		{
+			_datasource_Root_ToggleSelectionKey.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_widget_1_4_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_4_0_2;
+			_datasource_Root_ToggleSelectionKey = null;
+		}
+		_datasource_Root_ToggleSelectionKey = newDataSource;
+		_datasource_Root_ToggleSelectionKey = _datasource_Root.ToggleSelectionKey;
+		if (_datasource_Root_ToggleSelectionKey != null)
+		{
+			_datasource_Root_ToggleSelectionKey.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_datasource_Root_ToggleSelectionKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ToggleSelectionKey;
+			_widget_1_4_0_2.KeyID = _datasource_Root_ToggleSelectionKey.KeyID;
+			_widget_1_4_0_2.IsVisible = _datasource_Root_ToggleSelectionKey.IsVisible;
+			_widget_1_4_0_2.PropertyChanged += PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_4_0_2;
+			_widget_1_4_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_4_0_2;
 		}
 	}
 
@@ -2565,9 +2961,9 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			for (int num = _widget_1_7.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_1_7.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_1_7.GetChild(num);
-				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate)child2).SetDataSource(null);
+				((OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate)child2).SetDataSource(null);
 				_widget_1_7.RemoveChild(child2);
 			}
 			_datasource_Root_ActiveFilters = null;
@@ -2579,15 +2975,15 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 			_datasource_Root_ActiveFilters.ListChanged += OnList_datasource_Root_ActiveFiltersChanged;
 			for (int i = 0; i < _datasource_Root_ActiveFilters.Count; i++)
 			{
-				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate);
+				OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate = new OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate);
 				OrderTroopItemFilterVM dataSource = (OrderTroopItemFilterVM)(generatedWidgetData.Data = _datasource_Root_ActiveFilters[i]);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate, i);
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.CreateWidgets();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetIds();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetAttributes();
-				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_7.AddChildAtIndex(orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate, i);
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.CreateWidgets();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetIds();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetAttributes();
+				orderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_MissionOrderVM_Dependency_10_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

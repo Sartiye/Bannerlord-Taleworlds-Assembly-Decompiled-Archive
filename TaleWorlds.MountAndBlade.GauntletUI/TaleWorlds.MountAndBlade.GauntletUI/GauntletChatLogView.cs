@@ -139,9 +139,9 @@ public class GauntletChatLogView : GlobalLayer
 		if (!_dataSource.IsTypingText && !_dataSource.IsInspectingMessages)
 		{
 			TaleWorlds.MountAndBlade.Mission current = TaleWorlds.MountAndBlade.Mission.Current;
-			if (current != null && current.IsOrderMenuOpen)
+			if (current != null && current.IsOrderMenuOpen && TaleWorlds.MountAndBlade.Mission.Current.Mode != MissionMode.Deployment)
 			{
-				return TaleWorlds.MountAndBlade.Mission.Current.Mode != MissionMode.Deployment;
+				return !Input.IsGamepadActive;
 			}
 		}
 		return false;

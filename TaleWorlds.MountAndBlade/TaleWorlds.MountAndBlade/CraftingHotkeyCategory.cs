@@ -37,7 +37,7 @@ public sealed class CraftingHotkeyCategory : GameKeyContext
 	public const int ControllerZoomOut = 57;
 
 	public CraftingHotkeyCategory()
-		: base("CraftingHotkeyCategory", 111)
+		: base("CraftingHotkeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

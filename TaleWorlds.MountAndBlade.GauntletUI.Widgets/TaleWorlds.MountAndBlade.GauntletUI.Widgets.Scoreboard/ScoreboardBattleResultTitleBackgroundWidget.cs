@@ -44,6 +44,7 @@ public class ScoreboardBattleResultTitleBackgroundWidget : Widget
 			{
 				_victoryWidget = value;
 				OnPropertyChanged(value, "VictoryWidget");
+				BattleResultUpdated();
 			}
 		}
 	}
@@ -61,6 +62,7 @@ public class ScoreboardBattleResultTitleBackgroundWidget : Widget
 			{
 				_defeatWidget = value;
 				OnPropertyChanged(value, "DefeatWidget");
+				BattleResultUpdated();
 			}
 		}
 	}
@@ -78,6 +80,7 @@ public class ScoreboardBattleResultTitleBackgroundWidget : Widget
 			{
 				_retreatWidget = value;
 				OnPropertyChanged(value, "RetreatWidget");
+				BattleResultUpdated();
 			}
 		}
 	}
@@ -89,8 +92,17 @@ public class ScoreboardBattleResultTitleBackgroundWidget : Widget
 
 	private void BattleResultUpdated()
 	{
-		DefeatWidget.IsVisible = BattleResult == 0;
-		VictoryWidget.IsVisible = BattleResult == 1;
-		RetreatWidget.IsVisible = BattleResult == 2;
+		if (DefeatWidget != null)
+		{
+			DefeatWidget.IsVisible = BattleResult == 0;
+		}
+		if (VictoryWidget != null)
+		{
+			VictoryWidget.IsVisible = BattleResult == 1;
+		}
+		if (RetreatWidget != null)
+		{
+			RetreatWidget.IsVisible = BattleResult == 2;
+		}
 	}
 }

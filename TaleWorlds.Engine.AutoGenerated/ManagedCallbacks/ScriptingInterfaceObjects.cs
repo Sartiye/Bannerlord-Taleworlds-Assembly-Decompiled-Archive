@@ -766,6 +766,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_MetaMesh_set_material,
 		enm_IMono_MetaMesh_set_material_to_sub_meshes_with_tag,
 		enm_IMono_MetaMesh_set_num_lods,
+		enm_IMono_MetaMesh_set_shader_to_material,
 		enm_IMono_MetaMesh_set_vector_argument,
 		enm_IMono_MetaMesh_set_vector_argument_2,
 		enm_IMono_MetaMesh_set_vector_user_data,
@@ -1405,6 +1406,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_enable_global_edit_data_cacher,
 		enm_IMono_Util_enable_global_loading_window,
 		enm_IMono_Util_enable_single_gpu_query_per_frame,
+		enm_IMono_Util_end_loading_stuck_check_state,
 		enm_IMono_Util_execute_command_line_command,
 		enm_IMono_Util_exit_process,
 		enm_IMono_Util_export_nav_mesh_face_marks,
@@ -1514,6 +1516,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_set_watchdog_autoreport,
 		enm_IMono_Util_set_watchdog_value,
 		enm_IMono_Util_set_window_title,
+		enm_IMono_Util_start_loading_stuck_check_state,
 		enm_IMono_Util_start_scene_performance_report,
 		enm_IMono_Util_take_screenshot_from_platform_path,
 		enm_IMono_Util_take_screenshot_from_string_path,
@@ -3998,6 +4001,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_MetaMesh_set_num_lods:
 			ScriptingInterfaceOfIMetaMesh.call_SetNumLodsDelegate = (ScriptingInterfaceOfIMetaMesh.SetNumLodsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIMetaMesh.SetNumLodsDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_MetaMesh_set_shader_to_material:
+			ScriptingInterfaceOfIMetaMesh.call_SetShaderToMaterialDelegate = (ScriptingInterfaceOfIMetaMesh.SetShaderToMaterialDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIMetaMesh.SetShaderToMaterialDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_MetaMesh_set_vector_argument:
 			ScriptingInterfaceOfIMetaMesh.call_SetVectorArgumentDelegate = (ScriptingInterfaceOfIMetaMesh.SetVectorArgumentDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIMetaMesh.SetVectorArgumentDelegate));
 			break;
@@ -5915,6 +5921,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_enable_single_gpu_query_per_frame:
 			ScriptingInterfaceOfIUtil.call_EnableSingleGPUQueryPerFrameDelegate = (ScriptingInterfaceOfIUtil.EnableSingleGPUQueryPerFrameDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.EnableSingleGPUQueryPerFrameDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_end_loading_stuck_check_state:
+			ScriptingInterfaceOfIUtil.call_EndLoadingStuckCheckStateDelegate = (ScriptingInterfaceOfIUtil.EndLoadingStuckCheckStateDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.EndLoadingStuckCheckStateDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_execute_command_line_command:
 			ScriptingInterfaceOfIUtil.call_ExecuteCommandLineCommandDelegate = (ScriptingInterfaceOfIUtil.ExecuteCommandLineCommandDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.ExecuteCommandLineCommandDelegate));
 			break;
@@ -6241,6 +6250,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_set_window_title:
 			ScriptingInterfaceOfIUtil.call_SetWindowTitleDelegate = (ScriptingInterfaceOfIUtil.SetWindowTitleDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.SetWindowTitleDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_start_loading_stuck_check_state:
+			ScriptingInterfaceOfIUtil.call_StartLoadingStuckCheckStateDelegate = (ScriptingInterfaceOfIUtil.StartLoadingStuckCheckStateDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.StartLoadingStuckCheckStateDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_start_scene_performance_report:
 			ScriptingInterfaceOfIUtil.call_StartScenePerformanceReportDelegate = (ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate));

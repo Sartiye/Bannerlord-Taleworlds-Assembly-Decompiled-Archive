@@ -399,6 +399,12 @@ internal interface IUtil
 	[EngineMethod("is_async_physics_thread", false, null, false)]
 	bool IsAsyncPhysicsThread();
 
+	[EngineMethod("start_loading_stuck_check_state", false, null, false)]
+	void StartLoadingStuckCheckState(float seconds);
+
+	[EngineMethod("end_loading_stuck_check_state", false, null, false)]
+	void EndLoadingStuckCheckState();
+
 	[EngineMethod("set_watchdog_value", false, null, false)]
 	void SetWatchdogValue(string fileName, string groupName, string key, string value);
 

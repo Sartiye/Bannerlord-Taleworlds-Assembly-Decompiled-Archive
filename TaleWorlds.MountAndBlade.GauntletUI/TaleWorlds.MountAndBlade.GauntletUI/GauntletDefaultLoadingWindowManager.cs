@@ -59,6 +59,7 @@ public class GauntletDefaultLoadingWindowManager : GlobalLayer, ILoadingWindowMa
 		base.Layer.IsFocusLayer = true;
 		ScreenManager.TrySetFocus(base.Layer);
 		base.Layer.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
+		Utilities.StartLoadingStuckCheckState(720f);
 	}
 
 	void ILoadingWindowManager.DisableLoadingWindow()
@@ -68,6 +69,7 @@ public class GauntletDefaultLoadingWindowManager : GlobalLayer, ILoadingWindowMa
 		ScreenManager.TryLoseFocus(base.Layer);
 		base.Layer.InputRestrictions.ResetInputRestrictions();
 		GauntletGamepadNavigationManager.Instance?.SetAllDirty();
+		Utilities.EndLoadingStuckCheckState();
 	}
 
 	protected virtual string GetSpriteCategoryName()

@@ -144,16 +144,17 @@ public class NavigatableGridWidget : GridWidget
 	protected override void OnChildAdded(Widget child)
 	{
 		base.OnChildAdded(child);
-		SetNavigationIndexForChild(child);
 		child.OnGamepadNavigationFocusGained = OnWidgetGainedGamepadFocus;
 		child.EventFire += OnChildSiblingIndexChanged;
 		child.boolPropertyChanged += OnChildVisibilityChanged;
+		_areIndicesDirty = true;
 		UpdateEmptyNavigationWidget();
 	}
 
 	protected override void OnAfterChildRemoved(Widget child, int previousIndexOfChild)
 	{
 		base.OnAfterChildRemoved(child, previousIndexOfChild);
+		_areIndicesDirty = true;
 		child.OnGamepadNavigationFocusGained = null;
 		child.EventFire -= OnChildSiblingIndexChanged;
 		child.boolPropertyChanged -= OnChildVisibilityChanged;

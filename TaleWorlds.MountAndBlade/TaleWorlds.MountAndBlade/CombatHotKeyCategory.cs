@@ -94,7 +94,7 @@ public sealed class CombatHotKeyCategory : GameKeyContext
 	public const string ForfeitSpawn = "ForfeitSpawn";
 
 	public CombatHotKeyCategory()
-		: base("CombatHotKeyCategory", 111)
+		: base("CombatHotKeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

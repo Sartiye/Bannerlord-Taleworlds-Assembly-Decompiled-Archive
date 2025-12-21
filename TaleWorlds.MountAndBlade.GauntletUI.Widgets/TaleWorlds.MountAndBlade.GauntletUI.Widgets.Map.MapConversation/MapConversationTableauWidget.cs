@@ -43,7 +43,7 @@ public class MapConversationTableauWidget : TextureWidget
 	{
 		if (!base.SetForClearNextFrame)
 		{
-			base.TextureProvider.SetProperty("IsReleased", true);
+			base.TextureProvider?.SetProperty("IsReleased", true);
 			base.TextureProvider?.Clear(clearNextFrame: false);
 		}
 	}

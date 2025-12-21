@@ -1847,7 +1847,7 @@ public sealed class MapEvent : MBObjectBase
 		return result;
 	}
 
-	private void LootCasualtyCharacter(CharacterObject casualtyCharacter, MapEventParty winnerParty, MapEventParty defeatedParty, float aiTradePenalty, int maxLootedItemsPerBodyForMainParty, ItemRoster mainPartyLootFromCasualties)
+	private static void LootCasualtyCharacter(CharacterObject casualtyCharacter, MapEventParty winnerParty, MapEventParty defeatedParty, float aiTradePenalty, int maxLootedItemsPerBodyForMainParty, ItemRoster mainPartyLootFromCasualties)
 	{
 		Hero leaderHero = winnerParty.Party.LeaderHero;
 		if (leaderHero == null)

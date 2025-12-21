@@ -37,13 +37,15 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 
 	private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
 	{
-		if (mapEvent.IsNavalMapEvent || mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsFortification || !mapEvent.MapEventSettlement.HasPort || mapEvent.MapEventSettlement.SiegeEvent == null || !mapEvent.MapEventSettlement.SiegeEvent.IsBlockadeActive)
+		if (mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsFortification || !mapEvent.MapEventSettlement.HasPort || mapEvent.MapEventSettlement.SiegeEvent == null || !mapEvent.MapEventSettlement.SiegeEvent.IsBlockadeActive)
 		{
 			return;
 		}
+		bool isNavalMapEvent = mapEvent.IsNavalMapEvent;
 		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
 		{
-			if (allLordParty.DefaultBehavior == AiBehavior.DefendSettlement && allLordParty.TargetSettlement == mapEvent.MapEventSettlement && allLordParty.IsTargetingPort)
+			bool flag = allLordParty.DefaultBehavior == AiBehavior.DefendSettlement && allLordParty.TargetSettlement == mapEvent.MapEventSettlement;
+			if (((allLordParty.ShortTermBehavior == AiBehavior.EngageParty && allLordParty.ShortTermTargetParty.SiegeEvent != null && allLordParty.ShortTermTargetParty.MapFaction.IsAtWarWith(allLordParty.MapFaction)) || flag) && isNavalMapEvent != allLordParty.IsTargetingPort)
 			{
 				allLordParty.SetMoveModeHold();
 			}

@@ -13,7 +13,7 @@ public static class HotKeyManager
 
 	private static readonly List<string> _serializeIgnoredCategories = new List<string>();
 
-	private static readonly float _versionOfHotkeys = 5f;
+	private static readonly float _versionOfHotkeys = 5.1f;
 
 	private static bool _hotkeyEditEnabled = false;
 

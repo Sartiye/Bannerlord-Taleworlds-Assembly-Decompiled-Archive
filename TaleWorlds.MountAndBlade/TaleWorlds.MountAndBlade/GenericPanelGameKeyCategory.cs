@@ -36,7 +36,7 @@ public class GenericPanelGameKeyCategory : GameKeyContext
 	public static GenericPanelGameKeyCategory Current { get; private set; }
 
 	public GenericPanelGameKeyCategory(string categoryId = "GenericPanelGameKeyCategory")
-		: base(categoryId, 111)
+		: base(categoryId, 110)
 	{
 		Current = this;
 		RegisterHotKeys();

@@ -769,7 +769,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			TextObject textObject = new TextObject("{=3dhAfC4k}Smugglers of {ORIGIN_SETTLEMENT}");
 			textObject.SetTextVariable("ORIGIN_SETTLEMENT", _originSettlement.Name);
 			GetAdditionalVisualsForParty(_originSettlement.Culture, out var mountStringId, out var harnessStringId);
-			Hideout nearestHideoutSettlement = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.Default);
+			Hideout nearestHideoutSettlement = SettlementHelper.FindNearestHideoutToSettlement(_originSettlement, MobileParty.NavigationType.Default);
 			int desiredMenCount = (int)TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Ceiling((float)MobileParty.MainParty.MemberRoster.TotalManCount * 0.8f), 15f, 35f);
 			float customPartyBaseSpeed = MobileParty.MainParty.Speed * 1.1f;
 			PartyTemplateObject randomCaravanTemplate = CaravanHelper.GetRandomCaravanTemplate(_originSettlement.Culture, isElite: false, isLand: true);

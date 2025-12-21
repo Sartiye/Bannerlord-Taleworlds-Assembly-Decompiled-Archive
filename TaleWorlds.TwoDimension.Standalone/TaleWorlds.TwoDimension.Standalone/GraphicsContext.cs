@@ -126,7 +126,7 @@ public class GraphicsContext
 		Marshal.SizeOf(typeof(PixelFormatDescriptor));
 		ppfd.nSize = (ushort)Marshal.SizeOf(typeof(PixelFormatDescriptor));
 		ppfd.nVersion = 1;
-		ppfd.dwFlags = 32805u;
+		ppfd.dwFlags = 37u;
 		ppfd.iPixelType = 0;
 		ppfd.cColorBits = 32;
 		ppfd.cRedBits = 0;
@@ -143,7 +143,7 @@ public class GraphicsContext
 		ppfd.cAccumBlueBits = 0;
 		ppfd.cAccumAlphaBits = 0;
 		ppfd.cDepthBits = 24;
-		ppfd.cStencilBits = 0;
+		ppfd.cStencilBits = 8;
 		ppfd.cAuxBuffers = 0;
 		ppfd.iLayerType = 0;
 		ppfd.bReserved = 0;
@@ -162,7 +162,11 @@ public class GraphicsContext
 		}
 		SetActive();
 		string @string = Opengl32.GetString(7938u);
+		string string2 = Opengl32.GetString(7936u);
+		string string3 = Opengl32.GetString(7937u);
 		Watchdog.LogProperty("crash_tags.txt", "Runtime", "DefaultContextVersionOpenGL", @string);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "DefaultContextVendorOpenGL", string2);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "DefaultContextRendererOpenGL", string3);
 		IntPtr handleRenderContext = _handleRenderContext;
 		_handleRenderContext = IntPtr.Zero;
 		Active = null;
@@ -182,8 +186,12 @@ public class GraphicsContext
 			throw new OpenGlLoadException("Could not create OpenGL context.");
 		}
 		SetActive();
-		string string2 = Opengl32.GetString(7938u);
-		Watchdog.LogProperty("crash_tags.txt", "Runtime", "ContextVersionOpenGL", string2);
+		string string4 = Opengl32.GetString(7938u);
+		string string5 = Opengl32.GetString(7936u);
+		string string6 = Opengl32.GetString(7937u);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "ContextVersionOpenGL", string4);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "ContextVendorOpenGL", string5);
+		Watchdog.LogProperty("crash_tags.txt", "Runtime", "ContextRendererOpenGL", string6);
 		Opengl32ARB.LoadExtensions(_handleDeviceContext);
 		Opengl32.wglDeleteContext(handleRenderContext);
 		Opengl32.ShadeModel(ShadingModel.Smooth);

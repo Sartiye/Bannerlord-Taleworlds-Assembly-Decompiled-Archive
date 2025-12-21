@@ -177,6 +177,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void EndLoadingStuckCheckStateDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int ExecuteCommandLineCommandDelegate(byte[] command);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -729,6 +734,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void StartLoadingStuckCheckStateDelegate(float seconds);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void StartScenePerformanceReportDelegate(byte[] folderPath);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -816,6 +826,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static EnableGlobalLoadingWindowDelegate call_EnableGlobalLoadingWindowDelegate;
 
 	public static EnableSingleGPUQueryPerFrameDelegate call_EnableSingleGPUQueryPerFrameDelegate;
+
+	public static EndLoadingStuckCheckStateDelegate call_EndLoadingStuckCheckStateDelegate;
 
 	public static ExecuteCommandLineCommandDelegate call_ExecuteCommandLineCommandDelegate;
 
@@ -1034,6 +1046,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static SetWatchdogValueDelegate call_SetWatchdogValueDelegate;
 
 	public static SetWindowTitleDelegate call_SetWindowTitleDelegate;
+
+	public static StartLoadingStuckCheckStateDelegate call_StartLoadingStuckCheckStateDelegate;
 
 	public static StartScenePerformanceReportDelegate call_StartScenePerformanceReportDelegate;
 
@@ -1393,6 +1407,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public void EnableSingleGPUQueryPerFrame()
 	{
 		call_EnableSingleGPUQueryPerFrameDelegate();
+	}
+
+	public void EndLoadingStuckCheckState()
+	{
+		call_EndLoadingStuckCheckStateDelegate();
 	}
 
 	public string ExecuteCommandLineCommand(string command)
@@ -2303,6 +2322,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 			array[byteCount] = 0;
 		}
 		call_SetWindowTitleDelegate(array);
+	}
+
+	public void StartLoadingStuckCheckState(float seconds)
+	{
+		call_StartLoadingStuckCheckStateDelegate(seconds);
 	}
 
 	public void StartScenePerformanceReport(string folderPath)

@@ -9,6 +9,9 @@ internal interface IMetaMesh
 	[EngineMethod("set_material", false, null, false)]
 	void SetMaterial(UIntPtr multiMeshPointer, UIntPtr materialPointer);
 
+	[EngineMethod("set_shader_to_material", false, null, false)]
+	void SetShaderToMaterial(UIntPtr multiMeshPointer, string shaderName);
+
 	[EngineMethod("set_lod_bias", false, null, false)]
 	void SetLodBias(UIntPtr multiMeshPointer, int lod_bias);
 

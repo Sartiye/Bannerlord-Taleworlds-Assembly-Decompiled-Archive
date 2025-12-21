@@ -2012,11 +2012,19 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					CalculateNewBearingAndElevationForFirstPerson(agentToFollow, CameraBearing, CameraElevation, _cameraBearingDelta, _cameraElevationDelta, out var newBearing, out var newElevation);
 					if (newBearing != num15)
 					{
-						_cameraBearingDelta = (MBMath.IsBetween(MBMath.WrapAngle(_cameraBearingDelta), 0f, System.MathF.PI) ? MBMath.ClampFloat(MBMath.WrapAngle(newBearing - CameraBearing), 0f, _cameraBearingDelta) : MBMath.ClampFloat(MBMath.WrapAngle(newBearing - CameraBearing), _cameraBearingDelta, 0f));
+						float num17 = MBMath.WrapAngle(_cameraBearingDelta);
+						(float, float) tuple = TaleWorlds.Library.MathF.MinMax(0f - num17, num17);
+						float item = tuple.Item1;
+						float item2 = tuple.Item2;
+						_cameraBearingDelta = MBMath.ClampFloat(MBMath.WrapAngle(newBearing - CameraBearing), item, item2);
 					}
 					if (newElevation != num16)
 					{
-						_cameraElevationDelta = (MBMath.IsBetween(MBMath.WrapAngle(_cameraElevationDelta), 0f, System.MathF.PI) ? MBMath.ClampFloat(MBMath.WrapAngle(newElevation - CameraElevation), 0f, _cameraElevationDelta) : MBMath.ClampFloat(MBMath.WrapAngle(newElevation - CameraElevation), _cameraElevationDelta, 0f));
+						float num18 = MBMath.WrapAngle(_cameraElevationDelta);
+						(float, float) tuple2 = TaleWorlds.Library.MathF.MinMax(0f - num18, num18);
+						float item3 = tuple2.Item1;
+						float item4 = tuple2.Item2;
+						_cameraElevationDelta = MBMath.ClampFloat(MBMath.WrapAngle(newElevation - CameraElevation), item3, item4);
 					}
 				}
 				CameraBearing += _cameraBearingDelta;

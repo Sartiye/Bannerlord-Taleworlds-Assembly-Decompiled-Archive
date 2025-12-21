@@ -264,43 +264,24 @@ public abstract class GauntletOrderUIHandler : MissionView
 		{
 			_isReceivingInput = false;
 			_dataSource.UpdateCanUseShortcuts(value: false);
-			_dataSource.CanToggleCamera = false;
 			return;
 		}
-		_dataSource.CanToggleCamera = TaleWorlds.InputSystem.Input.IsGamepadActive;
 		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
-			bool flag2 = false;
-			int num = _dataSource.TroopController.TroopList.Count((OrderTroopItemVM t) => t.IsSelectionHighlightActive);
-			int num2 = _dataSource.TroopController.TroopList.Count((OrderTroopItemVM t) => t.IsSelected);
 			for (int i = 0; i < _dataSource.TroopController.TroopList.Count; i++)
 			{
 				OrderTroopItemVM orderTroopItemVM = _dataSource.TroopController.TroopList[i];
-				if (!flag2 && orderTroopItemVM.IsSelectionHighlightActive && orderTroopItemVM.IsSelectable)
-				{
-					if (num == 1 && num2 == 1 && orderTroopItemVM.IsSelected)
-					{
-						orderTroopItemVM.CanToggleSelection = false;
-					}
-					else
-					{
-						orderTroopItemVM.CanToggleSelection = true;
-					}
-					flag2 = true;
-				}
-				else
-				{
-					orderTroopItemVM.CanToggleSelection = false;
-				}
+				orderTroopItemVM.ShowSelectionInputs = orderTroopItemVM.IsSelectionHighlightActive && orderTroopItemVM.IsSelectable;
 			}
 		}
 		else
 		{
-			_dataSource.TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
+			for (int j = 0; j < _dataSource.TroopController.TroopList.Count; j++)
 			{
-				t.IsSelectionHighlightActive = false;
-				t.CanToggleSelection = true;
-			});
+				OrderTroopItemVM orderTroopItemVM2 = _dataSource.TroopController.TroopList[j];
+				orderTroopItemVM2.IsSelectionHighlightActive = false;
+				orderTroopItemVM2.ShowSelectionInputs = orderTroopItemVM2.IsSelectable;
+			}
 		}
 		_isReceivingInput = true;
 		if (!IsDeployment)
@@ -349,7 +330,10 @@ public abstract class GauntletOrderUIHandler : MissionView
 							chargeOrder.ExecuteAction(visualOrderExecutionParameters2);
 							SetSuspendTroopPlacer(value: true);
 							_targetFormationOrderGivenWithActionButton = true;
-							_dataSource.TryCloseToggleOrder();
+							if (!_dataSource.IsHolding)
+							{
+								_dataSource.TryCloseToggleOrder();
+							}
 							break;
 						}
 						IOrderable focusedOrderableObject = GetFocusedOrderableObject();
@@ -361,7 +345,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 							}
 							else
 							{
-								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 387);
+								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 370);
 							}
 						}
 						break;
@@ -373,7 +357,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 						_dataSource.OrderController.SetOrderWithPosition(OrderType.FormCustom, new WorldPosition(TaleWorlds.MountAndBlade.Mission.Current.Scene, UIntPtr.Zero, base.MissionScreen.GetOrderFlagPosition(), hasValidZ: false));
 						break;
 					default:
-						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 402);
+						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 385);
 						break;
 					}
 				}
@@ -420,65 +404,65 @@ public abstract class GauntletOrderUIHandler : MissionView
 				_dataSource.TroopController.ExecuteReset();
 			}
 		}
-		int num3 = -1;
+		int num = -1;
 		if ((!TaleWorlds.InputSystem.Input.IsGamepadActive || _dataSource.IsToggleOrderShown) && !base.DebugInput.IsControlDown())
 		{
 			if (base.Input.IsGameKeyPressed(69))
 			{
-				num3 = 0;
+				num = 0;
 			}
 			else if (base.Input.IsGameKeyPressed(70))
 			{
-				num3 = 1;
+				num = 1;
 			}
 			else if (base.Input.IsGameKeyPressed(71))
 			{
-				num3 = 2;
+				num = 2;
 			}
 			else if (base.Input.IsGameKeyPressed(72))
 			{
-				num3 = 3;
+				num = 3;
 			}
 			else if (base.Input.IsGameKeyPressed(73))
 			{
-				num3 = 4;
+				num = 4;
 			}
 			else if (base.Input.IsGameKeyPressed(74))
 			{
-				num3 = 5;
+				num = 5;
 			}
 			else if (base.Input.IsGameKeyPressed(75))
 			{
-				num3 = 6;
+				num = 6;
 			}
 			else if (base.Input.IsGameKeyPressed(76))
 			{
-				num3 = 7;
+				num = 7;
 			}
 			else if (base.Input.IsGameKeyPressed(77) && !TaleWorlds.InputSystem.Input.IsGamepadActive)
 			{
-				num3 = 8;
+				num = 8;
 			}
 		}
-		if (num3 > -1)
+		if (num > -1)
 		{
 			if (_dataSource.SelectedOrderSet != null)
 			{
 				int count = _dataSource.SelectedOrderSet.Orders.Count;
-				if (count > 0 && num3 >= 0)
+				if (count > 0 && num >= 0)
 				{
-					if (num3 == 8 && _dataSource.SelectedOrderSet.Orders.Any((OrderItemVM x) => x.Order is ReturnVisualOrder))
+					if (num == 8 && _dataSource.SelectedOrderSet.Orders.Any((OrderItemVM x) => x.Order is ReturnVisualOrder))
 					{
 						_dataSource.SelectedOrderSet.ExecuteDeSelect();
 					}
-					else if (num3 < count)
+					else if (num < count)
 					{
-						OrderItemVM orderItemVM = _dataSource.SelectedOrderSet.Orders[num3];
+						OrderItemVM orderItemVM = _dataSource.SelectedOrderSet.Orders[num];
 						if (!(orderItemVM.Order is ReturnVisualOrder))
 						{
 							VisualOrderExecutionParameters visualOrderExecutionParameters3 = GetVisualOrderExecutionParameters();
 							orderItemVM.ExecuteAction(visualOrderExecutionParameters3);
-							if (IsDeployment)
+							if (IsDeployment || _dataSource.IsHolding)
 							{
 								_dataSource.SelectedOrderSet?.ExecuteDeSelect();
 							}
@@ -492,87 +476,83 @@ public abstract class GauntletOrderUIHandler : MissionView
 			}
 			else
 			{
-				if (!_dataSource.IsToggleOrderShown)
+				_dataSource.OpenToggleOrder(fromHold: false);
+				if (_dataSource.IsToggleOrderShown)
 				{
-					_dataSource.OpenToggleOrder(fromHold: false);
-				}
-				if (num3 == 8 && _dataSource.OrderSets.Any((OrderSetVM x) => x.HasSingleOrder && x.Orders[0].Order is ReturnVisualOrder))
-				{
-					_dataSource.TryCloseToggleOrder();
-				}
-				else
-				{
-					OrderSetVM orderSetAtIndex = _dataSource.GetOrderSetAtIndex(num3);
-					if (orderSetAtIndex != null && (!orderSetAtIndex.HasSingleOrder || !(orderSetAtIndex.Orders[0].Order is ReturnVisualOrder)))
+					if (num == 8 && _dataSource.OrderSets.Any((OrderSetVM x) => x.HasSingleOrder && x.Orders[0].Order is ReturnVisualOrder))
 					{
-						_dataSource.TrySelectOrderSet(orderSetAtIndex);
+						_dataSource.TryCloseToggleOrder();
+					}
+					else
+					{
+						OrderSetVM orderSetAtIndex = _dataSource.GetOrderSetAtIndex(num);
+						if (orderSetAtIndex != null && (!orderSetAtIndex.HasSingleOrder || !(orderSetAtIndex.Orders[0].Order is ReturnVisualOrder)))
+						{
+							_dataSource.TrySelectOrderSet(orderSetAtIndex);
+						}
 					}
 				}
 			}
 		}
-		int num4 = -1;
+		int num2 = -1;
 		if (base.Input.IsGameKeyPressed(78))
 		{
-			num4 = 100;
+			num2 = 100;
 		}
 		else if (base.Input.IsGameKeyPressed(79))
 		{
-			num4 = 0;
+			num2 = 0;
 		}
 		else if (base.Input.IsGameKeyPressed(80))
 		{
-			num4 = 1;
+			num2 = 1;
 		}
 		else if (base.Input.IsGameKeyPressed(81))
 		{
-			num4 = 2;
+			num2 = 2;
 		}
 		else if (base.Input.IsGameKeyPressed(82))
 		{
-			num4 = 3;
+			num2 = 3;
 		}
 		else if (base.Input.IsGameKeyPressed(83))
 		{
-			num4 = 4;
+			num2 = 4;
 		}
 		else if (base.Input.IsGameKeyPressed(84))
 		{
-			num4 = 5;
+			num2 = 5;
 		}
 		else if (base.Input.IsGameKeyPressed(85))
 		{
-			num4 = 6;
+			num2 = 6;
 		}
 		else if (base.Input.IsGameKeyPressed(86))
 		{
-			num4 = 7;
+			num2 = 7;
 		}
 		if (!IsDeployment && _dataSource.IsToggleOrderShown && TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
 			if (base.Input.IsGameKeyPressed(88))
 			{
-				_dataSource.OnTroopHighlightSelection(MissionOrderVM.TroopSelectionDirection.Left);
+				_dataSource.OnTroopHighlightSelection(isDirectionLeft: true);
 			}
 			else if (base.Input.IsGameKeyPressed(89))
 			{
-				_dataSource.OnTroopHighlightSelection(MissionOrderVM.TroopSelectionDirection.Top);
+				_dataSource.OnTroopHighlightSelection(isDirectionLeft: false);
 			}
 			else if (base.Input.IsGameKeyPressed(90))
 			{
-				_dataSource.OnTroopHighlightSelection(MissionOrderVM.TroopSelectionDirection.Right);
+				_dataSource.ExecuteSelectHighlightedFormation();
 			}
 			else if (base.Input.IsGameKeyPressed(91))
 			{
-				_dataSource.OnTroopHighlightSelection(MissionOrderVM.TroopSelectionDirection.Bottom);
-			}
-			else if (base.Input.IsGameKeyPressed(92))
-			{
-				_dataSource.ExecuteSelectHighlightedFormations();
+				_dataSource.ExecuteToggleHighlightedFormation();
 			}
 		}
-		if (num4 != -1)
+		if (num2 != -1)
 		{
-			_dataSource.OnTroopFormationSelected(num4);
+			_dataSource.OnTroopFormationSelected(num2);
 		}
 		if (base.Input.IsGameKeyPressed(68))
 		{

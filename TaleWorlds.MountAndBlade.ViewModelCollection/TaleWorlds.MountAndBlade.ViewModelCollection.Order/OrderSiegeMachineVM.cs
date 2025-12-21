@@ -102,7 +102,7 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 	{
 		DeploymentPoint = deploymentPoint;
 		SetSelected = setSelected;
-		base.ShortcutText = keyIndex.ToString();
+		RefreshValues();
 	}
 
 	private void ExecuteAction()
@@ -183,7 +183,7 @@ public class OrderSiegeMachineVM : OrderSubjectVM
 		{
 			return DefaultSiegeEngineTypes.FireTrebuchet;
 		}
-		Debug.FailedAssert("Invalid siege weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSiegeMachineVM.cs", "GetSiegeType", 106);
+		Debug.FailedAssert("Invalid siege weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\OrderSiegeMachineVM.cs", "GetSiegeType", 107);
 		return DefaultSiegeEngineTypes.Ladder;
 	}
 }

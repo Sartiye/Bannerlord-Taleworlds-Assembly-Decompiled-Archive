@@ -61,9 +61,9 @@ public class Program
 				text = Path.Combine(text, "Mount and Blade II Bannerlord");
 				string name = Directory.GetParent(fileName).Name;
 				new Watchdog(use_coreclr: true, text);
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "103684");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "104956");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Target", "Public");
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.3.9.103684");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.3.11.104956");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Product Name", "Mount and Blade II Bannerlord");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Name", name);
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Launcher", "true");

@@ -57,10 +57,14 @@ public static class LauncherPlatform
 
 	private static LauncherPlatformType ReadWindowsPlatformFromFile()
 	{
-		LauncherPlatformType result = LauncherPlatformType.Steam;
+		LauncherPlatformType result = LauncherPlatformType.None;
 		if (IsGdk())
 		{
 			result = LauncherPlatformType.Gdk;
+		}
+		else if (IsSteam())
+		{
+			result = LauncherPlatformType.Steam;
 		}
 		else if (IsEpic())
 		{
@@ -69,6 +73,11 @@ public static class LauncherPlatform
 		else if (IsGog())
 		{
 			result = LauncherPlatformType.Gog;
+		}
+		else
+		{
+			Debug.ShowMessageBox("There is no target file! Please verify your files.", "ERROR", 4u);
+			Environment.Exit(0);
 		}
 		return result;
 	}

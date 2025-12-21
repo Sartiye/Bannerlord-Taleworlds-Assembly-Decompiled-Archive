@@ -363,6 +363,7 @@ public class OrderTroopItemVM : OrderSubjectVM
 		UpdateSelectionKeyInfo();
 		UpdateVisuals();
 		Formation.OnUnitCountChanged += FormationOnOnUnitCountChanged;
+		RefreshValues();
 	}
 
 	public OrderTroopItemVM()
@@ -376,6 +377,8 @@ public class OrderTroopItemVM : OrderSubjectVM
 		{
 			Formation.OnUnitCountChanged -= FormationOnOnUnitCountChanged;
 		}
+		base.ApplySelectionKey?.OnFinalize();
+		base.ToggleSelectionKey?.OnFinalize();
 	}
 
 	protected override void OnSelectionStateChanged(bool isSelected)
@@ -430,8 +433,12 @@ public class OrderTroopItemVM : OrderSubjectVM
 		}
 		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
-			GameKey gameKey = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(92);
-			base.SelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+			GameKey gameKey = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(91);
+			base.ToggleSelectionKey?.OnFinalize();
+			base.ToggleSelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
+			gameKey = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(90);
+			base.ApplySelectionKey?.OnFinalize();
+			base.ApplySelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey, isConsoleOnly: true);
 			return;
 		}
 		int num = -1;
@@ -470,7 +477,10 @@ public class OrderTroopItemVM : OrderSubjectVM
 		if (num != -1)
 		{
 			GameKey gameKey2 = HotKeyManager.GetCategory("MissionOrderHotkeyCategory").GetGameKey(num);
-			base.SelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey2, isConsoleOnly: false);
+			base.ApplySelectionKey?.OnFinalize();
+			base.ApplySelectionKey = InputKeyItemVM.CreateFromGameKey(gameKey2, isConsoleOnly: false);
+			base.ToggleSelectionKey?.OnFinalize();
+			base.ToggleSelectionKey = null;
 		}
 	}
 

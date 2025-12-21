@@ -710,10 +710,10 @@ public class GauntletTutorialSystem : GlobalLayer
 		GameTexts.SetVariable("FIRST_GROUP_HEAR_KEY", keyHyperlinkText8);
 		string keyHyperlinkText9 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 80));
 		GameTexts.SetVariable("SECOND_GROUP_HEAR_KEY", keyHyperlinkText9);
-		string keyHyperlinkText10 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 89));
-		GameTexts.SetVariable("SELECT_TOP_GROUP_KEY", keyHyperlinkText10);
-		string keyHyperlinkText11 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 91));
-		GameTexts.SetVariable("SELECT_BOTTOM_GROUP_KEY", keyHyperlinkText11);
+		string keyHyperlinkText10 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 88));
+		GameTexts.SetVariable("SELECT_LEFT_FORMATION_KEY", keyHyperlinkText10);
+		string keyHyperlinkText11 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 89));
+		GameTexts.SetVariable("SELECT_RIGHT_FORMATION_KEY", keyHyperlinkText11);
 		string keyHyperlinkText12 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 0));
 		GameTexts.SetVariable("FORWARD_KEY", keyHyperlinkText12);
 		string keyHyperlinkText13 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("Generic", 1));
@@ -734,7 +734,7 @@ public class GauntletTutorialSystem : GlobalLayer
 		GameTexts.SetVariable("WALK_MODE_KEY", keyHyperlinkText20);
 		string keyHyperlinkText21 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 15));
 		GameTexts.SetVariable("CROUCH_KEY", keyHyperlinkText21);
-		string keyHyperlinkText22 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 92));
+		string keyHyperlinkText22 = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 90));
 		GameTexts.SetVariable("APPLY_SELECTION_KEY", keyHyperlinkText22);
 		GameTexts.SetVariable("CONSOLE_MOVEMENT_KEY", HyperlinkTexts.GetKeyHyperlinkText("ControllerLStick"));
 		GameTexts.SetVariable("CONSOLE_CAMERA_KEY", HyperlinkTexts.GetKeyHyperlinkText("ControllerRStick"));

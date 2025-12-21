@@ -210,7 +210,6 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 		_dataSource.SetOrderIndexKey(7, category.GetGameKey(76));
 		_dataSource.SetOrderIndexKey(8, category.GetGameKey(77));
 		_dataSource.SetReturnKey(category.GetGameKey(77));
-		_dataSource.SetToggleCameraModeInputKey(category.GetHotKey("GamepadToggleCameraMode"));
 		_gauntletLayer = new GauntletLayer("MultiplayerOrder", ViewOrderPriority);
 		_spriteCategory = UIResourceManager.LoadSpriteCategory("ui_order");
 		string movieName = ((BannerlordConfig.OrderType == 0) ? _barOrderMovieName : _radialOrderMovieName);

@@ -90,7 +90,7 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		SkillLevelingManager.OnHideoutSpotted(party.MobileParty, hideout);
 	}
 
-	private static int GetItemValueForHideoutLoot(ItemObject itemToLoot)
+	private int GetItemValueForHideoutLoot(ItemObject itemToLoot)
 	{
 		return Campaign.Current.Models.TradeItemPriceFactorModel.GetTheoreticalMaxItemMarketValue(itemToLoot) + 1;
 	}
@@ -116,16 +116,12 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 			}
 		}
 		int totalLootedValue = 0;
-		for (int i = 0; i < gainedLoots.Count; i++)
-		{
-			totalLootedValue += GetItemValueForHideoutLoot(gainedLoots[i].EquipmentElement.Item) * gainedLoots[i].Amount;
-		}
 		float targetValue = num * (_initialHideoutPopulation * 30);
 		targetValue = MathF.Clamp(targetValue, _minimumHideoutLootTargetValue, 3500f);
 		if ((float)totalLootedValue < targetValue)
 		{
 			ItemObject itemObject = null;
-			for (int j = 0; j < _potentialLootItems.Count; j++)
+			for (int i = 0; i < _potentialLootItems.Count; i++)
 			{
 				if (gainedLoots.Count >= 5)
 				{
@@ -135,7 +131,7 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 				{
 					break;
 				}
-				itemObject = _potentialLootItems[j];
+				itemObject = _potentialLootItems[i];
 				int itemValueForHideoutLoot = GetItemValueForHideoutLoot(itemObject);
 				if ((float)itemValueForHideoutLoot <= targetValue - (float)totalLootedValue)
 				{
@@ -153,6 +149,21 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 				}
 			}
 			while (itemObject != null);
+		}
+		if (!PlayerEncounter.Current.ForceHideoutSendTroops)
+		{
+			foreach (MapEventParty party2 in PlayerEncounter.Battle.DefenderSide.Parties)
+			{
+				foreach (TroopRosterElement item in party2.Party.MemberRoster.GetTroopRoster())
+				{
+					float expectedLootedItemValueFromCasualty = Campaign.Current.Models.BattleRewardModel.GetExpectedLootedItemValueFromCasualty(Hero.MainHero, item.Character);
+					EquipmentElement lootedItemFromTroop = Campaign.Current.Models.BattleRewardModel.GetLootedItemFromTroop(item.Character, expectedLootedItemValueFromCasualty);
+					if (lootedItemFromTroop.Item != null)
+					{
+						gainedLoots.AddToCounts(lootedItemFromTroop, 1);
+					}
+				}
+			}
 		}
 		_initialHideoutPopulation = 0;
 	}
@@ -186,7 +197,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 
 	private void OnMissionEnded(IMission mission)
 	{
-		_initialHideoutPopulation = 0;
 	}
 
 	protected void AddGameMenus(CampaignGameStarter campaignGameStarter)

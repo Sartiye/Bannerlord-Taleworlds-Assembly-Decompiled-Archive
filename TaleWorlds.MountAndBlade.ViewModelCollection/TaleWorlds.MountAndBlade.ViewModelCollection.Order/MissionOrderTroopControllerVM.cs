@@ -805,7 +805,16 @@ public class MissionOrderTroopControllerVM : ViewModel
 		case OrderType.Charge:
 		case OrderType.Advance:
 		{
-			OrderItemVM orderItemVM = FindOrderWithId("order_movement_advance") ?? FindOrderWithId("order_movement_charge");
+			OrderItemVM orderItemVM = null;
+			switch (orderType)
+			{
+			case OrderType.Charge:
+				orderItemVM = FindOrderWithId("order_movement_charge") ?? FindOrderWithId("order_movement_advance");
+				break;
+			case OrderType.Advance:
+				orderItemVM = FindOrderWithId("order_movement_advance") ?? FindOrderWithId("order_movement_charge");
+				break;
+			}
 			if (orderItemVM != null)
 			{
 				MissionOrder.OnOrderExecuted(orderItemVM);
@@ -813,7 +822,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			break;
 		}
 		}
-		if (MissionOrder.IsToggleOrderShown && !MissionOrder.IsDeployment)
+		if (MissionOrder.IsToggleOrderShown && !MissionOrder.IsDeployment && !MissionOrder.IsHolding)
 		{
 			MissionOrder.TryCloseToggleOrder();
 		}
@@ -921,14 +930,11 @@ public class MissionOrderTroopControllerVM : ViewModel
 		OrderTroopItemVM orderTroopItemVM = null;
 		if (formationTroopIndex >= 0)
 		{
-			orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.Formation.Index == formationTroopIndex);
+			orderTroopItemVM = TroopList.FirstOrDefault((OrderTroopItemVM x) => x.Formation.Index == formationTroopIndex && x.IsSelectable);
 		}
 		if (orderTroopItemVM != null)
 		{
-			if (orderTroopItemVM.IsSelectable)
-			{
-				OnSelectFormation(orderTroopItemVM);
-			}
+			OnSelectFormation(orderTroopItemVM);
 		}
 		else
 		{
@@ -1037,7 +1043,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Added troop item is null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 728);
+			Debug.FailedAssert("Added troop item is null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 734);
 		}
 		OnAfterNewTroopItemAdded();
 		RefreshTroopItemBindings();

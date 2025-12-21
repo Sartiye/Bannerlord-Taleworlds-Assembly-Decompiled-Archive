@@ -20,7 +20,7 @@ public sealed class ChatLogHotKeyCategory : GameKeyContext
 	public const string SendMessage = "SendMessage";
 
 	public ChatLogHotKeyCategory()
-		: base("ChatLogHotKeyCategory", 111)
+		: base("ChatLogHotKeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

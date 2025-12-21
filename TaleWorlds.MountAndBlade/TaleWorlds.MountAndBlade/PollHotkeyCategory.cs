@@ -6,19 +6,19 @@ public sealed class PollHotkeyCategory : GameKeyContext
 {
 	public const string CategoryId = "PollHotkeyCategory";
 
-	public const int AcceptPoll = 109;
+	public const int AcceptPoll = 108;
 
-	public const int DeclinePoll = 110;
+	public const int DeclinePoll = 109;
 
 	public PollHotkeyCategory()
-		: base("PollHotkeyCategory", 111)
+		: base("PollHotkeyCategory", 110)
 	{
 		RegisterGameKeys();
 	}
 
 	private void RegisterGameKeys()
 	{
-		RegisterGameKey(new GameKey(109, "AcceptPoll", "PollHotkeyCategory", InputKey.F10, InputKey.ControllerLBumper, GameKeyMainCategories.PollCategory));
-		RegisterGameKey(new GameKey(110, "DeclinePoll", "PollHotkeyCategory", InputKey.F11, InputKey.ControllerRBumper, GameKeyMainCategories.PollCategory));
+		RegisterGameKey(new GameKey(108, "AcceptPoll", "PollHotkeyCategory", InputKey.F10, InputKey.ControllerLBumper, GameKeyMainCategories.PollCategory));
+		RegisterGameKey(new GameKey(109, "DeclinePoll", "PollHotkeyCategory", InputKey.F11, InputKey.ControllerRBumper, GameKeyMainCategories.PollCategory));
 	}
 }

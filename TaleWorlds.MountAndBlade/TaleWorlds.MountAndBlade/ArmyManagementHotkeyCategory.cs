@@ -9,7 +9,7 @@ public sealed class ArmyManagementHotkeyCategory : GameKeyContext
 	public const string RemoveParty = "RemoveParty";
 
 	public ArmyManagementHotkeyCategory()
-		: base("ArmyManagementHotkeyCategory", 111)
+		: base("ArmyManagementHotkeyCategory", 110)
 	{
 		RegisterHotKeys();
 	}

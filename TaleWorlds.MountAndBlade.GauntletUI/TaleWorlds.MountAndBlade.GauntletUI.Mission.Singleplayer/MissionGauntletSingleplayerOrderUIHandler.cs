@@ -126,7 +126,6 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		_dataSource.SetOrderIndexKey(7, category.GetGameKey(76));
 		_dataSource.SetOrderIndexKey(8, category.GetGameKey(77));
 		_dataSource.SetReturnKey(category.GetGameKey(77));
-		_dataSource.SetToggleCameraModeInputKey(category.GetHotKey("GamepadToggleCameraMode"));
 		if (IsSiegeDeployment)
 		{
 			foreach (DeploymentPoint playerDeploymentPoint in _siegeDeploymentHandler.PlayerDeploymentPoints)

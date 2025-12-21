@@ -332,6 +332,11 @@ internal class ScriptingInterfaceOfIMetaMesh : IMetaMesh
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetShaderToMaterialDelegate(UIntPtr multiMeshPointer, byte[] shaderName);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetVectorArgumentDelegate(UIntPtr multiMeshPointer, float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -481,6 +486,8 @@ internal class ScriptingInterfaceOfIMetaMesh : IMetaMesh
 	public static SetMaterialToSubMeshesWithTagDelegate call_SetMaterialToSubMeshesWithTagDelegate;
 
 	public static SetNumLodsDelegate call_SetNumLodsDelegate;
+
+	public static SetShaderToMaterialDelegate call_SetShaderToMaterialDelegate;
 
 	public static SetVectorArgumentDelegate call_SetVectorArgumentDelegate;
 
@@ -946,6 +953,19 @@ internal class ScriptingInterfaceOfIMetaMesh : IMetaMesh
 	public void SetNumLods(UIntPtr multiMeshPointer, int num_lod)
 	{
 		call_SetNumLodsDelegate(multiMeshPointer, num_lod);
+	}
+
+	public void SetShaderToMaterial(UIntPtr multiMeshPointer, string shaderName)
+	{
+		byte[] array = null;
+		if (shaderName != null)
+		{
+			int byteCount = _utf8.GetByteCount(shaderName);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(shaderName, 0, shaderName.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_SetShaderToMaterialDelegate(multiMeshPointer, array);
 	}
 
 	public void SetVectorArgument(UIntPtr multiMeshPointer, float vectorArgument0, float vectorArgument1, float vectorArgument2, float vectorArgument3)

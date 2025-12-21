@@ -86,8 +86,10 @@ public class PrisonBreakMissionController : MissionLogic
 		}
 		_failCounterMissionLogic = Mission.Current.GetMissionBehavior<StealthFailCounterMissionLogic>();
 		_failCounterMissionLogic.FailCounterSeconds = 15f;
+		base.Mission.AllowAiTicking = false;
 		SandBoxHelpers.MissionHelper.SpawnPlayer(civilianEquipment: false, noHorses: true);
 		base.Mission.GetMissionBehavior<MissionAgentHandler>().SpawnLocationCharacters();
+		base.Mission.AllowAiTicking = true;
 		Agent.Main.SetClothingColor1(4281281067u);
 		Agent.Main.SetClothingColor2(4281281067u);
 		Agent.Main.UpdateSpawnEquipmentAndRefreshVisuals(Hero.MainHero.StealthEquipment);

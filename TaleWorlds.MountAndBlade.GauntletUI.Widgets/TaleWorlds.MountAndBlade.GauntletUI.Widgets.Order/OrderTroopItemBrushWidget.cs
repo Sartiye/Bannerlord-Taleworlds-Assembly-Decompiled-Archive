@@ -172,6 +172,7 @@ public class OrderTroopItemBrushWidget : BrushWidget
 			{
 				base.Brush = MeleeCardBrush;
 			}
+			UpdateBackgroundState();
 		}
 	}
 }

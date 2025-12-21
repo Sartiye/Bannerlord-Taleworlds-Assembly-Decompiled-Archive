@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
 using psai.Editor;
@@ -225,22 +226,29 @@ internal class Logik
 		m_initializationFailure = false;
 		foreach (string pathToProjectFile in pathToProjectFiles)
 		{
-			string text = ModuleHelper.GetModuleFullPath(pathToProjectFile) + "Music/soundtrack.xml";
-			StreamReader streamReader = new StreamReader(text);
-			PsaiProject psaiProject2 = null;
-			if (streamReader == null)
+			try
 			{
-				TaleWorlds.Library.Debug.Print("Cannot find the music xml for the following path: " + text, 0, TaleWorlds.Library.Debug.DebugColor.Red, 281474976710656uL);
-				continue;
+				string text = ModuleHelper.GetModuleFullPath(pathToProjectFile) + "Music/soundtrack.xml";
+				StreamReader streamReader = new StreamReader(text);
+				PsaiProject psaiProject2 = null;
+				if (streamReader == null)
+				{
+					TaleWorlds.Library.Debug.Print("Cannot find the music xml for the following path: " + text, 0, TaleWorlds.Library.Debug.DebugColor.Red, 281474976710656uL);
+					continue;
+				}
+				psaiProject2 = PsaiProject.LoadProjectFromStream(streamReader, pathToProjectFile);
+				if (psaiProject == null)
+				{
+					psaiProject = psaiProject2;
+				}
+				else
+				{
+					psaiProject.MergeProjects(psaiProject2);
+				}
 			}
-			psaiProject2 = PsaiProject.LoadProjectFromStream(streamReader, pathToProjectFile);
-			if (psaiProject == null)
+			catch (Exception ex)
 			{
-				psaiProject = psaiProject2;
-			}
-			else
-			{
-				psaiProject.MergeProjects(psaiProject2);
+				MBDebug.Print("\t Error Occurred: \n\t" + ex.Source + "\n\t" + ex.Message + "\n\t" + ex.StackTrace);
 			}
 		}
 		psaiProject.ReconstructReferencesAfterXmlDeserialization();

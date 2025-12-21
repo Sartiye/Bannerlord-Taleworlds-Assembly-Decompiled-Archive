@@ -9,6 +9,14 @@ namespace TaleWorlds.TwoDimension.Standalone.Native.OpenGL;
 [SuppressUnmanagedCodeSecurity]
 internal static class Opengl32
 {
+	public const uint GL_VENDOR = 7936u;
+
+	public const uint GL_RENDERER = 7937u;
+
+	public const uint GL_VERSION = 7938u;
+
+	public const uint GL_EXTENSIONS = 7939u;
+
 	[DllImport("Opengl32.dll", EntryPoint = "glDrawArrays")]
 	public static extern void DrawArrays(BeginMode mode, int first, int count);
 

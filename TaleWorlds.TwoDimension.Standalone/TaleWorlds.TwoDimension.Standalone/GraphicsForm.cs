@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
@@ -36,9 +37,11 @@ public class GraphicsForm : IMessageCommunicator
 
 	public GraphicsForm(int width, int height, ResourceDepot resourceDepot, bool borderlessWindow = false, bool enableWindowBlur = false, bool layeredWindow = false, string name = null)
 	{
-		User32.GetClientRect(User32.GetDesktopWindow(), out var lpRect);
-		int x = (lpRect.Width - width) / 2;
-		int y = (lpRect.Height - height) / 2;
+		DXGI.RECT rECT = DecideWindowPosition();
+		int num = rECT.right - rECT.left;
+		int num2 = rECT.bottom - rECT.top;
+		int x = rECT.left + (num - width) / 2;
+		int y = rECT.top + (num2 - height) / 2;
 		_windowsForm = new WindowsForm(x, y, width, height, resourceDepot, borderlessWindow, enableWindowBlur, name);
 		Initalize(layeredWindow);
 	}
@@ -67,6 +70,75 @@ public class GraphicsForm : IMessageCommunicator
 		{
 			_layeredWindowController = new LayeredWindowController(_windowsForm.Handle, _windowsForm.Width, _windowsForm.Height);
 		}
+	}
+
+	public bool CompareRecrangles(DXGI.RECT Rect1, DXGI.RECT Rect2)
+	{
+		int num = Rect1.right - Rect1.left;
+		int num2 = Rect1.bottom - Rect1.top;
+		int num3 = Rect2.right - Rect2.left;
+		int num4 = Rect2.bottom - Rect2.top;
+		if (num > num3 && num2 > num4)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	public DXGI.RECT DecideWindowPosition()
+	{
+		DXGI.CreateDXGIFactory(ref DXGI.IID_IDXGIFactory, out var factory);
+		DXGI.IDXGIFactory iDXGIFactory = (DXGI.IDXGIFactory)Marshal.GetObjectForIUnknown(factory);
+		DXGI.DXGI_OUTPUT_DESC dXGI_OUTPUT_DESC = default(DXGI.DXGI_OUTPUT_DESC);
+		dXGI_OUTPUT_DESC.DeviceName = "";
+		dXGI_OUTPUT_DESC.DesktopCoordinates = new DXGI.RECT
+		{
+			left = 0,
+			top = 0,
+			right = 0,
+			bottom = 0
+		};
+		dXGI_OUTPUT_DESC.AttachedToDesktop = false;
+		dXGI_OUTPUT_DESC.Rotation = 0u;
+		dXGI_OUTPUT_DESC.Monitor = IntPtr.Zero;
+		DXGI.DXGI_OUTPUT_DESC dXGI_OUTPUT_DESC2 = dXGI_OUTPUT_DESC;
+		DXGI.DXGI_ADAPTER_DESC dXGI_ADAPTER_DESC = default(DXGI.DXGI_ADAPTER_DESC);
+		dXGI_ADAPTER_DESC.Description = "";
+		dXGI_ADAPTER_DESC.VendorId = 0u;
+		dXGI_ADAPTER_DESC.DeviceId = 0u;
+		dXGI_ADAPTER_DESC.SubSysId = 0u;
+		dXGI_ADAPTER_DESC.Revision = 0u;
+		dXGI_ADAPTER_DESC.DedicatedVideoMemory = UIntPtr.Zero;
+		dXGI_ADAPTER_DESC.DedicatedSystemMemory = UIntPtr.Zero;
+		dXGI_ADAPTER_DESC.SharedSystemMemory = UIntPtr.Zero;
+		dXGI_ADAPTER_DESC.AdapterLuid = UIntPtr.Zero;
+		DXGI.DXGI_ADAPTER_DESC dXGI_ADAPTER_DESC2 = dXGI_ADAPTER_DESC;
+		DXGI.IDXGIAdapter adapter;
+		for (uint num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
+		{
+			adapter.GetDesc(out var desc);
+			bool flag = (long)(ulong)desc.DedicatedVideoMemory > (long)(ulong)dXGI_ADAPTER_DESC2.DedicatedVideoMemory;
+			bool flag2 = false;
+			uint num2 = 0u;
+			DXGI.IDXGIOutput ppOutput;
+			while (flag && adapter.EnumOutputs(num2, out ppOutput) == 0)
+			{
+				ppOutput.GetDesc(out var desc2);
+				if (desc2.AttachedToDesktop)
+				{
+					flag2 = true;
+					dXGI_OUTPUT_DESC2 = desc2;
+				}
+				num2++;
+			}
+			if (flag && flag2)
+			{
+				dXGI_ADAPTER_DESC2 = desc;
+			}
+		}
+		Marshal.FinalReleaseComObject(iDXGIFactory);
+		iDXGIFactory = null;
+		return dXGI_OUTPUT_DESC2.DesktopCoordinates;
 	}
 
 	public void Destroy()

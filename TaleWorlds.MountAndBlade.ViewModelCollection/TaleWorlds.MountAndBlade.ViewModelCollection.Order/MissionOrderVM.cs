@@ -28,14 +28,6 @@ public class MissionOrderVM : ViewModel
 		SiegeMachines
 	}
 
-	public enum TroopSelectionDirection
-	{
-		Left,
-		Top,
-		Right,
-		Bottom
-	}
-
 	public struct ClassConfiguration
 	{
 		public int FormationIndex;
@@ -92,8 +84,6 @@ public class MissionOrderVM : ViewModel
 
 	private InputKeyItemVM _cancelInputKey;
 
-	private InputKeyItemVM _toggleCameraModeInputKey;
-
 	private MBBindingList<OrderSetVM> _orderSets;
 
 	private MissionOrderTroopControllerVM _troopController;
@@ -116,7 +106,7 @@ public class MissionOrderVM : ViewModel
 
 	private bool _isAnyOrderSetActive;
 
-	private bool _canToggleCamera;
+	private bool _useAlternativeFormationLayout;
 
 	private string _returnText;
 
@@ -170,23 +160,6 @@ public class MissionOrderVM : ViewModel
 			{
 				_cancelInputKey = value;
 				OnPropertyChangedWithValue(value, "CancelInputKey");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public InputKeyItemVM ToggleCameraModeInputKey
-	{
-		get
-		{
-			return _toggleCameraModeInputKey;
-		}
-		set
-		{
-			if (value != _toggleCameraModeInputKey)
-			{
-				_toggleCameraModeInputKey = value;
-				OnPropertyChangedWithValue(value, "ToggleCameraModeInputKey");
 			}
 		}
 	}
@@ -378,18 +351,18 @@ public class MissionOrderVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool CanToggleCamera
+	public bool UseAlternativeFormationLayout
 	{
 		get
 		{
-			return _canToggleCamera;
+			return _useAlternativeFormationLayout;
 		}
 		set
 		{
-			if (value != _canToggleCamera)
+			if (value != _useAlternativeFormationLayout)
 			{
-				_canToggleCamera = value;
-				OnPropertyChangedWithValue(value, "CanToggleCamera");
+				_useAlternativeFormationLayout = value;
+				OnPropertyChangedWithValue(value, "UseAlternativeFormationLayout");
 			}
 		}
 	}
@@ -912,10 +885,7 @@ public class MissionOrderVM : ViewModel
 		{
 			if (!CheckCanBeOpened())
 			{
-				if (IsToggleOrderShown)
-				{
-					TryCloseToggleOrder();
-				}
+				TryCloseToggleOrder();
 			}
 			else if (_updateTroopsTimer.Check(MBCommon.GetApplicationTime()))
 			{
@@ -923,6 +893,7 @@ public class MissionOrderVM : ViewModel
 			}
 			TroopController.Update();
 			TroopController.RefreshTroopFormationTargetVisuals();
+			UseAlternativeFormationLayout = TaleWorlds.InputSystem.Input.IsGamepadActive;
 		}
 		if (IsToggleOrderShown)
 		{
@@ -1063,158 +1034,69 @@ public class MissionOrderVM : ViewModel
 		_callbacks.RefreshVisuals();
 	}
 
-	protected virtual void HighlightAllTroops()
-	{
-		foreach (OrderTroopItemVM troop in TroopController.TroopList)
-		{
-			if (troop.IsSelectable)
-			{
-				troop.IsSelectionHighlightActive = true;
-			}
-		}
-	}
-
-	public void OnTroopHighlightSelection(TroopSelectionDirection direction)
+	public void OnTroopHighlightSelection(bool isDirectionLeft)
 	{
 		if (!CheckCanBeOpened(displayMessage: true) || TroopController.TroopList.Count <= 0)
 		{
 			return;
 		}
-		if (TroopController.TroopList.All((OrderTroopItemVM t) => t.IsSelectionHighlightActive))
+		OrderTroopItemVM highlightedFormation = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectionHighlightActive);
+		if (highlightedFormation != null)
 		{
-			OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex);
-			if (orderTroopItemVM != null)
+			OrderTroopItemVM targetFormation = (isDirectionLeft ? TroopController.TroopList.LastOrDefault((OrderTroopItemVM t) => t.FormationIndex < highlightedFormation.FormationIndex) : TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex > highlightedFormation.FormationIndex));
+			if (targetFormation == null)
+			{
+				targetFormation = (isDirectionLeft ? TroopController.TroopList.LastOrDefault() : TroopController.TroopList.FirstOrDefault());
+			}
+			if (targetFormation != null)
 			{
 				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
 				{
-					t.IsSelectionHighlightActive = false;
+					t.IsSelectionHighlightActive = t == targetFormation;
 				});
-				orderTroopItemVM.IsSelectionHighlightActive = true;
-				return;
-			}
-		}
-		OrderTroopItemVM orderTroopItemVM2 = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectionHighlightActive);
-		if (orderTroopItemVM2 != null)
-		{
-			int formationIndex = orderTroopItemVM2.FormationIndex;
-			if ((direction == TroopSelectionDirection.Left && formationIndex < 4) || (direction == TroopSelectionDirection.Right && formationIndex > 3))
-			{
-				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
-				{
-					t.IsSelectionHighlightActive = false;
-				});
-				HighlightAllTroops();
-				return;
-			}
-			int num = -1;
-			switch (direction)
-			{
-			case TroopSelectionDirection.Left:
-				num = -4;
-				break;
-			case TroopSelectionDirection.Top:
-				num = -1;
-				break;
-			case TroopSelectionDirection.Right:
-				num = 4;
-				break;
-			case TroopSelectionDirection.Bottom:
-				num = 1;
-				break;
-			}
-			int num2 = TroopController.TroopList.Min((OrderTroopItemVM t) => t.FormationIndex);
-			int num3 = TroopController.TroopList.Max((OrderTroopItemVM t) => t.FormationIndex);
-			int num4 = TaleWorlds.Library.MathF.Sign(num);
-			OrderTroopItemVM orderTroopItemVM3 = null;
-			for (int i = formationIndex + num; i >= num2 && i <= num3; i += num4)
-			{
-				for (int j = 0; j < TroopController.TroopList.Count; j++)
-				{
-					OrderTroopItemVM orderTroopItemVM4 = TroopController.TroopList[j];
-					if (orderTroopItemVM4.FormationIndex == i && (direction != TroopSelectionDirection.Bottom || formationIndex >= 4 || i < 4) && (direction != TroopSelectionDirection.Top || formationIndex < 4 || i >= 3))
-					{
-						orderTroopItemVM3 = orderTroopItemVM4;
-						break;
-					}
-				}
-				if (orderTroopItemVM3 != null)
-				{
-					break;
-				}
-			}
-			if (orderTroopItemVM3 != null)
-			{
-				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
-				{
-					t.IsSelectionHighlightActive = false;
-				});
-				orderTroopItemVM3.IsSelectionHighlightActive = true;
-				_lastHighlightedFormationIndex = orderTroopItemVM3.FormationIndex;
+				_lastHighlightedFormationIndex = targetFormation.FormationIndex;
 			}
 		}
 		else
 		{
-			OrderTroopItemVM orderTroopItemVM5 = TroopController.TroopList.FirstOrDefault();
-			if (orderTroopItemVM5 != null)
+			TroopController.TroopList[0].IsSelectionHighlightActive = true;
+		}
+	}
+
+	public void ExecuteSelectHighlightedFormation()
+	{
+		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
+		if (orderTroopItemVM != null)
+		{
+			if (orderTroopItemVM.IsSelected && TroopController.TroopList.Count((OrderTroopItemVM x) => x.IsSelected) == 1)
 			{
-				orderTroopItemVM5.IsSelectionHighlightActive = true;
+				TroopController.SelectAllFormations();
+			}
+			else
+			{
+				OnTroopFormationSelected(orderTroopItemVM.FormationIndex);
 			}
 		}
 	}
 
-	public void ExecuteSelectHighlightedFormations()
+	public void ExecuteToggleHighlightedFormation()
 	{
-		List<OrderTroopItemVM> list = new List<OrderTroopItemVM>();
-		List<OrderTroopItemVM> list2 = new List<OrderTroopItemVM>();
-		for (int i = 0; i < TroopController.TroopList.Count; i++)
+		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
+		if (orderTroopItemVM == null)
 		{
-			OrderTroopItemVM orderTroopItemVM = TroopController.TroopList[i];
-			if (orderTroopItemVM.IsSelectionHighlightActive)
-			{
-				list.Add(orderTroopItemVM);
-			}
-			if (orderTroopItemVM.IsSelected)
-			{
-				list2.Add(orderTroopItemVM);
-			}
+			return;
 		}
-		if (list.Count == TroopController.TroopList.Count)
+		if (orderTroopItemVM.IsSelected)
 		{
-			if (list2.Count != TroopController.TroopList.Count)
+			if (TroopController.TroopList.Count((OrderTroopItemVM t) => t.IsSelected) == 1)
 			{
 				TroopController.SelectAllFormations();
-				return;
 			}
-			OrderTroopItemVM orderTroopItemVM2 = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex);
-			if (orderTroopItemVM2 != null)
-			{
-				OnTroopFormationSelected(_lastHighlightedFormationIndex);
-				TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
-				{
-					t.IsSelectionHighlightActive = false;
-				});
-				orderTroopItemVM2.IsSelectionHighlightActive = true;
-				return;
-			}
+			TroopController.OnDeselectFormation(orderTroopItemVM.FormationIndex);
 		}
-		for (int j = 0; j < list.Count; j++)
+		else
 		{
-			OrderTroopItemVM orderTroopItemVM3 = list[j];
-			if (!orderTroopItemVM3.IsSelectionHighlightActive)
-			{
-				continue;
-			}
-			if (orderTroopItemVM3.IsSelected)
-			{
-				if (list2.Count > 1)
-				{
-					TroopController.OnDeselectFormation(orderTroopItemVM3.FormationIndex);
-				}
-			}
-			else
-			{
-				TroopController.AddSelectedFormation(orderTroopItemVM3);
-			}
+			TroopController.AddSelectedFormation(orderTroopItemVM);
 		}
 		TryCloseToggleOrder();
 		OpenToggleOrder(fromHold: false);
@@ -1294,7 +1176,7 @@ public class MissionOrderVM : ViewModel
 		{
 			TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
 			{
-				t.CanToggleSelection = false;
+				t.ShowSelectionInputs = false;
 			});
 		}
 	}
@@ -1318,10 +1200,5 @@ public class MissionOrderVM : ViewModel
 	public void SetCancelInputKey(HotKey hotKey)
 	{
 		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
-	}
-
-	public void SetToggleCameraModeInputKey(HotKey hotKey)
-	{
-		ToggleCameraModeInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

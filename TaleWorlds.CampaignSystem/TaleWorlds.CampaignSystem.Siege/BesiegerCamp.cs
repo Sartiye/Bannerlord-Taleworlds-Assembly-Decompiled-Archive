@@ -272,7 +272,7 @@ public class BesiegerCamp : ISiegeEventSide
 
 	private void ChangeSiegeStrategyIfNeeded()
 	{
-		if (SiegeStrategy != DefaultSiegeStrategies.Custom || _leaderParty.LeaderHero == Hero.MainHero)
+		if (SiegeStrategy != DefaultSiegeStrategies.Custom || _leaderParty == null || _leaderParty.LeaderHero == Hero.MainHero)
 		{
 			return;
 		}

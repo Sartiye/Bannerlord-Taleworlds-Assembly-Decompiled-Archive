@@ -26,7 +26,7 @@ public sealed class FaceGenHotkeyCategory : GameKeyContext
 	public const int ControllerZoomOut = 57;
 
 	public FaceGenHotkeyCategory()
-		: base("FaceGenHotkeyCategory", 111)
+		: base("FaceGenHotkeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

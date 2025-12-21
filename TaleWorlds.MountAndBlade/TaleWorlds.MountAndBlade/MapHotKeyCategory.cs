@@ -63,7 +63,7 @@ public sealed class MapHotKeyCategory : GameKeyContext
 	public const int MapTimeTogglePause = 63;
 
 	public MapHotKeyCategory()
-		: base("MapHotKeyCategory", 111)
+		: base("MapHotKeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

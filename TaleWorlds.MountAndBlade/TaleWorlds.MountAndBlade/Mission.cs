@@ -1857,7 +1857,7 @@ public sealed class Mission : DotNetObject, IMission
 
 	public void TickAgentsAndTeamsAsync(float dt)
 	{
-		MBAPI.IMBMission.tickAgentsAndTeamsAsync(Pointer, dt);
+		MBAPI.IMBMission.TickAgentsAndTeamsAsync(Pointer, dt);
 	}
 
 	internal void Tick(float dt)
@@ -3278,7 +3278,8 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else if (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithPhysics | WeaponSpawnFlags.WithStaticPhysics))
 		{
-			weaponEntity.AddPhysics(weaponData.BaseWeight, weaponData.CenterOfMassShift, weaponData.Shape, globalVelocity, globalAngularVelocity, PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics), collisionGroupID);
+			float mass = (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithHolster) ? (weaponData.BaseWeight * (float)weapon.MaxAmmo) : weaponData.BaseWeight);
+			weaponEntity.AddPhysics(mass, weaponData.CenterOfMassShift, weaponData.Shape, globalVelocity, globalAngularVelocity, PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics), collisionGroupID);
 			if (weaponEntity.Parent != WeakGameEntity.Invalid && spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics))
 			{
 				weaponEntity.SetPhysicsMoveToBatched(value: true);
@@ -3419,7 +3420,7 @@ public sealed class Mission : DotNetObject, IMission
 		PhysicsShape physicsShape = weaponData.Shape;
 		if (physicsShape == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2233);
+			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2235);
 			physicsShape = PhysicsShape.GetFromResource("bo_axe_short");
 		}
 		if (!weaponComponent.Item.ItemFlags.HasAnyFlag(ItemFlags.DoNotScaleBodyAccordingToWeaponLength))
@@ -3501,7 +3502,7 @@ public sealed class Mission : DotNetObject, IMission
 					int num8 = physicsShape.CapsuleCount();
 					if (num8 == 0)
 					{
-						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2371);
+						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2373);
 						return;
 					}
 					switch (weaponComponent.PrimaryWeapon.WeaponClass)
@@ -3552,7 +3553,7 @@ public sealed class Mission : DotNetObject, IMission
 					}
 					case WeaponClass.SmallShield:
 					case WeaponClass.LargeShield:
-						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2445);
+						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2447);
 						break;
 					}
 				}
@@ -4385,7 +4386,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3894);
+			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3896);
 		}
 	}
 
@@ -4457,7 +4458,7 @@ public sealed class Mission : DotNetObject, IMission
 			}
 			else
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 4001);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 4003);
 				TaleWorlds.Library.Debug.Print(string.Concat("Invalid banner item: ", bannerItem.Name, " is passed to a troop to be spawned"), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 			}
 		}
@@ -4654,7 +4655,7 @@ public sealed class Mission : DotNetObject, IMission
 			_otherMissionBehaviors.Remove(missionBehavior);
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4297);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4299);
 			break;
 		}
 		MissionBehaviors.Remove(missionBehavior);
@@ -4691,7 +4692,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4341);
+			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4343);
 		}
 	}
 
@@ -5181,7 +5182,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 5033);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 5035);
 			return null;
 		}
 		if (troopOrigin.IsUnderPlayersCommand)
@@ -5203,7 +5204,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5066);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5068);
 			return null;
 		}
 		return teamSide switch

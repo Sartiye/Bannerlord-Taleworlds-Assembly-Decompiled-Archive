@@ -129,8 +129,6 @@ public class PartyNameplateVM : NameplateVM
 
 	public MobileParty Party { get; private set; }
 
-	private IFaction _mainFaction => Hero.MainHero.MapFaction;
-
 	public Vec2 HeadPosition
 	{
 		get
@@ -426,8 +424,9 @@ public class PartyNameplateVM : NameplateVM
 		_mapCamera = null;
 		Party = null;
 		_isPartyBannerDirty = false;
-		Quests.Clear();
+		_latestNameTextObject = null;
 		_previousQuestsBind = CampaignUIHelper.IssueQuestFlags.None;
+		Quests.Clear();
 		OnFinalize();
 		UnregisterEvents();
 	}
@@ -569,7 +568,7 @@ public class PartyNameplateVM : NameplateVM
 			Army army = Party.Army;
 			if (army == null || !army.LeaderParty.AttachedParties.Contains(MobileParty.MainParty) || !Party.Army.LeaderParty.AttachedParties.Contains(Party))
 			{
-				if (FactionManager.IsAtWarAgainstFaction(Party.MapFaction, _mainFaction))
+				if (Hero.MainHero?.MapFaction != null && FactionManager.IsAtWarAgainstFaction(Party.MapFaction, Hero.MainHero?.MapFaction))
 				{
 					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? NegativeArmyIndicator : NegativeIndicator);
 				}
@@ -581,12 +580,12 @@ public class PartyNameplateVM : NameplateVM
 				{
 					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? NeutralArmyIndicator : NeutralIndicator);
 				}
-				goto IL_0411;
+				goto IL_042f;
 			}
 		}
 		_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? MainPartyArmyIndicator : MainPartyIndicator);
-		goto IL_0411;
-		IL_0411:
+		goto IL_042f;
+		IL_042f:
 		if (_isPartyBannerDirty || forceUpdate)
 		{
 			PartyBanner = new BannerImageIdentifierVM(Party.Banner, nineGrid: true);
@@ -632,7 +631,7 @@ public class PartyNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Party?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 343);
+			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 344);
 		}
 		else
 		{

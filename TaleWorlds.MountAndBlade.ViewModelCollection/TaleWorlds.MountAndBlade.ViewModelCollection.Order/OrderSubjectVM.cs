@@ -1,4 +1,5 @@
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
@@ -15,11 +16,13 @@ public abstract class OrderSubjectVM : ViewModel
 
 	private bool _isSelectionHighlightActive;
 
-	private bool _canToggleSelection;
+	private bool _showSelectionInputs;
 
-	private string _shortcutText;
+	private string _selectionText;
 
-	private InputKeyItemVM _selectionKey;
+	private InputKeyItemVM _applySelectionKey;
+
+	private InputKeyItemVM _toggleSelectionKey;
 
 	private MBBindingList<OrderItemVM> _activeOrders;
 
@@ -76,18 +79,18 @@ public abstract class OrderSubjectVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool CanToggleSelection
+	public bool ShowSelectionInputs
 	{
 		get
 		{
-			return _canToggleSelection;
+			return _showSelectionInputs;
 		}
 		set
 		{
-			if (value != _canToggleSelection)
+			if (value != _showSelectionInputs)
 			{
-				_canToggleSelection = value;
-				OnPropertyChangedWithValue(value, "CanToggleSelection");
+				_showSelectionInputs = value;
+				OnPropertyChangedWithValue(value, "ShowSelectionInputs");
 			}
 		}
 	}
@@ -127,35 +130,52 @@ public abstract class OrderSubjectVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string ShortcutText
+	public string SelectionText
 	{
 		get
 		{
-			return _shortcutText;
+			return _selectionText;
 		}
 		set
 		{
-			if (value != _shortcutText)
+			if (value != _selectionText)
 			{
-				_shortcutText = value;
-				OnPropertyChangedWithValue(value, "ShortcutText");
+				_selectionText = value;
+				OnPropertyChangedWithValue(value, "SelectionText");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public InputKeyItemVM SelectionKey
+	public InputKeyItemVM ApplySelectionKey
 	{
 		get
 		{
-			return _selectionKey;
+			return _applySelectionKey;
 		}
 		set
 		{
-			if (value != _selectionKey)
+			if (value != _applySelectionKey)
 			{
-				_selectionKey = value;
-				OnPropertyChangedWithValue(value, "SelectionKey");
+				_applySelectionKey = value;
+				OnPropertyChangedWithValue(value, "ApplySelectionKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM ToggleSelectionKey
+	{
+		get
+		{
+			return _toggleSelectionKey;
+		}
+		set
+		{
+			if (value != _toggleSelectionKey)
+			{
+				_toggleSelectionKey = value;
+				OnPropertyChangedWithValue(value, "ToggleSelectionKey");
 			}
 		}
 	}
@@ -180,6 +200,7 @@ public abstract class OrderSubjectVM : ViewModel
 	public OrderSubjectVM()
 	{
 		ActiveOrders = new MBBindingList<OrderItemVM>();
+		RefreshValues();
 	}
 
 	public void AddActiveOrder(OrderItemVM order)
@@ -195,6 +216,12 @@ public abstract class OrderSubjectVM : ViewModel
 	public void ClearActiveOrders()
 	{
 		ActiveOrders.Clear();
+	}
+
+	public override void RefreshValues()
+	{
+		base.RefreshValues();
+		SelectionText = new TextObject("{=*}Select").ToString();
 	}
 
 	protected abstract void OnSelectionStateChanged(bool isSelected);

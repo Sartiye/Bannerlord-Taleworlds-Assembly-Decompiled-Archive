@@ -6,6 +6,34 @@ namespace TaleWorlds.TwoDimension.Standalone.Native.Windows;
 
 public static class User32
 {
+	public struct RECT
+	{
+		public int left;
+
+		public int top;
+
+		public int right;
+
+		public int bottom;
+	}
+
+	public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr lParam);
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+	public struct MONITORINFOEX
+	{
+		public int cbSize;
+
+		public RECT rcMonitor;
+
+		public RECT rcWork;
+
+		public uint dwFlags;
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+		public string szDevice;
+	}
+
 	[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
 	public static extern short GetAsyncKeyState(int vkey);
 
@@ -113,4 +141,10 @@ public static class User32
 
 	[DllImport("user32.dll")]
 	public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+
+	[DllImport("user32.dll")]
+	public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
+
+	[DllImport("user32.dll", CharSet = CharSet.Auto)]
+	public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
 }

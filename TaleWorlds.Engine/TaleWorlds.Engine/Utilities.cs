@@ -940,4 +940,14 @@ public static class Utilities
 	{
 		return EngineApplicationInterface.IUtil.IsAsyncPhysicsThread();
 	}
+
+	public static void StartLoadingStuckCheckState(float timeoutThresholdSeconds)
+	{
+		EngineApplicationInterface.IUtil.StartLoadingStuckCheckState(timeoutThresholdSeconds);
+	}
+
+	public static void EndLoadingStuckCheckState()
+	{
+		EngineApplicationInterface.IUtil.EndLoadingStuckCheckState();
+	}
 }

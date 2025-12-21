@@ -318,6 +318,12 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetTickDebugPausedDelegate(UIntPtr missionPointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate float GetTimeDelegate(UIntPtr missionPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -607,7 +613,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void tickAgentsAndTeamsAsyncDelegate(UIntPtr missionPointer, float dt);
+	public delegate void TickAgentsAndTeamsAsyncDelegate(UIntPtr missionPointer, float dt);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -729,6 +735,8 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static GetStraightPathToTargetDelegate call_GetStraightPathToTargetDelegate;
 
+	public static GetTickDebugPausedDelegate call_GetTickDebugPausedDelegate;
+
 	public static GetTimeDelegate call_GetTimeDelegate;
 
 	public static GetVelocityOfMissileDelegate call_GetVelocityOfMissileDelegate;
@@ -841,7 +849,7 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static TickDelegate call_TickDelegate;
 
-	public static tickAgentsAndTeamsAsyncDelegate call_tickAgentsAndTeamsAsyncDelegate;
+	public static TickAgentsAndTeamsAsyncDelegate call_TickAgentsAndTeamsAsyncDelegate;
 
 	public void AddAiDebugText(UIntPtr missionPointer, string text)
 	{
@@ -1255,6 +1263,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		return call_GetStraightPathToTargetDelegate(scenePointer, targetPosition, startingPosition, samplingDistance, stopAtObstacle);
 	}
 
+	public bool GetTickDebugPaused(UIntPtr missionPointer)
+	{
+		return call_GetTickDebugPausedDelegate(missionPointer);
+	}
+
 	public float GetTime(UIntPtr missionPointer)
 	{
 		return call_GetTimeDelegate(missionPointer);
@@ -1554,9 +1567,9 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 		call_TickDelegate(missionPointer, dt);
 	}
 
-	public void tickAgentsAndTeamsAsync(UIntPtr missionPointer, float dt)
+	public void TickAgentsAndTeamsAsync(UIntPtr missionPointer, float dt)
 	{
-		call_tickAgentsAndTeamsAsyncDelegate(missionPointer, dt);
+		call_TickAgentsAndTeamsAsyncDelegate(missionPointer, dt);
 	}
 
 	int IMBMission.AddMissile(UIntPtr missionPointer, bool isPrediction, int shooterAgentIndex, in WeaponData weaponData, WeaponStatsData[] weaponStatsData, int weaponStatsDataLength, float damageBonus, ref Vec3 position, ref Vec3 direction, ref Mat3 orientation, float baseSpeed, float speed, bool addRigidBody, UIntPtr entityPointer, int forcedMissileIndex, bool isPrimaryWeaponShot, out UIntPtr missileEntity)

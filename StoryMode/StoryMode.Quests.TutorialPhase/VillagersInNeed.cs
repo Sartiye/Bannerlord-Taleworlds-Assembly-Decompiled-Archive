@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Helpers;
 using StoryMode.Missions;
@@ -38,6 +39,8 @@ public class VillagersInNeed : StoryModeQuestBase
 	private bool _isHeadmanFollowing;
 
 	private bool _rescuedHeadman;
+
+	private static int SettlementBusyPriority => 400;
 
 	public override TextObject Title => new TextObject("{=Cv2W7aFu}Villagers in Need");
 
@@ -93,6 +96,15 @@ public class VillagersInNeed : StoryModeQuestBase
 		CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, GameMenuOpened);
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
 		CampaignEvents.OnMissionEndedEvent.AddNonSerializedListener(this, OnMissionEnded);
+		CampaignEvents.IsSettlementBusyEvent.AddNonSerializedListener(this, IsSettlementBusy);
+	}
+
+	private void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
+	{
+		if (settlement == _village && asker != this)
+		{
+			priority = Math.Max(priority, SettlementBusyPriority);
+		}
 	}
 
 	private void OnMissionEnded(IMission mission)

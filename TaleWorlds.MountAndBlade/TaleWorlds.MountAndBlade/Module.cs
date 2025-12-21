@@ -689,6 +689,29 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		return text;
 	}
 
+	[CommandLineFunctionality.CommandLineArgumentFunction("get_item_mesh_names", "module")]
+	public static string GetCraftedItemMeshNames(List<string> arguments)
+	{
+		HashSet<string> hashSet = new HashSet<string>();
+		foreach (CraftingPiece objectType in MBObjectManager.Instance.GetObjectTypeList<CraftingPiece>())
+		{
+			hashSet.Add(objectType.MeshName);
+			if (objectType.BladeData != null)
+			{
+				hashSet.Add(objectType.BladeData.HolsterMeshName);
+			}
+		}
+		string text = "";
+		foreach (string item in hashSet)
+		{
+			if (item != null && !item.IsEmpty())
+			{
+				text = text + item + "#";
+			}
+		}
+		return text;
+	}
+
 	[MBCallback(null, false)]
 	internal string GetHorseMaterialNames()
 	{
@@ -1174,7 +1197,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	[MBCallback(null, false)]
 	internal static void MBThrowException()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1531);
+		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1558);
 	}
 
 	[MBCallback(null, false)]

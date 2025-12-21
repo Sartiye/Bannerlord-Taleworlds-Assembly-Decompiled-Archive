@@ -46,20 +46,16 @@ public sealed class MissionOrderHotkeyCategory : GameKeyContext
 
 	public const int HoldOrder = 87;
 
-	public const int SelectLeftGroup = 88;
+	public const int SelectLeftFormation = 88;
 
-	public const int SelectTopGroup = 89;
+	public const int SelectRightFormation = 89;
 
-	public const int SelectRightGroup = 90;
+	public const int ApplySelection = 90;
 
-	public const int SelectBottomGroup = 91;
-
-	public const int ApplySelection = 92;
-
-	public const string GamepadToggleCameraMode = "GamepadToggleCameraMode";
+	public const int ToggleSelection = 91;
 
 	public MissionOrderHotkeyCategory()
-		: base("MissionOrderHotkeyCategory", 111)
+		: base("MissionOrderHotkeyCategory", 110)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();
@@ -68,7 +64,6 @@ public sealed class MissionOrderHotkeyCategory : GameKeyContext
 
 	private void RegisterHotKeys()
 	{
-		RegisterHotKey(new HotKey("GamepadToggleCameraMode", "MissionOrderHotkeyCategory", InputKey.ControllerRThumb));
 	}
 
 	private void RegisterGameKeys()
@@ -93,11 +88,10 @@ public sealed class MissionOrderHotkeyCategory : GameKeyContext
 		RegisterGameKey(new GameKey(85, "Group6Hear", "MissionOrderHotkeyCategory", InputKey.D7, GameKeyMainCategories.OrderMenuCategory));
 		RegisterGameKey(new GameKey(86, "Group7Hear", "MissionOrderHotkeyCategory", InputKey.D8, GameKeyMainCategories.OrderMenuCategory));
 		RegisterGameKey(new GameKey(87, "HoldOrder", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLBumper, GameKeyMainCategories.OrderMenuCategory));
-		RegisterGameKey(new GameKey(88, "SelectLeftGroup", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLLeft, GameKeyMainCategories.OrderMenuCategory));
-		RegisterGameKey(new GameKey(89, "SelectTopGroup", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLUp, GameKeyMainCategories.OrderMenuCategory));
-		RegisterGameKey(new GameKey(90, "SelectRightGroup", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLRight, GameKeyMainCategories.OrderMenuCategory));
-		RegisterGameKey(new GameKey(91, "SelectBottomGroup", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLDown, GameKeyMainCategories.OrderMenuCategory));
-		RegisterGameKey(new GameKey(92, "ApplySelection", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerRBumper, GameKeyMainCategories.OrderMenuCategory));
+		RegisterGameKey(new GameKey(88, "SelectLeftFormation", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLLeft, GameKeyMainCategories.OrderMenuCategory));
+		RegisterGameKey(new GameKey(89, "SelectRightFormation", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLRight, GameKeyMainCategories.OrderMenuCategory));
+		RegisterGameKey(new GameKey(90, "ApplySelection", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLDown, GameKeyMainCategories.OrderMenuCategory));
+		RegisterGameKey(new GameKey(91, "ToggleSelection", "MissionOrderHotkeyCategory", InputKey.Invalid, InputKey.ControllerLUp, GameKeyMainCategories.OrderMenuCategory));
 	}
 
 	private void RegisterGameAxisKeys()

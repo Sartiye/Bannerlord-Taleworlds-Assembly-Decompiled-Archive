@@ -22,7 +22,10 @@ internal interface IMBMission
 	void ForceDisableOcclusion(UIntPtr missionPointer, bool value);
 
 	[EngineMethod("tick_agents_and_teams_async", false, null, false)]
-	void tickAgentsAndTeamsAsync(UIntPtr missionPointer, float dt);
+	void TickAgentsAndTeamsAsync(UIntPtr missionPointer, float dt);
+
+	[EngineMethod("get_tick_debug_paused", false, null, false)]
+	bool GetTickDebugPaused(UIntPtr missionPointer);
 
 	[EngineMethod("clear_agent_actions", false, null, false)]
 	void ClearAgentActions(UIntPtr missionPointer);

@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
@@ -151,7 +152,7 @@ public class EscortAgentBehavior : AgentBehavior
 		}
 		else
 		{
-			Debug.FailedAssert("At least one target must be specified for the escort behavior.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\AgentBehaviors\\EscortAgentBehavior.cs", "ControlMovement", 158);
+			Debug.FailedAssert("At least one target must be specified for the escort behavior.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\AgentBehaviors\\EscortAgentBehavior.cs", "ControlMovement", 160);
 			num2 = 0f;
 			targetPosition = base.OwnerAgent.GetWorldPosition();
 			targetRotation = 0f;
@@ -213,7 +214,7 @@ public class EscortAgentBehavior : AgentBehavior
 			}
 			break;
 		}
-		if (_state == State.Escorting && num2 < 16f && num < 16f)
+		if (_state == State.Escorting && num2 < 16f && num < 16f && !Campaign.Current.ConversationManager.IsConversationInProgress)
 		{
 			_escortFinished = true;
 		}

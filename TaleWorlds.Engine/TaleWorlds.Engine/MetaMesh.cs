@@ -283,6 +283,11 @@ public sealed class MetaMesh : GameEntityComponent
 		EngineApplicationInterface.IMetaMesh.SetMaterial(base.Pointer, material.Pointer);
 	}
 
+	public void SetShaderToMaterial(string shaderName)
+	{
+		EngineApplicationInterface.IMetaMesh.SetShaderToMaterial(base.Pointer, shaderName);
+	}
+
 	public void SetLodBias(int lodBias)
 	{
 		EngineApplicationInterface.IMetaMesh.SetLodBias(base.Pointer, lodBias);

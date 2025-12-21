@@ -1254,10 +1254,13 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 			{
 				if (settlement.Village != _targetVillage)
 				{
-					TextObject textObject = (settlement.IsRaided ? new TextObject("{=YTaM6G1E}It seems the village has been raided a short while ago. You found nothing but smoke, fire and crying people.") : new TextObject("{=2P3UJ8be}You ask around the village if anyone saw {TARGET_HERO.NAME} or some suspicious characters with a young woman.{newline}{newline}Villagers say that they saw a young man and woman ride in early in the morning. They bought some supplies and trotted off towards {TARGET_VILLAGE}."));
-					textObject.SetTextVariable("TARGET_VILLAGE", _targetVillage.Name);
-					StringHelpers.SetCharacterProperties("TARGET_HERO", _daughterHero.CharacterObject, textObject);
-					InformationManager.ShowInquiry(new InquiryData(Title.ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yS7PvrTD}OK").ToString(), "", null, null));
+					if (settlement.IsSettlementBusy(this))
+					{
+						TextObject textObject = (settlement.IsRaided ? new TextObject("{=YTaM6G1E}It seems the village has been raided a short while ago. You found nothing but smoke, fire and crying people.") : new TextObject("{=2P3UJ8be}You ask around the village if anyone saw {TARGET_HERO.NAME} or some suspicious characters with a young woman.{newline}{newline}Villagers say that they saw a young man and woman ride in early in the morning. They bought some supplies and trotted off towards {TARGET_VILLAGE}."));
+						textObject.SetTextVariable("TARGET_VILLAGE", _targetVillage.Name);
+						StringHelpers.SetCharacterProperties("TARGET_HERO", _daughterHero.CharacterObject, textObject);
+						InformationManager.ShowInquiry(new InquiryData(Title.ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yS7PvrTD}OK").ToString(), "", null, null));
+					}
 					if (!_isTrackerLogAdded)
 					{
 						TextObject textObject2 = new TextObject("{=WGi3Zuv7}You asked the villagers around {CURRENT_SETTLEMENT} if they saw a young woman matching the description of {QUEST_GIVER.LINK}'s daughter, {TARGET_HERO.NAME}.{newline}{newline}They said a young woman and a young man dropped by early in the morning to buy some supplies and then rode off towards {TARGET_VILLAGE}.");
@@ -1279,13 +1282,22 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 						TextObject textObject4 = new TextObject("{=aYMW8bWi}Talk to her");
 						inquiryData = new InquiryData(Title.ToString(), textObject3.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, textObject4.ToString(), null, TalkWithDaughterAfterRaid, null);
 					}
+					else if (settlement.IsSettlementBusy(this))
+					{
+						TextObject textObject5 = new TextObject("{=*}You ask around the village if anyone saw {TARGET_HERO.NAME} or some suspicious characters with a young woman. Villagers say that there was a young man and woman who arrived here exhausted. The villagers allowed them to stay for a while. You should search the village to find her.");
+						StringHelpers.SetCharacterProperties("TARGET_HERO", _daughterHero.CharacterObject, textObject5);
+						AddLog(textObject5);
+					}
 					else
 					{
-						TextObject textObject5 = new TextObject("{=bbwNIIKI}You ask around the village if anyone saw {TARGET_HERO.NAME} or some suspicious characters with a young woman.{newline}{newline}Villagers say that there was a young man and woman who arrived here exhausted. The villagers allowed them to stay for a while.{newline}You can check the area, and see if they are still hiding here.");
-						StringHelpers.SetCharacterProperties("TARGET_HERO", _daughterHero.CharacterObject, textObject5);
-						inquiryData = new InquiryData(Title.ToString(), textObject5.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=bb6e8DoM}Search the village").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), SearchTheVillage, null);
+						TextObject textObject6 = new TextObject("{=bbwNIIKI}You ask around the village if anyone saw {TARGET_HERO.NAME} or some suspicious characters with a young woman.{newline}{newline}Villagers say that there was a young man and woman who arrived here exhausted. The villagers allowed them to stay for a while.{newline}You can check the area, and see if they are still hiding here.");
+						StringHelpers.SetCharacterProperties("TARGET_HERO", _daughterHero.CharacterObject, textObject6);
+						inquiryData = new InquiryData(Title.ToString(), textObject6.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=bb6e8DoM}Search the village").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), SearchTheVillage, null);
 					}
-					InformationManager.ShowInquiry(inquiryData);
+					if (inquiryData != null)
+					{
+						InformationManager.ShowInquiry(inquiryData);
+					}
 				}
 				_villagesAndAlreadyVisitedBooleans[settlement.Village] = true;
 			}
