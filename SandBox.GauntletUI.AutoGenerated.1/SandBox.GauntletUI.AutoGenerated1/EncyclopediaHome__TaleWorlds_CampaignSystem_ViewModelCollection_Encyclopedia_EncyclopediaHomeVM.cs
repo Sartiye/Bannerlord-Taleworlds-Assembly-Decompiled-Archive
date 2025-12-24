@@ -47,13 +47,13 @@ public class EncyclopediaHome__TaleWorlds_CampaignSystem_ViewModelCollection_Enc
 
 	public void SetAttributes()
 	{
-		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
+		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		base.DoNotAcceptEvents = true;
 		base.Brush = base.Context.GetBrush("Encyclopedia.Page.SoundBrush");
-		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0.SuggestedHeight = 762f;
+		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0.SuggestedHeight = 912f;
 		_widget_0.SuggestedWidth = 1465f;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0.VerticalAlignment = VerticalAlignment.Center;
@@ -64,10 +64,12 @@ public class EncyclopediaHome__TaleWorlds_CampaignSystem_ViewModelCollection_Enc
 		_widget_0_0.IsDefaultNavigationScope = true;
 		_widget_0_0.HasCircularMovement = false;
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_1.MarginTop = 195f;
+		_widget_0_1.MarginBottom = 40f;
 		_widget_0_1.MarginLeft = 15f;
+		_widget_0_1.MarginRight = 15f;
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_0_1.VerticalAlignment = VerticalAlignment.Center;
 	}
 
 	public void RefreshBindingWithChildren()

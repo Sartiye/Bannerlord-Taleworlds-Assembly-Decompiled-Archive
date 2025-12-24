@@ -14,8 +14,6 @@ public class DetachmentManager
 
 	private readonly List<(int, float)> _slotIndexWeightTuplesCache;
 
-	private List<float> _templateCostCache;
-
 	private readonly Team _team;
 
 	public MBReadOnlyList<(IDetachment, DetachmentData)> Detachments => _detachments;
@@ -27,7 +25,6 @@ public class DetachmentManager
 		_team = team;
 		team.OnFormationsChanged += Team_OnFormationsChanged;
 		_slotIndexWeightTuplesCache = new List<(int, float)>();
-		_templateCostCache = new List<float>();
 	}
 
 	private void Team_OnFormationsChanged(Team team, Formation formation)
@@ -190,16 +187,9 @@ public class DetachmentManager
 								}
 							}
 							float exactCostOfAgentAtSlot = detachment.GetExactCostOfAgentAtSlot(movingAgentAtSlotIndex, item.Item1);
-							if (num7 == -1)
+							if (num7 != -1)
 							{
-								_templateCostCache = detachment.GetTemplateCostsOfAgent(movingAgentAtSlotIndex, _templateCostCache);
-								_ = _templateCostCache[item.Item1];
-							}
-							else
-							{
-								(Agent, List<float>) tuple4 = detachmentData.agentScores[num7];
-								_ = tuple4.Item2[item.Item1];
-								tuple4.Item2[item.Item1] = exactCostOfAgentAtSlot;
+								detachmentData.agentScores[num7].Item2[item.Item1] = exactCostOfAgentAtSlot;
 							}
 							num6 = exactCostOfAgentAtSlot;
 						}
@@ -207,16 +197,16 @@ public class DetachmentManager
 						{
 							detachment.MarkSlotAtIndex(item.Item1);
 						}
-						(Agent, List<float>) tuple5 = detachmentData.agentScores[num4];
-						float num8 = tuple5.Item2[item.Item1];
+						(Agent, List<float>) tuple4 = detachmentData.agentScores[num4];
+						float num8 = tuple4.Item2[item.Item1];
 						if (movingAgentAtSlotIndex != null && num6 <= num8)
 						{
 							flag = true;
 						}
 						else if (movingAgentAtSlotIndex != null)
 						{
-							float exactCostOfAgentAtSlot2 = detachment.GetExactCostOfAgentAtSlot(tuple5.Item1, item.Item1);
-							tuple5.Item2[item.Item1] = exactCostOfAgentAtSlot2;
+							float exactCostOfAgentAtSlot2 = detachment.GetExactCostOfAgentAtSlot(tuple4.Item1, item.Item1);
+							tuple4.Item2[item.Item1] = exactCostOfAgentAtSlot2;
 							if (num6 <= exactCostOfAgentAtSlot2)
 							{
 								flag = true;
@@ -224,7 +214,7 @@ public class DetachmentManager
 						}
 						if (!flag)
 						{
-							detachment.AddAgentAtSlotIndex(tuple5.Item1, item.Item1);
+							detachment.AddAgentAtSlotIndex(tuple4.Item1, item.Item1);
 							flag = true;
 						}
 					}

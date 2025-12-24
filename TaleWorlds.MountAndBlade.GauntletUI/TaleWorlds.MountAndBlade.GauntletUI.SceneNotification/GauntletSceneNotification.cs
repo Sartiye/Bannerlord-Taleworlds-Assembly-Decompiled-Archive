@@ -31,8 +31,6 @@ public class GauntletSceneNotification : GlobalLayer
 
 	private SceneNotificationVM _dataSource;
 
-	private SceneNotificationData _activeData;
-
 	private bool _isActive;
 
 	private bool _isLastActiveGameStatePaused;
@@ -99,6 +97,12 @@ public class GauntletSceneNotification : GlobalLayer
 	protected override void OnTick(float dt)
 	{
 		base.OnTick(dt);
+		if (_isActive && (MBGameManager.Current == null || Game.Current == null || MBGameManager.Current == null || MBGameManager.Current.IsEnding))
+		{
+			_notificationQueue.Clear();
+			CloseNotification();
+			return;
+		}
 		if (_dataSource != null)
 		{
 			_dataSource.EndProgress = _cameraPathScript?.GetCameraFade() ?? 0f;
@@ -120,7 +124,7 @@ public class GauntletSceneNotification : GlobalLayer
 			}
 			else
 			{
-				Debug.FailedAssert("Scene load was pending but scene notification is not active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OnTick", 116);
+				Debug.FailedAssert("Scene load was pending but scene notification is not active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OnTick", 121);
 			}
 			_isPendingSceneLoad = false;
 		}
@@ -158,27 +162,28 @@ public class GauntletSceneNotification : GlobalLayer
 
 	private void OpenScene()
 	{
-		SceneNotificationData.SceneNotificationCharacter[] sceneNotificationCharacters = _activeData.GetSceneNotificationCharacters();
-		Banner[] banners = _activeData.GetBanners();
-		SceneNotificationData.SceneNotificationShip[] ships = _activeData.GetShips();
+		SceneNotificationData activeData = _dataSource.ActiveData;
+		SceneNotificationData.SceneNotificationCharacter[] sceneNotificationCharacters = activeData.GetSceneNotificationCharacters();
+		Banner[] banners = activeData.GetBanners();
+		SceneNotificationData.SceneNotificationShip[] ships = activeData.GetShips();
 		_scene = Scene.CreateNewScene(initialize_physics: true, enable_decals: true, DecalAtlasGroup.Battle);
 		_scene.SetUsesDeleteLaterSystem(value: true);
 		SceneInitializationData initData = new SceneInitializationData(initializeWithDefaults: true);
-		initData.InitPhysicsWorld = _activeData.SceneProperties.InitializePhysics;
+		initData.InitPhysicsWorld = activeData.SceneProperties.InitializePhysics;
 		if (initData.InitPhysicsWorld)
 		{
 			_scene.EnableInclusiveAsyncPhysx();
 		}
-		_scene.Read(_activeData.SceneID, ref initData);
+		_scene.Read(activeData.SceneID, ref initData);
 		if (initData.InitPhysicsWorld)
 		{
 			_scene.EnableFixedTick();
 			_scene.SetFixedTickCallbackActive(isActive: true);
 		}
-		_scene.DisableStaticShadows(_activeData.SceneProperties.DisableStaticShadows);
-		if (_activeData.SceneProperties.OverriddenWaterStrength.HasValue)
+		_scene.DisableStaticShadows(activeData.SceneProperties.DisableStaticShadows);
+		if (activeData.SceneProperties.OverriddenWaterStrength.HasValue)
 		{
-			_scene.SetWaterStrength(_activeData.SceneProperties.OverriddenWaterStrength.Value);
+			_scene.SetWaterStrength(activeData.SceneProperties.OverriddenWaterStrength.Value);
 		}
 		_scene.SetClothSimulationState(state: true);
 		_scene.SetShadow(shadowEnabled: true);
@@ -312,14 +317,14 @@ public class GauntletSceneNotification : GlobalLayer
 				if (string.IsNullOrEmpty(sceneNotificationShip.ShipPrefabId))
 				{
 					num2++;
-					Debug.FailedAssert("Scene notification ship does not have a valid prefab", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 359);
+					Debug.FailedAssert("Scene notification ship does not have a valid prefab", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 366);
 					continue;
 				}
 				string text2 = "spawnpoint_ship_" + num2;
 				GameEntity gameEntity2 = _scene.FindEntityWithTag(text2);
 				if (gameEntity2 == null)
 				{
-					Debug.FailedAssert("Ship spawn point entity with tag: " + text2 + " was not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 367);
+					Debug.FailedAssert("Ship spawn point entity with tag: " + text2 + " was not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "OpenScene", 374);
 					num2++;
 					continue;
 				}
@@ -378,7 +383,7 @@ public class GauntletSceneNotification : GlobalLayer
 	{
 		if (_isActive)
 		{
-			Debug.FailedAssert("Trying to create scene notification while another notification is playing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "CreateSceneNotification", 434);
+			Debug.FailedAssert("Trying to create scene notification while another notification is playing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "CreateSceneNotification", 441);
 			return;
 		}
 		_isActive = true;
@@ -390,7 +395,6 @@ public class GauntletSceneNotification : GlobalLayer
 			GameStateManager.Current.RegisterActiveStateDisableRequest(this);
 			MBCommon.PauseGameEngine();
 		}
-		_activeData = data;
 		_dataSource.EndProgress = 0f;
 		_isPendingSceneLoad = true;
 	}
@@ -401,7 +405,7 @@ public class GauntletSceneNotification : GlobalLayer
 		{
 			return;
 		}
-		_dataSource.ForceClose();
+		_dataSource.ClearData();
 		_isActive = false;
 		base.Layer.InputRestrictions.ResetInputRestrictions();
 		ScreenManager.SetSuspendLayer(base.Layer, isSuspended: true);
@@ -409,7 +413,7 @@ public class GauntletSceneNotification : GlobalLayer
 		ScreenManager.TryLoseFocus(base.Layer);
 		if (_isLastActiveGameStatePaused)
 		{
-			GameStateManager.Current.UnregisterActiveStateDisableRequest(this);
+			GameStateManager.Current?.UnregisterActiveStateDisableRequest(this);
 			MBCommon.UnPauseGameEngine();
 		}
 		_cameraPathScript?.Destroy();
@@ -422,7 +426,6 @@ public class GauntletSceneNotification : GlobalLayer
 			_sceneCharacterScripts = null;
 		}
 		MBAgentRendererSceneController.DestructAgentRendererSceneController(_scene, _agentRendererSceneController, deleteThisFrame: false);
-		_activeData = null;
 		_scene.ClearAll();
 		_scene.ManualInvalidate();
 		_scene = null;

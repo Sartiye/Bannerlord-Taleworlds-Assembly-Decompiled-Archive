@@ -560,7 +560,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 							MatrixFrame frame = new MatrixFrame(in rot, in o);
 							item.SetGlobalFrame(in frame);
 						}
-						item.GetChild(0).SetVisibilityExcludeParents(flag3);
+						item.WeakEntity.GetChild(0).SetVisibilityExcludeParents(flag3);
 						int soundCodeId = -1;
 						if (!flag2 && flag3)
 						{
@@ -869,15 +869,15 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		gameEntity.GetLocalFrame(out var frame);
 		MatrixFrame frame2 = globalFrame.TransformToParent(in frame);
 		gameEntity.SetGlobalFrame(in frame2);
-		List<GameEntity> children = new List<GameEntity>();
-		gameEntity.GetChildrenRecursive(ref children);
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
+		gameEntity.WeakEntity.GetChildrenRecursive(ref children);
 		GameEntity gameEntity2 = null;
-		if (children.Any((GameEntity entity) => entity.HasTag("siege_machine_mapicon_skeleton")))
+		if (children.Any((WeakGameEntity entity) => entity.HasTag("siege_machine_mapicon_skeleton")))
 		{
-			GameEntity gameEntity3 = children.Find((GameEntity entity) => entity.HasTag("siege_machine_mapicon_skeleton"));
-			if (gameEntity3.Skeleton != null)
+			WeakGameEntity weakEntity = children.Find((WeakGameEntity entity) => entity.HasTag("siege_machine_mapicon_skeleton"));
+			if (weakEntity.Skeleton != null)
 			{
-				gameEntity2 = gameEntity3;
+				gameEntity2 = GameEntity.CreateFromWeakEntity(weakEntity);
 				string siegeEngineMapFireAnimationName = Campaign.Current.Models.SiegeEventModel.GetSiegeEngineMapFireAnimationName(type, side);
 				gameEntity2.Skeleton.SetAnimationAtChannel(siegeEngineMapFireAnimationName, 0, 1f, 0f, 1f);
 			}
@@ -965,9 +965,9 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 
 	private void SetSettlementLevelVisibility()
 	{
-		List<GameEntity> children = new List<GameEntity>();
-		StrategicEntity.GetChildrenRecursive(ref children);
-		foreach (GameEntity item in children)
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
+		StrategicEntity.WeakEntity.GetChildrenRecursive(ref children);
+		foreach (WeakGameEntity item in children)
 		{
 			if (((uint)item.GetUpgradeLevelMask() & _currentLevelMask) == _currentLevelMask)
 			{
@@ -1077,7 +1077,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		for (int i = 0; i < _defenderBreachableWallEntitiesForAllLevels.Length; i++)
 		{
 			bool flag = mBReadOnlyList[i % mBReadOnlyList.Count] <= 0f;
-			foreach (GameEntity child in _defenderBreachableWallEntitiesForAllLevels[i].GetChildren())
+			foreach (WeakGameEntity child in _defenderBreachableWallEntitiesForAllLevels[i].WeakEntity.GetChildren())
 			{
 				if (child.HasTag("map_solid_wall"))
 				{
@@ -1115,9 +1115,9 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 
 	private void RefreshSiegePreparations(PartyBase party)
 	{
-		List<GameEntity> children = new List<GameEntity>();
-		StrategicEntity.GetChildrenRecursive(ref children);
-		List<GameEntity> list = children.FindAll((GameEntity x) => x.HasTag("siege_preparation"));
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
+		StrategicEntity.WeakEntity.GetChildrenRecursive(ref children);
+		List<WeakGameEntity> list = children.FindAll((WeakGameEntity x) => x.HasTag("siege_preparation"));
 		bool flag = false;
 		if (party.Settlement != null && party.Settlement.IsUnderSiege)
 		{
@@ -1125,7 +1125,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 			if (siegePreparations != null && siegePreparations.Progress >= 1f)
 			{
 				flag = true;
-				foreach (GameEntity item in list)
+				foreach (WeakGameEntity item in list)
 				{
 					item.SetVisibilityExcludeParents(visible: true);
 				}
@@ -1135,7 +1135,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		{
 			return;
 		}
-		foreach (GameEntity item2 in list)
+		foreach (WeakGameEntity item2 in list)
 		{
 			item2.SetVisibilityExcludeParents(visible: false);
 		}

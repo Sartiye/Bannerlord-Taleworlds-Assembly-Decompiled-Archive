@@ -48,4 +48,8 @@ public abstract class UsableMissionObjectComponent
 	protected internal virtual void OnMissionReset()
 	{
 	}
+
+	protected internal virtual void OnMissionObjectDisabled()
+	{
+	}
 }

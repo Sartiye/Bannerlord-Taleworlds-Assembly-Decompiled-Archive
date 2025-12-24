@@ -197,10 +197,10 @@ public struct Vec2
 
 	public bool IsUnit()
 	{
-		float length = Length;
-		if ((double)length > 0.95)
+		float lengthSquared = LengthSquared;
+		if (lengthSquared > 0.98010004f)
 		{
-			return (double)length < 1.05;
+			return lengthSquared < 1.0201f;
 		}
 		return false;
 	}

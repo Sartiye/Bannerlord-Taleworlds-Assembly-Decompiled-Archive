@@ -171,6 +171,14 @@ public class SaveHandler
 		SaveArgsQueue.Enqueue(new SaveArgs(saveType, saveName));
 	}
 
+	public void ForceAutoSave()
+	{
+		if (!Campaign.Current.SandBoxManager.SandBoxSaveManager.IsAutoSaveDisabled())
+		{
+			SetSaveArgs(SaveArgs.SaveMode.AutoSave);
+		}
+	}
+
 	public CampaignSaveMetaDataArgs GetSaveMetaData()
 	{
 		return new CampaignSaveMetaDataArgs((from x in ModuleHelper.GetActiveModules()

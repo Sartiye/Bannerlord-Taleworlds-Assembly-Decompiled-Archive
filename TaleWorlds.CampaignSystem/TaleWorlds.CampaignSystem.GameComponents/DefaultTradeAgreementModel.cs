@@ -22,6 +22,20 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 
 	private const float MaxAssumedExposureBonus = 40f;
 
+	private static readonly TextObject _kingdomsAtWarText = new TextObject("{=vo7kAlkR}The kingdoms are at war.");
+
+	private static readonly TextObject _eliminatedKingdomText = new TextObject("{=ZeNt57yM}The kingdom is eliminated.");
+
+	private static readonly TextObject _existingTradeAgreementText = new TextObject("{=8HXcla1b}These kingdoms already have a trade agreement.");
+
+	private static readonly TextObject _maximumNumberOfTradeAgreementsText = new TextObject("{=DJ51OJWj}You already have maximum number of trade agreements.");
+
+	private static readonly TextObject _limitedSharerBordersText = new TextObject("{=EapZFDGF}Limited shared borders");
+
+	private static readonly TextObject _relationsText = new TextObject("{=3YVDMg5X}Low relations between rulers");
+
+	private static readonly TextObject _recentWarText = new TextObject("{=lDIz0nEY}Recent war");
+
 	private const int MaxReasonsInExplanation = 3;
 
 	private ITradeAgreementsCampaignBehavior _tradeAgreementsBehavior;
@@ -48,45 +62,49 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 		return 2;
 	}
 
-	public override bool CanMakeTradeAgreement(Kingdom kingdom, Kingdom other, bool checkOtherSideTradeSupport, out TextObject reason)
+	public override bool CanMakeTradeAgreement(Kingdom kingdom, Kingdom other, bool checkOtherSideTradeSupport, out TextObject reason, bool includeReason = false)
 	{
+		reason = (includeReason ? TextObject.GetEmpty() : null);
 		if (kingdom.IsAtWarWith(other))
 		{
-			reason = new TextObject("{=vo7kAlkR}The kingdoms are at war.");
+			reason = _kingdomsAtWarText;
 			return false;
 		}
 		if (other.IsEliminated)
 		{
-			reason = new TextObject("{=ZeNt57yM}The kingdom is eliminated.");
+			reason = _eliminatedKingdomText;
 			return false;
 		}
 		if (TradeAgreementsCampaignBehavior.HasTradeAgreement(kingdom, other))
 		{
-			reason = new TextObject("{=8HXcla1b}These kingdoms already have a trade agreement.");
+			reason = _existingTradeAgreementText;
 			return false;
 		}
 		if (Kingdom.All.Count((Kingdom x) => x != kingdom && !x.IsEliminated && TradeAgreementsCampaignBehavior.HasTradeAgreement(kingdom, x)) >= Campaign.Current.Models.TradeAgreementModel.GetMaximumTradeAgreementCount(kingdom))
 		{
-			reason = new TextObject("{=DJ51OJWj}You already have maximum number of trade agreements.");
+			reason = _maximumNumberOfTradeAgreementsText;
 			return false;
 		}
 		if (Kingdom.All.Count((Kingdom x) => x != other && !x.IsEliminated && TradeAgreementsCampaignBehavior.HasTradeAgreement(other, x)) >= Campaign.Current.Models.TradeAgreementModel.GetMaximumTradeAgreementCount(kingdom))
 		{
-			reason = new TextObject("{=O6zpuLGa}{OTHER_KINGDOM} already has maximum number of trade agreements.");
-			reason.SetTextVariable("OTHER_KINGDOM", other.Name);
+			if (includeReason)
+			{
+				reason = new TextObject("{=O6zpuLGa}{OTHER_KINGDOM} already has maximum number of trade agreements.");
+				reason.SetTextVariable("OTHER_KINGDOM", other.Name);
+			}
 			return false;
 		}
-		if (checkOtherSideTradeSupport && Campaign.Current.Models.TradeAgreementModel.GetScoreOfStartingTradeAgreement(kingdom, other, kingdom.RulingClan, out reason) < 50f)
+		if (checkOtherSideTradeSupport && Campaign.Current.Models.TradeAgreementModel.GetScoreOfStartingTradeAgreement(kingdom, other, kingdom.RulingClan, out reason, includeReason) < 50f)
 		{
 			return false;
 		}
-		reason = TextObject.GetEmpty();
 		return true;
 	}
 
-	public override float GetScoreOfStartingTradeAgreement(Kingdom kingdom, Kingdom targetKingdom, Clan clan, out TextObject explanation)
+	public override float GetScoreOfStartingTradeAgreement(Kingdom kingdom, Kingdom targetKingdom, Clan clan, out TextObject explanation, bool includeExplanation = false)
 	{
-		ExplainedNumber explanation2 = new ExplainedNumber(0f, includeDescriptions: true);
+		ExplainedNumber explanation2 = new ExplainedNumber(0f, includeExplanation);
+		explanation = null;
 		CampaignTime peaceDeclarationDate = Campaign.Current.FactionManager.GetStanceLinkInternal(kingdom, targetKingdom).PeaceDeclarationDate;
 		float num = ((float)clan.Leader.GetRelation(targetKingdom.Leader) + (float)kingdom.Leader.GetRelation(targetKingdom.Leader) * 3f) * 0.25f;
 		AddRelationshipEffectToTradeAgreementExplanationTooltip(num, ref explanation2);
@@ -95,7 +113,10 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 		float exposureScoreToOtherKingdom = GetExposureScoreToOtherKingdom(kingdom, targetKingdom);
 		AddExposureEffectToTradeAgreementExplanationTooltip(exposureScoreToOtherKingdom, ref explanation2);
 		float value = 15f + num + num2 + exposureScoreToOtherKingdom + kingdom.Leader.RandomFloatWithSeed((uint)CampaignTime.Now.ToDays, 0f, 5f);
-		explanation = BuildExplanationForTradeAgreement(targetKingdom, explanation2);
+		if (includeExplanation)
+		{
+			explanation = BuildExplanationForTradeAgreement(targetKingdom, explanation2);
+		}
 		return MBMath.ClampFloat(value, 0f, 100f);
 	}
 
@@ -103,7 +124,7 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 	{
 		if (exposure < 40f)
 		{
-			explanation.Add(40f - exposure, new TextObject("{=EapZFDGF}Limited shared borders"));
+			explanation.Add(40f - exposure, _limitedSharerBordersText);
 		}
 	}
 
@@ -111,7 +132,7 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 	{
 		if (relationshipScore < 0.25f * (float)Campaign.Current.Models.DiplomacyModel.MaxRelationLimit)
 		{
-			explanation.Add((float)Campaign.Current.Models.DiplomacyModel.MaxRelationLimit - relationshipScore, new TextObject("{=3YVDMg5X}Low relations between rulers"));
+			explanation.Add((float)Campaign.Current.Models.DiplomacyModel.MaxRelationLimit - relationshipScore, _relationsText);
 		}
 	}
 
@@ -119,7 +140,7 @@ public class DefaultTradeAgreementModel : TradeAgreementModel
 	{
 		if (warScore < 20f && peaceDeclarationDate != CampaignTime.Zero)
 		{
-			explanation.Add(20f - warScore, new TextObject("{=lDIz0nEY}Recent war"));
+			explanation.Add(20f - warScore, _recentWarText);
 		}
 	}
 

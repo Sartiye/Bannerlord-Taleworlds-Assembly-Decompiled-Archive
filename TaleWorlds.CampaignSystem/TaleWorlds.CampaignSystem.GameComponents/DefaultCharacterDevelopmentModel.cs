@@ -231,7 +231,7 @@ public class DefaultCharacterDevelopmentModel : CharacterDevelopmentModel
 			num2 += (float)characterAttributes.GetPropertyValue(attribute);
 		}
 		num = num2 / (float)skill.Attributes.Length;
-		result.AddFactor(0.4f * num, new TextObject("{=jlrvzwFb}Attribute Effect"));
+		result.AddFactor(0.4f * num, _attributeEffectText);
 		int num3 = TaleWorlds.Library.MathF.Round(Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningLimit(characterAttributes, focusValue, skill).ResultNumber);
 		result.AddFactor((float)focusValue * 1f, _skillFocusText);
 		if (skillValue > num3)

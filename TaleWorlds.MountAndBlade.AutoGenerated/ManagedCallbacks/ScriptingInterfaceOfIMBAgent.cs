@@ -1113,7 +1113,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetScriptedTargetEntityDelegate(UIntPtr agentPointer, UIntPtr entityId, ref WorldPosition specialPosition, int additionalFlags, [MarshalAs(UnmanagedType.U1)] bool ignoreIfAlreadyAttacking);
+	public delegate void SetScriptedTargetEntityDelegate(UIntPtr agentPointer, UIntPtr entityId, int additionalFlags, [MarshalAs(UnmanagedType.U1)] bool ignoreIfAlreadyAttacking);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -2896,9 +2896,9 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_SetScriptedPositionAndDirectionDelegate(agentPointer, ref targetPosition, targetDirection, addHumanLikeDelay, additionalFlags);
 	}
 
-	public void SetScriptedTargetEntity(UIntPtr agentPointer, UIntPtr entityId, ref WorldPosition specialPosition, int additionalFlags, bool ignoreIfAlreadyAttacking)
+	public void SetScriptedTargetEntity(UIntPtr agentPointer, UIntPtr entityId, int additionalFlags, bool ignoreIfAlreadyAttacking)
 	{
-		call_SetScriptedTargetEntityDelegate(agentPointer, entityId, ref specialPosition, additionalFlags, ignoreIfAlreadyAttacking);
+		call_SetScriptedTargetEntityDelegate(agentPointer, entityId, additionalFlags, ignoreIfAlreadyAttacking);
 	}
 
 	public void SetSelectedMountIndex(UIntPtr agentPointer, int mount_index)

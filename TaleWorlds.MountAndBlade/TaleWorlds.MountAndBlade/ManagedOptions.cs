@@ -22,7 +22,8 @@ public static class ManagedOptions
 		ShowTargetingReticle,
 		AutoSaveInterval,
 		FriendlyTroopsBannerOpacity,
-		AlwaysShowFriendlyTroopBanners,
+		AlwaysShowFriendlyTroopBannersType,
+		ShowFormationDistances,
 		ReportDamage,
 		ReportBark,
 		LockTarget,
@@ -94,8 +95,10 @@ public static class ManagedOptions
 			return BannerlordConfig.AutoSaveInterval;
 		case ManagedOptionsType.FriendlyTroopsBannerOpacity:
 			return BannerlordConfig.FriendlyTroopsBannerOpacity;
-		case ManagedOptionsType.AlwaysShowFriendlyTroopBanners:
-			return BannerlordConfig.AlwaysShowFriendlyTroopBanners ? 1 : 0;
+		case ManagedOptionsType.AlwaysShowFriendlyTroopBannersType:
+			return BannerlordConfig.AlwaysShowFriendlyTroopBannersType;
+		case ManagedOptionsType.ShowFormationDistances:
+			return BannerlordConfig.ShowFormationDistances ? 1 : 0;
 		case ManagedOptionsType.ReportDamage:
 			return BannerlordConfig.ReportDamage ? 1 : 0;
 		case ManagedOptionsType.ReportBark:
@@ -171,7 +174,7 @@ public static class ManagedOptions
 		case ManagedOptionsType.PlayerReceivedDamageDifficulty:
 			return BannerlordConfig.PlayerReceivedDamageDifficulty;
 		default:
-			Debug.FailedAssert("ManagedOptionsType not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "GetConfig", 174);
+			Debug.FailedAssert("ManagedOptionsType not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "GetConfig", 177);
 			return 0f;
 		}
 	}
@@ -204,8 +207,10 @@ public static class ManagedOptions
 			return 30f;
 		case ManagedOptionsType.FriendlyTroopsBannerOpacity:
 			return 1f;
-		case ManagedOptionsType.AlwaysShowFriendlyTroopBanners:
-			return 0f;
+		case ManagedOptionsType.AlwaysShowFriendlyTroopBannersType:
+			return 1f;
+		case ManagedOptionsType.ShowFormationDistances:
+			return BannerlordConfig.ShowFormationDistances ? 1 : 0;
 		case ManagedOptionsType.ReportDamage:
 			return 1f;
 		case ManagedOptionsType.ReportBark:
@@ -281,7 +286,7 @@ public static class ManagedOptions
 		case ManagedOptionsType.PlayerReceivedDamageDifficulty:
 			return 0f;
 		default:
-			Debug.FailedAssert("ManagedOptionsType not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "GetDefaultConfig", 283);
+			Debug.FailedAssert("ManagedOptionsType not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "GetDefaultConfig", 288);
 			return 0f;
 		}
 	}
@@ -289,7 +294,7 @@ public static class ManagedOptions
 	[MBCallback(null, true)]
 	internal static int GetConfigCount()
 	{
-		return 50;
+		return 51;
 	}
 
 	[MBCallback(null, true)]
@@ -338,8 +343,11 @@ public static class ManagedOptions
 		case ManagedOptionsType.FriendlyTroopsBannerOpacity:
 			BannerlordConfig.FriendlyTroopsBannerOpacity = value;
 			break;
-		case ManagedOptionsType.AlwaysShowFriendlyTroopBanners:
-			BannerlordConfig.AlwaysShowFriendlyTroopBanners = value != 0f;
+		case ManagedOptionsType.AlwaysShowFriendlyTroopBannersType:
+			BannerlordConfig.AlwaysShowFriendlyTroopBannersType = (int)value;
+			break;
+		case ManagedOptionsType.ShowFormationDistances:
+			BannerlordConfig.ShowFormationDistances = value != 0f;
 			break;
 		case ManagedOptionsType.ReportDamage:
 			BannerlordConfig.ReportDamage = value != 0f;
@@ -445,7 +453,7 @@ public static class ManagedOptions
 				BannerlordConfig.Language = voiceLanguageIds[(int)value];
 				break;
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "SetConfig", 446);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "SetConfig", 454);
 			BannerlordConfig.Language = voiceLanguageIds[0];
 			break;
 		}
@@ -463,7 +471,7 @@ public static class ManagedOptions
 				BannerlordConfig.VoiceLanguage = voiceLanguageIds[(int)value];
 				break;
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "SetConfig", 464);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Options\\ManagedOptions\\ManagedOptions.cs", "SetConfig", 472);
 			BannerlordConfig.VoiceLanguage = voiceLanguageIds[0];
 			break;
 		}

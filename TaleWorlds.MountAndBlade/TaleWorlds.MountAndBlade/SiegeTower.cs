@@ -1066,9 +1066,9 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		_spawnedFromSpawner = true;
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		SiegeTowerRecord siegeTowerRecord = (SiegeTowerRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		HasArrivedAtTarget = siegeTowerRecord.HasArrivedAtTarget;
 		_state = (GateState)siegeTowerRecord.State;

@@ -5,6 +5,7 @@ using SandBox.View.Map;
 using SandBox.View.Map.Managers;
 using SandBox.View.Map.Visuals;
 using SandBox.View.Missions.NameMarkers;
+using SandBox.View.OrderProviders;
 using SandBox.View.Overlay;
 using SandBox.ViewModelCollection.Missions.NameMarker;
 using TaleWorlds.CampaignSystem;
@@ -26,6 +27,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Tableaus;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Order.Visual;
 using TaleWorlds.SaveSystem;
 using TaleWorlds.SaveSystem.Load;
 using TaleWorlds.ScreenSystem;
@@ -39,6 +41,8 @@ public class SandBoxViewSubModule : MBSubModuleBase
 	private TextObject _sandBoxAchievementsHint = new TextObject("{=j09m7S2E}Achievements are disabled in SandBox mode!");
 
 	private bool _isInitialized;
+
+	private HideoutVisualOrderProvider _hideoutVisualOrderProvider;
 
 	private ConversationViewManager _conversationViewManager;
 
@@ -88,6 +92,8 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		MissionNameMarkerFactory.DefaultContext.AddProvider<DefaultMissionNameMarkerHandler>();
 		MissionNameMarkerFactory.DefaultContext.AddProvider<StealthNameMarkerProvider>();
 		_mapConversationDataProvider = new DefaultMapConversationDataProvider();
+		_hideoutVisualOrderProvider = new HideoutVisualOrderProvider();
+		VisualOrderFactory.RegisterProvider(_hideoutVisualOrderProvider);
 	}
 
 	protected override void OnSubModuleUnloaded()
@@ -95,6 +101,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		Module.CurrentModule.ImguiProfilerTick -= OnImguiProfilerTick;
 		SandBoxSaveHelper.OnStateChange -= OnSaveHelperStateChange;
 		GameMenuOverlayFactory.UnregisterProvider(_gameMenuOverlayProvider);
+		VisualOrderFactory.UnregisterProvider(_hideoutVisualOrderProvider);
 		UnregisterTooltipTypes();
 		_instance = null;
 		base.OnSubModuleUnloaded();
@@ -377,7 +384,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 			LoadingWindow.DisableGlobalLoadingWindow();
 			break;
 		default:
-			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 671);
+			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 679);
 			break;
 		}
 	}

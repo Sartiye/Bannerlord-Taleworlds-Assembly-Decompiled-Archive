@@ -5,7 +5,7 @@ namespace StoryMode;
 
 public abstract class StoryModeQuestBase : QuestBase
 {
-	public override bool IsSpecialQuest => true;
+	public override string SpecialQuestType => "MainStoryline";
 
 	public override bool IsRemainingTimeHidden => true;
 

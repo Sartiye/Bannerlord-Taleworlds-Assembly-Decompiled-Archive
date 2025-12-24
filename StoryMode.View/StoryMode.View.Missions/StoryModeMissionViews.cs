@@ -57,6 +57,7 @@ public class StoryModeMissionViews
 			new MissionSingleplayerViewHandler(),
 			new MusicStealthMissionView(),
 			new StealthTutorialView(),
+			SandBoxViewCreator.CreateMissionStealthFailCounter(),
 			ViewCreator.CreateMissionAgentStatusUIHandler(mission),
 			ViewCreator.CreateMissionMainAgentEquipmentController(mission),
 			ViewCreator.CreateMissionAgentLockVisualizerView(mission),

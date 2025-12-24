@@ -311,7 +311,7 @@ public struct Rectangle2D
 		{
 			LocalScale = Vector2.One;
 		}
-		_hasRotation = LocalRotation != 0f;
+		_hasRotation = LocalRotation != 0f || _renderProperties.RotationOffset != 0f;
 		ValidateVisuals();
 		_cachedMatrixFrame = RectangleHelper.CreateMatrixFrame(LocalPosition.X, LocalPosition.Y, LocalPivot.X, LocalPivot.Y, LocalScale.X, LocalScale.Y, LocalRotation);
 		if (parentRectangle.IsValid)
@@ -363,20 +363,20 @@ public struct Rectangle2D
 			return;
 		}
 		Vec3 origin = _cachedVisualMatrixFrame.origin;
-		Mat3 identity = Mat3.Identity;
+		Mat3 rotation = _cachedOrthonormalMatrix.rotation;
 		Vector2 localScale = LocalScale;
 		Vector2 vector = new Vector2(0.5f, 0.5f);
-		Vec3 v = new Vec3(LocalScale.X * (0f - vector.X), localScale.Y * (0f - vector.Y));
-		origin -= identity.TransformToParent(in v);
-		identity.RotateAboutUp(_renderProperties.RotationOffset * (System.MathF.PI / 180f));
-		origin += identity.TransformToParent(in v);
+		Vec3 v = new Vec3(localScale.X * (0f - vector.X), localScale.Y * (0f - vector.Y));
+		origin -= rotation.TransformToParent(in v);
+		rotation.RotateAboutUp(_renderProperties.RotationOffset * (System.MathF.PI / 180f));
+		origin += rotation.TransformToParent(in v);
 		Vec3 scaleAmountXYZ = new Vec3(LocalScale.X, LocalScale.Y, 1f);
-		identity.ApplyScaleLocal(in scaleAmountXYZ);
-		_cachedVisualMatrixFrame.origin = origin;
-		_cachedVisualMatrixFrame.rotation = identity;
-		ref Mat3 rotation = ref _cachedVisualMatrixFrame.rotation;
-		scaleAmountXYZ = new Vec3(_renderProperties.ScaleMultiplier.X, _renderProperties.ScaleMultiplier.Y, 1f);
 		rotation.ApplyScaleLocal(in scaleAmountXYZ);
+		_cachedVisualMatrixFrame.origin = origin;
+		_cachedVisualMatrixFrame.rotation = rotation;
+		ref Mat3 rotation2 = ref _cachedVisualMatrixFrame.rotation;
+		scaleAmountXYZ = new Vec3(_renderProperties.ScaleMultiplier.X, _renderProperties.ScaleMultiplier.Y, 1f);
+		rotation2.ApplyScaleLocal(in scaleAmountXYZ);
 		if (_renderProperties.ScaleMultiplier.X < 0f)
 		{
 			_renderProperties.PositionOffsetPixel.X -= _renderProperties.ScaleMultiplier.X * LocalScale.X;
@@ -389,9 +389,9 @@ public struct Rectangle2D
 		{
 			ref Vec3 origin2 = ref _cachedVisualMatrixFrame.origin;
 			Vec3 vec = origin2;
-			ref Mat3 rotation2 = ref _cachedOrthonormalMatrix.rotation;
+			ref Mat3 rotation3 = ref _cachedOrthonormalMatrix.rotation;
 			scaleAmountXYZ = new Vec3(_renderProperties.PositionOffsetPixel.X, _renderProperties.PositionOffsetPixel.Y);
-			origin2 = vec + rotation2.TransformToParent(in scaleAmountXYZ);
+			origin2 = vec + rotation3.TransformToParent(in scaleAmountXYZ);
 		}
 		_visualsNeedCalculation = false;
 	}

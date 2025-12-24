@@ -19,21 +19,21 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 
 	private static readonly TextObject FoodShortageText = new TextObject("{=qTFKvGSg}Food Shortage");
 
-	private static readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
+	private readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
 
-	private static readonly TextObject VillageBeingRaided = GameTexts.FindText("str_village_being_raided");
+	private readonly TextObject VillageBeingRaided = GameTexts.FindText("str_village_being_raided");
 
-	private static readonly TextObject VillageLooted = GameTexts.FindText("str_village_looted");
+	private readonly TextObject VillageLooted = GameTexts.FindText("str_village_looted");
 
-	private static readonly TextObject TownIsUnderSiege = GameTexts.FindText("str_villages_under_siege");
+	private readonly TextObject TownIsUnderSiege = GameTexts.FindText("str_villages_under_siege");
 
-	private static readonly TextObject RetiredText = GameTexts.FindText("str_retired");
+	private readonly TextObject RetiredText = GameTexts.FindText("str_retired");
 
-	private static readonly TextObject PaymentIsLessText = GameTexts.FindText("str_payment_is_less");
+	private readonly TextObject PaymentIsLessText = GameTexts.FindText("str_payment_is_less");
 
-	private static readonly TextObject UnpaidWagesText = GameTexts.FindText("str_unpaid_wages");
+	private readonly TextObject UnpaidWagesText = GameTexts.FindText("str_unpaid_wages");
 
-	private static readonly TextObject RebellionText = GameTexts.FindText("str_rebel_settlement");
+	private readonly TextObject RebellionText = GameTexts.FindText("str_rebel_settlement");
 
 	private const int MaximumDailyAutoRecruitmentCount = 1;
 

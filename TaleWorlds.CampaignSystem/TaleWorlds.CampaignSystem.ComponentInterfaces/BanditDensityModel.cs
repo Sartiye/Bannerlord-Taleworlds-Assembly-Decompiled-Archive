@@ -25,9 +25,9 @@ public abstract class BanditDensityModel : MBGameModel<BanditDensityModel>
 
 	public abstract int GetMaxSupportedNumberOfLootersForClan(Clan clan);
 
-	public abstract int GetMinimumTroopCountForHideoutMission(MobileParty party);
+	public abstract int GetMinimumTroopCountForHideoutMission(MobileParty party, bool isAssault);
 
-	public abstract int GetMaximumTroopCountForHideoutMission(MobileParty party);
+	public abstract int GetMaximumTroopCountForHideoutMission(MobileParty party, bool isAssault);
 
 	public abstract bool IsPositionInsideNavalSafeZone(CampaignVec2 position);
 }

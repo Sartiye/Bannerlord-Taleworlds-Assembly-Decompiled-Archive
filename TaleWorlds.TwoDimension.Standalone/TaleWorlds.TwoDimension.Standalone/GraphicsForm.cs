@@ -87,58 +87,66 @@ public class GraphicsForm : IMessageCommunicator
 
 	public DXGI.RECT DecideWindowPosition()
 	{
+		User32.GetClientRect(User32.GetDesktopWindow(), out var lpRect);
+		DXGI.RECT rECT = default(DXGI.RECT);
+		rECT.left = lpRect.Left;
+		rECT.right = lpRect.Right;
+		rECT.top = lpRect.Top;
+		rECT.bottom = lpRect.Bottom;
+		DXGI.RECT rECT2 = rECT;
 		DXGI.CreateDXGIFactory(ref DXGI.IID_IDXGIFactory, out var factory);
 		DXGI.IDXGIFactory iDXGIFactory = (DXGI.IDXGIFactory)Marshal.GetObjectForIUnknown(factory);
-		DXGI.DXGI_OUTPUT_DESC dXGI_OUTPUT_DESC = default(DXGI.DXGI_OUTPUT_DESC);
-		dXGI_OUTPUT_DESC.DeviceName = "";
-		dXGI_OUTPUT_DESC.DesktopCoordinates = new DXGI.RECT
-		{
-			left = 0,
-			top = 0,
-			right = 0,
-			bottom = 0
-		};
-		dXGI_OUTPUT_DESC.AttachedToDesktop = false;
-		dXGI_OUTPUT_DESC.Rotation = 0u;
-		dXGI_OUTPUT_DESC.Monitor = IntPtr.Zero;
-		DXGI.DXGI_OUTPUT_DESC dXGI_OUTPUT_DESC2 = dXGI_OUTPUT_DESC;
-		DXGI.DXGI_ADAPTER_DESC dXGI_ADAPTER_DESC = default(DXGI.DXGI_ADAPTER_DESC);
-		dXGI_ADAPTER_DESC.Description = "";
-		dXGI_ADAPTER_DESC.VendorId = 0u;
-		dXGI_ADAPTER_DESC.DeviceId = 0u;
-		dXGI_ADAPTER_DESC.SubSysId = 0u;
-		dXGI_ADAPTER_DESC.Revision = 0u;
-		dXGI_ADAPTER_DESC.DedicatedVideoMemory = UIntPtr.Zero;
-		dXGI_ADAPTER_DESC.DedicatedSystemMemory = UIntPtr.Zero;
-		dXGI_ADAPTER_DESC.SharedSystemMemory = UIntPtr.Zero;
-		dXGI_ADAPTER_DESC.AdapterLuid = UIntPtr.Zero;
-		DXGI.DXGI_ADAPTER_DESC dXGI_ADAPTER_DESC2 = dXGI_ADAPTER_DESC;
+		MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>> mBList = new MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>>();
 		DXGI.IDXGIAdapter adapter;
-		for (uint num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
+		uint num;
+		for (num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
 		{
 			adapter.GetDesc(out var desc);
-			bool flag = (long)(ulong)desc.DedicatedVideoMemory > (long)(ulong)dXGI_ADAPTER_DESC2.DedicatedVideoMemory;
-			bool flag2 = false;
-			uint num2 = 0u;
+			if ((long)(ulong)desc.DedicatedVideoMemory > 0L)
+			{
+				mBList.Add(new Tuple<uint, DXGI.DXGI_ADAPTER_DESC>(num, desc));
+			}
+		}
+		if (mBList.Count == 0)
+		{
+			Marshal.FinalReleaseComObject(iDXGIFactory);
+			return rECT2;
+		}
+		mBList.Sort((Tuple<uint, DXGI.DXGI_ADAPTER_DESC> x, Tuple<uint, DXGI.DXGI_ADAPTER_DESC> y) => ((ulong)x.Item2.DedicatedVideoMemory <= (ulong)y.Item2.DedicatedVideoMemory) ? 1 : (-1));
+		num = 0u;
+		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item in mBList)
+		{
+			_ = item;
+			iDXGIFactory.EnumAdapters(num, out var adapter2);
 			DXGI.IDXGIOutput ppOutput;
-			while (flag && adapter.EnumOutputs(num2, out ppOutput) == 0)
+			for (uint num2 = 0u; adapter2.EnumOutputs(num2, out ppOutput) == 0; num2++)
 			{
 				ppOutput.GetDesc(out var desc2);
-				if (desc2.AttachedToDesktop)
+				if (desc2.AttachedToDesktop && rECT2 == desc2.DesktopCoordinates)
 				{
-					flag2 = true;
-					dXGI_OUTPUT_DESC2 = desc2;
+					Marshal.FinalReleaseComObject(iDXGIFactory);
+					return rECT2;
 				}
-				num2++;
 			}
-			if (flag && flag2)
+		}
+		num = 0u;
+		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item2 in mBList)
+		{
+			_ = item2;
+			iDXGIFactory.EnumAdapters(num, out var adapter3);
+			DXGI.IDXGIOutput ppOutput2;
+			for (uint num3 = 0u; adapter3.EnumOutputs(num3, out ppOutput2) == 0; num3++)
 			{
-				dXGI_ADAPTER_DESC2 = desc;
+				ppOutput2.GetDesc(out var desc3);
+				if (desc3.AttachedToDesktop)
+				{
+					Marshal.FinalReleaseComObject(iDXGIFactory);
+					return desc3.DesktopCoordinates;
+				}
 			}
 		}
 		Marshal.FinalReleaseComObject(iDXGIFactory);
-		iDXGIFactory = null;
-		return dXGI_OUTPUT_DESC2.DesktopCoordinates;
+		return rECT2;
 	}
 
 	public void Destroy()

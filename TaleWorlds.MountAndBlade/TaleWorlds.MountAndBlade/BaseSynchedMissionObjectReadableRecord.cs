@@ -75,6 +75,11 @@ public struct BaseSynchedMissionObjectReadableRecord
 		return bufferReadValid;
 	}
 
+	public void SetSetVisibilityExcludeParents(bool visible)
+	{
+		SetVisibilityExcludeParents = visible;
+	}
+
 	public static (BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) CreateFromNetworkWithTypeIndex(int typeIndex)
 	{
 		bool bufferReadValid = true;

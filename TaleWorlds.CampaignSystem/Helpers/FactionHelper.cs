@@ -81,7 +81,7 @@ public static class FactionHelper
 		List<TextObject> list = new List<TextObject>();
 		if (name == null)
 		{
-			Debug.FailedAssert("Calling IsFactionNameApplicable with null string!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "IsFactionNameApplicable", 5519);
+			Debug.FailedAssert("Calling IsFactionNameApplicable with null string!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "IsFactionNameApplicable", 5466);
 			name = string.Empty;
 		}
 		if (name.Length > 50 || name.Length < 1)

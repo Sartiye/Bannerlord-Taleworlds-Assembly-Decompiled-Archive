@@ -450,10 +450,13 @@ public class SynchedMissionObject : MissionObject
 		GameNetworkMessage.WriteBoolToPacket(base.IsDisabled);
 	}
 
-	public virtual void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public virtual void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
 		var (baseSynchedMissionObjectReadableRecord, _) = synchedMissionObjectReadableRecord;
-		base.GameEntity.SetVisibilityExcludeParents(baseSynchedMissionObjectReadableRecord.SetVisibilityExcludeParents);
+		if (allowVisibilityUpdate)
+		{
+			base.GameEntity.SetVisibilityExcludeParents(baseSynchedMissionObjectReadableRecord.SetVisibilityExcludeParents);
+		}
 		if (baseSynchedMissionObjectReadableRecord.SynchTransform)
 		{
 			MatrixFrame frame = baseSynchedMissionObjectReadableRecord.GameObjectFrame;

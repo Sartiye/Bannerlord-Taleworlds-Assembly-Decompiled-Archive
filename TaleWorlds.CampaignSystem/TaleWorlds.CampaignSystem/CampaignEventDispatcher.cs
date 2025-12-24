@@ -1230,6 +1230,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void QuarterHourlyTick()
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].QuarterHourlyTick();
+		}
+	}
+
 	public override void HourlyTickParty(MobileParty mobileParty)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;

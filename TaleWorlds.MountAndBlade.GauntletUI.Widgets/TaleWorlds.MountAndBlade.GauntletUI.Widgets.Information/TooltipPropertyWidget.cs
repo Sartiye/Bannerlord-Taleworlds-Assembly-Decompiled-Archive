@@ -568,6 +568,7 @@ public class TooltipPropertyWidget : Widget
 			if (_isTitle)
 			{
 				base.PositionXOffset = 0f - base.MarginLeft;
+				ValueLabelContainer.PositionYOffset = 0f;
 				if (!IsTwoColumn)
 				{
 					ValueLabelContainer.MarginLeft = base.MarginLeft;
@@ -617,10 +618,9 @@ public class TooltipPropertyWidget : Widget
 			{
 				DefinitionLabelContainer.IsVisible = false;
 				ValueLabel.Text = _valueText;
-				ValueLabel.Brush = DescriptionTextBrush;
-				ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
+				ValueLabel.Brush = ((TextHeight < 0) ? SubtextBrush : DescriptionTextBrush);
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
 				ValueLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
-				ValueLabel.SuggestedWidth = 0f;
 				ValueLabelContainer.SuggestedWidth = 0f;
 			}
 			else if (_isCost)
@@ -675,7 +675,7 @@ public class TooltipPropertyWidget : Widget
 					DefinitionLabel.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
 					ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
 					ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
-					ValueLabelContainer.MarginLeft = base.MarginLeft;
+					ValueLabel.MarginLeft = base.MarginLeft;
 				}
 				else
 				{
@@ -696,7 +696,7 @@ public class TooltipPropertyWidget : Widget
 				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
 				ValueLabelContainer.WidthSizePolicy = SizePolicy.CoverChildren;
 				base.HorizontalAlignment = HorizontalAlignment.Right;
-				ValueLabelContainer.MarginLeft = base.MarginLeft;
+				ValueLabel.MarginLeft = base.MarginLeft;
 				DefinitionLabel.Brush = ValueNameTextBrush;
 				ValueLabel.Brush = ValueTextBrush;
 			}

@@ -23,6 +23,30 @@ public class DefaultAllianceModel : AllianceModel
 
 	private const int TooPowerfulEffect = 20;
 
+	private static readonly TextObject _sharedWarsText = new TextObject("{=Pg7bxzcY}Effect of shared wars");
+
+	private static readonly TextObject _unsharedWarsText = new TextObject("{=9YFVXAZ3}Unshared wars");
+
+	private static readonly TextObject _lackOfCommonEnemiesText = new TextObject("{=ugMAk9nb}Lack of common enemies");
+
+	private static readonly TextObject _relationText = new TextObject("{=3YVDMg5X}Low relations between rulers");
+
+	private static readonly TextObject _traitLevelText = new TextObject("{=iUURpauf}Effect of trait level");
+
+	private static readonly TextObject _receivedTributeText = new TextObject("{=pV1LM0aE}Receiving tribute");
+
+	private static readonly TextObject _paidTributeText = new TextObject("{=lyxa5jbH}Effect of tribute paying to the declared");
+
+	private static readonly TextObject _threatenedText = new TextObject("{=92m8jTWP}Feels threatened");
+
+	private static readonly TextObject _townsText = new TextObject("{=WaYxP7bX}Effect of having less than 3 towns");
+
+	private static readonly TextObject _warWithTheirAllyText = new TextObject("{=EOkS8gn8}Effect of having an ally that we are at war with");
+
+	private static readonly TextObject _allyWithTheirEnemyText = new TextObject("{=LhrU9cu3}Effect of having a ally that they are at war with");
+
+	private static readonly TextObject _conflictingAllianceText = new TextObject("{=IeGgrMlx}Conflicting alliances");
+
 	private const int MaxReasonsInExplanation = 3;
 
 	public override CampaignTime MaxDurationOfAlliance => CampaignTime.Days(84f);
@@ -37,6 +61,10 @@ public class DefaultAllianceModel : AllianceModel
 	{
 		int callToWarCostForCalledKingdom = GetCallToWarCostForCalledKingdom(calledKingdom, kingdomToCallToWarAgainst);
 		int callToWarBudgetOfCallingKingdom = GetCallToWarBudgetOfCallingKingdom(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+		if (callingKingdom == Clan.PlayerClan.Kingdom && callToWarBudgetOfCallingKingdom < 0)
+		{
+			return callToWarCostForCalledKingdom;
+		}
 		return (callToWarCostForCalledKingdom + callToWarBudgetOfCallingKingdom) / 2;
 	}
 
@@ -50,9 +78,9 @@ public class DefaultAllianceModel : AllianceModel
 		{
 			int num3 = kingdomDeclaredAlliance.FactionsAtWarWith.Count((IFaction x) => x.IsKingdomFaction && kingdomDeclaresAlliance.FactionsAtWarWith.Contains(x));
 			float sharedWarsEffect = (float)num3 / (float)num * 25f * 2f;
-			result.Add(num3, new TextObject("{=Pg7bxzcY}Effect of shared wars"));
+			result.Add(num3, _sharedWarsText);
 			float num4 = (float)(num2 - num3) / (float)num2 * -25f;
-			result.Add(num4, new TextObject("{=7JTNRsFn}Effect of unshared wars"));
+			result.Add(num4, _unsharedWarsText);
 			AddSharedWarsEffectToExplanationTooltip(num3, sharedWarsEffect, num4, num2, num, ref explanation);
 		}
 		else
@@ -60,10 +88,10 @@ public class DefaultAllianceModel : AllianceModel
 			AddNoWarsEffectToExplanationTooltip(ref explanation);
 		}
 		int num5 = MBMath.ClampInt(kingdomDeclaredAlliance.Leader.GetRelation(kingdomDeclaresAlliance.Leader), -20, 20);
-		result.Add(num5, new TextObject("{=pGK7qw44}Effect of relation"));
+		result.Add(num5, _relationText);
 		AddLowRelationEffectToExplanationTooltip(num5, ref explanation);
 		int traitLevel = kingdomDeclaredAlliance.Leader.GetTraitLevel(DefaultTraits.Honor);
-		result.Add(traitLevel * 10, new TextObject("{=iUURpauf}Effect of trait level"));
+		result.Add(traitLevel * 10, _traitLevelText);
 		AddHonorEffectToExplanationTooltip(traitLevel, kingdomDeclaredAlliance.Leader, ref explanation);
 		int dailyTributeToPay = kingdomDeclaresAlliance.GetStanceWith(kingdomDeclaredAlliance).GetDailyTributeToPay(kingdomDeclaredAlliance);
 		if (dailyTributeToPay > 0)
@@ -71,22 +99,22 @@ public class DefaultAllianceModel : AllianceModel
 			int num6 = 10000;
 			float num7 = MBMath.Map(dailyTributeToPay, 0f, num6, 0f, 20f);
 			AddTributeEffectToExplanationTooltip(num7, ref explanation);
-			result.Add(0f - num7, new TextObject("{=1tn51Xjs}Effect of tribute paid from declared"));
+			result.Add(0f - num7, _receivedTributeText);
 		}
 		int dailyTributeToPay2 = kingdomDeclaredAlliance.GetStanceWith(kingdomDeclaresAlliance).GetDailyTributeToPay(kingdomDeclaresAlliance);
 		if (dailyTributeToPay2 > 0)
 		{
 			int num8 = 10000;
-			result.Add(MBMath.Map(dailyTributeToPay2, 0f, num8, 0f, 20f), new TextObject("{=lyxa5jbH}Effect of tribute paying to the declared"));
+			result.Add(MBMath.Map(dailyTributeToPay2, 0f, num8, 0f, 20f), _paidTributeText);
 		}
 		if ((float)kingdomDeclaredAlliance.Fiefs.Count / (float)(Campaign.Current.AllTowns.Count + Campaign.Current.AllCastles.Count) > 0.3f)
 		{
 			AddTooPowerfulEffectToExplanationTooltip(ref explanation);
-			result.Add(-20f, new TextObject("{=BQbJLJZ8}Effect of having more than 30 percent of fiefs"));
+			result.Add(-20f, _threatenedText);
 		}
 		if (kingdomDeclaresAlliance.Fiefs.Count < 3)
 		{
-			result.Add(10f, new TextObject("{=WaYxP7bX}Effect of having less than 3 towns"));
+			result.Add(10f, _townsText);
 		}
 		int num9 = 0;
 		foreach (Kingdom alliedKingdom in kingdomDeclaredAlliance.AlliedKingdoms)
@@ -98,7 +126,7 @@ public class DefaultAllianceModel : AllianceModel
 		}
 		if (num9 < 0)
 		{
-			result.Add(num9, new TextObject("{=EOkS8gn8}Effect of having an ally that we are at war with"));
+			result.Add(num9, _warWithTheirAllyText);
 		}
 		int num10 = 0;
 		foreach (Kingdom alliedKingdom2 in kingdomDeclaresAlliance.AlliedKingdoms)
@@ -110,7 +138,7 @@ public class DefaultAllianceModel : AllianceModel
 		}
 		if (num10 < 0)
 		{
-			result.Add(num10, new TextObject("{=LhrU9cu3}Effect of having a ally that they are at war with"));
+			result.Add(num10, _allyWithTheirEnemyText);
 		}
 		AddConflictingAlliancesEffectToExplanationTooltip(num10, num9, ref explanation);
 		explanationText = BuildExplanationForAlliance(kingdomDeclaresAlliance, explanation);
@@ -131,7 +159,7 @@ public class DefaultAllianceModel : AllianceModel
 	{
 		if (enemyAllyEffectOnOurSide + enemyAllyEffectOnTheirSide < 0)
 		{
-			explanation.Add(-enemyAllyEffectOnOurSide - enemyAllyEffectOnTheirSide, new TextObject("{=IeGgrMlx}Conflicting alliances"));
+			explanation.Add(-enemyAllyEffectOnOurSide - enemyAllyEffectOnTheirSide, _conflictingAllianceText);
 		}
 	}
 
@@ -143,33 +171,33 @@ public class DefaultAllianceModel : AllianceModel
 			{
 				unsharedWarsEffect -= 50f - sharedWarsEffect;
 			}
-			explanation.Add(0f - unsharedWarsEffect, new TextObject("{=9YFVXAZ3}Unshared wars"));
+			explanation.Add(0f - unsharedWarsEffect, _unsharedWarsText);
 		}
 	}
 
 	private void AddNoWarsEffectToExplanationTooltip(ref ExplainedNumber explanation)
 	{
-		explanation.Add(50f, new TextObject("{=ugMAk9nb}Lack of common enemies"));
+		explanation.Add(50f, _lackOfCommonEnemiesText);
 	}
 
 	private void AddTributeEffectToExplanationTooltip(float tributeEffect, ref ExplainedNumber explanation)
 	{
 		if (tributeEffect > 0f)
 		{
-			explanation.Add(tributeEffect, new TextObject("{=pV1LM0aE}Receiving tribute"));
+			explanation.Add(tributeEffect, _receivedTributeText);
 		}
 	}
 
 	private void AddTooPowerfulEffectToExplanationTooltip(ref ExplainedNumber explanation)
 	{
-		explanation.Add(20f, new TextObject("{=92m8jTWP}Feels threatened"));
+		explanation.Add(20f, _threatenedText);
 	}
 
 	private void AddLowRelationEffectToExplanationTooltip(int relationshipEffect, ref ExplainedNumber explanation)
 	{
 		if (relationshipEffect < 20)
 		{
-			explanation.Add(20 - relationshipEffect, new TextObject("{=3YVDMg5X}Low relations between rulers"));
+			explanation.Add(20 - relationshipEffect, _relationText);
 		}
 	}
 

@@ -21,27 +21,27 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	private const float NotableSupportsEnemyLoyaltyEffect = -0.5f;
 
-	private static readonly TextObject StarvingText = GameTexts.FindText("str_starving");
+	private readonly TextObject StarvingText = GameTexts.FindText("str_starving");
 
 	private static readonly TextObject CultureText = new TextObject("{=YjoXyFDX}Owner Culture");
-
-	private static readonly TextObject NotableText = GameTexts.FindText("str_notable_relations");
-
-	private static readonly TextObject CrimeText = GameTexts.FindText("str_governor_criminal");
-
-	private static readonly TextObject GovernorText = GameTexts.FindText("str_notable_governor");
 
 	private static readonly TextObject GovernorCultureText = new TextObject("{=5Vo8dJub}Governor's Culture");
 
 	private static readonly TextObject NoGovernorText = new TextObject("{=NH5N3kP5}No governor");
 
-	private static readonly TextObject SecurityText = GameTexts.FindText("str_security");
+	private readonly TextObject NotableText = GameTexts.FindText("str_notable_relations");
 
-	private static readonly TextObject LoyaltyText = GameTexts.FindText("str_loyalty");
+	private readonly TextObject CrimeText = GameTexts.FindText("str_governor_criminal");
 
-	private static readonly TextObject LoyaltyDriftText = GameTexts.FindText("str_loyalty_drift");
+	private readonly TextObject GovernorText = GameTexts.FindText("str_notable_governor");
 
-	private static readonly TextObject CorruptionText = GameTexts.FindText("str_corruption");
+	private readonly TextObject SecurityText = GameTexts.FindText("str_security");
+
+	private readonly TextObject LoyaltyText = GameTexts.FindText("str_loyalty");
+
+	private readonly TextObject LoyaltyDriftText = GameTexts.FindText("str_loyalty_drift");
+
+	private readonly TextObject CorruptionText = GameTexts.FindText("str_corruption");
 
 	public override float HighLoyaltyProsperityEffect => 0.5f;
 

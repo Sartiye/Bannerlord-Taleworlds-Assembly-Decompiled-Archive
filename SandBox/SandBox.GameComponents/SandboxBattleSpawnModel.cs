@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.ComponentInterfaces;
@@ -94,7 +95,7 @@ public class SandboxBattleSpawnModel : BattleSpawnModel
 		}
 		for (int i = 0; i < 8; i++)
 		{
-			if (orderOfBattleCampaignBehavior.GetFormationDataAtIndex(i, Mission.Current.IsSiegeBattle) == null)
+			if (orderOfBattleCampaignBehavior.GetFormationDataAtIndex(i, Mission.Current.IsSiegeBattle, MobileParty.MainParty?.Army != null) == null)
 			{
 				return false;
 			}
@@ -102,7 +103,7 @@ public class SandboxBattleSpawnModel : BattleSpawnModel
 		int[] array = CalculateTroopCountsPerDefaultFormation(battleSide, troopOrigins);
 		for (int j = 0; j < 8; j++)
 		{
-			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationDataAtIndex = orderOfBattleCampaignBehavior.GetFormationDataAtIndex(j, Mission.Current.IsSiegeBattle);
+			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationDataAtIndex = orderOfBattleCampaignBehavior.GetFormationDataAtIndex(j, Mission.Current.IsSiegeBattle, MobileParty.MainParty?.Army != null);
 			formationOrderOfBattleConfigurations[j].OOBFormationClass = formationDataAtIndex.FormationClass;
 			formationOrderOfBattleConfigurations[j].Captain = formationDataAtIndex.Captain;
 			FormationClass formationClass = FormationClass.NumberOfAllFormations;

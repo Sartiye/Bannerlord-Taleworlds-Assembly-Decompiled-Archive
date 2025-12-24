@@ -135,6 +135,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		base.QuestNameYOffset = -1;
 		base.NormalItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active");
 		base.MainStoryLineItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active.MainStory");
+		base.NavalStorylineItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active.NavalMainStory");
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -390,6 +391,9 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 			break;
 		case "IsMainStoryLineQuest":
 			_datasource_Root.IsMainQuest = _widget.IsMainStoryLineQuest;
+			break;
+		case "IsNavalStorylineQuest":
+			_datasource_Root.IsNavalQuest = _widget.IsNavalStorylineQuest;
 			break;
 		}
 	}
@@ -936,6 +940,9 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 			_widget_0_0.IsHidden = _datasource_Root.IsMainQuest;
 			_widget_0_1.IsVisible = _datasource_Root.IsMainQuest;
 			break;
+		case "IsNavalQuest":
+			_widget.IsNavalStorylineQuest = _datasource_Root.IsNavalQuest;
+			break;
 		case "Name":
 			_widget_0_2.Text = _datasource_Root.Name;
 			break;
@@ -1080,6 +1087,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 			_widget.IsRemainingDaysHidden = _datasource_Root.IsRemainingDaysHidden;
 			_widget.IsSelected = _datasource_Root.IsSelected;
 			_widget.IsMainStoryLineQuest = _datasource_Root.IsMainQuest;
+			_widget.IsNavalStorylineQuest = _datasource_Root.IsNavalQuest;
 			_widget.EventFire += EventListenerOf_widget;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;

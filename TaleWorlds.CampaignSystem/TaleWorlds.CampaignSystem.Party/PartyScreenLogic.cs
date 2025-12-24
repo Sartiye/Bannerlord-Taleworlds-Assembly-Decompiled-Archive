@@ -396,6 +396,8 @@ public class PartyScreenLogic
 
 	public int RightPartyPrisonersSizeLimit { get; private set; }
 
+	public bool DoNotApplyGoldTransactions { get; private set; }
+
 	public bool ShowProgressBar { get; private set; }
 
 	public string DoneReasonString { get; private set; }
@@ -503,7 +505,7 @@ public class PartyScreenLogic
 		_initialData.CopyFromPartyAndRoster(MemberRosters[1], PrisonerRosters[1], MemberRosters[0], PrisonerRosters[0], RightOwnerParty);
 		if (initializationData.PartyPresentationDoneButtonDelegate == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Done handler is given null for party screen!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "Initialize", 241);
+			TaleWorlds.Library.Debug.FailedAssert("Done handler is given null for party screen!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "Initialize", 242);
 			initializationData.PartyPresentationDoneButtonDelegate = DefaultDoneHandler;
 		}
 		PartyPresentationDoneButtonDelegate = initializationData.PartyPresentationDoneButtonDelegate;
@@ -519,6 +521,7 @@ public class PartyScreenLogic
 		PartyPresentationCancelButtonActivateDelegate = initializationData.PartyPresentationCancelButtonActivateDelegate;
 		PartyPresentationCancelButtonDelegate = initializationData.PartyPresentationCancelButtonDelegate;
 		this.PartyScreenClosedEvent = initializationData.PartyScreenClosedDelegate;
+		DoNotApplyGoldTransactions = initializationData.DoNotApplyGoldTransactions;
 		ShowProgressBar = initializationData.ShowProgressBar;
 		if (_partyScreenMode == PartyScreenHelper.PartyScreenMode.QuestTroopManage)
 		{
@@ -1156,14 +1159,14 @@ public class PartyScreenLogic
 	{
 		if (roster.Count != list.Count)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Roster count is not synced with the list count", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1076);
+			TaleWorlds.Library.Debug.FailedAssert("Roster count is not synced with the list count", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1079);
 			return;
 		}
 		for (int i = 0; i < roster.Count; i++)
 		{
 			if (roster.GetCharacterAtIndex(i).StringId != list[i].Character.StringId)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Roster is not synced with the list at index: " + i, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1086);
+				TaleWorlds.Library.Debug.FailedAssert("Roster is not synced with the list at index: " + i, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1089);
 				break;
 			}
 		}
@@ -1248,7 +1251,10 @@ public class PartyScreenLogic
 		bool num = PartyPresentationDoneButtonDelegate(MemberRosters[0], PrisonerRosters[0], MemberRosters[1], PrisonerRosters[1], flattenedTroopRoster2, flattenedTroopRoster, isForced, LeftOwnerParty, RightOwnerParty);
 		if (num)
 		{
-			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, CurrentData.PartyGoldChangeAmount);
+			if (!DoNotApplyGoldTransactions)
+			{
+				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, CurrentData.PartyGoldChangeAmount);
+			}
 			if (CurrentData.PartyInfluenceChangeAmount.Item2 != 0)
 			{
 				GainKingdomInfluenceAction.ApplyForLeavingTroopToGarrison(Hero.MainHero, CurrentData.PartyInfluenceChangeAmount.Item2);
@@ -1509,7 +1515,7 @@ public class PartyScreenLogic
 		}
 		if (numOfItemsLeftToRemove > 0)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Couldn't find enough upgrade req items in the inventory.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "RemoveItemFromItemRoster", 1501);
+			TaleWorlds.Library.Debug.FailedAssert("Couldn't find enough upgrade req items in the inventory.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "RemoveItemFromItemRoster", 1507);
 		}
 		return list;
 	}

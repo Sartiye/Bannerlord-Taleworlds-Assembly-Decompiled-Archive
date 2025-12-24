@@ -1,4 +1,3 @@
-using System;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 
@@ -22,7 +21,18 @@ public class ScoreboardShipsNavigatableGridWidget : NavigatableGridWidget
 			if (_regularHorizontalAlignment != value)
 			{
 				_regularHorizontalAlignment = value;
-				OnPropertyChanged(Enum.GetName(typeof(HorizontalAlignment), value), "RegularHorizontalAlignment");
+				switch (value)
+				{
+				case HorizontalAlignment.Left:
+					OnPropertyChanged("Left", "RegularHorizontalAlignment");
+					break;
+				case HorizontalAlignment.Center:
+					OnPropertyChanged("Center", "RegularHorizontalAlignment");
+					break;
+				case HorizontalAlignment.Right:
+					OnPropertyChanged("Right", "RegularHorizontalAlignment");
+					break;
+				}
 			}
 		}
 	}
@@ -39,7 +49,18 @@ public class ScoreboardShipsNavigatableGridWidget : NavigatableGridWidget
 			if (_overflowHorizontalAlignment != value)
 			{
 				_overflowHorizontalAlignment = value;
-				OnPropertyChanged(Enum.GetName(typeof(HorizontalAlignment), value), "OverflowHorizontalAlignment");
+				switch (value)
+				{
+				case HorizontalAlignment.Left:
+					OnPropertyChanged("Left", "OverflowHorizontalAlignment");
+					break;
+				case HorizontalAlignment.Center:
+					OnPropertyChanged("Center", "OverflowHorizontalAlignment");
+					break;
+				case HorizontalAlignment.Right:
+					OnPropertyChanged("Right", "OverflowHorizontalAlignment");
+					break;
+				}
 			}
 		}
 	}

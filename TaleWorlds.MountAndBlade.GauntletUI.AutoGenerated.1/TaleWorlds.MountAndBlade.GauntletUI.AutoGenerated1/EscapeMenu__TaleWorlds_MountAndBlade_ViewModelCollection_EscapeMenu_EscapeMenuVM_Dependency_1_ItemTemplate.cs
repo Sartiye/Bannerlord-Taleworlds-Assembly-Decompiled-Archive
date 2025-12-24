@@ -70,6 +70,7 @@ public class EscapeMenu__TaleWorlds_MountAndBlade_ViewModelCollection_EscapeMenu
 		_widget_0_0.PositionYOffset = 1f;
 		_widget_0_0.Brush = base.Context.GetBrush("OverlayPopup.ButtonText");
 		_widget_0_0.ClipContents = false;
+		_widget_1.DoNotPassEventsToChildren = true;
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;

@@ -94,6 +94,11 @@ public static class SandBoxViewCreator
 		return ViewCreatorManager.CreateMissionView<MissionMainAgentDetectionView>(mission != null, mission, Array.Empty<object>());
 	}
 
+	public static MissionView CreateMissionStealthFailCounter(Mission mission = null)
+	{
+		return ViewCreatorManager.CreateMissionView<MissionStealthFailCounterView>(mission != null, mission, Array.Empty<object>());
+	}
+
 	public static MissionView CreateMissionTournamentView()
 	{
 		return ViewCreatorManager.CreateMissionView<MissionTournamentView>(isNetwork: false, null, Array.Empty<object>());

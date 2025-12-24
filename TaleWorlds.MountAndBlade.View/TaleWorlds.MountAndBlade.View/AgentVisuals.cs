@@ -111,6 +111,11 @@ public class AgentVisuals : IAgentVisual
 		return _data.AgentVisuals.GetEntity();
 	}
 
+	public WeakGameEntity GetWeakEntity()
+	{
+		return _data.AgentVisuals.GetWeakEntity();
+	}
+
 	public void SetVisible(bool value)
 	{
 		_data.AgentVisuals.SetVisible(value);
@@ -353,19 +358,17 @@ public class AgentVisuals : IAgentVisual
 		if (_data.EquipmentData != null)
 		{
 			bool isFemale = _data.BodyPropertiesData.Age >= 14f && _data.SkeletonTypeData == SkeletonType.Female;
-			skinParams = new SkinGenerationParams(mask, _data.EquipmentData.GetUnderwearType(isFemale), (int)_data.EquipmentData.BodyMeshType, (int)_data.EquipmentData.HairCoverType, (int)_data.EquipmentData.BeardCoverType, (int)_data.EquipmentData.BodyDeformType, _data.PrepareImmediatelyData, 0f, (int)_data.SkeletonTypeData, _data.RaceData, _data.UseTranslucencyData, _data.UseTesselationData);
+			skinParams = new SkinGenerationParams(mask, _data.EquipmentData.GetUnderwearType(isFemale), (int)_data.EquipmentData.BodyMeshType, (int)_data.EquipmentData.HairCoverType, (int)_data.EquipmentData.BeardCoverType, (int)_data.EquipmentData.BodyDeformType, _data.PrepareImmediatelyData, 0f, (int)_data.SkeletonTypeData, _data.RaceData, _data.UseTranslucencyData, _data.UseTesselationData, 0);
 		}
 		else
 		{
-			skinParams = new SkinGenerationParams(mask, Equipment.UnderwearTypes.FullUnderwear, 0, 4, 0, 0, _data.PrepareImmediatelyData, 0f, (int)_data.SkeletonTypeData, _data.RaceData, _data.UseTranslucencyData, _data.UseTesselationData);
+			skinParams = new SkinGenerationParams(mask, Equipment.UnderwearTypes.FullUnderwear, 0, 4, 0, 0, _data.PrepareImmediatelyData, 0f, (int)_data.SkeletonTypeData, _data.RaceData, _data.UseTranslucencyData, _data.UseTesselationData, 0);
 		}
-		BasicCharacterObject basicCharacterObject = null;
 		if (_data.CharacterObjectStringIdData != null)
 		{
-			basicCharacterObject = MBObjectManager.Instance.GetObject<BasicCharacterObject>(_data.CharacterObjectStringIdData);
+			MBObjectManager.Instance.GetObject<BasicCharacterObject>(_data.CharacterObjectStringIdData);
 		}
-		bool useFaceCache = forceUseFaceCache || (basicCharacterObject?.FaceMeshCache ?? false);
-		_data.AgentVisuals.AddSkinMeshes(skinParams, _data.BodyPropertiesData, useGPUMorph, useFaceCache);
+		_data.AgentVisuals.AddSkinMeshes(skinParams, _data.BodyPropertiesData, useGPUMorph, useFaceCache: false);
 	}
 
 	public void SetFaceGenerationParams(FaceGenerationParams faceGenerationParams)

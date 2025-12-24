@@ -146,6 +146,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_2_0.Id = "Contents";
 		_widget_2_0_0_0_0.SetIds();
 		_widget_2_0_0_0_0.Id = "LoadingIconWidget";
+		_widget_2_0_4.Id = "ScrollablePanel";
 		_widget_2_0_4_0.Id = "ClipRect";
 		_widget_2_0_4_0_0.Id = "Upgrades";
 		_widget_2_0_4_1.Id = "HorizontalScrollbar";
@@ -158,7 +159,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.Brush = base.Context.GetBrush("Party.UpgradePopup.TroopTupple");
 		base.HoveredCursorState = "RightClickLink";
-		base.ActionButtonsContainer = _widget_2_0.FindChild(new BindingPath("UpgradesContainer\\Upgrades"));
+		base.ActionButtonsContainer = _widget_2_0_4_0_0;
 		_widget_0.ScopeID = "TroopUpgradesPopupScope";
 		_widget_0.ScopeParent = _widget;
 		_widget_0.ScopeMovements = GamepadNavigationTypes.Horizontal;

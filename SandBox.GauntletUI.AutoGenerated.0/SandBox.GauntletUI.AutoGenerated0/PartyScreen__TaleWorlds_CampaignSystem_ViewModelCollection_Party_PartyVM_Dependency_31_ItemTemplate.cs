@@ -90,7 +90,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	public void SetIds()
 	{
 		base.Id = "TroopUpgrade";
-		_widget_1.Id = "TroopUpgradeButton";
+		_widget_1.Id = "ActionButton";
 		_widget_1_1.Id = "ImageIdentifier";
 		_widget_1_3.Id = "MarinerTroopIcon";
 	}

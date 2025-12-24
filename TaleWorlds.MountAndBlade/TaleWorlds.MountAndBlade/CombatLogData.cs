@@ -57,7 +57,9 @@ public struct CombatLogData
 
 	public bool IsFatalDamage;
 
-	public bool IsRammingDamage;
+	public bool IsSpecialDamage;
+
+	public bool IsEntityToEntityCollisionDamage;
 
 	public bool IsSneakAttack;
 
@@ -183,15 +185,26 @@ public struct CombatLogData
 			GameTexts.SetVariable("DAMAGE_TYPE", GameTexts.FindText("combat_log_damage_type", damageType.ToString()));
 			MBStringBuilder mBStringBuilder = default(MBStringBuilder);
 			mBStringBuilder.Initialize(16, "GetLogString");
-			if (IsRammingDamage)
+			if (IsEntityToEntityCollisionDamage)
 			{
 				if (IsAttackerPlayer)
 				{
-					mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_delivered"));
+					if (IsSpecialDamage)
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_delivered"));
+					}
+					else
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_collision_damage_delivered"));
+					}
+				}
+				else if (IsSpecialDamage)
+				{
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_received"));
 				}
 				else
 				{
-					mBStringBuilder.Append(GameTexts.FindText("combat_log_ram_damage_received"));
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_collision_damage_received"));
 				}
 			}
 			else if (IsVictimAgentSameAsAttackerAgent)
@@ -318,7 +331,8 @@ public struct CombatLogData
 		MissionObjectHit = missionObjectHit;
 		IsVictimRiderAgentSameAsAttackerAgent = isVictimRiderAgentSameAsAttackerAgent;
 		IsFatalDamage = isVictimAgentDead;
-		IsRammingDamage = false;
+		IsEntityToEntityCollisionDamage = false;
+		IsSpecialDamage = false;
 		DamageType = DamageTypes.Blunt;
 		CrushedThrough = crushedThrough;
 		Chamber = chamber;

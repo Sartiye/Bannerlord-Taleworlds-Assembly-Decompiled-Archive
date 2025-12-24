@@ -22,7 +22,9 @@ public sealed class SpawnWeaponWithNewEntity : GameNetworkMessage
 
 	public bool HasLifeTime { get; private set; }
 
-	public SpawnWeaponWithNewEntity(MissionWeapon weapon, Mission.WeaponSpawnFlags weaponSpawnFlags, int forcedIndex, MatrixFrame frame, MissionObjectId parentMissionObjectId, bool isVisible, bool hasLifeTime)
+	public bool SpawnedOnACorpse { get; private set; }
+
+	public SpawnWeaponWithNewEntity(MissionWeapon weapon, Mission.WeaponSpawnFlags weaponSpawnFlags, int forcedIndex, MatrixFrame frame, MissionObjectId parentMissionObjectId, bool isVisible, bool hasLifeTime, bool spawnedOnACorpse)
 	{
 		Weapon = weapon;
 		WeaponSpawnFlags = weaponSpawnFlags;
@@ -31,6 +33,7 @@ public sealed class SpawnWeaponWithNewEntity : GameNetworkMessage
 		ParentMissionObjectId = parentMissionObjectId;
 		IsVisible = isVisible;
 		HasLifeTime = hasLifeTime;
+		SpawnedOnACorpse = spawnedOnACorpse;
 	}
 
 	public SpawnWeaponWithNewEntity()
@@ -47,6 +50,7 @@ public sealed class SpawnWeaponWithNewEntity : GameNetworkMessage
 		ParentMissionObjectId = GameNetworkMessage.ReadMissionObjectIdFromPacket(ref bufferReadValid);
 		IsVisible = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		HasLifeTime = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		SpawnedOnACorpse = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		return bufferReadValid;
 	}
 
@@ -59,6 +63,7 @@ public sealed class SpawnWeaponWithNewEntity : GameNetworkMessage
 		GameNetworkMessage.WriteMissionObjectIdToPacket((ParentMissionObjectId.Id >= 0) ? ParentMissionObjectId : MissionObjectId.Invalid);
 		GameNetworkMessage.WriteBoolToPacket(IsVisible);
 		GameNetworkMessage.WriteBoolToPacket(HasLifeTime);
+		GameNetworkMessage.WriteBoolToPacket(SpawnedOnACorpse);
 	}
 
 	protected override MultiplayerMessageFilter OnGetLogFilter()

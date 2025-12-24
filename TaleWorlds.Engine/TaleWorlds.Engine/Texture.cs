@@ -127,9 +127,9 @@ public sealed class Texture : Resource
 		return EngineApplicationInterface.ITexture.CreateFromByteArray(data, width, height);
 	}
 
-	public void SaveToFile(string path)
+	public void SaveToFile(string path, bool isRelativePath)
 	{
-		EngineApplicationInterface.ITexture.SaveToFile(base.Pointer, path);
+		EngineApplicationInterface.ITexture.SaveToFile(base.Pointer, path, isRelativePath);
 	}
 
 	public void SetTextureAsAlwaysValid()

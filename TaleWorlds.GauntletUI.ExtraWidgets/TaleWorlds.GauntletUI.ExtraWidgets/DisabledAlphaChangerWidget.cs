@@ -9,6 +9,8 @@ public class DisabledAlphaChangerWidget : Widget
 
 	private bool _latestIsDisabled;
 
+	private bool _latestIsVisible;
+
 	private float _fromAlpha;
 
 	private float _disabledAlpha = 0.3f;
@@ -81,6 +83,11 @@ public class DisabledAlphaChangerWidget : Widget
 			_animationTimer = 0f;
 			_latestIsDisabled = base.IsDisabled;
 			_fromAlpha = base.AlphaFactor;
+		}
+		if (_latestIsVisible != base.IsVisible)
+		{
+			_animationTimer = AnimationDuration;
+			_latestIsVisible = base.IsVisible;
 		}
 		float num = (base.IsDisabled ? DisabledAlpha : 1f);
 		if (_animationTimer >= 0f && _animationTimer < AnimationDuration)

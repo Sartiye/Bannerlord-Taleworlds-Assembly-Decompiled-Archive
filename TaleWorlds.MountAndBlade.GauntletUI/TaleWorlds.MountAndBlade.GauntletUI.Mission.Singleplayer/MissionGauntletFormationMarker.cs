@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -26,6 +27,8 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 
 	private float _fadeOutTimer;
 
+	private bool _showDistanceTexts;
+
 	protected override void OnCreateView()
 	{
 		_dataSource = new MissionFormationMarkerVM(base.Mission);
@@ -37,10 +40,13 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 		{
 			_formationTargetHandler.OnFormationFocused += OnFormationFocusedFromHandler;
 		}
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+		UpdateShowDistanceTexts();
 	}
 
 	protected override void OnDestroyView()
 	{
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 		if (_formationTargetHandler != null)
 		{
 			_formationTargetHandler.OnFormationFocused -= OnFormationFocusedFromHandler;
@@ -67,6 +73,19 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 		}
 	}
 
+	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType optionType)
+	{
+		if (optionType == ManagedOptions.ManagedOptionsType.ShowFormationDistances)
+		{
+			UpdateShowDistanceTexts();
+		}
+	}
+
+	private void UpdateShowDistanceTexts()
+	{
+		_showDistanceTexts = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ShowFormationDistances) > 1E-05f;
+	}
+
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
@@ -77,22 +96,23 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 				_dataSource.IsEnabled = base.Input.IsGameKeyDown(5) || base.Mission.IsOrderMenuOpen;
 			}
 			_dataSource.IsFormationTargetRelevant = _formationTargetHandler != null && base.Mission.IsOrderMenuOpen;
+			_dataSource.ShowDistanceTexts = _showDistanceTexts;
 			if (_dataSource.IsEnabled)
 			{
 				_dataSource.RefreshFormationMarkers();
 				RefreshTargetProperties();
-				UpdateMarkerPositions(_fadeOutTimer < 0f);
+				UpdateMarkerPositions();
 				_fadeOutTimer = 2f;
 			}
 			else if (_fadeOutTimer >= 0f)
 			{
 				_fadeOutTimer -= dt;
-				UpdateMarkerPositions(isFirstFrame: false);
+				UpdateMarkerPositions();
 			}
 		}
 	}
 
-	private void UpdateMarkerPositions(bool isFirstFrame)
+	private void UpdateMarkerPositions()
 	{
 		for (int i = 0; i < _dataSource.Targets.Count; i++)
 		{
@@ -104,29 +124,32 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 			if (cachedMedianPosition.IsValid)
 			{
 				MBWindowManager.WorldToScreen(base.MissionScreen.CombatCamera, cachedMedianPosition.GetGroundVec3() + _heightOffset, ref screenX, ref screenY, ref w);
-				if (!MathF.IsValidValue(w) || !MathF.IsValidValue(screenX) || !MathF.IsValidValue(screenY))
+				if (!TaleWorlds.Library.MathF.IsValidValue(w) || !TaleWorlds.Library.MathF.IsValidValue(screenX) || !TaleWorlds.Library.MathF.IsValidValue(screenY))
 				{
 					screenX = -10000f;
 					screenY = -10000f;
 					w = -1f;
 				}
 				missionFormationMarkerTargetVM.WSign = ((!(w < 0f)) ? 1 : (-1));
-			}
-			if (!missionFormationMarkerTargetVM.IsTargetingAFormation && (!cachedMedianPosition.IsValid || !MathF.IsValidValue(w) || w < 0f || !MathF.IsValidValue(screenX) || !MathF.IsValidValue(screenY)))
-			{
-				screenX = -10000f;
-				screenY = -10000f;
-				w = 0f;
-			}
-			if (isFirstFrame)
-			{
+				missionFormationMarkerTargetVM.Distance = base.MissionScreen.CombatCamera.Position.Distance(cachedMedianPosition.GetGroundVec3());
 				missionFormationMarkerTargetVM.ScreenPosition = new Vec2(screenX, screenY);
+				if (_dataSource.ShowDistanceTexts)
+				{
+					Agent main = Agent.Main;
+					missionFormationMarkerTargetVM.DistanceText = ((main != null && main.IsActive()) ? ((int)Agent.Main.Position.Distance(cachedMedianPosition.GetGroundVec3())).ToString() : ((int)missionFormationMarkerTargetVM.Distance).ToString());
+				}
+				else
+				{
+					missionFormationMarkerTargetVM.DistanceText = string.Empty;
+				}
 			}
 			else
 			{
-				missionFormationMarkerTargetVM.ScreenPosition = Vec2.Lerp(missionFormationMarkerTargetVM.ScreenPosition, new Vec2(screenX, screenY), 0.9f);
+				missionFormationMarkerTargetVM.WSign = -1;
+				missionFormationMarkerTargetVM.Distance = 10000f;
+				missionFormationMarkerTargetVM.DistanceText = string.Empty;
+				missionFormationMarkerTargetVM.ScreenPosition = new Vec2(-10000f, -10000f);
 			}
-			missionFormationMarkerTargetVM.Distance = base.MissionScreen.CombatCamera.Position.Distance(cachedMedianPosition.GetGroundVec3());
 		}
 	}
 

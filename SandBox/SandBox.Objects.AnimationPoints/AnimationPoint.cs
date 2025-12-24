@@ -532,18 +532,25 @@ public class AnimationPoint : StandingPoint
 		switch (_state)
 		{
 		case State.NotUsing:
-			if (IsTargetReached() && base.UserAgent.MovementVelocity.LengthSquared < 0.1f && base.UserAgent.IsAbleToUseMachine())
+			if (!IsTargetReached() || !(base.UserAgent.MovementVelocity.LengthSquared < 0.1f) || !base.UserAgent.IsAbleToUseMachine())
 			{
-				if (ArriveActionCode != ActionIndexCache.act_none)
-				{
-					Agent userAgent = base.UserAgent;
-					ref ActionIndexCache arriveActionCode = ref ArriveActionCode;
-					long additionalFlags = 0L;
-					float blendInPeriod = (isSimulation ? 0f : (-0.2f));
-					userAgent.SetActionChannel(0, in arriveActionCode, ignorePriority: false, (AnimFlags)additionalFlags, 0f, MBRandom.RandomFloatRanged(0.8f, 1f), blendInPeriod);
-				}
-				_state = State.StartToUse;
+				break;
 			}
+			if (ArriveActionCode != ActionIndexCache.act_none)
+			{
+				Agent userAgent = base.UserAgent;
+				ref ActionIndexCache arriveActionCode = ref ArriveActionCode;
+				long additionalFlags = 0L;
+				float blendInPeriod = (isSimulation ? 0f : (-0.2f));
+				userAgent.SetActionChannel(0, in arriveActionCode, ignorePriority: false, (AnimFlags)additionalFlags, 0f, MBRandom.RandomFloatRanged(0.8f, 1f), blendInPeriod);
+				if (base.UserAgent.GetCurrentAnimationFlag(0).HasAnyFlag(AnimFlags.anf_displace_position))
+				{
+					base.UserAgent.ClearTargetFrame();
+					LockUserFrames = false;
+					LockUserPositions = false;
+				}
+			}
+			_state = State.StartToUse;
 			break;
 		case State.StartToUse:
 			if (ArriveActionCode != ActionIndexCache.act_none && isSimulation)
@@ -788,6 +795,8 @@ public class AnimationPoint : StandingPoint
 			base.UserAgent.ResetLookAgent();
 		}
 		IsArriveActionFinished = false;
+		LockUserFrames = true;
+		LockUserPositions = true;
 		base.OnUseStopped(userAgent, isSuccessful, preferenceIndex);
 		if (ActivatePairs)
 		{

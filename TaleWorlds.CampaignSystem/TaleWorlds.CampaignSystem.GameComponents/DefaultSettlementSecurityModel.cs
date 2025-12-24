@@ -30,23 +30,23 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 
 	private const float PerProsperityEffect = -0.0005f;
 
-	private static readonly TextObject GarrisonText = GameTexts.FindText("str_garrison");
+	private readonly TextObject GarrisonText = GameTexts.FindText("str_garrison");
 
-	private static readonly TextObject LootedVillagesText = GameTexts.FindText("str_looted_villages");
+	private readonly TextObject LootedVillagesText = GameTexts.FindText("str_looted_villages");
 
-	private static readonly TextObject CorruptionText = GameTexts.FindText("str_corruption");
+	private readonly TextObject CorruptionText = GameTexts.FindText("str_corruption");
 
-	private static readonly TextObject NearbyHideoutText = GameTexts.FindText("str_nearby_hideout");
+	private readonly TextObject NearbyHideoutText = GameTexts.FindText("str_nearby_hideout");
 
-	private static readonly TextObject UnderSiegeText = GameTexts.FindText("str_under_siege");
+	private readonly TextObject UnderSiegeText = GameTexts.FindText("str_under_siege");
 
-	private static readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
+	private readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
 
-	private static readonly TextObject Security = GameTexts.FindText("str_security");
+	private readonly TextObject Security = GameTexts.FindText("str_security");
 
-	private static readonly TextObject SecurityDriftText = GameTexts.FindText("str_security_drift");
+	private readonly TextObject SecurityDriftText = GameTexts.FindText("str_security_drift");
 
-	private static readonly TextObject PatrolPartiesText = GameTexts.FindText("str_patrol_parties");
+	private readonly TextObject PatrolPartiesText = GameTexts.FindText("str_patrol_parties");
 
 	public override int MaximumSecurityInSettlement => 100;
 

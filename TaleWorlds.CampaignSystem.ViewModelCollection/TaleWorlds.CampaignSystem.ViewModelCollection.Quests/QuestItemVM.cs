@@ -40,6 +40,8 @@ public class QuestItemVM : ViewModel
 
 	private bool _isMainQuest;
 
+	private bool _isNavalQuest;
+
 	private HeroVM _questGiverHero;
 
 	private bool _isQuestGiverHeroHidden;
@@ -99,6 +101,23 @@ public class QuestItemVM : ViewModel
 			{
 				_isMainQuest = value;
 				OnPropertyChangedWithValue(value, "IsMainQuest");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsNavalQuest
+	{
+		get
+		{
+			return _isNavalQuest;
+		}
+		set
+		{
+			if (value != _isNavalQuest)
+			{
+				_isNavalQuest = value;
+				OnPropertyChangedWithValue(value, "IsNavalQuest");
 			}
 		}
 	}

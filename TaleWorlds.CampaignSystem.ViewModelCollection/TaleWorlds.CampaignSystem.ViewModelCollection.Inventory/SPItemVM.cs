@@ -480,7 +480,7 @@ public class SPItemVM : ItemVM
 			IsStealthItem = newItem.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.Stealth);
 			IsGenderDifferent = (isHeroFemale && ItemRosterElement.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale)) || (!isHeroFemale && ItemRosterElement.EquipmentElement.Item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByMale));
 			CanCharacterUseItem = canCharacterUseItem;
-			IsArtifact = false;
+			IsArtifact = newItem.EquipmentElement.Item.IsUniqueItem;
 			UpdateCanBeSlaughtered();
 			UpdateHintTexts();
 			CanBeDonated = _inventoryLogic?.CanDonateItem(ItemRosterElement, InventorySide) ?? false;

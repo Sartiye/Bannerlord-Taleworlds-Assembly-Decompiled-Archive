@@ -529,7 +529,7 @@ public class MapEventSide
 				}
 			}
 		}
-		if (MapEvent.EventType == MapEvent.BattleTypes.Siege && MissionSide == BattleSideEnum.Defender)
+		if (MapEvent.EventType == MapEvent.BattleTypes.Siege && (MissionSide == BattleSideEnum.Defender || MapEvent.MapEventSettlement.CurrentSiegeState == Settlement.SiegeState.InTheLordsHall))
 		{
 			num2 = TaleWorlds.Library.MathF.Max(num2, 30f);
 		}

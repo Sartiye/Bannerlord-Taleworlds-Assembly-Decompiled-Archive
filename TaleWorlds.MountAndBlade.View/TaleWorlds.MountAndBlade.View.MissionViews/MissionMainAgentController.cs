@@ -656,53 +656,16 @@ public class MissionMainAgentController : MissionView
 				{
 					num = 0;
 				}
-				if (base.Input.IsGameKeyDown(9))
+				if (base.Input.IsGameKeyDown(9) && mainAgent.GetAgentFlags().HasAnyFlag(AgentFlag.CanAttack))
 				{
 					mainAgent.MovementFlags |= mainAgent.AttackDirectionToMovementFlag(mainAgent.GetAttackDirection());
 				}
-				goto IL_08e2;
+				goto IL_08fe;
 			}
-			goto IL_0a10;
+			goto IL_0a2c;
 		}
-		goto IL_0dff;
-		IL_0dff:
-		_overrideControlsThisFrame = OverrideMainAgentControlFlag.None;
-		return;
-		IL_08b1:
-		HandleRangedWeaponAttackAlternativeAiming(mainAgent);
-		goto IL_08e2;
-		IL_08e2:
-		if (num == 0 && base.Input.IsGameKeyDown(10))
-		{
-			if (ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ControlBlockDirection) == 2f && MissionGameModels.Current.AutoBlockModel != null)
-			{
-				switch (MissionGameModels.Current.AutoBlockModel.GetBlockDirection(base.Mission))
-				{
-				case Agent.UsageDirection.AttackLeft:
-					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendRight;
-					break;
-				case Agent.UsageDirection.AttackRight:
-					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendLeft;
-					break;
-				case Agent.UsageDirection.AttackUp:
-					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendUp;
-					break;
-				case Agent.UsageDirection.AttackDown:
-					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendDown;
-					break;
-				}
-			}
-			else
-			{
-				mainAgent.MovementFlags |= mainAgent.GetDefendMovementFlag();
-			}
-		}
-		else if (mainAgent.CrouchMode && mainAgent.Velocity.LengthSquared > 0.010000001f && !mainAgent.WieldedWeapon.IsEmpty && mainAgent.WieldedWeapon.CurrentUsageItem.IsRangedWeapon && mainAgent.GetCurrentActionStage(1) == Agent.ActionStage.AttackReady)
-		{
-			mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendDown;
-		}
-		goto IL_0a10;
-		IL_0a10:
+		goto IL_0e1b;
+		IL_0a2c:
 		if (!base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen)
 		{
 			if (base.Input.IsGameKeyPressed(16) && (mainAgent.KickClear() || mainAgent.MountAgent != null))
@@ -795,7 +758,47 @@ public class MissionMainAgentController : MissionView
 				mainAgent.EventControlFlags |= (Agent.EventControlFlag)(mainAgent.GetScriptedFlags().HasAnyFlag(Agent.AIScriptedFrameFlags.Crouch) ? 8192 : 16384);
 			}
 		}
-		goto IL_0dff;
+		goto IL_0e1b;
+		IL_08b1:
+		if (mainAgent.GetAgentFlags().HasAnyFlag(AgentFlag.CanAttack))
+		{
+			HandleRangedWeaponAttackAlternativeAiming(mainAgent);
+		}
+		goto IL_08fe;
+		IL_0e1b:
+		_overrideControlsThisFrame = OverrideMainAgentControlFlag.None;
+		return;
+		IL_08fe:
+		if (num == 0 && base.Input.IsGameKeyDown(10))
+		{
+			if (ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ControlBlockDirection) == 2f && MissionGameModels.Current.AutoBlockModel != null)
+			{
+				switch (MissionGameModels.Current.AutoBlockModel.GetBlockDirection(base.Mission))
+				{
+				case Agent.UsageDirection.AttackLeft:
+					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendRight;
+					break;
+				case Agent.UsageDirection.AttackRight:
+					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendLeft;
+					break;
+				case Agent.UsageDirection.AttackUp:
+					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendUp;
+					break;
+				case Agent.UsageDirection.AttackDown:
+					mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendDown;
+					break;
+				}
+			}
+			else
+			{
+				mainAgent.MovementFlags |= mainAgent.GetDefendMovementFlag();
+			}
+		}
+		else if (mainAgent.CrouchMode && mainAgent.Velocity.LengthSquared > 0.010000001f && !mainAgent.WieldedWeapon.IsEmpty && mainAgent.WieldedWeapon.CurrentUsageItem.IsRangedWeapon && mainAgent.GetCurrentActionStage(1) == Agent.ActionStage.AttackReady)
+		{
+			mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendDown;
+		}
+		goto IL_0a2c;
 	}
 
 	private void HandleRangedWeaponAttackAlternativeAiming(Agent player)

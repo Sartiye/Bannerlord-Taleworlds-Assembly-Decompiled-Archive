@@ -64,9 +64,9 @@ public class StoryModeBanditDensityModel : BanditDensityModel
 
 	public override float SpawnPercentageForFirstFightInHideoutMission => base.BaseModel.SpawnPercentageForFirstFightInHideoutMission;
 
-	public override int GetMaximumTroopCountForHideoutMission(MobileParty party)
+	public override int GetMaximumTroopCountForHideoutMission(MobileParty party, bool isAssault)
 	{
-		return base.BaseModel.GetMaximumTroopCountForHideoutMission(party);
+		return base.BaseModel.GetMaximumTroopCountForHideoutMission(party, isAssault);
 	}
 
 	public override bool IsPositionInsideNavalSafeZone(CampaignVec2 position)
@@ -83,8 +83,8 @@ public class StoryModeBanditDensityModel : BanditDensityModel
 		return base.BaseModel.GetMaxSupportedNumberOfLootersForClan(clan);
 	}
 
-	public override int GetMinimumTroopCountForHideoutMission(MobileParty party)
+	public override int GetMinimumTroopCountForHideoutMission(MobileParty party, bool isAssault)
 	{
-		return base.BaseModel.GetMinimumTroopCountForHideoutMission(party);
+		return base.BaseModel.GetMinimumTroopCountForHideoutMission(party, isAssault);
 	}
 }

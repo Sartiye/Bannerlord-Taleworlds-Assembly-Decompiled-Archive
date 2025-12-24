@@ -142,6 +142,7 @@ public class GauntletMapConversationView : MapConversationView, IConversationSta
 		{
 			ScreenManager.TrySetFocus(base.Layer);
 		}
+		_dataSource?.Tick(dt);
 		MapConversationVM dataSource = _dataSource;
 		if (dataSource != null && dataSource.DialogController?.AnswerList.Count <= 0 && !_barterView.IsCreated && base.IsConversationActive && _layerAsGauntletLayer.Input.IsHotKeyReleased("ContinueKey"))
 		{

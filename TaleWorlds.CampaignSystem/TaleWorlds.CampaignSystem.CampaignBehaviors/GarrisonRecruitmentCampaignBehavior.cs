@@ -203,9 +203,9 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 		return result;
 	}
 
-	private ExplainedNumber GetBaseGarrisonChangeExplainedNumber(Town town)
+	private ExplainedNumber GetBaseGarrisonChangeExplainedNumber(Town town, bool includeDescriptions = false)
 	{
-		ExplainedNumber result = Campaign.Current.Models.SettlementGarrisonModel.CalculateBaseGarrisonChange(town.Settlement, includeDescriptions: true);
+		ExplainedNumber result = Campaign.Current.Models.SettlementGarrisonModel.CalculateBaseGarrisonChange(town.Settlement, includeDescriptions);
 		int num = ((town.GarrisonParty == null) ? ((int)Campaign.Current.Models.PartySizeLimitModel.CalculateGarrisonPartySizeLimit(town.Settlement).ResultNumber) : (town.GarrisonParty.Party.PartySizeLimit - town.GarrisonParty.Party.NumberOfAllMembers));
 		if (result.LimitMaxValue > (float)num)
 		{
@@ -223,7 +223,7 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 	public ExplainedNumber GetGarrisonChangeExplainedNumber(Town town)
 	{
 		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: true);
-		ExplainedNumber baseGarrisonChangeExplainedNumber = GetBaseGarrisonChangeExplainedNumber(town);
+		ExplainedNumber baseGarrisonChangeExplainedNumber = GetBaseGarrisonChangeExplainedNumber(town, includeDescriptions: true);
 		result.AddFromExplainedNumber(baseGarrisonChangeExplainedNumber, new TextObject("{=basevalue}Base"));
 		if (CanSettlementAutoRecruit(town.Settlement))
 		{

@@ -25,6 +25,13 @@ public struct WorldFrame
 		return new MatrixFrame(in rotation, in o);
 	}
 
+	public MatrixFrame ToGroundMatrixFrameMT()
+	{
+		ref Mat3 rotation = ref Rotation;
+		Vec3 o = Origin.GetGroundVec3MT();
+		return new MatrixFrame(in rotation, in o);
+	}
+
 	public MatrixFrame ToNavMeshMatrixFrame()
 	{
 		ref Mat3 rotation = ref Rotation;

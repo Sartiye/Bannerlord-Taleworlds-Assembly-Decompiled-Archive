@@ -38,7 +38,7 @@ public static class ChangeShipOwnerAction
 				}
 				else
 				{
-					Debug.FailedAssert("Unhandled case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\ChangeShipOwnerAction.cs", "ApplyInternal", 49);
+					Debug.FailedAssert("Unhandled case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\ChangeShipOwnerAction.cs", "ApplyInternal", 46);
 					GiveGoldAction.ApplyForPartyToCharacter(newOwner, null, (int)shipTradeValue);
 				}
 				if (newOwner.Ships.Any() && !newOwner.MobileParty.Anchor.IsValid)
@@ -46,26 +46,22 @@ public static class ChangeShipOwnerAction
 					newOwner.MobileParty.Anchor.SetSettlement(ship.Owner.Settlement);
 				}
 			}
+			else if (owner.MobileParty.IsCaravan || owner.MobileParty.IsVillager)
+			{
+				GiveGoldAction.ApplyForCharacterToParty(null, owner, (int)shipTradeValue);
+			}
+			else if (owner.MobileParty.ActualClan?.Leader != null)
+			{
+				GiveGoldAction.ApplyBetweenCharacters(null, owner.MobileParty.ActualClan.Leader, (int)shipTradeValue);
+			}
+			else if (owner.LeaderHero != null)
+			{
+				GiveGoldAction.ApplyBetweenCharacters(null, owner.LeaderHero, (int)shipTradeValue);
+			}
 			else
 			{
-				if (owner.MobileParty.IsCaravan || owner.MobileParty.IsVillager)
-				{
-					GiveGoldAction.ApplyForCharacterToParty(null, owner, (int)shipTradeValue);
-				}
-				else if (owner.MobileParty.ActualClan?.Leader != null)
-				{
-					GiveGoldAction.ApplyBetweenCharacters(null, owner.MobileParty.ActualClan.Leader, (int)shipTradeValue);
-				}
-				else if (owner.LeaderHero != null)
-				{
-					GiveGoldAction.ApplyBetweenCharacters(null, owner.LeaderHero, (int)shipTradeValue);
-				}
-				else
-				{
-					Debug.FailedAssert("Unhandled case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\ChangeShipOwnerAction.cs", "ApplyInternal", 74);
-					GiveGoldAction.ApplyForCharacterToParty(null, owner, (int)shipTradeValue);
-				}
-				ship.ResetReservedUpgradePieces();
+				Debug.FailedAssert("Unhandled case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\ChangeShipOwnerAction.cs", "ApplyInternal", 71);
+				GiveGoldAction.ApplyForCharacterToParty(null, owner, (int)shipTradeValue);
 			}
 		}
 		ship.Owner = newOwner;

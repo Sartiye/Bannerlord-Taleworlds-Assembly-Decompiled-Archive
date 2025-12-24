@@ -28,6 +28,8 @@ public class SPScoreboardShipVM : ViewModel
 
 	private bool _isDestroyed;
 
+	private bool _isInactive;
+
 	private BasicTooltipViewModel _tooltip;
 
 	[DataSourceProperty]
@@ -146,6 +148,23 @@ public class SPScoreboardShipVM : ViewModel
 			{
 				_isDestroyed = value;
 				OnPropertyChangedWithValue(value, "IsDestroyed");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsInactive
+	{
+		get
+		{
+			return _isInactive;
+		}
+		set
+		{
+			if (value != _isInactive)
+			{
+				_isInactive = value;
+				OnPropertyChangedWithValue(value, "IsInactive");
 			}
 		}
 	}

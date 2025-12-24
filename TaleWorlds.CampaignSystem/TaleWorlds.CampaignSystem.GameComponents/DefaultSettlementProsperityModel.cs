@@ -12,13 +12,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultSettlementProsperityModel : SettlementProsperityModel
 {
-	private static readonly TextObject LoyaltyText = GameTexts.FindText("str_loyalty");
+	private readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
+
+	private readonly TextObject LoyaltyText = GameTexts.FindText("str_loyalty");
 
 	private static readonly TextObject FoodShortageText = new TextObject("{=qTFKvGSg}Food Shortage");
 
 	private static readonly TextObject ProsperityFromMarketText = new TextObject("{=RNT5hMVb}Goods From Market");
-
-	private static readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
 
 	private static readonly TextObject RaidedText = new TextObject("{=RVas572P}Raided");
 

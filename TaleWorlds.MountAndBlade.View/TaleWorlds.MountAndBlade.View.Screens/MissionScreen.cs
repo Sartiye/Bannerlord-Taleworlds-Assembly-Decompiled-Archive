@@ -651,7 +651,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 	{
 		foreach (Agent agent in Mission.Current.Agents)
 		{
-			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: true, prepareImmediately: false);
+			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: true, prepareImmediately: false, useFaceCache: false, 0);
 			agent.UpdateAgentProperties();
 			agent.AgentVisuals.UpdateSkeletonScale((int)agent.SpawnEquipment.BodyDeformType);
 		}
@@ -1660,7 +1660,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			else
 			{
-				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2183);
+				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2180);
 				flag = true;
 			}
 		}

@@ -158,6 +158,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate UIntPtr GetEntityPointerDelegate(UIntPtr agentVisualsPtr);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetFrameDelegate(UIntPtr agentVisualsPtr, ref MatrixFrame outFrame);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -429,6 +434,8 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	public static GetCurrentRagdollStateDelegate call_GetCurrentRagdollStateDelegate;
 
 	public static GetEntityDelegate call_GetEntityDelegate;
+
+	public static GetEntityPointerDelegate call_GetEntityPointerDelegate;
 
 	public static GetFrameDelegate call_GetFrameDelegate;
 
@@ -729,6 +736,11 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
 		}
 		return result;
+	}
+
+	public UIntPtr GetEntityPointer(UIntPtr agentVisualsPtr)
+	{
+		return call_GetEntityPointerDelegate(agentVisualsPtr);
 	}
 
 	public void GetFrame(UIntPtr agentVisualsPtr, ref MatrixFrame outFrame)

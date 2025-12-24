@@ -23,19 +23,11 @@ public static class CustomBattleHelper
 
 	private const string EmpireHorseArcherTroop = "bucellarii";
 
-	private const string EmpireInfantryBannermanTroop = "imperial_infantry_banner_bearer";
-
-	private const string EmpireCavalryBannermanTroop = "imperial_cavalry_banner_bearer";
-
 	private const string SturgiaInfantryTroop = "sturgian_spearman";
 
 	private const string SturgiaRangedTroop = "sturgian_archer";
 
 	private const string SturgiaCavalryTroop = "sturgian_hardened_brigand";
-
-	private const string SturgiaInfantryBannermanTroop = "sturgian_infantry_banner_bearer";
-
-	private const string SturgiaCavalryBannermanTroop = "sturgian_cavalry_banner_bearer";
 
 	private const string AseraiInfantryTroop = "aserai_infantry";
 
@@ -45,29 +37,17 @@ public static class CustomBattleHelper
 
 	private const string AseraiHorseArcherTroop = "aserai_faris";
 
-	private const string AseraiInfantryBannermanTroop = "aserai_infantry_banner_bearer";
-
-	private const string AseraiCavalryBannermanTroop = "aserai_cavalry_banner_bearer";
-
 	private const string VlandiaInfantryTroop = "vlandian_swordsman";
 
 	private const string VlandiaRangedTroop = "vlandian_hardened_crossbowman";
 
 	private const string VlandiaCavalryTroop = "vlandian_knight";
 
-	private const string VlandiaInfantryBannermanTroop = "vlandian_infantry_banner_bearer";
-
-	private const string VlandiaCavalryBannermanTroop = "vlandian_cavalry_banner_bearer";
-
 	private const string BattaniaInfantryTroop = "battanian_picked_warrior";
 
 	private const string BattaniaRangedTroop = "battanian_hero";
 
 	private const string BattaniaCavalryTroop = "battanian_scout";
-
-	private const string BattaniaInfantryBannermanTroop = "battanian_woodrunner";
-
-	private const string BattaniaCavalryBannermanTroop = "battanian_cavalry_banner_bearer";
 
 	private const string KhuzaitInfantryTroop = "khuzait_spear_infantry";
 
@@ -77,9 +57,9 @@ public static class CustomBattleHelper
 
 	private const string KhuzaitHorseArcherTroop = "khuzait_horse_archer";
 
-	private const string KhuzaitInfantryBannermanTroop = "khuzait_infantry_banner_bearer";
+	private const string NordInfantryTroop = "nord_spear_warrior";
 
-	private const string KhuzaitCavalryBannermanTroop = "khuzait_cavalry_banner_bearer";
+	private const string NordRangedTroop = "nord_marksman";
 
 	public static int GetIndexFromGameTypeStringId(string gameTypeStringId)
 	{
@@ -92,7 +72,7 @@ public static class CustomBattleHelper
 		case "Village":
 			return 2;
 		default:
-			Debug.FailedAssert("Given gameTypeStringId: \"" + gameTypeStringId + "\" is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.CustomBattle\\CustomBattle\\CustomBattleHelper.cs", "GetIndexFromGameTypeStringId", 85);
+			Debug.FailedAssert("Given gameTypeStringId: \"" + gameTypeStringId + "\" is invalid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.CustomBattle\\CustomBattle\\CustomBattleHelper.cs", "GetIndexFromGameTypeStringId", 78);
 			return -1;
 		}
 	}
@@ -311,11 +291,11 @@ public static class CustomBattleHelper
 
 	public static void AssertMissingTroopsForDebug()
 	{
-		foreach (BasicCultureObject objectType in MBObjectManager.Instance.GetObjectTypeList<BasicCultureObject>())
+		foreach (BasicCultureObject faction in CustomBattleData.Factions)
 		{
 			for (int i = 0; i < 4; i++)
 			{
-				GetDefaultTroopOfFormationForFaction(objectType, (FormationClass)i);
+				GetDefaultTroopOfFormationForFaction(faction, (FormationClass)i);
 			}
 		}
 	}
@@ -400,69 +380,14 @@ public static class CustomBattleHelper
 				return GetTroopFromId("khuzait_horse_archer");
 			}
 		}
-		return null;
-	}
-
-	public static BasicCharacterObject GetBannermanTroopOfFormationForFaction(BasicCultureObject culture, FormationClass formation)
-	{
-		if (culture.StringId.ToLower() == "empire")
+		else if (culture.StringId.ToLower() == "nord")
 		{
 			switch (formation)
 			{
 			case FormationClass.Infantry:
-				return GetTroopFromId("imperial_infantry_banner_bearer");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("imperial_cavalry_banner_bearer");
-			}
-		}
-		else if (culture.StringId.ToLower() == "sturgia")
-		{
-			switch (formation)
-			{
-			case FormationClass.Infantry:
-				return GetTroopFromId("sturgian_infantry_banner_bearer");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("sturgian_cavalry_banner_bearer");
-			}
-		}
-		else if (culture.StringId.ToLower() == "aserai")
-		{
-			switch (formation)
-			{
-			case FormationClass.Infantry:
-				return GetTroopFromId("aserai_infantry_banner_bearer");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("aserai_cavalry_banner_bearer");
-			}
-		}
-		else if (culture.StringId.ToLower() == "vlandia")
-		{
-			switch (formation)
-			{
-			case FormationClass.Infantry:
-				return GetTroopFromId("vlandian_infantry_banner_bearer");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("vlandian_cavalry_banner_bearer");
-			}
-		}
-		else if (culture.StringId.ToLower() == "battania")
-		{
-			switch (formation)
-			{
-			case FormationClass.Infantry:
-				return GetTroopFromId("battanian_woodrunner");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("battanian_cavalry_banner_bearer");
-			}
-		}
-		else if (culture.StringId.ToLower() == "khuzait")
-		{
-			switch (formation)
-			{
-			case FormationClass.Infantry:
-				return GetTroopFromId("khuzait_infantry_banner_bearer");
-			case FormationClass.Cavalry:
-				return GetTroopFromId("khuzait_cavalry_banner_bearer");
+				return GetTroopFromId("nord_spear_warrior");
+			case FormationClass.Ranged:
+				return GetTroopFromId("nord_marksman");
 			}
 		}
 		return null;

@@ -26,14 +26,17 @@ public class GameMenuItemVM : ViewModel
 
 		public readonly TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType Type;
 
+		public readonly GameMenuOption.IssueQuestFlags OptionQuestData;
+
 		public readonly GameMenuOption GameMenuOption;
 
 		public readonly GameKey ShortcutKey;
 
 		public string OptionID => GameMenuOption.IdString;
 
-		public GameMenuItemCreationData(MenuContext menuContext, int index, TextObject text, TextObject text2, TextObject tooltip, TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType type, GameMenuOption gameMenuOption, GameKey shortcutKey)
+		public GameMenuItemCreationData(MenuContext menuContext, int index, TextObject text, TextObject text2, TextObject tooltip, TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType type, GameMenuOption.IssueQuestFlags questFlags, GameMenuOption gameMenuOption, GameKey shortcutKey)
 		{
+			OptionQuestData = questFlags;
 			MenuContext = menuContext;
 			Index = index;
 			Text = text;
@@ -346,19 +349,19 @@ public class GameMenuItemVM : ViewModel
 		ItemHint.HintText = _tooltip;
 		OptionLeaveType = data.GameMenuOption.OptionLeaveType.ToString();
 		OptionID = data.GameMenuOption.IdString;
-		if (data.GameMenuOption.OptionQuestData != _questFlags)
+		if (data.OptionQuestData != _questFlags)
 		{
 			Quests.Clear();
 			for (int i = 0; i < GameMenuOption.IssueQuestFlagsValues.Length; i++)
 			{
 				GameMenuOption.IssueQuestFlags issueQuestFlags = GameMenuOption.IssueQuestFlagsValues[i];
-				if (issueQuestFlags != 0 && (data.GameMenuOption.OptionQuestData & issueQuestFlags) != 0)
+				if (issueQuestFlags != 0 && (data.OptionQuestData & issueQuestFlags) != 0)
 				{
 					CampaignUIHelper.IssueQuestFlags issueQuestFlag = (CampaignUIHelper.IssueQuestFlags)issueQuestFlags;
 					Quests.Add(new QuestMarkerVM(issueQuestFlag));
 				}
 			}
-			_questFlags = data.GameMenuOption.OptionQuestData;
+			_questFlags = data.OptionQuestData;
 		}
 		ShortcutKey = ((data.ShortcutKey != null) ? InputKeyItemVM.CreateFromGameKey(data.ShortcutKey, isConsoleOnly: true) : null);
 		RefreshValues();

@@ -180,9 +180,11 @@ public class SceneNotificationVM : ViewModel
 		SetData(data);
 	}
 
-	public void ForceClose()
+	public void ClearData()
 	{
 		IsShown = false;
+		ActiveData = null;
+		Scene = null;
 		OnPropertyChanged("TitleText");
 		OnPropertyChanged("AffirmativeDescription");
 		OnPropertyChanged("CancelDescription");
@@ -246,22 +248,16 @@ public class SceneNotificationVM : ViewModel
 
 	public void ExecuteClose()
 	{
-		ActiveData?.OnCloseAction();
+		SceneNotificationData activeData = ActiveData;
 		_closeNotification();
-		ClearData();
+		activeData?.OnCloseAction();
 	}
 
 	public void ExecuteNegativeProcess()
 	{
+		SceneNotificationData activeData = ActiveData;
 		_closeNotification();
-		ActiveData?.OnNegativeAction();
-		ClearData();
-	}
-
-	public void ClearData()
-	{
-		ActiveData = null;
-		Scene = null;
+		activeData?.OnNegativeAction();
 	}
 
 	public override void OnFinalize()

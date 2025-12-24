@@ -808,7 +808,7 @@ public class SiegeEvent
 		SiegeStartTime = CampaignTime.Now;
 		if (BesiegedSettlement.HasPort && BesiegerCamp.GetInvolvedPartiesForEventType().Any((PartyBase x) => x.Ships.Count > 0))
 		{
-			BlockadeShouldBeActivated = true;
+			ActivateBlockade();
 		}
 		BesiegedSettlement.Party.SetLevelMaskIsDirty();
 		CampaignEventDispatcher.Instance.OnSiegeEventStarted(this);
@@ -845,10 +845,6 @@ public class SiegeEvent
 	{
 		if (!(CampaignTime.DeltaTime == CampaignTime.Zero) && BesiegerCamp.LeaderParty.MapEvent == null && BesiegedSettlement.Party.MapEvent == null)
 		{
-			if (BesiegerCamp.IsPreparationComplete && BlockadeShouldBeActivated)
-			{
-				ActivateBlockade();
-			}
 			TickSiegeEventSide(BesiegerCamp);
 			TickSiegeEventSide(BesiegedSettlement);
 		}
@@ -857,6 +853,10 @@ public class SiegeEvent
 	public void OnAfterLoad()
 	{
 		BesiegerCamp?.OnAfterLoad();
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.13.105378")) && BlockadeShouldBeActivated)
+		{
+			ActivateBlockade();
+		}
 	}
 
 	private void TickSiegeEventSide(ISiegeEventSide siegeEventSide)
@@ -1171,7 +1171,7 @@ public class SiegeEvent
 				break;
 			}
 			default:
-				Debug.FailedAssert("Invalid target type on hit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\SiegeEvent.cs", "BombardTick", 1013);
+				Debug.FailedAssert("Invalid target type on hit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\SiegeEvent.cs", "BombardTick", 1015);
 				break;
 			}
 		}

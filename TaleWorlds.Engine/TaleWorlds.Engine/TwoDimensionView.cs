@@ -31,7 +31,7 @@ public sealed class TwoDimensionView : View
 		EngineApplicationInterface.ITwoDimensionView.Clear(base.Pointer);
 	}
 
-	public void CreateMeshFromDescription(Material material, TwoDimensionMeshDrawData meshDrawData)
+	public void CreateMeshFromDescription(WeakMaterial material, TwoDimensionMeshDrawData meshDrawData)
 	{
 		EngineApplicationInterface.ITwoDimensionView.AddNewMesh(base.Pointer, material.Pointer, ref meshDrawData);
 	}
@@ -46,8 +46,8 @@ public sealed class TwoDimensionView : View
 		EngineApplicationInterface.ITwoDimensionView.AddNewTextMesh(base.Pointer, vertices, uvs, indices, vertices.Length / 2, indexCount, material.Pointer, ref meshDrawData);
 	}
 
-	public Material GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture)
+	public WeakMaterial GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture)
 	{
-		return EngineApplicationInterface.ITwoDimensionView.GetOrCreateMaterial(base.Pointer, mainTexture?.Pointer ?? UIntPtr.Zero, overlayTexture?.Pointer ?? UIntPtr.Zero);
+		return new WeakMaterial(EngineApplicationInterface.ITwoDimensionView.GetOrCreateMaterial(base.Pointer, mainTexture?.Pointer ?? UIntPtr.Zero, overlayTexture?.Pointer ?? UIntPtr.Zero));
 	}
 }

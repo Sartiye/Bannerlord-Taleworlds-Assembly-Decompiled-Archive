@@ -809,7 +809,7 @@ public class StonePile : UsableMachine, IDetachment
 				{
 					if (throwingPoint.CanUseAttackEntity())
 					{
-						agent.SetScriptedTargetEntityAndPosition(throwingPoint.AttackEntity.WeakEntity, new WorldPosition(throwingPoint.AttackEntity.Scene, UIntPtr.Zero, throwingPoint.AttackEntity.GlobalPosition, hasValidZ: false), Agent.AISpecialCombatModeFlags.None, ignoreIfAlreadyAttacking: true);
+						agent.SetScriptedTargetEntity(throwingPoint.AttackEntity.WeakEntity, Agent.AISpecialCombatModeFlags.None, ignoreIfAlreadyAttacking: true);
 						return num;
 					}
 					agent.DisableScriptedCombatMovement();

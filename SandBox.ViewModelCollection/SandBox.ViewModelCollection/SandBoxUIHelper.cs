@@ -372,7 +372,7 @@ public static class SandBoxUIHelper
 	{
 		if (agent?.Team != null && agent.Team != Team.Invalid && !agent.Team.IsPlayerAlly && !agent.IsMainAgent)
 		{
-			return agent.GetAgentFlags().HasFlag(AgentFlag.CanGetAlarmed);
+			return (agent.GetAgentFlags() & AgentFlag.CanGetAlarmed) == AgentFlag.CanGetAlarmed;
 		}
 		return false;
 	}

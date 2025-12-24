@@ -531,6 +531,11 @@ public class DecisionItemBaseVM : ViewModel
 		{
 			return;
 		}
+		DecisionOptionVM currentSelectedOption2 = _currentSelectedOption;
+		if (currentSelectedOption2 != null && currentSelectedOption2.CurrentSupportWeight == Supporter.SupportWeights.Choose)
+		{
+			return;
+		}
 		foreach (DecisionOptionVM decisionOptions in DecisionOptionsList)
 		{
 			if (decisionOptions.Option?.SponsorClan != null && decisionOptions.Option.SponsorClan != Clan.PlayerClan)

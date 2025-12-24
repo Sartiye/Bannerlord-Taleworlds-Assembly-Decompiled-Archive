@@ -38,6 +38,8 @@ public static class ScreenManager
 
 	private static List<InputKey> _lastMouseActiveKeys;
 
+	public static bool DisableScreenManagerTicks;
+
 	private static bool _activeMouseVisible;
 
 	private static IReadOnlyList<int> _lastPressedKeys;
@@ -128,6 +130,7 @@ public static class ScreenManager
 		_sortedLayers = new List<ScreenLayer>(16);
 		_sortedActiveLayersCopyForUpdate = new ScreenLayer[16];
 		_isSortedActiveLayersDirty = true;
+		DisableScreenManagerTicks = false;
 		_isRefreshActive = false;
 		_globalLayers = new ObservableCollection<GlobalLayer>();
 		_screenList = new ObservableCollection<ScreenBase>();
@@ -278,6 +281,10 @@ public static class ScreenManager
 
 	public static void Tick(float dt)
 	{
+		if (DisableScreenManagerTicks)
+		{
+			return;
+		}
 		for (int i = 0; i < _globalLayers.Count; i++)
 		{
 			_globalLayers[i]?.EarlyTick(dt);

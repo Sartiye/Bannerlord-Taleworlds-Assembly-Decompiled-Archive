@@ -21,7 +21,7 @@ public class DefaultBuildingEffectModel : BuildingEffectModel
 			}
 			bonuses = new ExplainedNumber(num * baseBuildingEffectAmount);
 		}
-		if (effect == BuildingEffectEnum.FoodStock && building.BuildingType == DefaultBuildingTypes.CastleGranary)
+		if (effect == BuildingEffectEnum.FoodStock && (building.BuildingType == DefaultBuildingTypes.CastleGranary || building.BuildingType == DefaultBuildingTypes.SettlementWarehouse))
 		{
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.Battlements, building.Town, ref bonuses);
 		}

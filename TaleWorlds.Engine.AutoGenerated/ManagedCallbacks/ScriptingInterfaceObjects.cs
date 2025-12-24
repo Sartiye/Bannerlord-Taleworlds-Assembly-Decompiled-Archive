@@ -867,6 +867,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_check_point_can_see_point,
 		enm_IMono_Scene_check_resources,
 		enm_IMono_Scene_clear_all,
+		enm_IMono_Scene_clear_current_frame_tick_entities,
 		enm_IMono_Scene_clear_decals,
 		enm_IMono_Scene_clear_nav_mesh,
 		enm_IMono_Scene_contains_terrain,
@@ -4303,6 +4304,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_clear_all:
 			ScriptingInterfaceOfIScene.call_ClearAllDelegate = (ScriptingInterfaceOfIScene.ClearAllDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.ClearAllDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_clear_current_frame_tick_entities:
+			ScriptingInterfaceOfIScene.call_ClearCurrentFrameTickEntitiesDelegate = (ScriptingInterfaceOfIScene.ClearCurrentFrameTickEntitiesDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.ClearCurrentFrameTickEntitiesDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_clear_decals:
 			ScriptingInterfaceOfIScene.call_ClearDecalsDelegate = (ScriptingInterfaceOfIScene.ClearDecalsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.ClearDecalsDelegate));

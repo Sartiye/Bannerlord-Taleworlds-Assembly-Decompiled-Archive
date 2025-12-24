@@ -30,7 +30,7 @@ public class DefaultWorkshopModel : WorkshopModel
 
 	public override ExplainedNumber GetEffectiveConversionSpeedOfProduction(Workshop workshop, float speed, bool includeDescription)
 	{
-		ExplainedNumber result = new ExplainedNumber(speed, includeDescription, new TextObject("{=basevalue}Base"));
+		ExplainedNumber result = new ExplainedNumber(speed, includeDescription);
 		Settlement settlement = workshop.Settlement;
 		if (settlement.OwnerClan.Kingdom != null)
 		{

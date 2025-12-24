@@ -58,9 +58,13 @@ public interface IViewDataTracker
 
 	void AddEncyclopediaBookmarkToItem(Hero item);
 
+	void AddEncyclopediaBookmarkToItem(ShipHull shipHull);
+
 	void AddEncyclopediaBookmarkToItem(Clan clan);
 
 	void RemoveEncyclopediaBookmarkFromItem(Hero hero);
+
+	void RemoveEncyclopediaBookmarkFromItem(ShipHull shipHull);
 
 	void RemoveEncyclopediaBookmarkFromItem(Clan clan);
 
@@ -73,6 +77,8 @@ public interface IViewDataTracker
 	void RemoveEncyclopediaBookmarkFromItem(CharacterObject unit);
 
 	bool IsEncyclopediaBookmarked(Hero hero);
+
+	bool IsEncyclopediaBookmarked(ShipHull shipHull);
 
 	bool IsEncyclopediaBookmarked(Clan clan);
 

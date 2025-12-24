@@ -219,7 +219,7 @@ public abstract class KingdomDecision
 		return false;
 	}
 
-	public virtual bool CanMakeDecision(out TextObject reason)
+	public virtual bool CanMakeDecision(out TextObject reason, bool includeReason = false)
 	{
 		reason = TextObject.GetEmpty();
 		return true;

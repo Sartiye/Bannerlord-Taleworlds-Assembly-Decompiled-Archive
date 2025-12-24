@@ -63,6 +63,12 @@ public interface IBrushLayerData
 
 	bool UseRandomBaseOverlayYOffset { get; set; }
 
+	ImageFit.ImageFitTypes ImageFitType { get; set; }
+
+	ImageFit.ImageHorizontalAlignments ImageFitHorizontalAlignment { get; set; }
+
+	ImageFit.ImageVerticalAlignments ImageFitVerticalAlignment { get; set; }
+
 	float GetValueAsFloat(BrushAnimationProperty.BrushAnimationPropertyType propertyType);
 
 	Color GetValueAsColor(BrushAnimationProperty.BrushAnimationPropertyType propertyType);

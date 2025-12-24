@@ -312,6 +312,10 @@ public class EncyclopediaData
 		{
 			Game.Current.EventManager.TriggerEvent(new EncyclopediaPageChangedEvent(EncyclopediaPages.Hero));
 		}
+		else if (_page is EncyclopediaShipPageVM)
+		{
+			Game.Current.EventManager.TriggerEvent(new EncyclopediaPageChangedEvent(EncyclopediaPages.Ship));
+		}
 		else if (_page is EncyclopediaSettlementPageVM)
 		{
 			Game.Current.EventManager.TriggerEvent(new EncyclopediaPageChangedEvent(EncyclopediaPages.Settlement));
@@ -339,6 +343,10 @@ public class EncyclopediaData
 		else if (_page is DefaultEncyclopediaHeroPage)
 		{
 			Game.Current.EventManager.TriggerEvent(new EncyclopediaPageChangedEvent(EncyclopediaPages.ListHeroes));
+		}
+		else if (_page is DefaultEncyclopediaShipPage)
+		{
+			Game.Current.EventManager.TriggerEvent(new EncyclopediaPageChangedEvent(EncyclopediaPages.ListShips));
 		}
 		else if (_page is DefaultEncyclopediaSettlementPage)
 		{

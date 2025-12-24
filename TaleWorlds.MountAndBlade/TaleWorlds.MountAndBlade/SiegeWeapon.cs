@@ -535,7 +535,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 		return base.GameEntity.ComputeGlobalPhysicsBoundingBoxMinMax();
 	}
 
-	public virtual void OnShipSwappedBetweenTeams(BattleSideEnum newDefaultSide)
+	public virtual void OnShipCaptured(BattleSideEnum newDefaultSide)
 	{
 	}
 

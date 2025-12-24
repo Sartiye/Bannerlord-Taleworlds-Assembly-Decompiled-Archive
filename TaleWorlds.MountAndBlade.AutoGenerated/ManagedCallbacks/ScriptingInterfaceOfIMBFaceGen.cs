@@ -20,6 +20,11 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void FlushFaceCacheDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void GetDeformKeyDataDelegate(int keyNo, ref DeformKeyData deformKeyData, int race, int gender, float age);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -141,6 +146,8 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 
 	public static EnforceConstraintsDelegate call_EnforceConstraintsDelegate;
 
+	public static FlushFaceCacheDelegate call_FlushFaceCacheDelegate;
+
 	public static GetDeformKeyDataDelegate call_GetDeformKeyDataDelegate;
 
 	public static GetFaceGenInstancesLengthDelegate call_GetFaceGenInstancesLengthDelegate;
@@ -192,6 +199,11 @@ internal class ScriptingInterfaceOfIMBFaceGen : IMBFaceGen
 	public bool EnforceConstraints(ref FaceGenerationParams faceGenerationParams)
 	{
 		return call_EnforceConstraintsDelegate(ref faceGenerationParams);
+	}
+
+	public void FlushFaceCache()
+	{
+		call_FlushFaceCacheDelegate();
 	}
 
 	public void GetDeformKeyData(int keyNo, ref DeformKeyData deformKeyData, int race, int gender, float age)

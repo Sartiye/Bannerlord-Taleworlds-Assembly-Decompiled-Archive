@@ -145,7 +145,7 @@ public class MissionGauntletSingleplayerEscapeMenu : MissionGauntletEscapeMenuBa
 		{
 			return new Tuple<bool, TextObject>(item1: true, new TextObject("{=WazbgBDJ}Disabled during cutscenes."));
 		}
-		if (!base.MissionScreen.IsPhotoModeAllowed())
+		if (base.MissionScreen.CustomCamera != null || !base.MissionScreen.IsPhotoModeAllowed())
 		{
 			return new Tuple<bool, TextObject>(item1: true, new TextObject("{=7xU2wu7M}Photo mode isn't allowed."));
 		}

@@ -56,9 +56,9 @@ public class CampaignMissionManager : CampaignMission.ICampaignMissionManager
 		return SandBoxMissions.OpenBattleMissionWhileEnteringSettlement(scene, upgradeLevel, numberOfMaxTroopToBeSpawnedForPlayer, numberOfMaxTroopToBeSpawnedForOpponent);
 	}
 
-	IMission CampaignMission.ICampaignMissionManager.OpenHideoutBattleMission(string scene, FlattenedTroopRoster playerTroops)
+	IMission CampaignMission.ICampaignMissionManager.OpenHideoutBattleMission(string scene, FlattenedTroopRoster playerTroops, bool isTutorial)
 	{
-		return SandBoxMissions.OpenHideoutBattleMission(scene, playerTroops);
+		return SandBoxMissions.OpenHideoutBattleMission(scene, playerTroops, isTutorial);
 	}
 
 	IMission CampaignMission.ICampaignMissionManager.OpenTownCenterMission(string scene, int townUpgradeLevel, Location location, CharacterObject talkToChar, string playerSpawnTag)

@@ -759,15 +759,16 @@ public class KingdomManagementVM : ViewModel
 		{
 			return;
 		}
+		if (_isPlayerTheRuler)
+		{
+			GameTexts.SetVariable("WILL_DESTROY", (Kingdom.Clans.Count == 1) ? 1 : 0);
+			InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_abdicate_leadership").ToString(), GameTexts.FindText("str_abdicate_leadership_question").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmAbdicateLeadership, null));
+			return;
+		}
 		ref(bool, TextObject)? mostRecentLeaveKingdomPermission = ref _mostRecentLeaveKingdomPermission;
 		if (mostRecentLeaveKingdomPermission.HasValue && mostRecentLeaveKingdomPermission.GetValueOrDefault().Item1 && _mostRecentLeaveKingdomPermission?.Item2 != null)
 		{
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), _mostRecentLeaveKingdomPermission?.Item2.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmLeaveKingdom, null));
-		}
-		else if (_isPlayerTheRuler)
-		{
-			GameTexts.SetVariable("WILL_DESTROY", (Kingdom.Clans.Count == 1) ? 1 : 0);
-			InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_abdicate_leadership").ToString(), GameTexts.FindText("str_abdicate_leadership_question").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnConfirmAbdicateLeadership, null));
 		}
 		else if (TaleWorlds.CampaignSystem.Clan.PlayerClan.Settlements.Count == 0)
 		{

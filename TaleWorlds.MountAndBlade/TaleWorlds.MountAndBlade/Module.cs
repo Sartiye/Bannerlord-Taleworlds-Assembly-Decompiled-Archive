@@ -330,14 +330,14 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				int serverPort = Convert.ToInt32(array[i + 1]);
 				string serverRegion = array[i + 2];
 				sbyte serverPriority = Convert.ToSByte(array[i + 3]);
-				string serverGameMode = array[i + 4];
+				string text2 = array[i + 4];
 				i += 4;
 				StartupInfo.StartupType = GameStartupType.GameServer;
 				StartupInfo.DedicatedServerType = DedicatedServerType.Matchmaker;
 				StartupInfo.ServerPort = serverPort;
 				StartupInfo.ServerRegion = serverRegion;
 				StartupInfo.ServerPriority = serverPriority;
-				StartupInfo.ServerGameMode = serverGameMode;
+				StartupInfo.ServerGameMode = text2.Trim();
 			}
 			else if (text == "/dedicatedcustomserver".ToLower())
 			{

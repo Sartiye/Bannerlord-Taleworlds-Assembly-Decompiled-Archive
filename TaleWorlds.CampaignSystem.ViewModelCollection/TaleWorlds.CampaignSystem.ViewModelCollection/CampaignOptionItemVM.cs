@@ -318,7 +318,7 @@ public class CampaignOptionItemVM : ViewModel
 		{
 			string variable = textObject.ToString();
 			string disabledReason = isDisabledWithReason.DisabledReason;
-			textObject = GameTexts.FindText("str_string_newline_string").CopyTextObject();
+			textObject = GameTexts.FindText("str_string_newline_newline_string").CopyTextObject();
 			textObject.SetTextVariable("STR1", variable);
 			textObject.SetTextVariable("STR2", disabledReason);
 		}

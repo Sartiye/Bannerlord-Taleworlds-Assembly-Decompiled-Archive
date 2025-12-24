@@ -289,9 +289,9 @@ public class VertexAnimator : SynchedMissionObject
 		GameNetworkMessage.WriteFloatToPacket(Progress, CompressionBasic.AnimationProgressCompressionInfo);
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		VertexAnimatorRecord vertexAnimatorRecord = (VertexAnimatorRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		BeginKey = vertexAnimatorRecord.BeginKey;
 		EndKey = vertexAnimatorRecord.EndKey;

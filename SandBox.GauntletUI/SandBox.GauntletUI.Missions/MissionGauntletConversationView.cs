@@ -72,6 +72,7 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		}
 		if (_dataSource != null)
 		{
+			_dataSource.Tick(dt);
 			_dataSource.SelectedAnOptionOrLinkThisFrame = false;
 		}
 		if (_gauntletLayer != null && IsGameKeyReleasedInAnyLayer("ToggleEscapeMenu"))

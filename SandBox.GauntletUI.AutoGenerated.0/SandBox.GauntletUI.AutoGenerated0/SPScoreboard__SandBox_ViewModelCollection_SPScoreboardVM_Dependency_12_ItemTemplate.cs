@@ -26,9 +26,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 
 	private IconBrushWidget _widget_0_0_0_2;
 
-	private Widget _widget_1;
+	private BoolStateChangerWidget _widget_1;
 
-	private HintWidget _widget_2;
+	private Widget _widget_2;
+
+	private HintWidget _widget_3;
 
 	private SPScoreboardShipVM _datasource_Root;
 
@@ -54,10 +56,12 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_widget_0_0_0.AddChild(_widget_0_0_0_1);
 		_widget_0_0_0_2 = new IconBrushWidget(base.Context);
 		_widget_0_0_0.AddChild(_widget_0_0_0_2);
-		_widget_1 = new Widget(base.Context);
+		_widget_1 = new BoolStateChangerWidget(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_2 = new HintWidget(base.Context);
+		_widget_2 = new Widget(base.Context);
 		_widget.AddChild(_widget_2);
+		_widget_3 = new HintWidget(base.Context);
+		_widget.AddChild(_widget_3);
 	}
 
 	public void SetIds()
@@ -104,12 +108,16 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_widget_0_0_0_2.Brush = base.Context.GetBrush("Naval.Scoreboard.Ship.Icon.Enemy");
 		_widget_0_0_0_2.IconBrush = base.Context.GetBrush("Naval.Scoreboard.Ship.Icons");
 		_widget_0_0_0_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1.Sprite = base.Context.SpriteData.GetSprite("General\\MenuElements\\Cross");
-		_widget_1.Color = new Color(0.8000001f, 6f / 85f, 6f / 85f);
-		_widget_1.AlphaFactor = 0.7f;
-		_widget_2.IsEnabled = false;
+		_widget_1.TrueState = "Inactive";
+		_widget_1.FalseState = "Default";
+		_widget_1.TargetWidget = _widget;
+		_widget_1.IncludeChildren = true;
+		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2.Sprite = base.Context.SpriteData.GetSprite("General\\MenuElements\\Cross");
+		_widget_2.Color = new Color(0.8000001f, 6f / 85f, 6f / 85f);
+		_widget_2.AlphaFactor = 0.7f;
+		_widget_3.IsEnabled = false;
 	}
 
 	public void DestroyDataSource()
@@ -179,6 +187,15 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 			if (_datasource_Root_Tooltip != null)
 			{
 				_datasource_Root_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Tooltip;
@@ -190,7 +207,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_datasource_Root_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Tooltip;
-				_widget_2.EventFire -= EventListenerOf_widget_2;
+				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_datasource_Root_Tooltip = null;
 			}
 			_datasource_Root = null;
@@ -202,7 +219,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
-	private void EventListenerOf_widget_2(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -542,9 +559,62 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 
 	private void HandleWidgetPropertyChangeOf_widget_1(string propertyName)
 	{
+		if (propertyName == "BooleanCheck")
+		{
+			_datasource_Root.IsInactive = _widget_1.BooleanCheck;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_2(string propertyName)
+	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.IsDestroyed = _widget_1.IsVisible;
+			_datasource_Root.IsDestroyed = _widget_2.IsVisible;
 		}
 	}
 
@@ -621,8 +691,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		case "IsEnemyTeam":
 			_widget_0_0_0_2.IsVisible = _datasource_Root.IsEnemyTeam;
 			break;
+		case "IsInactive":
+			_widget_1.BooleanCheck = _datasource_Root.IsInactive;
+			break;
 		case "IsDestroyed":
-			_widget_1.IsVisible = _datasource_Root.IsDestroyed;
+			_widget_2.IsVisible = _datasource_Root.IsDestroyed;
 			break;
 		}
 	}
@@ -743,6 +816,15 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 			if (_datasource_Root_Tooltip != null)
 			{
 				_datasource_Root_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Tooltip;
@@ -754,7 +836,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_datasource_Root_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Tooltip;
-				_widget_2.EventFire -= EventListenerOf_widget_2;
+				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_datasource_Root_Tooltip = null;
 			}
 			_datasource_Root = null;
@@ -825,7 +907,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_0_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_0_2;
 			_widget_0_0_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_0_2;
 			_widget_0_0_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_0_2;
-			_widget_1.IsVisible = _datasource_Root.IsDestroyed;
+			_widget_1.BooleanCheck = _datasource_Root.IsInactive;
 			_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1;
@@ -835,6 +917,16 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
+			_widget_2.IsVisible = _datasource_Root.IsDestroyed;
+			_widget_2.PropertyChanged += PropertyChangedListenerOf_widget_2;
+			_widget_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2;
+			_widget_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2;
+			_widget_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2;
+			_widget_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2;
+			_widget_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2;
+			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
+			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
+			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
 			_datasource_Root_Tooltip = _datasource_Root.Tooltip;
 			if (_datasource_Root_Tooltip != null)
 			{
@@ -847,7 +939,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_datasource_Root_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Tooltip;
 				_datasource_Root_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Tooltip;
-				_widget_2.EventFire += EventListenerOf_widget_2;
+				_widget_3.EventFire += EventListenerOf_widget_3;
 			}
 		}
 	}
@@ -865,7 +957,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Tooltip;
 			_datasource_Root_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Tooltip;
 			_datasource_Root_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Tooltip;
-			_widget_2.EventFire -= EventListenerOf_widget_2;
+			_widget_3.EventFire -= EventListenerOf_widget_3;
 			_datasource_Root_Tooltip = null;
 		}
 		_datasource_Root_Tooltip = newDataSource;
@@ -881,7 +973,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Tooltip;
 			_datasource_Root_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Tooltip;
 			_datasource_Root_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Tooltip;
-			_widget_2.EventFire += EventListenerOf_widget_2;
+			_widget_3.EventFire += EventListenerOf_widget_3;
 		}
 	}
 }

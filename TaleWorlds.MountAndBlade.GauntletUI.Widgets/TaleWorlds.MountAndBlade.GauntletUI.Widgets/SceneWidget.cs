@@ -336,7 +336,7 @@ public class SceneWidget : TextureWidget
 		}
 		if (Scene != null && !IsReady)
 		{
-			IsReady = (bool?)GetTextureProviderProperty("IsReady") == true;
+			IsReady = GetTextureProviderProperty<bool>("IsReady") == true;
 			if (IsReady)
 			{
 				_fadeInTimer = FadeInDuration;

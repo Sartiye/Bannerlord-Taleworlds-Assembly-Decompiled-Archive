@@ -112,7 +112,7 @@ public class MissionMainAgentInteractionComponent
 		{
 			missionBehavior.OnFocusGained(Agent.Main, focusedObject, isInteractable);
 		}
-		this.OnFocusGained?.Invoke(Agent.Main, CurrentFocusedObject, isInteractable);
+		this.OnFocusGained?.Invoke(Agent.Main, focusedObject, isInteractable);
 	}
 
 	private void FocusLost(IFocusable focusedObject, IFocusable focusedMachine)
@@ -123,7 +123,7 @@ public class MissionMainAgentInteractionComponent
 		{
 			missionBehavior.OnFocusLost(Agent.Main, focusedObject);
 		}
-		this.OnFocusLost?.Invoke(Agent.Main, CurrentFocusedObject);
+		this.OnFocusLost?.Invoke(Agent.Main, focusedObject);
 	}
 
 	public void FocusTick()
@@ -318,6 +318,12 @@ public class MissionMainAgentInteractionComponent
 			return;
 		}
 		Agent main = Agent.Main;
+		if (main.IsUsingGameObject && !(main.CurrentlyUsedGameObject is SpawnedItemEntity) && (!(_currentInteractableObject is Agent) || !(main.CurrentlyUsedGameObject is StandingPoint { PlayerStopsUsingWhenInteractsWithOther: false })))
+		{
+			main.HandleStopUsingAction();
+			ClearFocus();
+			return;
+		}
 		if (_currentInteractableObject is UsableMissionObject usableMissionObject)
 		{
 			if (!main.IsUsingGameObject && main.IsAbleToUseMachine() && !(usableMissionObject is SpawnedItemEntity) && main.ObjectHasVacantPosition(usableMissionObject))
@@ -327,14 +333,9 @@ public class MissionMainAgentInteractionComponent
 			return;
 		}
 		Agent agent = _currentInteractableObject as Agent;
-		if (main.IsAbleToUseMachine() && agent != null)
+		if (main.IsAbleToUseMachine())
 		{
-			agent.OnUse(main, _currentInteractableObjectBoneIndex);
-		}
-		else if (main.IsUsingGameObject && !(main.CurrentlyUsedGameObject is SpawnedItemEntity) && (agent == null || !(main.CurrentlyUsedGameObject is StandingPoint { PlayerStopsUsingWhenInteractsWithOther: not false })))
-		{
-			main.HandleStopUsingAction();
-			ClearFocus();
+			agent?.OnUse(main, _currentInteractableObjectBoneIndex);
 		}
 	}
 

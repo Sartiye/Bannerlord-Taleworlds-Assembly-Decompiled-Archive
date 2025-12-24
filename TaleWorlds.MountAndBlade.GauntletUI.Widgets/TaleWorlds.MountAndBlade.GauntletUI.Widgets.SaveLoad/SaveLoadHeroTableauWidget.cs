@@ -9,7 +9,7 @@ public class SaveLoadHeroTableauWidget : TextureWidget
 
 	private string _bannerCode;
 
-	public bool IsVersionCompatible => (bool)GetTextureProviderProperty("IsVersionCompatible");
+	public bool IsVersionCompatible => GetTextureProviderProperty<bool>("IsVersionCompatible") == true;
 
 	[Editor(false)]
 	public string HeroVisualCode

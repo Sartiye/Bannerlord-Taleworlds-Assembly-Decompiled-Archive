@@ -312,7 +312,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Mercy, -100),
 			IncidentEffect.MoraleChange(5f)
 		});
-		Incident incident3 = RegisterIncident("incident_spoiled_food_supplies", "{=5aPGeeDf}Spoiled Food Supplies", "{=RsWbJJS7}A delegation of your troops approach you. They show you a heel of bread from your stores, crawling with maggots. A piece of dried meat is streaked with mold. Your quartermaster appears to have packed the goods carelessly, allowing moisture and pests to get inside.", IncidentTrigger.LeavingVillage, IncidentType.FoodConsumption, CampaignTime.Days(60f), (TextObject description) => true);
+		Incident incident3 = RegisterIncident("incident_spoiled_food_supplies", "{=5aPGeeDf}Spoiled Food Supplies", "{=RsWbJJS7}A delegation of your troops approach you. They show you a heel of bread from your stores, crawling with maggots. A piece of dried meat is streaked with mold. Your quartermaster appears to have packed the goods carelessly, allowing moisture and pests to get inside.", IncidentTrigger.LeavingVillage, IncidentType.FoodConsumption, CampaignTime.Days(60f), (TextObject description) => PartyBase.MainParty.MemberRoster.TotalRegulars >= 10);
 		incident3.AddOption("{=p0gqO74k}Money is tight and you've eaten worse in your time. Tell the lads to think of it as seasoning", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, -100),
@@ -483,7 +483,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Valor, -100),
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 100)
 		});
-		Incident incident9 = RegisterIncident("incident_arrow_proofing", "{=JKO2Rmlr}Arrow-proofing", "{=ZCqZvb7K}As you leave the village, one of your soldiers proudly shows you a magic oil he bought from a peddlar, who told him that, if he annoints himself with it, it will prevent him from being wounded in battle. ", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => true);
+		Incident incident9 = RegisterIncident("incident_arrow_proofing", "{=JKO2Rmlr}Arrow-proofing", "{=ZCqZvb7K}As you leave the village, one of your soldiers proudly shows you a magic oil he bought from a peddlar, who told him that, if he annoints himself with it, it will prevent him from being wounded in battle. ", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident9.AddOption("{=CNYKy7q3}Congratulate the soldier on his wise purchase, and tell him that you expect to see him in the thick of the fray in the next battle", new List<IncidentEffect>
 		{
 			IncidentEffect.MoraleChange(5f),
@@ -695,7 +695,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 				return false;
 			}
 			description.SetTextVariable("TOWN_NAME", MobileParty.MainParty.LastVisitedSettlement.Name);
-			return true;
+			return PartyBase.MainParty.MemberRoster.TotalRegulars >= 5;
 		});
 		incident20.AddOption("{=lm37mXGH}Let your men return and sack the town while it is still defenseless", new List<IncidentEffect> { IncidentEffect.Custom(null, delegate
 		{
@@ -748,7 +748,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.MoraleChange(-5f),
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, -100)
 		});
-		Incident incident22 = RegisterIncident("incident_vedmaks_treasure", "{=6bF0LqJo}Vedmak's Treasure", "{=tfckGAIA}As you prepare to leave, one of your men says the he was approached by a villager. There is a particularly ill-tempered vedmak on the edge of town who makes his living not from healing or love-potions but from black magic, and who threatens to curse villagers unless they pay him. They asked your men to drive the vedmak away and burn his hut, and told them that they can have his ill-gotten gains.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => MobileParty.MainParty.LastVisitedSettlement != null && MobileParty.MainParty.LastVisitedSettlement.MapFaction.StringId == "sturgia" && MobileParty.MainParty.LastVisitedSettlement.IsVillage);
+		Incident incident22 = RegisterIncident("incident_vedmaks_treasure", "{=6bF0LqJo}Vedmak's Treasure", "{=tfckGAIA}As you prepare to leave, one of your men says the he was approached by a villager. There is a particularly ill-tempered vedmak on the edge of town who makes his living not from healing or love-potions but from black magic, and who threatens to curse villagers unless they pay him. They asked your men to drive the vedmak away and burn his hut, and told them that they can have his ill-gotten gains.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => MobileParty.MainParty.LastVisitedSettlement != null && MobileParty.MainParty.LastVisitedSettlement.MapFaction.StringId == "sturgia" && MobileParty.MainParty.LastVisitedSettlement.IsVillage && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident22.AddOption("{=byocyGXf}Convince your men that those who anger with vedmaks are likely to see their nose shrivel up or their fingers fall off", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 200),
@@ -808,7 +808,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, -100),
 			IncidentEffect.MoraleChange(5f)
 		});
-		Incident incident25 = RegisterIncident("incident_kannic_splendors", "{=msK9baMp}Kannic Splendors", "{=a1cuuevH}One of your men comes up to you excitedly. A peddler in the marketplace sold him a map to a treasure buried by a long-dead Kannic sorceror in a wadi near here. He wants a bit of time to check it out and promises you a fifth share of anything he finds. You've heard tales of gold found in ancient tombs near here, but in this case you'd give a hundred to one odds that this leads to either a grave that was pillaged centuries ago or someone's underground irrigation cistern, and at any rate the locals won't appreciate your man smashing things up with pick and shovel.", IncidentTrigger.LeavingTown, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => MobileParty.MainParty.LastVisitedSettlement?.MapFaction.StringId == "aserai");
+		Incident incident25 = RegisterIncident("incident_kannic_splendors", "{=msK9baMp}Kannic Splendors", "{=a1cuuevH}One of your men comes up to you excitedly. A peddler in the marketplace sold him a map to a treasure buried by a long-dead Kannic sorceror in a wadi near here. He wants a bit of time to check it out and promises you a fifth share of anything he finds. You've heard tales of gold found in ancient tombs near here, but in this case you'd give a hundred to one odds that this leads to either a grave that was pillaged centuries ago or someone's underground irrigation cistern, and at any rate the locals won't appreciate your man smashing things up with pick and shovel.", IncidentTrigger.LeavingTown, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => MobileParty.MainParty.LastVisitedSettlement?.MapFaction.StringId == "aserai" && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident25.AddOption("{=12bIzNkB}Tell him that no one sells maps to treasures that they could just as easily dig up themselves", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Honor, 100),
@@ -919,7 +919,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 100),
 			IncidentEffect.MoraleChange(-1f)
 		});
-		Incident incident30 = RegisterIncident("incident_hunters_paradise", "{=zQ2rtAQE}Hunter's Paradise", "{=fjWw8D1x}Your men spot several deer on the outskirts of the village, a rare thing in a land where meat and hides are valuable. The villagers tell you that there was an unusual crop of acorns this year, while fear of bandits has prevented them from hunting as they normally would. They invite you to shoot a few deer, as there will be plenty to go around anyway and the beasts are trampling the crops.", IncidentTrigger.EnteringVillage, IncidentType.HuntingForaging, CampaignTime.Years(1000f), (TextObject description) => true);
+		Incident incident30 = RegisterIncident("incident_hunters_paradise", "{=zQ2rtAQE}Hunter's Paradise", "{=fjWw8D1x}Your men spot several deer on the outskirts of the village, a rare thing in a land where meat and hides are valuable. The villagers tell you that there was an unusual crop of acorns this year, while fear of bandits has prevented them from hunting as they normally would. They invite you to shoot a few deer, as there will be plenty to go around anyway and the beasts are trampling the crops.", IncidentTrigger.EnteringVillage, IncidentType.HuntingForaging, CampaignTime.Years(1000f), (TextObject description) => PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident30.AddOption("{=E659QFHp}Free meat, a bit of fun and practice for your men. Sound the hunting horn.", new List<IncidentEffect>
 		{
 			IncidentEffect.DisorganizeParty(),
@@ -934,7 +934,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.DisorganizeParty()
 		});
 		incident30.AddOption("{=5rjUJaW4}Hunting requires patience. You've got real battles to fight.", new List<IncidentEffect> { IncidentEffect.TraitChange(DefaultTraits.Valor, 100) });
-		Incident incident31 = RegisterIncident("incident_boar_in_a_thicket", "{=Fa0J7a6M}Boar in a Thicket", "{=sQA7Z3Pp}As you set out from the village, a local hunter tells you that he can lead you to a nest made by a particularly large boar in a nearby thicket. The animal is a threat to the village and too fierce for him, he says. It already killed two of his dogs. Your men could probably get it and claim a meal of fresh pork, though not without risk.", IncidentTrigger.LeavingVillage, IncidentType.HuntingForaging, CampaignTime.Days(60f), (TextObject description) => true);
+		Incident incident31 = RegisterIncident("incident_boar_in_a_thicket", "{=Fa0J7a6M}Boar in a Thicket", "{=sQA7Z3Pp}As you set out from the village, a local hunter tells you that he can lead you to a nest made by a particularly large boar in a nearby thicket. The animal is a threat to the village and too fierce for him, he says. It already killed two of his dogs. Your men could probably get it and claim a meal of fresh pork, though not without risk.", IncidentTrigger.LeavingVillage, IncidentType.HuntingForaging, CampaignTime.Days(60f), (TextObject description) => PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident31.AddOption("{=chZrxxe1}The hunt is on! Surround the thicket with spearmen and drive the boar out", new List<IncidentEffect> { IncidentEffect.Select(IncidentEffect.Group(IncidentEffect.MoraleChange(5f), IncidentEffect.ChangeItemAmount(() => Game.Current.ObjectManager.GetObject<ItemObject>("meat"), () => 3), IncidentEffect.TraitChange(DefaultTraits.Calculating, -100)), IncidentEffect.KillTroopsRandomly((TroopRosterElement x) => true, () => 1), 0.75f) });
 		incident31.AddOption("{=Hl2EsIob}Leave the animal be", new List<IncidentEffect> { IncidentEffect.TraitChange(DefaultTraits.Valor, 100) });
 		Incident incident32 = RegisterIncident("incident_broken_wagon", "{=8FobMTCH}Broken-down Wagon", "{=FJzoOKIU}You come across a trader whose wagon has gotten stuck in the road after his draught horse went lame. He is desperate to sell his wares before they spoil, and offers them at a bargain price.", IncidentTrigger.LeavingEncounter, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => !MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.ItemRoster.Any((ItemRosterElement x) => x.EquipmentElement.Item.HasHorseComponent || x.EquipmentElement.Item.StringId == "mule"));
@@ -991,7 +991,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Valor, 100),
 			IncidentEffect.MoraleChange(-10f)
 		});
-		Incident incident34 = RegisterIncident("incident_local_hero", "{=lfYEujfb}Local Hero", "{=9ab6HwCS}As you prepare to leave the village, the elder approaches you. His nephew is to be married, and it would be a great honor if a warrior of your renown would bless the couple. Your men suppress grins and jostle each other, and you know they are looking forward to the chance to get royally drunk.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => Hero.MainHero.Clan.Renown >= 500f);
+		Incident incident34 = RegisterIncident("incident_local_hero", "{=lfYEujfb}Local Hero", "{=9ab6HwCS}As you prepare to leave the village, the elder approaches you. His nephew is to be married, and it would be a great honor if a warrior of your renown would bless the couple. Your men suppress grins and jostle each other, and you know they are looking forward to the chance to get royally drunk.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => Hero.MainHero.Clan.Renown >= 500f && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident34.AddOption("{=Huu4DySE}Accept the invitation and let the men have their fun", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 100),
@@ -1023,7 +1023,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Honor, -100),
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 100)
 		});
-		Incident incident36 = RegisterIncident("incident_coin_clipping", "{=IFtXJbfK}Coin Clipping", "{=7fpGI4Jb}Shortly after the loot is distributed, you come across several of your men rubbing the edges of the coins that you paid them against a rock. You recognize what they're doing - clipping, or shaving off a bit of the silver to melt down in the hope that no one will notice.", IncidentTrigger.LeavingBattle, IncidentType.PartyCampLife, CampaignTime.Days(60f), (TextObject description) => Hero.MainHero.GetSkillValue(DefaultSkills.Roguery) >= 40);
+		Incident incident36 = RegisterIncident("incident_coin_clipping", "{=IFtXJbfK}Coin Clipping", "{=7fpGI4Jb}Shortly after the loot is distributed, you come across several of your men rubbing the edges of the coins that you paid them against a rock. You recognize what they're doing - clipping, or shaving off a bit of the silver to melt down in the hope that no one will notice.", IncidentTrigger.LeavingBattle, IncidentType.PartyCampLife, CampaignTime.Days(60f), (TextObject description) => Hero.MainHero.GetSkillValue(DefaultSkills.Roguery) >= 40 && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident36.AddOption("{=D750cNUH}Turn a blind eye, even though the practice is considered little better than counterfeiting", new List<IncidentEffect> { IncidentEffect.TraitChange(DefaultTraits.Honor, -100) });
 		incident36.AddOption("{=EM8bWb1b}Demand that your men stop, and inform any merchants in the next town that they should look very carefully at whatever coins your men give them.", new List<IncidentEffect>
 		{
@@ -1099,7 +1099,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 		Incident incident40 = RegisterIncident("incident_no_time_to_mourn", "{=GL0jmbbJ}No Time to Mourn", "{=Qrj5hN2k}It is time to bury your dead, but the ground is frozen solid and the wood from nearby trees is too wet to make a proper pyre. You can give the bodies a hasty burial in a nearby gully, even though wolves or other animals may find them, or take the bodies with you to bury them as soon as you can.", IncidentTrigger.LeavingBattle, IncidentType.PostBattle, CampaignTime.Days(60f), delegate
 		{
 			PlayerBattleEndedLogEntry playerBattleEndedLogEntry4 = Campaign.Current.LogEntryHistory.FindLastGameActionLog((PlayerBattleEndedLogEntry x) => true);
-			return playerBattleEndedLogEntry4 != null && playerBattleEndedLogEntry4.PlayerCasualties > 0;
+			return playerBattleEndedLogEntry4 != null && playerBattleEndedLogEntry4.PlayerCasualties > 0 && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5;
 		});
 		incident40.AddOption("{=2GMj6ZaW}Carry the bodies with you until you find dry wood or softer ground", new List<IncidentEffect>
 		{
@@ -1166,7 +1166,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			description.SetTextVariable("VILLAGE", village5.Name);
 			description.SetTextVariable("LOOTED_VILLAGE", lootedVillage2.Name);
 			description.SetTextVariable("ENEMY", lootedVillage2.Settlement.MapFaction.Name);
-			return MobileParty.MainParty.LastVisitedSettlement.MapFaction == Hero.MainHero.MapFaction && (from x in MobileParty.MainParty.PrisonRoster.GetTroopRoster()
+			return MobileParty.MainParty.LastVisitedSettlement.MapFaction == Hero.MainHero.MapFaction && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5 && (from x in MobileParty.MainParty.PrisonRoster.GetTroopRoster()
 				where x.Character.Culture == lootedVillage2.Settlement.Culture && !x.Character.IsHero
 				select x).Sum((TroopRosterElement x) => x.Number) > 5;
 		});
@@ -1321,7 +1321,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 50),
 			IncidentEffect.MoraleChange(5f)
 		});
-		Incident incident47 = RegisterIncident("incident_riddles_on_the_road", "{=bBd0jAvo}Riddles on the Road", "{=S2PV4Qeb}As you ride out of the village, an old man in rags comes up to you and grasps the halter of your horse. \"You must tell me!\" he barks. \"What is the tale told by the sword?\" Your men gather in to see if you will humor this seemingly mad hermit.", IncidentTrigger.LeavingVillage, IncidentType.DreamsSongsAndSigns, CampaignTime.Years(1000f), (TextObject description) => true);
+		Incident incident47 = RegisterIncident("incident_riddles_on_the_road", "{=bBd0jAvo}Riddles on the Road", "{=S2PV4Qeb}As you ride out of the village, an old man in rags comes up to you and grasps the halter of your horse. \"You must tell me!\" he barks. \"What is the tale told by the sword?\" Your men gather in to see if you will humor this seemingly mad hermit.", IncidentTrigger.LeavingVillage, IncidentType.DreamsSongsAndSigns, CampaignTime.Years(1000f), (TextObject description) => PartyBase.MainParty.MemberRoster.TotalRegulars >= 10);
 		incident47.AddOption("{=2dW3cBQy}That steel is forged from iron, and long hard marches breed tough warriors.", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Honor, 200),
@@ -1441,7 +1441,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 				return false;
 			}
 			CultureObject culture2 = MobileParty.MainParty.LastVisitedSettlement.Culture;
-			return culture2 != null && (culture2.StringId == "aserai" || culture2.StringId == "khuzait" || culture2.StringId == "empire_s");
+			return PartyBase.MainParty.MemberRoster.TotalRegulars >= 5 && culture2 != null && (culture2.StringId == "aserai" || culture2.StringId == "khuzait" || culture2.StringId == "empire_s");
 		});
 		incident51.AddOption("{=lPAC4x1e}Tell your men to steer clear of such dubious enticements", new List<IncidentEffect>
 		{
@@ -2007,7 +2007,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, -150),
 			IncidentEffect.RenownChange(5f)
 		});
-		Incident incident70 = RegisterIncident("incident_mad_dog", "{=iuAMSSTY}Mad Dog", "{=nyZpbVbv}Your men are very proud of their leader - perhaps too proud. Every time they go into town, they spread exaggerated tales of your recklessness in battle. You imagine that this could win you a few admiring recruits, but more and more you've caught a look that suggests fear or distrust, as though you're a wild animal or a demon.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => Hero.MainHero.Clan.Renown >= 300f);
+		Incident incident70 = RegisterIncident("incident_mad_dog", "{=iuAMSSTY}Mad Dog", "{=nyZpbVbv}Your men are very proud of their leader - perhaps too proud. Every time they go into town, they spread exaggerated tales of your recklessness in battle. You imagine that this could win you a few admiring recruits, but more and more you've caught a look that suggests fear or distrust, as though you're a wild animal or a demon.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Years(1000f), (TextObject description) => Hero.MainHero.Clan.Renown >= 300f && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident70.AddOption("{=bbH4PqtD}Let the tales spread! Sanity and caution do not inspire legend", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, -300),
@@ -2041,7 +2041,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 100),
 			IncidentEffect.MoraleChange(-20f)
 		});
-		Incident incident72 = RegisterIncident("incident_swaggering_shield_brothers", "{=KtJYTHVi}Swaggering Shield-Brothers", "{=YCPF4qyz}You are approached by a pair of Skolderbroda. They are anxious to fight for you and ask only that you pay them a token sum. They say you that a warlord like you deserves the services of men such as themselves - praise to you, but a slight to the rest of your party. One of your troops tells you that he's sure that these men must have broken their vows to their company, or why else would they be so eager to join you?", IncidentTrigger.LeavingVillage, IncidentType.PartyCampLife, CampaignTime.Years(1000f), (TextObject description) => Hero.MainHero.Clan.Renown >= 150f);
+		Incident incident72 = RegisterIncident("incident_swaggering_shield_brothers", "{=KtJYTHVi}Swaggering Shield-Brothers", "{=YCPF4qyz}You are approached by a pair of Skolderbroda. They are anxious to fight for you and ask only that you pay them a token sum. They say you that a warlord like you deserves the services of men such as themselves - praise to you, but a slight to the rest of your party. One of your troops tells you that he's sure that these men must have broken their vows to their company, or why else would they be so eager to join you?", IncidentTrigger.LeavingVillage, IncidentType.PartyCampLife, CampaignTime.Years(1000f), (TextObject description) => Hero.MainHero.Clan.Renown >= 150f && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident72.AddOption("{=Kqr9pVCU}Take them into your company. Your troops will need to bear any insult.", new List<IncidentEffect>
 		{
 			IncidentEffect.ChangeTroopAmount(GetSkolderbrotvaTroop, 2),
@@ -2085,7 +2085,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.PartyExperienceChance(100)
 		});
 		incident73.AddOption("{=YhxsQjGM}Nod quickly as though you weren't really listening and move on to some other task.", new List<IncidentEffect> { IncidentEffect.TraitChange(DefaultTraits.Calculating, -50) });
-		Incident incident74 = RegisterIncident("incident_heat_and_dust", "{=HoNCyyfW}Heat and Dust", "{=42bGMh4X}Your men were not expecting to spend so much time in the desert. They complain that baggage that they might gladly carry themselves in normal times becomes a crushing burden when the blazing sun is high in the sky. They have located a number of pack animals in the markets and ask you to buy them to lighten their own loads.", IncidentTrigger.LeavingVillage, IncidentType.HardTravel, CampaignTime.Years(1000f), (TextObject description) => Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.Position.Face) == TerrainType.Desert);
+		Incident incident74 = RegisterIncident("incident_heat_and_dust", "{=HoNCyyfW}Heat and Dust", "{=42bGMh4X}Your men were not expecting to spend so much time in the desert. They complain that baggage that they might gladly carry themselves in normal times becomes a crushing burden when the blazing sun is high in the sky. They have located a number of pack animals in the markets and ask you to buy them to lighten their own loads.", IncidentTrigger.LeavingVillage, IncidentType.HardTravel, CampaignTime.Years(1000f), (TextObject description) => Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.Position.Face) == TerrainType.Desert && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident74.AddOption("{=ACzeec4e}Agree to purchase the camels.", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 50),
@@ -2273,7 +2273,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.DisorganizeParty(),
 			IncidentEffect.GoldChange(() => -50)
 		});
-		Incident incident79 = RegisterIncident("incident_souvenirs", "{=LAMmAUvt}Souvenirs", "{=PqzLYt6i}Some time recently - you're not sure exactly when - your men started a new post-battle tradition - going about the field collecting grisly trophies from slain enemies. Now you can't help noticing these prizes dangling from their belts or the halters of their horses.", IncidentTrigger.LeavingBattle, IncidentType.PostBattle, CampaignTime.Years(1000f), (TextObject description) => Settlement.CurrentSettlement != null);
+		Incident incident79 = RegisterIncident("incident_souvenirs", "{=LAMmAUvt}Souvenirs", "{=PqzLYt6i}Some time recently - you're not sure exactly when - your men started a new post-battle tradition - going about the field collecting grisly trophies from slain enemies. Now you can't help noticing these prizes dangling from their belts or the halters of their horses.", IncidentTrigger.LeavingBattle, IncidentType.PostBattle, CampaignTime.Years(1000f), (TextObject description) => Settlement.CurrentSettlement != null && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident79.AddOption("{=1zsWhG2N}Tell your men as best you can that, while you respect their spirit, this will frighten local farmers who don't understand warriors' ways.", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, 50),
@@ -2702,7 +2702,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			{
 				return false;
 			}
-			description.SetTextVariable("TOWN_NAME", handInTheStrongboxWorkshop.Settlement.Name);
+			description.SetTextVariable("TOWN", handInTheStrongboxWorkshop.Settlement.Name);
 			description.SetTextVariable("WORKSHOP", handInTheStrongboxWorkshop.Name);
 			return true;
 		});
@@ -2818,19 +2818,19 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 		Incident incident95 = RegisterIncident("incident_just_rewards", "{=YwstWeDQ}Just Rewards", "{=Jo5OjwAU}Your men fought truly heroically in the last battle. As they help their wounded comrades back to camp and gather the slain, their weary faces sometimes look to you with expectation. If ever there was a time to give them some extra recognition of their valor and sacrifice, this would be it.", IncidentTrigger.LeavingBattle, IncidentType.PartyCampLife, CampaignTime.Years(1000f), delegate
 		{
 			PlayerBattleEndedLogEntry playerBattleEndedLogEntry = Campaign.Current.LogEntryHistory.FindLastGameActionLog((PlayerBattleEndedLogEntry x) => true);
-			return playerBattleEndedLogEntry != null && playerBattleEndedLogEntry.IsAgainstGreatOdds && Hero.MainHero.Gold >= 2000;
+			return playerBattleEndedLogEntry != null && playerBattleEndedLogEntry.IsAgainstGreatOdds && Hero.MainHero.Gold >= 2000 && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5;
 		});
 		incident95.AddOption("{=Wenvx1OE}Reach into your treasury and grab great fistfuls of silver denars, hurling it to your men and praising them by name for their deeds.", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Calculating, -100),
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 200),
-			IncidentEffect.GoldChange(() => (int)((float)Hero.MainHero.Gold * 0.5f)),
+			IncidentEffect.GoldChange(() => -(int)((float)Hero.MainHero.Gold * 0.5f)),
 			IncidentEffect.RenownChange(5f)
 		});
 		incident95.AddOption("{=w3a39PVT}Give them an extra week's pay as a bonus, telling them they deserve far more but it is all you can afford.", new List<IncidentEffect>
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 100),
-			IncidentEffect.GoldChange(() => MobileParty.MainParty.TotalWage * 7)
+			IncidentEffect.GoldChange(() => MobileParty.MainParty.TotalWage * -7)
 		});
 		incident95.AddOption("{=WnlD7awi}Gruffly tell them that you were pleased they did their duty.", new List<IncidentEffect> { IncidentEffect.TraitChange(DefaultTraits.Generosity, -100) });
 		Incident incident96 = RegisterIncident("incident_letter_of_reference", "{=q0HIXEal}Letter of Reference", "{=D7ZcX8XR}As you pass through the market, {NOTABLE.NAME} requests a minute of your time. {?NOTABLE.GENDER}Her{?}His{\\?} cousin is planning on doing some business in {TOWN}, and {?NOTABLE.GENDER}she{?}he{\\?} would like a letter of reference from you. You know next to nothing about the lad, although {NOTABLE.NAME} swears that he is honest and conscientious. You find you are receiving a number of these types of requests as your fame spreads.", IncidentTrigger.LeavingTown, IncidentType.Profit, CampaignTime.Years(1000f), delegate(TextObject description)

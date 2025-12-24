@@ -1483,6 +1483,7 @@ public static class CampaignUIHelper
 		{
 			return new StringItemWithHintVM("", TextObject.GetEmpty());
 		}
+		bool isMariner = character.IsMariner;
 		TextObject textObject = new TextObject("{=!}{TYPENAME}{MARINER}{BIG}");
 		TextObject textObject2;
 		if (character.IsRanged && character.IsMounted)
@@ -1493,7 +1494,8 @@ public static class CampaignUIHelper
 		else if (character.IsRanged)
 		{
 			textObject.SetTextVariable("TYPENAME", "bow");
-			textObject2 = GameTexts.FindText("str_troop_type_name", "Ranged");
+			string variation = (isMariner ? "Ranged_Mariner" : "Ranged");
+			textObject2 = GameTexts.FindText("str_troop_type_name", variation);
 		}
 		else if (character.IsMounted)
 		{
@@ -1507,16 +1509,12 @@ public static class CampaignUIHelper
 				return new StringItemWithHintVM("", TextObject.GetEmpty());
 			}
 			textObject.SetTextVariable("TYPENAME", "infantry");
-			textObject2 = GameTexts.FindText("str_troop_type_name", "Infantry");
+			string variation2 = (isMariner ? "Infantry_Mariner" : "Infantry");
+			textObject2 = GameTexts.FindText("str_troop_type_name", variation2);
 		}
-		textObject.SetTextVariable("MARINER", character.IsNavalSoldier() ? "_mariner" : "");
+		textObject.SetTextVariable("MARINER", isMariner ? "_mariner" : "");
 		textObject.SetTextVariable("BIG", isBig ? "_big" : "");
 		return new StringItemWithHintVM("General\\TroopTypeIcons\\icon_troop_type_" + textObject.ToString(), new TextObject("{=!}" + textObject2.ToString()));
-	}
-
-	private static bool IsNavalSoldier(this CharacterObject characterObject)
-	{
-		return characterObject.GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
 	}
 
 	public static List<TooltipProperty> GetHeroHealthTooltip(Hero hero)

@@ -146,6 +146,8 @@ public class Campaign : GameType
 
 	private MBCampaignEvent _hourlyTickEvent;
 
+	private MBCampaignEvent _QuarterHourlyTickEvent;
+
 	[CachedData]
 	private int _lastNonZeroDtFrame;
 
@@ -775,6 +777,11 @@ public class Campaign : GameType
 		(Game.Current.GameStateManager.ActiveState as MapState)?.OnHourlyTick();
 	}
 
+	internal void QuarterHourlyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
+	{
+		CampaignEventDispatcher.Instance.QuarterHourlyTick();
+	}
+
 	internal void DailyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
 	{
 		PlayerProgress = (PlayerProgress + Models.PlayerProgressionModel.GetPlayerProgress()) / 2f;
@@ -1012,6 +1019,13 @@ public class Campaign : GameType
 		}
 		_hourlyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Hours(1f), initialWait2);
 		_hourlyTickEvent.AddHandler(HourlyTick);
+		initialWait2 = CampaignTime.Hours(0.125f);
+		if (numTicks % (CampaignTime.TimeTicksPerHour / 4) != 0L)
+		{
+			initialWait2 = CampaignTime.Hours((float)(numTicks % (CampaignTime.TimeTicksPerHour / 4)) / (float)(CampaignTime.TimeTicksPerHour / 4));
+		}
+		_QuarterHourlyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Hours(0.25f), initialWait2);
+		_QuarterHourlyTickEvent.AddHandler(QuarterHourlyTick);
 	}
 
 	private void PartiesThink(float dt)

@@ -276,6 +276,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent _hourlyTickEvent = new MbEvent();
 
+	private readonly MbEvent _quarterHourlyTickEvent = new MbEvent();
+
 	private readonly MbEvent<MobileParty> _hourlyTickPartyEvent = new MbEvent<MobileParty>();
 
 	private readonly MbEvent<Settlement> _hourlyTickSettlementEvent = new MbEvent<Settlement>();
@@ -827,6 +829,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<Town, Building, int> OnBuildingLevelChangedEvent => Instance._onBuildingLevelChangedEvent;
 
 	public static IMbEvent HourlyTickEvent => Instance._hourlyTickEvent;
+
+	public static IMbEvent QuarterHourlyTickEvent => Instance._quarterHourlyTickEvent;
 
 	public static IMbEvent<MobileParty> HourlyTickPartyEvent => Instance._hourlyTickPartyEvent;
 
@@ -2019,6 +2023,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void HourlyTick()
 	{
 		Instance._hourlyTickEvent.Invoke();
+	}
+
+	public override void QuarterHourlyTick()
+	{
+		Instance._quarterHourlyTickEvent.Invoke();
 	}
 
 	public override void HourlyTickParty(MobileParty mobileParty)

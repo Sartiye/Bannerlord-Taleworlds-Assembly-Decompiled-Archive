@@ -12,9 +12,9 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultPartyWageModel : PartyWageModel
 {
-	private static readonly TextObject _cultureText = GameTexts.FindText("str_culture");
+	private readonly TextObject _cultureText = GameTexts.FindText("str_culture");
 
-	private static readonly TextObject _buildingEffects = GameTexts.FindText("str_building_effects");
+	private readonly TextObject _buildingEffects = GameTexts.FindText("str_building_effects");
 
 	private const float MercenaryWageFactor = 1.5f;
 
@@ -142,7 +142,7 @@ public class DefaultPartyWageModel : PartyWageModel
 			}
 			if (mobileParty.CurrentSettlement.Owner.Culture.HasFeat(DefaultCulturalFeats.EmpireGarrisonWageFeat))
 			{
-				bonuses2.AddFactor(DefaultCulturalFeats.EmpireGarrisonWageFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				bonuses2.AddFactor(DefaultCulturalFeats.EmpireGarrisonWageFeat.EffectBonus, _cultureText);
 			}
 			mobileParty.CurrentSettlement.Town.AddEffectOfBuildings(BuildingEffectEnum.GarrisonWageReduction, ref result);
 		}
@@ -264,7 +264,7 @@ public class DefaultPartyWageModel : PartyWageModel
 			}
 			if (troop.IsMounted && buyerHero.Culture.HasFeat(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat))
 			{
-				result.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
+				result.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, _cultureText);
 			}
 			if (buyerHero.IsPartyLeader && buyerHero.GetPerkValue(DefaultPerks.Steward.Frugal))
 			{

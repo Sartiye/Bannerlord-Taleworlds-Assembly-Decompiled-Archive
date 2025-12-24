@@ -502,13 +502,13 @@ public class CharacterTableauWidget : TextureWidget
 			LeftHandWieldedEquipmentIndex = -1;
 			RightHandWieldedEquipmentIndex = -1;
 		}
-		if (IsPlayingCustomAnimations && base.TextureProvider != null && !(bool)GetTextureProviderProperty("IsPlayingCustomAnimations"))
+		if (IsPlayingCustomAnimations && base.TextureProvider != null && GetTextureProviderProperty<bool>("IsPlayingCustomAnimations") != true)
 		{
 			IsPlayingCustomAnimations = false;
 		}
 		if (base.TextureProvider != null)
 		{
-			CustomAnimationProgressRatio = (float)GetTextureProviderProperty("CustomAnimationProgressRatio");
+			CustomAnimationProgressRatio = GetTextureProviderProperty<float>("CustomAnimationProgressRatio") ?? 0f;
 		}
 	}
 

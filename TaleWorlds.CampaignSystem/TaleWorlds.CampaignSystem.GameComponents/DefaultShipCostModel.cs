@@ -17,7 +17,7 @@ public class DefaultShipCostModel : ShipCostModel
 		return 0f;
 	}
 
-	public override int GetShipUpgradeCost(Ship ship, ShipUpgradePiece piece, PartyBase owner)
+	public override int GetShipUpgradePieceCost(Ship ship, ShipUpgradePiece piece, PartyBase owner)
 	{
 		return 0;
 	}

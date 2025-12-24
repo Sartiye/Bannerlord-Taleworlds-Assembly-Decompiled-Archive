@@ -9,6 +9,12 @@ public class BrushLayer : IBrushLayerData
 
 	private Sprite _sprite;
 
+	private ImageFit.ImageFitTypes _imageFitType;
+
+	private ImageFit.ImageHorizontalAlignments _imageFitHorizontalAlignment;
+
+	private ImageFit.ImageVerticalAlignments _imageFitVerticalAlignment;
+
 	private Color _color;
 
 	private float _colorFactor;
@@ -94,6 +100,57 @@ public class BrushLayer : IBrushLayerData
 			if (value != _sprite)
 			{
 				_sprite = value;
+				Version++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageFitTypes ImageFitType
+	{
+		get
+		{
+			return _imageFitType;
+		}
+		set
+		{
+			if (value != _imageFitType)
+			{
+				_imageFitType = value;
+				Version++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageHorizontalAlignments ImageFitHorizontalAlignment
+	{
+		get
+		{
+			return _imageFitHorizontalAlignment;
+		}
+		set
+		{
+			if (value != _imageFitHorizontalAlignment)
+			{
+				_imageFitHorizontalAlignment = value;
+				Version++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageVerticalAlignments ImageFitVerticalAlignment
+	{
+		get
+		{
+			return _imageFitVerticalAlignment;
+		}
+		set
+		{
+			if (value != _imageFitVerticalAlignment)
+			{
+				_imageFitVerticalAlignment = value;
 				Version++;
 			}
 		}
@@ -592,6 +649,9 @@ public class BrushLayer : IBrushLayerData
 		UseRandomBaseOverlayXOffset = false;
 		UseRandomBaseOverlayYOffset = false;
 		UseOverlayAlphaAsMask = false;
+		ImageFitType = ImageFit.ImageFitTypes.StretchToFit;
+		ImageFitHorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
+		ImageFitVerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
 	}
 
 	public void FillFrom(BrushLayer brushLayer)
@@ -625,6 +685,9 @@ public class BrushLayer : IBrushLayerData
 		UseRandomBaseOverlayXOffset = brushLayer.UseRandomBaseOverlayXOffset;
 		UseRandomBaseOverlayYOffset = brushLayer.UseRandomBaseOverlayYOffset;
 		UseOverlayAlphaAsMask = brushLayer.UseOverlayAlphaAsMask;
+		ImageFitType = brushLayer.ImageFitType;
+		ImageFitHorizontalAlignment = brushLayer.ImageFitHorizontalAlignment;
+		ImageFitVerticalAlignment = brushLayer.ImageFitVerticalAlignment;
 	}
 
 	public float GetValueAsFloat(BrushAnimationProperty.BrushAnimationPropertyType propertyType)
@@ -664,7 +727,7 @@ public class BrushLayer : IBrushLayerData
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlayYOffset:
 			return OverlayYOffset;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsFloat", 693);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsFloat", 747);
 			return 0f;
 		}
 	}
@@ -675,7 +738,7 @@ public class BrushLayer : IBrushLayerData
 		{
 			return Color;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsColor", 707);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsColor", 761);
 		return Color.Black;
 	}
 
@@ -688,7 +751,7 @@ public class BrushLayer : IBrushLayerData
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlaySprite:
 			return OverlaySprite;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsSprite", 724);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushLayer.cs", "GetValueAsSprite", 778);
 			return null;
 		}
 	}

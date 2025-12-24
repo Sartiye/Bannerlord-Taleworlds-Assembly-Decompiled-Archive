@@ -305,6 +305,30 @@ public class BrushFactory
 			case "UseRandomBaseOverlayYOffset":
 				brushLayer.UseRandomBaseOverlayYOffset = value2 == "true";
 				break;
+			case "ImageFit.Type":
+			{
+				if (Enum.TryParse<ImageFit.ImageFitTypes>(value2, out var result3))
+				{
+					brushLayer.ImageFitType = result3;
+				}
+				break;
+			}
+			case "ImageFit.HorizontalAlignment":
+			{
+				if (Enum.TryParse<ImageFit.ImageHorizontalAlignments>(value2, out var result2))
+				{
+					brushLayer.ImageFitHorizontalAlignment = result2;
+				}
+				break;
+			}
+			case "ImageFit.VerticalAlignment":
+			{
+				if (Enum.TryParse<ImageFit.ImageVerticalAlignments>(value2, out var result))
+				{
+					brushLayer.ImageFitVerticalAlignment = result;
+				}
+				break;
+			}
 			case "Name":
 				if (string.IsNullOrEmpty(brushLayer.Name))
 				{
@@ -448,7 +472,7 @@ public class BrushFactory
 		{
 			if (flag)
 			{
-				Debug.FailedAssert("A brush shouldn't have both a BaseBrush and a OverrideBrush", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 563);
+				Debug.FailedAssert("A brush shouldn't have both a BaseBrush and a OverrideBrush", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 584);
 			}
 			string text = dictionary["OverrideBrush"];
 			if (!string.IsNullOrEmpty(text))
@@ -465,7 +489,7 @@ public class BrushFactory
 			}
 			else
 			{
-				Debug.FailedAssert("Invalid overridden brush name: " + text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 582);
+				Debug.FailedAssert("Invalid overridden brush name: " + text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFrom", 603);
 			}
 		}
 		ApplyBrushAttributesFrom(brush, brushNode, dictionary);
@@ -844,7 +868,7 @@ public class BrushFactory
 		}
 		catch (Exception)
 		{
-			Debug.FailedAssert("Failed to load brush from file: " + name, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFile", 1109);
+			Debug.FailedAssert("Failed to load brush from file: " + name, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFile", 1130);
 		}
 	}
 
@@ -899,7 +923,7 @@ public class BrushFactory
 			}
 			else
 			{
-				Debug.FailedAssert("Failed to find brush for override: " + key, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFromFileAux", 1178);
+				Debug.FailedAssert("Failed to find brush for override: " + key, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "LoadBrushFromFileAux", 1199);
 			}
 		}
 		_overriddenBrushes.Clear();
@@ -918,7 +942,7 @@ public class BrushFactory
 	{
 		if (!_brushCategories.ContainsKey(name))
 		{
-			Debug.FailedAssert("Brush not found", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "SaveBrushAs", 1201);
+			Debug.FailedAssert("Brush not found", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\BrushFactory.cs", "SaveBrushAs", 1222);
 		}
 		string filename = _brushCategories[name];
 		XmlDocument xmlDocument = new XmlDocument();

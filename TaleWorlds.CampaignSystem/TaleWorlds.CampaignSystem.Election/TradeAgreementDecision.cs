@@ -238,9 +238,9 @@ public class TradeAgreementDecision : KingdomDecision
 		return Campaign.Current.Models.TradeAgreementModel.GetInfluenceCostOfProposingTradeAgreement(base.ProposerClan);
 	}
 
-	public override bool CanMakeDecision(out TextObject reason)
+	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)
 	{
-		return Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(base.Kingdom, TargetKingdom, checkOtherSideTradeSupport: true, out reason);
+		return Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(base.Kingdom, TargetKingdom, checkOtherSideTradeSupport: true, out reason, includeReason);
 	}
 
 	public float CalculateSupport(Clan clan)

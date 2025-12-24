@@ -140,7 +140,7 @@ internal class ScriptingInterfaceOfITexture : ITexture
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SaveToFileDelegate(UIntPtr texturePointer, byte[] fileName);
+	public delegate void SaveToFileDelegate(UIntPtr texturePointer, byte[] fileName, [MarshalAs(UnmanagedType.U1)] bool isRelativePath);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -469,7 +469,7 @@ internal class ScriptingInterfaceOfITexture : ITexture
 		call_SaveTextureAsAlwaysValidDelegate(texturePointer);
 	}
 
-	public void SaveToFile(UIntPtr texturePointer, string fileName)
+	public void SaveToFile(UIntPtr texturePointer, string fileName, bool isRelativePath)
 	{
 		byte[] array = null;
 		if (fileName != null)
@@ -479,7 +479,7 @@ internal class ScriptingInterfaceOfITexture : ITexture
 			_utf8.GetBytes(fileName, 0, fileName.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		call_SaveToFileDelegate(texturePointer, array);
+		call_SaveToFileDelegate(texturePointer, array, isRelativePath);
 	}
 
 	public void SetName(UIntPtr texturePointer, string name)

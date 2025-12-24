@@ -66,6 +66,11 @@ public abstract class EncyclopediaPage
 		}
 	}
 
+	public virtual bool IsRelevant()
+	{
+		return true;
+	}
+
 	public bool HasIdentifierType(Type identifierType)
 	{
 		return _identifierTypes.Contains(identifierType);

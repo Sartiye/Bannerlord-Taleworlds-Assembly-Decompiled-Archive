@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.GauntletUI;
 
@@ -7,7 +8,6 @@ internal class WidgetContainer
 {
 	internal enum ContainerType
 	{
-		None,
 		Update,
 		ParallelUpdate,
 		LateUpdate,
@@ -16,128 +16,73 @@ internal class WidgetContainer
 		UpdateBrushes
 	}
 
-	private int _currentBufferIndex;
+	private HashSet<Widget> _backList;
 
-	private List<Widget>[] _widgetLists;
+	private MBList<Widget> _frontList;
 
 	private EmptyWidget _emptyWidget;
 
-	private int _emptyCount;
+	private readonly ContainerType _containerType;
 
-	private ContainerType _containerType;
+	private bool _isFragmented;
 
-	internal int Count => _widgetLists[_currentBufferIndex].Count;
+	internal int Count => GetActiveList().Count;
 
-	internal int RealCount => _widgetLists[_currentBufferIndex].Count - _emptyCount;
-
-	internal Widget this[int index]
+	internal WidgetContainer(UIContext context, int initialCapacity, ContainerType containerType)
 	{
-		get
-		{
-			return _widgetLists[_currentBufferIndex][index];
-		}
-		set
-		{
-			_widgetLists[_currentBufferIndex][index] = value;
-		}
-	}
-
-	internal WidgetContainer(UIContext context, int initialCapacity, ContainerType type)
-	{
+		_containerType = containerType;
 		_emptyWidget = new EmptyWidget(context);
-		_currentBufferIndex = 0;
-		_widgetLists = new List<Widget>[2]
-		{
-			new List<Widget>(initialCapacity),
-			new List<Widget>(initialCapacity)
-		};
-		_containerType = type;
-		_emptyCount = 0;
+		_backList = new HashSet<Widget>();
+		_frontList = new MBList<Widget>(initialCapacity);
 	}
 
-	internal List<Widget> GetCurrentList()
+	internal void Add(Widget widget)
 	{
-		return _widgetLists[_currentBufferIndex];
-	}
-
-	internal int Add(Widget widget)
-	{
-		_widgetLists[_currentBufferIndex].Add(widget);
-		return _widgetLists[_currentBufferIndex].Count - 1;
+		_backList.Add(widget);
+		_isFragmented = true;
 	}
 
 	internal void Remove(Widget widget)
 	{
-		int index = _widgetLists[_currentBufferIndex].IndexOf(widget);
-		_widgetLists[_currentBufferIndex][index] = _emptyWidget;
-		_emptyCount++;
+		_backList.Remove(widget);
+		_isFragmented = true;
 	}
 
 	public void Clear()
 	{
-		for (int i = 0; i < _widgetLists.Length; i++)
+		_backList.Clear();
+		_frontList.Clear();
+		_backList = null;
+		_frontList = null;
+		_isFragmented = true;
+	}
+
+	public MBReadOnlyList<Widget> GetActiveList()
+	{
+		return _frontList;
+	}
+
+	public void Defrag()
+	{
+		if (!_isFragmented)
 		{
-			_widgetLists[i].Clear();
+			return;
 		}
-		_widgetLists = null;
-		_emptyCount = 0;
-	}
-
-	internal void RemoveFromIndex(int index)
-	{
-		_widgetLists[_currentBufferIndex][index] = _emptyWidget;
-		_emptyCount++;
-	}
-
-	internal bool CheckFragmentation()
-	{
-		int count = _widgetLists[_currentBufferIndex].Count;
-		if (count > 32 && (int)((float)count * 0.1f) < _emptyCount)
+		_frontList.Clear();
+		int num = 0;
+		foreach (Widget back in _backList)
 		{
-			return true;
-		}
-		return false;
-	}
-
-	internal void DoDefragmentation()
-	{
-		int count = _widgetLists[_currentBufferIndex].Count;
-		int num = (_currentBufferIndex + 1) % 2;
-		List<Widget> list = _widgetLists[_currentBufferIndex];
-		List<Widget> list2 = _widgetLists[num];
-		int num2 = 0;
-		for (int i = 0; i < count; i++)
-		{
-			Widget widget = list[i];
-			if (widget != _emptyWidget)
+			if (back != _emptyWidget)
 			{
-				switch (_containerType)
-				{
-				case ContainerType.Update:
-					widget.OnUpdateListIndex = num2;
-					break;
-				case ContainerType.ParallelUpdate:
-					widget.OnParallelUpdateListIndex = num2;
-					break;
-				case ContainerType.LateUpdate:
-					widget.OnLateUpdateListIndex = num2;
-					break;
-				case ContainerType.VisualDefinition:
-					widget.OnVisualDefinitionListIndex = num2;
-					break;
-				case ContainerType.TweenPosition:
-					widget.OnTweenPositionListIndex = num2;
-					break;
-				case ContainerType.UpdateBrushes:
-					widget.OnUpdateBrushesIndex = num2;
-					break;
-				}
-				list2.Add(widget);
-				num2++;
+				_frontList.Add(back);
+				num++;
 			}
 		}
-		list.Clear();
-		_emptyCount = 0;
-		_currentBufferIndex = num;
+		_backList.Clear();
+		for (int i = 0; i < _frontList.Count; i++)
+		{
+			_backList.Add(_frontList[i]);
+		}
+		_isFragmented = false;
 	}
 }

@@ -30,6 +30,8 @@ public class MapInfoVM : ViewModel
 
 	private bool _isMainHeroSick;
 
+	private bool _isMainPartyAtSea;
+
 	private bool _isInfoBarExtended;
 
 	private bool _isInfoBarEnabled;
@@ -183,7 +185,12 @@ public class MapInfoVM : ViewModel
 			_isMainHeroSick = flag;
 			_hitPointsInfo.SetOverriddenVisualId(_isMainHeroSick ? "hit_points_sick" : null);
 		}
-		_speedInfo.SetOverriddenVisualId(MobileParty.MainParty.IsCurrentlyAtSea ? "speed_at_sea" : null);
+		bool isCurrentlyAtSea = MobileParty.MainParty.IsCurrentlyAtSea;
+		if (_isMainPartyAtSea != isCurrentlyAtSea)
+		{
+			_isMainPartyAtSea = isCurrentlyAtSea;
+			_speedInfo.SetOverriddenVisualId(_isMainPartyAtSea ? "speed_at_sea" : null);
+		}
 		IsInfoBarEnabled = Hero.MainHero?.IsAlive ?? false;
 	}
 

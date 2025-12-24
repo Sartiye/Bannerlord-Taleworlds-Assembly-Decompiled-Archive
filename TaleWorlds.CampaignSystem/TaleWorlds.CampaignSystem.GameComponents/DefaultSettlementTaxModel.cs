@@ -12,7 +12,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultSettlementTaxModel : SettlementTaxModel
 {
-	private static readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
+	private readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
 
 	private static readonly TextObject VeryLowLoyalty = new TextObject("{=CcQzFnpN}Very Low Loyalty");
 

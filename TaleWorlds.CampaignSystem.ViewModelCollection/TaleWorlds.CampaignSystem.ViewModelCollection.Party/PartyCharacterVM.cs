@@ -1302,7 +1302,7 @@ public class PartyCharacterVM : ViewModel
 				}
 				flag = flag && !_partyVm.PartyScreenLogic.IsTroopUpgradesDisabled;
 				string upgradeHint = CampaignUIHelper.GetUpgradeHint(i, numOfCategoryItemPartyHas, num, upgradeGoldCost, flag3, requiredPerk, Character, Troop, _partyScreenLogic.CurrentData.PartyGoldChangeAmount, _partyVm.PartyScreenLogic.IsTroopUpgradesDisabled);
-				Upgrades[i].Refresh(num, flag, flag2, flag4, flag3, upgradeHint, Character.GetTraitLevel(DefaultTraits.NavalSoldier) != 0);
+				Upgrades[i].Refresh(num, flag, flag2, flag4, flag3, upgradeHint, Character.IsMariner);
 				if (i == 0)
 				{
 					UpgradeCostText = upgradeGoldCost.ToString();

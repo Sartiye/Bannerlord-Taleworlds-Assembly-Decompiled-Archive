@@ -131,6 +131,42 @@ public static class DXGI
 		public int right;
 
 		public int bottom;
+
+		public override bool Equals(object o)
+		{
+			if (o == null)
+			{
+				return false;
+			}
+			if (!(o is RECT))
+			{
+				return false;
+			}
+			return this == (RECT)o;
+		}
+
+		public override int GetHashCode()
+		{
+			return 0;
+		}
+
+		public static bool operator ==(RECT r1, RECT r2)
+		{
+			if (r1.bottom == r2.bottom && r1.right == r2.right && r1.top == r2.top)
+			{
+				return r1.left == r2.left;
+			}
+			return false;
+		}
+
+		public static bool operator !=(RECT r1, RECT r2)
+		{
+			if (r1.bottom == r2.bottom && r1.right == r2.right && r1.top == r2.top)
+			{
+				return r1.left != r2.left;
+			}
+			return true;
+		}
 	}
 
 	public static Guid IID_IDXGIAdapter = new Guid("2411E7E1-12AC-4CCF-BD14-9798E8534DC0");

@@ -1322,9 +1322,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		_spawnedFromSpawner = true;
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		SiegeLadderRecord siegeLadderRecord = (SiegeLadderRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		initialState = ((!siegeLadderRecord.IsStateLand) ? LadderState.OnWall : LadderState.OnLand);
 		_state = (LadderState)siegeLadderRecord.State;

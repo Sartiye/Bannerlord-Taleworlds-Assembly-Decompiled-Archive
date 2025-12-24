@@ -21,6 +21,18 @@ public class StealthFailCounterMissionLogic : MissionLogic
 
 	private TextObject _popupDescription;
 
+	public float FailCounterElapsedTime
+	{
+		get
+		{
+			if (!IsActive || _failCounter == null)
+			{
+				return -1f;
+			}
+			return _failCounter.ElapsedTime();
+		}
+	}
+
 	public override void OnAgentAlarmedStateChanged(Agent agent, Agent.AIStateFlag flag)
 	{
 		base.OnAgentAlarmedStateChanged(agent, flag);
@@ -75,6 +87,7 @@ public class StealthFailCounterMissionLogic : MissionLogic
 
 	private void ShowMissionFailedPopup()
 	{
+		IsActive = false;
 		TextObject obj = (TextObject.IsNullOrEmpty(_popupTitle) ? new TextObject("{=wQbfWNZO}Mission Failed!") : _popupTitle);
 		TextObject textObject = (TextObject.IsNullOrEmpty(_popupDescription) ? new TextObject("{=5R0TauYV}You have been compromised.") : _popupDescription);
 		InformationManager.ShowInquiry(new InquiryData(affirmativeText: new TextObject("{=DM6luo3c}Continue").ToString(), titleText: obj.ToString(), text: textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, negativeText: null, affirmativeAction: delegate

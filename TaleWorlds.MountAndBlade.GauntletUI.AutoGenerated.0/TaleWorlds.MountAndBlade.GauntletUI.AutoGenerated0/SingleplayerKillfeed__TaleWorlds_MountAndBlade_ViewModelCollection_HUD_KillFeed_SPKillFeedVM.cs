@@ -1,10 +1,8 @@
 using System.ComponentModel;
-using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.KillFeed.General;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.KillFeed.Personal;
 using TaleWorlds.MountAndBlade.ViewModelCollection.HUD.KillFeed;
@@ -21,8 +19,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 
 	private SingleplayerPersonalKillFeedWidget _widget_1;
 
-	private BoolStateChangerWidget _widget_2;
-
 	private SPKillFeedVM _datasource_Root;
 
 	private SPGeneralKillNotificationVM _datasource_Root_GeneralCasualty;
@@ -38,20 +34,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 	{
 	}
 
-	private VisualDefinition CreateVisualDefinitionPersonalKillFeed()
-	{
-		VisualDefinition visualDefinition = new VisualDefinition("PersonalKillFeed", 0.62f, 0f, AnimationInterpolation.Type.EaseInOut, AnimationInterpolation.Function.Cubic);
-		visualDefinition.AddVisualState(new VisualState("Default")
-		{
-			PositionYOffset = 0f
-		});
-		visualDefinition.AddVisualState(new VisualState("Passive")
-		{
-			PositionYOffset = -60f
-		});
-		return visualDefinition;
-	}
-
 	public void CreateWidgets()
 	{
 		_widget = this;
@@ -59,8 +41,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget.AddChild(_widget_0);
 		_widget_1 = new SingleplayerPersonalKillFeedWidget(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_2 = new BoolStateChangerWidget(base.Context);
-		_widget.AddChild(_widget_2);
 	}
 
 	public void SetIds()
@@ -79,7 +59,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0.MarginTop = 20f;
 		_widget_0.MarginRight = 20f;
-		_widget_1.VisualDefinition = CreateVisualDefinitionPersonalKillFeed();
 		_widget_1.DoNotAcceptEvents = true;
 		_widget_1.DoNotPassEventsToChildren = true;
 		_widget_1.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -87,9 +66,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1.MarginBottom = 150f;
-		_widget_2.TargetWidget = _widget_1;
-		_widget_2.TrueState = "Default";
-		_widget_2.FalseState = "Passive";
 	}
 
 	public void RefreshBindingWithChildren()
@@ -114,15 +90,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
-		_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
-		_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
-		_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
-		_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
-		_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
-		_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
-		_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
-		_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 		if (_datasource_Root_GeneralCasualty != null)
 		{
 			_datasource_Root_GeneralCasualty.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_GeneralCasualty;
@@ -179,59 +146,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
-	private void PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_2(string propertyName)
-	{
-		if (propertyName == "BooleanCheck")
-		{
-			_datasource_Root.IsAgentStatusPrioritized = _widget_2.BooleanCheck;
-		}
-	}
-
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
 	{
 		HandleViewModelPropertyChangeOf_datasource_Root(e.PropertyName);
@@ -279,17 +193,13 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root(string propertyName)
 	{
-		switch (propertyName)
+		if (propertyName == "GeneralCasualty")
 		{
-		case "GeneralCasualty":
 			RefreshDataSource_datasource_Root_GeneralCasualty(_datasource_Root.GeneralCasualty);
-			break;
-		case "PersonalFeed":
+		}
+		else if (propertyName == "PersonalFeed")
+		{
 			RefreshDataSource_datasource_Root_PersonalFeed(_datasource_Root.PersonalFeed);
-			break;
-		case "IsAgentStatusPrioritized":
-			_widget_2.BooleanCheck = _datasource_Root.IsAgentStatusPrioritized;
-			break;
 		}
 	}
 
@@ -524,15 +434,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			_widget_2.PropertyChanged -= PropertyChangedListenerOf_widget_2;
-			_widget_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2;
-			_widget_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2;
-			_widget_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2;
-			_widget_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2;
-			_widget_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2;
-			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
-			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
-			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
 			if (_datasource_Root_GeneralCasualty != null)
 			{
 				_datasource_Root_GeneralCasualty.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_GeneralCasualty;
@@ -601,16 +502,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		_widget_2.BooleanCheck = _datasource_Root.IsAgentStatusPrioritized;
-		_widget_2.PropertyChanged += PropertyChangedListenerOf_widget_2;
-		_widget_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2;
-		_widget_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2;
-		_widget_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2;
-		_widget_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2;
-		_widget_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2;
-		_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
-		_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
-		_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
 		_datasource_Root_GeneralCasualty = _datasource_Root.GeneralCasualty;
 		if (_datasource_Root_GeneralCasualty != null)
 		{

@@ -93,10 +93,14 @@ public class StealthAreaUsePoint : UsableMissionObject
 		bool result = false;
 		foreach (Agent allAgent in Mission.Current.AllAgents)
 		{
-			if (allAgent.IsActive() && allAgent.AIStateFlags.HasFlag(Agent.AIStateFlag.Alarmed))
+			if (allAgent.IsActive())
 			{
-				result = true;
-				break;
+				Agent.AIStateFlag aIStateFlag = Agent.AIStateFlag.Alarmed;
+				if ((allAgent.AIStateFlags & aIStateFlag) == aIStateFlag)
+				{
+					result = true;
+					break;
+				}
 			}
 		}
 		return result;
@@ -107,5 +111,10 @@ public class StealthAreaUsePoint : UsableMissionObject
 		_isEnabled = true;
 		Vec3 position = base.GameEntity.GlobalPosition;
 		SoundManager.StartOneShotEvent("event:/ui/notification/quest_update", in position);
+	}
+
+	public void DisableStealthAreaUsePoint()
+	{
+		_isEnabled = false;
 	}
 }

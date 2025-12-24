@@ -128,6 +128,11 @@ public static class MBBodyProperties
 		return (BodyMeshMaturityType)MBAPI.IMBFaceGen.GetMaturityType(age);
 	}
 
+	public static void FlushFaceCache()
+	{
+		MBAPI.IMBFaceGen.FlushFaceCache();
+	}
+
 	public static string[] GetRaceIds()
 	{
 		return MBAPI.IMBFaceGen.GetRaceIds().Split(new char[1] { ';' });

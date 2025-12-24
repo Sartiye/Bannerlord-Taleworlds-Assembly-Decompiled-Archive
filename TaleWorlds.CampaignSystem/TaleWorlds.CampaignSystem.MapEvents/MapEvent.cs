@@ -1611,7 +1611,7 @@ public sealed class MapEvent : MBObjectBase
 						{
 							if (character.IsHero)
 							{
-								if (!mapEventParty.IsNpcParty || troopRoster2.OwnerParty.MapFaction.IsAtWarWith(character.HeroObject.MapFaction))
+								if (character != CharacterObject.PlayerCharacter && (!mapEventParty.IsNpcParty || troopRoster2.OwnerParty.MapFaction.IsAtWarWith(character.HeroObject.MapFaction)))
 								{
 									prisonRoster.RemoveTroop(character, prisonerElement.Number);
 									if (!mapEventParty.IsNpcParty)

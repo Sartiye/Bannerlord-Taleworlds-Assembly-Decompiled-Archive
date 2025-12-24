@@ -439,6 +439,9 @@ public class EncyclopediaNavigatorVM : ViewModel
 			case "Concept":
 				Campaign.Current.EncyclopediaManager.GoToLink("ListPage", "Concept");
 				break;
+			case "Ships":
+				Campaign.Current.EncyclopediaManager.GoToLink("ListPage", "ShipHull");
+				break;
 			}
 		}
 	}

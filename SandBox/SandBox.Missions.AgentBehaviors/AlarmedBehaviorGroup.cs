@@ -191,21 +191,21 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		base.OwnerAgent.SetAILastSuspiciousPosition(worldPosition, checkNavMeshForCorrection: false);
 	}
 
-	public void AddIgnoredAgentsForAlarm(Agent agent)
-	{
-		_ignoredAgentsForAlarm.Add(agent);
-	}
-
 	private float GetSoundFactor(Agent currentAgent, float sneakingNoiseMultiplier)
 	{
 		if (currentAgent.Velocity.LengthSquared > 0.010000001f)
 		{
 			float num = (currentAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()) - (base.OwnerAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()))).Normalize();
 			float num2 = 200f * Math.Min(1f, currentAgent.AverageVelocity.Length / currentAgent.GetMaximumForwardUnlimitedSpeed());
-			float waterLevelAtPosition = currentAgent.Mission.Scene.GetWaterLevelAtPosition(currentAgent.Position.AsVec2, !GameNetwork.IsMultiplayer, checkWaterBodyEntities: true);
-			if (waterLevelAtPosition > currentAgent.Position.z)
+			bool flag = false;
+			if (currentAgent.Mission.Scene.GetWaterLevelAtPosition(currentAgent.Position.AsVec2, !GameNetwork.IsMultiplayer, checkWaterBodyEntities: true) > currentAgent.Position.z)
 			{
-				num2 *= 4f;
+				currentAgent.Mission.Scene.GetGroundHeightAndBodyFlagsAtPosition(currentAgent.Position, out var contactPointFlags, BodyFlags.CommonCollisionExcludeFlagsForAgent);
+				if ((contactPointFlags & (BodyFlags.Moveable | BodyFlags.Sinking)) != BodyFlags.Moveable)
+				{
+					flag = true;
+					num2 *= 4f;
+				}
 			}
 			if (currentAgent.HasMount)
 			{
@@ -219,10 +219,10 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 					num2 *= 0.7f;
 					break;
 				case HumanWalkingMovementMode.CrouchRunning:
-					num2 *= ((waterLevelAtPosition > currentAgent.Position.z) ? 0.6f : 0.1f);
+					num2 *= (flag ? 0.6f : 0.1f);
 					break;
 				case HumanWalkingMovementMode.CrouchWalking:
-					num2 *= ((waterLevelAtPosition > currentAgent.Position.z) ? 0.2f : 0f);
+					num2 *= (flag ? 0.2f : 0f);
 					break;
 				}
 			}

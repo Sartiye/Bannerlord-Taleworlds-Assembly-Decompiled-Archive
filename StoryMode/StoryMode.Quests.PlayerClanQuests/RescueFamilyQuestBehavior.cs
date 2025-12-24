@@ -650,16 +650,27 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 				return false;
 			}
 			StringHelpers.SetCharacterProperties("RADAGOS", _radagos.CharacterObject);
-			if (encounteredParty.IsSettlement && encounteredParty.Settlement.IsHideout && encounteredParty.Settlement == _hideout && Mission.Current != null && Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null && Hero.OneToOneConversationHero != null)
+			if (encounteredParty.IsSettlement && encounteredParty.Settlement.IsHideout && encounteredParty.Settlement == _hideout && Mission.Current != null && Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero == _hideoutBoss)
 			{
-				return Hero.OneToOneConversationHero == _hideoutBoss;
+				if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() == null)
+				{
+					return Mission.Current.GetMissionBehavior<HideoutMissionController>() != null;
+				}
+				return true;
 			}
 			return false;
 		}
 
 		private void bandit_hideout_start_duel_fight_on_consequence()
 		{
-			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightDuelMode;
+			if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null)
+			{
+				Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightDuelMode;
+			}
+			else
+			{
+				Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutMissionController.StartBossFightDuelMode;
+			}
 		}
 
 		private bool bandit_hideout_continue_battle_on_clickable_condition(out TextObject explanation)
@@ -683,7 +694,14 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void bandit_hideout_continue_battle_on_consequence()
 		{
-			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightBattleMode;
+			if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null)
+			{
+				Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightBattleMode;
+			}
+			else
+			{
+				Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutMissionController.StartBossFightBattleMode;
+			}
 		}
 
 		private bool hideout_boss_prisoner_talk_condition()

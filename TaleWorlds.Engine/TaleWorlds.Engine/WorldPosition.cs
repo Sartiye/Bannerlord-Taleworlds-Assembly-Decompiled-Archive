@@ -204,6 +204,24 @@ public struct WorldPosition
 		return _position;
 	}
 
+	public void SetVec2MT(Vec2 value)
+	{
+		if (_position.AsVec2 != value)
+		{
+			if (State != 0)
+			{
+				State = ZValidityState.Invalid;
+			}
+			else if (!_lastValidZPosition.IsValid)
+			{
+				ValidateZMT(ZValidityState.ValidAccordingToNavMesh);
+				State = ZValidityState.Invalid;
+			}
+			_position.x = value.x;
+			_position.y = value.y;
+		}
+	}
+
 	public void SetVec2(Vec2 value)
 	{
 		if (_position.AsVec2 != value)

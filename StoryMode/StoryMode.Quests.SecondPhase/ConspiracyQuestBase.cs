@@ -32,7 +32,7 @@ public abstract class ConspiracyQuestBase : QuestBase
 
 	public override bool IsRemainingTimeHidden => false;
 
-	public override bool IsSpecialQuest => true;
+	public override string SpecialQuestType => "MainStoryline";
 
 	protected ConspiracyQuestBase(string questId, Hero questGiver)
 		: base(questId, questGiver, CampaignTime.DaysFromNow(21f), 0)

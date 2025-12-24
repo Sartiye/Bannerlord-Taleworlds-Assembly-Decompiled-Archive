@@ -647,9 +647,17 @@ public class ItemMenuVM : ViewModel
 
 	private void AddGeneralItemFlags(MBBindingList<ItemFlagVM> list, ItemObject item)
 	{
+		if (item.IsUniqueItem)
+		{
+			list.Add(new ItemFlagVM("GeneralFlagIcons\\unique", GameTexts.FindText("str_inventory_flag_unique")));
+		}
 		if (item.IsCivilian)
 		{
 			list.Add(new ItemFlagVM("GeneralFlagIcons\\civillian", GameTexts.FindText("str_inventory_flag_civillian")));
+		}
+		if (item.IsStealthItem)
+		{
+			list.Add(new ItemFlagVM("GeneralFlagIcons\\stealth", GameTexts.FindText("str_inventory_flag_stealth")));
 		}
 		if (item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale))
 		{
@@ -670,7 +678,7 @@ public class ItemMenuVM : ViewModel
 	{
 		if (weapon == null)
 		{
-			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 419);
+			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 429);
 			return;
 		}
 		ItemObject.ItemUsageSetFlags itemUsageFlags = _getItemUsageSetFlags(weapon);
@@ -1204,7 +1212,7 @@ public class ItemMenuVM : ViewModel
 				return 4;
 			}
 		}
-		Debug.FailedAssert("This horse item category is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1436);
+		Debug.FailedAssert("This horse item category is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1446);
 		return -1;
 	}
 

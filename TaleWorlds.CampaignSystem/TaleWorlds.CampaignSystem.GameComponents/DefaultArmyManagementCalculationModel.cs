@@ -18,13 +18,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationModel
 {
-	private static readonly TextObject _numberOfPartiesText = GameTexts.FindText("str_number_of_parties");
+	private readonly TextObject _numberOfPartiesText = GameTexts.FindText("str_number_of_parties");
 
-	private static readonly TextObject _numberOfStarvingPartiesText = GameTexts.FindText("str_number_of_starving_parties");
+	private readonly TextObject _numberOfStarvingPartiesText = GameTexts.FindText("str_number_of_starving_parties");
 
-	private static readonly TextObject _numberOfLowMoralePartiesText = GameTexts.FindText("str_number_of_low_morale_parties");
+	private readonly TextObject _numberOfLowMoralePartiesText = GameTexts.FindText("str_number_of_low_morale_parties");
 
-	private static readonly TextObject _numberOfLessMemberPartiesText = GameTexts.FindText("str_number_of_less_member_parties");
+	private readonly TextObject _numberOfLessMemberPartiesText = GameTexts.FindText("str_number_of_less_member_parties");
 
 	public override float AIMobilePartySizeRatioToCallToArmy => 0.6f;
 

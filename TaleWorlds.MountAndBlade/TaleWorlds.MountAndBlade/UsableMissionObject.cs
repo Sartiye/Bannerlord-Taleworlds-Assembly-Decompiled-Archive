@@ -658,9 +658,9 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		SetScriptComponentToTick(GetTickRequirement());
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		UsableMissionObjectRecord usableMissionObjectRecord = (UsableMissionObjectRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		IsDeactivated = usableMissionObjectRecord.IsDeactivated;
 		IsDisabledForPlayers = usableMissionObjectRecord.IsDisabledForPlayers;

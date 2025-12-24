@@ -1166,6 +1166,7 @@ public class OrderOfBattleVM : ViewModel
 			heroItem.IsSelected = true;
 			_selectedHeroes.Add(heroItem);
 			UpdateHeroItemSelection();
+			DeselectAllFormations();
 		}
 	}
 
@@ -1481,7 +1482,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			if (num3 == num2)
 			{
-				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1181);
+				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1182);
 				break;
 			}
 		}
@@ -1495,7 +1496,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (_mission.PlayerTeam == null)
 		{
-			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1193);
+			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1194);
 			Debug.Print("Player team should be initialized before distributing troops");
 			return;
 		}
@@ -1835,6 +1836,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		formationItem.IsSelected = true;
 		_selectFormationAtIndex(formationItem.Formation.Index);
+		ExecuteClearHeroSelection();
 	}
 
 	private void DeselectFormationItem(OrderOfBattleFormationItemVM formationItem)

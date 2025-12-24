@@ -1733,29 +1733,31 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	protected virtual Mission.Missile ShootProjectileAux(ItemObject missileItem, bool randomizeMissileSpeed)
 	{
-		SetupProjectileToShoot(randomizeMissileSpeed, out var direction, out var orientation, out var missileShootingSpeed);
+		SetupProjectileToShoot(randomizeMissileSpeed, out var direction, out var orientation, out var missileBaseSpeed, out var missileShootingSpeed);
 		MissionObject missionObjectToIgnore = base.GameEntity.Root.GetFirstScriptOfType<MissionObject>() ?? this;
-		return Mission.Current.AddCustomMissile(LastShooterAgent, new MissionWeapon(missileItem, null, LastShooterAgent.Origin?.Banner, 1), ProjectileEntityCurrentGlobalPosition, direction, orientation, missileShootingSpeed, missileShootingSpeed, addRigidBody: false, missionObjectToIgnore);
+		return Mission.Current.AddCustomMissile(LastShooterAgent, new MissionWeapon(missileItem, null, LastShooterAgent.Origin?.Banner, 1), ProjectileEntityCurrentGlobalPosition, direction, orientation, missileShootingSpeed, missileBaseSpeed, addRigidBody: false, missionObjectToIgnore);
 	}
 
-	protected void SetupProjectileToShoot(bool randomizeMissileSpeed, out Vec3 direction, out Mat3 orientation, out float missileShootingSpeed)
+	protected void SetupProjectileToShoot(bool randomizeMissileSpeed, out Vec3 direction, out Mat3 orientation, out float missileBaseSpeed, out float missileShootingSpeed)
 	{
 		orientation = Mat3.Identity;
 		Vec3 globalVelocity = GetGlobalVelocity();
-		float num = ShootingSpeed * MBRandom.RandomFloatRanged(0.9f, 1.1f);
 		if (randomizeMissileSpeed)
 		{
+			float num = ShootingSpeed * MBRandom.RandomFloatRanged(0.9f, 1.1f);
 			orientation.f = GetBallisticErrorAppliedDirection(2.5f);
 			orientation.Orthonormalize();
 			direction = num * orientation.f + globalVelocity;
 			missileShootingSpeed = direction.Normalize();
+			missileBaseSpeed = num;
 		}
 		else
 		{
 			orientation.f = GetBallisticErrorAppliedDirection(MaximumBallisticError);
 			orientation.Orthonormalize();
-			direction = num * orientation.f + globalVelocity;
+			direction = ShootingSpeed * orientation.f + globalVelocity;
 			missileShootingSpeed = direction.Normalize();
+			missileBaseSpeed = ShootingSpeed;
 		}
 	}
 
@@ -1940,9 +1942,9 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	public abstract float ProcessTargetValue(float baseValue, TargetFlags flags);
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		RangedSiegeWeaponRecord rangedSiegeWeaponRecord = (RangedSiegeWeaponRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		_state = (WeaponState)rangedSiegeWeaponRecord.State;
 		TargetDirection = rangedSiegeWeaponRecord.TargetDirection;
@@ -2018,9 +2020,9 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		return base.AmmoPickUpPoints.Count == 0;
 	}
 
-	public override void OnShipSwappedBetweenTeams(BattleSideEnum newDefaultSide)
+	public override void OnShipCaptured(BattleSideEnum newDefaultSide)
 	{
-		base.OnShipSwappedBetweenTeams(newDefaultSide);
+		base.OnShipCaptured(newDefaultSide);
 		DefaultSide = newDefaultSide;
 	}
 }

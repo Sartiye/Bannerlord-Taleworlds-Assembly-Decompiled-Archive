@@ -96,6 +96,14 @@ public static class HyperlinkTexts
 		return textObject;
 	}
 
+	public static TextObject GetShipHyperlinkText(string link, TextObject shipHullName)
+	{
+		TextObject textObject = new TextObject("{=!}{.link}<a style=\"Link.Ship\" href=\"event:{LINK}\"><b>{SHIP}</b></a>");
+		textObject.SetTextVariable("LINK", link);
+		textObject.SetTextVariable("SHIP", shipHullName);
+		return textObject;
+	}
+
 	public static TextObject GetUnitHyperlinkText(string link, TextObject unitName)
 	{
 		TextObject textObject = new TextObject("{=!}{.link}<a style=\"Link.Unit\" href=\"event:{LINK}\"><b>{UNIT_NAME}</b></a>");

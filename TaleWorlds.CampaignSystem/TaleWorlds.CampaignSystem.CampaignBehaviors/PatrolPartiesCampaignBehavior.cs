@@ -56,7 +56,7 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 	{
 		if (building.BuildingType == DefaultBuildingTypes.SettlementGuardHouse)
 		{
-			if (building.CurrentLevel == 1 && levelChange > 0 && CanSettlementSpawnNewPartyCurrently(town.Settlement, out var _))
+			if (building.CurrentLevel == 1 && levelChange > 0 && CanSettlementSpawnNewPartyCurrently(town.Settlement, includeReason: false, out var _))
 			{
 				UpdateSettlementQueue(town.Settlement, CampaignTime.Zero);
 			}
@@ -69,7 +69,7 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 
 	private void DailyTickSettlement(Settlement settlement)
 	{
-		if (CanSettlementSpawnNewPartyCurrently(settlement, out var _))
+		if (CanSettlementSpawnNewPartyCurrently(settlement, includeReason: false, out var _))
 		{
 			if (!_partyGenerationQueue.TryGetValue(settlement, out var value))
 			{
@@ -134,7 +134,7 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 		}
 		foreach (Town allFief in Town.AllFiefs)
 		{
-			if (CanSettlementSpawnNewPartyCurrently(allFief.Settlement, out var _))
+			if (CanSettlementSpawnNewPartyCurrently(allFief.Settlement, includeReason: false, out var _))
 			{
 				SpawnPatrolParty(allFief.Settlement);
 			}
@@ -568,24 +568,24 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 		}
 	}
 
-	private bool CanSettlementSpawnNewPartyCurrently(Settlement settlement, out TextObject reason)
+	private bool CanSettlementSpawnNewPartyCurrently(Settlement settlement, bool includeReason, out TextObject reason)
 	{
 		if (!Campaign.Current.Models.SettlementPatrolModel.CanSettlementHavePatrolParties(settlement, naval: false))
 		{
-			reason = new TextObject("{=RosQSZWa}No Guard House");
+			reason = (includeReason ? new TextObject("{=RosQSZWa}No Guard House") : null);
 			return false;
 		}
 		if (settlement.InRebelliousState)
 		{
-			reason = new TextObject("{=UHDv0qer}Rebellious");
+			reason = (includeReason ? new TextObject("{=UHDv0qer}Rebellious") : null);
 			return false;
 		}
 		if (settlement.Town.IsUnderSiege || settlement.Party.MapEvent != null)
 		{
-			reason = new TextObject("{=BhiOmgst}Under Siege");
+			reason = (includeReason ? new TextObject("{=BhiOmgst}Under Siege") : null);
 			return false;
 		}
-		reason = TextObject.GetEmpty();
+		reason = (includeReason ? TextObject.GetEmpty() : null);
 		return settlement.PatrolParty == null;
 	}
 
@@ -662,7 +662,7 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 			empty.SetTextVariable("REMAINING_TROOP_COUNT", settlement.PatrolParty.MobileParty.MemberRoster.TotalManCount);
 			empty.SetTextVariable("TOTAL_TROOP_COUNT", settlement.PatrolParty.MobileParty.Party.PartySizeLimit);
 		}
-		else if (!CanSettlementSpawnNewPartyCurrently(settlement, out reason))
+		else if (!CanSettlementSpawnNewPartyCurrently(settlement, includeReason: true, out reason))
 		{
 			empty = reason;
 		}

@@ -554,6 +554,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void QuarterHourlyTick()
+	{
+	}
+
 	public virtual void HourlyTickParty(MobileParty mobileParty)
 	{
 	}

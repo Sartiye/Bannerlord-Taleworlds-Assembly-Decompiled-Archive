@@ -381,7 +381,7 @@ internal interface IMBAgent
 	bool SetScriptedPosition(UIntPtr agentPointer, ref WorldPosition targetPosition, bool addHumanLikeDelay, int additionalFlags);
 
 	[EngineMethod("set_scripted_target_entity", false, null, false)]
-	void SetScriptedTargetEntity(UIntPtr agentPointer, UIntPtr entityId, ref WorldPosition specialPosition, int additionalFlags, bool ignoreIfAlreadyAttacking);
+	void SetScriptedTargetEntity(UIntPtr agentPointer, UIntPtr entityId, int additionalFlags, bool ignoreIfAlreadyAttacking);
 
 	[EngineMethod("disable_scripted_movement", false, null, false)]
 	void DisableScriptedMovement(UIntPtr agentPointer);

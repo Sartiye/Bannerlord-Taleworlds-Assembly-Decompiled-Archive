@@ -74,13 +74,13 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 
 	private NavigationScopeTargeter _widget_4_1_0_0;
 
-	private NavigatableListPanel _widget_4_1_0_1;
+	private NavigatableGridWidget _widget_4_1_0_1;
 
-	private ScrollbarWidget _widget_4_2;
+	private ScrollbarWidget _widget_4_1_1;
 
-	private ImageWidget _widget_4_2_0;
+	private ImageWidget _widget_4_1_1_0;
 
-	private ImageWidget _widget_4_2_1;
+	private ImageWidget _widget_4_1_1_1;
 
 	private Widget _widget_5;
 
@@ -173,14 +173,14 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_4_1.AddChild(_widget_4_1_0);
 		_widget_4_1_0_0 = new NavigationScopeTargeter(base.Context);
 		_widget_4_1_0.AddChild(_widget_4_1_0_0);
-		_widget_4_1_0_1 = new NavigatableListPanel(base.Context);
+		_widget_4_1_0_1 = new NavigatableGridWidget(base.Context);
 		_widget_4_1_0.AddChild(_widget_4_1_0_1);
-		_widget_4_2 = new ScrollbarWidget(base.Context);
-		_widget_4.AddChild(_widget_4_2);
-		_widget_4_2_0 = new ImageWidget(base.Context);
-		_widget_4_2.AddChild(_widget_4_2_0);
-		_widget_4_2_1 = new ImageWidget(base.Context);
-		_widget_4_2.AddChild(_widget_4_2_1);
+		_widget_4_1_1 = new ScrollbarWidget(base.Context);
+		_widget_4_1.AddChild(_widget_4_1_1);
+		_widget_4_1_1_0 = new ImageWidget(base.Context);
+		_widget_4_1_1.AddChild(_widget_4_1_1_0);
+		_widget_4_1_1_1 = new ImageWidget(base.Context);
+		_widget_4_1_1.AddChild(_widget_4_1_1_1);
 		_widget_5 = new Widget(base.Context);
 		_widget.AddChild(_widget_5);
 		_widget_5_0 = new TextWidget(base.Context);
@@ -211,9 +211,9 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_3_1_0_1.Id = "Icon";
 		_widget_4_1_0.Id = "ClipRect";
 		_widget_4_1_0_1.Id = "AvailableMaps";
-		_widget_4_2.Id = "HorizontalScrollbar";
-		_widget_4_2_0.Id = "ScrollbarBed";
-		_widget_4_2_1.Id = "ScrollbarHandle";
+		_widget_4_1_1.Id = "VerticalScrollbar";
+		_widget_4_1_1_0.Id = "ScrollbarBed";
+		_widget_4_1_1_1.Id = "ScrollbarHandle";
 	}
 
 	public void SetAttributes()
@@ -331,7 +331,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4.MarginBottom = 100f;
+		_widget_4.MarginBottom = 70f;
 		_widget_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -345,41 +345,45 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_4_1.AutoHideScrollBars = true;
 		_widget_4_1.ClipRect = _widget_4_1_0;
 		_widget_4_1.InnerPanel = _widget_4_1_0_1;
-		_widget_4_1.HorizontalScrollbar = _widget_4_2;
+		_widget_4_1.VerticalScrollbar = _widget_4_1_1;
 		_widget_4_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1_0.MaxHeight = 650f;
 		_widget_4_1_0.ClipContents = true;
 		_widget_4_1_0_0.ScopeID = "IntermissionMapSelectionScope";
 		_widget_4_1_0_0.ScopeParent = _widget_4_1_0_1;
 		_widget_4_1_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
+		_widget_4_1_0_0.AlternateScopeMovements = GamepadNavigationTypes.Vertical;
+		_widget_4_1_0_0.AlternateMovementStepSize = 5;
 		_widget_4_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_1_0_1.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
-		_widget_4_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_2.SuggestedHeight = 10f;
-		_widget_4_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_4_2.MarginLeft = 20f;
-		_widget_4_2.MarginRight = 20f;
-		_widget_4_2.MarginTop = 10f;
-		_widget_4_2.AlignmentAxis = AlignmentAxis.Horizontal;
-		_widget_4_2.DoNotUpdateHandleSize = true;
-		_widget_4_2.Handle = _widget_4_2_1;
-		_widget_4_2.MaxValue = 100f;
-		_widget_4_2.MinValue = 0f;
-		_widget_4_2.UpdateChildrenStates = true;
-		_widget_4_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_2_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_2_0.SuggestedHeight = 4f;
-		_widget_4_2_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_2_0.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Bed");
-		_widget_4_2_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_2_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_2_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_2_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_2_1.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Handle");
+		_widget_4_1_0_1.UseDynamicCellWidth = true;
+		_widget_4_1_0_1.UseDynamicCellHeight = true;
+		_widget_4_1_0_1.ColumnCount = 5;
+		_widget_4_1_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_1_1.SuggestedWidth = 10f;
+		_widget_4_1_1.SuggestedHeight = 650f;
+		_widget_4_1_1.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_4_1_1.MarginRight = 50f;
+		_widget_4_1_1.AlignmentAxis = AlignmentAxis.Vertical;
+		_widget_4_1_1.DoNotUpdateHandleSize = true;
+		_widget_4_1_1.Handle = _widget_4_1_1_1;
+		_widget_4_1_1.MaxValue = 100f;
+		_widget_4_1_1.MinValue = 0f;
+		_widget_4_1_1.UpdateChildrenStates = true;
+		_widget_4_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4_1_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_1_1_0.SuggestedWidth = 4f;
+		_widget_4_1_1_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_1_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_4_1_1_0.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Bed");
+		_widget_4_1_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_1_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_1_1_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_1_1_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_4_1_1_1.Brush = base.Context.GetBrush("MPIntermission.Scrollbar.Handle");
 		_widget_5.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5.HorizontalAlignment = HorizontalAlignment.Center;

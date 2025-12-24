@@ -295,33 +295,42 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		return num2 + num3;
 	}
 
-	public override bool CanMakeDecision(out TextObject reason)
+	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)
 	{
+		reason = (includeReason ? TextObject.GetEmpty() : null);
 		if (CallingKingdom.IsEliminated || base.Kingdom.IsEliminated || KingdomToCallToWarAgainst.IsEliminated)
 		{
-			reason = new TextObject("{=a5EAl1aW}That realm has been eliminated.");
+			reason = (includeReason ? new TextObject("{=a5EAl1aW}That realm has been eliminated.") : null);
 			return false;
 		}
 		if (KingdomToCallToWarAgainst.IsAtWarWith(base.Kingdom))
 		{
-			reason = new TextObject("{=lseJ70y0}Your realm is at war with the {KINGDOM_NAME}.");
-			reason.SetTextVariable("KINGDOM_NAME", KingdomToCallToWarAgainst.Name);
+			if (includeReason)
+			{
+				reason = new TextObject("{=lseJ70y0}Your realm is at war with the {KINGDOM_NAME}.");
+				reason.SetTextVariable("KINGDOM_NAME", KingdomToCallToWarAgainst.Name);
+			}
 			return false;
 		}
 		if (!KingdomToCallToWarAgainst.IsAtWarWith(CallingKingdom))
 		{
-			reason = new TextObject("{=eUWYqwE6}The {CALLING_KINGDOM} is not at war with {KINGDOM_TO_CALL_TO_WAR_AGAINST} anymore.");
-			reason.SetTextVariable("CALLING_KINGDOM", CallingKingdom.Name);
-			reason.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.Name);
+			if (includeReason)
+			{
+				reason = new TextObject("{=eUWYqwE6}The {CALLING_KINGDOM} is not at war with {KINGDOM_TO_CALL_TO_WAR_AGAINST} anymore.");
+				reason.SetTextVariable("CALLING_KINGDOM", CallingKingdom.Name);
+				reason.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.Name);
+			}
 			return false;
 		}
 		if (!base.Kingdom.IsAllyWith(CallingKingdom))
 		{
-			reason = new TextObject("{=hz30Xfqh}Your realm is not ally with {KINGDOM_NAME} anymore.");
-			reason.SetTextVariable("KINGDOM_NAME", CallingKingdom.Name);
+			if (includeReason)
+			{
+				reason = new TextObject("{=hz30Xfqh}Your realm is not ally with {KINGDOM_NAME} anymore.");
+				reason.SetTextVariable("KINGDOM_NAME", CallingKingdom.Name);
+			}
 			return false;
 		}
-		reason = TextObject.GetEmpty();
 		return true;
 	}
 }

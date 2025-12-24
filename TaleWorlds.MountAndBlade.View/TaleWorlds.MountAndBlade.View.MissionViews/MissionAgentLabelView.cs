@@ -95,11 +95,13 @@ public class MissionAgentLabelView : MissionView
 		UpdateIsOrderFlagVisible();
 		if (!_isOrderFlagVisible && isOrderFlagVisible)
 		{
+			UpdateAllAgentMeshVisibilities();
 			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: false, useAllTeamAgents: false);
 			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: true, useAllTeamAgents: false);
 		}
 		if (_isOrderFlagVisible && !isOrderFlagVisible)
 		{
+			UpdateAllAgentMeshVisibilities();
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
 			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: true, useAllTeamAgents: false);
 		}
@@ -385,12 +387,12 @@ public class MissionAgentLabelView : MissionView
 
 	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType optionType)
 	{
-		if (optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners)
+		if (optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBannersType)
 		{
 			UpdateAlwaysShowFriendlyTroopBanners();
 			UpdateAllAgentMeshVisibilities();
 		}
-		if (optionType == ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity || optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners)
+		if (optionType == ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity || optionType == ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBannersType)
 		{
 			UpdateAllAgentMeshVisibilities();
 		}
@@ -398,7 +400,8 @@ public class MissionAgentLabelView : MissionView
 
 	private void UpdateAlwaysShowFriendlyTroopBanners()
 	{
-		_alwaysShowFriendlyTroopBanners = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners) > 1E-05f;
+		float config = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBannersType);
+		_alwaysShowFriendlyTroopBanners = config == 2f || (config == 1f && GameNetwork.IsMultiplayer);
 	}
 
 	private void UpdateAllAgentMeshVisibilities()

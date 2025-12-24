@@ -175,6 +175,8 @@ public class Widget : PropertyOwnerObject
 
 	public int NinePatchRight { get; set; }
 
+	public ImageFit ImageFit { get; set; }
+
 	public float GlobalRotation
 	{
 		get
@@ -739,7 +741,18 @@ public class Widget : PropertyOwnerObject
 			{
 				SetMeasureAndLayoutDirty();
 				_verticalAlignment = value;
-				OnPropertyChanged(Enum.GetName(typeof(VerticalAlignment), value), "VerticalAlignment");
+				switch (value)
+				{
+				case VerticalAlignment.Top:
+					OnPropertyChanged("Top", "VerticalAlignment");
+					break;
+				case VerticalAlignment.Center:
+					OnPropertyChanged("Center", "VerticalAlignment");
+					break;
+				case VerticalAlignment.Bottom:
+					OnPropertyChanged("Bottom", "VerticalAlignment");
+					break;
+				}
 			}
 		}
 	}
@@ -757,7 +770,18 @@ public class Widget : PropertyOwnerObject
 			{
 				SetMeasureAndLayoutDirty();
 				_horizontalAlignment = value;
-				OnPropertyChanged(Enum.GetName(typeof(HorizontalAlignment), value), "HorizontalAlignment");
+				switch (value)
+				{
+				case HorizontalAlignment.Left:
+					OnPropertyChanged("Left", "HorizontalAlignment");
+					break;
+				case HorizontalAlignment.Center:
+					OnPropertyChanged("Center", "HorizontalAlignment");
+					break;
+				case HorizontalAlignment.Right:
+					OnPropertyChanged("Right", "HorizontalAlignment");
+					break;
+				}
 			}
 		}
 	}
@@ -1209,24 +1233,6 @@ public class Widget : PropertyOwnerObject
 		}
 	}
 
-	internal int OnUpdateListIndex { get; set; } = -1;
-
-
-	internal int OnLateUpdateListIndex { get; set; } = -1;
-
-
-	internal int OnUpdateBrushesIndex { get; set; } = -1;
-
-
-	internal int OnParallelUpdateListIndex { get; set; } = -1;
-
-
-	internal int OnVisualDefinitionListIndex { get; set; } = -1;
-
-
-	internal int OnTweenPositionListIndex { get; set; } = -1;
-
-
 	[Editor(false)]
 	public float MaxWidth
 	{
@@ -1525,6 +1531,7 @@ public class Widget : PropertyOwnerObject
 		_states = new List<string>();
 		WidgetInfo = WidgetInfo.GetWidgetInfo(GetType());
 		Sprite = null;
+		ImageFit = new ImageFit();
 		AreaRect = Rectangle2D.Create();
 		_isGamepadCursorAreaDirty = true;
 		_stateTimer = 0f;
@@ -2324,25 +2331,23 @@ public class Widget : PropertyOwnerObject
 
 	protected virtual void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
 	{
-		Vector2 localPosition = LocalPosition;
-		if (ForcePixelPerfectRenderPlacement)
+		if (_sprite?.Texture != null)
 		{
-			localPosition.X = TaleWorlds.Library.MathF.Round(localPosition.X);
-			localPosition.Y = TaleWorlds.Library.MathF.Round(localPosition.Y);
-		}
-		if (_sprite == null)
-		{
-			return;
-		}
-		Texture texture = _sprite.Texture;
-		if (texture != null)
-		{
-			float x = localPosition.X;
-			float y = localPosition.Y;
+			ImageFit imageFit = ImageFit;
+			Vector2 containerSize = Size;
+			Vector2 imageSize = new Vector2(Sprite.Width, Sprite.Height);
+			ImageFitResult fittedRectangle = imageFit.GetFittedRectangle(in containerSize, in imageSize);
+			float num = LocalPosition.X;
+			float num2 = LocalPosition.Y;
+			if (ForcePixelPerfectRenderPlacement)
+			{
+				num = TaleWorlds.Library.MathF.Round(num);
+				num2 = TaleWorlds.Library.MathF.Round(num2);
+			}
 			SimpleMaterial simpleMaterial = drawContext.CreateSimpleMaterial();
 			simpleMaterial.OverlayEnabled = false;
 			simpleMaterial.CircularMaskingEnabled = false;
-			simpleMaterial.Texture = texture;
+			simpleMaterial.Texture = _sprite.Texture;
 			simpleMaterial.NinePatchParameters = _sprite.NinePatchParameters;
 			if (NinePatchLeft != 0 || NinePatchRight != 0 || NinePatchTop != 0 || NinePatchBottom != 0)
 			{
@@ -2354,28 +2359,29 @@ public class Widget : PropertyOwnerObject
 			simpleMaterial.HueFactor = 0f;
 			simpleMaterial.SaturationFactor = SaturationFactor;
 			simpleMaterial.ValueFactor = ValueFactor;
-			float num = ExtendLeft;
+			float num3 = ExtendLeft;
 			if (HorizontalFlip)
 			{
-				num = ExtendRight;
+				num3 = ExtendRight;
 			}
-			float x2 = Size.X;
-			x2 += (ExtendRight + ExtendLeft) * _scaleToUse;
-			x -= num * _scaleToUse;
-			float y2 = Size.Y;
-			float num2 = ExtendTop;
+			float width = fittedRectangle.Width;
+			width += (ExtendRight + ExtendLeft) * _scaleToUse;
+			num -= num3 * _scaleToUse;
+			float height = fittedRectangle.Height;
+			float num4 = ExtendTop;
 			if (VerticalFlip)
 			{
-				num2 = ExtendBottom;
+				num4 = ExtendBottom;
 			}
-			y2 += (ExtendTop + ExtendBottom) * _scaleToUse;
-			y -= num2 * _scaleToUse;
-			x2 = (HorizontalFlip ? (0f - x2) : x2);
-			y2 = (VerticalFlip ? (0f - y2) : y2);
-			float scaleX = ((x2 == 0f) ? 1f : (x2 / Size.X));
-			float scaleY = ((y2 == 0f) ? 1f : (y2 / Size.Y));
-			AreaRect.SetVisualOffset(x - localPosition.X, y - localPosition.Y);
+			height += (ExtendTop + ExtendBottom) * _scaleToUse;
+			num2 -= num4 * _scaleToUse;
+			width = (HorizontalFlip ? (0f - width) : width);
+			height = (VerticalFlip ? (0f - height) : height);
+			float scaleX = ((width == 0f) ? 1f : (width / Size.X));
+			float scaleY = ((height == 0f) ? 1f : (height / Size.Y));
+			AreaRect.SetVisualOffset(num - LocalPosition.X + fittedRectangle.OffsetX, num2 - LocalPosition.Y + fittedRectangle.OffsetY);
 			AreaRect.SetVisualScale(scaleX, scaleY);
+			AreaRect.ValidateVisuals();
 			drawContext.DrawSprite(_sprite, simpleMaterial, in AreaRect, _scaleToUse);
 		}
 	}

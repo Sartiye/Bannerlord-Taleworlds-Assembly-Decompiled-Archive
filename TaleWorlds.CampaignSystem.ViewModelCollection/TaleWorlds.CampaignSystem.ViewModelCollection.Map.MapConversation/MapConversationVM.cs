@@ -84,4 +84,9 @@ public class MapConversationVM : ViewModel
 		DialogController = null;
 		TableauData = null;
 	}
+
+	public void Tick(float dt)
+	{
+		DialogController?.Tick(dt);
+	}
 }

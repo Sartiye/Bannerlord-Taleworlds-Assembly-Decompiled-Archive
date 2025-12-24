@@ -10,8 +10,6 @@ public class SPKillFeedVM : ViewModel
 
 	private SPPersonalKillNotificationVM _personalFeed;
 
-	private bool _isAgentStatusPrioritized;
-
 	[DataSourceProperty]
 	public SPGeneralKillNotificationVM GeneralCasualty
 	{
@@ -46,28 +44,10 @@ public class SPKillFeedVM : ViewModel
 		}
 	}
 
-	[DataSourceProperty]
-	public bool IsAgentStatusPrioritized
-	{
-		get
-		{
-			return _isAgentStatusPrioritized;
-		}
-		set
-		{
-			if (value != _isAgentStatusPrioritized)
-			{
-				_isAgentStatusPrioritized = value;
-				OnPropertyChangedWithValue(value, "IsAgentStatusPrioritized");
-			}
-		}
-	}
-
 	public SPKillFeedVM()
 	{
 		GeneralCasualty = new SPGeneralKillNotificationVM();
 		PersonalFeed = new SPPersonalKillNotificationVM();
-		IsAgentStatusPrioritized = true;
 	}
 
 	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isHeadshot, bool isSuicide, bool isDrowning)

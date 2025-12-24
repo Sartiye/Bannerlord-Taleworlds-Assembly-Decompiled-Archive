@@ -1299,6 +1299,10 @@ public class ColumnFormation : IFormationArrangement
 		int fileIndex = VanguardFileIndex;
 		for (int rankIndex = 0; rankIndex < RankCount; rankIndex++)
 		{
+			if (rankIndex == 0 && Vanguard != null)
+			{
+				yield return (T)Vanguard;
+			}
 			if (_units2D[fileIndex, rankIndex] != null)
 			{
 				yield return (T)_units2D[fileIndex, rankIndex];

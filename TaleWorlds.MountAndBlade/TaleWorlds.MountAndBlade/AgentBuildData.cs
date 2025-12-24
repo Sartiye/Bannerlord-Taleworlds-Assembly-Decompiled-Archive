@@ -108,6 +108,10 @@ public class AgentBuildData
 		}
 	}
 
+	public bool UseFaceCache { get; set; }
+
+	public int FaceCacheId { get; set; }
+
 	private AgentBuildData()
 	{
 		AgentController = AgentControllerType.AI;
@@ -115,6 +119,8 @@ public class AgentBuildData
 		AgentFormation = null;
 		AgentMissionPeer = null;
 		AgentFormationTroopSpawnIndex = -1;
+		UseFaceCache = false;
+		FaceCacheId = 0;
 	}
 
 	public AgentBuildData(AgentData agentData)

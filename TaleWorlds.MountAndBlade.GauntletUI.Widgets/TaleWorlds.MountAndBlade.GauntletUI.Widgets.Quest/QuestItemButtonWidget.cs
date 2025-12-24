@@ -25,7 +25,11 @@ public class QuestItemButtonWidget : ButtonWidget
 
 	private bool _isMainStoryLineQuest;
 
+	private bool _isNavalStorylineQuest;
+
 	public Brush MainStoryLineItemBrush { get; set; }
+
+	public Brush NavalStorylineItemBrush { get; set; }
 
 	public Brush NormalItemBrush { get; set; }
 
@@ -59,6 +63,23 @@ public class QuestItemButtonWidget : ButtonWidget
 			{
 				_isMainStoryLineQuest = value;
 				OnPropertyChanged(value, "IsMainStoryLineQuest");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool IsNavalStorylineQuest
+	{
+		get
+		{
+			return _isNavalStorylineQuest;
+		}
+		set
+		{
+			if (_isNavalStorylineQuest != value)
+			{
+				_isNavalStorylineQuest = value;
+				OnPropertyChanged(value, "IsNavalStorylineQuest");
 			}
 		}
 	}
@@ -192,7 +213,18 @@ public class QuestItemButtonWidget : ButtonWidget
 		base.OnUpdate(dt);
 		if (!_initialized)
 		{
-			base.Brush = (IsMainStoryLineQuest ? MainStoryLineItemBrush : NormalItemBrush);
+			if (IsNavalStorylineQuest)
+			{
+				base.Brush = NavalStorylineItemBrush;
+			}
+			else if (IsMainStoryLineQuest)
+			{
+				base.Brush = MainStoryLineItemBrush;
+			}
+			else
+			{
+				base.Brush = NormalItemBrush;
+			}
 			_initialized = true;
 		}
 		if (QuestNameText != null && QuestDateText != null)

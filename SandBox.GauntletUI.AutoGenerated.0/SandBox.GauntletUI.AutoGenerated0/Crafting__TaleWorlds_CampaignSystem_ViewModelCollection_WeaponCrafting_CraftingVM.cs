@@ -1471,6 +1471,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_10_0_5_0.Brush = base.Context.GetBrush("TownManagement.GovernorPopup.GoldFrame");
 		_widget_10_0_5_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_10_0_5_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_10_0_5_0_0.MarginTop = 2f;
+		_widget_10_0_5_0_0.MarginBottom = 2f;
 		_widget_10_0_5_0_0.FillWidget = _widget_10_0_5_0_0_0;
 		_widget_10_0_5_0_0.IsDirectionUpward = true;
 		_widget_10_0_5_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");

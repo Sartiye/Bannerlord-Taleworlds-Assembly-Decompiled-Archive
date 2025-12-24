@@ -130,6 +130,8 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	private MapView _encounterOverlay;
 
+	public static bool DisableVisualTicks;
+
 	private MapReadyView _mapReadyView;
 
 	private MapView _armyOverlay;
@@ -499,6 +501,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			SceneLayer.SceneView.GetScene().DeleteWaterWakeRenderer();
 		}
 		SandBoxViewVisualManager.ClearVisualMemory();
+		ThumbnailCacheManager.Current.ForceClearAllCache(releaseImmediately: true);
 		Texture.ReleaseGpuMemories();
 		_gpuMemoryCleared = true;
 	}
@@ -536,7 +539,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		T mapViewWithType = _mapViewsContainer.GetMapViewWithType<T>();
 		if (mapViewWithType != null)
 		{
-			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 536);
+			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 545);
 			Debug.Print("Map view already added to the list: " + typeof(T).Name + ". Returning existing view instead of creating new one.");
 			return mapViewWithType;
 		}
@@ -618,8 +621,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			CheckValidityOfItems();
 		}
 		Instance = this;
-		BannerPersistentTextureCache.Current?.FlushCache();
-		ThumbnailCacheManager.Current.ForceClearAllCache();
+		ThumbnailCacheManager.Current.ForceClearAllCache(releaseImmediately: true);
 		MapCameraView.Initialize();
 		ViewSubModule.BannerTexturedMaterialCache = BannerTexturedMaterialCache;
 		SceneLayer = new SceneLayer(clearSceneOnFinalize: true, autoToggleSceneView: false);
@@ -777,7 +779,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 816);
+			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 824);
 		}
 	}
 
@@ -1965,6 +1967,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	private void TickVisuals(float realDt)
 	{
+		if (DisableVisualTicks)
+		{
+			MapScene.ClearCurrentFrameTickEntities();
+			return;
+		}
 		MapScene.TimeOfDay = CampaignTime.Now.CurrentHourInDay;
 		Campaign.Current.Models.MapWeatherModel.GetSeasonTimeFactorOfCampaignTime(CampaignTime.Now, out var timeFactorForSnow, out var _, snapCampaignTimeToWeatherPeriod: false);
 		MBMapScene.SetSeasonTimeFactor(MapScene, timeFactorForSnow);
@@ -2093,7 +2100,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2521);
+			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2536);
 		}
 	}
 
@@ -2101,11 +2108,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 	{
 		if (_campaignOptionsView == null)
 		{
-			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2529);
+			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2544);
 			_campaignOptionsView = GetMapView<MapCampaignOptionsView>();
 			if (_campaignOptionsView == null)
 			{
-				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2534);
+				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2549);
 				IsInCampaignOptions = false;
 				_campaignOptionsView = null;
 				return;
@@ -2123,6 +2130,19 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 	{
 		bool isMapConversationActive = _conversationView.IsConversationActive;
 		bool cannotQuickSave = MBSaveLoad.IsMaxNumberOfSavesReached() && !MBSaveLoad.IsSaveGameFileExists(MBSaveLoad.ActiveSaveSlotName);
+		if (cannotQuickSave && CampaignOptions.IsIronmanMode)
+		{
+			string activeSaveSlotName = MBSaveLoad.ActiveSaveSlotName;
+			string[] saveFileNames = MBSaveLoad.GetSaveFileNames();
+			for (int i = 0; i < saveFileNames.Length; i++)
+			{
+				if (saveFileNames[i] == activeSaveSlotName)
+				{
+					cannotQuickSave = false;
+					break;
+				}
+			}
+		}
 		return new List<EscapeMenuItemVM>
 		{
 			new EscapeMenuItemVM(new TextObject("{=e139gKZc}Return to the Game"), delegate
@@ -2351,8 +2371,13 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 						frame = partyVisual.CircleLocalFrame;
 						flag3 = true;
 						num3 = GetCircleIndex();
+						float num5 = 1.2f;
+						if (partyBase.MobileParty.IsCurrentlyAtSea)
+						{
+							num5 = 2.5f;
+						}
 						factor1Linear = (flag6 ? 4292093218u : (flag7 ? 4284183827u : 4291596077u));
-						num = frame.rotation.GetScaleVector().x * 1.2f;
+						num = frame.rotation.GetScaleVector().x * num5;
 					}
 				}
 				else
@@ -2414,19 +2439,19 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		scaleAmountXYZ = new Vec3(num2, num2, num2);
 		rotation2.ApplyScaleLocal(in scaleAmountXYZ);
 		_townCircleDecal.GameEntity.SetVisibilityExcludeParents(flag2);
-		_pointTargetInnerDecal.GameEntity.SetVisibilityExcludeParents(flag3 && !flag8);
+		_pointTargetInnerDecal.GameEntity.SetVisibilityExcludeParents(flag3 && (!flag8 || flag9));
 		_pointTargetOuterDecal.GameEntity.SetVisibilityExcludeParents(flag && (!flag8 || flag9));
-		_pointTargetWindDirectionDecal.GameEntity.SetVisibilityExcludeParents(flag3 && flag8);
+		_pointTargetWindDirectionDecal.GameEntity.SetVisibilityExcludeParents(flag3 && flag8 && !flag9);
 		if (flag3)
 		{
-			if (flag8)
+			if (flag8 && !flag9)
 			{
-				float num5 = num + 0.15f;
+				float num6 = num + 0.15f;
 				MatrixFrame frame4 = frame2;
 				Vec3 direction = Campaign.Current.Models.MapWeatherModel.GetWindForPosition(MobileParty.MainParty.TargetPosition).ToVec3().NormalizedCopy();
 				frame4.rotation = Mat3.CreateMat3WithForward(in direction);
 				ref Mat3 rotation3 = ref frame4.rotation;
-				scaleAmountXYZ = new Vec3(num5, num5, num5);
+				scaleAmountXYZ = new Vec3(num6, num6, num6);
 				rotation3.ApplyScaleLocal(in scaleAmountXYZ);
 				frame4.rotation.RotateAboutUp(System.MathF.PI / 2f);
 				_pointTargetWindDirectionDecal.Decal.SetFactor1Linear(factor1Linear);
@@ -2503,13 +2528,16 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 					_settlementHoverOutlineDecal.GameEntity.SetGlobalFrame(in frame5);
 					_settlementHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: true);
 					_partyHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: false);
+					return;
 				}
-				else
+				if (mapEntityVisual.MapEntity.IsMobile && mapEntityVisual.MapEntity.MobileParty.IsCurrentlyAtSea)
 				{
-					_partyHoverOutlineDecal.GameEntity.SetGlobalFrame(in frame5);
-					_settlementHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: false);
-					_partyHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: true);
+					scaleAmountXYZ = Vec3.One * 2.5f;
+					frame5.Scale(in scaleAmountXYZ);
 				}
+				_partyHoverOutlineDecal.GameEntity.SetGlobalFrame(in frame5);
+				_settlementHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: false);
+				_partyHoverOutlineDecal.GameEntity.SetVisibilityExcludeParents(visible: true);
 			}
 			else
 			{

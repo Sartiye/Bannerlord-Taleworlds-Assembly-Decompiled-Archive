@@ -1080,91 +1080,100 @@ public class MobilePartyAi
 		mostPowerfulLandAlly = null;
 		mostPowerfulNavalAlly = null;
 		CampaignVec2 v = ((targetSettlement.SiegeEvent != null) ? targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.Position : targetSettlement.GatePosition);
-		bool flag = _mobileParty.Position.Distance(v) < Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingNearbyPartyCheckRadius;
+		float num = Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingNearbyPartyCheckRadius;
+		if (targetSettlement.HasPort)
+		{
+			float num2 = (Campaign.Current.Models.MapDistanceModel.GetPortToGateDistanceForSettlement(targetSettlement) - (float)Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromSeaToLand) * 1.1f;
+			if (num2 > num)
+			{
+				num = num2;
+			}
+		}
+		bool flag = _mobileParty.Position.Distance(v) < num;
 		if (flag)
 		{
-			float num = 0f;
-			float num2 = 0f;
+			float num3 = 0f;
+			float num4 = 0f;
 			if (targetSettlement.IsFortification)
 			{
 				if (targetSettlement.SiegeEvent != null)
 				{
 					foreach (PartyBase item in targetSettlement.SiegeEvent.BesiegerCamp.GetInvolvedPartiesForEventType())
 					{
-						num += item.GetCustomStrength(BattleSideEnum.Defender, MapEvent.PowerCalculationContext.PlainBattle);
-						num2 += item.GetCustomStrength(BattleSideEnum.Defender, MapEvent.PowerCalculationContext.SeaBattle);
+						num3 += item.GetCustomStrength(BattleSideEnum.Defender, MapEvent.PowerCalculationContext.PlainBattle);
+						num4 += item.GetCustomStrength(BattleSideEnum.Defender, MapEvent.PowerCalculationContext.SeaBattle);
 					}
 				}
 				else
 				{
-					num = ((targetSettlement.LastAttackerParty.Army != null && targetSettlement.LastAttackerParty.Army.LeaderParty == targetSettlement.LastAttackerParty) ? targetSettlement.LastAttackerParty.Army.EstimatedStrength : targetSettlement.LastAttackerParty.Party.EstimatedStrength);
+					num3 = ((targetSettlement.LastAttackerParty.Army != null && targetSettlement.LastAttackerParty.Army.LeaderParty == targetSettlement.LastAttackerParty) ? targetSettlement.LastAttackerParty.Army.EstimatedStrength : targetSettlement.LastAttackerParty.Party.EstimatedStrength);
 				}
 			}
 			else if (targetSettlement.Party.MapEventSide != null)
 			{
 				MobileParty mobileParty = targetSettlement.Party.MapEventSide.OtherSide.LeaderParty.MobileParty;
-				num = ((mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty) ? mobileParty.Army.EstimatedStrength : mobileParty.Party.EstimatedStrength);
+				num3 = ((mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty) ? mobileParty.Army.EstimatedStrength : mobileParty.Party.EstimatedStrength);
 			}
 			LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(v.ToVec2(), Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingNearbyPartyCheckRadius);
 			MobileParty mobileParty2 = MobileParty.FindNextLocatable(ref data);
-			float num3 = 0f;
-			float num4 = 0f;
 			float num5 = 0f;
 			float num6 = 0f;
 			float num7 = 0f;
 			float num8 = 0f;
+			float num9 = 0f;
+			float num10 = 0f;
 			while (mobileParty2 != null)
 			{
 				if (mobileParty2.AttachedTo == null && ((mobileParty2.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty2.TargetSettlement == targetSettlement) || (mobileParty2.ShortTermBehavior == AiBehavior.EngageParty && mobileParty2.ShortTermTargetParty == targetSettlement.LastAttackerParty)))
 				{
-					float num9 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle);
+					float num11 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle);
 					if (targetSettlement.HasPort)
 					{
-						float num10 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle);
-						num4 += num10;
-						if (mostPowerfulNavalAlly == null || num8 < num10)
+						float num12 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle);
+						num6 += num12;
+						if (mostPowerfulNavalAlly == null || num10 < num12)
 						{
 							mostPowerfulNavalAlly = mobileParty2;
-							num8 = num10;
+							num10 = num12;
 						}
 					}
-					num3 += num9;
-					if (mostPowerfulLandAlly == null || num7 < num9)
+					num5 += num11;
+					if (mostPowerfulLandAlly == null || num9 < num11)
 					{
 						mostPowerfulLandAlly = mobileParty2;
-						num7 = num9;
+						num9 = num11;
 					}
 					if (mobileParty2.IsCurrentlyAtSea)
 					{
-						num6 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
+						num8 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
 					}
 					else
 					{
-						num5 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
+						num7 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
 					}
 				}
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 			}
-			shouldConsiderJoiningNearbyAllyParties = num3 > num || num4 > num2;
+			shouldConsiderJoiningNearbyAllyParties = num5 > num3 || num6 > num4;
 			if (shouldConsiderJoiningNearbyAllyParties)
 			{
-				float num11 = num3 - num;
-				float num12 = num4 - num2;
+				float num13 = num5 - num3;
+				float num14 = num6 - num4;
 				bool flag2 = targetSettlement.Party.MapEventSide != null && !targetSettlement.Party.MapEvent.IsNavalMapEvent;
 				bool flag3 = targetSettlement.Party.MapEventSide != null && targetSettlement.Party.MapEvent.IsNavalMapEvent;
-				if (num11 > 0f && num11 > num12)
+				if (num13 > 0f && num13 > num14)
 				{
 					shouldJoinLandSide = !flag3;
 				}
-				if (num12 > 0f && num12 > num11)
+				if (num14 > 0f && num14 > num13)
 				{
 					shouldJoinLandSide = flag2;
 				}
-				if (shouldJoinLandSide && num5 > num * 1.2f)
+				if (shouldJoinLandSide && num7 > num3 * 1.2f)
 				{
 					shouldEngage = true;
 				}
-				if (!shouldJoinLandSide && num6 > num2 * 1.4f)
+				if (!shouldJoinLandSide && num8 > num4 * 1.4f)
 				{
 					shouldEngage = true;
 				}
@@ -1366,7 +1375,7 @@ public class MobilePartyAi
 				_mobileParty.SetNavigationModeHold();
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1701);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1712);
 				break;
 			case AiBehavior.FleeToPoint:
 			case AiBehavior.FleeToGate:

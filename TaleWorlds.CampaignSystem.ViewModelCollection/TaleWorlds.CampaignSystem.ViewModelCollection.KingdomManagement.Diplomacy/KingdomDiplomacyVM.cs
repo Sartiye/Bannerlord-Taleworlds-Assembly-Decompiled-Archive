@@ -577,7 +577,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 			disabledReason = disabledReason2;
 			return false;
 		}
-		if (!new StartAllianceDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason))
+		if (!new StartAllianceDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason, includeReason: true))
 		{
 			disabledReason = reason;
 			return false;
@@ -593,7 +593,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 			disabledReason = disabledReason2;
 			return false;
 		}
-		if (!new TradeAgreementDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason))
+		if (!new TradeAgreementDecision(Clan.PlayerClan, item.Faction2 as Kingdom).CanMakeDecision(out var reason, includeReason: true))
 		{
 			disabledReason = reason;
 			return false;

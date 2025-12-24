@@ -462,7 +462,7 @@ public class SPInventoryVM : ViewModel
 			case 2:
 				return _currentCharacter.FirstStealthEquipment;
 			default:
-				Debug.FailedAssert("Invalid active equipment type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ActiveEquipment", 519);
+				Debug.FailedAssert("Invalid active equipment type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ActiveEquipment", 517);
 				return null;
 			}
 		}
@@ -3059,6 +3059,7 @@ public class SPInventoryVM : ViewModel
 
 	public SPInventoryVM(InventoryLogic inventoryLogic, bool isInCivilianModeByDefault, Func<WeaponComponentData, ItemObject.ItemUsageSetFlags> getItemUsageSetFlags)
 	{
+		IsSearchAvailable = true;
 		_usageType = InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default;
 		_inventoryLogic = inventoryLogic;
 		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
@@ -3515,7 +3516,7 @@ public class SPInventoryVM : ViewModel
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 642);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 640);
 			return;
 		}
 		IsRefreshed = false;
@@ -3554,7 +3555,7 @@ public class SPInventoryVM : ViewModel
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 692);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 690);
 			return;
 		}
 		IsRefreshed = false;
@@ -4436,7 +4437,7 @@ public class SPInventoryVM : ViewModel
 		case InventoryLogic.InventorySide.StealthEquipment:
 			return Equipment.EquipmentType.Stealth;
 		default:
-			Debug.FailedAssert("Cannot change InventoryLogic EquipmentMode to EquiptmentType", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ChangeIntoEquipmentType", 1893);
+			Debug.FailedAssert("Cannot change InventoryLogic EquipmentMode to EquiptmentType", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ChangeIntoEquipmentType", 1891);
 			return Equipment.EquipmentType.Invalid;
 		}
 	}

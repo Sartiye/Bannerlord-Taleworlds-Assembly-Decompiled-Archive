@@ -275,7 +275,7 @@ public class MakePeaceKingdomDecision : KingdomDecision
 	{
 		if (FactionToMakePeaceWith == Clan.PlayerClan.Kingdom && !Hero.MainHero.Clan.IsUnderMercenaryService)
 		{
-			TextObject textObject = new TextObject("{=1V8f9vRM}A courier bearing a peace offer from the {PROPOSER_HERO_FACTION} has arrived at the court of your realm.");
+			TextObject textObject = new TextObject("{=peaceDecisionText}A courier bearing a peace offer from the {PROPOSER_HERO_FACTION} has arrived at the court of your realm.");
 			textObject.SetTextVariable("PROPOSER_HERO_FACTION", base.ProposerClan.Leader.MapFaction.InformalName);
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new PeaceOfferMapNotification(base.ProposerClan.MapFaction, DailyTributeToBePaid, DailyTributeDurationInDays, textObject));
 			return false;

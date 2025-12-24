@@ -59,7 +59,7 @@ public class DefaultCrimeModel : CrimeModel
 	{
 		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions);
 		int num = faction.Settlements.Count((Settlement x) => x.IsTown && x.Alleys.Any((Alley y) => y.Owner == Hero.MainHero));
-		bonuses.Add((float)num * Campaign.Current.Models.AlleyModel.GetDailyCrimeRatingOfAlley, new TextObject("{=t87T82jq}Owned alleys"));
+		bonuses.Add((float)num * Campaign.Current.Models.AlleyModel.GetDailyCrimeRatingOfAlley, includeDescriptions ? new TextObject("{=t87T82jq}Owned alleys") : null);
 		if (faction.MainHeroCrimeRating.ApproximatelyEqualsTo(0f))
 		{
 			return bonuses;
@@ -67,27 +67,27 @@ public class DefaultCrimeModel : CrimeModel
 		Clan clan = faction as Clan;
 		if (Hero.MainHero.Clan == faction)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : TextObject.GetEmpty());
+			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : null);
 		}
 		else if (faction.IsKingdomFaction && faction.Leader == Hero.MainHero)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : TextObject.GetEmpty());
+			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : null);
 		}
 		else if (Hero.MainHero.MapFaction == faction)
 		{
-			bonuses.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : TextObject.GetEmpty());
+			bonuses.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : null);
 		}
 		else if (clan != null && Hero.MainHero.MapFaction == clan.Kingdom)
 		{
-			bonuses.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : TextObject.GetEmpty());
+			bonuses.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : null);
 		}
 		else if (Hero.MainHero.Clan.IsAtWarWith(faction))
 		{
-			bonuses.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : TextObject.GetEmpty());
+			bonuses.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : null);
 		}
 		else
 		{
-			bonuses.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : TextObject.GetEmpty());
+			bonuses.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : null);
 		}
 		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.WhiteLies, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		return bonuses;

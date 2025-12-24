@@ -2378,9 +2378,9 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public void SetScriptedTargetEntityAndPosition(WeakGameEntity target, WorldPosition position, AISpecialCombatModeFlags additionalFlags = AISpecialCombatModeFlags.None, bool ignoreIfAlreadyAttacking = false)
+	public void SetScriptedTargetEntity(WeakGameEntity target, AISpecialCombatModeFlags additionalFlags = AISpecialCombatModeFlags.None, bool ignoreIfAlreadyAttacking = false)
 	{
-		MBAPI.IMBAgent.SetScriptedTargetEntity(GetPtr(), target.Pointer, ref position, (int)additionalFlags, ignoreIfAlreadyAttacking);
+		MBAPI.IMBAgent.SetScriptedTargetEntity(GetPtr(), target.Pointer, (int)additionalFlags, ignoreIfAlreadyAttacking);
 	}
 
 	public void SetAgentExcludeStateForFaceGroupId(int faceGroupId, bool isExcluded)
@@ -2603,7 +2603,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			return standingPoint.CustomPlayerInteractionDistance;
 		}
-		if (!WalkMode)
+		if (!WalkMode || !MovementMode.HasAnyFlag(AgentMovementMode.Land))
 		{
 			return 1f;
 		}
@@ -3051,7 +3051,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		case BoneBodyPartType.ShoulderRight:
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3160);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3163);
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		}
 	}
@@ -3481,7 +3481,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		if (other == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3671);
+			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3674);
 			return 0f;
 		}
 		return Position.Distance(other.Position);
@@ -3633,7 +3633,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		AgentVisuals.ClearAllWeaponMeshes();
 		Equipment.FillFrom(SpawnEquipment, Origin?.Banner);
 		CheckEquipmentForCapeClothSimulationStateChange();
-		EquipItemsFromSpawnEquipment(neededBatchedItems: true, prepareImmediately: true);
+		EquipItemsFromSpawnEquipment(neededBatchedItems: true, prepareImmediately: true, useFaceCache: false, 0);
 		UpdateAgentProperties();
 		if (!Mission.Current.DoesMissionRequireCivilianEquipment && !GameNetwork.IsClientOrReplay)
 		{
@@ -4419,7 +4419,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	public void EquipItemsFromSpawnEquipment(bool neededBatchedItems, bool prepareImmediately)
+	public void EquipItemsFromSpawnEquipment(bool neededBatchedItems, bool prepareImmediately, bool useFaceCache, int faceCacheID)
 	{
 		Mission.OnEquipItemsFromSpawnEquipmentBegin(this, _creationType);
 		switch (_creationType)
@@ -4450,7 +4450,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 					AttachWeaponToWeaponAux(equipmentIndex, ref weapon, null, ref attachLocalFrame);
 				}
 			}
-			AddSkinMeshes(!neededBatchedItems || prepareImmediately);
+			AddSkinMeshes(!neededBatchedItems || prepareImmediately, useFaceCache, faceCacheID);
 			break;
 		}
 		}
@@ -5287,12 +5287,12 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return GetMissileRangeWithHeightDifferenceAux(Formation.CachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshZ());
 	}
 
-	private void AddSkinMeshes(bool prepareImmediately)
+	private void AddSkinMeshes(bool prepareImmediately, bool useFaceCache, int faceCacheID)
 	{
 		SkinMask skinMeshesMask = SpawnEquipment.GetSkinMeshesMask();
 		bool isFemale = IsFemale && BodyPropertiesValue.Age >= 14f;
-		SkinGenerationParams skinParams = new SkinGenerationParams((int)skinMeshesMask, SpawnEquipment.GetUnderwearType(isFemale), (int)SpawnEquipment.BodyMeshType, (int)SpawnEquipment.HairCoverType, (int)SpawnEquipment.BeardCoverType, (int)SpawnEquipment.BodyDeformType, prepareImmediately, Character.FaceDirtAmount, IsFemale ? 1 : 0, Character.Race, useTranslucency: false, useTesselation: false);
-		AgentVisuals.AddSkinMeshes(skinParams, BodyPropertiesValue, prepareImmediately, prepareImmediately);
+		SkinGenerationParams skinParams = new SkinGenerationParams((int)skinMeshesMask, SpawnEquipment.GetUnderwearType(isFemale), (int)SpawnEquipment.BodyMeshType, (int)SpawnEquipment.HairCoverType, (int)SpawnEquipment.BeardCoverType, (int)SpawnEquipment.BodyDeformType, prepareImmediately, Character.FaceDirtAmount, IsFemale ? 1 : 0, Character.Race, useTranslucency: false, useTesselation: false, faceCacheID);
+		AgentVisuals.AddSkinMeshes(skinParams, BodyPropertiesValue, prepareImmediately, useFaceCache);
 	}
 
 	private void HandleBlow(ref Blow b, in AttackCollisionData collisionData)

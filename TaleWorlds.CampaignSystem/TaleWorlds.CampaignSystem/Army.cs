@@ -703,7 +703,7 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 				}
 				float num4 = distance / (Campaign.MapDiagonalSquared * 0.1f);
 				float num5 = 20f * (1f - num4);
-				float num6 = (settlement2.Position - LeaderParty.Position).Length / (Campaign.MapDiagonalSquared * 0.1f);
+				float num6 = (settlement2.Position.ToVec2() - LeaderParty.Position.ToVec2()).Length / (Campaign.MapDiagonalSquared * 0.1f);
 				float num7 = 5f * (1f - num6);
 				float num8 = num3 + num5 * 0.5f + num7 * 0.1f;
 				if (num8 > num)

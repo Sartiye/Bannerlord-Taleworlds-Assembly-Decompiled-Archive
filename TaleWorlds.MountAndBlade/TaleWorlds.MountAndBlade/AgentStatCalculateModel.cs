@@ -17,6 +17,14 @@ public abstract class AgentStatCalculateModel : MBGameModel<AgentStatCalculateMo
 	{
 	}
 
+	public virtual void InitializeAgentStatsAfterDeploymentFinished(Agent agent)
+	{
+	}
+
+	public virtual void InitializeMissionEquipmentAfterDeploymentFinished(Agent agent)
+	{
+	}
+
 	public abstract void UpdateAgentStats(Agent agent, AgentDrivenProperties agentDrivenProperties);
 
 	public abstract float GetDifficultyModifier();

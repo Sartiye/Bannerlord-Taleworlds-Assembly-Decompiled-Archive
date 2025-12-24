@@ -39,6 +39,8 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	private InputKeyItemVM _secondaryActionInputKey;
 
+	private InputKeyItemVM _tertiaryActionInputKey;
+
 	private bool _isFocusedOnACharacter;
 
 	private bool _isOpen;
@@ -48,6 +50,8 @@ public abstract class PartyTroopManagerVM : ViewModel
 	private bool _isPrimaryActionAvailable;
 
 	private bool _isSecondaryActionAvailable;
+
+	private bool _isTertiaryActionAvailable;
 
 	private PartyTroopManagerItemVM _focusedTroop;
 
@@ -144,6 +148,23 @@ public abstract class PartyTroopManagerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public InputKeyItemVM TertiaryActionInputKey
+	{
+		get
+		{
+			return _tertiaryActionInputKey;
+		}
+		set
+		{
+			if (value != _tertiaryActionInputKey)
+			{
+				_tertiaryActionInputKey = value;
+				OnPropertyChangedWithValue(value, "TertiaryActionInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool IsFocusedOnACharacter
 	{
 		get
@@ -224,6 +245,23 @@ public abstract class PartyTroopManagerVM : ViewModel
 			{
 				_isSecondaryActionAvailable = value;
 				OnPropertyChangedWithValue(value, "IsSecondaryActionAvailable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsTertiaryActionAvailable
+	{
+		get
+		{
+			return _isTertiaryActionAvailable;
+		}
+		set
+		{
+			if (value != _isTertiaryActionAvailable)
+			{
+				_isTertiaryActionAvailable = value;
+				OnPropertyChangedWithValue(value, "IsTertiaryActionAvailable");
 			}
 		}
 	}
@@ -449,6 +487,18 @@ public abstract class PartyTroopManagerVM : ViewModel
 		}
 	}
 
+	public virtual void ExecuteItemPrimaryAction()
+	{
+	}
+
+	public virtual void ExecuteItemSecondaryAction()
+	{
+	}
+
+	public virtual void ExecuteItemTertiaryAction()
+	{
+	}
+
 	public PartyTroopManagerVM(PartyVM partyVM)
 	{
 		_partyVM = partyVM;
@@ -475,6 +525,7 @@ public abstract class PartyTroopManagerVM : ViewModel
 		CancelInputKey.OnFinalize();
 		PrimaryActionInputKey?.OnFinalize();
 		SecondaryActionInputKey?.OnFinalize();
+		TertiaryActionInputKey?.OnFinalize();
 	}
 
 	public virtual void OpenPopUp()
@@ -554,17 +605,20 @@ public abstract class PartyTroopManagerVM : ViewModel
 		{
 			IsPrimaryActionAvailable = false;
 			IsSecondaryActionAvailable = false;
+			IsTertiaryActionAvailable = false;
 		}
 		else if (IsUpgradePopUp)
 		{
 			MBBindingList<UpgradeTargetVM> upgrades = FocusedTroop.PartyCharacter.Upgrades;
 			IsPrimaryActionAvailable = upgrades.Count > 0 && upgrades[0].IsAvailable && !upgrades[0].IsInsufficient;
 			IsSecondaryActionAvailable = upgrades.Count > 1 && upgrades[1].IsAvailable && !upgrades[1].IsInsufficient;
+			IsTertiaryActionAvailable = upgrades.Count > 2 && upgrades[2].IsAvailable && !upgrades[2].IsInsufficient;
 		}
 		else
 		{
-			IsPrimaryActionAvailable = false;
-			IsSecondaryActionAvailable = FocusedTroop.IsTroopRecruitable;
+			IsPrimaryActionAvailable = FocusedTroop.IsTroopRecruitable;
+			IsSecondaryActionAvailable = false;
+			IsTertiaryActionAvailable = false;
 		}
 	}
 
@@ -586,5 +640,10 @@ public abstract class PartyTroopManagerVM : ViewModel
 	public void SetSecondaryActionInputKey(HotKey hotKey)
 	{
 		SecondaryActionInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+	}
+
+	public void SetTertiaryActionInputKey(HotKey hotKey)
+	{
+		TertiaryActionInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
 	}
 }

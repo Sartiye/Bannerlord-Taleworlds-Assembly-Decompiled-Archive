@@ -669,9 +669,9 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 		return null;
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		DestructableComponentRecord destructableComponentRecord = (DestructableComponentRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		HitPoint = destructableComponentRecord.HitPoint;
 		if (destructableComponentRecord.DestructionState != 0)

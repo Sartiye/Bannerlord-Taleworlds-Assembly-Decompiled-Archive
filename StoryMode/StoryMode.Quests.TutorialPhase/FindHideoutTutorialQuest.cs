@@ -292,7 +292,7 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 			.NpcLine(new TextObject("{=jPKIN2r4}One more thing. When you are talking to nobles and other people of importance, make sure you present yourself as someone from a distant but distinguished family.[if:convo_thinking]"))
 			.NpcLine(new TextObject("{=GVMGXfxS}You can use our family name if you like or make up a new one. You will have a better chance of obtaining an audience with nobles and it'll be easier for me to find you by asking around.[if:convo_normal]"))
 			.Consequence(SelectClanName)
-			.NpcLine(new TextObject("{=qIltCuBe}Get on the road now. Once I locate the little ones, I'll come find you.[ib:normal][if:convo_calm_friendly]"))
+			.NpcLine(GameTexts.FindText("find_hideout_quest_brother_conversation_line_3"))
 			.CloseDialog(), this);
 	}
 
@@ -370,6 +370,8 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 	{
 		StringHelpers.SetCharacterProperties("RADAGOS", StoryModeHeroes.Radagos.CharacterObject);
 		StringHelpers.SetCharacterProperties("TACTEOS", StoryModeHeroes.Tacitus.CharacterObject);
+		StringHelpers.SetCharacterProperties("LITTLE_BROTHER", StoryModeHeroes.LittleBrother.CharacterObject);
+		StringHelpers.SetCharacterProperties("LITTLE_SISTER", StoryModeHeroes.LittleSister.CharacterObject);
 		if (Hero.OneToOneConversationHero == StoryModeHeroes.ElderBrother)
 		{
 			return _talkedWithRadagos;
@@ -683,7 +685,7 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 			PlayerEncounter.StartBattle();
 			PlayerEncounter.Update();
 		}
-		CampaignMission.OpenHideoutBattleMission("forest_hideout_003", null);
+		CampaignMission.OpenHideoutBattleMission("forest_hideout_003", null, isTutorial: true);
 	}
 
 	private bool leave_radagos_hideout_condition(MenuCallbackArgs menuCallbackArgs)

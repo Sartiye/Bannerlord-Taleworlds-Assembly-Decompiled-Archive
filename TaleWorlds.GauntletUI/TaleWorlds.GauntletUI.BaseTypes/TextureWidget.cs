@@ -110,6 +110,16 @@ public class TextureWidget : ImageWidget
 		return TextureProvider?.GetProperty(propertyName);
 	}
 
+	protected TObject? GetTextureProviderProperty<TObject>(string propertyName) where TObject : struct
+	{
+		object obj;
+		if ((obj = TextureProvider?.GetProperty(propertyName)) is TObject)
+		{
+			return (TObject)obj;
+		}
+		return null;
+	}
+
 	protected void UpdateTextureWidget()
 	{
 		if (!_isRenderRequestedPreviousFrame || !IsRecursivelyVisible())

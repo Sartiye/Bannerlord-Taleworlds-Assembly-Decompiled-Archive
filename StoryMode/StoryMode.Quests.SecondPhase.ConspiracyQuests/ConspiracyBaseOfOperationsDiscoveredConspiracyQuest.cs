@@ -318,18 +318,26 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 
 	private void OnMissionStarted(IMission mission)
 	{
-		if (Settlement.CurrentSettlement == _hideout && PlayerEncounter.Current != null)
+		if (Settlement.CurrentSettlement != _hideout || PlayerEncounter.Current == null)
 		{
-			HideoutAmbushMissionController missionBehavior = ((Mission)mission).GetMissionBehavior<HideoutAmbushMissionController>();
-			if (missionBehavior != null)
-			{
-				CharacterObject overriddenHideoutBossCharacterObject = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? Campaign.Current.ObjectManager.GetObject<CharacterObject>("anti_imperial_conspiracy_boss") : Campaign.Current.ObjectManager.GetObject<CharacterObject>("imperial_conspiracy_boss"));
-				missionBehavior.SetOverriddenHideoutBossCharacterObject(overriddenHideoutBossCharacterObject);
-			}
-			else
-			{
-				Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 398);
-			}
+			return;
+		}
+		CharacterObject overriddenHideoutBossCharacterObject = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? Campaign.Current.ObjectManager.GetObject<CharacterObject>("anti_imperial_conspiracy_boss") : Campaign.Current.ObjectManager.GetObject<CharacterObject>("imperial_conspiracy_boss"));
+		Mission mission2 = (Mission)mission;
+		HideoutAmbushMissionController missionBehavior = mission2.GetMissionBehavior<HideoutAmbushMissionController>();
+		if (missionBehavior != null)
+		{
+			missionBehavior.SetOverriddenHideoutBossCharacterObject(overriddenHideoutBossCharacterObject);
+			return;
+		}
+		HideoutMissionController missionBehavior2 = mission2.GetMissionBehavior<HideoutMissionController>();
+		if (missionBehavior2 != null)
+		{
+			missionBehavior2.SetOverriddenHideoutBossCharacterObject(overriddenHideoutBossCharacterObject);
+		}
+		else
+		{
+			Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 406);
 		}
 	}
 
@@ -472,9 +480,13 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		{
 			return false;
 		}
-		if (encounteredParty.IsSettlement && encounteredParty.Settlement.IsHideout && encounteredParty.Settlement == _hideout && Mission.Current != null && Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null && CharacterObject.OneToOneConversationCharacter != null)
+		if (encounteredParty.IsSettlement && encounteredParty.Settlement.IsHideout && encounteredParty.Settlement == _hideout && Mission.Current != null && CharacterObject.OneToOneConversationCharacter != null && CharacterObject.OneToOneConversationCharacter.StringId == (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? "anti_imperial_conspiracy_boss" : "imperial_conspiracy_boss"))
 		{
-			return CharacterObject.OneToOneConversationCharacter.StringId == (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? "anti_imperial_conspiracy_boss" : "imperial_conspiracy_boss");
+			if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() == null)
+			{
+				return Mission.Current.GetMissionBehavior<HideoutMissionController>() != null;
+			}
+			return true;
 		}
 		return false;
 	}
@@ -482,7 +494,14 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 	private void bandit_hideout_start_duel_fight_on_consequence()
 	{
 		_dueledWithHideoutBoss = true;
-		Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightDuelMode;
+		if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null)
+		{
+			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightDuelMode;
+		}
+		else
+		{
+			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutMissionController.StartBossFightDuelMode;
+		}
 	}
 
 	private bool bandit_hideout_continue_battle_on_clickable_condition(out TextObject explanation)
@@ -507,7 +526,14 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 	private void bandit_hideout_continue_battle_on_consequence()
 	{
 		_dueledWithHideoutBoss = false;
-		Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightBattleMode;
+		if (Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null)
+		{
+			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutAmbushMissionController.StartBossFightBattleMode;
+		}
+		else
+		{
+			Campaign.Current.ConversationManager.ConversationEndOneShot += HideoutMissionController.StartBossFightBattleMode;
+		}
 	}
 
 	protected override void OnStartQuest()

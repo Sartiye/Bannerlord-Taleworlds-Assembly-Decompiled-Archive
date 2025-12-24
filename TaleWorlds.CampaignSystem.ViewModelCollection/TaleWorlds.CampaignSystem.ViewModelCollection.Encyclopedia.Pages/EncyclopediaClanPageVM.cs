@@ -603,6 +603,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 				num += item.Gold;
 			}
 		}
+		Members.Sort(new HeroAgeComparer(isAscending: false));
 		Banner = new BannerImageIdentifierVM(_faction.Banner, nineGrid: true);
 		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
 		{

@@ -34,51 +34,51 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 
 	private static readonly string _partyIncomeStr = "str_finance_party_income";
 
+	private static readonly string _partyExpensesStr = "str_finance_party_expenses";
+
+	private static readonly string _tributeIncomeStr = "str_finance_tribute_income";
+
+	private static readonly string _tariffTaxStr = "str_finance_tariff_tax";
+
 	private static readonly string _caravanIncomeStr = "str_finance_caravan_income";
 
 	private static readonly string _convoyIncomeStr = "str_finance_convoy_income";
 
-	private static readonly string _projectsIncomeStr = "str_finance_projects_income";
+	private static readonly TextObject _projectsIncomeText = Game.Current.GameTextManager.FindText("str_finance_projects_income");
 
-	private static readonly string _partyExpensesStr = "str_finance_party_expenses";
+	private static readonly TextObject _shopExpenseText = Game.Current.GameTextManager.FindText("str_finance_shop_expense");
 
-	private static readonly string _shopIncomeStr = "str_finance_shop_income";
+	private static readonly TextObject _mercenaryText = Game.Current.GameTextManager.FindText("str_finance_mercenary");
 
-	private static readonly string _shopExpenseStr = "str_finance_shop_expense";
+	private static readonly TextObject _mercenaryExpensesText = Game.Current.GameTextManager.FindText("str_finance_mercenary_expenses");
 
-	private static readonly string _mercenaryStr = "str_finance_mercenary";
+	private static readonly TextObject _tributeExpensesText = Game.Current.GameTextManager.FindText("str_finance_tribute_expenses");
 
-	private static readonly string _mercenaryExpensesStr = "str_finance_mercenary_expenses";
+	private static readonly TextObject _tributeIncomes = Game.Current.GameTextManager.FindText("str_finance_tribute_incomes");
 
-	private static readonly string _tributeExpensesStr = "str_finance_tribute_expenses";
+	private static readonly TextObject _callToWarExpenses = Game.Current.GameTextManager.FindText("str_finance_call_to_war_expenses");
 
-	private static readonly string _tributeIncomeStr = "str_finance_tribute_income";
+	private static readonly TextObject _callToWarIncomes = Game.Current.GameTextManager.FindText("str_finance_call_to_war_incomes");
 
-	private static readonly string _tributeIncomes = "str_finance_tribute_incomes";
+	private static readonly TextObject _settlementIncome = Game.Current.GameTextManager.FindText("str_finance_settlement_income");
 
-	private static readonly string _callToWarExpenses = "str_finance_call_to_war_expenses";
+	private static readonly TextObject _mainPartywageText = Game.Current.GameTextManager.FindText("str_finance_main_party_wage");
 
-	private static readonly string _callToWarIncomes = "str_finance_call_to_war_incomes";
+	private static readonly TextObject _caravanAndPartyIncome = Game.Current.GameTextManager.FindText("str_finance_caravan_and_party_income");
 
-	private static readonly string _settlementIncome = "str_finance_settlement_income";
+	private static readonly TextObject _garrisonAndPartyExpenses = Game.Current.GameTextManager.FindText("str_finance_garrison_and_party_expenses");
 
-	private static readonly string _mainPartywageStr = "str_finance_main_party_wage";
+	private static readonly TextObject _debtText = Game.Current.GameTextManager.FindText("str_finance_debt");
 
-	private static readonly string _caravanAndPartyIncome = "str_finance_caravan_and_party_income";
+	private static readonly TextObject _kingdomSupportText = Game.Current.GameTextManager.FindText("str_finance_kingdom_support");
 
-	private static readonly string _garrisonAndPartyExpenses = "str_finance_garrison_and_party_expenses";
+	private static readonly TextObject _kingdomBudgetText = Game.Current.GameTextManager.FindText("str_finance_kingdom_budget");
 
-	private static readonly string _debtStr = "str_finance_debt";
+	private static readonly TextObject _autoRecruitmentText = Game.Current.GameTextManager.FindText("str_finance_auto_recruitment");
 
-	private static readonly string _kingdomSupport = "str_finance_kingdom_support";
+	private static readonly TextObject _alleyText = Game.Current.GameTextManager.FindText("str_finance_alley");
 
-	private static readonly string _kingdomBudgetStr = "str_finance_kingdom_budget";
-
-	private static readonly string _tariffTaxStr = "str_finance_tariff_tax";
-
-	private static readonly string _autoRecruitmentStr = "str_finance_auto_recruitment";
-
-	private static readonly string _alley = "str_finance_alley";
+	private static readonly TextObject _shopIncomeText = Game.Current.GameTextManager.FindText("str_finance_shop_income");
 
 	private const int PartyGoldIncomeThreshold = 10000;
 
@@ -160,7 +160,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			{
 				clan.Kingdom.KingdomBudgetWallet += num;
 			}
-			goldChange.Add(-num, Game.Current.GameTextManager.FindText(_kingdomBudgetStr));
+			goldChange.Add(-num, _kingdomBudgetText);
 		}
 		if (clan.DebtToKingdom > 0)
 		{
@@ -186,7 +186,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				num -= ownedWorkshop.Expense;
 			}
 		}
-		goldChange.Add(num, Game.Current.GameTextManager.FindText(_shopExpenseStr));
+		goldChange.Add(num, _shopExpenseText);
 	}
 
 	public override ExplainedNumber CalculateClanExpenses(Clan clan, bool includeDescriptions = false, bool applyWithdrawals = false, bool includeDetails = false)
@@ -206,7 +206,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				num = MathF.Min(num, (int)((float)clan.Gold + goldChange.ResultNumber));
 				clan.DebtToKingdom -= num;
 			}
-			goldChange.Add(-num, Game.Current.GameTextManager.FindText(_debtStr));
+			goldChange.Add(-num, _debtText);
 		}
 	}
 
@@ -304,7 +304,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		if (kingdom.MercenaryWallet < 0)
 		{
 			int num2 = (int)((float)(-kingdom.MercenaryWallet) * num);
-			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num2, Game.Current.GameTextManager.FindText(_mercenaryExpensesStr));
+			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num2, _mercenaryExpensesText);
 			if (applyWithdrawals)
 			{
 				kingdom.MercenaryWallet += num2;
@@ -323,7 +323,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		if (kingdom.TributeWallet < 0)
 		{
 			int num2 = (int)((float)(-kingdom.TributeWallet) * num);
-			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num2, Game.Current.GameTextManager.FindText(_tributeExpensesStr));
+			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num2, _tributeExpensesText);
 			if (applyWithdrawals)
 			{
 				kingdom.TributeWallet += num2;
@@ -345,7 +345,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				num3 = MathF.Max(0, num4 - 5000);
 				clan.DebtToKingdom += num2 - num3;
 			}
-			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num3, Game.Current.GameTextManager.FindText(_callToWarExpenses));
+			ApplyShareForExpenses(clan, ref goldChange, applyWithdrawals, num3, _callToWarExpenses);
 			if (applyWithdrawals)
 			{
 				kingdom.CallToWarWallet += num2;
@@ -353,7 +353,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		}
 	}
 
-	private static void ApplyShareForExpenses(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, int expenseShare, TextObject mercenaryExpensesStr)
+	private static void ApplyShareForExpenses(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, int expenseShare, TextObject mercenaryExpensesText)
 	{
 		if (applyWithdrawals)
 		{
@@ -365,7 +365,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				clan.DebtToKingdom += num2;
 			}
 		}
-		goldChange.Add(-expenseShare, mercenaryExpensesStr);
+		goldChange.Add(-expenseShare, mercenaryExpensesText);
 	}
 
 	private void AddSettlementIncome(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
@@ -376,9 +376,18 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			ExplainedNumber explainedNumber2 = Campaign.Current.Models.SettlementTaxModel.CalculateTownTax(fief);
 			ExplainedNumber explainedNumber3 = Campaign.Current.Models.ClanFinanceModel.CalculateTownIncomeFromTariffs(clan, fief, applyWithdrawals);
 			int num = Campaign.Current.Models.ClanFinanceModel.CalculateTownIncomeFromProjects(fief);
-			explainedNumber.Add((int)explainedNumber2.ResultNumber, Game.Current.GameTextManager.FindText(_townTaxStr), fief.Name);
-			explainedNumber.Add((int)explainedNumber3.ResultNumber, Game.Current.GameTextManager.FindText(_tariffTaxStr), fief.Name);
-			explainedNumber.Add(num, Game.Current.GameTextManager.FindText(_projectsIncomeStr));
+			if (explainedNumber.IncludeDescriptions)
+			{
+				explainedNumber.Add((int)explainedNumber2.ResultNumber, Game.Current.GameTextManager.FindText(_townTaxStr), fief.Name);
+				explainedNumber.Add((int)explainedNumber3.ResultNumber, Game.Current.GameTextManager.FindText(_tariffTaxStr), fief.Name);
+				explainedNumber.Add(num, _projectsIncomeText);
+			}
+			else
+			{
+				explainedNumber.Add((int)explainedNumber2.ResultNumber);
+				explainedNumber.Add((int)explainedNumber3.ResultNumber);
+				explainedNumber.Add(num);
+			}
 			foreach (Village village in fief.Villages)
 			{
 				int num2 = CalculateVillageIncome(clan, village, applyWithdrawals);
@@ -387,11 +396,11 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		}
 		if (!includeDetails)
 		{
-			goldChange.Add(explainedNumber.ResultNumber, Game.Current.GameTextManager.FindText(_settlementIncome));
+			goldChange.Add(explainedNumber.ResultNumber, _settlementIncome);
 		}
 		else
 		{
-			goldChange.AddFromExplainedNumber(explainedNumber, Game.Current.GameTextManager.FindText(_settlementIncome));
+			goldChange.AddFromExplainedNumber(explainedNumber, _settlementIncome);
 		}
 	}
 
@@ -474,7 +483,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			{
 				clan.Kingdom.MercenaryWallet -= num;
 			}
-			goldChange.Add(num, Game.Current.GameTextManager.FindText(_mercenaryStr));
+			goldChange.Add(num, _mercenaryText);
 		}
 	}
 
@@ -488,7 +497,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		{
 			clan.Kingdom.KingdomBudgetWallet -= num2;
 		}
-		goldChange.Add(num2, Game.Current.GameTextManager.FindText(_kingdomSupport));
+		goldChange.Add(num2, _kingdomSupportText);
 	}
 
 	private void AddPlayerClanIncomeFromOwnedAlleys(ref ExplainedNumber goldChange)
@@ -498,7 +507,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		{
 			num += Campaign.Current.Models.AlleyModel.GetDailyIncomeOfAlley(ownedAlley);
 		}
-		goldChange.Add(num, Game.Current.GameTextManager.FindText(_alley));
+		goldChange.Add(num, _alleyText);
 	}
 
 	private void AddIncomeFromTribute(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
@@ -540,11 +549,11 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		}
 		if (!includeDetails)
 		{
-			goldChange.Add(explainedNumber.ResultNumber, Game.Current.GameTextManager.FindText(_tributeIncomes));
+			goldChange.Add(explainedNumber.ResultNumber, _tributeIncomes);
 		}
 		else
 		{
-			goldChange.AddFromExplainedNumber(explainedNumber, Game.Current.GameTextManager.FindText(_tributeIncomes));
+			goldChange.AddFromExplainedNumber(explainedNumber, _tributeIncomes);
 		}
 	}
 
@@ -564,7 +573,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				CampaignEventDispatcher.Instance.OnPlayerEarnedGoldFromAsset(AssetIncomeType.TributesEarned, num2);
 			}
 		}
-		goldChange.Add(num2, Game.Current.GameTextManager.FindText(_callToWarIncomes));
+		goldChange.Add(num2, _callToWarIncomes);
 	}
 
 	private void AddIncomeFromParties(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
@@ -602,11 +611,11 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		}
 		if (!includeDetails)
 		{
-			goldChange.Add(explainedNumber.ResultNumber, Game.Current.GameTextManager.FindText(_caravanAndPartyIncome));
+			goldChange.Add(explainedNumber.ResultNumber, _caravanAndPartyIncome);
 		}
 		else
 		{
-			goldChange.AddFromExplainedNumber(explainedNumber, Game.Current.GameTextManager.FindText(_caravanAndPartyIncome));
+			goldChange.AddFromExplainedNumber(explainedNumber, _caravanAndPartyIncome);
 		}
 	}
 
@@ -644,7 +653,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(0f, goldChange.IncludeDescriptions);
 		int num = AddExpenseFromLeaderParty(clan, goldChange, applyWithdrawals);
-		explainedNumber.Add(num, Game.Current.GameTextManager.FindText(_mainPartywageStr));
+		explainedNumber.Add(num, _mainPartywageText);
 		foreach (Hero aliveLord in clan.AliveLords)
 		{
 			foreach (CaravanPartyComponent ownedCaravan in aliveLord.OwnedCaravans)
@@ -652,7 +661,14 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				if (ownedCaravan.MobileParty.IsActive && ownedCaravan.MobileParty.LeaderHero != clan.Leader)
 				{
 					int num2 = AddPartyExpense(ownedCaravan.MobileParty, clan, goldChange, applyWithdrawals);
-					explainedNumber.Add(num2, Game.Current.GameTextManager.FindText(_partyExpensesStr), ownedCaravan.Name);
+					if (explainedNumber.IncludeDescriptions)
+					{
+						explainedNumber.Add(num2, Game.Current.GameTextManager.FindText(_partyExpensesStr), ownedCaravan.Name);
+					}
+					else
+					{
+						explainedNumber.Add(num2);
+					}
 				}
 			}
 		}
@@ -661,7 +677,14 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			foreach (CaravanPartyComponent ownedCaravan2 in companion.OwnedCaravans)
 			{
 				int num3 = AddPartyExpense(ownedCaravan2.MobileParty, clan, goldChange, applyWithdrawals);
-				explainedNumber.Add(num3, Game.Current.GameTextManager.FindText(_partyExpensesStr), ownedCaravan2.Name);
+				if (explainedNumber.IncludeDescriptions)
+				{
+					explainedNumber.Add(num3, Game.Current.GameTextManager.FindText(_partyExpensesStr), ownedCaravan2.Name);
+				}
+				else
+				{
+					explainedNumber.Add(num3);
+				}
 			}
 		}
 		foreach (WarPartyComponent warPartyComponent in clan.WarPartyComponents)
@@ -669,7 +692,14 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			if (warPartyComponent.MobileParty.IsActive && warPartyComponent.MobileParty.LeaderHero != clan.Leader)
 			{
 				int num4 = AddPartyExpense(warPartyComponent.MobileParty, clan, goldChange, applyWithdrawals);
-				explainedNumber.Add(num4, Game.Current.GameTextManager.FindText(_partyExpensesStr), warPartyComponent.Name);
+				if (explainedNumber.IncludeDescriptions)
+				{
+					explainedNumber.Add(num4, Game.Current.GameTextManager.FindText(_partyExpensesStr), warPartyComponent.Name);
+				}
+				else
+				{
+					explainedNumber.Add(num4);
+				}
 			}
 		}
 		foreach (Town fief in clan.Fiefs)
@@ -677,18 +707,25 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 			if (fief.GarrisonParty != null && fief.GarrisonParty.IsActive)
 			{
 				int num5 = AddPartyExpense(fief.GarrisonParty, clan, goldChange, applyWithdrawals);
-				TextObject textObject = new TextObject("{=fsTBcLvA}{SETTLEMENT} Garrison");
-				textObject.SetTextVariable("SETTLEMENT", fief.Name);
-				explainedNumber.Add(num5, Game.Current.GameTextManager.FindText(_partyExpensesStr), textObject);
+				if (explainedNumber.IncludeDescriptions)
+				{
+					TextObject textObject = new TextObject("{=fsTBcLvA}{SETTLEMENT} Garrison");
+					textObject.SetTextVariable("SETTLEMENT", fief.Name);
+					explainedNumber.Add(num5, Game.Current.GameTextManager.FindText(_partyExpensesStr), textObject);
+				}
+				else
+				{
+					explainedNumber.Add(num5);
+				}
 			}
 		}
 		if (!includeDetails)
 		{
-			goldChange.Add(explainedNumber.ResultNumber, Game.Current.GameTextManager.FindText(_garrisonAndPartyExpenses));
+			goldChange.Add(explainedNumber.ResultNumber, _garrisonAndPartyExpenses);
 		}
 		else
 		{
-			goldChange.AddFromExplainedNumber(explainedNumber, Game.Current.GameTextManager.FindText(_garrisonAndPartyExpenses));
+			goldChange.AddFromExplainedNumber(explainedNumber, _garrisonAndPartyExpenses);
 		}
 	}
 
@@ -699,7 +736,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		{
 			clan.AutoRecruitmentExpenses -= num;
 		}
-		goldChange.Add(-num, Game.Current.GameTextManager.FindText(_autoRecruitmentStr));
+		goldChange.Add(-num, _autoRecruitmentText);
 	}
 
 	private int AddExpenseFromLeaderParty(Clan clan, ExplainedNumber goldChange, bool applyWithdrawals)
@@ -785,7 +822,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				}
 			}
 		}
-		goldChange.Add(num, Game.Current.GameTextManager.FindText(_caravanIncomeStr));
+		goldChange.Add(num, goldChange.IncludeDescriptions ? Game.Current.GameTextManager.FindText(_caravanIncomeStr) : null);
 		CalculateHeroIncomeFromWorkshops(hero, ref goldChange, applyWithdrawals);
 		if (hero.CurrentSettlement == null)
 		{
@@ -821,7 +858,7 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 				num2++;
 			}
 		}
-		goldChange.Add(num, Game.Current.GameTextManager.FindText(_shopIncomeStr));
+		goldChange.Add(num, _shopIncomeText);
 		if (hero.Clan != null && (hero.Clan.Leader?.GetPerkValue(DefaultPerks.Trade.ArtisanCommunity) ?? false) && applyWithdrawals && num2 > 0)
 		{
 			hero.Clan.AddRenown((float)num2 * DefaultPerks.Trade.ArtisanCommunity.PrimaryBonus);

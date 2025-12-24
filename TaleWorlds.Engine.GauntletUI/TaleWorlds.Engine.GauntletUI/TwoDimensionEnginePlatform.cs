@@ -36,9 +36,9 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 		((ITwoDimensionPlatform)this).ResetScissors();
 	}
 
-	private Material GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture, bool useCustomMesh, bool useOverlayTextureAlphaAsMask)
+	private WeakMaterial GetOrCreateMaterial(Texture mainTexture, Texture overlayTexture, bool useCustomMesh, bool useOverlayTextureAlphaAsMask)
 	{
-		Material orCreateMaterial = _view.GetOrCreateMaterial(mainTexture, overlayTexture);
+		WeakMaterial orCreateMaterial = _view.GetOrCreateMaterial(mainTexture, overlayTexture);
 		orCreateMaterial.SetTexture(Material.MBTextureType.DiffuseMap, mainTexture);
 		if (overlayTexture != null)
 		{
@@ -86,7 +86,7 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 			Debug.FailedAssert("Trying to render a released texture", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\TwoDimensionEnginePlatform.cs", "DrawImage", 100);
 			return;
 		}
-		Material material2 = null;
+		WeakMaterial weakMaterial = WeakMaterial.Invalid;
 		MatrixFrame cachedVisualMatrixFrame = imageDrawObject.Rectangle.GetCachedVisualMatrixFrame();
 		Vec2 zero = Vec2.Zero;
 		Vec2 zero2 = Vec2.Zero;
@@ -98,7 +98,7 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 				Debug.FailedAssert("Trying to render a released texture", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine.GauntletUI\\TwoDimensionEnginePlatform.cs", "DrawImage", 117);
 				return;
 			}
-			material2 = GetOrCreateMaterial(texture2, texture3, useCustomMesh: true, material.UseOverlayAlphaAsMask);
+			weakMaterial = GetOrCreateMaterial(texture2, texture3, useCustomMesh: true, material.UseOverlayAlphaAsMask);
 			Vector2 visualScale = imageDrawObject.Rectangle.GetVisualScale();
 			float num = 1f / Mathf.Abs(visualScale.X);
 			float num2 = 1f / Mathf.Abs(visualScale.Y);
@@ -107,9 +107,9 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 			zero2.x = material.OverlayXOffset * num;
 			zero2.y = material.OverlayYOffset * num2;
 		}
-		if (material2 == null)
+		if (weakMaterial == WeakMaterial.Invalid)
 		{
-			material2 = GetOrCreateMaterial(texture2, null, useCustomMesh: true, useOverlayTextureAlphaAsMask: false);
+			weakMaterial = GetOrCreateMaterial(texture2, null, useCustomMesh: true, useOverlayTextureAlphaAsMask: false);
 		}
 		uint color = material.Color.ToUnsignedInteger();
 		float colorFactor = material.ColorFactor;
@@ -152,7 +152,7 @@ public class TwoDimensionEnginePlatform : ITwoDimensionPlatform
 		meshDrawData.OverlayOffset = zero2;
 		if (!MBDebug.DisableAllUI)
 		{
-			_view.CreateMeshFromDescription(material2, meshDrawData);
+			_view.CreateMeshFromDescription(weakMaterial, meshDrawData);
 		}
 	}
 

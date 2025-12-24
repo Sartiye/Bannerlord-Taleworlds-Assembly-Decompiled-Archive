@@ -6,11 +6,14 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultVillageProductionCalculatorModel : VillageProductionCalculatorModel
 {
+	private readonly TextObject _cultureEffect = GameTexts.FindText("str_culture");
+
 	public override ExplainedNumber CalculateDailyProductionAmount(Village village, ItemObject item)
 	{
 		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
@@ -51,11 +54,11 @@ public class DefaultVillageProductionCalculatorModel : VillageProductionCalculat
 				}
 				if ((item.ItemCategory == DefaultItemCategories.Sheep || item.ItemCategory == DefaultItemCategories.Cow || item.ItemCategory == DefaultItemCategories.WarHorse || item.ItemCategory == DefaultItemCategories.Horse || item.ItemCategory == DefaultItemCategories.PackAnimal) && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitAnimalProductionFeat))
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.KhuzaitAnimalProductionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+					bonuses.AddFactor(DefaultCulturalFeats.KhuzaitAnimalProductionFeat.EffectBonus, _cultureEffect);
 				}
 				if (item.ItemCategory == DefaultItemCategories.Grain && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.SturgianGrainProductionFeat))
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.SturgianGrainProductionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+					bonuses.AddFactor(DefaultCulturalFeats.SturgianGrainProductionFeat.EffectBonus, _cultureEffect);
 				}
 				if (village.Bound.IsFortification)
 				{
@@ -63,7 +66,7 @@ public class DefaultVillageProductionCalculatorModel : VillageProductionCalculat
 				}
 				if (village.Bound.IsCastle && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.VlandianCastleVillageProductionFeat))
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.VlandianCastleVillageProductionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+					bonuses.AddFactor(DefaultCulturalFeats.VlandianCastleVillageProductionFeat.EffectBonus, _cultureEffect);
 				}
 			}
 		}

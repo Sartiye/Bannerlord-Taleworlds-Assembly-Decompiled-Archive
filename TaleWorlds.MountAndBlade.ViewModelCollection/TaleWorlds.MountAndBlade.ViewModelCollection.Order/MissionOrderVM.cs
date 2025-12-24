@@ -106,9 +106,9 @@ public class MissionOrderVM : ViewModel
 
 	private bool _isAnyOrderSetActive;
 
-	private bool _useAlternativeFormationLayout;
-
 	private string _returnText;
+
+	private bool _useAlternativeFormationLayout;
 
 	public CursorStates CursorState
 	{
@@ -351,23 +351,6 @@ public class MissionOrderVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool UseAlternativeFormationLayout
-	{
-		get
-		{
-			return _useAlternativeFormationLayout;
-		}
-		set
-		{
-			if (value != _useAlternativeFormationLayout)
-			{
-				_useAlternativeFormationLayout = value;
-				OnPropertyChangedWithValue(value, "UseAlternativeFormationLayout");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public string ReturnText
 	{
 		get
@@ -380,6 +363,23 @@ public class MissionOrderVM : ViewModel
 			{
 				_returnText = value;
 				OnPropertyChangedWithValue(value, "ReturnText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool UseAlternativeFormationLayout
+	{
+		get
+		{
+			return _useAlternativeFormationLayout;
+		}
+		set
+		{
+			if (value != _useAlternativeFormationLayout)
+			{
+				_useAlternativeFormationLayout = value;
+				OnPropertyChangedWithValue(value, "UseAlternativeFormationLayout");
 			}
 		}
 	}
@@ -1034,6 +1034,22 @@ public class MissionOrderVM : ViewModel
 		_callbacks.RefreshVisuals();
 	}
 
+	public void ExecuteSelectHighlightedFormation()
+	{
+		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
+		if (orderTroopItemVM != null)
+		{
+			if (orderTroopItemVM.IsSelected && TroopController.TroopList.Count((OrderTroopItemVM x) => x.IsSelected) == 1)
+			{
+				TroopController.SelectAllFormations();
+			}
+			else
+			{
+				OnTroopFormationSelected(orderTroopItemVM.FormationIndex);
+			}
+		}
+	}
+
 	public void OnTroopHighlightSelection(bool isDirectionLeft)
 	{
 		if (!CheckCanBeOpened(displayMessage: true) || TroopController.TroopList.Count <= 0)
@@ -1060,22 +1076,6 @@ public class MissionOrderVM : ViewModel
 		else
 		{
 			TroopController.TroopList[0].IsSelectionHighlightActive = true;
-		}
-	}
-
-	public void ExecuteSelectHighlightedFormation()
-	{
-		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
-		if (orderTroopItemVM != null)
-		{
-			if (orderTroopItemVM.IsSelected && TroopController.TroopList.Count((OrderTroopItemVM x) => x.IsSelected) == 1)
-			{
-				TroopController.SelectAllFormations();
-			}
-			else
-			{
-				OnTroopFormationSelected(orderTroopItemVM.FormationIndex);
-			}
 		}
 	}
 

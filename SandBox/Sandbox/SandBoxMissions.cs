@@ -637,7 +637,7 @@ public static class SandBoxMissions
 	}
 
 	[MissionMethod]
-	public static Mission OpenHideoutBattleMission(string scene, FlattenedTroopRoster playerTroops)
+	public static Mission OpenHideoutBattleMission(string scene, FlattenedTroopRoster playerTroops, bool isTutorial)
 	{
 		List<MobileParty> list = new List<MobileParty>();
 		foreach (MapEventParty item in MapEvent.PlayerMapEvent.PartiesOnSide(BattleSideEnum.Defender))
@@ -647,12 +647,12 @@ public static class SandBoxMissions
 				list.Add(item.Party.MobileParty);
 			}
 		}
+		string sceneLevels = (isTutorial ? "level_1" : "level_2");
 		int firstPhaseEnemySideTroopCount;
 		FlattenedTroopRoster banditPriorityList = MapEventHelper.GetPriorityListForHideoutMission(list, out firstPhaseEnemySideTroopCount);
-		FlattenedTroopRoster playerPriorityList = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty), includePlayer: true).ToFlattenedRoster();
+		FlattenedTroopRoster playerPriorityList = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty, isAssault: true), includePlayer: true).ToFlattenedRoster();
 		int firstPhasePlayerSideTroopCount = playerPriorityList.Count();
-		MissionInitializerRecord rec = CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, DecalAtlasGroup.Town);
-		rec.DisableCorpseFadeOut = true;
+		MissionInitializerRecord rec = CreateSandBoxMissionInitializerRecord(scene, sceneLevels, doNotUseLoadingScreen: false, DecalAtlasGroup.Town);
 		return MissionState.OpenNew("HideoutBattle", rec, delegate
 		{
 			IMissionTroopSupplier[] suppliers = new IMissionTroopSupplier[2]
@@ -690,14 +690,14 @@ public static class SandBoxMissions
 	[MissionMethod(UsableByEditor = true)]
 	public static Mission OpenHideoutAmbushMission(string sceneName, FlattenedTroopRoster playerTroops, Location location)
 	{
-		FlattenedTroopRoster priorAllyTroops = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty), includePlayer: true).ToFlattenedRoster();
+		FlattenedTroopRoster priorAllyTroops = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty, isAssault: false), includePlayer: true).ToFlattenedRoster();
 		MissionInitializerRecord missionInitializerRecord = new MissionInitializerRecord(sceneName);
 		missionInitializerRecord.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
 		missionInitializerRecord.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
 		missionInitializerRecord.PlayingInCampaignMode = Campaign.Current.GameMode == CampaignGameMode.Campaign;
 		missionInitializerRecord.AtmosphereOnCampaign = ((Campaign.Current.GameMode == CampaignGameMode.Campaign) ? Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position) : AtmosphereInfo.GetInvalidAtmosphereInfo());
 		missionInitializerRecord.TerrainType = (int)((Campaign.Current.MapSceneWrapper != null) ? Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.CurrentNavigationFace) : ((TerrainType)0));
-		missionInitializerRecord.SceneLevels = "";
+		missionInitializerRecord.SceneLevels = "level_1";
 		missionInitializerRecord.DoNotUseLoadingScreen = false;
 		missionInitializerRecord.DisableCorpseFadeOut = true;
 		missionInitializerRecord.DecalAtlasGroup = 3;
@@ -993,7 +993,7 @@ public static class SandBoxMissions
 	[MissionMethod]
 	public static Mission OpenMeetingMission(string scene, CharacterObject character)
 	{
-		Debug.FailedAssert("This mission was broken", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\SandBoxMissions.cs", "OpenMeetingMission", 1334);
+		Debug.FailedAssert("This mission was broken", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\SandBoxMissions.cs", "OpenMeetingMission", 1335);
 		return MissionState.OpenNew("Conversation", CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[5]
 		{
 			new CampaignMissionComponent(),

@@ -48,6 +48,7 @@ public class CustomBattleViews
 		obj.Add(new MissionCustomBattlePreloadView());
 		obj.Add(ViewCreator.CreateMissionOrderOfBattleUIHandler(mission, new OrderOfBattleVM()));
 		obj.Add(ViewCreator.CreateMissionObjectiveView(mission));
+		obj.Add(new MissionFaceCacheView());
 		return obj.ToArray();
 	}
 

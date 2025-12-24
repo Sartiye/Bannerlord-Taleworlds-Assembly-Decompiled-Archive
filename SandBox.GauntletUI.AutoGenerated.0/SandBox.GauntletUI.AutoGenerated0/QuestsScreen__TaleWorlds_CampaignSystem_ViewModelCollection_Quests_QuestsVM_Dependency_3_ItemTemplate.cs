@@ -119,6 +119,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		base.SuggestedHeight = 91f;
 		base.NormalItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active");
 		base.MainStoryLineItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active.MainStory");
+		base.NavalStorylineItemBrush = base.Context.GetBrush("Quest.LeftPanel.QuestButton.Active.NavalMainStory");
 		base.ButtonType = ButtonType.Radio;
 		base.QuestDateText = _widget_1;
 		base.QuestDateXOffset = -3;
@@ -340,6 +341,9 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 	{
 		switch (propertyName)
 		{
+		case "IsNavalStorylineQuest":
+			_datasource_Root.IsNavalQuest = _widget.IsNavalStorylineQuest;
+			break;
 		case "IsCompleted":
 			_datasource_Root.IsCompleted = _widget.IsCompleted;
 			break;
@@ -779,6 +783,9 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 	{
 		switch (propertyName)
 		{
+		case "IsNavalQuest":
+			_widget.IsNavalStorylineQuest = _datasource_Root.IsNavalQuest;
+			break;
 		case "IsCompleted":
 			_widget.IsCompleted = _datasource_Root.IsCompleted;
 			break;
@@ -910,6 +917,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 			_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.IsNavalStorylineQuest = _datasource_Root.IsNavalQuest;
 			_widget.IsCompleted = _datasource_Root.IsCompleted;
 			_widget.IsRemainingDaysHidden = _datasource_Root.IsRemainingDaysHidden;
 			_widget.IsSelected = _datasource_Root.IsSelected;

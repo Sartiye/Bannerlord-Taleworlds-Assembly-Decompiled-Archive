@@ -3127,7 +3127,7 @@ public class CharacterCreationCampaignBehavior : CampaignBehaviorBase, ICharacte
 		SkillObject[] affectedSkills = new SkillObject[2]
 		{
 			DefaultSkills.Polearm,
-			DefaultSkills.Bow
+			DefaultSkills.Athletics
 		};
 		args.SetAffectedSkills(affectedSkills);
 		args.SetFocusToSkills(_focusToAdd);

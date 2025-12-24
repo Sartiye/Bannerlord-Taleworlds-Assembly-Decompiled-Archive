@@ -107,7 +107,9 @@ public static class BannerlordConfig
 
 	public const float DefaultFriendlyTroopsBannerOpacity = 1f;
 
-	public const bool DefaultAlwaysShowFriendlyTroopBanners = false;
+	public const int DefaultAlwaysShowFriendlyTroopBannersType = 1;
+
+	public const bool DefaultShowFormationDistances = false;
 
 	public const bool DefaultReportDamage = true;
 
@@ -222,7 +224,7 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 389);
+					Debug.FailedAssert("Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 390);
 				}
 				MBTextManager.LocalizationDebugMode = NativeConfig.LocalizationDebugMode;
 			}
@@ -250,7 +252,7 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Voice Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 416);
+					Debug.FailedAssert("Voice Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 417);
 				}
 			}
 		}
@@ -376,8 +378,12 @@ public static class BannerlordConfig
 	public static float FriendlyTroopsBannerOpacity { get; set; } = 1f;
 
 
+	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
+	public static int AlwaysShowFriendlyTroopBannersType { get; set; } = 1;
+
+
 	[ConfigPropertyUnbounded]
-	public static bool AlwaysShowFriendlyTroopBanners { get; set; } = false;
+	public static bool ShowFormationDistances { get; set; } = false;
 
 
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]

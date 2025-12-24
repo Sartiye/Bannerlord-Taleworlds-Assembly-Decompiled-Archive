@@ -11,19 +11,19 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultSettlementFoodModel : SettlementFoodModel
 {
-	private static readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
+	private readonly TextObject ProsperityText = GameTexts.FindText("str_prosperity");
 
-	private static readonly TextObject GarrisonText = GameTexts.FindText("str_garrison");
+	private readonly TextObject GarrisonText = GameTexts.FindText("str_garrison");
 
-	private static readonly TextObject LandsAroundSettlementText = GameTexts.FindText("str_lands_around_settlement");
+	private readonly TextObject LandsAroundSettlementText = GameTexts.FindText("str_lands_around_settlement");
 
-	private static readonly TextObject NormalVillagesText = GameTexts.FindText("str_normal_villages");
+	private readonly TextObject NormalVillagesText = GameTexts.FindText("str_normal_villages");
 
-	private static readonly TextObject RaidedVillagesText = GameTexts.FindText("str_raided_villages");
+	private readonly TextObject RaidedVillagesText = GameTexts.FindText("str_raided_villages");
 
-	private static readonly TextObject VillagesUnderSiegeText = GameTexts.FindText("str_villages_under_siege");
+	private readonly TextObject VillagesUnderSiegeText = GameTexts.FindText("str_villages_under_siege");
 
-	private static readonly TextObject FoodBoughtByCiviliansText = GameTexts.FindText("str_food_bought_by_civilians");
+	private readonly TextObject FoodBoughtByCiviliansText = GameTexts.FindText("str_food_bought_by_civilians");
 
 	private const int FoodProductionPerVillage = 10;
 
@@ -90,8 +90,8 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 			}
 		}
 		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions);
-		explainedNumber.AddFromExplainedNumber(bonuses, TextObject.GetEmpty());
-		explainedNumber.SubtractFromExplainedNumber(bonuses2, TextObject.GetEmpty());
+		explainedNumber.AddFromExplainedNumber(bonuses, null);
+		explainedNumber.SubtractFromExplainedNumber(bonuses2, null);
 		GetSettlementFoodChangeDueToIssues(town, ref explainedNumber);
 		return explainedNumber;
 	}

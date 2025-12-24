@@ -145,26 +145,66 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 		}
 		else
 		{
-			if (!Input.IsGamepadActive || !_gauntletLayer.Input.IsGameKeyReleased(39))
+			if (!Input.IsGamepadActive)
 			{
 				return;
 			}
-			PartyRecruitTroopVM recruitPopUp = _dataSource.RecruitPopUp;
-			if (recruitPopUp != null && recruitPopUp.IsOpen && _dataSource.RecruitPopUp.FocusedTroop != null)
+			if (_gauntletLayer.Input.IsHotKeyPressed("PopupItemPrimaryAction"))
 			{
-				_dataSource.RecruitPopUp.FocusedTroop.PartyCharacter.ExecuteOpenTroopEncyclopedia();
-				return;
-			}
-			PartyUpgradeTroopVM upgradePopUp = _dataSource.UpgradePopUp;
-			if (upgradePopUp != null && upgradePopUp.IsOpen)
-			{
-				if (_dataSource.UpgradePopUp.FocusedTroop != null)
+				if (_dataSource.UpgradePopUp.IsOpen && _dataSource.UpgradePopUp.IsPrimaryActionAvailable)
 				{
-					_dataSource.UpgradePopUp.FocusedTroop.ExecuteOpenTroopEncyclopedia();
+					UISoundsHelper.PlayUISound("event:/ui/party/upgrade");
+					_dataSource.UpgradePopUp.ExecuteItemPrimaryAction();
 				}
-				else if (_dataSource.CurrentFocusedUpgrade != null)
+			}
+			else if (_gauntletLayer.Input.IsHotKeyReleased("PopupItemSecondaryAction"))
+			{
+				if (_dataSource.UpgradePopUp.IsOpen)
 				{
-					_dataSource.CurrentFocusedUpgrade.ExecuteUpgradeEncyclopediaLink();
+					if (_dataSource.UpgradePopUp.IsSecondaryActionAvailable)
+					{
+						UISoundsHelper.PlayUISound("event:/ui/party/upgrade");
+						_dataSource.UpgradePopUp.ExecuteItemSecondaryAction();
+					}
+				}
+				else if (_dataSource.RecruitPopUp.IsOpen)
+				{
+					PartyTroopManagerItemVM focusedTroop = _dataSource.RecruitPopUp.FocusedTroop;
+					if (focusedTroop != null && focusedTroop.PartyCharacter.IsTroopRecruitable)
+					{
+						UISoundsHelper.PlayUISound("event:/ui/party/recruit_prisoner");
+						_dataSource.RecruitPopUp.ExecuteItemPrimaryAction();
+					}
+				}
+			}
+			else if (_gauntletLayer.Input.IsHotKeyReleased("GiveAllTroops"))
+			{
+				if (_dataSource.UpgradePopUp.IsOpen && _dataSource.UpgradePopUp.IsTertiaryActionAvailable)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/party/upgrade");
+					_dataSource.UpgradePopUp.ExecuteItemTertiaryAction();
+				}
+			}
+			else
+			{
+				if (!_gauntletLayer.Input.IsGameKeyReleased(39))
+				{
+					return;
+				}
+				if (_dataSource.RecruitPopUp.IsOpen && _dataSource.RecruitPopUp.FocusedTroop != null)
+				{
+					_dataSource.RecruitPopUp.FocusedTroop.PartyCharacter.ExecuteOpenTroopEncyclopedia();
+				}
+				else if (_dataSource.UpgradePopUp.IsOpen)
+				{
+					if (_dataSource.UpgradePopUp.FocusedTroop != null)
+					{
+						_dataSource.UpgradePopUp.FocusedTroop.ExecuteOpenTroopEncyclopedia();
+					}
+					else if (_dataSource.CurrentFocusedUpgrade != null)
+					{
+						_dataSource.CurrentFocusedUpgrade.ExecuteUpgradeEncyclopediaLink();
+					}
 				}
 			}
 		}
@@ -191,8 +231,8 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 		_dataSource.SetOpenRecruitPanelInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("OpenRecruitPopup"));
 		_dataSource.UpgradePopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemPrimaryAction"));
 		_dataSource.UpgradePopUp.SetSecondaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
-		_dataSource.RecruitPopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemPrimaryAction"));
-		_dataSource.RecruitPopUp.SetSecondaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
+		_dataSource.UpgradePopUp.SetTertiaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllTroops"));
+		_dataSource.RecruitPopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
 		_gauntletLayer.LoadMovie("PartyScreen", _dataSource);
 		AddLayer(_gauntletLayer);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions();
@@ -288,22 +328,17 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 
 	private void HandleCancelInput()
 	{
-		PartyUpgradeTroopVM upgradePopUp = _dataSource.UpgradePopUp;
-		if (upgradePopUp != null && upgradePopUp.IsOpen)
+		if (_dataSource.UpgradePopUp.IsOpen)
 		{
 			_dataSource.UpgradePopUp.ExecuteCancel();
 		}
+		else if (_dataSource.RecruitPopUp.IsOpen)
+		{
+			_dataSource.RecruitPopUp.ExecuteCancel();
+		}
 		else
 		{
-			PartyRecruitTroopVM recruitPopUp = _dataSource.RecruitPopUp;
-			if (recruitPopUp != null && recruitPopUp.IsOpen)
-			{
-				_dataSource.RecruitPopUp.ExecuteCancel();
-			}
-			else
-			{
-				_dataSource.ExecuteCancel();
-			}
+			_dataSource.ExecuteCancel();
 		}
 		UISoundsHelper.PlayUISound("event:/ui/default");
 	}
@@ -315,22 +350,17 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 
 	private void HandleDoneInput()
 	{
-		PartyUpgradeTroopVM upgradePopUp = _dataSource.UpgradePopUp;
-		if (upgradePopUp != null && upgradePopUp.IsOpen)
+		if (_dataSource.UpgradePopUp.IsOpen)
 		{
 			_dataSource.UpgradePopUp.ExecuteDone();
 		}
+		else if (_dataSource.RecruitPopUp.IsOpen)
+		{
+			_dataSource.RecruitPopUp.ExecuteDone();
+		}
 		else
 		{
-			PartyRecruitTroopVM recruitPopUp = _dataSource.RecruitPopUp;
-			if (recruitPopUp != null && recruitPopUp.IsOpen)
-			{
-				_dataSource.RecruitPopUp.ExecuteDone();
-			}
-			else
-			{
-				_dataSource.ExecuteDone();
-			}
+			_dataSource.ExecuteDone();
 		}
 		UISoundsHelper.PlayUISound("event:/ui/default");
 	}

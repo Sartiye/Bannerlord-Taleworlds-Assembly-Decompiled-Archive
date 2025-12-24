@@ -32,7 +32,7 @@ public class DefaultBuildingConstructionModel : BuildingConstructionModel
 
 	private static readonly TextObject VeryLowLoyaltyPenaltyText = new TextObject("{=CcQzFnpN}Very Low Loyalty");
 
-	private static readonly TextObject CultureText = GameTexts.FindText("str_culture");
+	private readonly TextObject CultureText = GameTexts.FindText("str_culture");
 
 	public override int TownBoostCost => 500;
 

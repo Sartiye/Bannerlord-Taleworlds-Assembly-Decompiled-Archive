@@ -34,6 +34,8 @@ public struct SkinGenerationParams
 
 	public int _race;
 
+	public int _faceCacheId;
+
 	public static SkinGenerationParams Create()
 	{
 		SkinGenerationParams result = default(SkinGenerationParams);
@@ -49,10 +51,11 @@ public struct SkinGenerationParams
 		result._race = 0;
 		result._useTranslucency = false;
 		result._useTesselation = false;
+		result._faceCacheId = 0;
 		return result;
 	}
 
-	public SkinGenerationParams(int skinMeshesVisibilityMask, Equipment.UnderwearTypes underwearType, int bodyMeshType, int hairCoverType, int beardCoverType, int bodyDeformType, bool prepareImmediately, float faceDirtAmount, int gender, int race, bool useTranslucency, bool useTesselation)
+	public SkinGenerationParams(int skinMeshesVisibilityMask, Equipment.UnderwearTypes underwearType, int bodyMeshType, int hairCoverType, int beardCoverType, int bodyDeformType, bool prepareImmediately, float faceDirtAmount, int gender, int race, bool useTranslucency, bool useTesselation, int faceCacheID)
 	{
 		_skinMeshesVisibilityMask = skinMeshesVisibilityMask;
 		_underwearType = underwearType;
@@ -66,5 +69,6 @@ public struct SkinGenerationParams
 		_race = race;
 		_useTranslucency = useTranslucency;
 		_useTesselation = useTesselation;
+		_faceCacheId = faceCacheID;
 	}
 }

@@ -25,6 +25,7 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list2 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list3 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
+			List<KeyValuePair<int, FlattenedTroopRosterElement>> list4 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			int num = 0;
 			foreach (FlattenedTroopRosterElement troop in battleParty.Troops)
 			{
@@ -60,13 +61,20 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 							}
 						}
 					}
-					if (isHero)
+					if (flag2)
+					{
+						if (isHero)
+						{
+							list3.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
+						}
+						else
+						{
+							list4.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
+						}
+					}
+					else if (isHero)
 					{
 						list2.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
-					}
-					else if (flag2)
-					{
-						list3.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
 					}
 					else
 					{
@@ -75,20 +83,25 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 				}
 				num++;
 			}
-			list = list.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
 			list3 = list3.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
+			list4 = list4.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
 			list2 = list2.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
-			for (int i = 0; i < list.Count; i++)
+			list = list.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
+			for (int i = 0; i < list3.Count; i++)
 			{
-				priorityList.Add((list[i].Value, battleParty, (float)(i + 1) / (float)list.Count));
+				priorityList.Add((list3[i].Value, battleParty, 3f + (float)(i + 1) / (float)list3.Count));
 			}
-			for (int j = 0; j < list3.Count; j++)
+			for (int j = 0; j < list4.Count; j++)
 			{
-				priorityList.Add((list3[j].Value, battleParty, 1f + (float)(j + 1) / (float)list3.Count));
+				priorityList.Add((list4[j].Value, battleParty, 2f + (float)(j + 1) / (float)list4.Count));
 			}
 			for (int k = 0; k < list2.Count; k++)
 			{
-				priorityList.Add((list2[k].Value, battleParty, 2f + (float)(k + 1) / (float)list2.Count));
+				priorityList.Add((list2[k].Value, battleParty, 1f + (float)(k + 1) / (float)list2.Count));
+			}
+			for (int l = 0; l < list.Count; l++)
+			{
+				priorityList.Add((list[l].Value, battleParty, (float)(l + 1) / (float)list.Count));
 			}
 			return;
 		}

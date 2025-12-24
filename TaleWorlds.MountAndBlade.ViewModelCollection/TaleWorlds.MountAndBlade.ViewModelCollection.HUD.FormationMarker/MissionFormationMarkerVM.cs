@@ -23,6 +23,8 @@ public class MissionFormationMarkerVM : ViewModel
 
 	private bool _isFormationTargetRelevant;
 
+	private bool _showDistanceTexts;
+
 	private MBBindingList<MissionFormationMarkerTargetVM> _targets;
 
 	[DataSourceProperty]
@@ -68,6 +70,27 @@ public class MissionFormationMarkerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool ShowDistanceTexts
+	{
+		get
+		{
+			return _showDistanceTexts;
+		}
+		set
+		{
+			if (_showDistanceTexts != value)
+			{
+				_showDistanceTexts = value;
+				OnPropertyChangedWithValue(value, "ShowDistanceTexts");
+				for (int i = 0; i < Targets.Count; i++)
+				{
+					Targets[i].ShowDistanceTexts = value;
+				}
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MBBindingList<MissionFormationMarkerTargetVM> Targets
 	{
 		get
@@ -102,6 +125,7 @@ public class MissionFormationMarkerVM : ViewModel
 				Targets.Add(missionFormationMarkerTargetVM);
 				missionFormationMarkerTargetVM.IsEnabled = IsEnabled;
 				missionFormationMarkerTargetVM.IsFormationTargetRelevant = IsFormationTargetRelevant;
+				missionFormationMarkerTargetVM.ShowDistanceTexts = ShowDistanceTexts;
 			}
 		}
 		if (formationList.CountQ() < Targets.Count)

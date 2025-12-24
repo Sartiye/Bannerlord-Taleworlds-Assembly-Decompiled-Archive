@@ -232,11 +232,11 @@ public struct MovementOrder
 		}
 		worldPosition3 = worldPosition;
 		worldPosition3.SetVec2(worldPosition.AsVec2 - targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
-		if (scene.DoesPathExistBetweenPositions(worldPosition3, formation.CachedMedianPosition))
+		if (!scene.DoesPathExistBetweenPositions(worldPosition3, formation.CachedMedianPosition))
 		{
-			return worldPosition3;
+			return worldPosition2;
 		}
-		return worldPosition2;
+		return worldPosition3;
 	}
 
 	private MovementOrder(MovementOrderEnum orderEnum, GameEntity targetEntity, bool surroundEntity)
@@ -250,25 +250,25 @@ public struct MovementOrder
 			Vec2 vec2 = targetEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized();
 			Vec2 vec3 = ((vec.DotProduct(vec2) >= 0f) ? vec2 : (-vec2));
 			WorldPosition worldPosition2 = worldPosition;
-			worldPosition2.SetVec2(worldPosition.AsVec2 + vec3 * 3f);
+			worldPosition2.SetVec2MT(worldPosition.AsVec2 + vec3 * 3f);
 			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition2, f.CachedMedianPosition))
 			{
 				return worldPosition2;
 			}
 			WorldPosition worldPosition3 = worldPosition;
-			worldPosition3.SetVec2(worldPosition.AsVec2 - vec3 * 3f);
+			worldPosition3.SetVec2MT(worldPosition.AsVec2 - vec3 * 3f);
 			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition))
 			{
 				return worldPosition3;
 			}
 			worldPosition3 = worldPosition;
-			worldPosition3.SetVec2(worldPosition.AsVec2 + targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
+			worldPosition3.SetVec2MT(worldPosition.AsVec2 + targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
 			if (Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition))
 			{
 				return worldPosition3;
 			}
 			worldPosition3 = worldPosition;
-			worldPosition3.SetVec2(worldPosition.AsVec2 - targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
+			worldPosition3.SetVec2MT(worldPosition.AsVec2 - targetEntity.GetGlobalFrame().rotation.s.AsVec2.Normalized() * 3f);
 			return Mission.Current.Scene.DoesPathExistBetweenPositions(worldPosition3, f.CachedMedianPosition) ? worldPosition3 : worldPosition2;
 		};
 		TargetEntity = targetEntity;
@@ -524,7 +524,7 @@ public struct MovementOrder
 		case MovementOrderEnum.Follow:
 			return _targetAgent.AverageVelocity.AsVec2;
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetTargetVelocity", 859);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetTargetVelocity", 842);
 			return Vec2.Zero;
 		}
 	}
@@ -861,6 +861,9 @@ public struct MovementOrder
 				RetreatAux(formation);
 			}
 			break;
+		case MovementOrderEnum.AttackEntity:
+			formation.AttackEntityOrderSecondaryDetachment.TickOccasionally(formation);
+			break;
 		case MovementOrderEnum.Charge:
 		case MovementOrderEnum.ChargeToTarget:
 		{
@@ -952,7 +955,7 @@ public struct MovementOrder
 							if (castleGate != null)
 							{
 								flag3 = true;
-								if (formation.AttackEntityOrderDetachment == null)
+								if (formation.AttackEntityOrderSecondaryDetachment == null)
 								{
 									GameEntity targetEntity = GameEntity.CreateFromWeakEntity(castleGate.GameEntity);
 									formation.FormAttackEntityDetachment(targetEntity);
@@ -967,6 +970,7 @@ public struct MovementOrder
 									TargetEntity = targetEntity2;
 									_position = ComputeAttackEntityWaitPosition(formation, castleGate.GameEntity);
 								}
+								formation.AttackEntityOrderSecondaryDetachment.TickOccasionally(formation);
 							}
 						}
 					}
@@ -990,7 +994,7 @@ public struct MovementOrder
 					agent.RefreshBehaviorValues(MovementOrderEnum.Charge, formation.ArrangementOrder.OrderEnum);
 				});
 			}
-			if (teamAISiegeComponent != null && formation.AttackEntityOrderDetachment != null && !flag3)
+			if (teamAISiegeComponent != null && formation.AttackEntityOrderSecondaryDetachment != null && !flag3)
 			{
 				formation.DisbandAttackEntityDetachment();
 				TargetEntity = null;
@@ -1122,7 +1126,7 @@ public struct MovementOrder
 			}
 			return Vec2.One;
 		}
-		Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetDirectionAux", 1789);
+		Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetDirectionAux", 1742);
 		return Vec2.One;
 	}
 
@@ -1199,7 +1203,7 @@ public struct MovementOrder
 			return cachedMedianPosition;
 		}
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1891);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1844);
 			return WorldPosition.Invalid;
 		}
 	}
@@ -1225,7 +1229,7 @@ public struct MovementOrder
 				formation.StopUsingMachine(ladder, isPlayerOrder: true);
 			}
 		}
-		if (formation.AttackEntityOrderDetachment != null)
+		if (formation.AttackEntityOrderSecondaryDetachment != null)
 		{
 			formation.DisbandAttackEntityDetachment();
 			TargetEntity = null;

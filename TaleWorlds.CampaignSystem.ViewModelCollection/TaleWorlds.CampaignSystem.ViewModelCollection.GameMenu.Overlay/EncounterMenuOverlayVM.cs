@@ -12,6 +12,7 @@ using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
@@ -663,7 +664,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		}
 		else
 		{
-			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 113);
+			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 114);
 		}
 	}
 
@@ -762,7 +763,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			}
 			else
 			{
-				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 212);
+				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 213);
 			}
 		}
 		else if (Settlement.CurrentSettlement?.SiegeEvent != null)
@@ -859,14 +860,19 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 				list6.Insert(i, item);
 			}
 		}
+		float num3 = list2.Sum((PartyBase party) => party.CalculateCurrentStrength());
+		float num4 = list.Sum((PartyBase party) => party.CalculateCurrentStrength());
+		if (list5.AnyQ((PartyBase p) => p.MobileParty?.IsInfoHidden ?? false))
+		{
+			num3 = 1f;
+			num4 = 0f;
+		}
 		if (PowerComparer == null)
 		{
-			PowerComparer = new PowerLevelComparer(list2.Sum((PartyBase party) => party.CalculateCurrentStrength()), list.Sum((PartyBase party) => party.CalculateCurrentStrength()));
+			PowerComparer = new PowerLevelComparer(num3, num4);
 		}
 		else
 		{
-			float num3 = list2.Sum((PartyBase party) => party.CalculateCurrentStrength());
-			float num4 = list.Sum((PartyBase party) => party.CalculateCurrentStrength());
 			PowerComparer.Update(num3, num4, num3, num4);
 		}
 		List<PartyBase> list8 = list.OrderByDescending((PartyBase p) => p.NumberOfAllMembers).ToList();
@@ -922,10 +928,10 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			attackerParty.RefreshProperties();
 		}
 		DefenderPartyCount = DefenderPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.NumberOfHealthyMembers ?? 0);
-		DefenderPartyCountLbl = DefenderPartyCount.ToString();
+		DefenderPartyCountLbl = (DefenderPartyList.AnyQ((GameMenuPartyItemVM p) => p.Party.MobileParty?.IsInfoHidden ?? false) ? "?" : DefenderPartyCount.ToString());
 		DefenderShipCount = DefenderPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.Ships.Count ?? 0);
 		AttackerPartyCount = AttackerPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.NumberOfHealthyMembers ?? 0);
-		AttackerPartyCountLbl = AttackerPartyCount.ToString();
+		AttackerPartyCountLbl = (AttackerPartyList.AnyQ((GameMenuPartyItemVM p) => p.Party.MobileParty?.IsInfoHidden ?? false) ? "?" : AttackerPartyCount.ToString());
 		AttackerShipCount = AttackerPartyList.Sum((GameMenuPartyItemVM p) => p?.Party?.Ships.Count ?? 0);
 		if (MobileParty.MainParty.MapEvent != null)
 		{

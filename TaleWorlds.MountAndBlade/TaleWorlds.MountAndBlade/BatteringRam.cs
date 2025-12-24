@@ -53,11 +53,11 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 
 	private const string KnockSlowestAnimation = "batteringram_fire_weakest";
 
-	private const float KnockAnimationHitProgress = 0.53f;
+	private const float KnockAnimationHitProgress = 0.5f;
 
-	private const float KnockSlowerAnimationHitProgress = 0.6f;
+	private const float KnockSlowerAnimationHitProgress = 0.56f;
 
-	private const float KnockSlowestAnimationHitProgress = 0.61f;
+	private const float KnockSlowestAnimationHitProgress = 0.58f;
 
 	private string _gateTag = "gate";
 
@@ -452,9 +452,9 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 				_storedPower += (float)_usedPower * dt;
 				float num2 = num switch
 				{
-					2 => 0.6f, 
-					3 => 0.53f, 
-					_ => 0.61f, 
+					2 => 0.56f, 
+					3 => 0.5f, 
+					_ => 0.58f, 
 				};
 				string animationName = num switch
 				{
@@ -716,9 +716,9 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		_pathEntityName = pathEntityName;
 	}
 
-	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord)
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
-		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord);
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate);
 		BatteringRamRecord batteringRamRecord = (BatteringRamRecord)(object)synchedMissionObjectReadableRecord.Item2;
 		HasArrivedAtTarget = batteringRamRecord.HasArrivedAtTarget;
 		_state = (RamState)batteringRamRecord.State;

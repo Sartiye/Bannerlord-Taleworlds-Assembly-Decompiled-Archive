@@ -76,7 +76,10 @@ public class EncyclopediaHomeVM : EncyclopediaPageVM
 			orderby p.HomePageOrderIndex
 			select p)
 		{
-			Lists.Add(new ListTypeVM(item));
+			if (item.IsRelevant())
+			{
+				Lists.Add(new ListTypeVM(item));
+			}
 		}
 		RefreshValues();
 	}

@@ -331,13 +331,13 @@ public class StrategicArea : MissionObject, IDetachment
 		}
 	}
 
-	private WorldFrame GetShimmiedGlobalWorldFrame()
+	private WorldFrame GetShimmiedGlobalWorldFrameMT()
 	{
 		CacheGlobalWorldFrame();
 		if (_shimmyLocalPosition.IsNonZero)
 		{
 			WorldPosition origin = _cachedGlobalWorldFrame.Origin;
-			origin.SetVec2(_cachedGlobalWorldFrame.ToGroundMatrixFrame().TransformToParent(in _shimmyLocalPosition).AsVec2);
+			origin.SetVec2(_cachedGlobalWorldFrame.ToGroundMatrixFrameMT().TransformToParent(in _shimmyLocalPosition).AsVec2);
 			return new WorldFrame(_cachedGlobalWorldFrame.Rotation, origin);
 		}
 		return _cachedGlobalWorldFrame;
@@ -598,12 +598,12 @@ public class StrategicArea : MissionObject, IDetachment
 			{
 				_shimmyDirection = shimmyDirection;
 				_lastShimmyTime = totalMissionTime;
-				MatrixFrame matrixFrame = _cachedGlobalWorldFrame.ToGroundMatrixFrame();
+				MatrixFrame matrixFrame = _cachedGlobalWorldFrame.ToGroundMatrixFrameMT();
 				Vec3 v = origin2.GetGroundVec3MT();
 				_shimmyLocalPosition = matrixFrame.TransformToLocal(in v);
 			}
 		}
-		return GetShimmiedGlobalWorldFrame();
+		return GetShimmiedGlobalWorldFrameMT();
 	}
 
 	private static float CalculateWeight(int capacity, int index)

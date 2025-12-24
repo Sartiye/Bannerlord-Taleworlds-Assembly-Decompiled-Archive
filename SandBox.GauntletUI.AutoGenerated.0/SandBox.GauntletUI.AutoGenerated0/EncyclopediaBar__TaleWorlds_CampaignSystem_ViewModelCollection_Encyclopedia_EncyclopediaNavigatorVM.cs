@@ -330,14 +330,14 @@ public class EncyclopediaBar__TaleWorlds_CampaignSystem_ViewModelCollection_Ency
 		_widget_4_1.IsVisible = false;
 		_widget_5.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_5.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_5.SuggestedHeight = 135f;
+		_widget_5.SuggestedHeight = 115f;
 		_widget_5.SuggestedWidth = 260f;
 		_widget_5.InnerPanel = _widget_5_0_2;
 		_widget_5.ClipRect = _widget_5_0;
 		_widget_5.VerticalAlignment = VerticalAlignment.Center;
 		_widget_5.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_5.MarginLeft = 1000f;
-		_widget_5.MarginBottom = 690f;
+		_widget_5.MarginBottom = 700f;
 		_widget_5.VerticalScrollbar = _widget_4;
 		_widget_5.AutoHideScrollBars = true;
 		_widget_5.AutoHideScrollBarHandle = true;
@@ -367,7 +367,7 @@ public class EncyclopediaBar__TaleWorlds_CampaignSystem_ViewModelCollection_Ency
 		_widget_6.VerticalAlignment = VerticalAlignment.Center;
 		_widget_6.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_6.PositionYOffset = -465f;
-		_widget_6.MarginLeft = 1440f;
+		_widget_6.MarginLeft = 1465f;
 		_widget_6.Brush = base.Context.GetBrush("Popup.CloseButton");
 		_widget_6_0.DoNotAcceptEvents = true;
 		_widget_6_0.WidthSizePolicy = SizePolicy.CoverChildren;

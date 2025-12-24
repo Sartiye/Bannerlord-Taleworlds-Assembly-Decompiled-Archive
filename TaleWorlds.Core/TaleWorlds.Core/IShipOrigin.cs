@@ -39,6 +39,8 @@ public interface IShipOrigin
 
 	int RandomValue { get; }
 
+	string CustomSailPatternId { get; }
+
 	float MaxRudderForceFactor { get; }
 
 	float MaxOarForceFactor { get; }

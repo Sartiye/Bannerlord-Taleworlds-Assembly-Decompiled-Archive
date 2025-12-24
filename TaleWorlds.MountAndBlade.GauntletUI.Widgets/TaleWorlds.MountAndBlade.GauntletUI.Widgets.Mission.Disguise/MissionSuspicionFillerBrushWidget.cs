@@ -3,29 +3,15 @@ using TaleWorlds.GauntletUI.BaseTypes;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission.Disguise;
 
-public class MissionSuspicionFillerBrushWidget : BrushWidget
+public class MissionSuspicionFillerBrushWidget : Widget
 {
-	private float _returnToDefaultTimer;
-
-	private float _colorChangeDuration;
-
 	private float _currentSuspicionRatio;
 
-	public float ColorChangeDuration
-	{
-		get
-		{
-			return _colorChangeDuration;
-		}
-		set
-		{
-			if (value != _colorChangeDuration)
-			{
-				_colorChangeDuration = value;
-				OnPropertyChanged(value, "ColorChangeDuration");
-			}
-		}
-	}
+	private BrushWidget _exclamationMark;
+
+	private Widget _detectionFillContainer;
+
+	private BrushWidget _circleIcon;
 
 	public float CurrentSuspicionRatio
 	{
@@ -37,11 +23,57 @@ public class MissionSuspicionFillerBrushWidget : BrushWidget
 		{
 			if (value != _currentSuspicionRatio)
 			{
-				SetState((value > _currentSuspicionRatio) ? "Increasing" : "Decreasing");
-				base.EventManager.AddLateUpdateAction(this, ReturnToDefaultTick, 1);
+				UpdateBrushState(value);
 				_currentSuspicionRatio = value;
 				OnPropertyChanged(value, "CurrentSuspicionRatio");
-				_returnToDefaultTimer = 0f;
+			}
+		}
+	}
+
+	public BrushWidget ExclamationMark
+	{
+		get
+		{
+			return _exclamationMark;
+		}
+		set
+		{
+			if (value != _exclamationMark)
+			{
+				_exclamationMark = value;
+				OnPropertyChanged(value, "ExclamationMark");
+			}
+		}
+	}
+
+	public Widget DetectionFillContainer
+	{
+		get
+		{
+			return _detectionFillContainer;
+		}
+		set
+		{
+			if (value != _detectionFillContainer)
+			{
+				_detectionFillContainer = value;
+				OnPropertyChanged(value, "DetectionFillContainer");
+			}
+		}
+	}
+
+	public BrushWidget CircleIcon
+	{
+		get
+		{
+			return _circleIcon;
+		}
+		set
+		{
+			if (value != _circleIcon)
+			{
+				_circleIcon = value;
+				OnPropertyChanged(value, "CircleIcon");
 			}
 		}
 	}
@@ -49,19 +81,27 @@ public class MissionSuspicionFillerBrushWidget : BrushWidget
 	public MissionSuspicionFillerBrushWidget(UIContext context)
 		: base(context)
 	{
-		ColorChangeDuration = 0.2f;
 	}
 
-	private void ReturnToDefaultTick(float dt)
+	private void UpdateBrushState(float suspicionRatio)
 	{
-		if (_returnToDefaultTimer >= ColorChangeDuration)
+		if (suspicionRatio >= 1f)
 		{
-			_returnToDefaultTimer = 0f;
-			SetState("Default");
+			CircleIcon?.SetState("Full");
+			DetectionFillContainer?.SetState("Full");
+			ExclamationMark?.SetState("Full");
+		}
+		else if (suspicionRatio > _currentSuspicionRatio)
+		{
+			CircleIcon?.SetState("Increasing");
+			DetectionFillContainer?.SetState("Increasing");
+			ExclamationMark?.SetState("Increasing");
 		}
 		else
 		{
-			base.EventManager.AddLateUpdateAction(this, ReturnToDefaultTick, 1);
+			CircleIcon?.SetState("Decreasing");
+			DetectionFillContainer?.SetState("Decreasing");
+			ExclamationMark?.SetState("Decreasing");
 		}
 	}
 }

@@ -63,6 +63,9 @@ internal interface IMBFaceGen
 	[EngineMethod("get_maturity_type", false, null, false)]
 	int GetMaturityType(float age);
 
+	[EngineMethod("flush_face_cache", false, null, false)]
+	void FlushFaceCache();
+
 	[EngineMethod("get_voice_type_usable_for_player_data", false, null, false)]
 	void GetVoiceTypeUsableForPlayerData(int race, int curGender, float age, bool[] aiArray);
 

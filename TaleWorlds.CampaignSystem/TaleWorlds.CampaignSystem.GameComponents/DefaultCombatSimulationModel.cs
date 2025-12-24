@@ -248,7 +248,7 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		int numRemainingSimulationTroops2 = mapEvent.AttackerSide.NumRemainingSimulationTroops;
 		if (!mapEvent.IsInvulnerable)
 		{
-			if (eventType == MapEvent.BattleTypes.Siege && ((mapEventSettlement.IsTown && numRemainingSimulationTroops > 100) || (mapEventSettlement.IsCastle && numRemainingSimulationTroops > 30)))
+			if (eventType == MapEvent.BattleTypes.Siege && mapEventSettlement.CurrentSiegeState != Settlement.SiegeState.InTheLordsHall && ((mapEventSettlement.IsTown && numRemainingSimulationTroops > 100) || (mapEventSettlement.IsCastle && numRemainingSimulationTroops > 30)))
 			{
 				float num = GetSettlementAdvantage(mapEventSettlement) * 0.7f;
 				item2 = TaleWorlds.Library.MathF.Round(1.5f + TaleWorlds.Library.MathF.Pow(numRemainingSimulationTroops, 0.3f)) * 2;

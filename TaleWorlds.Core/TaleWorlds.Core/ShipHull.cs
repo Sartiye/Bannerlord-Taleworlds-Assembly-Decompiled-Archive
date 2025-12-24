@@ -22,6 +22,10 @@ public class ShipHull : MBObjectBase
 
 	public TextObject Description { get; private set; }
 
+	public string EncyclopediaLink => typeof(ShipHull).ToString() + "-" + base.StringId;
+
+	public TextObject EncyclopediaLinkWithName => HyperlinkTexts.GetShipHyperlinkText(EncyclopediaLink, Name);
+
 	public float BaseSpeed { get; private set; }
 
 	public int Value { get; private set; }
@@ -127,7 +131,7 @@ public class ShipHull : MBObjectBase
 				}
 				else
 				{
-					Debug.FailedAssert("ShipSlot does not exist! Ship slot id: " + value + "\nShip slot cannot be added!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\NavalCore\\ShipHull.cs", "Deserialize", 136);
+					Debug.FailedAssert("ShipSlot does not exist! Ship slot id: " + value + "\nShip slot cannot be added!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\NavalCore\\ShipHull.cs", "Deserialize", 147);
 				}
 			}
 		}

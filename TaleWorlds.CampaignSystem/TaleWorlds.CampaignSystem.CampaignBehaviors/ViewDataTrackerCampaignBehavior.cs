@@ -59,6 +59,8 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 
 	private List<Hero> _encyclopediaBookmarkedHeroes;
 
+	private List<ShipHull> _encyclopediaBookmarkedShips;
+
 	private List<Clan> _encyclopediaBookmarkedClans;
 
 	private List<Concept> _encyclopediaBookmarkedConcepts;
@@ -124,6 +126,7 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_encyclopediaBookmarkedClans = new List<Clan>();
 		_encyclopediaBookmarkedConcepts = new List<Concept>();
 		_encyclopediaBookmarkedHeroes = new List<Hero>();
+		_encyclopediaBookmarkedShips = new List<ShipHull>();
 		_encyclopediaBookmarkedKingdoms = new List<Kingdom>();
 		_encyclopediaBookmarkedSettlements = new List<Settlement>();
 		_encyclopediaBookmarkedUnits = new List<CharacterObject>();
@@ -374,6 +377,11 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_encyclopediaBookmarkedHeroes.Add(item);
 	}
 
+	public void AddEncyclopediaBookmarkToItem(ShipHull shipHull)
+	{
+		_encyclopediaBookmarkedShips.Add(shipHull);
+	}
+
 	public void AddEncyclopediaBookmarkToItem(Clan clan)
 	{
 		_encyclopediaBookmarkedClans.Add(clan);
@@ -404,6 +412,11 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_encyclopediaBookmarkedHeroes.Remove(hero);
 	}
 
+	public void RemoveEncyclopediaBookmarkFromItem(ShipHull shipHull)
+	{
+		_encyclopediaBookmarkedShips.Remove(shipHull);
+	}
+
 	public void RemoveEncyclopediaBookmarkFromItem(Clan clan)
 	{
 		_encyclopediaBookmarkedClans.Remove(clan);
@@ -432,6 +445,11 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 	public bool IsEncyclopediaBookmarked(Hero hero)
 	{
 		return _encyclopediaBookmarkedHeroes.Contains(hero);
+	}
+
+	public bool IsEncyclopediaBookmarked(ShipHull shipHull)
+	{
+		return _encyclopediaBookmarkedShips.Contains(shipHull);
 	}
 
 	public bool IsEncyclopediaBookmarked(Clan clan)
@@ -554,6 +572,7 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		dataStore.SyncData("_partyTroopLocks", ref _partyTroopLocks);
 		dataStore.SyncData("_partyPrisonerLocks", ref _partyPrisonerLocks);
 		dataStore.SyncData("_encyclopediaBookmarkedHeroes", ref _encyclopediaBookmarkedHeroes);
+		dataStore.SyncData("_encyclopediaBookmarkedShips", ref _encyclopediaBookmarkedShips);
 		dataStore.SyncData("_encyclopediaBookmarkedClans", ref _encyclopediaBookmarkedClans);
 		dataStore.SyncData("_encyclopediaBookmarkedConcepts", ref _encyclopediaBookmarkedConcepts);
 		dataStore.SyncData("_encyclopediaBookmarkedKingdoms", ref _encyclopediaBookmarkedKingdoms);

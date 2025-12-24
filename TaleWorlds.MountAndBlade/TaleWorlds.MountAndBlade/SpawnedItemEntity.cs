@@ -102,6 +102,8 @@ public class SpawnedItemEntity : UsableMissionObject
 
 	public bool IsRemoved => _ownerGameEntity == null;
 
+	public bool SpawnedOnACorpse { get; private set; }
+
 	public override bool LockUserFrames => false;
 
 	public Mission.WeaponSpawnFlags SpawnFlags { get; private set; }
@@ -129,12 +131,13 @@ public class SpawnedItemEntity : UsableMissionObject
 		return GameTexts.FindText("str_inventory_weapon", _weapon.CurrentUsageItem.WeaponClass.ToString());
 	}
 
-	public void Initialize(MissionWeapon weapon, bool hasLifeTime, Mission.WeaponSpawnFlags spawnFlags, in Vec3 fakeSimulationVelocity)
+	public void Initialize(MissionWeapon weapon, bool hasLifeTime, Mission.WeaponSpawnFlags spawnFlags, in Vec3 fakeSimulationVelocity, bool spawnedOnACorpse = false)
 	{
 		_weapon = weapon;
 		HasLifeTime = hasLifeTime;
 		SpawnFlags = spawnFlags;
 		_fakeSimulationVelocity = fakeSimulationVelocity;
+		SpawnedOnACorpse = spawnedOnACorpse;
 		if (HasLifeTime)
 		{
 			float duration = 0f;
@@ -456,7 +459,7 @@ public class SpawnedItemEntity : UsableMissionObject
 	{
 		if (base.HasUser && !GameNetwork.IsClientOrReplay)
 		{
-			base.UserAgent.StopUsingGameObject(isSuccessful: false);
+			base.UserAgent.StopUsingGameObjectMT(isSuccessful: false);
 		}
 		base.OnRemoved(removeReason);
 		InvalidateWeakPointersIfValid();
@@ -612,6 +615,7 @@ public class SpawnedItemEntity : UsableMissionObject
 				_successActionIndex = (isLeftStance ? ActionIndexCache.act_pickup_up_end_left_stance : ActionIndexCache.act_pickup_up_end);
 			}
 		}
+		SetVisibleSynched(value: true);
 		userAgent.SetActionChannel(_usedChannelIndex, in _progressActionIndex, ignorePriority: false, (AnimFlags)0uL);
 	}
 
@@ -661,7 +665,7 @@ public class SpawnedItemEntity : UsableMissionObject
 				num3++;
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 799);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 803);
 				break;
 			}
 		}
@@ -886,5 +890,10 @@ public class SpawnedItemEntity : UsableMissionObject
 	public void RequestDeletionOnNextTick()
 	{
 		_deletionTimer = new Timer(Mission.Current.CurrentTime, -1f);
+	}
+
+	public override void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
+	{
+		base.OnAfterReadFromNetwork(synchedMissionObjectReadableRecord, allowVisibilityUpdate: false);
 	}
 }

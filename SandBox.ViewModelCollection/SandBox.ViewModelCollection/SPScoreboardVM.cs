@@ -22,6 +22,8 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 {
 	private readonly BattleSimulation _battleSimulation;
 
+	private SallyOutEndLogic _sallyOutEndLogic;
+
 	private static readonly TextObject _renownStr = new TextObject("{=eiWQoW9j}You gained {A0} renown.");
 
 	private static readonly TextObject _influenceStr = new TextObject("{=5zeL8sa9}You gained {A0} influence.");
@@ -33,6 +35,8 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 	private static readonly TextObject _deadLordStr = new TextObject("{=gDKhs4lD}{A0} has died on the battlefield.");
 
 	private static readonly TextObject _figureheadStr = new TextObject("{=ANoYN1yZ}You unlocked the {A0} figurehead.");
+
+	private float _moraleUpdateTimer = 1f;
 
 	private float _missionEndScoreboardDelayTimer;
 
@@ -141,7 +145,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			}
 			else
 			{
-				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 116);
+				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 118);
 			}
 			BattleObserverMissionLogic missionBehavior = _mission.GetMissionBehavior<BattleObserverMissionLogic>();
 			if (missionBehavior != null)
@@ -150,7 +154,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			}
 			else
 			{
-				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 141);
+				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 143);
 			}
 		}
 		string defenderColor;
@@ -173,16 +177,23 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 	{
 		if (!base.IsSimulation)
 		{
-			SallyOutEndLogic sallyOutEndLogic = Mission.Current?.GetMissionBehavior<SallyOutEndLogic>();
+			if (_sallyOutEndLogic == null)
+			{
+				_sallyOutEndLogic = _mission?.GetMissionBehavior<SallyOutEndLogic>();
+			}
 			if (!base.IsOver)
 			{
 				Mission mission = _mission;
 				if (mission == null || !mission.IsMissionEnding)
 				{
 					BattleEndLogic battleEndLogic = _battleEndLogic;
-					if ((battleEndLogic == null || !battleEndLogic.IsEnemySideRetreating) && (sallyOutEndLogic == null || !sallyOutEndLogic.IsSallyOutOver))
+					if (battleEndLogic == null || !battleEndLogic.IsEnemySideRetreating)
 					{
-						goto IL_0078;
+						SallyOutEndLogic sallyOutEndLogic = _sallyOutEndLogic;
+						if (sallyOutEndLogic == null || !sallyOutEndLogic.IsSallyOutOver)
+						{
+							goto IL_0092;
+						}
 					}
 				}
 				if (_missionEndScoreboardDelayTimer < 1.5f)
@@ -195,21 +206,26 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 				}
 			}
 		}
-		goto IL_0078;
-		IL_0078:
+		goto IL_0092;
+		IL_0092:
 		if (!base.IsSimulation && !base.IsOver)
 		{
 			base.MissionTimeInSeconds = (int)Mission.Current.CurrentTime;
 		}
-		if (base.IsSimulation)
+		_moraleUpdateTimer += dt;
+		if (_moraleUpdateTimer > 1f)
 		{
-			base.Attackers.Morale = MobileParty.MainParty.MapEvent.AttackerSide.GetSideMorale();
-			base.Defenders.Morale = MobileParty.MainParty.MapEvent.DefenderSide.GetSideMorale();
-		}
-		else
-		{
-			base.Attackers.Morale = GetBattleMoraleOfSide(BattleSideEnum.Attacker);
-			base.Defenders.Morale = GetBattleMoraleOfSide(BattleSideEnum.Defender);
+			if (base.IsSimulation)
+			{
+				base.Attackers.Morale = MobileParty.MainParty.MapEvent.AttackerSide.GetSideMorale();
+				base.Defenders.Morale = MobileParty.MainParty.MapEvent.DefenderSide.GetSideMorale();
+			}
+			else
+			{
+				base.Attackers.Morale = GetBattleMoraleOfSide(BattleSideEnum.Attacker);
+				base.Defenders.Morale = GetBattleMoraleOfSide(BattleSideEnum.Defender);
+			}
+			_moraleUpdateTimer = 0f;
 		}
 	}
 
@@ -306,7 +322,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 				}
 				else
 				{
-					Debug.FailedAssert("Battle rewards contain an invalid figurehead (null or name missing)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 330);
+					Debug.FailedAssert("Battle rewards contain an invalid figurehead (null or name missing)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 342);
 				}
 			}
 		}
@@ -316,7 +332,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			{
 				if (item.Character == null)
 				{
-					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 347);
+					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 359);
 					continue;
 				}
 				BattleResults.Add(new BattleResultVM(_deadLordStr.SetTextVariable("A0", item.Character.Name).ToString(), () => new List<TooltipProperty>(), SandBoxUIHelper.GetCharacterCode(item.Character as CharacterObject)));
@@ -328,7 +344,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			{
 				if (item2.Character == null)
 				{
-					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 364);
+					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 376);
 					continue;
 				}
 				BattleResults.Add(new BattleResultVM(_deadLordStr.SetTextVariable("A0", item2.Character.Name).ToString(), () => new List<TooltipProperty>(), SandBoxUIHelper.GetCharacterCode(item2.Character as CharacterObject)));

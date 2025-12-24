@@ -164,6 +164,11 @@ public class DefaultMapDistanceModel : MapDistanceModel
 		return MBMath.ClampFloat(value, 0f, 100000000f);
 	}
 
+	public override float GetPortToGateDistanceForSettlement(Settlement settlement)
+	{
+		return 100000000f;
+	}
+
 	public override bool PathExistBetweenPoints(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType)
 	{
 		if (fromPoint.IsOnLand)

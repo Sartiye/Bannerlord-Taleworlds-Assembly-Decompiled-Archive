@@ -69,7 +69,7 @@ public class GauntletBodyGeneratorScreen : ScreenBase, IFaceGeneratorScreen
 		}
 		foreach (Agent agent in current.Agents)
 		{
-			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false);
+			agent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false, useFaceCache: false, 0);
 			agent.UpdateAgentProperties();
 		}
 	}

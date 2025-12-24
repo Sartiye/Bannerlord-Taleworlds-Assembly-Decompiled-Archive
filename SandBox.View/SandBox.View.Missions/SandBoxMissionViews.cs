@@ -345,6 +345,7 @@ public class SandBoxMissionViews
 		obj.Add(new MissionPreloadView());
 		obj.Add(new MissionCampaignBattleSpectatorView());
 		obj.Add(ViewCreator.CreatePhotoModeView());
+		obj.Add(new MissionFaceCacheView());
 		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
 		obj.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		obj.Add(ViewCreator.CreateMissionOrderOfBattleUIHandler(mission, new SPOrderOfBattleVM()));
@@ -448,6 +449,7 @@ public class SandBoxMissionViews
 			SandBoxViewCreator.CreateMissionConversationView(mission),
 			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
 			ViewCreator.CreateMissionOrderUIHandler(),
+			SandBoxViewCreator.CreateMissionStealthFailCounter(),
 			new OrderTroopPlacer(null),
 			ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission),
 			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
@@ -610,6 +612,7 @@ public class SandBoxMissionViews
 		list.Add(new MissionCampaignBattleSpectatorView());
 		list.Add(ViewCreator.CreateMissionOrderOfBattleUIHandler(mission, new SPOrderOfBattleVM()));
 		list.Add(ViewCreator.CreateMissionSiegeEngineMarkerView(mission));
+		list.Add(new MissionFaceCacheView());
 		return list.ToArray();
 	}
 
@@ -711,13 +714,14 @@ public class SandBoxMissionViews
 		list.Add(new MissionAgentContourControllerView());
 		list.Add(new MissionCampaignBattleSpectatorView());
 		list.Add(ViewCreator.CreateMissionSiegeEngineMarkerView(mission));
+		list.Add(new MissionFaceCacheView());
 		return list.ToArray();
 	}
 
 	[ViewMethod("SiegeMissionForTutorial")]
 	public static MissionView[] OpenSiegeMissionForTutorial(Mission mission)
 	{
-		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 875);
+		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 879);
 		List<MissionView> obj = new List<MissionView>
 		{
 			new MissionConversationCameraView(),

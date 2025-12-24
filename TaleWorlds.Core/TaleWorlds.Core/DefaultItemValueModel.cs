@@ -157,7 +157,7 @@ public class DefaultItemValueModel : ItemValueModel
 	private float CalculateShieldTier(WeaponComponent weaponComponent)
 	{
 		WeaponComponentData weaponComponentData = weaponComponent.Weapons[0];
-		return ((float)weaponComponentData.MaxDataValue + 3f * (float)weaponComponentData.BodyArmor + (float)weaponComponentData.ThrustSpeed) / (6f + weaponComponent.Item.Weight) * 0.13f - 3f;
+		return (MathF.Pow(weaponComponentData.MaxDataValue, 1.22f) + 3f * (float)weaponComponentData.BodyArmor + (float)weaponComponentData.ThrustSpeed) / (6f + MathF.Pow(weaponComponent.Item.Weight, 1.11f)) * 0.04f - 2f;
 	}
 
 	private float CalculateAmmoTier(WeaponComponent weaponComponent)

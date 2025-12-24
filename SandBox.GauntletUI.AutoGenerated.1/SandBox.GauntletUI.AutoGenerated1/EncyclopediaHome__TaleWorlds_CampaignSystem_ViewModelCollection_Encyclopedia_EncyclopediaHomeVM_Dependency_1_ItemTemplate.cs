@@ -34,14 +34,15 @@ public class EncyclopediaHome__TaleWorlds_CampaignSystem_ViewModelCollection_Enc
 	public void SetAttributes()
 	{
 		base.DoNotPassEventsToChildren = true;
-		base.HeightSizePolicy = SizePolicy.Fixed;
-		base.WidthSizePolicy = SizePolicy.Fixed;
-		base.SuggestedHeight = 520f;
-		base.SuggestedWidth = 230f;
+		base.WidthSizePolicy = SizePolicy.StretchToParent;
+		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		base.VerticalAlignment = VerticalAlignment.Center;
 		base.HorizontalAlignment = HorizontalAlignment.Center;
-		base.MarginRight = 11f;
+		base.MarginLeft = 5f;
+		base.MarginRight = 5f;
 		base.FrictionEnabled = false;
+		base.ImageFit.Type = ImageFit.ImageFitTypes.Cover;
+		base.ClipContents = true;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.SuggestedHeight = 80f;

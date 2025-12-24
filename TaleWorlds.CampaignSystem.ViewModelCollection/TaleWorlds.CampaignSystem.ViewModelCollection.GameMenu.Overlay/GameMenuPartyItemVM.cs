@@ -781,7 +781,8 @@ public class GameMenuPartyItemVM : ViewModel
 		{
 			PartyWoundedSize = Party.NumberOfAllMembers - Party.NumberOfHealthyMembers;
 			PartySize = Party.NumberOfHealthyMembers;
-			PartySizeLbl = Party.NumberOfHealthyMembers.ToString();
+			MobileParty mobileParty = Party.MobileParty;
+			PartySizeLbl = ((mobileParty != null && mobileParty.IsInfoHidden) ? "?" : Party.NumberOfHealthyMembers.ToString());
 		}
 		ShipCount = Party.Ships?.Count ?? 0;
 	}

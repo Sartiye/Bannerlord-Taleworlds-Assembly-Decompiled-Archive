@@ -224,11 +224,11 @@ public class ThumbnailCacheManager
 		return result;
 	}
 
-	public void ForceClearAllCache()
+	public void ForceClearAllCache(bool releaseImmediately)
 	{
 		for (int i = 0; i < _thumbnailCaches.Count; i++)
 		{
-			_thumbnailCaches[i].Clear(releaseImmediately: false);
+			_thumbnailCaches[i].Clear(releaseImmediately);
 		}
 	}
 

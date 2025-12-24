@@ -770,7 +770,17 @@ public class LineFormation : IFormationArrangement
 		{
 			int num = CountUnitsAtRank(RankCount - 1);
 			int num2 = RankCount - 1;
-			if (num + num2 <= FileCount && MBRandom.RandomInt(RankCount * 2) == 0 && IsNarrowApplicable((FileCount <= 2) ? 1 : 2))
+			int fileCount = FileCount;
+			if (FileCount > 2)
+			{
+				num2 *= 2;
+				fileCount -= 2;
+			}
+			else
+			{
+				fileCount--;
+			}
+			if (num + num2 <= fileCount && MBRandom.RandomInt(RankCount * 2) == 0 && IsNarrowApplicable((FileCount <= 2) ? 1 : 2))
 			{
 				NarrowFormation(this, (FileCount <= 2) ? 1 : 2);
 			}
@@ -1041,7 +1051,10 @@ public class LineFormation : IFormationArrangement
 	{
 		TryReaddingUnpositionedUnits();
 		FillInTheGapsOfMiddleRanks(this);
-		TryToKeepDepth();
+		if (Mission.Current.IsDeploymentFinished)
+		{
+			TryToKeepDepth();
+		}
 	}
 
 	private static void WidenFormation(LineFormation formation, int fileCountFromBothFlanks)
@@ -1993,7 +2006,7 @@ public class LineFormation : IFormationArrangement
 				return formation._units2D[fileIndexOfRightFlank, num];
 			}
 		}
-		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3186);
+		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3198);
 		return null;
 	}
 

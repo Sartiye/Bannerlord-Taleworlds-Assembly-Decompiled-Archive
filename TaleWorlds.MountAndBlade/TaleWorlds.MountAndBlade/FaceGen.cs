@@ -102,6 +102,11 @@ public class FaceGen : IFaceGen
 		return MBBodyProperties.GetMaturityType(age);
 	}
 
+	public static void FlushFaceCache()
+	{
+		MBBodyProperties.FlushFaceCache();
+	}
+
 	public int GetRaceCount()
 	{
 		return _raceNamesArray.Length;

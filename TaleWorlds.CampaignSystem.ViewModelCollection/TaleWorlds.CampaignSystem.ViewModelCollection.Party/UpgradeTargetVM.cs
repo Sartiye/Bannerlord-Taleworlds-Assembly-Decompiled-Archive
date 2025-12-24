@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -21,6 +22,12 @@ public class UpgradeTargetVM : ViewModel
 
 	private string _hintString;
 
+	private InputKeyItemVM _primaryActionInputKey;
+
+	private InputKeyItemVM _secondaryActionInputKey;
+
+	private InputKeyItemVM _tertiaryActionInputKey;
+
 	private UpgradeRequirementsVM _requirements;
 
 	private CharacterImageIdentifierVM _troopImage;
@@ -36,6 +43,57 @@ public class UpgradeTargetVM : ViewModel
 	private bool _isHighlighted;
 
 	private bool _isMarinerTroop;
+
+	[DataSourceProperty]
+	public InputKeyItemVM PrimaryActionInputKey
+	{
+		get
+		{
+			return _primaryActionInputKey;
+		}
+		set
+		{
+			if (value != _primaryActionInputKey)
+			{
+				_primaryActionInputKey = value;
+				OnPropertyChangedWithValue(value, "PrimaryActionInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM SecondaryActionInputKey
+	{
+		get
+		{
+			return _secondaryActionInputKey;
+		}
+		set
+		{
+			if (value != _secondaryActionInputKey)
+			{
+				_secondaryActionInputKey = value;
+				OnPropertyChangedWithValue(value, "SecondaryActionInputKey");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InputKeyItemVM TertiaryActionInputKey
+	{
+		get
+		{
+			return _tertiaryActionInputKey;
+		}
+		set
+		{
+			if (value != _tertiaryActionInputKey)
+			{
+				_tertiaryActionInputKey = value;
+				OnPropertyChangedWithValue(value, "TertiaryActionInputKey");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public UpgradeRequirementsVM Requirements

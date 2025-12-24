@@ -10,7 +10,7 @@ public abstract class ShipCostModel : MBGameModel<ShipCostModel>
 
 	public abstract float GetShipRepairCost(Ship ship, PartyBase owner);
 
-	public abstract int GetShipUpgradeCost(Ship ship, ShipUpgradePiece piece, PartyBase owner);
+	public abstract int GetShipUpgradePieceCost(Ship ship, ShipUpgradePiece piece, PartyBase owner);
 
 	public abstract float GetShipSellingPenalty();
 }

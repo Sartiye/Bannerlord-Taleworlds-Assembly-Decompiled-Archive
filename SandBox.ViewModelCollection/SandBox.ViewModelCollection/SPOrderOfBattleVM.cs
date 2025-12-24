@@ -44,13 +44,13 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 	{
 		base.LoadConfiguration();
 		_orderOfBattleBehavior = Campaign.Current.GetCampaignBehavior<OrderOfBattleCampaignBehavior>();
-		if (!base.IsPlayerGeneral || MobileParty.MainParty.Army != null)
+		if (_orderOfBattleBehavior == null || !base.IsPlayerGeneral)
 		{
 			return;
 		}
 		for (int i = 0; i < base.TotalFormationCount; i++)
 		{
-			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationInfo = _orderOfBattleBehavior.GetFormationDataAtIndex(i, Mission.Current.IsSiegeBattle);
+			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationInfo = _orderOfBattleBehavior.GetFormationDataAtIndex(i, Mission.Current.IsSiegeBattle, MobileParty.MainParty.Army != null);
 			if (formationInfo != null && formationInfo.FormationClass != 0)
 			{
 				bool flag = formationInfo.PrimaryClassWeight > 0 || formationInfo.SecondaryClassWeight > 0;
@@ -145,7 +145,7 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 		}
 		for (int k = 0; k < base.TotalFormationCount; k++)
 		{
-			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationDataAtIndex = _orderOfBattleBehavior.GetFormationDataAtIndex(k, Mission.Current.IsSiegeBattle);
+			OrderOfBattleCampaignBehavior.OrderOfBattleFormationData formationDataAtIndex = _orderOfBattleBehavior.GetFormationDataAtIndex(k, Mission.Current.IsSiegeBattle, MobileParty.MainParty.Army != null);
 			if (formationDataAtIndex != null && formationDataAtIndex.FormationClass != 0)
 			{
 				if (_allFormations[k].Classes[0].Class != FormationClass.NumberOfAllFormations)
@@ -164,7 +164,7 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 	{
 		base.SaveConfiguration();
 		bool flag = MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle();
-		if (!(base.IsPlayerGeneral && flag) || MobileParty.MainParty.Army != null)
+		if (_orderOfBattleBehavior != null && !(base.IsPlayerGeneral && flag))
 		{
 			return;
 		}
@@ -196,7 +196,7 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 			};
 			list.Add(new OrderOfBattleCampaignBehavior.OrderOfBattleFormationData(captain, heroTroops, orderOfBattleClass, primaryWeight, secondaryWeight, filters));
 		}
-		_orderOfBattleBehavior.SetFormationInfos(list, Mission.Current.IsSiegeBattle);
+		_orderOfBattleBehavior.SetFormationInfos(list, Mission.Current.IsSiegeBattle, MobileParty.MainParty.Army != null);
 	}
 
 	protected override List<TooltipProperty> GetAgentTooltip(Agent agent)

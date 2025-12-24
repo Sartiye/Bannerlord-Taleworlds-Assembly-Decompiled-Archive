@@ -389,7 +389,8 @@ public class GameMenuVM : ViewModel
 					TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType virtualMenuAndOptionType = _gameMenuManager.GetVirtualMenuAndOptionType(MenuContext);
 					GameMenuOption virtualGameMenuOption = _gameMenuManager.GetVirtualGameMenuOption(MenuContext, i);
 					GameKey shortcutKey = (_shortcutKeys.ContainsKey(virtualGameMenuOption.OptionLeaveType) ? _shortcutKeys[virtualGameMenuOption.OptionLeaveType] : null);
-					GameMenuItemVM.GameMenuItemCreationData item = new GameMenuItemVM.GameMenuItemCreationData(MenuContext, i, textObject3, textObject4.IsEmpty() ? textObject3 : textObject4, tooltip, virtualMenuAndOptionType, virtualGameMenuOption, shortcutKey);
+					GameMenuOption.IssueQuestFlags optionQuestData = virtualGameMenuOption.OptionQuestData;
+					GameMenuItemVM.GameMenuItemCreationData item = new GameMenuItemVM.GameMenuItemCreationData(MenuContext, i, textObject3, textObject4.IsEmpty() ? textObject3 : textObject4, tooltip, virtualMenuAndOptionType, optionQuestData, virtualGameMenuOption, shortcutKey);
 					_newOptionsCache.Add(item);
 					if (virtualMenuAndOptionType == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption || virtualMenuAndOptionType == TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.WaitMenuShowProgressAndHoursOption)
 					{

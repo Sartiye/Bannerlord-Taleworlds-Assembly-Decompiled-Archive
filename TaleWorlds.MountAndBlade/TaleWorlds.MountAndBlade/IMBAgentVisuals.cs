@@ -152,6 +152,9 @@ internal interface IMBAgentVisuals
 	[EngineMethod("get_entity", false, null, false)]
 	GameEntity GetEntity(UIntPtr agentVisualsPtr);
 
+	[EngineMethod("get_entity_pointer", false, null, false)]
+	UIntPtr GetEntityPointer(UIntPtr agentVisualsPtr);
+
 	[EngineMethod("is_valid", false, null, false)]
 	bool IsValid(UIntPtr agentVisualsPtr);
 

@@ -145,21 +145,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 
 	private ImageWidget _widget_2;
 
-	private CircleLoadingAnimWidget _widget_2_0;
-
-	private Widget _widget_2_0_0;
-
-	private Widget _widget_2_0_1;
-
-	private Widget _widget_2_0_2;
-
-	private Widget _widget_2_0_3;
-
-	private Widget _widget_2_0_4;
-
-	private Widget _widget_2_0_5;
-
-	private Widget _widget_2_0_6;
+	private SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dependency_4_Standard_CircleLoadingWidget__DependendPrefab _widget_2_0;
 
 	private SaveLoadVM _datasource_Root;
 
@@ -355,22 +341,9 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_4_0_1_0.AddChild(_widget_1_1_4_0_1_0_0);
 		_widget_2 = new ImageWidget(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_2_0 = new CircleLoadingAnimWidget(base.Context);
+		_widget_2_0 = new SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dependency_4_Standard_CircleLoadingWidget__DependendPrefab(base.Context);
 		_widget_2.AddChild(_widget_2_0);
-		_widget_2_0_0 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_0);
-		_widget_2_0_1 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_1);
-		_widget_2_0_2 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_2);
-		_widget_2_0_3 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_3);
-		_widget_2_0_4 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_4);
-		_widget_2_0_5 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_5);
-		_widget_2_0_6 = new Widget(base.Context);
-		_widget_2_0.AddChild(_widget_2_0_6);
+		_widget_2_0.CreateWidgets();
 	}
 
 	public void SetIds()
@@ -394,6 +367,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_4_0_0_1_1.Id = "VerticalScrollbar";
 		_widget_1_1_4_0_0_1_1_1.Id = "VerticalScrollbarHandle";
 		_widget_1_1_4_0_1.Id = "DeleteButton";
+		_widget_2_0.SetIds();
 	}
 
 	public void SetAttributes()
@@ -760,56 +734,11 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.Brush = base.Context.GetBrush("Saveload.Blocker");
+		_widget_2_0.SetAttributes();
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_2_0.CircleRadius = 16f;
-		_widget_2_0.NumOfCirclesInASecond = 0.5f;
-		_widget_2_0.StaySeconds = -1f;
-		_widget_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_0.SuggestedWidth = 12f;
-		_widget_2_0_0.SuggestedHeight = 12f;
-		_widget_2_0_0.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_0.AlphaFactor = 0.6f;
-		_widget_2_0_0.Color = new Color(0.9490197f, 35f / 51f, 0.282353f);
-		_widget_2_0_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_1.SuggestedWidth = 12f;
-		_widget_2_0_1.SuggestedHeight = 12f;
-		_widget_2_0_1.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_1.AlphaFactor = 0.6f;
-		_widget_2_0_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_2.SuggestedWidth = 12f;
-		_widget_2_0_2.SuggestedHeight = 12f;
-		_widget_2_0_2.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_2.AlphaFactor = 0.6f;
-		_widget_2_0_3.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_3.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_3.SuggestedWidth = 12f;
-		_widget_2_0_3.SuggestedHeight = 12f;
-		_widget_2_0_3.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_3.AlphaFactor = 0.6f;
-		_widget_2_0_4.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_4.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_4.SuggestedWidth = 12f;
-		_widget_2_0_4.SuggestedHeight = 12f;
-		_widget_2_0_4.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_4.AlphaFactor = 0.6f;
-		_widget_2_0_5.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_5.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_5.SuggestedWidth = 12f;
-		_widget_2_0_5.SuggestedHeight = 12f;
-		_widget_2_0_5.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_5.AlphaFactor = 0.6f;
-		_widget_2_0_6.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_6.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_0_6.SuggestedWidth = 12f;
-		_widget_2_0_6.SuggestedHeight = 12f;
-		_widget_2_0_6.Sprite = base.Context.SpriteData.GetSprite("MapMenuUnread@2x");
-		_widget_2_0_6.AlphaFactor = 0.6f;
 	}
 
 	public void RefreshBindingWithChildren()
@@ -825,6 +754,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		{
 			return;
 		}
+		_widget_2_0.DestroyDataSource();
 		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -3299,6 +3229,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 	{
 		if (_datasource_Root != null)
 		{
+			_widget_2_0.SetDataSource(null);
 			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -4082,6 +4013,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 			_widget_1_1_4_0_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_1_4_0_1_0_0;
 			_widget_1_1_4_0_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_1_4_0_1_0_0;
 		}
+		_widget_2_0.SetDataSource(_datasource_Root);
 	}
 
 	private void RefreshDataSource_datasource_Root_CreateNewSaveHint(HintViewModel newDataSource)

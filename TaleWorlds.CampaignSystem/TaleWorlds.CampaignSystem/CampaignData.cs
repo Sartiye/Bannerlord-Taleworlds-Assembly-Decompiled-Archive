@@ -4,6 +4,8 @@ namespace TaleWorlds.CampaignSystem;
 
 public static class CampaignData
 {
+	public const string MainStorylineSpecialQuestType = "MainStoryline";
+
 	public const string MainHeroTag = "main_hero";
 
 	public const string PlayerTag = "spawnpoint_player";

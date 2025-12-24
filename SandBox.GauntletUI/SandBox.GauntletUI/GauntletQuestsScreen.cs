@@ -15,7 +15,7 @@ namespace SandBox.GauntletUI;
 [GameStateScreen(typeof(QuestsState))]
 public class GauntletQuestsScreen : ScreenBase, IGameStateListener
 {
-	private QuestsVM _dataSource;
+	protected QuestsVM _dataSource;
 
 	private GauntletLayer _gauntletLayer;
 

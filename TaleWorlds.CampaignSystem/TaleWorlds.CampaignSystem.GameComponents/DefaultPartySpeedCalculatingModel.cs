@@ -56,7 +56,7 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 
 	private static readonly TextObject _sturgiaSnowBonus = new TextObject("{=0VfEGekD}Sturgia snow bonus");
 
-	private static readonly TextObject _culture = GameTexts.FindText("str_culture");
+	private readonly TextObject _culture = GameTexts.FindText("str_culture");
 
 	private const float MovingAtForestEffect = -0.3f;
 

@@ -13,8 +13,8 @@ public static class DistanceHelper
 
 	public static float FindClosestDistanceFromSettlementToSettlement(Settlement fromSettlement, Settlement toSettlement, MobileParty.NavigationType navCapabilities, out bool isFromPort, out bool isTargetingPort, out float landRatio)
 	{
-		bool num = navCapabilities.HasFlag(MobileParty.NavigationType.Naval);
-		bool flag = navCapabilities.HasFlag(MobileParty.NavigationType.Default);
+		bool num = (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval;
+		bool flag = (navCapabilities & MobileParty.NavigationType.Default) == MobileParty.NavigationType.Default;
 		bool flag2 = num && fromSettlement.HasPort && fromSettlement != toSettlement;
 		bool flag3 = num && toSettlement.HasPort && fromSettlement != toSettlement;
 		float num2 = Campaign.Current.Models.MapDistanceModel.GetDistance(fromSettlement, toSettlement, isFromPort: false, isTargetingPort: false, navCapabilities, out landRatio);
@@ -56,8 +56,8 @@ public static class DistanceHelper
 	private static float FindClosestDistanceFromSettlementToSettlementForMobileParty(MobileParty mobileParty, Settlement toSettlement, MobileParty.NavigationType navCapabilities, out bool isFromPort, out bool isTargetingPort, out float landRatio)
 	{
 		Settlement currentSettlement = mobileParty.CurrentSettlement;
-		bool num = navCapabilities.HasFlag(MobileParty.NavigationType.Naval);
-		bool flag = navCapabilities.HasFlag(MobileParty.NavigationType.Default);
+		bool num = (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval;
+		bool flag = (navCapabilities & MobileParty.NavigationType.Default) == MobileParty.NavigationType.Default;
 		bool flag2 = num && currentSettlement.HasPort && currentSettlement != toSettlement;
 		bool flag3 = num && toSettlement.HasPort && currentSettlement != toSettlement;
 		float num2 = float.MaxValue;
@@ -145,8 +145,8 @@ public static class DistanceHelper
 		}
 		else
 		{
-			bool num2 = navCapabilities.HasFlag(MobileParty.NavigationType.Naval);
-			if (navCapabilities.HasFlag(MobileParty.NavigationType.Default))
+			bool num2 = (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval;
+			if ((navCapabilities & MobileParty.NavigationType.Default) == MobileParty.NavigationType.Default)
 			{
 				num = Campaign.Current.Models.MapDistanceModel.GetDistance(fromMobileParty, toSettlement, isTargetingPort: false, navCapabilities, out landRatio);
 			}
@@ -223,7 +223,7 @@ public static class DistanceHelper
 
 	public static float FindClosestDistanceFromSettlementToPoint(Settlement fromSettlement, CampaignVec2 point, MobileParty.NavigationType navCapabilities, out bool isFromPort)
 	{
-		bool num = navCapabilities.HasFlag(MobileParty.NavigationType.Naval) && fromSettlement.HasPort;
+		bool num = (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval && fromSettlement.HasPort;
 		isFromPort = false;
 		float num2 = Campaign.Current.Models.MapDistanceModel.GetDistance(fromSettlement, in point, !point.IsOnLand, navCapabilities);
 		if (num)
@@ -254,7 +254,7 @@ public static class DistanceHelper
 		CampaignVec2 toPoint = mapPoint.Position;
 		float num = mapDistanceModel.GetDistance(toSettlement, in toPoint, isFromPort: false, navCapabilities);
 		landRatio = 1f;
-		if (navCapabilities.HasFlag(MobileParty.NavigationType.Naval) && toSettlement.HasPort)
+		if ((navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval && toSettlement.HasPort)
 		{
 			MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
 			toPoint = mapPoint.Position;
@@ -277,9 +277,9 @@ public static class DistanceHelper
 	private static float FindClosestDistanceFromSettlementToPointForMobileParty(MobileParty mobileParty, CampaignVec2 point, MobileParty.NavigationType navCapabilities, out float landRatio)
 	{
 		Settlement currentSettlement = mobileParty.CurrentSettlement;
-		if ((!mobileParty.IsCurrentlyAtSea || navCapabilities.HasFlag(MobileParty.NavigationType.Naval)) && (mobileParty.IsCurrentlyAtSea || navCapabilities.HasFlag(MobileParty.NavigationType.Default)))
+		if ((!mobileParty.IsCurrentlyAtSea || (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval) && (mobileParty.IsCurrentlyAtSea || (navCapabilities & MobileParty.NavigationType.Default) == MobileParty.NavigationType.Default))
 		{
-			bool flag = navCapabilities.HasFlag(MobileParty.NavigationType.Naval) && currentSettlement.HasPort;
+			bool flag = (navCapabilities & MobileParty.NavigationType.Naval) == MobileParty.NavigationType.Naval && currentSettlement.HasPort;
 			float num = float.MaxValue;
 			if (navCapabilities != MobileParty.NavigationType.Naval)
 			{

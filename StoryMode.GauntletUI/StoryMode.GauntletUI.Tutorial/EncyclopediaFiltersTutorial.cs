@@ -28,7 +28,7 @@ public class EncyclopediaFiltersTutorial : TutorialItemBase
 	{
 		bool isActive = _isActive;
 		EncyclopediaPages currentEncyclopediaPage = TutorialHelper.CurrentEncyclopediaPage;
-		if ((uint)(currentEncyclopediaPage - 2) <= 5u)
+		if ((uint)(currentEncyclopediaPage - 2) <= 6u)
 		{
 			_isActive = true;
 		}

@@ -2156,7 +2156,7 @@ public static class CampaignCheats
 		{
 			return "Can't declare between same factions";
 		}
-		if (!Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(obj, obj2, checkOtherSideTradeSupport: true, out var reason))
+		if (!Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(obj, obj2, checkOtherSideTradeSupport: true, out var reason, includeReason: true))
 		{
 			return reason.ToString();
 		}
@@ -3448,7 +3448,7 @@ public static class CampaignCheats
 		return null;
 	}
 
-	public static bool CanPartyGetAnythingFromCheat(PartyBase party)
+	public static bool IsPartySuitableToUseCheat(PartyBase party)
 	{
 		if (party.MapEvent == null && party.SiegeEvent == null && party.IsActive)
 		{

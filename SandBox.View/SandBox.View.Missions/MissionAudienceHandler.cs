@@ -181,6 +181,8 @@ public class MissionAudienceHandler : MissionView
 					.ClothingColor2(Settlement.CurrentSettlement.MapFaction.Color2)
 					.CanSpawnOutsideOfMissionBoundary(canSpawn: true);
 				Agent agent = Mission.Current.SpawnAgent(agentBuildData2);
+				AnimationSystemData animationSystemData = MonsterExtensions.FillAnimationSystemData(actionSet: MBActionSet.GetActionSetWithIndex(0), monster: agentBuildData2.AgentMonster, stepSize: randomAudienceCharacterToSpawn.GetStepSize(), hasClippingPlane: false);
+				agent.SetActionSet(ref animationSystemData);
 				MBAnimation.PrefetchAnimationClip(agent.ActionSet, ActionIndexCache.act_arena_spectator);
 				agent.SetActionChannel(0, in ActionIndexCache.act_arena_spectator, ignorePriority: true, (AnimFlags)0uL, 0f, MBRandom.RandomFloatRanged(0.75f, 1f), -0.2f, 0.4f, MBRandom.RandomFloatRanged(0.01f, 1f));
 				agent.Controller = AgentControllerType.None;

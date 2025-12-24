@@ -501,7 +501,7 @@ public class BasicCharacterTableau
 				metaMesh.ManualInvalidate();
 			}
 			gameEntity.SetGlobalFrame(in _initialSpawnFrame);
-			SkinGenerationParams skinParams = new SkinGenerationParams((int)_skinMeshesMask, _underwearType, (int)_bodyMeshType, (int)_hairCoverType, (int)_beardCoverType, (int)_bodyDeformType, prepareImmediately: true, _faceDirtAmount, flag ? 1 : 0, _race, useTranslucency: false, useTesselation: false);
+			SkinGenerationParams skinParams = new SkinGenerationParams((int)_skinMeshesMask, _underwearType, (int)_bodyMeshType, (int)_hairCoverType, (int)_beardCoverType, (int)_bodyDeformType, prepareImmediately: true, _faceDirtAmount, flag ? 1 : 0, _race, useTranslucency: false, useTesselation: false, 0);
 			MBAgentVisuals.FillEntityWithBodyMeshesWithoutAgentVisuals(gameEntity, skinParams, _bodyProperties, glovesMesh);
 			gameEntity.Skeleton.SetAgentActionChannel(0, in ActionIndexCache.act_inventory_idle);
 			gameEntity.SetEnforcedMaximumLodLevel(0);

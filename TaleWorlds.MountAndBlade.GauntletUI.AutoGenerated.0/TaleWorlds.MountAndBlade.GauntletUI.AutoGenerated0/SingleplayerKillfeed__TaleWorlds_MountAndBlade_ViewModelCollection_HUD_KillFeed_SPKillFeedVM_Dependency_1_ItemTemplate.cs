@@ -37,20 +37,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 	{
 	}
 
-	private VisualDefinition CreateVisualDefinitionPersonalKillFeed()
-	{
-		VisualDefinition visualDefinition = new VisualDefinition("PersonalKillFeed", 0.62f, 0f, AnimationInterpolation.Type.EaseInOut, AnimationInterpolation.Function.Cubic);
-		visualDefinition.AddVisualState(new VisualState("Default")
-		{
-			PositionYOffset = 0f
-		});
-		visualDefinition.AddVisualState(new VisualState("Passive")
-		{
-			PositionYOffset = -60f
-		});
-		return visualDefinition;
-	}
-
 	public void CreateWidgets()
 	{
 		_widget = this;

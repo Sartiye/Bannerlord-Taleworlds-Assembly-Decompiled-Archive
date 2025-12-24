@@ -7,6 +7,12 @@ public class StyleLayer : IBrushLayerData, IDataSource
 {
 	private uint _localVersion;
 
+	private bool _isImageFitTypeChanged;
+
+	private bool _isImageFitHorizontalAlignmentChanged;
+
+	private bool _isImageFitVerticalAlignmentChanged;
+
 	private bool _isSpriteChanged;
 
 	private bool _isColorChanged;
@@ -62,6 +68,12 @@ public class StyleLayer : IBrushLayerData, IDataSource
 	private bool _isUseRandomBaseOverlayXOffset;
 
 	private bool _isUseRandomBaseOverlayYOffset;
+
+	private ImageFit.ImageFitTypes _imageFitType;
+
+	private ImageFit.ImageHorizontalAlignments _imageFitHorizontalAlignment;
+
+	private ImageFit.ImageVerticalAlignments _imageFitVerticalAlignment;
 
 	private Sprite _sprite;
 
@@ -152,6 +164,72 @@ public class StyleLayer : IBrushLayerData, IDataSource
 			{
 				_isSpriteChanged = SourceLayer.Sprite != value;
 				_sprite = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageFitTypes ImageFitType
+	{
+		get
+		{
+			if (_isImageFitTypeChanged)
+			{
+				return _imageFitType;
+			}
+			return SourceLayer.ImageFitType;
+		}
+		set
+		{
+			if (value != ImageFitType)
+			{
+				_isImageFitTypeChanged = SourceLayer.ImageFitType != value;
+				_imageFitType = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageHorizontalAlignments ImageFitHorizontalAlignment
+	{
+		get
+		{
+			if (_isImageFitHorizontalAlignmentChanged)
+			{
+				return _imageFitHorizontalAlignment;
+			}
+			return SourceLayer.ImageFitHorizontalAlignment;
+		}
+		set
+		{
+			if (value != ImageFitHorizontalAlignment)
+			{
+				_isImageFitHorizontalAlignmentChanged = SourceLayer.ImageFitHorizontalAlignment != value;
+				_imageFitHorizontalAlignment = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public ImageFit.ImageVerticalAlignments ImageFitVerticalAlignment
+	{
+		get
+		{
+			if (_isImageFitVerticalAlignmentChanged)
+			{
+				return _imageFitVerticalAlignment;
+			}
+			return SourceLayer.ImageFitVerticalAlignment;
+		}
+		set
+		{
+			if (value != ImageFitVerticalAlignment)
+			{
+				_isImageFitVerticalAlignmentChanged = SourceLayer.ImageFitVerticalAlignment != value;
+				_imageFitVerticalAlignment = value;
 				_localVersion++;
 			}
 		}
@@ -830,7 +908,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlayYOffset:
 			return OverlayYOffset;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsFloat", 862);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsFloat", 940);
 			return 0f;
 		}
 	}
@@ -841,7 +919,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		{
 			return Color;
 		}
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsColor", 876);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsColor", 954);
 		return Color.Black;
 	}
 
@@ -854,7 +932,7 @@ public class StyleLayer : IBrushLayerData, IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.OverlaySprite:
 			return OverlaySprite;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsSprite", 893);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\StyleLayer.cs", "GetValueAsSprite", 971);
 			return null;
 		}
 	}

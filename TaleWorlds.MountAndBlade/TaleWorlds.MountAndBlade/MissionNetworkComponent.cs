@@ -28,9 +28,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		if (GameNetwork.IsClientOrReplay)
 		{
 			registerer.RegisterBaseHandler<CreateFreeMountAgent>(HandleServerEventCreateFreeMountAgentEvent);
-			registerer.RegisterBaseHandler<CreateFreeCorpseMountAgent>(HandleServerEventCreateFreeCorpseMountAgentEvent);
 			registerer.RegisterBaseHandler<CreateAgent>(HandleServerEventCreateAgent);
-			registerer.RegisterBaseHandler<CreateCorpseAgent>(HandleServerEventCreateCorpseAgent);
 			registerer.RegisterBaseHandler<SynchronizeAgentSpawnEquipment>(HandleServerEventSynchronizeAgentEquipment);
 			registerer.RegisterBaseHandler<CreateAgentVisuals>(HandleServerEventCreateAgentVisuals);
 			registerer.RegisterBaseHandler<RemoveAgentVisualsForPeer>(HandleServerEventRemoveAgentVisualsForPeer);
@@ -204,26 +202,6 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		mission.SpawnMonster(horseItem, horseHarnessItem, in initialPosition, in initialDirection, createFreeMountAgent.AgentIndex);
 	}
 
-	private void HandleServerEventCreateFreeCorpseMountAgentEvent(GameNetworkMessage baseMessage)
-	{
-		CreateFreeCorpseMountAgent createFreeCorpseMountAgent = (CreateFreeCorpseMountAgent)baseMessage;
-		Mission mission = base.Mission;
-		EquipmentElement horseItem = createFreeCorpseMountAgent.HorseItem;
-		EquipmentElement horseHarnessItem = createFreeCorpseMountAgent.HorseHarnessItem;
-		Vec3 initialPosition = createFreeCorpseMountAgent.Position;
-		Vec2 initialDirection = createFreeCorpseMountAgent.Direction.Normalized();
-		Agent agent = mission.SpawnMonster(horseItem, horseHarnessItem, in initialPosition, in initialDirection, createFreeCorpseMountAgent.AgentIndex);
-		int attachedWeaponCount = createFreeCorpseMountAgent.AttachedWeaponCount;
-		for (int i = 0; i < attachedWeaponCount; i++)
-		{
-			MatrixFrame attachLocalFrame = createFreeCorpseMountAgent.AttachedWeaponsLocalFrames[i];
-			sbyte boneIndex = createFreeCorpseMountAgent.AttachedWeaponsBoneIndices[i];
-			MissionWeapon weapon = createFreeCorpseMountAgent.AttachedWeapons[i];
-			agent.AttachWeaponToBone(weapon, null, boneIndex, ref attachLocalFrame);
-		}
-		agent.MakeDead(isKilled: true, (createFreeCorpseMountAgent.DeathActionIndex == ActionIndexCache.act_none) ? ActionIndexCache.act_horse_fall_right : createFreeCorpseMountAgent.DeathActionIndex);
-	}
-
 	private void HandleServerEventCreateAgent(GameNetworkMessage baseMessage)
 	{
 		CreateAgent createAgent = (CreateAgent)baseMessage;
@@ -271,67 +249,6 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		agentBuildData3.Banner(banner);
 		_ = base.Mission.SpawnAgent(agentBuildData3).MountAgent;
-	}
-
-	private void HandleServerEventCreateCorpseAgent(GameNetworkMessage baseMessage)
-	{
-		CreateCorpseAgent createCorpseAgent = (CreateCorpseAgent)baseMessage;
-		BasicCharacterObject character = createCorpseAgent.Character;
-		MissionPeer missionPeer = createCorpseAgent.Peer?.GetComponent<MissionPeer>();
-		Team teamFromTeamIndex = Mission.MissionNetworkHelper.GetTeamFromTeamIndex(createCorpseAgent.TeamIndex);
-		AgentBuildData agentBuildData = new AgentBuildData(character).MissionPeer(createCorpseAgent.IsPlayerAgent ? missionPeer : null).Monster(createCorpseAgent.Monster).TroopOrigin(new BasicBattleAgentOrigin(character))
-			.Equipment(createCorpseAgent.SpawnEquipment)
-			.EquipmentSeed(createCorpseAgent.BodyPropertiesSeed);
-		Vec3 position = createCorpseAgent.Position;
-		AgentBuildData agentBuildData2 = agentBuildData.InitialPosition(in position);
-		Vec2 direction = createCorpseAgent.Direction.Normalized();
-		AgentBuildData agentBuildData3 = agentBuildData2.InitialDirection(in direction).MissionEquipment(createCorpseAgent.MissionEquipment).Team(teamFromTeamIndex)
-			.Index(createCorpseAgent.AgentIndex)
-			.MountIndex(createCorpseAgent.MountAgentIndex)
-			.IsFemale(createCorpseAgent.IsFemale)
-			.ClothingColor1(createCorpseAgent.ClothingColor1)
-			.ClothingColor2(createCorpseAgent.ClothingColor2);
-		Formation formation = null;
-		if (teamFromTeamIndex != null && createCorpseAgent.FormationIndex >= 0 && !GameNetwork.IsReplay)
-		{
-			formation = teamFromTeamIndex.GetFormation((FormationClass)createCorpseAgent.FormationIndex);
-			agentBuildData3.Formation(formation);
-		}
-		if (createCorpseAgent.IsPlayerAgent)
-		{
-			agentBuildData3.BodyProperties(missionPeer.Peer.BodyProperties);
-			agentBuildData3.Age((int)agentBuildData3.AgentBodyProperties.Age);
-		}
-		else
-		{
-			agentBuildData3.BodyProperties(BodyProperties.GetRandomBodyProperties(agentBuildData3.AgentRace, agentBuildData3.AgentIsFemale, character.GetBodyPropertiesMin(), character.GetBodyPropertiesMax(), (int)agentBuildData3.AgentOverridenSpawnEquipment.HairCoverType, agentBuildData3.AgentEquipmentSeed, character.BodyPropertyRange.HairTags, character.BodyPropertyRange.BeardTags, character.BodyPropertyRange.TattooTags));
-		}
-		Banner banner = null;
-		if (formation != null)
-		{
-			if (!string.IsNullOrEmpty(formation.BannerCode))
-			{
-				banner = ((formation.Banner != null) ? formation.Banner : (formation.Banner = new Banner(formation.BannerCode, teamFromTeamIndex.Color, teamFromTeamIndex.Color2)));
-			}
-		}
-		else if (missionPeer != null)
-		{
-			banner = new Banner(missionPeer.Peer.BannerCode, teamFromTeamIndex.Color, teamFromTeamIndex.Color2);
-		}
-		agentBuildData3.Banner(banner);
-		Agent agent = base.Mission.SpawnAgent(agentBuildData3);
-		int attachedWeaponCount = createCorpseAgent.AttachedWeaponCount;
-		for (int i = 0; i < attachedWeaponCount; i++)
-		{
-			MatrixFrame attachLocalFrame = createCorpseAgent.AttachedWeaponsLocalFrames[i];
-			sbyte boneIndex = createCorpseAgent.AttachedWeaponsBoneIndices[i];
-			MissionWeapon weapon = createCorpseAgent.AttachedWeapons[i];
-			agent.AttachWeaponToBone(weapon, null, boneIndex, ref attachLocalFrame);
-		}
-		MBActionSet actionSet = MBActionSet.GetActionSet("as_human_warrior");
-		AnimationSystemData animationSystemData = agent.Monster.FillAnimationSystemData(actionSet, agent.Character.GetStepSize(), hasClippingPlane: false);
-		agent.SetActionSet(ref animationSystemData);
-		agent.MakeDead(isKilled: true, (createCorpseAgent.DeathActionIndex == ActionIndexCache.act_none) ? ActionIndexCache.act_death_by_arrow_pelvis : createCorpseAgent.DeathActionIndex, createCorpseAgent.CorpsesToFadeIndex);
 	}
 
 	private void HandleServerEventSynchronizeAgentEquipment(GameNetworkMessage baseMessage)
@@ -443,7 +360,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 579);
+			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 468);
 		}
 	}
 
@@ -920,14 +837,16 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	private void HandleServerEventSynchronizeMissionObject(GameNetworkMessage baseMessage)
 	{
 		SynchronizeMissionObject synchronizeMissionObject = (SynchronizeMissionObject)baseMessage;
-		(Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(synchronizeMissionObject.MissionObjectId) as SynchedMissionObject).OnAfterReadFromNetwork(synchronizeMissionObject.RecordPair);
+		SynchedMissionObject obj = Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(synchronizeMissionObject.MissionObjectId) as SynchedMissionObject;
+		(BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) recordPair = synchronizeMissionObject.RecordPair;
+		obj.OnAfterReadFromNetwork(recordPair);
 	}
 
 	private void HandleServerEventSpawnWeaponWithNewEntity(GameNetworkMessage baseMessage)
 	{
 		SpawnWeaponWithNewEntity spawnWeaponWithNewEntity = (SpawnWeaponWithNewEntity)baseMessage;
 		MissionObject missionObjectFromMissionObjectId = Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(spawnWeaponWithNewEntity.ParentMissionObjectId);
-		GameEntity gameEntity = base.Mission.SpawnWeaponWithNewEntityAux(spawnWeaponWithNewEntity.Weapon, spawnWeaponWithNewEntity.WeaponSpawnFlags, spawnWeaponWithNewEntity.Frame, spawnWeaponWithNewEntity.ForcedIndex, missionObjectFromMissionObjectId, spawnWeaponWithNewEntity.HasLifeTime);
+		GameEntity gameEntity = base.Mission.SpawnWeaponWithNewEntityAux(spawnWeaponWithNewEntity.Weapon, spawnWeaponWithNewEntity.WeaponSpawnFlags, spawnWeaponWithNewEntity.Frame, spawnWeaponWithNewEntity.ForcedIndex, missionObjectFromMissionObjectId, spawnWeaponWithNewEntity.HasLifeTime, spawnWeaponWithNewEntity.SpawnedOnACorpse);
 		if (!spawnWeaponWithNewEntity.IsVisible)
 		{
 			gameEntity.SetVisibilityExcludeParents(visible: false);
@@ -1610,22 +1529,6 @@ public sealed class MissionNetworkComponent : MissionNetwork
 				MBDebug.Print("agent not sending " + agent.Index, 0, Debug.DebugColor.White, 17179869184uL);
 			}
 		}
-		for (int n = 0; n < base.Mission.CorpseAgentInfos.Count; n++)
-		{
-			Mission.CorpseAgentInfo corpseAgentInfo = base.Mission.CorpseAgentInfos[n];
-			if (corpseAgentInfo.IsMount)
-			{
-				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new CreateFreeCorpseMountAgent(-1, corpseAgentInfo.CorpseSpawnEquipment.GetEquipmentFromSlot(EquipmentIndex.ArmorItemEndSlot), corpseAgentInfo.CorpseSpawnEquipment.GetEquipmentFromSlot(EquipmentIndex.HorseHarness), corpseAgentInfo.CorpsePosition, corpseAgentInfo.CorpseMovementDirection, n, corpseAgentInfo.CorpseDeathActionIndex, corpseAgentInfo.AttachedWeapons.Count, corpseAgentInfo.AttachedWeapons, corpseAgentInfo.AttachedWeaponBoneIndices, corpseAgentInfo.AttachedWeaponFrames));
-				GameNetwork.EndModuleEventAsServer();
-			}
-			else
-			{
-				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new CreateCorpseAgent(-1, corpseAgentInfo.CorpseBasicCharacterObject, corpseAgentInfo.CorpseMonster, corpseAgentInfo.CorpseSpawnEquipment, corpseAgentInfo.CorpseMissionEquipment, corpseAgentInfo.CorpseBodyPropertiesValue, corpseAgentInfo.CorpseBodyPropertiesSeed, corpseAgentInfo.CorpseIsFemale, corpseAgentInfo.CorpseTeamIndex, corpseAgentInfo.CorpseFormationIndex, corpseAgentInfo.CorpseClothingColor1, corpseAgentInfo.CorpseClothingColor2, -1, null, isPlayerAgent: false, corpseAgentInfo.CorpsePosition, corpseAgentInfo.CorpseMovementDirection, corpseAgentInfo.CorpseMissionPeer?.GetNetworkPeer() ?? corpseAgentInfo.CorpseOwningAgentMissionPeer?.GetNetworkPeer(), corpseAgentInfo.CorpseDeathActionIndex, n, corpseAgentInfo.AttachedWeapons.Count, corpseAgentInfo.AttachedWeapons, corpseAgentInfo.AttachedWeaponBoneIndices, corpseAgentInfo.AttachedWeaponFrames));
-				GameNetwork.EndModuleEventAsServer();
-			}
-		}
 		MBDebug.Print("agents sending end-", 0, Debug.DebugColor.White, 17179869184uL);
 	}
 
@@ -1656,9 +1559,9 @@ public sealed class MissionNetworkComponent : MissionNetwork
 					weaponSpawnFlags = (weaponSpawnFlags & ~Mission.WeaponSpawnFlags.WithPhysics) | Mission.WeaponSpawnFlags.WithStaticPhysics;
 				}
 				bool hasLifeTime = true;
-				bool isVisible = !gameEntity.Parent.IsValid || missionObject2 != null;
+				bool isVisible = !spawnedItemEntity.SpawnedOnACorpse && (!gameEntity.Parent.IsValid || missionObject2 != null);
 				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(spawnedItemEntity.WeaponCopy, weaponSpawnFlags, spawnedItemEntity.Id.Id, frame, missionObject2?.Id ?? MissionObjectId.Invalid, isVisible, hasLifeTime));
+				GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(spawnedItemEntity.WeaponCopy, weaponSpawnFlags, spawnedItemEntity.Id.Id, frame, missionObject2?.Id ?? MissionObjectId.Invalid, isVisible, hasLifeTime, spawnedItemEntity.SpawnedOnACorpse));
 				GameNetwork.EndModuleEventAsServer();
 				for (int i = 0; i < spawnedItemEntity.WeaponCopy.GetAttachedWeaponsCount(); i++)
 				{

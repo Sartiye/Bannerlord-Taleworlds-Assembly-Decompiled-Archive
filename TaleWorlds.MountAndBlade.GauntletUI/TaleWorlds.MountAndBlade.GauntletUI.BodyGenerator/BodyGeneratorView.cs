@@ -639,7 +639,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 		if (TaleWorlds.MountAndBlade.Mission.Current != null)
 		{
 			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.UpdateBodyProperties(BodyGen.CurrentBodyProperties);
-			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false);
+			TaleWorlds.MountAndBlade.Mission.Current.MainAgent.EquipItemsFromSpawnEquipment(neededBatchedItems: false, prepareImmediately: false, useFaceCache: false, 0);
 		}
 		_affirmativeAction();
 	}

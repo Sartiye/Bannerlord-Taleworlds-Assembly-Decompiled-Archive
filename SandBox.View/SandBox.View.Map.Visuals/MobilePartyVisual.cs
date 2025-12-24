@@ -257,20 +257,20 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 			{
 				MatrixFrame frame3 = frame;
 				frame3.rotation.ApplyScaleLocal(HumanAgentVisuals.GetScale());
-				HumanAgentVisuals.GetEntity().SetFrame(ref frame3);
+				HumanAgentVisuals.GetWeakEntity().SetFrame(ref frame3);
 			}
 			if (MountAgentVisuals != null)
 			{
 				MatrixFrame frame4 = frame;
 				frame4.rotation.ApplyScaleLocal(MountAgentVisuals.GetScale());
-				MountAgentVisuals.GetEntity().SetFrame(ref frame4);
+				MountAgentVisuals.GetWeakEntity().SetFrame(ref frame4);
 			}
 			if (CaravanMountAgentVisuals != null)
 			{
 				MatrixFrame m = CaravanMountAgentVisuals.GetFrame();
 				MatrixFrame frame5 = frame.TransformToParent(in m);
 				frame5.rotation.ApplyScaleLocal(CaravanMountAgentVisuals.GetScale());
-				CaravanMountAgentVisuals.GetEntity().SetFrame(ref frame5);
+				CaravanMountAgentVisuals.GetWeakEntity().SetFrame(ref frame5);
 			}
 		}
 		ApplyWindEffect();
@@ -322,9 +322,30 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 		_bearingRotation = base.MapEntity.MobileParty.Bearing.RotationInRadians;
 		StrategicEntity.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
-		HumanAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
-		MountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
-		CaravanMountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
+		if (HumanAgentVisuals != null)
+		{
+			WeakGameEntity weakEntity = HumanAgentVisuals.GetWeakEntity();
+			if (weakEntity != WeakGameEntity.Invalid)
+			{
+				weakEntity.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
+			}
+		}
+		if (MountAgentVisuals != null)
+		{
+			WeakGameEntity weakEntity2 = MountAgentVisuals.GetWeakEntity();
+			if (weakEntity2 != WeakGameEntity.Invalid)
+			{
+				weakEntity2.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
+			}
+		}
+		if (CaravanMountAgentVisuals != null)
+		{
+			WeakGameEntity weakEntity3 = CaravanMountAgentVisuals.GetWeakEntity();
+			if (weakEntity3 != WeakGameEntity.Invalid)
+			{
+				weakEntity3.SetVisibilityExcludeParents(base.MapEntity.IsVisible);
+			}
+		}
 		StrategicEntity.SetReadyToRender(ready: true);
 		StrategicEntity.SetEntityEnvMapVisibility(value: false);
 		_entityAlpha = 0f;
@@ -351,33 +372,116 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 				if (_entityAlpha <= 0f)
 				{
 					StrategicEntity.SetVisibilityExcludeParents(visible: true);
-					HumanAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: true);
-					MountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: true);
-					CaravanMountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: true);
+					if (HumanAgentVisuals != null)
+					{
+						WeakGameEntity weakEntity = HumanAgentVisuals.GetWeakEntity();
+						if (weakEntity != WeakGameEntity.Invalid)
+						{
+							weakEntity.SetVisibilityExcludeParents(visible: true);
+						}
+					}
+					if (MountAgentVisuals != null)
+					{
+						WeakGameEntity weakEntity2 = MountAgentVisuals.GetWeakEntity();
+						if (weakEntity2 != WeakGameEntity.Invalid)
+						{
+							weakEntity2.SetVisibilityExcludeParents(visible: true);
+						}
+					}
+					if (CaravanMountAgentVisuals != null)
+					{
+						WeakGameEntity weakEntity3 = CaravanMountAgentVisuals.GetWeakEntity();
+						if (weakEntity3 != WeakGameEntity.Invalid)
+						{
+							weakEntity3.SetVisibilityExcludeParents(visible: true);
+						}
+					}
 				}
 				_entityAlpha = TaleWorlds.Library.MathF.Min(_entityAlpha + TaleWorlds.Library.MathF.Max(realDt, 1E-05f), 1f);
 				StrategicEntity.SetAlpha(_entityAlpha);
-				HumanAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				MountAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				CaravanMountAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				StrategicEntity.EntityFlags &= ~EntityFlags.DoNotTick;
-			}
-			else
-			{
-				_entityAlpha = TaleWorlds.Library.MathF.Max(_entityAlpha - TaleWorlds.Library.MathF.Max(realDt, 1E-05f), 0f);
-				StrategicEntity.SetAlpha(_entityAlpha);
-				HumanAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				MountAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				CaravanMountAgentVisuals?.GetEntity()?.SetAlpha(_entityAlpha);
-				if (_entityAlpha <= 0f)
+				if (HumanAgentVisuals != null)
 				{
-					StrategicEntity.SetVisibilityExcludeParents(visible: false);
-					HumanAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: false);
-					MountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: false);
-					CaravanMountAgentVisuals?.GetEntity()?.SetVisibilityExcludeParents(visible: false);
-					StrategicEntity.EntityFlags |= EntityFlags.DoNotTick;
+					WeakGameEntity weakEntity4 = HumanAgentVisuals.GetWeakEntity();
+					if (weakEntity4 != WeakGameEntity.Invalid)
+					{
+						weakEntity4.SetAlpha(_entityAlpha);
+					}
+				}
+				if (MountAgentVisuals != null)
+				{
+					WeakGameEntity weakEntity5 = MountAgentVisuals.GetWeakEntity();
+					if (weakEntity5 != WeakGameEntity.Invalid)
+					{
+						weakEntity5.SetAlpha(_entityAlpha);
+					}
+				}
+				if (CaravanMountAgentVisuals != null)
+				{
+					WeakGameEntity weakEntity6 = CaravanMountAgentVisuals.GetWeakEntity();
+					if (weakEntity6 != WeakGameEntity.Invalid)
+					{
+						weakEntity6.SetAlpha(_entityAlpha);
+					}
+				}
+				StrategicEntity.EntityFlags &= ~EntityFlags.DoNotTick;
+				return;
+			}
+			_entityAlpha = TaleWorlds.Library.MathF.Max(_entityAlpha - TaleWorlds.Library.MathF.Max(realDt, 1E-05f), 0f);
+			StrategicEntity.SetAlpha(_entityAlpha);
+			if (HumanAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity7 = HumanAgentVisuals.GetWeakEntity();
+				if (weakEntity7 != WeakGameEntity.Invalid)
+				{
+					weakEntity7.SetAlpha(_entityAlpha);
 				}
 			}
+			if (MountAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity8 = MountAgentVisuals.GetWeakEntity();
+				if (weakEntity8 != WeakGameEntity.Invalid)
+				{
+					weakEntity8.SetAlpha(_entityAlpha);
+				}
+			}
+			if (CaravanMountAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity9 = CaravanMountAgentVisuals.GetWeakEntity();
+				if (weakEntity9 != WeakGameEntity.Invalid)
+				{
+					weakEntity9.SetAlpha(_entityAlpha);
+				}
+			}
+			if (!(_entityAlpha <= 0f))
+			{
+				return;
+			}
+			StrategicEntity.SetVisibilityExcludeParents(visible: false);
+			if (HumanAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity10 = HumanAgentVisuals.GetWeakEntity();
+				if (weakEntity10 != WeakGameEntity.Invalid)
+				{
+					weakEntity10.SetVisibilityExcludeParents(visible: false);
+				}
+			}
+			if (MountAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity11 = MountAgentVisuals.GetWeakEntity();
+				if (weakEntity11 != WeakGameEntity.Invalid)
+				{
+					weakEntity11.SetVisibilityExcludeParents(visible: false);
+				}
+			}
+			if (CaravanMountAgentVisuals != null)
+			{
+				WeakGameEntity weakEntity12 = CaravanMountAgentVisuals.GetWeakEntity();
+				if (weakEntity12 != WeakGameEntity.Invalid)
+				{
+					weakEntity12.SetVisibilityExcludeParents(visible: false);
+				}
+			}
+			StrategicEntity.EntityFlags |= EntityFlags.DoNotTick;
 		}
 		else if (base.MapEntity.MobileParty.IsTransitionInProgress)
 		{
@@ -709,33 +813,34 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 				float actionAnimationDuration2 = MBActionSet.GetActionAnimationDuration(actionSet, in mountAction);
 				if (actionAnimationDuration2 < 1f)
 				{
-					MountAgentVisuals.GetEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration);
+					MountAgentVisuals.GetWeakEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration);
 				}
 				else
 				{
-					MountAgentVisuals.GetEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration / actionAnimationDuration2);
+					MountAgentVisuals.GetWeakEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration / actionAnimationDuration2);
 				}
 			}
-			MountAgentVisuals.GetEntity().SetContourColor(contourColor, alwaysVisible: false);
+			MountAgentVisuals.GetWeakEntity().SetContourColor(contourColor, alwaysVisible: false);
 			MatrixFrame frame = StrategicEntity.GetFrame();
 			frame.rotation.ApplyScaleLocal(agentVisualsData2.ScaleData);
-			MountAgentVisuals.GetEntity().SetFrame(ref frame);
+			MountAgentVisuals.GetWeakEntity().SetFrame(ref frame);
 		}
 		float num = ((MountAgentVisuals != null) ? 1.3f : 1f);
 		float speed = TaleWorlds.Library.MathF.Min(0.25f * num * _speed / 0.3f, 20f);
 		if (MountAgentVisuals != null)
 		{
 			MountAgentVisuals.Tick(null, 0.0001f, IsEntityMovingVisually(), speed);
-			MountAgentVisuals.GetEntity().Skeleton.ForceUpdateBoneFrames();
+			MountAgentVisuals.GetWeakEntity().Skeleton.ForceUpdateBoneFrames();
 		}
 		if (HumanAgentVisuals != null)
 		{
-			HumanAgentVisuals.GetEntity().SetContourColor(contourColor, alwaysVisible: false);
+			WeakGameEntity weakEntity = HumanAgentVisuals.GetWeakEntity();
+			weakEntity.SetContourColor(contourColor, alwaysVisible: false);
 			MatrixFrame frame2 = StrategicEntity.GetFrame();
 			frame2.rotation.ApplyScaleLocal(agentVisualsData.ScaleData);
-			HumanAgentVisuals.GetEntity().SetFrame(ref frame2);
+			weakEntity.SetFrame(ref frame2);
 			HumanAgentVisuals.Tick(MountAgentVisuals, 0.0001f, IsEntityMovingVisually(), speed);
-			HumanAgentVisuals.GetEntity().Skeleton.ForceUpdateBoneFrames();
+			weakEntity.Skeleton.ForceUpdateBoneFrames();
 		}
 	}
 
@@ -856,6 +961,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 	{
 		ResetPartyIcon();
 		base.MapEntity.SetVisualAsDirty();
+		_cachedBannerEntity = (null, null);
 	}
 
 	private void GetMeleeWeaponToWield(PartyBase party, out int wieldedItemIndex)

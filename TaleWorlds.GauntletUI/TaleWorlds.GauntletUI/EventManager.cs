@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Threading.Tasks;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.InputSystem;
@@ -69,31 +68,13 @@ public class EventManager
 
 	private Dictionary<int, List<UpdateAction>> _lateUpdateActionsRunning;
 
-	private WidgetContainer _widgetsWithUpdateContainer;
-
-	private WidgetContainer _widgetsWithLateUpdateContainer;
-
-	private WidgetContainer _widgetsWithParallelUpdateContainer;
-
-	private WidgetContainer _widgetsWithVisualDefinitionsContainer;
-
-	private WidgetContainer _widgetsWithTweenPositionsContainer;
-
-	private WidgetContainer _widgetsWithUpdateBrushesContainer;
+	private WidgetContainer[] _widgetContainers;
 
 	private const int UpdateActionOrderCount = 5;
 
 	private volatile bool _doingParallelTask;
 
 	private TwoDimensionDrawContext _drawContext;
-
-	private Action _widgetsWithUpdateContainerDoDefragmentationDelegate;
-
-	private Action _widgetsWithParallelUpdateContainerDoDefragmentationDelegate;
-
-	private Action _widgetsWithLateUpdateContainerDoDefragmentationDelegate;
-
-	private Action _widgetsWithUpdateBrushesContainerDoDefragmentationDelegate;
 
 	private readonly TWParallel.ParallelForWithDtAuxPredicate ParallelUpdateWidgetPredicate;
 
@@ -354,12 +335,15 @@ public class EventManager
 			UIEventManager = new TaleWorlds.Library.EventSystem.EventManager();
 		}
 		AreaRectangle = Rectangle2D.Create();
-		_widgetsWithUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.Update);
-		_widgetsWithParallelUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.ParallelUpdate);
-		_widgetsWithLateUpdateContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.LateUpdate);
-		_widgetsWithTweenPositionsContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.TweenPosition);
-		_widgetsWithVisualDefinitionsContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.VisualDefinition);
-		_widgetsWithUpdateBrushesContainer = new WidgetContainer(context, 64, WidgetContainer.ContainerType.UpdateBrushes);
+		_widgetContainers = new WidgetContainer[6]
+		{
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.Update),
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.ParallelUpdate),
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.LateUpdate),
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.TweenPosition),
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.VisualDefinition),
+			new WidgetContainer(context, 64, WidgetContainer.ContainerType.UpdateBrushes)
+		};
 		_lateUpdateActionLocker = new object();
 		_lateUpdateActions = new Dictionary<int, List<UpdateAction>>();
 		_lateUpdateActionsRunning = new Dictionary<int, List<UpdateAction>>();
@@ -384,24 +368,17 @@ public class EventManager
 			_lastSetFrictionValue = 1f;
 			Input.SetCursorFriction(_lastSetFrictionValue);
 		}
-		_widgetsWithLateUpdateContainer.Clear();
-		_widgetsWithParallelUpdateContainer.Clear();
-		_widgetsWithTweenPositionsContainer.Clear();
-		_widgetsWithUpdateBrushesContainer.Clear();
-		_widgetsWithUpdateContainer.Clear();
-		_widgetsWithVisualDefinitionsContainer.Clear();
-		for (int i = 0; i < _onAfterFinalizedCallbacks.Count; i++)
+		for (int i = 0; i < _widgetContainers.Length; i++)
 		{
-			_onAfterFinalizedCallbacks[i]?.Invoke();
+			_widgetContainers[i].Clear();
+		}
+		for (int j = 0; j < _onAfterFinalizedCallbacks.Count; j++)
+		{
+			_onAfterFinalizedCallbacks[j]?.Invoke();
 		}
 		_onAfterFinalizedCallbacks.Clear();
 		_onAfterFinalizedCallbacks = null;
-		_widgetsWithLateUpdateContainer = null;
-		_widgetsWithParallelUpdateContainer = null;
-		_widgetsWithTweenPositionsContainer = null;
-		_widgetsWithUpdateBrushesContainer = null;
-		_widgetsWithUpdateContainer = null;
-		_widgetsWithVisualDefinitionsContainer = null;
+		_widgetContainers = null;
 	}
 
 	public void AddAfterFinalizedCallback(Action callback)
@@ -473,133 +450,25 @@ public class EventManager
 
 	internal void RegisterWidgetForEvent(WidgetContainer.ContainerType type, Widget widget)
 	{
-		switch (type)
+		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition != null) || (type == WidgetContainer.ContainerType.TweenPosition && widget.TweenPosition) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
 		{
-		case WidgetContainer.ContainerType.Update:
-			lock (_widgetsWithUpdateContainer)
+			WidgetContainer widgetContainer = _widgetContainers[(int)type];
+			lock (widgetContainer)
 			{
-				if (widget.WidgetInfo.GotCustomUpdate && widget.OnUpdateListIndex < 0)
-				{
-					widget.OnUpdateListIndex = _widgetsWithUpdateContainer.Add(widget);
-				}
-				break;
+				widgetContainer.Add(widget);
 			}
-		case WidgetContainer.ContainerType.ParallelUpdate:
-			lock (_widgetsWithParallelUpdateContainer)
-			{
-				if (widget.WidgetInfo.GotCustomParallelUpdate && widget.OnParallelUpdateListIndex < 0)
-				{
-					widget.OnParallelUpdateListIndex = _widgetsWithParallelUpdateContainer.Add(widget);
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.LateUpdate:
-			lock (_widgetsWithLateUpdateContainer)
-			{
-				if (widget.WidgetInfo.GotCustomLateUpdate && widget.OnLateUpdateListIndex < 0)
-				{
-					widget.OnLateUpdateListIndex = _widgetsWithLateUpdateContainer.Add(widget);
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.VisualDefinition:
-			lock (_widgetsWithVisualDefinitionsContainer)
-			{
-				if (widget.VisualDefinition != null && widget.OnVisualDefinitionListIndex < 0)
-				{
-					widget.OnVisualDefinitionListIndex = _widgetsWithVisualDefinitionsContainer.Add(widget);
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.TweenPosition:
-			lock (_widgetsWithTweenPositionsContainer)
-			{
-				if (widget.TweenPosition && widget.OnTweenPositionListIndex < 0)
-				{
-					widget.OnTweenPositionListIndex = _widgetsWithTweenPositionsContainer.Add(widget);
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.UpdateBrushes:
-			lock (_widgetsWithUpdateBrushesContainer)
-			{
-				if (widget.WidgetInfo.GotUpdateBrushes && widget.OnUpdateBrushesIndex < 0)
-				{
-					widget.OnUpdateBrushesIndex = _widgetsWithUpdateBrushesContainer.Add(widget);
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.None:
-			break;
 		}
 	}
 
 	internal void UnRegisterWidgetForEvent(WidgetContainer.ContainerType type, Widget widget)
 	{
-		switch (type)
+		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition == null) || (type == WidgetContainer.ContainerType.TweenPosition && !widget.TweenPosition) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
 		{
-		case WidgetContainer.ContainerType.Update:
-			lock (_widgetsWithUpdateContainer)
+			WidgetContainer widgetContainer = _widgetContainers[(int)type];
+			lock (widgetContainer)
 			{
-				if (widget.WidgetInfo.GotCustomUpdate && widget.OnUpdateListIndex != -1)
-				{
-					_widgetsWithUpdateContainer.RemoveFromIndex(widget.OnUpdateListIndex);
-					widget.OnUpdateListIndex = -1;
-				}
-				break;
+				widgetContainer.Remove(widget);
 			}
-		case WidgetContainer.ContainerType.ParallelUpdate:
-			lock (_widgetsWithParallelUpdateContainer)
-			{
-				if (widget.WidgetInfo.GotCustomParallelUpdate && widget.OnParallelUpdateListIndex != -1)
-				{
-					_widgetsWithParallelUpdateContainer.RemoveFromIndex(widget.OnParallelUpdateListIndex);
-					widget.OnParallelUpdateListIndex = -1;
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.LateUpdate:
-			lock (_widgetsWithLateUpdateContainer)
-			{
-				if (widget.WidgetInfo.GotCustomLateUpdate && widget.OnLateUpdateListIndex != -1)
-				{
-					_widgetsWithLateUpdateContainer.RemoveFromIndex(widget.OnLateUpdateListIndex);
-					widget.OnLateUpdateListIndex = -1;
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.VisualDefinition:
-			lock (_widgetsWithVisualDefinitionsContainer)
-			{
-				if (widget.VisualDefinition != null && widget.OnVisualDefinitionListIndex != -1)
-				{
-					_widgetsWithVisualDefinitionsContainer.RemoveFromIndex(widget.OnVisualDefinitionListIndex);
-					widget.OnVisualDefinitionListIndex = -1;
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.TweenPosition:
-			lock (_widgetsWithTweenPositionsContainer)
-			{
-				if (widget.TweenPosition && widget.OnTweenPositionListIndex != -1)
-				{
-					_widgetsWithTweenPositionsContainer.RemoveFromIndex(widget.OnTweenPositionListIndex);
-					widget.OnTweenPositionListIndex = -1;
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.UpdateBrushes:
-			lock (_widgetsWithUpdateBrushesContainer)
-			{
-				if (widget.WidgetInfo.GotUpdateBrushes && widget.OnUpdateBrushesIndex != -1)
-				{
-					_widgetsWithUpdateBrushesContainer.RemoveFromIndex(widget.OnUpdateBrushesIndex);
-					widget.OnUpdateBrushesIndex = -1;
-				}
-				break;
-			}
-		case WidgetContainer.ContainerType.None:
-			break;
 		}
 	}
 
@@ -650,36 +519,32 @@ public class EventManager
 
 	private void WidgetDoTweenPositionAux(int startInclusive, int endExclusive, float deltaTime)
 	{
-		List<Widget> currentList = _widgetsWithParallelUpdateContainer.GetCurrentList();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[4].GetActiveList();
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
-			currentList[i].DoTweenPosition(deltaTime);
+			activeList[i].DoTweenPosition(deltaTime);
 		}
 	}
 
 	private void ParallelDoTweenPositions(float dt)
 	{
-		TWParallel.For(0, _widgetsWithTweenPositionsContainer.Count, dt, WidgetDoTweenPositionAuxPredicate);
+		WidgetContainer widgetContainer = _widgetContainers[4];
+		TWParallel.For(0, widgetContainer.Count, dt, WidgetDoTweenPositionAuxPredicate);
 	}
 
 	private void TweenPositions(float dt)
 	{
-		if (_widgetsWithTweenPositionsContainer.CheckFragmentation())
-		{
-			lock (_widgetsWithTweenPositionsContainer)
-			{
-				_widgetsWithTweenPositionsContainer.DoDefragmentation();
-			}
-		}
-		if (_widgetsWithTweenPositionsContainer.Count > 64)
+		WidgetContainer widgetContainer = _widgetContainers[4];
+		widgetContainer.Defrag();
+		if (widgetContainer.Count > 64)
 		{
 			ParallelDoTweenPositions(dt);
 			return;
 		}
-		List<Widget> currentList = _widgetsWithTweenPositionsContainer.GetCurrentList();
-		for (int i = 0; i < currentList.Count; i++)
+		MBReadOnlyList<Widget> activeList = widgetContainer.GetActiveList();
+		for (int i = 0; i < activeList.Count; i++)
 		{
-			currentList[i].DoTweenPosition(dt);
+			activeList[i].DoTweenPosition(dt);
 		}
 	}
 
@@ -1014,7 +879,7 @@ public class EventManager
 	{
 		if (widget == null)
 		{
-			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 1157);
+			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 1040);
 			return false;
 		}
 		return AnyWidgetsAt(widget, position);
@@ -1112,16 +977,17 @@ public class EventManager
 
 	private void ParallelUpdateWidget(int startInclusive, int endExclusive, float dt)
 	{
-		List<Widget> currentList = _widgetsWithParallelUpdateContainer.GetCurrentList();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[1].GetActiveList();
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
-			currentList[i].ParallelUpdate(dt);
+			activeList[i].ParallelUpdate(dt);
 		}
 	}
 
 	internal void ParallelUpdateWidgets(float dt)
 	{
-		TWParallel.For(0, _widgetsWithParallelUpdateContainer.Count, dt, ParallelUpdateWidgetPredicate);
+		WidgetContainer widgetContainer = _widgetContainers[1];
+		TWParallel.For(0, widgetContainer.Count, dt, ParallelUpdateWidgetPredicate);
 	}
 
 	internal void Update(float dt)
@@ -1129,98 +995,36 @@ public class EventManager
 		Time += dt;
 		CachedDt = dt;
 		IsControllerActive = Input.IsControllerConnected && !Input.IsMouseActive;
-		int realCount = _widgetsWithUpdateContainer.RealCount;
-		int realCount2 = _widgetsWithParallelUpdateContainer.RealCount;
-		int realCount3 = _widgetsWithLateUpdateContainer.RealCount;
-		int num = TaleWorlds.Library.MathF.Max(_widgetsWithUpdateBrushesContainer.RealCount, TaleWorlds.Library.MathF.Max(realCount, TaleWorlds.Library.MathF.Max(realCount2, realCount3)));
-		if (_widgetsWithUpdateContainerDoDefragmentationDelegate == null)
+		for (int i = 0; i < _widgetContainers.Length; i++)
 		{
-			_widgetsWithUpdateContainerDoDefragmentationDelegate = delegate
-			{
-				lock (_widgetsWithUpdateContainer)
-				{
-					_widgetsWithUpdateContainer.DoDefragmentation();
-				}
-			};
-			_widgetsWithParallelUpdateContainerDoDefragmentationDelegate = delegate
-			{
-				lock (_widgetsWithParallelUpdateContainer)
-				{
-					_widgetsWithParallelUpdateContainer.DoDefragmentation();
-				}
-			};
-			_widgetsWithLateUpdateContainerDoDefragmentationDelegate = delegate
-			{
-				lock (_widgetsWithLateUpdateContainer)
-				{
-					_widgetsWithLateUpdateContainer.DoDefragmentation();
-				}
-			};
-			_widgetsWithUpdateBrushesContainerDoDefragmentationDelegate = delegate
-			{
-				lock (_widgetsWithUpdateBrushesContainer)
-				{
-					_widgetsWithUpdateBrushesContainer.DoDefragmentation();
-				}
-			};
+			_widgetContainers[i].Defrag();
 		}
-		bool flag = _widgetsWithUpdateContainer.CheckFragmentation() || _widgetsWithParallelUpdateContainer.CheckFragmentation() || _widgetsWithLateUpdateContainer.CheckFragmentation() || _widgetsWithUpdateBrushesContainer.CheckFragmentation();
-		Task task = null;
-		Task task2 = null;
-		Task task3 = null;
-		Task task4 = null;
-		if (flag && num > 64)
+		MBReadOnlyList<Widget> activeList = _widgetContainers[3].GetActiveList();
+		for (int j = 0; j < activeList.Count; j++)
 		{
-			task = Task.Run(_widgetsWithUpdateContainerDoDefragmentationDelegate);
-			task2 = Task.Run(_widgetsWithParallelUpdateContainerDoDefragmentationDelegate);
-			task3 = Task.Run(_widgetsWithLateUpdateContainerDoDefragmentationDelegate);
-			task4 = Task.Run(_widgetsWithUpdateBrushesContainerDoDefragmentationDelegate);
+			activeList[j].UpdateVisualDefinitions(dt);
 		}
 		UpdateDragCarrier();
-		if (_widgetsWithVisualDefinitionsContainer.CheckFragmentation())
-		{
-			lock (_widgetsWithVisualDefinitionsContainer)
-			{
-				_widgetsWithVisualDefinitionsContainer.DoDefragmentation();
-			}
-		}
-		List<Widget> currentList = _widgetsWithVisualDefinitionsContainer.GetCurrentList();
-		for (int i = 0; i < currentList.Count; i++)
-		{
-			currentList[i].UpdateVisualDefinitions(dt);
-		}
-		if (flag)
-		{
-			if (num > 64)
-			{
-				Task.WaitAll(task, task2, task3, task4);
-			}
-			else
-			{
-				_widgetsWithUpdateContainerDoDefragmentationDelegate();
-				_widgetsWithParallelUpdateContainerDoDefragmentationDelegate();
-				_widgetsWithLateUpdateContainerDoDefragmentationDelegate();
-				_widgetsWithUpdateBrushesContainerDoDefragmentationDelegate();
-			}
-		}
 		UIContext.MouseCursors activeCursorOfContext = ((HoveredView?.HoveredCursorState == null) ? UIContext.MouseCursors.Default : ((UIContext.MouseCursors)Enum.Parse(typeof(UIContext.MouseCursors), HoveredView.HoveredCursorState)));
 		Context.ActiveCursorOfContext = activeCursorOfContext;
-		List<Widget> currentList2 = _widgetsWithUpdateContainer.GetCurrentList();
-		for (int j = 0; j < currentList2.Count; j++)
+		MBReadOnlyList<Widget> activeList2 = _widgetContainers[0].GetActiveList();
+		for (int k = 0; k < activeList2.Count; k++)
 		{
-			currentList2[j].Update(dt);
+			activeList2[k].Update(dt);
 		}
 		_doingParallelTask = true;
-		if (_widgetsWithParallelUpdateContainer.Count > 64)
+		WidgetContainer widgetContainer = _widgetContainers[1];
+		widgetContainer.Defrag();
+		if (widgetContainer.Count > 64)
 		{
 			ParallelUpdateWidgets(dt);
 		}
 		else
 		{
-			List<Widget> currentList3 = _widgetsWithParallelUpdateContainer.GetCurrentList();
-			for (int k = 0; k < currentList3.Count; k++)
+			MBReadOnlyList<Widget> activeList3 = widgetContainer.GetActiveList();
+			for (int l = 0; l < activeList3.Count; l++)
 			{
-				currentList3[k].ParallelUpdate(dt);
+				activeList3[l].ParallelUpdate(dt);
 			}
 		}
 		_doingParallelTask = false;
@@ -1228,29 +1032,32 @@ public class EventManager
 
 	internal void ParallelUpdateBrushes(float dt)
 	{
-		TWParallel.For(0, _widgetsWithUpdateBrushesContainer.Count, dt, UpdateBrushesWidgetPredicate);
+		WidgetContainer widgetContainer = _widgetContainers[5];
+		TWParallel.For(0, widgetContainer.Count, dt, UpdateBrushesWidgetPredicate);
 	}
 
 	internal void UpdateBrushes(float dt)
 	{
-		if (_widgetsWithUpdateBrushesContainer.Count > 64)
+		WidgetContainer widgetContainer = _widgetContainers[5];
+		widgetContainer.Defrag();
+		if (widgetContainer.Count > 64)
 		{
 			ParallelUpdateBrushes(dt);
 			return;
 		}
-		List<Widget> currentList = _widgetsWithUpdateBrushesContainer.GetCurrentList();
-		for (int i = 0; i < currentList.Count; i++)
+		MBReadOnlyList<Widget> activeList = widgetContainer.GetActiveList();
+		for (int i = 0; i < activeList.Count; i++)
 		{
-			currentList[i].UpdateBrushes(dt);
+			activeList[i].UpdateBrushes(dt);
 		}
 	}
 
 	private void UpdateBrushesWidget(int startInclusive, int endExclusive, float dt)
 	{
-		List<Widget> currentList = _widgetsWithUpdateBrushesContainer.GetCurrentList();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[5].GetActiveList();
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
-			currentList[i].UpdateBrushes(dt);
+			activeList[i].UpdateBrushes(dt);
 		}
 	}
 
@@ -1273,10 +1080,12 @@ public class EventManager
 
 	internal void LateUpdate(float dt)
 	{
-		List<Widget> currentList = _widgetsWithLateUpdateContainer.GetCurrentList();
-		for (int i = 0; i < currentList.Count; i++)
+		WidgetContainer obj = _widgetContainers[2];
+		obj.Defrag();
+		MBReadOnlyList<Widget> activeList = obj.GetActiveList();
+		for (int i = 0; i < activeList.Count; i++)
 		{
-			currentList[i].LateUpdate(dt);
+			activeList[i].LateUpdate(dt);
 		}
 		Dictionary<int, List<UpdateAction>> lateUpdateActions = _lateUpdateActions;
 		_lateUpdateActions = _lateUpdateActionsRunning;
@@ -1360,12 +1169,12 @@ public class EventManager
 	{
 		if (DraggedWidget != null)
 		{
-			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1617);
+			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1459);
 			ClearDragObject();
 		}
 		if (!draggedObject.ConnectedToRoot)
 		{
-			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1623);
+			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1465);
 			return;
 		}
 		draggedObject.IsPressed = false;

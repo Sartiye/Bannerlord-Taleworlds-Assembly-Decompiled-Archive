@@ -298,7 +298,7 @@ public static class MenuHelper
 			}
 			else if (mapEventSettlement.IsHideout)
 			{
-				CampaignMission.OpenHideoutBattleMission("sea_bandit_a", null);
+				CampaignMission.OpenHideoutBattleMission("sea_bandit_a", null, isTutorial: false);
 			}
 		}
 		else
@@ -345,11 +345,6 @@ public static class MenuHelper
 		MapEvent.PlayerMapEvent.ResetBattleState();
 		int wallLevel = PlayerSiege.BesiegedSettlement.Town.GetWallLevel();
 		CampaignMission.OpenSiegeLordsHallFightMission(PlayerSiege.BesiegedSettlement.LocationComplex.GetLocationWithId("lordshall").GetSceneName(wallLevel), selectedTroops.ToFlattenedRoster());
-	}
-
-	private static void LordsHallTroopRosterManageDoneForSimulation(TroopRoster selectedTroops)
-	{
-		EncounterOrderAttack(selectedTroops);
 	}
 
 	public static void CheckEnemyAttackableHonorably(MenuCallbackArgs args)
@@ -452,15 +447,7 @@ public static class MenuHelper
 		if (PlayerEncounter.Current != null)
 		{
 			GameMenu.ExitToLast();
-			if (selectedTroopsForPlayerSide != null && PlayerSiege.BesiegedSettlement != null && PlayerSiege.BesiegedSettlement.CurrentSiegeState == Settlement.SiegeState.InTheLordsHall)
-			{
-				FlattenedTroopRoster priorityListForLordsHallFightMission = Campaign.Current.Models.SiegeLordsHallFightModel.GetPriorityListForLordsHallFightMission(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, Campaign.Current.Models.SiegeLordsHallFightModel.MaxDefenderSideTroopCount);
-				PlayerEncounter.InitSimulation(selectedTroopsForPlayerSide.ToFlattenedRoster(), priorityListForLordsHallFightMission);
-			}
-			else
-			{
-				PlayerEncounter.InitSimulation(null, null);
-			}
+			PlayerEncounter.InitSimulation(null, null);
 			if (PlayerEncounter.Current != null && PlayerEncounter.Current.BattleSimulation != null)
 			{
 				((MapState)Game.Current.GameStateManager.ActiveState).StartBattleSimulation();
@@ -470,28 +457,7 @@ public static class MenuHelper
 
 	public static void EncounterOrderAttackConsequence(MenuCallbackArgs args)
 	{
-		if (PlayerSiege.BesiegedSettlement != null && PlayerSiege.BesiegedSettlement.CurrentSiegeState == Settlement.SiegeState.InTheLordsHall)
-		{
-			FlattenedTroopRoster priorityListForLordsHallFightMission = Campaign.Current.Models.SiegeLordsHallFightModel.GetPriorityListForLordsHallFightMission(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, Campaign.Current.Models.SiegeLordsHallFightModel.MaxDefenderSideTroopCount);
-			int num = MathF.Max(1, MathF.Min(Campaign.Current.Models.SiegeLordsHallFightModel.MaxAttackerSideTroopCount, MathF.Round((float)priorityListForLordsHallFightMission.Troops.Count() * Campaign.Current.Models.SiegeLordsHallFightModel.AttackerDefenderTroopCountRatio)));
-			TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
-			MobileParty mobileParty = ((MobileParty.MainParty.Army != null) ? MobileParty.MainParty.Army.LeaderParty : MobileParty.MainParty);
-			troopRoster.Add(mobileParty.MemberRoster);
-			foreach (MobileParty attachedParty in mobileParty.AttachedParties)
-			{
-				troopRoster.Add(attachedParty.MemberRoster);
-			}
-			TroopRoster troopRoster2 = TroopRoster.CreateDummyTroopRoster();
-			FlattenedTroopRoster flattenedTroopRoster = troopRoster.ToFlattenedRoster();
-			flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => x.IsWounded);
-			troopRoster2.Add(MobilePartyHelper.GetStrongestAndPriorTroops(flattenedTroopRoster, num, includePlayer: false));
-			int minSelectableTroopCount = 1;
-			args.MenuContext.OpenTroopSelection(troopRoster, troopRoster2, (CharacterObject character) => !character.IsPlayerCharacter, LordsHallTroopRosterManageDoneForSimulation, num, minSelectableTroopCount);
-		}
-		else
-		{
-			EncounterOrderAttack(null);
-		}
+		EncounterOrderAttack(null);
 	}
 
 	public static void EncounterCaptureTheEnemyOnConsequence(MenuCallbackArgs args)
@@ -525,7 +491,7 @@ public static class MenuHelper
 	{
 		if (string.IsNullOrEmpty(encounterCulture?.EncounterBackgroundMesh))
 		{
-			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 718);
+			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 665);
 			return string.Empty;
 		}
 		string text = encounterCulture.EncounterBackgroundMesh;

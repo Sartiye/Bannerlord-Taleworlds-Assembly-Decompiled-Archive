@@ -227,4 +227,9 @@ public class RangedSiegeWeaponView : UsableMissionObjectComponent
 			RangedSiegeWeapon.GiveInput(num, num2);
 		}
 	}
+
+	protected override void OnMissionObjectDisabled()
+	{
+		ResetCamera();
+	}
 }

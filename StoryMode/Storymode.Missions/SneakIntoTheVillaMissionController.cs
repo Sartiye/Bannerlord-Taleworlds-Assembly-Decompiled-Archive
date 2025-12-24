@@ -268,7 +268,7 @@ public class SneakIntoTheVillaMissionController : MissionLogic
 	{
 		if (_stealthKillTargetAgent != null && _stealthKillTargetAgent.IsAddedAsCorpse() && Agent.Main != null && Agent.Main.IsActive())
 		{
-			return Agent.Main.GetScriptedFlags().HasFlag(Agent.AIScriptedFrameFlags.Drag);
+			return (Agent.Main.GetScriptedFlags() & Agent.AIScriptedFrameFlags.Drag) == Agent.AIScriptedFrameFlags.Drag;
 		}
 		return false;
 	}

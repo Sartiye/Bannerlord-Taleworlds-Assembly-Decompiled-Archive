@@ -685,7 +685,7 @@ public class MPCosmeticObtainPopupVM : ViewModel
 	private void OnCultureSelection(MPCultureItemVM cultureItem)
 	{
 		ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>(_cultureShieldItemIDs[cultureItem.Culture]);
-		Banner banner = Banner.CreateOneColoredBannerWithOneIcon(cultureItem.Culture.ForegroundColor1, cultureItem.Culture.ForegroundColor2, SigilItem.IconID);
+		Banner banner = Banner.CreateOneColoredBannerWithOneIcon(cultureItem.Culture.BackgroundColor1, cultureItem.Culture.ForegroundColor1, SigilItem.IconID);
 		ItemVisual.FillFrom(new EquipmentElement(@object), banner);
 	}
 

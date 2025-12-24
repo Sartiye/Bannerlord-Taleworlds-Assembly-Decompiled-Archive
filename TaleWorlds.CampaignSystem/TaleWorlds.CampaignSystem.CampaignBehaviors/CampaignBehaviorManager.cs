@@ -57,7 +57,15 @@ public class CampaignBehaviorManager : ICampaignBehaviorManager
 
 	public T GetBehavior<T>()
 	{
-		return _campaignBehaviors.OfType<T>().FirstOrDefault();
+		foreach (CampaignBehaviorBase campaignBehavior in _campaignBehaviors)
+		{
+			CampaignBehaviorBase current;
+			if ((current = campaignBehavior) is T)
+			{
+				return (T)(object)current;
+			}
+		}
+		return default(T);
 	}
 
 	public IEnumerable<T> GetBehaviors<T>()

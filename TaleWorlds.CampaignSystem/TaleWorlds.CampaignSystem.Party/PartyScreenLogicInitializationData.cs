@@ -50,6 +50,8 @@ public struct PartyScreenLogicInitializationData
 
 	public PartyScreenClosedDelegate PartyScreenClosedDelegate;
 
+	public bool DoNotApplyGoldTransactions;
+
 	public bool IsDismissMode;
 
 	public bool TransferHealthiesGetWoundedsFirst;

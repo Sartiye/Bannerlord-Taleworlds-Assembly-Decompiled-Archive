@@ -544,7 +544,7 @@ public class PartyNameplateVM : NameplateVM
 			if (partyHealthyCount != _latestTotalCount)
 			{
 				_latestTotalCount = partyHealthyCount;
-				_countBind = partyHealthyCount.ToString();
+				_countBind = (Party.IsInfoHidden ? "?" : partyHealthyCount.ToString());
 			}
 			int allWoundedMembersAmount = SandBoxUIHelper.GetAllWoundedMembersAmount(Party);
 			int allPrisonerMembersAmount = SandBoxUIHelper.GetAllPrisonerMembersAmount(Party);
@@ -552,12 +552,12 @@ public class PartyNameplateVM : NameplateVM
 			{
 				if (_latestWoundedAmount != allWoundedMembersAmount)
 				{
-					_woundedBind = ((allWoundedMembersAmount == 0) ? "" : SandBoxUIHelper.GetPartyWoundedText(allWoundedMembersAmount));
+					_woundedBind = ((allWoundedMembersAmount == 0) ? "" : (Party.IsInfoHidden ? "?" : SandBoxUIHelper.GetPartyWoundedText(allWoundedMembersAmount)));
 					_latestWoundedAmount = allWoundedMembersAmount;
 				}
 				if (_latestPrisonerAmount != allPrisonerMembersAmount)
 				{
-					_prisonerBind = ((allPrisonerMembersAmount == 0) ? "" : SandBoxUIHelper.GetPartyPrisonerText(allPrisonerMembersAmount));
+					_prisonerBind = ((allPrisonerMembersAmount == 0) ? "" : (Party.IsInfoHidden ? "?" : SandBoxUIHelper.GetPartyPrisonerText(allPrisonerMembersAmount)));
 					_latestPrisonerAmount = allPrisonerMembersAmount;
 				}
 				_extraInfoTextBind = _woundedBind + _prisonerBind;
@@ -580,12 +580,12 @@ public class PartyNameplateVM : NameplateVM
 				{
 					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? NeutralArmyIndicator : NeutralIndicator);
 				}
-				goto IL_042f;
+				goto IL_046e;
 			}
 		}
 		_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? MainPartyArmyIndicator : MainPartyIndicator);
-		goto IL_042f;
-		IL_042f:
+		goto IL_046e;
+		IL_046e:
 		if (_isPartyBannerDirty || forceUpdate)
 		{
 			PartyBanner = new BannerImageIdentifierVM(Party.Banner, nineGrid: true);

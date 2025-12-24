@@ -184,6 +184,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_0_0.DownNavigationScope = "RightListHeadersScope";
 		_widget_0_0.IsDefaultNavigationScope = false;
 		_widget_0_0.ForceGainNavigationBasedOnDirection = true;
+		_widget_0_0.ForceGainNavigationOnClosestChild = true;
 		_widget_0_0.DoNotAutoNavigateAfterSort = true;
 		_widget_0_0.NavigateFromScopeEdges = true;
 		_widget_0_0.DoNotAutoCollectChildScopes = true;

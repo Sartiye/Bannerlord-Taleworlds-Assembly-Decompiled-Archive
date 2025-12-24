@@ -1,4 +1,3 @@
-using System;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
@@ -116,7 +115,21 @@ public class ScrollingRichTextWidget : RichTextWidget
 			if (value != _defaultTextHorizontalAlignment)
 			{
 				_defaultTextHorizontalAlignment = value;
-				OnPropertyChanged(Enum.GetName(typeof(TextHorizontalAlignment), value), "DefaultTextHorizontalAlignment");
+				switch (value)
+				{
+				case TextHorizontalAlignment.Left:
+					OnPropertyChanged("Left", "DefaultTextHorizontalAlignment");
+					break;
+				case TextHorizontalAlignment.Right:
+					OnPropertyChanged("Right", "DefaultTextHorizontalAlignment");
+					break;
+				case TextHorizontalAlignment.Center:
+					OnPropertyChanged("Center", "DefaultTextHorizontalAlignment");
+					break;
+				case TextHorizontalAlignment.Justify:
+					OnPropertyChanged("Justify", "DefaultTextHorizontalAlignment");
+					break;
+				}
 			}
 		}
 	}

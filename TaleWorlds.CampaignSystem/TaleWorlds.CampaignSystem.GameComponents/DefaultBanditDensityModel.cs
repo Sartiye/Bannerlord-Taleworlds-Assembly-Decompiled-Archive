@@ -21,7 +21,7 @@ public class DefaultBanditDensityModel : BanditDensityModel
 
 	public override int NumberOfMinimumBanditTroopsInHideoutMission => 10;
 
-	public override int NumberOfMaximumTroopCountForFirstFightInHideout => MathF.Floor(6f * (2f + Campaign.Current.PlayerProgress));
+	public override int NumberOfMaximumTroopCountForFirstFightInHideout => MathF.Floor(9f * (2f + Campaign.Current.PlayerProgress));
 
 	public override int NumberOfMaximumTroopCountForBossFightInHideout => MathF.Floor(1f + 5f * (1f + Campaign.Current.PlayerProgress));
 
@@ -39,9 +39,13 @@ public class DefaultBanditDensityModel : BanditDensityModel
 		}
 	}
 
-	public override int GetMinimumTroopCountForHideoutMission(MobileParty party)
+	public override int GetMinimumTroopCountForHideoutMission(MobileParty party, bool isAssault)
 	{
-		return 25;
+		if (!isAssault)
+		{
+			return 20;
+		}
+		return 8;
 	}
 
 	public override int GetMaxSupportedNumberOfLootersForClan(Clan clan)
@@ -57,9 +61,9 @@ public class DefaultBanditDensityModel : BanditDensityModel
 		return 270;
 	}
 
-	public override int GetMaximumTroopCountForHideoutMission(MobileParty party)
+	public override int GetMaximumTroopCountForHideoutMission(MobileParty party, bool isAssault)
 	{
-		int num = 40;
+		int num = (isAssault ? 15 : 40);
 		if (party.HasPerk(DefaultPerks.Tactics.SmallUnitTactics))
 		{
 			num += (int)DefaultPerks.Tactics.SmallUnitTactics.PrimaryBonus;

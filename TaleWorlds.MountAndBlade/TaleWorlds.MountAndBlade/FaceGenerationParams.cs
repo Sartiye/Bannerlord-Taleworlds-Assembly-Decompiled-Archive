@@ -73,6 +73,8 @@ public struct FaceGenerationParams
 	[MarshalAs(UnmanagedType.U1)]
 	public bool Padding2;
 
+	public int FaceCacheId;
+
 	public static FaceGenerationParams Create()
 	{
 		FaceGenerationParams result = default(FaceGenerationParams);
@@ -106,6 +108,7 @@ public struct FaceGenerationParams
 		result.UseCache = false;
 		result.UseGpuMorph = false;
 		result.Padding2 = false;
+		result.FaceCacheId = 0;
 		return result;
 	}
 

@@ -54,7 +54,7 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer GetOrCreateMaterialDelegate(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture);
+	public delegate UIntPtr GetOrCreateMaterialDelegate(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture);
 
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -140,15 +140,8 @@ internal class ScriptingInterfaceOfITwoDimensionView : ITwoDimensionView
 		call_EndFrameDelegate(pointer);
 	}
 
-	public Material GetOrCreateMaterial(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture)
+	public UIntPtr GetOrCreateMaterial(UIntPtr pointer, UIntPtr mainTexture, UIntPtr overlayTexture)
 	{
-		NativeObjectPointer nativeObjectPointer = call_GetOrCreateMaterialDelegate(pointer, mainTexture, overlayTexture);
-		Material result = null;
-		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
-		{
-			result = new Material(nativeObjectPointer.Pointer);
-			LibraryApplicationInterface.IManaged.DecreaseReferenceCount(nativeObjectPointer.Pointer);
-		}
-		return result;
+		return call_GetOrCreateMaterialDelegate(pointer, mainTexture, overlayTexture);
 	}
 }

@@ -22,7 +22,13 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 
 	private ListPanel _widget_0_0_0;
 
-	private ListPanel _widget_0_1;
+	private Widget _widget_0_1;
+
+	private ListPanel _widget_0_1_0;
+
+	private Widget _widget_0_2;
+
+	private ListPanel _widget_0_2_0;
 
 	private Widget _widget_1;
 
@@ -35,6 +41,8 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 	private MBBindingList<MissionInteractionItemBaseVM> _datasource_Root_InteractionInterface_SecondaryInteractionMessages;
 
 	private MBBindingList<MissionPrimaryInteractionItemVM> _datasource_Root_InteractionInterface_PrimaryInteractionMessages;
+
+	private MBBindingList<MissionPrimaryInteractionItemVM> _datasource_Root_InteractionInterface_ForcedInteractionMessages;
 
 	public MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_2_AgentFocus__DependendPrefab(UIContext context)
 		: base(context)
@@ -50,8 +58,14 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0.AddChild(_widget_0_0);
 		_widget_0_0_0 = new ListPanel(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
-		_widget_0_1 = new ListPanel(base.Context);
+		_widget_0_1 = new Widget(base.Context);
 		_widget_0.AddChild(_widget_0_1);
+		_widget_0_1_0 = new ListPanel(base.Context);
+		_widget_0_1.AddChild(_widget_0_1_0);
+		_widget_0_2 = new Widget(base.Context);
+		_widget_0.AddChild(_widget_0_2);
+		_widget_0_2_0 = new ListPanel(base.Context);
+		_widget_0_2.AddChild(_widget_0_2_0);
 		_widget_1 = new Widget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_2 = new FillBar(base.Context);
@@ -84,7 +98,15 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_2.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1.SuggestedWidth = 220f;
@@ -150,6 +172,24 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			_widget_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0;
+			_widget_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1;
+			_widget_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -182,13 +222,24 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			if (_datasource_Root_InteractionInterface_PrimaryInteractionMessages != null)
 			{
 				_datasource_Root_InteractionInterface_PrimaryInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_PrimaryInteractionMessagesChanged;
-				for (int num2 = _widget_0_1.ChildCount - 1; num2 >= 0; num2--)
+				for (int num2 = _widget_0_1_0.ChildCount - 1; num2 >= 0; num2--)
 				{
-					Widget child2 = _widget_0_1.GetChild(num2);
+					Widget child2 = _widget_0_1_0.GetChild(num2);
 					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child2).OnBeforeRemovedChild(child2);
-					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)_widget_0_1.GetChild(num2)).DestroyDataSource();
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)_widget_0_1_0.GetChild(num2)).DestroyDataSource();
 				}
 				_datasource_Root_InteractionInterface_PrimaryInteractionMessages = null;
+			}
+			if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+			{
+				_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+				for (int num3 = _widget_0_2_0.ChildCount - 1; num3 >= 0; num3--)
+				{
+					Widget child3 = _widget_0_2_0.GetChild(num3);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)_widget_0_2_0.GetChild(num3)).DestroyDataSource();
+				}
+				_datasource_Root_InteractionInterface_ForcedInteractionMessages = null;
 			}
 			_datasource_Root_InteractionInterface = null;
 		}
@@ -306,6 +357,112 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		}
 	}
 
+	private void PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_1(string propertyName)
+	{
+		if (propertyName == "IsHidden")
+		{
+			_datasource_Root_InteractionInterface.HasForcedMessages = _widget_0_1.IsHidden;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root_InteractionInterface.HasForcedMessages = _widget_0_2.IsVisible;
+		}
+	}
+
 	private void PropertyChangedListenerOf_widget_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_1(propertyName);
@@ -416,52 +573,102 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_0_1(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_0_1_0(string propertyName)
+	{
+		_ = propertyName == "IsVisible";
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0(string propertyName)
 	{
 		_ = propertyName == "IsVisible";
 	}
@@ -521,11 +728,18 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		case "PrimaryInteractionMessages":
 			RefreshDataSource_datasource_Root_InteractionInterface_PrimaryInteractionMessages(_datasource_Root_InteractionInterface.PrimaryInteractionMessages);
 			break;
+		case "ForcedInteractionMessages":
+			RefreshDataSource_datasource_Root_InteractionInterface_ForcedInteractionMessages(_datasource_Root_InteractionInterface.ForcedInteractionMessages);
+			break;
 		case "DisplayInteractionText":
 			_widget_0.IsVisible = _datasource_Root_InteractionInterface.DisplayInteractionText;
 			break;
 		case "HasSecondaryMessages":
 			_widget_0_0.IsVisible = _datasource_Root_InteractionInterface.HasSecondaryMessages;
+			break;
+		case "HasForcedMessages":
+			_widget_0_1.IsHidden = _datasource_Root_InteractionInterface.HasForcedMessages;
+			_widget_0_2.IsVisible = _datasource_Root_InteractionInterface.HasForcedMessages;
 			break;
 		case "ShowHealthBar":
 			_widget_1.IsVisible = _datasource_Root_InteractionInterface.ShowHealthBar;
@@ -652,13 +866,13 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		{
 		case TaleWorlds.Library.ListChangedType.Reset:
 		{
-			for (int num = _widget_0_1.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child3 = _widget_0_1.GetChild(num);
+				Widget child3 = _widget_0_1_0.GetChild(num);
 				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-				Widget child4 = _widget_0_1.GetChild(num);
+				Widget child4 = _widget_0_1_0.GetChild(num);
 				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child4).SetDataSource(null);
-				_widget_0_1.RemoveChild(child4);
+				_widget_0_1_0.RemoveChild(child4);
 			}
 			break;
 		}
@@ -667,7 +881,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			for (int i = 0; i < _datasource_Root_InteractionInterface_PrimaryInteractionMessages.Count; i++)
 			{
 				MissionPrimaryInteractionItemVM bindingObject = _datasource_Root_InteractionInterface_PrimaryInteractionMessages[i];
-				_widget_0_1.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+				_widget_0_1_0.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
 			}
 			break;
 		}
@@ -677,7 +891,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate);
 			MissionPrimaryInteractionItemVM dataSource = (MissionPrimaryInteractionItemVM)(generatedWidgetData.Data = _datasource_Root_InteractionInterface_PrimaryInteractionMessages[e.NewIndex]);
 			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, e.NewIndex);
+			_widget_0_1_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, e.NewIndex);
 			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.CreateWidgets();
 			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetIds();
 			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetAttributes();
@@ -686,15 +900,71 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
-			Widget child2 = _widget_0_1.GetChild(e.NewIndex);
+			Widget child2 = _widget_0_1_0.GetChild(e.NewIndex);
 			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
-			Widget child = _widget_0_1.GetChild(e.NewIndex);
+			Widget child = _widget_0_1_0.GetChild(e.NewIndex);
 			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child).SetDataSource(null);
-			_widget_0_1.RemoveChild(child);
+			_widget_0_1_0.RemoveChild(child);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemChanged:
+			break;
+		}
+	}
+
+	public void OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged(object sender, TaleWorlds.Library.ListChangedEventArgs e)
+	{
+		switch (e.ListChangedType)
+		{
+		case TaleWorlds.Library.ListChangedType.Reset:
+		{
+			for (int num = _widget_0_2_0.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child3 = _widget_0_2_0.GetChild(num);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				Widget child4 = _widget_0_2_0.GetChild(num);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child4).SetDataSource(null);
+				_widget_0_2_0.RemoveChild(child4);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.Sorted:
+		{
+			for (int i = 0; i < _datasource_Root_InteractionInterface_ForcedInteractionMessages.Count; i++)
+			{
+				MissionPrimaryInteractionItemVM bindingObject = _datasource_Root_InteractionInterface_ForcedInteractionMessages[i];
+				_widget_0_2_0.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemAdded:
+		{
+			MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
+			MissionPrimaryInteractionItemVM dataSource = (MissionPrimaryInteractionItemVM)(generatedWidgetData.Data = _datasource_Root_InteractionInterface_ForcedInteractionMessages[e.NewIndex]);
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_2_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, e.NewIndex);
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+			mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
+		{
+			Widget child2 = _widget_0_2_0.GetChild(e.NewIndex);
+			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemDeleted:
+		{
+			Widget child = _widget_0_2_0.GetChild(e.NewIndex);
+			((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).SetDataSource(null);
+			_widget_0_2_0.RemoveChild(child);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemChanged:
@@ -733,6 +1003,24 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			_widget_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0;
+			_widget_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1;
+			_widget_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2;
+			_widget_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -767,15 +1055,28 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 			if (_datasource_Root_InteractionInterface_PrimaryInteractionMessages != null)
 			{
 				_datasource_Root_InteractionInterface_PrimaryInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_PrimaryInteractionMessagesChanged;
-				for (int num2 = _widget_0_1.ChildCount - 1; num2 >= 0; num2--)
+				for (int num2 = _widget_0_1_0.ChildCount - 1; num2 >= 0; num2--)
 				{
-					Widget child3 = _widget_0_1.GetChild(num2);
+					Widget child3 = _widget_0_1_0.GetChild(num2);
 					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-					Widget child4 = _widget_0_1.GetChild(num2);
+					Widget child4 = _widget_0_1_0.GetChild(num2);
 					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child4).SetDataSource(null);
-					_widget_0_1.RemoveChild(child4);
+					_widget_0_1_0.RemoveChild(child4);
 				}
 				_datasource_Root_InteractionInterface_PrimaryInteractionMessages = null;
+			}
+			if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+			{
+				_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+				for (int num3 = _widget_0_2_0.ChildCount - 1; num3 >= 0; num3--)
+				{
+					Widget child5 = _widget_0_2_0.GetChild(num3);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+					Widget child6 = _widget_0_2_0.GetChild(num3);
+					((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child6).SetDataSource(null);
+					_widget_0_2_0.RemoveChild(child6);
+				}
+				_datasource_Root_InteractionInterface_ForcedInteractionMessages = null;
 			}
 			_datasource_Root_InteractionInterface = null;
 		}
@@ -814,6 +1115,26 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 		_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 		_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
+		_widget_0_1.IsHidden = _datasource_Root_InteractionInterface.HasForcedMessages;
+		_widget_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1;
+		_widget_0_2.IsVisible = _datasource_Root_InteractionInterface.HasForcedMessages;
+		_widget_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2;
 		_widget_1.IsVisible = _datasource_Root_InteractionInterface.ShowHealthBar;
 		_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
@@ -862,11 +1183,28 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate);
 				MissionPrimaryInteractionItemVM dataSource2 = (MissionPrimaryInteractionItemVM)(generatedWidgetData2.Data = _datasource_Root_InteractionInterface_PrimaryInteractionMessages[j]);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData2);
-				_widget_0_1.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, j);
+				_widget_0_1_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, j);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.CreateWidgets();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetIds();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetAttributes();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetDataSource(dataSource2);
+			}
+		}
+		_datasource_Root_InteractionInterface_ForcedInteractionMessages = _datasource_Root_InteractionInterface.ForcedInteractionMessages;
+		if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+		{
+			_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged += OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+			for (int k = 0; k < _datasource_Root_InteractionInterface_ForcedInteractionMessages.Count; k++)
+			{
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
+				MissionPrimaryInteractionItemVM dataSource3 = (MissionPrimaryInteractionItemVM)(generatedWidgetData3.Data = _datasource_Root_InteractionInterface_ForcedInteractionMessages[k]);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData3);
+				_widget_0_2_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, k);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource3);
 			}
 		}
 	}
@@ -911,13 +1249,13 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		if (_datasource_Root_InteractionInterface_PrimaryInteractionMessages != null)
 		{
 			_datasource_Root_InteractionInterface_PrimaryInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_PrimaryInteractionMessagesChanged;
-			for (int num = _widget_0_1.ChildCount - 1; num >= 0; num--)
+			for (int num = _widget_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
-				Widget child = _widget_0_1.GetChild(num);
+				Widget child = _widget_0_1_0.GetChild(num);
 				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child).OnBeforeRemovedChild(child);
-				Widget child2 = _widget_0_1.GetChild(num);
+				Widget child2 = _widget_0_1_0.GetChild(num);
 				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child2).SetDataSource(null);
-				_widget_0_1.RemoveChild(child2);
+				_widget_0_1_0.RemoveChild(child2);
 			}
 			_datasource_Root_InteractionInterface_PrimaryInteractionMessages = null;
 		}
@@ -932,11 +1270,46 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate);
 				MissionPrimaryInteractionItemVM dataSource = (MissionPrimaryInteractionItemVM)(generatedWidgetData.Data = _datasource_Root_InteractionInterface_PrimaryInteractionMessages[i]);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, i);
+				_widget_0_1_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, i);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.CreateWidgets();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetIds();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetAttributes();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetDataSource(dataSource);
+			}
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_InteractionInterface_ForcedInteractionMessages(MBBindingList<MissionPrimaryInteractionItemVM> newDataSource)
+	{
+		if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+		{
+			_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+			for (int num = _widget_0_2_0.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child = _widget_0_2_0.GetChild(num);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child).OnBeforeRemovedChild(child);
+				Widget child2 = _widget_0_2_0.GetChild(num);
+				((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child2).SetDataSource(null);
+				_widget_0_2_0.RemoveChild(child2);
+			}
+			_datasource_Root_InteractionInterface_ForcedInteractionMessages = null;
+		}
+		_datasource_Root_InteractionInterface_ForcedInteractionMessages = newDataSource;
+		_datasource_Root_InteractionInterface_ForcedInteractionMessages = _datasource_Root_InteractionInterface.ForcedInteractionMessages;
+		if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+		{
+			_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged += OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+			for (int i = 0; i < _datasource_Root_InteractionInterface_ForcedInteractionMessages.Count; i++)
+			{
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
+				MissionPrimaryInteractionItemVM dataSource = (MissionPrimaryInteractionItemVM)(generatedWidgetData.Data = _datasource_Root_InteractionInterface_ForcedInteractionMessages[i]);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_2_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, i);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -983,6 +1356,24 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				_widget_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0;
 				_widget_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0;
 				_widget_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0;
+				_widget_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1;
+				_widget_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1;
+				_widget_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2;
+				_widget_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2;
 				_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 				_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 				_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -1017,15 +1408,28 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				if (_datasource_Root_InteractionInterface_PrimaryInteractionMessages != null)
 				{
 					_datasource_Root_InteractionInterface_PrimaryInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_PrimaryInteractionMessagesChanged;
-					for (int num2 = _widget_0_1.ChildCount - 1; num2 >= 0; num2--)
+					for (int num2 = _widget_0_1_0.ChildCount - 1; num2 >= 0; num2--)
 					{
-						Widget child3 = _widget_0_1.GetChild(num2);
+						Widget child3 = _widget_0_1_0.GetChild(num2);
 						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-						Widget child4 = _widget_0_1.GetChild(num2);
+						Widget child4 = _widget_0_1_0.GetChild(num2);
 						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate)child4).SetDataSource(null);
-						_widget_0_1.RemoveChild(child4);
+						_widget_0_1_0.RemoveChild(child4);
 					}
 					_datasource_Root_InteractionInterface_PrimaryInteractionMessages = null;
+				}
+				if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+				{
+					_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged -= OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+					for (int num3 = _widget_0_2_0.ChildCount - 1; num3 >= 0; num3--)
+					{
+						Widget child5 = _widget_0_2_0.GetChild(num3);
+						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+						Widget child6 = _widget_0_2_0.GetChild(num3);
+						((MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate)child6).SetDataSource(null);
+						_widget_0_2_0.RemoveChild(child6);
+					}
+					_datasource_Root_InteractionInterface_ForcedInteractionMessages = null;
 				}
 				_datasource_Root_InteractionInterface = null;
 			}
@@ -1079,6 +1483,26 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 		_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 		_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
+		_widget_0_1.IsHidden = _datasource_Root_InteractionInterface.HasForcedMessages;
+		_widget_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1;
+		_widget_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1;
+		_widget_0_2.IsVisible = _datasource_Root_InteractionInterface.HasForcedMessages;
+		_widget_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2;
+		_widget_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2;
 		_widget_1.IsVisible = _datasource_Root_InteractionInterface.ShowHealthBar;
 		_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;
@@ -1127,11 +1551,28 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate);
 				MissionPrimaryInteractionItemVM dataSource2 = (MissionPrimaryInteractionItemVM)(generatedWidgetData2.Data = _datasource_Root_InteractionInterface_PrimaryInteractionMessages[j]);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData2);
-				_widget_0_1.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, j);
+				_widget_0_1_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate, j);
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.CreateWidgets();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetIds();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetAttributes();
 				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_6_ItemTemplate.SetDataSource(dataSource2);
+			}
+		}
+		_datasource_Root_InteractionInterface_ForcedInteractionMessages = _datasource_Root_InteractionInterface.ForcedInteractionMessages;
+		if (_datasource_Root_InteractionInterface_ForcedInteractionMessages != null)
+		{
+			_datasource_Root_InteractionInterface_ForcedInteractionMessages.ListChanged += OnList_datasource_Root_InteractionInterface_ForcedInteractionMessagesChanged;
+			for (int k = 0; k < _datasource_Root_InteractionInterface_ForcedInteractionMessages.Count; k++)
+			{
+				MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate = new MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate);
+				MissionPrimaryInteractionItemVM dataSource3 = (MissionPrimaryInteractionItemVM)(generatedWidgetData3.Data = _datasource_Root_InteractionInterface_ForcedInteractionMessages[k]);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.AddComponent(generatedWidgetData3);
+				_widget_0_2_0.AddChildAtIndex(mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate, k);
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.CreateWidgets();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetIds();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetAttributes();
+				mainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionAgentStatusVM_Dependency_7_ItemTemplate.SetDataSource(dataSource3);
 			}
 		}
 	}

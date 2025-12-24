@@ -46,6 +46,8 @@ public abstract class MapDistanceModel : MBGameModel<MapDistanceModel>
 
 	public abstract float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType navigationType);
 
+	public abstract float GetPortToGateDistanceForSettlement(Settlement settlement);
+
 	public abstract bool PathExistBetweenPoints(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType);
 
 	public abstract void RegisterDistanceCache(MobileParty.NavigationType navigationCapability, INavigationCache cacheToRegister);

@@ -12,6 +12,8 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 
 	private float _missionEndScoreboardDelayTimer;
 
+	private float _moraleUpdateTimer = 1f;
+
 	public override void Initialize(IMissionScreen missionScreen, Mission mission, Action releaseSimulationSources, Action<bool> onToggle)
 	{
 		base.Initialize(missionScreen, mission, releaseSimulationSources, onToggle);
@@ -70,8 +72,13 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 		}
 		if (!base.IsSimulation)
 		{
-			base.Attackers.Morale = GetBattleMoraleOfSide(BattleSideEnum.Attacker);
-			base.Defenders.Morale = GetBattleMoraleOfSide(BattleSideEnum.Defender);
+			_moraleUpdateTimer += dt;
+			if (_moraleUpdateTimer >= 1f)
+			{
+				base.Attackers.Morale = GetBattleMoraleOfSide(BattleSideEnum.Attacker);
+				base.Defenders.Morale = GetBattleMoraleOfSide(BattleSideEnum.Defender);
+				_moraleUpdateTimer = 0f;
+			}
 		}
 	}
 

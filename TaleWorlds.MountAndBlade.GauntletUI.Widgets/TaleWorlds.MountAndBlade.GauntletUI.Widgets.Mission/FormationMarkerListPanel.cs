@@ -11,9 +11,15 @@ public class FormationMarkerListPanel : ListPanel
 {
 	private bool _isMarkersDirty = true;
 
+	private Vec2 _markerDefaultSize = Vec2.Invalid;
+
 	private bool _isMarkerEnabled;
 
 	private bool _isTargetingAFormation;
+
+	private bool _isActive = true;
+
+	public bool _showDistanceTexts;
 
 	private int _teamType;
 
@@ -45,10 +51,10 @@ public class FormationMarkerListPanel : ListPanel
 	public float ClosestFadeoutRange { get; set; } = 3f;
 
 
-	public float FarSizeTarget { get; set; } = 20f;
+	public float FarScaleTarget { get; set; } = 0.5f;
 
 
-	public float CloseSizeTarget { get; set; } = 50f;
+	public float CloseScaleTarget { get; set; } = 1.4f;
 
 
 	[DataSourceProperty]
@@ -69,6 +75,23 @@ public class FormationMarkerListPanel : ListPanel
 	}
 
 	[DataSourceProperty]
+	public bool IsActive
+	{
+		get
+		{
+			return _isActive;
+		}
+		set
+		{
+			if (_isActive != value)
+			{
+				_isActive = value;
+				OnPropertyChanged(value, "IsActive");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool IsTargetingAFormation
 	{
 		get
@@ -81,6 +104,23 @@ public class FormationMarkerListPanel : ListPanel
 			{
 				_isTargetingAFormation = value;
 				OnPropertyChanged(value, "IsTargetingAFormation");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowDistanceTexts
+	{
+		get
+		{
+			return _showDistanceTexts;
+		}
+		set
+		{
+			if (_showDistanceTexts != value)
+			{
+				_showDistanceTexts = value;
+				OnPropertyChanged(value, "ShowDistanceTexts");
 			}
 		}
 	}
@@ -250,7 +290,7 @@ public class FormationMarkerListPanel : ListPanel
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		float delta = TaleWorlds.Library.MathF.Clamp(dt * 12f, 0f, 1f);
+		float amount = TaleWorlds.Library.MathF.Clamp(dt * 12f, 0f, 1f);
 		if (_isMarkersDirty)
 		{
 			Sprite sprite = null;
@@ -264,7 +304,7 @@ public class FormationMarkerListPanel : ListPanel
 			}
 			else
 			{
-				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 50);
+				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 51);
 			}
 			if (TeamTypeMarker != null)
 			{
@@ -286,15 +326,23 @@ public class FormationMarkerListPanel : ListPanel
 		}
 		if (IsMarkerEnabled)
 		{
-			float distanceRelatedAlphaTarget = GetDistanceRelatedAlphaTarget(Distance);
-			this.SetGlobalAlphaRecursively(distanceRelatedAlphaTarget);
-			float distanceRelatedSize = GetDistanceRelatedSize(Distance);
-			TeamTypeMarker.SuggestedWidth = distanceRelatedSize;
-			TeamTypeMarker.SuggestedHeight = distanceRelatedSize;
+			float num = GetDistanceRelatedAlphaTarget(Distance);
+			if (!IsActive)
+			{
+				num *= 0.5f;
+			}
+			this.SetGlobalAlphaRecursively(num);
+			if (!_markerDefaultSize.IsValid)
+			{
+				_markerDefaultSize = new Vec2(TeamTypeMarker.SuggestedWidth, TeamTypeMarker.SuggestedHeight);
+			}
+			float distanceRelatedScale = GetDistanceRelatedScale(Distance);
+			TeamTypeMarker.SuggestedWidth = _markerDefaultSize.X * distanceRelatedScale;
+			TeamTypeMarker.SuggestedHeight = _markerDefaultSize.Y * distanceRelatedScale;
 		}
 		else
 		{
-			float alphaFactor = LocalLerp(base.AlphaFactor, 0f, delta);
+			float alphaFactor = TaleWorlds.Library.MathF.Lerp(base.AlphaFactor, 0f, amount);
 			this.SetGlobalAlphaRecursively(alphaFactor);
 		}
 		if ((double)base.AlphaFactor > 0.05)
@@ -356,18 +404,22 @@ public class FormationMarkerListPanel : ListPanel
 		}
 	}
 
-	private float GetDistanceRelatedSize(float distance)
+	private float GetDistanceRelatedScale(float distance)
 	{
+		if (ShowDistanceTexts)
+		{
+			return 1f;
+		}
 		if (distance > FarDistanceCutoff)
 		{
-			return FarSizeTarget;
+			return FarScaleTarget;
 		}
 		if (distance <= FarDistanceCutoff && distance >= CloseDistanceCutoff)
 		{
 			float amount = (float)Math.Pow((distance - CloseDistanceCutoff) / (FarDistanceCutoff - CloseDistanceCutoff), 1.0 / 3.0);
-			return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(CloseSizeTarget, FarSizeTarget, amount), FarSizeTarget, CloseSizeTarget);
+			return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(CloseScaleTarget, FarScaleTarget, amount), FarScaleTarget, CloseScaleTarget);
 		}
-		return CloseSizeTarget;
+		return CloseScaleTarget;
 	}
 
 	private float GetDistanceRelatedAlphaTarget(float distance)
@@ -387,14 +439,5 @@ public class FormationMarkerListPanel : ListPanel
 			return TaleWorlds.Library.MathF.Lerp(0f, 1f, amount2);
 		}
 		return 0f;
-	}
-
-	private float LocalLerp(float start, float end, float delta)
-	{
-		if (Math.Abs(start - end) > float.Epsilon)
-		{
-			return (end - start) * delta + start;
-		}
-		return end;
 	}
 }

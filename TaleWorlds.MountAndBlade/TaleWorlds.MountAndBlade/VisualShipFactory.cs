@@ -83,6 +83,11 @@ public class VisualShipFactory
 		scene.SetDoNotAddEntitiesToTickList(value: false);
 	}
 
+	public static void DeregisterVisualShipCache()
+	{
+		_shipEntityCache.Clear();
+	}
+
 	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
@@ -107,7 +112,7 @@ public class VisualShipFactory
 			firstScriptOfType.Health = hitPointRatio;
 			gameEntity.CallScriptCallbacks(registerScriptComponents: true);
 		}
-		foreach (Mesh item2 in gameEntity.GetAllMeshesWithTag("faction_color"))
+		foreach (Mesh item2 in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
 		{
 			item2.Color = sailColor1;
 			item2.Color2 = sailColor2;
@@ -115,7 +120,7 @@ public class VisualShipFactory
 		return gameEntity;
 	}
 
-	public static GameEntity CreateVisualShipForCampaign(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue)
+	public static GameEntity CreateVisualShipForCampaign(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, string shipCustomSailPatternId, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
 		GameEntity gameEntity = GameEntity.CopyFrom(scene, _shipEntityCache[shipPrefab], createPhysics: false, callScriptCallbacks: false);
@@ -124,9 +129,9 @@ public class VisualShipFactory
 			RefreshUpgrades(gameEntity.WeakEntity, upgrades);
 		}
 		ShipVisual firstScriptOfType = gameEntity.GetFirstScriptOfType<ShipVisual>();
-		firstScriptOfType.Initialize(shipSeed);
+		firstScriptOfType.Initialize(shipSeed, shipCustomSailPatternId);
 		firstScriptOfType.SailColors = (sailColor1: sailColor1, sailColor2: sailColor2);
-		foreach (Mesh item in gameEntity.GetAllMeshesWithTag("faction_color"))
+		foreach (Mesh item in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
 		{
 			item.Color = sailColor1;
 			item.Color2 = sailColor2;

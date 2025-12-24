@@ -143,6 +143,8 @@ public sealed class ItemObject : MBObjectBase
 
 	public bool IsFood { get; private set; }
 
+	public bool IsUniqueItem { get; private set; }
+
 	public float ScaleFactor { get; private set; }
 
 	public BasicCultureObject Culture { get; private set; }
@@ -317,6 +319,7 @@ public sealed class ItemObject : MBObjectBase
 		IsFood = itemToCopy.IsFood;
 		Type = itemToCopy.Type;
 		ScaleFactor = itemToCopy.ScaleFactor;
+		IsUniqueItem = false;
 	}
 
 	internal void SetCraftedWeaponName(TextObject weaponName)
@@ -466,7 +469,7 @@ public sealed class ItemObject : MBObjectBase
 			ItemObject itemObject = Crafting.CreatePreCraftedWeaponOnDeserialize(this, array, innerText, craftedWeaponName, itemModifierGroup);
 			if (itemObject.WeaponComponent == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Crafted item: " + itemObject.StringId + " can not be initialized, item replaced with Trash item.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 446);
+				TaleWorlds.Library.Debug.FailedAssert("Crafted item: " + itemObject.StringId + " can not be initialized, item replaced with Trash item.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 448);
 				MBObjectManager.Instance.UnregisterObject(this);
 				return;
 			}
@@ -586,7 +589,7 @@ public sealed class ItemObject : MBObjectBase
 								itemComponent = new TradeItemComponent();
 								break;
 							case "Food":
-								TaleWorlds.Library.Debug.FailedAssert("FoodComponent tag has been converted to TradeComponent. Use Trade xml node type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 685);
+								TaleWorlds.Library.Debug.FailedAssert("FoodComponent tag has been converted to TradeComponent. Use Trade xml node type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 687);
 								itemComponent = null;
 								break;
 							case "Banner":
@@ -635,7 +638,7 @@ public sealed class ItemObject : MBObjectBase
 			}
 			if (Type == ItemTypeEnum.Banner && !(ItemComponent is BannerComponent) && !(base.StringId == "campaign_banner_small"))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 747);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 749);
 				TaleWorlds.Library.Debug.Print(string.Concat("Banner item with name: ", Name, " is not properly set. It must either be a campaign banner or it must have a banner component."), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 			}
 			XmlAttribute xmlAttribute9 = node.Attributes["AmmoOffset"];
@@ -652,12 +655,12 @@ public sealed class ItemObject : MBObjectBase
 					}
 					catch (Exception)
 					{
-						TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 774);
+						TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 776);
 					}
 				}
 				else
 				{
-					TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 779);
+					TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Throw Base Offset is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "Deserialize", 781);
 				}
 			}
 			if (node.Attributes["tier_override"] != null)
@@ -724,17 +727,17 @@ public sealed class ItemObject : MBObjectBase
 		{
 			if ((Type == ItemTypeEnum.Bow || Type == ItemTypeEnum.Crossbow || Type == ItemTypeEnum.TwoHandedWeapon) && !PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have NotUsableWithOneHand flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 957);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have NotUsableWithOneHand flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 959);
 				PrimaryWeapon.WeaponFlags |= WeaponFlags.NotUsableWithOneHand;
 			}
 			if ((Type == ItemTypeEnum.Bow || Type == ItemTypeEnum.Crossbow) && !PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.TwoHandIdleOnMount))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have TwoHandIdleOnMount flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 966);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": Two Handed Item does not have TwoHandIdleOnMount flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 968);
 				PrimaryWeapon.WeaponFlags |= WeaponFlags.TwoHandIdleOnMount;
 			}
 			if ((Type == ItemTypeEnum.OneHandedWeapon || Type == ItemTypeEnum.Shield) && PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.NotUsableWithOneHand))
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": One Handed Item has TwoHanded flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 975);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat(Name, ": One Handed Item has TwoHanded flag!"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\ItemObject.cs", "MakeSureProperFlagsSetForOneAndTwoHandedWeapons", 977);
 				PrimaryWeapon.WeaponFlags &= ~WeaponFlags.NotUsableWithOneHand;
 			}
 		}

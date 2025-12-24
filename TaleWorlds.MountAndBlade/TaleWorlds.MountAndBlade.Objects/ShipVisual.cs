@@ -12,6 +12,8 @@ public class ShipVisual : ScriptComponentBehavior
 
 	public int Seed { get; private set; }
 
+	public string CustomSailPatternId { get; private set; }
+
 	public List<ScriptComponentBehavior> SailVisuals { get; private set; } = new List<ScriptComponentBehavior>();
 
 
@@ -27,8 +29,9 @@ public class ShipVisual : ScriptComponentBehavior
 		}
 	}
 
-	public void Initialize(int seed)
+	public void Initialize(int seed, string customSailPatternId = "")
 	{
 		Seed = seed;
+		CustomSailPatternId = customSailPatternId;
 	}
 }

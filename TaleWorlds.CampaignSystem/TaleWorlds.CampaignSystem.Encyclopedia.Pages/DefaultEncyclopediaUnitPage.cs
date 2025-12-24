@@ -25,7 +25,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 			{
 				return tier.ToString();
 			}
-			Debug.FailedAssert("Unable to get the tier of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 147);
+			Debug.FailedAssert("Unable to get the tier of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 175);
 			return "";
 		}
 	}
@@ -45,7 +45,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 			{
 				return level.ToString();
 			}
-			Debug.FailedAssert("Unable to get the level of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 168);
+			Debug.FailedAssert("Unable to get the level of a non-character object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "GetComparedValueText", 196);
 			return "";
 		}
 	}
@@ -63,7 +63,7 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be character objects.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "CompareUnits", 183);
+			Debug.FailedAssert("Both objects should be character objects.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaUnitPage.cs", "CompareUnits", 211);
 			return 0;
 		}
 	}
@@ -90,38 +90,65 @@ public class DefaultEncyclopediaUnitPage : EncyclopediaPage
 	protected override IEnumerable<EncyclopediaFilterGroup> InitializeFilterItems()
 	{
 		List<EncyclopediaFilterGroup> list = new List<EncyclopediaFilterGroup>();
-		List<EncyclopediaFilterItem> filters = new List<EncyclopediaFilterItem>
+		List<EncyclopediaFilterItem> typeFilterItems = GetTypeFilterItems();
+		list.Add(new EncyclopediaFilterGroup(typeFilterItems, new TextObject("{=zMMqgxb1}Type")));
+		List<EncyclopediaFilterItem> occupationFilterItems = GetOccupationFilterItems();
+		list.Add(new EncyclopediaFilterGroup(occupationFilterItems, new TextObject("{=GZxFIeiJ}Occupation")));
+		List<EncyclopediaFilterItem> cultureFilterItems = GetCultureFilterItems();
+		list.Add(new EncyclopediaFilterGroup(cultureFilterItems, GameTexts.FindText("str_culture")));
+		List<EncyclopediaFilterItem> outlawFilterItems = GetOutlawFilterItems();
+		list.Add(new EncyclopediaFilterGroup(outlawFilterItems, GameTexts.FindText("str_outlaw")));
+		return list;
+	}
+
+	protected virtual List<EncyclopediaFilterItem> GetTypeFilterItems()
+	{
+		return new List<EncyclopediaFilterItem>
 		{
 			new EncyclopediaFilterItem(new TextObject("{=1Bm1Wk1v}Infantry"), (object s) => ((CharacterObject)s).IsInfantry),
 			new EncyclopediaFilterItem(new TextObject("{=bIiBytSB}Archers"), (object s) => ((CharacterObject)s).IsRanged && !((CharacterObject)s).IsMounted),
 			new EncyclopediaFilterItem(new TextObject("{=YVGtcLHF}Cavalry"), (object s) => ((CharacterObject)s).IsMounted && !((CharacterObject)s).IsRanged),
 			new EncyclopediaFilterItem(new TextObject("{=I1CMeL9R}Mounted Archers"), (object s) => ((CharacterObject)s).IsRanged && ((CharacterObject)s).IsMounted)
 		};
-		list.Add(new EncyclopediaFilterGroup(filters, new TextObject("{=zMMqgxb1}Type")));
-		List<EncyclopediaFilterItem> filters2 = new List<EncyclopediaFilterItem>
+	}
+
+	protected virtual List<EncyclopediaFilterItem> GetOccupationFilterItems()
+	{
+		return new List<EncyclopediaFilterItem>
 		{
 			new EncyclopediaFilterItem(GameTexts.FindText("str_occupation", "Soldier"), (object s) => ((CharacterObject)s).Occupation == Occupation.Soldier),
 			new EncyclopediaFilterItem(GameTexts.FindText("str_occupation", "Mercenary"), (object s) => ((CharacterObject)s).Occupation == Occupation.Mercenary),
 			new EncyclopediaFilterItem(GameTexts.FindText("str_occupation", "Bandit"), (object s) => ((CharacterObject)s).Occupation == Occupation.Bandit)
 		};
-		list.Add(new EncyclopediaFilterGroup(filters2, new TextObject("{=GZxFIeiJ}Occupation")));
-		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
-		List<EncyclopediaFilterItem> list3 = new List<EncyclopediaFilterItem>();
+	}
+
+	protected virtual List<EncyclopediaFilterItem> GetCultureFilterItems()
+	{
+		List<EncyclopediaFilterItem> list = new List<EncyclopediaFilterItem>();
+		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
+			orderby !x.IsMainCulture descending
+			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
+		{
+			if (!culture.IsBandit && culture.StringId != "neutral_culture")
+			{
+				list.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
+			}
+		}
+		return list;
+	}
+
+	protected virtual List<EncyclopediaFilterItem> GetOutlawFilterItems()
+	{
+		List<EncyclopediaFilterItem> list = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
 			orderby !x.IsMainCulture descending
 			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
 		{
 			if (culture.IsBandit)
 			{
-				list3.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
-			}
-			else if (culture.StringId != "neutral_culture")
-			{
-				list2.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
+				list.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((CharacterObject)c).Culture == culture));
 			}
 		}
-		list.Add(new EncyclopediaFilterGroup(list2, GameTexts.FindText("str_culture")));
-		list.Add(new EncyclopediaFilterGroup(list3, GameTexts.FindText("str_outlaw")));
 		return list;
 	}
 

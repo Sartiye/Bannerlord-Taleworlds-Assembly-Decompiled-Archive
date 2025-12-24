@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 
 namespace TaleWorlds.MountAndBlade.CustomBattle.CustomBattle;
 
@@ -134,6 +135,10 @@ public struct CustomBattleData
 				yield return Game.Current.ObjectManager.GetObject<BasicCultureObject>("vlandia");
 				yield return Game.Current.ObjectManager.GetObject<BasicCultureObject>("battania");
 				yield return Game.Current.ObjectManager.GetObject<BasicCultureObject>("khuzait");
+				if (ModuleHelper.IsModuleActive("NavalDLC"))
+				{
+					yield return Game.Current.ObjectManager.GetObject<BasicCultureObject>("nord");
+				}
 			}
 		}
 	}

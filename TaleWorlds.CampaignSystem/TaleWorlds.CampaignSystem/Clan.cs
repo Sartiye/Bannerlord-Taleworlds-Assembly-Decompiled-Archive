@@ -835,6 +835,25 @@ public sealed class Clan : MBObjectBase, IFaction
 			}
 			SetInitialHomeSettlement(settlement);
 		}
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.11") && Kingdom == null && this == PlayerClan)
+		{
+			Kingdom kingdom = Kingdom.All.FirstOrDefault((Kingdom t) => t.RulingClan == PlayerClan);
+			if (kingdom != null)
+			{
+				Clan clan = (from t in kingdom.Clans
+					where t != PlayerClan
+					orderby t.CurrentTotalStrength descending
+					select t).FirstOrDefault();
+				if (clan != null)
+				{
+					ChangeRulingClanAction.Apply(kingdom, clan);
+				}
+				else
+				{
+					DestroyKingdomAction.Apply(kingdom);
+				}
+			}
+		}
 		CalculateMidSettlement();
 	}
 

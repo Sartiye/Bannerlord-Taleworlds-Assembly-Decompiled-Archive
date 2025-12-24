@@ -84,7 +84,9 @@ public abstract class QuestBase : MBObjectBase
 
 	public virtual int RelationshipChangeWithQuestGiver { get; protected set; }
 
-	public virtual bool IsSpecialQuest => false;
+	public bool IsSpecialQuest => !string.IsNullOrEmpty(SpecialQuestType);
+
+	public virtual string SpecialQuestType => string.Empty;
 
 	protected virtual TextObject TargetHeroDisappearedLogText => new TextObject("{=ZfRmHMJJ}{QUEST_TARGET.LINK} has lost the struggle against {?QUEST_TARGET.GENDER}her{?}his{\\?} rivals and decided to left the realm. Your agreement with {QUEST_GIVER.LINK} has been canceled and your service is no longer needed to solve the issue.");
 
@@ -324,7 +326,7 @@ public abstract class QuestBase : MBObjectBase
 		}
 		else
 		{
-			Debug.FailedAssert("Quest log requested to be removed cant be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestBase.cs", "RemoveLog", 293);
+			Debug.FailedAssert("Quest log requested to be removed cant be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\QuestBase.cs", "RemoveLog", 294);
 		}
 	}
 

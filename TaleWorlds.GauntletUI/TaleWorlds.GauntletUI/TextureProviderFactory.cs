@@ -39,10 +39,15 @@ public static class TextureProviderFactory
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		for (int i = 0; i < assemblies.Length; i++)
 		{
-			Type[] types = assemblies[i].GetTypes();
-			foreach (Type type in types)
+			List<Type> typesSafe = assemblies[i].GetTypesSafe();
+			for (int j = 0; j < typesSafe.Count; j++)
 			{
-				if (typeof(TextureProvider).IsAssignableFrom(type) && !type.IsAbstract)
+				Type type = typesSafe[j];
+				if (type == null)
+				{
+					Debug.FailedAssert("(RefreshProviderTypes): Null type while iterating assemblies", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\TextureProviderFactory.cs", "RefreshProviderTypes", 53);
+				}
+				else if (typeof(TextureProvider).IsAssignableFrom(type) && !type.IsAbstract)
 				{
 					_textureProvidertypes.Add(type.Name, type);
 				}

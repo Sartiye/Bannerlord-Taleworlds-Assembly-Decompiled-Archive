@@ -61,7 +61,7 @@ internal interface ITexture
 	Texture CreateFromMemory(byte[] data);
 
 	[EngineMethod("save_to_file", false, null, false)]
-	void SaveToFile(UIntPtr texturePointer, string fileName);
+	void SaveToFile(UIntPtr texturePointer, string fileName, bool isRelativePath);
 
 	[EngineMethod("set_texture_as_always_valid", false, null, false)]
 	void SaveTextureAsAlwaysValid(UIntPtr texturePointer);

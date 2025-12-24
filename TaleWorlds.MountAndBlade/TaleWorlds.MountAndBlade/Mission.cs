@@ -381,51 +381,6 @@ public sealed class Mission : DotNetObject, IMission
 		All
 	}
 
-	public struct CorpseAgentInfo
-	{
-		public BasicCharacterObject CorpseBasicCharacterObject;
-
-		public Monster CorpseMonster;
-
-		public Equipment CorpseSpawnEquipment;
-
-		public MissionEquipment CorpseMissionEquipment;
-
-		public BodyProperties CorpseBodyPropertiesValue;
-
-		public int CorpseBodyPropertiesSeed;
-
-		public bool CorpseIsFemale;
-
-		public int CorpseTeamIndex;
-
-		public int CorpseFormationIndex;
-
-		public uint CorpseClothingColor1;
-
-		public uint CorpseClothingColor2;
-
-		public MissionPeer CorpseMissionPeer;
-
-		public MissionPeer CorpseOwningAgentMissionPeer;
-
-		public Vec3 CorpsePosition;
-
-		public Vec2 CorpseMovementDirection;
-
-		public int AgentCorpsesToFadeIndex;
-
-		public bool IsMount;
-
-		public MBList<MissionWeapon> AttachedWeapons;
-
-		public MBList<sbyte> AttachedWeaponBoneIndices;
-
-		public MBList<MatrixFrame> AttachedWeaponFrames;
-
-		public ActionIndexCache CorpseDeathActionIndex;
-	}
-
 	public static class MissionNetworkHelper
 	{
 		public static Agent GetAgentFromIndex(int agentIndex, bool canBeNull = false)
@@ -633,7 +588,7 @@ public sealed class Mission : DotNetObject, IMission
 				num10 = 0.4f * weight * 0.4f * 0.4f;
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("Unknown missile type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "CalculateBounceBackVelocity", 298);
+				TaleWorlds.Library.Debug.FailedAssert("Unknown missile type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "CalculateBounceBackVelocity", 272);
 				num10 = 0f;
 				break;
 			}
@@ -732,6 +687,8 @@ public sealed class Mission : DotNetObject, IMission
 	public delegate void OnAddSoundAlarmFactorToAgentsDelegate(Agent alarmCreatorAgent, in Vec3 soundPosition, float soundLevelSquareRoot);
 
 	public delegate void OnMainAgentChangedDelegate(Agent oldAgent);
+
+	public delegate BodyProperties ComputeTroopBodyPropertiesDelegate(AgentBuildData agentBuildData, BasicCharacterObject characterObject, Equipment equipment, int seed);
 
 	public sealed class TeamCollection : List<Team>
 	{
@@ -1056,8 +1013,6 @@ public sealed class Mission : DotNetObject, IMission
 	private ConcurrentQueue<CombatLogData> _combatLogsCreated = new ConcurrentQueue<CombatLogData>();
 
 	private AgentList _allAgents;
-
-	private MBList<CorpseAgentInfo> _corpseAgentInfos;
 
 	private MBList<(MissionTickAction Action, Agent Agent, int Param1, int Param2)> _tickActions = new MBList<(MissionTickAction, Agent, int, int)>();
 
@@ -1405,6 +1360,18 @@ public sealed class Mission : DotNetObject, IMission
 
 	public IMissionDeploymentPlan DeploymentPlan => _deploymentPlan;
 
+	public bool IsBattleSpawnPathSelectorInitialized
+	{
+		get
+		{
+			if (_battleSpawnPathSelector != null)
+			{
+				return _battleSpawnPathSelector.IsInitialized;
+			}
+			return false;
+		}
+	}
+
 	public Agent MainAgentServer { get; set; }
 
 	public bool HasSpawnPath => _battleSpawnPathSelector.IsInitialized;
@@ -1418,8 +1385,6 @@ public sealed class Mission : DotNetObject, IMission
 	public bool IsNavalBattle => MissionTeamAIType == MissionTeamAITypeEnum.NavalBattle;
 
 	public AgentReadOnlyList AllAgents => _allAgents;
-
-	public MBReadOnlyList<CorpseAgentInfo> CorpseAgentInfos => _corpseAgentInfos;
 
 	public AgentReadOnlyList Agents => _activeAgents;
 
@@ -1586,6 +1551,8 @@ public sealed class Mission : DotNetObject, IMission
 	public event Func<bool> IsAgentInteractionAllowed_AdditionalCondition;
 
 	public event OnMainAgentChangedDelegate OnMainAgentChanged;
+
+	public event ComputeTroopBodyPropertiesDelegate OnComputeTroopBodyProperties;
 
 	public event Func<BattleSideEnum, BasicCharacterObject, FormationClass> GetAgentTroopClass_Override;
 
@@ -2517,7 +2484,7 @@ public sealed class Mission : DotNetObject, IMission
 		float result = 0f;
 		if (side == BattleSideEnum.NumSides)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Cannot get removed agent count for side. Invalid battle side passed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetRemovedAgentRatioForSide", 722);
+			TaleWorlds.Library.Debug.FailedAssert("Cannot get removed agent count for side. Invalid battle side passed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetRemovedAgentRatioForSide", 694);
 		}
 		float num = _initialAgentCountPerSide[(int)side];
 		if (num > 0f && _agentCount > 0)
@@ -2739,7 +2706,7 @@ public sealed class Mission : DotNetObject, IMission
 		switch (side)
 		{
 		case BattleSideEnum.NumSides:
-			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetFleePositionsForSide", 1283);
+			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetFleePositionsForSide", 1253);
 			return null;
 		default:
 			num = (int)(side + 1);
@@ -2781,7 +2748,6 @@ public sealed class Mission : DotNetObject, IMission
 		_missilesDictionary = new Dictionary<int, Missile>();
 		_activeAgents = new AgentList(256);
 		_allAgents = new AgentList(256);
-		_corpseAgentInfos = new MBList<CorpseAgentInfo>(256);
 		for (int i = 0; i < 3; i++)
 		{
 			_fleePositions[i] = new MBList<FleePosition>(32);
@@ -2818,7 +2784,7 @@ public sealed class Mission : DotNetObject, IMission
 		switch (side)
 		{
 		case BattleSideEnum.NumSides:
-			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "AddFleePosition", 1374);
+			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "AddFleePosition", 1343);
 			break;
 		case BattleSideEnum.None:
 		{
@@ -2908,60 +2874,23 @@ public sealed class Mission : DotNetObject, IMission
 
 	[UsedImplicitly]
 	[MBCallback(null, false)]
-	internal void OnCorpseRemoved(int corpsesToFadeIndex)
-	{
-		if (!GameNetwork.IsClientOrReplay && _corpseAgentInfos.Count > 0)
-		{
-			_corpseAgentInfos.RemoveAt(0);
-		}
-	}
-
-	[UsedImplicitly]
-	[MBCallback(null, false)]
 	internal void OnAgentAddedAsCorpse(Agent affectedAgent, int corpsesToFadeIndex)
 	{
 		if (GameNetwork.IsClientOrReplay)
 		{
 			return;
 		}
-		CorpseAgentInfo item = default(CorpseAgentInfo);
-		item.AttachedWeapons = new MBList<MissionWeapon>();
-		item.AttachedWeaponBoneIndices = new MBList<sbyte>();
-		item.AttachedWeaponFrames = new MBList<MatrixFrame>();
 		for (int i = 0; i < affectedAgent.GetAttachedWeaponsCount(); i++)
 		{
-			MissionWeapon attachedWeapon = affectedAgent.GetAttachedWeapon(i);
-			if (attachedWeapon.Item.ItemFlags.HasAnyFlag(ItemFlags.CanBePickedUpFromCorpse))
+			if (affectedAgent.GetAttachedWeapon(i).Item.ItemFlags.HasAnyFlag(ItemFlags.CanBePickedUpFromCorpse))
 			{
 				SpawnAttachedWeaponOnCorpse(affectedAgent, i, -1);
-				item.AttachedWeapons.Add(attachedWeapon);
-				item.AttachedWeaponBoneIndices.Add(affectedAgent.GetAttachedWeaponBoneIndex(i));
-				item.AttachedWeaponFrames.Add(affectedAgent.GetAttachedWeaponFrame(i));
 			}
 		}
-		item.CorpseBasicCharacterObject = affectedAgent.Character;
-		item.CorpseMonster = affectedAgent.Monster;
-		item.CorpseSpawnEquipment = affectedAgent.SpawnEquipment;
-		item.CorpseMissionEquipment = affectedAgent.Equipment;
-		item.CorpseBodyPropertiesValue = affectedAgent.BodyPropertiesValue;
-		item.CorpseBodyPropertiesSeed = affectedAgent.BodyPropertiesSeed;
-		item.CorpseIsFemale = affectedAgent.IsFemale;
-		item.CorpseTeamIndex = affectedAgent.Team?.TeamIndex ?? (-1);
-		item.CorpseFormationIndex = affectedAgent.Formation?.Index ?? (-1);
-		item.CorpseMissionPeer = affectedAgent.MissionPeer;
-		item.CorpseOwningAgentMissionPeer = affectedAgent.OwningAgentMissionPeer;
-		item.CorpsePosition = affectedAgent.Position;
-		item.CorpseMovementDirection = affectedAgent.GetMovementDirection();
-		item.AgentCorpsesToFadeIndex = corpsesToFadeIndex;
-		item.IsMount = affectedAgent.IsMount;
-		item.CorpseClothingColor1 = (affectedAgent.IsHuman ? affectedAgent.ClothingColor1 : uint.MaxValue);
-		item.CorpseClothingColor2 = (affectedAgent.IsHuman ? affectedAgent.ClothingColor2 : uint.MaxValue);
-		item.CorpseDeathActionIndex = affectedAgent.GetCurrentAction(0);
-		_corpseAgentInfos.Add(item);
 		affectedAgent.ClearAttachedWeapons();
 	}
 
-	public void SpawnAttachedWeaponOnCorpse(Agent agent, int attachedWeaponIndex, int forcedSpawnIndex)
+	public SpawnedItemEntity SpawnAttachedWeaponOnCorpse(Agent agent, int attachedWeaponIndex, int forcedSpawnIndex)
 	{
 		agent.AgentVisuals.GetSkeleton()?.ForceUpdateBoneFrames();
 		MissionWeapon attachedWeapon = agent.GetAttachedWeapon(attachedWeaponIndex);
@@ -2978,7 +2907,7 @@ public sealed class Mission : DotNetObject, IMission
 			GameNetwork.WriteMessage(new SpawnAttachedWeaponOnCorpse(agent.Index, attachedWeaponIndex, firstScriptOfType.Id.Id));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
-		SpawnWeaponAux(attachedWeaponEntity.WeakEntity, attachedWeapon, WeaponSpawnFlags.AsMissile | WeaponSpawnFlags.WithStaticPhysics, Vec3.Zero, Vec3.Zero, hasLifeTime: false);
+		return SpawnWeaponAux(attachedWeaponEntity.WeakEntity, attachedWeapon, WeaponSpawnFlags.AsMissile | WeaponSpawnFlags.WithStaticPhysics, Vec3.Zero, Vec3.Zero, hasLifeTime: false, spawnedOnACorpse: true);
 	}
 
 	public void AddMountWithoutRider(Agent mount)
@@ -3201,7 +3130,7 @@ public sealed class Mission : DotNetObject, IMission
 		return SpawnWeaponWithNewEntityAux(weapon, spawnFlags, frame, -1, null, hasLifeTime: false);
 	}
 
-	public GameEntity SpawnWeaponWithNewEntityAux(MissionWeapon weapon, WeaponSpawnFlags spawnFlags, MatrixFrame frame, int forcedSpawnIndex, MissionObject attachedMissionObject, bool hasLifeTime)
+	public GameEntity SpawnWeaponWithNewEntityAux(MissionWeapon weapon, WeaponSpawnFlags spawnFlags, MatrixFrame frame, int forcedSpawnIndex, MissionObject attachedMissionObject, bool hasLifeTime, bool spawnedOnACorpse = false)
 	{
 		GameEntity gameEntity = GameEntityExtensions.Instantiate(Scene, weapon, spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithHolster), needBatchedVersion: true);
 		gameEntity.CreateAndAddScriptComponent(typeof(SpawnedItemEntity).Name, callScriptCallbacks: true);
@@ -3227,7 +3156,7 @@ public sealed class Mission : DotNetObject, IMission
 		if (GameNetwork.IsServerOrRecorder)
 		{
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(weapon, spawnFlags, firstScriptOfType.Id.Id, frame, attachedMissionObject?.Id ?? MissionObjectId.Invalid, isVisible: true, hasLifeTime));
+			GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(weapon, spawnFlags, firstScriptOfType.Id.Id, frame, attachedMissionObject?.Id ?? MissionObjectId.Invalid, isVisible: true, hasLifeTime, spawnedOnACorpse));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 			for (int i = 0; i < weapon.GetAttachedWeaponsCount(); i++)
 			{
@@ -3237,7 +3166,7 @@ public sealed class Mission : DotNetObject, IMission
 			}
 		}
 		Vec3 zero = Vec3.Zero;
-		SpawnWeaponAux(gameEntity.WeakEntity, weapon, spawnFlags, zero, zero, hasLifeTime);
+		SpawnWeaponAux(gameEntity.WeakEntity, weapon, spawnFlags, zero, zero, hasLifeTime, spawnedOnACorpse);
 		return gameEntity;
 	}
 
@@ -3249,7 +3178,7 @@ public sealed class Mission : DotNetObject, IMission
 		spawnedItem.AttachWeaponToWeapon(weapon, ref attachLocalFrame);
 	}
 
-	private void SpawnWeaponAux(WeakGameEntity weaponEntity, MissionWeapon weapon, WeaponSpawnFlags spawnFlags, Vec3 globalVelocity, Vec3 globalAngularVelocity, bool hasLifeTime)
+	private SpawnedItemEntity SpawnWeaponAux(WeakGameEntity weaponEntity, MissionWeapon weapon, WeaponSpawnFlags spawnFlags, Vec3 globalVelocity, Vec3 globalAngularVelocity, bool hasLifeTime, bool spawnedOnACorpse = false)
 	{
 		SpawnedItemEntity firstScriptOfType = weaponEntity.GetFirstScriptOfType<SpawnedItemEntity>();
 		bool flag = weapon.IsBanner();
@@ -3257,40 +3186,39 @@ public sealed class Mission : DotNetObject, IMission
 		bool hasLifeTime2 = !flag && hasLifeTime;
 		WeaponSpawnFlags spawnFlags2 = spawnFlags;
 		Vec3 fakeSimulationVelocity = (flag ? globalVelocity : Vec3.Zero);
-		firstScriptOfType.Initialize(weapon2, hasLifeTime2, spawnFlags2, in fakeSimulationVelocity);
-		if (!spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithPhysics | WeaponSpawnFlags.WithStaticPhysics))
+		firstScriptOfType.Initialize(weapon2, hasLifeTime2, spawnFlags2, in fakeSimulationVelocity, spawnedOnACorpse);
+		if (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithPhysics | WeaponSpawnFlags.WithStaticPhysics))
 		{
-			return;
-		}
-		BodyFlags bodyFlags = BodyFlags.OnlyCollideWithRaycast | BodyFlags.DroppedItem;
-		if (weapon.Item.ItemFlags.HasAnyFlag(ItemFlags.CannotBePickedUp) || spawnFlags.HasAnyFlag(WeaponSpawnFlags.CannotBePickedUp))
-		{
-			bodyFlags |= BodyFlags.DoNotCollideWithRaycast;
-		}
-		bodyFlags |= BodyFlags.Moveable;
-		weaponEntity.AddBodyFlags(bodyFlags, applyToChildren: false);
-		WeaponData weaponData = weapon.GetWeaponData(needBatchedVersionForMeshes: true);
-		RecalculateBody(ref weaponData, weapon.Item.ItemComponent, weapon.Item.WeaponDesign, ref spawnFlags);
-		int collisionGroupID = -1;
-		if (flag)
-		{
-			weaponEntity.AddPhysics(weaponData.BaseWeight, weaponData.CenterOfMassShift, weaponData.Shape, globalVelocity, globalAngularVelocity, PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), isStatic: true, collisionGroupID);
-		}
-		else if (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithPhysics | WeaponSpawnFlags.WithStaticPhysics))
-		{
-			float mass = (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithHolster) ? (weaponData.BaseWeight * (float)weapon.MaxAmmo) : weaponData.BaseWeight);
-			weaponEntity.AddPhysics(mass, weaponData.CenterOfMassShift, weaponData.Shape, globalVelocity, globalAngularVelocity, PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics), collisionGroupID);
-			if (weaponEntity.Parent != WeakGameEntity.Invalid && spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics))
+			BodyFlags bodyFlags = BodyFlags.OnlyCollideWithRaycast | BodyFlags.DroppedItem;
+			if (weapon.Item.ItemFlags.HasAnyFlag(ItemFlags.CannotBePickedUp) || spawnFlags.HasAnyFlag(WeaponSpawnFlags.CannotBePickedUp))
 			{
-				weaponEntity.SetPhysicsMoveToBatched(value: true);
-				weaponEntity.ConvertDynamicBodyToRayCast();
+				bodyFlags |= BodyFlags.DoNotCollideWithRaycast;
 			}
-			else
+			bodyFlags |= BodyFlags.Moveable;
+			weaponEntity.AddBodyFlags(bodyFlags, applyToChildren: false);
+			WeaponData weaponData = weapon.GetWeaponData(needBatchedVersionForMeshes: true);
+			RecalculateBody(ref weaponData, weapon.Item.ItemComponent, weapon.Item.WeaponDesign, ref spawnFlags);
+			int collisionGroupID = -1;
+			if (flag)
 			{
-				weaponEntity.SetPhysicsStateOnlyVariable(isEnabled: true, setChildren: true);
+				weaponEntity.AddPhysics(weaponData.BaseWeight, weaponData.CenterOfMassShift, weaponData.Shape, globalVelocity, globalAngularVelocity, PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), isStatic: true, collisionGroupID);
 			}
+			else if (spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithPhysics | WeaponSpawnFlags.WithStaticPhysics))
+			{
+				GameEntityPhysicsExtensions.AddPhysics(mass: spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithHolster) ? (weaponData.BaseWeight * (float)weapon.MaxAmmo) : weaponData.BaseWeight, gameEntity: weaponEntity, localCenterOfMass: weaponData.CenterOfMassShift, body: weaponData.Shape, initialVelocity: globalVelocity, angularVelocity: globalAngularVelocity, physicsMaterial: PhysicsMaterial.GetFromIndex(weaponData.PhysicsMaterialIndex), isStatic: spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics), collisionGroupID: collisionGroupID);
+				if (weaponEntity.Parent != WeakGameEntity.Invalid && spawnFlags.HasAnyFlag(WeaponSpawnFlags.WithStaticPhysics))
+				{
+					weaponEntity.SetPhysicsMoveToBatched(value: true);
+					weaponEntity.ConvertDynamicBodyToRayCast();
+				}
+				else
+				{
+					weaponEntity.SetPhysicsStateOnlyVariable(isEnabled: true, setChildren: true);
+				}
+			}
+			weaponData.DeinitializeManagedPointers();
 		}
-		weaponData.DeinitializeManagedPointers();
+		return firstScriptOfType;
 	}
 
 	public void OnEquipItemsFromSpawnEquipmentBegin(Agent agent, Agent.CreationType creationType)
@@ -3420,7 +3348,7 @@ public sealed class Mission : DotNetObject, IMission
 		PhysicsShape physicsShape = weaponData.Shape;
 		if (physicsShape == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2235);
+			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2164);
 			physicsShape = PhysicsShape.GetFromResource("bo_axe_short");
 		}
 		if (!weaponComponent.Item.ItemFlags.HasAnyFlag(ItemFlags.DoNotScaleBodyAccordingToWeaponLength))
@@ -3502,7 +3430,7 @@ public sealed class Mission : DotNetObject, IMission
 					int num8 = physicsShape.CapsuleCount();
 					if (num8 == 0)
 					{
-						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2373);
+						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2302);
 						return;
 					}
 					switch (weaponComponent.PrimaryWeapon.WeaponClass)
@@ -3553,7 +3481,7 @@ public sealed class Mission : DotNetObject, IMission
 					}
 					case WeaponClass.SmallShield:
 					case WeaponClass.LargeShield:
-						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2447);
+						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2376);
 						break;
 					}
 				}
@@ -4040,7 +3968,7 @@ public sealed class Mission : DotNetObject, IMission
 				agent.SetInitialAgentScale(0.01f * (float)equipmentElement.Item.HorseComponent.BodyLength);
 			}
 		}
-		agent.EquipItemsFromSpawnEquipment(neededBatchedItems: true, (agentBuildData != null && agentBuildData.PrepareImmediately) || agent == Agent.Main);
+		agent.EquipItemsFromSpawnEquipment(neededBatchedItems: true, (agentBuildData != null && agentBuildData.PrepareImmediately) || agent == Agent.Main, agentBuildData?.UseFaceCache ?? false, agentBuildData?.FaceCacheId ?? 0);
 		agent.InitializeAgentRecord();
 		agent.AgentVisuals.BatchLastLodMeshes();
 		agent.PreloadForRendering();
@@ -4314,7 +4242,17 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		if (!agentBuildData.BodyPropertiesOverriden)
 		{
-			agent.UpdateBodyProperties(agentCharacter.GetBodyProperties(equipment, agentBuildData.AgentEquipmentSeed));
+			BodyProperties bodyProperties;
+			if (this.OnComputeTroopBodyProperties != null)
+			{
+				bodyProperties = this.OnComputeTroopBodyProperties(agentBuildData, agentCharacter, equipment, agentBuildData.AgentEquipmentSeed);
+				agentBuildData.UseFaceCache = !agentCharacter.IsHero;
+			}
+			else
+			{
+				bodyProperties = agentCharacter.GetBodyProperties(equipment, agentBuildData.AgentEquipmentSeed);
+			}
+			agent.UpdateBodyProperties(bodyProperties);
 		}
 		if (GameNetwork.IsServerOrRecorder && agent.RiderAgent == null)
 		{
@@ -4375,6 +4313,12 @@ public sealed class Mission : DotNetObject, IMission
 				agent.SetRidingOrder(RidingOrder.RidingOrderEnum.Mount);
 			}
 		}
+		Mission current = Current;
+		if (current != null && current.IsDeploymentFinished)
+		{
+			MissionGameModels.Current.AgentStatCalculateModel.InitializeAgentStatsAfterDeploymentFinished(agent);
+			MissionGameModels.Current.AgentStatCalculateModel.InitializeMissionEquipmentAfterDeploymentFinished(agent);
+		}
 		return agent;
 	}
 
@@ -4386,7 +4330,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3896);
+			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3851);
 		}
 	}
 
@@ -4458,7 +4402,7 @@ public sealed class Mission : DotNetObject, IMission
 			}
 			else
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 4003);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 3958);
 				TaleWorlds.Library.Debug.Print(string.Concat("Invalid banner item: ", bannerItem.Name, " is passed to a troop to be spawned"), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 			}
 		}
@@ -4655,7 +4599,7 @@ public sealed class Mission : DotNetObject, IMission
 			_otherMissionBehaviors.Remove(missionBehavior);
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4299);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4254);
 			break;
 		}
 		MissionBehaviors.Remove(missionBehavior);
@@ -4692,7 +4636,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4343);
+			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4298);
 		}
 	}
 
@@ -5182,7 +5126,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 5035);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 4990);
 			return null;
 		}
 		if (troopOrigin.IsUnderPlayersCommand)
@@ -5204,7 +5148,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5068);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5023);
 			return null;
 		}
 		return teamSide switch
@@ -6666,7 +6610,7 @@ public sealed class Mission : DotNetObject, IMission
 
 	public bool IsFormationUnitPositionAvailableMT(ref WorldPosition formationPosition, ref WorldPosition unitPosition, ref WorldPosition nearestAvailableUnitPosition, float manhattanDistance, Team team)
 	{
-		if (!formationPosition.IsValid || formationPosition.GetNavMesh() == UIntPtr.Zero || !unitPosition.IsValid || unitPosition.GetNavMesh() == UIntPtr.Zero)
+		if (!formationPosition.IsValid || formationPosition.GetNavMeshMT() == UIntPtr.Zero || !unitPosition.IsValid || unitPosition.GetNavMeshMT() == UIntPtr.Zero)
 		{
 			return false;
 		}
@@ -6830,6 +6774,11 @@ public sealed class Mission : DotNetObject, IMission
 		for (int num = MissionBehaviors.Count - 1; num >= 0; num--)
 		{
 			MissionBehaviors[num].OnAfterDeploymentFinished();
+		}
+		foreach (Agent agent in Agents)
+		{
+			MissionGameModels.Current.AgentStatCalculateModel?.InitializeAgentStatsAfterDeploymentFinished(agent);
+			MissionGameModels.Current.AgentStatCalculateModel?.InitializeMissionEquipmentAfterDeploymentFinished(agent);
 		}
 	}
 

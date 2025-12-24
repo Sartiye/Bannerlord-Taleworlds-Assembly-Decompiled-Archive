@@ -251,6 +251,8 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 
 	public static IEnumerable<CharacterObject> ConversationCharacters => Campaign.Current.ConversationManager.ConversationCharacters;
 
+	public bool IsMariner { get; private set; }
+
 	public new CultureObject Culture
 	{
 		get
@@ -428,6 +430,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		characterObject._occupation = character._occupation;
 		characterObject._persona = character._persona;
 		characterObject._characterTraits = new PropertyOwner<TraitObject>(character._characterTraits);
+		characterObject.IsMariner = character.IsMariner;
 		characterObject._civilianEquipmentTemplate = character._civilianEquipmentTemplate;
 		characterObject._battleEquipmentTemplate = character._battleEquipmentTemplate;
 		characterObject.HiddenInEncyclopedia = character.HiddenInEncyclopedia;
@@ -522,6 +525,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		UpgradeRequiresItemFromCategory = _originCharacter.UpgradeRequiresItemFromCategory;
 		_civilianEquipmentTemplate = _originCharacter._civilianEquipmentTemplate;
 		_battleEquipmentTemplate = _originCharacter._battleEquipmentTemplate;
+		IsMariner = _originCharacter.IsMariner;
 		_persona = _originCharacter._persona;
 		_characterTraits = _originCharacter._characterTraits;
 		DefaultCharacterSkills = _originCharacter.DefaultCharacterSkills;
@@ -589,6 +593,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		{
 			_battleEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("battleTemplate", typeof(CharacterObject), node) as CharacterObject;
 		}
+		IsMariner = GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
 		_originCharacter = null;
 	}
 
@@ -708,7 +713,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		case Equipment.EquipmentType.Stealth:
 			return FirstStealthEquipment;
 		default:
-			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 890);
+			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 896);
 			return null;
 		}
 	}

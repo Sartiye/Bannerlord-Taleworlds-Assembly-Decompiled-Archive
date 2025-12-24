@@ -179,4 +179,28 @@ public class PartyUpgradeTroopVM : PartyTroopManagerVM
 		}
 		return CampaignUIHelper.GetUsedHorsesTooltip(list);
 	}
+
+	public override void ExecuteItemPrimaryAction()
+	{
+		UpgradeTroopAtIndex(0);
+	}
+
+	public override void ExecuteItemSecondaryAction()
+	{
+		UpgradeTroopAtIndex(1);
+	}
+
+	public override void ExecuteItemTertiaryAction()
+	{
+		UpgradeTroopAtIndex(2);
+	}
+
+	private void UpgradeTroopAtIndex(int upgradeIndex)
+	{
+		PartyCharacterVM partyCharacterVM = base.FocusedTroop?.PartyCharacter;
+		if (partyCharacterVM != null && partyCharacterVM.Upgrades.Count > upgradeIndex && partyCharacterVM.Upgrades[upgradeIndex].IsAvailable)
+		{
+			partyCharacterVM.Upgrades[upgradeIndex].ExecuteUpgrade();
+		}
+	}
 }

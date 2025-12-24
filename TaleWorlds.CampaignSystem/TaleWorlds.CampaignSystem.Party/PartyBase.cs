@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -300,7 +301,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			}
 			if (value != null && IsMobile && MapEvent != null && MapEvent.DefenderSide.LeaderParty == this)
 			{
-				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 255);
+				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 257);
 			}
 			if (_mapEventSide != null)
 			{
@@ -694,34 +695,68 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 
 	internal void AfterLoad()
 	{
+		if (!MBSaveLoad.IsUpdatingGameVersion)
+		{
+			return;
+		}
 		if (RandomValue == 0)
 		{
 			RandomValue = MBRandom.RandomInt(1, int.MaxValue);
 		}
-		TroopRoster prisonRoster = PrisonRoster;
-		if (prisonRoster != null && prisonRoster.Contains(CharacterObject.PlayerCharacter) && (this != Hero.MainHero.PartyBelongedToAsPrisoner || (Hero.MainHero.PartyBelongedTo != null && Hero.MainHero.PartyBelongedToAsPrisoner != null)))
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.11.104253")))
 		{
-			if (Hero.MainHero.PartyBelongedTo == MainParty?.MobileParty)
+			if (PrisonRoster.Contains(CharacterObject.PlayerCharacter))
 			{
-				PrisonRoster.AddToCounts(CharacterObject.PlayerCharacter, -1);
+				if (Hero.MainHero.PartyBelongedToAsPrisoner != this)
+				{
+					if (Hero.MainHero.PartyBelongedToAsPrisoner != null)
+					{
+						MBList<TroopRosterElement> troopRoster = PrisonRoster.GetTroopRoster();
+						PrisonRoster = new TroopRoster(this);
+						foreach (TroopRosterElement item in troopRoster)
+						{
+							if (item.Character != Hero.MainHero.CharacterObject)
+							{
+								PrisonRoster.AddToCounts(item.Character, item.Number);
+							}
+						}
+					}
+					else if (Hero.MainHero.PartyBelongedTo != null)
+					{
+						PrisonRoster.RemoveTroop(CharacterObject.PlayerCharacter);
+					}
+					else
+					{
+						TakePrisonerAction.Apply(this, Hero.MainHero);
+					}
+				}
+				else if (Hero.MainHero.PartyBelongedTo != null)
+				{
+					PrisonRoster.RemoveTroop(CharacterObject.PlayerCharacter);
+				}
 			}
-			else
+			foreach (TroopRosterElement item2 in PrisonRoster.GetTroopRoster())
 			{
-				PlayerCaptivity.CaptorParty = this;
+				if (item2.Character.HeroObject == null || item2.Character == CharacterObject.PlayerCharacter)
+				{
+					continue;
+				}
+				Hero heroObject = item2.Character.HeroObject;
+				if (heroObject.PartyBelongedTo != null || heroObject.PartyBelongedToAsPrisoner != this)
+				{
+					PrisonRoster.RemoveTroop(item2.Character);
+					if (!heroObject.IsDead && !heroObject.IsDisabled)
+					{
+						MakeHeroFugitiveAction.Apply(heroObject);
+					}
+				}
+			}
+			if (IsMobile && MobileParty.IsCaravan && !MobileParty.IsCurrentlyUsedByAQuest && _customOwner != null && MobileParty.Owner != Owner)
+			{
+				SetCustomOwner(null);
 			}
 		}
-		if (IsMobile && MobileParty.IsCaravan && !MobileParty.IsCurrentlyUsedByAQuest && _customOwner != null && MobileParty.Owner != Owner)
-		{
-			SetCustomOwner(null);
-		}
-		foreach (TroopRosterElement item in PrisonRoster.GetTroopRoster())
-		{
-			if (item.Character.HeroObject != null && item.Character.HeroObject.PartyBelongedToAsPrisoner == null)
-			{
-				PrisonRoster.RemoveTroop(item.Character);
-			}
-		}
-		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0"))
+		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0"))
 		{
 			MemberRoster.RemoveZeroCounts();
 		}
@@ -750,7 +785,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	{
 		if (tier < 0)
 		{
-			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 587);
+			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 631);
 			return 0;
 		}
 		bool flag = false;

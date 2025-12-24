@@ -109,6 +109,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ClearCurrentFrameTickEntitiesDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void ClearDecalsDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1592,6 +1597,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static ClearAllDelegate call_ClearAllDelegate;
 
+	public static ClearCurrentFrameTickEntitiesDelegate call_ClearCurrentFrameTickEntitiesDelegate;
+
 	public static ClearDecalsDelegate call_ClearDecalsDelegate;
 
 	public static ClearNavMeshDelegate call_ClearNavMeshDelegate;
@@ -2290,6 +2297,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void ClearAll(UIntPtr scenePointer)
 	{
 		call_ClearAllDelegate(scenePointer);
+	}
+
+	public void ClearCurrentFrameTickEntities(UIntPtr scenePointer)
+	{
+		call_ClearCurrentFrameTickEntitiesDelegate(scenePointer);
 	}
 
 	public void ClearDecals(UIntPtr scenePointer)

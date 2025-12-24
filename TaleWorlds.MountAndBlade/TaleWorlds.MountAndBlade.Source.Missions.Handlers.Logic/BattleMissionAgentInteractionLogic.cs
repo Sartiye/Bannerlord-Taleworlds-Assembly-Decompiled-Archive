@@ -14,7 +14,7 @@ public class BattleMissionAgentInteractionLogic : MissionLogic
 				{
 					if (otherAgent.RiderAgent == null)
 					{
-						return userAgent.GetAgentFlags().HasFlag(AgentFlag.CanRide);
+						return (userAgent.GetAgentFlags() & AgentFlag.CanRide) == AgentFlag.CanRide;
 					}
 					return false;
 				}

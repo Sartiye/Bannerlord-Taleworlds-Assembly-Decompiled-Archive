@@ -663,6 +663,10 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				standingPoint.SetIsDeactivatedSynched(value: true);
 			}
 		}
+		foreach (UsableMissionObjectComponent component in _components)
+		{
+			component.OnMissionObjectDisabled();
+		}
 		if (ShouldDisableTickIfMachineDisabled())
 		{
 			SetScriptComponentToTick(TickRequirement.None);
@@ -1096,7 +1100,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1440);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1445);
 		}
 	}
 

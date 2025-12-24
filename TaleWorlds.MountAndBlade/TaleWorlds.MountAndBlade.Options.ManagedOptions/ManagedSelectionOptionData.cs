@@ -47,6 +47,7 @@ public class ManagedSelectionOptionData : ManagedOptionData, ISelectionOptionDat
 			TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ReinforcementWaveCount => 4, 
 			TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.UnitSpawnPrioritization => 4, 
 			TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.PlayerReceivedDamageDifficulty => 3, 
+			TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBannersType => 3, 
 			_ => 0, 
 		};
 	}

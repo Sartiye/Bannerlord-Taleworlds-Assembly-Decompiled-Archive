@@ -48,6 +48,11 @@ public sealed class MBAgentVisuals : NativeObject
 		return MBAPI.IMBAgentVisuals.GetEntity(GetPtr());
 	}
 
+	public WeakGameEntity GetWeakEntity()
+	{
+		return new WeakGameEntity(MBAPI.IMBAgentVisuals.GetEntityPointer(GetPtr()));
+	}
+
 	public bool IsValid()
 	{
 		return MBAPI.IMBAgentVisuals.IsValid(GetPtr());
@@ -366,7 +371,7 @@ public sealed class MBAgentVisuals : NativeObject
 		case EquipmentIndex.Cape:
 			return BodyMeshTypes.Shoulderpiece;
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBAgentVisuals.cs", "GetBodyMeshIndex", 429);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Base\\MBAgentVisuals.cs", "GetBodyMeshIndex", 434);
 			return BodyMeshTypes.Invalid;
 		}
 	}

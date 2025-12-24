@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -206,12 +207,12 @@ public class FlattenedTroopRoster : IEnumerable<FlattenedTroopRosterElement>, IE
 
 	public void ResetTroopXP()
 	{
-		foreach (KeyValuePair<UniqueTroopDescriptor, FlattenedTroopRosterElement> item in _elementDictionary.ToMBList())
+		foreach (UniqueTroopDescriptor item in _elementDictionary.Keys.ToList())
 		{
-			if (item.Value.XpGained > 0)
+			FlattenedTroopRosterElement flattenedTroopRosterElement = _elementDictionary[item];
+			if (flattenedTroopRosterElement.XpGained > 0)
 			{
-				FlattenedTroopRosterElement value = item.Value;
-				_elementDictionary[item.Key] = new FlattenedTroopRosterElement(value.Troop, value.State, value.Xp, value.Descriptor);
+				_elementDictionary[item] = new FlattenedTroopRosterElement(flattenedTroopRosterElement.Troop, flattenedTroopRosterElement.State, flattenedTroopRosterElement.Xp, flattenedTroopRosterElement.Descriptor);
 			}
 		}
 	}

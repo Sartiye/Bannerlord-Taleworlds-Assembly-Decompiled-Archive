@@ -759,7 +759,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_1_5.SuggestedHeight = 43f;
 		_widget_1_0_1_5.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_0_1_5.MarginLeft = 100f;
-		_widget_1_0_1_5.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.SpecialButton");
+		_widget_1_0_1_5.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.SlaughterButton");
 		_widget_1_0_1_5.GamepadNavigationIndex = 2;
 		_widget_1_0_1_5_0.DoNotAcceptEvents = true;
 		_widget_1_0_1_5_0.WidthSizePolicy = SizePolicy.Fixed;

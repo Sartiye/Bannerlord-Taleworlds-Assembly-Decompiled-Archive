@@ -225,7 +225,7 @@ public sealed class Formation : IFormation
 
 	public MBReadOnlyList<Agent> DetachedUnits => _detachedUnits;
 
-	public AttackEntityOrderDetachment AttackEntityOrderDetachment { get; private set; }
+	public AttackEntityOrderSecondaryDetachment AttackEntityOrderSecondaryDetachment { get; private set; }
 
 	public FormationAI AI { get; private set; }
 
@@ -1257,7 +1257,7 @@ public sealed class Formation : IFormation
 		case MovementOrder.MovementStateEnum.StandGround:
 			return unit.GetWorldPosition();
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1575);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1574);
 			return WorldPosition.Invalid;
 		}
 	}
@@ -2342,8 +2342,7 @@ public sealed class Formation : IFormation
 
 	public void FormAttackEntityDetachment(GameEntity targetEntity)
 	{
-		AttackEntityOrderDetachment = new AttackEntityOrderDetachment(targetEntity);
-		JoinDetachment(AttackEntityOrderDetachment);
+		AttackEntityOrderSecondaryDetachment = new AttackEntityOrderSecondaryDetachment(targetEntity);
 	}
 
 	public void LeaveDetachment(IDetachment detachment)
@@ -2355,10 +2354,10 @@ public sealed class Formation : IFormation
 
 	public void DisbandAttackEntityDetachment()
 	{
-		if (AttackEntityOrderDetachment != null)
+		if (AttackEntityOrderSecondaryDetachment != null)
 		{
-			Team.DetachmentManager.DestroyDetachment(AttackEntityOrderDetachment);
-			AttackEntityOrderDetachment = null;
+			AttackEntityOrderSecondaryDetachment.Disband(this);
+			AttackEntityOrderSecondaryDetachment = null;
 		}
 	}
 
@@ -2647,7 +2646,7 @@ public sealed class Formation : IFormation
 		}
 		_detachedUnits = new MBList<Agent>();
 		_looseDetachedUnits = new MBList<Agent>();
-		AttackEntityOrderDetachment = null;
+		AttackEntityOrderSecondaryDetachment = null;
 		AI = new FormationAI(this);
 		QuerySystem = new FormationQuerySystem(this);
 		SetPositioning(null, Vec2.Forward, 1);

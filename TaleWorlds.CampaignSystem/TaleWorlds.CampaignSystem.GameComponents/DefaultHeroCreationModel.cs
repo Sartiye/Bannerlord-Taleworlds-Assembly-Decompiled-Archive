@@ -400,37 +400,55 @@ public class DefaultHeroCreationModel : HeroCreationModel
 		{
 			list.Add((item2, GetInheritedSkillValue(hero, item2)));
 		}
-		List<(SkillObject, int)> list2 = list.OrderByDescending(((SkillObject, int) x) => x.Item2).ToList();
-		bool flag = false;
+		list = list.OrderByDescending(((SkillObject, int) x) => x.Item2).ToList();
 		int num = (int)Math.Round((float)list.Count * (5f / 18f));
-		for (int i = 0; i < list2.Count; i++)
+		int num2 = -1;
+		for (int i = 0; i < list.Count; i++)
 		{
-			(SkillObject, int) tuple = list2[i];
+			(SkillObject, int) tuple = list[i];
 			if (IsSkillCombatant(tuple.Item1))
 			{
-				flag = i < num;
+				num2 = i;
 				(item, _) = tuple;
 				break;
 			}
 		}
-		list2 = list2.Take(num).ToList();
-		if (!flag && (!hero.IsFemale || hero.Mother == null || !hero.Mother.IsNoncombatant || MBRandom.RandomFloat < 0.6f))
+		list = list.Take(num).ToList();
+		bool flag = !hero.IsFemale || hero.Mother == null || !hero.Mother.IsNoncombatant || MBRandom.RandomFloat < 0.6f;
+		if (flag && num2 >= list.Count)
 		{
-			list2[list2.Count - 1] = (item, list2[list2.Count - 1].Item2);
+			list[list.Count - 1] = (item, list[list.Count - 1].Item2);
+			num2 = list.Count - 1;
 		}
-		int num2 = list2.Sum(((SkillObject, int) x) => x.Item2);
-		if (num2 == 0)
+		int num3 = list.Sum(((SkillObject, int) x) => x.Item2);
+		if (num3 == 0)
 		{
-			Debug.FailedAssert("Neither parent has any skills!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultHeroCreationModel.cs", "GetInheritedSkillsForHero", 511);
+			Debug.FailedAssert("Neither parent has any skills!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultHeroCreationModel.cs", "GetInheritedSkillsForHero", 513);
 			return new List<(SkillObject, int)>();
 		}
-		float scale = (float)(112 * num) / (float)num2;
-		List<(SkillObject, int)> list3 = list2.Select(((SkillObject, int) x) => (x.Item1, (int)((float)x.Item2 * scale))).ToList();
-		if (IsSkillCombatant(list3[list3.Count - 1].Item1) && list3[list3.Count - 1].Item2 < 100)
+		float num4 = (float)(112 * num) / (float)num3;
+		if (flag)
 		{
-			list3[list3.Count - 1] = (list3[list3.Count - 1].Item1, 100);
+			if (TaleWorlds.Library.MathF.Round((float)list[num2].Item2 * num4) < 100)
+			{
+				num3 -= list[num2].Item2;
+				num4 = (float)(112 * (num - 1)) / (float)num3;
+				list[num2] = (list[num2].Item1, 100);
+			}
+			else
+			{
+				list[num2] = (list[num2].Item1, TaleWorlds.Library.MathF.Round((float)list[num2].Item2 * num4));
+			}
 		}
-		return list3;
+		for (int j = 0; j < list.Count; j++)
+		{
+			if (!flag || j != num2)
+			{
+				(SkillObject, int) tuple3 = list[j];
+				list[j] = (tuple3.Item1, TaleWorlds.Library.MathF.Round((float)tuple3.Item2 * num4));
+			}
+		}
+		return list;
 	}
 
 	private static bool IsSkillCombatant(SkillObject skillObject)

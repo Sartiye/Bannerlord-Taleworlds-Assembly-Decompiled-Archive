@@ -86,12 +86,18 @@ public class OrderOfBattleCampaignBehavior : CampaignBehaviorBase
 
 	private List<OrderOfBattleFormationData> _siegeFormationInfos;
 
+	private List<OrderOfBattleFormationData> _siegeArmyFormationInfos;
+
 	private List<OrderOfBattleFormationData> _fieldBattleFormationInfos;
+
+	private List<OrderOfBattleFormationData> _fieldBattleArmyFormationInfos;
 
 	public OrderOfBattleCampaignBehavior()
 	{
 		_siegeFormationInfos = new List<OrderOfBattleFormationData>();
+		_siegeArmyFormationInfos = new List<OrderOfBattleFormationData>();
 		_fieldBattleFormationInfos = new List<OrderOfBattleFormationData>();
+		_fieldBattleArmyFormationInfos = new List<OrderOfBattleFormationData>();
 	}
 
 	public override void RegisterEvents()
@@ -105,19 +111,43 @@ public class OrderOfBattleCampaignBehavior : CampaignBehaviorBase
 		{
 			_siegeFormationInfos = new List<OrderOfBattleFormationData>();
 		}
+		if (dataStore.SyncData("_siegeArmyFormationInfos", ref _siegeArmyFormationInfos) && _siegeArmyFormationInfos == null)
+		{
+			_siegeArmyFormationInfos = new List<OrderOfBattleFormationData>();
+		}
 		if (dataStore.SyncData("_formationInfos", ref _fieldBattleFormationInfos) && _fieldBattleFormationInfos == null)
 		{
 			_fieldBattleFormationInfos = new List<OrderOfBattleFormationData>();
 		}
+		if (dataStore.SyncData("_fieldBattleArmyFormationInfos", ref _fieldBattleArmyFormationInfos) && _fieldBattleArmyFormationInfos == null)
+		{
+			_fieldBattleArmyFormationInfos = new List<OrderOfBattleFormationData>();
+		}
 	}
 
-	public OrderOfBattleFormationData GetFormationDataAtIndex(int formationIndex, bool isSiegeBattle)
+	public OrderOfBattleFormationData GetFormationDataAtIndex(int formationIndex, bool isSiegeBattle, bool isInArmy)
 	{
 		if (isSiegeBattle)
 		{
+			if (isInArmy)
+			{
+				if (_siegeArmyFormationInfos.Count > formationIndex)
+				{
+					return _siegeArmyFormationInfos[formationIndex];
+				}
+				return null;
+			}
 			if (_siegeFormationInfos.Count > formationIndex)
 			{
 				return _siegeFormationInfos[formationIndex];
+			}
+			return null;
+		}
+		if (isInArmy)
+		{
+			if (_fieldBattleArmyFormationInfos.Count > formationIndex)
+			{
+				return _fieldBattleArmyFormationInfos[formationIndex];
 			}
 			return null;
 		}
@@ -128,11 +158,22 @@ public class OrderOfBattleCampaignBehavior : CampaignBehaviorBase
 		return null;
 	}
 
-	public void SetFormationInfos(List<OrderOfBattleFormationData> formationInfos, bool isSiegeBattle)
+	public void SetFormationInfos(List<OrderOfBattleFormationData> formationInfos, bool isSiegeBattle, bool isInArmy)
 	{
 		if (isSiegeBattle)
 		{
-			_siegeFormationInfos = new List<OrderOfBattleFormationData>(formationInfos);
+			if (isInArmy)
+			{
+				_siegeArmyFormationInfos = new List<OrderOfBattleFormationData>(formationInfos);
+			}
+			else
+			{
+				_siegeFormationInfos = new List<OrderOfBattleFormationData>(formationInfos);
+			}
+		}
+		else if (isInArmy)
+		{
+			_fieldBattleArmyFormationInfos = new List<OrderOfBattleFormationData>(formationInfos);
 		}
 		else
 		{

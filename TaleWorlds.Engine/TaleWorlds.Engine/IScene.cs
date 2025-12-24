@@ -907,6 +907,9 @@ internal interface IScene
 	[EngineMethod("set_uses_delete_later_system", false, null, false)]
 	void SetUsesDeleteLaterSystem(UIntPtr scenePointer, bool value);
 
+	[EngineMethod("clear_current_frame_tick_entities", false, null, false)]
+	void ClearCurrentFrameTickEntities(UIntPtr scenePointer);
+
 	[EngineMethod("find_closest_exit_position_for_position_on_a_boundary_face", false, null, false)]
 	Vec2 FindClosestExitPositionForPositionOnABoundaryFace(UIntPtr scenePointer, Vec3 position, UIntPtr boundaryNavMeshFacePointer);
 }

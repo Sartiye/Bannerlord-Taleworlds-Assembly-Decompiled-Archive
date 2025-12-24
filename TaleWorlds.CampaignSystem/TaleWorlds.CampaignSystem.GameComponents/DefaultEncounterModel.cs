@@ -427,7 +427,7 @@ public class DefaultEncounterModel : EncounterModel
 		while (nearbyParty != null)
 		{
 			bool flag = (PlayerEncounter.Battle != null && (PlayerEncounter.Battle.IsBlockade || PlayerEncounter.Battle.IsBlockadeSallyOut)) || MobileParty.MainParty.IsCurrentlyAtSea;
-			if (nearbyParty != MobileParty.MainParty && nearbyParty.MapEvent == null && !nearbyParty.IsInRaftState && nearbyParty.SiegeEvent == null && nearbyParty.CurrentSettlement == null && nearbyParty.AttachedTo == null && nearbyParty.IsCurrentlyAtSea == flag && (nearbyParty.IsLordParty || nearbyParty.IsBandit || nearbyParty.ShouldJoinPlayerBattles))
+			if (nearbyParty != MobileParty.MainParty && nearbyParty.MapEvent == null && !nearbyParty.IsInRaftState && nearbyParty.SiegeEvent == null && nearbyParty.CurrentSettlement == null && nearbyParty.AttachedTo == null && nearbyParty.IsCurrentlyAtSea == flag && (nearbyParty.IsLordParty || nearbyParty.IsBandit || nearbyParty.IsPatrolParty || nearbyParty.ShouldJoinPlayerBattles))
 			{
 				if (PlayerEncounter.Battle != null)
 				{

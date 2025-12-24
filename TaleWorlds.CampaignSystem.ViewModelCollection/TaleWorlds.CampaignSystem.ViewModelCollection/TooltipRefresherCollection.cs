@@ -471,14 +471,28 @@ public static class TooltipRefresherCollection
 		}
 		propertyBasedTooltipVM.AddProperty(new TextObject("{=4Dd2xgPm}Weight").ToString(), item.Weight.ToString());
 		string text = "";
-		if (item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale))
+		if (item.IsUniqueItem)
 		{
 			if (text != string.Empty)
 			{
 				TextObject textObject = GameTexts.FindText("str_STR1_space_STR2");
 				textObject.SetTextVariable("STR1", text);
-				textObject.SetTextVariable("STR2", GameTexts.FindText("str_inventory_flag_male_only").ToString());
+				textObject.SetTextVariable("STR2", GameTexts.FindText("str_inventory_flag_unique").ToString());
 				text = textObject.ToString();
+			}
+			else
+			{
+				text = GameTexts.FindText("str_inventory_flag_unique").ToString();
+			}
+		}
+		if (item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale))
+		{
+			if (text != string.Empty)
+			{
+				TextObject textObject2 = GameTexts.FindText("str_STR1_space_STR2");
+				textObject2.SetTextVariable("STR1", text);
+				textObject2.SetTextVariable("STR2", GameTexts.FindText("str_inventory_flag_male_only").ToString());
+				text = textObject2.ToString();
 			}
 			else
 			{
@@ -489,10 +503,10 @@ public static class TooltipRefresherCollection
 		{
 			if (text != string.Empty)
 			{
-				TextObject textObject2 = GameTexts.FindText("str_STR1_space_STR2");
-				textObject2.SetTextVariable("STR1", text);
-				textObject2.SetTextVariable("STR2", GameTexts.FindText("str_inventory_flag_female_only").ToString());
-				text = textObject2.ToString();
+				TextObject textObject3 = GameTexts.FindText("str_STR1_space_STR2");
+				textObject3.SetTextVariable("STR1", text);
+				textObject3.SetTextVariable("STR2", GameTexts.FindText("str_inventory_flag_female_only").ToString());
+				text = textObject3.ToString();
 			}
 			else
 			{
@@ -632,29 +646,29 @@ public static class TooltipRefresherCollection
 		{
 			return;
 		}
-		TextObject textObject4;
+		TextObject textObject5;
 		if (item?.BannerComponent?.BannerEffect != null)
 		{
 			GameTexts.SetVariable("RANK", item.BannerComponent.BannerEffect.Name);
 			string content = string.Empty;
 			if (item.BannerComponent.BannerEffect.IncrementType == EffectIncrementType.AddFactor)
 			{
-				TextObject textObject3 = GameTexts.FindText("str_NUMBER_percent");
-				textObject3.SetTextVariable("NUMBER", ((int)Math.Abs(item.BannerComponent.GetBannerEffectBonus() * 100f)).ToString());
-				content = textObject3.ToString();
+				TextObject textObject4 = GameTexts.FindText("str_NUMBER_percent");
+				textObject4.SetTextVariable("NUMBER", ((int)Math.Abs(item.BannerComponent.GetBannerEffectBonus() * 100f)).ToString());
+				content = textObject4.ToString();
 			}
 			else if (item.BannerComponent.BannerEffect.IncrementType == EffectIncrementType.Add)
 			{
 				content = item.BannerComponent.GetBannerEffectBonus().ToString();
 			}
 			GameTexts.SetVariable("NUMBER", content);
-			textObject4 = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
+			textObject5 = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
 		}
 		else
 		{
-			textObject4 = new TextObject("{=koX9okuG}None");
+			textObject5 = new TextObject("{=koX9okuG}None");
 		}
-		propertyBasedTooltipVM.AddProperty(new TextObject("{=DbXZjPdf}Banner Effect: ").ToString(), textObject4.ToString());
+		propertyBasedTooltipVM.AddProperty(new TextObject("{=DbXZjPdf}Banner Effect: ").ToString(), textObject5.ToString());
 	}
 
 	public static void RefreshBuildingTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -1264,15 +1278,15 @@ public static class TooltipRefresherCollection
 		};
 		troopRoster = func();
 		troopRoster2 = func2();
-		if (troopRoster.Count > 0)
+		if (troopRoster.Count > 0 && !mobileParty.IsInfoHidden)
 		{
 			AddPartyTroopProperties(propertyBasedTooltipVM, troopRoster, GameTexts.FindText("str_map_tooltip_troops"), flag || isInspected || !flag2, func);
 		}
-		if (troopRoster2.Count > 0 && (isInspected || flag))
+		if (troopRoster2.Count > 0 && !mobileParty.IsInfoHidden && (isInspected || flag))
 		{
 			AddPartyTroopProperties(propertyBasedTooltipVM, troopRoster2, GameTexts.FindText("str_map_tooltip_prisoners"), isInspected || !flag2, func2);
 		}
-		if (mobileParty.Ships.Count > 0)
+		if (mobileParty.Ships.Count > 0 && !mobileParty.IsInfoHidden)
 		{
 			AddPartyShipProperties(propertyBasedTooltipVM, new MBList<MobileParty> { mobileParty }, flag, flag2);
 		}
@@ -1742,40 +1756,58 @@ public static class TooltipRefresherCollection
 			MBTextManager.SetTextVariable("PARTY_2S_MEMBERS", parties2[0].Party.MapFaction.Name);
 			propertyBasedTooltipVM.AddProperty(new TextObject("{=CExQ40Ux}{PARTY_1S_MEMBERS}   ").ToString(), new TextObject("{=OTaPfaJl}{PARTY_2S_MEMBERS}   ").ToString());
 		}
+		bool isInfoHiddenLeft = false;
+		bool isInfoHiddenRight = false;
 		int lastHeroIndex = 0;
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		foreach (MapEventParty item in parties1)
 		{
-			for (int j = 0; j < item.Party.MemberRoster.Count; j++)
+			MobileParty mobileParty = item.Party.MobileParty;
+			if (mobileParty == null || !mobileParty.IsInfoHidden)
 			{
-				TroopRosterElement elementCopyAtIndex = item.Party.MemberRoster.GetElementCopyAtIndex(j);
-				if (elementCopyAtIndex.Character.IsHero)
+				for (int j = 0; j < item.Party.MemberRoster.Count; j++)
 				{
-					troopRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
-					lastHeroIndex++;
+					TroopRosterElement elementCopyAtIndex = item.Party.MemberRoster.GetElementCopyAtIndex(j);
+					if (elementCopyAtIndex.Character.IsHero)
+					{
+						troopRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
+						lastHeroIndex++;
+					}
+					else
+					{
+						troopRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber);
+					}
 				}
-				else
-				{
-					troopRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber);
-				}
+			}
+			else
+			{
+				isInfoHiddenLeft = true;
 			}
 		}
 		lastHeroIndex = 0;
 		TroopRoster troopRoster2 = TroopRoster.CreateDummyTroopRoster();
 		foreach (MapEventParty item2 in parties2)
 		{
-			for (int k = 0; k < item2.Party.MemberRoster.Count; k++)
+			MobileParty mobileParty2 = item2.Party.MobileParty;
+			if (mobileParty2 == null || !mobileParty2.IsInfoHidden)
 			{
-				TroopRosterElement elementCopyAtIndex2 = item2.Party.MemberRoster.GetElementCopyAtIndex(k);
-				if (elementCopyAtIndex2.Character.IsHero)
+				for (int k = 0; k < item2.Party.MemberRoster.Count; k++)
 				{
-					troopRoster2.AddToCounts(elementCopyAtIndex2.Character, elementCopyAtIndex2.Number, insertAtFront: false, elementCopyAtIndex2.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
-					lastHeroIndex++;
+					TroopRosterElement elementCopyAtIndex2 = item2.Party.MemberRoster.GetElementCopyAtIndex(k);
+					if (elementCopyAtIndex2.Character.IsHero)
+					{
+						troopRoster2.AddToCounts(elementCopyAtIndex2.Character, elementCopyAtIndex2.Number, insertAtFront: false, elementCopyAtIndex2.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
+						lastHeroIndex++;
+					}
+					else
+					{
+						troopRoster2.AddToCounts(elementCopyAtIndex2.Character, elementCopyAtIndex2.Number, insertAtFront: false, elementCopyAtIndex2.WoundedNumber);
+					}
 				}
-				else
-				{
-					troopRoster2.AddToCounts(elementCopyAtIndex2.Character, elementCopyAtIndex2.Number, insertAtFront: false, elementCopyAtIndex2.WoundedNumber);
-				}
+			}
+			else
+			{
+				isInfoHiddenRight = true;
 			}
 		}
 		Func<string> func = () => "";
@@ -1788,21 +1820,29 @@ public static class TooltipRefresherCollection
 				lastHeroIndex = 0;
 				foreach (MapEventParty item3 in parties1)
 				{
-					for (int num2 = 0; num2 < item3.Party.MemberRoster.Count; num2++)
+					MobileParty mobileParty4 = item3.Party.MobileParty;
+					if (mobileParty4 == null || !mobileParty4.IsInfoHidden)
 					{
-						TroopRosterElement elementCopyAtIndex6 = item3.Party.MemberRoster.GetElementCopyAtIndex(num2);
-						if (elementCopyAtIndex6.Character.IsHero)
+						for (int num2 = 0; num2 < item3.Party.MemberRoster.Count; num2++)
 						{
-							troopRoster4.AddToCounts(elementCopyAtIndex6.Character, elementCopyAtIndex6.Number, insertAtFront: false, elementCopyAtIndex6.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
-							lastHeroIndex++;
-						}
-						else
-						{
-							troopRoster4.AddToCounts(elementCopyAtIndex6.Character, elementCopyAtIndex6.Number, insertAtFront: false, elementCopyAtIndex6.WoundedNumber);
+							TroopRosterElement elementCopyAtIndex6 = item3.Party.MemberRoster.GetElementCopyAtIndex(num2);
+							if (elementCopyAtIndex6.Character.IsHero)
+							{
+								troopRoster4.AddToCounts(elementCopyAtIndex6.Character, elementCopyAtIndex6.Number, insertAtFront: false, elementCopyAtIndex6.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
+								lastHeroIndex++;
+							}
+							else
+							{
+								troopRoster4.AddToCounts(elementCopyAtIndex6.Character, elementCopyAtIndex6.Number, insertAtFront: false, elementCopyAtIndex6.WoundedNumber);
+							}
 						}
 					}
 				}
 				TextObject textObject4 = new TextObject("{=QlbkxoSp} {TOOLTIP_TROOPS} ({PARTY_SIZE})");
+				if (isInfoHiddenLeft)
+				{
+					textObject4 = ((troopRoster4.TotalManCount <= 0) ? new TextObject("{=CLvFTdTn} {TOOLTIP_TROOPS} (?)") : new TextObject("{=ZGjnsItg} {TOOLTIP_TROOPS} ({PARTY_SIZE}) + ?"));
+				}
 				textObject4.SetTextVariable("TOOLTIP_TROOPS", GameTexts.FindText("str_map_tooltip_troops"));
 				textObject4.SetTextVariable("PARTY_SIZE", PartyBaseHelper.GetPartySizeText(troopRoster4.TotalManCount - troopRoster4.TotalWounded, troopRoster4.TotalWounded, isInspected: true));
 				return textObject4.ToString();
@@ -1816,21 +1856,29 @@ public static class TooltipRefresherCollection
 				lastHeroIndex = 0;
 				foreach (MapEventParty item4 in parties2)
 				{
-					for (int num = 0; num < item4.Party.MemberRoster.Count; num++)
+					MobileParty mobileParty3 = item4.Party.MobileParty;
+					if (mobileParty3 == null || !mobileParty3.IsInfoHidden)
 					{
-						TroopRosterElement elementCopyAtIndex5 = item4.Party.MemberRoster.GetElementCopyAtIndex(num);
-						if (elementCopyAtIndex5.Character.IsHero)
+						for (int num = 0; num < item4.Party.MemberRoster.Count; num++)
 						{
-							troopRoster3.AddToCounts(elementCopyAtIndex5.Character, elementCopyAtIndex5.Number, insertAtFront: false, elementCopyAtIndex5.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
-							lastHeroIndex++;
-						}
-						else
-						{
-							troopRoster3.AddToCounts(elementCopyAtIndex5.Character, elementCopyAtIndex5.Number, insertAtFront: false, elementCopyAtIndex5.WoundedNumber);
+							TroopRosterElement elementCopyAtIndex5 = item4.Party.MemberRoster.GetElementCopyAtIndex(num);
+							if (elementCopyAtIndex5.Character.IsHero)
+							{
+								troopRoster3.AddToCounts(elementCopyAtIndex5.Character, elementCopyAtIndex5.Number, insertAtFront: false, elementCopyAtIndex5.WoundedNumber, 0, removeDepleted: true, lastHeroIndex);
+								lastHeroIndex++;
+							}
+							else
+							{
+								troopRoster3.AddToCounts(elementCopyAtIndex5.Character, elementCopyAtIndex5.Number, insertAtFront: false, elementCopyAtIndex5.WoundedNumber);
+							}
 						}
 					}
 				}
 				TextObject textObject3 = new TextObject("{=QlbkxoSp} {TOOLTIP_TROOPS} ({PARTY_SIZE})");
+				if (isInfoHiddenRight)
+				{
+					textObject3 = ((troopRoster3.TotalManCount <= 0) ? new TextObject("{=CLvFTdTn} {TOOLTIP_TROOPS} (?)") : new TextObject("{=ZGjnsItg} {TOOLTIP_TROOPS} ({PARTY_SIZE}) + ?"));
+				}
 				textObject3.SetTextVariable("TOOLTIP_TROOPS", GameTexts.FindText("str_map_tooltip_troops"));
 				textObject3.SetTextVariable("PARTY_SIZE", PartyBaseHelper.GetPartySizeText(troopRoster3.TotalManCount - troopRoster3.TotalWounded, troopRoster3.TotalWounded, isInspected: true));
 				return textObject3.ToString();
@@ -1843,10 +1891,10 @@ public static class TooltipRefresherCollection
 		}
 		if (isExtended)
 		{
+			string blankString = new TextObject("{=!} ").ToString();
 			propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.DefaultSeperator);
 			for (int l = 0; l < troopRoster.Count || l < troopRoster2.Count; l++)
 			{
-				string blankString = new TextObject("{=!} ").ToString();
 				Func<string> definition = () => blankString;
 				Func<string> value = () => blankString;
 				if (l < troopRoster.Count)
@@ -1881,6 +1929,10 @@ public static class TooltipRefresherCollection
 						return blankString;
 					};
 				}
+				else if (l == troopRoster.Count && isInfoHiddenLeft)
+				{
+					definition = () => "?";
+				}
 				if (l < troopRoster2.Count)
 				{
 					CharacterObject character = troopRoster2.GetElementCopyAtIndex(l).Character;
@@ -1913,7 +1965,25 @@ public static class TooltipRefresherCollection
 						return blankString;
 					};
 				}
+				else if (l == troopRoster2.Count && isInfoHiddenRight)
+				{
+					value = () => "?";
+				}
 				propertyBasedTooltipVM.AddProperty(definition, value);
+			}
+			if ((troopRoster.Count >= troopRoster2.Count && isInfoHiddenLeft) || (troopRoster2.Count >= troopRoster.Count && isInfoHiddenRight))
+			{
+				Func<string> definition2 = () => blankString;
+				Func<string> value2 = () => blankString;
+				if (troopRoster.Count >= troopRoster2.Count && isInfoHiddenLeft)
+				{
+					definition2 = () => "?";
+				}
+				if (troopRoster2.Count >= troopRoster.Count && isInfoHiddenRight)
+				{
+					value2 = () => "?";
+				}
+				propertyBasedTooltipVM.AddProperty(definition2, value2);
 			}
 		}
 		propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.BattleModeOver);

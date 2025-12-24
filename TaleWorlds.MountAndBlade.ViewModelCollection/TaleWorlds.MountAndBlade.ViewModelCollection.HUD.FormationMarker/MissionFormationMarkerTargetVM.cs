@@ -16,6 +16,8 @@ public class MissionFormationMarkerTargetVM : ViewModel
 
 	private float _distance;
 
+	private string _distanceText;
+
 	private bool _isEnabled;
 
 	private bool _isCenterOfFocus;
@@ -23,6 +25,8 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	private bool _isFormationTargetRelevant;
 
 	private bool _isTargetingAFormation;
+
+	private bool _showDistanceTexts;
 
 	private int _teamType;
 
@@ -103,6 +107,23 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool ShowDistanceTexts
+	{
+		get
+		{
+			return _showDistanceTexts;
+		}
+		set
+		{
+			if (_showDistanceTexts != value)
+			{
+				_showDistanceTexts = value;
+				OnPropertyChangedWithValue(value, "ShowDistanceTexts");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string FormationType
 	{
 		get
@@ -166,6 +187,23 @@ public class MissionFormationMarkerTargetVM : ViewModel
 			{
 				_distance = value;
 				OnPropertyChangedWithValue(value, "Distance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string DistanceText
+	{
+		get
+		{
+			return _distanceText;
+		}
+		set
+		{
+			if (_distanceText != value)
+			{
+				_distanceText = value;
+				OnPropertyChangedWithValue(value, "DistanceText");
 			}
 		}
 	}

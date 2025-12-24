@@ -53,6 +53,11 @@ public class DefaultCampaignOptionsProvider : ICampaignOptionProvider
 		{
 			CampaignOptions.AutoAllocateClanMemberPerks = value == 1f;
 		});
+		if (MBSaveLoad.IsMaxNumberOfSavesReached())
+		{
+			yield return new BooleanCampaignOptionData("IronmanMode", 1100, CampaignOptionEnableState.Disabled, null, null, GetIronmanModeDisabledWithReason);
+			yield break;
+		}
 		yield return new BooleanCampaignOptionData("IronmanMode", 1100, CampaignOptionEnableState.DisabledLater, () => (!CampaignOptions.IsIronmanMode) ? 0f : 1f, delegate(float value)
 		{
 			CampaignOptions.IsIronmanMode = value == 1f;
@@ -121,6 +126,17 @@ public class DefaultCampaignOptionsProvider : ICampaignOptionProvider
 		default:
 			return 0f;
 		}
+	}
+
+	private CampaignOptionDisableStatus GetIronmanModeDisabledWithReason()
+	{
+		if (!MBSaveLoad.IsMaxNumberOfSavesReached())
+		{
+			return new CampaignOptionDisableStatus(isDisabled: false, string.Empty);
+		}
+		TextObject textObject = GameTexts.FindText("str_string_newline_string").SetTextVariable("STR1", string.Empty).SetTextVariable("STR2", new TextObject("{=ld0SelSH}Ironman mode requires at least one available save slot."))
+			.SetTextVariable("newline", "\n");
+		return new CampaignOptionDisableStatus(isDisabled: true, textObject.ToString(), 0f);
 	}
 
 	private CampaignOptionDisableStatus GetBattleDeathDisabledStatusWithReason()

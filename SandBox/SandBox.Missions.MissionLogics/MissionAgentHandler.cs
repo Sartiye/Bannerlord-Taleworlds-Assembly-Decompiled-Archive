@@ -638,6 +638,10 @@ public class MissionAgentHandler : MissionLogic
 
 	public void FadeoutExitingLocationCharacter(LocationCharacter locationCharacter)
 	{
+		if (base.Mission.CurrentState == Mission.State.EndingNextFrame || base.Mission.CurrentState == Mission.State.Over)
+		{
+			return;
+		}
 		foreach (Agent agent in Mission.Current.Agents)
 		{
 			if ((CharacterObject)agent.Character == locationCharacter.Character)
@@ -836,7 +840,7 @@ public class MissionAgentHandler : MissionLogic
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("delay > 0", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\MissionAgentHandler.cs", "SpawnWanderingAgentWithDelay", 1032);
+			TaleWorlds.Library.Debug.FailedAssert("delay > 0", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\MissionAgentHandler.cs", "SpawnWanderingAgentWithDelay", 1035);
 		}
 	}
 

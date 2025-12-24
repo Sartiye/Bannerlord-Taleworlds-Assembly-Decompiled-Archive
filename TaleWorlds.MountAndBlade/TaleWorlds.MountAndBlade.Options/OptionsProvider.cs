@@ -234,7 +234,11 @@ public static class OptionsProvider
 	{
 		yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.TrailAmount);
 		yield return new ManagedNumericOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.FriendlyTroopsBannerOpacity);
-		yield return new ManagedBooleanOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBanners);
+		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AlwaysShowFriendlyTroopBannersType);
+		if (!isMultiplayer)
+		{
+			yield return new ManagedBooleanOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ShowFormationDistances);
+		}
 		yield return new ManagedBooleanOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ShowBlood);
 	}
 

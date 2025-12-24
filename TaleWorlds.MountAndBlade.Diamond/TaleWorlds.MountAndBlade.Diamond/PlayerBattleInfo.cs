@@ -87,7 +87,7 @@ public class PlayerBattleInfo
 	{
 		if (_state != State.Disconnected)
 		{
-			throw new Exception("PlayerBattleInfo incorrect state, expected Fled got " + _state);
+			throw new Exception("PlayerBattleInfo incorrect state, expected Disconnected got " + _state);
 		}
 		TeamNo = teamNo;
 		PeerIndex = -1;

@@ -10,6 +10,11 @@ public class SandBoxSaveManager : ISaveManager
 		return BannerlordConfig.AutoSaveInterval;
 	}
 
+	public bool IsAutoSaveDisabled()
+	{
+		return BannerlordConfig.AutoSaveInterval == -1;
+	}
+
 	public void OnSaveOver(bool isSuccessful, string newSaveGameName)
 	{
 		if (isSuccessful)

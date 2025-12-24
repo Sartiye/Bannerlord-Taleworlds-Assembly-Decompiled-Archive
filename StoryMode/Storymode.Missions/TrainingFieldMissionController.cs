@@ -1073,12 +1073,12 @@ public class TrainingFieldMissionController : MissionLogic
 				return;
 			}
 			_bowNpc.SetWatchState(Agent.WatchState.Alarmed);
-			_bowNpc.SetScriptedTargetEntityAndPosition(GetValidTarget(), _bowNpc.GetWorldPosition());
+			_bowNpc.SetScriptedTargetEntity(GetValidTarget());
 			_atShootingPosition = true;
 		}
 		else if (_atShootingPosition && _lastTargetGiven.IsDestroyed)
 		{
-			_bowNpc.SetScriptedTargetEntityAndPosition(GetValidTarget(), _bowNpc.GetWorldPosition());
+			_bowNpc.SetScriptedTargetEntity(GetValidTarget());
 		}
 	}
 
@@ -2149,7 +2149,7 @@ public class TrainingFieldMissionController : MissionLogic
 			_mountedAI.SetScriptedPositionAndDirection(ref scriptedPosition3, globalFrame2.rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: true);
 			if (!_allTargetsDestroyed)
 			{
-				_mountedAI.SetScriptedTargetEntityAndPosition(_mountedAITargets[_mountedAICurrentHitTarget].GameEntity, default(WorldPosition));
+				_mountedAI.SetScriptedTargetEntity(_mountedAITargets[_mountedAICurrentHitTarget].GameEntity);
 			}
 		}
 	}

@@ -192,6 +192,8 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		}
 	}
 
+	private const int ReinforcementWaveAgentCount = 5;
+
 	private readonly float _areaLostRatio;
 
 	private readonly float _attackerDefenderTroopCountRatio;
@@ -221,6 +223,8 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 	private bool _setChargeOrderNextFrame;
 
 	private BattleSideEnum _playerSide;
+
+	private int _removedAllyCounter;
 
 	public LordsHallFightMissionController(IMissionTroopSupplier[] suppliers, float areaLostRatio, float attackerDefenderTroopCountRatio, int attackerSideTroopCountMax, int defenderSideTroopCountMax, BattleSideEnum playerSide)
 	{
@@ -289,7 +293,12 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 			return;
 		}
 		_setChargeOrderNextFrame = affectedAgent.IsMainAgent;
-		_spawnReinforcements = true;
+		_removedAllyCounter++;
+		if (_removedAllyCounter == 5)
+		{
+			_spawnReinforcements = true;
+			_removedAllyCounter = 0;
+		}
 	}
 
 	private Tuple<int, AreaEntityData> FindAgentMachine(Agent agent)
@@ -377,7 +386,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 	{
 		if (_spawnReinforcements)
 		{
-			_missionSides[1].SpawnTroops(1, isReinforcement: true);
+			_missionSides[1].SpawnTroops(5, isReinforcement: true);
 			_spawnReinforcements = false;
 		}
 	}

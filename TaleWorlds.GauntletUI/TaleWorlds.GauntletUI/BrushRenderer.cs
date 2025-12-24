@@ -46,6 +46,8 @@ public class BrushRenderer
 
 	private Style _styleOfCurrentState;
 
+	private ImageFit _cachedImageFit;
+
 	private float _brushTimer
 	{
 		get
@@ -160,6 +162,7 @@ public class BrushRenderer
 		_currentBrushLayerState = new Dictionary<string, BrushLayerState>();
 		_brushLocalTimer = 0f;
 		_brushRendererAnimationState = BrushRendererAnimationState.None;
+		_cachedImageFit = new ImageFit();
 		_randomXOffset = -1f;
 		_randomYOffset = -1f;
 	}
@@ -593,14 +596,14 @@ public class BrushRenderer
 		}
 	}
 
-	public void Render(TwoDimensionDrawContext drawContext, in Rectangle2D rect, float scale, float contextAlpha, Vector2 overlayOffset = default(Vector2))
+	public void Render(TwoDimensionDrawContext drawContext, in Rectangle2D rect, float scale, float contextAlpha, Vector2 overlayOffset = default(Vector2), Vector2 overlaySize = default(Vector2))
 	{
 		if (Brush == null)
 		{
 			return;
 		}
 		Vector2 vector = new Vector2(rect.LocalPosition.X, rect.LocalPosition.Y);
-		Vector2 size = new Vector2(rect.LocalScale.X, rect.LocalScale.Y);
+		Vector2 containerSize = new Vector2(rect.LocalScale.X, rect.LocalScale.Y);
 		if (ForcePixelPerfectPlacement)
 		{
 			vector.X = TaleWorlds.Library.MathF.Round(vector.X);
@@ -627,11 +630,7 @@ public class BrushRenderer
 				brushLayerState = _currentBrushLayerState[layer.Name];
 			}
 			Sprite sprite = brushLayerState.Sprite;
-			if (sprite == null)
-			{
-				continue;
-			}
-			Texture texture = sprite.Texture;
+			Texture texture = sprite?.Texture;
 			if (texture == null)
 			{
 				continue;
@@ -649,25 +648,25 @@ public class BrushRenderer
 				{
 					simpleMaterial.OverlayEnabled = true;
 					simpleMaterial.StartCoordinate = new Vector2(num, num2);
-					simpleMaterial.Size = size;
+					simpleMaterial.Size = containerSize;
 					simpleMaterial.OverlayTexture = texture2;
 					simpleMaterial.UseOverlayAlphaAsMask = layer.UseOverlayAlphaAsMask;
 					float num3;
 					float num4;
-					if (layer.UseOverlayAlphaAsMask)
-					{
-						num3 = brushLayerState.XOffset;
-						num4 = brushLayerState.YOffset;
-					}
-					else if (overlayOffset == default(Vector2))
-					{
-						num3 = brushLayerState.OverlayXOffset;
-						num4 = brushLayerState.OverlayYOffset;
-					}
-					else
+					if (overlayOffset != default(Vector2))
 					{
 						num3 = overlayOffset.X;
 						num4 = overlayOffset.Y;
+					}
+					else if (layer.UseOverlayAlphaAsMask)
+					{
+						num3 = brushLayerState.XOffset + brushLayerState.OverlayXOffset;
+						num4 = brushLayerState.YOffset + brushLayerState.OverlayYOffset;
+					}
+					else
+					{
+						num3 = brushLayerState.OverlayXOffset;
+						num4 = brushLayerState.OverlayYOffset;
 					}
 					if (layer.UseRandomBaseOverlayXOffset)
 					{
@@ -680,8 +679,21 @@ public class BrushRenderer
 					simpleMaterial.OverlayXOffset = num3 * scale;
 					simpleMaterial.OverlayYOffset = num4 * scale;
 					simpleMaterial.Scale = scale;
-					simpleMaterial.OverlayTextureWidth = (layer.UseOverlayAlphaAsMask ? size.X : ((float)overlaySprite.Width));
-					simpleMaterial.OverlayTextureHeight = (layer.UseOverlayAlphaAsMask ? size.Y : ((float)overlaySprite.Height));
+					if (overlaySize != default(Vector2))
+					{
+						simpleMaterial.OverlayTextureWidth = overlaySize.X;
+						simpleMaterial.OverlayTextureHeight = overlaySize.Y;
+					}
+					else if (layer.UseOverlayAlphaAsMask)
+					{
+						simpleMaterial.OverlayTextureWidth = containerSize.X;
+						simpleMaterial.OverlayTextureHeight = containerSize.Y;
+					}
+					else
+					{
+						simpleMaterial.OverlayTextureWidth = overlaySprite.Width;
+						simpleMaterial.OverlayTextureHeight = overlaySprite.Height;
+					}
 				}
 			}
 			simpleMaterial.Texture = texture;
@@ -694,6 +706,14 @@ public class BrushRenderer
 			simpleMaterial.ValueFactor = brushLayerState.ValueFactor;
 			float num5 = 0f;
 			float num6 = 0f;
+			_cachedImageFit.Type = layer.ImageFitType;
+			_cachedImageFit.HorizontalAlignment = layer.ImageFitHorizontalAlignment;
+			_cachedImageFit.VerticalAlignment = layer.ImageFitVerticalAlignment;
+			_cachedImageFit.OffsetX = 0f;
+			_cachedImageFit.OffsetY = 0f;
+			ImageFit cachedImageFit = _cachedImageFit;
+			Vector2 imageSize = new Vector2(sprite.Width, sprite.Height);
+			ImageFitResult fittedRectangle = cachedImageFit.GetFittedRectangle(in containerSize, in imageSize);
 			if (layer.WidthPolicy == BrushLayerSizePolicy.StretchToTarget)
 			{
 				float num7 = brushLayerState.ExtendLeft;
@@ -701,7 +721,7 @@ public class BrushRenderer
 				{
 					num7 = brushLayerState.ExtendRight;
 				}
-				num5 = size.X;
+				num5 = fittedRectangle.Width;
 				num5 += (brushLayerState.ExtendRight + brushLayerState.ExtendLeft) * scale;
 				num -= num7 * scale;
 			}
@@ -720,7 +740,7 @@ public class BrushRenderer
 				{
 					num8 = brushLayerState.ExtendBottom;
 				}
-				num6 = size.Y;
+				num6 = fittedRectangle.Height;
 				num6 += (brushLayerState.ExtendTop + brushLayerState.ExtendBottom) * scale;
 				num2 -= num8 * scale;
 			}
@@ -732,16 +752,20 @@ public class BrushRenderer
 			{
 				num6 = layer.OverridenHeight * scale;
 			}
-			bool horizontalFlip = layer.HorizontalFlip;
-			bool verticalFlip = layer.VerticalFlip;
-			num5 = (horizontalFlip ? (0f - num5) : num5);
-			num6 = (verticalFlip ? (0f - num6) : num6);
-			float num9 = ((size.X == 0f) ? 1f : (num5 / size.X));
-			float num10 = ((size.Y == 0f) ? 1f : (num6 / size.Y));
-			Vector2 vector2 = new Vector2(num - vector.X, num2 - vector.Y);
-			Vector2 vector3 = new Vector2(num9 - 1f, num10 - 1f);
+			if (layer.HorizontalFlip)
+			{
+				num5 *= -1f;
+			}
+			if (layer.VerticalFlip)
+			{
+				num6 *= -1f;
+			}
+			float x = ((containerSize.X == 0f) ? 1f : (num5 / containerSize.X));
+			float y = ((containerSize.Y == 0f) ? 1f : (num6 / containerSize.Y));
+			Vector2 vector2 = new Vector2(num - vector.X + fittedRectangle.OffsetX, num2 - vector.Y + fittedRectangle.OffsetY);
+			Vector2 vector3 = new Vector2(x, y);
 			rectangle.AddVisualOffset(vector2.X, vector2.Y);
-			rectangle.AddVisualScale(vector3.X, vector3.Y);
+			rectangle.AddVisualScale(vector3.X - 1f, vector3.Y - 1f);
 			rectangle.AddVisualRotationOffset(brushLayerState.Rotation);
 			rectangle.ValidateVisuals();
 			drawContext.DrawSprite(sprite, simpleMaterial, in rectangle, scale);

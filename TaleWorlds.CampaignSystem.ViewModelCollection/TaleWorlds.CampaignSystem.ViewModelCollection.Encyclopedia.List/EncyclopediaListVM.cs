@@ -240,6 +240,10 @@ public class EncyclopediaListVM : EncyclopediaPageVM
 		{
 			text += GameTexts.FindText("str_encyclopedia_concepts").ToString();
 		}
+		else if (Page.HasIdentifierType(typeof(ShipHull)))
+		{
+			text += GameTexts.FindText("str_encyclopedia_ships").ToString();
+		}
 		return text;
 	}
 
@@ -290,6 +294,10 @@ public class EncyclopediaListVM : EncyclopediaPageVM
 			else if (item.Object is CharacterObject unit)
 			{
 				item.IsBookmarked = Campaign.Current.EncyclopediaManager.ViewDataTracker.IsEncyclopediaBookmarked(unit);
+			}
+			else if (item.Object is ShipHull shipHull)
+			{
+				item.IsBookmarked = Campaign.Current.EncyclopediaManager.ViewDataTracker.IsEncyclopediaBookmarked(shipHull);
 			}
 		}
 		_isInitializationOver = false;

@@ -32,6 +32,10 @@ public class AgentInteractionInterfaceVM : ViewModel
 
 	private bool _displayInteractionText;
 
+	private bool _hasForcedMessages;
+
+	private MBBindingList<MissionPrimaryInteractionItemVM> _forcedInteractionMessages;
+
 	private bool IsPlayerActive
 	{
 		get
@@ -207,6 +211,48 @@ public class AgentInteractionInterfaceVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public MBBindingList<MissionPrimaryInteractionItemVM> ForcedInteractionMessages
+	{
+		get
+		{
+			return _forcedInteractionMessages;
+		}
+		set
+		{
+			if (_forcedInteractionMessages != value)
+			{
+				_forcedInteractionMessages = value;
+				OnPropertyChangedWithValue(value, "ForcedInteractionMessages");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasForcedMessages
+	{
+		get
+		{
+			return _hasForcedMessages;
+		}
+		set
+		{
+			if (_hasForcedMessages == value)
+			{
+				return;
+			}
+			_hasForcedMessages = value;
+			OnPropertyChangedWithValue(value, "HasForcedMessages");
+			if (!value)
+			{
+				ForcedInteractionMessages.ApplyActionOnAllItems(delegate(MissionPrimaryInteractionItemVM x)
+				{
+					x.ResetData();
+				});
+			}
+		}
+	}
+
 	public AgentInteractionInterfaceVM(Mission mission)
 	{
 		_mission = mission;
@@ -217,6 +263,11 @@ public class AgentInteractionInterfaceVM : ViewModel
 			new MissionPrimaryInteractionItemVM()
 		};
 		SecondaryInteractionMessages = new MBBindingList<MissionInteractionItemBaseVM>();
+		ForcedInteractionMessages = new MBBindingList<MissionPrimaryInteractionItemVM>
+		{
+			new MissionPrimaryInteractionItemVM(),
+			new MissionPrimaryInteractionItemVM()
+		};
 	}
 
 	public override void RefreshValues()
@@ -230,6 +281,10 @@ public class AgentInteractionInterfaceVM : ViewModel
 		{
 			p.RefreshValues();
 		});
+		ForcedInteractionMessages.ApplyActionOnAllItems(delegate(MissionPrimaryInteractionItemVM p)
+		{
+			p.RefreshValues();
+		});
 	}
 
 	public override void OnFinalize()
@@ -240,6 +295,10 @@ public class AgentInteractionInterfaceVM : ViewModel
 			p.OnFinalize();
 		});
 		SecondaryInteractionMessages.ApplyActionOnAllItems(delegate(MissionInteractionItemBaseVM p)
+		{
+			p.OnFinalize();
+		});
+		ForcedInteractionMessages.ApplyActionOnAllItems(delegate(MissionPrimaryInteractionItemVM p)
 		{
 			p.OnFinalize();
 		});
@@ -425,7 +484,7 @@ public class AgentInteractionInterfaceVM : ViewModel
 	{
 		if (HasSecondaryInteractionMessage(message))
 		{
-			Debug.FailedAssert("Trying to add the same interaction message twice", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Missions\\Interaction\\MissionAgentInteractionInterfaceVM.cs", "AddSecondaryMessage", 256);
+			Debug.FailedAssert("Trying to add the same interaction message twice", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Missions\\Interaction\\MissionAgentInteractionInterfaceVM.cs", "AddSecondaryMessage", 264);
 			return;
 		}
 		SecondaryInteractionMessages.Add(message);
@@ -459,8 +518,23 @@ public class AgentInteractionInterfaceVM : ViewModel
 	public void ResetFocus()
 	{
 		_currentFocusedObject = null;
+		ShowHealthBar = false;
 		PrimaryInteractionMessages[0].ResetData();
 		PrimaryInteractionMessages[1].ResetData();
+	}
+
+	public void SetForcedInteractionTexts(TextObject text1, bool isDisabled1, TextObject text2, bool isDisabled2)
+	{
+		HasForcedMessages = true;
+		ForcedInteractionMessages[0].SetData(text1, isDisabled1);
+		ForcedInteractionMessages[1].SetData(text2, isDisabled2);
+	}
+
+	public void ClearForcedInteractionTexts()
+	{
+		ForcedInteractionMessages[0].ResetData();
+		ForcedInteractionMessages[1].ResetData();
+		HasForcedMessages = false;
 	}
 
 	private string GetWeaponSpecificText(SpawnedItemEntity spawnedItem)

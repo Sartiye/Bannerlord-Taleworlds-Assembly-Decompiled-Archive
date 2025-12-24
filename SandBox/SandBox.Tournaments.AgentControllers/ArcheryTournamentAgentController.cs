@@ -69,7 +69,7 @@ public class ArcheryTournamentAgentController : AgentController
 		}
 		if (_target != null)
 		{
-			base.Owner.SetScriptedTargetEntityAndPosition(_target.GameEntity, base.Owner.GetWorldPosition());
+			base.Owner.SetScriptedTargetEntity(_target.GameEntity);
 		}
 	}
 

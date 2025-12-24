@@ -1703,6 +1703,11 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.SetUsesDeleteLaterSystem(base.Pointer, value);
 	}
 
+	public void ClearCurrentFrameTickEntities()
+	{
+		EngineApplicationInterface.IScene.ClearCurrentFrameTickEntities(base.Pointer);
+	}
+
 	public Vec2 FindClosestExitPositionForPositionOnABoundaryFace(Vec3 position, UIntPtr boundaryFacePointer)
 	{
 		return EngineApplicationInterface.IScene.FindClosestExitPositionForPositionOnABoundaryFace(base.Pointer, position, boundaryFacePointer);

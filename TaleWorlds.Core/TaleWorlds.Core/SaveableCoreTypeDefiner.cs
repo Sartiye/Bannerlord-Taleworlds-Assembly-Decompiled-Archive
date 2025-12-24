@@ -119,6 +119,7 @@ public class SaveableCoreTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(List<AgentSaveData>));
 		ConstructContainerDefinition(typeof(List<BattleSideEnum>));
 		ConstructContainerDefinition(typeof(List<ShipUpgradePiece>));
+		ConstructContainerDefinition(typeof(List<ShipHull>));
 		ConstructContainerDefinition(typeof(Dictionary<string, ItemCategory>));
 		ConstructContainerDefinition(typeof(Dictionary<string, CraftingPiece>));
 		ConstructContainerDefinition(typeof(Dictionary<string, CraftingTemplate>));

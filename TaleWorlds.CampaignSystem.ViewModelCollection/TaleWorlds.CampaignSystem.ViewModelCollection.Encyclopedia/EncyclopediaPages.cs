@@ -9,11 +9,13 @@ public enum EncyclopediaPages
 	ListClans,
 	ListKingdoms,
 	ListHeroes,
+	ListShips,
 	ListConcepts,
 	Clan,
 	Settlement,
 	Unit,
 	Kingdom,
 	Hero,
+	Ship,
 	Concept
 }

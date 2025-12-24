@@ -325,17 +325,23 @@ public class ArmyCompositionItemVM : ViewModel
 			textObject2 = GameTexts.FindText("str_troop_type_name", "HorseArcher");
 			break;
 		case CompositionType.RangedInfantry:
+		{
 			textObject.SetTextVariable("TYPENAME", "bow");
-			textObject2 = GameTexts.FindText("str_troop_type_name", "Ranged");
+			string variation2 = (flag ? "Ranged_Mariner" : "Ranged");
+			textObject2 = GameTexts.FindText("str_troop_type_name", variation2);
 			break;
+		}
 		case CompositionType.MeleeCavalry:
 			textObject.SetTextVariable("TYPENAME", "cavalry");
 			textObject2 = GameTexts.FindText("str_troop_type_name", "Cavalry");
 			break;
 		case CompositionType.MeleeInfantry:
+		{
 			textObject.SetTextVariable("TYPENAME", "infantry");
-			textObject2 = GameTexts.FindText("str_troop_type_name", "Infantry");
+			string variation = (flag ? "Infantry_Mariner" : "Infantry");
+			textObject2 = GameTexts.FindText("str_troop_type_name", variation);
 			break;
+		}
 		default:
 			return new StringItemWithHintVM("", null);
 		}

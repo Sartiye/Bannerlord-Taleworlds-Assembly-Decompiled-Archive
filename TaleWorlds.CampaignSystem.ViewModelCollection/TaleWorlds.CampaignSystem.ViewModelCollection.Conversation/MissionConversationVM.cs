@@ -11,6 +11,7 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Conversation;
@@ -425,6 +426,7 @@ public class MissionConversationVM : ViewModel
 			{
 				_isAggressive = value;
 				OnPropertyChangedWithValue(value, "IsAggressive");
+				OnAgressiveStateUpdated();
 			}
 		}
 	}
@@ -593,7 +595,120 @@ public class MissionConversationVM : ViewModel
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Combine(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(RefreshValues));
 		CampaignEvents.PersuasionProgressCommittedEvent.AddNonSerializedListener(this, OnPersuasionProgress);
 		Persuasion = new PersuasionVM(_conversationManager);
+		if (_conversationManager.SpeakerAgent != null && (CharacterObject)_conversationManager.SpeakerAgent.Character != null && ((CharacterObject)_conversationManager.SpeakerAgent.Character).IsHero && _conversationManager.SpeakerAgent.Character != CharacterObject.PlayerCharacter)
+		{
+			Hero heroObject = ((CharacterObject)_conversationManager.SpeakerAgent.Character).HeroObject;
+			Relation = (int)heroObject.GetRelationWithPlayer();
+		}
 		IsAggressive = Campaign.Current.CurrentConversationContext == ConversationContext.PartyEncounter && _conversationManager.ConversationParty != null && FactionManager.IsAtWarAgainstFaction(_conversationManager.ConversationParty.MapFaction, Hero.MainHero.MapFaction);
+		if (IsAggressive)
+		{
+			List<MobileParty> list = new List<MobileParty>();
+			List<MobileParty> list2 = new List<MobileParty>();
+			MobileParty conversationParty = _conversationManager.ConversationParty;
+			MobileParty mainParty = MobileParty.MainParty;
+			if (PlayerEncounter.PlayerIsAttacker)
+			{
+				list2.Add(mainParty);
+				list.Add(conversationParty);
+				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list2, list);
+			}
+			else
+			{
+				list2.Add(conversationParty);
+				list.Add(mainParty);
+				PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list, list2);
+			}
+			AttackerLeader = new ConversationAggressivePartyItemVM(PlayerEncounter.PlayerIsAttacker ? mainParty : conversationParty);
+			DefenderLeader = new ConversationAggressivePartyItemVM(PlayerEncounter.PlayerIsAttacker ? conversationParty : mainParty);
+			double num = 0.0;
+			double num2 = 0.0;
+			num += (double)DefenderLeader.Party.Party.CalculateCurrentStrength();
+			num2 += (double)AttackerLeader.Party.Party.CalculateCurrentStrength();
+			foreach (MobileParty item in list)
+			{
+				if (item != conversationParty && item != mainParty)
+				{
+					num += (double)item.Party.CalculateCurrentStrength();
+					DefenderParties.Add(new ConversationAggressivePartyItemVM(item));
+				}
+			}
+			foreach (MobileParty item2 in list2)
+			{
+				if (item2 != conversationParty && item2 != mainParty)
+				{
+					num2 += (double)item2.Party.CalculateCurrentStrength();
+					AttackerParties.Add(new ConversationAggressivePartyItemVM(item2));
+				}
+			}
+			string defenderColor = ((DefenderLeader.Party.MapFaction == null || !(DefenderLeader.Party.MapFaction is Kingdom)) ? Color.FromUint(DefenderLeader.Party.MapFaction.Banner.GetPrimaryColor()).ToString() : Color.FromUint(((Kingdom)DefenderLeader.Party.MapFaction).PrimaryBannerColor).ToString());
+			string attackerColor = ((AttackerLeader.Party.MapFaction == null || !(AttackerLeader.Party.MapFaction is Kingdom)) ? Color.FromUint(AttackerLeader.Party.MapFaction.Banner.GetPrimaryColor()).ToString() : Color.FromUint(((Kingdom)AttackerLeader.Party.MapFaction).PrimaryBannerColor).ToString());
+			if (list2.AnyQ((MobileParty p) => p.IsInfoHidden) || list.AnyQ((MobileParty p) => p.IsInfoHidden))
+			{
+				if (PlayerEncounter.PlayerIsAttacker)
+				{
+					num2 = 0.0;
+					num = 1.0;
+				}
+				else
+				{
+					num2 = 1.0;
+					num = 0.0;
+				}
+			}
+			PowerComparer = new PowerLevelComparer(num, num2);
+			PowerComparer.SetColors(defenderColor, attackerColor);
+		}
+		else
+		{
+			DefenderLeader = new ConversationAggressivePartyItemVM(null);
+			AttackerLeader = new ConversationAggressivePartyItemVM(null);
+		}
+		ExecuteSetCurrentAnswer(null);
+		RefreshValues();
+	}
+
+	private void OnPersuasionProgress(Tuple<PersuasionOptionArgs, PersuasionOptionResult> result)
+	{
+		Persuasion?.OnPersuasionProgress(result);
+		AnswerList.ApplyActionOnAllItems(delegate(ConversationItemVM a)
+		{
+			a.OnPersuasionProgress(result);
+		});
+	}
+
+	public override void RefreshValues()
+	{
+		base.RefreshValues();
+		ContinueText = _getContinueInputText();
+		MoreOptionText = GameTexts.FindText("str_more_brackets").ToString();
+		PersuasionText = GameTexts.FindText("str_persuasion").ToString();
+		RelationHint = new HintViewModel(GameTexts.FindText("str_tooltip_label_relation"));
+		GoldHint = new HintViewModel(new TextObject("{=o5G8A8ZH}Your Denars"));
+		_answerList.ApplyActionOnAllItems(delegate(ConversationItemVM x)
+		{
+			x.RefreshValues();
+		});
+		_defenderParties.ApplyActionOnAllItems(delegate(ConversationAggressivePartyItemVM x)
+		{
+			x.RefreshValues();
+		});
+		_attackerParties.ApplyActionOnAllItems(delegate(ConversationAggressivePartyItemVM x)
+		{
+			x.RefreshValues();
+		});
+		_defenderLeader.RefreshValues();
+		_attackerLeader.RefreshValues();
+		_currentSelectedAnswer.RefreshValues();
+	}
+
+	public void Tick(float dt)
+	{
+		IsAggressive = Campaign.Current.CurrentConversationContext == ConversationContext.PartyEncounter && _conversationManager.ConversationParty != null && FactionManager.IsAtWarAgainstFaction(_conversationManager.ConversationParty.MapFaction, Hero.MainHero.MapFaction);
+	}
+
+	private void OnAgressiveStateUpdated()
+	{
 		if (IsAggressive)
 		{
 			List<MobileParty> list = new List<MobileParty>();
@@ -644,47 +759,6 @@ public class MissionConversationVM : ViewModel
 			DefenderLeader = new ConversationAggressivePartyItemVM(null);
 			AttackerLeader = new ConversationAggressivePartyItemVM(null);
 		}
-		if (_conversationManager.SpeakerAgent != null && (CharacterObject)_conversationManager.SpeakerAgent.Character != null && ((CharacterObject)_conversationManager.SpeakerAgent.Character).IsHero && _conversationManager.SpeakerAgent.Character != CharacterObject.PlayerCharacter)
-		{
-			Hero heroObject = ((CharacterObject)_conversationManager.SpeakerAgent.Character).HeroObject;
-			Relation = (int)heroObject.GetRelationWithPlayer();
-		}
-		ExecuteSetCurrentAnswer(null);
-		RefreshValues();
-	}
-
-	private void OnPersuasionProgress(Tuple<PersuasionOptionArgs, PersuasionOptionResult> result)
-	{
-		Persuasion?.OnPersuasionProgress(result);
-		AnswerList.ApplyActionOnAllItems(delegate(ConversationItemVM a)
-		{
-			a.OnPersuasionProgress(result);
-		});
-	}
-
-	public override void RefreshValues()
-	{
-		base.RefreshValues();
-		ContinueText = _getContinueInputText();
-		MoreOptionText = GameTexts.FindText("str_more_brackets").ToString();
-		PersuasionText = GameTexts.FindText("str_persuasion").ToString();
-		RelationHint = new HintViewModel(GameTexts.FindText("str_tooltip_label_relation"));
-		GoldHint = new HintViewModel(new TextObject("{=o5G8A8ZH}Your Denars"));
-		_answerList.ApplyActionOnAllItems(delegate(ConversationItemVM x)
-		{
-			x.RefreshValues();
-		});
-		_defenderParties.ApplyActionOnAllItems(delegate(ConversationAggressivePartyItemVM x)
-		{
-			x.RefreshValues();
-		});
-		_attackerParties.ApplyActionOnAllItems(delegate(ConversationAggressivePartyItemVM x)
-		{
-			x.RefreshValues();
-		});
-		_defenderLeader.RefreshValues();
-		_attackerLeader.RefreshValues();
-		_currentSelectedAnswer.RefreshValues();
 	}
 
 	public void OnConversationContinue()

@@ -575,7 +575,7 @@ public class HumanAIComponent : AgentComponent
 					num2 = cachedMedianPosition.AsVec2.DistanceSquared(cachedMedianPosition2.AsVec2);
 					if (num2 <= num3)
 					{
-						num2 = Agent.Formation.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(cachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshVec3());
+						num2 = Agent.Formation.CachedMedianPosition.GetNavMeshVec3MT().DistanceSquared(cachedClosestEnemyFormation.Formation.CachedMedianPosition.GetNavMeshVec3MT());
 					}
 				}
 				flag = num2 > num3;

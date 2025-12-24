@@ -53,7 +53,7 @@ public sealed class CraftingHotkeyCategory : GameKeyContext
 		};
 		List<Key> keys2 = new List<Key>
 		{
-			new Key(InputKey.Space),
+			new Key(InputKey.Enter),
 			new Key(InputKey.ControllerRLeft)
 		};
 		List<Key> keys3 = new List<Key>
