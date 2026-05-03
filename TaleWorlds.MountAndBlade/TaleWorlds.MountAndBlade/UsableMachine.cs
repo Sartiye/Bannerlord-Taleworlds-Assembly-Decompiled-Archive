@@ -711,7 +711,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		foreach (StandingPoint standingPoint in StandingPoints)
 		{
 			Agent userAgent = standingPoint.UserAgent;
-			if (userAgent != null && userAgent.Formation == formation && !userAgent.IsPlayerControlled)
+			if (userAgent != null && userAgent.Formation == formation && userAgent.IsAIControlled)
 			{
 				OnFormationLeaveHelper(formation, userAgent);
 			}

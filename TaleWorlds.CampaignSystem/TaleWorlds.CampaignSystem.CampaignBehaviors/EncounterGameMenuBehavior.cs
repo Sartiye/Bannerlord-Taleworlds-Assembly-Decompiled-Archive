@@ -2727,7 +2727,8 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	{
 		PlayerSiege.PlayerSiegeEvent.DeactivateBlockade();
 		List<MapEventParty> list = MobileParty.MainParty.MapEvent.AttackerSide.Parties.ToList();
-		MobileParty.MainParty.MapEvent.FinalizeEvent();
+		PlayerEncounter.Current.FinalizeBattle();
+		PlayerEncounter.Current.SetupFields(MobileParty.MainParty.Party, PlayerSiege.PlayerSiegeEvent.BesiegedSettlement.Party);
 		foreach (MapEventParty item in list)
 		{
 			if (item.Party != PartyBase.MainParty && item.Party.IsMobile && item.Party.MobileParty.CurrentSettlement == null && item.Party.MobileParty.AttachedTo == null)

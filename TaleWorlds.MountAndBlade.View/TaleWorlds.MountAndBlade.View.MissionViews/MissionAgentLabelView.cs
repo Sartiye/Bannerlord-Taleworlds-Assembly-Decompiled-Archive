@@ -114,7 +114,7 @@ public class MissionAgentLabelView : MissionView
 		for (int i = 0; i < _closeAgentsWithMeshes.Count; i++)
 		{
 			Agent agent = _closeAgentsWithMeshes[i];
-			SetBannerHighlightVisibility(agent, _agentMeshes[agent], IsAgentListeningToOrders(agent));
+			SetBannerHighlightVisibility(agent, IsAgentListeningToOrders(agent));
 		}
 		_closeAgentsWithMeshes.Clear();
 		AgentProximityMap.ProximityMapSearchStruct searchStruct = AgentProximityMap.BeginSearch(base.Mission, base.MissionScreen.CombatCamera.Position.AsVec2, 8f);
@@ -129,7 +129,7 @@ public class MissionAgentLabelView : MissionView
 		for (int j = 0; j < _closeAgentsWithMeshes.Count; j++)
 		{
 			Agent agent2 = _closeAgentsWithMeshes[j];
-			SetBannerHighlightVisibility(agent2, _agentMeshes[agent2], IsAgentListeningToOrders(agent2));
+			SetBannerHighlightVisibility(agent2, IsAgentListeningToOrders(agent2));
 		}
 	}
 
@@ -185,7 +185,7 @@ public class MissionAgentLabelView : MissionView
 
 	public override void OnAssignPlayerAsSergeantOfFormation(Agent agent)
 	{
-		SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlightVisibility: true);
+		SetBannerHighlightVisibility(agent, highlightVisibility: true);
 	}
 
 	public override void OnClearScene()
@@ -307,7 +307,7 @@ public class MissionAgentLabelView : MissionView
 		agent.AgentVisuals.AddMultiMesh(copy, BodyMeshTypes.Label);
 		_agentMeshes.Add(agent, copy);
 		UpdateVisibilityOfAgentMesh(agent);
-		SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlightVisibility: false);
+		SetBannerHighlightVisibility(agent, highlightVisibility: false);
 	}
 
 	private void UpdateVisibilityOfAgentMesh(Agent agent)
@@ -342,7 +342,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		if (agent.IsActive() && _agentMeshes.ContainsKey(agent))
 		{
-			SetBannerHighlightVisibility(agent, _agentMeshes[agent], IsAgentListeningToOrders(agent));
+			SetBannerHighlightVisibility(agent, IsAgentListeningToOrders(agent));
 		}
 	}
 
@@ -448,8 +448,13 @@ public class MissionAgentLabelView : MissionView
 		return false;
 	}
 
-	private void SetBannerHighlightVisibility(Agent agent, MetaMesh mesh, bool highlightVisibility)
+	private void SetBannerHighlightVisibility(Agent agent, bool highlightVisibility)
 	{
+		if (!_agentMeshes.TryGetValue(agent, out var value))
+		{
+			Debug.FailedAssert("Trying to update the banner of an agent that isn't present in _agentMeshes!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionAgentLabelView.cs", "SetBannerHighlightVisibility", 498);
+			return;
+		}
 		float num = (highlightVisibility ? 1f : (-1f));
 		float num2 = (agent.Position + _meshOffset).Distance(base.MissionScreen.CombatCamera.Position);
 		if (num2 < 1.5f)
@@ -460,7 +465,7 @@ public class MissionAgentLabelView : MissionView
 		{
 			num *= (num2 - 1.5f) / 6.5f;
 		}
-		mesh.SetVectorArgument2(20f, 0.4f, 0.44f, num * BannerlordConfig.FriendlyTroopsBannerOpacity);
+		value.SetVectorArgument2(20f, 0.4f, 0.44f, num * BannerlordConfig.FriendlyTroopsBannerOpacity);
 	}
 
 	private void UpdateIsOrderFlagVisible()
@@ -484,7 +489,7 @@ public class MissionAgentLabelView : MissionView
 					Agent userAgent = standingPoint.UserAgent;
 					if (userAgent != null)
 					{
-						SetBannerHighlightVisibility(userAgent, _agentMeshes[userAgent], highlight);
+						SetBannerHighlightVisibility(userAgent, highlight);
 					}
 				}
 			}
@@ -503,7 +508,7 @@ public class MissionAgentLabelView : MissionView
 				{
 					foreach (Agent activeAgent in team.ActiveAgents)
 					{
-						SetBannerHighlightVisibility(activeAgent, _agentMeshes[activeAgent], highlight);
+						SetBannerHighlightVisibility(activeAgent, highlight);
 					}
 					return;
 				}
@@ -515,7 +520,7 @@ public class MissionAgentLabelView : MissionView
 		{
 			selectedFormation.ApplyActionOnEachUnit(delegate(Agent agent)
 			{
-				SetBannerHighlightVisibility(agent, _agentMeshes[agent], highlight);
+				SetBannerHighlightVisibility(agent, highlight);
 			});
 		}
 	}
@@ -524,7 +529,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		foreach (KeyValuePair<Agent, MetaMesh> agentMesh in _agentMeshes)
 		{
-			SetBannerHighlightVisibility(agentMesh.Key, agentMesh.Value, highlightVisibility: false);
+			SetBannerHighlightVisibility(agentMesh.Key, highlightVisibility: false);
 		}
 	}
 

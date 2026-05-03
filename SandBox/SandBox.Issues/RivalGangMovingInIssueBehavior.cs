@@ -1159,7 +1159,7 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 			}
 			if (_allyGangLeaderHenchmanHero != null && _allyGangLeaderHenchmanHero.IsAlive)
 			{
-				_allyGangLeaderHenchmanHero.SetNewOccupation(Occupation.NotAssigned);
+				_allyGangLeaderHenchmanHero.SetNewOccupation(Occupation.Special);
 				KillCharacterAction.ApplyByRemove(_allyGangLeaderHenchmanHero);
 			}
 			if (_rivalGangLeaderHenchmanHero != null && _rivalGangLeaderHenchmanHero.IsAlive)

@@ -112,30 +112,39 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 
 	private Settlement GetQuestFromSettlement()
 	{
-		Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
+		Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
 		if (settlement == null)
 		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
+			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && IsSettlementCultureSuitable(s) && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
 		}
 		if (settlement == null)
 		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown);
+			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && IsSettlementCultureSuitable(s));
 		}
 		return settlement;
 	}
 
 	private Settlement GetNextSettlement(Settlement settlement)
 	{
-		Settlement settlement2 = SettlementHelper.FindNearestTownToSettlement(settlement, MobileParty.NavigationType.Default, (Settlement s) => !_caravanTargetSettlements.Contains(s) && s.MapFaction != Clan.PlayerClan.MapFaction && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom) : (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom))) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f)?.Settlement;
+		Settlement settlement2 = SettlementHelper.FindNearestTownToSettlement(settlement, MobileParty.NavigationType.Default, (Settlement s) => !_caravanTargetSettlements.Contains(s) && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom) : (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom))) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f)?.Settlement;
 		if (settlement2 == null)
 		{
-			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
+			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
 		}
 		if (settlement2 == null)
 		{
-			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
+			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && IsSettlementCultureSuitable(s) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
 		}
 		return settlement2;
+	}
+
+	private bool IsSettlementCultureSuitable(Settlement settlement)
+	{
+		if (settlement.Culture != StoryModeData.KhuzaitKingdom.Culture && settlement.Culture != StoryModeData.ImperialCulture && settlement.Culture != StoryModeData.BattaniaKingdom.Culture && settlement.Culture != StoryModeData.SturgiaKingdom.Culture && settlement.Culture != StoryModeData.VlandiaKingdom.Culture)
+		{
+			return settlement.Culture == StoryModeData.AseraiKingdom.Culture;
+		}
+		return true;
 	}
 
 	protected override void InitializeQuestOnGameLoad()

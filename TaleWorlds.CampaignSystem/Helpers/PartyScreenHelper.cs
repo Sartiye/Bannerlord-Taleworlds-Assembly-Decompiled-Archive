@@ -36,7 +36,7 @@ public static class PartyScreenHelper
 		{
 			return result;
 		}
-		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 7459);
+		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 7436);
 		return null;
 	}
 
@@ -94,7 +94,7 @@ public static class PartyScreenHelper
 		PartyScreenLogic partyScreenLogic = activePartyState?.PartyScreenLogic;
 		if (partyScreenLogic == null)
 		{
-			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 7526);
+			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 7503);
 			return;
 		}
 		bool flag = true;

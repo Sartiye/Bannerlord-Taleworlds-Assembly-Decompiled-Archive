@@ -1575,6 +1575,19 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 				}
 			}
 		}
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.14")) && PartyBelongedToAsPrisoner != null && StayingInSettlement != null)
+		{
+			StayingInSettlement = null;
+			if (PartyBelongedToAsPrisoner != null && PartyBelongedToAsPrisoner.PrisonRoster.Contains(CharacterObject))
+			{
+				PartyBelongedToAsPrisoner.PrisonRoster.RemoveTroop(CharacterObject);
+			}
+			PartyBelongedToAsPrisoner = null;
+			if (!IsDead && !IsDisabled)
+			{
+				ChangeState(CharacterStates.Fugitive);
+			}
+		}
 		UpdatePowerModifier();
 	}
 
@@ -1943,7 +1956,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		if (!IsLord && !IsPlayerCompanion && !IsSpecial)
 		{
-			Debug.FailedAssert("Only lords, companions and special quest heroes can become prisoners! Check CanBecomePrisoner usage.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Hero.cs", "CanBecomePrisoner", 1828);
+			Debug.FailedAssert("Only lords, companions and special quest heroes can become prisoners! Check CanBecomePrisoner usage.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Hero.cs", "CanBecomePrisoner", 1850);
 			return false;
 		}
 		if (this != MainHero)

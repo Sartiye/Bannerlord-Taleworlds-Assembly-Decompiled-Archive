@@ -27,10 +27,10 @@ public class OrderOfBattleCampaignBehavior : CampaignBehaviorBase
 		[SaveableField(6)]
 		public readonly Hero[] HeroTroops;
 
-		public OrderOfBattleFormationData(Hero captain, List<Hero> heroTroops, DeploymentFormationClass formationClass, int primaryWeight, int secondaryWeight, Dictionary<FormationFilterType, bool> filters)
+		public OrderOfBattleFormationData(Hero captain, Hero[] heroTroops, DeploymentFormationClass formationClass, int primaryWeight, int secondaryWeight, Dictionary<FormationFilterType, bool> filters)
 		{
 			Captain = captain;
-			HeroTroops = heroTroops.ToArray();
+			HeroTroops = heroTroops;
 			FormationClass = formationClass;
 			PrimaryClassWeight = primaryWeight;
 			SecondaryClassWeight = secondaryWeight;
@@ -194,26 +194,24 @@ public class OrderOfBattleCampaignBehavior : CampaignBehaviorBase
 					continue;
 				}
 			}
-			List<Hero> list = orderOfBattleFormationData.HeroTroops.ToList();
-			list.Remove(hero);
+			Hero[] heroTroops2 = orderOfBattleFormationData.HeroTroops?.Where((Hero t) => t != hero).ToArray();
 			Hero captain = ((orderOfBattleFormationData.Captain == hero) ? null : orderOfBattleFormationData.Captain);
-			_siegeFormationInfos[num] = new OrderOfBattleFormationData(captain, list, orderOfBattleFormationData.FormationClass, orderOfBattleFormationData.PrimaryClassWeight, orderOfBattleFormationData.SecondaryClassWeight, orderOfBattleFormationData.Filters);
+			_siegeFormationInfos[num] = new OrderOfBattleFormationData(captain, heroTroops2, orderOfBattleFormationData.FormationClass, orderOfBattleFormationData.PrimaryClassWeight, orderOfBattleFormationData.SecondaryClassWeight, orderOfBattleFormationData.Filters);
 		}
 		for (int num2 = _fieldBattleFormationInfos.Count - 1; num2 >= 0; num2--)
 		{
 			OrderOfBattleFormationData orderOfBattleFormationData2 = _fieldBattleFormationInfos[num2];
 			if (orderOfBattleFormationData2.Captain != hero)
 			{
-				Hero[] heroTroops2 = orderOfBattleFormationData2.HeroTroops;
-				if (heroTroops2 == null || !heroTroops2.Contains(hero))
+				Hero[] heroTroops3 = orderOfBattleFormationData2.HeroTroops;
+				if (heroTroops3 == null || !heroTroops3.Contains(hero))
 				{
 					continue;
 				}
 			}
-			List<Hero> list2 = orderOfBattleFormationData2.HeroTroops.ToList();
-			list2.Remove(hero);
+			Hero[] heroTroops4 = orderOfBattleFormationData2.HeroTroops?.Where((Hero t) => t != hero).ToArray();
 			Hero captain2 = ((orderOfBattleFormationData2.Captain == hero) ? null : orderOfBattleFormationData2.Captain);
-			_fieldBattleFormationInfos[num2] = new OrderOfBattleFormationData(captain2, list2, orderOfBattleFormationData2.FormationClass, orderOfBattleFormationData2.PrimaryClassWeight, orderOfBattleFormationData2.SecondaryClassWeight, orderOfBattleFormationData2.Filters);
+			_fieldBattleFormationInfos[num2] = new OrderOfBattleFormationData(captain2, heroTroops4, orderOfBattleFormationData2.FormationClass, orderOfBattleFormationData2.PrimaryClassWeight, orderOfBattleFormationData2.SecondaryClassWeight, orderOfBattleFormationData2.Filters);
 		}
 	}
 }

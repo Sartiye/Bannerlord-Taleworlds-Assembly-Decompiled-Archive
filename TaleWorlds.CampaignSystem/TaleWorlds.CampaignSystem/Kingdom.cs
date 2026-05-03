@@ -7,6 +7,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Election;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -632,7 +633,13 @@ public sealed class Kingdom : MBObjectBase, IFaction
 				{
 					if (item.MobileParty.MapEvent != null && (item.MobileParty.Army == null || item.MobileParty.Army.LeaderParty == item.MobileParty))
 					{
-						item.MobileParty.MapEvent.FinalizeEvent();
+						bool isPlayerMapEvent = item.MobileParty.MapEvent.IsPlayerMapEvent;
+						item.MobileParty.MapEventSide = null;
+						if (isPlayerMapEvent && MobileParty.MainParty.MapEvent == null)
+						{
+							PlayerEncounter.Finish();
+							Campaign.Current.MapStateData.GameMenuId = null;
+						}
 					}
 				}
 			}

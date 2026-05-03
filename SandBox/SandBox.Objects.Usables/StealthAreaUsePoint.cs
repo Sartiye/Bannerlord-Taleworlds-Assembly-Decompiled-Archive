@@ -108,9 +108,12 @@ public class StealthAreaUsePoint : UsableMissionObject
 
 	public void EnableStealthAreaUsePoint()
 	{
+		if (!_isEnabled)
+		{
+			Vec3 position = base.GameEntity.GlobalPosition;
+			SoundManager.StartOneShotEvent("event:/ui/notification/quest_update", in position);
+		}
 		_isEnabled = true;
-		Vec3 position = base.GameEntity.GlobalPosition;
-		SoundManager.StartOneShotEvent("event:/ui/notification/quest_update", in position);
 	}
 
 	public void DisableStealthAreaUsePoint()

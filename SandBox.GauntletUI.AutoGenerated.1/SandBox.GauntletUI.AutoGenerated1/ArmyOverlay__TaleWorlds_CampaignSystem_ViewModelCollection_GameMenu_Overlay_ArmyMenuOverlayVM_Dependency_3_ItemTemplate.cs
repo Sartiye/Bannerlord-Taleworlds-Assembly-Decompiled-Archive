@@ -23,11 +23,11 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		VisualDefinition visualDefinition = new VisualDefinition("Overlay", 0.4f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("MapExtendedOverlayNormal")
 		{
-			PositionYOffset = 75f
+			PositionYOffset = 71f
 		});
 		visualDefinition.AddVisualState(new VisualState("MapNormalOverlayNormal")
 		{
-			PositionYOffset = 107f
+			PositionYOffset = 106f
 		});
 		visualDefinition.AddVisualState(new VisualState("MapNormalOverlayExtended")
 		{

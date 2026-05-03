@@ -28,10 +28,10 @@ public class VirtualFolders
 					}
 				}
 
-				[VirtualFile("Environment", "vS9wnQVo_BBm40jwrN7ZRFrP1aWHs_PBBH51yrjyLv3NioUsGCmBUT66380AdX_fJqcAhQYfWfv3VTaMEy0yP0d2k29hupukfDax2ndigQ3Odx0agv52IoOEMDMKDiBnNxtQ7mi_D7ti5CLOcLq.cjQiUJF2Xe_BF4H9hV3D3Zk-")]
+				[VirtualFile("Environment", "qmCQNuPrXgaznVfoX5i8N7FP3RaIO2p3gBofZp0KSHtaJPdw1AEpfhxbOc6D0BuDylPvybDqZIdjPNHMNwdjVR3bHs.oK67g2CZhZySkIaXbs9.gDnXnsW2zDvVWnb6NNXy2VLgSSnxy84WGmC1zPY3_vsGnB4c_5dhUgtNZHL0-")]
 				public string Environment;
 
-				[VirtualFile("Version.xml", "<Version>\t<Singleplayer Value=\"v1.3.13.105726\"/></Version>")]
+				[VirtualFile("Version.xml", "<Version>\t<Singleplayer Value=\"v1.3.15.110062\"/></Version>")]
 				public string Version;
 
 				[VirtualFile("ClientProfile.xml", "<ClientProfile Value=\"Azure.Discovery\"/>")]

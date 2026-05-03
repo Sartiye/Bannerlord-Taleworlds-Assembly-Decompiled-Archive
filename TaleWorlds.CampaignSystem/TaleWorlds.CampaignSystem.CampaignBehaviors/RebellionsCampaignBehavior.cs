@@ -235,7 +235,7 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		settlement.Town.GarrisonParty.MemberRoster.Clear();
 		foreach (KeyValuePair<TroopRosterElement, int> item2 in dictionary)
 		{
-			settlement.Town.GarrisonParty.AddPrisoner(item2.Key.Character, item2.Value);
+			settlement.Party.AddPrisoner(item2.Key.Character, item2.Value);
 		}
 		settlement.Town.GarrisonParty.AddElementToMemberRoster(settlement.Culture.RangedMilitiaTroop, (int)(settlement.Militia * (MBRandom.RandomFloatRanged(-0.1f, 0.1f) + 0.6f)));
 		settlement.Militia = 0f;

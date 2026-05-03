@@ -272,7 +272,7 @@ public class DefaultSkillEffects
 		_effectTradePenaltyReduction.Initialize(new TextObject("{=uq7JwT1Z}Trade penalty Reduction +{a0}%"), DefaultSkills.Trade, PartyRole.PartyLeader, 0.002f, EffectIncrementType.AddFactor);
 		_effectLeadershipMoraleBonus.Initialize(new TextObject("{=n3bFiuVu}Increase morale of the parties under your command +{a0}"), DefaultSkills.Leadership, PartyRole.Personal, 0.1f, EffectIncrementType.Add);
 		_effectLeadershipGarrisonSizeBonus.Initialize(new TextObject("{=cSt26auo}Increase garrison size by +{a0}"), DefaultSkills.Leadership, PartyRole.Personal, 0.2f, EffectIncrementType.Add);
-		_effectSurgeonSurvivalBonus.Initialize(new TextObject("{=w4BzNJYl}Casualty survival chance +{a0}%"), DefaultSkills.Medicine, PartyRole.Surgeon, 0.0025f, EffectIncrementType.Add);
+		_effectSurgeonSurvivalBonus.Initialize(new TextObject("{=w4BzNJYl}Casualty survival chance +{a0}%"), DefaultSkills.Medicine, PartyRole.Surgeon, 0.01f, EffectIncrementType.Add);
 		_effectHealingRateBonusForHeroes.Initialize(new TextObject("{=fUvs4g40}Healing rate increase for heroes +{a0}%"), DefaultSkills.Medicine, PartyRole.Surgeon, 0.005f, EffectIncrementType.AddFactor);
 		_effectHealingRateBonusForRegulars.Initialize(new TextObject("{=A310vHqJ}Healing rate increase for troops +{a0}%"), DefaultSkills.Medicine, PartyRole.Surgeon, 0.01f, EffectIncrementType.AddFactor);
 		_effectGovernorHealingRateBonus.Initialize(new TextObject("{=6mQGst9s}Healing rate increase +{a0}%"), DefaultSkills.Medicine, PartyRole.Governor, 0.001f, EffectIncrementType.AddFactor);

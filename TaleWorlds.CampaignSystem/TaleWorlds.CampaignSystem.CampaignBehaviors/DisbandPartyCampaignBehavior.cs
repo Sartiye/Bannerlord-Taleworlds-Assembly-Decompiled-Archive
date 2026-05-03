@@ -289,7 +289,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 
 	private void OnPartyDisbanded(MobileParty disbandParty, Settlement relatedSettlement)
 	{
-		if (relatedSettlement == null)
+		if (relatedSettlement == null || disbandParty.IsCustomParty)
 		{
 			return;
 		}

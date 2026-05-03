@@ -195,7 +195,7 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 						flag2 = true;
 						_lastFactionMadePeaceWithCausedPlayerToLeaveEvent = siegeEvent.BesiegerCamp.LeaderParty.MapFaction;
 					}
-					else
+					else if (party.MobileParty.Army == null || party.MobileParty.Army.LeaderParty == party.MobileParty)
 					{
 						LeaveSettlementAction.ApplyForParty(party.MobileParty);
 					}

@@ -186,7 +186,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
 			}
-			if (mobileParty2.SiegeEvent != null && mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty.TargetSettlement == mobileParty2.SiegeEvent.BesiegedSettlement && mobileParty2.MapEvent != null && mobileParty2.MapEvent.IsBlockade && !mobileParty.IsCurrentlyAtSea)
+			if (mobileParty2.MapEvent != null && (mobileParty2.MapEvent.IsBlockade || mobileParty2.MapEvent.IsBlockadeSallyOut) && !mobileParty.IsCurrentlyAtSea)
 			{
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;

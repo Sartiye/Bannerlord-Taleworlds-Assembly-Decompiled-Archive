@@ -284,7 +284,7 @@ public static class NavigationHelper
 		}
 		if (result.ToVec2() == Vec2.Invalid)
 		{
-			Debug.FailedAssert("Point should not be invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "FindPointInsideArea", 9751);
+			Debug.FailedAssert("Point should not be invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "FindPointInsideArea", 9728);
 			return FindPointInsideArea(minBorders, maxBorders, navigationCapability);
 		}
 		return result;

@@ -32,7 +32,9 @@ public class DefaultPartyHealingModel : PartyHealingModel
 
 	private const float DriftingWoundedEffectRatio = 0.25f;
 
-	private const float DoctorsOathMultiplier = 0.4f;
+	private const float AISurgeonSurvivalMultiplier = 0.25f;
+
+	private const float DoctorsOathMultiplier = 0.1f;
 
 	private static readonly TextObject _starvingText = new TextObject("{=jZYUdkXF}Starving");
 
@@ -62,54 +64,54 @@ public class DefaultPartyHealingModel : PartyHealingModel
 		{
 			return 1f;
 		}
-		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
+		ExplainedNumber survivalDenominator = new ExplainedNumber(1f);
 		if (party?.MobileParty != null)
 		{
 			MobileParty mobileParty = party.MobileParty;
-			SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.SurgeonSurvivalBonus, mobileParty, ref explainedNumber);
+			AddSurgeonSurvivalBonus(mobileParty, ref survivalDenominator);
 			if (enemyParty?.MobileParty != null && enemyParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath))
 			{
-				AddDoctorsOathSkillBonusForParty(enemyParty.MobileParty, ref explainedNumber);
+				AddDoctorsOathSkillBonusForParty(enemyParty.MobileParty, ref survivalDenominator);
 				SkillLevelingManager.OnSurgeryApplied(enemyParty.MobileParty, surgerySuccess: false, character.Tier);
 			}
-			explainedNumber.Add((float)character.Level * 0.02f);
+			survivalDenominator.Add((float)character.Level * 0.02f);
 			if (!character.IsHero && party.MapEvent != null && character.Tier < 3)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.PhysicianOfPeople, party.MobileParty, isPrimaryBonus: false, ref explainedNumber, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.PhysicianOfPeople, party.MobileParty, isPrimaryBonus: false, ref survivalDenominator, party.MobileParty.IsCurrentlyAtSea);
 			}
 			if (character.IsHero)
 			{
-				explainedNumber.Add(character.GetTotalArmorSum() * 0.01f);
-				explainedNumber.Add(character.Age * -0.01f);
-				explainedNumber.AddFactor(50f);
+				survivalDenominator.Add(character.GetTotalArmorSum() * 0.01f);
+				survivalDenominator.Add(character.Age * -0.01f);
+				survivalDenominator.AddFactor(50f);
 			}
-			ExplainedNumber explainedNumber2 = new ExplainedNumber(1f / explainedNumber.ResultNumber);
+			ExplainedNumber explainedNumber = new ExplainedNumber(1f / survivalDenominator.ResultNumber);
 			if (character.IsHero)
 			{
 				if (party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Medicine.CheatDeath, checkSecondaryRole: true))
 				{
-					explainedNumber2.AddFactor(DefaultPerks.Medicine.CheatDeath.SecondaryBonus, DefaultPerks.Medicine.CheatDeath.Name);
+					explainedNumber.AddFactor(DefaultPerks.Medicine.CheatDeath.SecondaryBonus, DefaultPerks.Medicine.CheatDeath.Name);
 				}
 				if (character.HeroObject.Clan == Clan.PlayerClan)
 				{
 					float clanMemberDeathChanceMultiplier = Campaign.Current.Models.DifficultyModel.GetClanMemberDeathChanceMultiplier();
 					if (!clanMemberDeathChanceMultiplier.ApproximatelyEqualsTo(0f))
 					{
-						explainedNumber2.AddFactor(clanMemberDeathChanceMultiplier, GameTexts.FindText("str_game_difficulty"));
+						explainedNumber.AddFactor(clanMemberDeathChanceMultiplier, GameTexts.FindText("str_game_difficulty"));
 					}
 				}
 			}
-			return 1f - MBMath.ClampFloat(explainedNumber2.ResultNumber, 0f, 1f);
+			return 1f - MBMath.ClampFloat(explainedNumber.ResultNumber, 0f, 1f);
 		}
 		if (character.IsHero && character.HeroObject.IsPrisoner)
 		{
 			return 1f - character.Age * 0.0035f;
 		}
-		if (explainedNumber.ResultNumber.ApproximatelyEqualsTo(0f))
+		if (survivalDenominator.ResultNumber.ApproximatelyEqualsTo(0f))
 		{
 			return 0f;
 		}
-		return 1f - 1f / explainedNumber.ResultNumber;
+		return 1f - 1f / survivalDenominator.ResultNumber;
 	}
 
 	public override int GetSkillXpFromHealingTroop(PartyBase party)
@@ -311,14 +313,27 @@ public class DefaultPartyHealingModel : PartyHealingModel
 		return result;
 	}
 
-	private static void AddDoctorsOathSkillBonusForParty(MobileParty party, ref ExplainedNumber explainedNumber)
+	private static void AddDoctorsOathSkillBonusForParty(MobileParty enemyParty, ref ExplainedNumber explainedNumber)
 	{
-		CharacterObject characterObject = party.GetEffectiveRoleHolder(PartyRole.Surgeon)?.CharacterObject ?? SkillHelper.GetEffectivePartyLeaderForSkill(party.Party);
+		CharacterObject characterObject = enemyParty.GetEffectiveRoleHolder(PartyRole.Surgeon)?.CharacterObject ?? SkillHelper.GetEffectivePartyLeaderForSkill(enemyParty.Party);
 		if (characterObject != null)
 		{
+			bool flag = enemyParty.MapEvent?.IsPlayerMapEvent ?? false;
 			int skillValue = characterObject.GetSkillValue(DefaultSkillEffects.SurgeonSurvivalBonus.EffectedSkill);
 			float skillEffectValue = DefaultSkillEffects.SurgeonSurvivalBonus.GetSkillEffectValue(skillValue);
-			explainedNumber.Add(skillEffectValue * 0.4f, explainedNumber.IncludeDescriptions ? GameTexts.FindText("role", PartyRole.Surgeon.ToString()) : null);
+			explainedNumber.Add(skillEffectValue * (flag ? 1f : 0.1f), explainedNumber.IncludeDescriptions ? GameTexts.FindText("role", PartyRole.Surgeon.ToString()) : null);
+		}
+	}
+
+	private void AddSurgeonSurvivalBonus(MobileParty mobileParty, ref ExplainedNumber survivalDenominator)
+	{
+		CharacterObject characterObject = mobileParty.GetEffectiveRoleHolder(PartyRole.Surgeon)?.CharacterObject ?? SkillHelper.GetEffectivePartyLeaderForSkill(mobileParty.Party);
+		if (characterObject != null)
+		{
+			bool flag = mobileParty.MapEvent?.IsPlayerMapEvent ?? false;
+			int skillValue = characterObject.GetSkillValue(DefaultSkillEffects.SurgeonSurvivalBonus.EffectedSkill);
+			float skillEffectValue = DefaultSkillEffects.SurgeonSurvivalBonus.GetSkillEffectValue(skillValue);
+			survivalDenominator.Add(skillEffectValue * (flag ? 1f : 0.25f), survivalDenominator.IncludeDescriptions ? GameTexts.FindText("role", PartyRole.Surgeon.ToString()) : null);
 		}
 	}
 }

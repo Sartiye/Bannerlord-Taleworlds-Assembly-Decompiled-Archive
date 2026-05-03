@@ -1179,6 +1179,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			_friendListTimer.Restart();
 			CheckAndSendMessage(new GetFriendListMessage());
+			RecentPlayersManager.TrimPlayers();
 			PlayerId[] recentPlayerIds = RecentPlayersManager.GetRecentPlayerIds();
 			if (recentPlayerIds.Length != 0)
 			{

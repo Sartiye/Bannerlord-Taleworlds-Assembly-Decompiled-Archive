@@ -101,11 +101,11 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		VisualDefinition visualDefinition = new VisualDefinition("Overlay", 0.4f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
 		visualDefinition.AddVisualState(new VisualState("MapExtendedOverlayNormal")
 		{
-			PositionYOffset = 75f
+			PositionYOffset = 71f
 		});
 		visualDefinition.AddVisualState(new VisualState("MapNormalOverlayNormal")
 		{
-			PositionYOffset = 107f
+			PositionYOffset = 106f
 		});
 		visualDefinition.AddVisualState(new VisualState("MapNormalOverlayExtended")
 		{
@@ -220,7 +220,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1.VisualDefinition = CreateVisualDefinitionOverlay();
 		_widget_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1.SuggestedWidth = 510f;
+		_widget_1.SuggestedWidth = 450f;
 		_widget_1.SuggestedHeight = 229f;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
@@ -337,7 +337,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_2.MarginTop = 70f;
 		_widget_1_2.Container = _widget_1_2_1;
-		_widget_1_2.ItemPerPage = 18;
+		_widget_1_2.ItemPerPage = 15;
 		_widget_1_2.LoopNavigation = true;
 		_widget_1_2.NextPageButton = _widget_1_2_2;
 		_widget_1_2.PageText = _widget_1_2_3;
@@ -345,7 +345,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_2_0.ScopeParent = _widget_1_2_1;
 		_widget_1_2_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
 		_widget_1_2_0.AlternateScopeMovements = GamepadNavigationTypes.Vertical;
-		_widget_1_2_0.AlternateMovementStepSize = 6;
+		_widget_1_2_0.AlternateMovementStepSize = 5;
 		_widget_1_2_0.ExtendDiscoveryAreaTop = -5f;
 		_widget_1_2_0.NavigateFromScopeEdges = true;
 		_widget_1_2_0.UseDiscoveryAreaAsScopeEdges = true;
@@ -355,7 +355,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_2_1.MarginLeft = 35f;
 		_widget_1_2_1.DefaultCellWidth = 72f;
 		_widget_1_2_1.DefaultCellHeight = 52f;
-		_widget_1_2_1.ColumnCount = 6;
+		_widget_1_2_1.ColumnCount = 5;
 		_widget_1_2_1.MinIndex = 0;
 		_widget_1_2_1.MaxIndex = 1000;
 		_widget_1_2_2.WidthSizePolicy = SizePolicy.Fixed;

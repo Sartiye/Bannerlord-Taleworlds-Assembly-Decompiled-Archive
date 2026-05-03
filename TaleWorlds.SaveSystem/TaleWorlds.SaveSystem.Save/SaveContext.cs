@@ -388,7 +388,7 @@ public class SaveContext : ISaveContext
 		{
 			if (!EnableSaveStatistics)
 			{
-				TWParallel.For(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
+				TWParallel.ForWithoutRenderThread(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
 				{
 					for (int j = startInclusive; j < endExclusive; j++)
 					{

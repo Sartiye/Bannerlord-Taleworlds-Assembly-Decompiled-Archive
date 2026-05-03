@@ -8,6 +8,7 @@ using SandBox.View.Missions.NameMarkers;
 using SandBox.View.OrderProviders;
 using SandBox.View.Overlay;
 using SandBox.ViewModelCollection.Missions.NameMarker;
+using Sandbox.View.GameStates;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.Map;
@@ -79,7 +80,8 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		}, () => IsSavedGamesDisabled()));
 		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("ContinueCampaign", new TextObject("{=0tJ1oarX}Continue Campaign"), 1, delegate
 		{
-			ContinueCampaign(BannerlordConfig.LatestSaveGameName);
+			PreloadState gameState = GameStateManager.Current.CreateState<PreloadState>(new object[1] { BannerlordConfig.LatestSaveGameName });
+			GameStateManager.Current.PushState(gameState);
 		}, () => IsContinueCampaignDisabled(BannerlordConfig.LatestSaveGameName)));
 		Module.CurrentModule.AddInitialStateOption(new InitialStateOption("SandBoxNewGame", new TextObject("{=171fTtIN}SandBox"), 3, delegate
 		{
@@ -384,7 +386,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 			LoadingWindow.DisableGlobalLoadingWindow();
 			break;
 		default:
-			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 679);
+			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 683);
 			break;
 		}
 	}

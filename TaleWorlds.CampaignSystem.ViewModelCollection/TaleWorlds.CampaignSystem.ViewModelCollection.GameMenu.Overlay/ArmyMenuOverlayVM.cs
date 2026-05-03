@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
@@ -17,8 +16,6 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
 [MenuOverlay("ArmyMenuOverlay")]
 public class ArmyMenuOverlayVM : GameMenuOverlay
 {
-	private List<MobileParty> _savedPartyList;
-
 	private const float CohesionWarningMin = 30f;
 
 	public Action OpenArmyManagement;
@@ -59,17 +56,22 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 	{
 		get
 		{
-			Army army = MobileParty.MainParty.Army;
-			if (army == null)
+			object obj = MobileParty.MainParty?.Army;
+			if (obj == null)
 			{
-				MobileParty targetParty = MobileParty.MainParty.TargetParty;
+				MobileParty mainParty = MobileParty.MainParty;
+				if (mainParty == null)
+				{
+					return null;
+				}
+				MobileParty targetParty = mainParty.TargetParty;
 				if (targetParty == null)
 				{
 					return null;
 				}
-				army = targetParty.Army;
+				obj = targetParty.Army;
 			}
-			return army;
+			return (Army)obj;
 		}
 	}
 
@@ -295,7 +297,6 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		PartyList = new MBBindingList<GameMenuPartyItemVM>();
 		base.CurrentOverlayType = 2;
 		base.IsInitializationOver = false;
-		_savedPartyList = new List<MobileParty>();
 		CohesionHint = new BasicTooltipViewModel();
 		ManCountHint = new BasicTooltipViewModel();
 		FoodHint = new BasicTooltipViewModel();
@@ -354,7 +355,7 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		CharacterObject characterObject = _contextMenuItem.Character ?? _contextMenuItem.Party.LeaderHero?.CharacterObject;
 		if (characterObject == null)
 		{
-			Debug.FailedAssert("ArmyMenuOverlayVM.ExecuteOnSetAsActiveContextMenuItem called on party with no leader hero: " + _contextMenuItem.Party.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteOnSetAsActiveContextMenuItem", 127);
+			Debug.FailedAssert("ArmyMenuOverlayVM.ExecuteOnSetAsActiveContextMenuItem called on party with no leader hero: " + _contextMenuItem.Party.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteOnSetAsActiveContextMenuItem", 124);
 		}
 		else
 		{
@@ -395,7 +396,7 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		Army army = ArmyToUse;
 		if (army == null)
 		{
-			Debug.FailedAssert("Army is null but trying to update army overlay properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "UpdateProperties", 172);
+			Debug.FailedAssert("Army is null but trying to update army overlay properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "UpdateProperties", 169);
 			return;
 		}
 		float num = army.LeaderParty.Food;
@@ -415,50 +416,44 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 
 	private void UpdateLists()
 	{
-		Army army = ArmyToUse;
-		if (army == null)
+		Army armyToUse = ArmyToUse;
+		if (armyToUse == null)
 		{
-			Debug.FailedAssert("Army is null but trying to update army overlay lists", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "UpdateLists", 201);
+			Debug.FailedAssert("Army is null but trying to update army overlay lists", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "UpdateLists", 198);
 			return;
 		}
-		List<MobileParty> list = army.Parties.Except(_savedPartyList).ToList();
-		list.Remove(army.LeaderParty);
-		List<MobileParty> list2 = _savedPartyList.Except(army.Parties).ToList();
-		_savedPartyList = army.Parties.ToList();
-		foreach (MobileParty item in list2)
+		for (int num = PartyList.Count - 1; num >= 0; num--)
 		{
-			for (int num = PartyList.Count - 1; num >= 0; num--)
+			GameMenuPartyItemVM partyVM = PartyList[num];
+			if (!armyToUse.Parties.Any((MobileParty p) => p.Party == partyVM.Party))
 			{
-				if (PartyList[num].Party == item.Party)
+				PartyList.RemoveAt(num);
+			}
+		}
+		for (int i = 0; i < armyToUse.Parties.Count; i++)
+		{
+			MobileParty party = armyToUse.Parties[i];
+			if (!PartyList.Any((GameMenuPartyItemVM p) => p.Party == party.Party))
+			{
+				bool flag = party == armyToUse.LeaderParty;
+				GameMenuPartyItemVM item = new GameMenuPartyItemVM(ExecuteOnSetAsActiveContextMenuItem, party.Party, canShowQuest: true)
 				{
-					PartyList.RemoveAt(num);
-					break;
+					IsLeader = flag
+				};
+				if (flag)
+				{
+					PartyList.Insert(0, item);
+				}
+				else
+				{
+					PartyList.Add(item);
 				}
 			}
 		}
-		foreach (MobileParty item2 in list)
+		foreach (GameMenuPartyItemVM party2 in PartyList)
 		{
-			PartyList.Add(new GameMenuPartyItemVM(ExecuteOnSetAsActiveContextMenuItem, item2.Party, canShowQuest: true));
+			party2.RefreshProperties();
 		}
-		foreach (GameMenuPartyItemVM party in PartyList)
-		{
-			party.RefreshProperties();
-		}
-		if (PartyList.Count <= 0 || PartyList[0].Party == army.LeaderParty.Party)
-		{
-			return;
-		}
-		if (PartyList.SingleOrDefault((GameMenuPartyItemVM p) => p.Party == army.LeaderParty.Party) != null)
-		{
-			int index = PartyList.IndexOf(PartyList.SingleOrDefault((GameMenuPartyItemVM p) => p.Party == army.LeaderParty.Party));
-			PartyList.RemoveAt(index);
-		}
-		GameMenuPartyItemVM gameMenuPartyItemVM = new GameMenuPartyItemVM(ExecuteOnSetAsActiveContextMenuItem, army.LeaderParty.Party, canShowQuest: true)
-		{
-			IsLeader = true
-		};
-		PartyList.Insert(0, gameMenuPartyItemVM);
-		gameMenuPartyItemVM.RefreshProperties();
 	}
 
 	public void ExecuteOpenArmyManagement()
@@ -478,7 +473,7 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Cohesion encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteCohesionLink", 267);
+			Debug.FailedAssert("Couldn't find Cohesion encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\ArmyMenuOverlayVM.cs", "ExecuteCohesionLink", 257);
 		}
 	}
 

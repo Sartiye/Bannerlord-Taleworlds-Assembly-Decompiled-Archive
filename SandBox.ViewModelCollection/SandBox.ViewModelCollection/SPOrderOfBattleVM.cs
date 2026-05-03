@@ -177,10 +177,10 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 			{
 				captain = Hero.FindFirst((Hero h) => h.CharacterObject == formationItemVM.Captain.Agent.Character);
 			}
-			List<Hero> heroTroops = (from ht in formationItemVM.HeroTroops
+			Hero[] heroTroops = (from ht in formationItemVM.HeroTroops
 				select Hero.FindFirst((Hero hero) => hero.CharacterObject == ht.Agent.Character) into h
 				where h != null
-				select h).ToList();
+				select h).ToArray();
 			DeploymentFormationClass orderOfBattleClass = formationItemVM.GetOrderOfBattleClass();
 			bool flag2 = orderOfBattleClass == DeploymentFormationClass.Unset;
 			int primaryWeight = ((!flag2) ? formationItemVM.Classes[0].Weight : 0);

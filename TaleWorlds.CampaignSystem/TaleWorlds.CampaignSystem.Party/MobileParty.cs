@@ -2122,7 +2122,11 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 		{
 			_isDisorganized = true;
 		}
-		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.2"))
+		if (!MBSaveLoad.IsUpdatingGameVersion)
+		{
+			return;
+		}
+		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.2"))
 		{
 			if ((LeaderHero != null && this != MainParty && LeaderHero.PartyBelongedTo != this) || (MapEvent == null && base.StringId.Contains("troops_of_")))
 			{
@@ -2137,13 +2141,18 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 				DestroyPartyAction.Apply(null, this);
 			}
 		}
-		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0") && IsActive && MapFaction == null)
+		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0") && IsActive && MapFaction == null)
 		{
 			if (MapEvent != null)
 			{
 				MapEventSide = null;
 			}
 			RemoveParty();
+		}
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.15")) && (IsGarrison || IsMilitia) && CurrentSettlement == null && (MapEvent == null || (!MapEvent.IsSallyOut && !MapEvent.IsBlockadeSallyOut)))
+		{
+			MapEventSide = null;
+			DestroyPartyAction.Apply(null, this);
 		}
 	}
 
@@ -3107,7 +3116,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			}
 			return false;
 		case PartyRole.Personal:
-			Debug.FailedAssert("personal perk is called in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "HasPerk", 3038);
+			Debug.FailedAssert("personal perk is called in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "HasPerk", 3052);
 			return LeaderHero?.GetPerkValue(perk) ?? false;
 		case PartyRole.ClanLeader:
 			if (LeaderHero != null)
@@ -3470,7 +3479,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			}
 			else
 			{
-				Debug.FailedAssert("Path finding target is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "ComputePath", 3604);
+				Debug.FailedAssert("Path finding target is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "ComputePath", 3618);
 			}
 		}
 		PathBegin = 0;

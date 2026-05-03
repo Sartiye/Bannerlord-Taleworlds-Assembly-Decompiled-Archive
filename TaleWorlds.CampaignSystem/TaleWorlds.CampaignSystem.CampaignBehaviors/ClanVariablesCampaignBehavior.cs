@@ -321,6 +321,33 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 		}
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.14")))
+		{
+			return;
+		}
+		for (int num2 = Kingdom.All.Count - 1; num2 >= 0; num2--)
+		{
+			Kingdom kingdom = Kingdom.All[num2];
+			if (!kingdom.IsEliminated)
+			{
+				foreach (Kingdom sameRulerKingdom in Kingdom.All.Where((Kingdom t) => t != kingdom && t.RulingClan == kingdom.RulingClan).ToList())
+				{
+					if (sameRulerKingdom.Clans.Count > 1)
+					{
+						Clan clan = (from t in sameRulerKingdom.Clans
+							where t != sameRulerKingdom.RulingClan
+							orderby t.CurrentTotalStrength descending
+							select t).First();
+						ChangeRulingClanAction.Apply(sameRulerKingdom, clan);
+					}
+					else
+					{
+						sameRulerKingdom.RulingClan = null;
+						DestroyKingdomAction.Apply(sameRulerKingdom);
+					}
+				}
+			}
+		}
 	}
 
 	private void MakeClanFinancialEvaluation(Clan clan)

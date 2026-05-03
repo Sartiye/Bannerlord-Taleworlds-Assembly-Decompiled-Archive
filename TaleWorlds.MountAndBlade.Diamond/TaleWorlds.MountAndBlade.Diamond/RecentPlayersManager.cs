@@ -33,6 +33,10 @@ public static class RecentPlayersManager
 
 	private const string RecentPlayersFileName = "RecentPlayers.json";
 
+	private const int MaxRecentPlayersSize = 200;
+
+	private const int DownsizedRecentPlayersSize = 160;
+
 	private static bool IsRecentPlayersCacheDirty;
 
 	private static readonly object _lockObject;
@@ -105,14 +109,14 @@ public static class RecentPlayersManager
 			}
 			catch (Exception ex)
 			{
-				Debug.FailedAssert("Could not recent players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 80);
+				Debug.FailedAssert("Could not recent players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 83);
 				try
 				{
 					FileHelper.DeleteFile(RecentPlayerFilePath);
 				}
 				catch (Exception ex2)
 				{
-					Debug.FailedAssert("Could not delete recent players file. " + ex2.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 87);
+					Debug.FailedAssert("Could not delete recent players file. " + ex2.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\RecentPlayersManager.cs", "LoadRecentPlayers", 90);
 				}
 			}
 		}
@@ -184,6 +188,20 @@ public static class RecentPlayersManager
 			{
 				_recentPlayers.Remove(item);
 			}
+		}
+	}
+
+	public static void TrimPlayers()
+	{
+		if (_recentPlayers.Count <= 200)
+		{
+			return;
+		}
+		lock (_lockObject)
+		{
+			List<RecentPlayerInfo> collection = _recentPlayers.OrderByDescending((RecentPlayerInfo p) => p.ImportanceScore).Take(160).ToList();
+			_recentPlayers.Clear();
+			_recentPlayers.AddRange(collection);
 		}
 	}
 

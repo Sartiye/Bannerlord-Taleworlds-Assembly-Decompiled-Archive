@@ -47,8 +47,6 @@ public class Widget : PropertyOwnerObject
 
 	private float _suggestedHeight;
 
-	private bool _tweenPosition;
-
 	private string _hoveredCursorState;
 
 	private bool _alternateClickEventHasSpecialEvent;
@@ -456,27 +454,6 @@ public class Widget : PropertyOwnerObject
 		set
 		{
 			SuggestedHeight = value * _inverseScaleToUse;
-		}
-	}
-
-	[Editor(false)]
-	public bool TweenPosition
-	{
-		get
-		{
-			return _tweenPosition;
-		}
-		set
-		{
-			if (_tweenPosition != value)
-			{
-				bool tweenPosition = _tweenPosition;
-				_tweenPosition = value;
-				if (ConnectedToRoot && (!tweenPosition || !_tweenPosition))
-				{
-					EventManager.OnWidgetTweenPositionChanged(this);
-				}
-			}
 		}
 	}
 
@@ -2133,24 +2110,6 @@ public class Widget : PropertyOwnerObject
 		LayoutImp.OnLayout(this, left, bottom, right, top);
 	}
 
-	internal void DoTweenPosition(float dt)
-	{
-		if (IsVisible && dt > 0f)
-		{
-			float num = Left - LocalPosition.X;
-			float num2 = Top - LocalPosition.Y;
-			if (Mathf.Abs(num) + Mathf.Abs(num2) < 0.003f)
-			{
-				LocalPosition = new Vector2(Left, Top);
-				return;
-			}
-			num = Mathf.Clamp(num, -100f, 100f);
-			num2 = Mathf.Clamp(num2, -100f, 100f);
-			float num3 = Mathf.Min(dt * 18f, 1f);
-			LocalPosition = new Vector2(LocalPosition.X + num3 * num, LocalPosition.Y + num3 * num2);
-		}
-	}
-
 	private void ParallelUpdateChildPositions()
 	{
 		TWParallel.For(0, _children.Count, UpdateChildPositionMT);
@@ -2167,10 +2126,7 @@ public class Widget : PropertyOwnerObject
 	{
 		if (IsVisible)
 		{
-			if (!TweenPosition)
-			{
-				LocalPosition = new Vector2(Left, Top);
-			}
+			LocalPosition = new Vector2(Left, Top);
 			OnUpdatePosition();
 			_isGamepadCursorAreaDirty = true;
 			OnUpdateChildPositions();

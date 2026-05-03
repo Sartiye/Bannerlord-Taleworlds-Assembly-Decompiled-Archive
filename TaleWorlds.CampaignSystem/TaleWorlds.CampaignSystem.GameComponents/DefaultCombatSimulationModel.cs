@@ -326,6 +326,10 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 
 	public override float GetBluntDamageChance(CharacterObject strikerTroop, CharacterObject strikedTroop, PartyBase strikerParty, PartyBase strikedParty, MapEvent battle)
 	{
+		if (battle.IsPlayerMapEvent)
+		{
+			return 0.3f;
+		}
 		return 0.1f;
 	}
 }

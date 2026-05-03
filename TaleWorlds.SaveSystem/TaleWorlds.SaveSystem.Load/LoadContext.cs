@@ -89,7 +89,7 @@ public class LoadContext
 					}
 					else
 					{
-						TWParallel.For(0, _objectCount, delegate(int startInclusive, int endExclusive)
+						TWParallel.ForWithoutRenderThread(0, _objectCount, delegate(int startInclusive, int endExclusive)
 						{
 							for (int num5 = startInclusive; num5 < endExclusive; num5++)
 							{
@@ -99,7 +99,7 @@ public class LoadContext
 								_objectHeaderLoadDatas[num5] = objectHeaderLoadData6;
 							}
 						});
-						TWParallel.For(0, _containerCount, delegate(int startInclusive, int endExclusive)
+						TWParallel.ForWithoutRenderThread(0, _containerCount, delegate(int startInclusive, int endExclusive)
 						{
 							for (int num4 = startInclusive; num4 < endExclusive; num4++)
 							{
@@ -181,7 +181,7 @@ public class LoadContext
 				}
 				else
 				{
-					TWParallel.For(0, _objectCount, delegate(int startInclusive, int endExclusive)
+					TWParallel.ForWithoutRenderThread(0, _objectCount, delegate(int startInclusive, int endExclusive)
 					{
 						for (int num3 = startInclusive; num3 < endExclusive; num3++)
 						{
@@ -214,7 +214,7 @@ public class LoadContext
 				}
 				else
 				{
-					TWParallel.For(0, _containerCount, delegate(int startInclusive, int endExclusive)
+					TWParallel.ForWithoutRenderThread(0, _containerCount, delegate(int startInclusive, int endExclusive)
 					{
 						for (int num2 = startInclusive; num2 < endExclusive; num2++)
 						{

@@ -864,6 +864,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 
 	public void IntervalUpdate()
 	{
+		UpdateTroops();
 		for (int num = TroopList.Count - 1; num >= 0; num--)
 		{
 			OrderTroopItemVM orderTroopItemVM = TroopList[num];
@@ -1043,7 +1044,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Added troop item is null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 734);
+			Debug.FailedAssert("Added troop item is null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\MissionOrderTroopControllerVM.cs", "AddTroopItemIfNotExist", 736);
 		}
 		OnAfterNewTroopItemAdded();
 		RefreshTroopItemBindings();

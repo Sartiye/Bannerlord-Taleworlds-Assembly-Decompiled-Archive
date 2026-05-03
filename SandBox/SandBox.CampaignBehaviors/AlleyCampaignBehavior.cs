@@ -310,6 +310,7 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 	{
 		playerOwnedArea.UnderAttackBy = playerOwnedArea.Alley.Settlement.Alleys.Where((Alley x) => x.State == Alley.AreaState.OccupiedByGangLeader).GetRandomElementInefficiently();
 		playerOwnedArea.UnderAttackBy.Owner.SetHasMet();
+		Debug.Print($"Player alley with id: {playerOwnedArea.Alley.Tag}  in settlement: {playerOwnedArea.Alley.Settlement} under attack by hero: {playerOwnedArea.UnderAttackBy.Owner}  with id: {playerOwnedArea.UnderAttackBy.Owner.StringId} time: {CampaignTime.Now}");
 		float alleyAttackResponseTimeInDays = Campaign.Current.Models.AlleyModel.GetAlleyAttackResponseTimeInDays(playerOwnedArea.TroopRoster);
 		playerOwnedArea.AttackResponseDueDate = CampaignTime.DaysFromNow(alleyAttackResponseTimeInDays);
 		TextObject textObject = new TextObject("{=5bIpeW9X}Your alley in {SETTLEMENT} is under attack from neighboring gangs. Unless you go to their help, the alley will be lost in {RESPONSE_TIME} days.");
@@ -355,7 +356,10 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 
 	private void DailyTickSettlement(Settlement settlement)
 	{
-		TickAlleyOwnerships(settlement);
+		if (settlement.IsTown)
+		{
+			TickAlleyOwnerships(settlement);
+		}
 	}
 
 	private void TickAlleyOwnerships(Settlement settlement)
@@ -373,7 +377,7 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 			{
 				settlement.Alleys.FirstOrDefault((Alley x) => x.State == Alley.AreaState.Empty)?.SetOwner(notable);
 			}
-			if (MBRandom.RandomFloat < num2)
+			if (MBRandom.RandomFloat < num2 && !_playerOwnedCommonAreaData.Any((PlayerAlleyData x) => x.Alley.Settlement == settlement && x.UnderAttackBy?.Owner == notable))
 			{
 				notable.OwnedAlleys.GetRandomElement()?.SetOwner(null);
 			}
@@ -437,7 +441,7 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 		_masterThug = MBObjectManager.Instance.GetObject<CharacterObject>("gangster_3");
 		AddGameMenus(campaignGameStarter);
 		AddDialogs(campaignGameStarter);
-		if (!MBSaveLoad.IsUpdatingGameVersion || !(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0")))
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.14.107126")))
 		{
 			return;
 		}

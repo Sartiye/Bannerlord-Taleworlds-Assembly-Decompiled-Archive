@@ -12,7 +12,6 @@ internal class WidgetContainer
 		ParallelUpdate,
 		LateUpdate,
 		VisualDefinition,
-		TweenPosition,
 		UpdateBrushes
 	}
 
@@ -20,31 +19,31 @@ internal class WidgetContainer
 
 	private MBList<Widget> _frontList;
 
-	private EmptyWidget _emptyWidget;
-
-	private readonly ContainerType _containerType;
-
 	private bool _isFragmented;
 
 	internal int Count => GetActiveList().Count;
 
-	internal WidgetContainer(UIContext context, int initialCapacity, ContainerType containerType)
+	internal WidgetContainer(int initialCapacity)
 	{
-		_containerType = containerType;
-		_emptyWidget = new EmptyWidget(context);
 		_backList = new HashSet<Widget>();
 		_frontList = new MBList<Widget>(initialCapacity);
 	}
 
 	internal void Add(Widget widget)
 	{
-		_backList.Add(widget);
+		lock (_backList)
+		{
+			_backList.Add(widget);
+		}
 		_isFragmented = true;
 	}
 
 	internal void Remove(Widget widget)
 	{
-		_backList.Remove(widget);
+		lock (_backList)
+		{
+			_backList.Remove(widget);
+		}
 		_isFragmented = true;
 	}
 
@@ -69,19 +68,12 @@ internal class WidgetContainer
 			return;
 		}
 		_frontList.Clear();
-		int num = 0;
-		foreach (Widget back in _backList)
+		lock (_backList)
 		{
-			if (back != _emptyWidget)
+			foreach (Widget back in _backList)
 			{
 				_frontList.Add(back);
-				num++;
 			}
-		}
-		_backList.Clear();
-		for (int i = 0; i < _frontList.Count; i++)
-		{
-			_backList.Add(_frontList[i]);
 		}
 		_isFragmented = false;
 	}

@@ -276,7 +276,7 @@ public class LegacySaveContext : ISaveContext
 				{
 					if (!EnableSaveStatistics)
 					{
-						TWParallel.For(0, _childObjects.Count, delegate(int startInclusive, int endExclusive)
+						TWParallel.ForWithoutRenderThread(0, _childObjects.Count, delegate(int startInclusive, int endExclusive)
 						{
 							for (int m = startInclusive; m < endExclusive; m++)
 							{
@@ -297,7 +297,7 @@ public class LegacySaveContext : ISaveContext
 				{
 					if (!EnableSaveStatistics)
 					{
-						TWParallel.For(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
+						TWParallel.ForWithoutRenderThread(0, _childContainers.Count, delegate(int startInclusive, int endExclusive)
 						{
 							for (int l = startInclusive; l < endExclusive; l++)
 							{

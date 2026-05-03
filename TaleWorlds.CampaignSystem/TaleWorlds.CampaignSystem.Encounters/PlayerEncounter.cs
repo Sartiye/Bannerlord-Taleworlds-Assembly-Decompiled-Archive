@@ -576,6 +576,11 @@ public class PlayerEncounter
 		{
 			CreateLocationEncounter(EncounterSettlementAux);
 		}
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.13.106222")) && _mapEvent != null && MobileParty.MainParty.MapEvent == null && (_mapEvent.EventType == MapEvent.BattleTypes.BlockadeSallyOutBattle || _mapEvent.EventType == MapEvent.BattleTypes.BlockadeBattle))
+		{
+			Current.FinalizeBattle();
+			Current.SetupFields(MobileParty.MainParty.Party, PlayerSiege.PlayerSiegeEvent.BesiegedSettlement.Party);
+		}
 	}
 
 	public static void RestartPlayerEncounter(PartyBase defenderParty, PartyBase attackerParty, bool forcePlayerOutFromSettlement = true)
@@ -635,12 +640,12 @@ public class PlayerEncounter
 						}
 						else
 						{
-							Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 495);
+							Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 508);
 						}
 					}
 					else
 					{
-						Debug.FailedAssert("If there is no map event we should create one in order to join battle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 500);
+						Debug.FailedAssert("If there is no map event we should create one in order to join battle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 513);
 					}
 				}
 				CheckNearbyPartiesToJoinPlayerMapEvent();
@@ -819,7 +824,7 @@ public class PlayerEncounter
 				}
 				else
 				{
-					Debug.FailedAssert("Proper mapEvent type could not be set for the battle.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartBattleInternal", 729);
+					Debug.FailedAssert("Proper mapEvent type could not be set for the battle.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartBattleInternal", 742);
 				}
 			}
 			else if (_isSallyOutAmbush)
@@ -1087,7 +1092,7 @@ public class PlayerEncounter
 					DoEnd();
 					break;
 				default:
-					Debug.FailedAssert("[DEBUG]Invalid map event state: " + _mapEventState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "UpdateInternal", 1032);
+					Debug.FailedAssert("[DEBUG]Invalid map event state: " + _mapEventState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "UpdateInternal", 1045);
 					break;
 				}
 			}
@@ -1868,7 +1873,7 @@ public class PlayerEncounter
 		}
 		case Settlement.SiegeState.InTheLordsHall:
 		case Settlement.SiegeState.Invalid:
-			Debug.FailedAssert("Siege state is invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartSiegeAmbushMission", 2059);
+			Debug.FailedAssert("Siege state is invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartSiegeAmbushMission", 2072);
 			break;
 		}
 	}

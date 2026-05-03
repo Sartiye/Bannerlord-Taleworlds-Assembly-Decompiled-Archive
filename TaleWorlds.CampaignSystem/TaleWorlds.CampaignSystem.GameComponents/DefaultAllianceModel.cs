@@ -77,35 +77,35 @@ public class DefaultAllianceModel : AllianceModel
 		if (num > 0 && num2 > 0)
 		{
 			int num3 = kingdomDeclaredAlliance.FactionsAtWarWith.Count((IFaction x) => x.IsKingdomFaction && kingdomDeclaresAlliance.FactionsAtWarWith.Contains(x));
-			float sharedWarsEffect = (float)num3 / (float)num * 25f * 2f;
-			result.Add(num3, _sharedWarsText);
-			float num4 = (float)(num2 - num3) / (float)num2 * -25f;
-			result.Add(num4, _unsharedWarsText);
-			AddSharedWarsEffectToExplanationTooltip(num3, sharedWarsEffect, num4, num2, num, ref explanation);
+			float num4 = (float)num3 / (float)num * 25f * 2f;
+			result.Add(num4, _sharedWarsText);
+			float num5 = (float)(num2 - num3) / (float)num2 * -25f;
+			result.Add(num5, _unsharedWarsText);
+			AddSharedWarsEffectToExplanationTooltip(num3, num4, num5, num2, num, ref explanation);
 		}
 		else
 		{
 			AddNoWarsEffectToExplanationTooltip(ref explanation);
 		}
-		int num5 = MBMath.ClampInt(kingdomDeclaredAlliance.Leader.GetRelation(kingdomDeclaresAlliance.Leader), -20, 20);
-		result.Add(num5, _relationText);
-		AddLowRelationEffectToExplanationTooltip(num5, ref explanation);
+		int num6 = MBMath.ClampInt(kingdomDeclaredAlliance.Leader.GetRelation(kingdomDeclaresAlliance.Leader), -20, 20);
+		result.Add(num6, _relationText);
+		AddLowRelationEffectToExplanationTooltip(num6, ref explanation);
 		int traitLevel = kingdomDeclaredAlliance.Leader.GetTraitLevel(DefaultTraits.Honor);
 		result.Add(traitLevel * 10, _traitLevelText);
 		AddHonorEffectToExplanationTooltip(traitLevel, kingdomDeclaredAlliance.Leader, ref explanation);
 		int dailyTributeToPay = kingdomDeclaresAlliance.GetStanceWith(kingdomDeclaredAlliance).GetDailyTributeToPay(kingdomDeclaredAlliance);
 		if (dailyTributeToPay > 0)
 		{
-			int num6 = 10000;
-			float num7 = MBMath.Map(dailyTributeToPay, 0f, num6, 0f, 20f);
-			AddTributeEffectToExplanationTooltip(num7, ref explanation);
-			result.Add(0f - num7, _receivedTributeText);
+			int num7 = 10000;
+			float num8 = MBMath.Map(dailyTributeToPay, 0f, num7, 0f, 20f);
+			AddTributeEffectToExplanationTooltip(num8, ref explanation);
+			result.Add(0f - num8, _receivedTributeText);
 		}
 		int dailyTributeToPay2 = kingdomDeclaredAlliance.GetStanceWith(kingdomDeclaresAlliance).GetDailyTributeToPay(kingdomDeclaresAlliance);
 		if (dailyTributeToPay2 > 0)
 		{
-			int num8 = 10000;
-			result.Add(MBMath.Map(dailyTributeToPay2, 0f, num8, 0f, 20f), _paidTributeText);
+			int num9 = 10000;
+			result.Add(MBMath.Map(dailyTributeToPay2, 0f, num9, 0f, 20f), _paidTributeText);
 		}
 		if ((float)kingdomDeclaredAlliance.Fiefs.Count / (float)(Campaign.Current.AllTowns.Count + Campaign.Current.AllCastles.Count) > 0.3f)
 		{
@@ -116,31 +116,31 @@ public class DefaultAllianceModel : AllianceModel
 		{
 			result.Add(10f, _townsText);
 		}
-		int num9 = 0;
+		int num10 = 0;
 		foreach (Kingdom alliedKingdom in kingdomDeclaredAlliance.AlliedKingdoms)
 		{
 			if (alliedKingdom.IsAtWarWith(kingdomDeclaresAlliance))
-			{
-				num9 -= 5;
-			}
-		}
-		if (num9 < 0)
-		{
-			result.Add(num9, _warWithTheirAllyText);
-		}
-		int num10 = 0;
-		foreach (Kingdom alliedKingdom2 in kingdomDeclaresAlliance.AlliedKingdoms)
-		{
-			if (alliedKingdom2.IsAtWarWith(kingdomDeclaredAlliance))
 			{
 				num10 -= 5;
 			}
 		}
 		if (num10 < 0)
 		{
-			result.Add(num10, _allyWithTheirEnemyText);
+			result.Add(num10, _warWithTheirAllyText);
 		}
-		AddConflictingAlliancesEffectToExplanationTooltip(num10, num9, ref explanation);
+		int num11 = 0;
+		foreach (Kingdom alliedKingdom2 in kingdomDeclaresAlliance.AlliedKingdoms)
+		{
+			if (alliedKingdom2.IsAtWarWith(kingdomDeclaredAlliance))
+			{
+				num11 -= 5;
+			}
+		}
+		if (num11 < 0)
+		{
+			result.Add(num11, _allyWithTheirEnemyText);
+		}
+		AddConflictingAlliancesEffectToExplanationTooltip(num11, num10, ref explanation);
 		explanationText = BuildExplanationForAlliance(kingdomDeclaresAlliance, explanation);
 		return result;
 	}

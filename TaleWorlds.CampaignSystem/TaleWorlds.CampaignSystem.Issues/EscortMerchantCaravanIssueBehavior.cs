@@ -944,6 +944,10 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		private void AdjustCaravansSpeed()
 		{
+			if (!MobileParty.MainParty.IsActive)
+			{
+				return;
+			}
 			float speed = MobileParty.MainParty.Speed;
 			float speed2 = _questCaravanMobileParty.Speed;
 			while (speed < speed2 || speed - speed2 > 1f)

@@ -33,15 +33,11 @@ public class HideoutConversationsCampaignBehavior : CampaignBehaviorBase
 	private bool bandit_hideout_start_defender_on_condition()
 	{
 		PartyBase encounteredParty = PlayerEncounter.EncounteredParty;
-		if (encounteredParty == null || encounteredParty.IsMobile || !encounteredParty.MapFaction.IsBanditFaction)
+		if (encounteredParty != null && encounteredParty.MapFaction?.IsBanditFaction == true && encounteredParty != null && encounteredParty.Settlement?.IsHideout == true)
 		{
-			return false;
-		}
-		if (encounteredParty.MapFaction.IsBanditFaction && encounteredParty.IsSettlement && encounteredParty.Settlement.IsHideout && Mission.Current != null)
-		{
-			if (Mission.Current.GetMissionBehavior<HideoutMissionController>() == null)
+			if (Mission.Current?.GetMissionBehavior<HideoutMissionController>() == null)
 			{
-				return Mission.Current.GetMissionBehavior<HideoutAmbushMissionController>() != null;
+				return Mission.Current?.GetMissionBehavior<HideoutAmbushMissionController>() != null;
 			}
 			return true;
 		}

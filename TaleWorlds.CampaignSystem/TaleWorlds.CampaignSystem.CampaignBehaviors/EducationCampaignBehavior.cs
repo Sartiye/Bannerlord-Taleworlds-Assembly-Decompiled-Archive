@@ -65,7 +65,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			foreach (SkillObject skill in skills)
 			{
 				child.HeroDeveloper.AddFocus(skill, 1, checkUnspentFocusPoints: false);
-				child.HeroDeveloper.ChangeSkillLevel(skill, 5);
+				child.HeroDeveloper.ChangeSkillLevel(skill, 15);
 			}
 		}
 
@@ -125,7 +125,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			if (!TextObject.IsNullOrEmpty(textObject2))
 			{
 				textObject2.SetTextVariable("NUMBER_FP", 1);
-				textObject2.SetTextVariable("NUMBER_SP", 5);
+				textObject2.SetTextVariable("NUMBER_SP", 15);
 			}
 			textObject.SetTextVariable("SKILL_DESCRIPTION", textObject2);
 			textObject.SetTextVariable("ATTRIBUTE_DESCRIPTION", textObject3);
@@ -180,7 +180,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			string[] array = optionKey.Split(new char[1] { ';' });
 			if (!int.TryParse(array[0], out var result))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildEquipmentForOption", 221);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildEquipmentForOption", 239);
 			}
 			Equipment equipment = null;
 			if (Target == ChildAgeState.Year8)
@@ -223,7 +223,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			EducationOption option = GetOption(optionKey);
 			if (!int.TryParse(array[0], out var _))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildPropertiesForOption", 270);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetChildPropertiesForOption", 288);
 			}
 			Equipment childEquipmentForOption = GetChildEquipmentForOption(child, optionKey, previousOptions);
 			return new EducationCharacterProperties(child.CharacterObject, childEquipmentForOption, option.ChildProperties.ActionId, option.ChildProperties.PrefabId, option.ChildProperties.UseOffHand);
@@ -246,7 +246,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			string[] array = optionKey.Split(new char[1] { ';' });
 			if (!int.TryParse(array[0], out var result))
 			{
-				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetSpecialCharacterForOption", 313);
+				Debug.FailedAssert("/keys/ isnt set correctly", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetSpecialCharacterForOption", 331);
 			}
 			CharacterObject result2 = null;
 			if (Target == ChildAgeState.Year8)
@@ -316,7 +316,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 					return educationPage;
 				}
 			}
-			Debug.FailedAssert("Education page not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetPage", 404);
+			Debug.FailedAssert("Education page not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EducationCampaignBehavior.cs", "GetPage", 421);
 			return null;
 		}
 
@@ -519,7 +519,7 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 
 	private const int FocusIncrease = 1;
 
-	private const int SkillIncrease = 5;
+	private const int SkillIncrease = 15;
 
 	private readonly TextObject _pickAttributeText = new TextObject("{=m7iBf6fQ}Pick an Attribute");
 
@@ -549,6 +549,11 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 
 	private EducationStage _activeStage;
 
+	public override void SyncData(IDataStore dataStore)
+	{
+		dataStore.SyncData("_previousEducations", ref _previousEducations);
+	}
+
 	public override void RegisterEvents()
 	{
 		if (!CampaignOptions.IsLifeDeathCycleDisabled)
@@ -569,79 +574,12 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		}
 	}
 
-	public override void SyncData(IDataStore dataStore)
-	{
-		dataStore.SyncData("_previousEducations", ref _previousEducations);
-	}
-
-	public void GetOptionProperties(Hero child, string optionKey, List<string> previousOptions, out TextObject optionTitle, out TextObject description, out TextObject effect, out (CharacterAttribute, int)[] attributes, out (SkillObject, int)[] skills, out (SkillObject, int)[] focusPoints, out EducationCharacterProperties[] educationCharacterProperties)
-	{
-		EducationStage stage = GetStage(child);
-		EducationOption option = stage.GetOption(optionKey);
-		description = option.Description;
-		effect = option.Effect;
-		optionTitle = option.Title;
-		educationCharacterProperties = stage.GetCharacterPropertiesForOption(child, option, optionKey, previousOptions);
-		if (option.Attributes == null)
-		{
-			attributes = null;
-		}
-		else
-		{
-			attributes = new(CharacterAttribute, int)[option.Attributes.Length];
-			for (int i = 0; i < option.Attributes.Length; i++)
-			{
-				attributes[i] = (option.Attributes[i], 1);
-			}
-		}
-		if (option.Skills == null)
-		{
-			skills = null;
-			focusPoints = null;
-			return;
-		}
-		skills = new(SkillObject, int)[option.Skills.Length];
-		focusPoints = new(SkillObject, int)[option.Skills.Length];
-		for (int j = 0; j < option.Skills.Length; j++)
-		{
-			skills[j] = (option.Skills[j], 5);
-			focusPoints[j] = (option.Skills[j], 1);
-		}
-	}
-
-	public void GetPageProperties(Hero child, List<string> previousChoices, out TextObject title, out TextObject description, out TextObject instruction, out EducationCharacterProperties[] defaultCharacterProperties, out string[] availableOptions)
-	{
-		EducationStage stage = GetStage(child);
-		EducationPage page = stage.GetPage(previousChoices);
-		defaultCharacterProperties = stage.GetCharacterPropertiesForPage(child, page, previousChoices);
-		title = page.Title;
-		description = page.Description;
-		instruction = page.Instruction;
-		availableOptions = page.GetAvailableOptions(stage.StringIdToEducationOption(previousChoices));
-	}
-
-	public bool IsValidEducationNotification(EducationMapNotification data)
-	{
-		EducationStage stage = GetStage(data.Child);
-		if (data.Child.IsAlive && data.Age > 0 && data.Child.Age < (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
-		{
-			return stage != null;
-		}
-		return false;
-	}
-
 	private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail details, bool showNotifications)
 	{
 		if (victim.Clan == Clan.PlayerClan && _previousEducations.ContainsKey(victim))
 		{
 			_previousEducations.Remove(victim);
 		}
-	}
-
-	public void GetStageProperties(Hero child, out int pageCount)
-	{
-		EducationStage stage = GetStage(child);
-		pageCount = stage.PageCount;
 	}
 
 	private void OnCharacterCreationOver()
@@ -680,6 +618,68 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 				}
 			}
 		}
+	}
+
+	public void GetOptionProperties(Hero child, string optionKey, List<string> previousOptions, out TextObject optionTitle, out TextObject description, out TextObject effect, out (CharacterAttribute, int)[] attributes, out (SkillObject, int)[] skills, out (SkillObject, int)[] focusPoints, out EducationCharacterProperties[] educationCharacterProperties)
+	{
+		EducationStage stage = GetStage(child);
+		EducationOption option = stage.GetOption(optionKey);
+		description = option.Description;
+		effect = option.Effect;
+		optionTitle = option.Title;
+		educationCharacterProperties = stage.GetCharacterPropertiesForOption(child, option, optionKey, previousOptions);
+		if (option.Attributes == null)
+		{
+			attributes = null;
+		}
+		else
+		{
+			attributes = new(CharacterAttribute, int)[option.Attributes.Length];
+			for (int i = 0; i < option.Attributes.Length; i++)
+			{
+				attributes[i] = (option.Attributes[i], 1);
+			}
+		}
+		if (option.Skills == null)
+		{
+			skills = null;
+			focusPoints = null;
+			return;
+		}
+		skills = new(SkillObject, int)[option.Skills.Length];
+		focusPoints = new(SkillObject, int)[option.Skills.Length];
+		for (int j = 0; j < option.Skills.Length; j++)
+		{
+			skills[j] = (option.Skills[j], 15);
+			focusPoints[j] = (option.Skills[j], 1);
+		}
+	}
+
+	public void GetPageProperties(Hero child, List<string> previousChoices, out TextObject title, out TextObject description, out TextObject instruction, out EducationCharacterProperties[] defaultCharacterProperties, out string[] availableOptions)
+	{
+		EducationStage stage = GetStage(child);
+		EducationPage page = stage.GetPage(previousChoices);
+		defaultCharacterProperties = stage.GetCharacterPropertiesForPage(child, page, previousChoices);
+		title = page.Title;
+		description = page.Description;
+		instruction = page.Instruction;
+		availableOptions = page.GetAvailableOptions(stage.StringIdToEducationOption(previousChoices));
+	}
+
+	public bool IsValidEducationNotification(EducationMapNotification data)
+	{
+		EducationStage stage = GetStage(data.Child);
+		if (data.Child.IsAlive && data.Age > 0 && data.Child.Age < (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
+		{
+			return stage != null;
+		}
+		return false;
+	}
+
+	public void GetStageProperties(Hero child, out int pageCount)
+	{
+		EducationStage stage = GetStage(child);
+		pageCount = stage.PageCount;
 	}
 
 	private ChildAgeState GetClosestStage(Hero child)
@@ -838,6 +838,113 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		return _activeStage;
 	}
 
+	private static int ChildStateToAge(ChildAgeState state)
+	{
+		return state switch
+		{
+			ChildAgeState.Year2 => 2, 
+			ChildAgeState.Year5 => 5, 
+			ChildAgeState.Year8 => 8, 
+			ChildAgeState.Year11 => 11, 
+			ChildAgeState.Year14 => 14, 
+			ChildAgeState.Year16 => 16, 
+			_ => -1, 
+		};
+	}
+
+	private void Stage2Selection(List<SkillObject> skills, EducationPage previousPage, EducationPage currentPage, EducationCharacterProperties[] childProperties, EducationCharacterProperties[] tutorProperties)
+	{
+		for (int i = 0; i < skills.Count; i++)
+		{
+			int index = i;
+			EducationCharacterProperties childProperties2 = childProperties[index];
+			EducationCharacterProperties specialCharacterProperties = tutorProperties[index];
+			SkillObject skill = skills[index];
+			TextObject textObject = new TextObject("{=!}{SKILL}");
+			TextObject textObject2 = new TextObject("{=!}{SKILL_DESC}");
+			textObject.SetTextVariable("SKILL", skill.Name);
+			textObject2.SetTextVariable("SKILL_DESC", previousPage.Options.First((EducationOption x) => x.Skills.Contains(skill)).Description);
+			EducationOption.EducationOptionConditionDelegate condition = delegate(EducationOption o, List<EducationOption> previousOptions)
+			{
+				int num4 = previousOptions[0].RandomValue % skills.Count;
+				int num5 = previousOptions[1].RandomValue % skills.Count;
+				int num6;
+				if ((num4 + num5) % skills.Count == index)
+				{
+					num6 = ((previousOptions[1].Skills[0] != skill) ? 1 : 0);
+					if (num6 != 0)
+					{
+						currentPage.Description.SetTextVariable("SKILL", skill.Name);
+					}
+				}
+				else
+				{
+					num6 = 0;
+				}
+				return (byte)num6 != 0;
+			};
+			currentPage.AddOption(new EducationOption(textObject, textObject2, null, condition, null, null, new SkillObject[1] { skill }, childProperties2, specialCharacterProperties));
+			SkillObject alternativeSkill = skills[(index + MBRandom.RandomInt(1, 6)) % skills.Count];
+			TextObject textObject3 = new TextObject("{=!}{SKILL}");
+			TextObject textObject4 = new TextObject("{=!}{SKILL_DESC}");
+			textObject3.SetTextVariable("SKILL", alternativeSkill.Name);
+			textObject4.SetTextVariable("SKILL_DESC", previousPage.Options.First((EducationOption x) => x.Skills.Contains(alternativeSkill)).Description);
+			EducationOption.EducationOptionConditionDelegate condition2 = delegate(EducationOption o, List<EducationOption> previousOptions)
+			{
+				int num = previousOptions[0].RandomValue % skills.Count;
+				int num2 = previousOptions[1].RandomValue % skills.Count;
+				int num3;
+				if ((num + num2) % skills.Count == index)
+				{
+					num3 = ((previousOptions[1].Skills[0] == skill) ? 1 : 0);
+					if (num3 != 0)
+					{
+						currentPage.Description.SetTextVariable("SKILL", alternativeSkill.Name);
+					}
+				}
+				else
+				{
+					num3 = 0;
+				}
+				return (byte)num3 != 0;
+			};
+			currentPage.AddOption(new EducationOption(textObject3, textObject4, null, condition2, null, null, new SkillObject[1] { alternativeSkill }, childProperties2, specialCharacterProperties));
+		}
+	}
+
+	private void Stage16Selection((TextObject, TextObject, SkillObject)[] titleDescSkillTuple, EducationPage currentPage, EducationCharacterProperties[] childProperties)
+	{
+		for (int i = 0; i < titleDescSkillTuple.Length; i++)
+		{
+			int index = i;
+			(TextObject, TextObject, SkillObject) container = titleDescSkillTuple[index];
+			EducationCharacterProperties childProperties2 = childProperties[index];
+			SkillObject skill = container.Item3;
+			EducationOption option = new EducationOption(new TextObject("{=!}{OUTCOME_TITLE}"), new TextObject("{=!}{OUTCOME_DESC}"), null, delegate(EducationOption o, List<EducationOption> previousOptions)
+			{
+				int num = previousOptions[0].RandomValue % titleDescSkillTuple.Length;
+				int num2 = previousOptions[1].RandomValue % titleDescSkillTuple.Length;
+				int num3 = (num + num2) % titleDescSkillTuple.Length;
+				SkillObject previousPageSkill = previousOptions[1].Skills[0];
+				bool num4 = index == num3;
+				if (num4)
+				{
+					int num5 = titleDescSkillTuple.FindIndex(((TextObject, TextObject, SkillObject) x) => x.Item3 == previousPageSkill);
+					if (num3 == num5)
+					{
+						container = titleDescSkillTuple[(index + 1) % titleDescSkillTuple.Length];
+					}
+					currentPage.Description.SetTextVariable("RANDOM_OUTCOME", container.Item1);
+					currentPage.Description.SetTextVariable("SKILL", skill.Name);
+				}
+				o.Title.SetTextVariable("OUTCOME_TITLE", container.Item1);
+				o.Description.SetTextVariable("OUTCOME_DESC", container.Item2);
+				return num4;
+			}, null, null, new SkillObject[1] { skill }, childProperties2);
+			currentPage.AddOption(option);
+		}
+	}
+
 	private EducationStage CreateStage2(Hero child)
 	{
 		EducationStage educationStage = new EducationStage(ChildAgeState.Year2);
@@ -961,113 +1068,6 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 			}
 		}
 		return educationStage;
-	}
-
-	private static int ChildStateToAge(ChildAgeState state)
-	{
-		return state switch
-		{
-			ChildAgeState.Year2 => 2, 
-			ChildAgeState.Year5 => 5, 
-			ChildAgeState.Year8 => 8, 
-			ChildAgeState.Year11 => 11, 
-			ChildAgeState.Year14 => 14, 
-			ChildAgeState.Year16 => 16, 
-			_ => -1, 
-		};
-	}
-
-	private void Stage2Selection(List<SkillObject> skills, EducationPage previousPage, EducationPage currentPage, EducationCharacterProperties[] childProperties, EducationCharacterProperties[] tutorProperties)
-	{
-		for (int i = 0; i < skills.Count; i++)
-		{
-			int index = i;
-			EducationCharacterProperties childProperties2 = childProperties[index];
-			EducationCharacterProperties specialCharacterProperties = tutorProperties[index];
-			SkillObject skill = skills[index];
-			TextObject textObject = new TextObject("{=!}{SKILL}");
-			TextObject textObject2 = new TextObject("{=!}{SKILL_DESC}");
-			textObject.SetTextVariable("SKILL", skill.Name);
-			textObject2.SetTextVariable("SKILL_DESC", previousPage.Options.First((EducationOption x) => x.Skills.Contains(skill)).Description);
-			EducationOption.EducationOptionConditionDelegate condition = delegate(EducationOption o, List<EducationOption> previousOptions)
-			{
-				int num4 = previousOptions[0].RandomValue % skills.Count;
-				int num5 = previousOptions[1].RandomValue % skills.Count;
-				int num6;
-				if ((num4 + num5) % skills.Count == index)
-				{
-					num6 = ((previousOptions[1].Skills[0] != skill) ? 1 : 0);
-					if (num6 != 0)
-					{
-						currentPage.Description.SetTextVariable("SKILL", skill.Name);
-					}
-				}
-				else
-				{
-					num6 = 0;
-				}
-				return (byte)num6 != 0;
-			};
-			currentPage.AddOption(new EducationOption(textObject, textObject2, null, condition, null, null, new SkillObject[1] { skill }, childProperties2, specialCharacterProperties));
-			SkillObject alternativeSkill = skills[(index + MBRandom.RandomInt(1, 6)) % skills.Count];
-			TextObject textObject3 = new TextObject("{=!}{SKILL}");
-			TextObject textObject4 = new TextObject("{=!}{SKILL_DESC}");
-			textObject3.SetTextVariable("SKILL", alternativeSkill.Name);
-			textObject4.SetTextVariable("SKILL_DESC", previousPage.Options.First((EducationOption x) => x.Skills.Contains(alternativeSkill)).Description);
-			EducationOption.EducationOptionConditionDelegate condition2 = delegate(EducationOption o, List<EducationOption> previousOptions)
-			{
-				int num = previousOptions[0].RandomValue % skills.Count;
-				int num2 = previousOptions[1].RandomValue % skills.Count;
-				int num3;
-				if ((num + num2) % skills.Count == index)
-				{
-					num3 = ((previousOptions[1].Skills[0] == skill) ? 1 : 0);
-					if (num3 != 0)
-					{
-						currentPage.Description.SetTextVariable("SKILL", alternativeSkill.Name);
-					}
-				}
-				else
-				{
-					num3 = 0;
-				}
-				return (byte)num3 != 0;
-			};
-			currentPage.AddOption(new EducationOption(textObject3, textObject4, null, condition2, null, null, new SkillObject[1] { alternativeSkill }, childProperties2, specialCharacterProperties));
-		}
-	}
-
-	private void Stage16Selection((TextObject, TextObject, SkillObject)[] titleDescSkillTuple, EducationPage currentPage, EducationCharacterProperties[] childProperties)
-	{
-		for (int i = 0; i < titleDescSkillTuple.Length; i++)
-		{
-			int index = i;
-			(TextObject, TextObject, SkillObject) container = titleDescSkillTuple[index];
-			EducationCharacterProperties childProperties2 = childProperties[index];
-			SkillObject skill = container.Item3;
-			EducationOption option = new EducationOption(new TextObject("{=!}{OUTCOME_TITLE}"), new TextObject("{=!}{OUTCOME_DESC}"), null, delegate(EducationOption o, List<EducationOption> previousOptions)
-			{
-				int num = previousOptions[0].RandomValue % titleDescSkillTuple.Length;
-				int num2 = previousOptions[1].RandomValue % titleDescSkillTuple.Length;
-				int num3 = (num + num2) % titleDescSkillTuple.Length;
-				SkillObject previousPageSkill = previousOptions[1].Skills[0];
-				bool num4 = index == num3;
-				if (num4)
-				{
-					int num5 = titleDescSkillTuple.FindIndex(((TextObject, TextObject, SkillObject) x) => x.Item3 == previousPageSkill);
-					if (num3 == num5)
-					{
-						container = titleDescSkillTuple[(index + 1) % titleDescSkillTuple.Length];
-					}
-					currentPage.Description.SetTextVariable("RANDOM_OUTCOME", container.Item1);
-					currentPage.Description.SetTextVariable("SKILL", skill.Name);
-				}
-				o.Title.SetTextVariable("OUTCOME_TITLE", container.Item1);
-				o.Description.SetTextVariable("OUTCOME_DESC", container.Item2);
-				return num4;
-			}, null, null, new SkillObject[1] { skill }, childProperties2);
-			currentPage.AddOption(option);
-		}
 	}
 
 	private EducationStage CreateStage5(Hero child)

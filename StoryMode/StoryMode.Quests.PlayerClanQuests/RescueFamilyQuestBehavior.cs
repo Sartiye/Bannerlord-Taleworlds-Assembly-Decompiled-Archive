@@ -182,6 +182,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			{
 				StoryModeHeroes.LittleBrother.ChangeState(Hero.CharacterStates.Active);
 				EnterSettlementAction.ApplyForCharacterOnly(StoryModeHeroes.LittleBrother, _targetSettlementForSiblings);
+				StoryModeHelpers.SetPlayerSiblingsSkillsIfNeeded(StoryModeHeroes.LittleBrother);
 			}
 			else
 			{
@@ -205,6 +206,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 				{
 					StoryModeHeroes.LittleSister.ChangeState(Hero.CharacterStates.Active);
 					EnterSettlementAction.ApplyForCharacterOnly(StoryModeHeroes.LittleSister, _targetSettlementForSiblings);
+					StoryModeHelpers.SetPlayerSiblingsSkillsIfNeeded(StoryModeHeroes.LittleSister);
 				}
 				else
 				{

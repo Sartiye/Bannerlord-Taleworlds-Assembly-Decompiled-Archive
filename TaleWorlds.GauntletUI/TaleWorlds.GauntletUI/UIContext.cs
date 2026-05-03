@@ -361,6 +361,7 @@ public class UIContext
 		EventManager.CalculateCanvas(pageSize, dt);
 		EventManager.LateUpdate(dt);
 		EventManager.RecalculateCanvas();
+		EventManager.DefragContainers();
 	}
 
 	public void RenderTick(float dt)

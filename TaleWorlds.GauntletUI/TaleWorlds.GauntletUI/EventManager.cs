@@ -68,7 +68,7 @@ public class EventManager
 
 	private Dictionary<int, List<UpdateAction>> _lateUpdateActionsRunning;
 
-	private WidgetContainer[] _widgetContainers;
+	private Dictionary<WidgetContainer.ContainerType, WidgetContainer> _widgetContainers;
 
 	private const int UpdateActionOrderCount = 5;
 
@@ -79,8 +79,6 @@ public class EventManager
 	private readonly TWParallel.ParallelForWithDtAuxPredicate ParallelUpdateWidgetPredicate;
 
 	private readonly TWParallel.ParallelForWithDtAuxPredicate UpdateBrushesWidgetPredicate;
-
-	private readonly TWParallel.ParallelForWithDtAuxPredicate WidgetDoTweenPositionAuxPredicate;
 
 	private float _lastSetFrictionValue = 1f;
 
@@ -335,14 +333,28 @@ public class EventManager
 			UIEventManager = new TaleWorlds.Library.EventSystem.EventManager();
 		}
 		AreaRectangle = Rectangle2D.Create();
-		_widgetContainers = new WidgetContainer[6]
+		_widgetContainers = new Dictionary<WidgetContainer.ContainerType, WidgetContainer>
 		{
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.Update),
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.ParallelUpdate),
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.LateUpdate),
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.TweenPosition),
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.VisualDefinition),
-			new WidgetContainer(context, 64, WidgetContainer.ContainerType.UpdateBrushes)
+			{
+				WidgetContainer.ContainerType.Update,
+				new WidgetContainer(32)
+			},
+			{
+				WidgetContainer.ContainerType.ParallelUpdate,
+				new WidgetContainer(16)
+			},
+			{
+				WidgetContainer.ContainerType.LateUpdate,
+				new WidgetContainer(32)
+			},
+			{
+				WidgetContainer.ContainerType.VisualDefinition,
+				new WidgetContainer(16)
+			},
+			{
+				WidgetContainer.ContainerType.UpdateBrushes,
+				new WidgetContainer(64)
+			}
 		};
 		_lateUpdateActionLocker = new object();
 		_lateUpdateActions = new Dictionary<int, List<UpdateAction>>();
@@ -356,7 +368,6 @@ public class EventManager
 		_drawContext = new TwoDimensionDrawContext();
 		MouseOveredViews = new List<Widget>();
 		ParallelUpdateWidgetPredicate = ParallelUpdateWidget;
-		WidgetDoTweenPositionAuxPredicate = WidgetDoTweenPositionAux;
 		UpdateBrushesWidgetPredicate = UpdateBrushesWidget;
 		IsControllerActive = Input.IsControllerConnected && !Input.IsMouseActive;
 	}
@@ -368,13 +379,13 @@ public class EventManager
 			_lastSetFrictionValue = 1f;
 			Input.SetCursorFriction(_lastSetFrictionValue);
 		}
-		for (int i = 0; i < _widgetContainers.Length; i++)
+		foreach (KeyValuePair<WidgetContainer.ContainerType, WidgetContainer> widgetContainer in _widgetContainers)
 		{
-			_widgetContainers[i].Clear();
+			widgetContainer.Value.Clear();
 		}
-		for (int j = 0; j < _onAfterFinalizedCallbacks.Count; j++)
+		for (int i = 0; i < _onAfterFinalizedCallbacks.Count; i++)
 		{
-			_onAfterFinalizedCallbacks[j]?.Invoke();
+			_onAfterFinalizedCallbacks[i]?.Invoke();
 		}
 		_onAfterFinalizedCallbacks.Clear();
 		_onAfterFinalizedCallbacks = null;
@@ -417,7 +428,6 @@ public class EventManager
 			RegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, widget2);
 			RegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, widget2);
 			RegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, widget2);
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget2);
 		}
 	}
 
@@ -440,7 +450,6 @@ public class EventManager
 			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.UpdateBrushes, widget2);
 			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.ParallelUpdate, widget2);
 			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, widget2);
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget2);
 			GauntletGamepadNavigationManager.Instance?.OnWidgetDisconnectedFromRoot(widget2);
 			widget2.GamepadNavigationIndex = -1;
 			widget2.UsedNavigationMovements = GamepadNavigationTypes.None;
@@ -450,25 +459,17 @@ public class EventManager
 
 	internal void RegisterWidgetForEvent(WidgetContainer.ContainerType type, Widget widget)
 	{
-		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition != null) || (type == WidgetContainer.ContainerType.TweenPosition && widget.TweenPosition) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
+		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition != null) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
 		{
-			WidgetContainer widgetContainer = _widgetContainers[(int)type];
-			lock (widgetContainer)
-			{
-				widgetContainer.Add(widget);
-			}
+			_widgetContainers[type].Add(widget);
 		}
 	}
 
 	internal void UnRegisterWidgetForEvent(WidgetContainer.ContainerType type, Widget widget)
 	{
-		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition == null) || (type == WidgetContainer.ContainerType.TweenPosition && !widget.TweenPosition) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
+		if ((type == WidgetContainer.ContainerType.Update && widget.WidgetInfo.GotCustomUpdate) || (type == WidgetContainer.ContainerType.ParallelUpdate && widget.WidgetInfo.GotCustomParallelUpdate) || (type == WidgetContainer.ContainerType.LateUpdate && widget.WidgetInfo.GotCustomLateUpdate) || (type == WidgetContainer.ContainerType.VisualDefinition && widget.VisualDefinition == null) || (type == WidgetContainer.ContainerType.UpdateBrushes && widget.WidgetInfo.GotUpdateBrushes))
 		{
-			WidgetContainer widgetContainer = _widgetContainers[(int)type];
-			lock (widgetContainer)
-			{
-				widgetContainer.Remove(widget);
-			}
+			_widgetContainers[type].Remove(widget);
 		}
 	}
 
@@ -481,18 +482,6 @@ public class EventManager
 		else
 		{
 			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.VisualDefinition, widget);
-		}
-	}
-
-	internal void OnWidgetTweenPositionChanged(Widget widget)
-	{
-		if (widget.TweenPosition)
-		{
-			RegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget);
-		}
-		else
-		{
-			UnRegisterWidgetForEvent(WidgetContainer.ContainerType.TweenPosition, widget);
 		}
 	}
 
@@ -517,37 +506,6 @@ public class EventManager
 		Root.UpdatePosition();
 	}
 
-	private void WidgetDoTweenPositionAux(int startInclusive, int endExclusive, float deltaTime)
-	{
-		MBReadOnlyList<Widget> activeList = _widgetContainers[4].GetActiveList();
-		for (int i = startInclusive; i < endExclusive; i++)
-		{
-			activeList[i].DoTweenPosition(deltaTime);
-		}
-	}
-
-	private void ParallelDoTweenPositions(float dt)
-	{
-		WidgetContainer widgetContainer = _widgetContainers[4];
-		TWParallel.For(0, widgetContainer.Count, dt, WidgetDoTweenPositionAuxPredicate);
-	}
-
-	private void TweenPositions(float dt)
-	{
-		WidgetContainer widgetContainer = _widgetContainers[4];
-		widgetContainer.Defrag();
-		if (widgetContainer.Count > 64)
-		{
-			ParallelDoTweenPositions(dt);
-			return;
-		}
-		MBReadOnlyList<Widget> activeList = widgetContainer.GetActiveList();
-		for (int i = 0; i < activeList.Count; i++)
-		{
-			activeList[i].DoTweenPosition(dt);
-		}
-	}
-
 	internal void CalculateCanvas(Vector2 pageSize, float dt)
 	{
 		if (_measureDirty > 0 || _layoutDirty > 0)
@@ -563,7 +521,6 @@ public class EventManager
 				MeasureAll();
 			}
 			LayoutAll(0f, PageSize.Y, PageSize.X, 0f);
-			TweenPositions(dt);
 			UpdatePositions();
 			if (_measureDirty > 0)
 			{
@@ -879,7 +836,7 @@ public class EventManager
 	{
 		if (widget == null)
 		{
-			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 1040);
+			Debug.FailedAssert("Calling HitTest using null widget!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "HitTest", 969);
 			return false;
 		}
 		return AnyWidgetsAt(widget, position);
@@ -977,7 +934,7 @@ public class EventManager
 
 	private void ParallelUpdateWidget(int startInclusive, int endExclusive, float dt)
 	{
-		MBReadOnlyList<Widget> activeList = _widgetContainers[1].GetActiveList();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[WidgetContainer.ContainerType.ParallelUpdate].GetActiveList();
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
 			activeList[i].ParallelUpdate(dt);
@@ -986,7 +943,7 @@ public class EventManager
 
 	internal void ParallelUpdateWidgets(float dt)
 	{
-		WidgetContainer widgetContainer = _widgetContainers[1];
+		WidgetContainer widgetContainer = _widgetContainers[WidgetContainer.ContainerType.ParallelUpdate];
 		TWParallel.For(0, widgetContainer.Count, dt, ParallelUpdateWidgetPredicate);
 	}
 
@@ -995,26 +952,23 @@ public class EventManager
 		Time += dt;
 		CachedDt = dt;
 		IsControllerActive = Input.IsControllerConnected && !Input.IsMouseActive;
-		for (int i = 0; i < _widgetContainers.Length; i++)
+		DefragContainers();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[WidgetContainer.ContainerType.VisualDefinition].GetActiveList();
+		for (int i = 0; i < activeList.Count; i++)
 		{
-			_widgetContainers[i].Defrag();
-		}
-		MBReadOnlyList<Widget> activeList = _widgetContainers[3].GetActiveList();
-		for (int j = 0; j < activeList.Count; j++)
-		{
-			activeList[j].UpdateVisualDefinitions(dt);
+			activeList[i].UpdateVisualDefinitions(dt);
 		}
 		UpdateDragCarrier();
 		UIContext.MouseCursors activeCursorOfContext = ((HoveredView?.HoveredCursorState == null) ? UIContext.MouseCursors.Default : ((UIContext.MouseCursors)Enum.Parse(typeof(UIContext.MouseCursors), HoveredView.HoveredCursorState)));
 		Context.ActiveCursorOfContext = activeCursorOfContext;
-		MBReadOnlyList<Widget> activeList2 = _widgetContainers[0].GetActiveList();
-		for (int k = 0; k < activeList2.Count; k++)
+		MBReadOnlyList<Widget> activeList2 = _widgetContainers[WidgetContainer.ContainerType.Update].GetActiveList();
+		for (int j = 0; j < activeList2.Count; j++)
 		{
-			activeList2[k].Update(dt);
+			activeList2[j].Update(dt);
 		}
 		_doingParallelTask = true;
-		WidgetContainer widgetContainer = _widgetContainers[1];
-		widgetContainer.Defrag();
+		DefragContainers();
+		WidgetContainer widgetContainer = _widgetContainers[WidgetContainer.ContainerType.ParallelUpdate];
 		if (widgetContainer.Count > 64)
 		{
 			ParallelUpdateWidgets(dt);
@@ -1022,24 +976,31 @@ public class EventManager
 		else
 		{
 			MBReadOnlyList<Widget> activeList3 = widgetContainer.GetActiveList();
-			for (int l = 0; l < activeList3.Count; l++)
+			for (int k = 0; k < activeList3.Count; k++)
 			{
-				activeList3[l].ParallelUpdate(dt);
+				activeList3[k].ParallelUpdate(dt);
 			}
 		}
 		_doingParallelTask = false;
 	}
 
+	internal void DefragContainers()
+	{
+		foreach (KeyValuePair<WidgetContainer.ContainerType, WidgetContainer> widgetContainer in _widgetContainers)
+		{
+			widgetContainer.Value.Defrag();
+		}
+	}
+
 	internal void ParallelUpdateBrushes(float dt)
 	{
-		WidgetContainer widgetContainer = _widgetContainers[5];
+		WidgetContainer widgetContainer = _widgetContainers[WidgetContainer.ContainerType.UpdateBrushes];
 		TWParallel.For(0, widgetContainer.Count, dt, UpdateBrushesWidgetPredicate);
 	}
 
 	internal void UpdateBrushes(float dt)
 	{
-		WidgetContainer widgetContainer = _widgetContainers[5];
-		widgetContainer.Defrag();
+		WidgetContainer widgetContainer = _widgetContainers[WidgetContainer.ContainerType.UpdateBrushes];
 		if (widgetContainer.Count > 64)
 		{
 			ParallelUpdateBrushes(dt);
@@ -1054,7 +1015,7 @@ public class EventManager
 
 	private void UpdateBrushesWidget(int startInclusive, int endExclusive, float dt)
 	{
-		MBReadOnlyList<Widget> activeList = _widgetContainers[5].GetActiveList();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[WidgetContainer.ContainerType.UpdateBrushes].GetActiveList();
 		for (int i = startInclusive; i < endExclusive; i++)
 		{
 			activeList[i].UpdateBrushes(dt);
@@ -1080,9 +1041,8 @@ public class EventManager
 
 	internal void LateUpdate(float dt)
 	{
-		WidgetContainer obj = _widgetContainers[2];
-		obj.Defrag();
-		MBReadOnlyList<Widget> activeList = obj.GetActiveList();
+		DefragContainers();
+		MBReadOnlyList<Widget> activeList = _widgetContainers[WidgetContainer.ContainerType.LateUpdate].GetActiveList();
 		for (int i = 0; i < activeList.Count; i++)
 		{
 			activeList[i].LateUpdate(dt);
@@ -1169,12 +1129,12 @@ public class EventManager
 	{
 		if (DraggedWidget != null)
 		{
-			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1459);
+			Debug.FailedAssert("Trying to BeginDragging while there is already a dragged object.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1392);
 			ClearDragObject();
 		}
 		if (!draggedObject.ConnectedToRoot)
 		{
-			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1465);
+			Debug.FailedAssert("Trying to drag a widget with no parent, possibly a widget which is already being dragged", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\EventManager.cs", "BeginDragging", 1398);
 			return;
 		}
 		draggedObject.IsPressed = false;

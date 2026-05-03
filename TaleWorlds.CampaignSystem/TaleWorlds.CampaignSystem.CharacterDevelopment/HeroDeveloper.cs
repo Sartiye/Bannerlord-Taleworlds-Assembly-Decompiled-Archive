@@ -240,7 +240,7 @@ public class HeroDeveloper
 		}
 	}
 
-	internal void CheckLevel(bool shouldNotify)
+	public void CheckLevel(bool shouldNotify)
 	{
 		bool flag = false;
 		int totalXp = _totalXp;

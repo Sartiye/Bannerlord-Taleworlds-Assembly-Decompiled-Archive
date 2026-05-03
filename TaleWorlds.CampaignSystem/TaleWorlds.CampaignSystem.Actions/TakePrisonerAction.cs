@@ -33,7 +33,7 @@ public static class TakePrisonerAction
 				}
 			}
 		}
-		if (capturerParty.IsSettlement && prisonerCharacter.StayingInSettlement != null)
+		if (prisonerCharacter.StayingInSettlement != null)
 		{
 			prisonerCharacter.StayingInSettlement = null;
 		}
